@@ -1,196 +1,192 @@
 
 
-$outputs   = @('metal', 'essl',    'glsl',    'hlsl',    'spirv')
-$targets = @('--platform osx -p metal -O 3', '--platform windows -p 320_es', '--platform windows -p 440', '--platform windows -p s_5_0 -O 3', '--platform windows -p spirv')
-#$targets = @('--platform ios -p metal', '--platform android -p 320_es', '--platform linux -p440', '--platform windows -p s_5_0', '--platform linux -p spirv')
-$shaderc = ".\shaderc.exe"
+function Process-Shader {
+   Param($Source, $OutputFile, $Header, $Type, $Defines=@())
 
-for($i = 0; $i -lt 5; $i++)
-{
-   Write-Host Processing shaders for $outputs[$i] using $targets[$i]
-   If(!(test-path -PathType container $outputs[$i]))
+   $outputs = @('mtl ', 'essl', 'glsl', 'dx11', 'spv ')
+   $targets = @(
+      '--platform osx     -p metal -O 3', # '--platform ios -p metal'
+      '--platform windows -p 320_es    ', # '--platform android -p 320_es'
+      '--platform windows -p 440       ', # '--platform linux -p440'
+      '--platform windows -p s_5_0 -O 3', 
+      '--platform windows -p spirv     ')
+   $shaderc = ".\shaderc.exe"
+
+   $OutputPath = ("../bgfx_" + $OutputFile)
+   $ShortName = $Header.Substring(0, $Header.Length - 1)
+
+   Add-Content -Path $OutputPath -Value ("`n//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////`n// Build of " + $Type + " shader from " + $Source + " to " + $ShortName + " with options: " + $Defines)
+   Write-Host ("> " + $Type + " shader from " + $Source + " to " + $ShortName + " with " + $Defines)
+   for($i = 0; $i -lt 5; $i++)
    {
-      New-Item -Name $outputs[$i] -ItemType "directory" > $null
-   }
-
-   Write-Host "> Debug shader"
-   $Parms = ("-f vs_debug.sc -o " + $outputs[$i] + "/vs_debug.bin " + $targets[$i] + " --type vertex").Split(" ")
-   & "$shaderc" $Parms
-   $Parms = ("-f fs_debug.sc -o " + $outputs[$i] + "/fs_debug.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   ################################
-   # Flasher shaders
-
-   Write-Host "> Flasher shader"
-   $Parms = ("-f vs_flasher.sc -o " + $outputs[$i] + "/vs_flasher.bin " + $targets[$i] + " --type vertex").Split(" ")
-   & "$shaderc" $Parms
-   $Parms = ("-f fs_flasher.sc -o " + $outputs[$i] + "/fs_flasher.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   ################################
-   # Basic material shaders
-
-   Write-Host "> Base material shader"
-   $variants = @("TEX", "NOTEX")
-   foreach ($variant in $variants)
-   {
-      $Parms = ("-f vs_basic.sc -o " + $outputs[$i] + "/vs_basic_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define " + $variant).Split(" ")
-      & "$shaderc" $Parms
-      $variants2 = @("AT", "NOAT")
-      foreach ($variant2 in $variants2)
+      $CmdLine = "-f " + $Source + " " + $targets[$i] + " --bin2c " + $Header + $outputs[$i] + " --type " + $Type
+      #$CmdLine = "-f " + $Source + " " + $Target + " -o shaders/" + $Header + ".bin --type " + $Type
+      If($Defines.count -ne 0)
       {
-        $variants3 = @("REFL", "NOREFL")
-        foreach ($variant3 in $variants3)
-        {
-          $Parms = ("-f fs_basic.sc -o " + $outputs[$i] + "/fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2 + ";" + $variant3).Split(" ")
-          & "$shaderc" $Parms
-        }
+         $CmdLine = $CmdLine + " --define " + ($Defines -join ';')
       }
-   }
-
-   ################################
-   # Ball shaders
-
-   Write-Host "> Ball shader"
-   $Parms = ("-f vs_ball.sc -o " + $outputs[$i] + "/vs_ball.bin " + $targets[$i] + " --type vertex").Split(" ")
-   & "$shaderc" $Parms
-   $Parms = ("-f fs_ball_trail.sc -o " + $outputs[$i] + "/fs_ball_trail.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-   $variants = @("EQUIRECTANGULAR", "SPHERICAL")
-   foreach ($variant in $variants)
-   {
-      $subvariants = @("DECAL", "NODECAL")
-      foreach ($subvariant in $subvariants)
-      {
-         $Parms = ("-f fs_ball.sc -o " + $outputs[$i] + "/fs_ball_" + $variant.ToLower() + "_" + $subvariant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $subvariant).Split(" ")
-         & "$shaderc" $Parms
-      }
-   }
-
-   ################################
-   # DMD/Sprite shaders
-
-   Write-Host "> DMD & sprite shaders"
-   $variants = @("WORLD", "NOWORLD")
-   foreach ($variant in $variants)
-   {
-      $Parms = ("-f vs_dmd.sc -o " + $outputs[$i] + "/vs_basic_dmd_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define " + $variant).Split(" ")
+      $CmdLine = $CmdLine + " -o tmp.h"
+      $Parms = $CmdLine.Split(" ")
       & "$shaderc" $Parms
+      Get-Content -Path "tmp.h" | Add-Content -Path $OutputPath
+      Remove-Item "tmp.h"
    }
-   $variants = @("DMD", "SPRITE")
-   foreach ($variant in $variants)
-   {
-       
-      $variants2 = @("TEX", "NOTEX")
-      foreach ($variant2 in $variants2)
-      {
-         $Parms = ("-f fs_dmd.sc -o " + $outputs[$i] + "/fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2).Split(" ")
-         & "$shaderc" $Parms
-      }
-   }
-
-   ################################
-   # Light shaders
-
-   Write-Host "> Light shader"
-   $variants = @("NOSHADOW", "BALLSHADOW")
-   foreach ($variant in $variants)
-   {
-      $Parms = ("-f vs_light.sc -o " + $outputs[$i] + "/vs_light_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define " + $variant).Split(" ")
-      & "$shaderc" $Parms
-      $Parms = ("-f fs_light.sc -o " + $outputs[$i] + "/fs_light_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant).Split(" ")
-      & "$shaderc" $Parms
-       
-      $variants2 = @("TEX", "NOTEX")
-      foreach ($variant2 in $variants2)
-      {
-         $Parms = ("-f vs_basic.sc -o " + $outputs[$i] + "/vs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type vertex --define CLASSIC_LIGHT;" + $variant + ";" + $variant2).Split(" ")
-         & "$shaderc" $Parms
-         $Parms = ("-f fs_classic_light.sc -o " + $outputs[$i] + "/fs_classic_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2).Split(" ")
-         & "$shaderc" $Parms
-      }
-   }
-
-   ################################
-   # Post process shaders
-
-   Write-Host "> Post process shaders"
-
-   $Parms = ("-f vs_postprocess_offseted.sc -o " + $outputs[$i] + "/vs_postprocess_offseted.bin " + $targets[$i] + " --type vertex").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f vs_postprocess.sc -o " + $outputs[$i] + "/vs_postprocess.bin " + $targets[$i] + " --type vertex").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_mirror.sc -o " + $outputs[$i] + "/fs_pp_mirror.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_copy.sc -o " + $outputs[$i] + "/fs_pp_copy.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_bloom.sc -o " + $outputs[$i] + "/fs_pp_bloom.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_irradiance.sc -o " + $outputs[$i] + "/fs_pp_irradiance.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_ssao.sc -o " + $outputs[$i] + "/fs_pp_ssao.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_ssr.sc -o " + $outputs[$i] + "/fs_pp_ssr.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_cas.sc -o " + $outputs[$i] + "/fs_pp_cas.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_bilateral_cas.sc -o " + $outputs[$i] + "/fs_pp_bilateral_cas.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $Parms = ("-f fs_pp_nfaa.sc -o " + $outputs[$i] + "/fs_pp_nfaa.bin " + $targets[$i] + " --type fragment").Split(" ")
-   & "$shaderc" $Parms
-
-   $variants = @("FXAA1", "FXAA2", "FXAA3")
-   foreach ($variant in $variants)
-   {
-      $Parms = ("-f fs_pp_fxaa.sc -o " + $outputs[$i] + "/fs_pp_" + $variant.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant).Split(" ")
-      & "$shaderc" $Parms
-   }
-
-   $variants = @("REINHARD", "FILMIC", "TONY")
-   foreach ($variant in $variants)
-   {
-   $variants2 = @("AO", "NOAO")
-   foreach ($variant2 in $variants2)
-   {
-   $variants3 = @("FILTER", "NOFILTER")
-   foreach ($variant3 in $variants3)
-   {
-   $variants4 = @("GRAY", "RG", "RGB")
-   foreach ($variant4 in $variants4)
-   {
-      $Parms = ("-f fs_pp_tonemap.sc -o " + $outputs[$i] + "/fs_pp_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_" + $variant4.ToLower() + ".bin " + $targets[$i] + " --type fragment --define " + $variant + ";" + $variant2 + ";" + $variant3 + ";" + $variant4).Split(" ")
-      & "$shaderc" $Parms
-   }
-   }
-   }
-   }
-
-   $blurs = @("BLUR_7", "BLUR_9", "BLUR_11", "BLUR_13", "BLUR_15", "BLUR_19", "BLUR_19H", "BLUR_23", "BLUR_27", "BLUR_39")
-   foreach ($blur in $blurs)
-   {
-      $axis = @("HORIZONTAL", "VERTICAL")
-      $axis_suffix = @("_h", "_v")
-      for($j = 0; $j -lt 2; $j++)
-      {
-         $Parms = ("-f fs_blur.sc -o " + $outputs[$i] + "/fs_" + $blur.ToLower()+$axis_suffix[$j] + ".bin " + $targets[$i] + " --type fragment --define " + $blur + ";" + $axis[$j]).Split(" ")
-         & "$shaderc" $Parms
-      }
-   }
-
-   Write-Host ""
-
+   Add-Content -Path $OutputPath -Value ("static const bgfx::EmbeddedShader " + $ShortName + " = BGFX_EMBEDDED_SHADER(" + $ShortName + ");")
 }
 
+$stereo = @("NOSTEREO", "STEREO")
+$stOutput = @(("_"), ("_st_"))
 
+
+################################
+# Debug shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Debug shader"
+New-Item -Path . -Name "../bgfx_debug.h" -ItemType "File" -Force -Value "// Debug Shaders`n"
+Process-Shader "vs_debug.sc" "debug.h" "vs_debug_" "vertex"
+Process-Shader "fs_debug.sc" "debug.h" "fs_debug_" "fragment"
+
+################################
+# Flasher shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Flasher shader"
+New-Item -Path . -Name "../bgfx_flasher.h" -ItemType "File" -Force -Value "// Flasher Shaders`n"
+Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_"    "vertex"
+Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_st_" "vertex" @("STEREO")
+Process-Shader "fs_flasher.sc" "flasher.h" "fs_flasher_"    "fragment"
+
+################################
+# Basic material shaders (also 'classic' light)
+Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
+New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
+foreach ($variant in @("TEX", "NOTEX"))
+{
+  Process-Shader "vs_basic.sc" "basic.h" ("vs_basic_" + $variant.ToLower() + "_")    "vertex" @($variant)
+  Process-Shader "vs_basic.sc" "basic.h" ("vs_basic_" + $variant.ToLower() + "_st_") "vertex" @("STEREO", $variant)
+  foreach ($variant2 in @("AT", "NOAT"))
+  {
+	 foreach ($variant3 in @("REFL", "NOREFL"))
+	 {
+		Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant, $variant2, $variant3)
+		Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_st_") "fragment" @("STEREO", $variant, $variant2, $variant3)
+	 }
+  }
+  Process-Shader "vs_basic.sc" "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_") "vertex" @("CLASSIC_LIGHT", $variant)
+  Process-Shader "vs_basic.sc" "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_st_") "vertex" @("STEREO", "CLASSIC_LIGHT", $variant)
+  foreach ($variant2 in @("NOSHADOW", "BALLSHADOW"))
+  {
+	 Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_") "fragment" @($variant, $variant2)
+  }
+}
+
+################################
+# Ball shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Ball shader"
+New-Item -Path . -Name "../bgfx_ball.h" -ItemType "File" -Force -Value "// Ball Shaders`n"
+for($k = 0; $k -lt 2; $k++)
+{
+  Process-Shader "vs_ball.sc" "ball.h" ("vs_ball" + $stOutput[$k]) "vertex" @($stereo[$k])
+  foreach ($variant in @("EQUIRECTANGULAR", "SPHERICAL"))
+  {
+	 foreach ($subvariant in @("DECAL", "NODECAL"))
+	 {
+		Process-Shader "fs_ball.sc" "ball.h" ("fs_ball_" + $variant.ToLower() + "_" + $subvariant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $subvariant)
+	 }
+  }
+}
+Process-Shader "fs_ball_trail.sc" "ball.h" "fs_ball_trail_" "fragment"
+
+################################
+# DMD/Sprite shaders
+Write-Host "`n>>>>>>>>>>>>>>>> DMD & sprite shaders"
+New-Item -Path . -Name "../bgfx_dmd.h" -ItemType "File" -Force -Value "// DMD Shaders`n"
+Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_world_"    "vertex" @("WORLD")
+Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_world_st_" "vertex" @("WORLD", "STEREO")
+Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_noworld_"  "vertex"
+foreach ($variant in @("DMD", "SPRITE"))
+{
+  foreach ($variant2 in @("TEX", "NOTEX"))
+  {
+	 Process-Shader "fs_dmd.sc" "dmd.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_") "fragment" @($variant, $variant2)
+  }
+}
+
+################################
+# Light shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Light shader"
+New-Item -Path . -Name "../bgfx_light.h" -ItemType "File" -Force -Value "// Light Shaders`n"
+Process-Shader "vs_light.sc" "light.h" "vs_light_"    "vertex"
+Process-Shader "vs_light.sc" "light.h" "vs_light_st_" "vertex" @("STEREO")
+foreach ($variant in @("NOSHADOW", "BALLSHADOW"))
+{
+  Process-Shader "fs_light.sc" "light.h" ("fs_light_" + $variant.ToLower() + "_") "fragment" @($variant)
+}
+
+################################
+# Stereo shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Stereo shaders"
+New-Item -Path . -Name "../bgfx_stereo.h" -ItemType "File" -Force -Value "// Stereo Shaders`n"
+for($k = 0; $k -lt 2; $k++)
+{
+   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_sbs" + $stOutput[$k]) "fragment" @("SBS", $stereo[$k])
+   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_int" + $stOutput[$k]) "fragment" @("INT", $stereo[$k])
+   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_flipped_int" + $stOutput[$k]) "fragment" @("FLIPPED_INT", $stereo[$k])
+   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_deghost" + $stOutput[$k]) "fragment" @("ANAGLYPH", "DEGHOST", $stereo[$k])
+   foreach ($colors in @("SRGB", "GAMMA"))
+   {
+      foreach ($desat in @("NODESAT", "DYNDESAT"))
+      {
+         Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_lin_" + $colors.ToLower() + "_" + $desat.ToLower() + $stOutput[$k]) "fragment" @("ANAGLYPH", $desat, $colors, $stereo[$k])
+      }
+   }
+}
+
+################################
+# Post process shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Post process shaders"
+New-Item -Path . -Name "../bgfx_postprocess.h" -ItemType "File" -Force -Value "// Postprocess Shaders`n"
+New-Item -Path . -Name "../bgfx_antialiasing.h" -ItemType "File" -Force -Value "// Antialiasing Shaders`n"
+New-Item -Path . -Name "../bgfx_tonemap.h" -ItemType "File" -Force -Value "// Tonemap Shaders`n"
+New-Item -Path . -Name "../bgfx_blur.h" -ItemType "File" -Force -Value "// Blur Kernel Shaders`n"
+for($k = 0; $k -lt 2; $k++)
+{
+  Process-Shader "vs_postprocess_offseted.sc" "postprocess.h" ("vs_postprocess_offseted" + $stOutput[$k]) "vertex" @($stereo[$k])
+  Process-Shader "vs_postprocess.sc" "postprocess.h" ("vs_postprocess" + $stOutput[$k]) "vertex" @($stereo[$k])
+  Process-Shader "fs_pp_mirror.sc" "postprocess.h" ("fs_pp_mirror" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_copy.sc" "postprocess.h" ("fs_pp_copy" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_bloom.sc" "postprocess.h" ("fs_pp_bloom" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_irradiance.sc" "postprocess.h" ("fs_pp_irradiance" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_ssao.sc" "postprocess.h" ("fs_pp_ssao" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_ssr.sc" "postprocess.h" ("fs_pp_ssr" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_cas.sc" "antialiasing.h" ("fs_pp_cas" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_bilateral_cas.sc" "antialiasing.h" ("fs_pp_bilateral_cas" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_nfaa.sc" "antialiasing.h" ("fs_pp_nfaa" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_dlaa_edge.sc" "antialiasing.h" ("fs_pp_dlaa_edge" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_dlaa.sc" "antialiasing.h" ("fs_pp_dlaa" + $stOutput[$k]) "fragment" @($stereo[$k])
+  foreach ($variant in @("FXAA1", "FXAA2", "FXAA3"))
+  {
+	 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
+  }
+  foreach ($variant in @("REINHARD", "FILMIC", "TONY"))
+  {
+	 foreach ($variant2 in @("AO", "NOAO"))
+	 {
+		foreach ($variant3 in @("FILTER", "NOFILTER"))
+		{
+		   foreach ($variant4 in @("GRAY", "RG", "RGB"))
+		   {
+			  Process-Shader "fs_pp_tonemap.sc" "tonemap.h" ("fs_pp_tonemap_"  + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_" + $variant4.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, $variant3, $variant4)
+		   }
+		}
+	 }
+  }
+  $blurs = @("BLUR_7", "BLUR_9", "BLUR_11", "BLUR_13", "BLUR_15", "BLUR_19", "BLUR_19H", "BLUR_23", "BLUR_27", "BLUR_39")
+  foreach ($blur in $blurs)
+  {
+	 $axis = @("HORIZONTAL", "VERTICAL")
+	 $axis_suffix = @("_h", "_v")
+	 for($j = 0; $j -lt 2; $j++)
+	 {
+		Process-Shader "fs_blur.sc" "blur.h" ("fs_"  + $blur.ToLower() + $axis_suffix[$j] + $stOutput[$k]) "fragment" @($stereo[$k], $blur, $axis[$j])
+	 }
+  }
+}
 

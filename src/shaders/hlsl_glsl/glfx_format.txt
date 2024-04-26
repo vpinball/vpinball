@@ -1,0 +1,185 @@
+This format was created to reduce the effort of converting the fx shaders of VisualPinball to OpenGL.
+
+1. General
+
+1.1 License
+
+	Although personally I don't think it is a good idea to reuse this code anywhere else, you can use this code either under the VisualPinball license
+	or under this license:
+
+		Copyright (c) 2018, Sebastian Wiedemann glfx@<domain_missing>.com
+		All rights reserved.
+
+		Redistribution and use in source and binary forms, with or without
+		modification, are permitted provided that the following conditions are met:
+			* Redistributions of source code must retain the above copyright
+			  notice, this list of conditions and the following disclaimer.
+			* Redistributions in binary form must reproduce the above copyright
+			  notice, this list of conditions and the following disclaimer in the
+			  documentation and/or other materials provided with the distribution.
+			* Neither the name of VisualPinball nor the
+			  names of its contributors may be used to endorse or promote products
+			  derived from this software without specific prior written permission.
+
+		THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+		ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+		WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+		DISCLAIMED. IN NO EVENT SHALL <COPYRIGHT HOLDER> BE LIABLE FOR ANY
+		DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+		(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+		LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+		ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+		(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+		SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+2. Structure
+
+Since I wanted to keep it simple ans stupid, the parser itself is (unlike C, C++ or glsl) a linebased and case sensitive
+parser. All Lines starting with four slashes (e.g. //// ) changes the output generated for the glsl compiler. Lines 
+following ////GLOBAL are used for vertex and fragment shader. Lines following ////VERTEX and /////FRAGMENT are used for
+all vertex/fragment shaders. To use code only in one shader use ////vs_notex_main where vs_notex_main is the vertex/fragment
+shader you define later in the TECHNIQUES block. Every final shader must contain exactly ONE main() function. Geometry
+shaders can be defined with ////GEOMETRY
+
+To add defines into your code set Shader::Defines to a string containing your defines and insert a ////DEFINES block in your glfx file.
+
+Do not use comments starting with //// - this breaks the parser.
+
+3. Converting
+
+3.1 Techniques
+DX9 definition of a technique:
+technique basic_without_texture_isMetal
+{ 
+   pass P0 
+   { 
+      VertexShader = compile vs_3_0 vs_notex_main(); 
+      PixelShader = compile ps_3_0 ps_main(1);
+   } 
+}
+
+without geometry shader is transformed to a single line:
+
+basic_without_texture_isMetal:P0:vs_notex_main():ps_main(1)
+or
+basic_without_texture_isMetal:P0:vs_notex_main()::ps_main(1)
+
+(note:you can have one or two colons between vertex shader and fragment shader, when you have no geometry shader)
+
+if you want to add a geometry shader:
+basic_without_texture_isMetal:P0:vs_main():gs_main():ps_main(1)
+
+Parameters as in ps_main(1) can be defined in the shadercode with %PARAMi% starting with %PARAM0%. Note: If a function is called
+with less parameters than defined in the code, the undefined %PARAMi% are not replaced. This will probably not compile.
+
+Multiple passes are possible, just use multiple lines (untested).
+
+3.2 Include files:
+Lines matching the pattern '#include "filename"' are parsed at this position. They might also contain ////Blocks. The parsing starts
+with the same block state as the main file and after parsing the include file the state is switched back to the last state before #include.
+
+3.3. Converting main functions:
+Either use a converter or do it manually:
+
+struct VS_NOTEX_OUTPUT 
+{
+   float4 pos      : POSITION;
+   float4 worldPos_t1x : TEXCOORD0; // pack tex1 into w component of the float4s
+   float4 normal_t1y : TEXCOORD1;
+};
+
+texture Texture3; // bulb light buffer
+sampler2D texSamplerBL : TEXUNIT3 = sampler_state // bulb light/transmission buffer texture
+{
+	Texture	  = (Texture3);
+    MIPFILTER = NONE; //!! ??
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+	ADDRESSU  = Clamp;
+	ADDRESSV  = Clamp;
+};
+
+float4 ps_main(in VS_NOTEX_OUTPUT IN, uniform bool is_metal) : COLOR
+{
+   const float3 diffuse  = cBase_Alpha.xyz;
+   const float3 glossy   = is_metal ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
+   const float3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
+   const float  edge     = is_metal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+   
+   const float3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t1x.xyz);
+   const float3 N = normalize(IN.normal_t1y.xyz);
+
+   //return float4((N+1.0)*0.5,1.0); // visualize normals
+
+   float4 result;
+   result.xyz = lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, is_metal); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   result.a = cBase_Alpha.a;
+
+   [branch] if(cBase_Alpha.a < 1.0) {
+      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+
+      if (fDisableLighting_top_below.y < 1.0)
+          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+          result.xyz += lerp(sqrt(diffuse)*tex2Dlod(texSamplerBL, float4(float2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.,0.)).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
+
+   return result;
+}
+
+Must be converted to:
+////ps_main
+#version 330
+
+in vec4 pos;
+in vec4 worldPos_t1x;
+in vec4 normal_t1y;
+
+in sampler2D Texture3;
+
+out vec4 color;
+
+void main() {
+   const vec3 diffuse  = cBase_Alpha.xyz;
+   const vec3 glossy   = %PARAM0% ? cBase_Alpha.xyz : cGlossy_ImageLerp.xyz*0.08;
+   const vec3 specular = cClearcoat_EdgeAlpha.xyz*0.08;
+   const float  edge     = %PARAM0% ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
+   
+   const vec3 V = normalize(/*camera=0,0,0,1*/-IN.worldPos_t1x.xyz);
+   const vec3 N = normalize(IN.normal_t1y.xyz);
+
+   //return vec4((N+1.0)*0.5,1.0); // visualize normals
+
+   vec4 result;
+   result.xyz = lightLoop(IN.worldPos_t1x.xyz, N, V, diffuse, glossy, specular, edge, true, %PARAM0%); //!! have a "real" view vector instead that mustn't assume that viewer is directly in front of monitor? (e.g. cab setup) -> viewer is always relative to playfield and/or user definable
+   result.a = cBase_Alpha.a;
+
+   if(cBase_Alpha.a < 1.0) {
+      result.a = GeometricOpacity(dot(N,V),result.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);
+
+      if (fDisableLighting_top_below.y < 1.0)
+          // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
+          result.xyz += mix(sqrt(diffuse)*textureLod(Texture3, vec2(0.5*IN.worldPos_t1x.w,-0.5*IN.normal_t1y.w)+0.5, 0.0).xyz*result.a, 0., fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+   }
+
+   color = result;
+}
+
+3.4 defines are ignored by the parser, but handeled by the GLSL compiler if they are defined in the glfx file. Passing C/C++ defines from VisualStudio is not possible.
+
+3.5 Conversion help:
+
+float2 => vec2
+float3 => vec3
+float4 => vec4
+
+tex2Dlod(sampler, vec4) => textureLod(sampler, vec4.xy, vec4.w)
+lerp(x,y,s) => mix(x,y,s)
+ddx(x) => dFdx(x)
+ddy(x) => dFdy(x)
+sincos(phi,sp,cp) => {sp=sin(phi);cp=cos(phi);
+frac(x) => fract(x)
+
+unchanged:
+dot(x,y)
+normalize(x)
+sqrt(x)

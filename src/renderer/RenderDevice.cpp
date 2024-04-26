@@ -11,8 +11,8 @@
 #include "RenderDevice.h"
 #include "RenderCommand.h"
 #include "Shader.h"
-#include "shader/AreaTex.h"
-#include "shader/SearchTex.h"
+#include "renderer/AreaTex.h"
+#include "renderer/SearchTex.h"
 
 #ifdef ENABLE_SDL_VIDEO
 #include <SDL2/SDL_syswm.h>
@@ -24,6 +24,7 @@
 #undef _WIN64
 #endif
 #include "bx/platform.h"
+#include "bx/string.h"
 #include "bgfx/platform.h"
 #include "bgfx/bgfx.h"
 #ifdef __STANDALONE__
@@ -43,13 +44,13 @@
 
 #elif defined(ENABLE_DX9)
 #include "parts/Material.h"
-#include "BasicShader.h"
-#include "DMDShader.h"
-#include "FBShader.h"
-#include "FlasherShader.h"
-#include "LightShader.h"
-#include "StereoShader.h"
-#include "BallShader.h"
+#include "shaders/hlsl_basic.h"
+#include "shaders/hlsl_dmd.h"
+#include "shaders/hlsl_postprocess.h"
+#include "shaders/hlsl_flasher.h"
+#include "shaders/hlsl_light.h"
+#include "shaders/hlsl_stereo.h"
+#include "shaders/hlsl_ball.h"
 #endif
 
 #if defined(ENABLE_BGFX)

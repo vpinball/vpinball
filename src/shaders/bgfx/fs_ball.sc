@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_worldPos, v_normal, v_texcoord0, v_eye
+#else
 $input v_worldPos, v_normal, v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -7,14 +11,19 @@ $input v_worldPos, v_normal, v_texcoord0
 uniform mat4 matView;
 uniform mat4 matWorldView;
 uniform mat4 matWorldViewInverse;
+#ifdef STEREO
+uniform mat4 matWorldViewProj[2];
+uniform mat4 matProj[2];
+#else
 uniform mat4 matWorldViewProj;
 uniform mat4 matProj;
+#endif
 
-SAMPLER2D(tex_ball_color, 0);     // base texture (used as a reflection map)
-SAMPLER2D(tex_env, 1);            // envmap
-SAMPLER2D(tex_diffuse_env, 2);    // envmap radiance
-SAMPLER2D(tex_ball_decal, 3);     // ball decal
-SAMPLER2D(tex_ball_playfield, 4); // playfield probe, mixed with based texture
+SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)
+SAMPLER2D      (tex_env, 1);            // envmap
+SAMPLER2D      (tex_diffuse_env, 2);    // envmap radiance
+SAMPLER2D      (tex_ball_decal, 3);     // ball decal
+SAMPLER2DSTEREO(tex_ball_playfield, 4); // playfield probe, mixed with based texture
 
 uniform vec4 u_basic_shade_mode;
 #define doMetal             (u_basic_shade_mode.x)
@@ -125,7 +134,11 @@ EARLY_DEPTH_STENCIL void main()
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
+	#ifdef STEREO
+    const vec4 proj = mul(matProj[v_eye], vec4(playfield_hit, 1.0));
+	#else
     const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
+	#endif
     const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb

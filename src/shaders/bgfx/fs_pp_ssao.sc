@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -13,15 +17,19 @@ uniform vec4 w_h_height;
 
 uniform vec4 AO_scale_timeblur; // actually vec2 extended to vec4
 
-SAMPLER2D(tex_fb_filtered,  0); // Framebuffer (filtered)
-SAMPLER2D(tex_depth,        4); // DepthBuffer
-SAMPLER2D(tex_ao_dither,    5); // AO Dither
+SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
+SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
+SAMPLER2D      (tex_ao_dither,    5); // AO Dither
 
 
+#ifdef STEREO
+vec3 get_nonunit_normal(const float depth0, const vec2 u, const int v_eye) // use neighboring pixels // quite some tex access by this
+#else
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
+#endif
 {
-   const float depth1 = texture2DLod(tex_depth, float2(u.x, u.y + w_h_height.y), 0.0).x;
-   const float depth2 = texture2DLod(tex_depth, float2(u.x + w_h_height.x, u.y), 0.0).x;
+   const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
+   const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
@@ -47,7 +55,11 @@ void main()
 	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
 	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
+	#ifdef STEREO
+	const vec3 normal = normalize(get_nonunit_normal(depth0, u, v_eye));
+	#else
 	const vec3 normal = normalize(get_nonunit_normal(depth0, u));
+	#endif
 	//const vec3 normal = texNoLod(tex_normals, u).xyz *2.0-1.0; // use 8bitRGB pregenerated normals
 	const float radius_depth = radius/depth0;
 
@@ -60,7 +72,11 @@ void main()
 		//const float rdotn = dot(ray,normal);
 		const vec2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = texStereoNoLod(tex_depth, hemi_ray).x;
+		#ifdef STEREO
+		const vec3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray, v_eye);
+		#else
 		const vec3 occ_normal = get_nonunit_normal(occ_depth, hemi_ray);
+		#endif
 		//const vec3 occ_normal = texNoLod(tex_normals, hemi_ray).xyz *2.0-1.0;  // use 8bitRGB pregenerated normals, can also omit normalization below then
 		const float diff_depth = depth0 - occ_depth;
 		const float diff_norm = dot(occ_normal,normal);
@@ -69,8 +85,8 @@ void main()
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
 	gl_FragColor = vec4((texStereoNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-				  +texStereoNoLod(tex_fb_filtered, uv1).x
-				  +texStereoNoLod(tex_fb_filtered, vec2(uv0.x,uv1.y)).x
-				  +texStereoNoLod(tex_fb_filtered, vec2(uv1.x,uv0.y)).x)
+                        +texStereoNoLod(tex_fb_filtered, uv1).x
+                        +texStereoNoLod(tex_fb_filtered, vec2(uv0.x,uv1.y)).x
+                        +texStereoNoLod(tex_fb_filtered, vec2(uv1.x,uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }

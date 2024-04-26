@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -11,8 +15,8 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-SAMPLER2D(tex_fb_filtered,  0); // Framebuffer (filtered)
-SAMPLER2D(tex_depth,        4); // DepthBuffer
+SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
+SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
 
 // Some of the texFetch are unfiltered, but since they are aligned ot exact texel coords, this does not need a dedicated sampler
 #define tex_fb_unfiltered tex_fb_filtered
@@ -27,7 +31,11 @@ float luma(const vec3 l)
 }
 
 // Approximation of FXAA
+#ifdef STEREO
+vec4 fxaa1(const vec2 u, const int v_eye)
+#else
 vec4 fxaa1(const vec2 u)
+#endif
 {
 	const vec3 rMc = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
@@ -77,7 +85,11 @@ vec4 fxaa1(const vec2 u)
 #define FXAA_QUALITY_P2 8.0
 
 // Full mid-quality PC FXAA 3.11
+#ifdef STEREO
+vec4 fxaa2(const vec2 u, const int v_eye)
+#else
 vec4 fxaa2(const vec2 u)
+#endif
 {
 	const vec3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
@@ -222,7 +234,11 @@ vec4 fxaa2(const vec2 u)
 #define FXAA_QUALITY_P11 8.0
 
 // Full extreme-quality PC FXAA 3.11
+#ifdef STEREO
+vec4 fxaa3(const vec2 u, const int v_eye)
+#else
 vec4 fxaa3(const vec2 u)
+#endif
 {
 	const vec3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
@@ -480,11 +496,21 @@ vec4 fxaa3(const vec2 u)
 
 void main()
 {
+#ifdef STEREO
+#if defined(FXAA1)
+	gl_FragColor = fxaa1(v_texcoord0, v_eye);
+#elif defined(FXAA2)
+	gl_FragColor = fxaa2(v_texcoord0, v_eye);
+#elif defined(FXAA3)
+	gl_FragColor = fxaa3(v_texcoord0, v_eye);
+#endif
+#else
 #if defined(FXAA1)
 	gl_FragColor = fxaa1(v_texcoord0);
 #elif defined(FXAA2)
 	gl_FragColor = fxaa2(v_texcoord0);
 #elif defined(FXAA3)
 	gl_FragColor = fxaa3(v_texcoord0);
+#endif
 #endif
 }

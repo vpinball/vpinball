@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
+#else
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -6,22 +10,27 @@ $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated
 
 #ifdef TEX
-SAMPLER2D(tex_base_color, 0); // base color
+SAMPLER2D      (tex_base_color, 0); // base color
 #endif
-SAMPLER2D(tex_env, 1); // envmap
-SAMPLER2D(tex_diffuse_env, 2); // envmap radiance
-SAMPLER2D(tex_base_transmission, 3); // bulb light buffer
-SAMPLER2D(tex_base_normalmap, 4); // normal map
-SAMPLER2D(tex_reflection, 5); // reflections
-SAMPLER2D(tex_refraction, 6); // refractions
-SAMPLER2D(tex_probe_depth, 7); // depth probe
+SAMPLER2D      (tex_env, 1); // envmap
+SAMPLER2D      (tex_diffuse_env, 2); // envmap radiance
+SAMPLER2DSTEREO(tex_base_transmission, 3); // bulb light buffer
+SAMPLER2D      (tex_base_normalmap, 4); // normal map
+SAMPLER2DSTEREO(tex_reflection, 5); // reflections
+SAMPLER2DSTEREO(tex_refraction, 6); // refractions
+SAMPLER2DSTEREO(tex_probe_depth, 7); // depth probe
 
-uniform mat4 matWorldViewProj;
 uniform mat4 matWorldView;
 uniform mat4 matWorldViewInverseTranspose;
 uniform mat4 matWorld;
 uniform mat4 matView;
+#ifdef STEREO
+uniform mat4 matWorldViewProj[2];
+uniform mat4 matProj[2];
+#else
+uniform mat4 matWorldViewProj;
 uniform mat4 matProj;
+#endif
 
 uniform vec4 objectSpaceNormalMap; // float extended to vec4 for BGFX FIXME float uniforms are not supported: group or declare as vec4
 
@@ -89,7 +98,11 @@ vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 
 // Compute reflections from reflection probe (screen space coordinates)
 // This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
+#ifdef STEREO
+vec3 compute_reflection(const vec2 screenCoord, const vec3 N, const int v_eye)
+#else
 vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
+#endif
 {
    // Only apply to faces pointing in the direction of the probe (normal = [0,0,-1])
    // the smoothstep values are *magic* values taken from visual tests
@@ -99,13 +112,21 @@ vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
 }
 
 // Compute refractions from screen space probe
+#ifdef STEREO
+vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, const vec3 V, const int v_eye)
+#else
 vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, const vec3 V)
+#endif
 {
    // Compute refracted visible position then project from world view position to probe UV
    // const vec4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const vec3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const vec3 refracted_pos = pos + refractionThickness.x * R; // Shift ray by the thickness of the material
-   const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
+   #ifdef STEREO
+      const vec4 proj = mul(matProj[v_eye], vec4(refracted_pos, 1.0));
+   #else
+      const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
+   #endif
    
    vec2 uv = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
 
@@ -142,7 +163,11 @@ EARLY_DEPTH_STENCIL void main() {
    #ifdef REFL
       // Reflection only pass variant of the basic material shading
       vec3 N = normalize(v_normal);
+	  #ifdef STEREO
+      color.rgb = compute_reflection(gl_FragCoord.xy, N, v_eye);
+	  #else
       color.rgb = compute_reflection(gl_FragCoord.xy, N);
+	  #endif
       color.a = 1.0;
 
    #else
@@ -187,7 +212,7 @@ EARLY_DEPTH_STENCIL void main() {
 
          if (fDisableLighting_top_below.y < 1.0)
             // add light from "below" from user-flagged bulb lights, pre-rendered/blurred in previous renderpass //!! sqrt = magic
-            color.rgb += mix(sqrt(diffuse)*texture2DLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy, 0.0).rgb*color.a, vec3_splat(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
+            color.rgb += mix(sqrt(diffuse)*texStereoLod(tex_base_transmission, gl_FragCoord.xy * w_h_height.xy, 0.0).rgb*color.a, vec3_splat(0.), fDisableLighting_top_below.y); //!! depend on normal of light (unknown though) vs geom normal, too?
       }
 
       BRANCH if (lightCenter_doShadow.w != 0.)
@@ -199,12 +224,20 @@ EARLY_DEPTH_STENCIL void main() {
       }
 
       BRANCH if (doReflections)
+         #ifdef STEREO
+         color.rgb += compute_reflection(gl_FragCoord.xy, N, v_eye);
+         #else
          color.rgb += compute_reflection(gl_FragCoord.xy, N);
+         #endif
 
       BRANCH if (doRefractions)
       {
          // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
+		 #ifdef STEREO
+         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, cBase_Alpha.a);
+		 #else
          color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, cBase_Alpha.a);
+		 #endif
          color.a = 1.0;
       }
    #endif

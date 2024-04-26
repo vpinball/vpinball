@@ -1,7 +1,6 @@
 #pragma once
 
 #if defined(ENABLE_BGFX)
-
 #ifdef __STANDALONE__
 #pragma push_macro("_far")
 #pragma push_macro("_WIN64")
@@ -9,6 +8,7 @@
 #undef _WIN64
 #endif
 #include "bx/readerwriter.h"
+#include "bgfx/embedded_shader.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
 #pragma pop_macro("_far")
@@ -655,7 +655,7 @@ private:
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
    bgfx::ProgramHandle m_debugProgramHandle = BGFX_INVALID_HANDLE;
 
-   void loadProgram(bx::FileReaderI* reader, ShaderTechniques tech, const char* vsName, const char* fsName);
+   void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques tech, const char* vsName, const char* fsName);
 
 public:
    bgfx::ProgramHandle GetCore() const { 

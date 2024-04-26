@@ -1,0 +1,288 @@
+////GLOBAL
+#version 430
+/**
+ * Copyright (C) 2013 Jorge Jimenez (jorge@iryoku.com)
+ * Copyright (C) 2013 Jose I. Echevarria (joseignacioechevarria@gmail.com)
+ * Copyright (C) 2013 Belen Masia (bmasia@unizar.es)
+ * Copyright (C) 2013 Fernando Navarro (fernandn@microsoft.com)
+ * Copyright (C) 2013 Diego Gutierrez (diegog@unizar.es)
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to
+ * do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software. As clarification, there
+ * is no requirement that the copyright notice and permission be included in
+ * binary distributions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+//Modified for Visual pinball
+
+////DEFINES
+#include "Helpers.fxh"
+#undef lerp
+#undef saturate
+
+#define SMAA_PRESET_HIGH
+//#define SMAA_USE_DEPTH
+//#define SMAA_USE_STENCIL
+#define SMAA_USE_COLOR // otherwise luma
+
+#ifdef SMAA_PRESET_CUSTOM
+/**
+ * This can be ignored; its purpose is to support interactive custom parameter
+ * tweaking.
+ */
+float threshld;
+float maxSearchSteps;
+float maxSearchStepsDiag;
+float cornerRounding;
+#endif
+
+uniform vec4 w_h_height; 
+// Use a real macro here for maximum performance!
+#ifndef SMAA_RT_METRICS // This is just for compilation-time syntax checking.
+//#define SMAA_RT_METRICS vec4(w_h_height.x, w_h_height.y, 1.0/w_h_height.x, 1.0/w_h_height.y)
+#define SMAA_RT_METRICS w_h_height
+#endif
+
+// Set the GLSL version:
+#define SMAA_GLSL_4
+
+#ifdef SMAA_PRESET_CUSTOM
+#define SMAA_THRESHOLD threshld
+#define SMAA_MAX_SEARCH_STEPS maxSearchSteps
+#define SMAA_MAX_SEARCH_STEPS_DIAG maxSearchStepsDiag
+#define SMAA_CORNER_ROUNDING cornerRounding
+#endif
+
+
+////VERTEX
+// And include our header (identical for HLSL/GLSL)!
+#define SMAA_INCLUDE_VS 1
+#define SMAA_INCLUDE_PS 0
+#include "SMAA.fxh"
+
+////FRAGMENT
+// And include our header (identical for HLSL/GLSL)!
+#define SMAA_INCLUDE_VS 0
+#define SMAA_INCLUDE_PS 1
+#include "SMAA.fxh"
+
+/**
+ * Input vars and textures.
+ */
+
+
+
+uniform sampler2D areaTex;
+uniform sampler2D searchTex;
+
+uniform samplerStereo edgesTex;
+uniform samplerStereo blendTex;
+uniform samplerStereo tex_fb_filtered; // Framebuffer (filtered)
+//uniform sampler2D colorTex;
+#define colorTex tex_fb_filtered //!! misses SRGB, also see SMAA_NeighborhoodBlending()
+//uniform sampler2D colorGammaTex;
+#define colorGammaTex tex_fb_filtered //!! misses MipFilter
+
+out vec4 color;
+
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
+
+//-----------------------------------------------------------------------------
+// Vertex shaders
+//-----------------------------------------------------------------------------
+
+////VERTEX
+
+uniform int layer; // Layer being rendered (set to 0 if using layered rendering, that is to say rendering multiple layers using instanced rendering)
+
+layout(location=0) in vec3 vPosition;
+layout(location=1) in vec2 tc;
+
+VS_OUT(vec2, texcoord);
+VS_OUT_EYE;
+
+////GLSL_SMAAEdgeDetectionVS
+VS_OUT(vec4[3], offset);
+
+void main()
+{
+    VS_EYE;
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, tc);
+    #if USE_GEOMETRY_SHADER
+    SMAAEdgeDetectionVS(texcoord_gs, offset_gs);
+    #else
+    SMAAEdgeDetectionVS(texcoord, offset);
+    #endif
+}
+
+////GLSL_SMAABlendingWeightCalculationVS
+VS_OUT(vec4[3], offset);
+VS_OUT(vec2, pixcoord);
+
+void main()
+{
+    VS_EYE;
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, tc);
+    #if USE_GEOMETRY_SHADER
+    SMAABlendingWeightCalculationVS(texcoord_gs, pixcoord_gs, offset_gs);
+    #else
+    SMAABlendingWeightCalculationVS(texcoord, pixcoord, offset);
+    #endif
+}
+
+////GLSL_SMAANeighborhoodBlendingVS
+VS_OUT(vec4, offset);
+
+void main()
+{
+    VS_EYE;
+    VS_POSITION(vec4(vPosition.x,-vPosition.y,0.0,1.0), vec4(vPosition.x,-vPosition.y,0.0,1.0));
+    VS_VARYING(texcoord, tc);
+    #if USE_GEOMETRY_SHADER
+    SMAANeighborhoodBlendingVS(texcoord_gs, offset_gs);
+    // Reverse Y offset to account for texture orientation
+    offset_gs.y = -offset_gs.y;
+    offset_gs.w = -offset_gs.w;
+    #else
+    SMAANeighborhoodBlendingVS(texcoord, offset);
+    // Reverse Y offset to account for texture orientation
+    offset.y = -offset.y;
+    offset.w = -offset.w;
+    #endif
+}
+
+
+//-----------------------------------------------------------------------------
+// Geometry shaders
+//-----------------------------------------------------------------------------
+
+////GEOMETRY
+layout(triangles) in;
+layout(triangle_strip, max_vertices = 3) out;
+
+in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
+
+in vec2 texcoord_gs[];
+out vec2 texcoord;
+
+////GLSL_SMAAEdgeDetectionGS
+in vec4[3] offset_gs[];
+out vec4[3] offset;
+
+void main()
+{
+   GS_LAYER_COPY;
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset[0] = offset_gs[0][i];
+      offset[1] = offset_gs[1][i];
+      offset[2] = offset_gs[2][i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+////GLSL_SMAABlendingWeightCalculationGS
+in vec4[3] offset_gs[];
+in vec2 pixcoord_gs[];
+out vec4[3] offset;
+out vec2 pixcoord;
+
+void main()
+{
+   GS_LAYER_COPY;
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset[0] = offset_gs[0][i];
+      offset[1] = offset_gs[1][i];
+      offset[2] = offset_gs[2][i];
+      pixcoord = pixcoord_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+////GLSL_SMAANeighborhoodBlendingGS
+in vec4 offset_gs[];
+out vec4 offset;
+
+void main()
+{
+   GS_LAYER_COPY;
+   for (int i=0;i<gl_in.length();i++) {
+      gl_Position = gl_in[i].gl_Position;
+      texcoord = texcoord_gs[i];
+      offset = offset_gs[i];
+      EmitVertex();
+   }
+   EndPrimitive();
+}
+
+
+//-----------------------------------------------------------------------------
+// Fragment shaders
+//-----------------------------------------------------------------------------
+
+////GLSL_SMAAColorEdgeDetectionPS
+
+in vec2 texcoord;
+in vec4[3] offset;
+
+void main()
+{
+    FS_LAYER_TO_GLOBAL;
+    color = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorGammaTex), 0.0, 0.0);
+}
+
+////GLSL_SMAABlendingWeightCalculationPS
+
+in vec2 texcoord;
+in vec4[3] offset;
+in vec2 pixcoord;
+
+void main()
+{
+    FS_LAYER_TO_GLOBAL;
+    color = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, vec4(0.0));
+}
+
+////GLSL_SMAANeighborhoodBlendingPS
+
+in vec2 texcoord;
+in vec4 offset;
+
+void main()
+{
+    FS_LAYER_TO_GLOBAL;
+    color = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
+}
+
+////TECHNIQUES
+
+//technique SMAA_LumaEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAAEdgeDetectionGS():GLSL_SMAALumaEdgeDetectionPS()
+SMAA_ColorEdgeDetection:P0:GLSL_SMAAEdgeDetectionVS():GLSL_SMAAEdgeDetectionGS():GLSL_SMAAColorEdgeDetectionPS()
+SMAA_BlendWeightCalculation:P0:GLSL_SMAABlendingWeightCalculationVS():GLSL_SMAABlendingWeightCalculationGS():GLSL_SMAABlendingWeightCalculationPS()
+SMAA_NeighborhoodBlending:P0:GLSL_SMAANeighborhoodBlendingVS():GLSL_SMAANeighborhoodBlendingGS():GLSL_SMAANeighborhoodBlendingPS()

@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_texcoord0, v_eye
+#else
 $input v_texcoord0
+#endif
 
 #include "common.sh"
 
@@ -11,7 +15,7 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-SAMPLER2D(tex_fb_filtered,  0); // Framebuffer (filtered)
+SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
 
 
 // For reference, see https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
