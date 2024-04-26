@@ -18,6 +18,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <wctype.h>
 
 #include "vbscript.h"
 #include "vbscript_defs.h"

@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <wctype.h>
 
 #define COBJMACROS
 #include "windef.h"

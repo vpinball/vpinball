@@ -20,6 +20,7 @@
 
 #include <stdarg.h>
 #include <math.h>
+#include <wctype.h>
 
 #include "windef.h"
 #include "winbase.h"
