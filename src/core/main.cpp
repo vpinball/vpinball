@@ -521,7 +521,16 @@ public:
          }
 
          //
-
+#ifdef __STANDALONE__
+         // If the only parameter passed is a vpx table we play it automatically.
+         const bool launchfile = (!valid_param) && (nArgs == 2) && (i==1) && strstr(szArglist[i], ".vpx") == (&szArglist[i][strlen(szArglist[i]) - 4]);
+         if(launchfile)
+         {
+            valid_param = true;
+            // Backtrack so the rest of the loop sees the table path as the next argument
+            i = 0;
+         }
+#endif
          if (!valid_param
             || compare_option(szArglist[i], OPTION_H)
             || compare_option(szArglist[i], OPTION_HELP)
@@ -754,7 +763,7 @@ public:
          if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript || tournament)
 #else
 #ifndef __ANDROID__
-         if (prefPath || ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript || tournament)
+         if (prefPath || ini || tableIni || editfile || playfile || launchfile || povEdit || extractpov || extractscript || tournament)
 #else
          if (editfile || playfile || povEdit || extractpov || extractscript || tournament)
 #endif
@@ -849,6 +858,9 @@ public:
                   exit(1);
                }
                m_play = playfile || povEdit;
+#ifdef __STANDALONE__
+               m_play = m_play || launchfile; 
+#endif
                m_extractPov = extractpov;
                m_extractScript = extractscript;
                m_vpinball.m_povEdit = povEdit;
