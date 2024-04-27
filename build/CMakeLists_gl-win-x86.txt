@@ -428,8 +428,6 @@ add_executable(vpinball WIN32
    src/utils/BlackBox.h
    src/utils/CrashHandler.cpp
    src/utils/CrashHandler.h
-   src/utils/logger.cpp
-   src/utils/logger.h
 
    src/ui/vpinball.rc
    vpinball.idl

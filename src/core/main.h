@@ -247,6 +247,9 @@ class ColorButton { };
 class SCNotification { };
 #endif
 
+#define PLOG_OMIT_LOG_DEFINES 
+#define PLOG_NO_DBG_OUT_INSTANCE_ID 1
+#include <plog/Log.h>
 
 #ifdef __STANDALONE__
 #include "standalone/inc/atl/atldef.h"
