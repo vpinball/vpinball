@@ -2,6 +2,20 @@
 
 #include <map>
 #include <vector>
+#include <queue>
+#include <mutex>
+
+#define PUP_SETTINGS_BACKGLASSX      320
+#define PUP_SETTINGS_BACKGLASSY      30
+#define PUP_SETTINGS_BACKGLASSWIDTH  290
+#define PUP_SETTINGS_BACKGLASSHEIGHT 218
+#define PUP_ZORDER_BACKGLASS         150
+
+#define PUP_SETTINGS_TOPPERX         320
+#define PUP_SETTINGS_TOPPERY         PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5
+#define PUP_SETTINGS_TOPPERWIDTH     290
+#define PUP_SETTINGS_TOPPERHEIGHT    75
+#define PUP_ZORDER_TOPPER            300
 
 typedef enum
 {
@@ -35,29 +49,49 @@ typedef enum
    PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY  // this will ignore the trigger if the file playing has the same Priority. This is nice for events such as Jackpot videos or others that will play very often, and you don't want to have them constantly interrupting each other. “Normal” PlayAction files with the same Priority will interrupt each other no matter the Rest Seconds. Using SkipSamePri will not play the new file (with same the Priority) if the current file is still playing and allows for smoother non-interruptive action for common events.
 } PUP_TRIGGER_PLAY_ACTION;
 
+typedef struct {
+   char type;
+   int number;
+   int value;
+} PUPTriggerData;
+
 class PUPScreen;
 class PUPPlaylist;
 class PUPTrigger;
+class PUPWindow;
 
 class PUPManager
 {
 public:
-   PUPManager() {}
-   ~PUPManager() {}
+   ~PUPManager();
 
+   static PUPManager* GetInstance();
+
+   bool IsInit() { return m_init; }
    bool LoadConfig(const string& szRomName);
-   const vector<PUPScreen*>& GetScreens() { return m_screens; }
-   PUPScreen* GetScreen(int screenNum);
-   PUPScreen* GetScreen(const string& szScreen);
+   void Start();
+   void Stop();
+   void QueueTriggerData(PUPTriggerData data);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    string GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile);
-   PUPScreen* GetBackglass();
 
 private:
-   string m_szPath;
+   PUPManager();
 
-   std::vector<PUPScreen*> m_screens;
+   void RunLoop();
+   PUPScreen* GetScreen(int screenNum);
+
+   static PUPManager* m_pInstance;
+   bool m_init;
+   string m_szPath;
    std::map<int, PUPScreen*> m_screenMap;
-   std::map<string, PUPScreen*> m_screenDesMap;
    std::map<string, PUPPlaylist*> m_playlistMap;
+   PUPScreen* m_pBackglassScreen;
+   PUPWindow* m_pBackglassWindow;
+   PUPScreen* m_pTopperScreen;
+   PUPWindow* m_pTopperWindow;
+   std::queue<PUPTriggerData> m_triggerQueue;
+   std::mutex m_triggerMutex;
+   std::thread* m_pThread;
+   bool m_running;
 };
