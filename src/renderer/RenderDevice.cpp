@@ -865,13 +865,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       #endif
    }
 
-   m_basicShader = new Shader(this, Shader::BASIC_SHADER, m_nEyes == 2, m_isVR);
-   m_ballShader = new Shader(this, Shader::BALL_SHADER, m_nEyes == 2, m_isVR);
-   m_DMDShader = new Shader(this, Shader::DMD_SHADER, m_nEyes == 2, m_isVR);
-   m_flasherShader = new Shader(this, Shader::FLASHER_SHADER, m_nEyes == 2, m_isVR);
-   m_lightShader = new Shader(this, Shader::LIGHT_SHADER, m_nEyes == 2, m_isVR);
-   m_stereoShader = new Shader(this, Shader::STEREO_SHADER, m_nEyes == 2, m_isVR);
-   m_FBShader = new Shader(this, Shader::POSTPROCESS_SHADER, m_nEyes == 2, m_isVR);
+   m_basicShader = new Shader(this, Shader::BASIC_SHADER, m_nEyes == 2);
+   m_ballShader = new Shader(this, Shader::BALL_SHADER, m_nEyes == 2);
+   m_DMDShader = new Shader(this, m_isVR ? Shader::DMD_VR_SHADER : Shader::DMD_SHADER, m_nEyes == 2);
+   m_flasherShader = new Shader(this, Shader::FLASHER_SHADER, m_nEyes == 2);
+   m_lightShader = new Shader(this, Shader::LIGHT_SHADER, m_nEyes == 2);
+   m_stereoShader = new Shader(this, Shader::STEREO_SHADER, m_nEyes == 2);
+   m_FBShader = new Shader(this, Shader::POSTPROCESS_SHADER, m_nEyes == 2);
 
    if (m_basicShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
    {
@@ -883,12 +883,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
 
-   #if !defined(__OPENGLES__) && !defined(ENABLE_BGFX)
-      // FIXME BGFX implement SMAA
+   #if !defined(__OPENGLES__)
       // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
       UploadAndSetSMAATextures();
-      m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
-      m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
    #endif
 }
 
@@ -1146,7 +1143,7 @@ void RenderDevice::Flip()
 
 void RenderDevice::UploadAndSetSMAATextures()
 {
-   // FIXME use standard BaseTexture / Sampler code instead
+   // TODO use standard BaseTexture / Sampler code instead
    /* BaseTexture* searchBaseTex = new BaseTexture(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, BaseTexture::BW);
    memcpy(searchBaseTex->data(), searchTexBytes, SEARCHTEX_SIZE);
    m_SMAAsearchTexture = new Sampler(this, searchBaseTex, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
@@ -1154,6 +1151,13 @@ void RenderDevice::UploadAndSetSMAATextures()
    delete searchBaseTex;*/
 
 #if defined(ENABLE_BGFX)
+	bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));
+   m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, smaaAreaTex, AREATEX_WIDTH, AREATEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
+   m_SMAAareaTexture->SetName("SMAA Area"s);
+
+   bgfx::TextureHandle smaaSearchTex = bgfx::createTexture2D(SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, false, 1, bgfx::TextureFormat::R8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(searchTexBytes, SEARCHTEX_SIZE));
+   m_SMAAsearchTexture = new Sampler(this, SurfaceType::RT_DEFAULT, smaaSearchTex, SEARCHTEX_WIDTH, SEARCHTEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_NONE);
+   m_SMAAsearchTexture->SetName("SMAA Search"s);
 
 #elif defined(ENABLE_OPENGL)
    auto tex_unit = m_samplerBindings.back();
@@ -1234,6 +1238,9 @@ void RenderDevice::UploadAndSetSMAATextures()
       m_SMAAareaTexture->SetName("SMAA Area"s);
    }
 #endif
+
+   m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
+   m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
 }
 
 void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)

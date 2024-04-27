@@ -359,12 +359,11 @@ ShaderAttributes Shader::getAttributeByName(const string& name)
 Shader* Shader::current_shader = nullptr;
 Shader* Shader::GetCurrentShader() { return current_shader;  }
 
-Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo, const bool isVR)
+Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo)
    : m_renderDevice(renderDevice)
    , m_technique(SHADER_TECHNIQUE_INVALID)
    , m_shaderId(id)
    , m_isStereo(isStereo)
-   , m_isVR(isVR)
 {
    #if defined(ENABLE_BGFX)
    const int nEyes = m_isStereo ? 2 : 1;
@@ -763,7 +762,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
 {
    assert(current_shader != this); // Changing the technique of a used shader is not allowed (between Begin/End)
    assert(0 <= technique && technique < SHADER_TECHNIQUE_COUNT);
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    if (m_techniques[technique] == nullptr)
    {
       m_technique = SHADER_TECHNIQUE_INVALID;
@@ -946,9 +945,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    case SUT_Float4x4:
       memcpy(dst, src, m_stateSizes[uniformName]);
       #if defined(ENABLE_BGFX)
-      {
       bgfx::setUniform(desc.handle, src, desc.uniform.count);
-      }
       #elif defined(ENABLE_OPENGL)
       glUniformMatrix4fv(desc.location, desc.uniform.count, GL_FALSE, (const GLfloat*)src);
       #elif defined(ENABLE_DX9)
@@ -1176,9 +1173,23 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    bgfx::RendererType::Enum type = bgfx::getRendererType();
    bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(embeddedShaders, type, vsName);
 	bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
+   if (!bgfx::isValid(vsh) || !bgfx::isValid(fsh))
+   {
+      PLOGE << "Failed to setup shader from " << vsName << " / " << fsName;
+      m_hasError = true;
+      return;
+   }
    m_techniques[technique]->program = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
+   if (!bgfx::isValid(m_techniques[technique]->program))
+   {
+      PLOGE << "Failed to build program from " << vsName << " / " << fsName;
+      m_hasError = true;
+      return;
+   }
 
    // Create uniforms from informations gathered by BGFX: BGFX does not gather uniform informations for OpenGL...
+   // std::stringstream ss;
+   // ss << GetTechniqueName(technique) << " uniforms: ";
    for (int j = 0; j < 2; j++)
    {
       bgfx::UniformHandle uniforms[SHADER_UNIFORM_COUNT];
@@ -1188,7 +1199,12 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          bgfx::UniformInfo info;
          bgfx::getUniformInfo(uniforms[i], info);
          auto uniformIndex = getUniformByName(info.name);
-         if (uniformIndex < SHADER_UNIFORM_COUNT && std::find(m_uniforms[technique].begin(), m_uniforms[technique].end(), uniformIndex) == m_uniforms[technique].end())
+         // ss << info.name << ", ";
+         if (uniformIndex == SHADER_UNIFORM_INVALID)
+         {
+            PLOGE << "Invalid uniform defined in shader " << (j == 0 ? vsName : fsName) << ": " << info.name;
+         }
+         else if (std::find(m_uniforms[technique].begin(), m_uniforms[technique].end(), uniformIndex) == m_uniforms[technique].end())
          {
             assert(info.num == shaderUniformNames[uniformIndex].count);
             m_uniforms[technique].push_back(uniformIndex);
@@ -1197,6 +1213,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          }
       }
    }
+   // PLOGD << ss.str();
 }
 
 // Embedded shaders
@@ -1213,212 +1230,229 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
 
 void Shader::Load()
 {
+   #define BGFX_EMBEDDED_SHADER_ST(a) BGFX_EMBEDDED_SHADER(a), BGFX_EMBEDDED_SHADER(a##_st)
    static const bgfx::EmbeddedShader embeddedShaders[] =
    {
-      BGFX_EMBEDDED_SHADER(vs_basic_tex),
-      BGFX_EMBEDDED_SHADER(vs_basic_notex),
-      BGFX_EMBEDDED_SHADER(vs_classic_light_tex),
-      BGFX_EMBEDDED_SHADER(vs_classic_light_notex),
-      BGFX_EMBEDDED_SHADER(fs_basic_tex_noat_norefl),
-      BGFX_EMBEDDED_SHADER(fs_basic_tex_at_norefl),
-      BGFX_EMBEDDED_SHADER(fs_basic_notex_noat_norefl),
-      BGFX_EMBEDDED_SHADER(fs_basic_tex_at_refl),
-      BGFX_EMBEDDED_SHADER(fs_classic_light_tex_noshadow),
-      BGFX_EMBEDDED_SHADER(fs_classic_light_notex_noshadow),
+      BGFX_EMBEDDED_SHADER_ST(vs_basic_tex),
+      BGFX_EMBEDDED_SHADER_ST(vs_basic_notex),
+      BGFX_EMBEDDED_SHADER_ST(vs_kicker),
+      BGFX_EMBEDDED_SHADER_ST(vs_classic_light_tex),
+      BGFX_EMBEDDED_SHADER_ST(vs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST(fs_basic_tex_noat),
+      BGFX_EMBEDDED_SHADER_ST(fs_basic_tex_at),
+      BGFX_EMBEDDED_SHADER_ST(fs_basic_notex_noat),
+      BGFX_EMBEDDED_SHADER_ST(fs_basic_refl),
+      BGFX_EMBEDDED_SHADER_ST(fs_decal_tex),
+      BGFX_EMBEDDED_SHADER_ST(fs_decal_notex),
+      BGFX_EMBEDDED_SHADER_ST(fs_classic_light_tex),
+      BGFX_EMBEDDED_SHADER_ST(fs_classic_light_notex),
       //
-      BGFX_EMBEDDED_SHADER(vs_ball),
-      BGFX_EMBEDDED_SHADER(fs_ball_equirectangular_nodecal),
-      BGFX_EMBEDDED_SHADER(fs_ball_equirectangular_decal),
-      BGFX_EMBEDDED_SHADER(fs_ball_spherical_nodecal),
-      BGFX_EMBEDDED_SHADER(fs_ball_spherical_decal),
-      BGFX_EMBEDDED_SHADER(fs_ball_trail),
+      BGFX_EMBEDDED_SHADER_ST(vs_ball),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_equirectangular_nodecal),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_equirectangular_decal),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_spherical_nodecal),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_spherical_decal),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_trail),
+      BGFX_EMBEDDED_SHADER_ST(fs_ball_debug),
       //
+      BGFX_EMBEDDED_SHADER_ST(vs_basic_dmd_world),
       BGFX_EMBEDDED_SHADER(vs_basic_dmd_noworld),
-      BGFX_EMBEDDED_SHADER(vs_basic_dmd_world),
       BGFX_EMBEDDED_SHADER(fs_basic_dmd_tex),
       BGFX_EMBEDDED_SHADER(fs_basic_sprite_tex),
       BGFX_EMBEDDED_SHADER(fs_basic_sprite_notex),
       //
-      BGFX_EMBEDDED_SHADER(vs_light),
+      BGFX_EMBEDDED_SHADER_ST(vs_light),
       BGFX_EMBEDDED_SHADER(fs_light_noshadow),
       BGFX_EMBEDDED_SHADER(fs_light_ballshadow),
       //
-      BGFX_EMBEDDED_SHADER(vs_flasher),
+      BGFX_EMBEDDED_SHADER_ST(vs_flasher),
       BGFX_EMBEDDED_SHADER(fs_flasher),
       //
-      BGFX_EMBEDDED_SHADER(vs_postprocess),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_tb),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_sbs),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_int),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_flipped_int),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_nodesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
-      BGFX_EMBEDDED_SHADER(fs_pp_stereo_anaglyph_deghost),
+      BGFX_EMBEDDED_SHADER_ST(vs_postprocess),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_tb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_sbs),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_int),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_flipped_int),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_srgb_nodesat),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_gamma_nodesat),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_deghost),
       //
-      BGFX_EMBEDDED_SHADER(vs_postprocess),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_tony_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_tony_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_tony_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_tony_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_filmic_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_filmic_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_filmic_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_filmic_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_noao_nofilter_rg),
-      BGFX_EMBEDDED_SHADER(fs_pp_tonemap_reinhard_noao_nofilter_gray),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       //
-      BGFX_EMBEDDED_SHADER(fs_pp_ssao),
-      BGFX_EMBEDDED_SHADER(fs_pp_bloom),
-      BGFX_EMBEDDED_SHADER(fs_pp_mirror),
-      BGFX_EMBEDDED_SHADER(fs_pp_copy),
-      BGFX_EMBEDDED_SHADER(fs_pp_ssr),
-      BGFX_EMBEDDED_SHADER(fs_pp_irradiance),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_display),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ssao),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_bloom),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_mirror),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_copy),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
       //
-      BGFX_EMBEDDED_SHADER(fs_pp_nfaa),
-      BGFX_EMBEDDED_SHADER(fs_pp_dlaa_edge),
-      BGFX_EMBEDDED_SHADER(fs_pp_dlaa),
-      BGFX_EMBEDDED_SHADER(fs_pp_fxaa1),
-      BGFX_EMBEDDED_SHADER(fs_pp_fxaa2),
-      BGFX_EMBEDDED_SHADER(fs_pp_fxaa3),
-      BGFX_EMBEDDED_SHADER(fs_pp_cas),
-      BGFX_EMBEDDED_SHADER(fs_pp_bilateral_cas),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_nfaa),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa_edge),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa1),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa2),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_fxaa3),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_cas),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_bilateral_cas),
+      BGFX_EMBEDDED_SHADER(vs_pp_smaa_edgedetection),
+      BGFX_EMBEDDED_SHADER(fs_pp_smaa_edgedetection),
+      BGFX_EMBEDDED_SHADER(vs_pp_smaa_blendweightcalculation),
+      BGFX_EMBEDDED_SHADER(fs_pp_smaa_blendweightcalculation),
+      BGFX_EMBEDDED_SHADER(vs_pp_smaa_neighborhoodblending),
+      BGFX_EMBEDDED_SHADER(fs_pp_smaa_neighborhoodblending),
       //
-      BGFX_EMBEDDED_SHADER(fs_blur_7_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_7_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_9_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_9_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_11_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_11_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_13_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_13_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_15_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_15_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_19_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_19_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_23_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_23_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_27_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_27_v),
-      BGFX_EMBEDDED_SHADER(fs_blur_39_h),
-      BGFX_EMBEDDED_SHADER(fs_blur_39_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_7_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_7_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_9_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_9_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_11_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_11_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_13_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_13_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_15_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_15_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_19_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_19_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_23_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_23_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_27_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_27_v),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_39_h),
+      BGFX_EMBEDDED_SHADER_ST(fs_blur_39_v),
       //
       BGFX_EMBEDDED_SHADER_END()
-
    };
+   #undef BGFX_EMBEDDED_SHADER_ST
+   #define STEREO(n) m_isStereo ? n##_st.name : #n
    switch (m_shaderId)
    {
    case BASIC_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture, "vs_basic_tex", "fs_basic_tex_noat_norefl");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at, "vs_basic_tex", "fs_basic_tex_at_norefl");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_without_texture, "vs_basic_notex", "fs_basic_notex_noat_norefl");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_reflection_only, "vs_basic_tex", "fs_basic_tex_at_refl"); // TODO tex & at do not have any effetc on this
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_with_texture, "vs_classic_light_tex", "fs_classic_light_tex_noshadow");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_without_texture, "vs_classic_light_notex", "fs_classic_light_notex_noshadow");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, "", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture, "", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean, "", "");*/
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture, STEREO(vs_basic_tex), STEREO(fs_basic_tex_noat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at, STEREO(vs_basic_tex), STEREO(fs_basic_tex_at));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_without_texture, STEREO(vs_basic_notex), STEREO(fs_basic_notex_noat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_reflection_only, STEREO(vs_basic_tex), STEREO(fs_basic_refl));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_with_texture, STEREO(vs_classic_light_tex), STEREO(fs_classic_light_tex));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_without_texture, STEREO(vs_classic_light_notex), STEREO(fs_classic_light_notex));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex), STEREO(fs_decal_notex));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture, STEREO(vs_basic_tex), STEREO(fs_decal_tex));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean, STEREO(vs_kicker), STEREO(fs_basic_notex_noat));
       break;
    case BALL_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall, "vs_ball", "fs_ball_equirectangular_nodecal");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode, "vs_ball", "fs_ball_equirectangular_decal");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap, "vs_ball", "fs_ball_spherical_nodecal");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, "vs_ball", "fs_ball_spherical_decal");
-      // loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail, "vs_ball", "fs_ball_trail");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall, STEREO(vs_ball), STEREO(fs_ball_equirectangular_nodecal));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode, STEREO(vs_ball), STEREO(fs_ball_equirectangular_decal));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap, STEREO(vs_ball), STEREO(fs_ball_spherical_nodecal));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball), STEREO(fs_ball_spherical_decal));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug, STEREO(vs_ball), STEREO(fs_ball_debug));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail, STEREO(vs_ball), STEREO(fs_ball_trail));
       break;
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD, "vs_basic_dmd_noworld", "fs_basic_dmd_tex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world, "vs_basic_dmd_world", "fs_basic_dmd_tex");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world, STEREO(vs_basic_dmd_world), "fs_basic_dmd_tex");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite_tex");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_basic_dmd_noworld", "fs_basic_sprite_notex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, "vs_basic_dmd_world", "fs_basic_sprite_tex");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_basic_dmd_world), "fs_basic_sprite_tex");
       break;
+   case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, "vs_flasher", "fs_flasher");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher), "fs_flasher");
       break;
    case LIGHT_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, "vs_light", "fs_light_noshadow");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, "vs_light", "fs_light_ballshadow");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, STEREO(vs_light), "fs_light_noshadow");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light), "fs_light_ballshadow");
       break;
    case STEREO_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, "vs_postprocess", "fs_pp_stereo_sbs");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_TB, "vs_postprocess", "fs_pp_stereo_tb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Int, "vs_postprocess", "fs_pp_stereo_int");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Flipped_Int, "vs_postprocess", "fs_pp_stereo_flipped_int");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_srgb_nodesat");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_gamma_nodesat");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_srgb_dyndesat");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_lin_gamma_dyndesat");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_DeghostAnaglyph, "vs_postprocess", "fs_pp_stereo_anaglyph_deghost");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, STEREO(vs_postprocess), STEREO(fs_pp_stereo_sbs));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_TB, STEREO(vs_postprocess), STEREO(fs_pp_stereo_tb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Int, STEREO(vs_postprocess), STEREO(fs_pp_stereo_int));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_Flipped_Int, STEREO(vs_postprocess), STEREO(fs_pp_stereo_flipped_int));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_srgb_nodesat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_gamma_nodesat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_sRGBDynDesatAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_srgb_dyndesat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_GammaDynDesatAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_lin_gamma_dyndesat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_Stereo_DeghostAnaglyph, STEREO(vs_postprocess), STEREO(fs_pp_stereo_anaglyph_deghost));
       break;
    case POSTPROCESS_SHADER:
       // Tonemapping / Dither / Apply AO / Color Grade
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap, "vs_postprocess", "fs_pp_tonemap_reinhard_noao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO, "vs_postprocess", "fs_pp_tonemap_reinhard_ao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, "vs_postprocess", "fs_pp_tonemap_reinhard_noao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, "vs_postprocess", "fs_pp_tonemap_reinhard_ao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, "vs_postprocess", "fs_pp_tonemap_tony_noao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, "vs_postprocess", "fs_pp_tonemap_tony_ao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, "vs_postprocess", "fs_pp_tonemap_tony_noao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, "vs_postprocess", "fs_pp_tonemap_tony_ao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, "vs_postprocess", "fs_pp_tonemap_filmic_noao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, "vs_postprocess", "fs_pp_tonemap_filmic_ao_filter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, "vs_postprocess", "fs_pp_tonemap_filmic_noao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, "vs_postprocess", "fs_pp_tonemap_filmic_ao_nofilter_rgb");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, "vs_postprocess", "fs_pp_tonemap_reinhard_noao_nofilter_rg");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, "vs_postprocess", "fs_pp_tonemap_reinhard_noao_nofilter_gray");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 
       // Ambient Occlusion and misc post process (SSR, Bloom, mirror, ...)
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_AO, "vs_postprocess", "fs_pp_ssao");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO, "vs_postprocess", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO_static, "vs_postprocess", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO_no_filter_static, "vs_postprocess", "");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_bloom, "vs_postprocess", "fs_pp_bloom");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_mirror, "vs_postprocess", "fs_pp_mirror");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_copy, "vs_postprocess", "fs_pp_copy");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_SSReflection, "vs_postprocess", "fs_pp_ssr");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_irradiance, "vs_postprocess", "fs_pp_irradiance");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_AO, STEREO(vs_postprocess), STEREO(fs_pp_ssao));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO, STEREO(vs_postprocess), STEREO(fs_pp_ao_display));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO_static, STEREO(vs_postprocess), STEREO(fs_pp_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_AO_no_filter_static, STEREO(vs_postprocess), STEREO(fs_pp_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_bloom, STEREO(vs_postprocess), STEREO(fs_pp_bloom));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_mirror, STEREO(vs_postprocess), STEREO(fs_pp_mirror));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_copy, STEREO(vs_postprocess), STEREO(fs_pp_copy));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_SSReflection, STEREO(vs_postprocess), STEREO(fs_pp_ssr));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_irradiance, STEREO(vs_postprocess), STEREO(fs_pp_irradiance));
 
       // Postprocessed antialiasing
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, "vs_postprocess", "fs_pp_nfaa");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA_edge, "vs_postprocess", "fs_pp_dlaa_edge");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA, "vs_postprocess", "fs_pp_dlaa");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA1, "vs_postprocess", "fs_pp_fxaa1");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA2, "vs_postprocess", "fs_pp_fxaa2");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA3, "vs_postprocess", "fs_pp_fxaa3");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_CAS, "vs_postprocess", "fs_pp_cas");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_BilateralSharp_CAS, "vs_postprocess", "fs_pp_bilateral_cas");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_ColorEdgeDetection, "vs_postprocess", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_BlendWeightCalculation, "vs_postprocess", "");
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending, "vs_postprocess", "");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, STEREO(vs_postprocess), STEREO(fs_pp_nfaa));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA_edge, STEREO(vs_postprocess), STEREO(fs_pp_dlaa_edge));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA, STEREO(vs_postprocess), STEREO(fs_pp_dlaa));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA1, STEREO(vs_postprocess), STEREO(fs_pp_fxaa1));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA2, STEREO(vs_postprocess), STEREO(fs_pp_fxaa2));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA3, STEREO(vs_postprocess), STEREO(fs_pp_fxaa3));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_CAS, STEREO(vs_postprocess), STEREO(fs_pp_cas));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_BilateralSharp_CAS, STEREO(vs_postprocess), STEREO(fs_pp_bilateral_cas));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_ColorEdgeDetection, "vs_pp_smaa_edgedetection", "fs_pp_smaa_edgedetection");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_BlendWeightCalculation, "vs_pp_smaa_blendweightcalculation", "fs_pp_smaa_blendweightcalculation");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending, "vs_pp_smaa_neighborhoodblending", "fs_pp_smaa_neighborhoodblending");
 
       // Blur Kernels
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz7x7, "vs_postprocess", "fs_blur_7_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert7x7, "vs_postprocess", "fs_blur_7_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz9x9, "vs_postprocess", "fs_blur_9_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert9x9, "vs_postprocess", "fs_blur_9_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz11x11, "vs_postprocess", "fs_blur_11_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert11x11, "vs_postprocess", "fs_blur_11_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz13x13, "vs_postprocess", "fs_blur_13_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert13x13, "vs_postprocess", "fs_blur_13_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz15x15, "vs_postprocess", "fs_blur_15_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert15x15, "vs_postprocess", "fs_blur_15_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz19x19, "vs_postprocess", "fs_blur_19_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert19x19, "vs_postprocess", "fs_blur_19_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz23x23, "vs_postprocess", "fs_blur_23_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert23x23, "vs_postprocess", "fs_blur_23_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz27x27, "vs_postprocess", "fs_blur_27_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert27x27, "vs_postprocess", "fs_blur_27_v");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz39x39, "vs_postprocess", "fs_blur_39_h");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert39x39, "vs_postprocess", "fs_blur_39_v");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz7x7, STEREO(vs_postprocess), STEREO(fs_blur_7_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert7x7, STEREO(vs_postprocess), STEREO(fs_blur_7_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz9x9, STEREO(vs_postprocess), STEREO(fs_blur_9_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert9x9, STEREO(vs_postprocess), STEREO(fs_blur_9_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz11x11, STEREO(vs_postprocess), STEREO(fs_blur_11_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert11x11, STEREO(vs_postprocess), STEREO(fs_blur_11_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz13x13, STEREO(vs_postprocess), STEREO(fs_blur_13_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert13x13, STEREO(vs_postprocess), STEREO(fs_blur_13_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz15x15, STEREO(vs_postprocess), STEREO(fs_blur_15_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert15x15, STEREO(vs_postprocess), STEREO(fs_blur_15_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz19x19, STEREO(vs_postprocess), STEREO(fs_blur_19_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert19x19, STEREO(vs_postprocess), STEREO(fs_blur_19_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz23x23, STEREO(vs_postprocess), STEREO(fs_blur_23_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert23x23, STEREO(vs_postprocess), STEREO(fs_blur_23_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz27x27, STEREO(vs_postprocess), STEREO(fs_blur_27_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert27x27, STEREO(vs_postprocess), STEREO(fs_blur_27_v));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_horiz39x39, STEREO(vs_postprocess), STEREO(fs_blur_39_h));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_blur_vert39x39, STEREO(vs_postprocess), STEREO(fs_blur_39_v));
       break;
    }
+   #undef STEREO
 }
 
 
@@ -1428,7 +1462,8 @@ void Shader::Load()
 
 bool Shader::UseGeometryShader() const
 {
-   // TODO we could (should) move the viewport/layer index from geometry to vertex shader and simplify all of this (a few hardware do not support it but they wan fallback to multi pass rendering)
+   // TODO remove geometry shader, and only support layered rendering on driver supporting ARB_shader_viewport_layer_array (all GPU starting GTX950+),
+   // the performance impact should be positive for normal rendering and VR/stereo (older GPU are not really able to render in VR/Stereo)
    return m_isStereo;
 }
 
@@ -1842,7 +1877,8 @@ void Shader::Load()
    {
    case BASIC_SHADER: Load("BasicShader.glfx"s); break;
    case BALL_SHADER: Load("BallShader.glfx"s); break;
-   case DMD_SHADER: Load(m_isVR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s); break;
+   case DMD_SHADER: Load("DMDShader.glfx"s); break;
+   case DMD_VR_SHADER: Load("DMDShaderVR.glfx"s); break;
    case FLASHER_SHADER: Load("FlasherShader.glfx"s); break;
    case LIGHT_SHADER: Load("LightShader.glfx"s); break;
    case STEREO_SHADER: Load("StereoShader.glfx"s); break;
@@ -1980,6 +2016,7 @@ void Shader::Load()
    case BASIC_SHADER: m_shaderCodeName = "BasicShader.hlsl"s; code = g_basicShaderCode; codeSize = sizeof(g_basicShaderCode); break;
    case BALL_SHADER: m_shaderCodeName = "BallShader.hlsl"s; code = g_ballShaderCode; codeSize = sizeof(g_ballShaderCode); break;
    case DMD_SHADER: m_shaderCodeName = "DMDShader.hlsl"s; code = g_dmdShaderCode; codeSize = sizeof(g_dmdShaderCode); break;
+   case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER: m_shaderCodeName = "FlasherShader.hlsl"s; code = g_flasherShaderCode; codeSize = sizeof(g_flasherShaderCode); break;
    case LIGHT_SHADER: m_shaderCodeName = "LightShader.hlsl"s; code = g_lightShaderCode; codeSize = sizeof(g_lightShaderCode); break;
    case STEREO_SHADER: m_shaderCodeName = "StereoShader.hlsl"s; code = g_stereoShaderCode; codeSize = sizeof(g_stereoShaderCode); break;

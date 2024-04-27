@@ -1,6 +1,7 @@
 $input a_position, a_normal, a_texcoord0
 #ifdef STEREO
 $output v_worldPos, v_normal, v_texcoord0, v_eye
+uniform vec4 layer;
 #else
 $output v_worldPos, v_normal, v_texcoord0
 #endif
@@ -33,7 +34,7 @@ void main()
 	#ifdef STEREO
 		gl_Position = mul(matWorldViewProj[gl_InstanceID], pos);
 		gl_Layer = gl_InstanceID;
-		v_eye = gl_InstanceID;
+		v_eye = layer.x + gl_InstanceID;
 	#else
 		gl_Position = mul(matWorldViewProj, pos);
 	#endif

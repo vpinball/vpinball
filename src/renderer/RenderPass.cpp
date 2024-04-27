@@ -175,17 +175,17 @@ bool RenderPass::Execute(const bool log)
    if (m_commands.empty())
       return false;
 
+   int left, bottom, right, top;
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
-      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
       assert((left <= right) && (bottom <= top));
       if (left == right || bottom == top)
          return false;
       #if defined(ENABLE_BGFX)
-      // FIXME implement BGFX
       #elif defined(ENABLE_OPENGL)
       glEnable(GL_SCISSOR_TEST);
       glScissor((GLint)left, (GLint)bottom, (GLsizei)(right - left), (GLsizei)(top - bottom));
@@ -196,7 +196,7 @@ bool RenderPass::Execute(const bool log)
       #endif
    }
 
-   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__) && defined(_DEBUG)
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream passName;
@@ -229,61 +229,50 @@ bool RenderPass::Execute(const bool log)
    if (m_rt->m_nLayers == 1 || (m_singleLayerRendering < 0 && m_rt->GetRenderDevice()->SupportLayeredRendering()))
    {
       m_rt->Activate();
-      #ifdef ENABLE_BGFX
+      #if defined(ENABLE_BGFX)
+      if (m_areaOfInterest.x != FLT_MAX)
+         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+      #if defined(_DEBUG)
       bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
       #endif
-
+      #endif
       for (RenderCommand* cmd : m_commands)
-      {
-         #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
-         Shader::ShaderState* state = cmd->GetShaderState();
-         if (state)
-            state->SetInt(SHADER_layer, 0);
-         #endif
          cmd->Execute(m_rt->m_nLayers, log);
-      }
    }
    else if (m_singleLayerRendering >= 0)
    {
       assert(m_singleLayerRendering < m_rt->m_nLayers);
       m_rt->Activate(m_singleLayerRendering);
-      #ifdef ENABLE_BGFX
-      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
+      #if defined(ENABLE_BGFX)
+      if (m_areaOfInterest.x != FLT_MAX)
+         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+      #if defined(_DEBUG)
+      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(m_singleLayerRendering)).append("]").c_str());
+      #endif
       #endif
       for (RenderCommand* cmd : m_commands)
-      {
-         #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
-         Shader::ShaderState* state = cmd->GetShaderState();
-         if (state)
-            state->SetInt(SHADER_layer, m_singleLayerRendering);
-         #endif
          cmd->Execute(1, log);
-      }
    }
    else
    {
       for (int layer = 0; layer < m_rt->m_nLayers; layer++)
       {
          m_rt->Activate(layer);
-         #ifdef ENABLE_BGFX
+         #if defined(ENABLE_BGFX)
+         if (m_areaOfInterest.x != FLT_MAX)
+            bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+         #if defined(_DEBUG)
          bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append("]").c_str());
          #endif
+         #endif
          for (RenderCommand* cmd : m_commands)
-         {
-            #if defined(ENABLE_OPENGL) // Layered rendering is not yet implemented for DirectX
-            Shader::ShaderState* state = cmd->GetShaderState();
-            if (state)
-               state->SetInt(SHADER_layer, layer);
-            #endif
             cmd->Execute(1, log);
-         }
       }
    }
 
    if (m_areaOfInterest.x != FLT_MAX)
    {
       #if defined(ENABLE_BGFX)
-      // FIXME implement
       #elif defined(ENABLE_OPENGL)
       glDisable(GL_SCISSOR_TEST);
       #elif defined(ENABLE_DX9)
@@ -294,7 +283,7 @@ bool RenderPass::Execute(const bool log)
    if (m_depthReadback)
       m_rt->UpdateDepthSampler(true);
 
-   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
+   #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__) && defined(_DEBUG)
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
    #endif

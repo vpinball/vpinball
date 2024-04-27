@@ -824,7 +824,10 @@ void Light::Render(const unsigned int renderMask)
          matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
          matWorldViewProj[0]._42 = 1.0f;
          #if defined(ENABLE_BGFX)
-         // FIXME implement
+         const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
+         if (eyes > 1)
+            memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+         shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
          #elif defined(ENABLE_OPENGL)
          if (shader == m_rd->m_lightShader)
          {
@@ -855,11 +858,11 @@ void Light::Render(const unsigned int renderMask)
       Vertex3Ds pos0(0.f, 0.f, 0.f);
       Vertex3Ds haloPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_surfaceHeight);
       m_rd->DrawMesh(shader, m_d.m_BulbLight || (m_surfaceMaterial && m_surfaceMaterial->m_bOpacityActive), m_backglass ? pos0 : haloPos, m_backglass ? 0.f : m_d.m_depthBias, m_lightmapMeshBuffer, RenderDevice::TRIANGLELIST, 0, m_lightmapMeshBuffer->m_ib->m_count);
-   }
 
-   // Restore state
-   if (m_backglass)
-      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+      // Restore state
+      if (m_backglass)
+         g_pplayer->m_renderer->UpdateBasicShaderMatrix();
+   }
 }
 
 void Light::SetObjectPos()

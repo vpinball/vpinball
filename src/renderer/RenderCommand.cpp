@@ -144,12 +144,9 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    case RC_DRAW_QUAD_PNT:
    case RC_DRAW_MESH:
    {
-#ifdef ENABLE_OPENGL
-      int instanceCount = nInstances;
-#endif
-      //m_rd->SupportLayeredRendering() ? RenderTarget::GetCurrentRenderTarget()->m_nLayers : 1;
       m_renderState.Apply(m_rd);
       m_shader->SetTechnique(m_shaderTechnique);
+      m_shaderState->SetInt(SHADER_layer, RenderTarget::GetCurrentRenderLayer() < 0 ? 0 : RenderTarget::GetCurrentRenderLayer());
       m_shader->m_state->CopyTo(false, m_shaderState, m_shaderTechnique);
       m_shader->Begin();
       m_rd->m_curDrawCalls++;
@@ -164,6 +161,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::allocTransientVertexBuffer(&tvb, 4, *m_rd->m_pVertexTexelDeclaration);
          memcpy(tvb.data, m_vertices, 4 * sizeof(Vertex3D_TexelOnly));
          bgfx::setVertexBuffer(0, &tvb);
+         bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
          bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());         
          
@@ -173,8 +171,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_TexelOnly));
          m_rd->m_quadPTDynMeshBuffer->m_vb->Unlock();
          m_rd->m_quadPTDynMeshBuffer->bind();
-         if (instanceCount > 1)
-            glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4, instanceCount);
+         if (nInstances > 1)
+            glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4, nInstances);
          else
             glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
          
@@ -201,6 +199,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::allocTransientVertexBuffer(&tvb, 4, *m_rd->m_pVertexNormalTexelDeclaration);
          memcpy(tvb.data, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
          bgfx::setVertexBuffer(0, &tvb);
+         bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
          bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
          
@@ -210,8 +209,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          memcpy(bufvb, m_vertices, 4 * sizeof(Vertex3D_NoTex2));
          m_rd->m_quadPNTDynMeshBuffer->m_vb->Unlock();
          m_rd->m_quadPNTDynMeshBuffer->bind();
-         if (instanceCount > 1)
-            glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4, instanceCount);
+         if (nInstances > 1)
+            glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4, nInstances);
          else
             glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPNTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
 
@@ -229,6 +228,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          break;
       }
 
+   #if 1
       case RC_DRAW_MESH:
       {
          unsigned int np; 
@@ -253,6 +253,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                bgfx::setVertexBuffer(0, m_mb->m_vb->GetStaticBuffer(), m_mb->m_vb->GetVertexOffset(), m_indicesCount);
             else
                bgfx::setVertexBuffer(0, m_mb->m_vb->GetDynamicBuffer(), m_mb->m_vb->GetVertexOffset(), m_indicesCount);
+            bgfx::setInstanceCount(nInstances);
             if (m_primitiveType == RenderDevice::TRIANGLELIST)
                bgfx::setState(m_rd->m_bgfxState);
             else if (m_primitiveType == RenderDevice::TRIANGLESTRIP)
@@ -265,8 +266,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          
             #elif defined(ENABLE_OPENGL)
             //assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
-            if (instanceCount > 1)
-               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount, instanceCount);
+            if (nInstances > 1)
+               glDrawArraysInstanced(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount, nInstances);
             else
                glDrawArrays(m_primitiveType, m_mb->m_vb->GetVertexOffset() + m_startIndex, m_indicesCount);
 
@@ -288,6 +289,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                bgfx::setIndexBuffer(m_mb->m_ib->GetStaticBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
             else
                bgfx::setIndexBuffer(m_mb->m_ib->GetDynamicBuffer(), m_mb->m_ib->GetIndexOffset() + m_startIndex, m_indicesCount);
+            bgfx::setInstanceCount(nInstances);
             if (m_primitiveType == RenderDevice::TRIANGLELIST)
                bgfx::setState(m_rd->m_bgfxState);
             else if (m_primitiveType == RenderDevice::TRIANGLESTRIP)
@@ -315,8 +317,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             #endif
             if (vertexOffset == 0)
             {
-               if (instanceCount > 1)
-                  glDrawElementsInstanced(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, instanceCount);
+               if (nInstances > 1)
+                  glDrawElementsInstanced(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, nInstances);
                else
                   glDrawRangeElements(m_primitiveType, 
                      m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
@@ -327,8 +329,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                #if defined(__OPENGLES__)
                assert(false); // OpenGL ES does not support offseted vertices. The buffers must be built accordingly
                #else
-               if (instanceCount > 1)
-                  glDrawElementsInstancedBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset, instanceCount);
+               if (nInstances > 1)
+                  glDrawElementsInstancedBaseVertex(m_primitiveType, m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset, nInstances);
                else
                   glDrawRangeElementsBaseVertex(m_primitiveType, 
                      m_mb->m_vb->GetVertexOffset(), m_mb->m_vb->GetVertexOffset() + m_mb->m_vb->m_count, 
@@ -343,6 +345,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          }
          break;
       }
+#endif
       default: break;
       }
       m_shader->End();

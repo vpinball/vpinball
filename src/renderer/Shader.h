@@ -353,8 +353,8 @@ enum ShaderAttributes
 class Shader final
 {
 public:
-   enum ShaderId { BALL_SHADER, BASIC_SHADER, DMD_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
-   Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo, const bool isVR);
+   enum ShaderId { BALL_SHADER, BASIC_SHADER, DMD_SHADER, DMD_VR_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
+   Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo);
    ~Shader();
 
    void Begin();
@@ -424,10 +424,6 @@ public:
       {
          assert(other->m_shader == m_shader);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          if (copyTo)
             memcpy(other->m_state + m_shader->m_stateOffsets[uniformName], m_state + m_shader->m_stateOffsets[uniformName], m_shader->m_stateSizes[uniformName]);
@@ -447,10 +443,8 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_OPENGL
          if (uniformName == SHADER_layer && m_shader->m_stateOffsets[uniformName] == -1)
-            return; // layer uniform may be stripped out by GLSL compiler since it is only used for stereo
-         #endif
+            return; // layer uniform may be stripped out since it is only used for stereo
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Int);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -567,7 +561,6 @@ private:
    RenderDevice* const m_renderDevice;
    const ShaderId m_shaderId;
    const bool m_isStereo;
-   const bool m_isVR;
    ShaderTechniques m_technique;
    string m_shaderCodeName;
 
