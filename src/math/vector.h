@@ -3,6 +3,7 @@
 #pragma once
 
 #include <cfloat>
+#include "utils/logger.h"
 
 // 2D vector
 class alignas(8) Vertex2D

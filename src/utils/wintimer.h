@@ -5,6 +5,7 @@
 #endif
 
 #include "robin_hood.h"
+#include "logger.h"
 
 // call if msec,usec or uSleep, etc. should be more precise
 void set_lowest_possible_win_timer_resolution();
