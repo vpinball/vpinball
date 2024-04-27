@@ -37,20 +37,12 @@
 #elif defined(ENABLE_OPENGL)
 #include "typedefs3D.h"
 #include "TextureManager.h"
-#include <SDL2/SDL_syswm.h>
 #ifndef __STANDALONE__
 #include "captureExt.h"
 #endif
 
 #elif defined(ENABLE_DX9)
 #include "parts/Material.h"
-#include "shaders/hlsl_basic.h"
-#include "shaders/hlsl_dmd.h"
-#include "shaders/hlsl_postprocess.h"
-#include "shaders/hlsl_flasher.h"
-#include "shaders/hlsl_light.h"
-#include "shaders/hlsl_stereo.h"
-#include "shaders/hlsl_ball.h"
 #endif
 
 #if defined(ENABLE_BGFX)
@@ -101,6 +93,85 @@ struct tBGFXCallback : public bgfx::CallbackI
 
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
+static const char* glErrorToString(const int error)
+{
+   switch (error)
+   {
+   case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
+   case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
+   case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
+#ifndef __OPENGLES__
+   case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
+   case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
+#endif
+   case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
+   case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+   default: return "unknown";
+   }
+}
+#if 0 // not used anymore
+void checkGLErrors(const char *file, const int line) {
+   GLenum err;
+   unsigned int count = 0;
+   while ((err = glGetError()) != GL_NO_ERROR) {
+      count++;
+      ReportFatalError(err, file, line);
+   }
+   /*if (count>0) {
+      exit(-1);
+   }*/
+}
+#endif
+
+// Callback function for printing debug statements
+#if defined(_DEBUG) && !defined(__OPENGLES__)
+void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* msg, const void* data)
+{
+   char* _source;
+   switch (source)
+   {
+   case GL_DEBUG_SOURCE_API: _source = (LPSTR) "API"; break;
+   case GL_DEBUG_SOURCE_WINDOW_SYSTEM: _source = (LPSTR) "WINDOW SYSTEM"; break;
+   case GL_DEBUG_SOURCE_SHADER_COMPILER: _source = (LPSTR) "SHADER COMPILER"; break;
+   case GL_DEBUG_SOURCE_THIRD_PARTY: _source = (LPSTR) "THIRD PARTY"; break;
+   case GL_DEBUG_SOURCE_APPLICATION: _source = (LPSTR) "APPLICATION"; break;
+   case GL_DEBUG_SOURCE_OTHER: _source = (LPSTR) "UNKNOWN"; break;
+   default: _source = (LPSTR) "UNHANDLED"; break;
+   }
+   char* _type;
+   switch (type)
+   {
+   case GL_DEBUG_TYPE_ERROR: _type = (LPSTR) "ERROR"; break;
+   case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: _type = (LPSTR) "DEPRECATED BEHAVIOR"; break;
+   case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: _type = (LPSTR) "UNDEFINED BEHAVIOR"; break;
+   case GL_DEBUG_TYPE_PORTABILITY: _type = (LPSTR) "PORTABILITY"; break;
+   case GL_DEBUG_TYPE_PERFORMANCE: _type = (LPSTR) "PERFORMANCE"; break;
+   case GL_DEBUG_TYPE_OTHER: _type = (LPSTR) "OTHER"; break;
+   case GL_DEBUG_TYPE_MARKER: _type = (LPSTR) "MARKER"; break;
+   case GL_DEBUG_TYPE_PUSH_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_PUSH_GROUP"; break;
+   case GL_DEBUG_TYPE_POP_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_POP_GROUP"; break;
+   default: _type = (LPSTR) "UNHANDLED"; break;
+   }
+   char* _severity;
+   switch (severity)
+   {
+   case GL_DEBUG_SEVERITY_HIGH: _severity = (LPSTR) "HIGH"; break;
+   case GL_DEBUG_SEVERITY_MEDIUM: _severity = (LPSTR) "MEDIUM"; break;
+   case GL_DEBUG_SEVERITY_LOW: _severity = (LPSTR) "LOW"; break;
+   case GL_DEBUG_SEVERITY_NOTIFICATION: _severity = (LPSTR) "NOTIFICATION"; break;
+   default: _severity = (LPSTR) "UNHANDLED"; break;
+   }
+   if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+   {
+      // FIXME this will crash if the drivers performs the call on the wrong thread (nvogl does...)
+      /* assert(false);
+      PLOGE << "OpenGL Error #" << id << ": " << _type << " of " << _severity << "severity, raised from " << _source << ": " << msg;
+      fprintf(stderr, "%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
+      if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
+         ShowError(msg);*/
+   }
+}
+#endif
 
 #elif defined(ENABLE_DX9)
 #include <DxErr.h>
@@ -142,33 +213,16 @@ static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes typ
    }
 }
 
-#if defined(ENABLE_OPENGL)
-static const char* glErrorToString(const int error) {
-   switch (error) {
-   case GL_INVALID_ENUM: return "GL_INVALID_ENUM";
-   case GL_INVALID_VALUE: return "GL_INVALID_VALUE";
-   case GL_INVALID_OPERATION: return "GL_INVALID_OPERATION";
-#ifndef __OPENGLES__
-   case GL_STACK_OVERFLOW: return "GL_STACK_OVERFLOW";
-   case GL_STACK_UNDERFLOW: return "GL_STACK_UNDERFLOW";
-#endif
-   case GL_OUT_OF_MEMORY: return "GL_OUT_OF_MEMORY";
-   case GL_INVALID_FRAMEBUFFER_OPERATION: return "GL_INVALID_FRAMEBUFFER_OPERATION";
-   default: return "unknown";
-   }
-}
-#endif
-
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
    char msg[2176];
-#if defined(ENABLE_BGFX)
-   sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X in %s:%d", hr, file, line);
-#elif defined(ENABLE_OPENGL)
-   sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X %s in %s:%d", hr, glErrorToString(hr), file, line);
-#elif defined(ENABLE_DX9)
-   sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
-#endif
+   #if defined(ENABLE_BGFX)
+      sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X in %s:%d", hr, file, line);
+   #elif defined(ENABLE_OPENGL)
+      sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   #elif defined(ENABLE_DX9)
+      sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   #endif
    ShowError(msg);
    assert(false);
    exit(-1);
@@ -177,78 +231,15 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
 void ReportError(const char *errorText, const HRESULT hr, const char *file, const int line)
 {
    char msg[16384];
-#if defined(ENABLE_BGFX)
-   sprintf_s(msg, sizeof(msg), "Error 0x%08X in %s:%d\n%s", hr, file, line, errorText);
-#elif defined(ENABLE_OPENGL)
-   sprintf_s(msg, sizeof(msg), "Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
-#elif defined(ENABLE_DX9)
-   sprintf_s(msg, sizeof(msg), "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
-#endif
+   #if defined(ENABLE_BGFX)
+      sprintf_s(msg, sizeof(msg), "Error 0x%08X in %s:%d\n%s", hr, file, line, errorText);
+   #elif defined(ENABLE_OPENGL)
+      sprintf_s(msg, sizeof(msg), "Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
+   #elif defined(ENABLE_DX9)
+      sprintf_s(msg, sizeof(msg), "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+   #endif
    ShowError(msg);
 }
-
-#if 0 //def ENABLE_OPENGL // not used anymore
-void checkGLErrors(const char *file, const int line) {
-   GLenum err;
-   unsigned int count = 0;
-   while ((err = glGetError()) != GL_NO_ERROR) {
-      count++;
-      ReportFatalError(err, file, line);
-   }
-   /*if (count>0) {
-      exit(-1);
-   }*/
-}
-#endif
-
-// Callback function for printing debug statements
-#if defined(ENABLE_OPENGL) && defined(_DEBUG) && !defined(__OPENGLES__)
-void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
-                                     GLenum severity, GLsizei length,
-                                     const GLchar *msg, const void *data)
-{
-   char* _source;
-   switch (source) {
-      case GL_DEBUG_SOURCE_API: _source = (LPSTR) "API"; break;
-      case GL_DEBUG_SOURCE_WINDOW_SYSTEM: _source = (LPSTR) "WINDOW SYSTEM"; break;
-      case GL_DEBUG_SOURCE_SHADER_COMPILER: _source = (LPSTR) "SHADER COMPILER"; break;
-      case GL_DEBUG_SOURCE_THIRD_PARTY: _source = (LPSTR) "THIRD PARTY"; break;
-      case GL_DEBUG_SOURCE_APPLICATION: _source = (LPSTR) "APPLICATION"; break;
-      case GL_DEBUG_SOURCE_OTHER: _source = (LPSTR) "UNKNOWN"; break;
-      default: _source = (LPSTR) "UNHANDLED"; break;
-   }
-   char* _type;
-   switch (type) {
-   case GL_DEBUG_TYPE_ERROR: _type = (LPSTR) "ERROR"; break;
-   case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: _type = (LPSTR) "DEPRECATED BEHAVIOR"; break;
-   case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR: _type = (LPSTR) "UNDEFINED BEHAVIOR"; break;
-   case GL_DEBUG_TYPE_PORTABILITY: _type = (LPSTR) "PORTABILITY"; break;
-   case GL_DEBUG_TYPE_PERFORMANCE: _type = (LPSTR) "PERFORMANCE"; break;
-   case GL_DEBUG_TYPE_OTHER: _type = (LPSTR) "OTHER"; break;
-   case GL_DEBUG_TYPE_MARKER: _type = (LPSTR) "MARKER"; break;
-   case GL_DEBUG_TYPE_PUSH_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_PUSH_GROUP"; break;
-   case GL_DEBUG_TYPE_POP_GROUP: _type = (LPSTR) "GL_DEBUG_TYPE_POP_GROUP"; break;
-   default: _type = (LPSTR) "UNHANDLED"; break;
-   }
-   char* _severity;
-   switch (severity) {
-      case GL_DEBUG_SEVERITY_HIGH: _severity = (LPSTR) "HIGH"; break;
-      case GL_DEBUG_SEVERITY_MEDIUM: _severity = (LPSTR) "MEDIUM"; break;
-      case GL_DEBUG_SEVERITY_LOW: _severity = (LPSTR) "LOW"; break;
-      case GL_DEBUG_SEVERITY_NOTIFICATION: _severity = (LPSTR) "NOTIFICATION"; break;
-      default: _severity = (LPSTR) "UNHANDLED"; break;
-   }
-   if (severity != GL_DEBUG_SEVERITY_NOTIFICATION)
-   {
-      // FIXME this will crash if the drivers performs the call on the wrong thread (nvogl does...)
-      /* assert(false);
-      PLOGE << "OpenGL Error #" << id << ": " << _type << " of " << _severity << "severity, raised from " << _source << ": " << msg;
-      fprintf(stderr, "%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
-      if (type == GL_DEBUG_TYPE_ERROR || type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR || severity == GL_DEBUG_SEVERITY_HIGH)
-         ShowError(msg);*/
-   }
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 
@@ -874,27 +865,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       #endif
    }
 
-   #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-   m_basicShader = new Shader(this, "BasicShader.glfx"s);
-   m_DMDShader = new Shader(this, m_isVR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
-   #ifndef __OPENGLES__
-   m_FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
-   #else
-   m_FBShader = new Shader(this, "FBShader.glfx"s);
-   #endif
-   m_flasherShader = new Shader(this, "FlasherShader.glfx"s);
-   m_lightShader = new Shader(this, "LightShader.glfx"s);
-   m_stereoShader = new Shader(this, "StereoShader.glfx"s);
-   m_ballShader = new Shader(this, "BallShader.glfx"s);
-   #elif defined(ENABLE_DX9)
-   m_basicShader = new Shader(this, "BasicShader.hlsl"s, g_basicShaderCode, sizeof(g_basicShaderCode));
-   m_DMDShader = new Shader(this, "DMDShader.hlsl"s, g_dmdShaderCode, sizeof(g_dmdShaderCode));
-   m_FBShader = new Shader(this, "FBShader.hlsl"s, g_FBShaderCode, sizeof(g_FBShaderCode));
-   m_flasherShader = new Shader(this, "FlasherShader.hlsl"s, g_flasherShaderCode, sizeof(g_flasherShaderCode));
-   m_lightShader = new Shader(this, "LightShader.hlsl"s, g_lightShaderCode, sizeof(g_lightShaderCode));
-   m_stereoShader = new Shader(this, "StereoShader.hlsl"s, g_stereoShaderCode, sizeof(g_stereoShaderCode));
-   m_ballShader = new Shader(this, "BallShader.hlsl"s, g_ballShaderCode, sizeof(g_ballShaderCode));
-   #endif
+   m_basicShader = new Shader(this, Shader::BASIC_SHADER, m_nEyes == 2, m_isVR);
+   m_ballShader = new Shader(this, Shader::BALL_SHADER, m_nEyes == 2, m_isVR);
+   m_DMDShader = new Shader(this, Shader::DMD_SHADER, m_nEyes == 2, m_isVR);
+   m_flasherShader = new Shader(this, Shader::FLASHER_SHADER, m_nEyes == 2, m_isVR);
+   m_lightShader = new Shader(this, Shader::LIGHT_SHADER, m_nEyes == 2, m_isVR);
+   m_stereoShader = new Shader(this, Shader::STEREO_SHADER, m_nEyes == 2, m_isVR);
+   m_FBShader = new Shader(this, Shader::POSTPROCESS_SHADER, m_nEyes == 2, m_isVR);
 
    if (m_basicShader->HasError() || m_DMDShader->HasError() || m_FBShader->HasError() || m_flasherShader->HasError() || m_lightShader->HasError() || m_stereoShader->HasError())
    {
@@ -906,7 +883,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
 
-   #ifndef __OPENGLES__
+   #if !defined(__OPENGLES__) && !defined(ENABLE_BGFX)
+      // FIXME BGFX implement SMAA
       // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
       UploadAndSetSMAATextures();
       m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
@@ -1433,7 +1411,14 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
-#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
+#if defined(ENABLE_BGFX)
+   // FIXME BGFX implement
+   /* m_DMDShader->SetVector(SHADER_clip_plane, &plane);
+   m_basicShader->SetVector(SHADER_clip_plane, &plane);
+   m_lightShader->SetVector(SHADER_clip_plane, &plane);
+   m_flasherShader->SetVector(SHADER_clip_plane, &plane);
+   m_ballShader->SetVector(SHADER_clip_plane, &plane);*/
+#elif defined(ENABLE_OPENGL)
    m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
    m_lightShader->SetVector(SHADER_clip_plane, &plane);

@@ -39,13 +39,6 @@ $stOutput = @(("_"), ("_st_"))
 
 
 ################################
-# Debug shaders
-Write-Host "`n>>>>>>>>>>>>>>>> Debug shader"
-New-Item -Path . -Name "../bgfx_debug.h" -ItemType "File" -Force -Value "// Debug Shaders`n"
-Process-Shader "vs_debug.sc" "debug.h" "vs_debug_" "vertex"
-Process-Shader "fs_debug.sc" "debug.h" "fs_debug_" "fragment"
-
-################################
 # Flasher shaders
 Write-Host "`n>>>>>>>>>>>>>>>> Flasher shader"
 New-Item -Path . -Name "../bgfx_flasher.h" -ItemType "File" -Force -Value "// Flasher Shaders`n"
@@ -127,6 +120,7 @@ New-Item -Path . -Name "../bgfx_stereo.h" -ItemType "File" -Force -Value "// Ste
 for($k = 0; $k -lt 2; $k++)
 {
    Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_sbs" + $stOutput[$k]) "fragment" @("SBS", $stereo[$k])
+   Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_tb" + $stOutput[$k]) "fragment" @("TB", $stereo[$k])
    Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_int" + $stOutput[$k]) "fragment" @("INT", $stereo[$k])
    Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_flipped_int" + $stOutput[$k]) "fragment" @("FLIPPED_INT", $stereo[$k])
    Process-Shader "fs_pp_stereo.sc" "stereo.h" ("fs_pp_stereo_anaglyph_deghost" + $stOutput[$k]) "fragment" @("ANAGLYPH", "DEGHOST", $stereo[$k])
