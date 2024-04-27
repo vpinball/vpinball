@@ -22,6 +22,16 @@
      RestSeconds = RestSeconds
      Loop = PlayAction
      Defaults = ?
+
+   trigger names:
+
+     S = Solenoid
+     W = Switches
+     L = Lights
+     G = GIs
+     E = DOFs
+     M = Mechs
+     D = PupCap DMD Match
 */
 
 PUPTrigger::PUPTrigger()

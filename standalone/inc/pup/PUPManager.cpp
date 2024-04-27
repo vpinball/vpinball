@@ -47,9 +47,9 @@ bool PUPManager::LoadConfig(const string& szRomName)
 
    // Load screens
 
-   string screensPath = szPath + "screens.pup";
+   string szScreensPath = szPath + "screens.pup";
    std::ifstream screensFile;
-   screensFile.open(screensPath, std::ifstream::in);
+   screensFile.open(szScreensPath, std::ifstream::in);
    if (screensFile.is_open()) {
       string line;
       int i = 0;
@@ -61,19 +61,19 @@ bool PUPManager::LoadConfig(const string& szRomName)
          if (pScreen)
             m_screenMap[pScreen->GetScreenNum()] = pScreen;
       }
-      PLOGI.printf("Screens loaded: file=%s, size=%d", screensPath.c_str(), m_screenMap.size());
+      PLOGI.printf("Screens loaded: file=%s, size=%d", szScreensPath.c_str(), m_screenMap.size());
    }
    else {
-      PLOGW.printf("Unable to load %s", screensPath.c_str());
+      PLOGW.printf("Unable to load %s", szScreensPath.c_str());
 
       return false;
    }
 
    // Load Playlists
 
-   string playlistsPath = szPath + "playlists.pup";
+   string szPlaylistsPath = szPath + "playlists.pup";
    std::ifstream playlistsFile;
-   playlistsFile.open(playlistsPath, std::ifstream::in);
+   playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
       string line;
       int i = 0;
@@ -85,19 +85,19 @@ bool PUPManager::LoadConfig(const string& szRomName)
          if (pPlaylist)
             m_playlistMap[pPlaylist->GetFolder()] = pPlaylist;
       }
-      PLOGI.printf("Playlists loaded: file=%s, size=%d", playlistsPath.c_str(), m_playlistMap.size());
+      PLOGI.printf("Playlists loaded: file=%s, size=%d", szPlaylistsPath.c_str(), m_playlistMap.size());
    }
    else {
-      PLOGW.printf("Unable to load %s", playlistsPath.c_str());
+      PLOGW.printf("Unable to load %s", szPlaylistsPath.c_str());
 
       return false;
    }
 
    // Load Triggers
 
-   string triggersPath = szPath + "triggers.pup";
+   string szTriggersPath = szPath + "triggers.pup";
    std::ifstream triggersFile;
-   triggersFile.open(triggersPath, std::ifstream::in);
+   triggersFile.open(szTriggersPath, std::ifstream::in);
    if (triggersFile.is_open()) {
       int triggers = 0;
       string line;
@@ -119,30 +119,51 @@ bool PUPManager::LoadConfig(const string& szRomName)
             }
          }
       }
-      PLOGI.printf("Triggers loaded: file=%s, size=%d", triggersPath.c_str(), triggers);
+      PLOGI.printf("Triggers loaded: file=%s, size=%d", szTriggersPath.c_str(), triggers);
    }
    else {
-      PLOGW.printf("Unable to load %s", triggersPath.c_str());
+      PLOGW.printf("Unable to load %s", szTriggersPath.c_str());
 
       return false;
    }
 
+   // Load Fonts
+
+   string szFontsPath = szPath + "FONTS" + PATH_SEPARATOR_CHAR;
+   if (std::filesystem::is_directory(szFontsPath)) {
+      for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
+         if (entry.is_regular_file()) {
+            string szFontPath = entry.path().string();
+            if (extension_from_path(szFontPath) == "ttf") {
+               TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8);
+               if (pFont) {
+                  string szFamilyName = std::string(TTF_FontFaceFamilyName(pFont));
+                  m_fontMap[szFamilyName] = pFont;
+
+                  PLOGI.printf("Font loaded: file=%s, family=%s", szFontPath.c_str(), szFamilyName.c_str());
+               }
+               else {
+                  PLOGW.printf("Error loading font: file=%s", szFontPath.c_str());
+               }
+            }
+         }
+      }
+   }
+   else {
+      PLOGI.printf("No PUP FONTS directory");
+   }
+
    // Determine child screens
 
-   vector<int> childKeys;
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
          PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
          if (pParentScreen) {
             pParentScreen->AddChild(pScreen);
-            childKeys.push_back(key);
          }
       }
    }
-
-   for (const auto& key : childKeys)
-      m_screenMap.erase(key);
 
    m_szPath = szPath;
    m_init = true;
@@ -235,6 +256,11 @@ void PUPManager::Stop()
 
    m_playlistMap.clear();
 
+   for (auto& [key, pFont] : m_fontMap)
+      TTF_CloseFont(pFont);
+
+   m_fontMap.clear();
+
    m_szPath.clear();
    m_init = false;
 }
@@ -290,4 +316,10 @@ string PUPManager::GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile)
       return m_szPath + pPlaylist->GetFolder() + PATH_SEPARATOR_CHAR + szPlayFile;
 
    return m_szPath + pPlaylist->GetFolder() + PATH_SEPARATOR_CHAR + pPlaylist->GetPlayFile();
+}
+
+TTF_Font* PUPManager::GetFont(const string& szFamilyName)
+{
+   std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szFamilyName);
+   return it != m_fontMap.end() ? it->second : nullptr;
 }

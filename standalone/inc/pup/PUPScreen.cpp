@@ -5,6 +5,7 @@
 #include "PUPTrigger.h"
 #include "PUPManager.h"
 #include "PUPPlaylist.h"
+#include "PUPLabel.h"
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 #include "PUPMediaPlayer.h"
 #endif
@@ -37,6 +38,10 @@ PUPScreen::PUPScreen(PUPManager* pManager)
 #endif
    m_pOverlay = NULL;
    m_pOverlayTexture = NULL;
+
+   m_currentPage = 0;
+   m_defaultPageNum = 0;
+   m_labelPageSeconds = 0;
 }
 
 PUPScreen::~PUPScreen()
@@ -49,8 +54,10 @@ PUPScreen::~PUPScreen()
    for (auto& [key, pTrigger] : m_triggerMap)
       delete pTrigger;
 
-   for (PUPScreen* pScreen : m_children)
-      delete pScreen;
+   for (auto& [key, pLabel] : m_labelMap)
+      delete pLabel;
+
+   m_children.clear();
 
    if (m_pOverlay)
       SDL_FreeSurface(m_pOverlay);
@@ -133,12 +140,32 @@ void PUPScreen::Init(SDL_Renderer* pRenderer, int w, int h)
       pScreen->Init(pRenderer, m_rect.w, m_rect.h);
 }
 
+void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel, int pageNum)
+{
+   string szLabelNameLower = szLabelName;
+   std::transform(szLabelNameLower.begin(), szLabelNameLower.end(), szLabelNameLower.begin(), ::tolower);
+
+   m_labelMap[szLabelNameLower] = pLabel;
+}
+
+PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
+{
+   string szLabelNameLower = szLabelName;
+   std::transform(szLabelNameLower.begin(), szLabelNameLower.end(), szLabelNameLower.begin(), ::tolower);
+
+   std::map<string, PUPLabel*>::iterator it = m_labelMap.find(szLabelNameLower);
+   return it != m_labelMap.end() ? it->second : nullptr;
+}
+
 void PUPScreen::Render()
 {
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    if (m_pMediaPlayer)
       m_pMediaPlayer->Render();
 #endif
+
+   for (auto& [key, pLabel] : m_labelMap)
+      pLabel->Render(m_pRenderer, m_rect);
 
    for (PUPScreen* pScreen : GetChildren())
       pScreen->Render();

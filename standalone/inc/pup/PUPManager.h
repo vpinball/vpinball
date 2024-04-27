@@ -5,6 +5,8 @@
 #include <queue>
 #include <mutex>
 
+#include <SDL2/SDL_ttf.h>
+
 #define PUP_SETTINGS_BACKGLASSX      320
 #define PUP_SETTINGS_BACKGLASSY      30
 #define PUP_SETTINGS_BACKGLASSWIDTH  290
@@ -74,18 +76,20 @@ public:
    void QueueTriggerData(PUPTriggerData data);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    string GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile);
+   PUPScreen* GetScreen(int screenNum);
+   TTF_Font* GetFont(const string& szFamily);
 
 private:
    PUPManager();
 
    void RunLoop();
-   PUPScreen* GetScreen(int screenNum);
 
    static PUPManager* m_pInstance;
    bool m_init;
    string m_szPath;
    std::map<int, PUPScreen*> m_screenMap;
    std::map<string, PUPPlaylist*> m_playlistMap;
+   std::map<string, TTF_Font*> m_fontMap;
    PUPScreen* m_pBackglassScreen;
    PUPWindow* m_pBackglassWindow;
    PUPScreen* m_pTopperScreen;
