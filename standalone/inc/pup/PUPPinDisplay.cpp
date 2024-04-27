@@ -218,9 +218,6 @@ STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
 
    if (m_pManager->LoadConfig(szRomName))
       m_pManager->Start();
-   else {
-      PLOGW.printf("Unable to load PUP config for %s", szRomName.c_str());
-   }
 
    return S_OK;
 }

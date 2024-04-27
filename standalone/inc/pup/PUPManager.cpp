@@ -39,12 +39,15 @@ bool PUPManager::LoadConfig(const string& szRomName)
       return false;
    }
 
-   m_szPath = g_pvp->m_currentTablePath + "pupvideos" +
+   string szPath = g_pvp->m_currentTablePath + "pupvideos" +
       PATH_SEPARATOR_CHAR + szRomName + PATH_SEPARATOR_CHAR;
+
+   if (!std::filesystem::is_directory(szPath))
+      return false;
 
    // Load screens
 
-   string screensPath = m_szPath + "screens.pup";
+   string screensPath = szPath + "screens.pup";
    std::ifstream screensFile;
    screensFile.open(screensPath, std::ifstream::in);
    if (screensFile.is_open()) {
@@ -61,14 +64,14 @@ bool PUPManager::LoadConfig(const string& szRomName)
       PLOGI.printf("Screens loaded: file=%s, size=%d", screensPath.c_str(), m_screenMap.size());
    }
    else {
-      PLOGE.printf("Unable to load %s", screensPath.c_str());
+      PLOGW.printf("Unable to load %s", screensPath.c_str());
 
       return false;
    }
 
    // Load Playlists
 
-   string playlistsPath = m_szPath + "playlists.pup";
+   string playlistsPath = szPath + "playlists.pup";
    std::ifstream playlistsFile;
    playlistsFile.open(playlistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {
@@ -78,21 +81,21 @@ bool PUPManager::LoadConfig(const string& szRomName)
          if (++i == 1)
             continue;
 
-         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(m_szPath, line);
+         PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSVLine(szPath, line);
          if (pPlaylist)
             m_playlistMap[pPlaylist->GetFolder()] = pPlaylist;
       }
       PLOGI.printf("Playlists loaded: file=%s, size=%d", playlistsPath.c_str(), m_playlistMap.size());
    }
    else {
-      PLOGE.printf("Unable to load %s", playlistsPath.c_str());
+      PLOGW.printf("Unable to load %s", playlistsPath.c_str());
 
       return false;
    }
 
    // Load Triggers
 
-   string triggersPath = m_szPath + "triggers.pup";
+   string triggersPath = szPath + "triggers.pup";
    std::ifstream triggersFile;
    triggersFile.open(triggersPath, std::ifstream::in);
    if (triggersFile.is_open()) {
@@ -119,7 +122,7 @@ bool PUPManager::LoadConfig(const string& szRomName)
       PLOGI.printf("Triggers loaded: file=%s, size=%d", triggersPath.c_str(), triggers);
    }
    else {
-      PLOGE.printf("Unable to load %s", triggersPath.c_str());
+      PLOGW.printf("Unable to load %s", triggersPath.c_str());
 
       return false;
    }
@@ -141,6 +144,7 @@ bool PUPManager::LoadConfig(const string& szRomName)
    for (const auto& key : childKeys)
       m_screenMap.erase(key);
 
+   m_szPath = szPath;
    m_init = true;
 
    return true;
@@ -231,6 +235,7 @@ void PUPManager::Stop()
 
    m_playlistMap.clear();
 
+   m_szPath.clear();
    m_init = false;
 }
 

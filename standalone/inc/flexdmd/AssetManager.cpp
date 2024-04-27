@@ -126,6 +126,9 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       pAssetSrc->SetAssetType(AssetType_GIF);
    else if (ext == "fnt")
       pAssetSrc->SetAssetType(AssetType_BMFont);
+   else {
+      PLOGW.printf("Unsupported asset extension: %s", ext.c_str());
+   }
 
    if (pAssetSrc->GetAssetType() == AssetType_Image) {
       for (size_t i = 1; i < parts.size(); i++) {

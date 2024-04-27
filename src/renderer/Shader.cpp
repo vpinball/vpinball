@@ -390,6 +390,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       case SUT_Float4x3:
       case SUT_Float4x4: type = bgfx::UniformType::Mat4; break;
       case SUT_Sampler: type = bgfx::UniformType::Sampler; break;
+      default: break;
       }
       m_uniformHandles[i] = bgfx::createUniform(u.name.c_str(), type, n);
    }

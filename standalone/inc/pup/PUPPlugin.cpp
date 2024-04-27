@@ -38,9 +38,6 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
       DataReceive( 'D', 0, 1 );
       m_pManager->Start();
    }
-   else {
-      PLOGW.printf("Unable to load PUP config for %s", szRomName.c_str());
-   }
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetPUPTriggerCallback(OnPUPCaptureTrigger, this);

@@ -10,8 +10,8 @@ PINMAME_SHA=f0722e0bfced46f3afb39d74e7ebb08e01495f35
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
 LIBDMDUTIL_SHA=0b58af9d2bb7886721ccfa3d3000b3d8f054a114
 LIBDOF_SHA=ac5d1e3487a4a6511953eb6aeef06ef5111510ea
-BGFX_CMAKE_VERSION=1.127.8710-464
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
+BGFX_CMAKE_VERSION=1.127.8710-464
 
 NUM_PROCS=$(nproc)
 
@@ -24,8 +24,8 @@ echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
-echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
+echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo ""
 
 if [ -z "${BUILD_TYPE}" ]; then
@@ -303,36 +303,6 @@ cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
 
 #
-# build bgfx and copy to external
-#
-
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
-   tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
-   cd bgfx.cmake
-   cmake -S. \
-      -DBGFX_LIBRARY_TYPE=SHARED \
-      -DBGFX_BUILD_EXAMPLES=OFF \
-      -DBGFX_CONFIG_MULTITHREADED=OFF \
-      -DCMAKE_BUILD_TYPE=Release \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp -r bgfx/include/bgfx ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp -r bimg/include/bimg ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp -r bx/include/bx ../../${CACHE_DIR}/${CACHE_NAME}/include
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp build/cmake/bgfx/libbgfx.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cd ..
-   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
-fi
-
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
-
-#
 # build FFMPEG libraries and copy to external
 #
 
@@ -360,3 +330,33 @@ fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
+
+#
+# build bgfx and copy to external
+#
+
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_001"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+   tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+   cd bgfx.cmake
+   cmake -S. \
+      -DBGFX_LIBRARY_TYPE=SHARED \
+      -DBGFX_BUILD_EXAMPLES=OFF \
+      -DBGFX_CONFIG_MULTITHREADED=OFF \
+      -DCMAKE_BUILD_TYPE=Release \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp -r bgfx/include/bgfx ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp -r bimg/include/bimg ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp -r bx/include/bx ../../${CACHE_DIR}/${CACHE_NAME}/include
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/cmake/bgfx/libbgfx.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
