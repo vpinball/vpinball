@@ -66,23 +66,6 @@ bool PUPManager::LoadConfig(const string& szRomName)
       return false;
    }
 
-   // Determine child screens
-
-   vector<int> childKeys;
-   for (auto& [key, pScreen] : m_screenMap) {
-      PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
-      if (pCustomPos) {
-         PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
-         if (pParentScreen) {
-            pParentScreen->AddChild(pScreen);
-            childKeys.push_back(key);
-         }
-      }
-   }
-
-   for (const auto& key : childKeys)
-      m_screenMap.erase(key);
-
    // Load Playlists
 
    string playlistsPath = m_szPath + "playlists.pup";
@@ -140,6 +123,23 @@ bool PUPManager::LoadConfig(const string& szRomName)
 
       return false;
    }
+
+   // Determine child screens
+
+   vector<int> childKeys;
+   for (auto& [key, pScreen] : m_screenMap) {
+      PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
+      if (pCustomPos) {
+         PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
+         if (pParentScreen) {
+            pParentScreen->AddChild(pScreen);
+            childKeys.push_back(key);
+         }
+      }
+   }
+
+   for (const auto& key : childKeys)
+      m_screenMap.erase(key);
 
    m_init = true;
 
