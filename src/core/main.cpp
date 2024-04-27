@@ -946,7 +946,7 @@ public:
             VPX::Window::GetDisplayModes(display, allVideoModes);
             for (size_t i = 0; i < allVideoModes.size(); ++i) {
                VPX::Window::VideoMode mode = allVideoModes.at(i);
-               PLOGI << "display " << displays.at(i).adapter << ": " << mode.width << 'x' << mode.height
+               PLOGI << "display " << displays.at(display).adapter << ": " << mode.width << 'x' << mode.height
                      << " (depth=" << mode.depth << ", refreshRate=" << mode.refreshrate << ')';
             }
          }
