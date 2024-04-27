@@ -1,4 +1,8 @@
+#ifdef STEREO
+$input v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
+#else
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
+#endif
 
 #include "common.sh"
 

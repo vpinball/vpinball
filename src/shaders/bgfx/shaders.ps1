@@ -39,34 +39,21 @@ $stOutput = @(("_"), ("_st_"))
 
 
 ################################
-# Flasher shaders
-Write-Host "`n>>>>>>>>>>>>>>>> Flasher shader"
-New-Item -Path . -Name "../bgfx_flasher.h" -ItemType "File" -Force -Value "// Flasher Shaders`n"
-Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_"    "vertex"
-Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_st_" "vertex" @("STEREO")
-Process-Shader "fs_flasher.sc" "flasher.h" "fs_flasher_"    "fragment"
-
-################################
 # Basic material shaders (also 'classic' light)
 Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
 New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
-foreach ($variant in @("TEX", "NOTEX"))
+for($k = 0; $k -lt 2; $k++)
 {
-  Process-Shader "vs_basic.sc" "basic.h" ("vs_basic_" + $variant.ToLower() + "_")    "vertex" @($variant)
-  Process-Shader "vs_basic.sc" "basic.h" ("vs_basic_" + $variant.ToLower() + "_st_") "vertex" @("STEREO", $variant)
-  foreach ($variant2 in @("AT", "NOAT"))
+  Process-Shader "vs_basic.sc" "basic.h" ("vs_kicker" + $stOutput[$k]) "vertex" @($stereo[$k], "KICKER")
+  Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_refl" + $stOutput[$k]) "fragment" @($stereo[$k], "REFL")
+  foreach ($variant in @("TEX", "NOTEX"))
   {
-	 foreach ($variant3 in @("REFL", "NOREFL"))
-	 {
-		Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant, $variant2, $variant3)
-		Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_st_") "fragment" @("STEREO", $variant, $variant2, $variant3)
-	 }
-  }
-  Process-Shader "vs_basic.sc" "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_") "vertex" @("CLASSIC_LIGHT", $variant)
-  Process-Shader "vs_basic.sc" "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_st_") "vertex" @("STEREO", "CLASSIC_LIGHT", $variant)
-  foreach ($variant2 in @("NOSHADOW", "BALLSHADOW"))
-  {
-	 Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_") "fragment" @($variant, $variant2)
+    Process-Shader "vs_basic.sc"         "basic.h" ("vs_basic_" + $variant.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant)
+	Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_noat" + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "NOAT")
+	Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_at" + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "AT") # FIXME useless for notex
+    Process-Shader "fs_decal.sc"         "basic.h" ("fs_decal_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
+    Process-Shader "vs_basic.sc"         "basic.h" ("vs_classic_light_" + $variant.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], "CLASSIC_LIGHT", $variant)
+    Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "NOSHADOW")
   }
 }
 
@@ -77,6 +64,8 @@ New-Item -Path . -Name "../bgfx_ball.h" -ItemType "File" -Force -Value "// Ball 
 for($k = 0; $k -lt 2; $k++)
 {
   Process-Shader "vs_ball.sc" "ball.h" ("vs_ball" + $stOutput[$k]) "vertex" @($stereo[$k])
+  Process-Shader "fs_ball_trail.sc" "ball.h" ("fs_ball_trail" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_ball_debug.sc" "ball.h" ("fs_ball_debug" + $stOutput[$k]) "fragment" @($stereo[$k])
   foreach ($variant in @("EQUIRECTANGULAR", "SPHERICAL"))
   {
 	 foreach ($subvariant in @("DECAL", "NODECAL"))
@@ -85,7 +74,6 @@ for($k = 0; $k -lt 2; $k++)
 	 }
   }
 }
-Process-Shader "fs_ball_trail.sc" "ball.h" "fs_ball_trail_" "fragment"
 
 ################################
 # DMD/Sprite shaders
@@ -101,6 +89,14 @@ foreach ($variant in @("DMD", "SPRITE"))
 	 Process-Shader "fs_dmd.sc" "dmd.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_") "fragment" @($variant, $variant2)
   }
 }
+
+################################
+# Flasher shaders
+Write-Host "`n>>>>>>>>>>>>>>>> Flasher shader"
+New-Item -Path . -Name "../bgfx_flasher.h" -ItemType "File" -Force -Value "// Flasher Shaders`n"
+Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_"    "vertex"
+Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_st_" "vertex" @("STEREO")
+Process-Shader "fs_flasher.sc" "flasher.h" "fs_flasher_"    "fragment"
 
 ################################
 # Light shaders
@@ -155,6 +151,11 @@ for($k = 0; $k -lt 2; $k++)
   Process-Shader "fs_pp_nfaa.sc" "antialiasing.h" ("fs_pp_nfaa" + $stOutput[$k]) "fragment" @($stereo[$k])
   Process-Shader "fs_pp_dlaa_edge.sc" "antialiasing.h" ("fs_pp_dlaa_edge" + $stOutput[$k]) "fragment" @($stereo[$k])
   Process-Shader "fs_pp_dlaa.sc" "antialiasing.h" ("fs_pp_dlaa" + $stOutput[$k]) "fragment" @($stereo[$k])
+  Process-Shader "fs_pp_ao_display.sc" "postprocess.h" ("fs_pp_ao_display" + $stOutput[$k]) "fragment" @($stereo[$k])
+  foreach ($variant in @("FILTER", "NOFILTER"))
+  {
+	 Process-Shader "fs_pp_ao.sc" "postprocess.h" ("fs_pp_ao_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
+  }
   foreach ($variant in @("FXAA1", "FXAA2", "FXAA3"))
   {
 	 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
@@ -179,8 +180,15 @@ for($k = 0; $k -lt 2; $k++)
 	 $axis_suffix = @("_h", "_v")
 	 for($j = 0; $j -lt 2; $j++)
 	 {
-		Process-Shader "fs_blur.sc" "blur.h" ("fs_"  + $blur.ToLower() + $axis_suffix[$j] + $stOutput[$k]) "fragment" @($stereo[$k], $blur, $axis[$j])
+		Process-Shader "fs_pp_blur.sc" "blur.h" ("fs_"  + $blur.ToLower() + $axis_suffix[$j] + $stOutput[$k]) "fragment" @($stereo[$k], $blur, $axis[$j])
 	 }
   }
 }
+# TODO add stereo support to SMAA
+Process-Shader "vs_pp_smaa_BlendingWeightCalculation.sc" "antialiasing.h" "vs_pp_smaa_blendweightcalculation_" "vertex"
+Process-Shader "vs_pp_smaa_EdgeDetection.sc"             "antialiasing.h" "vs_pp_smaa_edgedetection_"          "vertex"
+Process-Shader "vs_pp_smaa_NeighborhoodBlending.sc"      "antialiasing.h" "vs_pp_smaa_neighborhoodblending_"   "vertex"
+Process-Shader "fs_pp_smaa_BlendingWeightCalculation.sc" "antialiasing.h" "fs_pp_smaa_blendweightcalculation_" "fragment"
+Process-Shader "fs_pp_smaa_EdgeDetection.sc"             "antialiasing.h" "fs_pp_smaa_edgedetection_"          "fragment"
+Process-Shader "fs_pp_smaa_NeighborhoodBlending.sc"      "antialiasing.h" "fs_pp_smaa_neighborhoodblending_"   "fragment"
 

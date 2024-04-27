@@ -67,6 +67,7 @@ private:
    bgfx::FrameBufferHandle m_framebuffer = BGFX_INVALID_HANDLE;
    bgfx::TextureHandle m_color_tex = BGFX_INVALID_HANDLE;
    bgfx::TextureHandle m_depth_tex = BGFX_INVALID_HANDLE;
+   bgfx::FrameBufferHandle m_framebuffer_layers[6];
 #elif defined(ENABLE_OPENGL)
    GLuint m_framebuffer = 0;
    GLenum m_texTarget = 0;

@@ -150,11 +150,8 @@ public:
    bool SupportLayeredRendering() const
    {
       #if defined(ENABLE_BGFX)
-      // TODO actually use BGFX layered rendering
-      return false;
+      return bgfx::getCaps()->supported & (BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY);
       #elif defined(ENABLE_OPENGL)
-      // TODO remove geometry shader, and only support layered rendering on driver supporting ARB_shader_viewport_layer_array (all GPU starting GTX950+),
-      // the performance impact should be positive for normal rendering and VR/stereo (older GPU are not really able to render in VR/Stereo)
       return true;
       #elif defined(ENABLE_DX9)
       return false;

@@ -51,7 +51,7 @@ uniform vec4 cGlossy_ImageLerp;
 //!! Metals have high specular reflectance: 0.5-1.0
 
 uniform vec4 staticColor_Alpha;
-uniform vec4 alphaTestValue; // FIXME Actually float but extended to vec4 for BGFX (and we should use the builtin)
+uniform vec4 alphaTestValue; // FIXME Actually float but extended to vec4 for BGFX (and we could use the builtin)
 
 uniform vec4 w_h_height;
 
@@ -153,24 +153,25 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    return refractionTint.rgb * texStereo(tex_refraction, uv).rgb;
 }
 
-#ifdef AT
-void main() {
-#else
+
+#ifdef REFL
 EARLY_DEPTH_STENCIL void main() {
-#endif
-   vec4 color;
-
-   #ifdef REFL
-      // Reflection only pass variant of the basic material shading
-      vec3 N = normalize(v_normal);
-	  #ifdef STEREO
-      color.rgb = compute_reflection(gl_FragCoord.xy, N, v_eye);
-	  #else
-      color.rgb = compute_reflection(gl_FragCoord.xy, N);
-	  #endif
-      color.a = 1.0;
-
+   // Reflection only pass variant of the basic material shading
+   vec3 N = normalize(v_normal);
+   #ifdef STEREO
+   vec3 color = compute_reflection(gl_FragCoord.xy, N, v_eye);
    #else
+   vec3 color = compute_reflection(gl_FragCoord.xy, N);
+   #endif
+   gl_FragColor = vec4(color.rgb * staticColor_Alpha.rgb, staticColor_Alpha.a);
+}
+
+#else
+   #ifndef AT
+   EARLY_DEPTH_STENCIL
+   #endif
+   void main() {
+      vec4 color;
       // Full basic material shading
       #ifdef TEX
          vec4 pixel = texture2D(tex_base_color, v_texcoord0);
@@ -240,7 +241,7 @@ EARLY_DEPTH_STENCIL void main() {
 		 #endif
          color.a = 1.0;
       }
-   #endif
 
-   gl_FragColor = color * staticColor_Alpha;
-}
+      gl_FragColor = color * staticColor_Alpha;
+   }
+#endif

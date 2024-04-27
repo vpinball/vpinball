@@ -594,9 +594,9 @@ void VideoOptionsDialog::LoadSettings()
    SendDlgItemMessage(IDC_BG_SET, BM_SETCHECK, (bgset != 0) ? BST_CHECKED : BST_UNCHECKED, 0);
 
    bool fakeStereo = true;
-   #if defined(ENABLE_OPENGL)
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    fakeStereo = settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false);
-   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
+   #elif defined(ENABLE_DX9)
    GetDlgItem(IDC_FAKE_STEREO).EnableWindow(FALSE);
    #endif
    SendDlgItemMessage(IDC_FAKE_STEREO, BM_SETCHECK, fakeStereo ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -881,7 +881,7 @@ void VideoOptionsDialog::SaveSettings(const bool saveAll)
    settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, stereo3D != STEREO_OFF, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DYAxis"s, IsDlgButtonChecked(IDC_3D_STEREO_Y) == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Stereo3DOffset"s, GetDlgItemText(IDC_3D_STEREO_OFS).GetString(), !saveAll);
-   #ifdef ENABLE_OPENGL
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    settings.SaveValue(Settings::Player, "Stereo3DFake"s, IsDlgButtonChecked(IDC_FAKE_STEREO) == BST_CHECKED, !saveAll);
    #endif
    settings.SaveValue(Settings::Player, "Stereo3DMaxSeparation"s, GetDlgItemText(IDC_3D_STEREO_MS).GetString(), !saveAll);
@@ -1128,7 +1128,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       {
          LRESULT stereo3D = SendDlgItemMessage(IDC_3D_STEREO, CB_GETCURSEL, 0, 0);
          bool fakeStereo = true;
-         #ifdef ENABLE_OPENGL
+         #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
          fakeStereo = IsDlgButtonChecked(IDC_FAKE_STEREO);
          #endif
          SetDlgItemText(IDC_3D_STEREO_MS_LABEL, fakeStereo ? "Parallax Separation" : "Eye Separation (mm)");
@@ -1148,7 +1148,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          else if (Is3DTVStereoMode(stereo3D))
          {
-            #ifdef ENABLE_OPENGL
+            #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
             GetDlgItem(IDC_FAKE_STEREO).EnableWindow(true);
             #endif
             GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(fakeStereo);
@@ -1164,7 +1164,7 @@ BOOL VideoOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          else if (IsAnaglyphStereoMode(stereo3D))
          {
-            #ifdef ENABLE_OPENGL
+            #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
             GetDlgItem(IDC_FAKE_STEREO).EnableWindow(true);
             #endif
             GetDlgItem(IDC_3D_STEREO_Y).EnableWindow(fakeStereo);

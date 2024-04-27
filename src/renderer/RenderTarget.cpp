@@ -78,8 +78,9 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureFormat::Enum fmt;
-   // FIXME most render target are not blit destination and are only used as write target (then GPU sampling, no readback)
-   uint64_t flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST;
+   // FIXME most render target are not blit destination and are only used as write target (then GPU sampling, no readback) => BGFX_TEXTURE_READ_BACK
+   // FIXME add MSAA (BGFX_TEXTURE_RT_MSAA_X2 ...)
+   uint64_t flags = BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST;
    switch (format)
    {
    case colorFormat::RED16F: fmt = bgfx::TextureFormat::R16F; break;
@@ -93,9 +94,10 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    case colorFormat::GREY8: fmt = bgfx::TextureFormat::R8; break;
    default: assert(false); // Unsupported texture format 
    }
-   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, 1, fmt, flags);
+   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, flags);
    m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
    m_color_sampler->SetName(name + ".Color"s);
+   
    if (m_shared_depth)
    {
       m_depth_tex = sharedDepth->m_depth_tex;
@@ -103,20 +105,31 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    }
    else if (with_depth)
    {
-      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx::TextureFormat::D24, flags);
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::D24, flags);
       m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
       m_depth_sampler->SetName(name + ".Depth"s);
    }
 
    if (with_depth)
    {
-      const bgfx::TextureHandle handles[] = { m_color_tex, m_depth_tex };
-      m_framebuffer = bgfx::createFrameBuffer(2, handles);
+      // FIXME BGFX multi layer framebuffer with depth buffer are not bound for multilayered rendering (only layer 0 is rendered, without depth/stencil, both layer are rendered)
+      bgfx::Attachment colorAttachment, depthAttachment;
+      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+      depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+      const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
+      m_framebuffer = bgfx::createFrameBuffer(2, attachments);
    }
    else
    {
-      const bgfx::TextureHandle handles[] = { m_color_tex };
-      m_framebuffer = bgfx::createFrameBuffer(1, handles);
+      bgfx::Attachment colorAttachment;
+      colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
+      m_framebuffer = bgfx::createFrameBuffer(1, &colorAttachment);
+   }
+   if (!bgfx::isValid(m_framebuffer))
+   {
+      PLOGE << failureMessage;
+      PLOGE << "Failed to create render target";
+      exit(-1);
    }
    bgfx::setName(m_framebuffer, name.c_str());
    
@@ -319,7 +332,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       ShowError(msg);
 
 #ifndef __OPENGLES__
-      PLOGI.printf("failed - message=%s (rd=%p, width=%d, height=%d, colorFormat=%d, with_depth=%d, nMSAASamples=%d)",
+      PLOGE.printf("failed - message=%s (rd=%p, width=%d, height=%d, colorFormat=%d, with_depth=%d, nMSAASamples=%d)",
               failureMessage, rd, width, height, format, with_depth, nMSAASamples);
 #endif
 
@@ -497,9 +510,7 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    int pw1 = w1 == -1 ? GetWidth() : w1, ph1 = h1 == -1 ? GetHeight() : h1;
    int px2 = x2 == -1 ? 0 : x2, py2 = y2 == -1 ? 0 : y2, pz2 = dstLayer == -1 ? 0 : dstLayer;
    int pw2 = w2 == -1 ? dest->GetWidth() : w2, ph2 = h2 == -1 ? dest->GetHeight() : h2;
-#ifdef ENABLE_OPENGL
    int nLayers = srcLayer == -1 ? m_nLayers : 1;
-#endif
    assert(srcLayer != -1 || dstLayer != -1 || m_nLayers == dest->m_nLayers); // Either we copy a single layer or the full set in which case they must match
 
 #if defined(ENABLE_BGFX)
@@ -563,9 +574,13 @@ void RenderTarget::Activate(const int layer)
    current_render_layer = layer;
    
    #if defined(ENABLE_BGFX)
+   assert(layer == -1 || m_nLayers == 1);
    m_rd->NextView();
+   #ifdef _DEBUG
    bgfx::setViewName(m_rd->m_activeViewId, m_name.c_str());
-   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_framebuffer);
+   #endif
+   // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
+   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, (layer == -1 || m_nLayers == 1) ? m_framebuffer : m_framebuffer_layers[layer]);
    bgfx::setViewRect(m_rd->m_activeViewId, 0, 0, m_width, m_height);
 
    #elif defined(ENABLE_OPENGL)
@@ -578,6 +593,7 @@ void RenderTarget::Activate(const int layer)
    glViewport(0, 0, m_width, m_height);
    
    #elif defined(ENABLE_DX9)
+   assert(layer == -1 || m_nLayers == 1);
    static IDirect3DSurface9* currentColorSurface = nullptr;
    if (currentColorSurface != m_color_surface)
    {

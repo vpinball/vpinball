@@ -111,7 +111,7 @@ public:
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
    : m_table(table)
    , m_stereo3D(stereo3D)
-   #if defined(ENABLE_DX9) || defined(ENABLE_BGFX) // DirectX 9 does not support stereo rendering, FIXME it is unimplemented for BGFX
+   #if defined(ENABLE_DX9) // DirectX 9 does not support stereo rendering
    , m_stereo3DfakeStereo(true)
    #else
    , m_stereo3DfakeStereo(stereo3D == STEREO_VR ? false : table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false))
@@ -945,9 +945,9 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
 {
    TRACE_FUNCTION();
    ViewSetup& viewSetup = m_table->mViewSetups[m_table->m_BG_current_set];
-   #if defined(ENABLE_OPENGL)
+   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    bool stereo = m_stereo3D != STEREO_OFF && m_stereo3D != STEREO_VR && m_stereo3Denabled;
-   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX) // TODO implement for BGFX
+   #elif defined(ENABLE_DX9)
    bool stereo = false;
    #endif
    if (viewSetup.mMode == VLM_WINDOW)
@@ -1071,15 +1071,15 @@ void Renderer::UpdateBasicShaderMatrix(const Matrix3D& objectTrafo)
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matView, &matrices.matView);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewInverseTranspose, &matrices.matWorldViewInverseTranspose);
-   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
-#elif defined(ENABLE_OPENGL)
+   m_pd3dPrimaryDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+#elif defined(ENABLE_OPENGL)
    m_pd3dPrimaryDevice->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
+   m_pd3dPrimaryDevice->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_lightShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
+   m_pd3dPrimaryDevice->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
 #endif
 }
 
@@ -1101,7 +1101,7 @@ void Renderer::UpdateBallShaderMatrix()
       matrices.matWorldViewProj[eye] = GetMVP().GetModelViewProj(eye);
 
 #if defined(ENABLE_DX9) || defined(ENABLE_BGFX)
-   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0]);
+   m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewProj, &matrices.matWorldViewProj[0], nEyes);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldView, &matrices.matWorldView);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matWorldViewInverse, &matrices.matWorldViewInverse);
    m_pd3dPrimaryDevice->m_ballShader->SetMatrix(SHADER_matView, &matrices.matView);
@@ -1134,10 +1134,8 @@ void Renderer::UpdateStereoShaderState()
    }
    
    RenderTarget *renderedRT = GetPostProcessRenderTarget1();
-   #if defined(ENABLE_OPENGL)
-   if (m_stereo3DfakeStereo) // OpenGL strip down this uniform which is only needed for interlaced mode on DirectX 9
-   #endif
-   m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
+   if (m_stereo3DfakeStereo)
+      m_pd3dPrimaryDevice->m_stereoShader->SetVector(SHADER_w_h_height, (float)(1.0 / renderedRT->GetWidth()), (float)(1.0 / renderedRT->GetHeight()), (float)renderedRT->GetHeight(), m_table->Get3DOffset());
 
    m_stereo3DDefocus = 0.f;
    if (IsAnaglyphStereoMode(m_stereo3D))
