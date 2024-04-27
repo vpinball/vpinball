@@ -9,12 +9,12 @@
 
 PUPPinDisplay::PUPPinDisplay()
 {
-   m_pManager = new PUPManager();
+   m_pManager = PUPManager::GetInstance();
 }
 
 PUPPinDisplay::~PUPPinDisplay()
 {
-   delete m_pManager;
+   m_pManager->Stop();
 }
 
 STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
@@ -174,7 +174,9 @@ STDMETHODIMP PUPPinDisplay::put_SN(LONG Value){
 
 STDMETHODIMP PUPPinDisplay::B2SData(BSTR tIndex, int Value)
 {
-   PLOGW << "Not implemented";
+   string szData = MakeString(tIndex);
+
+   m_pManager->QueueTriggerData({ szData[0] , std::stoi(szData.substr(1)), Value });
 
    return S_OK;
 }
@@ -207,11 +209,17 @@ STDMETHODIMP PUPPinDisplay::Hide(LONG ScreenNum)
 
 STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
 {
+   if (m_pManager->IsInit()) {
+      PLOGW.printf("PUP already initialized");
+      return S_OK;
+   }
+
    string szRomName = MakeString(RomName);
 
-   if (!m_pManager->LoadConfig(szRomName)) {
+   if (m_pManager->LoadConfig(szRomName))
+      m_pManager->Start();
+   else {
       PLOGW.printf("Unable to load PUP config for %s", szRomName.c_str());
-      return S_OK;
    }
 
    return S_OK;
