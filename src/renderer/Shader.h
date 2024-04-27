@@ -352,24 +352,15 @@ enum ShaderAttributes
 
 class Shader final
 {
-private:
-   Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2, const BYTE* code, unsigned int codeSize);
-   bool Load(const std::string& name, const BYTE* code, unsigned int codeSize);
-
 public:
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
-   Shader(RenderDevice *renderDevice, const std::string& src1, const std::string& src2 = ""s) : Shader(renderDevice, src1, src2, nullptr, 0) { }
-   #elif defined(ENABLE_DX9)
-   Shader(RenderDevice *renderDevice, const std::string& name, const BYTE* code, unsigned int codeSize) : Shader(renderDevice, name, ""s, code, codeSize) { }
-   #endif
+   enum ShaderId { BALL_SHADER, BASIC_SHADER, DMD_SHADER, FLASHER_SHADER, POSTPROCESS_SHADER, LIGHT_SHADER, STEREO_SHADER };
+   Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStereo, const bool isVR);
    ~Shader();
-   void UnbindSampler(Sampler* sampler);
-
-   bool HasError() const { return m_hasError; }
 
    void Begin();
    void End();
 
+   bool HasError() const { return m_hasError; }
    static Shader* GetCurrentShader();
    static string GetTechniqueName(ShaderTechniques technique);
    void SetTechnique(const ShaderTechniques technique);
@@ -377,6 +368,7 @@ public:
    void SetBasic(const Material * const mat, Texture * const pin);
    ShaderTechniques GetCurrentTechnique() { return m_technique; }
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
+   void UnbindSampler(Sampler* sampler);
 
    void SetMaterial(const Material * const mat, const bool has_alpha = true);
    void SetAlphaTestValue(const float value);
@@ -446,10 +438,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Bool);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -459,12 +447,10 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return;
+         #ifdef ENABLE_OPENGL
+         if (uniformName == SHADER_layer && m_shader->m_stateOffsets[uniformName] == -1)
+            return; // layer uniform may be stripped out by GLSL compiler since it is only used for stereo
          #endif
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return; // FIXME layer uniform may be stripped out by compiler (since it is only used for stereo)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Int);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -474,10 +460,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -491,10 +473,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return 0.f;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
@@ -504,10 +482,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-            return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
@@ -531,10 +505,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-             return vec4();
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
@@ -549,10 +519,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-             return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
@@ -569,10 +535,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-             return;
-         #endif
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_DataBlock);
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
@@ -581,10 +543,6 @@ public:
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
-         #ifdef ENABLE_BGFX // FIXME BGFX shader uniforms
-         if (m_shader->m_stateOffsets[uniformName] == -1)
-             return;
-         #endif
          assert(shaderUniformNames[uniformName].type == SUT_Sampler);
          assert(sampler != nullptr);
          #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
@@ -607,15 +565,20 @@ public:
 
 private:
    RenderDevice* const m_renderDevice;
-   static Shader* current_shader;
+   const ShaderId m_shaderId;
+   const bool m_isStereo;
+   const bool m_isVR;
    ShaderTechniques m_technique;
    string m_shaderCodeName;
+
+   static Shader* current_shader;
 
    bool m_hasError = false; // True if loading the shader failed
    unsigned int m_stateSize = 0; // Overall size of a shader state data block
    int m_stateOffsets[SHADER_UNIFORM_COUNT]; // Position of each uniform inside the state data block
    int m_stateSizes[SHADER_UNIFORM_COUNT]; // Byte size of each uniform inside the state data block
 
+   void Load();
    void ApplyUniform(const ShaderUniforms uniformName);
 
    struct ShaderUniform
@@ -643,8 +606,8 @@ private:
    static ShaderTechniques m_boundTechnique; // TODO => move to render device ? This is global 
    struct UniformDesc
    {
-      ShaderUniform uniform;
       bgfx::UniformHandle handle;
+      ShaderUniform uniform;
    };
 
    struct ShaderTechnique
@@ -653,18 +616,12 @@ private:
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
    };
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
-   bgfx::ProgramHandle m_debugProgramHandle = BGFX_INVALID_HANDLE;
+   bgfx::UniformHandle m_uniformHandles[SHADER_UNIFORM_COUNT];
 
    void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques tech, const char* vsName, const char* fsName);
 
 public:
-   bgfx::ProgramHandle GetCore() const { 
-      if (m_techniques[m_technique] == nullptr)
-      {
-         int zz = 1; // for debugging
-      }
-      return m_techniques[m_technique] == nullptr ? m_debugProgramHandle : m_techniques[m_technique]->program; 
-   }
+   bgfx::ProgramHandle GetCore() const { return m_techniques[m_technique]->program; }
 
 #elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
@@ -689,9 +646,8 @@ public:
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
-   #ifdef __STANDALONE__
-   string preprocessGLShader(const string& shaderCode);
-   #endif
+   string PreprocessGLShader(const string& shaderCode);
+   void Load(const std::string& file);
 
 #elif defined(ENABLE_DX9)
    struct UniformDesc
