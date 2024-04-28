@@ -53,7 +53,7 @@ Window::Window(const string& title, const string& settingsId, const int display,
    {
       bool fsModeExists = false;
       vector<VideoMode> allVideoModes;
-      GetDisplayModes(display, allVideoModes);
+      GetDisplayModes(m_display, allVideoModes);
       for (VideoMode mode : allVideoModes)
       {
          if ((mode.width == m_width) && (mode.height == m_height))
