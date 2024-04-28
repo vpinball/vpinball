@@ -99,6 +99,23 @@ PUPScreen* PUPScreen::CreateFromCSVLine(PUPManager* pManager, string line)
    return pScreen;
 }
 
+void PUPScreen::UpdateSize(int w, int h)
+{
+   if (!m_pCustomPos)
+      m_rect = { 0, 0, w, h };
+   else {
+      m_rect = {
+         (int)((m_pCustomPos->GetXPos() / 100.) * w),
+         (int)((m_pCustomPos->GetYPos() / 100.) * h),
+         (int)((m_pCustomPos->GetWidth() / 100.) * w),
+         (int)((m_pCustomPos->GetHeight() / 100.) * h)
+      };
+   }
+
+   for (PUPScreen* pScreen : GetChildren())
+      pScreen->UpdateSize(w, h);
+}
+
 void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
 {
    std::map<string, PUPTrigger*>::iterator it = m_triggerMap.find(pTrigger->GetTrigger());
@@ -110,20 +127,9 @@ void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
       m_triggerMap[pTrigger->GetTrigger()] = pTrigger;
 }
 
-void PUPScreen::Init(SDL_Renderer* pRenderer, int w, int h)
+void PUPScreen::Init(SDL_Renderer* pRenderer)
 {
    m_pRenderer = pRenderer;
-
-   if (!m_pCustomPos)
-      m_rect = { 0, 0, w, h };
-   else {
-      m_rect = {
-         (int)((m_pCustomPos->GetXPos() / 100.) * w),
-         (int)((m_pCustomPos->GetYPos() / 100.) * h),
-         (int)((m_pCustomPos->GetWidth() / 100.) * w),
-         (int)((m_pCustomPos->GetHeight() / 100.) * h)
-      };
-   }
 
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pMediaPlayer = new PUPMediaPlayer(pRenderer, &m_rect);
@@ -137,7 +143,7 @@ void PUPScreen::Init(SDL_Renderer* pRenderer, int w, int h)
 #endif
 
    for (PUPScreen* pScreen : GetChildren())
-      pScreen->Init(pRenderer, m_rect.w, m_rect.h);
+      pScreen->Init(pRenderer);
 }
 
 void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel, int pageNum)

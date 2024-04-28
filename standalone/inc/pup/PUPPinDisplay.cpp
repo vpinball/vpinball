@@ -10,7 +10,6 @@
 #include <sstream>
 
 #include <SDL2/SDL_ttf.h>
-
 #include "RSJparser/RSJparser.tcc"
 
 PUPPinDisplay::PUPPinDisplay()
@@ -291,14 +290,7 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
       return S_OK;
    }
 
-   SDL_Rect rect = pScreen->GetRect();
-
-   PUPLabel* pLabel = new PUPLabel(pFont,  (Size / 100.0 * rect.h), Color, Visible);
-   pLabel->m_xalign = xAlign;
-   pLabel->m_yalign = yAlign;
-   pLabel->m_x = xMargin / 100.0 * rect.w;
-   pLabel->m_y = yMargin / 100.0 * rect.h;
-
+   PUPLabel* pLabel = new PUPLabel(pFont, Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible);
    pScreen->AddLabel(MakeString(LabelName), pLabel, PageNum);
 
    return S_OK;
@@ -333,15 +325,12 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
       return S_OK;
    }
 
-   bool renderLabel = false;
-   string szOldText = pLabel->m_szText;
    string szNewText = MakeString(Caption);
-   if (szOldText != szNewText) {
-      pLabel->m_szText = szNewText;
-      renderLabel = true;
+   if (pLabel->GetText() != szNewText) {
+      pLabel->SetText(szNewText);
    }
 
-   pLabel->m_visible = Visible;
+   pLabel->SetVisible(Visible);
 
    string szJSON = MakeString(Special);
    if (!szJSON.empty()) {
@@ -351,47 +340,33 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
          case 2: {
             SDL_Rect rect = pScreen->GetRect();
       
-            if (json["size"].exists()) {
-               float height = std::stof(json["size"].as_str());
-               auto fontHeight = height / 100.0 * rect.h;
-               pLabel->m_height = fontHeight;
-               renderLabel = true;
-            }
+            if (json["size"].exists())
+               pLabel->SetSize(std::stoi(json["size"].as_str()));
 
-            if (json["xpos"].exists()) {
-               pLabel->m_x = std::stof(json["xpos"].as_str()) / 100.0 * rect.w;
-            }
+            if (json["xpos"].exists())
+               pLabel->SetXPos(std::stoi(json["xpos"].as_str()));
 
-            if (json["ypos"].exists()) {
-               pLabel->m_y = std::stof(json["ypos"].as_str()) / 100.0 * rect.h;
-            }
+            if (json["ypos"].exists())
+               pLabel->SetYPos(std::stoi(json["ypos"].as_str()));
 
             if (json["fname"].exists()) {
                string szFontName = json["fname"].as_str();
                TTF_Font* pFont = m_pManager->GetFont(szFontName);
-                if (pFont) {
-                    pLabel->m_pFont = pFont;
-                    renderLabel = true;
-                }
+                if (pFont)
+                    pLabel->SetFont(pFont);
                 else {
                     PLOGW.printf("Invalid font: fontName=%s", szFontName.c_str());
                 }
             }
 
-            if (json["color"].exists()) {
-               pLabel->m_color = json["color"].as<int>();
-               renderLabel = true;
-            }
+            if (json["color"].exists())
+               pLabel->SetColor(json["color"].as<int>());
 
-            if (json["xalign"].exists()) {
-               pLabel->m_xalign = json["xalign"].as<int>();
-               renderLabel = true;
-            }
+            if (json["xalign"].exists())
+               pLabel->SetXAlign((PUP_LABEL_XALIGN)json["xalign"].as<int>());
 
-            if (json["yalign"].exists()) {
-               pLabel->m_yalign = json["yalign"].as<int>();
-               renderLabel = true;
-            }
+            if (json["yalign"].exists())
+               pLabel->SetYAlign((PUP_LABEL_YALIGN)json["yalign"].as<int>());
 
             if (json["pagenum"].exists()) {
                int pagenum = json["pagenum"].as<int>();

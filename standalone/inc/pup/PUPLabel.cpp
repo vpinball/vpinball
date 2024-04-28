@@ -1,19 +1,25 @@
+/*
+ * This code was derived from notes at:
+ *
+ * https://nailbuster.com/pup/PUPDMD_Reference_v13.zip
+ */
+
 #include "core/stdafx.h"
 
 #include "PUPLabel.h"
 
-PUPLabel::PUPLabel(TTF_Font* face, float h, LONG c, bool vis)
+PUPLabel::PUPLabel(TTF_Font* pFont, int size, LONG color, LONG angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, int xPos, int yPos, bool visible) 
 {
-   m_pFont = face;
-   m_height = h;
-   m_color = c;
-   m_visible = vis;
+   m_pFont = pFont;
+   m_size = size;
+   m_color = color;
+   m_angle = angle;
+   m_xAlign = xAlign;
+   m_yAlign = yAlign;
+   m_xPos = xPos;
+   m_yPos = yPos;
+   m_visible = visible;
 
-   m_szText = "";
-   m_x = 0;
-   m_y = 0;
-   m_xalign = 0;
-   m_yalign = 0;
    m_pTexture = NULL;
 }
 
@@ -33,19 +39,43 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect)
    if (!m_visible || m_szText.empty())
       return;
 
-   TTF_SetFontSize(m_pFont, m_height);
+   int height = (int)((m_size / 100.0) * rect.h);
+   TTF_SetFontSize(m_pFont, height);
 
    SDL_Color color = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
    SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended(m_pFont, m_szText.c_str(), color);
+
    if (pTextSurface) {
       m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pTextSurface);
       if (m_pTexture) {
-         int w, h;
-         SDL_QueryTexture(m_pTexture, NULL, NULL, &w, &h);
-
-         SDL_Rect dest = { rect.x + (int)m_x, rect.y + (int)m_y, w, h };
+         int x = rect.x;
+         int xPos = (int)((m_xPos / 100.0) * rect.w);
+         switch (m_xAlign) {
+            case PUP_LABEL_XALIGN_LEFT:
+                x += xPos;
+                break;
+            case PUP_LABEL_XALIGN_CENTER:
+                x += ((rect.w - pTextSurface->w) / 2);
+                break;
+            case PUP_LABEL_XALIGN_RIGHT:
+                x += (rect.w - pTextSurface->w - xPos);
+                break;
+         }
+         int y = rect.y;
+         int yPos = (int)((m_yPos / 100.0) * rect.h);
+         switch (m_yAlign) {
+            case PUP_LABEL_YALIGN_TOP:
+                y += yPos;
+                break;
+            case PUP_LABEL_YALIGN_CENTER:
+                y += ((rect.h - pTextSurface->h) / 2);
+                break;
+            case PUP_LABEL_YALIGN_BOTTOM:
+                y += (rect.h - pTextSurface->h - yPos);
+                break;
+         }
+         SDL_Rect dest = { x, y, pTextSurface->w, pTextSurface->h };
          SDL_RenderCopy(pRenderer, m_pTexture, NULL, &dest);
-
       }
    }
    else {
