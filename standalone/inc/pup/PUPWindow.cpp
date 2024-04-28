@@ -17,6 +17,8 @@ PUPWindow::PUPWindow(PUPScreen* pScreen, const string& szTitle, int x, int y, in
 {
    m_pScreen = pScreen;
    m_visible = true;
+
+   m_pScreen->UpdateSize(w, h);
 }
 
 PUPWindow::~PUPWindow()
@@ -29,7 +31,7 @@ bool PUPWindow::Init()
       return false;
 
    if (m_pScreen)
-      m_pScreen->Init(m_pRenderer, GetWidth(), GetHeight());
+      m_pScreen->Init(m_pRenderer);
 
    return true;
 }

@@ -31,8 +31,9 @@ public:
    PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
    void AddChild(PUPScreen* pScreen) { m_children.push_back(pScreen); }
    const vector<PUPScreen*>& GetChildren() const { return m_children; }
+   void UpdateSize(int w, int h);
    void AddTrigger(PUPTrigger* pTrigger);
-   void Init(SDL_Renderer* pRenderer, int w, int h);
+   void Init(SDL_Renderer* pRenderer);
    void AddLabel(const string& labelName, PUPLabel* pLabel, int pageNum);
    PUPLabel* GetLabel(const string& labelName);
    void Render();
