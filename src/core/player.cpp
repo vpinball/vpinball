@@ -309,7 +309,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #endif
 #endif
 
-   m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, refreshrate, colordepth);
+   m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, colordepth, refreshrate);
 
    // Touch screen support
 
