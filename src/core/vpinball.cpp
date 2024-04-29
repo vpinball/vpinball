@@ -629,6 +629,26 @@ CMenu VPinball::GetMainMenu(int id)
 #endif
 }
 
+#ifndef __STANDALONE__
+class InfoDialog : public CDialog
+{
+public:
+   InfoDialog(const string &message)
+      : CDialog(IDD_INFOTEXT)
+      , m_message(message)
+   {
+   }
+
+   virtual BOOL OnInitDialog() override
+   {
+      SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
+      return TRUE;
+   }
+
+   string m_message;
+};
+#endif
+
 bool VPinball::ParseCommand(const size_t code, const bool notify)
 {
 #ifndef __STANDALONE__
@@ -699,7 +719,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
                ptCur->ToggleLock();
-               ptCur->AuditTable();
+               string msg = ptCur->AuditTable();
+               InfoDialog info(msg);
+               info.DoModal();
             }
          }
          ptCur->ClearMultiSel(nullptr);
