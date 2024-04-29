@@ -8,7 +8,7 @@
 
 #include "PUPLabel.h"
 
-PUPLabel::PUPLabel(TTF_Font* pFont, int size, LONG color, LONG angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, int xPos, int yPos, bool visible) 
+PUPLabel::PUPLabel(TTF_Font* pFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum)
 {
    m_pFont = pFont;
    m_size = size;
@@ -19,7 +19,7 @@ PUPLabel::PUPLabel(TTF_Font* pFont, int size, LONG color, LONG angle, PUP_LABEL_
    m_xPos = xPos;
    m_yPos = yPos;
    m_visible = visible;
-
+   m_pagenum = pagenum;
    m_pTexture = NULL;
 }
 
@@ -29,15 +29,15 @@ PUPLabel::~PUPLabel()
       SDL_DestroyTexture(m_pTexture);
 }
 
-void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect)
+void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
+   if (!m_visible || pagenum != m_pagenum || m_szText.empty())
+      return;
+
    if (m_pTexture) {
       SDL_DestroyTexture(m_pTexture);
       m_pTexture = NULL;
    }
-
-   if (!m_visible || m_szText.empty())
-      return;
 
    int height = (int)((m_size / 100.0) * rect.h);
    TTF_SetFontSize(m_pFont, height);

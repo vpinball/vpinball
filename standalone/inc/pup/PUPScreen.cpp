@@ -39,13 +39,16 @@ PUPScreen::PUPScreen(PUPManager* pManager)
    m_pOverlay = NULL;
    m_pOverlayTexture = NULL;
 
-   m_currentPage = 0;
-   m_defaultPageNum = 0;
-   m_labelPageSeconds = 0;
+   m_pagenum = 0;
+   m_defaultPagenum = 0;
+   m_pPageTimer = new VP::Timer();
+   m_pPageTimer->SetElapsedListener(std::bind(&PUPScreen::PageTimerElapsed, this, std::placeholders::_1));
 }
 
 PUPScreen::~PUPScreen()
 {
+   delete m_pPageTimer;
+
    delete m_pCustomPos;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    delete m_pMediaPlayer;
@@ -99,6 +102,12 @@ PUPScreen* PUPScreen::CreateFromCSVLine(PUPManager* pManager, string line)
    return pScreen;
 }
 
+void PUPScreen::PageTimerElapsed(VP::Timer* pTimer)
+{
+   m_pPageTimer->Stop();
+   m_pagenum = m_defaultPagenum;
+}
+
 void PUPScreen::UpdateSize(int w, int h)
 {
    if (!m_pCustomPos)
@@ -146,7 +155,7 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
       pScreen->Init(pRenderer);
 }
 
-void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel, int pageNum)
+void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel)
 {
    string szLabelNameLower = szLabelName;
    std::transform(szLabelNameLower.begin(), szLabelNameLower.end(), szLabelNameLower.begin(), ::tolower);
@@ -163,6 +172,19 @@ PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
    return it != m_labelMap.end() ? it->second : nullptr;
 }
 
+void PUPScreen::SetPage(int pagenum, int seconds)
+{
+   m_pPageTimer->Stop();
+   m_pagenum = pagenum;
+
+   if (seconds == 0)
+      m_defaultPagenum = pagenum;
+   else {
+      m_pPageTimer->SetInterval(seconds * 1000);
+      m_pPageTimer->Start();
+   }
+}
+
 void PUPScreen::Render()
 {
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
@@ -171,7 +193,7 @@ void PUPScreen::Render()
 #endif
 
    for (auto& [key, pLabel] : m_labelMap)
-      pLabel->Render(m_pRenderer, m_rect);
+      pLabel->Render(m_pRenderer, m_rect, m_pagenum);
 
    for (PUPScreen* pScreen : GetChildren())
       pScreen->Render();

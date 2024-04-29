@@ -290,8 +290,8 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
       return S_OK;
    }
 
-   PUPLabel* pLabel = new PUPLabel(pFont, Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible);
-   pScreen->AddLabel(MakeString(LabelName), pLabel, PageNum);
+   pScreen->AddLabel(MakeString(LabelName),
+      new PUPLabel(pFont, Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible, PageNum));
 
    return S_OK;
 }
@@ -341,13 +341,13 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
             SDL_Rect rect = pScreen->GetRect();
       
             if (json["size"].exists())
-               pLabel->SetSize(std::stoi(json["size"].as_str()));
+               pLabel->SetSize(std::stof(json["size"].as_str()));
 
             if (json["xpos"].exists())
-               pLabel->SetXPos(std::stoi(json["xpos"].as_str()));
+               pLabel->SetXPos(std::stof(json["xpos"].as_str()));
 
             if (json["ypos"].exists())
-               pLabel->SetYPos(std::stoi(json["ypos"].as_str()));
+               pLabel->SetYPos(std::stof(json["ypos"].as_str()));
 
             if (json["fname"].exists()) {
                string szFontName = json["fname"].as_str();
@@ -368,10 +368,8 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
             if (json["yalign"].exists())
                pLabel->SetYAlign((PUP_LABEL_YALIGN)json["yalign"].as<int>());
 
-            if (json["pagenum"].exists()) {
-               int pagenum = json["pagenum"].as<int>();
-               PLOGW.printf("Changing page not implemented: pagenum=%d", pagenum);
-            }
+            if (json["pagenum"].exists())
+                pLabel->SetPageNum(json["pagenum"].as<int>());
          }
          break;
          
@@ -421,11 +419,7 @@ STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Sec
       return S_OK;
    }
 
-   pScreen->SetCurrentPage(PageNum);
-   if (Seconds == 0)
-      pScreen->SetDefaultPageNum(PageNum);
-
-   pScreen->SetLabelPageSeconds(Seconds);
+   pScreen->SetPage(PageNum, Seconds);
 
    return S_OK;
 }
