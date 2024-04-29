@@ -1062,8 +1062,9 @@ void LiveUI::Update(const RenderTarget *rt)
    io.DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight()); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
    io.DisplayFramebufferScale = ImVec2(1.f, 1.f); // Retina display scaling is already applied since we override the value fom NewFrame with the rt size 
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
+   const bool isVR = m_renderer->m_stereo3D == STEREO_VR;
    // If we are only showing overlays (no mouse interaction), apply main camera rotation
-   m_rotate = isInteractiveUI ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
+   m_rotate = (isInteractiveUI || isVR) ? 0 : ((int)(m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation((int)io.DisplaySize.x, (int)io.DisplaySize.y) / 90.0f));
    if (m_rotate == 1 || m_rotate == 3)
    {
       const float tmp = io.DisplaySize.x;
@@ -1082,7 +1083,7 @@ void LiveUI::Update(const RenderTarget *rt)
    // Display notification (except when script has an unaligned rotation)
    const U32 tick = msec();
    float notifY = io.DisplaySize.y * 0.5f;
-   const bool showNotifications = ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
+   const bool showNotifications = isVR || ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
    ImGui::PushFont(m_overlayFont);
    for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
    {
