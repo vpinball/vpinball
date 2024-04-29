@@ -6,7 +6,7 @@
 
 #include "PUPManager.h"
 
-#include <set>
+#include "../common/Timer.h"
 
 class PUPCustomPos;
 class PUPTrigger;
@@ -34,18 +34,18 @@ public:
    void UpdateSize(int w, int h);
    void AddTrigger(PUPTrigger* pTrigger);
    void Init(SDL_Renderer* pRenderer);
-   void AddLabel(const string& labelName, PUPLabel* pLabel, int pageNum);
+   void AddLabel(const string& labelName, PUPLabel* pLabel);
    PUPLabel* GetLabel(const string& labelName);
+   void SetPage(int pagenum, int seconds);
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
-   void SetCurrentPage(int pageNum) { m_currentPage = pageNum; }
-   void SetDefaultPageNum(int pageNum) { m_defaultPageNum = pageNum; }
-   void SetLabelPageSeconds(int seconds) { m_labelPageSeconds = seconds; }
    void Trigger(const string& szTrigger);
    string ToString() const;
 
 private:
    PUPScreen(PUPManager* m_pManager);
+
+   void PageTimerElapsed(VP::Timer* pTimer);
 
    PUPManager* m_pManager;
    PUP_SCREEN_MODE m_mode;
@@ -66,7 +66,7 @@ private:
    SDL_Renderer* m_pRenderer;
    SDL_Surface* m_pOverlay;
    SDL_Texture* m_pOverlayTexture;
-   int m_currentPage;
-   int m_defaultPageNum;
-   int m_labelPageSeconds;
+   int m_pagenum;
+   int m_defaultPagenum;
+   VP::Timer* m_pPageTimer;
 };
