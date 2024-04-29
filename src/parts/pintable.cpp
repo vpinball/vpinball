@@ -7945,28 +7945,7 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    return nullptr;
 }
 
-class InfoDialog : public CDialog
-{
-public:
-   InfoDialog(const string &message)
-      : CDialog(IDD_INFOTEXT)
-      , m_message(message)
-   {
-   }
-
-   virtual BOOL OnInitDialog() override
-   {
-#ifndef __STANDALONE__
-      SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
-#endif
-      return TRUE;
-   }
-
-   string m_message;
-};
-
-
-void PinTable::AuditTable() const
+string PinTable::AuditTable() const
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
    std::stringstream ss;
@@ -8183,10 +8162,7 @@ void PinTable::AuditTable() const
 
    string msg = "Table audit:\r\n" + ss.str();
    PLOGI << msg;
-#ifndef __STANDALONE__
-   InfoDialog info(msg);
-   info.DoModal();
-#endif
+   return msg;
 }
 
 void PinTable::ListCustomInfo(HWND hwndListView)
