@@ -370,6 +370,21 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
 
             if (json["pagenum"].exists())
                 pLabel->SetPageNum(json["pagenum"].as<int>());
+
+            if (json["shadowcolor"].exists())
+               pLabel->SetShadowColor(json["shadowcolor"].as<int>());
+
+            if (json["shadowstate"].exists())
+               pLabel->SetShadowState(json["shadowstate"].as<int>());
+
+            if (json["xoffset"].exists())
+               pLabel->SetXOffset(std::stof(json["xoffset"].as_str()));
+
+            if (json["yoffset"].exists())
+               pLabel->SetYOffset(std::stof(json["yoffset"].as_str()));
+
+            if (json["outline"].exists())
+               pLabel->SetOutline(json["outline"].as<int>() == 1);
          }
          break;
          
