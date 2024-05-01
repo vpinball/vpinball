@@ -208,6 +208,8 @@ private:
    bool m_isVisibleStateSet;
    bool m_lastTopVisible;
    bool m_lastSecondVisible;
+   int m_lampThreshold;
+   int m_giStringThreshold;
    bool m_changedLampsCalled;
    bool m_changedSolenoidsCalled;
    bool m_changedGIStringsCalled;

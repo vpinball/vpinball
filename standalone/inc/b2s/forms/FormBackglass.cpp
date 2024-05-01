@@ -333,18 +333,17 @@ void FormBackglass::StopSound(const string& szSoundName)
 
 void FormBackglass::LoadB2SData()
 {
-   string filename = TitleAndPathFromFilename(m_pB2SData->GetTableFileName().c_str()) + ".directb2s";
-
-   if (!std::filesystem::exists(filename)) {
+   string szFilename = find_path_case_insensitive(TitleAndPathFromFilename(m_pB2SData->GetTableFileName().c_str()) + ".directb2s");
+   if (szFilename.empty()) {
       PLOGW.printf("No directb2s file found");
       return;
    }
-   
-   PLOGI.printf("directb2s file found at: %s", filename.c_str());
 
-   m_pB2SData->SetBackglassFileName(filename);
+   PLOGI.printf("directb2s file found at: %s", szFilename.c_str());
 
-   std::ifstream infile(filename);
+   m_pB2SData->SetBackglassFileName(szFilename);
+
+   std::ifstream infile(szFilename);
    if (!infile.good())
       return;
 
@@ -353,19 +352,19 @@ void FormBackglass::LoadB2SData()
    try {
       tinyxml2::XMLDocument b2sTree;
       std::stringstream buffer;
-      std::ifstream myFile(filename.c_str());
+      std::ifstream myFile(szFilename.c_str());
       buffer << myFile.rdbuf();
       myFile.close();
 
       auto xml = buffer.str();
       if (b2sTree.Parse(xml.c_str(), xml.size())) {
-         PLOGE.printf("Failed to parse directb2s file: %s", filename.c_str());
+         PLOGE.printf("Failed to parse directb2s file: %s", szFilename.c_str());
          return;
       }
       
       // try to get into the file and read some XML
       if (!b2sTree.FirstChildElement("DirectB2SData")) {
-         PLOGE.printf("Invalid directb2s file: %s", filename.c_str());
+         PLOGE.printf("Invalid directb2s file: %s", szFilename.c_str());
          return;
       }
 
@@ -384,6 +383,10 @@ void FormBackglass::LoadB2SData()
       }
 
       auto topnode = b2sTree.FirstChildElement("DirectB2SData");
+
+      bool mergeBulbs = false;
+      if (topnode->FirstChildElement("MergeBulbs"))
+         mergeBulbs = (topnode->FirstChildElement("MergeBulbs")->IntAttribute("Value") != 0);
 
       // clear all data
       m_pB2SData->ClearAll(true);
@@ -1026,7 +1029,7 @@ void FormBackglass::LoadB2SData()
         }
 
         // maybe draw some light images for pretty fast image changing
-        if (top4Authentic >= minSize4Image) {
+        if (top4Authentic >= minSize4Image && mergeBulbs) {
            // create some light images
            if (m_pTopLightImage4Authentic == NULL) {
               m_pTopLightImage4Authentic = CreateLightImage(m_pDarkImage4Authentic, eDualMode_Authentic, topkey4Authentic, "", m_topRomID4Authentic, m_topRomIDType4Authentic, m_topRomInverted4Authentic);
@@ -1040,7 +1043,7 @@ void FormBackglass::LoadB2SData()
               m_pTopAndSecondLightImage4Authentic = CreateLightImage(m_pTopLightImage4Authentic, eDualMode_Authentic, topkey4Authentic);
            }
         }
-        if (m_pB2SData->IsDualBackglass() && top4Fantasy >= minSize4Image) {
+        if (m_pB2SData->IsDualBackglass() && top4Fantasy >= minSize4Image && mergeBulbs) {
            // create some light images
            if (m_pTopLightImage4Fantasy == NULL) {
               m_pTopLightImage4Fantasy = CreateLightImage(m_pDarkImage4Fantasy, eDualMode_Fantasy, topkey4Fantasy, "", m_topRomID4Fantasy, m_topRomIDType4Fantasy, m_topRomInverted4Fantasy);

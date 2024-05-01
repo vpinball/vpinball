@@ -24,6 +24,9 @@ Server::Server()
    m_lastTopVisible = false;
    m_lastSecondVisible = false;
 
+   m_lampThreshold = 0;
+   m_giStringThreshold = 4;
+
    m_changedLampsCalled = false;
    m_changedSolenoidsCalled = false;
    m_changedGIStringsCalled = false;
@@ -769,6 +772,22 @@ STDMETHODIMP Server::put_SolMask(VARIANT number, LONG pRetVal)
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->put_SolMask(V_I4(&var0), pRetVal);
 
+   // There is a new setting for VPinMame.SolMask(2) to set the output mode:
+   // 0 = default
+   // 1 = modulated (PWM) solenoid (exist for some years already)
+   // 2 = new PWM mode (all solenoids but also lamps, and value if physic meaning, not smoothed out binary state)
+   // For this new mode, we now hardcode a value 64, if the lamp intensity exceed this value, it is binary 1
+   if (V_I4(&var0) == 2) {
+      if (pRetVal == 2) {
+         m_lampThreshold = 64;
+         m_giStringThreshold = 64;
+      }
+      else {
+         m_lampThreshold = 0;
+         m_giStringThreshold = 4;
+      }
+   }
+
    VariantClear(&var0);
 
    return hres;
@@ -1451,7 +1470,7 @@ void Server::CheckGetMech(int number, int mech)
 void Server::CheckLamps(SAFEARRAY* psa)
 {
    int lampId;
-   int lampState;
+   bool lampState;
 
    if (psa) {
       LONG uCount = 0;
@@ -1476,21 +1495,21 @@ void Server::CheckLamps(SAFEARRAY* psa)
          ix[1] = 1;
          VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
-         lampState = V_I4(&varValue);
+         lampState = (V_I4(&varValue) > m_lampThreshold);
          VariantClear(&varValue);
 
          if (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps()) {
             // collect illumination data
             if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetTopRomID() == lampId) 
-               m_pCollectLampsData->Add(lampId, new CollectData(lampState, eCollectedDataType_TopImage));
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_TopImage));
             else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_Lamp && m_pFormBackglass->GetSecondRomID() == lampId)
-               m_pCollectLampsData->Add(lampId, new CollectData(lampState, eCollectedDataType_SecondImage));
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_SecondImage));
             if (m_pB2SData->GetUsedRomLampIDs()->contains(lampId))
-               m_pCollectLampsData->Add(lampId, new CollectData(lampState, eCollectedDataType_Standard));
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Standard));
 
             // collect animation data
             if (m_pB2SData->GetUsedAnimationLampIDs()->contains(lampId) || m_pB2SData->GetUsedRandomAnimationLampIDs()->contains(lampId))
-               m_pCollectLampsData->Add(lampId, new CollectData(lampState, eCollectedDataType_Animation));
+               m_pCollectLampsData->Add(lampId, new CollectData((int)lampState, eCollectedDataType_Animation));
          }
       }
    }
@@ -1503,7 +1522,7 @@ void Server::CheckLamps(SAFEARRAY* psa)
       m_pCollectLampsData->Lock();
       for (const auto& [key, pCollectData] : *m_pCollectLampsData) {
          lampId = key;
-         lampState = pCollectData->GetState();
+         lampState = (pCollectData->GetState() > 0);
          int datatypes = pCollectData->GetTypes();
 
          // illumination stuff
@@ -1511,12 +1530,12 @@ void Server::CheckLamps(SAFEARRAY* psa)
             bool topvisible = m_lastTopVisible;
             bool secondvisible = m_lastSecondVisible;
             if (datatypes & eCollectedDataType_TopImage) {
-               topvisible = (lampState != 0);
+               topvisible = lampState;
                if (m_pFormBackglass->IsTopRomInverted())
                   topvisible = !topvisible;
             }
             else if (datatypes & eCollectedDataType_SecondImage) {
-               secondvisible = (lampState != 0);
+               secondvisible = lampState;
                if (m_pFormBackglass->IsSecondRomInverted())
                   topvisible = !topvisible;
             }
@@ -1541,7 +1560,7 @@ void Server::CheckLamps(SAFEARRAY* psa)
             for (const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[lampId]) {
                B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
                if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
-                  bool visible = (lampState != 0);
+                  bool visible = lampState;
                   if (pPicbox->IsRomInverted())
                      visible = !visible;
                   if (m_pB2SData->IsUseRotatingImage() && m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && pPicbox == (*m_pB2SData->GetRotatingPictureBox())[0]) {
@@ -1560,7 +1579,7 @@ void Server::CheckLamps(SAFEARRAY* psa)
          if (datatypes & eCollectedDataType_Animation) {
             if (m_pB2SData->GetUsedAnimationLampIDs()->contains(lampId)) {
                for (const auto& animation : (*m_pB2SData->GetUsedAnimationLampIDs())[lampId]) {
-                  bool start = (lampState != 0);
+                  bool start = lampState;
                   if (animation->IsInverted())
                      start = !start;
                   if (start)
@@ -1571,7 +1590,7 @@ void Server::CheckLamps(SAFEARRAY* psa)
             }
             // random animation start
             if (m_pB2SData->GetUsedRandomAnimationLampIDs()->contains(lampId)) {
-               bool start = (lampState != 0);
+               bool start = lampState;
                bool isrunning = false;
                if (start) {
                   for (const auto& matchinganimation : (*m_pB2SData->GetUsedRandomAnimationLampIDs())[lampId]) {
@@ -1764,8 +1783,8 @@ void Server::CheckSolenoids(SAFEARRAY* psa)
 
 void Server::CheckGIStrings(SAFEARRAY* psa)
 {
-   int gistringId;
-   int gistringState;
+   int giStringId;
+   bool giStringBool;
 
    if (psa) {
       LONG uCount = 0;
@@ -1784,27 +1803,27 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
          ix[1] = 0;
          VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
-         gistringId = V_I4(&varValue) + 1;
+         giStringId = V_I4(&varValue) + 1;
          VariantClear(&varValue);
 
          ix[1] = 1;
          VariantInit(&varValue);
          SafeArrayGetElement(psa, ix, &varValue);
-         gistringState = V_I4(&varValue);
+         giStringBool = (V_I4(&varValue) > m_giStringThreshold);
          VariantClear(&varValue);
 
          if (m_pB2SData->IsUseRomGIStrings() || m_pB2SData->IsUseAnimationGIStrings()) {
             // collect illumination data
-            if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetTopRomID() == gistringId)
-               m_pCollectGIStringsData->Add(gistringId, new CollectData(gistringState, eCollectedDataType_TopImage));
-            else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetSecondRomID() == gistringId)
-               m_pCollectGIStringsData->Add(gistringId, new CollectData(gistringState, eCollectedDataType_SecondImage));
-            if (m_pB2SData->GetUsedRomGIStringIDs()->contains(gistringId))
-               m_pCollectGIStringsData->Add(gistringId, new CollectData(gistringState, eCollectedDataType_Standard));
+            if (m_pFormBackglass->GetTopRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetTopRomID() == giStringId)
+               m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_TopImage));
+            else if (m_pFormBackglass->GetSecondRomIDType() == eRomIDType_GIString && m_pFormBackglass->GetSecondRomID() == giStringId)
+               m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_SecondImage));
+            if (m_pB2SData->GetUsedRomGIStringIDs()->contains(giStringId))
+               m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Standard));
 
             // collect animation data
-            if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(gistringId) || m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(gistringId))
-               m_pCollectGIStringsData->Add(gistringId, new CollectData(gistringState, eCollectedDataType_Animation));
+            if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(giStringId) || m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(giStringId))
+               m_pCollectGIStringsData->Add(giStringId, new CollectData((int)giStringBool, eCollectedDataType_Animation));
          }
       }
    }
@@ -1816,8 +1835,8 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
    if (m_pCollectGIStringsData->ShowData()) {
       m_pCollectGIStringsData->Lock();
       for (const auto& [key, pCollectData] : *m_pCollectGIStringsData) {
-         gistringId = key;
-         gistringState = pCollectData->GetState();
+         giStringId = key;
+         giStringBool = (pCollectData->GetState() > 0);
          int datatypes = pCollectData->GetTypes();
 
          // illumination stuff
@@ -1825,12 +1844,12 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
             bool topvisible = m_lastTopVisible;
             bool secondvisible = m_lastSecondVisible;
             if (datatypes & eCollectedDataType_TopImage) {
-               topvisible = (gistringState > 4);
+               topvisible = giStringBool;
                if (m_pFormBackglass->IsTopRomInverted())
                   topvisible = !topvisible;
             }
             else if (datatypes & eCollectedDataType_SecondImage) {
-               secondvisible = (gistringState > 4);
+               secondvisible = giStringBool;
                if (m_pFormBackglass->IsSecondRomInverted())
                   topvisible = !topvisible;
             }
@@ -1852,10 +1871,10 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
             }
          }
          if (datatypes & eCollectedDataType_Standard) {
-            for (const auto& pBase : (*m_pB2SData->GetUsedRomGIStringIDs())[gistringId]) {
+            for (const auto& pBase : (*m_pB2SData->GetUsedRomGIStringIDs())[giStringId]) {
                B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
                if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
-                  bool visible = (gistringState > 4);
+                  bool visible = giStringBool;
                   if (pPicbox->IsRomInverted())
                      visible = !visible;
                   if (m_pB2SData->IsUseRotatingImage() && m_pB2SData->GetRotatingPictureBox() && (*m_pB2SData->GetRotatingPictureBox())[0] && pPicbox == (*m_pB2SData->GetRotatingPictureBox())[0]) {
@@ -1872,9 +1891,9 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
 
          // animation stuff
          if (datatypes & eCollectedDataType_Animation) {
-            if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(gistringId)) {
-               for (const auto& animation : (*m_pB2SData->GetUsedAnimationGIStringIDs())[gistringId]) {
-                  bool start = (gistringState > 4);
+            if (m_pB2SData->GetUsedAnimationGIStringIDs()->contains(giStringId)) {
+               for (const auto& animation : (*m_pB2SData->GetUsedAnimationGIStringIDs())[giStringId]) {
+                  bool start = giStringBool;
                   if (animation->IsInverted())
                      start = !start;
                   if (start)
@@ -1884,11 +1903,11 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
                }
             }
             // random animation start
-            if (m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(gistringId)) {
-               bool start = (gistringState > 4);
+            if (m_pB2SData->GetUsedRandomAnimationGIStringIDs()->contains(giStringId)) {
+               bool start = giStringBool;
                bool isrunning = false;
                if (start) {
-                  for (const auto& matchinganimation : (*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[gistringId]) {
+                  for (const auto& matchinganimation : (*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId]) {
                      if (m_pFormBackglass->IsAnimationRunning(matchinganimation->GetAnimationName())) {
                         isrunning = true;
                         break;
@@ -1897,8 +1916,8 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
                }
                if (start) {
                   if (!isrunning) {
-                     int random = RandomStarter((*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[gistringId].size());
-                     auto& animation = (*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[gistringId][random];
+                     int random = RandomStarter((*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId].size());
+                     auto& animation = (*m_pB2SData->GetUsedRandomAnimationGIStringIDs())[giStringId][random];
                      m_lastRandomStartedAnimation = animation->GetAnimationName();
                      m_pFormBackglass->StartAnimation(m_lastRandomStartedAnimation);
                   }
