@@ -157,18 +157,12 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
 
 void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel)
 {
-   string szLabelNameLower = szLabelName;
-   std::transform(szLabelNameLower.begin(), szLabelNameLower.end(), szLabelNameLower.begin(), ::tolower);
-
-   m_labelMap[szLabelNameLower] = pLabel;
+   m_labelMap[string_to_lower(szLabelName)] = pLabel;
 }
 
 PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
 {
-   string szLabelNameLower = szLabelName;
-   std::transform(szLabelNameLower.begin(), szLabelNameLower.end(), szLabelNameLower.begin(), ::tolower);
-
-   std::map<string, PUPLabel*>::iterator it = m_labelMap.find(szLabelNameLower);
+   std::map<string, PUPLabel*>::iterator it = m_labelMap.find(string_to_lower(szLabelName));
    return it != m_labelMap.end() ? it->second : nullptr;
 }
 

@@ -401,17 +401,20 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
       return true;
    }
 #else
-   std::ifstream scriptFile;
-   scriptFile.open(szPath, std::ifstream::in);
-   if (scriptFile.is_open()) {
-      std::stringstream buffer;
-      buffer << scriptFile.rdbuf();
+   szPath = find_path_case_insensitive(szPath);
+   if (!szPath.empty()) {
+      std::ifstream scriptFile;
+      scriptFile.open(szPath, std::ifstream::in);
+      if (scriptFile.is_open()) {
+         std::stringstream buffer;
+         buffer << scriptFile.rdbuf();
 
-      const WCHAR * const wz = MakeWide(buffer.str());
-      *pContents = SysAllocString(wz);
-      delete[] wz;
+         const WCHAR * const wz = MakeWide(buffer.str());
+         *pContents = SysAllocString(wz);
+         delete[] wz;
 
-      return true;
+         return true;
+      }
    }
 #endif
 
@@ -456,92 +459,6 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
 {
    char szFileName[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, FileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
-
-#ifdef __STANDALONE__
-   static vector<const char*> scriptList = {
-      "6803.vbs",
-      "ALI.vbs",
-      "Atari.vbs",
-      "Atari1.vbs",
-      "Atari1b.vbs",
-      "Atari2.vbs",
-      "B2B.vbs",
-      "B2Bcollision.vbs",
-      "Bally.vbs",
-      "BallyG.vbs",
-      "Class1812.vbs",
-      "FPVPX.vbs",
-      "GamePlan.vbs",
-      "Hankin.vbs",
-      "LTD.vbs",
-      "LTD3.vbs",
-      "LTD4a.vbs",
-      "LTDPecmen.vbs",
-      "NudgePlugIn_blur2NoAccel.vbs",
-      "NudgePlugIn_blurNoAccel.vbs",
-      "NudgePlugIn_mjrAccelAndTilt.vbs",
-      "NudgePlugIn_robBlurNoAccel.vbs",
-      "NudgePlugIn_robNoAccel.vbs",
-      "PDB.vbs",
-      "Play1.vbs",
-      "Play2.vbs",
-      "Play4.vbs",
-      "UltraDMD_Options.vbs",
-      "VPMKeys.vbs",
-      "WPC.vbs",
-      "alving.vbs",
-      "antar.vbs",
-      "b2s.vbs",
-      "capcom.vbs",
-      "controller.vbs",
-      "core.vbs",
-      "de.vbs",
-      "de2.vbs",
-      "gts1.vbs",
-      "gts3.vbs",
-      "idsa.vbs",
-      "inder.vbs",
-      "inder_atleta.vbs",
-      "inder_centaur.vbs",
-      "inder_skateboard.vbs",
-      "ironballs.vbs",
-      "joctronic.vbs",
-      "juegos.vbs",
-      "juegos2.vbs",
-      "jvh.vbs",
-      "lancelot.vbs",
-      "mac.vbs",
-      "mrgame.vbs",
-      "nuova.vbs",
-      "peyper.vbs",
-      "s11.vbs",
-      "s11_grand_lizard.vbs",
-      "s4.vbs",
-      "s6.vbs",
-      "s7.vbs",
-      "s8_StillCrazy.vbs",
-      "sam.vbs",
-      "sega.vbs",
-      "sega2.vbs",
-      "sleic.vbs",
-      "solarwars.vbs",
-      "spinball.vbs",
-      "stern.vbs",
-      "sys80.vbs",
-      "taito.vbs",
-      "zac.vbs",
-      "zac1.vbs",
-      "zac2.vbs",
-      "zacproto.vbs"
-   };
-
-   for(const auto& scriptName : scriptList) {
-      if (!lstrcmpi(szFileName, scriptName)) {
-         strcpy(szFileName, scriptName);
-         break;
-      }
-   }
-#endif
 
    for(size_t i = 0; i < std::size(defaultFileNameSearch); ++i)
       if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))

@@ -653,6 +653,7 @@ bool IsWindows10_1803orAbove();
 
 void copy_folder(const string& srcPath, const string& dstPath);
 vector<string> find_files_by_extension(const string& directoryPath, const string& extension);
+string find_path_case_insensitive(const string& szPath);
 string extension_from_path(const string& path);
 string normalize_path_separators(const string& path);
 bool path_has_extension(const string& path, const string& extension);
@@ -668,6 +669,7 @@ string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
+string string_to_lower(const string& str);
 vector<string> add_line_numbers(const char* src);
 string create_hex_dump(const UINT8* buffer, size_t size);
 vector<unsigned char> base64_decode(const string &encoded_string);

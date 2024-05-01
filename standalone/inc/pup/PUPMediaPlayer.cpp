@@ -73,9 +73,16 @@ PUPMediaPlayer::~PUPMediaPlayer()
 
 void PUPMediaPlayer::Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority)
 {
+   if (m_pCurrentVideo)
+      m_pCurrentVideo->isPaused = true;
+
+   string szPath = find_path_case_insensitive(szFilename);
+   if (szPath.empty())
+      return;
+
    PUPVideo* pVideo = (PUPVideo*)malloc(sizeof(PUPVideo));
    memset(pVideo, 0, sizeof(PUPVideo));
-   pVideo->szFilename = szFilename;
+   pVideo->szFilename = szPath;
    pVideo->volume = volume;
    pVideo->action = action;
    pVideo->priority = priority;
@@ -84,16 +91,17 @@ void PUPMediaPlayer::Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY
       std::lock_guard<std::mutex> lock(m_playlistMutex);
       m_playlist.push_back(pVideo);
    }
-    
-   if (m_pCurrentVideo)
-      m_pCurrentVideo->isPaused = true;  
 }
   
 void PUPMediaPlayer::SetBG(const string& szFilename, int volume, int priority)
 {
+   string szPath = find_path_case_insensitive(szFilename);
+   if (szPath.empty())
+      return;
+
    m_pBackgroundVideo = (PUPVideo*)malloc(sizeof(PUPVideo));
    memset(m_pBackgroundVideo, 0, sizeof(PUPVideo));
-   m_pBackgroundVideo->szFilename = szFilename;
+   m_pBackgroundVideo->szFilename = szPath;
    m_pBackgroundVideo->volume = volume;
    m_pBackgroundVideo->action = PUP_TRIGGER_PLAY_ACTION_LOOP;
    m_pBackgroundVideo->priority = priority;
