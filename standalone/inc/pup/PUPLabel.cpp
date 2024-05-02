@@ -36,16 +36,27 @@ PUPLabel::~PUPLabel()
       SDL_DestroyTexture(m_pTexture);
 }
 
+void PUPLabel::SetCaption(const string& szCaption)
+{
+   string szText = szCaption;
+   std::replace(szText.begin(), szText.end(), '~', '\n');
+
+   if (m_szCaption != szText) {
+      m_szCaption = szCaption;
+      m_dirty = true;
+   }
+}
+
 void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
-   if (!m_visible || pagenum != m_pagenum || m_szText.empty())
+   if (!m_visible || pagenum != m_pagenum || m_szCaption.empty())
       return;
 
    if (m_dirty)
       UpdateLabelTexture(pRenderer, rect);
 
    if (!m_pTexture) {
-      PLOGW.printf("Unable to render label: %s", m_szText.c_str());
+      PLOGW.printf("Unable to render label: caption=%s", m_szCaption.c_str());
       return;
    }
 
@@ -91,13 +102,13 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    TTF_SetFontOutline(m_pFont, 0);
 
    SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
-   SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended(m_pFont, m_szText.c_str(), textColor);
+   SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended(m_pFont, m_szCaption.c_str(), textColor);
    if (!pTextSurface)
       return;
 
    if (m_shadowState) {
       SDL_Color shadowColor = { GetRValue(m_shadowColor), GetGValue(m_shadowColor), GetBValue(m_shadowColor) };
-      SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended(m_pFont, m_szText.c_str(), shadowColor);
+      SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended(m_pFont, m_szCaption.c_str(), shadowColor);
       if (!pShadowSurface) {
          delete pTextSurface;
          return;

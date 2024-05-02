@@ -31,8 +31,8 @@ public:
    void SetXPos(float xPos) { m_xPos = xPos; m_dirty = true; }
    void SetYPos(float yPos) { m_yPos = yPos; m_dirty = true; }
    void SetVisible(bool visible) { m_visible = visible; }
-   const string& GetText() const { return m_szText; }
-   void SetText(const string& szText) { m_szText = szText; m_dirty = true; }
+   const string& GetCaption() const { return m_szCaption; }
+   void SetCaption(const string& szCaption);
    void SetPageNum(int pagenum) { m_pagenum = pagenum; }
    void SetShadowColor(LONG shadowColor) { m_shadowColor = shadowColor; m_dirty = true; }
    void SetShadowState(int shadowState) { m_shadowState = shadowState; m_dirty = true; }
@@ -53,7 +53,7 @@ private:
    float m_xPos;
    float m_yPos;
    bool m_visible;
-   string m_szText;
+   string m_szCaption;
    int m_pagenum;
    LONG m_shadowColor;
    int m_shadowState;

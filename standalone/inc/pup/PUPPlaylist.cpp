@@ -64,7 +64,9 @@ PUPPlaylist* PUPPlaylist::CreateFromCSVLine(const string& szBasePath, const stri
 
       for (const auto& entry : std::filesystem::directory_iterator(szPath)) {
          if (entry.is_regular_file()) {
-            files.push_back(entry.path().filename().string());
+            string szFilename = entry.path().filename();
+            if (!szFilename.empty() && szFilename[0] != '.')
+               files.push_back(szFilename);
          }
       }
    }

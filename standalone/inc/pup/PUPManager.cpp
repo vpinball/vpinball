@@ -39,6 +39,8 @@ bool PUPManager::LoadConfig(const string& szRomName)
       return false;
    }
 
+   TTF_Init();
+
    string szPath = g_pvp->m_currentTablePath + "pupvideos" +
       PATH_SEPARATOR_CHAR + szRomName + PATH_SEPARATOR_CHAR;
 
@@ -263,6 +265,8 @@ void PUPManager::Stop()
 
    m_szPath.clear();
    m_init = false;
+
+   TTF_Quit();
 }
 
 void PUPManager::RunLoop()

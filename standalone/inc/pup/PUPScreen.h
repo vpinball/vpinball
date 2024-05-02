@@ -34,6 +34,8 @@ public:
    void UpdateSize(int w, int h);
    void AddTrigger(PUPTrigger* pTrigger);
    void Init(SDL_Renderer* pRenderer);
+   bool IsLabelInit() const { return m_labelInit; }
+   void SetLabelInit() { m_labelInit = true; }
    void AddLabel(const string& labelName, PUPLabel* pLabel);
    PUPLabel* GetLabel(const string& labelName);
    void SetPage(int pagenum, int seconds);
@@ -66,6 +68,7 @@ private:
    SDL_Renderer* m_pRenderer;
    SDL_Surface* m_pOverlay;
    SDL_Texture* m_pOverlayTexture;
+   bool m_labelInit;
    int m_pagenum;
    int m_defaultPagenum;
    VP::Timer* m_pPageTimer;

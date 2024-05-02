@@ -39,6 +39,7 @@ PUPScreen::PUPScreen(PUPManager* pManager)
    m_pOverlay = NULL;
    m_pOverlayTexture = NULL;
 
+   m_labelInit = false;
    m_pagenum = 0;
    m_defaultPagenum = 0;
    m_pPageTimer = new VP::Timer();

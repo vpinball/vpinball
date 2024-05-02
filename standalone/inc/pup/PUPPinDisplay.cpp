@@ -15,8 +15,6 @@
 PUPPinDisplay::PUPPinDisplay()
 {
    m_pManager = PUPManager::GetInstance();
-
-   TTF_Init();
 }
 
 PUPPinDisplay::~PUPPinDisplay()
@@ -284,9 +282,14 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
       return S_OK;
    }
 
+   if (!pScreen->IsLabelInit()) {
+      PLOGW.printf("LabelInit has not been called: screenNum=%d", ScreenNum);
+      return S_OK;
+   }
+
    TTF_Font* pFont = m_pManager->GetFont(MakeString(FontName));
    if (!pFont) {
-      PLOGW.printf("Invalid font: fontName=%s", MakeString(FontName).c_str());
+      PLOGW.printf("Invalid font: screenNum=%d, labelName=%s, fontName=%s", ScreenNum, MakeString(LabelName).c_str(), MakeString(FontName).c_str());
       return S_OK;
    }
 
@@ -325,11 +328,7 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
       return S_OK;
    }
 
-   string szNewText = MakeString(Caption);
-   if (pLabel->GetText() != szNewText) {
-      pLabel->SetText(szNewText);
-   }
-
+   pLabel->SetCaption(MakeString(Caption));
    pLabel->SetVisible(Visible);
 
    string szJSON = MakeString(Special);
@@ -352,11 +351,11 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
             if (json["fname"].exists()) {
                string szFontName = json["fname"].as_str();
                TTF_Font* pFont = m_pManager->GetFont(szFontName);
-                if (pFont)
-                    pLabel->SetFont(pFont);
-                else {
-                    PLOGW.printf("Invalid font: fontName=%s", szFontName.c_str());
-                }
+               if (pFont)
+                  pLabel->SetFont(pFont);
+               else {
+                   PLOGW.printf("Invalid font: fontName=%s", szFontName.c_str());
+               }
             }
 
             if (json["color"].exists())
@@ -441,7 +440,13 @@ STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Sec
 
 STDMETHODIMP PUPPinDisplay::LabelInit(LONG ScreenNum)
 {
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (!pScreen) {
+      PLOGW.printf("Invalid target screen: screenNum=%d", ScreenNum);
+      return S_OK;
+   }
+
+   pScreen->SetLabelInit();
 
    return S_OK;
 }
