@@ -114,7 +114,6 @@ PinInput::PinInput()
    m_joytabledown = 0;
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
    m_joylflipkey = SDL_CONTROLLER_BUTTON_LEFTSHOULDER + 1;
    m_joyrflipkey = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER + 1;
    m_joylmagnasave = SDL_CONTROLLER_BUTTON_LEFTSTICK + 1;
@@ -128,7 +127,6 @@ PinInput::PinInput()
    m_joylefttilt = SDL_CONTROLLER_BUTTON_DPAD_LEFT + 1;
    m_joyrighttilt = SDL_CONTROLLER_BUTTON_DPAD_RIGHT + 1;
    m_joylockbar = SDL_CONTROLLER_BUTTON_GUIDE + 1;
-#endif
 #endif
 
    m_firedautostart = 0;
@@ -156,27 +154,21 @@ PinInput::PinInput()
    m_mixerKeyUp = false;
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
    m_pSDLGameController = nullptr;
-#else
    m_pSDLJoystick = nullptr;
    m_pSDLRumbleDevice = nullptr;
-#endif
 #endif
 }
 
 PinInput::~PinInput()
 {
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
    if (m_pSDLGameController)
       SDL_GameControllerClose(m_pSDLGameController);
-#else
    if (m_pSDLRumbleDevice)
       SDL_HapticClose(m_pSDLRumbleDevice);
    if (m_pSDLJoystick)
       SDL_JoystickClose(m_pSDLJoystick);
-#endif
 #endif
 }
 
@@ -241,7 +233,6 @@ void PinInput::LoadSettings(const Settings& settings)
 }
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
 void PinInput::RefreshSDLGameController()
 {
    if (m_pSDLGameController) {
@@ -270,7 +261,6 @@ void PinInput::RefreshSDLGameController()
       PLOGI.printf("No game controllers connected!");
    }
 }
-#else
 void PinInput::RefreshSDLJoystick()
 {
    if (m_pSDLRumbleDevice) {
@@ -306,7 +296,6 @@ void PinInput::RefreshSDLJoystick()
       PLOGI.printf("No joysticks connected!");
    }   
 }
-#endif
 #endif
 
 //
@@ -856,7 +845,7 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
       case SDL_QUIT:
          //Open Exit dialog
          break;
-#ifdef ENABLE_SDL_GAMECONTROLLER
+#ifdef ENABLE_SDL_INPUT
       case SDL_CONTROLLERDEVICEADDED:
       case SDL_CONTROLLERDEVICEREMOVED:
          RefreshSDLGameController();
@@ -879,7 +868,6 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             j++;
          }
          break;
-#else
       case SDL_JOYDEVICEADDED:
       case SDL_JOYDEVICEREMOVED:
          RefreshSDLJoystick();
@@ -1016,13 +1004,10 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       break;
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
       if (m_pSDLGameController && SDL_GameControllerHasRumble(m_pSDLGameController))
          SDL_GameControllerRumble(m_pSDLGameController, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
-#else
       if (m_pSDLRumbleDevice)
          SDL_HapticRumblePlay(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
-#endif
 #endif
       break;
    case 3: //IGameController
@@ -1036,9 +1021,8 @@ void PinInput::Init(const HWND hwnd)
 {
    m_hwnd = hwnd;
 
-#if defined(ENABLE_SDL_INPUT)
-#ifdef ENABLE_SDL_GAMECONTROLLER
-   SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+#ifdef ENABLE_SDL_INPUT
+   SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK);
    string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
    if (!std::filesystem::exists(path))
       std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
@@ -1049,9 +1033,6 @@ void PinInput::Init(const HWND hwnd)
    else {
       PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
    }
-#else
-   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-#endif
 #endif
 
 #ifdef _WIN32
@@ -1131,11 +1112,8 @@ void PinInput::Init(const HWND hwnd)
       break;
    case 2: //SDL2
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
       RefreshSDLGameController();
-#else
       RefreshSDLJoystick();
-#endif
       uShockType = USHOCKTYPE_GENERIC;
 #else
       m_inputApi = 0;
