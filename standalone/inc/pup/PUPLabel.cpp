@@ -7,10 +7,14 @@
 #include "core/stdafx.h"
 
 #include "PUPLabel.h"
+#include "PUPScreen.h"
+#include "PUPManager.h"
 
-PUPLabel::PUPLabel(TTF_Font* pFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum)
+#include "RSJparser/RSJparser.tcc"
+
+PUPLabel::PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum)
 {
-   m_pFont = pFont;
+   m_pFont = PUPManager::GetInstance()->GetFont(szFont);
    m_size = size;
    m_color = color;
    m_angle = angle;
@@ -26,8 +30,10 @@ PUPLabel::PUPLabel(TTF_Font* pFont, float size, LONG color, float angle, PUP_LAB
    m_yoffset = 0;
    m_outline = false;
    m_dirty = true;
-
+   m_pScreen = nullptr;
    m_pTexture = NULL;
+   m_width = 0;
+   m_height = 0;
 }
 
 PUPLabel::~PUPLabel()
@@ -38,6 +44,9 @@ PUPLabel::~PUPLabel()
 
 void PUPLabel::SetCaption(const string& szCaption)
 {
+   if (szCaption == "`u`")
+      return;
+
    string szText = szCaption;
    std::replace(szText.begin(), szText.end(), '~', '\n');
 
@@ -47,9 +56,141 @@ void PUPLabel::SetCaption(const string& szCaption)
    }
 }
 
+void PUPLabel::SetSpecial(const string& szSpecial)
+{
+   if (szSpecial.empty())
+      return;
+
+   RSJresource json(szSpecial);
+
+   switch (json["mt"].as<int>(0)) {
+      case 2: {
+         if (json["zback"].exists() && json["zback"].as<int>() == 1)
+            m_pScreen->SendLabelToBack(this);
+
+         if (json["ztop"].exists() && json["ztop"].as<int>() == 1)
+            m_pScreen->SendLabelToFront(this);
+
+         if (json["size"].exists()) {
+            m_size = std::stof(json["size"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["xpos"].exists()) {
+            m_xPos = std::stof(json["xpos"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["ypos"].exists()) {
+            m_yPos = std::stof(json["ypos"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["fname"].exists()) {
+            m_pFont = PUPManager::GetInstance()->GetFont(json["fname"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["color"].exists()) {
+            m_color = json["color"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["xalign"].exists()) {
+            m_xAlign = (PUP_LABEL_XALIGN)json["xalign"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["yalign"].exists()) {
+            m_yAlign = (PUP_LABEL_YALIGN)json["yalign"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["pagenum"].exists()) {
+            m_pagenum = json["pagenum"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["stopani"].exists()) {
+            // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
+         }
+
+         if (json["rotate"].exists()) {
+            // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
+         }
+
+         if (json["zoom"].exists()) {
+            // 120 for 120% of current height, 80% etc...
+         }
+
+         if (json["alpha"].exists()) {
+            // '0-255  255=full, 0=blank
+         }
+
+         if (json["gradstate"].exists() && json["gradcolor"].exists()) {
+            // color=gradcolor, gradstate = 0 (gradstate is percent)
+         }
+
+         if (json["grayscale"].exists()) {
+            // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
+         }
+
+         if (json["filter"].exists()) {
+            // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
+         }
+
+         if (json["shadowcolor"].exists()) {
+            m_shadowColor = json["shadowcolor"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["shadowtype"].exists()) {
+            // ST = 1 (Shadow), ST = 2 (Border)
+         }
+
+         if (json["xoffset"].exists()) {
+            m_xoffset = std::stof(json["xoffset"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["yoffset"].exists()) {
+            m_yoffset = std::stof(json["yoffset"].as_str());
+            m_dirty = true;
+         }
+
+         if (json["shadowstate"].exists()) {
+            m_shadowState = json["shadowstate"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["outline"].exists()) {
+            m_outline = (json["outline"].as<int>() == 1);
+            m_dirty = true;
+         }
+      }
+      break;
+
+      case 1: {
+         /*
+            Animate
+            at = animate type (1=flashing, 2=motion)
+            fq = when flashing its the frequency of flashing
+            len = length in ms of animation
+            fc = foreground color of text during animation
+            PLOGW << "Label animation not implemented";
+         */
+      }
+      break;
+
+      default:
+         PLOGW.printf("Unknown message type: mt=%s", json["mt"].as_str().c_str());
+         break;
+   }
+}
+
 void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
-   if (!m_visible || pagenum != m_pagenum || m_szCaption.empty())
+   if (!m_visible || pagenum != m_pagenum || m_szCaption.empty() || !m_pFont)
       return;
 
    if (m_dirty)
@@ -67,10 +208,10 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
          x += xPos;
          break;
       case PUP_LABEL_XALIGN_CENTER:
-         x += ((rect.w - m_textureWidth) / 2);
+         x += ((rect.w - m_width) / 2);
          break;
       case PUP_LABEL_XALIGN_RIGHT:
-         x += (xPos == 0 ? (rect.w - m_textureWidth) : (xPos - m_textureWidth));
+         x += (xPos == 0 ? (rect.w - m_width) : (xPos - m_width));
          break;
    }
    int y = rect.y;
@@ -80,13 +221,13 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
          y += yPos;
          break;
       case PUP_LABEL_YALIGN_CENTER:
-         y += ((rect.h - m_textureHeight) / 2);
+         y += ((rect.h - m_height) / 2);
          break;
       case PUP_LABEL_YALIGN_BOTTOM:
-         y += (yPos == 0 ? (rect.h - m_textureHeight) : (yPos - m_textureHeight));
+         y += (yPos == 0 ? (rect.h - m_height) : (yPos - m_height));
          break;
    }
-   SDL_Rect dest = { x, y, m_textureWidth, m_textureHeight };
+   SDL_Rect dest = { x, y, m_width, m_height };
    SDL_RenderCopy(pRenderer, m_pTexture, NULL, &dest);
 }
 
@@ -149,8 +290,8 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
 
          if (pMergedSurface) {
             m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pMergedSurface);
-            m_textureWidth = pMergedSurface->w;
-            m_textureHeight = pMergedSurface->h;
+            m_width = pMergedSurface->w;
+            m_height = pMergedSurface->h;
 
             SDL_FreeSurface(pMergedSurface);
          }
@@ -160,8 +301,8 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    }
    else {
       m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pTextSurface);
-      m_textureWidth = pTextSurface->w;
-      m_textureHeight = pTextSurface->h;
+      m_width = pTextSurface->w;
+      m_height = pTextSurface->h;
    }
 
    SDL_FreeSurface(pTextSurface);

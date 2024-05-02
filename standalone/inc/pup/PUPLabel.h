@@ -16,29 +16,18 @@ typedef enum
    PUP_LABEL_YALIGN_BOTTOM
 } PUP_LABEL_YALIGN;
 
+class PUPScreen;
+
 class PUPLabel
 {
 public:
-   PUPLabel(TTF_Font* pFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum);
+   PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum);
    ~PUPLabel();
 
-   void SetFont(TTF_Font* pFont) { m_pFont = pFont; m_dirty = true; }
-   void SetSize(float size) { m_size = size; m_dirty = true; }
-   void SetColor(LONG color) { m_color = color; m_dirty = true; }
-   void SetAngle(float angle) { m_angle = angle; m_dirty = true; }
-   void SetXAlign(PUP_LABEL_XALIGN xAlign) { m_xAlign = xAlign; m_dirty = true; }
-   void SetYAlign(PUP_LABEL_YALIGN yAlign) { m_yAlign = yAlign; m_dirty = true; }
-   void SetXPos(float xPos) { m_xPos = xPos; m_dirty = true; }
-   void SetYPos(float yPos) { m_yPos = yPos; m_dirty = true; }
-   void SetVisible(bool visible) { m_visible = visible; }
-   const string& GetCaption() const { return m_szCaption; }
+   void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    void SetCaption(const string& szCaption);
-   void SetPageNum(int pagenum) { m_pagenum = pagenum; }
-   void SetShadowColor(LONG shadowColor) { m_shadowColor = shadowColor; m_dirty = true; }
-   void SetShadowState(int shadowState) { m_shadowState = shadowState; m_dirty = true; }
-   void SetXOffset(float xoffset) { m_xoffset = xoffset; m_dirty = true; }
-   void SetYOffset(float yoffset) { m_yoffset = yoffset; m_dirty = true; }
-   void SetOutline(bool outline) { m_outline = outline; m_dirty = true; }
+   void SetVisible(bool visible) { m_visible = visible; }
+   void SetSpecial(const string& szSpecial);
    void Render(SDL_Renderer* renderer, SDL_Rect& rect, int pagenum);
 
 private:
@@ -61,8 +50,8 @@ private:
    float m_yoffset;
    bool m_outline;
    bool m_dirty;
-
+   PUPScreen* m_pScreen;
    SDL_Texture* m_pTexture;
-   int m_textureWidth;
-   int m_textureHeight;
+   int m_width;
+   int m_height;
 };

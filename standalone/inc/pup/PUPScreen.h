@@ -38,6 +38,8 @@ public:
    void SetLabelInit() { m_labelInit = true; }
    void AddLabel(const string& labelName, PUPLabel* pLabel);
    PUPLabel* GetLabel(const string& labelName);
+   void SendLabelToFront(PUPLabel* pLabel);
+   void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
@@ -61,6 +63,7 @@ private:
    SDL_Rect m_rect;
    vector<PUPScreen*> m_children;
    std::map<string, PUPTrigger*> m_triggerMap;
+   vector<PUPLabel*> m_labels;
    std::map<string, PUPLabel*> m_labelMap;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    PUPMediaPlayer* m_pMediaPlayer;

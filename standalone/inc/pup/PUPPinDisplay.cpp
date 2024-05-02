@@ -9,7 +9,6 @@
 #include <fstream>
 #include <sstream>
 
-#include <SDL2/SDL_ttf.h>
 #include "RSJparser/RSJparser.tcc"
 
 PUPPinDisplay::PUPPinDisplay()
@@ -251,7 +250,11 @@ STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
 
 STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
 {
-   PLOGW << "Not implemented";
+   string szMsg = MakeString(cMSG);
+
+   RSJresource json(szMsg);
+
+   PLOGW << "Not implemented: szMsg=" << szMsg;
 
    return S_OK;
 }
@@ -287,14 +290,8 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
       return S_OK;
    }
 
-   TTF_Font* pFont = m_pManager->GetFont(MakeString(FontName));
-   if (!pFont) {
-      PLOGW.printf("Invalid font: screenNum=%d, labelName=%s, fontName=%s", ScreenNum, MakeString(LabelName).c_str(), MakeString(FontName).c_str());
-      return S_OK;
-   }
-
    pScreen->AddLabel(MakeString(LabelName),
-      new PUPLabel(pFont, Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible, PageNum));
+      new PUPLabel(MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible, PageNum));
 
    return S_OK;
 }
@@ -330,80 +327,7 @@ STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Captio
 
    pLabel->SetCaption(MakeString(Caption));
    pLabel->SetVisible(Visible);
-
-   string szJSON = MakeString(Special);
-   if (!szJSON.empty()) {
-      RSJresource json(szJSON);
-
-      switch (json["mt"].as<int>(0)) {
-         case 2: {
-            SDL_Rect rect = pScreen->GetRect();
-      
-            if (json["size"].exists())
-               pLabel->SetSize(std::stof(json["size"].as_str()));
-
-            if (json["xpos"].exists())
-               pLabel->SetXPos(std::stof(json["xpos"].as_str()));
-
-            if (json["ypos"].exists())
-               pLabel->SetYPos(std::stof(json["ypos"].as_str()));
-
-            if (json["fname"].exists()) {
-               string szFontName = json["fname"].as_str();
-               TTF_Font* pFont = m_pManager->GetFont(szFontName);
-               if (pFont)
-                  pLabel->SetFont(pFont);
-               else {
-                   PLOGW.printf("Invalid font: fontName=%s", szFontName.c_str());
-               }
-            }
-
-            if (json["color"].exists())
-               pLabel->SetColor(json["color"].as<int>());
-
-            if (json["xalign"].exists())
-               pLabel->SetXAlign((PUP_LABEL_XALIGN)json["xalign"].as<int>());
-
-            if (json["yalign"].exists())
-               pLabel->SetYAlign((PUP_LABEL_YALIGN)json["yalign"].as<int>());
-
-            if (json["pagenum"].exists())
-                pLabel->SetPageNum(json["pagenum"].as<int>());
-
-            if (json["shadowcolor"].exists())
-               pLabel->SetShadowColor(json["shadowcolor"].as<int>());
-
-            if (json["shadowstate"].exists())
-               pLabel->SetShadowState(json["shadowstate"].as<int>());
-
-            if (json["xoffset"].exists())
-               pLabel->SetXOffset(std::stof(json["xoffset"].as_str()));
-
-            if (json["yoffset"].exists())
-               pLabel->SetYOffset(std::stof(json["yoffset"].as_str()));
-
-            if (json["outline"].exists())
-               pLabel->SetOutline(json["outline"].as<int>() == 1);
-         }
-         break;
-         
-         case 1: { 
-            /*
-               Animate
-               at = animate type (1=flashing, 2=motion)
-               fq = when flashing its the frequency of flashing
-               len = length in ms of animation
-               fc = foreground color of text during animation
-               PLOGW << "Label animation not implemented";
-            */
-         }
-         break;
-
-         default:
-            PLOGW.printf("Unknown message type: mt=%s", json["mt"].as_str().c_str());
-            break;
-      }
-   }
+   pLabel->SetSpecial(MakeString(Special));
 
    return S_OK;
 }

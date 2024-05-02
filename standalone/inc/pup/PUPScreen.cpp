@@ -58,7 +58,7 @@ PUPScreen::~PUPScreen()
    for (auto& [key, pTrigger] : m_triggerMap)
       delete pTrigger;
 
-   for (auto& [key, pLabel] : m_labelMap)
+   for (PUPLabel* pLabel : m_labels)
       delete pLabel;
 
    m_children.clear();
@@ -158,13 +158,30 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
 
 void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel)
 {
+   pLabel->SetScreen(this);
+
    m_labelMap[string_to_lower(szLabelName)] = pLabel;
+   m_labels.push_back(pLabel);
 }
 
 PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
 {
-   std::map<string, PUPLabel*>::iterator it = m_labelMap.find(string_to_lower(szLabelName));
+   auto it = m_labelMap.find(string_to_lower(szLabelName));
    return it != m_labelMap.end() ? it->second : nullptr;
+}
+
+void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
+{
+   auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
+   if (it != m_labels.end())
+      std::rotate(m_labels.begin(), it, it + 1);
+}
+
+void PUPScreen::SendLabelToBack(PUPLabel* pLabel)
+{
+   auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
+   if (it != m_labels.end())
+      std::rotate(it, it + 1, m_labels.end());
 }
 
 void PUPScreen::SetPage(int pagenum, int seconds)
@@ -187,7 +204,7 @@ void PUPScreen::Render()
       m_pMediaPlayer->Render();
 #endif
 
-   for (auto& [key, pLabel] : m_labelMap)
+   for (PUPLabel* pLabel : m_labels)
       pLabel->Render(m_pRenderer, m_rect, m_pagenum);
 
    for (PUPScreen* pScreen : GetChildren())

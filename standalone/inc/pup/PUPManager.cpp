@@ -324,6 +324,14 @@ string PUPManager::GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile)
 
 TTF_Font* PUPManager::GetFont(const string& szFamilyName)
 {
+   if (szFamilyName.empty())
+      return NULL;
+
    std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szFamilyName);
-   return it != m_fontMap.end() ? it->second : nullptr;
+   if (it == m_fontMap.end()) {
+      PLOGW.printf("Font not found: family=%s", szFamilyName.c_str());
+      return NULL;
+   }
+
+   return it->second;
 }
