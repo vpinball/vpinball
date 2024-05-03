@@ -9,7 +9,7 @@
 #include "standalone/PoleStorage.h"
 #endif
 
-unsigned long long tinymt64state[2] = { 'T', 'M' };
+unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
 float sz2f(const string& sz)
@@ -455,7 +455,7 @@ string find_path_case_insensitive(const string& szPath)
 
    std::filesystem::path parentPath = path.parent_path();
    if (!parentPath.empty() && std::filesystem::is_directory(parentPath)) {
-      string lowerFilename = string_to_lower(path.filename());
+      const string lowerFilename = string_to_lower(path.filename());
       for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
          if (string_to_lower(entry.path().filename()) == lowerFilename) {
             PLOGW.printf("exact path not found, but a case-insensitive match was found: path=%s, match=%s", szPath.c_str(), entry.path().c_str());
@@ -464,14 +464,14 @@ string find_path_case_insensitive(const string& szPath)
       }
    }
 
-   return "";
+   return string();
 }
 
 string extension_from_path(const string& path)
 {
-   string lowerPath = string_to_lower(path);
-   size_t pos = path.find_last_of(".");
-   return pos != string::npos ? lowerPath.substr(pos + 1) : "";
+   const string lowerPath = string_to_lower(path);
+   const size_t pos = path.find_last_of('.');
+   return pos != string::npos ? lowerPath.substr(pos + 1) : string();
 }
 
 string normalize_path_separators(const string& path)
@@ -602,7 +602,7 @@ vector<string> parse_csv_line(const string& line)
 
 string color_to_hex(OLE_COLOR color)
 {
-   UINT32 rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
+   const UINT32 rgba = (GetRValue(color) << 24) | (GetGValue(color) << 16) | (GetBValue(color) << 8) | 0xFF;
    std::stringstream stream;
    stream << std::setfill('0') << std::setw(8) << std::hex << rgba;
    return stream.str();
@@ -634,7 +634,7 @@ bool string_starts_with_case_insensitive(const std::string& str, const std::stri
 
 string create_hex_dump(const UINT8* buffer, size_t size)
 {
-   const int bytesPerLine = 32;
+   constexpr int bytesPerLine = 32;
    std::stringstream ss;
 
    for (size_t i = 0; i < size; i += bytesPerLine) {
@@ -659,7 +659,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    static const string base64_chars =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       "abcdefghijklmnopqrstuvwxyz"
-      "0123456789+/";
+      "0123456789+/"s;
 
    string input = encoded_string;
    input.erase(std::remove(input.begin(), input.end(), '\r'), input.end());

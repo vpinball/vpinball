@@ -453,6 +453,30 @@ __forceinline float sgn(const float a)
 {
    return (a > 0.f) ? 1.f : ((a < 0.f) ? -1.f : 0.f);
 }
+
+#if !defined(_MSC_VER) && !defined(_rotl) //!!
+#define _rotl(x,y)  (((x) << (y)) | ((x) >> (-(y) & 31)))
+#endif
+
+#if !defined(_MSC_VER) && !defined(_rotr) //!!
+#define _rotr(x,y)  (((x) >> (y)) | ((x) << (-(y) & 31)))
+#endif
+
+__forceinline unsigned int swap_byteorder(unsigned int x)
+{
+#if defined(__GNUC__) || defined(__clang__)
+   return __builtin_bswap32(x);
+#elif defined(__linux__)
+   return bswap_32(x);
+#elif defined(_MSC_VER)
+   return _byteswap_ulong(x);
+#else
+   x = ((x << 8) & 0xFF00FF00u) | ((x >> 8) & 0xFF00FFu);
+   return (x << 16) | (x >> 16);
+#endif
+}
+
+#if 0
 //
 // TinyMT64 for random numbers (much better than rand())
 //
@@ -489,17 +513,58 @@ extern unsigned long long tinymt64state[2];
 __forceinline float rand_mt_01()  { return (float)(tinymtu(tinymt64state) >> (64-24)) * 0.000000059604644775390625f; } // [0..1)
 __forceinline float rand_mt_m11() { return (float)((int64_t)tinymtu(tinymt64state) >> (64-25)) * 0.000000059604644775390625f; } // [-1..1)
 
+#else
+
+// via https://cas.ee.ic.ac.uk/people/dt10/research/rngs-gpu-mwc64x.html
+
+extern unsigned long long mwc64x_state;
+
+__forceinline unsigned int mwc64x(unsigned long long& s)
+{
+   constexpr unsigned int m = 4294883355u;
+   const unsigned int c = (unsigned int)(s >> 32), x = (unsigned int)s;
+
+   s = x * ((unsigned long long)m) + c;
+   return x ^ c;
+}
+
+__forceinline float rand_mt_01()  { return (float)(mwc64x(mwc64x_state) >> (32-24)) * 0.000000059604644775390625f; } // [0..1)
+__forceinline float rand_mt_m11() { return (float)((int)mwc64x(mwc64x_state) >> (32-25)) * 0.000000059604644775390625f; } // [-1..1)
+#endif
+
 //
 
 // flip bits on decimal point (bit reversal)/van der Corput/radical inverse
-__forceinline float radical_inverse(unsigned int v)
+__forceinline float radical_inverse(unsigned int i)
 {
-   v = (v << 16) | (v >> 16);
+#if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
+   return (float)(_arm_rbit(i) >> 8) * 0.000000059604644775390625f;
+#elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(__clang__) //!! gcc does not have an intrinsic yet
+   return (float)(__builtin_arm_rbit(i) >> 8) * 0.000000059604644775390625f;
+#elif defined(__clang__)
+   return (float)(__builtin_bitreverse32(i) >> 8) * 0.000000059604644775390625f;
+#else
+   /*v = (v << 16) | (v >> 16);
    v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
    v = ((v & 0x33333333u) << 2) | ((v & 0xCCCCCCCCu) >> 2);
    v = ((v & 0x0F0F0F0Fu) << 4) | ((v & 0xF0F0F0F0u) >> 4);
-   v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);
-   return (float)(v >> 8) * 0.000000059604644775390625f;
+   v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);*/
+   /*i = i*65536 | (i >> 16);
+   i =    ((i & 0x00ff00ff)*256)  | ((i & 0xff00ff00) >> 8);
+   i =    ((i & 0x0f0f0f0f)*16)   | ((i & 0xf0f0f0f0) >> 4);
+   i =    ((i & 0x33333333)*4)    | ((i & 0xcccccccc) >> 2);
+   i = ((i & 0x55555555)*2) | ((i & 0xaaaaaaaa) >> 1);*/
+   /*i = ((i >> 1) & 0x55555555) | ((i & 0x55555555)*2);
+   i = ((i >> 2) & 0x33333333) | ((i & 0x33333333)*4);
+   i = ((i >> 4) & 0x0f0f0f0f) | ((i & 0x0f0f0f0f)*16);
+   i = ((i >> 8) & 0x00ff00ff) | ((i & 0x00ff00ff)*256);
+   i = i*65536 | (i >> 16);*/
+   i = _rotr(i & 0xaaaaaaaa, 2) | (i & 0x55555555);
+   i = _rotr(i & 0x66666666, 4) | (i & 0x99999999);
+   i = _rotr(i & 0x1e1e1e1e, 8) | (i & 0xe1e1e1e1);
+   i = _rotl(i, 7);
+   return (float)(swap_byteorder(i) >> 8) * 0.000000059604644775390625f;
+#endif
 }
 
 template <unsigned int base>

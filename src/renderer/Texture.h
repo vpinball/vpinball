@@ -2,10 +2,6 @@
 
 #define MIN_TEXTURE_SIZE 8u
 
-#if !defined(_MSC_VER) && !defined(_rotl) //!!
-#define _rotl(x,y)  (((x) << (y)) | ((x) >> (-(y) & 31)))
-#endif
-
 struct FIBITMAP;
 
 // texture stored in main memory in 24/32bit RGB/RGBA uchar format or 48/96bit RGB float
