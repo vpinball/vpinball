@@ -28,17 +28,18 @@
      CustomPos = CustomPos
 */
 
-PUPScreen::PUPScreen(PUPManager* pManager)
+PUPScreen::PUPScreen()
 {
-   m_pManager = pManager;
+   m_pManager = PUPManager::GetInstance();
 
    m_pCustomPos = nullptr;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pMediaPlayer = nullptr;
 #endif
-   m_pOverlay = NULL;
+   m_pBackgroundFrameTexture = NULL;
+   m_backgroundFrameDirty = false;
    m_pOverlayTexture = NULL;
-
+   m_overlayDirty = false;
    m_labelInit = false;
    m_pagenum = 0;
    m_defaultPagenum = 0;
@@ -63,20 +64,20 @@ PUPScreen::~PUPScreen()
 
    m_children.clear();
 
-   if (m_pOverlay)
-      SDL_FreeSurface(m_pOverlay);
+   if (m_pBackgroundFrameTexture)
+      SDL_DestroyTexture(m_pBackgroundFrameTexture);
 
    if (m_pOverlayTexture)
       SDL_DestroyTexture(m_pOverlayTexture);
 }
 
-PUPScreen* PUPScreen::CreateFromCSVLine(PUPManager* pManager, string line)
+PUPScreen* PUPScreen::CreateFromCSVLine(string line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8)
       return nullptr;
 
-   PUPScreen* pScreen = new PUPScreen(pManager);
+   PUPScreen* pScreen = new PUPScreen();
 
    string mode = parts[5];
    if (string_compare_case_insensitive(mode, "Show"))
@@ -143,14 +144,25 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
 
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pMediaPlayer = new PUPMediaPlayer(pRenderer, &m_rect);
+#endif
 
    PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(m_backgroundPlaylist);
    if (pPlaylist) {
       string szPath = m_pManager->GetPath(pPlaylist, m_backgroundFilename);
-      if (!szPath.empty())
-         m_pMediaPlayer->SetBG(szPath, GetVolume(), 0);
-   }
+      if (!szPath.empty()) {
+         switch(pPlaylist->GetFunction()) {
+            case PUP_PLAYLIST_FUNCTION_FRAMES:
+               m_szBackgroundFrame = szPath;
+               m_backgroundFrameDirty = true;
+               break;
+            default:
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
+               m_pMediaPlayer->SetBG(szPath, GetVolume(), 0);
 #endif
+               break;
+         }
+      }
+   }
 
    for (PUPScreen* pScreen : GetChildren())
       pScreen->Init(pRenderer);
@@ -199,6 +211,25 @@ void PUPScreen::SetPage(int pagenum, int seconds)
 
 void PUPScreen::Render()
 {
+   if (m_backgroundFrameDirty) {
+      if (m_pBackgroundFrameTexture) {
+         SDL_DestroyTexture(m_pBackgroundFrameTexture);
+         m_pBackgroundFrameTexture = NULL;
+      }
+      if (!m_szBackgroundFrame.empty()) {
+         SDL_Surface* pSurface = IMG_Load(m_szBackgroundFrame.c_str());
+         if (pSurface) {
+            m_pBackgroundFrameTexture = SDL_CreateTextureFromSurface(m_pRenderer, pSurface);
+            if (m_pBackgroundFrameTexture)
+               m_backgroundFrameDirty = false;
+            SDL_FreeSurface(pSurface);
+         }
+      }
+   }
+
+   if (m_pBackgroundFrameTexture)
+      SDL_RenderCopy(m_pRenderer, m_pBackgroundFrameTexture, NULL, &m_rect);
+
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    if (m_pMediaPlayer)
       m_pMediaPlayer->Render();
@@ -210,13 +241,24 @@ void PUPScreen::Render()
    for (PUPScreen* pScreen : GetChildren())
       pScreen->Render();
 
-   if (m_pOverlay) {
-      if (!m_pOverlayTexture)
-         m_pOverlayTexture = SDL_CreateTextureFromSurface(m_pRenderer, m_pOverlay);
-
-      if (m_pOverlayTexture)
-         SDL_RenderCopy(m_pRenderer, m_pOverlayTexture, NULL, &m_rect);
+   if (m_overlayDirty) {
+      if (m_pOverlayTexture) {
+         SDL_DestroyTexture(m_pOverlayTexture);
+         m_pOverlayTexture = NULL;
+      }
+      if (!m_szOverlay.empty()) {
+         SDL_Surface* pSurface = IMG_Load(m_szOverlay.c_str());
+         if (pSurface) {
+            m_pOverlayTexture = SDL_CreateTextureFromSurface(m_pRenderer, pSurface);
+            if (m_pOverlayTexture)
+               m_overlayDirty = false;
+            SDL_FreeSurface(pSurface);
+         }
+      }
    }
+
+   if (m_pOverlayTexture)
+      SDL_RenderCopy(m_pRenderer, m_pOverlayTexture, NULL, &m_rect);
 }
 
 void PUPScreen::Trigger(const string& szTrigger)
@@ -231,17 +273,26 @@ void PUPScreen::Trigger(const string& szTrigger)
          string szPath = m_pManager->GetPath(pPlaylist, szPlayfile);
          if (szPath.empty())
             return;
-         if (pPlaylist->GetFunction() == PUP_PLAYLIST_FUNCTION_OVERLAYS) {
-            if (m_pOverlay)
-               SDL_FreeSurface(m_pOverlay);
-            m_pOverlay = IMG_Load(szPath.c_str());
-         }
-         else {
+         switch(pPlaylist->GetFunction()) {
+            case PUP_PLAYLIST_FUNCTION_FRAMES:
+               m_szBackgroundFrame = szPath;
+               m_backgroundFrameDirty = true;
+               break;
+            case PUP_PLAYLIST_FUNCTION_OVERLAYS:
+            case PUP_PLAYLIST_FUNCTION_ALPHAS:
+               m_szOverlay = szPath;
+               m_overlayDirty = true;
+               break;
+            case PUP_PLAYLIST_FUNCTION_SHAPES:
+               PLOGW.printf("PUP_PLAYLIST_FUNCTION_SHAPES not implemented");
+               break;
+            default:
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
-            if (m_pMediaPlayer)
-               m_pMediaPlayer->Play(szPath, (!szPlayfile.empty() ? pTrigger->GetVolume() : pPlaylist->GetVolume()),
-                  pTrigger->GetPlayAction(), pTrigger->GetPriority());
+               if (m_pMediaPlayer)
+                  m_pMediaPlayer->Play(szPath, (!szPlayfile.empty() ? pTrigger->GetVolume() : pPlaylist->GetVolume()),
+                     pTrigger->GetPlayAction(), pTrigger->GetPriority());
 #endif
+                  break;
          }
       }
    }

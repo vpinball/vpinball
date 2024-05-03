@@ -59,7 +59,7 @@ bool PUPManager::LoadConfig(const string& szRomName)
          if (++i == 1)
             continue;
 
-         PUPScreen* pScreen = PUPScreen::CreateFromCSVLine(this, line);
+         PUPScreen* pScreen = PUPScreen::CreateFromCSVLine(line);
          if (pScreen)
             m_screenMap[pScreen->GetScreenNum()] = pScreen;
       }

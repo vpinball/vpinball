@@ -19,7 +19,7 @@ class PUPScreen {
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSVLine(PUPManager* pManager, string line);
+   static PUPScreen* CreateFromCSVLine(string line);
 
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    int GetScreenNum() const { return m_screenNum; }
@@ -47,7 +47,7 @@ public:
    string ToString() const;
 
 private:
-   PUPScreen(PUPManager* m_pManager);
+   PUPScreen();
 
    void PageTimerElapsed(VP::Timer* pTimer);
 
@@ -69,8 +69,12 @@ private:
    PUPMediaPlayer* m_pMediaPlayer;
 #endif
    SDL_Renderer* m_pRenderer;
-   SDL_Surface* m_pOverlay;
+   string m_szBackgroundFrame;
+   SDL_Texture* m_pBackgroundFrameTexture;
+   bool m_backgroundFrameDirty;
+   string m_szOverlay;
    SDL_Texture* m_pOverlayTexture;
+   bool m_overlayDirty;
    bool m_labelInit;
    int m_pagenum;
    int m_defaultPagenum;

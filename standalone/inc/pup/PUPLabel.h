@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_image.h>
 
 typedef enum
 {
@@ -54,4 +55,6 @@ private:
    SDL_Texture* m_pTexture;
    int m_width;
    int m_height;
+   int m_anigif;
+   IMG_Animation* m_pAnimation;
 };

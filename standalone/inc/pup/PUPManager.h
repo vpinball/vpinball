@@ -73,6 +73,7 @@ public:
    bool LoadConfig(const string& szRomName);
    void Start();
    void Stop();
+   const string& GetPath() { return m_szPath; }
    void QueueTriggerData(PUPTriggerData data);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    string GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile);

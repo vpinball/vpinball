@@ -34,6 +34,8 @@ PUPLabel::PUPLabel(const string& szFont, float size, LONG color, float angle, PU
    m_pTexture = NULL;
    m_width = 0;
    m_height = 0;
+   m_anigif = 0;
+   m_pAnimation = NULL;
 }
 
 PUPLabel::~PUPLabel()
@@ -158,6 +160,21 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             m_dirty = true;
          }
 
+         if (json["anigif"].exists()) {
+            m_anigif = json["anigif"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["width"].exists()) {
+            m_width = json["width"].as<int>();
+            m_dirty = true;
+         }
+
+         if (json["height"].exists()) {
+            m_height = json["height"].as<int>();
+            m_dirty = true;
+         }
+
          if (json["shadowstate"].exists()) {
             m_shadowState = json["shadowstate"].as<int>();
             m_dirty = true;
@@ -190,11 +207,26 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
 void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
-   if (!m_visible || pagenum != m_pagenum || m_szCaption.empty() || !m_pFont)
+   if (!m_visible || pagenum != m_pagenum || m_szCaption.empty())
       return;
 
-   if (m_dirty)
-      UpdateLabelTexture(pRenderer, rect);
+   if (m_dirty) {
+      if (m_anigif) {
+         if (m_pAnimation)
+            IMG_FreeAnimation(m_pAnimation);
+
+         string szFilename = PUPManager::GetInstance()->GetPath() + normalize_path_separators(m_szCaption);
+         m_pAnimation = IMG_LoadAnimation(szFilename.c_str());
+         if (m_pAnimation) {
+            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_pAnimation->count - 1]);
+            m_dirty = false;
+         }
+      }
+      else {
+         if (m_pFont)
+            UpdateLabelTexture(pRenderer, rect);
+      }
+   }
 
    if (!m_pTexture) {
       PLOGW.printf("Unable to render label: caption=%s", m_szCaption.c_str());
