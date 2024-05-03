@@ -221,7 +221,7 @@ void ReportFatalError(const HRESULT hr, const char *file, const int line)
    #elif defined(ENABLE_OPENGL)
       sprintf_s(msg, sizeof(msg), "Fatal Error 0x%08X %s in %s:%d", hr, glErrorToString(hr), file, line);
    #elif defined(ENABLE_DX9)
-      sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
+      sprintf_s(msg, sizeof(msg), "Fatal Error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
    #endif
    ShowError(msg);
    assert(false);
@@ -1151,7 +1151,7 @@ void RenderDevice::UploadAndSetSMAATextures()
    delete searchBaseTex;*/
 
 #if defined(ENABLE_BGFX)
-	bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));
+   bgfx::TextureHandle smaaAreaTex = bgfx::createTexture2D(AREATEX_WIDTH, AREATEX_HEIGHT, false, 1, bgfx::TextureFormat::RG8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::makeRef(areaTexBytes, AREATEX_SIZE));
    m_SMAAareaTexture = new Sampler(this, SurfaceType::RT_DEFAULT, smaaAreaTex, AREATEX_WIDTH, AREATEX_HEIGHT, true, true, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, SamplerFilter::SF_BILINEAR);
    m_SMAAareaTexture->SetName("SMAA Area"s);
 

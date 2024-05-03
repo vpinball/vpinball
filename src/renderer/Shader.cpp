@@ -1172,7 +1172,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    m_techniques[technique] = new ShaderTechnique { };
    bgfx::RendererType::Enum type = bgfx::getRendererType();
    bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(embeddedShaders, type, vsName);
-	bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
+   bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
    if (!bgfx::isValid(vsh) || !bgfx::isValid(fsh))
    {
       PLOGE << "Failed to setup shader from " << vsName << " / " << fsName;
