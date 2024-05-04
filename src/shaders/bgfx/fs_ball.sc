@@ -1,8 +1,11 @@
-#ifdef STEREO
-$input v_worldPos, v_normal, v_texcoord0, v_eye
-#else
 $input v_worldPos, v_normal, v_texcoord0
+#ifdef STEREO
+	$input v_eye
 #endif
+#ifdef CLIP
+	$input v_clipDistance
+#endif
+
 
 #include "common.sh"
 
@@ -71,8 +74,16 @@ vec3 ballLightLoop(const vec3 pos, vec3 N, vec3 V, vec3 diffuse, vec3 glossy, co
    return color;
 }
 
-EARLY_DEPTH_STENCIL void main()
+#ifndef CLIP
+EARLY_DEPTH_STENCIL
+#endif
+void main()
 {
+	#ifdef CLIP
+	if (v_clipDistance < 0.0)
+       discard;
+	#endif
+
     const vec3 V = normalize(/*camera=0,0,0,1*/-v_worldPos.xyz);
     const vec3 N = normalize(v_normal.xyz);
     const vec3 R = reflect(V, N);

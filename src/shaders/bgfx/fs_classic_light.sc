@@ -1,7 +1,9 @@
-#ifdef STEREO
-$input v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
-#else
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
+#ifdef STEREO
+	$input v_eye
+#endif
+#ifdef CLIP
+	$input v_clipDistance
 #endif
 
 #include "common.sh"
@@ -41,8 +43,13 @@ uniform vec4 u_basic_shade_mode;
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
 
-void main()
+// Light don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
+EARLY_DEPTH_STENCIL void main()
 {
+	#ifdef CLIP
+	if (v_clipDistance < 0.0)
+		discard;
+	#endif
     #ifdef TEX
         // FIXME check tex_light_color declaration
         vec4 pixel = texNoLod(tex_light_color, v_texcoord0); //!! IN.tex0 abused in backglass mode

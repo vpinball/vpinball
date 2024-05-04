@@ -1,7 +1,9 @@
-#ifdef STEREO
-$input v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
-#else
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
+#ifdef STEREO
+	$input v_eye
+#endif
+#ifdef CLIP
+	$input v_clipDistance
 #endif
 
 #include "common.sh"
@@ -155,22 +157,33 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
 
 #ifdef REFL
-EARLY_DEPTH_STENCIL void main() {
-   // Reflection only pass variant of the basic material shading
-   vec3 N = normalize(v_normal);
-   #ifdef STEREO
-   vec3 color = compute_reflection(gl_FragCoord.xy, N, v_eye);
-   #else
-   vec3 color = compute_reflection(gl_FragCoord.xy, N);
-   #endif
-   gl_FragColor = vec4(color.rgb * staticColor_Alpha.rgb, staticColor_Alpha.a);
-}
+	#ifndef CLIP
+	EARLY_DEPTH_STENCIL
+	#endif
+	void main() {
+	   // Reflection only pass variant of the basic material shading
+		#ifdef CLIP
+		if (v_clipDistance < 0.0)
+		   discard;
+		#endif
+		vec3 N = normalize(v_normal);
+		#ifdef STEREO
+		vec3 color = compute_reflection(gl_FragCoord.xy, N, v_eye);
+		#else
+		vec3 color = compute_reflection(gl_FragCoord.xy, N);
+		#endif
+		gl_FragColor = vec4(color.rgb * staticColor_Alpha.rgb, staticColor_Alpha.a);
+	}
 
 #else
-   #ifndef AT
+   #if !defined(AT) && !defined(CLIP)
    EARLY_DEPTH_STENCIL
    #endif
    void main() {
+      #ifdef CLIP
+      if (v_clipDistance < 0.0)
+         discard;
+      #endif
       vec4 color;
       // Full basic material shading
       #ifdef TEX

@@ -1231,42 +1231,44 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
 void Shader::Load()
 {
    #define BGFX_EMBEDDED_SHADER_ST(a) BGFX_EMBEDDED_SHADER(a), BGFX_EMBEDDED_SHADER(a##_st)
+   #define BGFX_EMBEDDED_SHADER_CLIP(a) BGFX_EMBEDDED_SHADER(a##_clip), BGFX_EMBEDDED_SHADER(a##_noclip)
+   #define BGFX_EMBEDDED_SHADER_ST_CLIP(a) BGFX_EMBEDDED_SHADER_ST(a##_clip), BGFX_EMBEDDED_SHADER_ST(a##_noclip)
    static const bgfx::EmbeddedShader embeddedShaders[] =
    {
-      BGFX_EMBEDDED_SHADER_ST(vs_basic_tex),
-      BGFX_EMBEDDED_SHADER_ST(vs_basic_notex),
-      BGFX_EMBEDDED_SHADER_ST(vs_kicker),
-      BGFX_EMBEDDED_SHADER_ST(vs_classic_light_tex),
-      BGFX_EMBEDDED_SHADER_ST(vs_classic_light_notex),
-      BGFX_EMBEDDED_SHADER_ST(fs_basic_tex_noat),
-      BGFX_EMBEDDED_SHADER_ST(fs_basic_tex_at),
-      BGFX_EMBEDDED_SHADER_ST(fs_basic_notex_noat),
-      BGFX_EMBEDDED_SHADER_ST(fs_basic_refl),
-      BGFX_EMBEDDED_SHADER_ST(fs_decal_tex),
-      BGFX_EMBEDDED_SHADER_ST(fs_decal_notex),
-      BGFX_EMBEDDED_SHADER_ST(fs_classic_light_tex),
-      BGFX_EMBEDDED_SHADER_ST(fs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_kicker),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_noat),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_tex_at),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_notex_noat),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_basic_refl),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_notex),
       //
-      BGFX_EMBEDDED_SHADER_ST(vs_ball),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_equirectangular_nodecal),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_equirectangular_decal),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_spherical_nodecal),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_spherical_decal),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_trail),
-      BGFX_EMBEDDED_SHADER_ST(fs_ball_debug),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_decal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_nodecal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_decal),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
       //
-      BGFX_EMBEDDED_SHADER_ST(vs_basic_dmd_world),
-      BGFX_EMBEDDED_SHADER(vs_basic_dmd_noworld),
-      BGFX_EMBEDDED_SHADER(fs_basic_dmd_tex),
-      BGFX_EMBEDDED_SHADER(fs_basic_sprite_tex),
-      BGFX_EMBEDDED_SHADER(fs_basic_sprite_notex),
+      BGFX_EMBEDDED_SHADER(vs_dmd_noworld),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd_tex),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       //
-      BGFX_EMBEDDED_SHADER_ST(vs_light),
-      BGFX_EMBEDDED_SHADER(fs_light_noshadow),
-      BGFX_EMBEDDED_SHADER(fs_light_ballshadow),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_light),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_light_noshadow),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_light_ballshadow),
       //
-      BGFX_EMBEDDED_SHADER_ST(vs_flasher),
-      BGFX_EMBEDDED_SHADER(fs_flasher),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_flasher),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_flasher),
       //
       BGFX_EMBEDDED_SHADER_ST(vs_postprocess),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_tb),
@@ -1345,39 +1347,39 @@ void Shader::Load()
    switch (m_shaderId)
    {
    case BASIC_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture, STEREO(vs_basic_tex), STEREO(fs_basic_tex_noat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at, STEREO(vs_basic_tex), STEREO(fs_basic_tex_at));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_without_texture, STEREO(vs_basic_notex), STEREO(fs_basic_notex_noat));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_reflection_only, STEREO(vs_basic_tex), STEREO(fs_basic_refl));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_with_texture, STEREO(vs_classic_light_tex), STEREO(fs_classic_light_tex));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_without_texture, STEREO(vs_classic_light_notex), STEREO(fs_classic_light_notex));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex), STEREO(fs_decal_notex));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture, STEREO(vs_basic_tex), STEREO(fs_decal_tex));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean, STEREO(vs_kicker), STEREO(fs_basic_notex_noat));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture,       STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_tex_noat_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at,    STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_tex_at_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_without_texture,    STEREO(vs_basic_notex_noclip),         STEREO(fs_basic_notex_noat_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_reflection_only,    STEREO(vs_basic_tex_noclip),           STEREO(fs_basic_refl_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_with_texture,       STEREO(vs_classic_light_tex_noclip),   STEREO(fs_classic_light_tex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_without_texture,    STEREO(vs_classic_light_notex_noclip), STEREO(fs_classic_light_notex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex_noclip),         STEREO(fs_decal_notex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_decal_tex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean,            STEREO(vs_kicker_noclip),              STEREO(fs_basic_notex_noat_noclip));
       break;
    case BALL_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall, STEREO(vs_ball), STEREO(fs_ball_equirectangular_nodecal));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode, STEREO(vs_ball), STEREO(fs_ball_equirectangular_decal));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap, STEREO(vs_ball), STEREO(fs_ball_spherical_nodecal));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball), STEREO(fs_ball_spherical_decal));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug, STEREO(vs_ball), STEREO(fs_ball_debug));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail, STEREO(vs_ball), STEREO(fs_ball_trail));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode,              STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_decal_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap,           STEREO(vs_ball_noclip), STEREO(fs_ball_spherical_nodecal_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball_noclip), STEREO(fs_ball_spherical_decal_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_noclip), STEREO(fs_ball_debug_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_noclip), STEREO(fs_ball_trail_noclip));
       break;
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD, "vs_basic_dmd_noworld", "fs_basic_dmd_tex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world, STEREO(vs_basic_dmd_world), "fs_basic_dmd_tex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD, "vs_basic_dmd_noworld", "fs_basic_sprite_tex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_basic_dmd_noworld", "fs_basic_sprite_notex");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_basic_dmd_world), "fs_basic_sprite_tex");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         "vs_dmd_noworld",            "fs_dmd_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       "vs_dmd_noworld",            "fs_sprite_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_dmd_noworld",            "fs_sprite_notex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
       break;
    case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher), "fs_flasher");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher_noclip), "fs_flasher_noclip");
       break;
    case LIGHT_SHADER:
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, STEREO(vs_light), "fs_light_noshadow");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light), "fs_light_ballshadow");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, STEREO(vs_light_noclip), "fs_light_noshadow_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light_noclip), "fs_light_ballshadow_noclip");
       break;
    case STEREO_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, STEREO(vs_postprocess), STEREO(fs_pp_stereo_sbs));

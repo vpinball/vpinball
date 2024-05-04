@@ -8,7 +8,7 @@ function Process-Shader {
       '--platform osx     -p metal -O 3', # '--platform ios -p metal'
       '--platform windows -p 320_es    ', # '--platform android -p 320_es'
       '--platform windows -p 440       ', # '--platform linux -p440'
-      '--platform windows -p s_5_0 -O 3', 
+      '--platform windows -p s_5_0 -O 3', # '--platform windows -p s_5_0 --debug -O 0' for debug in Renderdoc & MS Visual Studio (see https://www.intel.com/content/www/us/en/developer/articles/technical/shader-debugging-for-bgfx-rendering-engine.html)
       '--platform windows -p spirv     ')
    $shaderc = ".\shaderc.exe"
 
@@ -42,18 +42,21 @@ $stOutput = @(("_"), ("_st_"))
 # Basic material shaders (also 'classic' light)
 Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
 New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
-for($k = 0; $k -lt 2; $k++)
+foreach ($variant2 in @("CLIP", "NOCLIP"))
 {
-  Process-Shader "vs_basic.sc" "basic.h" ("vs_kicker" + $stOutput[$k]) "vertex" @($stereo[$k], "KICKER")
-  Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_refl" + $stOutput[$k]) "fragment" @($stereo[$k], "REFL")
-  foreach ($variant in @("TEX", "NOTEX"))
+  for($k = 0; $k -lt 2; $k++)
   {
-    Process-Shader "vs_basic.sc"         "basic.h" ("vs_basic_" + $variant.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant)
-	Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_noat" + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "NOAT")
-	Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_at" + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "AT") # FIXME useless for notex
-    Process-Shader "fs_decal.sc"         "basic.h" ("fs_decal_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
-    Process-Shader "vs_basic.sc"         "basic.h" ("vs_classic_light_" + $variant.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], "CLASSIC_LIGHT", $variant)
-    Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, "NOSHADOW")
+    Process-Shader "vs_basic.sc" "basic.h" ("vs_kicker_" + $variant2.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant2, "KICKER")
+    Process-Shader "fs_basic.sc" "basic.h" ("fs_basic_refl_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant2, "REFL")
+    foreach ($variant in @("TEX", "NOTEX"))
+    {
+      Process-Shader "vs_basic.sc"         "basic.h" ("vs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant, $variant2)
+	  Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_noat_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOAT")
+	  Process-Shader "fs_basic.sc"         "basic.h" ("fs_basic_" + $variant.ToLower() + "_at_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "AT") # FIXME useless for notex
+      Process-Shader "fs_decal.sc"         "basic.h" ("fs_decal_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2)
+      Process-Shader "vs_basic.sc"         "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], "CLASSIC_LIGHT", $variant, $variant2)
+      Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOSHADOW")
+	}
   }
 }
 
@@ -63,15 +66,18 @@ Write-Host "`n>>>>>>>>>>>>>>>> Ball shader"
 New-Item -Path . -Name "../bgfx_ball.h" -ItemType "File" -Force -Value "// Ball Shaders`n"
 for($k = 0; $k -lt 2; $k++)
 {
-  Process-Shader "vs_ball.sc" "ball.h" ("vs_ball" + $stOutput[$k]) "vertex" @($stereo[$k])
-  Process-Shader "fs_ball_trail.sc" "ball.h" ("fs_ball_trail" + $stOutput[$k]) "fragment" @($stereo[$k])
-  Process-Shader "fs_ball_debug.sc" "ball.h" ("fs_ball_debug" + $stOutput[$k]) "fragment" @($stereo[$k])
-  foreach ($variant in @("EQUIRECTANGULAR", "SPHERICAL"))
+  foreach ($variant3 in @("CLIP", "NOCLIP"))
   {
-	 foreach ($subvariant in @("DECAL", "NODECAL"))
-	 {
-		Process-Shader "fs_ball.sc" "ball.h" ("fs_ball_" + $variant.ToLower() + "_" + $subvariant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $subvariant)
-	 }
+    Process-Shader "vs_ball.sc" "ball.h" ("vs_ball_" + $variant3.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant3)
+    Process-Shader "fs_ball_trail.sc" "ball.h" ("fs_ball_trail_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant3)
+    Process-Shader "fs_ball_debug.sc" "ball.h" ("fs_ball_debug_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant3)
+    foreach ($variant in @("EQUIRECTANGULAR", "SPHERICAL"))
+    {
+      foreach ($variant2 in @("DECAL", "NODECAL"))
+      {
+	    Process-Shader "fs_ball.sc" "ball.h" ("fs_ball_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, $variant3)
+	  }
+	}
   }
 }
 
@@ -79,14 +85,17 @@ for($k = 0; $k -lt 2; $k++)
 # DMD/Sprite shaders
 Write-Host "`n>>>>>>>>>>>>>>>> DMD & sprite shaders"
 New-Item -Path . -Name "../bgfx_dmd.h" -ItemType "File" -Force -Value "// DMD Shaders`n"
-Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_world_"    "vertex" @("WORLD")
-Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_world_st_" "vertex" @("WORLD", "STEREO")
-Process-Shader "vs_dmd.sc" "dmd.h" "vs_basic_dmd_noworld_"  "vertex"
-foreach ($variant in @("DMD", "SPRITE"))
+Process-Shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_"  "vertex"
+foreach ($variant3 in @("CLIP", "NOCLIP"))
 {
+  Process-Shader "vs_dmd.sc" "dmd.h" ("vs_dmd_world_" + $variant3.ToLower() + "_")    "vertex" @("WORLD", $variant3)
+  Process-Shader "vs_dmd.sc" "dmd.h" ("vs_dmd_world_" + $variant3.ToLower() + "_st_") "vertex" @("WORLD", "STEREO", $variant3)
   foreach ($variant2 in @("TEX", "NOTEX"))
   {
-	 Process-Shader "fs_dmd.sc" "dmd.h" ("fs_basic_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_") "fragment" @($variant, $variant2)
+    foreach ($variant in @("DMD", "SPRITE"))
+	{
+	  Process-Shader "fs_dmd.sc" "dmd.h" ("fs_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant, $variant2, $variant3)
+	}
   }
 }
 
@@ -94,19 +103,25 @@ foreach ($variant in @("DMD", "SPRITE"))
 # Flasher shaders
 Write-Host "`n>>>>>>>>>>>>>>>> Flasher shader"
 New-Item -Path . -Name "../bgfx_flasher.h" -ItemType "File" -Force -Value "// Flasher Shaders`n"
-Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_"    "vertex"
-Process-Shader "vs_flasher.sc" "flasher.h" "vs_flasher_st_" "vertex" @("STEREO")
-Process-Shader "fs_flasher.sc" "flasher.h" "fs_flasher_"    "fragment"
+foreach ($variant in @("CLIP", "NOCLIP"))
+{
+  Process-Shader "vs_flasher.sc" "flasher.h" ("vs_flasher_" + $variant.ToLower() + "_")    "vertex" @($variant)
+  Process-Shader "vs_flasher.sc" "flasher.h" ("vs_flasher_" + $variant.ToLower() + "_st_") "vertex" @("STEREO", $variant)
+  Process-Shader "fs_flasher.sc" "flasher.h" ("fs_flasher_" + $variant.ToLower() + "_")    "fragment" @($variant)
+}
 
 ################################
 # Light shaders
 Write-Host "`n>>>>>>>>>>>>>>>> Light shader"
 New-Item -Path . -Name "../bgfx_light.h" -ItemType "File" -Force -Value "// Light Shaders`n"
-Process-Shader "vs_light.sc" "light.h" "vs_light_"    "vertex"
-Process-Shader "vs_light.sc" "light.h" "vs_light_st_" "vertex" @("STEREO")
-foreach ($variant in @("NOSHADOW", "BALLSHADOW"))
+foreach ($variant in @("CLIP", "NOCLIP"))
 {
-  Process-Shader "fs_light.sc" "light.h" ("fs_light_" + $variant.ToLower() + "_") "fragment" @($variant)
+  Process-Shader "vs_light.sc" "light.h" ("vs_light_" + $variant.ToLower() + "_")    "vertex" @($variant)
+  Process-Shader "vs_light.sc" "light.h" ("vs_light_" + $variant.ToLower() + "_st_") "vertex" @($variant, "STEREO")
+  foreach ($variant2 in @("NOSHADOW", "BALLSHADOW"))
+  {
+    Process-Shader "fs_light.sc" "light.h" ("fs_light_" + $variant2.ToLower() + "_" + $variant.ToLower() + "_") "fragment" @($variant, $variant2)
+  }
 }
 
 ################################

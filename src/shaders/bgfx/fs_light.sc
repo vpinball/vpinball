@@ -1,4 +1,7 @@
 $input v_tablePos
+#ifdef CLIP
+	$input v_clipDistance
+#endif
 
 #include "common.sh"
 #include "ball_shadows.sh"
@@ -8,6 +11,7 @@ uniform vec4 lightColor2_falloff_power;
 uniform vec4 lightCenter_maxRange;
 uniform vec4 blend_modulate_vs_add; // single float, passed as vec4 (BGFX does not support float/int/bool uniforms)
 
+// Light don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
 EARLY_DEPTH_STENCIL void main()
 {
     const vec3 light_dir = v_tablePos - lightCenter_maxRange.xyz;
