@@ -1,4 +1,7 @@
 $input v_tablePos, v_texcoord0
+#ifdef CLIP
+	$input v_clipDistance
+#endif
 
 #include "common.sh"
 #include "ball_shadows.sh"
@@ -18,8 +21,14 @@ uniform vec4 lightCenter_doShadow;
 SAMPLER2D(tex_flasher_A, 0); // base texture
 SAMPLER2D(tex_flasher_B, 1); // second image
 
+// Flasher don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
 EARLY_DEPTH_STENCIL void main()
 {
+	#ifdef CLIP
+	if (v_clipDistance < 0.0)
+       discard;
+	#endif
+
    vec4 pixel1,pixel2;
 
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
