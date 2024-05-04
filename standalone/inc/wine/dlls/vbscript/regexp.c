@@ -32,7 +32,6 @@
  */
 
 #include <assert.h>
-#include <wctype.h>
 
 #include "vbscript.h"
 #include "regexp.h"

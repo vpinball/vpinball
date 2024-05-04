@@ -1,5 +1,5 @@
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/include/winternl.h	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/include/winternl.h	2023-12-09 20:25:35
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/include/winternl.h	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/winternl.h	2024-05-04 08:37:03
 @@ -20,8 +20,16 @@
  
  #ifndef __WINE_WINTERNL_H
@@ -17,8 +17,8 @@
  #include <windef.h>
  
  #ifdef __cplusplus
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/include/winnt.h	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/include/winnt.h	2023-12-09 20:25:35
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/include/winnt.h	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/winnt.h	2024-05-04 08:37:03
 @@ -420,10 +420,14 @@
  
  /* Compile time assertion */
@@ -34,7 +34,7 @@
  #endif
  
  /* Eliminate Microsoft C/C++ compiler warning 4715 */
-@@ -2377,6 +2381,7 @@
+@@ -2422,6 +2426,7 @@
  
  struct _TEB;
  
@@ -42,7 +42,7 @@
  #ifdef WINE_UNIX_LIB
  # ifdef __GNUC__
  NTSYSAPI struct _TEB * WINAPI NtCurrentTeb(void) __attribute__((pure));
-@@ -2438,6 +2443,13 @@
+@@ -2483,6 +2488,13 @@
  }
  #elif !defined(RC_INVOKED)
  # error You must define NtCurrentTeb() for your architecture
@@ -56,8 +56,8 @@
  #endif
  
  #ifdef NONAMELESSUNION
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/include/windef.h	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/include/windef.h	2023-12-09 20:25:35
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/include/windef.h	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/windef.h	2024-05-04 08:37:03
 @@ -21,6 +21,11 @@
  #ifndef _WINDEF_
  #define _WINDEF_
@@ -108,8 +108,8 @@
  
  #ifdef __cplusplus
  }
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/atl/atl.c	2023-12-09 10:11:39
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/atl/atl.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/atl/atl.c	2024-05-03 21:06:34
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/atl/atl.c	2024-05-04 08:37:03
 @@ -967,6 +967,7 @@
      return _ATL_VER;
  }
@@ -123,8 +123,8 @@
      return TRUE;
  }
 +#endif
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/kernelbase/locale.c	2023-12-09 10:11:39
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/kernelbase/locale.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/kernelbase/locale.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/kernelbase/locale.c	2024-05-04 08:37:03
 @@ -595,6 +595,7 @@
  
  static const NLS_LOCALE_LCID_INDEX *find_lcid_entry( LCID lcid )
@@ -218,9 +218,23 @@
          break;
      }
  
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/scrrun/dictionary.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/dictionary.c	2023-12-09 20:25:36
-@@ -517,6 +517,10 @@
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/scrrun/dictionary.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/dictionary.c	2024-05-04 08:37:03
+@@ -188,10 +188,12 @@
+     {
+         return hash == pair->hash && numeric_key_eq(key, &pair->key);
+     }
++#ifdef __STANDALONE__
+     else if (V_VT(&pair->key) == VT_EMPTY || V_VT(&pair->key) == VT_NULL)
+     {
+         return V_VT(&pair->key) == V_VT(key);
+     }
++#endif
+     else
+     {
+         WARN("Unexpected key type %#x.\n", V_VT(key));
+\ No newline at end of file
+@@ -521,6 +523,10 @@
      return get_typeinfo(IDictionary_tid, ppTInfo);
  }
  
@@ -232,7 +246,7 @@
                  UINT cNames, LCID lcid, DISPID *rgDispId)
  {
 \ No newline at end of file
-@@ -534,9 +538,15 @@
+@@ -538,9 +544,15 @@
  
      return hr;
  }
@@ -249,7 +263,7 @@
  {
      ITypeInfo *typeinfo;
 \ No newline at end of file
-@@ -554,6 +564,7 @@
+@@ -558,6 +570,7 @@
  
      return hr;
  }
@@ -258,7 +272,7 @@
  static HRESULT WINAPI dictionary_putref_Item(IDictionary *iface, VARIANT *Key, VARIANT *pRetItem)
  {
 \ No newline at end of file
-@@ -974,3 +985,7 @@
+@@ -982,3 +995,7 @@
  
      return S_OK;
  }
@@ -267,8 +281,8 @@
 +#include "dictionary_proxy.c"
 +#endif
 \ No newline at end of file
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/scrrun/filesystem.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/filesystem.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/scrrun/filesystem.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/filesystem.c	2024-05-04 08:37:03
 @@ -349,6 +349,11 @@
      return get_typeinfo(ITextStream_tid, ppTInfo);
  }
@@ -557,8 +571,8 @@
 +#include "filesystem_proxy.c"
 +#endif
 \ No newline at end of file
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/scrrun/scrrun.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/scrrun.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/scrrun/scrrun.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/scrrun.c	2024-05-04 08:37:03
 @@ -234,6 +234,7 @@
      classinfo->guid = guid;
  }
@@ -575,8 +589,8 @@
  
  /***********************************************************************
   *      DllGetClassObject (scrrun.@)
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/compile.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/compile.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/compile.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/compile.c	2024-05-04 08:37:03
 @@ -1074,7 +1074,9 @@
          break;
      case EXPR_CALL:
@@ -610,8 +624,8 @@
          }
      }
  
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/vbdisp.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbdisp.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/vbdisp.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbdisp.c	2024-05-04 08:37:03
 @@ -128,7 +128,11 @@
                  return DISP_E_MEMBERNOTFOUND; /* That's what tests show */
              }
@@ -903,8 +917,8 @@
  }
  
  static HRESULT WINAPI DispatchEx_GetIDsOfNames(IDispatchEx *iface, REFIID riid,
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/vbscript.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/vbscript.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript.c	2024-05-04 08:37:03
 @@ -91,7 +91,11 @@
          || This->state == SCRIPTSTATE_DISCONNECTED;
  }
@@ -933,8 +947,8 @@
  
      if(ctx->secmgr) {
          IInternetHostSecurityManager_Release(ctx->secmgr);
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/interp.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/interp.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/interp.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/interp.c	2024-05-04 08:37:03
 @@ -629,6 +629,12 @@
              return variant_call(ctx, ref.u.v, arg_cnt, res);
  
@@ -1063,8 +1077,8 @@
          LIST_FOR_EACH_ENTRY(item, &ctx->script->named_items, named_item_t, entry) {
              if(!(item->flags & SCRIPTITEM_GLOBALMEMBERS)) continue;
              disp = item->disp;
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/vbscript.h	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.h	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/vbscript.h	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript.h	2024-05-04 08:37:03
 @@ -32,6 +32,12 @@
  #include "vbscript_defs.h"
  
@@ -1078,7 +1092,7 @@
  
  typedef struct {
      void **blocks;
-@@ -389,6 +395,12 @@
+@@ -390,6 +396,12 @@
  HRESULT compile_script(script_ctx_t*,const WCHAR*,const WCHAR*,const WCHAR*,DWORD_PTR,unsigned,DWORD,vbscode_t**);
  HRESULT compile_procedure(script_ctx_t*,const WCHAR*,const WCHAR*,const WCHAR*,DWORD_PTR,unsigned,DWORD,class_desc_t**);
  HRESULT exec_script(script_ctx_t*,BOOL,function_t*,vbdisp_t*,DISPPARAMS*,VARIANT*);
@@ -1091,8 +1105,8 @@
  void release_dynamic_var(dynamic_var_t*);
  named_item_t *lookup_named_item(script_ctx_t*,const WCHAR*,unsigned);
  void release_named_item(named_item_t*);
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/vbscript_main.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript_main.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/vbscript_main.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript_main.c	2024-05-04 08:37:03
 @@ -39,7 +39,115 @@
  BSTR get_vbscript_string(int id)
  {
@@ -1235,8 +1249,8 @@
      return CLASS_E_CLASSNOTAVAILABLE;
  }
 +#endif
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/parser.y	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/parser.y	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/parser.y	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/parser.y	2024-05-04 08:37:03
 @@ -150,11 +150,11 @@
  %type <elseif> ElseIfs_opt ElseIfs ElseIf
  %type <class_decl> ClassDeclaration ClassBody
@@ -1326,8 +1340,8 @@
      class_decl->props = dim_decl;
      return class_decl;
  }
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/vbscript/global.c	2023-12-09 10:11:40
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/global.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/vbscript/global.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/global.c	2024-05-04 08:37:03
 @@ -28,6 +28,11 @@
  
  #include "wine/debug.h"
@@ -1340,11 +1354,10 @@
  WINE_DEFAULT_DEBUG_CHANNEL(vbscript);
  
  #define VB_E_CANNOT_CREATE_OBJ 0x800a01ad
-@@ -36,7 +41,153 @@
- /* Defined as extern in urlmon.idl, but not exported by uuid.lib */
+@@ -37,6 +42,152 @@
  const GUID GUID_CUSTOM_CONFIRMOBJECTSAFETY =
      {0x10200490,0xfa38,0x11d0,{0xac,0x0e,0x00,0xa0,0xc9,0xf,0xff,0xc0}};
-+
+ 
 +#ifdef __STANDALONE__
 +typedef struct {
 +    IDispatch IDispatch_iface;
@@ -1420,7 +1433,7 @@
 +{
 +    return E_NOTIMPL;
 +}
- 
++
 +static function_t* getref_lookup_function(script_ctx_t *ctx, const WCHAR* name) {
 +    function_t **funcs = ctx->script_obj->global_funcs;
 +    size_t i, cnt = ctx->script_obj->global_funcs_cnt;
@@ -1557,13 +1570,14 @@
  }
  
  static HRESULT Global_DateValue(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
-@@ -2298,8 +2473,16 @@
+@@ -2298,9 +2473,16 @@
          hres = E_NOTIMPL;
      }
  
 +#ifndef __STANDALONE__
      if(SUCCEEDED(hres))
          hres = show_msgbox(This->ctx, prompt, type, title, res);
+-
 +#else
 +    if(SUCCEEDED(hres)) {
 +        char buf[2048];
@@ -1571,10 +1585,10 @@
 +        external_log_info("MsgBox: prompt=%s", buf);
 +    }
 +#endif
- 
      SysFreeString(prompt);
      SysFreeString(title);
-@@ -2319,8 +2502,16 @@
+     return hres;
+@@ -2319,8 +2501,16 @@
      }
  
      obj = create_object(This->ctx, V_BSTR(arg));
@@ -1591,13 +1605,13 @@
  
      if(res) {
          hres = IUnknown_QueryInterface(obj, &IID_IDispatch, (void**)&V_DISPATCH(res));
-@@ -2456,14 +2647,129 @@
+@@ -2456,14 +2646,129 @@
  
  static HRESULT Global_DateDiff(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
  {
 +#ifndef __STANDALONE__
      FIXME("\n");
-+    return E_NOTIMPL;
+     return E_NOTIMPL;
 +#else
 +    SYSTEMTIME st1, st2;
 +    FILETIME ft1, ft2;
@@ -1608,7 +1622,7 @@
 +
 +    assert(3 <= args_cnt && args_cnt <= 5);
 +
-+    if (V_VT(arg) != VT_BSTR || V_VT(arg + 1) != VT_DATE || V_VT(arg + 2) != VT_DATE)
++    if (V_VT(arg) != VT_BSTR || !(V_VT(arg + 1) == VT_DATE || V_VT(arg + 1) == VT_BSTR) || V_VT(arg + 2) != VT_DATE)
 +        return E_INVALIDARG;
 +
 +    interval = V_BSTR(arg);
@@ -1636,7 +1650,7 @@
 +    else if (!wcsicmp(interval, L"w"))
 +        return E_NOTIMPL;
 +    else if (!wcsicmp(interval, L"ww"))
-     return E_NOTIMPL;
++        return E_NOTIMPL;
 +    else if (!wcsicmp(interval, L"h")) {
 +        ui1.LowPart = ft1.dwLowDateTime;
 +        ui1.HighPart = ft1.dwHighDateTime;
@@ -1721,7 +1735,7 @@
  }
  
  static HRESULT Global_TypeName(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
-@@ -2578,12 +2884,110 @@
+@@ -2578,12 +2883,113 @@
      return E_NOTIMPL;
  }
  
@@ -1747,8 +1761,8 @@
 +        break;
 +    default:
 +        return E_NOTIMPL;
- }
- 
++    }
++
 +    if (SafeArrayGetDim(sa) != 1) {
 +        return E_NOTIMPL;
 +    }
@@ -1808,8 +1822,8 @@
 +            memcpy(tmp + stringLen, delimiter, delimiterlen * sizeof(WCHAR));
 +            SysFreeString(string);
 +            string = tmp;
-+        }
-+
+ }
+ 
 +        stringLen = SysStringLen(string);
 +        strLen = SysStringLen(str);
 +        tmp = SysAllocStringLen(string, stringLen + strLen);
@@ -1817,7 +1831,10 @@
 +        SysFreeString(string);
 +        string = tmp;
 +
-+        SysFreeString(conv_str);
++        if (conv_str) {
++            SysFreeString(conv_str);
++            conv_str = NULL;
++        }
 +    }
 +
 +    SafeArrayUnaccessData(sa);
@@ -1833,7 +1850,7 @@
  static HRESULT Global_Split(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
  {
      BSTR string, delimiter = NULL;
-@@ -2962,6 +3366,7 @@
+@@ -2962,6 +3368,7 @@
  
  static HRESULT Global_FormatNumber(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
  {
@@ -1841,7 +1858,7 @@
      union
      {
          struct
-@@ -2990,8 +3395,90 @@
+@@ -2990,8 +3397,90 @@
      if (FAILED(hres)) return hres;
  
      return return_bstr(res, str);
@@ -1863,9 +1880,9 @@
 +           hres = to_int(args+1, &decimal_places);
 +           if (FAILED(hres))
 +              return hres;
-+        }
+ }
 +    }
-+
+ 
 +    if (args_cnt > 2) {
 +        if (V_VT(args+2) != VT_ERROR) {
 +           hres = to_int(args+2, &inc_leading_zero);
@@ -1898,8 +1915,8 @@
 +        setlocale(LC_NUMERIC, "");
 +
 +        swprintf(format, ARRAY_SIZE(format), L"%%'.%df", decimal_places);
- }
- 
++    }
++
 +    WCHAR buf[128];
 +    swprintf(buf, ARRAY_SIZE(buf), format, number);
 +
@@ -1932,7 +1949,7 @@
  static HRESULT Global_FormatCurrency(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
  {
      union
-@@ -3210,26 +3697,145 @@
+@@ -3210,26 +3699,145 @@
  
  static HRESULT Global_Eval(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
  {
@@ -2078,8 +2095,8 @@
  }
  
  static HRESULT Global_Err(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/oleaut32/oleaut.c	2023-12-09 10:11:39
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/oleaut32/oleaut.c	2023-12-09 20:25:36
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/oleaut32/oleaut.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/oleaut32/oleaut.c	2024-05-04 08:37:03
 @@ -282,9 +282,13 @@
  
      bstr = bstr_from_str(str);
@@ -2123,31 +2140,50 @@
  
  /***********************************************************************
   *		DllRegisterServer (OLEAUT32.@)
---- /Users/jmillard/vpx/wine-93f7ef86701f0b5f0828c8e0c4581b00873a7676/dlls/oleaut32/vartype.c	2023-12-09 10:11:39
-+++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/oleaut32/vartype.c	2023-12-09 20:25:36
-@@ -6533,15 +6533,21 @@
+--- /Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447/dlls/oleaut32/vartype.c	2024-05-03 21:06:35
++++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/oleaut32/vartype.c	2024-05-04 08:37:03
+@@ -6540,15 +6540,21 @@
  static HRESULT VARIANT_BstrFromReal(DOUBLE dblIn, LCID lcid, ULONG dwFlags,
-                                     BSTR* pbstrOut, LPCWSTR lpszFormat)
+                                     BSTR* pbstrOut, int ndigits)
  {
 +#ifndef __STANDALONE__
    _locale_t locale;
 +#endif
-   WCHAR buff[256];
+   WCHAR *e, buff[256];
+   int len;
  
    if (!pbstrOut)
      return E_INVALIDARG;
  
 +#ifndef __STANDALONE__
    if (!(locale = _create_locale(LC_ALL, "C"))) return E_OUTOFMEMORY;
-   _swprintf_l(buff, ARRAY_SIZE(buff), lpszFormat, locale, dblIn);
-   _free_locale(locale);
+   len = _swprintf_l(buff, ARRAY_SIZE(buff), L"%.*G", locale, ndigits, dblIn);
 +#else
-+  swprintf(buff, ARRAY_SIZE(buff), lpszFormat, dblIn);
++  len = swprintf(buff, ARRAY_SIZE(buff), L"%.*G", ndigits, dblIn);
++#endif
+   e = wcschr(buff, 'E');
+   if (e)
+   {
+@@ -6559,12 +6565,18 @@
+       extra_decimals = dot ? e - dot - 2 : 0;
+       if (labs(wcstol(e+1, NULL, 10)) + extra_decimals < ndigits)
+       {
++#ifndef __STANDALONE__
+           len = _swprintf_l(buff, ARRAY_SIZE(buff), L"%.*f", locale, ndigits, dblIn);
++#else
++          len = swprintf(buff, ARRAY_SIZE(buff), L"%.*f", ndigits, dblIn);
++#endif
+           while (len > 0 && (buff[len-1] == '0')) len--;
+       }
+   }
+   buff[len] = 0;
++#ifndef __STANDALONE__
+   _free_locale(locale);
 +#endif
  
    /* Negative zeroes are disallowed (some applications depend on this).
       If buff starts with a minus, and then nothing follows but zeroes
-@@ -6814,6 +6820,7 @@
+@@ -6837,6 +6849,7 @@
  
    *pbstrOut = NULL;
  
@@ -2155,7 +2191,7 @@
    if (dwFlags & VAR_CALENDAR_THAI)
        st.wYear += 553; /* Use the Thai buddhist calendar year */
    else if (dwFlags & (VAR_CALENDAR_HIJRI|VAR_CALENDAR_GREGORIAN))
-@@ -6847,6 +6854,11 @@
+@@ -6870,6 +6883,11 @@
      if (!GetTimeFormatW(lcid, dwFormatFlags, &st, NULL, time, ARRAY_SIZE(date)-(time-date)))
        return E_INVALIDARG;
    }
@@ -2167,7 +2203,7 @@
  
    *pbstrOut = SysAllocString(date);
    if (*pbstrOut)
-@@ -6911,6 +6923,12 @@
+@@ -6934,6 +6952,12 @@
      dwResId++; /* Use negative form */
  
  VarBstrFromBool_GetLocalised:

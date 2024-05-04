@@ -4,6 +4,23 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/04/24
+    * Bump Wine source to 9.8 [655de4b0](https://gitlab.winehq.org/wine/wine/-/tree/655de4b0bf09746cd163dc771abd2c0f3c777447)
+
+* 05/03/24
+    * Add support for PuP background frames
+
+* 05/02/24
+    * Add support for PUP LabelInit
+    * Fix TTF initialization (@francisdb)
+
+* 05/01/24
+    * Implement case insensitive path helper (@WildCoder)
+    * Add latest updates to B2S since initial port
+
+* 04/30/24
+    * Add support for PuP Shadowed and Outline labels
+
 * 04/27/24
     * Add support for child PuP screens
     * Share `PUPManager` between `PUPPlugin` and `PUPPinDisplay`

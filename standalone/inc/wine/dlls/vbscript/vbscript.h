@@ -193,6 +193,7 @@ struct vbcaller {
 
     LONG ref;
 
+    script_ctx_t *ctx;
     IServiceProvider *caller;
 };
 

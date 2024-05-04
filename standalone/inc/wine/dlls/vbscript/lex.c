@@ -19,7 +19,6 @@
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
-#include <wctype.h>
 
 #include "vbscript.h"
 #include "parse.h"

@@ -22,7 +22,6 @@
 #include <limits.h>
 #include <assert.h>
 #include <wchar.h>
-#include <wctype.h>
 
 #include "windef.h"
 #include "winbase.h"

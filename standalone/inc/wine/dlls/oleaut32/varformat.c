@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <wctype.h>
 
 #include "windef.h"
 #include "winbase.h"
