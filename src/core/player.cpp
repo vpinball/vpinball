@@ -222,32 +222,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
-   m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
-   if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
-      m_maxFramerate = 24;
-   m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
-   if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-   {
-      const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
-      switch (vsync)
-      {
-      case -1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-      case 0: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
-      case 1: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
-      case 2: m_maxFramerate = 0; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      default: m_maxFramerate = vsync; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      }
-   }
-   if (m_maxFramerate < 0)
-      m_maxFramerate = 0;
-   if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-      m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
-   if (useVR)
-   {
-      // Disable VSync for VR (sync is performed by the OpenVR runtime)
-      m_videoSyncMode = VideoSyncMode::VSM_NONE;
-      m_maxFramerate = 0;
-   }
 
    m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
 
@@ -262,54 +236,85 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_dmd = int2(0,0);
 
    PLOGI << "Creating main window"; // For profiling
-
-   int wnd_width, wnd_height;
-   if (stereo3D == STEREO_VR)
    {
-      m_fullScreen = false;
-      wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
-      wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
-   }
-   else
-   {
-      m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
-      // command line override
-      if (g_pvp->m_disEnableTrueFullscreen == 0)
+      #if defined(_MSC_VER) && !defined(__STANDALONE__)
+         WNDCLASS wc;
+         ZeroMemory(&wc, sizeof(wc));
+         wc.hInstance = g_pvp->theInstance;
+         #ifndef ENABLE_SDL_VIDEO
+         wc.lpfnWndProc = PlayerWindowProc;
+         #elif defined(UNICODE)
+         wc.lpfnWndProc = ::DefWindowProcW;
+         #else
+         wc.lpfnWndProc = ::DefWindowProcA;
+         #endif
+         wc.lpszClassName = WIN32_PLAYER_WND_CLASSNAME;
+         wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
+         wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+         ::RegisterClass(&wc);
+         #ifdef ENABLE_SDL_VIDEO
+         SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_pvp->theInstance);
+         #endif
+      #endif
+      
+      int wnd_width, wnd_height;
+      if (stereo3D == STEREO_VR)
+      {
          m_fullScreen = false;
-      else if (g_pvp->m_disEnableTrueFullscreen == 1)
-         m_fullScreen = true;
-      wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-      wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, wnd_width * 9 / 16);
+         wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
+         wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
+      }
+      else
+      {
+         m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
+         // command line override
+         if (g_pvp->m_disEnableTrueFullscreen == 0)
+            m_fullScreen = false;
+         else if (g_pvp->m_disEnableTrueFullscreen == 1)
+            m_fullScreen = true;
+         wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
+         wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, wnd_width * 9 / 16);
+      }
+      const int display = g_pvp->m_primaryDisplay ? -1 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
+      const int requestedRefreshRate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
+      const bool video10bit = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
+      const int colordepth = (video10bit && m_fullScreen && stereo3D != STEREO_VR) ? 30 : 32;
+      if (!m_fullScreen && video10bit)
+         ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
+
+      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, colordepth, requestedRefreshRate);
+
+      int pfRefreshRate = m_playfieldWnd->GetRefreshRate();
+      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
+      if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
+         m_maxFramerate = 24;
+      if (m_maxFramerate <= 0) // Negative or 0 is display refresh rate
+         m_maxFramerate = pfRefreshRate;
+      m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
+      if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+      {
+         const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
+         switch (vsync)
+         {
+         case -1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
+         case 0: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
+         case 1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
+         case 2: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         default: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         }
+      }
+      if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
+         m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
+      if (useVR)
+      {
+         // Disable VSync for VR (sync is performed by the OpenVR runtime)
+         m_videoSyncMode = VideoSyncMode::VSM_NONE;
+         m_maxFramerate = pfRefreshRate;
+      }
+      m_maxFramerate = min(m_maxFramerate, pfRefreshRate);
+      PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
    }
-   const int display = g_pvp->m_primaryDisplay ? -1 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-   const int refreshrate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
-   const bool video10bit = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
-   const int colordepth = (video10bit && m_fullScreen && stereo3D != STEREO_VR) ? 30 : 32;
-   if (!m_fullScreen && video10bit)
-      ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
 
-
-#if defined(_MSC_VER) && !defined(__STANDALONE__)
-   WNDCLASS wc;
-   ZeroMemory(&wc, sizeof(wc));
-   wc.hInstance = g_pvp->theInstance;
-   #ifndef ENABLE_SDL_VIDEO
-   wc.lpfnWndProc = PlayerWindowProc;
-   #elif defined(UNICODE)
-   wc.lpfnWndProc = ::DefWindowProcW;
-   #else
-   wc.lpfnWndProc = ::DefWindowProcA;
-   #endif
-   wc.lpszClassName = WIN32_PLAYER_WND_CLASSNAME;
-   wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
-   wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-   ::RegisterClass(&wc);
-   #ifdef ENABLE_SDL_VIDEO
-   SDL_RegisterApp(WIN32_PLAYER_WND_CLASSNAME, 0, g_pvp->theInstance);
-   #endif
-#endif
-
-   m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, colordepth, refreshrate);
 
    // Touch screen support
 
@@ -436,8 +441,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_renderer->DisableStaticPrePass(playMode != 0);
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
-   m_maxFramerate = (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate == 0) ? refreshrate : min(m_maxFramerate, refreshrate);
-   PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << refreshrate;
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
