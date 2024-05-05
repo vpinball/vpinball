@@ -1625,7 +1625,11 @@ static int get_calendar_info( const NLS_LOCALE_DATA *locale, CALID id, CALTYPE t
 
     if (id != CAL_GREGORIAN && type != CAL_ITWODIGITYEARMAX)
     {
+#ifndef __STANDALONE__
         const USHORT *ids = locale_strings + locale->scalendartype;
+#else
+        const USHORT *ids = (const USHORT *)(locale_strings + locale->scalendartype);
+#endif
         for (i = 0; i < ids[0]; i++) if (ids[1 + i] == id) break;
         if (i == ids[0]) goto invalid;
     }
@@ -2117,7 +2121,11 @@ static const WCHAR *get_decomposition( WCHAR ch, unsigned int *ret_len )
     if (pos >> 13)
     {
         if (get_char_props( norm_info, ch ) != 0xbf) return NULL;
+#ifndef __STANDALONE__
         ret = (const USHORT *)norm_info + norm_info->decomp_seq + (pos & 0x1fff);
+#else
+        ret = (const WCHAR *)((const USHORT *)norm_info + norm_info->decomp_seq + (pos & 0x1fff));
+#endif
         len = pos >> 13;
     }
     else
@@ -2132,7 +2140,11 @@ static const WCHAR *get_decomposition( WCHAR ch, unsigned int *ret_len )
         for ( ; pos < end; pos++)
         {
             if (pairs[pos].src != (WCHAR)ch) continue;
+#ifndef __STANDALONE__
             ret = (const USHORT *)norm_info + norm_info->decomp_seq + (pairs[pos].dst & 0x1fff);
+#else
+            ret = (const WCHAR *)((const USHORT *)norm_info + norm_info->decomp_seq + (pairs[pos].dst & 0x1fff));
+#endif
             len = pairs[pos].dst >> 13;
             break;
         }
@@ -2149,7 +2161,11 @@ static const WCHAR *get_decomposition( WCHAR ch, unsigned int *ret_len )
 static WCHAR compose_chars( WCHAR ch1, WCHAR ch2 )
 {
     const USHORT *table = (const USHORT *)norm_info + norm_info->comp_hash;
+#ifndef __STANDALONE__
     const WCHAR *chars = (const USHORT *)norm_info + norm_info->comp_seq;
+#else
+    const WCHAR *chars = (const WCHAR *)((const USHORT *)norm_info + norm_info->comp_seq);
+#endif
     unsigned int hash, start, end, i;
     WCHAR ch[3];
 
@@ -4341,7 +4357,11 @@ BOOL WINAPI DECLSPEC_HOTPATCH Internal_EnumCalendarInfo( CALINFO_ENUMPROCW proc,
     if (id == ENUM_ALL_CALENDARS)
     {
         count = locale_strings[locale->scalendartype];
+#ifndef __STANDALONE__
         calendars = locale_strings + locale->scalendartype + 1;
+#else
+        calendars = (const USHORT *)(locale_strings + locale->scalendartype + 1);
+#endif
     }
     else if (id <= CAL_UMALQURA)
     {
@@ -4417,7 +4437,11 @@ BOOL WINAPI DECLSPEC_HOTPATCH Internal_EnumDateFormats( DATEFMT_ENUMPROCW proc,
         return FALSE;
     }
 
+#ifndef __STANDALONE__
     calendars = locale_strings + locale->scalendartype;
+#else
+    calendars = (const USHORT *)(locale_strings + locale->scalendartype);
+#endif
 
     switch (flags & ~LOCALE_USE_CP_ACP)
     {
