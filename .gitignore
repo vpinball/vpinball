@@ -30,5 +30,5 @@ standalone/linux-aarch64/external
 
 # local Microsoft Visual Studio files
 VisualPinball.sln
-VisualPinball.vcxproj
-VisualPinball.vcxproj.filters
+/*.vcxproj
+/*.vcxproj.filters

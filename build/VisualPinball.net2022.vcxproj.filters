@@ -114,51 +114,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src/utils/def.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/parts/dragpoint.cpp">
-      <Filter>parts</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/extern.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/hid.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/ieditable.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/iselect.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/parts/pinbinary.cpp">
-      <Filter>parts</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/pininput.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/pinundo.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/main.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/vpinball.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/wintimer.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/ui/worker.cpp">
-      <Filter>ui</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/bulb.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/stdafx.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
     <ClCompile Include="src/audio/mixer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -180,20 +135,35 @@
     <ClCompile Include="src/core/TableDB.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src/core/extern.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/ieditable.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/iselect.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/pininput.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/pinundo.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/main.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/vpinball.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/stdafx.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
     <ClCompile Include="src/math/matrix.cpp">
       <Filter>math</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/fileio.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/lzwreader.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/lzwwriter.cpp">
-      <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="src/parts/ball.cpp">
       <Filter>parts</Filter>
@@ -214,6 +184,12 @@
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="src/parts/flipper.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="src/parts/dragpoint.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
+    <ClCompile Include="src/parts/pinbinary.cpp">
       <Filter>parts</Filter>
     </ClCompile>
     <ClCompile Include="src/parts/gate.cpp">
@@ -288,6 +264,9 @@
     <ClCompile Include="src/physics/quadtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="src/plugins/PluginManager.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -348,30 +327,6 @@
     <ClCompile Include="src/renderer/Window.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/memutil.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/variant.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/BlackBox.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/CrashHandler.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/MemoryStatus.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/StackTrace.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/hash.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
-    <ClCompile Include="src/utils/objloader.cpp">
-      <Filter>utils</Filter>
-    </ClCompile>
     <ClCompile Include="src/ui/hitrectsur.cpp">
       <Filter>ui</Filter>
     </ClCompile>
@@ -391,6 +346,9 @@
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="src/ui/codeview.cpp">
+      <Filter>ui</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/worker.cpp">
       <Filter>ui</Filter>
     </ClCompile>
     <ClCompile Include="src/ui/dialogs/AboutDialog.cpp">
@@ -576,6 +534,51 @@
     <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src/utils/def.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/hid.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/wintimer.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/bulb.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/fileio.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/lzwreader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/lzwwriter.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/memutil.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/variant.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/BlackBox.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/CrashHandler.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/MemoryStatus.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/StackTrace.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/hash.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src/utils/objloader.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
     </ClCompile>
@@ -638,19 +641,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src/core/def.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/eventproxy.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/ui/resource.h">
-      <Filter>ui</Filter>
-    </ClInclude>
     <ClInclude Include="vpinball.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="src/core/vpversion.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/audioplayer.h">
@@ -664,6 +655,12 @@
     </ClInclude>
     <ClInclude Include="src/audio/mixer.h">
       <Filter>audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/def.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/vpversion.h">
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/core/extern.h">
       <Filter>core</Filter>
@@ -923,6 +920,12 @@
     <ClInclude Include="src/physics/quadtree.h">
       <Filter>physics</Filter>
     </ClInclude>
+    <ClInclude Include="src/plugins/PluginManager.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src/plugins/VPXPlugin.h">
+      <Filter>core</Filter>
+    </ClInclude>
     <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
     </ClInclude>
@@ -998,56 +1001,8 @@
     <ClInclude Include="src/renderer/Window.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/hash.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/lzwwriter.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/lzwreader.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/fileio.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/helpers.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/BlackBox.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/CrashHandler.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/MemoryStatus.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/StackTrace.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/objloader.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/variant.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/vector.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/vectorsort.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/memutil.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/wintimer.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/bulb.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/hid.h">
-      <Filter>utils</Filter>
+    <ClInclude Include="src/ui/resource.h">
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/worker.h">
       <Filter>ui</Filter>
@@ -1258,6 +1213,60 @@
     </ClInclude>
     <ClInclude Include="src/ui/properties/TableLightsProperty.h">
       <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/eventproxy.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/hash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/lzwwriter.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/lzwreader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/fileio.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/helpers.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/BlackBox.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/CrashHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/MemoryStatus.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/StackTrace.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/objloader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/variant.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/vector.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/vectorsort.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/memutil.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/wintimer.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/bulb.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/hid.h">
+      <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/bass.h">
       <Filter>third-party</Filter>

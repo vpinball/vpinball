@@ -294,14 +294,17 @@ public:
    void OnIdle();
 
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
-   int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
-   int m_mainLoopPhase = 0;
    U64 m_lastPresentFrameTick = 0;
    bool m_lastFrameSyncOnVBlank;
    bool m_lastFrameSyncOnFPS;
+
+private:
+   int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+   int m_mainLoopPhase = 0;
    bool m_curFrameSyncOnVBlank = false;
    bool m_curFrameSyncOnFPS = false;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
+   unsigned int m_onPrepareFrameEventId;
 #pragma endregion
 
 
