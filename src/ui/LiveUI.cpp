@@ -2150,6 +2150,8 @@ void LiveUI::UpdateMainUI()
                popup_audio_settings = true;
             if (ImGui::MenuItem("Video Options"))
                popup_video_settings = true;
+            if (ImGui::MenuItem("Nudge Options"))
+               m_ShowPlumb = true;
             ImGui::EndMenu();
          }
          m_menubar_height = ImGui::GetWindowSize().y;
@@ -2259,6 +2261,8 @@ void LiveUI::UpdateMainUI()
 
    if (ImGui::IsPopupOpen(ID_BAM_SETTINGS))
       UpdateHeadTrackingModal();
+
+   UpdatePlumbWindow();
 #endif
 
    if (m_ShowSplashModal && !ImGui::IsPopupOpen(ID_MODAL_SPLASH))
@@ -3444,6 +3448,154 @@ void LiveUI::UpdateHeadTrackingModal()
 #endif
 }
 
+void LiveUI::UpdatePlumbWindow()
+{
+   // TODO table or global settings ?
+   if (!m_ShowPlumb)
+      return;
+   if (ImGui::Begin("Nudge & Plumb Settings", &m_ShowPlumb, ImGuiWindowFlags_AlwaysAutoResize))
+   {
+      // Physical accelerator settings
+      bool accEnabled = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true);
+      if (ImGui::Checkbox("Acc. Enabled", &accEnabled))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWEnabled"s, accEnabled);
+         m_player->ReadAccelerometerCalibration();
+      }
+      ImGui::BeginDisabled(!accEnabled);
+      int accMax[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100) };
+      if (ImGui::InputInt2("Acc. Maximum", accMax))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[0]);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[1]);
+         m_player->ReadAccelerometerCalibration();
+      }
+      int accGain[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150) };
+      if (ImGui::InputInt2("Acc. Gain", accGain))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, accGain[0]);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, accGain[1]);
+         m_player->ReadAccelerometerCalibration();
+      }
+      int accSensitivity = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500);
+      if (ImGui::InputInt("Acc. Sensitivity", &accSensitivity))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "NudgeSensitivity"s, accSensitivity);
+         m_player->ReadAccelerometerCalibration();
+      }
+      bool accOrientationEnabled = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false); // TODO Legacy stuff => remove and only keep rotation
+      int accOrientation = accOrientationEnabled ? m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 500) : 0;
+      if (ImGui::InputInt("Acc. Rotation", &accOrientation))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, accOrientation == 0 ? false : true);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, accOrientation);
+         m_player->ReadAccelerometerCalibration();
+      }
+      bool accFaceUp = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true);
+      if (ImGui::Checkbox("Acc. Face Up", &accFaceUp))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, accFaceUp);
+         m_player->ReadAccelerometerCalibration();
+      }
+      bool accFilter = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
+      if (ImGui::Checkbox("Acc. Filter", &accFilter))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "EnableNudgeFilter"s, accFilter);
+         m_player->ReadAccelerometerCalibration();
+      }
+      ImGui::EndDisabled();
+
+      ImGui::Separator();
+
+      // Tilt plumb settings
+      bool enablePlumbTilt = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
+      if (ImGui::Checkbox("Enable virtual Tilt plumb", &enablePlumbTilt))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, enablePlumbTilt);
+         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
+      }
+      ImGui::BeginDisabled(!enablePlumbTilt);
+      int plumbTiltThreshold = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400);
+      if (ImGui::InputInt("Tilt threshold", &plumbTiltThreshold))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, plumbTiltThreshold);
+         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
+      }
+      ImGui::EndDisabled();
+
+      ImGui::Separator();
+
+      ImGui::Text("Nudge & Plumb State");
+      const int panelSize = 100;
+      if (ImGui::BeginTable("PlumbInfo", 2, ImGuiTableFlags_Borders))
+      {
+         ImGui::TableSetupColumn("Col1", ImGuiTableColumnFlags_WidthFixed, panelSize * m_dpi);
+         ImGui::TableSetupColumn("Col2", ImGuiTableColumnFlags_WidthFixed, panelSize * m_dpi);
+      
+         ImGui::TableNextColumn();
+         ImGui::Text("Acceleration");
+         ImGui::TableNextColumn();
+         ImGui::Text("Plumb X");
+         ImGui::TableNextRow();
+
+         const ImVec2 fullSize = ImVec2(panelSize * m_dpi, panelSize * m_dpi);
+         const ImVec2 halfSize = fullSize * 0.5f;
+         ImGui::TableNextColumn();
+         {
+            ImGui::BeginChild("Acc", fullSize);
+            const ImVec2 &pos = ImGui::GetWindowPos();
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
+            const Vertex2D &acc = m_player->GetRawAccelerometer(); // Range: -1..1
+            ImVec2 accPos = pos + halfSize + ImVec2(acc.x, acc.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
+            ImGui::GetWindowDrawList()->AddCircleFilled(accPos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
+            ImGui::EndChild();
+         }
+         ImGui::TableNextColumn();
+         {
+            ImGui::BeginDisabled(!enablePlumbTilt);
+            ImGui::BeginChild("PlumbX", fullSize);
+            const ImVec2 &pos = ImGui::GetWindowPos();
+            const Vertex2D &plumb = m_player->m_physics->GetPlumbPos();
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.x + plumb.x * 100.f, fullSize.y), IM_COL32_WHITE);
+            ImGui::EndChild();
+            ImGui::EndDisabled();
+         }
+         ImGui::TableNextRow();
+
+         ImGui::TableNextColumn();
+         ImGui::Text("Nudge");
+         ImGui::TableNextColumn();
+         ImGui::Text("Plumb Y");
+         ImGui::TableNextRow();
+
+         ImGui::TableNextColumn();
+         {
+            ImGui::BeginChild("Nudge", fullSize);
+            const ImVec2 &pos = ImGui::GetWindowPos();
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
+            const Vertex3Ds &nudge = m_player->m_physics->GetNudge(); // Range: -1..1
+            ImVec2 nudgePos = pos + halfSize + ImVec2(nudge.x, nudge.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
+            ImGui::GetWindowDrawList()->AddCircleFilled(nudgePos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
+            ImGui::EndChild();
+         }
+         ImGui::TableNextColumn();
+         {
+            ImGui::BeginDisabled(!enablePlumbTilt);
+            ImGui::BeginChild("PlumbY", ImVec2(panelSize * m_dpi, panelSize * m_dpi));
+            const ImVec2 &pos = ImGui::GetWindowPos();
+            const Vertex2D& plumb = m_player->m_physics->GetPlumbPos();
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.x + plumb.y * 100.f, fullSize.y), IM_COL32_WHITE);
+            ImGui::EndChild();
+            ImGui::EndDisabled();
+         }
+         ImGui::EndTable();
+      }
+   }
+   ImGui::End();
+}
+
 void LiveUI::UpdateRendererInspectionModal()
 {
    m_renderer->DisableStaticPrePass(false);
@@ -3549,9 +3701,8 @@ void LiveUI::UpdateRendererInspectionModal()
 	   
       // Other detailed information
       ImGui::Text("%s", m_player->GetPerfInfo().c_str());
-
-      ImGui::End();
    }
+   ImGui::End();
 }
 
 void LiveUI::UpdateMainSplashModal()

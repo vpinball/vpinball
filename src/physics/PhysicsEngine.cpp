@@ -8,15 +8,9 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
 
    m_plumb = Vertex2D(0.f, 0.f);
    m_plumbVel = Vertex2D(0.f, 0.f);
-   m_plumbTiltThreshold = (float)table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(1.0 / 1000.0);
-   m_enablePlumbTilt = table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
-
-   m_enableNudgeFilter = table->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
 
    // Initialize legacy nudging.
-   m_legacyNudge = table->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyNudge"s, false);
-   m_legacyNudgeStrength = table->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
-   m_legacyNudgeBack = Vertex2D(0.f, 0.f);
+   m_legacyNudgeBack = Vertex2D(0.f, 0.f); 
 
    // Initialize new nudging.
    m_tableVel.SetZero();
@@ -44,6 +38,8 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
    //   zeta = c / (2 sqrt(k)).
    // Solving for the damping coefficient c, we get
    m_nudgeDamping = dampingRatio * 2.0f * sqrtf(m_nudgeSpring);
+
+   ReadNudgeSettings(table->m_settings);
 
    for (IEditable *const pe : table->m_vedit)
    {
@@ -259,7 +255,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       //   u'' = -k u - c u'
       // with a spring constant k and a damping coefficient c
       const Vertex3Ds force = -m_nudgeSpring * m_tableDisplacement - m_nudgeDamping * m_tableVel;
-      m_tableVel += (float)PHYS_FACTOR * force;
+      m_tableVel          += (float)PHYS_FACTOR * force;
       m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
 
       m_tableVelDelta = m_tableVel - m_tableVelOld;
@@ -302,9 +298,10 @@ void PhysicsEngine::UpdateNudge(float dtime)
       // force of the hook, and the dampening force of the air.  Here, force is exerted only by the table tilting
       // (the string) and dampening and friction forces are lumped together with a constant, and gravity is not
       // present.
-      const Vertex2D &nudge = m_nudge;
+      const Vertex2D nudge = Vertex2D(m_nudge.x * 2.0f, m_nudge.y * 2.0f); // For some reason, the original code needs a normalized to -2..2 value
+      //const Vertex2D nudge = Vertex2D(GetNudge().x * 2.0f, GetNudge().y * 2.0f); // GetNudge also takes in account the table velocity (keyboard nudge) => if doing this we must trigger mechanical tilt and not nudge
       const float ax = sinf((nudge.x - m_plumb.x) * (float)(M_PI / 5.0));
-      const float ay = sinf((nudge.x - m_plumb.y) * (float)(M_PI / 5.0));
+      const float ay = sinf((nudge.y - m_plumb.y) * (float)(M_PI / 5.0));
 
       // Add force to the plumb.
       m_plumbVel.x += (float)(825.0 * 0.25) * ax * dtime;
@@ -335,15 +332,19 @@ void PhysicsEngine::UpdateNudge(float dtime)
          m_plumbVel.SetZero();
          m_plumb.SetZero();
       }
-
-      // Update position.
-      m_plumb += m_plumbVel * dtime;
+      else
+      {
+         // Update position.
+         m_plumb += m_plumbVel * dtime;
+      }
 
       // Fire event (same as keyboard tilt)
       if (m_plumbTiltHigh != tilted)
       {
          m_plumbTiltHigh = tilted;
+         // this triggers front nudge instead of mechanical (so using the accelerometer to simulate keyboard nudge which would be a surprising use case)
          g_pplayer->m_pininput.FireKeyEvent(m_plumbTiltHigh ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eCenterTiltKey]);
+         //g_pplayer->m_pininput.FireKeyEvent(m_plumbTiltHigh ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eMechanicalTilt]);
       }
 
       #else
@@ -402,9 +403,22 @@ void PhysicsEngine::UpdateNudge(float dtime)
    }
 }
 
+void PhysicsEngine::ReadNudgeSettings(Settings& settings)
+{
+   m_enablePlumbTilt = settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
+   m_plumbTiltThreshold = (float)settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(1.0 / 1000.0);
+
+   m_enableNudgeFilter = settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
+
+   m_legacyNudge = settings.LoadValueWithDefault(Settings::Player, "EnableLegacyNudge"s, false);
+   m_legacyNudgeStrength = settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
+}
+
 Vertex3Ds PhysicsEngine::GetNudge() const
 {
-   return {m_nudge.x - m_tableVelDelta.x, m_nudge.y - m_tableVelDelta.y, 0.f};
+   // This value is added to ball speed after each physics simulation step.
+   // It should be homogenous to a speed which is not the true here for m_nudge (homogenous to an acceleration => multiply by step length ?)
+   return Vertex3Ds(m_nudge.x - m_tableVelDelta.x, m_nudge.y - m_tableVelDelta.y, - m_tableVelDelta.z);
 }
 
 Vertex2D PhysicsEngine::GetScreenNudge() const

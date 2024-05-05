@@ -27,8 +27,10 @@ public:
    bool RecordContact(const CollisionEvent& newColl);
 
    void Nudge(float angle, float force);
-   Vertex3Ds GetNudge() const;
-   Vertex2D GetScreenNudge() const;
+   Vertex3Ds GetNudge() const; // More or less nudge velocity (table velocity and "nudge force")
+   Vertex2D GetScreenNudge() const; // Table displacement
+   const Vertex2D& GetPlumbPos() const { return m_plumb; } // Plumb position on the tilt circle plane
+   void ReadNudgeSettings(Settings& settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 

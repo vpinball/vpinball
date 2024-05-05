@@ -78,6 +78,7 @@ private:
    void UpdateAnaglyphCalibrationModal();
    void UpdateRendererInspectionModal();
    void UpdateHeadTrackingModal();
+   void UpdatePlumbWindow();
 
    // UI Selection & properties
    void ImageProperties();
@@ -211,6 +212,7 @@ private:
    bool m_ShowUI = false;
    bool m_ShowSplashModal = false;
    bool m_ShowBAMModal = false;
+   bool m_ShowPlumb = false;
    bool m_flyMode = false;
    bool m_RendererInspection = false;
    bool m_disable_esc = false; // Option for keyboard shortcuts
