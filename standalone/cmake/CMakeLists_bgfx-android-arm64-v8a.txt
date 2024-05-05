@@ -191,6 +191,10 @@ add_library(vpinball SHARED
    src/physics/quadtree.cpp
    src/physics/quadtree.h
 
+   src/plugins/PluginManager.h
+   src/plugins/PluginManager.cpp
+   src/plugins/VPXPlugin.h
+
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp
    src/renderer/Anaglyph.h

@@ -705,25 +705,29 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
    m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
 
-   // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
-   // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
-   PLOGI << "Prerendering static parts"; // For profiling
-   m_renderer->RenderStaticPrepass();
+   // Initialize stereo rendering
+   m_renderer->UpdateStereoShaderState();
+
+   ReadAccelerometerCalibration();
 
 #ifdef PLAYBACK
    if (m_playback)
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
-   // Initialize stereo rendering
-   m_renderer->UpdateStereoShaderState();
+   m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
 
-   ReadAccelerometerCalibration();
+   // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
+   m_onPrepareFrameEventId = PluginManager::GetEventID(VPX_EVT_ON_PREPARE_FRAME);
+   PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_GAME_START), nullptr);
+
+   // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
+   // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
+   PLOGI << "Prerendering static parts"; // For profiling
+   m_renderer->RenderStaticPrepass();
 
    wintimer_init();
    m_physics->StartPhysics();
-
-   m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
 
    m_progressDialog.SetProgress("Starting..."s, 100);
 
@@ -790,6 +794,9 @@ Player::~Player()
    }
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
+
+   // Signal plugins early since most fields will become invalid
+   PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_GAME_END), nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -1701,6 +1708,8 @@ void Player::PrepareFrame()
    m_LastKnownGoodCounter++;
    m_startFrameTick = usec();
    g_frameProfiler.OnPrepare();
+
+   PluginManager::BroadcastEvent(m_onPrepareFrameEventId, nullptr);
 
    m_physics->OnPrepareFrame();
 

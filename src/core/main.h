@@ -319,6 +319,8 @@ class SCNotification { };
 #include "audio/pinsound.h"
 #include "parts/pinbinary.h"
 
+#include "plugins/PluginManager.h"
+
 #include "extern.h"
 
 #include "vpinball_h.h"
