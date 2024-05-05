@@ -332,17 +332,17 @@ public:
    #endif
 
    float m_NudgeShake; // whether to shake the screen during nudges and how much
-   int2 m_curAccel[PININ_JOYMXCNT];
 
 private:
-   mutable Vertex2D m_accelerometer; // lazily evaluated sum of joystick mapped accelerometers, applying clamping then gain
+   int2 m_accelerometerMax; // Accelerometer max value X/Y axis (in -JOYRANGEMX..JOYRANGEMX renge)
+   int2 m_curAccel[PININ_JOYMXCNT]; // Live value acquired from joystick, clamped to max values (in -m_accelerometerMax..m_accelerometerMax)
    mutable bool m_accelerometerDirty = true;
+   mutable Vertex2D m_accelerometer; // lazily evaluated sum of joystick mapped accelerometers, applying clamping then gain, normalized to -1..1 range
    bool m_accelerometerEnabled; // true if electronic accelerometer enabled
    bool m_accelerometerFaceUp; // true is Normal Mounting (Left Hand Coordinates)
    float m_accelerometerAngle; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
    float m_accelerometerSensitivity;
    Vertex2D m_accelerometerGain; // Accelerometer gain X/Y axis
-   int2 m_accelerometerMax; // Accelerometer max value X/Y axis
 #pragma endregion
 
 

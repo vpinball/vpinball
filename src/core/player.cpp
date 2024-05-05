@@ -1228,10 +1228,10 @@ void Player::ReadAccelerometerCalibration()
 
    m_accelerometerSensitivity = clamp((float)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0), 0.f, 1.f);
 
-   m_accelerometerMax.x = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100);
-   m_accelerometerMax.y = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100);
-   m_accelerometerGain.x = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150.0f);
-   m_accelerometerGain.y = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150.0f);
+   m_accelerometerMax.x = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100) * JOYRANGEMX / 100;
+   m_accelerometerMax.y = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
+   m_accelerometerGain.x = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150));
+   m_accelerometerGain.y = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150));
 
    m_pininput.LoadSettings(m_ptable->m_settings);
 }
