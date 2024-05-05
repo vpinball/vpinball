@@ -3463,11 +3463,11 @@ void LiveUI::UpdatePlumbWindow()
          m_player->ReadAccelerometerCalibration();
       }
       ImGui::BeginDisabled(!accEnabled);
-      int accMax[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100) };
+      int accMax[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) };
       if (ImGui::InputInt2("Acc. Maximum", accMax))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[0]);
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[1]);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, accMax[1]);
          m_player->ReadAccelerometerCalibration();
       }
       int accGain[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150) };
