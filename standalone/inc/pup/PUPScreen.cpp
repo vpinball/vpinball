@@ -170,8 +170,13 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
 
 void PUPScreen::AddLabel(const string& szLabelName, PUPLabel* pLabel)
 {
-   pLabel->SetScreen(this);
+   if (GetLabel(szLabelName)) {
+      PLOGW.printf("Duplicate label: screenNum=%d, labelName=%s", m_screenNum, szLabelName.c_str());
+      return;
+   }
 
+   pLabel->SetScreen(this);
+   pLabel->SetName(szLabelName);
    m_labelMap[string_to_lower(szLabelName)] = pLabel;
    m_labels.push_back(pLabel);
 }
@@ -182,14 +187,14 @@ PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
    return it != m_labelMap.end() ? it->second : nullptr;
 }
 
-void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
+void PUPScreen::SendLabelToBack(PUPLabel* pLabel)
 {
    auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
    if (it != m_labels.end())
       std::rotate(m_labels.begin(), it, it + 1);
 }
 
-void PUPScreen::SendLabelToBack(PUPLabel* pLabel)
+void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
 {
    auto it = std::find(m_labels.begin(), m_labels.end(), pLabel);
    if (it != m_labels.end())
@@ -235,9 +240,6 @@ void PUPScreen::Render()
       m_pMediaPlayer->Render();
 #endif
 
-   for (PUPLabel* pLabel : m_labels)
-      pLabel->Render(m_pRenderer, m_rect, m_pagenum);
-
    for (PUPScreen* pScreen : GetChildren())
       pScreen->Render();
 
@@ -259,6 +261,13 @@ void PUPScreen::Render()
 
    if (m_pOverlayTexture)
       SDL_RenderCopy(m_pRenderer, m_pOverlayTexture, NULL, &m_rect);
+
+   SDL_RenderSetClipRect(m_pRenderer, &m_rect);
+
+   for (PUPLabel* pLabel : m_labels)
+      pLabel->Render(m_pRenderer, m_rect, m_pagenum);
+
+   SDL_RenderSetClipRect(m_pRenderer, NULL);
 }
 
 void PUPScreen::Trigger(const string& szTrigger)

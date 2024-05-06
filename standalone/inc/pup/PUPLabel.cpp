@@ -12,7 +12,7 @@
 
 #include "RSJparser/RSJparser.tcc"
 
-PUPLabel::PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum)
+PUPLabel::PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
 {
    m_pFont = PUPManager::GetInstance()->GetFont(szFont);
    m_size = size;
@@ -53,18 +53,23 @@ void PUPLabel::SetCaption(const string& szCaption)
    std::replace(szText.begin(), szText.end(), '~', '\n');
 
    if (m_szCaption != szText) {
-      m_szCaption = szCaption;
+      string szExt = extension_from_path(szCaption);
+      if (szExt == "png" || szExt == "apng" || szExt == "gif") {
+         m_szPath = find_path_case_insensitive(PUPManager::GetInstance()->GetPath() + normalize_path_separators(szCaption));
+      }
+      else
+         m_szPath.clear();
+
+      m_szCaption = szText;
       m_dirty = true;
    }
 }
 
 void PUPLabel::SetSpecial(const string& szSpecial)
 {
-   if (szSpecial.empty())
-      return;
+   PLOGD.printf("PUPLabel::SetSpecial: name=%s, caption=%s, json=%s", m_szName.c_str(), m_szCaption.c_str(), szSpecial.c_str());
 
    RSJresource json(szSpecial);
-
    switch (json["mt"].as<int>(0)) {
       case 2: {
          if (json["zback"].exists() && json["zback"].as<int>() == 1)
@@ -119,6 +124,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["rotate"].exists()) {
             // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
+            m_angle = std::stof(json["rotate"].as_str());
          }
 
          if (json["zoom"].exists()) {
@@ -166,12 +172,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          }
 
          if (json["width"].exists()) {
-            m_width = json["width"].as<int>();
+            m_width = std::stof(json["width"].as_str());
             m_dirty = true;
          }
 
          if (json["height"].exists()) {
-            m_height = json["height"].as<int>();
+            m_height = std::stof(json["height"].as_str());
             m_dirty = true;
          }
 
@@ -199,9 +205,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
       }
       break;
 
-      default:
-         PLOGW.printf("Unknown message type: mt=%s", json["mt"].as_str().c_str());
-         break;
+      default: break;
    }
 }
 
@@ -211,14 +215,12 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
       return;
 
    if (m_dirty) {
-      if (m_anigif) {
+      if (!m_szPath.empty()) {
          if (m_pAnimation)
             IMG_FreeAnimation(m_pAnimation);
-
-         string szFilename = PUPManager::GetInstance()->GetPath() + normalize_path_separators(m_szCaption);
-         m_pAnimation = IMG_LoadAnimation(szFilename.c_str());
+         m_pAnimation = IMG_LoadAnimation(m_szPath.c_str());
          if (m_pAnimation) {
-            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_pAnimation->count - 1]);
+            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[0]);
             m_dirty = false;
          }
       }
@@ -233,34 +235,50 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
       return;
    }
 
-   int x = rect.x;
-   int xPos = (int)((m_xPos / 100.0) * rect.w);
-   switch (m_xAlign) {
-      case PUP_LABEL_XALIGN_LEFT:
-         x += xPos;
-         break;
-      case PUP_LABEL_XALIGN_CENTER:
-         x += ((rect.w - m_width) / 2);
-         break;
-      case PUP_LABEL_XALIGN_RIGHT:
-         x += (xPos == 0 ? (rect.w - m_width) : (xPos - m_width));
-         break;
+   float width;
+   float height;
+
+   if (m_pAnimation) {
+      width = (m_width / 100.0) * rect.w;
+      height = (m_height / 100.0) * rect.h;
    }
-   int y = rect.y;
-   int yPos = (int)((m_yPos / 100.0) * rect.h);
-   switch (m_yAlign) {
-      case PUP_LABEL_YALIGN_TOP:
-         y += yPos;
-         break;
-      case PUP_LABEL_YALIGN_CENTER:
-         y += ((rect.h - m_height) / 2);
-         break;
-      case PUP_LABEL_YALIGN_BOTTOM:
-         y += (yPos == 0 ? (rect.h - m_height) : (yPos - m_height));
-         break;
+   else {
+      width = m_width;
+      height = m_height;
    }
-   SDL_Rect dest = { x, y, m_width, m_height };
-   SDL_RenderCopy(pRenderer, m_pTexture, NULL, &dest);
+
+   SDL_FRect dest = { (float)rect.x, (float)rect.y, width, height };
+
+   if (m_xPos > 0) {
+      dest.x += ((m_xPos / 100.0) * rect.w);
+      if (m_xAlign == PUP_LABEL_XALIGN_CENTER)
+         dest.x -= (width / 2);
+      else if (m_xAlign == PUP_LABEL_XALIGN_RIGHT)
+         dest.x -= width;
+   }
+   else {
+      if (m_xAlign == PUP_LABEL_XALIGN_CENTER)
+         dest.x += ((rect.w - width) / 2);
+      else if (m_xAlign == PUP_LABEL_XALIGN_RIGHT)
+         dest.x += (rect.w - width);
+   }
+
+   if (m_yPos > 0) {
+      dest.y += ((m_yPos / 100.0) * rect.h);
+      if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
+         dest.y -= (height / 2);
+      else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
+         dest.y -= height;
+   }
+   else {
+      if (m_yAlign == PUP_LABEL_YALIGN_CENTER)
+         dest.y += ((rect.h - height) / 2.0);
+      else if (m_yAlign == PUP_LABEL_YALIGN_BOTTOM)
+         dest.y += (rect.h - height);
+   }
+
+   SDL_FPoint center = { height / 2.0f, 0 };
+   SDL_RenderCopyExF(pRenderer, m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
 }
 
 void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
@@ -279,6 +297,8 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    if (!pTextSurface)
       return;
 
+   SDL_Surface* pMergedSurface = NULL;
+
    if (m_shadowState) {
       SDL_Color shadowColor = { GetRValue(m_shadowColor), GetGValue(m_shadowColor), GetBValue(m_shadowColor) };
       SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended(m_pFont, m_szCaption.c_str(), shadowColor);
@@ -287,11 +307,12 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
          return;
       }
 
-      int xoffset = (int)abs(m_xoffset);
-      int yoffset = (int)abs(m_yoffset);
+      int xoffset = (int) (((abs(m_xoffset) / 100.0) * height) / 2);
+      int yoffset = (int) (((abs(m_yoffset) / 100.0) * height) / 2);
 
-      SDL_Surface* pMergedSurface = SDL_CreateRGBSurfaceWithFormat(0, pTextSurface->w + xoffset, pTextSurface->h + yoffset, 32, SDL_PIXELFORMAT_RGBA32);
+      pMergedSurface = SDL_CreateRGBSurfaceWithFormat(0, pTextSurface->w + xoffset, pTextSurface->h + yoffset, 32, SDL_PIXELFORMAT_RGBA32);
       if (pMergedSurface) {
+         //SDL_FillRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
          if (!m_outline) {
             SDL_Rect shadowRect = { (m_xoffset < 0) ? 0 : xoffset, (m_yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
             SDL_BlitSurface(pShadowSurface, NULL, pMergedSurface, &shadowRect);
@@ -319,26 +340,44 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
             SDL_Rect textRect = { xoffset / 2, yoffset / 2, pTextSurface->w, pTextSurface->h };
             SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, &textRect);
          }
-
-         if (pMergedSurface) {
-            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pMergedSurface);
-            m_width = pMergedSurface->w;
-            m_height = pMergedSurface->h;
-
-            SDL_FreeSurface(pMergedSurface);
-         }
       }
 
       SDL_FreeSurface(pShadowSurface);
    }
    else {
-      m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pTextSurface);
-      m_width = pTextSurface->w;
-      m_height = pTextSurface->h;
+      pMergedSurface = SDL_CreateRGBSurfaceWithFormat(0, pTextSurface->w, pTextSurface->h, 32, SDL_PIXELFORMAT_RGBA32);
+      if (pMergedSurface) {
+         //SDL_FillRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
+         SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, NULL);
+      }
+   }
+
+   if (pMergedSurface) {
+      m_pTexture = SDL_CreateTextureFromSurface(pRenderer, pMergedSurface);
+      if (m_pTexture) {
+         m_width = pMergedSurface->w;
+         m_height = pMergedSurface->h;
+
+         m_dirty = true;
+      }
+
+      SDL_FreeSurface(pMergedSurface);
    }
 
    SDL_FreeSurface(pTextSurface);
+}
 
-   if (m_pTexture)
-      m_dirty = false;
+string PUPLabel::ToString() const
+{
+   return "name=" + m_szName +
+      ", caption=" + m_szCaption +
+      ", visible=" + (m_visible ? "true" : "false") +
+      ", size=" + std::to_string(m_size) +
+      ", color=" + std::to_string(m_color) +
+      ", angle=" + std::to_string(m_angle) +
+      ", xAlign=" + (m_xAlign == PUP_LABEL_XALIGN_LEFT  ? "LEFT" : m_xAlign == PUP_LABEL_XALIGN_CENTER ? "CENTER" : "RIGHT") +
+      ", yAlign=" + (m_yAlign == PUP_LABEL_YALIGN_TOP ? "TOP" : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER" : "BOTTOM") +
+      ", xPos=" + std::to_string(m_xPos) +
+      ", yPos=" + std::to_string(m_yPos) +
+      ", pagenum=" + std::to_string(m_pagenum);
 }

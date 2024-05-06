@@ -17,19 +17,30 @@ typedef enum
    PUP_LABEL_YALIGN_BOTTOM
 } PUP_LABEL_YALIGN;
 
+typedef enum
+{
+   PUP_CAPTION_TYPE_TEXT,
+   PUP_CAPTION_TYPE_IMAGE,
+   PUP_CAPTION_TYPE_GIF
+} PUP_CAPTION_TYPE;
+
 class PUPScreen;
 
 class PUPLabel
 {
 public:
-   PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, bool visible, int pagenum);
+   PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
    ~PUPLabel();
 
-   void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
+   const string& GetCaption() const { return m_szCaption; }
    void SetCaption(const string& szCaption);
    void SetVisible(bool visible) { m_visible = visible; }
    void SetSpecial(const string& szSpecial);
    void Render(SDL_Renderer* renderer, SDL_Rect& rect, int pagenum);
+   const string& GetName() const { return m_szName; }
+   void SetName(const string& szName) { m_szName = szName; }
+   void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
+   string ToString() const;
 
 private:
    void UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect);
@@ -53,8 +64,10 @@ private:
    bool m_dirty;
    PUPScreen* m_pScreen;
    SDL_Texture* m_pTexture;
-   int m_width;
-   int m_height;
+   float m_width;
+   float m_height;
+   string m_szName;
    int m_anigif;
    IMG_Animation* m_pAnimation;
+   string m_szPath;
 };

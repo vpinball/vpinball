@@ -291,7 +291,7 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
    }
 
    pScreen->AddLabel(MakeString(LabelName),
-      new PUPLabel(MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, Visible, PageNum));
+      new PUPLabel(MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, PageNum, Visible));
 
    return S_OK;
 }
