@@ -43,7 +43,7 @@ unsigned int PluginManager::GetEventID(const char* name)
       m_nextEventId++;
       if (m_nextEventId >= m_maxEventCallbacks)
       {
-         PLOGE << "Too many event created.";
+         PLOGE << "Too many events created.";
          exit(-1);
       }
    }
