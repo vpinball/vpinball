@@ -5,4 +5,3 @@
 extern VPinball *g_pvp;
 extern class Player *g_pplayer; // Game currently being played
 extern HACCEL g_haccel; // Accelerator keys
-extern PluginManager g_plugins; // Plugin registry

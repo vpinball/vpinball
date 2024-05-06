@@ -4,7 +4,7 @@
 
 #include "VPXPlugin.h"
 
-typedef void (*vpxpi_load_plugin)(VPXPluginAPI* api);
+typedef bool (*vpxpi_load_plugin)(VPXPluginAPI* api);
 typedef void (*vpxpi_unload_plugin)();
 
 class VPXPlugin
@@ -51,19 +51,29 @@ public:
 
    void ScanPluginFolder(const string& pluginDir);
 
+   static PluginManager& GetInstance() { return s_instance; }
+
    // Event API implementation
    static unsigned int GetEventID(const char* name);
    static void SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback);
    static void UnsubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback);
    static void BroadcastEvent(const unsigned int eventId, void* data);
 
+   // General information API
+   static const char* GetTablePath();
+
+   // View API implementation
+   static void GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
+   static void SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
+
 private:
    vector<VPXPlugin*> m_plugins;
    VPXPluginAPI m_vpxAPI;
 
    // Event API implementation
-   static robin_hood::unordered_map<string, unsigned int> m_eventIds;
-   static constexpr unsigned int m_maxEventCallbacks = 500;
-   static vector<vpxpi_event_callback> m_eventCallbacks[m_maxEventCallbacks];
-   static unsigned int m_nextEventId;
+   static robin_hood::unordered_map<string, unsigned int> s_eventIds;
+   static constexpr unsigned int s_maxEventCallbacks = 500;
+   static vector<vpxpi_event_callback> s_eventCallbacks[s_maxEventCallbacks];
+   static unsigned int s_nextEventId;
+   static PluginManager s_instance;
 };

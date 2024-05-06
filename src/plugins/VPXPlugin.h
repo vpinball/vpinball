@@ -41,12 +41,21 @@
 // 'OnGameEnd' events. They are marked '[InGame]' in the following comments.
 //
 // Plugins must implement and export the load/unload functions to be valid.
-// For windows, use:
-// extern "C" __declspec(dllexport) void PluginLoad(VPXPluginAPI* api);
-// extern "C" __declspec(dllexport) void PluginUnload();
+// VPX_EXPORT bool PluginLoad(VPXPluginAPI* api);
+// VPX_EXPORT void PluginUnload();
 //
 // This header is a common header to be used both by VPX and its plugins.
 
+#if defined(_MSC_VER)
+   // Microsoft
+   #define VPX_EXPORT extern "C" __declspec(dllexport)
+#elif defined(__GNUC__)
+   // GCC
+   #define VPX_EXPORT extern "C" __attribute__((visibility("default")))
+#else
+   // Others: hope that all symbols are exported
+   #define VPX_EXPORT extern "C" 
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // VPX Plugin API
@@ -59,15 +68,42 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 #define VPX_EVT_ON_GAME_END      "VPX.OnGameEnd"      // Broadcasted during player shutdown
 #define VPX_EVT_ON_PREPARE_FRAME "VPX.OnPrepareFrame" // Broadcasted when player starts preparing a new frame
 
+// API version
+#define VPX_PLUGIN_API_VERSION   1
+
 typedef struct
 {
-   // Plugin Events
+   // First field of the API is always the API version. All fields after this one depends on its value.
+   // Plugin MUST check against it when loading and fail (return false) if confronted to an unsupported API version.
+   unsigned int version;
+   
+   // Communication bus
    unsigned int (*GetEventID)(const char* name);
    void (*SubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
    void (*UnsubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
    void (*BroadcastEvent)(const unsigned int eventId, void* data);
 
-   // Core VPX API
-   // TODO add VPX API (same as COM ?)
+   // General information API
+   const char* (*GetTablePath)();
+
+   // View management
+   typedef struct
+   {
+      // See ViewSetup class for member description
+      int viewMode;                                       // [R_]
+      float sceneScaleX, sceneScaleY, sceneScaleZ;        // [R_]
+      float viewX, viewY, viewZ;                          // [RW]
+      float lookAt;                                       // [R_]
+      float viewportRotation;                             // [R_]
+      float FOV;                                          // [R_]
+      float layback;                                      // [R_]
+      float viewHOfs, viewVOfs;                           // [R_]
+      float windowTopZOfs, windowBottomZOfs;              // [R_]
+      // Fields computed from user settings
+      float screenWidth, screenHeight, screenInclination; // [R_]
+      float realToVirtualScale;                           // [R_]
+   } ViewSetupDef;
+   void (*GetActiveViewSetup)(ViewSetupDef* view);
+   void (*SetActiveViewSetup)(ViewSetupDef* view);
 
 } VPXPluginAPI;
