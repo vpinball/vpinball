@@ -1372,7 +1372,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       VPApp theApp(hInstance);
       theApp.InitInstance();
 
-      g_plugins.ScanPluginFolder(g_pvp->m_szMyPath + PATH_SEPARATOR_CHAR + "plugins");
+      PluginManager::GetInstance().ScanPluginFolder(g_pvp->m_szMyPath + PATH_SEPARATOR_CHAR + "plugins");
 
       // Run the application
       retval = theApp.Run();

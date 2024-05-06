@@ -3,4 +3,3 @@
 VPinball *g_pvp = nullptr;
 Player *g_pplayer = nullptr;
 HACCEL g_haccel;
-PluginManager g_plugins;

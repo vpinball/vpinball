@@ -9,10 +9,25 @@
 
 PluginManager::PluginManager()
 {
+   #ifdef _DEBUG
+   memset(&m_vpxAPI, 0, sizeof(m_vpxAPI));
+   #endif
+   m_vpxAPI.version = VPX_PLUGIN_API_VERSION;
+   // Event API
    m_vpxAPI.GetEventID = GetEventID;
    m_vpxAPI.SubscribeEvent = SubscribeEvent;
    m_vpxAPI.UnsubscribeEvent = UnsubscribeEvent;
    m_vpxAPI.BroadcastEvent = BroadcastEvent;
+   // General information API
+   m_vpxAPI.GetTablePath = GetTablePath;
+   // View API
+   m_vpxAPI.GetActiveViewSetup = GetActiveViewSetup;
+   m_vpxAPI.SetActiveViewSetup = SetActiveViewSetup;
+   // Validate API to ensure no field has been forgotten
+   #ifdef _DEBUG
+   for (int i = 0; i < sizeof(m_vpxAPI) / 4; i++)
+      assert(((unsigned int*)&m_vpxAPI)[i] != 0);
+   #endif
 }
 
 PluginManager::~PluginManager()
@@ -26,22 +41,23 @@ PluginManager::~PluginManager()
    m_plugins.clear();
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // Event API (very basic messaging API that allows to share data blocks)
 
-unsigned int PluginManager::m_nextEventId = 0;
-robin_hood::unordered_map<string, unsigned int> PluginManager::m_eventIds;
-vector<vpxpi_event_callback> PluginManager::m_eventCallbacks[m_maxEventCallbacks];
+unsigned int PluginManager::s_nextEventId = 0;
+robin_hood::unordered_map<string, unsigned int> PluginManager::s_eventIds;
+vector<vpxpi_event_callback> PluginManager::s_eventCallbacks[s_maxEventCallbacks];
 
 unsigned int PluginManager::GetEventID(const char* name)
 {
-   auto result = m_eventIds.try_emplace(name, m_nextEventId);
+   auto result = s_eventIds.try_emplace(name, s_nextEventId);
    if (result.second)
    {
       // Event created, search a free id for next event creation
       // TODO allow event release to avoid overflowing event table
-      m_nextEventId++;
-      if (m_nextEventId >= m_maxEventCallbacks)
+      s_nextEventId++;
+      if (s_nextEventId >= s_maxEventCallbacks)
       {
          PLOGE << "Too many events created.";
          exit(-1);
@@ -53,30 +69,85 @@ unsigned int PluginManager::GetEventID(const char* name)
 void PluginManager::SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
 {
    assert(callback != nullptr);
-   assert(0 <= eventId && eventId < m_maxEventCallbacks);
-   assert(FindIndexOf(m_eventCallbacks[eventId], callback) == -1);
-   m_eventCallbacks[eventId].push_back(callback);
+   assert(0 <= eventId && eventId < s_maxEventCallbacks);
+   assert(FindIndexOf(s_eventCallbacks[eventId], callback) == -1);
+   s_eventCallbacks[eventId].push_back(callback);
 }
 
 void PluginManager::UnsubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
 {
    assert(callback != nullptr);
-   assert(0 <= eventId && eventId < m_maxEventCallbacks);
-   typename vector<vpxpi_event_callback>::const_iterator it = std::find(m_eventCallbacks[eventId].begin(), m_eventCallbacks[eventId].end(), callback);
-   assert(it != m_eventCallbacks[eventId].end());
-   m_eventCallbacks[eventId].erase(it);
+   assert(0 <= eventId && eventId < s_maxEventCallbacks);
+   typename vector<vpxpi_event_callback>::const_iterator it = std::find(s_eventCallbacks[eventId].begin(), s_eventCallbacks[eventId].end(), callback);
+   assert(it != s_eventCallbacks[eventId].end());
+   s_eventCallbacks[eventId].erase(it);
 }
 
 void PluginManager::BroadcastEvent(const unsigned int eventId, void* data)
 {
-   assert(0 <= eventId && eventId < m_maxEventCallbacks); 
-   for (vpxpi_event_callback cb : m_eventCallbacks[eventId])
+   assert(0 <= eventId && eventId < s_maxEventCallbacks); 
+   for (vpxpi_event_callback cb : s_eventCallbacks[eventId])
       cb(eventId, data);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// General information API
+
+const char* PluginManager::GetTablePath()
+{
+   assert(g_pplayer); // Only allowed in game
+   return g_pplayer->m_ptable->m_szFileName.c_str();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// View API
+
+void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+{
+   assert(g_pplayer); // Only allowed in game
+   ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   view->viewMode = viewSetup.mMode;
+   view->sceneScaleX = viewSetup.mSceneScaleX;
+   view->sceneScaleY = viewSetup.mSceneScaleY;
+   view->sceneScaleZ = viewSetup.mSceneScaleZ;
+   view->viewX = viewSetup.mViewX;
+   view->viewY = viewSetup.mViewY;
+   view->viewZ = viewSetup.mViewZ;
+   view->lookAt = viewSetup.mLookAt;
+   view->viewportRotation = viewSetup.mViewportRotation;
+   view->FOV = viewSetup.mFOV;
+   view->layback = viewSetup.mLayback;
+   view->viewHOfs = viewSetup.mViewHOfs;
+   view->viewVOfs = viewSetup.mViewVOfs;
+   view->windowTopZOfs = viewSetup.mWindowTopZOfs;
+   view->windowBottomZOfs = viewSetup.mWindowBottomZOfs;
+   view->screenWidth = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f);
+   view->screenHeight = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
+   view->screenInclination = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f);
+   view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
+}
+
+void PluginManager::SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+{
+   assert(g_pplayer); // Only allowed in game
+   ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   viewSetup.mViewX = view->viewX;
+   viewSetup.mViewY = view->viewY;
+   viewSetup.mViewZ = view->viewZ;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Plugin management
+
+string unquote(const string& str)
+{
+   if (str.front() == '"' && str.back() == '"')
+      return str.substr(1, str.size() - 2);
+   return str;
+}
 
 void PluginManager::ScanPluginFolder(const string& pluginDir)
 {
@@ -86,28 +157,61 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
       PLOGE << "Missing plugin directory: " << pluginDir;
       return;
    }
-   #if defined(__STANDALONE__)
-      // Not yet implemented
-      const string libraryKey = "";
-      return;
-   #elif defined(_WIN64)
-      const string libraryKey = "windows.x64";
-   #elif defined(_WIN32)
-      const string libraryKey = "windows.x86";
+   string libraryKey = "";
+   #ifdef _MSC_VER
+      #if (GET_PLATFORM_BITS_ENUM == 0)
+         libraryKey = "windows.x86_32";
+      #elif (GET_PLATFORM_BITS_ENUM == 1)
+         libraryKey = "windows.x86_64";
+      #endif
+   #elif (defined(__linux) || defined(__linux__))
+      #if (GET_PLATFORM_BITS_ENUM == 0)
+         libraryKey = "linux.x86_32";
+      #elif (GET_PLATFORM_BITS_ENUM == 1)
+         libraryKey = "linux.x86_64";
+      #endif
+   #elif defined(__APPLE__)
+      #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
+         // Not yet implemented
+      #elif defined(TARGET_OS_TV) && TARGET_OS_TV
+         // Not yet implemented
+      #else
+         #if (GET_PLATFORM_BITS_ENUM == 0)
+            libraryKey = "macos.x86_32";
+         #elif (GET_PLATFORM_BITS_ENUM == 1)
+            libraryKey = "macos.x86_64";
+         #endif
+      #endif
+   #elif defined(__ANDROID__)
+      #if (GET_PLATFORM_CPU_ENUM == 0)
+         #if (GET_PLATFORM_BITS_ENUM == 0)
+            libraryKey = "android.x86_32";
+         #elif (GET_PLATFORM_BITS_ENUM == 1)
+            libraryKey = "android.x86_64";
+         #endif
+      #elif (GET_PLATFORM_CPU_ENUM == 1) && (GET_PLATFORM_BITS_ENUM == 0)
+         libraryKey = "android.x86_32";
+      #endif
    #endif
+   if (libraryKey.size() == 0)
+   {
+      // Unsupported platform
+      return;
+   }
+
    for (const auto& entry : std::filesystem::directory_iterator(pluginDir))
    {
       if (entry.is_directory())
       {
          mINI::INIStructure ini;
          mINI::INIFile file(entry.path().string() + "/plugin.cfg");
-         if (file.read(ini) && ini.has("informations") && ini["informations"].has("id") && ini.has("libraries") && ini["libraries"].has(libraryKey))
+         if (file.read(ini) && ini.has("configuration") && ini["configuration"].has("id") && ini.has("libraries") && ini["libraries"].has(libraryKey))
          {
-            string id = ini["informations"]["id"];
+            string id = unquote(ini["configuration"]["id"]);
             for (auto it = m_plugins.begin(); it != m_plugins.end(); it++)
                if ((*it)->m_id == id)
                   it = m_plugins.erase(it);
-            const string libraryFile = ini["libraries"][libraryKey];
+            const string libraryFile = unquote(ini["libraries"][libraryKey]);
             const string libraryPath = entry.path().string() + "/" + libraryFile;
             if (!std::filesystem::exists(libraryPath))
             {
@@ -115,11 +219,11 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                return;
             }
             VPXPlugin* plugin = new VPXPlugin(id, 
-               ini["informations"].get("name"),
-               ini["informations"].get("description"),
-               ini["informations"].get("author"),
-               ini["informations"].get("version"),
-               ini["informations"].get("link"),
+               unquote(ini["configuration"].get("name")),
+               unquote(ini["configuration"].get("description")),
+               unquote(ini["configuration"].get("author")),
+               unquote(ini["configuration"].get("version")),
+               unquote(ini["configuration"].get("link")),
                libraryPath);
             m_plugins.push_back(plugin);
             // TODO this directly loads the plugin which is a security concern, the initial load should be requasted/validated by the user
@@ -175,9 +279,8 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
    #else
       assert(false);
    #endif
-   m_loadPlugin(vpxAPI);
-   m_is_loaded = true;
-   PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ")";
+   m_is_loaded = m_loadPlugin(vpxAPI);
+   PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ")";
 }
 
 void VPXPlugin::Unload()
@@ -199,3 +302,6 @@ void VPXPlugin::Unload()
    m_unloadPlugin = nullptr;
    m_is_loaded = false;
 }
+
+// the singleton instance must be declared in the same compilation unit, after other static fields to ensure correct destructor call order
+PluginManager PluginManager::s_instance;
