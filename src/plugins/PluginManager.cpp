@@ -6,13 +6,13 @@
 #include <filesystem>
 #define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
+#include "core/vpversion.h"
 
 PluginManager::PluginManager()
 {
    #ifdef _DEBUG
    memset(&m_vpxAPI, 0, sizeof(m_vpxAPI));
    #endif
-   m_vpxAPI.version = VPX_PLUGIN_API_VERSION;
    // Event API
    m_vpxAPI.GetEventID = GetEventID;
    m_vpxAPI.SubscribeEvent = SubscribeEvent;
@@ -205,7 +205,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
       {
          mINI::INIStructure ini;
          mINI::INIFile file(entry.path().string() + "/plugin.cfg");
-         if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
+         if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini["configuration"s].has("vpx_api"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
          {
             string id = unquote(ini["configuration"s]["id"s]);
             for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
@@ -216,6 +216,25 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
             if (!std::filesystem::exists(libraryPath))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
+               return;
+            }
+            string api = unquote(ini["configuration"]["vpx_api"]);
+            int nParsed, apiVersion[4];
+            apiVersion[3] = 0;
+            nParsed = sscanf(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
+            if ((nParsed == 3) || (nParsed == 4))
+            {
+               #define VERSION(a,b,c,d) (a * 1000000 + b * 10000 + c * 100 + d)
+               if (VERSION(apiVersion[0], apiVersion[1], apiVersion[2], apiVersion[3]) < VERSION(10, 8, 1, 0))
+               {
+                  PLOGE << "Plugin " << id << " is not compatible with this version of VPX (VPX version: " << VP_VERSION_STRING_COMMAS << " / Plugin API: " << api << ")";
+                  return;
+               }
+               #undef VERSION
+            }
+            else
+            {
+               PLOGE << "Plugin " << id << " has an invalid target API: '" << api << "'";
                return;
             }
             VPXPlugin* plugin = new VPXPlugin(id, 

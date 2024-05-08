@@ -38,10 +38,15 @@
 // When loaded, plugins are provided a pointer table to the VPX API. This API
 // takes for granted that at any time, only one game can be played. All calls
 // related to a running game may only be called between the 'OnGameStart' & 
-// 'OnGameEnd' events. They are marked '[InGame]' in the following comments.
+// 'OnGameEnd' events.
 //
+// Plugins are instantiated on the 'game thread' which may or may not be the
+// main application thread. Therefore plugins are not allowed to perform any
+// operation only allowed on the main application thread like creating OS
+// windows.
+// 
 // Plugins must implement and export the load/unload functions to be valid.
-// VPX_EXPORT bool PluginLoad(VPXPluginAPI* api);
+// VPX_EXPORT void PluginLoad(VPXPluginAPI* api);
 // VPX_EXPORT void PluginUnload();
 //
 // This header is a common header to be used both by VPX and its plugins.
@@ -68,15 +73,8 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 #define VPX_EVT_ON_GAME_END      "VPX.OnGameEnd"      // Broadcasted during player shutdown
 #define VPX_EVT_ON_PREPARE_FRAME "VPX.OnPrepareFrame" // Broadcasted when player starts preparing a new frame
 
-// API version
-#define VPX_PLUGIN_API_VERSION   1
-
 typedef struct
 {
-   // First field of the API is always the API version. All fields after this one depends on its value.
-   // Plugin MUST check against it when loading and fail (return false) if confronted to an unsupported API version.
-   unsigned int version;
-   
    // Communication bus
    unsigned int (*GetEventID)(const char* name);
    void (*SubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
