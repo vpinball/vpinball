@@ -17,19 +17,15 @@ void onGameEnd(const unsigned int eventId, void* data)
 void onPrepareFrame(const unsigned int eventId, void* data)
 {
    // Called when the player is about to prepare a new frame
-   // This can be used ot tweak any visual parameter before building the frame (for example head tracking,...)
+   // This can be used to tweak any visual parameter before building the frame (for example head tracking,...)
 }
 
-VPX_EXPORT bool PluginLoad(VPXPluginAPI* api)
+VPX_EXPORT void PluginLoad(VPXPluginAPI* api)
 {
    vpx = api;
-   // We must check that the provided API is the one used to compile this plugin and fail otherwise
-   if (vpx->version != VPX_PLUGIN_API_VERSION)
-      return false;
    vpx->SubscribeEvent(vpx->GetEventID(VPX_EVT_ON_GAME_START), onGameStart);
    vpx->SubscribeEvent(vpx->GetEventID(VPX_EVT_ON_GAME_END), onGameEnd);
    vpx->SubscribeEvent(vpx->GetEventID(VPX_EVT_ON_PREPARE_FRAME), onPrepareFrame);
-   return true;
 }
 
 VPX_EXPORT void PluginUnload()
