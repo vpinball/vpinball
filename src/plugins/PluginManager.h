@@ -25,10 +25,10 @@ public:
    bool IsLoaded() const { return m_is_loaded; }
 
    const string m_id; // Unique ID of the plugin, used to identify it
-   const string m_name; // Human readable name of the plugin
-   const string m_description; // Human readable description of the plugin intent
-   const string m_author; // Human readable author name, if you really want to share it :)
-   const string m_version; // Human readable version (VPX does not perform any version management)
+   const string m_name; // Human-readable name of the plugin
+   const string m_description; // Human-readable description of the plugin intent
+   const string m_author; // Human-readable author name, if you really want to share it :)
+   const string m_version; // Human-readable version (VPX does not perform any version management)
    const string m_link; // Web link to online information
    const string m_library; // Library implementing this plugin for the current platform
 

@@ -25,7 +25,7 @@ PluginManager::PluginManager()
    m_vpxAPI.SetActiveViewSetup = SetActiveViewSetup;
    // Validate API to ensure no field has been forgotten
    #ifdef _DEBUG
-   for (int i = 0; i < sizeof(m_vpxAPI) / 4; i++)
+   for (size_t i = 0; i < sizeof(m_vpxAPI) / 4; i++)
       assert(((unsigned int*)&m_vpxAPI)[i] != 0);
    #endif
 }
@@ -51,7 +51,7 @@ vector<vpxpi_event_callback> PluginManager::s_eventCallbacks[s_maxEventCallbacks
 
 unsigned int PluginManager::GetEventID(const char* name)
 {
-   auto result = s_eventIds.try_emplace(name, s_nextEventId);
+   const auto result = s_eventIds.try_emplace(name, s_nextEventId);
    if (result.second)
    {
       // Event created, search a free id for next event creation
@@ -86,7 +86,7 @@ void PluginManager::UnsubscribeEvent(const unsigned int eventId, const vpxpi_eve
 void PluginManager::BroadcastEvent(const unsigned int eventId, void* data)
 {
    assert(0 <= eventId && eventId < s_maxEventCallbacks); 
-   for (vpxpi_event_callback cb : s_eventCallbacks[eventId])
+   for (const vpxpi_event_callback cb : s_eventCallbacks[eventId])
       cb(eventId, data);
 }
 
@@ -107,7 +107,7 @@ const char* PluginManager::GetTablePath()
 void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
-   ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
+   const ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
    view->viewMode = viewSetup.mMode;
    view->sceneScaleX = viewSetup.mSceneScaleX;
    view->sceneScaleY = viewSetup.mSceneScaleY;
@@ -157,18 +157,18 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
       PLOGE << "Missing plugin directory: " << pluginDir;
       return;
    }
-   string libraryKey = "";
+   string libraryKey;
    #ifdef _MSC_VER
       #if (GET_PLATFORM_BITS_ENUM == 0)
-         libraryKey = "windows.x86_32";
+         libraryKey = "windows.x86_32"s;
       #elif (GET_PLATFORM_BITS_ENUM == 1)
-         libraryKey = "windows.x86_64";
+         libraryKey = "windows.x86_64"s;
       #endif
    #elif (defined(__linux) || defined(__linux__))
       #if (GET_PLATFORM_BITS_ENUM == 0)
-         libraryKey = "linux.x86_32";
+         libraryKey = "linux.x86_32"s;
       #elif (GET_PLATFORM_BITS_ENUM == 1)
-         libraryKey = "linux.x86_64";
+         libraryKey = "linux.x86_64"s;
       #endif
    #elif defined(__APPLE__)
       #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
@@ -177,23 +177,23 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
          // Not yet implemented
       #else
          #if (GET_PLATFORM_BITS_ENUM == 0)
-            libraryKey = "macos.x86_32";
+            libraryKey = "macos.x86_32"s;
          #elif (GET_PLATFORM_BITS_ENUM == 1)
-            libraryKey = "macos.x86_64";
+            libraryKey = "macos.x86_64"s;
          #endif
       #endif
    #elif defined(__ANDROID__)
       #if (GET_PLATFORM_CPU_ENUM == 0)
          #if (GET_PLATFORM_BITS_ENUM == 0)
-            libraryKey = "android.x86_32";
+            libraryKey = "android.x86_32"s;
          #elif (GET_PLATFORM_BITS_ENUM == 1)
-            libraryKey = "android.x86_64";
+            libraryKey = "android.x86_64"s;
          #endif
       #elif (GET_PLATFORM_CPU_ENUM == 1) && (GET_PLATFORM_BITS_ENUM == 0)
-         libraryKey = "android.x86_32";
+         libraryKey = "android.x86_32"s;
       #endif
    #endif
-   if (libraryKey.size() == 0)
+   if (libraryKey.empty())
    {
       // Unsupported platform
       return;
@@ -205,28 +205,28 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
       {
          mINI::INIStructure ini;
          mINI::INIFile file(entry.path().string() + "/plugin.cfg");
-         if (file.read(ini) && ini.has("configuration") && ini["configuration"].has("id") && ini.has("libraries") && ini["libraries"].has(libraryKey))
+         if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
          {
-            string id = unquote(ini["configuration"]["id"]);
-            for (auto it = m_plugins.begin(); it != m_plugins.end(); it++)
+            string id = unquote(ini["configuration"s]["id"s]);
+            for (auto it = m_plugins.begin(); it != m_plugins.end(); ++it)
                if ((*it)->m_id == id)
                   it = m_plugins.erase(it);
-            const string libraryFile = unquote(ini["libraries"][libraryKey]);
-            const string libraryPath = entry.path().string() + "/" + libraryFile;
+            const string libraryFile = unquote(ini["libraries"s][libraryKey]);
+            const string libraryPath = entry.path().string() + '/' + libraryFile;
             if (!std::filesystem::exists(libraryPath))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                return;
             }
             VPXPlugin* plugin = new VPXPlugin(id, 
-               unquote(ini["configuration"].get("name")),
-               unquote(ini["configuration"].get("description")),
-               unquote(ini["configuration"].get("author")),
-               unquote(ini["configuration"].get("version")),
-               unquote(ini["configuration"].get("link")),
+               unquote(ini["configuration"s].get("name"s)),
+               unquote(ini["configuration"s].get("description"s)),
+               unquote(ini["configuration"s].get("author"s)),
+               unquote(ini["configuration"s].get("version"s)),
+               unquote(ini["configuration"s].get("link"s)),
                libraryPath);
             m_plugins.push_back(plugin);
-            // TODO this directly loads the plugin which is a security concern, the initial load should be requasted/validated by the user
+            // TODO this directly loads the plugin which is a security concern, the initial load should be requested/validated by the user
             plugin->Load(&m_vpxAPI);
          }
       }
@@ -280,7 +280,7 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
       assert(false);
    #endif
    m_is_loaded = m_loadPlugin(vpxAPI);
-   PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ")";
+   PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ')';
 }
 
 void VPXPlugin::Unload()
