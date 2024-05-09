@@ -31,14 +31,13 @@ extern "C" int WinMain(void*, void*, void*, int);
           if (vpxTableArchiveFile && vpxTableArchiveFile.length > 0 &&
               [[vpxTableArchiveFile.lowercaseString pathExtension]
                   isEqualToString:@"vpx"]) {
-            char** new_argv = (char**)malloc(4 * sizeof(char*));
+            char** new_argv = (char**)malloc(3 * sizeof(char*));
 
             new_argv[0] = g_argv[0];
-            new_argv[1] = strdup("-EnableTrueFullscreen");
-            new_argv[2] = strdup("-play");
-            new_argv[3] = strdup([vpxTableArchiveFile UTF8String]);
+            new_argv[1] = strdup("-play");
+            new_argv[2] = strdup([vpxTableArchiveFile UTF8String]);
 
-            g_argc = 4;
+            g_argc = 3;
             g_argv = new_argv;
           }
         } else {
