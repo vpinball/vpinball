@@ -208,7 +208,7 @@ jobs:
         arch: [ arm64, x64 ]
     steps:
       - run: |
-          brew install bison autoconf automake nasm
+          brew install bison autoconf automake libtool nasm
           echo "/usr/local/opt/bison/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - run: |
