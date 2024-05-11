@@ -18,8 +18,8 @@ float bulb_filament_temperature_to_emission(const float T);
 void bulb_filament_temperature_to_tint(const float T, float* linear_RGB);
 double bulb_emission_to_filament_temperature(const double p);
 double bulb_cool_down_factor(const int bulb, const double T);
-double bulb_cool_down(const int bulb, double T, double duration);
+double bulb_cool_down(const int bulb, double T, float duration);
 float bulb_heat_up_factor(const int bulb, const float T, const float U, const float serial_R);
-double bulb_heat_up(const int bulb, double T, const double duration, const double U, const double serial_R);
+double bulb_heat_up(const int bulb, double T, float duration, const float U, const float serial_R);
 
 #endif /* INC_BULB */

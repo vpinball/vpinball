@@ -166,11 +166,11 @@ double bulb_cool_down_factor(const int bulb, const double T)
 /*-------------------------------
 /  Compute cool down factor of a filament over a given period
 /-------------------------------*/
-double bulb_cool_down(const int bulb, double T, double duration)
+double bulb_cool_down(const int bulb, double T, float duration)
 {
-   while (duration > 0.0)
+   while (duration > 0.0f)
    {
-      double dt = duration > 0.001 ? 0.001 : duration;
+      float dt = duration > 0.001f ? 0.001f : duration;
       T += dt * bulbs[bulb].cool_down[(int) T];
       if (T <= 294.0)
       {
@@ -199,14 +199,14 @@ float bulb_heat_up_factor(const int bulb, const float T, const float U, const fl
 /*-------------------------------
 /  Compute temperature of a filament under a given voltage over a given period (sum of heating and cooldown)
 /-------------------------------*/
-double bulb_heat_up(const int bulb, double T, double duration, const double U, const double serial_R)
+double bulb_heat_up(const int bulb, double T, float duration, const float U, const float serial_R)
 {
-   while (duration > 0.0)
+   while (duration > 0.0f)
    {
       T = T < 293.0 ? 293.0 : T > BULB_T_MAX ? BULB_T_MAX : T; // Keeps T within the range of the LUT (between room temperature and melt down point)
       double energy;
       double U1 = U;
-      if (serial_R != 0.)
+      if (serial_R != 0.f)
       {
          const double R = bulbs[bulb].r0 * pow(T, 1.215);
          U1 *= R / (R + serial_R);
@@ -217,16 +217,16 @@ double bulb_heat_up(const int bulb, double T, double duration, const double U, c
          // Stable state reached since electric heat (roughly) equals radiation cool down
          return T;
       }
-      double dt;
+      float dt;
       if (energy > 1000e3)
       {
          // Initial current surge, 0.5ms integration period in order to account for the fast resistor rise that will quickly lower the current
-         dt = duration > 0.0005 ? 0.0005 : duration;
+         dt = duration > 0.0005f ? 0.0005f : duration;
       }
       else
       {
          // Ramping up, 1ms integration period
-         dt = duration > 0.001 ? 0.001 : duration;
+         dt = duration > 0.001f ? 0.001f : duration;
       }
       T += dt * energy;
       duration -= dt;
