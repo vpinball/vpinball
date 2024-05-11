@@ -2047,7 +2047,7 @@ void LiveUI::UpdateMainUI()
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          const vec3 camTarget = pos - dir * m_camDistance;
-         m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
+         m_camDistance *= powf(1.1f, -ImGui::GetIO().MouseWheel);
          const vec3 newEye = camTarget + dir * m_camDistance;
          m_camView.SetLookAtRH(newEye, camTarget, up);
       }
