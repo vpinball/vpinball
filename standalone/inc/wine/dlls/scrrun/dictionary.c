@@ -20,6 +20,9 @@
 
 #include <stdarg.h>
 #include <math.h>
+#if defined(__STANDALONE__)
+#include <wctype.h>
+#endif
 
 #include "windef.h"
 #include "winbase.h"
