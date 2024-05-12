@@ -43,6 +43,13 @@
 #include <map>
 #endif
 
+#ifdef _MSC_VER
+// Used to log which program steals the focus from VPX
+#include "psapi.h"
+#pragma comment(lib, "Psapi")
+#endif
+
+
 #if !(_WIN32_WINNT >= 0x0500)
  #define KEYEVENTF_SCANCODE    0x0008
 #endif /* _WIN32_WINNT >= 0x0500 */
@@ -759,9 +766,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pWindowManager->Startup();
 #endif
 
-   // Show the window (for VR, even without preview, we need to create a window).
-   m_playfieldWnd->ShowAndFocus();
-
 #ifndef __STANDALONE__
    // Disable editor (Note that now that the played table use a copy, we could allow editing while playing but problem may arise with shared parts like images and mesh data)
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
@@ -783,6 +787,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
+   // Show the window (for VR, even without preview, we need to create a window).
+   m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
+   m_playfieldWnd->ShowAndFocus();
+
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
@@ -793,7 +801,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
-
 }
 
 Player::~Player()
@@ -1061,13 +1068,54 @@ void Player::OnFocusChanged(const bool isGameFocused)
    // A lost focus event happens during player destruction when the main window is destroyed
    if (m_closing == CS_CLOSED)
       return;
-   bool wasPlaying = IsPlaying();
-   bool willPlay = m_playing && isGameFocused;
+   if (isGameFocused)
+   {
+      PLOGI << "Focus gained";
+   }
+   else
+   {
+      #ifdef _MSC_VER
+      string newFocusedWnd = "undefined";
+      HWND foregroundWnd = GetForegroundWindow();
+      if (foregroundWnd)
+      {
+         DWORD foregroundProcessId;
+         DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
+         if (foregroundProcessId)
+         {
+            HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
+            if (foregroundProcess)
+            {
+               char szFileName[MAXSTRING];
+               if (GetProcessImageFileName(foregroundProcess, szFileName, MAXSTRING))
+                  newFocusedWnd = szFileName;
+            }
+         }
+      }
+      PLOGI << "Focus lost (new focused window: " << newFocusedWnd << ")";
+      #else
+      PLOGI << "Focus lost";
+      #endif
+   }
+   const bool wasPlaying = IsPlaying();
+   const bool willPlay = m_playing && isGameFocused;
    if (wasPlaying != willPlay)
    {
       ApplyPlayingState(willPlay);
       m_focused = isGameFocused;
    }
+
+   #ifdef _MSC_VER
+   // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
+   if (!isGameFocused && m_time_msec < 5000)
+   {
+      #ifdef ENABLE_SDL_VIDEO
+      SDL_RaiseWindow(m_playfieldWnd->GetCore());
+      #elif defined(_MSC_VER)
+      SetForegroundWindow(m_playfieldWnd->GetCore());
+      #endif
+   }
+   #endif
 }
 
 void Player::ApplyPlayingState(const bool play)
@@ -1081,11 +1129,13 @@ void Player::ApplyPlayingState(const bool play)
       m_LastKnownGoodCounter++; // Reset hang script detection
       m_noTimeCorrect = true;   // Disable physics engine time correction on next physic update
       UnpauseMusic();
+      PLOGI << "Unpausing Game";
       m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
    }
    else
    {
       PauseMusic();
+      PLOGI << "Pausing Game";
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
    }
    UpdateCursorState();
@@ -1910,19 +1960,17 @@ bool Player::FinishFrame()
 #endif
    }
 
-#ifndef __STANDALONE__
+#ifdef _MSC_VER
+   // FIXME hacky Win32 mamagement (hacky and not handling Pup, B2S, Freezy's DMD,... )
    // Try to bring PinMAME window back on top
    if (m_overall_frames < 10)
    {
       const HWND hVPMWnd = FindWindow("MAME", nullptr);
-      if (hVPMWnd != nullptr)
-      {
-         if (::IsWindowVisible(hVPMWnd))
-            ::SetWindowPos(
-               hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
-      }
+      if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
+         ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
    }
 #endif
+
    return false;
 }
 

@@ -152,6 +152,7 @@ Window::Window(const string& title, const string& settingsId, const int display,
       #endif
       #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
          wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
+         SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
       #elif defined(__STANDALONE__)
          if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
             wnd_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
@@ -271,6 +272,8 @@ void Window::ShowAndFocus()
 {
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
       SDL_ShowWindow(m_nwnd);
+      SDL_RaiseWindow(m_nwnd);
+      //SDL_SetWindowInputFocus(m_nwnd);
    #else // Win32 Windowing
       ShowWindow(m_nwnd, SW_SHOW);
       SetForegroundWindow(m_nwnd);
