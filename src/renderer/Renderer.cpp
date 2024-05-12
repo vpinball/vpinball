@@ -950,8 +950,6 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    #elif defined(ENABLE_DX9)
    bool stereo = false;
    #endif
-   if (viewSetup.mMode == VLM_WINDOW)
-      viewSetup.SetWindowModeFromSettings(m_table);
    viewSetup.ComputeMVP(m_table, 
       (float)((double)GetBackBufferTexture()->GetWidth() / (double)GetBackBufferTexture()->GetHeight()),
       stereo, *m_mvp, vec3(m_cam.x, m_cam.y, m_cam.z), m_inc,
@@ -1167,7 +1165,7 @@ void Renderer::PrepareFrame()
       g_pplayer->m_vrDevice->UpdateVRPosition(GetMVP());
    else 
    #endif
-
+   // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
    if (g_pplayer->m_headTracking)
    {
       Matrix3D m_matView;
@@ -1179,8 +1177,6 @@ void Renderer::PrepareFrame()
       for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
          m_mvp->SetProj(eye, m_matProj[eye]);
    }
-   else if (g_pplayer->m_liveUI->IsTweakMode())
-      InitLayout();
 
    // Reinitialize parts that have been modified
    for (auto renderable : m_renderableToInit)
@@ -1387,11 +1383,6 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_DMDShader, vertices);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
-}
-
-bool Renderer::IsUsingStaticPrepass() const
-{
-   return !m_disableStaticPrepass && m_stereo3D != STEREO_VR && !g_pplayer->m_headTracking;
 }
 
 void Renderer::RenderStaticPrepass()

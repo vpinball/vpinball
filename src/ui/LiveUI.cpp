@@ -1013,7 +1013,11 @@ void LiveUI::OpenLiveUI()
       m_ShowSplashModal = false;
       m_useEditorCam = true;
       m_orthoCam = false;
-      m_renderer->DisableStaticPrePass(true);
+      if (!m_staticPrepassDisabled)
+      {
+         m_staticPrepassDisabled = true;
+         m_renderer->DisableStaticPrePass(true);
+      }
       ResetCameraFromPlayer();
    }
 }
@@ -1344,7 +1348,11 @@ void LiveUI::OpenTweakMode()
 {
    m_ShowUI = false;
    m_ShowSplashModal = false;
-   m_renderer->DisableStaticPrePass(true);
+   if (!m_staticPrepassDisabled)
+   {
+      m_staticPrepassDisabled = true;
+      m_renderer->DisableStaticPrePass(true);
+   }
    m_tweakMode = true;
    m_activeTweakPage = m_table->m_szRules.empty() ? (m_renderer->m_stereo3D == STEREO_VR ? TP_TableOption : TP_PointOfView) : TP_Rules;
    m_activeTweakIndex = 0;
@@ -2006,8 +2014,8 @@ void LiveUI::UpdateTweakModeUI()
          view.Invert();
          const vec3 pos = view.GetOrthoNormalPos();
          ImGui::Text("Camera at X: %.0fcm Y: %.0fcm Z: %.0fcm, Rotation: %.2f", 
-            VPUTOCM(pos.x - 0.5f * m_player->m_ptable->m_right), 
-            VPUTOCM(pos.y - m_player->m_ptable->m_bottom), 
+            VPUTOCM(pos.x - 0.5f * m_live_table->m_right), 
+            VPUTOCM(pos.y - m_live_table->m_bottom), 
             VPUTOCM(pos.z), viewSetup.mViewportRotation);
          ImGui::NewLine();
       }
@@ -2024,7 +2032,9 @@ void LiveUI::UpdateTweakModeUI()
             ImGui::NewLine();
             ImGui::PopStyleColor();
          }
+         viewSetup.SetWindowModeFromSettings(m_live_table);
       }
+      m_renderer->InitLayout();
    }
 
    if (m_activeTweakPage == TP_Rules)
@@ -2099,7 +2109,11 @@ void LiveUI::HideUI()
    m_ShowSplashModal = false;
    m_ShowUI = false;
    m_flyMode = false;
-   m_renderer->DisableStaticPrePass(false);
+   if (m_staticPrepassDisabled)
+   {
+      m_staticPrepassDisabled = false;
+      m_renderer->DisableStaticPrePass(false);
+   }
    m_player->SetPlayState(true);
 }
 
@@ -2129,7 +2143,11 @@ void LiveUI::UpdateMainUI()
 
    if (showFullUI)
    {
-      m_renderer->DisableStaticPrePass(true);
+      if (!m_staticPrepassDisabled)
+      {
+         m_staticPrepassDisabled = true;
+         m_renderer->DisableStaticPrePass(true);
+      }
 
       // Main menubar
       if (ImGui::BeginMainMenuBar())
@@ -2380,7 +2398,7 @@ void LiveUI::UpdateMainUI()
          view.Invert();
          const vec3 up = view.GetOrthoNormalUp(), dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
          const vec3 camTarget = pos - dir * m_camDistance;
-         m_camDistance *= (float) pow(1.1, -ImGui::GetIO().MouseWheel);
+         m_camDistance *= powf(1.1f, -ImGui::GetIO().MouseWheel);
          const vec3 newEye = camTarget + dir * m_camDistance;
          m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, up);
       }
@@ -3598,7 +3616,11 @@ void LiveUI::UpdatePlumbWindow()
 
 void LiveUI::UpdateRendererInspectionModal()
 {
-   m_renderer->DisableStaticPrePass(false);
+   if (m_staticPrepassDisabled)
+   {
+      m_staticPrepassDisabled = false;
+      m_renderer->DisableStaticPrePass(false);
+   }
    m_useEditorCam = false;
    m_renderer->InitLayout();
 
@@ -3773,7 +3795,6 @@ void LiveUI::UpdateMainSplashModal()
          SetupImGuiStyle(1.0f);
          m_useEditorCam = false;
          m_renderer->InitLayout();
-         m_renderer->DisableStaticPrePass(false);
          HideUI();
       }
       ImGui::SetItemDefaultFocus();
@@ -3796,7 +3817,11 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::CloseCurrentPopup();
          m_ShowUI = true;
          m_ShowSplashModal = false;
-         m_renderer->DisableStaticPrePass(true);
+         if (!m_staticPrepassDisabled)
+         {
+            m_staticPrepassDisabled = true;
+            m_renderer->DisableStaticPrePass(true);
+         }
          ResetCameraFromPlayer();
       }
 #endif

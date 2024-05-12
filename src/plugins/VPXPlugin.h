@@ -38,10 +38,15 @@
 // When loaded, plugins are provided a pointer table to the VPX API. This API
 // takes for granted that at any time, only one game can be played. All calls
 // related to a running game may only be called between the 'OnGameStart' & 
-// 'OnGameEnd' events. They are marked '[InGame]' in the following comments.
+// 'OnGameEnd' events.
 //
+// Plugins are instantiated on the 'game thread' which may or may not be the
+// main application thread. Therefore plugins are not allowed to perform any
+// operation only allowed on the main application thread like creating OS
+// windows.
+// 
 // Plugins must implement and export the load/unload functions to be valid.
-// VPX_EXPORT bool PluginLoad(VPXPluginAPI* api);
+// VPX_EXPORT void PluginLoad(VPXPluginAPI* api);
 // VPX_EXPORT void PluginUnload();
 //
 // This header is a common header to be used both by VPX and its plugins.
@@ -68,15 +73,22 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 #define VPX_EVT_ON_GAME_END      "VPX.OnGameEnd"      // Broadcasted during player shutdown
 #define VPX_EVT_ON_PREPARE_FRAME "VPX.OnPrepareFrame" // Broadcasted when player starts preparing a new frame
 
-// API version
-#define VPX_PLUGIN_API_VERSION   1
+// Helper defines
+
+// Conversions to/from VP units (50 VPU = 1.0625 inches which is 1"1/16, the default size of a ball, 1 inch is 2.54cm)
+// These value are very slightly off from original values which used a VPU to MM of 0.540425 instead of 0.53975 (result of the following formula)
+// So it used to be 0.125% larger which is not noticeable but makes it difficult to have perfect matches when playing between apps
+#ifndef MMTOVPU
+#define MMTOVPU(x) ((x) * (float)(50. / (25.4 * 1.0625)))
+#define CMTOVPU(x) ((x) * (float)(50. / (2.54 * 1.0625)))
+#define VPUTOMM(x) ((x) * (float)(25.4 * 1.0625 / 50.))
+#define VPUTOCM(x) ((x) * (float)(2.54 * 1.0625 / 50.))
+#define INCHESTOVPU(x) ((x) * (float)(50. / 1.0625))
+#define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
+#endif
 
 typedef struct
 {
-   // First field of the API is always the API version. All fields after this one depends on its value.
-   // Plugin MUST check against it when loading and fail (return false) if confronted to an unsupported API version.
-   unsigned int version;
-   
    // Communication bus
    unsigned int (*GetEventID)(const char* name);
    void (*SubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
@@ -84,9 +96,15 @@ typedef struct
    void (*BroadcastEvent)(const unsigned int eventId, void* data);
 
    // General information API
-   const char* (*GetTablePath)();
+   typedef struct
+   {
+      const char* path;              // [R_]
+      float tableWidth, tableHeight; // [R_]
+   } TableInfo;
+   void (*GetTableInfo)(TableInfo* info);
 
    // View management
+   void (*DisableStaticPrerendering)(bool disable);
    typedef struct
    {
       // See ViewSetup class for member description
