@@ -60,9 +60,10 @@ public:
    static void BroadcastEvent(const unsigned int eventId, void* data);
 
    // General information API
-   static const char* GetTablePath();
+   static void GetTableInfo(VPXPluginAPI::TableInfo* info);
 
    // View API implementation
+   static void DisableStaticPrerendering(bool disable);
    static void GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
    static void SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
 

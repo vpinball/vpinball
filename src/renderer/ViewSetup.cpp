@@ -18,7 +18,6 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);
    const Matrix3D rotx = // Rotate by the angle between playfield and real world horizontal (scale on Y and Z axis are equal and can be ignored)
-      //Matrix3D::MatrixRotateX(atan2f(mSceneScaleZ * (screenTopZ - screenBotZ), mSceneScaleY * table->m_bottom) - ANGTORAD(inclination));
       Matrix3D::MatrixRotateX(atan2f(screenTopZ - screenBotZ, table->m_bottom) - ANGTORAD(inclination));
    playerPos = rotx.MultiplyVectorNoPerspective(playerPos);
    mViewX = playerPos.x;
