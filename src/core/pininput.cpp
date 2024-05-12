@@ -738,17 +738,6 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
          break;
       case SDL_KEYDOWN:
          g_pplayer->ShowMouseCursor(false);
-      case SDL_KEYUP:
-         if (e.key.repeat == 0) {
-            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
-            if (dik != ~0u) {
-               didod[j].dwOfs = dik;
-               didod[j].dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
-               //didod[j].dwTimeStamp = curr_time_msec;
-               PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
-               j++; 
-            }
-         }
          break;
       case SDL_MOUSEMOTION:
          {
@@ -766,6 +755,19 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
 
    #ifdef ENABLE_SDL_INPUT
       if (m_inputApi == 2) switch (e.type) {
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+         if (e.key.repeat == 0) {
+            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+            if (dik != ~0u) {
+               didod[j].dwOfs = dik;
+               didod[j].dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+               //didod[j].dwTimeStamp = curr_time_msec;
+               PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
+               j++; 
+            }
+         }
+         break;
       #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
       case SDL_FINGERDOWN:
       case SDL_FINGERUP: {
