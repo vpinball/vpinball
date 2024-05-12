@@ -19,8 +19,9 @@ PluginManager::PluginManager()
    m_vpxAPI.UnsubscribeEvent = UnsubscribeEvent;
    m_vpxAPI.BroadcastEvent = BroadcastEvent;
    // General information API
-   m_vpxAPI.GetTablePath = GetTablePath;
+   m_vpxAPI.GetTableInfo = GetTableInfo;
    // View API
+   m_vpxAPI.DisableStaticPrerendering = DisableStaticPrerendering;
    m_vpxAPI.GetActiveViewSetup = GetActiveViewSetup;
    m_vpxAPI.SetActiveViewSetup = SetActiveViewSetup;
    // Validate API to ensure no field has been forgotten
@@ -94,15 +95,23 @@ void PluginManager::BroadcastEvent(const unsigned int eventId, void* data)
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
-const char* PluginManager::GetTablePath()
+void PluginManager::GetTableInfo(VPXPluginAPI::TableInfo* info)
 {
    assert(g_pplayer); // Only allowed in game
-   return g_pplayer->m_ptable->m_szFileName.c_str();
+   info->path = g_pplayer->m_ptable->m_szFileName.c_str();
+   info->tableWidth = g_pplayer->m_ptable->m_right;
+   info->tableHeight = g_pplayer->m_ptable->m_bottom;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // View API
+
+void PluginManager::DisableStaticPrerendering(bool disable)
+{
+   assert(g_pplayer); // Only allowed in game
+   g_pplayer->m_renderer->DisableStaticPrePass(disable);
+}
 
 void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
 {
@@ -136,6 +145,7 @@ void PluginManager::SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
    viewSetup.mViewX = view->viewX;
    viewSetup.mViewY = view->viewY;
    viewSetup.mViewZ = view->viewZ;
+   g_pplayer->m_renderer->InitLayout();
 }
 
 

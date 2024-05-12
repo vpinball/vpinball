@@ -2032,7 +2032,9 @@ void LiveUI::UpdateTweakModeUI()
             ImGui::NewLine();
             ImGui::PopStyleColor();
          }
+         viewSetup.SetWindowModeFromSettings(m_live_table);
       }
+      m_renderer->InitLayout();
    }
 
    if (m_activeTweakPage == TP_Rules)

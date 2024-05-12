@@ -427,6 +427,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
+   ViewSetup &viewSetup = m_ptable->mViewSetups[m_ptable->m_BG_current_set];
+   if (viewSetup.mMode == VLM_WINDOW)
+      viewSetup.SetWindowModeFromSettings(m_ptable);
+
    try
    {
       m_renderer = new Renderer(m_ptable, m_playfieldWnd, m_videoSyncMode, stereo3D);
