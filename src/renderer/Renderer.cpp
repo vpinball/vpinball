@@ -1389,11 +1389,6 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_pd3dPrimaryDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
-bool Renderer::IsUsingStaticPrepass() const
-{
-   return !m_disableStaticPrepass && m_stereo3D != STEREO_VR && !g_pplayer->m_headTracking;
-}
-
 void Renderer::RenderStaticPrepass()
 {
    // For VR, we don't use any static pre-rendering

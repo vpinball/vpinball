@@ -439,7 +439,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
-   m_renderer->DisableStaticPrePass(playMode != 0);
+   // Disable static prerendering for VR and legacy headtracking (this won't be reenable)
+   if (m_headTracking || (stereo3D != STEREO_VR))
+      m_renderer->DisableStaticPrePass(true);
+
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
@@ -715,17 +718,26 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_fplaylog = fopen("c:\\badlog.txt", "r");
 #endif
 
+   // We need to initialize the perf counter before creating the UI which uses it
+   wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    m_onPrepareFrameEventId = PluginManager::GetEventID(VPX_EVT_ON_PREPARE_FRAME);
    PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_GAME_START), nullptr);
 
+   // Open UI if requested (this also disables static prerendering, so must be done before performing it)
+   if (playMode == 1)
+      m_liveUI->OpenTweakMode();
+   else if (playMode == 2 && m_renderer->m_stereo3D != STEREO_VR)
+      m_liveUI->OpenLiveUI();
+
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    PLOGI << "Prerendering static parts"; // For profiling
    m_renderer->RenderStaticPrepass();
 
+   // Reset the perf counter to start time when physics starts
    wintimer_init();
    m_physics->StartPhysics();
 
@@ -778,10 +790,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                                  "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
    }
 
-   if (playMode == 1)
-      m_liveUI->OpenTweakMode();
-   else if (playMode == 2 && m_renderer->m_stereo3D != STEREO_VR)
-      m_liveUI->OpenLiveUI();
 }
 
 Player::~Player()

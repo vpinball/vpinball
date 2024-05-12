@@ -29,8 +29,8 @@ public:
    void UpdateBallShaderMatrix();
    void UpdateStereoShaderState();
 
-   void DisableStaticPrePass(const bool disable) { if (m_disableStaticPrepass != disable) { m_disableStaticPrepass = disable; m_isStaticPrepassDirty = true; } }
-   bool IsUsingStaticPrepass() const;
+   void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
+   bool IsUsingStaticPrepass() const { return m_disableStaticPrepass <= 0; };
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
    void RenderStaticPrepass();
 
@@ -163,7 +163,7 @@ private:
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
 
    bool m_isStaticPrepassDirty = true;
-   bool m_disableStaticPrepass = false;
+   int m_disableStaticPrepass = 0;
    RenderTarget* m_staticPrepassRT = nullptr;
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
