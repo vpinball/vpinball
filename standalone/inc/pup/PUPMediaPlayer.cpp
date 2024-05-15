@@ -17,14 +17,9 @@
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
-PUPMediaPlayer::PUPMediaPlayer(SDL_Renderer* pRenderer, SDL_Rect* pRect)
+PUPMediaPlayer::PUPMediaPlayer()
 {
-   m_pRenderer = pRenderer;
-   m_pRect = pRect;
-
-   m_pAudioPlayer = new AudioPlayer();
-   m_pAudioPlayer->StreamInit(44100, 2, 1.0f);
-
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pFormatContext = NULL;
    m_pAudioContext = NULL;
    m_pVideoContext = NULL;
@@ -43,18 +38,57 @@ PUPMediaPlayer::PUPMediaPlayer(SDL_Renderer* pRenderer, SDL_Rect* pRect)
    m_flushing = false;
    m_decoded = false;
    m_firstPTS = -1.0;
-   m_pVideoTexture = NULL;
-   m_pBackgroundVideo = nullptr;
-   m_pCurrentVideo = nullptr;
-
-   m_running = false;
+   m_pTexture = NULL;
+   m_pAudioPlayer = new AudioPlayer();
+   m_pAudioPlayer->StreamInit(44100, 2, 1.0f);
    m_pThread = nullptr;
-
-   RunLoop();
+#endif
+   m_running = false;
 }
 
 PUPMediaPlayer::~PUPMediaPlayer()
 {
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
+   Stop();
+
+   if (m_pTexture)
+      SDL_DestroyTexture(m_pTexture);
+
+   delete m_pAudioPlayer;
+#endif
+}
+
+bool PUPMediaPlayer::IsPlaying()
+{
+   return m_running;
+}
+
+void PUPMediaPlayer::Stop()
+{
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
+   m_running = false;
+
+   if (m_pThread) {
+      m_pThread->join();
+      delete m_pThread;
+      m_pThread = NULL;
+   }
+
+   while (!m_frameQueue.empty()) {
+      std::unique_lock<std::mutex> lock(m_frameQueueMutex);
+      AVFrame* pFrame = m_frameQueue.front();
+      av_frame_free(&pFrame);
+      m_frameQueue.pop();
+      lock.unlock();
+   }
+
+    Cleanup();
+#endif
+}
+
+void PUPMediaPlayer::Play(const string& szFilename, int volume)
+{
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_running = false;
 
    if (m_pThread) {
@@ -73,53 +107,35 @@ PUPMediaPlayer::~PUPMediaPlayer()
 
    Cleanup();
 
-   if (m_pVideoTexture)
-      SDL_DestroyTexture(m_pVideoTexture);
-
-   delete m_pAudioPlayer;
-}
-
-void PUPMediaPlayer::Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority)
-{
-   if (m_pCurrentVideo)
-      m_pCurrentVideo->isPaused = true;
-
-   string szPath = find_path_case_insensitive(szFilename);
-   if (szPath.empty())
+   m_szFilename = find_path_case_insensitive(szFilename);
+   if (m_szFilename.empty()) {
+      PLOGE.printf("File not found: filename=%s", szFilename.c_str());
       return;
-
-   PUPVideo* pVideo = (PUPVideo*)malloc(sizeof(PUPVideo));
-   memset(pVideo, 0, sizeof(PUPVideo));
-   pVideo->szFilename = szPath;
-   pVideo->volume = volume;
-   pVideo->action = action;
-   pVideo->priority = priority;
-
-   {
-      std::lock_guard<std::mutex> lock(m_playlistMutex);
-      m_playlist.push_back(pVideo);
    }
-}
-  
-void PUPMediaPlayer::SetBG(const string& szFilename, int volume, int priority)
-{
-   string szPath = find_path_case_insensitive(szFilename);
-   if (szPath.empty())
-      return;
 
-   m_pBackgroundVideo = (PUPVideo*)malloc(sizeof(PUPVideo));
-   memset(m_pBackgroundVideo, 0, sizeof(PUPVideo));
-   m_pBackgroundVideo->szFilename = szPath;
-   m_pBackgroundVideo->volume = volume;
-   m_pBackgroundVideo->action = PUP_TRIGGER_PLAY_ACTION_LOOP;
-   m_pBackgroundVideo->priority = priority;
+   m_volume = volume;
+
+   m_loop = false;
+
+   m_running = true;
+
+   m_pThread = new std::thread([this]() {
+      while (m_running) {
+         ProcessMedia();
+         if (!m_loop)
+            break;
+      }
+      m_running = false;
+   });
+#endif
 }
 
-void PUPMediaPlayer::Render()
+void PUPMediaPlayer::Render(SDL_Renderer* pRenderer, SDL_Rect* pRect)
 {
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    if (m_frameQueue.empty()) {
-      if (m_pVideoTexture)
-         SDL_RenderCopy(m_pRenderer, m_pVideoTexture, NULL, m_pRect);
+      if (m_pTexture)
+         SDL_RenderCopy(pRenderer, m_pTexture, NULL, pRect);
       return;
    }
    
@@ -129,14 +145,14 @@ void PUPMediaPlayer::Render()
    lock.unlock();
 
    SDL_PixelFormatEnum format = GetVideoFormat((enum AVPixelFormat)pFrame->format);
-   if (!m_pVideoTexture || format != m_videoFormat ||pFrame->width != m_videoWidth || pFrame->height != m_videoHeight) {
-      if (m_pVideoTexture)
-         SDL_DestroyTexture(m_pVideoTexture);
+   if (!m_pTexture || format != m_videoFormat ||pFrame->width != m_videoWidth || pFrame->height != m_videoHeight) {
+      if (m_pTexture)
+         SDL_DestroyTexture(m_pTexture);
 
       if (format == SDL_PIXELFORMAT_UNKNOWN)
-         m_pVideoTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, pFrame->width,pFrame->height);
+         m_pTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING, pFrame->width,pFrame->height);
       else
-         m_pVideoTexture = SDL_CreateTexture(m_pRenderer, format, SDL_TEXTUREACCESS_STREAMING, pFrame->width, pFrame->height);
+         m_pTexture = SDL_CreateTexture(pRenderer, format, SDL_TEXTUREACCESS_STREAMING, pFrame->width, pFrame->height);
  
       m_videoFormat = format;
       m_videoWidth = pFrame->width;
@@ -153,20 +169,20 @@ void PUPMediaPlayer::Render()
          if (m_pVideoConversionContext != NULL) {
             uint8_t* pPixels[4];
             int pitch[4];
-            if (SDL_LockTexture(m_pVideoTexture, NULL, (void **)pPixels, pitch) == 0) {
+            if (SDL_LockTexture(m_pTexture, NULL, (void **)pPixels, pitch) == 0) {
                sws_scale(m_pVideoConversionContext, (const uint8_t * const *)pFrame->data, pFrame->linesize, 0, pFrame->height, pPixels, pitch);
-               SDL_UnlockTexture(m_pVideoTexture);
+               SDL_UnlockTexture(m_pTexture);
             }
          }
          break;
 
       case SDL_PIXELFORMAT_IYUV:
          if (pFrame->linesize[0] > 0 && pFrame->linesize[1] > 0 && pFrame->linesize[2] > 0) {
-            SDL_UpdateYUVTexture(m_pVideoTexture, NULL, pFrame->data[0], pFrame->linesize[0],
+            SDL_UpdateYUVTexture(m_pTexture, NULL, pFrame->data[0], pFrame->linesize[0],
                pFrame->data[1], pFrame->linesize[1], pFrame->data[2], pFrame->linesize[2]);
          }
          else if (pFrame->linesize[0] < 0 && pFrame->linesize[1] < 0 && pFrame->linesize[2] < 0) {
-            SDL_UpdateYUVTexture(m_pVideoTexture, NULL, pFrame->data[0] + pFrame->linesize[0] * (pFrame->height - 1), -pFrame->linesize[0],
+            SDL_UpdateYUVTexture(m_pTexture, NULL, pFrame->data[0] + pFrame->linesize[0] * (pFrame->height - 1), -pFrame->linesize[0],
                pFrame->data[1] + pFrame->linesize[1] * (AV_CEIL_RSHIFT(pFrame->height, 1) - 1), -pFrame->linesize[1],
                pFrame->data[2] + pFrame->linesize[2] * (AV_CEIL_RSHIFT(pFrame->height, 1) - 1), -pFrame->linesize[2]);
             flip = SDL_FLIP_VERTICAL;
@@ -175,52 +191,24 @@ void PUPMediaPlayer::Render()
          break;
       default:
          if (pFrame->linesize[0] < 0) {
-            SDL_UpdateTexture(m_pVideoTexture, NULL, pFrame->data[0] + pFrame->linesize[0] * (pFrame->height - 1), -pFrame->linesize[0]);
+            SDL_UpdateTexture(m_pTexture, NULL, pFrame->data[0] + pFrame->linesize[0] * (pFrame->height - 1), -pFrame->linesize[0]);
             flip = SDL_FLIP_VERTICAL;
          }
          else
-            SDL_UpdateTexture(m_pVideoTexture, NULL, pFrame->data[0], pFrame->linesize[0]);
+            SDL_UpdateTexture(m_pTexture, NULL, pFrame->data[0], pFrame->linesize[0]);
    }
 
-   SDL_RenderCopy(m_pRenderer, m_pVideoTexture, NULL, m_pRect);
+   SDL_RenderCopy(pRenderer, m_pTexture, NULL, pRect);
 
    av_frame_free(&pFrame);
+#endif
 }
 
-void PUPMediaPlayer::RunLoop()
-{
-   m_running = true;
-
-   m_pThread = new std::thread([this]() {
-      while (m_running) {
-         {
-            std::lock_guard<std::mutex> lock(m_playlistMutex);
-            if (!m_playlist.empty()) {
-               m_pCurrentVideo = m_playlist.front();
-               m_playlist.pop_front();
-            }
-         }
-         
-         if (m_pCurrentVideo) {
-         }
-         else if (m_pBackgroundVideo) {
-            m_pCurrentVideo = m_pBackgroundVideo;
-            m_pCurrentVideo->isPaused = false;
-         }
-         else {
-            SDL_Delay(10);
-            continue;
-         }
- 
-         ProcessMedia();
-      }
-   });
-}
-
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 void PUPMediaPlayer::ProcessMedia()
 {
-   if (avformat_open_input(&m_pFormatContext, m_pCurrentVideo->szFilename.c_str(), NULL, NULL) != 0) {
-      PLOGE.printf("Unable to open: filename=%s", m_pCurrentVideo->szFilename.c_str());
+   if (avformat_open_input(&m_pFormatContext, m_szFilename.c_str(), NULL, NULL) != 0) {
+      PLOGE.printf("Unable to open: filename=%s", m_szFilename.c_str());
       Cleanup();
       return;
    }
@@ -229,7 +217,7 @@ void PUPMediaPlayer::ProcessMedia()
    if (m_videoStream >= 0) {
       m_pVideoContext = OpenVideoStream(m_pFormatContext, m_videoStream);
       if (!m_pVideoContext) {
-         PLOGE.printf("Unable to open video stream: filename=%s", m_pCurrentVideo->szFilename.c_str());
+         PLOGE.printf("Unable to open video stream: filename=%s", m_szFilename.c_str());
          Cleanup();
          return;
       }
@@ -239,7 +227,7 @@ void PUPMediaPlayer::ProcessMedia()
    if (m_audioStream >= 0) {
       m_pAudioContext = OpenAudioStream(m_pFormatContext, m_audioStream);
       if (!m_pAudioContext) {
-         PLOGE.printf("Unable to open audio stream: filename=%s", m_pCurrentVideo->szFilename.c_str());
+         PLOGE.printf("Unable to open audio stream: filename=%s", m_szFilename.c_str());
          Cleanup();
          return;
       }
@@ -247,27 +235,25 @@ void PUPMediaPlayer::ProcessMedia()
 
    m_pPacket = av_packet_alloc();
    if (!m_pPacket) {
-      PLOGE.printf("Unable to allocate packet: filename=%s", m_pCurrentVideo->szFilename.c_str());
+      PLOGE.printf("Unable to allocate packet: filename=%s", m_szFilename.c_str());
       Cleanup();
       return;
    }
 
    m_pFrame = av_frame_alloc();
    if (!m_pFrame) {
-      PLOGE.printf("Unable to allocate frame: filename=%s", m_pCurrentVideo->szFilename.c_str());
+      PLOGE.printf("Unable to allocate frame: filename=%s", m_szFilename.c_str());
       Cleanup();
       return;
    }
 
-   PLOGI.printf("Playing: filename=%s, volume=%d%%", m_pCurrentVideo->szFilename.c_str(), m_pCurrentVideo->volume);
-   m_pAudioPlayer->StreamVolume(m_pCurrentVideo->volume / 100.0f);
+   PLOGI.printf("Playing: filename=%s, volume=%d%%", m_szFilename.c_str(), m_volume);
+   m_pAudioPlayer->StreamVolume(m_volume / 100.0f);
 
-   while (m_running && !m_done && !m_pCurrentVideo->isPaused)
+   while (m_running && !m_done && !m_paused)
       ProcessFrame();
 
    Cleanup();
-
-   m_pCurrentVideo = nullptr;
 }
 
 AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext, int stream)
@@ -560,6 +546,7 @@ void PUPMediaPlayer::Cleanup()
    m_decoded = false;
    m_firstPTS = -1.0;
 }
+#endif
 
 #if defined(__clang__)
 #pragma clang diagnostic pop

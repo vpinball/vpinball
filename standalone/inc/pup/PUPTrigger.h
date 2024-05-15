@@ -2,16 +2,19 @@
 
 #include "PUPManager.h"
 
+class PUPPlaylist;
+class PUPScreen;
+
 class PUPTrigger {
 public:
    ~PUPTrigger() {}
 
-   static PUPTrigger* CreateFromCSVLine(string line);
+   static PUPTrigger* CreateFromCSV(string line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_descript; }
    const string& GetTrigger() const { return m_trigger; }
-   int GetScreenNum() const { return m_screenNum; }
-   const string& GetPlaylist() const { return m_playlist; }
+   PUPScreen* GetScreen() const { return m_pScreen; }
+   PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
    const string& GetPlayFile() { return m_playFile; }
    int GetVolume() const { return m_volume; }
    int GetPriority() const { return m_priority; }
@@ -26,8 +29,8 @@ private:
    bool m_active;
    string m_descript;
    string m_trigger;
-   int m_screenNum;
-   string m_playlist;
+   PUPScreen* m_pScreen;
+   PUPPlaylist* m_pPlaylist;
    string m_playFile;
    int m_volume;
    int m_priority;

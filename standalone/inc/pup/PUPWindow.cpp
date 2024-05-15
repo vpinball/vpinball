@@ -16,9 +16,7 @@ PUPWindow::PUPWindow(PUPScreen* pScreen, const string& szTitle, int x, int y, in
     : VP::Window(szTitle, x, y, w, h, z, rotation)
 {
    m_pScreen = pScreen;
-   m_visible = true;
-
-   m_pScreen->UpdateSize(w, h);
+   m_pScreen->SetSize(w, h);
 }
 
 PUPWindow::~PUPWindow()

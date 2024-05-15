@@ -1,9 +1,14 @@
 #pragma once
 
+#if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
+#define VIDEO_WINDOW_HAS_FFMPEG_LIBS 1
+#endif
+
 #include "PUPManager.h"
 
 #include "../common/Window.h"
 
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 extern "C" {
    #include "libavutil/imgutils.h"
    #include "libavformat/avformat.h"
@@ -12,27 +17,22 @@ extern "C" {
    #include "libswresample/swresample.h"
    #include "libavcodec/avcodec.h"
 }
-
-typedef struct {
-   string szFilename;
-   int volume;
-   bool isPaused;
-   PUP_TRIGGER_PLAY_ACTION action;
-   int priority;
-} PUPVideo;
+#endif
 
 class PUPMediaPlayer
 {
 public:
-   PUPMediaPlayer(SDL_Renderer* pRenderer, SDL_Rect* pRect);
+   PUPMediaPlayer();
    ~PUPMediaPlayer();
 
-   void Play(const string& szFilename, int volume, PUP_TRIGGER_PLAY_ACTION action, int priority);
-   void SetBG(const string& szFilename, int volume, int priority);
-   void Render();
+   void Play(const string& szFilename, int volume);
+   bool IsPlaying();
+   void Stop();
+   void Render(SDL_Renderer* pRenderer, SDL_Rect* pRect);
+   void SetLoop(bool loop) { m_loop = loop; }
 
 private:
-   void RunLoop();
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    void ProcessMedia();
    void ProcessFrame();
    AVCodecContext* OpenVideoStream(AVFormatContext* pInputFormatContext, int stream);
@@ -42,9 +42,7 @@ private:
    SDL_PixelFormatEnum GetVideoFormat(enum AVPixelFormat format);
    void SetYUVConversionMode(AVFrame* pFrame);
    void Cleanup();
-   
-   SDL_Renderer* m_pRenderer;
-   SDL_Rect* m_pRect;
+
    AudioPlayer* m_pAudioPlayer;
    AVFormatContext* m_pFormatContext;
    AVCodecContext* m_pAudioContext;
@@ -64,14 +62,14 @@ private:
    bool m_flushing;
    bool m_decoded;
    double m_firstPTS;
-   SDL_Texture* m_pVideoTexture;
-   PUPVideo* m_pBackgroundVideo;
-   PUPVideo* m_pCurrentVideo;
-   std::deque<PUPVideo*> m_playlist;
-   std::mutex m_playlistMutex;
+   SDL_Texture* m_pTexture;
    std::queue<AVFrame*> m_frameQueue;
    std::mutex m_frameQueueMutex;
-
    std::thread* m_pThread;
+   string m_szFilename;
+   float m_volume;
+#endif
+   bool m_loop;
    bool m_running;
+   bool m_paused;
 };

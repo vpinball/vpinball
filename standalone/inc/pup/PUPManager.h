@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 #include <mutex>
+#include <condition_variable>
 
 #include <SDL2/SDL_ttf.h>
 
@@ -26,7 +27,8 @@ typedef enum
    PUP_SCREEN_MODE_FORCE_ON,             // Forces the window to be the Top most window, and it stays on. A video is always going to be playing in this mode. When a new video starts or the current video restarts, the ForceON action happens and will force the window to be the Top window again.
    PUP_SCREEN_MODE_FORCE_POP,            // Similar to ForceOn, except the vlc window opens and closes with each video played
    PUP_SCREEN_MODE_FORCE_BACK,           // Keeps the video window always open, but under the other PuP screens. This can cause any PuP screen with this setting to get pushed behind your game window.
-   PUP_SCREEN_MODE_FORCE_POP_BACK        // Similar to ForceBack, except the vlc window opens and closes with each video played
+   PUP_SCREEN_MODE_FORCE_POP_BACK,       // Similar to ForceBack, except the vlc window opens and closes with each video played
+   PUP_SCREEN_MODE_MUSIC_ONLY
 } PUP_SCREEN_MODE;
 
 typedef enum
@@ -51,6 +53,10 @@ typedef enum
    PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY  // this will ignore the trigger if the file playing has the same Priority. This is nice for events such as Jackpot videos or others that will play very often, and you don't want to have them constantly interrupting each other. “Normal” PlayAction files with the same Priority will interrupt each other no matter the Rest Seconds. Using SkipSamePri will not play the new file (with same the Priority) if the current file is still playing and allows for smoother non-interruptive action for common events.
 } PUP_TRIGGER_PLAY_ACTION;
 
+const char* PUP_TRIGGER_PLAY_ACTION_TO_STRING(PUP_TRIGGER_PLAY_ACTION value);
+const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value);
+const char* PUP_SCREEN_MODE_TO_STRING(PUP_SCREEN_MODE value);
+
 typedef struct {
    char type;
    int number;
@@ -68,35 +74,40 @@ public:
    ~PUPManager();
 
    static PUPManager* GetInstance();
-
    bool IsInit() { return m_init; }
    bool LoadConfig(const string& szRomName);
+   const string& GetPath() { return m_szPath; }
+   bool AddScreen(PUPScreen* pScreen);
+   PUPScreen* GetScreen(int screenNum);
+   bool AddPlaylist(PUPPlaylist* pPlaylist);
+   PUPPlaylist* GetPlaylist(const string& szFolder);
+   bool AddTrigger(PUPTrigger* pTrigger);
+   vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
+   bool AddFont(TTF_Font* pFont);
+   TTF_Font* GetFont(const string& szFamily);
+   void QueueTriggerData(PUPTriggerData data);
    void Start();
    void Stop();
-   const string& GetPath() { return m_szPath; }
-   void QueueTriggerData(PUPTriggerData data);
-   PUPPlaylist* GetPlaylist(const string& szFolder);
-   string GetPath(PUPPlaylist* pPlaylist, const string& szPlayFile);
-   PUPScreen* GetScreen(int screenNum);
-   TTF_Font* GetFont(const string& szFamily);
 
 private:
    PUPManager();
 
-   void RunLoop();
+   void ProcessQueue();
 
    static PUPManager* m_pInstance;
    bool m_init;
    string m_szPath;
    std::map<int, PUPScreen*> m_screenMap;
    std::map<string, PUPPlaylist*> m_playlistMap;
+   std::map<string, vector<PUPTrigger*>> m_triggerMap;
    std::map<string, TTF_Font*> m_fontMap;
    PUPScreen* m_pBackglassScreen;
    PUPWindow* m_pBackglassWindow;
    PUPScreen* m_pTopperScreen;
    PUPWindow* m_pTopperWindow;
-   std::queue<PUPTriggerData> m_triggerQueue;
-   std::mutex m_triggerMutex;
-   std::thread* m_pThread;
-   bool m_running;
+   std::queue<PUPTriggerData> m_triggerDataQueue;
+   std::mutex m_queueMutex;
+   std::condition_variable m_queueCondVar;
+   bool m_isRunning;
+   std::thread m_thread;
 };

@@ -1,6 +1,8 @@
 #include "core/stdafx.h"
 
 #include "PUPTrigger.h"
+#include "PUPScreen.h"
+#include "PUPPlaylist.h"
 
 /*
    triggers.pup: ID,Active,Descript,Trigger,ScreenNum,PlayList,PlayFile,Volume,Priority,Length,Counter,RestSeconds,Loop,Defaults
@@ -39,24 +41,31 @@ PUPTrigger::PUPTrigger()
    m_playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 }
 
-PUPTrigger* PUPTrigger::CreateFromCSVLine(string line)
+PUPTrigger* PUPTrigger::CreateFromCSV(string line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 14)
       return nullptr;
 
    bool active = (string_to_int(parts[1], 0) == 1);
-
    if (!active)
+      return nullptr;
+
+   PUPScreen* pScreen = PUPManager::GetInstance()->GetScreen(string_to_int(parts[4], -1));
+   if (!pScreen)
+      return nullptr;
+
+   PUPPlaylist* pPlaylist = PUPManager::GetInstance()->GetPlaylist(parts[5]);
+   if (!pPlaylist)
       return nullptr;
 
    PUPTrigger* pTrigger = new PUPTrigger();
 
-   pTrigger->m_active = true;
+   pTrigger->m_active = active;
    pTrigger->m_descript = parts[2];
    pTrigger->m_trigger = parts[3];
-   pTrigger->m_screenNum = string_to_int(parts[4], 0);
-   pTrigger->m_playlist = parts[5];
+   pTrigger->m_pScreen = pScreen;
+   pTrigger->m_pPlaylist = pPlaylist;
    pTrigger->m_playFile = parts[6];
    pTrigger->m_volume = string_to_int(parts[7], 0);
    pTrigger->m_priority = string_to_int(parts[8], 0);
@@ -92,13 +101,13 @@ string PUPTrigger::ToString() const {
    return string("active=") + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_descript +
       ", trigger=" + m_trigger +
-      ", screenNum=" + std::to_string(m_screenNum) +
-      ", playlist=" + m_playlist +
+      ", screen={" + m_pScreen->ToString(false) + "}" +
+      ", playlist={" + m_pPlaylist->ToString() + "}" +
       ", playFile=" + m_playFile +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
       ", length=" + std::to_string(m_length) +
       ", count=" + std::to_string(m_counter) +
       ", restSeconds=" + std::to_string(m_restSeconds) +
-      ", playAction=" + std::to_string(m_playAction);
+      ", playAction=" + string(PUP_TRIGGER_PLAY_ACTION_TO_STRING(m_playAction));
 }
