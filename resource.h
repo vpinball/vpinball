@@ -1259,6 +1259,7 @@
 #define IDC_AR_LABEL2                   924
 #define IDC_SAVE_OVERRIDES              925
 #define IDC_INFOTEXT_EDIT               926
+#define IDC_SYNC                        928
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1455,7 +1456,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        677
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         927
+#define _APS_NEXT_CONTROL_VALUE         929
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

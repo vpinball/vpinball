@@ -417,6 +417,10 @@ void LayersListDialog::UpdateLayerInfo()
     if (m_activeTable == nullptr)
         return;
 
+    // If Radio button IDC_SYNC is unchecked, return
+    if (IsDlgButtonChecked(IDC_SYNC) == BST_UNCHECKED)
+        return;
+
     // Get the selected element
     ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(0);
 	if (psel != nullptr)
