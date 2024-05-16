@@ -6586,6 +6586,9 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         }
         m_vpinball->SetStatusBarElementInfo(info);
         m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
+        // Update the layer dialog
+        m_vpinball->GetLayersListDialog()->UpdateLayerInfo();
+
     }
 }
 

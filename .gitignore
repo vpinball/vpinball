@@ -1,3 +1,10 @@
 .project
 build/
 /CMakeLists.txt
+/.build
+/.vs
+/shader
+/VisualPinball.net2022.vcxproj.user
+/vpinball.h
+/vpinball.tlb
+/vpinball_i.c
