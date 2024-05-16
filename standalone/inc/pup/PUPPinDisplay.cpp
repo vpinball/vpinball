@@ -46,7 +46,7 @@ STDMETHODIMP PUPPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR p
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
    if (pScreen)
-      pScreen->PlayEx(MakeString(playlist), MakeString(playfilename), volume, forceplay);
+      pScreen->QueuePlay(MakeString(playlist), MakeString(playfilename), volume, forceplay);
 
    return S_OK;
 }
@@ -118,7 +118,7 @@ STDMETHODIMP PUPPinDisplay::playstop(LONG ScreenNum)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
    if (pScreen)
-      pScreen->Stop();
+      pScreen->QueueStop();
 
    return S_OK;
 }
@@ -164,7 +164,7 @@ STDMETHODIMP PUPPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
    if (pScreen)
-      pScreen->SetBackGround(Mode);
+      pScreen->SetBG(Mode);
 
    return S_OK;
 }

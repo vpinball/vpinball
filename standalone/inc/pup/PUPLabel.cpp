@@ -54,24 +54,35 @@ void PUPLabel::SetCaption(const string& szCaption)
    string szText = szCaption;
    std::replace(szText.begin(), szText.end(), '~', '\n');
 
-   if (m_szCaption != szText) {
-      m_type = PUP_LABEL_TYPE_TEXT;
-      m_szPath.clear();
+   {
+      std::lock_guard<std::mutex> lock(m_mutex);
+      if (m_szCaption != szText) {
+         m_type = PUP_LABEL_TYPE_TEXT;
+         m_szPath.clear();
 
-      const string szExt = extension_from_path(szCaption);
-      if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
-         std::filesystem::path fs_path(normalize_path_separators(szCaption));
-         PUPPlaylist* pPlaylist = PUPManager::GetInstance()->GetPlaylist(fs_path.parent_path());
-         if (pPlaylist) {
-            m_szPath = find_path_case_insensitive(pPlaylist->GetFolderPath() + fs_path.filename().string());
-            if (!m_szPath.empty())
-               m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+         const string szExt = extension_from_path(szCaption);
+         if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
+            std::filesystem::path fs_path(normalize_path_separators(szCaption));
+            PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(fs_path.parent_path());
+            if (pPlaylist) {
+               string szFile = pPlaylist->GetPlayFile(fs_path.filename().string());
+               if (!szFile.empty()) {
+                  m_szPath = PUPManager::GetInstance()->GetPath() + pPlaylist->GetFolder() + PATH_SEPARATOR_CHAR + szFile;
+                  m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+               }
+            }
          }
-      }
 
-      m_szCaption = szText;
-      m_dirty = true;
+         m_szCaption = szText;
+         m_dirty = true;
+      }
    }
+}
+
+void PUPLabel::SetVisible(bool visible)
+{
+   std::lock_guard<std::mutex> lock(m_mutex);
+   m_visible = visible;
 }
 
 void PUPLabel::SetSpecial(const string& szSpecial)
@@ -87,142 +98,146 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          if (json["ztop"s].exists() && json["ztop"s].as<int>() == 1)
             m_pScreen->SendLabelToFront(this);
 
-         if (json["size"s].exists()) {
-            m_size = std::stof(json["size"s].as_str());
-            m_dirty = true;
-         }
+         {
+            std::lock_guard<std::mutex> lock(m_mutex);
 
-         if (json["xpos"s].exists()) {
-            m_xPos = std::stof(json["xpos"s].as_str());
-            m_dirty = true;
-         }
+            if (json["size"].exists()) {
+               m_size = std::stof(json["size"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["ypos"s].exists()) {
-            m_yPos = std::stof(json["ypos"s].as_str());
-            m_dirty = true;
-         }
+            if (json["xpos"].exists()) {
+               m_xPos = std::stof(json["xpos"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["fname"s].exists()) {
-            m_pFont = PUPManager::GetInstance()->GetFont(json["fname"s].as_str());
-            m_dirty = true;
-         }
+            if (json["ypos"].exists()) {
+               m_yPos = std::stof(json["ypos"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["color"s].exists()) {
-            m_color = json["color"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["fname"].exists()) {
+               m_pFont = PUPManager::GetInstance()->GetFont(json["fname"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["xalign"s].exists()) {
-            m_xAlign = (PUP_LABEL_XALIGN)json["xalign"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["color"].exists()) {
+               m_color = json["color"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["yalign"s].exists()) {
-            m_yAlign = (PUP_LABEL_YALIGN)json["yalign"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["xalign"].exists()) {
+               m_xAlign = (PUP_LABEL_XALIGN)json["xalign"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["pagenum"s].exists()) {
-            m_pagenum = json["pagenum"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["yalign"].exists()) {
+               m_yAlign = (PUP_LABEL_YALIGN)json["yalign"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["stopani"s].exists()) {
-            // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
-            PLOGW.printf("stopani not implemented");
-            m_dirty = true;
-         }
+            if (json["pagenum"].exists()) {
+               m_pagenum = json["pagenum"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["rotate"s].exists()) {
-            // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
-            m_angle = std::stof(json["rotate"s].as_str());
-            m_dirty = true;
-         }
+            if (json["stopani"].exists()) {
+               // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
+               PLOGW.printf("stopani not implemented");
+               m_dirty = true;
+            }
 
-         if (json["zoom"s].exists()) {
-            // 120 for 120% of current height, 80% etc...
-            PLOGW.printf("zoom not implemented");
-            m_dirty = true;
-         }
+            if (json["rotate"].exists()) {
+               // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
+               m_angle = std::stof(json["rotate"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["alpha"s].exists()) {
-            // '0-255  255=full, 0=blank
-            PLOGW.printf("alpha not implemented");
-            m_dirty = true;
-         }
+            if (json["zoom"].exists()) {
+               // 120 for 120% of current height, 80% etc...
+               PLOGW.printf("zoom not implemented");
+               m_dirty = true;
+            }
 
-         if (json["gradstate"s].exists() && json["gradcolor"s].exists()) {
-            // color=gradcolor, gradstate = 0 (gradstate is percent)
-            PLOGW.printf("gradstate/gradcolor not implemented");
-            m_dirty = true;
-         }
+            if (json["alpha"].exists()) {
+               // '0-255  255=full, 0=blank
+               PLOGW.printf("alpha not implemented");
+               m_dirty = true;
+            }
 
-         if (json["grayscale"s].exists()) {
-            // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
-            PLOGW.printf("filter not implemented");
-            m_dirty = true;
-         }
+            if (json["gradstate"].exists() && json["gradcolor"].exists()) {
+               // color=gradcolor, gradstate = 0 (gradstate is percent)
+               PLOGW.printf("gradstate/gradcolor not implemented");
+               m_dirty = true;
+            }
 
-         if (json["filter"s].exists()) {
-            // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
-            PLOGW.printf("filter not implemented");
-            m_dirty = true;
-         }
+            if (json["grayscale"].exists()) {
+               // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
+               PLOGW.printf("filter not implemented");
+               m_dirty = true;
+            }
 
-         if (json["shadowcolor"s].exists()) {
-            m_shadowColor = json["shadowcolor"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["filter"].exists()) {
+               // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
+               PLOGW.printf("filter not implemented");
+               m_dirty = true;
+            }
 
-         if (json["shadowtype"s].exists()) {
-            // ST = 1 (Shadow), ST = 2 (Border)
-            PLOGW.printf("shadowtype not implemented");
-            m_dirty = true;
-         }
+            if (json["shadowcolor"].exists()) {
+               m_shadowColor = json["shadowcolor"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["xoffset"s].exists()) {
-            m_xoffset = std::stof(json["xoffset"s].as_str());
-            m_dirty = true;
-         }
+            if (json["shadowtype"].exists()) {
+               // ST = 1 (Shadow), ST = 2 (Border)
+               PLOGW.printf("shadowtype not implemented");
+               m_dirty = true;
+            }
 
-         if (json["yoffset"s].exists()) {
-            m_yoffset = std::stof(json["yoffset"s].as_str());
-            m_dirty = true;
-         }
+            if (json["xoffset"].exists()) {
+               m_xoffset = std::stof(json["xoffset"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["anigif"s].exists()) {
-            m_anigif = json["anigif"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["yoffset"].exists()) {
+               m_yoffset = std::stof(json["yoffset"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["width"s].exists()) {
-            m_width = std::stof(json["width"s].as_str());
-            m_dirty = true;
-         }
+            if (json["anigif"].exists()) {
+               m_anigif = json["anigif"].as<int>();
+               m_dirty = true;
+            }
 
-         if (json["height"s].exists()) {
-            m_height = std::stof(json["height"s].as_str());
-            m_dirty = true;
-         }
+            if (json["width"].exists()) {
+               m_width = std::stof(json["width"].as_str());
+               m_dirty = true;
+            }
 
-          if (json["autow"s].exists()) {
-            PLOGW.printf("autow not implemented");
-            m_dirty = true;
-         }
+            if (json["height"].exists()) {
+               m_height = std::stof(json["height"].as_str());
+               m_dirty = true;
+            }
 
-         if (json["autoh"s].exists()) {
-            PLOGW.printf("autoh not implemented");
-            m_dirty = true;
-         }
+            if (json["autow"].exists()) {
+               PLOGW.printf("autow not implemented");
+               m_dirty = true;
+            }
 
-         if (json["shadowstate"s].exists()) {
-            m_shadowState = json["shadowstate"s].as<int>();
-            m_dirty = true;
-         }
+            if (json["autoh"].exists()) {
+               PLOGW.printf("autoh not implemented");
+               m_dirty = true;
+            }
 
-         if (json["outline"s].exists()) {
-            m_outline = (json["outline"s].as<int>() == 1);
-            m_dirty = true;
+            if (json["shadowstate"].exists()) {
+               m_shadowState = json["shadowstate"].as<int>();
+               m_dirty = true;
+            }
+
+            if (json["outline"].exists()) {
+               m_outline = (json["outline"].as<int>() == 1);
+               m_dirty = true;
+            }
          }
       }
       break;
@@ -245,6 +260,7 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
 void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
+   std::lock_guard<std::mutex> lock(m_mutex);
    if (!m_visible || pagenum != m_pagenum || m_szCaption.empty())
       return;
 
