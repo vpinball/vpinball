@@ -721,7 +721,7 @@ vector<string> find_files_by_extension(const string& directoryPath, const string
 string find_path_case_insensitive(const string& szPath);
 string find_directory_case_insensitive(const std::string& szParentPath, const std::string& szDirName);
 string extension_from_path(const string& path);
-string normalize_path_separators(const string& path);
+string normalize_path_separators(const string& szPath);
 bool path_has_extension(const string& path, const string& extension);
 bool try_parse_int(const string& str, int& value);
 bool try_parse_float(const string& str, float& value);

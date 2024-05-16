@@ -8,6 +8,7 @@
 
 #include "PUPLabel.h"
 #include "PUPScreen.h"
+#include "PUPPlaylist.h"
 #include "PUPManager.h"
 
 #include "RSJparser/RSJparser.tcc"
@@ -54,17 +55,18 @@ void PUPLabel::SetCaption(const string& szCaption)
    std::replace(szText.begin(), szText.end(), '~', '\n');
 
    if (m_szCaption != szText) {
+      m_type = PUP_LABEL_TYPE_TEXT;
+      m_szPath.clear();
+
       string szExt = extension_from_path(szCaption);
-      if (szExt == "png" || szExt == "apng" || szExt == "gif") {
-         m_szPath = find_path_case_insensitive(PUPManager::GetInstance()->GetPath() + normalize_path_separators(szCaption));
-         if (!m_szPath.empty())
-            m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
-         else
-            m_type = PUP_LABEL_TYPE_TEXT;
-      }
-      else {
-         m_szPath.clear();
-         m_type = PUP_LABEL_TYPE_TEXT;
+      if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
+         std::filesystem::path fs_path(normalize_path_separators(szCaption));
+         PUPPlaylist* pPlaylist = PUPManager::GetInstance()->GetPlaylist(fs_path.parent_path());
+         if (pPlaylist) {
+            m_szPath = find_path_case_insensitive(pPlaylist->GetFolderPath() + fs_path.filename().string());
+            if (!m_szPath.empty())
+               m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+         }
       }
 
       m_szCaption = szText;

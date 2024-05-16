@@ -500,16 +500,20 @@ string extension_from_path(const string& path)
    return pos != string::npos ? lowerPath.substr(pos + 1) : string();
 }
 
-string normalize_path_separators(const string& path)
+string normalize_path_separators(const string& szPath)
 {
-   string result = path;
+   string szResult = szPath;
 
    if (PATH_SEPARATOR_CHAR == '/')
-      std::replace(result.begin(), result.end(), '\\', PATH_SEPARATOR_CHAR);
+      std::replace(szResult.begin(), szResult.end(), '\\', PATH_SEPARATOR_CHAR);
    else
-      std::replace(result.begin(), result.end(), '/', PATH_SEPARATOR_CHAR);
+      std::replace(szResult.begin(), szResult.end(), '/', PATH_SEPARATOR_CHAR);
 
-   return result;
+   auto end = std::unique(szResult.begin(), szResult.end(),
+       [](char a, char b) { return a == b && a == PATH_SEPARATOR_CHAR; });
+   szResult.erase(end, szResult.end());
+
+   return szResult;
 }
 
 bool path_has_extension(const string& path, const string& ext)
