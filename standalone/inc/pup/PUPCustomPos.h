@@ -6,21 +6,15 @@ class PUPCustomPos {
 public:
    ~PUPCustomPos() {}
 
-   static PUPCustomPos* CreateFromCSVLine(string line);
+   static PUPCustomPos* CreateFromCSV(string line);
    const int GetSourceScreen() const { return m_sourceScreen; }
-   const float GetXPos() const { return m_xpos; }
-   const float GetYPos() const { return m_ypos; }
-   const float GetWidth() const { return m_width; }
-   const float GetHeight() const { return m_height; }
+   SDL_Rect ScaledRect(int w, int h);
    string ToString() const;
 
 private:
    PUPCustomPos() {}
-   
+
    int m_sourceScreen;
-   float m_xpos;
-   float m_ypos;
-   float m_width;
-   float m_height;
+   SDL_FRect m_frect;
 };
 

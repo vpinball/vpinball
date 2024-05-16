@@ -1,27 +1,43 @@
 #pragma once
 
-#if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
-#define VIDEO_WINDOW_HAS_FFMPEG_LIBS 1
-#endif
-
 #include "PUPManager.h"
 
 #include "../common/Timer.h"
 
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+
 class PUPCustomPos;
 class PUPTrigger;
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 class PUPMediaPlayer;
-#endif
 class PUPLabel;
+
+
+struct PUPScreenRequest
+{
+   PUP_TRIGGER_PLAY_ACTION action;
+   PUPPlaylist* pPlaylist;
+   string szPlayFile;
+   int volume;
+   int priority;
+};
+
+struct PUPScreenRenderable
+{
+   SDL_Surface* pSurface;
+   SDL_Texture* pTexture;
+   bool dirty;
+};
 
 class PUPScreen {
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSVLine(string line);
-
+   static PUPScreen* CreateFromCSV(string line);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
+   void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
    const string& GetScreenDes() const { return m_screenDes; }
    const string& GetBackgroundPlaylist() const { return m_backgroundPlaylist; }
@@ -29,26 +45,39 @@ public:
    bool IsTransparent() const { return m_transparent; }
    int GetVolume() const { return m_volume; }
    PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
-   void AddChild(PUPScreen* pScreen) { m_children.push_back(pScreen); }
-   const vector<PUPScreen*>& GetChildren() const { return m_children; }
-   void UpdateSize(int w, int h);
-   void AddTrigger(PUPTrigger* pTrigger);
+   void AddChild(PUPScreen* pScreen);
+   void SetParent(PUPScreen* pParent) { m_pParent = pParent; }
+   PUPScreen* GetParent() { return m_pParent; }
+   void SendToFront();
+   void SetSize(int w, int h);
    void Init(SDL_Renderer* pRenderer);
    bool IsLabelInit() const { return m_labelInit; }
    void SetLabelInit() { m_labelInit = true; }
-   void AddLabel(const string& labelName, PUPLabel* pLabel);
+   void AddLabel(PUPLabel* pLabel);
    PUPLabel* GetLabel(const string& labelName);
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
-   void Trigger(const string& szTrigger);
-   string ToString() const;
+   void ProcessTrigger(PUPTrigger* pTrigger);
+   void Play(const string& szPlaylist);
+   void PlayEx(const string& szPlaylist, const string& szPlayfilename, int volume, int priority);
+   void Stop();
+   void SetLoop(int state);
+   void SetBackGround(int mode);
+   void SetBackground(const std::string& file);
+   void SetMedia(const std::string& file, int volume);
+   void SetOverlay(const std::string& file);
+   string ToString(bool full = true) const;
 
 private:
    PUPScreen();
 
+   void ProcessQueue();
+   void LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile);
+   void Render(PUPScreenRenderable* pRenderable);
+   void FreeRenderable(PUPScreenRenderable* pRenderable);
    void PageTimerElapsed(VP::Timer* pTimer);
 
    PUPManager* m_pManager;
@@ -61,22 +90,24 @@ private:
    int m_volume;
    PUPCustomPos* m_pCustomPos;
    SDL_Rect m_rect;
-   vector<PUPScreen*> m_children;
-   std::map<string, PUPTrigger*> m_triggerMap;
+   PUPScreen* m_pParent;
    vector<PUPLabel*> m_labels;
    std::map<string, PUPLabel*> m_labelMap;
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
-   PUPMediaPlayer* m_pMediaPlayer;
-#endif
    SDL_Renderer* m_pRenderer;
-   string m_szBackgroundFrame;
-   SDL_Texture* m_pBackgroundFrameTexture;
-   bool m_backgroundFrameDirty;
-   string m_szOverlay;
-   SDL_Texture* m_pOverlayTexture;
-   bool m_overlayDirty;
+   PUPScreenRenderable m_background;
+   PUPScreenRenderable m_overlay;
+   PUPMediaPlayer* m_pMediaPlayer;
    bool m_labelInit;
    int m_pagenum;
    int m_defaultPagenum;
    VP::Timer* m_pPageTimer;
+   vector<PUPScreen*> m_topChildren;
+   vector<PUPScreen*> m_backChildren;
+   vector<PUPScreen*> m_defaultChildren;
+   std::queue<PUPScreenRequest> m_requestQueue;
+   std::mutex m_queueMutex;
+   std::condition_variable m_queueCondVar;
+   bool m_isRunning;
+   std::thread m_playThread;
+   std::mutex m_renderMutex;
 };

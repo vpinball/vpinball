@@ -6,7 +6,7 @@
    First number is always the screen. 1,22.5,45.3,55.1,54.7 [pupid # source screen,xpos,ypos,width,height] values in % of pupdisplay. 
 */
 
-PUPCustomPos* PUPCustomPos::CreateFromCSVLine(string line)
+PUPCustomPos* PUPCustomPos::CreateFromCSV(string line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 5)
@@ -15,19 +15,33 @@ PUPCustomPos* PUPCustomPos::CreateFromCSVLine(string line)
    PUPCustomPos* pCustomPos = new PUPCustomPos();
 
    pCustomPos->m_sourceScreen = string_to_int(parts[0], 0);
-   pCustomPos->m_xpos = string_to_float(parts[1], 0.0f);
-   pCustomPos->m_ypos = string_to_float(parts[2], 0.0f);
-   pCustomPos->m_width = string_to_float(parts[3], 0.0f);
-   pCustomPos->m_height = string_to_float(parts[4], 0.0f);
+   pCustomPos->m_frect =
+   {
+       string_to_float(parts[1], 0.0f),
+       string_to_float(parts[2], 0.0f),
+       string_to_float(parts[3], 0.0f),
+       string_to_float(parts[4], 0.0f)
+   };
 
    return pCustomPos;
 }
 
+SDL_Rect PUPCustomPos::ScaledRect(int w, int h)
+{
+   return {
+      (int)((m_frect.x / 100.) * w),
+      (int)((m_frect.y / 100.) * h),
+      (int)((m_frect.w / 100.) * w),
+      (int)((m_frect.h / 100.) * h)
+   };
+}
+
 string PUPCustomPos::ToString() const
 {
-   return "m_sourceScreen=" + std::to_string(m_sourceScreen) 
-      + ", m_xpos=" + std::to_string(m_xpos) 
-      + ", m_ypos=" + std::to_string(m_ypos)
-      + ", m_width=" + std::to_string(m_width) 
-      + ", m_height=" + std::to_string(m_width);
+   return "sourceScreen=" + std::to_string(m_sourceScreen) +
+      ", frect={" +
+      std::to_string(m_frect.x) + ", " +
+      std::to_string(m_frect.y) + ", " +
+      std::to_string(m_frect.w) + ", " +
+      std::to_string(m_frect.h) + "}";
 }

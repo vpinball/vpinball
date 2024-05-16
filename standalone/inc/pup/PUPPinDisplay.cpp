@@ -44,7 +44,9 @@ STDMETHODIMP PUPPinDisplay::playlistplay(LONG ScreenNum, BSTR playlist)
 
 STDMETHODIMP PUPPinDisplay::playlistplayex(LONG ScreenNum, BSTR playlist, BSTR playfilename, LONG volume, LONG forceplay)
 {
-   PLOGW.printf("Not implemented: screenNum=%d, playlist=%s, playfilename=%s, volume=%d, forceplay=%d", ScreenNum, MakeString(playlist).c_str(), MakeString(playfilename).c_str(), volume, forceplay);
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (pScreen)
+      pScreen->PlayEx(MakeString(playlist), MakeString(playfilename), volume, forceplay);
 
    return S_OK;
 }
@@ -114,7 +116,9 @@ STDMETHODIMP PUPPinDisplay::playresume(LONG ScreenNum)
 
 STDMETHODIMP PUPPinDisplay::playstop(LONG ScreenNum)
 {
-   PLOGW.printf("Not implemented: screenNum=%d", ScreenNum);
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (pScreen)
+      pScreen->Stop();
 
    return S_OK;
 }
@@ -149,14 +153,18 @@ STDMETHODIMP PUPPinDisplay::SetLength(LONG ScreenNum, LONG StopSecs)
 
 STDMETHODIMP PUPPinDisplay::SetLoop(LONG ScreenNum, LONG LoopState)
 {
-   PLOGW.printf("Not implemented: screenNum=%d, loopState=%d", ScreenNum, LoopState);
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (pScreen)
+      pScreen->SetLoop(LoopState);
 
    return S_OK;
 }
 
 STDMETHODIMP PUPPinDisplay::SetBackGround(LONG ScreenNum, LONG Mode)
 {
-   PLOGW.printf("Not implemented: screenNum=%d, mode=%d", ScreenNum, Mode);
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (pScreen)
+      pScreen->SetBackGround(Mode);
 
    return S_OK;
 }
@@ -253,8 +261,42 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
    string szMsg = MakeString(cMSG);
 
    RSJresource json(szMsg);
-
-   PLOGW << "Not implemented: szMsg=" << szMsg;
+   if (json["mt"].exists()) {
+      int mt = json["mt"].as<int>();
+      switch(mt) {
+         case 301:
+            if (json["SN"].exists() && json["FN"].exists()) {
+               int sn = json["SN"].as<int>();
+               PUPScreen* pScreen = m_pManager->GetScreen(sn);
+               if (pScreen) {
+                  int fn = json["FN"].as<int>();
+                  switch (fn) {
+                     case 6:
+                        // Bring screen to the front
+                        pScreen->SendToFront();
+                        break;
+                     default:
+                        PLOGW.printf("Not implemented: screen={%s}, fn=%d, szMsg=%s",
+                           pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                  }
+               }
+               else {
+                  PLOGW.printf("Screen not found: screenNum=%d, szMsg=%s", sn, szMsg.c_str());
+               }
+            }
+            else {
+               PLOGW.printf("Not implemented: mt=%d, szMsg=%s", mt, szMsg.c_str());
+            }
+            break;
+         default:
+            PLOGW.printf("Not implemented: mt=%d, szMsg=%s", mt, szMsg.c_str());
+            break;
+      }
+   }
+   else {
+      PLOGW.printf("No message type found: szMsg=%s", szMsg.c_str());
+   }
 
    return S_OK;
 }
@@ -280,18 +322,16 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
 STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontName, LONG Size, LONG Color, LONG Angle, LONG xAlign, LONG yAlign, LONG xMargin, LONG yMargin, LONG PageNum, LONG Visible)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
-   if (!pScreen) {
-      PLOGW.printf("Invalid target screen: screenNum=%d", ScreenNum);
+   if (!pScreen)
       return S_OK;
-   }
 
    if (!pScreen->IsLabelInit()) {
       PLOGW.printf("LabelInit has not been called: screenNum=%d", ScreenNum);
       return S_OK;
    }
 
-   pScreen->AddLabel(MakeString(LabelName),
-      new PUPLabel(MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, PageNum, Visible));
+   pScreen->AddLabel(
+      new PUPLabel(MakeString(LabelName), MakeString(FontName), Size, Color, Angle, (PUP_LABEL_XALIGN)xAlign, (PUP_LABEL_YALIGN)yAlign, xMargin, yMargin, PageNum, Visible));
 
    return S_OK;
 }
@@ -313,15 +353,19 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
 
 STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
 {
-   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
-   if (!pScreen) {
-      PLOGW.printf("Invalid target screen: screenNum=%d", ScreenNum);
-      return S_OK;
-   }
+   static robin_hood::unordered_map<LONG, robin_hood::unordered_set<string>> warnedLabels;
 
-   PUPLabel* pLabel = pScreen->GetLabel(MakeString(LabelName));
+   PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
+   if (!pScreen)
+      return S_OK;
+
+   string szLabelName = MakeString(LabelName);
+   PUPLabel* pLabel = pScreen->GetLabel(szLabelName);
    if (!pLabel) {
-      PLOGW.printf("Invalid label: labelName=%s", MakeString(LabelName).c_str());
+      if (warnedLabels[ScreenNum].find(szLabelName) == warnedLabels[ScreenNum].end()) {
+         PLOGW.printf("Invalid label: screen={%s}, labelName=%s", pScreen->ToString(false).c_str(), szLabelName.c_str());
+         warnedLabels[ScreenNum].insert(szLabelName);
+      }
       return S_OK;
    }
 
@@ -352,10 +396,8 @@ STDMETHODIMP PUPPinDisplay::LabelSetEx()
 STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Seconds, BSTR Special)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
-   if (!pScreen) {
-      PLOGW.printf("Invalid target screen: screenNum=%d", ScreenNum);
+   if (!pScreen)
       return S_OK;
-   }
 
    pScreen->SetPage(PageNum, Seconds);
 
@@ -365,10 +407,8 @@ STDMETHODIMP PUPPinDisplay::LabelShowPage(LONG ScreenNum, LONG PageNum, LONG Sec
 STDMETHODIMP PUPPinDisplay::LabelInit(LONG ScreenNum)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
-   if (!pScreen) {
-      PLOGW.printf("Invalid target screen: screenNum=%d", ScreenNum);
+   if (!pScreen)
       return S_OK;
-   }
 
    pScreen->SetLabelInit();
 

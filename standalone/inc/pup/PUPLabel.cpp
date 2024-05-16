@@ -12,8 +12,9 @@
 
 #include "RSJparser/RSJparser.tcc"
 
-PUPLabel::PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
+PUPLabel::PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
 {
+   m_szName = szName;
    m_pFont = PUPManager::GetInstance()->GetFont(szFont);
    m_size = size;
    m_color = color;
@@ -56,9 +57,15 @@ void PUPLabel::SetCaption(const string& szCaption)
       string szExt = extension_from_path(szCaption);
       if (szExt == "png" || szExt == "apng" || szExt == "gif") {
          m_szPath = find_path_case_insensitive(PUPManager::GetInstance()->GetPath() + normalize_path_separators(szCaption));
+         if (!m_szPath.empty())
+            m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+         else
+            m_type = PUP_LABEL_TYPE_TEXT;
       }
-      else
+      else {
          m_szPath.clear();
+         m_type = PUP_LABEL_TYPE_TEXT;
+      }
 
       m_szCaption = szText;
       m_dirty = true;
@@ -120,31 +127,44 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["stopani"].exists()) {
             // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
+            PLOGW.printf("stopani not implemented");
+            m_dirty = true;
          }
 
          if (json["rotate"].exists()) {
             // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
             m_angle = std::stof(json["rotate"].as_str());
+            m_dirty = true;
          }
 
          if (json["zoom"].exists()) {
             // 120 for 120% of current height, 80% etc...
+            PLOGW.printf("zoom not implemented");
+            m_dirty = true;
          }
 
          if (json["alpha"].exists()) {
             // '0-255  255=full, 0=blank
+            PLOGW.printf("alpha not implemented");
+            m_dirty = true;
          }
 
          if (json["gradstate"].exists() && json["gradcolor"].exists()) {
             // color=gradcolor, gradstate = 0 (gradstate is percent)
+            PLOGW.printf("gradstate/gradcolor not implemented");
+            m_dirty = true;
          }
 
          if (json["grayscale"].exists()) {
             // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
+            PLOGW.printf("filter not implemented");
+            m_dirty = true;
          }
 
          if (json["filter"].exists()) {
             // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
+            PLOGW.printf("filter not implemented");
+            m_dirty = true;
          }
 
          if (json["shadowcolor"].exists()) {
@@ -154,6 +174,8 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["shadowtype"].exists()) {
             // ST = 1 (Shadow), ST = 2 (Border)
+            PLOGW.printf("shadowtype not implemented");
+            m_dirty = true;
          }
 
          if (json["xoffset"].exists()) {
@@ -178,6 +200,16 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 
          if (json["height"].exists()) {
             m_height = std::stof(json["height"].as_str());
+            m_dirty = true;
+         }
+
+          if (json["autow"].exists()) {
+            PLOGW.printf("autow not implemented");
+            m_dirty = true;
+         }
+
+         if (json["autoh"].exists()) {
+            PLOGW.printf("autoh not implemented");
             m_dirty = true;
          }
 
@@ -220,7 +252,8 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
             IMG_FreeAnimation(m_pAnimation);
          m_pAnimation = IMG_LoadAnimation(m_szPath.c_str());
          if (m_pAnimation) {
-            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[0]);
+            m_frame = 0;
+            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_frame]);
             m_dirty = false;
          }
       }
@@ -233,6 +266,12 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
    if (!m_pTexture) {
       PLOGW.printf("Unable to render label: caption=%s", m_szCaption.c_str());
       return;
+   }
+
+   if (m_pAnimation) {
+      if (++m_frame >= m_pAnimation->count)
+         m_frame = 0;
+      SDL_UpdateTexture(m_pTexture, nullptr, m_pAnimation->frames[m_frame]->pixels, m_pAnimation->frames[m_frame]->pitch);
    }
 
    float width;
@@ -379,5 +418,6 @@ string PUPLabel::ToString() const
       ", yAlign=" + (m_yAlign == PUP_LABEL_YALIGN_TOP ? "TOP" : m_yAlign == PUP_LABEL_YALIGN_CENTER ? "CENTER" : "BOTTOM") +
       ", xPos=" + std::to_string(m_xPos) +
       ", yPos=" + std::to_string(m_yPos) +
-      ", pagenum=" + std::to_string(m_pagenum);
+      ", pagenum=" + std::to_string(m_pagenum) +
+      ", szPath=" + m_szPath;
 }

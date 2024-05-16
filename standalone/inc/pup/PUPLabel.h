@@ -19,17 +19,17 @@ typedef enum
 
 typedef enum
 {
-   PUP_CAPTION_TYPE_TEXT,
-   PUP_CAPTION_TYPE_IMAGE,
-   PUP_CAPTION_TYPE_GIF
-} PUP_CAPTION_TYPE;
+   PUP_LABEL_TYPE_TEXT,
+   PUP_LABEL_TYPE_IMAGE,
+   PUP_LABEL_TYPE_GIF
+} PUP_LABEL_TYPE;
 
 class PUPScreen;
 
 class PUPLabel
 {
 public:
-   PUPLabel(const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
+   PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible);
    ~PUPLabel();
 
    const string& GetCaption() const { return m_szCaption; }
@@ -38,7 +38,6 @@ public:
    void SetSpecial(const string& szSpecial);
    void Render(SDL_Renderer* renderer, SDL_Rect& rect, int pagenum);
    const string& GetName() const { return m_szName; }
-   void SetName(const string& szName) { m_szName = szName; }
    void SetScreen(PUPScreen* pScreen) { m_pScreen = pScreen; }
    string ToString() const;
 
@@ -68,6 +67,8 @@ private:
    float m_height;
    string m_szName;
    int m_anigif;
+   PUP_LABEL_TYPE m_type;
    IMG_Animation* m_pAnimation;
    string m_szPath;
+   int m_frame;
 };
