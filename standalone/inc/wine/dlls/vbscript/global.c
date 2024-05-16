@@ -18,6 +18,9 @@
 
 #include <assert.h>
 #include <math.h>
+#if defined(__STANDALONE__)
+#include <wctype.h>
+#endif
 
 #include "vbscript.h"
 #include "vbscript_defs.h"

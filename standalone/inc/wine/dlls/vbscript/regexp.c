@@ -32,6 +32,9 @@
  */
 
 #include <assert.h>
+#if defined(__STANDALONE__)
+#include <wctype.h>
+#endif
 
 #include "vbscript.h"
 #include "regexp.h"
