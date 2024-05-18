@@ -258,6 +258,11 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    const int id = LOWORD(wParam);
    switch (id)
    {
+       case IDC_SYNC:
+       {
+          UpdateLayerInfo();
+		   return TRUE;
+       }
    case IDC_ADD_LAYER_BUTTON:
    {
       if (!AddLayer("New Layer 0", nullptr))
@@ -1145,3 +1150,4 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    return FALSE;
 }
+
