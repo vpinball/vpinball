@@ -5,6 +5,7 @@
 LayersListDialog::LayersListDialog()
    : CDialog(IDD_LAYERS)
    , m_collapsed(true)
+    , m_isCaseSensitive(false)
 {
    m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
@@ -257,6 +258,11 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    const int id = LOWORD(wParam);
    switch (id)
    {
+       case IDC_SYNC:
+       {
+          UpdateLayerInfo();
+		   return TRUE;
+       }
    case IDC_ADD_LAYER_BUTTON:
    {
       if (!AddLayer("New Layer 0", nullptr))
@@ -408,6 +414,36 @@ vector<string> LayersListDialog::GetAllLayerNames()
 { 
     return m_layerTreeView.GetAllLayerNames();
 }
+
+// If SYNC checkbox is checked, the layer list will be updated
+void LayersListDialog::UpdateLayerInfo()
+{
+    // If active table is not set, return
+    if (m_activeTable == nullptr)
+        return;
+
+    // If Radio button IDC_SYNC is unchecked, return
+    if (IsDlgButtonChecked(IDC_SYNC) == BST_UNCHECKED)
+        return;
+
+    // Get the selected element
+    ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(0);
+	if (psel != nullptr)
+	{
+        // Get the layer name of the selected element
+    	const string layerName{psel->m_layerName};
+        // Set the active layer
+	    m_layerTreeView.SetActiveLayer(layerName);
+        // Find the selected element name and find it in the layer, selecting it
+        const HTREEITEM item = m_layerTreeView.GetItemByElement(psel->GetIEditable());
+        m_layerTreeView.SelectItem(item);
+	}
+    else
+    {
+	    m_layerTreeView.SetActiveLayer("");
+    }
+}
+
 
 CContainLayers::CContainLayers()
 {
@@ -1114,3 +1150,4 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    return FALSE;
 }
+
