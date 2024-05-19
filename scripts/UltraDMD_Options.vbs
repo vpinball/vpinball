@@ -136,7 +136,7 @@ End Function
 Function ExitUltraDMD
 	On Error Resume Next
 	If UltraDMD.IsRendering Then UltraDMD.CancelRendering
-	If Error.Number<>0 Then UltraDMD = Null:Exit Function
+	If Err.Number<>0 Then UltraDMD = Null:Exit Function
 	Dim WshShell:Set WshShell = CreateObject("WScript.Shell")
 	WshShell.RegWrite "HKCU\Software\UltraDMD\color",DMDOldColor,"REG_SZ"
 	WshShell.RegWrite "HKCU\Software\UltraDMD\fullcolor",DMDOldFullColor,"REG_SZ"
