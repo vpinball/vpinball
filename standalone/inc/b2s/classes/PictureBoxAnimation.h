@@ -28,7 +28,7 @@ public:
       bool bringToFront,
       bool randomStart,
       int randomQuality,
-      vector<PictureBoxAnimationEntry*> entries);
+      const vector<PictureBoxAnimationEntry*>& entries);
    ~PictureBoxAnimation();
 
    void Start() override;
