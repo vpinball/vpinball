@@ -13,7 +13,7 @@ public:
    virtual ~B2SAnimation();
 
    void AddAnimation(
-      string szName,
+      const string& szName,
       Form* pForm,
       Form* pFormDMD,
       eDualMode dualMode,
@@ -28,7 +28,7 @@ public:
       bool bringToFront,
       bool randomStart,
       int randomQuality,
-      vector<PictureBoxAnimationEntry*> entries);
+      const vector<PictureBoxAnimationEntry*>& entries);
 
    void AutoStart();
    void StartAnimation(const string& szName, bool playReverse = false);

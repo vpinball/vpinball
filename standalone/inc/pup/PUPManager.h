@@ -15,7 +15,7 @@
 #define PUP_ZORDER_BACKGLASS         150
 
 #define PUP_SETTINGS_TOPPERX         320
-#define PUP_SETTINGS_TOPPERY         PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5
+#define PUP_SETTINGS_TOPPERY         (PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5)
 #define PUP_SETTINGS_TOPPERWIDTH     290
 #define PUP_SETTINGS_TOPPERHEIGHT    75
 #define PUP_ZORDER_TOPPER            300
@@ -74,7 +74,7 @@ public:
    ~PUPManager();
 
    static PUPManager* GetInstance();
-   bool IsInit() { return m_init; }
+   bool IsInit() const { return m_init; }
    bool LoadConfig(const string& szRomName);
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);

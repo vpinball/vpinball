@@ -2,7 +2,7 @@
 
 #include "PictureBoxAnimationEntry.h"
 
-PictureBoxAnimationEntry::PictureBoxAnimationEntry(string on1, int waitAfterOn1, string off1, int waitAfterOff1, int pulseSwitch)
+PictureBoxAnimationEntry::PictureBoxAnimationEntry(const string& on1, int waitAfterOn1, const string& off1, int waitAfterOff1, int pulseSwitch)
 {
    m_on1 = Check4StringOrArray(on1);
    m_waitAfterOn1 = waitAfterOn1;
@@ -10,8 +10,8 @@ PictureBoxAnimationEntry::PictureBoxAnimationEntry(string on1, int waitAfterOn1,
    m_waitAfterOff1 = waitAfterOff1;
    m_pulseSwitch = pulseSwitch;
 
-   m_on2.push_back(string(""));
-   m_off2.push_back(string(""));
+   m_on2.push_back(string());
+   m_off2.push_back(string());
    m_waitAfterOn2 = 0;
    m_waitAfterOff2 = 0;
 }

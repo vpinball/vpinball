@@ -27,7 +27,7 @@ PictureBoxAnimation::PictureBoxAnimation(
    bool bringToFront,
    bool randomStart,
    int randomQuality,
-   vector<PictureBoxAnimationEntry*> entries) : B2SAnimationBase(dualMode, interval, eType_ImageCollectionAtForm, loops, false,
+   const vector<PictureBoxAnimationEntry*>& entries) : B2SAnimationBase(dualMode, interval, eType_ImageCollectionAtForm, loops, false,
       startTimerAtVPActivate, lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationStopBehaviour,
       lockInvolvedLamps, hideScoreDisplays, bringToFront, randomStart, randomQuality)
 {
@@ -43,7 +43,7 @@ PictureBoxAnimation::PictureBoxAnimation(
    SetElapsedListener(std::bind(&PictureBoxAnimation::PictureBoxAnimationTick, this, std::placeholders::_1));
 
    // collect all the entries in a nice collection
-   for (auto& pEntry : entries)
+   for (const auto& pEntry : entries)
    {
       bool isOn1Valid = (!pEntry->GetOn1()[0].empty() || pEntry->GetWaitAfterOn1() > 0);
       bool isOff1Valid = (!pEntry->GetOff1()[0].empty() || pEntry->GetWaitAfterOff1() > 0);

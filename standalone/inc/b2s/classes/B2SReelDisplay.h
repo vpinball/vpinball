@@ -11,12 +11,12 @@ public:
    virtual ~B2SReelDisplay();
 
    ReelDisplayReelBoxCollection* GetReels() { return &m_reels; }
-   int GetStartDigit() { return m_startDigit; }
+   int GetStartDigit() const { return m_startDigit; }
    void SetStartDigit(int startDigit) { m_startDigit = startDigit; }
-   int GetDigits() { return m_digits; }
+   int GetDigits() const { return m_digits; }
    void SetDigits(int digits) { m_digits = digits; }
    bool IsInAction();
-   int GetScore() { return m_score; }
+   int GetScore() const { return m_score; }
    void SetScore(int score);
    void SetScore_(int score, int startIndex = 0);
 

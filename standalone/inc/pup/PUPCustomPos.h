@@ -7,7 +7,7 @@ public:
    ~PUPCustomPos() {}
 
    static PUPCustomPos* CreateFromCSV(string line);
-   const int GetSourceScreen() const { return m_sourceScreen; }
+   int GetSourceScreen() const { return m_sourceScreen; }
    SDL_Rect ScaledRect(int w, int h);
    string ToString() const;
 

@@ -50,12 +50,12 @@ void B2SReelDisplay::SetScore(int score)
 
 void B2SReelDisplay::SetScore_(int score, int startAtIndex)
 {
-   if (m_reels.size() > 0) {
+   if (!m_reels.empty()) {
       m_pTimerIA->Start();
 
       std::ostringstream oss;
       oss << std::setw(m_digits) << std::setfill('0') << score;
-      string scoreAsStringX = oss.str();
+      const string scoreAsStringX = oss.str();
 
       int j = 1;
       for (int i = m_startDigit + m_digits - startAtIndex - 1; i >= m_startDigit; i--) {

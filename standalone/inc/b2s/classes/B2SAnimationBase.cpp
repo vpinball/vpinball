@@ -54,8 +54,7 @@ B2SAnimationBase::B2SAnimationBase(
 
 B2SAnimationBase::~B2SAnimationBase()
 {
-   if (m_pSwitchTimer)
-      delete m_pSwitchTimer;
+   delete m_pSwitchTimer;
 }
 
 void B2SAnimationBase::RaiseFinishedEvent()

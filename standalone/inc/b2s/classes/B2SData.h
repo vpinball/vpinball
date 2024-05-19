@@ -117,21 +117,21 @@ public:
    AnimationCollection* GetUsedAnimationGIStringIDs() { return &m_usedAnimationGIStringIDs; }
    AnimationCollection* GetUsedRandomAnimationGIStringIDs() { return &m_usedRandomAnimationGIStringIDs; }
    int GetLEDCoordMax() const { return m_ledCoordMax; }
-   bool IsLampsData();
-   bool IsSolenoidsData();
-   bool IsGIStringsData();
-   bool IsLEDsData();
-   bool IsUseRomLamps();
-   bool IsUseRomSolenoids();
-   bool IsUseRomGIStrings();
-   bool IsUseRomMechs();
-   bool IsUseAnimationLamps();
-   bool IsUseAnimationSolenoids();
-   bool IsUseAnimationGIStrings();
-   bool IsUseRomReelLamps();
-   bool IsUseLEDs();
-   bool IsUseLEDDisplays();
-   bool IsUseReels();
+   bool IsLampsData() const;
+   bool IsSolenoidsData() const;
+   bool IsGIStringsData() const;
+   bool IsLEDsData() const;
+   bool IsUseRomLamps() const;
+   bool IsUseRomSolenoids() const;
+   bool IsUseRomGIStrings() const;
+   bool IsUseRomMechs() const;
+   bool IsUseAnimationLamps() const;
+   bool IsUseAnimationSolenoids() const;
+   bool IsUseAnimationGIStrings() const;
+   bool IsUseRomReelLamps() const;
+   bool IsUseLEDs() const;
+   bool IsUseLEDDisplays() const;
+   bool IsUseReels() const;
    bool IsValid() const { return m_valid; }
    void SetValid(bool valid) { m_valid = valid; }
 

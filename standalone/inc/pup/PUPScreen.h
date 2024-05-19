@@ -44,10 +44,10 @@ public:
    const string& GetBackgroundFilename() const { return m_backgroundFilename; }
    bool IsTransparent() const { return m_transparent; }
    int GetVolume() const { return m_volume; }
-   PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
+   PUPCustomPos* GetCustomPos() const { return m_pCustomPos; }
    void AddChild(PUPScreen* pScreen);
    void SetParent(PUPScreen* pParent) { m_pParent = pParent; }
-   PUPScreen* GetParent() { return m_pParent; }
+   PUPScreen* GetParent() const { return m_pParent; }
    void SendToFront();
    void SetSize(int w, int h);
    void Init(SDL_Renderer* pRenderer);
@@ -61,7 +61,6 @@ public:
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
    void ProcessTrigger(PUPTrigger* pTrigger);
-   void Play(const string& szPlaylist);
    void PlayEx(const string& szPlaylist, const string& szPlayfilename, int volume, int priority);
    void Stop();
    void SetLoop(int state);

@@ -2,7 +2,7 @@
 
 #include "EntryAction.h"
 
-EntryAction::EntryAction(vector<string> bulbs, int intervalMultiplier, bool visible, int corrector, int pulseSwitch)
+EntryAction::EntryAction(const vector<string>& bulbs, int intervalMultiplier, bool visible, int corrector, int pulseSwitch)
 {
    m_bulbs = bulbs;
    m_intervalMultiplier = intervalMultiplier;

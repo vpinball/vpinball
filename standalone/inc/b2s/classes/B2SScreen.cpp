@@ -257,23 +257,23 @@ void B2SScreen::ScaleAllControls(float rescaleX, float rescaleY, float rescaleDM
 {
    // get scale info for all picked objects and scale some of them
    for(const auto& [key, pReelbox] : *m_pB2SData->GetReels()) {
-      bool isOnDMD = (pReelbox->GetParent() && pReelbox->GetParent()->GetName() == "formDMD");
+      bool isOnDMD = (pReelbox->GetParent() && pReelbox->GetParent()->GetName() == "formDMD"s);
       ScaleControl(pReelbox, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD);
    }
    for(const auto& [key, pLedbox] : *m_pB2SData->GetLEDs()) {
-      bool isOnDMD = (pLedbox->GetParent() && pLedbox->GetParent()->GetName() == "formDMD");
+      bool isOnDMD = (pLedbox->GetParent() && pLedbox->GetParent()->GetName() == "formDMD"s);
       ScaleControl(pLedbox, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD, isOnDMD && m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
    for(const auto& [key, pDream7Display] : *m_pB2SData->GetLEDDisplays()) {
-      bool isOnDMD = (pDream7Display->GetParent() && pDream7Display->GetParent()->GetName() == "formDMD");
+      bool isOnDMD = (pDream7Display->GetParent() && pDream7Display->GetParent()->GetName() == "formDMD"s);
       ScaleControl(pDream7Display, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD, isOnDMD && m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
    for(const auto& [key, pPicbox] : *m_pB2SData->GetIlluminations()) {
-      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD");
+      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD"s);
       ScaleControl(pPicbox, rescaleX, rescaleY, isOnDMD);
    }
    for(const auto& [key, pPicbox] : *m_pB2SData->GetDMDIlluminations()) {
-      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD");
+      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD"s);
       ScaleControl(pPicbox, rescaleDMDX, rescaleDMDY, isOnDMD, m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
 
@@ -345,13 +345,13 @@ void B2SScreen::ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescale
 void B2SScreen::ScaleControl(Dream7Display* pControl, float rescaleX, float rescaleY, bool isOnDMD, bool flipY)
 {
    // store current LED location
-   SDL_FRect rectF = { pControl->GetLeft() / rescaleX, pControl->GetTop() / rescaleY, pControl->GetWidth() / rescaleX, pControl->GetHeight() / rescaleY };
+   SDL_FRect rectF = { (float)pControl->GetLeft() / rescaleX, (float)pControl->GetTop() / rescaleY, (float)pControl->GetWidth() / rescaleX, (float)pControl->GetHeight() / rescaleY };
 
    // scale LED display
-   pControl->SetLocation({ (int)(pControl->GetLeft() / rescaleX), (int)(pControl->GetTop() / rescaleY) });
-   pControl->SetSize({ 0, 0, (int)(pControl->GetWidth() / rescaleX), (int)(pControl->GetHeight() / rescaleY) });
+   pControl->SetLocation({ (int)((float)pControl->GetLeft() / rescaleX), (int)((float)pControl->GetTop() / rescaleY) });
+   pControl->SetSize({ 0, 0, (int)((float)pControl->GetWidth() / rescaleX), (int)((float)pControl->GetHeight() / rescaleY) });
    pControl->SetSpacing(pControl->GetSpacing() / rescaleX);
-   pControl->SetOffsetWidth((int)(pControl->GetOffsetWidth() / rescaleX));
+   pControl->SetOffsetWidth((int)((float)pControl->GetOffsetWidth() / rescaleX));
    pControl->SetThickness(pControl->GetThickness() / rescaleX);
    pControl->SegmentDisplaySizeChanged();
 
@@ -360,7 +360,7 @@ void B2SScreen::ScaleControl(Dream7Display* pControl, float rescaleX, float resc
       pControl->SetMirrored(true);
       // set new top location
       if (m_pFormDMD) {
-         float newY = m_pFormDMD->GetHeight() / rescaleY - rectF.y - rectF.h;
+         float newY = (float)m_pFormDMD->GetHeight() / rescaleY - rectF.y - rectF.h;
          pControl->SetLocation({ (int)rectF.x, (int)newY });
       }
    }
@@ -424,11 +424,9 @@ SDL_Surface* B2SScreen::FlipImage(SDL_Surface* pSourceImage)
 
    int bpp = pSourceImage->format->BytesPerPixel;
    for (int y = 0; y < pSourceImage->h; ++y) {
-      for (int x = 0; x < pSourceImage->w; ++x) {
-         UINT8* src_pixel = (UINT8*)pSourceImage->pixels + y * pSourceImage->pitch + x * bpp;
-         UINT8* dst_pixel = (UINT8*)pFlippedImage->pixels + (pFlippedImage->h - y - 1) * pFlippedImage->pitch + x * bpp;
-         memcpy(dst_pixel, src_pixel, bpp);
-      }
+      UINT8* src_pixel = (UINT8*)pSourceImage->pixels + y * pSourceImage->pitch;
+      UINT8* dst_pixel = (UINT8*)pFlippedImage->pixels + (pFlippedImage->h - y - 1) * pFlippedImage->pitch;
+      memcpy(dst_pixel, src_pixel, pSourceImage->w*bpp);
    }
 
    SDL_UnlockSurface(pSourceImage);

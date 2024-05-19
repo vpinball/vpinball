@@ -4,7 +4,7 @@
 #include "B2SSettings.h"
 #include "B2SPlayer.h"
 
-B2SData* B2SData::m_pInstance = NULL;
+B2SData* B2SData::m_pInstance = nullptr;
 
 B2SData* B2SData::GetInstance()
 {
@@ -16,7 +16,7 @@ B2SData* B2SData::GetInstance()
 
 B2SData::B2SData()
 {
-   m_pVPinMAME = NULL;
+   m_pVPinMAME = nullptr;
    m_tableType = 0;
    m_dmdType = 0;
    m_grillHeight = 0;
@@ -38,7 +38,7 @@ B2SData::B2SData()
    m_ledCoordMax = 103;
 
    // add led segments
-   const int toleft = 8;
+   constexpr int toleft = 8;
    // 8 segments
    m_led8Seg.push_back({ { 22, 5 }, { 26, 2 }, { 88, 2 }, { 92, 5 }, { 85, 11 }, { 29, 11 } });
    m_led8Seg.push_back({ { 93, 7 }, { 96, 10 }, { 96 - toleft, 46 }, { 93 - toleft, 49 }, { 87 - toleft, 43 }, { 87, 12 } });
@@ -117,9 +117,9 @@ void B2SData::ClearAll(bool donotclearnames)
 {
    m_infoDirty = true;
    if (!donotclearnames) {
-      m_szTableName = "";
-      m_szTableFileName = "";
-      m_szBackglassFileName = "";
+      m_szTableName.clear();
+      m_szTableFileName.clear();
+      m_szBackglassFileName.clear();
    }
    else {
       m_launchBackglass = true;
@@ -203,89 +203,89 @@ std::map<int, vector<B2SBaseBox*>>* B2SData::GetUsedRomMechIDs()
    return (m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy) ? &m_usedRomMechIDs4Fantasy : &m_usedRomMechIDs4Authentic;
 }
 
-bool B2SData::IsLampsData()
+bool B2SData::IsLampsData() const
 {
    return m_valid && (IsUseRomLamps() || IsUseAnimationLamps()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLampsOff();
 }
 
-bool B2SData::IsSolenoidsData()
+bool B2SData::IsSolenoidsData() const
 {
    return m_valid && (IsUseRomSolenoids() || IsUseAnimationSolenoids()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsSolenoidsOff();
 }
 
-bool B2SData::IsGIStringsData()
+bool B2SData::IsGIStringsData() const
 {
    return m_valid && (IsUseRomGIStrings() || IsUseAnimationGIStrings()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsGIStringsOff();
 }
 
-bool B2SData::IsLEDsData()
+bool B2SData::IsLEDsData() const
 {
    return m_valid && (IsUseLEDs() || IsUseLEDDisplays() || IsUseReels()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLEDsOff();
 }
 
-bool B2SData::IsUseRomLamps()
+bool B2SData::IsUseRomLamps() const
 {
    if (m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy)
-      return (m_usedRomLampIDs4Fantasy.size() > 0 || m_usedTopRomIDType4Fantasy == eRomIDType_Lamp || m_usedSecondRomIDType4Fantasy == eRomIDType_Lamp);
+      return (!m_usedRomLampIDs4Fantasy.empty() || m_usedTopRomIDType4Fantasy == eRomIDType_Lamp || m_usedSecondRomIDType4Fantasy == eRomIDType_Lamp);
    else
-      return (m_usedRomLampIDs4Authentic.size() > 0 || m_usedTopRomIDType4Authentic == eRomIDType_Lamp || m_usedSecondRomIDType4Authentic == eRomIDType_Lamp);
+      return (!m_usedRomLampIDs4Authentic.empty() || m_usedTopRomIDType4Authentic == eRomIDType_Lamp || m_usedSecondRomIDType4Authentic == eRomIDType_Lamp);
 }
 
-bool B2SData::IsUseRomSolenoids()
+bool B2SData::IsUseRomSolenoids() const
 {
    if (m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy)
-      return (m_usedRomSolenoidIDs4Fantasy.size() > 0 || m_usedTopRomIDType4Fantasy == eRomIDType_Solenoid || m_usedSecondRomIDType4Fantasy == eRomIDType_Solenoid);
+      return (!m_usedRomSolenoidIDs4Fantasy.empty() || m_usedTopRomIDType4Fantasy == eRomIDType_Solenoid || m_usedSecondRomIDType4Fantasy == eRomIDType_Solenoid);
    else
-      return (m_usedRomSolenoidIDs4Authentic.size() > 0 || m_usedTopRomIDType4Authentic == eRomIDType_Solenoid || m_usedSecondRomIDType4Authentic == eRomIDType_Solenoid);
+      return (!m_usedRomSolenoidIDs4Authentic.empty() || m_usedTopRomIDType4Authentic == eRomIDType_Solenoid || m_usedSecondRomIDType4Authentic == eRomIDType_Solenoid);
 }
 
-bool B2SData::IsUseRomGIStrings()
+bool B2SData::IsUseRomGIStrings() const
 {
    if (m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy)
-      return (m_usedRomGIStringIDs4Fantasy.size() > 0 || m_usedTopRomIDType4Fantasy == eRomIDType_GIString || m_usedSecondRomIDType4Fantasy == eRomIDType_GIString);
+      return (!m_usedRomGIStringIDs4Fantasy.empty() || m_usedTopRomIDType4Fantasy == eRomIDType_GIString || m_usedSecondRomIDType4Fantasy == eRomIDType_GIString);
    else
-      return (m_usedRomGIStringIDs4Authentic.size() > 0 || m_usedTopRomIDType4Authentic == eRomIDType_GIString || m_usedSecondRomIDType4Authentic == eRomIDType_GIString);
+      return (!m_usedRomGIStringIDs4Authentic.empty() || m_usedTopRomIDType4Authentic == eRomIDType_GIString || m_usedSecondRomIDType4Authentic == eRomIDType_GIString);
 }
 
-bool B2SData::IsUseRomMechs()
+bool B2SData::IsUseRomMechs() const
 {
    if (m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy)
-      return (m_usedRomMechIDs4Fantasy.size() > 0);
+      return (!m_usedRomMechIDs4Fantasy.empty());
    else
-      return (m_usedRomMechIDs4Authentic.size() > 0);
+      return (!m_usedRomMechIDs4Authentic.empty());
 }
 
-bool B2SData::IsUseAnimationLamps()
+bool B2SData::IsUseAnimationLamps() const
 {
-   return (m_usedAnimationLampIDs.size() > 0 || m_usedRandomAnimationLampIDs.size() > 0);
+   return (!m_usedAnimationLampIDs.empty() || !m_usedRandomAnimationLampIDs.empty());
 }
 
-bool B2SData::IsUseAnimationSolenoids()
+bool B2SData::IsUseAnimationSolenoids() const
 {
-   return (m_usedAnimationSolenoidIDs.size() > 0 || m_usedRandomAnimationSolenoidIDs.size() > 0);
+   return (!m_usedAnimationSolenoidIDs.empty() || !m_usedRandomAnimationSolenoidIDs.empty());
 }
 
-bool B2SData::IsUseAnimationGIStrings()
+bool B2SData::IsUseAnimationGIStrings() const
 {
-   return (m_usedAnimationGIStringIDs.size() > 0 || m_usedRandomAnimationGIStringIDs.size() > 0);
+   return (!m_usedAnimationGIStringIDs.empty() || !m_usedRandomAnimationGIStringIDs.empty());
 }
 
-bool B2SData::IsUseRomReelLamps()
+bool B2SData::IsUseRomReelLamps() const
 {
-   return (m_usedRomReelLampIDs.size() > 0);
+   return (!m_usedRomReelLampIDs.empty());
 }
 
-bool B2SData::IsUseLEDs()
+bool B2SData::IsUseLEDs() const
 {
-   return (m_leds.size() > 0);
+   return (!m_leds.empty());
 }
 
-bool B2SData::IsUseLEDDisplays()
+bool B2SData::IsUseLEDDisplays() const
 {
-   return (m_ledDisplays.size() > 0);
+   return (!m_ledDisplays.empty());
 }
 
-bool B2SData::IsUseReels()
+bool B2SData::IsUseReels() const
 {
-   return (m_reels.size() > 0);
+   return (!m_reels.empty());
 }

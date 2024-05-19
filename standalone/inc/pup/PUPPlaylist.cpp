@@ -80,13 +80,11 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
 
 string PUPPlaylist::GetPlayFile(const string& szPlayFile)
 {
-   static const std::string szEmptyString = "";
-
    if (!szPlayFile.empty())
       return find_path_case_insensitive(m_szFolderPath + szPlayFile);
 
    if (m_files.empty())
-      return szEmptyString;
+      return string();
 
    if (!m_randomize) {
       std::lock_guard<std::mutex> lock(m_mutex);

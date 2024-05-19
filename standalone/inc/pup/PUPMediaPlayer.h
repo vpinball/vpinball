@@ -26,7 +26,7 @@ public:
    ~PUPMediaPlayer();
 
    void Play(const string& szFilename, int volume);
-   bool IsPlaying();
+   bool IsPlaying() const;
    void Stop();
    void Render(SDL_Renderer* pRenderer, SDL_Rect* pRect);
    void SetLoop(bool loop) { m_loop = loop; }

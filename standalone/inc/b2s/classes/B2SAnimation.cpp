@@ -14,7 +14,7 @@ B2SAnimation::~B2SAnimation()
 }
 
 void B2SAnimation::AddAnimation(
-   string szName,
+   const string& szName,
    Form* pForm,
    Form* pFormDMD,
    eDualMode dualMode,
@@ -29,7 +29,7 @@ void B2SAnimation::AddAnimation(
    bool bringToFront,
    bool randomStart,
    int randomQuality,
-   vector<PictureBoxAnimationEntry*> entries)
+   const vector<PictureBoxAnimationEntry*>& entries)
 {
    if (!m_pictureBoxAnimations.contains(szName))
       m_pictureBoxAnimations[szName] = new PictureBoxAnimation(pForm, pFormDMD, szName, dualMode, interval, loops, startTimerAtVPActivate, lightsStateAtAnimationStart, lightsStateAtAnimationEnd, animationStopBehaviour, lockInvolvedLamps, hideScoreDisplays, bringToFront, randomStart, randomQuality, entries);

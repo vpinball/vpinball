@@ -35,7 +35,7 @@ void B2SCollectData::DataAdded()
    m_skipFrames--;
 }
 
-bool B2SCollectData::ShowData()
+bool B2SCollectData::ShowData() const
 {
    return (m_skipFrames < 0);
 }

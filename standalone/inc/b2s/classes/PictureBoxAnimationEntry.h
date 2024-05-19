@@ -5,7 +5,7 @@
 class PictureBoxAnimationEntry
 {
 public:
-   PictureBoxAnimationEntry(string on1, int waitAfterOn1, string off1, int waitAfterOff1, int pulseSwitch);
+   PictureBoxAnimationEntry(const string& on1, int waitAfterOn1, const string& off1, int waitAfterOff1, int pulseSwitch);
 
    vector<string>* GetOn1() { return &m_on1; }
    vector<string>* GetOff1() { return &m_off1; }

@@ -5,7 +5,7 @@
 Sound::Sound(const vector<unsigned char>& stream)
 {
    m_pStream = (UINT8*)malloc(stream.size());
-   memcpy(m_pStream, &stream[0], stream.size());
+   memcpy(m_pStream, stream.data(), stream.size());
 }
 
 Sound::~Sound()

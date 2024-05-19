@@ -58,7 +58,7 @@ PUPMediaPlayer::~PUPMediaPlayer()
 #endif
 }
 
-bool PUPMediaPlayer::IsPlaying()
+bool PUPMediaPlayer::IsPlaying() const
 {
    return m_running;
 }
@@ -113,7 +113,7 @@ void PUPMediaPlayer::Play(const string& szFilename, int volume)
       return;
    }
 
-   m_volume = volume;
+   m_volume = (float)volume;
 
    m_loop = false;
 

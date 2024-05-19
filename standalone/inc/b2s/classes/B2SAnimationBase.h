@@ -51,7 +51,7 @@ public:
    RunningAnimationsCollection* GetRunningAnimations() const { return m_pRunningAnimations; }
    void RaiseFinishedEvent();
    using FinishedListener = std::function<void()>;
-   void SetFinishedListener(FinishedListener listener) { m_finishedListener = listener; };
+   void SetFinishedListener(FinishedListener listener) { m_finishedListener = listener; }
 
 protected:
    void SetSwitch(int switchid);

@@ -12,7 +12,7 @@ public:
 
    bool Add(int key, CollectData* pCollectData);
    void DataAdded();
-   bool ShowData();
+   bool ShowData() const;
    void ClearData(int skipFrames);
 
    void Lock();
