@@ -139,6 +139,10 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(fb_fmtonemap_AO),
    SHADER_TECHNIQUE(fb_fmtonemap_no_filter),
    SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_nttonemap),
+   SHADER_TECHNIQUE(fb_nttonemap_AO),
+   SHADER_TECHNIQUE(fb_nttonemap_no_filter),
+   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
    SHADER_TECHNIQUE(fb_blur_horiz7x7),
@@ -633,7 +637,7 @@ public:
       UniformDesc uniform_desc[SHADER_UNIFORM_COUNT];
    };
    ShaderTechnique* m_techniques[SHADER_TECHNIQUE_COUNT];
-   string m_shaderPath = ""s;
+   string m_shaderPath;
 
    bool UseGeometryShader() const;
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);

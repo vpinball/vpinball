@@ -1885,6 +1885,7 @@ void Renderer::PrepareVideoBuffers()
       else if (infoMode == IF_RENDER_PROBES)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
                                                    : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                   : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
                                                                                             : SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
@@ -1896,6 +1897,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
+      else if (m_toneMapper == TM_NEUTRAL)
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter);
       else // TM_TONY_MC_MAPFACE
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter

@@ -113,7 +113,7 @@ vec3 FilmicToneMap(vec3 color)
     // http://filmicworlds.com/blog/filmic-tonemapping-operators/
     const vec3 x = max(vec3(0., 0., 0.), color - 0.004); // Filmic Curve
     color = (x * (6.2 * x + .5)) / (x * (6.2 * x + 1.7) + 0.06);
-    
+
     // Filmic ACES fitted curve by Krzysztof Narkowicz (luminance only causing slightly oversaturate brights). Linear RGB to Linear RGB, with exposure included (1.0 -> 0.8).
     // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     /*color = 0.6 * color; // remove the included exposure using the value given in the blog post
@@ -171,6 +171,28 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
 vec2 TonyMcMapfaceToneMap(vec2 color) { return color; } // Unimplemented
 float TonyMcMapfaceToneMap(float color) { return color; } // Unimplemented
 
+vec3 PBRNeutralToneMapping(vec3 color)
+{
+    const float startCompression = 0.8 - 0.04;
+    const float desaturation = 0.15;
+
+    float x = min(color.x, min(color.y, color.z));
+    float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
+    color -= offset;
+
+    const float peak = max(color.x, max(color.y, color.z));
+    if (peak < startCompression) return color;
+
+    const float d = 1. - startCompression;
+    const float newPeak = 1. - (d * d) / (peak + (d - startCompression));
+
+    const float inv_g = desaturation * (peak - newPeak) + 1.;
+    const float w = newPeak / (inv_g*peak);
+    const float n = newPeak - newPeak/inv_g;
+    return n + color*w;
+}
+vec2 PBRNeutralToneMapping(vec2 color) { return color; } // Unimplemented
+float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Dithering
@@ -335,9 +357,9 @@ vec3 FBColorGrade(vec3 color)
 void main()
 {
    // v_texcoord0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-   
+
    rtype result = texStereoNoLod(tex_fb, v_texcoord0).swizzle;
-   
+
    // moving AO before tonemap does not really change the look
    #ifdef AO
       result *= texStereoNoLod(tex_ao, v_texcoord0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -354,30 +376,34 @@ void main()
          result = TonyMcMapfaceToneMap(result);
       #elif defined(FILMIC)
          result = FilmicToneMap(result);
-	  #endif
+      #elif defined(NEUTRAL)
+         result = PBRNeutralToneMapping(result);
+      #endif
 
    #ifdef GRAY
       #ifdef FILMIC
-	     result =         saturate(FBDither(result, v_texcoord0));
+         result =         saturate(FBDither(result, v_texcoord0));
       #else
-	     result = FBGamma(saturate(FBDither(result, v_texcoord0)));
+         result = FBGamma(saturate(FBDither(result, v_texcoord0)));
       #endif
       gl_FragColor = vec4(result, result, result, 1.0);
    
    #elif defined(RG)
       //float grey = dot(result, vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
       #ifdef FILMIC
-		 float grey =         saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)));
+         float grey =         saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)));
       #else
-		 float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
+         float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
       #endif
       gl_FragColor = vec4(grey, grey, grey, 1.0);
    
    #else
       #ifdef FILMIC
-	     result =         saturate(FBDither(result, v_texcoord0));
+         result =         saturate(FBDither(result, v_texcoord0));
+      #elif NEUTRAL
+         result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
       #else
-	     result = FBGamma(saturate(FBDither(result, v_texcoord0)));
+         result = FBGamma(saturate(FBDither(result, v_texcoord0)));
       #endif
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
    

@@ -395,6 +395,12 @@ float3 FBGamma(const float3 color)
 #define Luminance(linearRGB) dot(linearRGB, float3(0.212655,0.715158,0.072187))
 
 
+//#define FBGamma22(color) pow(color, 1.0/2.2) // apparently most consumer displays nowadays feature a plain 2.2 curve
+float3 FBGamma22(const float3 color)
+{
+    return float3(pow(color.x, 1.0/2.2),pow(color.y, 1.0/2.2),pow(color.z, 1.0/2.2));
+}
+
 
 #if 0
 // RGBM/RGBD

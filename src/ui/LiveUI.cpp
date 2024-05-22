@@ -1571,8 +1571,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             int tm = m_renderer->m_toneMapper + (int)step;
             if (tm < 0)
-               tm = ToneMapper::TM_FILMIC;
-            if (tm > ToneMapper::TM_FILMIC)
+               tm = ToneMapper::TM_NEUTRAL;
+            if (tm > ToneMapper::TM_NEUTRAL)
                tm = ToneMapper::TM_REINHARD;
             m_renderer->m_toneMapper = (ToneMapper)tm;
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
@@ -1992,7 +1992,7 @@ void LiveUI::UpdateTweakModeUI()
             snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : m_renderer->m_toneMapper == 2 ? "Filmic" : "Neutral", ""); break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
@@ -3544,7 +3544,7 @@ void LiveUI::UpdatePlumbWindow()
       ImGui::Separator();
 
       ImGui::Text("Nudge & Plumb State");
-      const int panelSize = 100;
+      constexpr int panelSize = 100;
       if (ImGui::BeginTable("PlumbInfo", 2, ImGuiTableFlags_Borders))
       {
          ImGui::TableSetupColumn("Col1", ImGuiTableColumnFlags_WidthFixed, panelSize * m_dpi);
@@ -3896,7 +3896,7 @@ void LiveUI::UpdateMainSplashModal()
       const string launchTable = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx"s);
       if (ImGui::BeginCombo("##Launch Table", launchTable.c_str()))
       {
-         vector<string> files = find_files_by_extension(g_pvp->m_szMyPrefPath, "vpx");
+         vector<string> files = find_files_by_extension(g_pvp->m_szMyPrefPath, "vpx"s);
 
          for (const auto& file : files) {
             if (ImGui::Selectable(file.c_str()))
@@ -3951,7 +3951,7 @@ void LiveUI::UpdateMainSplashModal()
    }
    else
    {
-      ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but needs it to be disabled to allow keyboard shortcuts
+      ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but need it to be disabled to allow keyboard shortcuts
    }
 }
 
@@ -3994,11 +3994,11 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       
       PropSeparator();
-      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s };
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;
-      PinTable *table = m_table;
-      Player *player = m_player;
+      PinTable * const table = m_table;
+      Player * const player = m_player;
       auto upd_tm = [table, player](bool is_live, int prev, int v)
       {
          if (is_live)
@@ -4006,7 +4006,7 @@ void LiveUI::TableProperties(bool is_live)
          else
             table->SetToneMapper((ToneMapper)v);
       };
-      PropCombo("Tonemapper", m_table, is_live, &startup_mode, &live_mode, 3, tonemapperLabels, upd_tm);
+      PropCombo("Tonemapper", m_table, is_live, &startup_mode, &live_mode, 4, tonemapperLabels, upd_tm);
       ImGui::EndTable();
    }
 }

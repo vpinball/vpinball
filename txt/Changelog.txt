@@ -7,6 +7,8 @@ FEATURES:
 
 - add "Surface" to the "Select Element" list
 
+- add additional tonemapper (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)

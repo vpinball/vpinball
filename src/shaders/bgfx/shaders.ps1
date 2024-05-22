@@ -175,7 +175,7 @@ for($k = 0; $k -lt 2; $k++)
   {
 	 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
   }
-  foreach ($variant in @("REINHARD", "FILMIC", "TONY"))
+  foreach ($variant in @("REINHARD", "FILMIC", "TONY", "NEUTRAL"))
   {
 	 foreach ($variant2 in @("AO", "NOAO"))
 	 {
@@ -206,4 +206,3 @@ Process-Shader "vs_pp_smaa_NeighborhoodBlending.sc"      "antialiasing.h" "vs_pp
 Process-Shader "fs_pp_smaa_BlendingWeightCalculation.sc" "antialiasing.h" "fs_pp_smaa_blendweightcalculation_" "fragment"
 Process-Shader "fs_pp_smaa_EdgeDetection.sc"             "antialiasing.h" "fs_pp_smaa_edgedetection_"          "fragment"
 Process-Shader "fs_pp_smaa_NeighborhoodBlending.sc"      "antialiasing.h" "fs_pp_smaa_neighborhoodblending_"   "fragment"
-

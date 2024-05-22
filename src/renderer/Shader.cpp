@@ -136,6 +136,10 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(fb_fmtonemap_AO),
    SHADER_TECHNIQUE(fb_fmtonemap_no_filter),
    SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_nttonemap),
+   SHADER_TECHNIQUE(fb_nttonemap_AO),
+   SHADER_TECHNIQUE(fb_nttonemap_no_filter),
+   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
    SHADER_TECHNIQUE(fb_blur_horiz7x7),
@@ -540,7 +544,14 @@ void Shader::Begin()
       #if defined(ENABLE_OPENGL)
       glUseProgram(m_techniques[m_technique]->program);
       #elif defined(ENABLE_DX9)
-      CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].c_str()));
+      //CHECKD3D(m_shader->SetTechnique((D3DXHANDLE)shaderTechniqueNames[m_technique].c_str()));
+      const char* const stn = shaderTechniqueNames[m_technique].c_str();
+      const HRESULT hrTmp = m_shader->SetTechnique((D3DXHANDLE)stn);
+      if (FAILED(hrTmp))
+      {
+         MessageBox(NULL, stn, stn, MB_OK);
+         ReportFatalError(hrTmp, __FILE__, __LINE__);
+      }
       #endif
    }
    for (const auto& uniformName : m_uniforms[m_technique])
@@ -1293,6 +1304,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_filter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_nofilter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       //
@@ -1406,6 +1421,10 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_filter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_nofilter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 

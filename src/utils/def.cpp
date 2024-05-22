@@ -471,7 +471,7 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
 {
    std::filesystem::path parentPath(szParentPath);
    if (!std::filesystem::exists(parentPath) || !std::filesystem::is_directory(parentPath))
-      return "";
+      return string();
 
    std::filesystem::path fullPath = parentPath / szDirName;
    if (std::filesystem::exists(fullPath) && std::filesystem::is_directory(fullPath))
@@ -490,7 +490,7 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
       }
    }
 
-   return "";
+   return string();
 }
 
 string extension_from_path(const string& path)

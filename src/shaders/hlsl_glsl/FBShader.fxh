@@ -104,7 +104,7 @@ float3 FilmicToneMap(float3 color)
     // http://filmicworlds.com/blog/filmic-tonemapping-operators/
     const float3 x = max(float3(0., 0., 0.), color - 0.004); // Filmic Curve
     color = (x * (6.2 * x + .5)) / (x * (6.2 * x + 1.7) + 0.06);
-    
+
     // Filmic ACES fitted curve by Krzysztof Narkowicz (luminance only causing slightly oversaturate brights). Linear RGB to Linear RGB, with exposure included (1.0 -> 0.8).
     // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     /*color = 0.6 * color; // remove the included exposure using the value given in the blog post
@@ -156,4 +156,25 @@ float3 TonyMcMapfaceToneMap(float3 color)
     const float3 a = texNoLod(tex_tonemap_lut, float2(encoded.x, y)).rgb;
     const float3 b = texNoLod(tex_tonemap_lut, float2(encoded.x, y + 1.0 / LUT_DIMS)).rgb;
     return lerp(a, b, frac(encoded.z));
+}
+
+float3 PBRNeutralToneMapping(float3 color)
+{
+    const float startCompression = 0.8 - 0.04;
+    const float desaturation = 0.15;
+
+    float x = min(color.x, min(color.y, color.z));
+    float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
+    color -= offset;
+
+    const float peak = max(color.x, max(color.y, color.z));
+    if (peak < startCompression) return color;
+
+    const float d = 1. - startCompression;
+    const float newPeak = 1. - (d * d) / (peak + (d - startCompression));
+
+    const float inv_g = desaturation * (peak - newPeak) + 1.;
+    const float w = newPeak / (inv_g*peak);
+    const float n = newPeak - newPeak/inv_g;
+    return n + color*w;
 }

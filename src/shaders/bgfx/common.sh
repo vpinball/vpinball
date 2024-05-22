@@ -283,6 +283,12 @@ vec3 FBGamma(const vec3 color)
 #define FBGamma // uses hardware support via D3DRS_SRGBWRITEENABLE
 #endif
 
+//#define FBGamma22(color) pow(color, 1.0/2.2) // apparently most consumer displays nowadays feature a plain 2.2 curve
+vec3 FBGamma22(const vec3 color)
+{
+    return vec3(pow(color.x, 1.0/2.2),pow(color.y, 1.0/2.2),pow(color.z, 1.0/2.2));
+}
+
 float FBToneMap(const float l)
 {
     return l * ((l*BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
