@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -107,11 +107,11 @@ namespace Win32xx
 
 namespace Win32xx
 {
-    inline CRegKey::CRegKey() : m_key(0)
+    inline CRegKey::CRegKey() : m_key(NULL)
     {
     }
 
-    inline CRegKey::CRegKey(HKEY key) : m_key(0)
+    inline CRegKey::CRegKey(HKEY key) : m_key(NULL)
     {
         Attach(key);
     }
@@ -136,7 +136,7 @@ namespace Win32xx
     // Attaches a KEY handle to this CRegKey object.
     inline void CRegKey::Attach(HKEY key)
     {
-        assert(m_key == 0);
+        assert(m_key == NULL);
         m_key = key;
     }
 
@@ -145,10 +145,10 @@ namespace Win32xx
     {
         LONG lRes = ERROR_SUCCESS;
 
-        if (m_key != 0)
+        if (m_key != NULL)
         {
             lRes = ::RegCloseKey(m_key);
-            m_key = 0;
+            m_key = NULL;
         }
 
         return lRes;
@@ -158,7 +158,7 @@ namespace Win32xx
     inline LONG CRegKey::Create(HKEY keyParent, LPCTSTR keyName, LPTSTR className, DWORD options,
                    REGSAM samDesired, LPSECURITY_ATTRIBUTES secAttr, LPDWORD disposition)
     {
-        HKEY key = 0;
+        HKEY key = NULL;
         LONG result =  ::RegCreateKeyEx(keyParent, keyName, 0, className, options, samDesired, secAttr, &key, disposition);
 
         // RegCreateKeyEx opens existing keys, so close it now.
@@ -186,7 +186,7 @@ namespace Win32xx
     {
         assert(m_key);
         HKEY key = m_key;
-        m_key = 0;
+        m_key = NULL;
         return key;
     }
 

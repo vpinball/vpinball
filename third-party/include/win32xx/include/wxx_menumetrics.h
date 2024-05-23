@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -113,7 +113,7 @@ namespace Win32xx
     // MenuItemData defines the data for each dropdown menu item.
     struct MenuItemData
     {
-        MenuItemData() : menu(0), pos(0)
+        MenuItemData() : menu(NULL), pos(0)
         {
             ZeroMemory(&mii, GetSizeofMenuItemInfo());
         }
@@ -272,17 +272,17 @@ namespace Win32xx
     //////////////////////////////////////////
     // Definitions for the CMenuMetrics class.
     //
-    inline CMenuMetrics::CMenuMetrics() : m_theme(0), m_pfnCloseThemeData(0), m_pfnDrawThemeBackground(0),
-                                            m_pfnDrawThemeText(0), m_pfnGetThemePartSize(0), m_pfnGetThemeInt(0),
-                                            m_pfnGetThemeMargins(0), m_pfnGetThemeTextExtent(0),
-                                            m_pfnIsThemeBGPartTransparent(0), m_pfnOpenThemeData(0)
+    inline CMenuMetrics::CMenuMetrics() : m_theme(NULL), m_pfnCloseThemeData(NULL), m_pfnDrawThemeBackground(NULL),
+                                            m_pfnDrawThemeText(NULL), m_pfnGetThemePartSize(NULL), m_pfnGetThemeInt(NULL),
+                                            m_pfnGetThemeMargins(NULL), m_pfnGetThemeTextExtent(NULL),
+                                            m_pfnIsThemeBGPartTransparent(NULL), m_pfnOpenThemeData(NULL)
     {
         Initialize();
     }
 
     inline CMenuMetrics::~CMenuMetrics()
     {
-        if (m_theme != 0)
+        if (m_theme != NULL)
             CloseThemeData();
     }
 
@@ -345,7 +345,7 @@ namespace Win32xx
         return CRect(x, y, x + m_sizeCheck.cx, y + m_sizeCheck.cy);
     }
 
-    // Retrieve the size of the menu item
+    // Retrieve the size of the menu item.
     inline CSize CMenuMetrics::GetItemSize(MenuItemData* pmd, CClientDC& dc) const
     {
         CSize size;
@@ -485,7 +485,7 @@ namespace Win32xx
     {
         HMODULE uxTheme = ::GetModuleHandle(_T("uxtheme.dll"));
 
-        if (uxTheme != 0)
+        if (uxTheme != NULL)
         {
             m_pfnCloseThemeData = reinterpret_cast<CLOSETHEMEDATA*>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "CloseThemeData")));
@@ -510,25 +510,25 @@ namespace Win32xx
 
     inline void CMenuMetrics::SetMetrics(HWND frame)
     {
-        if (m_theme != 0)
+        if (m_theme != NULL)
         {
             CloseThemeData();
-            m_theme = 0;
+            m_theme = NULL;
         }
 
         m_theme = OpenThemeData(frame, VSCLASS_MENU);
 
-        if (m_theme != 0)
+        if (m_theme != NULL)
         {
-            int borderSize = 0;    // Border space between item text and accelerator
-            int bgBorderSize = 0;  // Border space between item text and gutter
-            GetThemePartSize(0, MENU_POPUPCHECK, 0, NULL, TS_TRUE, &m_sizeCheck);
-            GetThemePartSize(0, MENU_POPUPSEPARATOR, 0, NULL, TS_TRUE, &m_sizeSeparator);
+            int borderSize = 0;    // Border space between item text and accelerator.
+            int bgBorderSize = 0;  // Border space between item text and gutter.
+            GetThemePartSize(NULL, MENU_POPUPCHECK, 0, NULL, TS_TRUE, &m_sizeCheck);
+            GetThemePartSize(NULL, MENU_POPUPSEPARATOR, 0, NULL, TS_TRUE, &m_sizeSeparator);
             GetThemeInt(MENU_POPUPITEM, 0, TMT_BORDERSIZE, &borderSize);
             GetThemeInt(MENU_POPUPBACKGROUND, 0, TMT_BORDERSIZE, &bgBorderSize);
-            GetThemeMargins(0, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &m_marCheck);
-            GetThemeMargins(0, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, NULL, &m_marCheckBackground);
-            GetThemeMargins(0, MENU_POPUPITEM, 0, TMT_CONTENTMARGINS, NULL, &m_marItem);
+            GetThemeMargins(NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &m_marCheck);
+            GetThemeMargins(NULL, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, NULL, &m_marCheckBackground);
+            GetThemeMargins(NULL, MENU_POPUPITEM, 0, TMT_CONTENTMARGINS, NULL, &m_marItem);
 
             // Popup text margins
             m_marText = m_marItem;
@@ -567,7 +567,7 @@ namespace Win32xx
 
     inline BOOL CMenuMetrics::IsVistaMenu() const
     {
-        return (m_theme != 0);
+        return (m_theme != NULL);
     }
 
     // Convert from item state to MENU_POPUPITEM state.

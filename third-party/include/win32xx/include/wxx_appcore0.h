@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -65,6 +65,7 @@ namespace Win32xx
     class CClientDC;
     class CClientDCEx;
     class CDataExchange;
+    class CDialog;
     class CDC;
     class CDocker;
     class CFont;
@@ -116,7 +117,7 @@ namespace Win32xx
     struct CGDI_Data
     {
         // Constructor
-        CGDI_Data() : hGDIObject(0), count(1L), isManagedObject(false) {}
+        CGDI_Data() : hGDIObject(NULL), count(1L), isManagedObject(false) {}
 
         HGDIOBJ hGDIObject;
         long    count;
@@ -128,7 +129,7 @@ namespace Win32xx
     struct CIml_Data
     {
         // Constructor
-        CIml_Data() : images(0), isManagedHiml(false), count(1L) {}
+        CIml_Data() : images(NULL), isManagedHiml(false), count(1L) {}
 
         HIMAGELIST  images;
         bool        isManagedHiml;
@@ -139,7 +140,7 @@ namespace Win32xx
     struct CMenu_Data
     {
         // Constructor
-        CMenu_Data() : menu(0), isManagedMenu(false), count(1L) {}
+        CMenu_Data() : menu(NULL), isManagedMenu(false), count(1L) {}
 
         HMENU menu;
         bool isManagedMenu;
@@ -186,11 +187,9 @@ namespace Win32xx
     {
         CWnd* pWnd;         // Pointer to CWnd object for window creation
         HWND  mainWnd;      // Handle to the main window for the thread (usually CFrame)
-        CMenuBar* pMenuBar; // Pointer to CMenuBar object used for the WH_MSGFILTER hook
-        HHOOK msgHook;      // WH_MSGFILTER hook for CMenuBar and modal dialogs
-        long  dlgHooks;     // Number of dialog MSG hooks
+        CMenuBar* pMenuBar; // Pointer to the CMenuBar object with the WH_MSGFILTER hook
 
-        TLSData() : pWnd(0), mainWnd(0), pMenuBar(0), msgHook(0), dlgHooks(0) {} // Constructor
+        TLSData() : pWnd(NULL), mainWnd(NULL), pMenuBar(NULL) {} // Constructor
     };
 
     ///////////////////////////////////////////////////////////////////
@@ -215,7 +214,7 @@ namespace Win32xx
     {
     public:
         // Constructors and Destructors
-        CGlobalLock() : m_h(0), m_p(0) {}
+        CGlobalLock() : m_h(NULL), m_p(NULL) {}
         CGlobalLock(HANDLE h) : m_h(h) { Lock(); }
         CGlobalLock(const CGlobalLock& rhs);
         ~CGlobalLock() { Unlock(); }
@@ -251,7 +250,7 @@ namespace Win32xx
     // There can only be one instance of CWinApp.
     class CWinApp : public CMessagePump
     {
-        // Provide these access to CWinApp's private members:
+        // These provide access to CWinApp's private members:
         friend class CDC;
         friend class CDialog;
         friend class CEnhMetaFile;
@@ -306,7 +305,7 @@ namespace Win32xx
         void SetCallback();
         void SetTlsData();
 
-        static CWinApp* SetnGetThis(CWinApp* pThis = 0, bool reset = false);
+        static CWinApp* SetnGetThis(CWinApp* pThis = NULL, bool reset = false);
 
         std::map<HDC, CDC_Data*, CompareHDC> m_mapCDCData;
         std::map<HGDIOBJ, CGDI_Data*, CompareGDI> m_mapCGDIData;

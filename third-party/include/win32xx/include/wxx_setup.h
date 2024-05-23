@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -158,7 +158,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0951     // Win32++ version 9.5.1
+#define _WIN32XX_VER 0x0952     // Win32++ version 9.5.2
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -255,7 +255,7 @@ namespace Win32xx
     {
         // Retrieve the Common Controls DLL handle.
         HMODULE comCtl = ::GetModuleHandle(_T("comctl32.dll"));
-        if (comCtl == 0)
+        if (comCtl == NULL)
             return 0;
 
         DWORD comCtlVer = 400;
@@ -393,7 +393,7 @@ namespace Win32xx
     {
         // Retrieve the Common Controls DLL handle.
         HMODULE comCtl = ::GetModuleHandle(_T("comctl32.dll"));
-        if (comCtl == 0)
+        if (comCtl == NULL)
             comCtl = ::GetModuleHandle(_T("commctrl.dll"));
 
         if (comCtl)
@@ -474,13 +474,13 @@ namespace Win32xx
             for (index = 0; index < dst_size - 1; ++index)
             {
                 dst[index] = src[index];
-                if (src[index] == '\0')
+                if (src[index] == L'\0')
                     break;
             }
 
             // Add null termination if required.
-            if (dst[index] != '\0')
-                dst[dst_size - 1] = '\0';
+            if (dst[index] != L'\0')
+                dst[dst_size - 1] = L'\0';
         }
     }
 

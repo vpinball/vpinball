@@ -1,3 +1,60 @@
+Version 9.5.2
+=============
+Changes:
+ * Updated CString.
+    The CString constructor, operator+, operator+=, and operator<< overloads
+    now support CStringA and CStringW arguments in addition to the arguments
+    supported previously.
+ * Updated ToCString.
+    ToCString now supports CStringA and CStringW arguments in addition to the
+    arguments supported previously.
+ * Updated CTime.
+    Some CTime constructors have been updated, and others removed.
+ * Updated the docker samples to eliminate jitter when the dockers are resized.
+
+Changes in detail
+-----------------
+Added:  tm* ::GMTime(tm& atm, const time_t& t)              global function
+Added:  tm* ::LocalTime(tm& atm, const time_t& t)           global function
+
+Added CFrameT<T>::RemoveKbdHook()
+
+Added:  CStringA operator+(const CStringA& string1, const CStringA& string2)
+Added:  CStringW operator+(const CStringW& string1, const CStringW& string2)
+
+Added:  CString(const CStringA& str)
+Added:  CString(const CStringW& str)
+Added:  CString& operator=(const CStringA& str)
+Added:  CString& operator=(const CStringW& str)
+Added:  CString operator+(const CString& string1, const CStringA& string2)
+Added:  CString operator+(const CString& string1, const CStringW& string2)
+Added:  CString operator+(const CStringA& string1, const CString& string2)
+Added:  CString operator+(const CStringW& string1, const CString& string2)
+
+Added:  CString& operator+=(const CStringA& str);
+Added:  CString& operator+=(const CStringW& str);
+
+Added:  CString ToCString(const CStringA& string)
+Added:  CString ToCString(const CStringW& string)
+Added:  CString ToCString(const CString& string)
+
+Modified: CTime(int year, int month, int day, int hour, int min, int sec, int isDST = -1);
+Modified: CTime::GetDayOfWeek    Now returns value in the range 1 through 7
+
+Removed: CTime(UINT yr, UINT mo, UINT wkday, UINT nthwk, UINT hr, UINT min, UINT sec, int isDST = -1);
+Removed: CTime(UINT yr, UINT doy, UINT hr, UINT min, UINT sec, int isDST = -1);
+
+Removed: time_tm typedef
+Removed: timespan_t typedef
+
+Removed: CString::Left                    redundant
+Removed: CString::Mid                     redundant
+Removed: CString::right                   redundant
+Removed: CString::SpanExcluding           redundant
+Removed: CString::SpanIncluding           redundant
+Removed: CString::Tokenize                redundant
+
+
 Version 9.5.1
 =============
 This version has minor improvements to CDocker, CDockContainer and
@@ -8,16 +65,12 @@ New Features and Enhancements
 * Updated CDocker and CDockContainer.
    The dock hinting displayed when a docker is over a dock target has been
    updated.
-
 * Updated CResizer.
    The scroll positions are retained when the window's DPI changes.
-
 * Updated the Docker, DockContainer and DockTabbedMDI samples.
    The DockContainer sample demonstrates how to prevent the frame's last
    container from being undocked or closed.
-
 * Adds support for MinGW-w64 version 13.2.0.
-
 
 Changes in detail
 -----------------
@@ -295,7 +348,7 @@ New Features and Enhancements
   Windows theme is using dark mode, and adjusts the frame's theme accordingly.
   The sample also uses a dialog that supports dark mode to display the 
   information about the application. 
-  This samples requires Windows 10 or higher.
+  This samples requires Windows 10 or later.
 
 Changes in Detail
 -----------------

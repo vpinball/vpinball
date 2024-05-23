@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -154,10 +154,10 @@ namespace Win32xx
     //                   handle cannot be inherited.
     inline CEvent::CEvent(BOOL isInitiallySignaled, BOOL isManualReset, LPCTSTR name,
                     LPSECURITY_ATTRIBUTES attributes)
-    : m_event(0)
+    : m_event(NULL)
     {
         m_event = ::CreateEvent(attributes, isManualReset, isInitiallySignaled, name);
-        if (m_event == 0)
+        if (m_event == NULL)
             throw CResourceException(GetApp()->MsgMtxEvent());
     }
 
@@ -187,10 +187,10 @@ namespace Win32xx
     //                   handle cannot be inherited.
     inline CMutex::CMutex(BOOL isInitiallySignaled, LPCTSTR name,
                             LPSECURITY_ATTRIBUTES attributes)
-    : m_mutex(0)
+    : m_mutex(NULL)
     {
         m_mutex = ::CreateMutex(attributes, isInitiallySignaled, name);
-        if (m_mutex == 0)
+        if (m_mutex == NULL)
             throw CResourceException(GetApp()->MsgMtxMutex());
     }
 
@@ -208,13 +208,13 @@ namespace Win32xx
     //                   handle cannot be inherited.
     inline CSemaphore::CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR name,
                             LPSECURITY_ATTRIBUTES attributes)
-    : m_semaphore(0)
+    : m_semaphore(NULL)
     {
         assert(maxCount > 0);
         assert(initialCount <= maxCount);
 
         m_semaphore = ::CreateSemaphore(attributes, initialCount, maxCount, name);
-        if (m_semaphore == 0)
+        if (m_semaphore == NULL)
             throw CResourceException(GetApp()->MsgMtxSemaphore());
     }
 

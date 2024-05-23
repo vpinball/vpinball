@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,7 +54,7 @@
 //  catch(const CException &e) // catch all exceptions inherited from CException
 //  {
 //      // display the exception in a message box
-//      ::MessageBox(0, LoadString(e.GetMessageID()), AtoT(e.what()), MB_ICONERROR);
+//      ::MessageBox(NULL, LoadString(e.GetMessageID()), AtoT(e.what()), MB_ICONERROR);
 //  }
 
 //
@@ -70,7 +70,7 @@
 //  catch(const CException &e) // catch all exceptions inherited from CException
 //  {
 //      // display the exception in a message box
-//      ::MessageBox(0, e.GetText(), AtoT(e.what()), MB_ICONERROR);
+//      ::MessageBox(NULL, e.GetText(), AtoT(e.what()), MB_ICONERROR);
 //  }
 
 
@@ -109,7 +109,7 @@ namespace Win32xx
     ///////////////////////////////////////////////////////////
     // This exception is used by CArchive and CFile to indicate
     // a problem creating or accessing a file.
-    // Note: Each function guarantees not to throw an exception
+    // Note: Each function guarantees not to throw an exception.
     class CFileException : public CException
     {
     public:
@@ -131,7 +131,7 @@ namespace Win32xx
     //////////////////////////////////////////////////////////////
     // This exception is used by the Win32++ framework to indicate
     // errors that prevent Win32++ from running.
-    // Note: Each function guarantees not to throw an exception
+    // Note: Each function guarantees not to throw an exception.
     class CNotSupportedException : public CException
     {
     public:

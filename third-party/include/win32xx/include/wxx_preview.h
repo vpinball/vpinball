@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -41,8 +41,8 @@
 // in developing this class.
 
 
-#ifndef _WIN32XX_PREVIEWDIALOG_H_
-#define _WIN32XX_PREVIEWDIALOG_H_
+#ifndef _WIN32XX_PREVIEW_H_
+#define _WIN32XX_PREVIEW_H_
 
 #include "wxx_wincore.h"
 #include "wxx_dialog.h"
@@ -205,8 +205,8 @@ namespace Win32xx
 {
 
     //////////////////////////////////////////////////////
-    // Definitions for the CPreviewPane class
-    // CPreviewPane provides a preview pane for CPrintPreview
+    // Definitions for the CPreviewPane class.
+    // CPreviewPane provides a preview pane for CPrintPreview.
     //
 
     // Constructor.
@@ -226,7 +226,7 @@ namespace Win32xx
             wc.lpfnWndProc = ::DefWindowProc;
             wc.hInstance = GetApp()->GetInstanceHandle();
             wc.hbrBackground = (HBRUSH)GetStockObject(GRAY_BRUSH);
-            wc.hCursor = ::LoadCursor(0, IDC_ARROW);
+            wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
             VERIFY(::RegisterClass(&wc));
         }
 
@@ -335,7 +335,7 @@ namespace Win32xx
     }
 
     ///////////////////////////////////////////
-    // Definitions for the CPrintPreview class
+    // Definitions for the CPrintPreview class.
     //
 
     // Constructor.
@@ -414,14 +414,14 @@ namespace Win32xx
         AttachItem(IDW_PREVIEWCLOSE, m_buttonClose);
         AttachItem(IDW_PREVIEWPANE, GetPreviewPane());
 
-        // Assign button text from string resources
+        // Assign button text from string resources.
         m_buttonPrint.SetWindowText(LoadString(IDW_PREVIEWPRINT));
         m_buttonSetup.SetWindowText(LoadString(IDW_PREVIEWSETUP));
         m_buttonPrev.SetWindowText(LoadString(IDW_PREVIEWPREV));
         m_buttonNext.SetWindowText(LoadString(IDW_PREVIEWNEXT));
         m_buttonClose.SetWindowText(LoadString(IDW_PREVIEWCLOSE));
 
-        // Support dialog resizing
+        // Support dialog resizing.
         m_resizer.Initialize(*this, CRect(0, 0, 100, 120));
         m_resizer.AddChild(m_buttonPrint, CResizer::topleft, 0);
         m_resizer.AddChild(m_buttonSetup, CResizer::topleft, 0);
@@ -492,7 +492,7 @@ namespace Win32xx
     template <typename T>
     inline void CPrintPreview<T>::PreviewPage(UINT page)
     {
-        // Get the device context of the default or currently chosen printer
+        // Get the device context of the default or currently chosen printer.
         CPrintDialog printDlg;
         CDC printerDC = printDlg.GetPrinterDC();
 
@@ -513,7 +513,7 @@ namespace Win32xx
         memDC.SetWindowExtEx(width, height, NULL);
         memDC.SetViewportExtEx(width / shrink, height / shrink, NULL);
 
-        // Fill the bitmap with a white background
+        // Fill the bitmap with a white background.
         CRect rc(0, 0, width, height);
         memDC.FillRect(rc, (HBRUSH)::GetStockObject(WHITE_BRUSH));
 
@@ -521,11 +521,11 @@ namespace Win32xx
         assert(m_pSource);
         m_pSource->PrintPage(memDC, page);
 
-        // Detach the bitmap from the memory DC and save it
+        // Detach the bitmap from the memory DC and save it.
         CBitmap bitmap = memDC.DetachBitmap();
         GetPreviewPane().SetBitmap(bitmap);
 
-        // Display the print preview
+        // Display the print preview.
         UpdateButtons();
         CDC previewDC = GetPreviewPane().GetDC();
         GetPreviewPane().Render(previewDC);
@@ -542,4 +542,4 @@ namespace Win32xx
 }
 
 
-#endif // _WIN32XX_PREVIEWDIALOG_H_
+#endif // _WIN32XX_PREVIEW_H_

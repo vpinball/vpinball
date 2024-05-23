@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -103,12 +103,12 @@ namespace Win32xx
         CRibbon& operator=(const CRibbon&);   // Disable assignment operator
 
         IUIFramework* m_pRibbonFramework;
-        LONG m_count;                            // Reference count.
+        LONG m_count;                         // Reference count.
 
     };
 
-    //////////////////////////////////////////////
-    // Declaration of the CRibbonFrameT class template
+    ///////////////////////////////////////////////////
+    // Declaration of the CRibbonFrameT class template.
     //
 
     // The CRibbonFrameT is the base class for frames that support the Ribbon Framework.
@@ -154,7 +154,7 @@ namespace Win32xx
         virtual void UpdateMRUMenu();
 
     private:
-        CRibbonFrameT(const CRibbonFrameT&);              // Disable copy construction
+        CRibbonFrameT(const CRibbonFrameT&);            // Disable copy construction
         CRibbonFrameT& operator=(const CRibbonFrameT&); // Disable assignment operator
 
         std::vector<RecentFilesPtr> m_recentFiles;
@@ -169,7 +169,7 @@ namespace Win32xx
         virtual ~CRibbonFrame() {}
 
     private:
-        CRibbonFrame(const CRibbonFrame&);              // Disable copy construction
+        CRibbonFrame(const CRibbonFrame&);            // Disable copy construction
         CRibbonFrame& operator=(const CRibbonFrame&); // Disable assignment operator
     };
 
@@ -183,7 +183,7 @@ namespace Win32xx
         virtual ~CRibbonDockFrame() {}
 
     private:
-        CRibbonDockFrame(const CRibbonDockFrame&);              // Disable copy construction
+        CRibbonDockFrame(const CRibbonDockFrame&);            // Disable copy construction
         CRibbonDockFrame& operator=(const CRibbonDockFrame&); // Disable assignment operator
     };
 
@@ -197,7 +197,7 @@ namespace Win32xx
         virtual ~CRibbonMDIFrame() {}
 
     private:
-        CRibbonMDIFrame(const CRibbonMDIFrame&);              // Disable copy construction
+        CRibbonMDIFrame(const CRibbonMDIFrame&);            // Disable copy construction
         CRibbonMDIFrame& operator=(const CRibbonMDIFrame&); // Disable assignment operator
     };
 
@@ -212,7 +212,7 @@ namespace Win32xx
         virtual ~CRibbonMDIDockFrame() {}
 
     private:
-        CRibbonMDIDockFrame(const CRibbonMDIDockFrame&);              // Disable copy construction
+        CRibbonMDIDockFrame(const CRibbonMDIDockFrame&);            // Disable copy construction
         CRibbonMDIDockFrame& operator=(const CRibbonMDIDockFrame&); // Disable assignment operator
     };
 
@@ -372,7 +372,7 @@ namespace Win32xx
     // Definitions for the CRibbonFrameT class template
     //
 
-    // Get the frame's client area
+    // Get the frame's client area.
     template <class T>
     inline CRect CRibbonFrameT<T>::GetViewRect() const
     {
@@ -403,8 +403,8 @@ namespace Win32xx
         {
             if (SUCCEEDED(CreateRibbon(*this)))
             {
-                T::UseReBar(FALSE);     // Don't use a ReBar
-                T::UseToolBar(FALSE);   // Don't use a ToolBar
+                T::UseReBar(FALSE);     // Don't use a ReBar.
+                T::UseToolBar(FALSE);   // Don't use a ToolBar.
             }
             else
             {
@@ -416,8 +416,8 @@ namespace Win32xx
         T::OnCreate(cs);
         if (GetRibbonFramework())
         {
-            T::SetMenu(0);              // Disable the window menu
-            T::SetFrameMenu(reinterpret_cast<HMENU>(0));
+            T::SetMenu(NULL);              // Disable the window menu.
+            T::SetFrameMenu(reinterpret_cast<HMENU>(NULL));
         }
 
         return 0;

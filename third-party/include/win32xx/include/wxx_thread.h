@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -36,7 +36,6 @@
 ////////////////////////////////////////////////////////
 
 
-
 #ifndef _WIN32XX_THREAD_H_
 #define _WIN32XX_THREAD_H_
 
@@ -70,13 +69,13 @@ namespace Win32xx
         operator HANDLE () const { return GetThread(); }
 
     private:
-        CThreadT(const CThreadT&);              // Disable copy construction
-        CThreadT& operator=(const CThreadT&);   // Disable assignment operator
+        CThreadT(const CThreadT&);              // Disable copy construction.
+        CThreadT& operator=(const CThreadT&);   // Disable assignment operator.
 
-        THREADPROC* m_pfnThreadProc;    // Thread callback function
-        LPVOID m_pThreadParams;         // Thread parameter
-        HANDLE m_thread;                // Handle of this thread
-        UINT m_threadID;                // ID of this thread
+        THREADPROC* m_pfnThreadProc;    // Thread callback function.
+        LPVOID m_pThreadParams;         // Thread parameter.
+        HANDLE m_thread;                // Handle of this thread.
+        UINT m_threadID;                // ID of this thread.
     };
 
     typedef CThreadT<CObject> WorkThread;
@@ -95,14 +94,14 @@ namespace Win32xx
         virtual ~CWorkThread() {}
 
     private:
-        CWorkThread(const CWorkThread&);            // Disable copy construction
-        CWorkThread& operator=(const CWorkThread&); // Disable assignment operator
+        CWorkThread(const CWorkThread&);            // Disable copy construction.
+        CWorkThread& operator=(const CWorkThread&); // Disable assignment operator.
     };
 
 
 #if defined (_MSC_VER)
 #pragma warning ( push )
-#pragma warning ( disable : 4355 )            // 'this' used in base member initializer list
+#pragma warning ( disable : 4355 )            // 'this' used in base member initializer list.
 #endif // (_MSC_VER)
 
     /////////////////////////////////////////////////////////////
@@ -165,32 +164,32 @@ namespace Win32xx
                 TRACE("*** Warning *** Ending CWinThread before ending its thread\n");
             }
 
-            // Close the thread's handle
+            // Close the thread's handle.
             ::CloseHandle(m_thread);
         }
     }
 
     // Creates a new thread
     // Valid argument values:
-    // initflag                 Either CREATE_SUSPENDED or 0
-    // stack_size               Either the stack size or 0
-    // pSecurityAttributes      Either a pointer to SECURITY_ATTRIBUTES or 0
+    // initflag                 Either CREATE_SUSPENDED or 0.
+    // stack_size               Either the stack size or 0.
+    // pSecurityAttributes      Either a pointer to SECURITY_ATTRIBUTES or 0.
     // Refer to CreateThread in the Windows API documentation for more information.
     template <class T>
     inline HANDLE CThreadT<T>::CreateThread(unsigned initflag /* = 0*/, unsigned stack_size /* = 0*/,
         LPSECURITY_ATTRIBUTES pSecurityAttributes /* = NULL*/)
     {
-        // Reusing the CWinThread
+        // Reusing the CWinThread.
         if (m_thread)
         {
             assert(!IsRunning());
             ::CloseHandle(m_thread);
         }
 
-        m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size, m_pfnThreadProc,
-            m_pThreadParams, initflag, &m_threadID));
+        m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size,
+            m_pfnThreadProc, m_pThreadParams, initflag, &m_threadID));
 
-        if (m_thread == 0)
+        if (m_thread == NULL)
             throw CWinException(GetApp()->MsgAppThread());
 
         return m_thread;
@@ -211,7 +210,7 @@ namespace Win32xx
         return m_threadID;
     }
 
-    // Retrieves this thread's priority
+    // Retrieves this thread's priority.
     // Refer to GetThreadPriority in the Windows API documentation for more information.
     template <class T>
     inline int CThreadT<T>::GetThreadPriority() const
@@ -268,7 +267,7 @@ namespace Win32xx
 
     inline CWinThread::~CWinThread()
     {
-        if (GetThread() != 0)
+        if (GetThread() != NULL)
         {
             // Post a WM_QUIT to safely end the thread.
             PostThreadMessage(WM_QUIT, 0, 0);
@@ -281,7 +280,7 @@ namespace Win32xx
     // When the GUI thread starts, it runs this function.
     inline UINT WINAPI CWinThread::StaticThreadProc(LPVOID pCThread)
     {
-        // Get the pointer for this CWinThread object
+        // Get the pointer for this CWinThread object.
         CWinThread* pThread = static_cast<CWinThread*>(pCThread);
         assert(pThread != NULL);
 

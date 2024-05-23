@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -76,10 +76,10 @@ namespace Win32xx
         operator HMETAFILE() { return m_pData->metaFile; }
 
     private:
-        struct CMetaFile_Data   // A structure that contains the data members for CMetaFile
+        struct CMetaFile_Data   // A structure that contains the data members for CMetaFile.
         {
             // Constructor
-            CMetaFile_Data() : metaFile(0) {}
+            CMetaFile_Data() : metaFile(NULL) {}
 
             HMETAFILE metaFile;
         };
@@ -113,7 +113,7 @@ namespace Win32xx
         struct CEnhMetaFile_Data    // A structure that contains the data members for CEnhMetaFile.
         {
             // Constructor
-            CEnhMetaFile_Data() : enhMetaFile(0) {}
+            CEnhMetaFile_Data() : enhMetaFile(NULL) {}
 
             HENHMETAFILE enhMetaFile;
         };
@@ -159,9 +159,9 @@ namespace Win32xx
 
     inline CMetaFile& CMetaFile::operator=(const CMetaFile& rhs)
     {
-        CThreadLock mapLock(GetApp()->m_gdiLock);
         if (this != &rhs)
         {
+            CThreadLock mapLock(GetApp()->m_gdiLock);
             Release();
             m_pData = rhs.m_pData;
         }
@@ -175,7 +175,7 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_gdiLock);
 
         // Delete the metafile when the last copy goes out of scope.
-        if (m_pData.use_count() == 1 && m_pData->metaFile != 0)
+        if (m_pData.use_count() == 1 && m_pData->metaFile != NULL)
         {
             VERIFY(::DeleteMetaFile(m_pData->metaFile));
         }
@@ -210,9 +210,9 @@ namespace Win32xx
 
     inline CEnhMetaFile& CEnhMetaFile::operator=(const CEnhMetaFile& rhs)
     {
-        CThreadLock mapLock(GetApp()->m_gdiLock);
         if (this != &rhs)
         {
+            CThreadLock mapLock(GetApp()->m_gdiLock);
             Release();
             m_pData = rhs.m_pData;
         }
@@ -225,7 +225,7 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_gdiLock);
 
         // Delete the enhanced metafile when the last copy goes out of scope.
-        if (m_pData.use_count() == 1 && m_pData->enhMetaFile != 0)
+        if (m_pData.use_count() == 1 && m_pData->enhMetaFile != NULL)
         {
             VERIFY(::DeleteEnhMetaFile(m_pData->enhMetaFile));
         }

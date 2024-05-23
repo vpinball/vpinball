@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -99,8 +99,8 @@ namespace Win32xx
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CScrollView(const CScrollView&);               // Disable copy construction
-        CScrollView& operator=(const CScrollView&);    // Disable assignment operator
+        CScrollView(const CScrollView&);               // Disable copy construction.
+        CScrollView& operator=(const CScrollView&);    // Disable assignment operator.
         void UpdateBars();
 
         CPoint m_currentPos;
@@ -119,8 +119,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    ////////////////////////////////////////
-    // Definitions for the CScrollView class
+    /////////////////////////////////////////
+    // Definitions for the CScrollView class.
     //
 
     inline CScrollView::CScrollView()
@@ -153,9 +153,9 @@ namespace Win32xx
     inline BOOL CScrollView::OnEraseBkgnd(CDC&)
     {
         if (m_totalSize == CSize(0, 0))
-            return FALSE;   // Allow background erasure when the scroll bars are disabled
+            return FALSE;   // Allow background erasure when the scroll bars are disabled.
         else
-            return TRUE;    // Prevent background erasure to reduce flicker
+            return TRUE;    // Prevent background erasure to reduce flicker.
     }
 
     // Called when an event occurs in the horizontal scroll bar.
@@ -216,19 +216,19 @@ namespace Win32xx
         {
         case VK_HOME:       // HOME key
             if (control)
-                newPos = CPoint(0, 0);      // scroll to the top
+                newPos = CPoint(0, 0);      // Scroll to the top.
             else
-                newPos.x = 0;               // scroll to the left side
+                newPos.x = 0;               // Scroll to the left side.
             break;
 
         case VK_END:        // END key
             if (control)
-                newPos = m_totalSize;       // scroll to the bottom
+                newPos = m_totalSize;       // Scroll to the bottom.
             else
-                newPos.x = m_totalSize.cx;  // scroll to the right side
+                newPos.x = m_totalSize.cx;  // Scroll to the right side.
             break;
 
-        case VK_PRIOR:      //PAGEUP key
+        case VK_PRIOR:      // PAGEUP key
             newPos.y -= m_pageSize.cy;
             break;
 
@@ -286,27 +286,27 @@ namespace Win32xx
             assert(m_totalSize.cx > 0);
             assert(m_totalSize.cy > 0);
 
-            // Create the compatible bitmap for the memory DC
+            // Create the compatible bitmap for the memory DC.
             memDC.CreateCompatibleBitmap(GetDC(), m_totalSize.cx, m_totalSize.cy);
 
-            // Set the background color
+            // Set the background color.
             CRect rcTotal(CPoint(0, 0), m_totalSize);
             memDC.FillRect(rcTotal, m_bkgndBrush);
 
-            // Call the overridden OnDraw function
+            // Call the overridden OnDraw function.
             OnDraw(memDC);
 
-            // Copy the modified memory DC to the window's DC with scrolling offsets
+            // Copy the modified memory DC to the window's DC with scrolling offsets.
             dc.BitBlt(0, 0, m_totalSize.cx, m_totalSize.cy, memDC, m_currentPos.x, m_currentPos.y, SRCCOPY);
 
-            // Set the area outside the scrolling area
+            // Set the area outside the scrolling area.
             FillOutsideRect(dc, m_bkgndBrush);
 
-            // No more drawing required
+            // No more drawing required.
             return 0;
         }
 
-        // Do default OnPaint if m_sizeTotal is zero
+        // Do default OnPaint if m_sizeTotal is zero.
         return CWnd::OnPaint(msg, wparam, lparam);
     }
 
@@ -357,7 +357,7 @@ namespace Win32xx
                 break;
 
             case SB_THUMBTRACK: // User dragging the scroll box.
-                // Retrieve 32 bit track position
+                // Retrieve 32 bit track position.
                 GetScrollInfo(SB_VERT, si);
                 newPos.y = si.nTrackPos;
                 break;
@@ -400,16 +400,16 @@ namespace Win32xx
 
         CRect rc(0, 0, pWinPos->cx, pWinPos->cy);
 
-        // Possibly hide the horizontal scroll bar
+        // Possibly hide the horizontal scroll bar.
         if (rc.Width() > m_totalSize.cx)
         {
-            ShowScrollBar(SB_HORZ, FALSE);  // Can resize the view
+            ShowScrollBar(SB_HORZ, FALSE);  // Can resize the view.
         }
 
         // Possibly hide the vertical scroll bar
         if (rc.Height() > m_totalSize.cy)
         {
-            ShowScrollBar(SB_VERT, FALSE);  // Can resize the view
+            ShowScrollBar(SB_VERT, FALSE);  // Can resize the view.
         }
 
         return FinalWindowProc(msg, wparam, lparam);
@@ -417,7 +417,7 @@ namespace Win32xx
 
     inline void CScrollView::PreCreate(CREATESTRUCT& cs)
     {
-        // Set the Window Class name
+        // Set the Window Class name.
         cs.lpszClass = _T("ScrollView");
 
         cs.style = WS_CHILD | WS_HSCROLL | WS_VSCROLL;
@@ -482,11 +482,11 @@ namespace Win32xx
                 CRect totalRect(0, 0, m_totalSize.cx, m_totalSize.cy);
                 AdjustWindowRectEx(&totalRect, 0, FALSE, exStyle);
 
-                // CRect of view, size affected by scroll bars
+                // CRect of view, size affected by scroll bars.
                 CRect clientRect = GetClientRect();
                 AdjustWindowRectEx(&clientRect, 0, FALSE, exStyle);
 
-                // CRect of view, unaffected by scroll bars
+                // CRect of view, unaffected by scroll bars.
                 CRect viewRect = GetWindowRect();
 
                 SCROLLINFO si;
@@ -495,8 +495,8 @@ namespace Win32xx
                 si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
                 si.nMin = 0;
 
-                bool isHBAlwaysOn = (totalRect.Width() > viewRect.Width());         // Horizontal Bar always on
-                bool isVBAlwaysOn = (totalRect.Height() > viewRect.Height());       // Vertical Bar always on
+                bool isHBAlwaysOn = (totalRect.Width() > viewRect.Width());         // Horizontal Bar always on.
+                bool isVBAlwaysOn = (totalRect.Height() > viewRect.Height());       // Vertical Bar always on.
 
                 // Horizontal Bars are always shown if the total width is greater than the window's width.
                 // They are also shown if the vertical bar is shown, and the total width is greater than
@@ -532,7 +532,7 @@ namespace Win32xx
                     ShowScrollBar(SB_VERT, FALSE);
                 }
 
-                // Perform any additional scrolling required by window resizing
+                // Perform any additional scrolling required by window resizing.
                 int cxScroll = ::GetSystemMetrics(SM_CXVSCROLL) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                 int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                 cxScroll = IsVScrollVisible() ? cxScroll : 0;
@@ -565,7 +565,7 @@ namespace Win32xx
         case WM_WINDOWPOSCHANGING:  return OnWindowPosChanging(msg, wparam, lparam);
         }
 
-        // Pass unhandled messages on for default processing
+        // Pass unhandled messages on for default processing.
         return CWnd::WndProcDefault(msg, wparam, lparam);
     }
 }

@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -222,17 +222,18 @@ namespace Win32xx
         virtual int  OnCreate(CREATESTRUCT& cs);
         virtual void OnDestroy();
         virtual void OnSize(int width, int height);
+        virtual void PreCreate(CREATESTRUCT& cs);
 
         // Not intended to be overridden
         LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CWebBrowser(const CWebBrowser&);              // Disable copy construction
-        CWebBrowser& operator=(const CWebBrowser&);   // Disable assignment operator
+        CWebBrowser(const CWebBrowser&);              // Disable copy construction.
+        CWebBrowser& operator=(const CWebBrowser&);   // Disable assignment operator.
 
         UINT    GetPidlLength(LPITEMIDLIST pidl) const;
-        CAXHost  m_axHost;              // The ActiveX host
-        IWebBrowser2* m_pIWebBrowser2;  // Interface to the ActiveX web browser control
+        CAXHost  m_axHost;              // The ActiveX host.
+        IWebBrowser2* m_pIWebBrowser2;  // Interface to the ActiveX web browser control.
     };
 
 }
@@ -242,8 +243,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    /////////////////////////////////////////
-    // Definitions for the CAXHost class
+    /////////////////////////////////////
+    // Definitions for the CAXHost class.
     //
 
     inline CAXHost::CAXHost() : m_hwnd(NULL), m_pUnk(NULL)
@@ -748,8 +749,8 @@ namespace Win32xx
     }
 
 
-    ////////////////////////////////////////
-    // Definitions for the CWebBrowser class
+    /////////////////////////////////////////
+    // Definitions for the CWebBrowser class.
     //
 
     inline CWebBrowser::CWebBrowser() : m_pIWebBrowser2(0)
@@ -811,6 +812,13 @@ namespace Win32xx
     {
         // position the container
         VERIFY(SUCCEEDED(GetAXHost()->SetLocation(0, 0, width, height)));
+    }
+
+    // Set the CREATESTURCT parameters before the window is created.
+    inline void CWebBrowser::PreCreate(CREATESTRUCT& cs)
+    {
+        CWnd::PreCreate(cs);
+        cs.style |= WS_CLIPCHILDREN;
     }
 
     // Provides default message processing for the web browser window.
@@ -1148,7 +1156,8 @@ namespace Win32xx
         return hr;
     }
 
-    // Navigates the browser to a location specified by a pointer to an item identifier list (PIDL) for an entity in the Microsoft Windows Shell namespace.
+    // Navigates the browser to a location specified by a pointer to an item
+    // identifier list (PIDL) for an entity in the Microsoft Windows Shell namespace.
     inline HRESULT CWebBrowser::Navigate2(LPITEMIDLIST pIDL, DWORD flags /*= 0*/, LPCTSTR targetFrameName /*= NULL*/) const
     {
         UINT cb = GetPidlLength(pIDL);

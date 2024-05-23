@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -148,7 +148,7 @@ namespace Win32xx
         CArchive& operator<<(const ArchiveObject& ao);
         CArchive& operator<<(const CObject& object);
 #if !defined (_MSC_VER) ||  ( _MSC_VER > 1310 )
-        // wchar_t is not an a built-in type on older MS compilers
+        // wchar_t is not an a built-in type on older MS compilers.
         CArchive& operator<<(wchar_t ch);
 #endif
 
@@ -175,7 +175,7 @@ namespace Win32xx
         CArchive& operator>>(ArchiveObject& ao);
         CArchive& operator>>(CObject& object);
 #if !defined (_MSC_VER) ||  ( _MSC_VER > 1310 )
-        // wchar_t is not an a built-in type on older MS compilers
+        // wchar_t is not an a built-in type on older MS compilers.
         CArchive& operator>>(wchar_t& ch);
 #endif
 
@@ -230,13 +230,13 @@ namespace Win32xx
         {
             if (mode == load)
             {
-                // Open the archive for loading
+                // Open the archive for loading.
                 m_pFile = new CFile(fileName, CFile::modeRead);
                 m_isStoring = false;
             }
             else
             {
-                // Open the archive for storing. Creates file if required
+                // Open the archive for storing. Creates file if required.
                 m_pFile = new CFile(fileName, CFile::modeCreate);
                 m_isStoring = true;
             }
@@ -245,7 +245,7 @@ namespace Win32xx
         catch(...)
         {
             delete m_pFile;
-            throw; // Rethrow the exception
+            throw; // Rethrow the exception.
         }
     }
 
@@ -253,10 +253,10 @@ namespace Win32xx
     {
         if (m_pFile)
         {
-            // if the file is open
+            // Test if the file is open.
             if (m_pFile->GetHandle())
             {
-                // flush if in write mode
+                // Flush if in write mode.
                 if (IsStoring())
                     m_pFile->Flush();
 
@@ -433,7 +433,7 @@ namespace Win32xx
         return *this;
     }
 
-// wchar_t is not an a built-in type on older MS compilers
+// wchar_t is not an a built-in type on older MS compilers.
 #if !defined (_MSC_VER) ||  ( _MSC_VER > 1310 )
 
     // Writes the wchar_t ch into the archive file.
@@ -473,7 +473,7 @@ namespace Win32xx
         int chars = string.GetLength();
         bool isUnicode = false;
 
-        // Store the Unicode state and number of characters in the archive
+        // Store the Unicode state and number of characters in the archive.
         *this << isUnicode;
         *this << chars;
 
@@ -489,7 +489,7 @@ namespace Win32xx
         int chars = string.GetLength();
         bool isUnicode = true;
 
-        // Store the Unicode state and number of characters in the archive
+        // Store the Unicode state and number of characters in the archive.
         *this << isUnicode;
         *this << chars;
 
@@ -505,7 +505,7 @@ namespace Win32xx
         int chars = string.GetLength();
         bool isUnicode = (sizeof(TCHAR) == sizeof(WCHAR));
 
-        // Store the Unicode state and number of characters in the archive
+        // Store the Unicode state and number of characters in the archive.
         *this << isUnicode;
         *this << chars;
 
@@ -519,7 +519,7 @@ namespace Win32xx
     {
         UINT size = sizeof(pt);
 
-        // Write() throws exception upon error
+        // Write() throws exception upon error.
         Write(&size, sizeof(size));
         Write(&pt, size);
         return *this;
@@ -531,7 +531,7 @@ namespace Win32xx
     {
         UINT size = sizeof(rc);
 
-        // Write() throws exception upon error
+        // Write() throws exception upon error.
         Write(&size, sizeof(size));
         Write(&rc, size);
         return *this;
@@ -543,7 +543,7 @@ namespace Win32xx
     {
         UINT size = sizeof(sz);
 
-        // Write() throws exception upon error
+        // Write() throws exception upon error.
         Write(&size, sizeof(size));
         Write(&sz, size);
         return *this;
@@ -555,7 +555,7 @@ namespace Win32xx
     {
         Write(&ao.m_size, sizeof(ao.m_size));
 
-        // Write() throws exception upon error
+        // Write() throws exception upon error.
         Write(ao.m_pData, ao.m_size);
         return *this;
     }
@@ -699,7 +699,7 @@ namespace Win32xx
         bool isUnicode;
         int chars;
 
-        // Retrieve the Unicode state and number of characters from the archive
+        // Retrieve the Unicode state and number of characters from the archive.
         *this >> isUnicode;
         *this >> chars;
         assert(chars >= 0);
@@ -720,7 +720,7 @@ namespace Win32xx
         bool isUnicode;
         int chars;
 
-        // Retrieve the Unicode state and number of characters from the archive
+        // Retrieve the Unicode state and number of characters from the archive.
         *this >> isUnicode;
         *this >> chars;
         assert(chars >= 0);
@@ -741,14 +741,14 @@ namespace Win32xx
         bool isUnicode;
         int chars;
 
-        // Retrieve the Unicode state and number of characters from the archive
+        // Retrieve the Unicode state and number of characters from the archive.
         *this >> isUnicode;
         *this >> chars;
         assert(chars >= 0);
 
         if (isUnicode)
         {
-            // use a vector to create our WCHAR array
+            // Use a vector to create our WCHAR array.
             std::vector<WCHAR> vWChar(size_t(chars) + 1, L'\0');
             WCHAR* buf = &vWChar.front();
 
@@ -757,7 +757,7 @@ namespace Win32xx
 #ifdef UNICODE
             memcpy(string.GetBuffer(chars), buf, size_t(chars)*2);
 #else
-            // Convert the archive string from Wide to Ansi
+            // Convert the archive string from Wide to Ansi.
             WideCharToMultiByte(CP_ACP, 0, buf, chars, string.GetBuffer(chars), chars, NULL, NULL);
 #endif
 
@@ -765,14 +765,14 @@ namespace Win32xx
         }
         else
         {
-            // use a vector to create our char array
+            // Use a vector to create our char array.
             std::vector<char> vChar(size_t(chars) + 1, '\0');
             char* buf = &vChar.front();
 
             Read(buf, static_cast<UINT>(chars));
 
 #ifdef UNICODE
-            // Convert the archive string from Ansi to Wide
+            // Convert the archive string from Ansi to Wide.
             MultiByteToWideChar(CP_ACP, 0, buf, chars, string.GetBuffer(chars), int(chars));
 #else
             memcpy(string.GetBuffer(chars), buf, chars);

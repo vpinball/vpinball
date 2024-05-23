@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -270,8 +270,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    ////////////////////////////////////////
-    // Definitions for the CButton class
+    /////////////////////////////////////
+    // Definitions for the CButton class.
     //
 
     // Returns the handle to the bitmap associated with the button.

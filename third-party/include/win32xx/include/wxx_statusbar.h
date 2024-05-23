@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -86,8 +86,8 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    //////////////////////////////////////
-    // Definitions for the CStatusBar class
+    ////////////////////////////////////////
+    // Definitions for the CStatusBar class.
     //
     inline CStatusBar::CStatusBar()
     {
@@ -110,7 +110,7 @@ namespace Win32xx
         PreCreate(cs);
 
         // Create the status bar window.
-        HWND wnd = CreateEx(cs.dwExStyle, STATUSCLASSNAME, 0, static_cast<DWORD>(cs.style),
+        HWND wnd = CreateEx(cs.dwExStyle, STATUSCLASSNAME, NULL, static_cast<DWORD>(cs.style),
             cs.x, cs.y, cs.cx, cs.cy, parent, 0, cs.lpCreateParams);
 
         return wnd;
@@ -186,7 +186,7 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(SB_ISSIMPLE, 0, 0));
     }
 
-    // Called when the background needs erasing
+    // Called when the background needs erasing.
     inline BOOL CStatusBar::OnEraseBkgnd(CDC& dc)
     {
         // Permit the parent window to handle the drawing of the StatusBar's background.
@@ -243,7 +243,7 @@ namespace Win32xx
         assert(IsWindow());
         assert(part >= 0 && part <= 255);
 
-        // Fill the PartWidths vector with the current width of the StatusBar parts
+        // Fill the PartWidths vector with the current width of the StatusBar parts.
         int partsCount = static_cast<int>(SendMessage(SB_GETPARTS, 0, 0));
         size_t parts = static_cast<size_t>(partsCount);
         std::vector<int> partWidths(parts, 0);
@@ -251,7 +251,7 @@ namespace Win32xx
         SendMessage(SB_GETPARTS, static_cast<WPARAM>(partsCount),
             reinterpret_cast<LPARAM>(pPartWidthArray));
 
-        // Fill the NewPartWidths vector with the new width of the StatusBar parts
+        // Fill the NewPartWidths vector with the new width of the StatusBar parts.
         int newPartsCount = MAX(part+1, partsCount);
         size_t newParts = static_cast<size_t>(newPartsCount);
         std::vector<int> newPartWidths(newParts, 0);
@@ -268,7 +268,7 @@ namespace Win32xx
                 pNewPartWidthArray[part] = -1;
         }
 
-        // Set the StatusBar parts with our new parts count and part widths
+        // Set the StatusBar parts with our new parts count and part widths.
         BOOL result = static_cast<BOOL>(SendMessage(SB_SETPARTS, static_cast<WPARAM>(newPartsCount),
             reinterpret_cast<LPARAM>(pNewPartWidthArray)));
 

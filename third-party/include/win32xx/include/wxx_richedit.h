@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -40,8 +40,8 @@
 // wxx_rich_edit.h
 //  Declaration of the CRichEdit class
 
-#ifndef _WIN32XX_RICH_EDIT_H_
-#define _WIN32XX_RICH_EDIT_H_
+#ifndef _WIN32XX_RICHEDIT_H_
+#define _WIN32XX_RICHEDIT_H_
 
 
 #include "wxx_wincore.h"
@@ -53,7 +53,7 @@ namespace Win32xx
 {
 
 #ifdef __GNUC__
-   //   UndoName info (required by some GNU compilers)
+   //   UndoName info (required by some GNU compilers).
     typedef enum _undonameid
     {
         UID_UNKNOWN     = 0,
@@ -126,7 +126,7 @@ namespace Win32xx
         int     LineLength(int charIndex = -1) const;
         void    LineScroll(int lines) const;
         void    Paste() const;
-        void    PasteSpecial(UINT clipFormat, DWORD aspect = 0, HMETAFILE mf = 0) const;
+        void    PasteSpecial(UINT clipFormat, DWORD aspect = 0, HMETAFILE mf = NULL) const;
         CPoint  PosFromChar(UINT fromChar) const;
         BOOL    Redo() const;
         void    ReplaceSel(LPCTSTR newText, BOOL canUndo = FALSE) const;
@@ -186,7 +186,7 @@ namespace Win32xx
 
     inline CRichEdit::CRichEdit()
     {
-        // Windows 95   Includes only Rich Edit 1.0
+        // Windows 95   Includes only Rich Edit 1.0.
         // Windows 98   Includes Rich Edit 1.0 and 2.0.
         // Windows 2000 Includes Rich Edit 3.0 with a Rich Edit 1.0 emulator.
         // Windows XP   Includes Rich Edit 4.1, and Rich Edit 3.0 with a Rich Edit 1.0 emulator.
@@ -198,7 +198,7 @@ namespace Win32xx
         // Load RichEdit version 1.0
         m_rich1 = ::LoadLibrary(system + _T("\\riched32.dll"));
 
-        if (m_rich1 == 0)
+        if (m_rich1 == NULL)
             throw CNotSupportedException(GetApp()->MsgRichEditDll());
 
         // Load RichEdit version 2.0 or 3.0 (for Win98 and above)
@@ -210,7 +210,7 @@ namespace Win32xx
 
     inline CRichEdit::~CRichEdit()
     {
-        // Destroy the window before freeing the DLL
+        // Destroy the window before freeing the DLL.
         Destroy();
 
         ::FreeLibrary(m_rich1);
@@ -232,18 +232,18 @@ namespace Win32xx
     {
         // Use the latest version of RichEdit available.
 
-        // For RichEdit version 1.0, 2.0 and 3.0
+        // For RichEdit version 1.0, 2.0 and 3.0.
         wc.lpszClassName = RICHEDIT_CLASS;
 
-        // For RichEdit version 4.1 (available on XP and above)
+        // For RichEdit version 4.1 (available on XP and above).
 #if defined MSFTEDIT_CLASS && defined UNICODE
-        if (m_rich4_1 != 0)
+        if (m_rich4_1 != NULL)
             wc.lpszClassName = MSFTEDIT_CLASS;
 #endif
 
     }
 
-    // Adds text to the end of the document
+    // Adds text to the end of the document.
     inline void CRichEdit::AppendText(LPCTSTR text) const
     {
         LRESULT position = SendMessage(WM_GETTEXTLENGTH, 0, 0);
@@ -759,7 +759,7 @@ namespace Win32xx
 
     // Inserts the contents of the Clipboard in the specified data format.
     // Refer to EM_PASTESPECIAL in the Windows API documentation for more information.
-    inline void CRichEdit::PasteSpecial(UINT clipFormat, DWORD aspect /* = 0 */, HMETAFILE mf /* = 0 */) const
+    inline void CRichEdit::PasteSpecial(UINT clipFormat, DWORD aspect /* = NULL */, HMETAFILE mf /* = NULL */) const
     {
         assert(IsWindow());
 

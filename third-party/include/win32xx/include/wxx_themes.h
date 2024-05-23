@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -110,14 +110,14 @@ namespace Win32xx
     {
         BOOL isAeroThemed = FALSE;
 
-        // Test if Windows version is XP or greater
+        // Test if Windows version is XP or greater.
         if (GetWinVersion() >= 2501)
         {
             HMODULE module = ::GetModuleHandle(_T("uxtheme.dll"));
 
-            if (module != 0)
+            if (module != NULL)
             {
-                // Declare pointers to IsCompositionActive function
+                // Declare pointers to IsCompositionActive function.
                 FARPROC pIsCompositionActive = ::GetProcAddress(module, "IsCompositionActive");
 
                 if (pIsCompositionActive)
@@ -138,11 +138,11 @@ namespace Win32xx
     {
         BOOL isXPThemed = FALSE;
 
-        // Test if Windows version is XP or greater
+        // Test if Windows version is XP or greater.
         if (GetWinVersion() >= 2501)
         {
             HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
-            if (theme != 0)
+            if (theme != NULL)
             {
                 // Declare pointers to functions
                 FARPROC pIsAppThemed   = ::GetProcAddress(theme, "IsAppThemed");
@@ -152,7 +152,7 @@ namespace Win32xx
                 {
                     if (pIsAppThemed() && pIsThemeActive())
                     {
-                        // Test if ComCtl32 dll used is version 6 or later
+                        // Test if ComCtl32 dll used is version 6 or later.
                         isXPThemed = (GetComCtlVersion() >= 600);
                     }
                 }

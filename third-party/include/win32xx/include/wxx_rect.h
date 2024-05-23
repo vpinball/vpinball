@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -44,9 +44,9 @@
 #ifndef _WIN32XX_RECT_H_
 #define _WIN32XX_RECT_H_
 
-#include <winsock2.h>       // must include before windows.h
+#include <winsock2.h>       // Must be included before windows.h.
 #include <windows.h>        // For SIZE, POINT, RECT etc.
-#include "wxx_setup.h"      // For VERIFY
+#include "wxx_setup.h"      // For VERIFY.
 
 
 // define useful macros from WindowsX.h

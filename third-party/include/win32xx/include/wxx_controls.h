@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.1
-// Release Date: 24th April 2024
+// Win32++   Version 9.5.2
+// Release Date: 20th May 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -1501,10 +1501,10 @@ namespace Win32xx
     // Refer to GetKeyNameText in the Windows API documentation for more information.
     inline CString CHotKey::GetKeyName(UINT keyCode, BOOL isExtended) const
     {
-        // Translate the virtual-key code to a scan code
+        // Translate the virtual-key code to a scan code.
         UINT scan = MapVirtualKey(keyCode, 0);
 
-        // Construct an LPARAM with the scan code in Bits 16-23, and an extended flag in bit 24
+        // Construct an LPARAM with the scan code in Bits 16-23, and an extended flag in bit 24.
         LPARAM lparam = LPARAM(scan) << 16;
         if (isExtended)
             lparam |= 0x01000000L;
@@ -1513,7 +1513,7 @@ namespace Win32xx
         int incompleteLength = 64;
         int length = incompleteLength;
 
-        // Loop until we have retrieved the entire string
+        // Loop until we have retrieved the entire string.
         while (length == incompleteLength)
         {
             incompleteLength *= 4;
@@ -1553,7 +1553,7 @@ namespace Win32xx
     {
         if (GetComCtlVersion() > 470)
         {
-            // Call InitCommonControlsEx
+            // Call InitCommonControlsEx.
             INITCOMMONCONTROLSEX initStruct;
             ZeroMemory(&initStruct, sizeof(initStruct));
             initStruct.dwSize = sizeof(initStruct);
@@ -2536,7 +2536,7 @@ namespace Win32xx
         CString str;
         TOOLINFO info = GetToolInfo(control, id);
 
-        LPTSTR text = str.GetBuffer(80); // Maximum allowed ToolTip is 80 characters for Windows XP and below
+        LPTSTR text = str.GetBuffer(80); // Maximum allowed ToolTip is 80 characters for Windows XP and below.
         info.lpszText = text;
         LPARAM lparam = reinterpret_cast<LPARAM>(&info);
         SendMessage(TTM_GETTEXT, 0, lparam);
