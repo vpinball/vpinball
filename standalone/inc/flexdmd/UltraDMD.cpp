@@ -256,7 +256,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
    else {
        string path = filename;
        std::replace(path.begin(), path.end(), ',', '|');
-       if (path.find("|") != string::npos)
+       if (path.find('|') != string::npos)
           return ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, "", 30, true);
        else {
           AssetSrc* pAssetSrc = m_pFlexDMD->GetAssetManager()->ResolveSrc(path, NULL);
@@ -417,7 +417,7 @@ STDMETHODIMP UltraDMD::DisplayScene00Ex(BSTR background, BSTR toptext, LONG topB
 
 STDMETHODIMP UltraDMD::DisplayScene00ExWithId(BSTR sceneId, VARIANT_BOOL cancelPrevious, BSTR background, BSTR toptext, LONG topBrightness, LONG topOutlineBrightness, BSTR bottomtext, LONG bottomBrightness, LONG bottomOutlineBrightness, LONG animateIn, LONG pauseTime, LONG animateOut)
 {
-   string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : "";
+   string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : string();
 
    if (cancelPrevious == VARIANT_TRUE && szSceneId.length() > 0) {
       Scene* pScene = m_pQueue->GetActiveScene();
@@ -427,8 +427,8 @@ STDMETHODIMP UltraDMD::DisplayScene00ExWithId(BSTR sceneId, VARIANT_BOOL cancelP
    m_pScoreBoard->SetVisible(false);
    m_pQueue->SetVisible(true);
 
-   string szTopText = (toptext != NULL) ? MakeString(toptext) : "";
-   string szBottomText = (bottomtext != NULL) ? MakeString(bottomtext) : "";
+   string szTopText = (toptext != NULL) ? MakeString(toptext) : string();
+   string szBottomText = (bottomtext != NULL) ? MakeString(bottomtext) : string();
 
    if (szTopText.length() > 0 && szBottomText.length() > 0) {
       Font* pFontTop = GetFont(m_pTwoLinesFontTop->GetPath(), topBrightness / 15.0f, topOutlineBrightness / 15.0f);
@@ -460,7 +460,7 @@ STDMETHODIMP UltraDMD::DisplayScene00ExWithId(BSTR sceneId, VARIANT_BOOL cancelP
 
 STDMETHODIMP UltraDMD::ModifyScene00(BSTR id, BSTR toptext, BSTR bottomtext)
 {
-   string szId = (id != NULL) ? MakeString(id) : "";
+   string szId = (id != NULL) ? MakeString(id) : string();
 
    Scene* pScene = m_pQueue->GetActiveScene();
    if (pScene != NULL && szId.length() > 0 && pScene->GetName() == szId) {
@@ -477,7 +477,7 @@ STDMETHODIMP UltraDMD::ModifyScene00(BSTR id, BSTR toptext, BSTR bottomtext)
 
 STDMETHODIMP UltraDMD::ModifyScene00Ex(BSTR id, BSTR toptext, BSTR bottomtext, LONG pauseTime)
 {
-   string szId = (id != NULL) ? MakeString(id) : "";
+   string szId = (id != NULL) ? MakeString(id) : string();
 
    Scene* pScene = m_pQueue->GetActiveScene();
    if (pScene != NULL && szId.length() > 0 && pScene->GetName() == szId) {
@@ -495,7 +495,7 @@ STDMETHODIMP UltraDMD::ModifyScene00Ex(BSTR id, BSTR toptext, BSTR bottomtext, L
 
 STDMETHODIMP UltraDMD::DisplayScene01(BSTR sceneId, BSTR background, BSTR text, LONG textBrightness, LONG textOutlineBrightness, LONG animateIn, LONG pauseTime, LONG animateOut)
 {
-   string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : "";
+   string szSceneId = (sceneId != NULL) ? MakeString(sceneId) : string();
 
    Font* pFont = GetFont(m_singleLineFonts[0]->GetPath(), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
    SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(MakeString(background), false), MakeString(text), pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, true, szSceneId);

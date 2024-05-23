@@ -94,7 +94,7 @@ float3 ACESFitted(float3 color)
 
 // There are numerous filmic curve fitting implementation shared publicly
 // I gathered a few here to be able to test and find the best result (also performance wise)
-// Warning: The retrned value is already gamam corrected
+// Warning: The returned value is already gamma corrected
 float3 FilmicToneMap(float3 color)
 {
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)

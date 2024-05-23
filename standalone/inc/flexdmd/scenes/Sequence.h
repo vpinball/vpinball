@@ -11,7 +11,7 @@ public:
 
    void Enqueue(Scene* scene);
    void RemoveAllScenes();
-   void RemoveScene(string name);
+   void RemoveScene(const string& name);
    bool IsFinished();
    Scene* GetActiveScene() { return m_pActiveScene; };
    void Update(float delta) override;

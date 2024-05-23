@@ -77,7 +77,7 @@ private:
    SDL_Surface* ResizeSurface(SDL_Surface* original, int newWidth, int newHeight);
    SDL_Surface* RotateSurface(SDL_Surface* source, double angle);
 
-   const int minSize4Image = 300000;
+   constexpr int minSize4Image = 300000;
 
    B2SSettings* m_pB2SSettings;
    B2SData* m_pB2SData;

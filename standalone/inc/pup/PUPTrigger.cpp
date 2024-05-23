@@ -41,7 +41,7 @@ PUPTrigger::PUPTrigger()
    m_playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;
 }
 
-PUPTrigger* PUPTrigger::CreateFromCSV(string line)
+PUPTrigger* PUPTrigger::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 14)
@@ -98,11 +98,11 @@ PUPTrigger* PUPTrigger::CreateFromCSV(string line)
 }
 
 string PUPTrigger::ToString() const {
-   return string("active=") + ((m_active == true) ? "true" : "false") +
+   return "active="s + ((m_active == true) ? "true" : "false") +
       ", descript=" + m_descript +
       ", trigger=" + m_trigger +
-      ", screen={" + m_pScreen->ToString(false) + "}" +
-      ", playlist={" + m_pPlaylist->ToString() + "}" +
+      ", screen={" + m_pScreen->ToString(false) + '}' +
+      ", playlist={" + m_pPlaylist->ToString() + '}' +
       ", playFile=" + m_playFile +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +

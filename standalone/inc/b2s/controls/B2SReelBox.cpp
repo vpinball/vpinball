@@ -37,17 +37,17 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
       if (!m_szReelIndex.empty()) {
          GenericDictionaryIgnoreCase<SDL_Surface*>* pImages = (m_illuminated ? m_pB2SData->GetReelIlluImages() : m_pB2SData->GetReelImages());
          GenericDictionaryIgnoreCase<SDL_Surface*>* pIntImages = (m_illuminated ? m_pB2SData->GetReelIntermediateIlluImages() : m_pB2SData->GetReelIntermediateImages());
-         string name = "";
+         string name;
          SDL_Rect rect = GetRect();
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {
-            name = m_szReelType + "_" + m_szReelIndex + (m_setID > 0 && m_illuminated ? "_" + std::to_string(m_setID) : "") + "_" + std::to_string(m_firstintermediatecount);
+            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount);
             if (pIntImages->contains(name)) {
                pGraphics->DrawImage((*pIntImages)[name], NULL, &rect);
                m_firstintermediatecount++;
                m_intermediates2go = 2;
             }
             else {
-               name = m_szReelType + "_" + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? "_" + std::to_string(m_setID) : "");
+               name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
                if (pImages->contains(name))
                   pGraphics->DrawImage((*pImages)[name], NULL, &rect);
                m_intermediates = m_firstintermediatecount - 1;
@@ -55,12 +55,12 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
             }
          }
          else if (m_intermediates2go > 0) {
-            name = m_szReelType + "_" + m_szReelIndex + (m_setID > 0 && m_illuminated ? "_" + std::to_string(m_setID) : "") + "_" + std::to_string(m_intermediates - m_intermediates2go + 1);
+            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_intermediates - m_intermediates2go + 1);
             if (pIntImages->contains(name))
                pGraphics->DrawImage((*pIntImages)[name], NULL, &rect);
          }
          else {
-            name = m_szReelType + "_" + m_szReelIndex + (m_setID > 0 && m_illuminated ? "_" + std::to_string(m_setID) : "");
+            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
             if (pImages->contains(name))
                pGraphics->DrawImage((*pImages)[name], NULL, &rect);
          }
@@ -90,7 +90,7 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
          if (m_pSound != NULL) {
             //My.Computer.Audio.Play(Sound(), AudioPlayMode.Background)
          }
-         else if (m_szSoundName == "stille") {
+         else if (m_szSoundName == "stille"s) {
             // no sound
          }
          else {
@@ -122,20 +122,20 @@ void B2SReelBox::SetRollingInterval(int rollingInterval)
    }
 }
 
-void B2SReelBox::SetReelType(string szReelType)
+void B2SReelBox::SetReelType(const string& szReelType)
 {
    string value = szReelType;
 
    m_szReelIndex = "0";
    if (szReelType.substr(value.length() - 1, 1) == "_") {
       m_length = 2;
-       m_szReelIndex = "00";
+       m_szReelIndex = "00"s;
        value = value.substr(0, value.length() - 1);
    }
    if (string_starts_with_case_insensitive(szReelType, "led") || string_starts_with_case_insensitive(szReelType, "importedled")) {
       m_led = true;
-      m_szReelIndex = "Empty";
-      m_initValue = "Empty";
+      m_szReelIndex = "Empty"s;
+      m_initValue = "Empty"s;
       SetText(-1);
    }
     m_szReelType = value;
@@ -179,41 +179,34 @@ void B2SReelBox::SetText(int text, bool animateReelChange)
 
 string B2SReelBox::ConvertValue(int value)
 {
-   string ret = m_initValue;
+   string ret;
    // remove the "," from the 7-segmenter
    if (value >= 128 && value <= 255)
       value -= 128;
    // map value
-   if (value > 0) {
       switch (value) {
          // 7-segment stuff
          case 63: ret = "0"; break;
-         case 6: ret = "1"; break;
-         case 91:ret = "2"; break;
-         case 79:  ret = "3"; break;
+         case 6:  ret = "1"; break;
+         case 91: ret = "2"; break;
+         case 79: ret = "3"; break;
          case 102:ret = "4"; break;
-         case 109: ret = "5"; break;
-         case 125: ret = "6";break;
-         case 7: ret = "7"; break;
-         case 127: ret = "8"; break;
-         case 111: ret = "9"; break;
-         default:
-            //additional 10-segment stuff
-            switch (value) {
-               case 768: ret = "1"; break;
-               case 124: ret = "6"; break;
-               case 103: ret = "9"; break;
-            }
-            break;
+         case 109:ret = "5"; break;
+         case 125:ret = "6"; break;
+         case 7:  ret = "7"; break;
+         case 127:ret = "8"; break;
+         case 111:ret = "9"; break;
+         //additional 10-segment stuff
+         case 768:ret = "1"; break;
+         case 124:ret = "6"; break;
+         case 103:ret = "9"; break;
+         default: ret = m_initValue; break;
       }
-   }
-   return (m_length == 2 ? "0" : "") + ret;
+   return (m_length == 2 ? "0" : string()) + ret;
 }
 
 string B2SReelBox::ConvertText(int text)
 {
-   string ret = "";
-   ret = "00" + std::to_string(text);
-   ret = ret.substr(ret.length() - m_length, m_length);
-   return ret;
+   const string ret = "00" + std::to_string(text);
+   return ret.substr(ret.length() - m_length, m_length);
 }

@@ -146,7 +146,7 @@ STDMETHODIMP Server::put_GameName(BSTR pRetVal)
 {
    m_pB2SData->GetVPinMAME()->put_GameName(pRetVal);
    m_pB2SSettings->SetGameName(MakeString(pRetVal));
-   m_pB2SSettings->SetB2SName("");
+   m_pB2SSettings->SetB2SName(string());
 
    return S_OK;
 }
@@ -170,7 +170,7 @@ STDMETHODIMP Server::put_B2SName(BSTR pRetVal)
    string szB2SName = MakeString(pRetVal);
    szB2SName.erase(std::remove(szB2SName.begin(), szB2SName.end(), ' '), szB2SName.end());
    m_pB2SSettings->SetB2SName(szB2SName);
-   m_pB2SSettings->SetGameName("");
+   m_pB2SSettings->SetGameName(string());
 
    return S_OK;
 }
@@ -1611,7 +1611,7 @@ void Server::CheckLamps(SAFEARRAY* psa)
                else {
                   if (!m_lastRandomStartedAnimation.empty()) {
                      m_pFormBackglass->StopAnimation(m_lastRandomStartedAnimation);
-                     m_lastRandomStartedAnimation = "";
+                     m_lastRandomStartedAnimation.clear();
                   }
                }
             }
@@ -1768,7 +1768,7 @@ void Server::CheckSolenoids(SAFEARRAY* psa)
                else {
                   if (!m_lastRandomStartedAnimation.empty()) {
                      m_pFormBackglass->StopAnimation(m_lastRandomStartedAnimation);
-                     m_lastRandomStartedAnimation = "";
+                     m_lastRandomStartedAnimation.clear();
                   }
                }
             }
@@ -1925,7 +1925,7 @@ void Server::CheckGIStrings(SAFEARRAY* psa)
                else {
                   if (!m_lastRandomStartedAnimation.empty()) {
                      m_pFormBackglass->StopAnimation(m_lastRandomStartedAnimation);
-                     m_lastRandomStartedAnimation = "";
+                     m_lastRandomStartedAnimation.clear();
                   }
                }
             }

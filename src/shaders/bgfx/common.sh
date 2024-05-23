@@ -2,7 +2,7 @@
 
 #define PI 3.1415926535897932384626433832795
 
-// The selected min value is for mediump on GLES. Could be higher for other platform but this may lead to rendering differences between platforms
+// The selected min value is for mediump on GLES. Could be higher for other platforms but this may lead to rendering differences between platforms
 // #define FLT_MIN_VALUE 0.0000001
 #define FLT_MIN_VALUE 0.00006103515625
 

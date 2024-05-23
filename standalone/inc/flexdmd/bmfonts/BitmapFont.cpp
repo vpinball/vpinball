@@ -197,7 +197,7 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
 string BitmapFont::GetNamedString(const std::map<string, string>& parts, const string& name)
 {
    auto it = parts.find(name);
-   return (it != parts.end()) ? it->second : "";
+   return (it != parts.end()) ? it->second : string();
 }
 
 int BitmapFont::GetNamedInt(const std::map<string, string>& parts, const string& name, int defaultValue)

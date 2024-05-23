@@ -21,7 +21,7 @@ PUPPlugin::~PUPPlugin()
 
 const std::string& PUPPlugin::GetName() const
 {
-   static std::string name = "PinUpPlugin";
+   static const std::string name = "PinUpPlugin"s;
    return name;
 }
 

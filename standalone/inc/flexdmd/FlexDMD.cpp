@@ -609,7 +609,7 @@ void FlexDMD::RenderLoop()
    });
 }
 
-Font* FlexDMD::NewFont(string font, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize)
+Font* FlexDMD::NewFont(const string& font, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize)
 {
    AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(
         font + "&tint=" + color_to_hex(tint) + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + color_to_hex(borderTint), NULL);
@@ -619,9 +619,9 @@ Font* FlexDMD::NewFont(string font, OLE_COLOR tint, OLE_COLOR borderTint, LONG b
    return pFont;
 }
 
-AnimatedActor* FlexDMD::NewVideo(string szVideo, string szName)
+AnimatedActor* FlexDMD::NewVideo(const string& szVideo, const string& szName)
 {
-   if (szVideo.find("|") != string::npos)
+   if (szVideo.find('|') != string::npos)
       return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
    else {
       AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(szVideo, NULL);

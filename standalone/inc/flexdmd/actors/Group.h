@@ -63,7 +63,7 @@ public:
 
 private:
    Group* GetRoot();
-   Actor* Get(string name);
+   Actor* Get(const string& name);
 
    bool m_clip;
    vector<Actor*> m_children;

@@ -228,7 +228,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
                return;
             }
-            string api = unquote(ini["configuration"]["vpx_api"]);
+            string api = unquote(ini["configuration"s]["vpx_api"s]);
             int nParsed, apiVersion[4];
             apiVersion[3] = 0;
             nParsed = sscanf(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
@@ -237,14 +237,14 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                #define VERSION(a,b,c,d) (a * 1000000 + b * 10000 + c * 100 + d)
                if (VERSION(apiVersion[0], apiVersion[1], apiVersion[2], apiVersion[3]) < VERSION(10, 8, 1, 0))
                {
-                  PLOGE << "Plugin " << id << " is not compatible with this version of VPX (VPX version: " << VP_VERSION_STRING_COMMAS << " / Plugin API: " << api << ")";
+                  PLOGE << "Plugin " << id << " is not compatible with this version of VPX (VPX version: " << VP_VERSION_STRING_COMMAS << " / Plugin API: " << api << ')';
                   return;
                }
                #undef VERSION
             }
             else
             {
-               PLOGE << "Plugin " << id << " has an invalid target API: '" << api << "'";
+               PLOGE << "Plugin " << id << " has an invalid target API: '" << api << '\'';
                return;
             }
             VPXPlugin* plugin = new VPXPlugin(id, 

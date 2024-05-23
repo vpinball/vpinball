@@ -535,13 +535,14 @@ bool try_parse_float(const string& str, float& value)
 
 bool try_parse_color(const string& str, OLE_COLOR& value)
 {
-   string hexStr = str;
-
-   if (hexStr[0] == '#')
-      hexStr = hexStr.substr(1);
+   string hexStr;
+   if (str[0] == '#')
+      hexStr = str.substr(1);
+   else
+      hexStr = str;
 
    if (hexStr.size() == 6)
-      hexStr = hexStr + "FF";
+      hexStr += "FF";
 
    if (hexStr.size() != 8)
       return false;

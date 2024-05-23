@@ -23,8 +23,7 @@ Dream7Display::Dream7Display() : Control()
 
 Dream7Display::~Dream7Display()
 {
-   if (m_pMatrix)
-      delete m_pMatrix;
+   delete m_pMatrix;
 }
 
 void Dream7Display::OnPaint(VP::RendererGraphics* pGraphics)
@@ -62,8 +61,8 @@ void Dream7Display::SetText(const string& szText)
       char sChar = ' ';
       if (!m_szText.empty() && m_szText.length() > nSegment)
          sChar = m_szText.substr(nSegment, 1)[0];
-      if (sChar == '.' && nIndex > 0 && !m_segmentNumbers[nIndex - 1]->GetCharacter().ends_with("."))
-         m_segmentNumbers[nIndex - 1]->SetCharacter(m_segmentNumbers[nIndex - 1]->GetCharacter() + ".");
+      if (sChar == '.' && nIndex > 0 && !m_segmentNumbers[nIndex - 1]->GetCharacter().ends_with('.'))
+         m_segmentNumbers[nIndex - 1]->SetCharacter(m_segmentNumbers[nIndex - 1]->GetCharacter() + '.');
       else {
          m_segmentNumbers[nIndex]->SetCharacter(string() + sChar);
          nIndex++;
@@ -158,7 +157,7 @@ void Dream7Display::SetWireFrame(const bool wireFrame)
    }
 }
 
-void Dream7Display::SetValue(int segment, string value)
+void Dream7Display::SetValue(int segment, const string& value)
 {
    if (m_segmentNumbers.size() <= segment)
       return;
@@ -185,8 +184,7 @@ void Dream7Display::SetExtraSpacing(int segment, long value)
 
 void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
 {
-   if (m_pMatrix)
-      delete m_pMatrix;
+   delete m_pMatrix;
    m_pMatrix = new VP::Matrix();
    if (shear < 0.0f)
        shear = 0.0f;
@@ -208,8 +206,8 @@ void Dream7Display::InitMatrix(float shear, float scaleFactor, bool mirrored)
    if (IsHandleCreated()) {
       SDL_FRect bounds = GetBounds(&styleMatrix);
       if (m_scaleMode != ScaleMode_Manual) {
-         float scaleX = (this->GetWidth() + 3.0f - m_offsetWidth) / bounds.w;
-         float scaleY = (this->GetHeight() - 1.0f) / bounds.h;
+         float scaleX = (float)(this->GetWidth() + 3 - m_offsetWidth) / bounds.w;
+         float scaleY = (float)(this->GetHeight() - 1) / bounds.h;
          if (m_scaleMode == ScaleMode_Zoom) {
             scaleY = std::min(scaleX, scaleY);
             scaleX = scaleY;

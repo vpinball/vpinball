@@ -6,7 +6,7 @@
    First number is always the screen. 1,22.5,45.3,55.1,54.7 [pupid # source screen,xpos,ypos,width,height] values in % of pupdisplay. 
 */
 
-PUPCustomPos* PUPCustomPos::CreateFromCSV(string line)
+PUPCustomPos* PUPCustomPos::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 5)
@@ -43,5 +43,5 @@ string PUPCustomPos::ToString() const
       std::to_string(m_frect.x) + ", " +
       std::to_string(m_frect.y) + ", " +
       std::to_string(m_frect.w) + ", " +
-      std::to_string(m_frect.h) + "}";
+      std::to_string(m_frect.h) + '}';
 }

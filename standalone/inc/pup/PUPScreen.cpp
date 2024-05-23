@@ -66,7 +66,7 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
-PUPScreen* PUPScreen::CreateFromCSV(string line)
+PUPScreen* PUPScreen::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8)

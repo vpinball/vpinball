@@ -9,7 +9,7 @@ class PUPTrigger {
 public:
    ~PUPTrigger() {}
 
-   static PUPTrigger* CreateFromCSV(string line);
+   static PUPTrigger* CreateFromCSV(const string& line);
    bool IsActive() const { return m_active; }
    const string& GetDescription() const { return m_descript; }
    const string& GetTrigger() const { return m_trigger; }

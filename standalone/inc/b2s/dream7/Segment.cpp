@@ -55,20 +55,11 @@ Segment::Segment(float x, float y, float radius)
 
 Segment::~Segment()
 {
-   if (m_pStyle)
-      delete m_pStyle;
-
-   if (m_pGlassPath)
-      delete m_pGlassPath;
-
-   if (m_pLightPath)
-      delete m_pLightPath;
-
-   if (m_pExternMatrix)
-      delete m_pExternMatrix;
-
-   if (m_pOwnMatrix)
-      delete m_pOwnMatrix;
+   delete m_pStyle;
+   delete m_pGlassPath;
+   delete m_pLightPath;
+   delete m_pExternMatrix;
+   delete m_pOwnMatrix;
 }
 
 GraphicsPath* Segment::GetGlassPath()
@@ -209,16 +200,16 @@ void Segment::LeftRightFromCap(SegmentCap nCap, float nWidth, float nCapangle, f
          break;
       case SegmentCap_MoreLeft:
          nLeft = nWidth / 4.0f;
-         nRight = nWidth * 3.0f / 4.0f;
+         nRight = nWidth * (float)(3.0 / 4.0);
          break;
       case SegmentCap_MoreRight:
-         nLeft = nWidth * 3.0f / 4.0f;
+         nLeft = nWidth * (float)(3.0 / 4.0);
          nRight = nWidth / 4.0f;
          break;
     }
     nDelta = nLeft;
-    nLeft = tan(nCapangle / 180.0f * M_PI) * nLeft;
-    nRight = tan(nCapangle / 180.0f * M_PI) * nRight;
+    nLeft *= tanf(nCapangle * (float)(M_PI / 180.0));
+    nRight *= tanf(nCapangle * (float)(M_PI / 180.0));
 }
  
 void Segment::PaintSegment(VP::RendererGraphics* pGraphics, GraphicsPath* pPath)
@@ -257,14 +248,11 @@ void Segment::GetLightData()
 
 void Segment::ResetCacheData()
 {
-   if (m_pGlassPath) {
-      delete m_pGlassPath;
-      m_pGlassPath = NULL;
-   }
-   if (m_pLightPath) {
-      delete m_pLightPath;
-      m_pLightPath = NULL;
-   }
+   delete m_pGlassPath;
+   m_pGlassPath = NULL;
+
+   delete m_pLightPath;
+   m_pLightPath = NULL;
 }
 
 void Segment::SetTransform(VP::RendererGraphics* pGraphics)

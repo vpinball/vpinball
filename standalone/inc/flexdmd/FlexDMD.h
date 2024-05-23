@@ -94,14 +94,14 @@ public:
    STDMETHOD(NewFont)(BSTR Font, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize, IUnknown **pRetVal);
    STDMETHOD(NewUltraDMD)(IUltraDMD **pRetVal);
 
-   Font* NewFont(string szFont, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize);
-   AnimatedActor* NewVideo(string szVideo, string szName);
-   LONG GetRuntimeVersion() { return m_runtimeVersion; }
-   int GetWidth() { return m_width; }
-   int GetHeight() { return m_height; }
-   RenderMode GetRenderMode() { return m_renderMode; }
+   Font* NewFont(const string& szFont, OLE_COLOR tint, OLE_COLOR borderTint, LONG borderSize);
+   AnimatedActor* NewVideo(const string& szVideo, const string& szName);
+   LONG GetRuntimeVersion() const { return m_runtimeVersion; }
+   int GetWidth() const { return m_width; }
+   int GetHeight() const { return m_height; }
+   RenderMode GetRenderMode() const { return m_renderMode; }
    void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; }
-   OLE_COLOR GetDMDColor() { return m_dmdColor; }
+   OLE_COLOR GetDMDColor() const { return m_dmdColor; }
    void SetDMDColor(OLE_COLOR dmdColor) { m_dmdColor = dmdColor; }
    VP::SurfaceGraphics* GetGraphics() { return m_pGraphics; }
    Group* GetStage() { return m_pStage; }

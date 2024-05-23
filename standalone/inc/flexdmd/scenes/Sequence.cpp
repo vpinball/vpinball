@@ -28,7 +28,7 @@ void Sequence::RemoveAllScenes()
    m_finished = true;
 }
 
-void Sequence::RemoveScene(string name)
+void Sequence::RemoveScene(const string& name)
 {
    if (m_pActiveScene->GetName() == name) {
       m_pActiveScene->Remove();

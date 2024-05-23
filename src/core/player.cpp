@@ -450,7 +450,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
-   // Disable static prerendering for VR and legacy headtracking (this won't be reenable)
+   // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
    if (m_headTracking || (stereo3D != STEREO_VR))
       m_renderer->DisableStaticPrePass(true);
 
@@ -1075,7 +1075,7 @@ void Player::OnFocusChanged(const bool isGameFocused)
    else
    {
       #ifdef _MSC_VER
-      string newFocusedWnd = "undefined";
+      string newFocusedWnd = "undefined"s;
       HWND foregroundWnd = GetForegroundWindow();
       if (foregroundWnd)
       {
@@ -1092,7 +1092,7 @@ void Player::OnFocusChanged(const bool isGameFocused)
             }
          }
       }
-      PLOGI << "Focus lost (new focused window: " << newFocusedWnd << ")";
+      PLOGI << "Focus lost (new focused window: " << newFocusedWnd << ')';
       #else
       PLOGI << "Focus lost";
       #endif
@@ -1328,7 +1328,7 @@ const Vertex2D& Player::GetRawAccelerometer() const
          // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
          // and are required to be acceleration values (not velocity or displacement)
 
-         //rotate to match hardware mounting orentation, including left or right coordinates
+         // rotate to match hardware mounting orentation, including left or right coordinates
          const float a = ANGTORAD(m_accelerometerAngle);
          const float cna = cosf(a);
          const float sna = sinf(a);
@@ -1354,7 +1354,7 @@ int Player::NudgeGetTilt()
    static U32 last_tilt_time;
    static U32 last_jolt_time;
 
-   if(!m_ptable->m_accelerometerEnabled || m_NudgeManual >= 0 ||                 //disabled or in joystick test mode
+   if(!m_ptable->m_accelerometerEnabled || m_NudgeManual >= 0 ||               //disabled or in joystick test mode
        m_ptable->m_tilt_amount == 0 || m_ptable->m_jolt_amount == 0) return 0; //disabled
 
    const U32 ms = msec();

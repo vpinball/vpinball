@@ -12,7 +12,7 @@ public:
    ePictureBoxType GetPictureBoxType() const { return m_pictureBoxType; }
    void SetPictureBoxType(ePictureBoxType pictureBoxType) { m_pictureBoxType = pictureBoxType; }
    string GetGroupName() const { return m_szGroupName; }
-   void SetGroupName(string szGroupName) { m_szGroupName = szGroupName; }
+   void SetGroupName(const string& szGroupName) { m_szGroupName = szGroupName; }
    int GetIntensity() const { return m_intensity; }
    void SetIntensity(int intensity) { m_intensity = intensity; }
    int GetInitialState() const { return m_initialState; }

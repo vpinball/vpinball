@@ -489,7 +489,7 @@ void FormBackglass::LoadB2SData()
             if (innerNode->FindAttribute("OffImage"))
                 pOffImage = Base64ToImage(innerNode->Attribute("OffImage"));
             B2SPictureBox* pPicbox = new B2SPictureBox();
-            bool isOnBackglass = (parent == "Backglass");
+            bool isOnBackglass = (parent == "Backglass"s);
             pPicbox->SetName("PictureBox" + std::to_string(id));
             pPicbox->SetGroupName(name);
             pPicbox->SetLocation(loc);
@@ -609,16 +609,16 @@ void FormBackglass::LoadB2SData()
                     romidvalue = innerNode->IntAttribute("ReelIlluB2SValue");
                 romidtype = 1;
             }
-            string soundName = "";
+            string soundName;
 
             // set some tmp vars
-            bool isOnBackglass = (parent == "Backglass");
+            bool isOnBackglass = (parent == "Backglass"s);
             bool isDream7LEDs = string_starts_with_case_insensitive(reeltype, "dream7");
             bool isRenderedLEDs = string_starts_with_case_insensitive(reeltype, "rendered");
             bool isReels = !isDream7LEDs && !isRenderedLEDs;
             SDL_FRect glowbulb = { 0.0f, 0.0f, 0.0f, 0.0f };
             int glow = d7glow;
-            string ledtype = "";
+            string ledtype;
 
             // set led type
             if (isDream7LEDs)
@@ -759,7 +759,7 @@ void FormBackglass::LoadB2SData()
                }
                else if (isReels) {
                   // look for matching reel sound
-                  soundName = "";
+                  soundName.clear();
                   if (innerNode->FindAttribute(string("Sound" + std::to_string(i)).c_str())) {
                      soundName = innerNode->Attribute(string("Sound" + std::to_string(i)).c_str());
                      if (soundName.empty())
@@ -994,9 +994,9 @@ void FormBackglass::LoadB2SData()
 
         // look for the largest bulb amount
         int top4Authentic = 0;
-        string topkey4Authentic = "";
+        string topkey4Authentic;
         int second4Authentic = 0;
-        string secondkey4Authentic = "";
+        string secondkey4Authentic;
         for (auto romsize : roms4Authentic) {
            if (romsize.second > second4Authentic) {
               second4Authentic = romsize.second;
@@ -1010,9 +1010,9 @@ void FormBackglass::LoadB2SData()
            }
         }
         int top4Fantasy = 0;
-        string topkey4Fantasy = "";
+        string topkey4Fantasy;
         int second4Fantasy = 0;
-        string secondkey4Fantasy = "";
+        string secondkey4Fantasy;
         if (m_pB2SData->IsDualBackglass()) {
            for (auto romsize : roms4Fantasy) {
               if (romsize.second > second4Fantasy) {
@@ -1385,7 +1385,7 @@ void FormBackglass::CheckDMDForm()
 
 SDL_Surface* FormBackglass::CreateLightImage(SDL_Surface* image, eDualMode dualmode, const string& firstromkey_)
 {
-   return CreateLightImage(image, dualmode, firstromkey_, "");
+   return CreateLightImage(image, dualmode, firstromkey_, string());
 }
 
 SDL_Surface* FormBackglass::CreateLightImage(SDL_Surface* image, eDualMode dualmode, const string& firstromkey_, const string& secondromkey_)
@@ -1469,9 +1469,9 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, double angle)
 
    SDL_Surface* destination = SDL_CreateRGBSurface(0, source->w, source->h, source->format->BitsPerPixel, source->format->Rmask, source->format->Gmask, source->format->Bmask, source->format->Amask);
 
-   double radians = angle * M_PI / 180.0;
-   double cosine = cos(radians);
-   double sine = sin(radians);
+   double radians = angle * (M_PI / 180.0);
+   float cosine = cos(radians);
+   float sine = sin(radians);
 
    float center_x = source->w / 2.0f;
    float center_y = source->h / 2.0f;
@@ -1481,7 +1481,7 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, double angle)
          int new_x = (int)(round((x - center_x) * cosine + (y - center_y) * sine + center_x));
          int new_y = (int)(round(-(x - center_x) * sine + (y - center_y) * cosine + center_y));
 
-         if (new_x >= 0 && new_x < source->w && new_y >= 0 && new_y < source->h) {
+         if (/*new_x >= 0 &&*/ (unsigned int)new_x < (unsigned int)source->w && /*new_y >= 0 &&*/ (unsigned int)new_y < (unsigned int)source->h) {
             UINT32 pixel = ((UINT32*)source->pixels)[y * source->w + x];
             ((UINT32*)destination->pixels)[new_y * destination->w + new_x] = pixel;
          }

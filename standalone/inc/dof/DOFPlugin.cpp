@@ -20,13 +20,12 @@ DOFPlugin::DOFPlugin() : Plugin()
 
 DOFPlugin::~DOFPlugin()
 {
-   if (m_pDOF)
-      delete m_pDOF;
+   delete m_pDOF;
 }
 
 const std::string& DOFPlugin::GetName() const
 {
-   static std::string name = "DOFPlugin";
+   static const std::string name = "DOFPlugin"s;
    return name;
 }
 

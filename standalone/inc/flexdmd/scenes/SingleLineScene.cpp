@@ -16,7 +16,7 @@ SingleLineScene::~SingleLineScene()
    m_pText->Release();
 }
 
-void SingleLineScene::SetText(string text)
+void SingleLineScene::SetText(const string& text)
 {
    m_pText->SetText(text);
 }

@@ -62,7 +62,7 @@ public:
    void SetOffsetWidth(const int offsetWidth) { if (m_offsetWidth != offsetWidth) { m_offsetWidth = offsetWidth; InitSegmentsStyle(); } }
    float GetAngle() const { return m_angle; }
    void SetAngle(const float angle) { if (m_angle != angle) { m_angle = angle; InitSegmentsStyle(); } }
-   void SetValue(int segment, string value);
+   void SetValue(int segment, const string& value);
    void SetValue(int segment, long value);
    void SetExtraSpacing(int segment, long value);
    void SegmentNumberInvalidated(SegmentNumber* pNumber);

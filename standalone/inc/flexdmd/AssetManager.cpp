@@ -92,7 +92,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    else if (parts[0].starts_with("VPX.")) {
       pAssetSrc->SetSrcType(AssetSrcType_VPXResource);
       pAssetSrc->SetPath(parts[0].substr(4));
-      ext = "";
+      ext.clear();
 
       Texture* pTexture = NULL;
       for (Texture* texturePtr : g_pvp->m_ptableActive->m_vimage) {

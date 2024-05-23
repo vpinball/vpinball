@@ -19,7 +19,7 @@ TwoLineScene::~TwoLineScene()
    m_pBottomText->Release();
 }
 
-void TwoLineScene::SetText(string topText, string bottomText)
+void TwoLineScene::SetText(const string& topText, const string& bottomText)
 {
    m_pTopText->SetText(topText);
    m_pBottomText->SetText(bottomText);

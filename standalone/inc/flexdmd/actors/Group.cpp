@@ -66,7 +66,7 @@ Group* Group::GetRoot()
    return root;
 }
 
-Actor* Group::Get(string name)
+Actor* Group::Get(const string& name)
 {
    if (GetName() == name)
       return this;
