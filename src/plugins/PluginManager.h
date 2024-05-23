@@ -62,8 +62,13 @@ public:
    // General information API
    static void GetTableInfo(VPXPluginAPI::TableInfo* info);
 
+   // User Interface
+   static float GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
+   static void* PushNotification(const char* msg, const unsigned int lengthMs);
+   static void UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs);
+
    // View API implementation
-   static void DisableStaticPrerendering(bool disable);
+   static void DisableStaticPrerendering(const bool disable);
    static void GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
    static void SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
 

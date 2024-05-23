@@ -6,6 +6,7 @@ void onGameStart(const unsigned int eventId, void* data)
 {
    // Game is starting (plugin can be loaded and kept alive through multiple game plays)
    // After this event, all functions of the API marked as 'in game only' can be called
+   vpx->PushNotification("Hello World", 5000);
 }
 
 void onGameEnd(const unsigned int eventId, void* data)

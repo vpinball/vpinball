@@ -63,10 +63,12 @@ public:
       DefaultPropsTrigger,
       DefaultCamera,
 
-      Count
+      // Plugin pages
+      Plugin00
    };
 
    static Section GetSection(const string& szName);
+   static int GetNPluginSections() { return (int) m_settingKeys.size() - Plugin00; };
 
    bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
@@ -97,13 +99,15 @@ public:
    };
    struct OptionDef
    {
+      Section section;
       string name;
       float minValue, maxValue, step, defaultValue;
       OptionUnit unit;
       vector<string> literals;
    };
    void RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string>& literals);
-   const vector<OptionDef> &GetSettings() { return m_options; }
+   const vector<OptionDef>& GetTableSettings() const { return m_tableOptions; }
+   const vector<OptionDef>& GetPluginSettings() const { return m_pluginOptions; }
 
 private:
    enum DataType
@@ -116,10 +120,13 @@ private:
    bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
    bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
 
-   vector<OptionDef> m_options;
-
    bool m_modified = false;
    string m_iniPath;
    mINI::INIStructure m_ini;
-   const Settings *m_parent;
+   const Settings * m_parent;
+   vector<OptionDef> m_tableOptions;
+
+   // Shared accross all settings
+   static vector<OptionDef> m_pluginOptions;
+   static vector<string> m_settingKeys;
 };

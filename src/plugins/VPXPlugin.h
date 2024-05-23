@@ -22,7 +22,7 @@
 // For the sake of simplicity and portability, the API only use C definitions.
 //
 // The plugin API is not thread safe. If a plugin uses multithreading, it must
-// perform all needed synchronization and data copies. Plugin share the same
+// perform all needed synchronization and data copies. Plugins share the same
 // memory space.
 //
 // Plugins communicates between each others and with VPX using a basic event
@@ -53,13 +53,13 @@
 
 #if defined(_MSC_VER)
    // Microsoft
-   #define VPX_EXPORT extern "C" __declspec(dllexport)
+#define VPX_EXPORT extern "C" __declspec(dllexport)
 #elif defined(__GNUC__)
    // GCC
-   #define VPX_EXPORT extern "C" __attribute__((visibility("default")))
+#define VPX_EXPORT extern "C" __attribute__((visibility("default")))
 #else
    // Others: hope that all symbols are exported
-   #define VPX_EXPORT extern "C" 
+#define VPX_EXPORT extern "C" 
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -68,10 +68,19 @@
 // Callbacks
 typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 
-// Core VPX events:
-#define VPX_EVT_ON_GAME_START    "VPX.OnGameStart"    // Broadcasted during player creation, before script initialization
-#define VPX_EVT_ON_GAME_END      "VPX.OnGameEnd"      // Broadcasted during player shutdown
-#define VPX_EVT_ON_PREPARE_FRAME "VPX.OnPrepareFrame" // Broadcasted when player starts preparing a new frame
+// Core VPX events
+#define VPX_EVT_ON_GAME_START       "VPX.OnGameStart"       // Broadcasted during player creation, before script initialization
+#define VPX_EVT_ON_GAME_END         "VPX.OnGameEnd"         // Broadcasted during player shutdown
+#define VPX_EVT_ON_PREPARE_FRAME    "VPX.OnPrepareFrame"    // Broadcasted when player starts preparing a new frame
+#define VPX_EVT_ON_SETTINGS_CHANGED "VPX.OnSettingsChanged" // Broadcasted when settings have been changed
+
+// Core VPX settings pages
+// GetOption 'pageId' parameter is either the id of a loaded plugin or the id of one of the core VPX pages defined below
+#define VPX_TWEAK_VIEW           "VPX.tweak.view"
+#define VPX_TWEAK_TABLE          "VPX.tweak.table"
+// GetOption bitmask flags defining where the setting should be displayed
+#define VPX_OPT_SHOW_UI          1
+#define VPX_OPT_SHOW_TWEAK       2
 
 // Helper defines
 
@@ -87,7 +96,8 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 #define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
 #endif
 
-typedef struct
+
+typedef struct VPXPluginAPI
 {
    // Communication bus
    unsigned int (*GetEventID)(const char* name);
@@ -96,16 +106,22 @@ typedef struct
    void (*BroadcastEvent)(const unsigned int eventId, void* data);
 
    // General information API
-   typedef struct
+   typedef struct TableInfo
    {
       const char* path;              // [R_]
       float tableWidth, tableHeight; // [R_]
    } TableInfo;
    void (*GetTableInfo)(TableInfo* info);
 
+   // User Interface
+   enum OptionUnit { NONE, PERCENT };
+   float (*GetOption)(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const OptionUnit unit, const char** values);
+   void* (*PushNotification)(const char* msg, const unsigned int lengthMs);
+   void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
+
    // View management
-   void (*DisableStaticPrerendering)(bool disable);
-   typedef struct
+   void (*DisableStaticPrerendering)(const bool disable);
+   typedef struct ViewSetupDef
    {
       // See ViewSetup class for member description
       int viewMode;                                       // [R_]
@@ -117,9 +133,10 @@ typedef struct
       float layback;                                      // [R_]
       float viewHOfs, viewVOfs;                           // [R_]
       float windowTopZOfs, windowBottomZOfs;              // [R_]
-      // Fields computed from user settings
+      // Following fields are defined in user settings
       float screenWidth, screenHeight, screenInclination; // [R_]
       float realToVirtualScale;                           // [R_]
+      float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
    } ViewSetupDef;
    void (*GetActiveViewSetup)(ViewSetupDef* view);
    void (*SetActiveViewSetup)(ViewSetupDef* view);
