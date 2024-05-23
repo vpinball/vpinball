@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <filesystem>
 
-static const string regKey[Settings::Count] =
+static const string regKey[Settings::Plugin00] =
    { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s,
       "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
@@ -12,15 +12,19 @@ static const string regKey[Settings::Count] =
       "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s,
       "Defaults\\Camera"s
    };
+vector<string> Settings::m_settingKeys = vector<string>(regKey, regKey + Settings::Section::Plugin00);
+vector<Settings::OptionDef> Settings::m_pluginOptions;
 
 Settings::Section Settings::GetSection(const string& name)
 {
-   for (int i = 0; i < Settings::Count; i++)
+   int index = FindIndexOf(m_settingKeys, name);
+   if (index < 0)
    {
-      if (regKey[i] == name)
-         return (Settings::Section) i;
+      PLOGI << "Creating new setting section '" << name << "' for custom table/plugin use";
+      index = (int)m_settingKeys.size();
+      m_settingKeys.push_back(name);
    }
-   return Count;
+   return (Settings::Section)index;
 }
 
 Settings::Settings(const Settings* parent)
@@ -51,14 +55,14 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
 
       #ifdef _WIN32
       // For Windows, get settings values from windows registry (which was used to store settings before 10.8)
-      for (unsigned int j = 0; j < Section::Count; j++)
+      for (unsigned int j = 0; j < Section::Plugin00; j++)
       {
          // We do not save version of played tables in the ini file
          if (j == Section::Version)
             continue;
 
          string regpath(j == Section::Controller ? "Software\\Visual Pinball\\"s : "Software\\Visual Pinball\\VP10\\"s);
-         regpath += regKey[j];
+         regpath += m_settingKeys[j];
 
          HKEY hk;
          LSTATUS res = RegOpenKeyEx(HKEY_CURRENT_USER, regpath.c_str(), 0, KEY_READ, &hk);
@@ -81,7 +85,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             res = RegQueryValueEx(hk, szName, nullptr, &type, pvalue, &dwSize);
             if (res != ERROR_SUCCESS)
             {
-               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported. Failure cause: failed to get value";
+               PLOGI << "Settings '" << m_settingKeys[j] << '/' << szName << "' was not imported. Failure cause: failed to get value";
                continue;
             }
 
@@ -109,14 +113,14 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             else
             {
                copy = nullptr;
-               assert(!"Bad RegKey");
+               assert(!"Bad m_settingKeys");
             }
 
             string name(szName);
-            if (!m_ini[regKey[j]].has(name))
+            if (!m_ini[m_settingKeys[j]].has(name))
             {
                // Search for a case insensitive match
-               for (const auto& item : m_ini[regKey[j]])
+               for (const auto& item : m_ini[m_settingKeys[j]])
                {
                   if (StrCompareNoCase(name, item.first))
                   {
@@ -126,11 +130,11 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
                }
             }
 
-            if (m_ini[regKey[j]].has(name))
-               m_ini[regKey[j]][name] = copy;
+            if (m_ini[m_settingKeys[j]].has(name))
+               m_ini[m_settingKeys[j]][name] = copy;
             else
             {
-               PLOGI << "Settings '" << regKey[j] << '/' << szName << "' was not imported (value in registry: " << copy << "). Failure cause: name not found";
+               PLOGI << "Settings '" << m_settingKeys[j] << '/' << szName << "' was not imported (value in registry: " << copy << "). Failure cause: name not found";
             }
          }
          RegCloseKey(hk);
@@ -201,7 +205,7 @@ void Settings::CopyOverrides(const Settings& settings)
 
 bool Settings::HasValue(const Section section, const string& key, const bool searchParent) const
 {
-   bool hasInIni = m_ini.get(regKey[section]).has(key);
+   bool hasInIni = m_ini.get(m_settingKeys[section]).has(key);
    if (!hasInIni && m_parent && searchParent)
       hasInIni = m_parent->HasValue(section, key, searchParent);
    return hasInIni;
@@ -274,7 +278,7 @@ bool Settings::LoadValue(const Section section, const string &key, DataType &typ
       return false;
    }
 
-      const string value = m_ini.get(regKey[section]).get(key);
+      const string value = m_ini.get(m_settingKeys[section]).get(key);
       if (!value.empty())
       {
          // Value is empty (just a marker for text formatting), consider it as undefined
@@ -341,16 +345,16 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
       if (m_parent->LoadValue(section, key, value) && value == copy)
       {
          // This is an override and it has the same value as parent: remove it and rely on parent
-         if (m_ini.get(regKey[section]).has(key))
+         if (m_ini.get(m_settingKeys[section]).has(key))
          {
             m_modified = true;
-            m_ini[regKey[section]].remove(key);
+            m_ini[m_settingKeys[section]].remove(key);
          }
          return true;
       }
    }
    m_modified = true;
-   m_ini[regKey[section]][key] = copy;
+   m_ini[m_settingKeys[section]][key] = copy;
    return true;
 }
 
@@ -387,10 +391,10 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
    bool success = true;
    if (m_parent && deleteFromParent)
       success &= DeleteValue(section, key, deleteFromParent);
-   if (m_ini.get(regKey[section]).has(key))
+   if (m_ini.get(m_settingKeys[section]).has(key))
    {
       m_modified = true;
-      success &= m_ini[regKey[section]].remove(key);
+      success &= m_ini[m_settingKeys[section]].remove(key);
    }
    return success;
 }
@@ -400,18 +404,19 @@ bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
    bool success = true;
    if (m_parent && deleteFromParent)
       success &= DeleteSubKey(section, deleteFromParent);
-   if (m_ini.has(regKey[section]))
+   if (m_ini.has(m_settingKeys[section]))
    {
       m_modified = true;
-      success &= m_ini.remove(regKey[section]);
+      success &= m_ini.remove(m_settingKeys[section]);
    }
    return success;
 }
 
 void Settings::RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals)
 {
-   assert(section == TableOption); // For the time being, this system is only used for custom table options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
+   assert(section == TableOption || section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
    OptionDef opt;
+   opt.section = section;
    opt.name = name;
    opt.minValue = minValue;
    opt.maxValue = maxValue;
@@ -419,16 +424,14 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
    opt.defaultValue = defaultValue;
    opt.literals = literals;
    opt.unit = unit;
-   bool found = false;
-   for (auto option = begin(m_options); option != end(m_options); ++option)
+   vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
+   for (auto option = begin(options); option != end(options); ++option)
    {
-      if (option->name == name)
+      if (option->section == section && option->name == name)
       {
          *option = opt;
-         found = true;
-         break;
+         return;
       }
    }
-   if (!found)
-      m_options.push_back(opt);
+   options.push_back(opt);
 }
