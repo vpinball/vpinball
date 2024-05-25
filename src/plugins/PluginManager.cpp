@@ -358,10 +358,12 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
          return;
       }
    #elif defined(_WIN32) || defined(_WIN64)
-      m_module = LoadLibraryEx(m_library.c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+      // Windows XP does not support LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR and LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+      // This makes the plugin features buggy on Windows XP since a plugin coming with its own dependencies (dll in the plugin directory) will not load on WinXP
+      DWORD flags = 0x00000100 /* LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR */ | 0x00001000 /* LOAD_LIBRARY_SEARCH_DEFAULT_DIRS */;
+      m_module = LoadLibraryEx(m_library.c_str(), NULL, flags);
       if (m_module == NULL)
       {
-
          PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
          PLOGE << "Last error was: " << GetLastErrorAsString();
          return;
