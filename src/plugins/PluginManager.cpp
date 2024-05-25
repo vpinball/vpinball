@@ -20,6 +20,10 @@ PluginManager::PluginManager()
    m_vpxAPI.BroadcastEvent = BroadcastEvent;
    // General information API
    m_vpxAPI.GetTableInfo = GetTableInfo;
+   // User Interface API
+   m_vpxAPI.GetOption = GetOption;
+   m_vpxAPI.PushNotification = PushNotification;
+   m_vpxAPI.UpdateNotification = UpdateNotification;
    // View API
    m_vpxAPI.DisableStaticPrerendering = DisableStaticPrerendering;
    m_vpxAPI.GetActiveViewSetup = GetActiveViewSetup;
@@ -105,9 +109,58 @@ void PluginManager::GetTableInfo(VPXPluginAPI::TableInfo* info)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// User Input API
+
+float PluginManager::GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
+   const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values)
+{
+   // TODO handle showMask flag
+   // TODO handle core VPX setting pages
+   if (strcmp(pageId, VPX_TWEAK_VIEW) == 0)
+   {
+      return 0.f;
+   }
+   if (strcmp(pageId, VPX_TWEAK_TABLE) == 0)
+   {
+      return 0.f;
+   }
+   else
+   {
+      Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+      const string sectionName = "Plugin."s + pageId;
+      Settings::Section section = settings.GetSection(sectionName);
+      vector<string> literals;
+      if (values != nullptr)
+      {
+         const int nSteps = 1 + (int)(roundf((maxValue - minValue) / step));
+         for (int i = 0; i < nSteps; i++)
+            literals.push_back(values[i]);
+      }
+      settings.RegisterSetting(section, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+      const float value = settings.LoadValueWithDefault(section, optionName, defaultValue);
+      return clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
+   }
+}
+
+void* PluginManager::PushNotification(const char* msg, const unsigned int lengthMs)
+{
+   assert(g_pplayer); // Only allowed in game
+   g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
+   // FIXME implement
+   return nullptr;
+}
+
+void PluginManager::UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs)
+{
+   assert(g_pplayer); // Only allowed in game
+   // FIXME implement
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // View API
 
-void PluginManager::DisableStaticPrerendering(bool disable)
+void PluginManager::DisableStaticPrerendering(const bool disable)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
@@ -214,7 +267,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
       if (entry.is_directory())
       {
          mINI::INIStructure ini;
-         mINI::INIFile file(entry.path().string() + "/plugin.cfg");
+         mINI::INIFile file(entry.path().string() + PATH_SEPARATOR_CHAR + "plugin.cfg");
          if (file.read(ini) && ini.has("configuration"s) && ini["configuration"s].has("id"s) && ini["configuration"s].has("vpx_api"s) && ini.has("libraries"s) && ini["libraries"s].has(libraryKey))
          {
             string id = unquote(ini["configuration"s]["id"s]);
@@ -222,7 +275,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                if ((*it)->m_id == id)
                   it = m_plugins.erase(it);
             const string libraryFile = unquote(ini["libraries"s][libraryKey]);
-            const string libraryPath = entry.path().string() + '/' + libraryFile;
+            const string libraryPath = entry.path().string() + PATH_SEPARATOR_CHAR + libraryFile;
             if (!std::filesystem::exists(libraryPath))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
@@ -262,6 +315,21 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
    }
 }
 
+#ifdef _MSC_VER
+std::string GetLastErrorAsString()
+{
+   DWORD errorMessageID = ::GetLastError();
+   if (errorMessageID == 0)
+      return std::string();
+   LPSTR messageBuffer = nullptr;
+   size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+      (LPSTR)&messageBuffer, 0, NULL);
+   std::string message(messageBuffer, size);
+   LocalFree(messageBuffer);
+   return message;
+}
+#endif
+
 void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
 {
    if (m_is_loaded)
@@ -269,6 +337,8 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
       PLOGE << "Requested to load plugin '" << m_name << "' which is already loaded";
       return;
    }
+   if (m_module == nullptr)
+   {
    #if defined(__STANDALONE__)
       m_module = SDL_LoadObject(m_library.c_str());
       if (m_module == nullptr)
@@ -288,10 +358,12 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
          return;
       }
    #elif defined(_WIN32) || defined(_WIN64)
-      m_module = LoadLibrary(m_library.c_str());
+      m_module = LoadLibraryEx(m_library.c_str(), NULL, LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
       if (m_module == NULL)
       {
+
          PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
+         PLOGE << "Last error was: " << GetLastErrorAsString();
          return;
       }
       m_loadPlugin = (vpxpi_load_plugin)GetProcAddress(m_module, "PluginLoad");
@@ -308,6 +380,7 @@ void VPXPlugin::Load(VPXPluginAPI* vpxAPI)
    #else
       assert(false);
    #endif
+   }
    m_is_loaded = m_loadPlugin(vpxAPI);
    PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ')';
 }
@@ -320,6 +393,9 @@ void VPXPlugin::Unload()
       return;
    }
    m_unloadPlugin();
+   // Use module unload instead of explicit unloading (avoid crashes due to forced unloading modules with thread still running)
+   // The only drawback is that the application keep the module (dll file) locked
+   /*
    #if defined(__STANDALONE__)
       SDL_UnloadObject(m_module);
       m_module = nullptr;
@@ -330,6 +406,7 @@ void VPXPlugin::Unload()
    m_loadPlugin = nullptr;
    m_unloadPlugin = nullptr;
    m_is_loaded = false;
+   */
 }
 
 // the singleton instance must be declared in the same compilation unit, after other static fields to ensure correct destructor call order

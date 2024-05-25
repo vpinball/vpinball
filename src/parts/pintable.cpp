@@ -436,10 +436,11 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
    const int sectionLen = (int)lstrlenW(Section);
    char *const sectionSz = new char[sectionLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, Section, -1, sectionSz, sectionLen + 1, nullptr, nullptr);
+   Settings::Section sectionId = g_pvp->m_settings.GetSection(sectionSz);
    const int settingLen = (int)lstrlenW(SettingName);
    char *const settingSz = new char[settingLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, SettingName, -1, settingSz, settingLen + 1, nullptr, nullptr);
-   if (g_pvp->m_settings.LoadValue(Settings::GetSection(sectionSz), settingSz, value))
+   if (g_pvp->m_settings.LoadValue(sectionId, settingSz, value))
    {
       const int len = (int)value.length() + 1;
       WCHAR *const wzT = new WCHAR[len];

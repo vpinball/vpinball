@@ -44,7 +44,7 @@ private:
       TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
          type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
    };
-   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_Count };
+   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_Plugin00 };
    enum BackdropSetting
    {
       BS_Page,
@@ -53,9 +53,10 @@ private:
       // Table tweaks & Custom table defined options (must be the last of this enum)
       BS_MusicVolume, BS_SoundVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Custom
    };
-   TweakPage m_activeTweakPage = TP_PointOfView;
    U32 m_lastTweakKeyDown = 0;
    int m_activeTweakIndex = 0;
+   int m_activeTweakPageIndex = 0;
+   vector<TweakPage> m_tweakPages;
    int m_tweakState[BS_Custom + 100]; // 0 = unmodified, 1 = modified, 2 = resetted
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
