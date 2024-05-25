@@ -49,7 +49,7 @@ void FormDMD::OnPaint(VP::RendererGraphics* pGraphics)
             }
          }
          else {
-            // first of all draw zorderd images
+            // first of all draw z-ordered images
             for(const auto& [key, pIllus] : *m_pB2SData->GetZOrderDMDImages()) {
                for (int i = 0; i < pIllus.size(); i++) {
                   if (pIllus[i]->IsVisible()) {

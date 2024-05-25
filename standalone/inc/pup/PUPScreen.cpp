@@ -422,7 +422,7 @@ string PUPScreen::ToString(bool full) const
          ", backgroundFilename=" + m_backgroundFilename +
          ", transparent=" + (m_transparent ? "true" : "false") +
          ", volume=" + std::to_string(m_volume) +
-         ", m_customPos={" + (m_pCustomPos ? m_pCustomPos->ToString() : "") + "}";
+         ", m_customPos={" + (m_pCustomPos ? m_pCustomPos->ToString() : "") + '}';
    }
 
    return "screenNum=" + std::to_string(m_screenNum) +

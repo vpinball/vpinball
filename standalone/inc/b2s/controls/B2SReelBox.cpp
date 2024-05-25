@@ -8,13 +8,13 @@ B2SReelBox::B2SReelBox() : B2SBaseBox()
    m_led = false;
    m_length = 1;
    m_initValue = "0";
-   m_szReelIndex = "";
+   m_szReelIndex.clear();
    m_intermediates = -1;
    m_intermediates2go = 0;
-   m_szSoundName = "";
+   m_szSoundName.clear();
    m_pSound = NULL;
    m_scoreType = eScoreType_NotUsed;
-   m_szGroupName = "";
+   m_szGroupName.clear();
    m_illuminated = false;
    m_value = 0;
    m_currentText = 0;
@@ -90,7 +90,7 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
          if (m_pSound != NULL) {
             //My.Computer.Audio.Play(Sound(), AudioPlayMode.Background)
          }
-         else if (m_szSoundName == "stille"s) {
+         else if (m_szSoundName == "stille") {
             // no sound
          }
          else {
@@ -132,7 +132,7 @@ void B2SReelBox::SetReelType(const string& szReelType)
        m_szReelIndex = "00"s;
        value = value.substr(0, value.length() - 1);
    }
-   if (string_starts_with_case_insensitive(szReelType, "led") || string_starts_with_case_insensitive(szReelType, "importedled")) {
+   if (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)) {
       m_led = true;
       m_szReelIndex = "Empty"s;
       m_initValue = "Empty"s;

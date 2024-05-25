@@ -12,7 +12,7 @@ public:
    BitmapFont();
    ~BitmapFont();
    
-   static const int NoMaxWidth = -1;
+   static constexpr int NoMaxWidth = -1;
 
    static BitmapFont* Create(string fileName);
 

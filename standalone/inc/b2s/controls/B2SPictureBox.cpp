@@ -5,7 +5,7 @@
 B2SPictureBox::B2SPictureBox() : B2SBaseBox()
 {
    m_pictureBoxType = ePictureBoxType_StandardImage;
-   m_szGroupName = "";
+   m_szGroupName.clear();
    m_intensity = 1;
    m_initialState = 0;
    m_dualMode = eDualMode_Both;

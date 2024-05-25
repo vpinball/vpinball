@@ -59,13 +59,13 @@ void PUPLabel::SetCaption(const string& szCaption)
       m_szPath.clear();
 
       const string szExt = extension_from_path(szCaption);
-      if (szExt == "gif"s || szExt == "png"s || szExt == "apng"s || szExt == "bmp"s || szExt == "jpg"s) {
+      if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
          std::filesystem::path fs_path(normalize_path_separators(szCaption));
          PUPPlaylist* pPlaylist = PUPManager::GetInstance()->GetPlaylist(fs_path.parent_path());
          if (pPlaylist) {
             m_szPath = find_path_case_insensitive(pPlaylist->GetFolderPath() + fs_path.filename().string());
             if (!m_szPath.empty())
-               m_type = (szExt == "gif"s) ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+               m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
          }
       }
 

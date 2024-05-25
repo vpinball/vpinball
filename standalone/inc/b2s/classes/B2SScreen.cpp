@@ -14,7 +14,7 @@ B2SScreen::B2SScreen()
    m_pFormBackglass = NULL;
    m_pFormDMD = NULL;
    m_playfieldSize = { 0, 0, 0, 0 };
-   m_backglassMonitor = "";
+   m_backglassMonitor.clear();
    m_backglassSize = { 0, 0, 0, 0 };
    m_backglassLocation = { 0, 0 };
    m_backglassGrillHeight = 0;
@@ -26,7 +26,7 @@ B2SScreen::B2SScreen()
    m_dmdViewMode = eDMDViewMode_NotDefined;
    m_backgroundSize = { 0, 0, 0, 0 };
    m_backgroundLocation = { 0, 0 };
-   m_backgroundPath = "";
+   m_backgroundPath.clear();
    m_backglassCutOff = { 0, 0, 0, 0 };
    m_dmdToBeShown = false;
 
@@ -257,23 +257,23 @@ void B2SScreen::ScaleAllControls(float rescaleX, float rescaleY, float rescaleDM
 {
    // get scale info for all picked objects and scale some of them
    for(const auto& [key, pReelbox] : *m_pB2SData->GetReels()) {
-      bool isOnDMD = (pReelbox->GetParent() && pReelbox->GetParent()->GetName() == "formDMD"s);
+      bool isOnDMD = (pReelbox->GetParent() && pReelbox->GetParent()->GetName() == "formDMD");
       ScaleControl(pReelbox, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD);
    }
    for(const auto& [key, pLedbox] : *m_pB2SData->GetLEDs()) {
-      bool isOnDMD = (pLedbox->GetParent() && pLedbox->GetParent()->GetName() == "formDMD"s);
+      bool isOnDMD = (pLedbox->GetParent() && pLedbox->GetParent()->GetName() == "formDMD");
       ScaleControl(pLedbox, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD, isOnDMD && m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
    for(const auto& [key, pDream7Display] : *m_pB2SData->GetLEDDisplays()) {
-      bool isOnDMD = (pDream7Display->GetParent() && pDream7Display->GetParent()->GetName() == "formDMD"s);
+      bool isOnDMD = (pDream7Display->GetParent() && pDream7Display->GetParent()->GetName() == "formDMD");
       ScaleControl(pDream7Display, isOnDMD ? rescaleDMDX : rescaleX, isOnDMD ? rescaleDMDY : rescaleY, isOnDMD, isOnDMD && m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
    for(const auto& [key, pPicbox] : *m_pB2SData->GetIlluminations()) {
-      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD"s);
+      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD");
       ScaleControl(pPicbox, rescaleX, rescaleY, isOnDMD);
    }
    for(const auto& [key, pPicbox] : *m_pB2SData->GetDMDIlluminations()) {
-      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD"s);
+      bool isOnDMD = (pPicbox->GetParent() && pPicbox->GetParent()->GetName() == "formDMD");
       ScaleControl(pPicbox, rescaleDMDX, rescaleDMDY, isOnDMD, m_dmdFlipY && !m_dmdAtDefaultLocation);
    }
 

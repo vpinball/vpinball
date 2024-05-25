@@ -7,7 +7,7 @@ Dream7Display::Dream7Display() : Control()
 
    m_hidden = false;
    m_mirrored = false;
-   m_szText = "";
+   m_szText.clear();
    m_scaleMode = ScaleMode_Stretch;
    m_spacing = 20.0f;
    m_transparentBackground = false;

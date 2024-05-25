@@ -333,7 +333,7 @@ void WebServer::Start()
    const string addr = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerAddr"s, "0.0.0.0"s);
    const int port = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerPort"s, 2112);
 
-   string bindUrl = "http://" + addr + ":" + std::to_string(port);
+   string bindUrl = "http://" + addr + ':' + std::to_string(port);
 
    PLOGI.printf("Starting web server at %s", bindUrl.c_str());
 
@@ -347,7 +347,7 @@ void WebServer::Start()
       string ip = GetIPAddress();
 
       if (!ip.empty()) {
-         m_url = "http://" + ip + ":" + std::to_string(port);
+         m_url = "http://" + ip + ':' + std::to_string(port);
 
          PLOGI.printf("To access the web server, in a browser go to: %s", m_url.c_str());
       }
@@ -395,9 +395,6 @@ string WebServer::GetIPAddress()
 {
    struct ifaddrs *ifaddr;
    struct ifaddrs *ifa;
-   int family;
-   int s;
-   char host[NI_MAXHOST];
 
    if (getifaddrs(&ifaddr) == -1)
       return string();
@@ -406,11 +403,12 @@ string WebServer::GetIPAddress()
       if (ifa->ifa_addr == nullptr)
          continue;
 
-      family = ifa->ifa_addr->sa_family;
+      int family = ifa->ifa_addr->sa_family;
 
       if (family == AF_INET) {
          if (!strcmp(ifa->ifa_name, "wlan0") || !strcmp(ifa->ifa_name, "eth0") || !strcmp(ifa->ifa_name, "en0") || !strcmp(ifa->ifa_name, "en1")) {
-            s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
+            char host[NI_MAXHOST];
+            int s = getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST);
             freeifaddrs(ifaddr);
             if (s != 0)
                return string();

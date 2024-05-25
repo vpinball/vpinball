@@ -12,7 +12,7 @@ void ReelDisplayReelBoxCollection::Add(int key, B2SReelBox* pReelbox)
 {
    string szReelType = pReelbox->GetReelType();
 
-   if (!m_led && (string_starts_with_case_insensitive(szReelType, "led") || string_starts_with_case_insensitive(szReelType, "importedled")))
+   if (!m_led && (string_starts_with_case_insensitive(szReelType, "led"s) || string_starts_with_case_insensitive(szReelType, "importedled"s)))
       m_led = true;
 
    (*this)[key] = pReelbox;

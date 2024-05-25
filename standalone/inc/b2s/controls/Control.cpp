@@ -5,7 +5,7 @@
 Control::Control()
 {  
    m_pParent = NULL;
-   m_szName = "";
+   m_szName.clear();
    m_rect = { 0, 0, 0, 0 };
    m_visible = true;
    m_backColor = RGB(0, 0, 0);

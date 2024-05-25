@@ -316,7 +316,7 @@ void SegmentNumber::DisplayBitCode(long value)
    long segment = 0;
    bool anyChange = false;
    for (auto& pSegment : m_segments) {
-      if (m_type == SegmentNumberType_TenSegment && pSegment->GetName() == "g2"s) {
+      if (m_type == SegmentNumberType_TenSegment && pSegment->GetName() == "g2") {
          if (SetSegmentState(pSegment, (value & (1 << (segment - 1))) > 0))
             anyChange = true;
       }
