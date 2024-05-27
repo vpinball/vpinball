@@ -231,7 +231,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate();
       #if defined(ENABLE_BGFX)
       if (m_areaOfInterest.x != FLT_MAX)
-         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
       bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
       #endif
@@ -245,7 +245,7 @@ bool RenderPass::Execute(const bool log)
       m_rt->Activate(m_singleLayerRendering);
       #if defined(ENABLE_BGFX)
       if (m_areaOfInterest.x != FLT_MAX)
-         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+         bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
       bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(m_singleLayerRendering)).append("]").c_str());
       #endif
@@ -260,7 +260,7 @@ bool RenderPass::Execute(const bool log)
          m_rt->Activate(layer);
          #if defined(ENABLE_BGFX)
          if (m_areaOfInterest.x != FLT_MAX)
-            bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, bottom, right - left, top - bottom);
+            bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
          #if defined(_DEBUG)
          bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append("]").c_str());
          #endif
