@@ -295,8 +295,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
       if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
          m_maxFramerate = 24;
-      if (m_maxFramerate <= 0) // Negative or 0 is display refresh rate
-         m_maxFramerate = pfRefreshRate;
       m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
       if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
@@ -310,15 +308,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          default: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
+      if (m_maxFramerate < 0) // Negative is display refresh rate
+         m_maxFramerate = pfRefreshRate;
+      if (m_maxFramerate == 0) // 0 is unbound refresh rate
+         m_maxFramerate = 10000;
       if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
          m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
       if (useVR)
       {
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
-         m_maxFramerate = pfRefreshRate;
+         m_maxFramerate = 10000;
       }
-      m_maxFramerate = min(m_maxFramerate, pfRefreshRate);
       PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
    }
 
@@ -1588,7 +1589,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::OnIdle()
 {
-   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate == 0)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
 
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
@@ -1745,8 +1746,7 @@ void Player::OnIdle()
          return;
 
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
-      if (m_maxFramerate != 0 // User has requested a target FPS
-      && (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_playfieldWnd->GetRefreshRate())) // The synchronization is not already performed by the VSYNC
+      if (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate != m_playfieldWnd->GetRefreshRate()) // The synchronization is not already performed by the VSYNC
       {
          const int timeForFrame = (int)(usec() - m_startFrameTick);
          const int targetTime = 1000000 / m_maxFramerate;
