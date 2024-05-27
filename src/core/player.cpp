@@ -452,7 +452,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
-   if (m_headTracking || (stereo3D != STEREO_VR))
+   if (m_headTracking || (stereo3D == STEREO_VR))
       m_renderer->DisableStaticPrePass(true);
 
    m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
