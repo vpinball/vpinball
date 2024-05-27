@@ -1961,13 +1961,18 @@ bool Player::FinishFrame()
    }
 
 #ifdef _MSC_VER
-   // FIXME hacky Win32 mamagement (hacky and not handling Pup, B2S, Freezy's DMD,... )
-   // Try to bring PinMAME window back on top
+   // TODO hacky Win32 management: try to bring PinMAME, B2S, Freezy's DMD, Pup window back on top (to be removed when these extensions will be cleanly handled by cleaned up plugins)
    if (m_overall_frames < 10)
    {
-      const HWND hVPMWnd = FindWindow("MAME", nullptr);
-      if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
-         ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
+      const vector<string> overlaylist = { "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
+      for (const string &windowtext : overlaylist)
+      {
+         HWND hVPMWnd = FindWindow(nullptr, windowtext.c_str());
+         if (hVPMWnd == nullptr)
+            hVPMWnd = FindWindow(windowtext.c_str(), nullptr);
+         if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
+            ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
+      }
    }
 #endif
 
