@@ -590,6 +590,8 @@ add_executable(vpinball
    standalone/inc/pup/PUPWindow.h
    standalone/inc/pup/PUPMediaPlayer.cpp
    standalone/inc/pup/PUPMediaPlayer.h
+   standalone/inc/pup/PUPMediaManager.cpp
+   standalone/inc/pup/PUPMediaManager.h
    standalone/inc/pup/pup_i_proxy.cpp
    standalone/inc/pup/pup_i.c
    standalone/inc/pup/pup_i.h

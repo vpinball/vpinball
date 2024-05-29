@@ -25,51 +25,51 @@ public:
    PUPMediaPlayer();
    ~PUPMediaPlayer();
 
-   void Play(const string& szFilename, int volume);
-   bool IsPlaying() const;
+   void SetRenderer(SDL_Renderer* pRenderer);
+   void Play(const string& szFilename);
+   bool IsPlaying();
+   void Pause(bool pause);
+   const string& GetFilename() const { return m_szFilename; }
+   int GetPriority() const { return m_priority; }
    void Stop();
-   void Render(SDL_Renderer* pRenderer, SDL_Rect* pRect);
-   void SetLoop(bool loop) { m_loop = loop; }
+   void SetVolume(float volume);
+   void SetLoop(bool loop);
+   void Render(const SDL_Rect& destRect);
 
 private:
+   void Run();
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
-   void ProcessMedia();
-   void ProcessFrame();
-   AVCodecContext* OpenVideoStream(AVFormatContext* pInputFormatContext, int stream);
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
-   AVCodecContext* OpenAudioStream(AVFormatContext* pInputFormatContext, int stream);
-   void HandleAudioFrame(AVFrame* pFrame);
    SDL_PixelFormatEnum GetVideoFormat(enum AVPixelFormat format);
    void SetYUVConversionMode(AVFrame* pFrame);
-   void Cleanup();
+   void HandleAudioFrame(AVFrame* pFrame);
+#endif
 
-   AudioPlayer* m_pAudioPlayer;
+   string m_szFilename;
+   bool m_loop;
+   float m_volume;
+   int m_priority;
+   SDL_Renderer* m_pRenderer;
+   SDL_Texture* m_pTexture;
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    AVFormatContext* m_pFormatContext;
-   AVCodecContext* m_pAudioContext;
-   AVCodecContext* m_pVideoContext;
-   AVPacket* m_pPacket;
-   AVFrame* m_pFrame;
-   int m_audioStream;
    int m_videoStream;
+   AVCodecContext* m_pVideoContext;
    struct SwsContext* m_pVideoConversionContext;
    SDL_PixelFormatEnum m_videoFormat;
    int m_videoWidth;
    int m_videoHeight;
-   Uint64 m_videoStart;
+   int m_audioStream;
+   AVCodecContext* m_pAudioContext;
    struct SwrContext* m_pAudioConversionContext;
    AVSampleFormat m_audioFormat;
-   bool m_done;
-   bool m_flushing;
-   bool m_decoded;
-   double m_firstPTS;
-   SDL_Texture* m_pTexture;
-   std::queue<AVFrame*> m_frameQueue;
-   std::mutex m_frameQueueMutex;
-   std::thread* m_pThread;
-   string m_szFilename;
-   float m_volume;
 #endif
-   bool m_loop;
+   AudioPlayer* m_pAudioPlayer;
+#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
+   std::queue<AVFrame*> m_queue;
+#endif
+   std::mutex m_mutex;
+   std::thread m_thread;
    bool m_running;
    bool m_paused;
 };

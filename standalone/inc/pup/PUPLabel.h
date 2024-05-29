@@ -34,7 +34,7 @@ public:
 
    const string& GetCaption() const { return m_szCaption; }
    void SetCaption(const string& szCaption);
-   void SetVisible(bool visible) { m_visible = visible; }
+   void SetVisible(bool visible);
    void SetSpecial(const string& szSpecial);
    void Render(SDL_Renderer* renderer, SDL_Rect& rect, int pagenum);
    const string& GetName() const { return m_szName; }
@@ -71,4 +71,5 @@ private:
    IMG_Animation* m_pAnimation;
    string m_szPath;
    int m_frame;
+   std::mutex m_mutex;
 };

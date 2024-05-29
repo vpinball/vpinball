@@ -21,8 +21,53 @@
      AlphaSort=0 is Randomize checked
 */
 
-PUPPlaylist::PUPPlaylist()
+const char* PUP_PLAYLIST_FUNCTION_STRINGS[] = {
+   "PUP_PLAYLIST_FUNCTION_DEFAULT",
+   "PUP_PLAYLIST_FUNCTION_OVERLAYS",
+   "PUP_PLAYLIST_FUNCTION_FRAMES",
+   "PUP_PLAYLIST_FUNCTION_ALPHAS",
+   "PUP_PLAYLIST_FUNCTION_SHAPES"
+};
+
+const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value)
 {
+   if ((int)value < 0 || (size_t)value >= sizeof(PUP_PLAYLIST_FUNCTION_STRINGS) / sizeof(PUP_PLAYLIST_FUNCTION_STRINGS[0]))
+      return "UNKNOWN";
+   return PUP_PLAYLIST_FUNCTION_STRINGS[value];
+}
+
+PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority)
+{
+   m_szFolder = szFolder;
+   m_szDescription = szDescription;
+   m_randomize = randomize;
+   m_restSeconds = restSeconds;
+   m_volume = volume;
+   m_priority = priority;
+
+   if (string_compare_case_insensitive(szFolder, "PUPOverlays"))
+      m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
+   else if (string_compare_case_insensitive(szFolder, "PUPFrames"))
+      m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
+   else if (string_compare_case_insensitive(szFolder, "PUPAlphas"))
+      m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
+   else if (string_compare_case_insensitive(szFolder, "PuPShapes"))
+      m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
+   else
+      m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
+
+   string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
+   for (const auto& entry : std::filesystem::directory_iterator(szFolderPath)) {
+      if (entry.is_regular_file()) {
+         string szFilename = entry.path().filename();
+         if (!szFilename.empty() && szFilename[0] != '.') {
+            m_files.push_back(szFilename);
+            m_fileMap[string_to_lower(szFilename)] = szFilename;
+         }
+      }
+   }
+   std::sort(m_files.begin(), m_files.end());
+
    m_lastIndex = 0;
 }
 
@@ -34,66 +79,63 @@ PUPPlaylist::~PUPPlaylist()
 PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 7)
-      return nullptr;
-
-   string szFolder = parts[1];
-   string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
-
-   if (szFolderPath.empty()) {
-      PLOGW.printf("Playlist folder not found: %s", szFolder.c_str());
+   if (parts.size() != 7) {
+      PLOGD.printf("Invalid playlist: %s", line.c_str());
       return nullptr;
    }
 
-   PUPPlaylist* pPlaylist = new PUPPlaylist();
+   string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), parts[1]);
+   if (szFolderPath.empty()) {
+      PLOGD.printf("Playlist folder not found: %s", parts[1].c_str());
+      return nullptr;
+   }
 
-   pPlaylist->m_szFolder = szFolder;
-   pPlaylist->m_szDescription = parts[2];
-   pPlaylist->m_randomize = (string_to_int(parts[3], 0) == 0);
-   pPlaylist->m_restSeconds = string_to_int(parts[4], 0);
-   pPlaylist->m_volume = string_to_int(parts[5], 0);
-   pPlaylist->m_priority = string_to_int(parts[6], 0);
-
-   if (string_compare_case_insensitive(pPlaylist->m_szFolder, "PUPOverlays"))
-      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
-   else if (string_compare_case_insensitive(pPlaylist->m_szFolder, "PUPFrames"))
-      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
-   else if (string_compare_case_insensitive(pPlaylist->m_szFolder, "PUPAlphas"))
-      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
-   else if (string_compare_case_insensitive(pPlaylist->m_szFolder, "PuPShapes"))
-      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
-   else
-      pPlaylist->m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
-
-   pPlaylist->m_szFolderPath = szFolderPath;
-   for (const auto& entry : std::filesystem::directory_iterator(pPlaylist->m_szFolderPath)) {
+   bool hasFiles = false;
+   for (const auto& entry : std::filesystem::directory_iterator(szFolderPath)) {
       if (entry.is_regular_file()) {
          string szFilename = entry.path().filename();
-         if (!szFilename.empty() && szFilename[0] != '.')
-            pPlaylist->m_files.push_back(szFilename);
+         if (!szFilename.empty() && szFilename[0] != '.') {
+            hasFiles = true;
+            break;
+         }
       }
    }
-   std::sort(pPlaylist->m_files.begin(), pPlaylist->m_files.end());
+
+   if (!hasFiles) {
+      PLOGD.printf("Playlist folder is empty");
+      return nullptr;
+   }
+
+   string szFolder = std::filesystem::path(szFolderPath).parent_path().filename().string();
+
+   PUPPlaylist* pPlaylist = new PUPPlaylist(
+      szFolder,
+      parts[2],
+      (string_to_int(parts[3], 0) == 0),
+      string_to_int(parts[4], 0),
+      string_to_int(parts[5], 0),
+      string_to_int(parts[6], 0));
 
    return pPlaylist;
 }
 
-string PUPPlaylist::GetPlayFile(const string& szPlayFile)
+const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 {
-   if (!szPlayFile.empty())
-      return find_path_case_insensitive(m_szFolderPath + szPlayFile);
+   static string emptyString = "";
 
-   if (m_files.empty())
-      return string();
+   std::map<string, string>::iterator it = m_fileMap.find(string_to_lower(szFilename));
+   return it != m_fileMap.end() ? it->second : emptyString;
+}
 
+const string& PUPPlaylist::GetNextPlayFile()
+{
    if (!m_randomize) {
-      std::lock_guard<std::mutex> lock(m_mutex);
       if (++m_lastIndex >= m_files.size())
          m_lastIndex = 0;
-      return m_szFolderPath + m_files[m_lastIndex];
+      return m_files[m_lastIndex];
    }
 
-   return m_szFolderPath + m_files[rand() % m_files.size()];
+   return m_files[rand() % m_files.size()];
 }
 
 string PUPPlaylist::ToString() const {
@@ -103,6 +145,5 @@ string PUPPlaylist::ToString() const {
       ", restSeconds=" + std::to_string(m_restSeconds) +
       ", volume=" + std::to_string(m_volume) +
       ", priority=" + std::to_string(m_priority) +
-      ", function=" + string(PUP_PLAYLIST_FUNCTION_TO_STRING(m_function)) +
-      ", folderPath=" + m_szFolderPath;
+      ", function=" + string(PUP_PLAYLIST_FUNCTION_TO_STRING(m_function));
 }

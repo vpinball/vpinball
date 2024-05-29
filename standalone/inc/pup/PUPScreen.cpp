@@ -6,9 +6,40 @@
 #include "PUPManager.h"
 #include "PUPPlaylist.h"
 #include "PUPLabel.h"
-#include "PUPMediaPlayer.h"
+#include "PUPMediaManager.h"
 
 #include <SDL2/SDL_image.h>
+
+const char* PUP_SCREEN_MODE_STRINGS[] = {
+   "PUP_SCREEN_MODE_OFF",
+   "PUP_SCREEN_MODE_SHOW",
+   "PUP_SCREEN_MODE_FORCE_ON",
+   "PUP_SCREEN_MODE_FORCE_POP",
+   "PUP_SCREEN_MODE_FORCE_BACK",
+   "PUP_SCREEN_MODE_FORCE_POP_BACK",
+   "PUP_SCREEN_MODE_MUSIC_ONLY"
+};
+
+const char* PUP_SCREEN_MODE_TO_STRING(PUP_SCREEN_MODE value)
+{
+   if ((int)value < 0 || (size_t)value >= sizeof(PUP_SCREEN_MODE_STRINGS) / sizeof(PUP_SCREEN_MODE_STRINGS[0]))
+      return "UNKNOWN";
+   return PUP_SCREEN_MODE_STRINGS[value];
+}
+
+const char* PUP_SCREEN_REQUEST_TYPE_STRINGS[] = {
+   "PUP_SCREEN_REQUEST_TYPE_NORMAL",
+   "PUP_SCREEN_REQUEST_TYPE_LOOP",
+   "PUP_SCREEN_REQUEST_TYPE_SET_BG",
+   "PUP_SCREEN_REQUEST_TYPE_STOP"
+};
+
+const char* PUP_SCREEN_REQUEST_TYPE_TO_STRING(PUP_SCREEN_REQUEST_TYPE value)
+{
+   if ((int)value < 0 || (size_t)value >= sizeof(PUP_SCREEN_REQUEST_TYPE_STRINGS) / sizeof(PUP_SCREEN_REQUEST_TYPE_STRINGS[0]))
+      return "UNKNOWN";
+   return PUP_SCREEN_REQUEST_TYPE_STRINGS[value];
+}
 
 /*
    screens.pup: ScreenNum,ScreenDes,PlayList,PlayFile,Loopit,Active,Priority,CustomPos
@@ -26,22 +57,33 @@
      CustomPos = CustomPos
 */
 
-PUPScreen::PUPScreen()
+PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos)
 {
    m_pManager = PUPManager::GetInstance();
 
-   m_pCustomPos = nullptr;
+   m_mode = mode;
+   m_screenNum = screenNum;
+   m_screenDes = szScreenDes;
+   m_backgroundPlaylist = szBackgroundPlaylist;
+   m_backgroundFilename = szBackgroundFilename;
+   m_transparent = transparent;
+   m_volume = volume;
+   m_pCustomPos = pCustomPos;
    memset(&m_background, 0, sizeof(m_background));
    memset(&m_overlay, 0, sizeof(m_overlay));
-   m_pMediaPlayer = new PUPMediaPlayer();
+   m_pMediaPlayerManager = new PUPMediaManager(this);
    m_labelInit = false;
    m_pagenum = 0;
    m_defaultPagenum = 0;
    m_pPageTimer = new VP::Timer();
    m_pPageTimer->SetElapsedListener(std::bind(&PUPScreen::PageTimerElapsed, this, std::placeholders::_1));
+   m_pParent = nullptr;
+
+   LoadPlaylists();
+   LoadTriggers();
 
    m_isRunning = true;
-   m_playThread = std::thread(&PUPScreen::ProcessQueue, this);
+   m_thread = std::thread(&PUPScreen::ProcessQueue, this);
 }
 
 PUPScreen::~PUPScreen()
@@ -51,13 +93,21 @@ PUPScreen::~PUPScreen()
       m_isRunning = false;
    }
    m_queueCondVar.notify_all();
-   m_playThread.join();
+   m_thread.join();
 
    delete m_pCustomPos;
    FreeRenderable(&m_background);
    FreeRenderable(&m_overlay);
-   delete m_pMediaPlayer;
+   delete m_pMediaPlayerManager;
    delete m_pPageTimer;
+
+   for (auto& [key, pPlaylist] : m_playlistMap)
+      delete pPlaylist;
+
+   for (auto& [key, pTriggers] : m_triggerMap) {
+      for (PUPTrigger* pTrigger : pTriggers)
+         delete pTrigger;
+   }
 
    for (PUPLabel* pLabel : m_labels)
       delete pLabel;
@@ -69,36 +119,68 @@ PUPScreen::~PUPScreen()
 PUPScreen* PUPScreen::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 8)
+   if (parts.size() != 8) {
+      PLOGD.printf("Invalid screen: %s", line.c_str());
       return nullptr;
+   }
 
-   PUPScreen* pScreen = new PUPScreen();
-
-   string mode = parts[5];
-   if (string_compare_case_insensitive(mode, "Show"))
-      pScreen->m_mode = PUP_SCREEN_MODE_SHOW;
-   else if (string_compare_case_insensitive(mode, "ForceON"))
-      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_ON;
-   else if (string_compare_case_insensitive(mode, "ForcePoP"))
-      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_POP;
-   else if (string_compare_case_insensitive(mode, "ForceBack"))
-      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_BACK;
-   else if (string_compare_case_insensitive(mode, "ForcePopBack"))
-      pScreen->m_mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
-   else if (string_compare_case_insensitive(mode, "MusicOnly"))
-      pScreen->m_mode = PUP_SCREEN_MODE_MUSIC_ONLY;
+   PUP_SCREEN_MODE mode;
+   if (string_compare_case_insensitive(parts[5], "Show"))
+      mode = PUP_SCREEN_MODE_SHOW;
+   else if (string_compare_case_insensitive(parts[5], "ForceON"))
+      mode = PUP_SCREEN_MODE_FORCE_ON;
+   else if (string_compare_case_insensitive(parts[5], "ForcePoP"))
+      mode = PUP_SCREEN_MODE_FORCE_POP;
+   else if (string_compare_case_insensitive(parts[5], "ForceBack"))
+      mode = PUP_SCREEN_MODE_FORCE_BACK;
+   else if (string_compare_case_insensitive(parts[5], "ForcePopBack"))
+      mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
+   else if (string_compare_case_insensitive(parts[5], "MusicOnly"))
+      mode = PUP_SCREEN_MODE_MUSIC_ONLY;
    else
-      pScreen->m_mode = PUP_SCREEN_MODE_OFF;
+      mode = PUP_SCREEN_MODE_OFF;
 
-   pScreen->m_screenNum = string_to_int(parts[0], 0);
-   pScreen->m_screenDes = parts[1];
-   pScreen->m_backgroundPlaylist = parts[2];
-   pScreen->m_backgroundFilename = parts[3];
-   pScreen->m_transparent = (parts[4] == "1");
-   pScreen->m_volume = string_to_int(parts[6], 0);
-   pScreen->m_pCustomPos = PUPCustomPos::CreateFromCSV(parts[7]);
+   return new PUPScreen(
+      mode,
+      string_to_int(parts[0], 0), // screenNum
+      parts[1], // screenDes
+      parts[2], // background Playlist
+      parts[3], // background PlayFile
+      parts[4] == "1", // transparent
+      string_to_float(parts[6], 100.0f), // volume
+      PUPCustomPos::CreateFromCSV(parts[7]));
+}
 
-   return pScreen;
+void PUPScreen::LoadPlaylists()
+{
+   string szPlaylistsPath = find_path_case_insensitive(m_pManager->GetPath() + "playlists.pup");
+   std::ifstream playlistsFile;
+   playlistsFile.open(szPlaylistsPath, std::ifstream::in);
+   if (playlistsFile.is_open()) {
+      string line;
+      int i = 0;
+      while (std::getline(playlistsFile, line)) {
+         if (++i == 1)
+            continue;
+         AddPlaylist(PUPPlaylist::CreateFromCSV(line));
+      }
+   }
+}
+
+void PUPScreen::LoadTriggers()
+{
+   string szPlaylistsPath = find_path_case_insensitive(m_pManager->GetPath() + "triggers.pup");
+   std::ifstream triggersFile;
+   triggersFile.open(szPlaylistsPath, std::ifstream::in);
+   if (triggersFile.is_open()) {
+      string line;
+      int i = 0;
+      while (std::getline(triggersFile, line)) {
+         if (++i == 1)
+            continue;
+         AddTrigger(PUPTrigger::CreateFromCSV(this, line));
+      }
+   }
 }
 
 void PUPScreen::AddChild(PUPScreen* pScreen)
@@ -132,6 +214,39 @@ void PUPScreen::SendToFront()
             std::rotate(it, it + 1, m_pParent->m_backChildren.end());
       }
    }
+}
+
+void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
+{
+   if (!pPlaylist)
+      return;
+
+   if (GetPlaylist(pPlaylist->GetFolder())) {
+      delete pPlaylist;
+      return;
+   }
+
+   m_playlistMap[string_to_lower(pPlaylist->GetFolder())] = pPlaylist;
+}
+
+PUPPlaylist* PUPScreen::GetPlaylist(const string& szFolder)
+{
+   std::map<string, PUPPlaylist*>::iterator it = m_playlistMap.find(string_to_lower(szFolder));
+   return it != m_playlistMap.end() ? it->second : nullptr;
+}
+
+void PUPScreen::AddTrigger(PUPTrigger* pTrigger)
+{
+   if (!pTrigger)
+      return;
+
+   m_triggerMap[pTrigger->GetTrigger()].push_back(pTrigger);
+}
+
+vector<PUPTrigger*>* PUPScreen::GetTriggers(const string& szTrigger)
+{
+   std::map<string, vector<PUPTrigger*>>::iterator it = m_triggerMap.find(szTrigger);
+   return it != m_triggerMap.end() ? &it->second : nullptr;
 }
 
 void PUPScreen::AddLabel(PUPLabel* pLabel)
@@ -169,6 +284,7 @@ void PUPScreen::SendLabelToFront(PUPLabel* pLabel)
 
 void PUPScreen::SetPage(int pagenum, int seconds)
 {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    m_pPageTimer->Stop();
    m_pagenum = pagenum;
 
@@ -182,6 +298,7 @@ void PUPScreen::SetPage(int pagenum, int seconds)
 
 void PUPScreen::PageTimerElapsed(VP::Timer* pTimer)
 {
+   std::lock_guard<std::mutex> lock(m_renderMutex);
    m_pPageTimer->Stop();
    m_pagenum = m_defaultPagenum;
 }
@@ -199,76 +316,144 @@ void PUPScreen::SetSize(int w, int h)
    }
 }
 
-void PUPScreen::SetBackground(const string& file)
+void PUPScreen::SetBackground(const string& szFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-   LoadRenderable(&m_background, file);
+   LoadRenderable(&m_background, szFile);
 }
 
-void PUPScreen::SetMedia(const std::string& file, int volume)
+void PUPScreen::SetOverlay(const string& szFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-
-   string ext = extension_from_path(file);
-   if (ext == "png" || ext == "jpg" || ext == "bmp") {
-       LoadRenderable(&m_background, file);
-   }
-   else {
-      if (m_background.pSurface) {
-         SDL_FreeSurface(m_background.pSurface);
-         m_background.pSurface = NULL;
-         m_background.dirty = true;
-      }
-      m_pMediaPlayer->Play(file, volume);
-   }
+   LoadRenderable(&m_overlay, szFile);
 }
 
-void PUPScreen::SetOverlay(const string& file)
+void PUPScreen::SetMedia(const std::string& szFile, float volume, int priority)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
-   LoadRenderable(&m_overlay, file);
-}
-
-void PUPScreen::PlayEx(const string& szPlaylist, const string& szPlayfilename, int volume, int priority)
-{
-   PUPPlaylist* pPlaylist = m_pManager->GetPlaylist(szPlaylist);
-   if (pPlaylist) {
-      {
-         std::lock_guard<std::mutex> lock(m_queueMutex);
-         m_requestQueue.push({ PUP_TRIGGER_PLAY_ACTION_NORMAL, pPlaylist, szPlayfilename, volume, priority});
-      }
-      m_queueCondVar.notify_one();
-   }
-}
-
-void PUPScreen::Stop()
-{
-   PLOGI.printf("Stop: screen={%s}", ToString(false).c_str());
-
-   //m_pMediaPlayer->Stop();
+   m_pMediaPlayerManager->Play(szFile, m_pParent ? (volume / 100.0f) * m_pParent->GetVolume() : volume, priority);
 }
 
 void PUPScreen::SetLoop(int state)
 {
-   PLOGI.printf("SetLoop: screen={%s}, state=%d", ToString(false).c_str(), state);
-
-   //m_pMediaPlayer->SetLoop(state);
+   std::lock_guard<std::mutex> lock(m_renderMutex);
+   m_pMediaPlayerManager->SetLoop(state != 0);
 }
 
-void PUPScreen::SetBackGround(int mode)
+void PUPScreen::SetBG(int mode)
 {
-   PLOGW.printf("Not implemented: screen={%s}, mode=%d", ToString(false).c_str(), mode);
+   std::lock_guard<std::mutex> lock(m_renderMutex);
+   m_pMediaPlayerManager->SetBG(mode != 0);
 }
 
-void PUPScreen::ProcessTrigger(PUPTrigger* pTrigger)
+void PUPScreen::QueuePlay(const string& szPlaylist, const string& szPlayFile, float volume, int priority)
 {
-   PLOGW.printf("Trigger: {%s}", pTrigger->ToString().c_str());
+   PUPPlaylist* pPlaylist = GetPlaylist(szPlaylist);
+   if (!pPlaylist) {
+      PLOGW.printf("Playlist not found: screen={%s}, playlist=%s", ToString(false).c_str(), szPlaylist.c_str());
+      return;
+   }
 
    {
       std::lock_guard<std::mutex> lock(m_queueMutex);
-      m_requestQueue.push({ pTrigger->GetPlayAction(), pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority() });
+      m_queue.push({ PUP_SCREEN_REQUEST_TYPE_NORMAL, pPlaylist, szPlayFile, volume, priority, -1 });
+   }
+
+   m_queueCondVar.notify_one();
+}
+
+void PUPScreen::QueueStop()
+{
+   PLOGW.printf("screen={%s}", ToString(false).c_str());
+
+   {
+      std::lock_guard<std::mutex> lock(m_queueMutex);
+      m_queue.push({ PUP_SCREEN_REQUEST_TYPE_STOP, nullptr, "", -1, -1, -1 });
+   }
+
+   m_queueCondVar.notify_one();
+}
+
+void PUPScreen::QueueLoop(int state)
+{
+   PLOGW.printf("screen={%s}, state=%d", ToString(false).c_str(), state);
+
+   {
+      std::lock_guard<std::mutex> lock(m_queueMutex);
+      m_queue.push({ PUP_SCREEN_REQUEST_TYPE_LOOP, nullptr, "", -1, -1, state });
    }
    m_queueCondVar.notify_one();
+}
+
+void PUPScreen::QueueBG(int mode)
+{
+   PLOGW.printf("screen={%s}, mode=%d", ToString(false).c_str(), mode);
+
+   {
+      std::lock_guard<std::mutex> lock(m_queueMutex);
+      m_queue.push({ PUP_SCREEN_REQUEST_TYPE_SET_BG, nullptr, "", -1, -1, mode });
+   }
+   m_queueCondVar.notify_one();
+}
+
+void PUPScreen::QueueTrigger(char type, int number, int value)
+{
+   if (value == 0)
+      return;
+
+   vector<PUPTrigger*>* pTriggers = GetTriggers(type + std::to_string(number));
+   if (!pTriggers)
+      return;
+
+   for (PUPTrigger* pTrigger : *pTriggers) {
+      if (pTrigger->IsResting()) {
+         PLOGW.printf("Trigger is resting: trigger=%s", pTrigger->ToString().c_str());
+         continue;
+      }
+      pTrigger->SetTriggered();
+
+      switch(pTrigger->GetPlayAction())
+      {
+         case PUP_TRIGGER_PLAY_ACTION_NORMAL:
+         case PUP_TRIGGER_PLAY_ACTION_LOOP:
+         case PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY:
+         case PUP_TRIGGER_PLAY_ACTION_SET_BG:
+         {
+            if (pTrigger->GetPlayAction() == PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY) {
+               PLOGE.printf("Probably wrong on this: %s", PUP_TRIGGER_PLAY_ACTION_TO_STRING(pTrigger->GetPlayAction()));
+            }
+
+            {
+               std::lock_guard<std::mutex> lock(m_queueMutex);
+               m_queue.push({ PUP_SCREEN_REQUEST_TYPE_NORMAL, (PUPPlaylist*)pTrigger->GetPlaylist(), pTrigger->GetPlayFile(), pTrigger->GetVolume(), pTrigger->GetPriority(), -1 });
+               if (pTrigger->GetPlayAction() == PUP_TRIGGER_PLAY_ACTION_SET_BG)
+                  m_queue.push({ PUP_SCREEN_REQUEST_TYPE_SET_BG, nullptr, "", -1, -1, 1 });
+               else if (pTrigger->GetPlayAction() == PUP_TRIGGER_PLAY_ACTION_LOOP)
+                  m_queue.push({ PUP_SCREEN_REQUEST_TYPE_LOOP, nullptr, "", -1, -1, 1 });
+            }
+            
+            m_queueCondVar.notify_one();
+            break;
+         }
+         case PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER:
+         case PUP_TRIGGER_PLAY_ACTION_STOP_FILE:
+         {
+            if (pTrigger->GetPlayAction() == PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER || pTrigger->GetPlayAction() == PUP_TRIGGER_PLAY_ACTION_STOP_FILE) {
+               PLOGE.printf("Probably wrong on this: %s", PUP_TRIGGER_PLAY_ACTION_TO_STRING(pTrigger->GetPlayAction()));
+            }
+     
+            {
+               std::lock_guard<std::mutex> lock(m_queueMutex);
+               m_queue.push({ PUP_SCREEN_REQUEST_TYPE_STOP, nullptr, "", -1, -1, -1 });
+            }
+            m_queueCondVar.notify_one();
+            break;
+         }
+         default:
+            PLOGW.printf("Play action not implemented: %s", PUP_TRIGGER_PLAY_ACTION_TO_STRING(pTrigger->GetPlayAction()));
+            break;
+      }
+   }
 }
 
 void PUPScreen::Init(SDL_Renderer* pRenderer)
@@ -280,68 +465,73 @@ void PUPScreen::Init(SDL_Renderer* pRenderer)
          pScreen->Init(pRenderer);
    }
 
-   PlayEx(m_backgroundPlaylist, m_backgroundFilename, m_volume, 0);
+   m_pMediaPlayerManager->SetRenderer(pRenderer);
+
+   if (!m_backgroundPlaylist.empty()) {
+      QueuePlay(m_backgroundPlaylist, m_backgroundFilename, m_volume, -1);
+      QueueBG(true);
+   }
 }
 
 void PUPScreen::ProcessQueue()
 {
    while (true) {
       std::unique_lock<std::mutex> lock(m_queueMutex);
-      m_queueCondVar.wait(lock, [this] { return !m_requestQueue.empty() || !m_isRunning; });
+      m_queueCondVar.wait(lock, [this] { return !m_queue.empty() || !m_isRunning; });
 
       if (!m_isRunning) {
-         while (!m_requestQueue.empty())
-            m_requestQueue.pop();
+         while (!m_queue.empty())
+            m_queue.pop();
          break;
       }
 
-      PUPScreenRequest request = m_requestQueue.front();
-      m_requestQueue.pop();
+      PUPScreenRequest request = m_queue.front();
+      m_queue.pop();
       lock.unlock();
 
-      switch (request.action) {
-         case PUP_TRIGGER_PLAY_ACTION_NORMAL:
-         case PUP_TRIGGER_PLAY_ACTION_SET_BG:
-         case PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY:
-         case PUP_TRIGGER_PLAY_ACTION_LOOP:
+      switch (request.type) {
+         case PUP_SCREEN_REQUEST_TYPE_NORMAL:
          {
-            if (!request.pPlaylist)
-               continue;
-
-            int volume;
-            string szPath;
-
+            string szPlayFile;
             if (!request.szPlayFile.empty()) {
-                szPath = request.pPlaylist->GetPlayFile(request.szPlayFile);
-                volume = request.volume;
+               szPlayFile = request.pPlaylist->GetPlayFile(request.szPlayFile);
+               if (szPlayFile.empty()) {
+                  PLOGE.printf("PlayFile not found: screen={%s}, playlist=%s, playFile=%s", ToString(false).c_str(), request.pPlaylist->ToString().c_str(), szPlayFile.c_str());
+                  continue;
+               }
             }
             else {
-               szPath = request.pPlaylist->GetPlayFile("");
-               volume = request.pPlaylist->GetVolume();
+               szPlayFile = request.pPlaylist->GetNextPlayFile();
             }
-
-            if (szPath.empty()) {
-               PLOGW.printf("Unable to find path: screen={%s}, action={%s}, playlist={%s}, playFile=%s, volume=%d, priority=%d", ToString(false).c_str(), 
-                  PUP_TRIGGER_PLAY_ACTION_TO_STRING(request.action), request.pPlaylist->ToString().c_str(), request.szPlayFile.c_str(), request.volume, request.priority);
-               continue;
-            }
-
+            string szPath = m_pManager->GetPath() + request.pPlaylist->GetFolder() + PATH_SEPARATOR_CHAR + szPlayFile;
             switch (request.pPlaylist->GetFunction()) {
+               case PUP_PLAYLIST_FUNCTION_DEFAULT:
+                  SetMedia(szPath, request.volume, request.priority);
+                  break;
                case PUP_PLAYLIST_FUNCTION_FRAMES:
                   SetBackground(szPath);
                   break;
                case PUP_PLAYLIST_FUNCTION_OVERLAYS:
+               case PUP_PLAYLIST_FUNCTION_ALPHAS:
                   SetOverlay(szPath);
                   break;
                default:
-                  SetMedia(szPath, volume);
+                  PLOGW.printf("Playlist function not implemented: %s", PUP_PLAYLIST_FUNCTION_TO_STRING(request.pPlaylist->GetFunction()));
                   break;
             }
+            break;
          }
-         break;
-
+         case PUP_SCREEN_REQUEST_TYPE_LOOP:
+            SetLoop(request.value);
+            break;
+         case PUP_SCREEN_REQUEST_TYPE_SET_BG:
+            SetBG(request.value);
+            break;
+         case PUP_SCREEN_REQUEST_TYPE_STOP:
+            m_pMediaPlayerManager->Stop();
+            break;
          default:
-            PLOGE.printf("Unhandled action: %s", PUP_TRIGGER_PLAY_ACTION_TO_STRING(request.action));
+            PLOGW.printf("Request type not implemented: %s", PUP_SCREEN_REQUEST_TYPE_TO_STRING(request.type));
             break;
       }
    }
@@ -353,12 +543,7 @@ void PUPScreen::Render()
 
    Render(&m_background);
 
-   if (m_mode == PUP_SCREEN_MODE_FORCE_POP || m_mode == PUP_SCREEN_MODE_FORCE_POP_BACK) {
-      if (m_pMediaPlayer->IsPlaying())
-         m_pMediaPlayer->Render(m_pRenderer, &m_rect);
-   }
-   else
-      m_pMediaPlayer->Render(m_pRenderer, &m_rect);
+   m_pMediaPlayerManager->Render(m_rect);
 
    for (auto pChildren : { &m_defaultChildren, &m_backChildren, &m_topChildren }) {
       for (PUPScreen* pScreen : *pChildren)
