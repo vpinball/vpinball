@@ -34,11 +34,11 @@ bool PUPManager::LoadConfig(const string& szRomName)
       return false;
    }
 
-   m_szPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
-   if (m_szPath.empty())
+   m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
+   if (m_szRootPath.empty())
       return false;
 
-   m_szPath = find_directory_case_insensitive(m_szPath, szRomName);
+   m_szPath = find_directory_case_insensitive(m_szRootPath, szRomName);
    if (m_szPath.empty())
       return false;
 
@@ -80,20 +80,16 @@ bool PUPManager::LoadConfig(const string& szRomName)
 
    string szFontsPath = find_directory_case_insensitive(m_szPath, "FONTS");
    if (!szFontsPath.empty()) {
-      int count = 0;
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
          if (entry.is_regular_file()) {
             string szFontPath = entry.path().string();
-            if (extension_from_path(szFontPath) == "ttf") {
-               if (AddFont(TTF_OpenFont(szFontPath.c_str(), 8)))
-                  count++;
-               else {
-                  PLOGE.printf("Unable to load %s", szFontPath.c_str());
-               }
-            }
+            if (extension_from_path(szFontPath) == "ttf")
+               AddFont(TTF_OpenFont(szFontPath.c_str(), 8), entry.path().filename());
          }
       }
-      PLOGI.printf("Fonts loaded: path=%s, size=%d", szFontsPath.c_str(), count);
+   }
+   else {
+      PLOGI.printf("No FONTS folder found");
    }
 
    m_init = true;
@@ -114,7 +110,7 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
 
    m_screenMap[pScreen->GetScreenNum()] = pScreen;
 
-   PLOGW.printf("Screen added: screen={%s}", pScreen->ToString().c_str());
+   PLOGI.printf("Screen added: screen={%s}", pScreen->ToString().c_str());
 
    return true;
 }
@@ -125,19 +121,34 @@ PUPScreen* PUPManager::GetScreen(int screenNum)
    return it != m_screenMap.end() ? it->second : nullptr;
 }
 
-bool PUPManager::AddFont(TTF_Font* pFont)
+bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 {
    if (!pFont)
       return false;
 
-   m_fontMap[string_to_lower(string(TTF_FontFaceFamilyName(pFont)))] = pFont;
+   string szFamilyName = string(TTF_FontFaceFamilyName(pFont));
+   string szNormalizedFamilyName = string_to_lower(string_replace_all(szFamilyName, "  ", " "));
+
+   m_fontMap[szNormalizedFamilyName] = pFont;
+   m_fontFilenameMap[string_to_lower(szFilename.substr(0, szFilename.length() - 4))] = pFont;
+
+   PLOGI.printf("Font added: familyName=%s, filename=%s", szFamilyName.c_str(), szFilename.c_str());
+
    return true;
 }
 
-TTF_Font* PUPManager::GetFont(const string& szFamilyName)
+TTF_Font* PUPManager::GetFont(const string& szFont)
 {
-   std::map<string, TTF_Font*>::iterator it = m_fontMap.find(string_to_lower(szFamilyName));
-   return it != m_fontMap.end() ? it->second : nullptr;
+   string szNormalizedFamilyName = string_to_lower(string_replace_all(szFont, "  ", " "));
+
+   std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szNormalizedFamilyName);
+   if (it != m_fontMap.end())
+      return it->second;
+   it = m_fontFilenameMap.find(string_to_lower(szFont));
+   if (it != m_fontFilenameMap.end())
+      return it->second;
+
+   return nullptr;
 }
 
 void PUPManager::QueueTriggerData(PUPTriggerData data)

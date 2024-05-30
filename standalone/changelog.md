@@ -4,6 +4,26 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/30/24
+    * Add support for multiline PuP Labels
+    * Replace `\\r` with `\n` in PuP Label captions
+    * Add support for loading PuP fonts by filename and family name
+    * Fix PUPPinDisplay `GetRoot` (@francisdb, @toccata10)
+
+* 05/29/24
+    * Refactor PUP again
+    * Simplify PUPMediaPlayer. Add support for MP3 decoding
+    * Move background player logic to PUPMediaManager 
+    * Screens now get own copies of playlists and triggers
+
+* 05/15/24
+    * Refactor PuP to better support triggers
+    * More work on PuP labels and screen ordering
+    * Add wctype.h to compile under GCC 14 (@WildCoder)
+
+* 05/09/24
+    * Implement open panel for macOS builds (@kaicherry)
+
 * 05/04/24
     * Bump Wine source to 9.8 [655de4b0](https://gitlab.winehq.org/wine/wine/-/tree/655de4b0bf09746cd163dc771abd2c0f3c777447)
 

@@ -16,7 +16,13 @@
 PUPLabel::PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
 {
    m_szName = szName;
-   m_pFont = PUPManager::GetInstance()->GetFont(szFont);
+
+   TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
+   if (!pFont) {
+       PLOGE.printf("Label font not found: name=%s, font=%s", szName.c_str(), szFont.c_str());
+   }
+   m_pFont = pFont;
+
    m_size = size;
    m_color = color;
    m_angle = angle;
@@ -52,7 +58,8 @@ void PUPLabel::SetCaption(const string& szCaption)
       return;
 
    string szText = szCaption;
-   std::replace(szText.begin(), szText.end(), '~', '\n');
+   szText = string_replace_all(szText, "~", "\n");
+   szText = string_replace_all(szText, "\\r", "\n");
 
    {
       std::lock_guard<std::mutex> lock(m_mutex);
@@ -117,7 +124,12 @@ void PUPLabel::SetSpecial(const string& szSpecial)
             }
 
             if (json["fname"].exists()) {
-               m_pFont = PUPManager::GetInstance()->GetFont(json["fname"].as_str());
+               string szFont = json["fname"].as_str();
+               TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
+               if (!pFont) {
+                  PLOGE.printf("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
+               }
+               m_pFont = pFont;
                m_dirty = true;
             }
 
@@ -274,6 +286,9 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
             m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_frame]);
             m_dirty = false;
          }
+         else {
+            PLOGE.printf("Unable to load animation: %s", m_szPath.c_str());
+         }
       }
       else {
          if (m_pFont)
@@ -281,10 +296,8 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
       }
    }
 
-   if (!m_pTexture) {
-      PLOGW.printf("Unable to render label: caption=%s", m_szCaption.c_str());
+   if (!m_pTexture)
       return;
-   }
 
    if (m_pAnimation) {
       if (++m_frame >= m_pAnimation->count)
@@ -350,16 +363,19 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    TTF_SetFontOutline(m_pFont, 0);
 
    SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
-   SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended(m_pFont, m_szCaption.c_str(), textColor);
-   if (!pTextSurface)
+   SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), textColor, 0);
+   if (!pTextSurface) {
+      PLOGE.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), TTF_GetError());
       return;
+   }
 
    SDL_Surface* pMergedSurface = NULL;
 
    if (m_shadowState) {
       SDL_Color shadowColor = { GetRValue(m_shadowColor), GetGValue(m_shadowColor), GetBValue(m_shadowColor) };
-      SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended(m_pFont, m_szCaption.c_str(), shadowColor);
+      SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), shadowColor, 0);
       if (!pShadowSurface) {
+         PLOGE.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), TTF_GetError());
          delete pTextSurface;
          return;
       }
