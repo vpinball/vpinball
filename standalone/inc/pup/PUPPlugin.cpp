@@ -34,10 +34,8 @@ void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomNam
       return;
    }
 
-   if (m_pManager->LoadConfig(szRomName)) {
-      DataReceive( 'D', 0, 1 );
+   if (m_pManager->LoadConfig(szRomName))
       m_pManager->Start();
-   }
 
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetPUPTriggerCallback(OnPUPCaptureTrigger, this);
