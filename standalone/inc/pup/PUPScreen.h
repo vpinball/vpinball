@@ -73,6 +73,7 @@ public:
    void AddChild(PUPScreen* pScreen);
    void SetParent(PUPScreen* pParent) { m_pParent = pParent; }
    PUPScreen* GetParent() { return m_pParent; }
+   bool HasParent() { return m_pParent != nullptr;}
    void AddPlaylist(PUPPlaylist* pPlaylist);
    PUPPlaylist* GetPlaylist(const string& szFolder);
    void AddTrigger(PUPTrigger* pTrigger);

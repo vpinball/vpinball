@@ -9,6 +9,7 @@ The downside of this approach is not accurately keeping track of history:
     * Replace `\\r` with `\n` in PuP Label captions
     * Add support for loading PuP fonts by filename and family name
     * Fix PUPPinDisplay `GetRoot` (@francisdb, @toccata10)
+    * Add support for PuP DMD, Playfield, and FullDMD windows
 
 * 05/29/24
     * Refactor PUP again

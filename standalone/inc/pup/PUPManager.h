@@ -8,17 +8,40 @@
 
 #include <SDL2/SDL_ttf.h>
 
-#define PUP_SETTINGS_BACKGLASSX      320
-#define PUP_SETTINGS_BACKGLASSY      30
-#define PUP_SETTINGS_BACKGLASSWIDTH  290
-#define PUP_SETTINGS_BACKGLASSHEIGHT 218
-#define PUP_ZORDER_BACKGLASS         150
+#define PUP_SCREEN_TOPPER             0
+#define PUP_SETTINGS_TOPPERX          320
+#define PUP_SETTINGS_TOPPERY          30
+#define PUP_SETTINGS_TOPPERWIDTH      290
+#define PUP_SETTINGS_TOPPERHEIGHT     75
+#define PUP_ZORDER_TOPPER             300
 
-#define PUP_SETTINGS_TOPPERX         320
-#define PUP_SETTINGS_TOPPERY         (PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5)
-#define PUP_SETTINGS_TOPPERWIDTH     290
-#define PUP_SETTINGS_TOPPERHEIGHT    75
-#define PUP_ZORDER_TOPPER            300
+#define PUP_SCREEN_BACKGLASS          2
+#define PUP_SETTINGS_BACKGLASSX       PUP_SETTINGS_TOPPERX
+#define PUP_SETTINGS_BACKGLASSY       PUP_SETTINGS_TOPPERY + PUP_SETTINGS_TOPPERHEIGHT + 5
+#define PUP_SETTINGS_BACKGLASSWIDTH   290
+#define PUP_SETTINGS_BACKGLASSHEIGHT  218
+#define PUP_ZORDER_BACKGLASS          150
+
+#define PUP_SCREEN_DMD                1
+#define PUP_SETTINGS_DMDX             PUP_SETTINGS_TOPPERX
+#define PUP_SETTINGS_DMDY             PUP_SETTINGS_BACKGLASSY + PUP_SETTINGS_BACKGLASSHEIGHT + 5
+#define PUP_SETTINGS_DMDWIDTH         290
+#define PUP_SETTINGS_DMDHEIGHT        75
+#define PUP_ZORDER_DMD                200
+
+#define PUP_SCREEN_PLAYFIELD          3
+#define PUP_SETTINGS_PLAYFIELDX       PUP_SETTINGS_TOPPERX + PUP_SETTINGS_TOPPERWIDTH + 5
+#define PUP_SETTINGS_PLAYFIELDY       PUP_SETTINGS_TOPPERY
+#define PUP_SETTINGS_PLAYFIELDWIDTH   216
+#define PUP_SETTINGS_PLAYFIELDHEIGHT  384
+#define PUP_ZORDER_PLAYFIELD          150
+
+#define PUP_SCREEN_FULLDMD            5
+#define PUP_SETTINGS_FULLDMDX         PUP_SETTINGS_TOPPERX
+#define PUP_SETTINGS_FULLDMDY         PUP_SETTINGS_DMDY + 5
+#define PUP_SETTINGS_FULLDMDWIDTH     290
+#define PUP_SETTINGS_FULLDMDHEIGHT    150
+#define PUP_ZORDER_FULLDMD            200
 
 typedef struct {
    char type;
@@ -52,6 +75,7 @@ public:
 private:
    PUPManager();
 
+   void AddWindow(const string& szWindowName, int defaultScreen, int defaultX, int defaultY, int defaultWidth, int defaultHeight, int zOrder);
    void ProcessQueue();
 
    static PUPManager* m_pInstance;
@@ -61,8 +85,7 @@ private:
    std::map<int, PUPScreen*> m_screenMap;
    std::map<string, TTF_Font*> m_fontMap;
    std::map<string, TTF_Font*> m_fontFilenameMap;
-   PUPWindow* m_pBackglassWindow;
-   PUPWindow* m_pTopperWindow;
+   vector<PUPWindow*> m_windows;
    std::queue<PUPTriggerData> m_triggerDataQueue;
    std::mutex m_queueMutex;
    std::condition_variable m_queueCondVar;
