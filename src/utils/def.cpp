@@ -649,6 +649,12 @@ bool string_compare_case_insensitive(const string& str1, const string& str2)
    return string_to_lower(str1) == string_to_lower(str2);
 }
 
+bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix)
+{
+   if(prefix.size() > str.size()) return false;
+   return string_compare_case_insensitive(str.substr(0, prefix.size()), prefix);
+}
+
 string string_to_lower(const string& str)
 {
    string lowerStr = str;
@@ -657,10 +663,15 @@ string string_to_lower(const string& str)
    return lowerStr;
 }
 
-bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix)
+string string_replace_all(const string& szStr, const string& szFrom, const string& szTo)
 {
-   if(prefix.size() > str.size()) return false;
-   return string_compare_case_insensitive(str.substr(0, prefix.size()), prefix);
+   size_t startPos = szStr.find(szFrom);
+   if (startPos == std::string::npos)
+      return szStr;
+
+   string szNewStr = szStr;
+   szNewStr.replace(startPos, szFrom.length(), szTo);
+   return string_replace_all(szNewStr, szFrom, szTo);
 }
 
 string create_hex_dump(const UINT8* buffer, size_t size)

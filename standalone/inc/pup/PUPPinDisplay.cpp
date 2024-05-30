@@ -431,9 +431,7 @@ STDMETHODIMP PUPPinDisplay::put_GetGame(BSTR Value)
 
 STDMETHODIMP PUPPinDisplay::get_GetRoot(BSTR *Value)
 {
-   string szPath = g_pvp->m_currentTablePath;
-
-   CComBSTR Val(szPath.c_str());
+   CComBSTR Val(m_pManager->GetRootPath().c_str());
    *Value = Val.Detach();
 
    return S_OK;

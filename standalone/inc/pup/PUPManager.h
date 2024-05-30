@@ -39,10 +39,11 @@ public:
    static PUPManager* GetInstance();
    bool IsInit() const { return m_init; }
    bool LoadConfig(const string& szRomName);
+   const string& GetRootPath() { return m_szRootPath; }
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
    PUPScreen* GetScreen(int screenNum);
-   bool AddFont(TTF_Font* pFont);
+   bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFamily);
    void QueueTriggerData(PUPTriggerData data);
    void Start();
@@ -55,9 +56,11 @@ private:
 
    static PUPManager* m_pInstance;
    bool m_init;
+   string m_szRootPath;
    string m_szPath;
    std::map<int, PUPScreen*> m_screenMap;
    std::map<string, TTF_Font*> m_fontMap;
+   std::map<string, TTF_Font*> m_fontFilenameMap;
    PUPWindow* m_pBackglassWindow;
    PUPWindow* m_pTopperWindow;
    std::queue<PUPTriggerData> m_triggerDataQueue;
