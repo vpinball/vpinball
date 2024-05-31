@@ -23,6 +23,7 @@ Changelog:
 - add EnableDepthMask to the primitive element
 - YieldTime will now do nothing anymore
 - add Option property to table to store options that are presented to the user in the Tweak mode
+- add global FrameIndex
 
 10.7.4:
 - add Setting property to the globals
@@ -122,6 +123,7 @@ GLOBALS
 Variables
 ---------
 
+*FrameIndex(int) - index of the current frame, incremented for each new frame
 *GameTime(int) - gets the current internal game time in milliseconds
 *SystemTime(int) - gets the current system time in milliseconds
 

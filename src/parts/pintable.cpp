@@ -744,6 +744,16 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_FrameIndex(long *pVal)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   *pVal = g_pplayer->m_overall_frames;
+
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
 {
    if (!g_pplayer)
