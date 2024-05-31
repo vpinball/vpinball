@@ -4,9 +4,12 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 05/31/24
+    * Prevent empty captions from resetting PuP image labels (@francisdb)
+
 * 05/30/24
-    * Add support for multiline PuP Labels
-    * Replace `\\r` with `\n` in PuP Label captions
+    * Add support for multiline PuP labels
+    * Replace `\\r` with `\n` in PuP label captions
     * Add support for loading PuP fonts by filename and family name
     * Fix PUPPinDisplay `GetRoot` (@francisdb, @toccata10)
     * Add support for PuP DMD, Playfield, and FullDMD windows

@@ -17,11 +17,15 @@ PUPLabel::PUPLabel(const string& szName, const string& szFont, float size, LONG 
 {
    m_szName = szName;
 
-   TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
-   if (!pFont) {
-       PLOGE.printf("Label font not found: name=%s, font=%s", szName.c_str(), szFont.c_str());
+   if (!szFont.empty()) {
+      TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
+      if (!pFont) {
+         PLOGE.printf("Font not found: label=%s, font=%s", szName.c_str(), szFont.c_str());
+      }
+      m_pFont = pFont;
    }
-   m_pFont = pFont;
+   else
+      m_pFont = nullptr;
 
    m_size = size;
    m_color = color;
@@ -50,10 +54,16 @@ PUPLabel::~PUPLabel()
 {
    if (m_pTexture)
       SDL_DestroyTexture(m_pTexture);
+
+   if (m_pAnimation)
+      IMG_FreeAnimation(m_pAnimation);
 }
 
 void PUPLabel::SetCaption(const string& szCaption)
 {
+   if (szCaption.empty() && m_type != PUP_LABEL_TYPE_TEXT)
+      return;
+
    if (szCaption == "`u`")
       return;
 
@@ -67,9 +77,9 @@ void PUPLabel::SetCaption(const string& szCaption)
          m_type = PUP_LABEL_TYPE_TEXT;
          m_szPath.clear();
 
-         const string szExt = extension_from_path(szCaption);
+         const string szExt = extension_from_path(szText);
          if (szExt == "gif" || szExt == "png" || szExt == "apng" || szExt == "bmp" || szExt == "jpg") {
-            std::filesystem::path fs_path(normalize_path_separators(szCaption));
+            std::filesystem::path fs_path(normalize_path_separators(szText));
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(fs_path.parent_path());
             if (pPlaylist) {
                string szFile = pPlaylist->GetPlayFile(fs_path.filename().string());
@@ -273,21 +283,38 @@ void PUPLabel::SetSpecial(const string& szSpecial)
 void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
+
    if (!m_visible || pagenum != m_pagenum || m_szCaption.empty())
       return;
 
    if (m_dirty) {
       if (!m_szPath.empty()) {
-         if (m_pAnimation)
-            IMG_FreeAnimation(m_pAnimation);
-         m_pAnimation = IMG_LoadAnimation(m_szPath.c_str());
-         if (m_pAnimation) {
-            m_frame = 0;
-            m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_frame]);
-            m_dirty = false;
+         if (m_pTexture) {
+            SDL_DestroyTexture(m_pTexture);
+            m_pTexture = NULL;
          }
-         else {
-            PLOGE.printf("Unable to load animation: %s", m_szPath.c_str());
+         if (m_pAnimation) {
+            IMG_FreeAnimation(m_pAnimation);
+            m_pAnimation = nullptr;
+         }
+         if (m_type == PUP_LABEL_TYPE_IMAGE) {
+            m_pTexture = IMG_LoadTexture(pRenderer, m_szPath.c_str());
+            if (m_pTexture)
+               m_dirty = false;
+            else {
+               PLOGE.printf("Unable to load image: %s", m_szPath.c_str());
+            }
+         }
+         else if (m_type == PUP_LABEL_TYPE_GIF) {
+            m_pAnimation = IMG_LoadAnimation(m_szPath.c_str());
+            if (m_pAnimation) {
+               m_frame = 0;
+               m_pTexture = SDL_CreateTextureFromSurface(pRenderer, m_pAnimation->frames[m_frame]);
+               m_dirty = false;
+            }
+            else {
+               PLOGE.printf("Unable to load animation: %s", m_szPath.c_str());
+            }
          }
       }
       else {
@@ -308,13 +335,13 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
    float width;
    float height;
 
-   if (m_pAnimation) {
-      width = (m_width / 100.0) * rect.w;
-      height = (m_height / 100.0) * rect.h;
-   }
-   else {
+   if (m_type == PUP_LABEL_TYPE_TEXT) {
       width = m_width;
       height = m_height;
+   }
+   else {
+      width = (m_width / 100.0) * rect.w;
+      height = (m_height / 100.0) * rect.h;
    }
 
    SDL_FRect dest = { (float)rect.x, (float)rect.y, width, height };
