@@ -40,6 +40,7 @@ As for coding light sequences for original tables, please check this helper app:
 
 | Name | Type | Description |
 | ---- | ---- | ----------- |
+| *FrameIndex | int | index of the current frame, incremented for each new frame |
 | *GameTime | int | gets the current internal game time in milliseconds |
 | *SystemTime | int | gets the current system time in milliseconds |
 | | | |
@@ -981,7 +982,8 @@ The following methods only applies to mesh primitives with an animation sequence
 - add `Shadows` property to Light element
 - add `EnableDepthMask` to the primitive element
 - `YieldTime` will now do nothing anymore
-
+- add global `FrameIndex`
+ 
 ### 10.7.4
 - add `Setting` property to the globals
 - document missing `GetTextFile`
