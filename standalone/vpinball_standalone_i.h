@@ -3307,6 +3307,9 @@ ITableGlobal : public IDispatch
     virtual HRESULT STDMETHODCALLTYPE get_GameTime(
         long *pVal) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE get_FrameIndex(
+        long *pVal) = 0;
+
     virtual HRESULT STDMETHODCALLTYPE get_SystemTime(
         long *pVal) = 0;
 
@@ -3714,6 +3717,10 @@ typedef struct ITableGlobalVtbl {
         ITableGlobal *This,
         long *pVal);
 
+    HRESULT (STDMETHODCALLTYPE *get_FrameIndex)(
+        ITableGlobal *This,
+        long *pVal);
+
     HRESULT (STDMETHODCALLTYPE *get_SystemTime)(
         ITableGlobal *This,
         long *pVal);
@@ -4038,6 +4045,7 @@ interface ITableGlobal {
 #define ITableGlobal_get_AddCreditKey(This,pVal) (This)->lpVtbl->get_AddCreditKey(This,pVal)
 #define ITableGlobal_get_AddCreditKey2(This,pVal) (This)->lpVtbl->get_AddCreditKey2(This,pVal)
 #define ITableGlobal_get_GameTime(This,pVal) (This)->lpVtbl->get_GameTime(This,pVal)
+#define ITableGlobal_get_FrameIndex(This,pVal) (This)->lpVtbl->get_FrameIndex(This,pVal)
 #define ITableGlobal_get_SystemTime(This,pVal) (This)->lpVtbl->get_SystemTime(This,pVal)
 #define ITableGlobal_GetCustomParam(This,index,param) (This)->lpVtbl->GetCustomParam(This,index,param)
 #define ITableGlobal_get_Setting(This,Section,SettingName,pVal) (This)->lpVtbl->get_Setting(This,Section,SettingName,pVal)
@@ -4202,6 +4210,9 @@ static __WIDL_INLINE HRESULT ITableGlobal_get_AddCreditKey2(ITableGlobal* This,l
 }
 static __WIDL_INLINE HRESULT ITableGlobal_get_GameTime(ITableGlobal* This,long *pVal) {
     return This->lpVtbl->get_GameTime(This,pVal);
+}
+static __WIDL_INLINE HRESULT ITableGlobal_get_FrameIndex(ITableGlobal* This,long *pVal) {
+    return This->lpVtbl->get_FrameIndex(This,pVal);
 }
 static __WIDL_INLINE HRESULT ITableGlobal_get_SystemTime(ITableGlobal* This,long *pVal) {
     return This->lpVtbl->get_SystemTime(This,pVal);
