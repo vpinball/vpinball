@@ -1644,7 +1644,7 @@ Class cvpmMech
 	End Sub
 
 	Public Sub AddPulseSwNew(aSwNo, aInterval, aStart, aEnd)
-		If Controller.Version >= "01200000" Then
+		If Controller.Version >= 01200000 Then
 			mSw(mNextSw) = Array(aSwNo, aStart, aEnd, aInterval)
 		Else
 			mSw(mNextSw) = Array(aSwNo, -aInterval, aEnd - aStart + 1, 0)
@@ -2509,8 +2509,8 @@ Sub PinMAMETimer_Timer
 	Dim ChgLamp,ChgSol,ChgGI,ChgLed, ii, tmp, idx
 	Dim DMDp
 	Dim ChgNVRAM
-	
-	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX version)
+
+	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX versions)
 	Dim UpdateVisual
 	If HasFrameIndex Then
 		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
