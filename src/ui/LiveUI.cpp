@@ -1586,8 +1586,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             int tm = m_renderer->m_toneMapper + (int)step;
             if (tm < 0)
-               tm = ToneMapper::TM_NEUTRAL;
-            if (tm > ToneMapper::TM_NEUTRAL)
+               tm = ToneMapper::TM_AGX;
+            if (tm > ToneMapper::TM_AGX)
                tm = ToneMapper::TM_REINHARD;
             m_renderer->m_toneMapper = (ToneMapper)tm;
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
@@ -2047,7 +2047,12 @@ void LiveUI::UpdateTweakModeUI()
             snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : m_renderer->m_toneMapper == 2 ? "Filmic" : "Neutral", ""); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
+                                                                 : m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
+                                                                 : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
+                                                                 : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
+                                                                 :                                                  "AgX","");
+            break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 

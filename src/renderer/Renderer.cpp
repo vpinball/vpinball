@@ -1884,9 +1884,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                                                   : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
-                                                   : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
-                                                                                            : SHADER_TECHNIQUE_fb_tmtonemap);
+                                                     : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                     : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
+                                                     : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
+                                                     : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
@@ -1901,6 +1902,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter);
+      else if (m_toneMapper == TM_AGX)
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter);
       else // TM_TONY_MC_MAPFACE
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
