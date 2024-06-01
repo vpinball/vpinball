@@ -51,6 +51,7 @@
 //
 // This header is a common header to be used both by VPX and its plugins.
 
+
 #if defined(_MSC_VER)
    // Microsoft
 #define VPX_EXPORT extern "C" __declspec(dllexport)
@@ -66,7 +67,7 @@
 // VPX Plugin API
 
 // Callbacks
-typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
+typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* userData, void* eventData);
 
 // Core VPX events
 #define VPX_EVT_ON_GAME_START       "VPX.OnGameStart"       // Broadcasted during player creation, before script initialization
@@ -97,21 +98,48 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* data);
 #endif
 
 
+// For compability and ease of binding reasons we stick to C 89 syntax: no bool type, no nested typedef,...
+#ifndef BOOL
+typedef int                 BOOL;
+#endif
+
+
+typedef struct VPXTableInfo
+{
+   const char* path;              // [R_]
+   float tableWidth, tableHeight; // [R_]
+} VPXTableInfo;
+
+
+typedef struct VPXViewSetupDef
+{
+   // See ViewSetup class for member description
+   int viewMode;                                       // [R_]
+   float sceneScaleX, sceneScaleY, sceneScaleZ;        // [R_]
+   float viewX, viewY, viewZ;                          // [RW]
+   float lookAt;                                       // [R_]
+   float viewportRotation;                             // [R_]
+   float FOV;                                          // [R_]
+   float layback;                                      // [R_]
+   float viewHOfs, viewVOfs;                           // [R_]
+   float windowTopZOfs, windowBottomZOfs;              // [R_]
+   // Following fields are defined in user settings
+   float screenWidth, screenHeight, screenInclination; // [R_]
+   float realToVirtualScale;                           // [R_]
+   float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
+} VPXViewSetupDef;
+
+
 typedef struct VPXPluginAPI
 {
    // Communication bus
    unsigned int (*GetEventID)(const char* name);
-   void (*SubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
+   void (*SubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback, void* userData);
    void (*UnsubscribeEvent)(const unsigned int eventId, const vpxpi_event_callback callback);
    void (*BroadcastEvent)(const unsigned int eventId, void* data);
 
    // General information API
-   typedef struct TableInfo
-   {
-      const char* path;              // [R_]
-      float tableWidth, tableHeight; // [R_]
-   } TableInfo;
-   void (*GetTableInfo)(TableInfo* info);
+   void (*GetTableInfo)(VPXTableInfo* info);
 
    // User Interface
    enum OptionUnit { NONE, PERCENT };
@@ -120,25 +148,8 @@ typedef struct VPXPluginAPI
    void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
 
    // View management
-   void (*DisableStaticPrerendering)(const bool disable);
-   typedef struct ViewSetupDef
-   {
-      // See ViewSetup class for member description
-      int viewMode;                                       // [R_]
-      float sceneScaleX, sceneScaleY, sceneScaleZ;        // [R_]
-      float viewX, viewY, viewZ;                          // [RW]
-      float lookAt;                                       // [R_]
-      float viewportRotation;                             // [R_]
-      float FOV;                                          // [R_]
-      float layback;                                      // [R_]
-      float viewHOfs, viewVOfs;                           // [R_]
-      float windowTopZOfs, windowBottomZOfs;              // [R_]
-      // Following fields are defined in user settings
-      float screenWidth, screenHeight, screenInclination; // [R_]
-      float realToVirtualScale;                           // [R_]
-      float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
-   } ViewSetupDef;
-   void (*GetActiveViewSetup)(ViewSetupDef* view);
-   void (*SetActiveViewSetup)(ViewSetupDef* view);
+   void (*DisableStaticPrerendering)(const BOOL disable);
+   void (*GetActiveViewSetup)(VPXViewSetupDef* view);
+   void (*SetActiveViewSetup)(VPXViewSetupDef* view);
 
 } VPXPluginAPI;

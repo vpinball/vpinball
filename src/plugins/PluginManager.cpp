@@ -52,7 +52,7 @@ PluginManager::~PluginManager()
 
 unsigned int PluginManager::s_nextEventId = 0;
 robin_hood::unordered_map<string, unsigned int> PluginManager::s_eventIds;
-vector<vpxpi_event_callback> PluginManager::s_eventCallbacks[s_maxEventCallbacks];
+vector<PluginManager::CallbackEntry> PluginManager::s_eventCallbacks[s_maxEventCallbacks];
 
 unsigned int PluginManager::GetEventID(const char* name)
 {
@@ -71,35 +71,46 @@ unsigned int PluginManager::GetEventID(const char* name)
    return result.first->second;
 }
 
-void PluginManager::SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
+void PluginManager::SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback, void* userData)
 {
    assert(callback != nullptr);
    assert(0 <= eventId && eventId < s_maxEventCallbacks);
-   assert(FindIndexOf(s_eventCallbacks[eventId], callback) == -1);
-   s_eventCallbacks[eventId].push_back(callback);
+   #ifdef DEBUG
+   // Callback are only allowed to be registered once per event Id
+   for (const CallbackEntry entry : s_eventCallbacks[eventId])
+      assert(entry.callback != callback);
+   #endif
+   s_eventCallbacks[eventId].push_back(CallbackEntry{ callback, userData });
 }
 
 void PluginManager::UnsubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
 {
    assert(callback != nullptr);
    assert(0 <= eventId && eventId < s_maxEventCallbacks);
-   typename vector<vpxpi_event_callback>::const_iterator it = std::find(s_eventCallbacks[eventId].begin(), s_eventCallbacks[eventId].end(), callback);
-   assert(it != s_eventCallbacks[eventId].end());
-   s_eventCallbacks[eventId].erase(it);
+   for (vector<CallbackEntry>::iterator it = s_eventCallbacks[eventId].begin(); it != s_eventCallbacks[eventId].end(); it++)
+   {
+      if (it->callback == callback)
+      {
+         s_eventCallbacks[eventId].erase(it);
+         return;
+      }
+   }
+   // Detect invalid subscribe/unsubscribe pairs
+   assert(false);
 }
 
-void PluginManager::BroadcastEvent(const unsigned int eventId, void* data)
+void PluginManager::BroadcastEvent(const unsigned int eventId, void* eventData)
 {
    assert(0 <= eventId && eventId < s_maxEventCallbacks); 
-   for (const vpxpi_event_callback cb : s_eventCallbacks[eventId])
-      cb(eventId, data);
+   for (const CallbackEntry entry : s_eventCallbacks[eventId])
+      entry.callback(eventId, entry.userData, eventData);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
-void PluginManager::GetTableInfo(VPXPluginAPI::TableInfo* info)
+void PluginManager::GetTableInfo(VPXTableInfo* info)
 {
    assert(g_pplayer); // Only allowed in game
    info->path = g_pplayer->m_ptable->m_szFileName.c_str();
@@ -160,13 +171,13 @@ void PluginManager::UpdateNotification(const void* handle, const char* msg, cons
 ///////////////////////////////////////////////////////////////////////////////
 // View API
 
-void PluginManager::DisableStaticPrerendering(const bool disable)
+void PluginManager::DisableStaticPrerendering(const BOOL disable)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
 }
 
-void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+void PluginManager::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    const ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -191,7 +202,7 @@ void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 
-void PluginManager::SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+void PluginManager::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
