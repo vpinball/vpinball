@@ -175,7 +175,17 @@ for($k = 0; $k -lt 2; $k++)
   {
 	 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
   }
-  foreach ($variant in @("REINHARD", "FILMIC", "TONY", "NEUTRAL"))
+  foreach ($variant in @("FILMIC", "TONY", "NEUTRAL", "AGX"))
+  {
+	 foreach ($variant2 in @("AO", "NOAO"))
+	 {
+		foreach ($variant3 in @("FILTER", "NOFILTER"))
+		{
+			Process-Shader "fs_pp_tonemap.sc" "tonemap.h" ("fs_pp_tonemap_"  + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, $variant3)
+		}
+	 }
+  }
+  foreach ($variant in @("REINHARD"))
   {
 	 foreach ($variant2 in @("AO", "NOAO"))
 	 {

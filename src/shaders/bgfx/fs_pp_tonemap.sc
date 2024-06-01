@@ -53,6 +53,7 @@ SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 
 #define MAX_BURST 1000.0
 
+#ifdef REINHARD
 float ReinhardToneMap(const float l)
 {
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
@@ -70,7 +71,10 @@ vec3 ReinhardToneMap(const vec3 color)
     const float l = min(dot(color, vec3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
+#endif
 
+
+#ifdef FILMIC
 vec3 RRTAndODTFit(vec3 v)
 {
     vec3 a = v * (v + 0.0245786) - 0.000090537;
@@ -142,7 +146,10 @@ vec3 FilmicToneMap(vec3 color)
 }
 vec2 FilmicToneMap(vec2 color) { return color; } // Unimplemented
 float FilmicToneMap(float color) { return color; } // Unimplemented
+#endif
 
+
+#ifdef TONY
 // Tony Mc MapFace Tonemapping (MIT licensed): see https://github.com/h3r2tic/tony-mc-mapface
 // This tonemapping is similar to Reinhard but handles better highly saturated over powered colors
 // (for these, it looks somewhat similar to AGX by desaturating them)
@@ -170,7 +177,10 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
 }
 vec2 TonyMcMapfaceToneMap(vec2 color) { return color; } // Unimplemented
 float TonyMcMapfaceToneMap(float color) { return color; } // Unimplemented
+#endif
 
+
+#ifdef NEUTRAL
 vec3 PBRNeutralToneMapping(vec3 color)
 {
     const float startCompression = 0.8 - 0.04;
@@ -193,6 +203,106 @@ vec3 PBRNeutralToneMapping(vec3 color)
 }
 vec2 PBRNeutralToneMapping(vec2 color) { return color; } // Unimplemented
 float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
+#endif
+
+
+#ifdef AGX
+// Matrices for rec 2020 <> rec 709 color space conversion
+// matrix provided in row-major order so it has been transposed
+// https://www.itu.int/pub/R-REP-BT.2407-2017
+static const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mtxFromRows3
+(
+	vec3(1.6605, -0.1246, -0.0182),
+	vec3(-0.5876, 1.1329, -0.1006),
+	vec3(-0.0728, -0.0083, 1.1187)
+);
+
+static const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
+(
+	vec3(0.6274, 0.0691, 0.0164),
+	vec3(0.3293, 0.9195, 0.0880),
+	vec3(0.0433, 0.0113, 0.8956)
+);
+
+// https://iolite-engine.com/blog_posts/minimal_agx_implementation
+// Mean error^2: 3.6705141e-06
+vec3 agxDefaultContrastApprox(vec3 x)
+{
+
+    vec3 x2 = x * x;
+    vec3 x4 = x2 * x2;
+
+    return +15.5 * x4 * x2
+		- 40.14 * x4 * x
+		+ 31.96 * x4
+		- 6.868 * x2 * x
+		+ 0.4298 * x2
+		+ 0.1191 * x
+		- 0.00232;
+
+}
+
+// AgX Tone Mapping implementation taken from three.js, based on Filament, 
+// which in turn is based on Blender's implementation using rec 2020 primaries
+// https://github.com/google/filament/pull/7236
+// Inputs and outputs are encoded as Linear-sRGB.
+
+vec3 AgXToneMapping(vec3 color)
+{
+	// AgX constants
+	static const mat3 AgXInsetMatrix = mtxFromRows3
+    (
+		vec3(0.856627153315983, 0.137318972929847, 0.11189821299995),
+		vec3(0.0951212405381588, 0.761241990602591, 0.0767994186031903),
+		vec3(0.0482516061458583, 0.101439036467562, 0.811302368396859)
+	);
+
+	// explicit AgXOutsetMatrix generated from Filaments AgXOutsetMatrixInv
+	static const mat3 AgXOutsetMatrix = mtxFromRows3
+    (
+		vec3(1.1271005818144368, -0.1413297634984383, -0.14132976349843826),
+		vec3(-0.11060664309660323, 1.157823702216272, -0.11060664309660294),
+		vec3(-0.016493938717834573, -0.016493938717834257, 1.2519364065950405)
+	);
+
+	// LOG2_MIN      = -10.0
+	// LOG2_MAX      =  +6.5
+	// MIDDLE_GRAY   =  0.18
+    const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
+    const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
+
+    //color *= toneMappingExposure;
+
+    color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
+
+    color = mul(color, AgXInsetMatrix);
+
+	// Log2 encoding
+    color = max(color, 1e-10); // avoid 0 or negative numbers for log2
+    color = log2(color);
+    color = (color - AgxMinEv) / (AgxMaxEv - AgxMinEv);
+
+    color = clamp(color, 0.0, 1.0);
+
+	// Apply sigmoid
+    color = agxDefaultContrastApprox(color);
+
+	// Apply AgX look
+	// v = agxLook(v, look);
+
+    color = mul(color, AgXOutsetMatrix);
+
+	// Linearize
+    color = pow(max(vec3(0.0, 0.0, 0.0), color), vec3(2.2, 2.2, 2.2));
+
+    color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);
+
+	// Gamut mapping. Simple clamp for now.
+    color = clamp(color, 0.0, 1.0);
+
+    return color;
+}
+#endif
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Dithering
@@ -378,6 +488,8 @@ void main()
          result = FilmicToneMap(result);
       #elif defined(NEUTRAL)
          result = PBRNeutralToneMapping(result);
+      #elif defined(AGX)
+         result = AgXToneMapping(result);
       #endif
 
    #ifdef GRAY
@@ -400,7 +512,7 @@ void main()
    #else
       #ifdef FILMIC
          result =         saturate(FBDither(result, v_texcoord0));
-      #elif NEUTRAL
+      #elif defined(NEUTRAL)
          result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
       #else
          result = FBGamma(saturate(FBDither(result, v_texcoord0)));
