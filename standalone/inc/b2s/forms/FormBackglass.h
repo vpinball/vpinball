@@ -75,7 +75,7 @@ private:
    Sound* Base64ToWav(const string& data);
    OLE_COLOR String2Color(const string& color);
    SDL_Surface* ResizeSurface(SDL_Surface* original, int newWidth, int newHeight);
-   SDL_Surface* RotateSurface(SDL_Surface* source, double angle);
+   SDL_Surface* RotateSurface(SDL_Surface* source, int angle);
 
    static constexpr int minSize4Image = 300000;
 
@@ -89,8 +89,7 @@ private:
    int m_rotateSlowDownSteps;
    bool m_rotateRunTillEnd;
    bool m_rotateRunToFirstStep;
-   int m_rotateSteps;
-   float m_rotateAngle;
+   int m_rotateAngle;
    int m_rotateTimerInterval;
    eLEDTypes m_selectedLEDType;
    SDL_Surface* m_pDarkImage4Authentic;
