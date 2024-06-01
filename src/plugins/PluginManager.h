@@ -50,6 +50,7 @@ public:
    ~PluginManager();
 
    void ScanPluginFolder(const string& pluginDir);
+   VPXPlugin* GetPlugin(const string& pluginId) const;
 
    static PluginManager& GetInstance() { return s_instance; }
 
@@ -63,7 +64,7 @@ public:
    static void GetTableInfo(VPXTableInfo* info);
 
    // User Interface
-   static float GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
+   static float GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
    static void* PushNotification(const char* msg, const unsigned int lengthMs);
    static void UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs);
 

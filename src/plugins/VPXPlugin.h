@@ -143,7 +143,7 @@ typedef struct VPXPluginAPI
 
    // User Interface
    enum OptionUnit { NONE, PERCENT };
-   float (*GetOption)(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const OptionUnit unit, const char** values);
+   float (*GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const OptionUnit unit, const char** values);
    void* (*PushNotification)(const char* msg, const unsigned int lengthMs);
    void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
 
