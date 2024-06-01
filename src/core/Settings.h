@@ -68,7 +68,8 @@ public:
    };
 
    static Section GetSection(const string& szName);
-   static int GetNPluginSections() { return (int) m_settingKeys.size() - Plugin00; };
+   static const string& GetSectionName(const Section section);
+   static int GetNPluginSections() { return (int)m_settingKeys.size() - Plugin00; };
 
    bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
@@ -100,12 +101,13 @@ public:
    struct OptionDef
    {
       Section section;
-      string name;
+      string id, name;
+      int showMask;
       float minValue, maxValue, step, defaultValue;
       OptionUnit unit;
       vector<string> literals;
    };
-   void RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string>& literals);
+   void RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals);
    const vector<OptionDef>& GetTableSettings() const { return m_tableOptions; }
    const vector<OptionDef>& GetPluginSettings() const { return m_pluginOptions; }
 

@@ -1360,8 +1360,16 @@ void LiveUI::OpenTweakMode()
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
    m_tweakPages.push_back(TP_TableOption);
-   for (int i = 0; i < g_pvp->m_settings.GetNPluginSections(); i++)
-      m_tweakPages.push_back((TweakPage) (TP_Plugin00 + i));
+   for (int j = 0; j < g_pvp->m_settings.GetNPluginSections(); j++)
+   {
+      int nOptions = 0;
+      int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      for (int i = 0; i < nCustomOptions; i++)
+         if ((m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + j) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
+            nOptions++;
+      if (nOptions > 0)
+         m_tweakPages.push_back((TweakPage)(TP_Plugin00 + j));
+   }
    if (!m_table->m_szDescription.empty())
       m_tweakPages.push_back(TP_Info);
    m_activeTweakPageIndex = 0;
@@ -1446,7 +1454,7 @@ void LiveUI::UpdateTweakPage()
    {
       int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
-         if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00))
+         if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       break;
    }
@@ -1605,7 +1613,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                if (nSteps > 0)
                {
                   m_lastTweakKeyDown += nSteps * nMsecPerStep;
-                  float value = m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue);
+                  float value = m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
                   if (!opt.literals.empty())
                   {
                      value += (float)nSteps * opt.step * step;
@@ -1616,7 +1624,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   }
                   else
                      value = clamp(value + (float)nSteps * opt.step * step, opt.minValue, opt.maxValue);
-                  table->m_settings.SaveValue(opt.section, opt.name, value);
+                  table->m_settings.SaveValue(opt.section, opt.id, value);
                   if (opt.section == Settings::TableOption)
                      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
                   else
@@ -1713,9 +1721,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
-                     m_table->m_settings.DeleteValue(opt.section, opt.name);
+                     m_table->m_settings.DeleteValue(opt.section, opt.id);
                   else
-                     m_table->m_settings.SaveValue(opt.section, opt.name, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
+                     m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
                   m_tweakState[BS_Custom + i] = 0;
                }
             }
@@ -1860,9 +1868,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
-                     m_table->m_settings.DeleteValue(opt.section, opt.name);
+                     m_table->m_settings.DeleteValue(opt.section, opt.id);
                   else
-                     m_table->m_settings.SaveValue(opt.section, opt.name, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
+                     m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue));
                   m_tweakState[BS_Custom + i] = 0;
                }
             }
@@ -1973,7 +1981,7 @@ void LiveUI::UpdateTweakModeUI()
             if (setting - BS_Custom >= (int)customOptions.size())
                continue;
             const Settings::OptionDef &opt = customOptions[setting - BS_Custom];
-            float value = table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue);
+            float value = table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
             const string label = opt.name + ": ";
             if (!opt.literals.empty()) // List of values
             {
@@ -1994,12 +2002,23 @@ void LiveUI::UpdateTweakModeUI()
          else switch (setting)
          {
          case BS_Page: {
-               CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s",
-                    m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"
-                  : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"
-                  : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"
-                                                                           : "Information",
-                  "");
+            const int page = m_tweakPages[m_activeTweakPageIndex];
+            string title;
+            if (page >= TP_Plugin00)
+            {
+               const string& sectionName = Settings::GetSectionName((Settings::Section)(Settings::Plugin00 + page - TP_Plugin00));
+               const VPXPlugin* plugin = sectionName.length() > 7 ? PluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
+               if (plugin)
+                  title = plugin->m_name + " Plugin"s;
+               else
+                  title = "Invalid Plugin"s;
+            }
+            else 
+               title = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"
+                                                                              : "Information";
+            CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s", title.c_str(), "");
             CM_SKIP_LINE;
             break;
          }

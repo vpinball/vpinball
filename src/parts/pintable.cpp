@@ -10780,7 +10780,8 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
 
    float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
    *param = clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
@@ -10816,7 +10817,8 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
    
    m_settings.SaveValue(Settings::TableOption, name, val);
 

@@ -122,7 +122,7 @@ void PluginManager::GetTableInfo(VPXTableInfo* info)
 ///////////////////////////////////////////////////////////////////////////////
 // User Input API
 
-float PluginManager::GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
+float PluginManager::GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
    const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values)
 {
    // TODO handle showMask flag
@@ -147,8 +147,8 @@ float PluginManager::GetOption(const char* pageId, const unsigned int showMask, 
          for (int i = 0; i < nSteps; i++)
             literals.push_back(values[i]);
       }
-      settings.RegisterSetting(section, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
-      const float value = settings.LoadValueWithDefault(section, optionName, defaultValue);
+      settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+      const float value = settings.LoadValueWithDefault(section, optionId, defaultValue);
       return clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
    }
 }
@@ -319,12 +319,29 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                unquote(ini["configuration"s].get("link"s)),
                libraryPath);
             m_plugins.push_back(plugin);
-            // TODO this directly loads the plugin which is a security concern, the initial load should be requested/validated by the user
-            plugin->Load(&m_vpxAPI);
+            const char* enableDisable[] = { "Disabled", "Enabled" };
+            int enabled = (int)GetOption(id.c_str(), "enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
+            if (enabled)
+            {
+               plugin->Load(&m_vpxAPI);
+            }
+            else
+            {
+               PLOGI << "Plugin " << id << " was found but is disabled (" << plugin->m_library << ")";
+            }
          }
       }
    }
 }
+
+VPXPlugin* PluginManager::GetPlugin(const string& pluginId) const
+{
+   for (VPXPlugin* plugin : m_plugins)
+      if (plugin->m_id == pluginId)
+         return plugin;
+   return nullptr;
+}
+
 
 #ifdef _MSC_VER
 std::string GetLastErrorAsString()
