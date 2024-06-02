@@ -30,7 +30,7 @@ class B2SSettings
 public:
    static B2SSettings* GetInstance();
 
-   string GetDirectB2SVersion() const { return "2.0.3"; }
+   string GetDirectB2SVersion() const { return "2.1.2"; }
    string GetMinimumDirectB2SVersion() const { return "1.0"; }
    string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }
@@ -67,6 +67,8 @@ public:
    void SetDefaultGlow(const int defaultGlow) { m_defaultGlow = defaultGlow; }
    bool IsHideB2SDMD() const { return m_hideB2SDMD; }
    void SetHideB2SDMD(const bool hideB2SDMD) { m_hideB2SDMD = hideB2SDMD; }
+   bool IsHideB2SBackglass() const { return m_hideB2SBackglass; }
+   void SetHideB2SBackglass(const bool hideB2SBackglass) { m_hideB2SBackglass = hideB2SBackglass; }
    bool IsROMControlled() { return !m_szGameName.empty(); }
    eDualMode GetCurrentDualMode() const { return m_currentDualMode; }
    void SetCurrentDualMode(const eDualMode currentDualMode) { m_currentDualMode = currentDualMode; }
@@ -109,6 +111,7 @@ private:
    int m_defaultGlow;
    B2SSettingsCheckedState m_hideGrill;
    bool m_hideB2SDMD;
+   bool m_hideB2SBackglass;
    B2SSettingsCheckedState m_hideDMD;
    eDualMode m_currentDualMode;
    string m_szGameName;

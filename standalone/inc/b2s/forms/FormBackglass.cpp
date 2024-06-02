@@ -109,6 +109,11 @@ FormBackglass::~FormBackglass()
 
 void FormBackglass::OnPaint(VP::RendererGraphics* pGraphics)
 {
+   if (m_pB2SSettings->IsHideB2SBackglass()) {
+      Hide();
+      return;
+   }
+
    if (IsVisible() && GetBackgroundImage()) {
       // draw background image
       pGraphics->DrawImage(GetBackgroundImage(), NULL, NULL);
@@ -381,7 +386,7 @@ void FormBackglass::LoadB2SData()
 
       auto topnode = b2sTree.FirstChildElement("DirectB2SData");
 
-      bool mergeBulbs = false;
+      bool mergeBulbs = true;
       if (topnode->FirstChildElement("MergeBulbs"))
          mergeBulbs = (topnode->FirstChildElement("MergeBulbs")->IntAttribute("Value") != 0);
 
