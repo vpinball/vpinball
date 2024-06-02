@@ -333,7 +333,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    bgfx::Init init;
    
    // Untested implementations
-   init.type = bgfx::RendererType::Direct3D12; // To be tested
+   init.type = bgfx::RendererType::Direct3D12; // Fail on a call to CreateGraphicsPipelineState
    init.type = bgfx::RendererType::OpenGL;     // Needs explicit uniform handling
    init.type = bgfx::RendererType::Metal;      // Unsupported under Windows
    init.type = bgfx::RendererType::OpenGLES;   // Unsupported under Windows
@@ -387,14 +387,14 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
    default: break;
    }
-   bgfx::reset(wnd->GetWidth(), wnd->GetHeight(), syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
+   // Could be RGB8 but this is an emulated format from RGBA8 and Vulkan back end would fail
+   // FIXME BGFX use desktop or fullscreen backbuffer format
+   back_buffer_format = colorFormat::RGBA8;
+   bgfx::reset(wnd->GetWidth(), wnd->GetHeight(), syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGBA8);
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
 
-   // FIXME BGFX use desktop or fullscreen backbuffer format
-   back_buffer_format = colorFormat::RGB8;
-   
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
    // OpenGL device initialization
@@ -1115,7 +1115,7 @@ void RenderDevice::Flip()
    if (!m_isVR)
       g_frameProfiler.OnPresent();
    #if defined(ENABLE_BGFX)
-   SubmitAndFlipFrame();
+   // Nothing to do, since FlushRenderFrame trigger the flip
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
    #elif defined(ENABLE_DX9)
@@ -1450,6 +1450,12 @@ void RenderDevice::FlushRenderFrame()
    m_currentPass = nullptr;
    if (rendered)
       m_logNextFrame = false;
+#ifdef ENABLE_BGFX
+   // FIXME BGFX (without this) would queue all command until a flip is performed to actually submit them to the GPU
+   // The drawback is that BGFX always perform a flip for each render queue submission (before or after) which is 
+   // not the expected behavior here. This may lead to some delay when prerendering static parts, or artefacts.
+   SubmitAndFlipFrame();
+#endif
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
