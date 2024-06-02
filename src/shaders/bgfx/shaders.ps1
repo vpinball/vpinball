@@ -39,7 +39,7 @@ $stOutput = @(("_"), ("_st_"))
 
 
 ################################
-# Basic material shaders (also 'classic' light)
+# Basic material shaders (also 'classic' light, decals, kickers and unshaded variants)
 Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
 New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
 foreach ($variant2 in @("CLIP", "NOCLIP"))
@@ -56,6 +56,8 @@ foreach ($variant2 in @("CLIP", "NOCLIP"))
       Process-Shader "fs_decal.sc"         "basic.h" ("fs_decal_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2)
       Process-Shader "vs_basic.sc"         "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], "CLASSIC_LIGHT", $variant, $variant2)
       Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOSHADOW")
+      Process-Shader "fs_unshaded.sc"      "basic.h" ("fs_unshaded_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOSHADOW")
+      Process-Shader "fs_unshaded.sc"      "basic.h" ("fs_unshaded_" + $variant.ToLower() + "_ballshadow_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "SHADOW")
 	}
   }
 }
