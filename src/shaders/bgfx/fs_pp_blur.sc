@@ -21,7 +21,7 @@ SAMPLER2DSTEREO(tex_fb_filtered,  0);
 // . for AO, w_h_height.zw keeps per-frame offset for temporal variation of the pattern
 // . for AA techniques, w_h_height.z keeps source texture width, w_h_height.w is a boolean set to 1 when depth is available
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
-const float4 w_h_height; 
+uniform float4 w_h_height; 
 
 void main()
 {
