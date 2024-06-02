@@ -27,12 +27,13 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 #if defined(ENABLE_BGFX)
    BaseTexture* upload = surf;
    bgfx::TextureFormat::Enum bgfx_format;
-   bool is_srgb = false, add_alpha = false;
+   m_isLinear = true;
+   bool add_alpha = false;
    switch (surf->m_format)
    {
-   case BaseTexture::SRGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; is_srgb = true; break;
+   case BaseTexture::SRGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
    case BaseTexture::RGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::SRGB: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; is_srgb = true; add_alpha = true; break;
+   case BaseTexture::SRGB: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; add_alpha = true; break;
    case BaseTexture::RGB: bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
    case BaseTexture::RGBA_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
    case BaseTexture::RGB_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
@@ -58,10 +59,10 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete [] (BYTE*)_userData; }, upload);
 
    // Create a render target and blit texture on it to force BGFX mip map generation (BGFX does not support automatic mipmap generation for textures)
-   const uint64_t flags = BGFX_SAMPLER_NONE | (is_srgb ? BGFX_TEXTURE_SRGB : BGFX_TEXTURE_NONE);
-   m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+   const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
    m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data); // Base texture without mipmaps
    m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
+   m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
    bgfx::Attachment m_mips_attachment;
    m_mips_attachment.init(m_texture);
    m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
