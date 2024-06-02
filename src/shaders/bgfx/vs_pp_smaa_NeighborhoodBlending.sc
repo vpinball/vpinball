@@ -1,5 +1,10 @@
 $input a_position, a_texcoord0
+#ifdef STEREO
+$output v_texcoord0, v_texcoord2, v_eye
+uniform vec4 layer;
+#else
 $output v_texcoord0, v_texcoord2
+#endif
 
 #include "common.sh"
 
@@ -7,18 +12,15 @@ $output v_texcoord0, v_texcoord2
 #define SMAA_INCLUDE_PS 0
 #include "SMAA.sh"
 
-#ifdef STEREO
-	uniform mat4 matWorldViewProj[2];
-	#define mvp matWorldViewProj[gl_InstanceID]
-#else
-	uniform mat4 matWorldViewProj;
-	#define mvp matWorldViewProj
-#endif
 void main()
 {
 	vec4 offset;
 	SMAANeighborhoodBlendingVS(a_texcoord0.xy, offset);
 	v_texcoord0 = a_texcoord0.xy;
 	v_texcoord2 = offset;
-	gl_Position = mul(mvp, vec4(a_position, 1.0));
+    gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
+    #ifdef STEREO
+       gl_Layer = gl_InstanceID;
+       v_eye = layer.x + gl_InstanceID;
+    #endif
 }

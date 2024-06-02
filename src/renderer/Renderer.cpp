@@ -2005,6 +2005,7 @@ void Renderer::PrepareVideoBuffers()
       outputRT = GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L); // Needed since shader uses discard
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
@@ -2013,8 +2014,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
@@ -2022,8 +2023,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 #endif

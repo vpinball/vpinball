@@ -71,13 +71,6 @@ float cornerRounding;
 texture2D depthTex2D;
 #endif
 
-texture2D edgesTex2D;
-texture2D blendTex2D;
-
-texture2D areaTex2D;
-texture2D searchTex2D;
-
-
 /**
  * DX9 samplers.
  */
@@ -108,31 +101,50 @@ sampler2D depthTex {
 };
 #endif
 
-sampler2D edgesTex : TEXUNIT1 {
-    Texture = <edgesTex2D>;
-    AddressU = Clamp; AddressV = Clamp;
-    MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
+texture2D Texture7;  // edgesTex
+texture2D Texture8;  // blendTex
+texture2D Texture9;  // areaTex
+texture2D Texture10; // searchTex
+
+sampler2D edgesTex : TEXUNIT7 = sampler_state {
+    Texture       = (Texture7);
+    AddressU      = Clamp;
+	AddressV      = Clamp;
+    MipFilter     = Linear;
+	MinFilter     = Linear;
+	MagFilter     = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D blendTex : TEXUNIT7 {
-    Texture = <blendTex2D>;
-    AddressU = Clamp; AddressV = Clamp;
-    MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
+sampler2D blendTex : TEXUNIT8 = sampler_state {
+    Texture       = (Texture8);
+    AddressU      = Clamp;
+	AddressV      = Clamp;
+    MipFilter     = Linear;
+	MinFilter     = Linear;
+	MagFilter     = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D areaTex : TEXUNIT8 {
-    Texture = <areaTex2D>;
-    AddressU = Clamp; AddressV = Clamp; AddressW = Clamp;
-    MipFilter = Linear; MinFilter = Linear; MagFilter = Linear; //!! ??
+sampler2D areaTex : TEXUNIT9 = sampler_state {
+    Texture       = (Texture9);
+    AddressU      = Clamp;
+	AddressV      = Clamp;
+	AddressW      = Clamp;
+    MipFilter     = Linear;
+	MinFilter     = Linear;
+	MagFilter     = Linear; //!! ??
     //SRGBTexture = false;
 };
 
-sampler2D searchTex : TEXUNIT9 {
-    Texture = <searchTex2D>;
-    AddressU = Clamp; AddressV = Clamp; AddressW = Clamp;
-    MipFilter = Point; MinFilter = Point; MagFilter = Point;
+sampler2D searchTex : TEXUNIT10 = sampler_state {
+    Texture       = (Texture10);
+    AddressU      = Clamp;
+	AddressV      = Clamp;
+	AddressW      = Clamp;
+    MipFilter     = Point;
+	MinFilter     = Point;
+	MagFilter     = Point;
     //SRGBTexture = false;
 };
 
