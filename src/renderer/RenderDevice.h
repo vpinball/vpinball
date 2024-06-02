@@ -234,7 +234,7 @@ public:
       if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 2) // Last view is reserved for ImGui
       {
          PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
-         SubmitAndFlipFrame();
+         FlushRenderFrame();
       }
       m_activeViewId++;
       bgfx::resetView(m_activeViewId);
