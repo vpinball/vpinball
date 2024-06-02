@@ -498,7 +498,7 @@ void main()
       #elif defined(TONY)
          result = TonyMcMapfaceToneMap(result);
       #elif defined(FILMIC)
-         result = FilmicToneMap(result);
+         result = FilmicToneMap(result); else result = FBGamma(result);
       #elif defined(NEUTRAL)
          result = PBRNeutralToneMapping(result);
       #elif defined(AGX)

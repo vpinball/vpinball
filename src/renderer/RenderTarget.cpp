@@ -519,9 +519,9 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
       for (int z = 0; z < nLayers; z++)
       {
          if (copyColor)
-            bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, 0, px2, py2, pz1 + z, m_color_tex, 0, px1, py1, pz2 + z, w1, h1, 1);
+            bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, 0, px2, py2, pz2 + z, m_color_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
          if (m_has_depth && dest->m_has_depth && copyDepth)
-            bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz1 + z, m_depth_tex, 0, px1, py1, pz2 + z, w1, h1, 1);
+            bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz2 + z, m_depth_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
       }
    }
    else

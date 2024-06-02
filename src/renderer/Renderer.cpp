@@ -1767,7 +1767,7 @@ void Renderer::PrepareVideoBuffers()
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
-   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, renderedRT->GetDepthSampler());
 
    // Compute bloom (to be applied later)
    Bloom();
@@ -1864,15 +1864,11 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      // Texture used for LUT color grading must be treated as if they were linear
-      #ifdef ENABLE_BGFX // FIXME BGFX color grade is not yet supported (sRGB vs linear bug)
-      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, false);
-      #else
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
-         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
+         // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      #endif
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 
