@@ -1,9 +1,11 @@
 #ifdef GLSL
+uniform float exposure; // overaal scene exposure
 uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT
 
 #else // HLSL
 
 texture Texture6; // Precomputed Tonemapping LUT
+const float exposure; // overaal scene exposure
 sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 {
     Texture = (Texture6);
@@ -22,19 +24,25 @@ sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 
 #define MAX_BURST 1000.0
 
-float ReinhardToneMap(const float l)
+float ReinhardToneMap(float l)
 {
+    l *= exposure;
+    
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
-float2 ReinhardToneMap(const float2 color)
+float2 ReinhardToneMap(float2 color)
 {
+    color *= exposure;
+    
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
-float3 ReinhardToneMap(const float3 color)
+float3 ReinhardToneMap(float3 color)
 {
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -97,6 +105,8 @@ float3 ACESFitted(float3 color)
 // Warning: The returned value is already gamma corrected
 float3 FilmicToneMap(float3 color)
 {
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -140,6 +150,8 @@ float3 TonyMcMapfaceToneMap(float3 color)
 {
     const float LUT_DIMS = 48.0;
 
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -163,6 +175,8 @@ float3 PBRNeutralToneMapping(float3 color)
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
 
+    color *= exposure;
+
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
     color -= offset;
@@ -177,4 +191,127 @@ float3 PBRNeutralToneMapping(float3 color)
     const float w = newPeak / (inv_g*peak);
     const float n = newPeak - newPeak/inv_g;
     return n + color*w;
+}
+
+
+#ifdef GLSL
+// Matrices for rec 2020 <> rec 709 color space conversion
+// matrix provided in row-major order so it has been transposed
+// https://www.itu.int/pub/R-REP-BT.2407-2017
+const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
+	vec3(1.6605, -0.1246, -0.0182),
+	vec3(-0.5876, 1.1329, -0.1006),
+	vec3(-0.0728, -0.0083, 1.1187)
+);
+
+const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
+	vec3(0.6274, 0.0691, 0.0164),
+	vec3(0.3293, 0.9195, 0.0880),
+	vec3(0.0433, 0.0113, 0.8956)
+);
+#else
+static const float3x3 LINEAR_REC2020_TO_LINEAR_SRGB =
+{
+    { 1.6605, -0.1246, -0.0182 },
+    { -0.5876, 1.1329, -0.1006 },
+    { -0.0728, -0.0083, 1.1187 }
+};
+static const float3x3 LINEAR_SRGB_TO_LINEAR_REC2020 =
+{
+    { 0.6274, 0.0691, 0.0164 },
+    { 0.3293, 0.9195, 0.0880 },
+    { 0.0433, 0.0113, 0.8956 }
+};
+#endif
+
+// https://iolite-engine.com/blog_posts/minimal_agx_implementation
+// Mean error^2: 3.6705141e-06
+float3 agxDefaultContrastApprox(float3 x)
+{
+
+    float3 x2 = x * x;
+    float3 x4 = x2 * x2;
+
+    return +15.5 * x4 * x2
+		- 40.14 * x4 * x
+		+ 31.96 * x4
+		- 6.868 * x2 * x
+		+ 0.4298 * x2
+		+ 0.1191 * x
+		- 0.00232;
+
+}
+
+// AgX Tone Mapping implementation taken from three.js, based on Filament, 
+// which in turn is based on Blender's implementation using rec 2020 primaries
+// https://github.com/google/filament/pull/7236
+// Inputs and outputs are encoded as Linear-sRGB.
+
+float3 AgXToneMapping(float3 color)
+{
+    #ifdef GLSL
+	// AgX constants
+    const mat3 AgXInsetMatrix = mat3(
+		vec3(0.856627153315983, 0.137318972929847, 0.11189821299995),
+		vec3(0.0951212405381588, 0.761241990602591, 0.0767994186031903),
+		vec3(0.0482516061458583, 0.101439036467562, 0.811302368396859)
+	);
+
+	// explicit AgXOutsetMatrix generated from Filaments AgXOutsetMatrixInv
+    const mat3 AgXOutsetMatrix = mat3(
+		vec3(1.1271005818144368, -0.1413297634984383, -0.14132976349843826),
+		vec3(-0.11060664309660323, 1.157823702216272, -0.11060664309660294),
+		vec3(-0.016493938717834573, -0.016493938717834257, 1.2519364065950405)
+	);
+    #else
+    static const float3x3 AgXInsetMatrix =
+    {
+        { 0.856627153315983, 0.137318972929847, 0.11189821299995 },
+        { 0.0951212405381588, 0.761241990602591, 0.0767994186031903 },
+        { 0.0482516061458583, 0.101439036467562, 0.811302368396859 }
+    };
+    static const float3x3 AgXOutsetMatrix =
+    {
+        { 1.1271005818144368, -0.1413297634984383, -0.14132976349843826 },
+        { -0.11060664309660323, 1.157823702216272, -0.11060664309660294 },
+        { -0.016493938717834573, -0.016493938717834257, 1.2519364065950405 }
+    };
+    #endif
+
+	// LOG2_MIN      = -10.0
+	// LOG2_MAX      =  +6.5
+	// MIDDLE_GRAY   =  0.18
+    const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
+    const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
+
+    color *= exposure;
+
+    color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
+
+    color = mul(color, AgXInsetMatrix);
+
+	// Log2 encoding
+    color = max(color, 1e-10); // avoid 0 or negative numbers for log2
+    color = log2(color);
+    color = (color - AgxMinEv) / (AgxMaxEv - AgxMinEv);
+
+    color = clamp(color, 0.0, 1.0);
+
+	// Apply sigmoid
+    color = agxDefaultContrastApprox(color);
+
+	// Apply AgX look
+	// v = agxLook(v, look);
+
+    color = mul(color, AgXOutsetMatrix);
+
+	// Linearize
+    color = pow(max(float3(0.0, 0.0, 0.0), color), float3(2.2, 2.2, 2.2));
+
+    color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);
+
+	// Gamut mapping. Simple clamp for now.
+    color = clamp(color, 0.0, 1.0);
+
+    return color;
 }

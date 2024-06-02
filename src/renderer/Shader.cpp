@@ -140,6 +140,10 @@ const string Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT]
    SHADER_TECHNIQUE(fb_nttonemap_AO),
    SHADER_TECHNIQUE(fb_nttonemap_no_filter),
    SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter),
+   SHADER_TECHNIQUE(fb_agxtonemap),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO),
+   SHADER_TECHNIQUE(fb_agxtonemap_no_filter),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterR),
    SHADER_TECHNIQUE(fb_blur_horiz7x7),
@@ -202,8 +206,8 @@ string Shader::GetTechniqueName(ShaderTechniques technique)
 }
 
 
-#define SHADER_UNIFORM(type, name, count) { type, #name, count, string(), SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
-#define SHADER_SAMPLER(name, tex_name, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, #tex_name, default_clampu, default_clampv, default_filter }
+#define SHADER_UNIFORM(type, name, count) { type, #name, count, 0, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED }
+#define SHADER_SAMPLER(name, tex_unit, default_clampu, default_clampv, default_filter) { SUT_Sampler, #name, 1, tex_unit, default_clampu, default_clampv, default_filter }
 Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    // Shared uniforms
    SHADER_UNIFORM(SUT_Int, layer, 1),
@@ -243,8 +247,8 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float2, fDisableLighting_top_below, 1),
    SHADER_UNIFORM(SUT_Float2, fenvEmissionScale_TexWidth, 1),
    SHADER_UNIFORM(SUT_Float4, cAmbient_LightRange, 1),
-   SHADER_SAMPLER(tex_env, Texture1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
-   SHADER_SAMPLER(tex_diffuse_env, Texture2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
+   SHADER_SAMPLER(tex_env, 1, SA_REPEAT, SA_CLAMP, SF_TRILINEAR), // environment
+   SHADER_SAMPLER(tex_diffuse_env, 2, SA_REPEAT, SA_CLAMP, SF_BILINEAR), // diffuse environment contribution/radiance
 
    // Basic Shader
    SHADER_UNIFORM(SUT_Float4, cClearcoat_EdgeAlpha, 1),
@@ -257,20 +261,20 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, refractionTint_thickness, 1),
    SHADER_UNIFORM(SUT_Float4, mirrorNormal_factor, 1),
    SHADER_UNIFORM(SUT_Bool, objectSpaceNormalMap, 1),
-   SHADER_SAMPLER(tex_base_color, Texture0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_base_transmission, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
-   SHADER_SAMPLER(tex_base_normalmap, Texture4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
-   SHADER_SAMPLER(tex_reflection, Texture5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
-   SHADER_SAMPLER(tex_refraction, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
-   SHADER_SAMPLER(tex_probe_depth, Texture7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
+   SHADER_SAMPLER(tex_base_color, 0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_base_transmission, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // bulb light/transmission buffer texture
+   SHADER_SAMPLER(tex_base_normalmap, 4, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // normal map texture
+   SHADER_SAMPLER(tex_reflection, 5, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // plane reflection
+   SHADER_SAMPLER(tex_refraction, 6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // screen space refraction
+   SHADER_SAMPLER(tex_probe_depth, 7, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // depth probe
 
    // Ball Shader
    SHADER_UNIFORM(SUT_Float4x3, orientation, 1),
    SHADER_UNIFORM(SUT_Float4, invTableRes_reflection, 1),
    SHADER_UNIFORM(SUT_Float4, w_h_disableLighting, 1),
-   SHADER_SAMPLER(tex_ball_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_ball_playfield, Texture4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
-   SHADER_SAMPLER(tex_ball_decal, Texture3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
+   SHADER_SAMPLER(tex_ball_color, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_ball_playfield, 4, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // playfield
+   SHADER_SAMPLER(tex_ball_decal, 3, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // ball decal
 
    // Light Shader
    SHADER_UNIFORM(SUT_Float, blend_modulate_vs_add, 1),
@@ -278,20 +282,20 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, lightColor2_falloff_power, 1), // Classic and Halo
    SHADER_UNIFORM(SUT_Float4, lightColor_intensity, 1), // Classic and Halo
    SHADER_UNIFORM(SUT_Bool, lightingOff, 1), // Classic only
-   SHADER_SAMPLER(tex_light_color, Texture0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // Classic only
+   SHADER_SAMPLER(tex_light_color, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // Classic only
 
    // DMD Shader
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
-   SHADER_SAMPLER(tex_dmd, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
-   SHADER_SAMPLER(tex_sprite, Texture0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
+   SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
+   SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
    SHADER_UNIFORM(SUT_Float3, amount_blend_modulate_vs_add_flasherMode, 1),
-   SHADER_SAMPLER(tex_flasher_A, Texture0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
-   SHADER_SAMPLER(tex_flasher_B, Texture1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
+   SHADER_SAMPLER(tex_flasher_A, 0, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // base texture
+   SHADER_SAMPLER(tex_flasher_B, 1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
 
    // Post Process Shader
    SHADER_UNIFORM(SUT_Bool, color_grade, 1),
@@ -299,22 +303,23 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Bool, do_dither, 1),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
-   SHADER_SAMPLER(tex_fb_unfiltered, Texture0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
-   SHADER_SAMPLER(tex_fb_filtered, Texture0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
-   SHADER_SAMPLER(tex_bloom, Texture1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
-   SHADER_SAMPLER(tex_color_lut, Texture2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
-   SHADER_SAMPLER(tex_ao, Texture3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
-   SHADER_SAMPLER(tex_depth, Texture4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
-   SHADER_SAMPLER(tex_ao_dither, Texture5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
-   SHADER_SAMPLER(tex_tonemap_lut, Texture6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Tonemap LUT
-   SHADER_SAMPLER(edgesTex, edgesTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA (TexUnit 1, not conflicting with bloom since they are used in different shaders)
-   SHADER_SAMPLER(blendTex, blendTex2D, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA (TexUnit 7)
-   SHADER_SAMPLER(areaTex, areaTex2D, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // SMAA (TexUnit 8)
-   SHADER_SAMPLER(searchTex, searchTex2D, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA (TexUnit 9)
+   SHADER_UNIFORM(SUT_Float, exposure, 1),
+   SHADER_SAMPLER(tex_fb_unfiltered, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_fb_filtered, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
+   SHADER_SAMPLER(tex_bloom, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
+   SHADER_SAMPLER(tex_color_lut, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Color grade LUT
+   SHADER_SAMPLER(tex_ao, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // AO Result
+   SHADER_SAMPLER(tex_depth, 4, SA_CLAMP, SA_CLAMP, SF_NONE), // Depth
+   SHADER_SAMPLER(tex_ao_dither, 5, SA_REPEAT, SA_REPEAT, SF_NONE), // AO dither
+   SHADER_SAMPLER(tex_tonemap_lut, 6, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Tonemap LUT
+   SHADER_SAMPLER(edgesTex, 7, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(blendTex, 8, SA_CLAMP, SA_CLAMP, SF_TRILINEAR), // SMAA
+   SHADER_SAMPLER(areaTex, 9, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // SMAA
+   SHADER_SAMPLER(searchTex, 10, SA_CLAMP, SA_CLAMP, SF_NONE), // SMAA
 
    // Stereo Shader
-   SHADER_SAMPLER(tex_stereo_fb, Texture0, SA_REPEAT, SA_REPEAT, SF_NONE), // Framebuffer (unfiltered)
-   SHADER_SAMPLER(tex_stereo_depth, Texture4, SA_REPEAT, SA_REPEAT, SF_NONE), // Depth
+   SHADER_SAMPLER(tex_stereo_fb, 0, SA_REPEAT, SA_REPEAT, SF_NONE), // Framebuffer (unfiltered)
+   SHADER_SAMPLER(tex_stereo_depth, 4, SA_REPEAT, SA_REPEAT, SF_NONE), // Depth
    SHADER_UNIFORM(SUT_Float4, Stereo_MS_ZPD_YAxis, 1), // Stereo (analgyph and 3DTV)
    SHADER_UNIFORM(SUT_Float4x4, Stereo_LeftMat, 1), // Anaglyph Stereo
    SHADER_UNIFORM(SUT_Float4x4, Stereo_RightMat, 1), // Anaglyph Stereo
@@ -1030,21 +1035,11 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
             case SA_REPEAT: /* Default mode, no flag to set */ break;
             default: break;
             }
-            auto tex_name = shaderUniformNames[uniformName].tex_name;
-            if (std::string(tex_name).rfind("Texture"s, 0) == 0)
-            {
-               int unit = tex_name[tex_name.length() - 1] - '0';
-               bgfx::setTexture(unit, desc.handle, texel->GetCoreTexture(), flags);
-            }
+            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc.handle, texel->GetCoreTexture(), flags);
          }
          else
          {
-            auto tex_name = shaderUniformNames[uniformName].tex_name;
-            if (std::string(tex_name).rfind("Texture"s, 0) == 0)
-            {
-               int unit = tex_name[tex_name.length() - 1] - '0';
-               bgfx::setTexture(unit, desc.handle, m_renderDevice->m_nullTexture->GetCoreTexture());
-            }
+            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc.handle, m_renderDevice->m_nullTexture->GetCoreTexture());
          }
       
          #elif defined(ENABLE_OPENGL)
@@ -1259,6 +1254,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_notex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
       //
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
@@ -1296,18 +1295,22 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_filter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_nofilter_rgb),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_neutral_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       //
@@ -1371,6 +1374,10 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex_noclip),         STEREO(fs_decal_notex_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_decal_tex_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean,            STEREO(vs_kicker_noclip),              STEREO(fs_basic_notex_noat_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture, STEREO(vs_basic_notex_noclip),         STEREO(fs_unshaded_notex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_unshaded_tex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_noclip),  STEREO(fs_unshaded_notex_ballshadow_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_noclip),       STEREO(fs_unshaded_tex_ballshadow_noclip));
       break;
    case BALL_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));
@@ -1413,18 +1420,22 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_filter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_filter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_nofilter_rgb));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_neutral_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 
@@ -2136,10 +2147,12 @@ void Shader::Load()
          bool addToUniformList = true;
          if (type == ShaderUniformType::SUT_Sampler)
          {
-            m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, shaderUniformNames[uniformIndex].tex_name.c_str());
+            const string name = "Texture"s.append(std::to_string(shaderUniformNames[uniformIndex].tex_unit));
+            m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, name.c_str());
             if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).rfind("TEXUNIT"s, 0) == 0)
             {
-               int unit = param_desc.Semantic[strlen(param_desc.Semantic) - 1] - '0';
+               const int unit = shaderUniformNames[uniformIndex].tex_unit;
+               assert(unit == atoi(param_desc.Semantic + 7));
                m_uniform_desc[uniformIndex].sampler = unit;
                // DirectX effect framework manages samplers for us and we only perform texture binding, so just keep
                // Since we only manages the texture state and not the sampler ones, only add one of the samplers bound to a given texture unit to avoid useless calls

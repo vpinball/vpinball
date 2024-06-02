@@ -6,9 +6,9 @@ $input v_texcoord0, v_texcoord1, v_texcoord2, v_texcoord3, v_texcoord4
 #define SMAA_INCLUDE_PS 1
 #include "SMAA.sh"
 
-SAMPLER2D(areaTex,   6);
-SAMPLER2D(searchTex, 7);
-SAMPLER2D(edgesTex,  8);
+SAMPLER2D(edgesTex,   7);
+SAMPLER2D(areaTex,    9);
+SAMPLER2D(searchTex, 10);
 
 void main()
 {

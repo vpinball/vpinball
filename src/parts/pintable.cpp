@@ -2302,6 +2302,7 @@ void PinTable::Play(const int playMode)
    dst->m_enableAO = src->m_enableAO;
    dst->m_enableSSR = src->m_enableSSR;
    dst->m_toneMapper = src->m_toneMapper;
+   dst->m_exposure = src->m_exposure;
    dst->m_bloom_strength = src->m_bloom_strength;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
 
@@ -3573,6 +3574,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_enableSSR);
    bw.WriteInt(FID(TMAP), m_toneMapper);
+   bw.WriteFloat(FID(EXPO), m_exposure);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
    // Legacy material saving for backward compatibility
@@ -4231,6 +4233,7 @@ void PinTable::SetLoadDefaults()
    m_enableAO = true;
    m_enableSSR = true;
    m_toneMapper = TM_REINHARD;
+   m_exposure = 1.f;
 
    m_bloom_strength = 1.0f;
 
@@ -4444,6 +4447,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       }
       break;
    case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
+   case FID(EXPO): pbr->GetFloat(m_exposure); break;
    case FID(UFXA):
       if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
@@ -10780,7 +10784,8 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
 
    float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
    *param = clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
@@ -10816,7 +10821,8 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
    
    m_settings.SaveValue(Settings::TableOption, name, val);
 

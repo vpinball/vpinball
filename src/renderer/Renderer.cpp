@@ -120,6 +120,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
+   m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
@@ -399,7 +400,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
-   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
+   // TODO we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
    //if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
       m_tonemapLUT = new Texture();
@@ -1000,6 +1001,8 @@ void Renderer::SetupShaders()
    vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
+
+   m_pd3dPrimaryDevice->m_FBShader->SetFloat(SHADER_exposure, m_exposure);
 
    //m_pd3dPrimaryDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -1764,7 +1767,7 @@ void Renderer::PrepareVideoBuffers()
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
-   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, renderedRT->GetDepthSampler());
 
    // Compute bloom (to be applied later)
    Bloom();
@@ -1861,15 +1864,11 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      // Texture used for LUT color grading must be treated as if they were linear
-      #ifdef ENABLE_BGFX // FIXME BGFX color grade is not yet supported (sRGB vs linear bug)
-      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, false);
-      #else
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
-         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
+         // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      #endif
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 
@@ -1884,9 +1883,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                                                   : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
-                                                   : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
-                                                                                            : SHADER_TECHNIQUE_fb_tmtonemap);
+                                                     : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                     : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
+                                                     : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
+                                                     : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
@@ -1901,6 +1901,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter);
+      else if (m_toneMapper == TM_AGX)
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter);
       else // TM_TONY_MC_MAPFACE
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
@@ -2001,6 +2005,7 @@ void Renderer::PrepareVideoBuffers()
       outputRT = GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L); // Needed since shader uses discard
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
@@ -2009,8 +2014,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
@@ -2018,8 +2023,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 #endif

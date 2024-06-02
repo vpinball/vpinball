@@ -7,7 +7,7 @@ $input v_texcoord0, v_texcoord2
 #include "SMAA.sh"
 
 SAMPLER2D(tex_fb_filtered, 0);
-SAMPLER2D(blendTex,        9);
+SAMPLER2D(blendTex,        8);
 
 void main()
 {

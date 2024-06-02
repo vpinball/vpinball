@@ -20,6 +20,7 @@ private:
     ComboBox    m_ballImageCombo;
     ComboBox    m_ballDecalCombo;
     ComboBox    m_toneMapperCombo;
+    EditBox     m_exposureEdit;
     EditBox     m_reflectionStrengthEdit;
     EditBox     m_ballReflectPlayfieldEdit;
     EditBox     m_ballDefaultBulbIntensScaleEdit;
