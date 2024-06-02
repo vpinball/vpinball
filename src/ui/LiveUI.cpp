@@ -2028,15 +2028,15 @@ void LiveUI::UpdateTweakModeUI()
                const string& sectionName = Settings::GetSectionName((Settings::Section)(Settings::Plugin00 + page - TP_Plugin00));
                const VPXPlugin* plugin = sectionName.length() > 7 ? PluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
                if (plugin)
-                  title = plugin->m_name + " Plugin"s;
+                  title = plugin->m_name + " Plugin";
                else
                   title = "Invalid Plugin"s;
             }
             else 
-               title = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"
-                     : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"
-                     : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"
-                                                                              : "Information";
+               title = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"s
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"s
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"s
+                                                                              : "Information"s;
             CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s", title.c_str(), "");
             CM_SKIP_LINE;
             break;

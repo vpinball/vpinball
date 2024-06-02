@@ -295,7 +295,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
             string api = unquote(ini["configuration"s]["vpx_api"s]);
             int nParsed, apiVersion[4];
             apiVersion[3] = 0;
-            nParsed = sscanf(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
+            nParsed = sscanf_s(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
             if ((nParsed == 3) || (nParsed == 4))
             {
                #define VERSION(a,b,c,d) (a * 1000000 + b * 10000 + c * 100 + d)
