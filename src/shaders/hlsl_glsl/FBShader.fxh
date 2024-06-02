@@ -1,9 +1,11 @@
 #ifdef GLSL
+uniform float exposure; // overaal scene exposure
 uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT
 
 #else // HLSL
 
 texture Texture6; // Precomputed Tonemapping LUT
+const float exposure; // overaal scene exposure
 sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 {
     Texture = (Texture6);
@@ -22,19 +24,25 @@ sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 
 #define MAX_BURST 1000.0
 
-float ReinhardToneMap(const float l)
+float ReinhardToneMap(float l)
 {
+    l *= exposure;
+    
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
-float2 ReinhardToneMap(const float2 color)
+float2 ReinhardToneMap(float2 color)
 {
+    color *= exposure;
+    
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
-float3 ReinhardToneMap(const float3 color)
+float3 ReinhardToneMap(float3 color)
 {
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -97,6 +105,8 @@ float3 ACESFitted(float3 color)
 // Warning: The returned value is already gamma corrected
 float3 FilmicToneMap(float3 color)
 {
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -140,6 +150,8 @@ float3 TonyMcMapfaceToneMap(float3 color)
 {
     const float LUT_DIMS = 48.0;
 
+    color *= exposure;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -163,6 +175,8 @@ float3 PBRNeutralToneMapping(float3 color)
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
 
+    color *= exposure;
+
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
     color -= offset;
@@ -178,6 +192,7 @@ float3 PBRNeutralToneMapping(float3 color)
     const float n = newPeak - newPeak/inv_g;
     return n + color*w;
 }
+
 
 #ifdef GLSL
 // Matrices for rec 2020 <> rec 709 color space conversion
@@ -269,7 +284,7 @@ float3 AgXToneMapping(float3 color)
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-    //color *= toneMappingExposure;
+    color *= exposure;
 
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
 

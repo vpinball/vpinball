@@ -1444,6 +1444,7 @@ void LiveUI::UpdateTweakPage()
       for (int i = 0; i < nCustomOptions; i++)
          m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       m_tweakPageOptions.push_back(BS_DayNight);
+      m_tweakPageOptions.push_back(BS_Exposure);
       m_tweakPageOptions.push_back(BS_Tonemapper);
       m_tweakPageOptions.push_back(BS_Difficulty);
       m_tweakPageOptions.push_back(BS_MusicVolume);
@@ -1580,6 +1581,13 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
+      case BS_Exposure:
+      {
+         m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
+         m_renderer->SetupShaders();
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+         break;
+      }
       case BS_Tonemapper:
       {
          if (keyEvent == 1)
@@ -1682,6 +1690,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_table->m_settings.DeleteValue(Settings::Player, "EmissionScale"s);
             }
             m_tweakState[BS_DayNight] = 0;
+            // Exposure slider
+            if (m_tweakState[BS_Exposure] == 1)
+               m_table->m_settings.SaveValue(Settings::TableOverride, "Exposure"s, m_renderer->m_exposure);
+            else if (m_tweakState[BS_Exposure] == 2)
+               m_table->m_settings.DeleteValue(Settings::TableOverride, "Exposure"s);
+            m_tweakState[BS_Exposure] = 0;
             // Tonemapper
             if (m_tweakState[BS_Tonemapper] == 1)
                m_table->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, m_renderer->m_toneMapper);
@@ -1748,11 +1762,14 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
             m_renderer->m_globalEmissionScale = m_table->m_globalEmissionScale;
-            m_renderer->SetupShaders();
+
+            // Exposure
+            m_tweakState[BS_Exposure] = 2;
+            m_renderer->m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
 
             // Tonemapper
             m_tweakState[BS_Tonemapper] = 2;
-            m_renderer->m_toneMapper = m_table->GetToneMapper();
+            m_renderer->m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
 
             // Remove custom difficulty and get back to the one of the table, eventually overriden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
@@ -1761,6 +1778,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // Music/sound volume
             m_player->m_MusicVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
             m_player->m_SoundVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
+
+            m_renderer->SetupShaders();
          }
          else if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
          {
@@ -2047,6 +2066,7 @@ void LiveUI::UpdateTweakModeUI()
             snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
+         case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;
          case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
                                                                  : m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
                                                                  : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 

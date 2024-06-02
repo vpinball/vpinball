@@ -120,6 +120,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
+   m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
@@ -399,7 +400,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
-   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
+   // TODO we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
    //if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
       m_tonemapLUT = new Texture();
@@ -1000,6 +1001,8 @@ void Renderer::SetupShaders()
    vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
+
+   m_pd3dPrimaryDevice->m_FBShader->SetFloat(SHADER_exposure, m_exposure);
 
    //m_pd3dPrimaryDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 

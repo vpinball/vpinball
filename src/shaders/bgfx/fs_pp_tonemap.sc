@@ -15,11 +15,12 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-uniform vec2 AO_scale_timeblur;
-
 uniform vec4 color_grade; // converted to vec4 for BGFX
 uniform vec4 do_dither; // converted to vec4 for BGFX
 uniform vec4 do_bloom; // converted to vec4 for BGFX
+
+uniform vec4 exposure; // converted to vec4 for BGFX
+
 
 #ifdef GRAY
   #define rtype float
@@ -54,19 +55,25 @@ SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 #define MAX_BURST 1000.0
 
 #ifdef REINHARD
-float ReinhardToneMap(const float l)
+float ReinhardToneMap(float l)
 {
+	l *= exposure.x;
+	
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
-vec2 ReinhardToneMap(const vec2 color)
+vec2 ReinhardToneMap(vec2 color)
 {
+	color *= exposure.x;
+	
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
-vec3 ReinhardToneMap(const vec3 color)
+vec3 ReinhardToneMap(vec3 color)
 {
+	color *= exposure.x;
+	
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -110,6 +117,8 @@ vec3 ACESFitted(vec3 color)
 // Warning: The retrned value is already gamam corrected
 vec3 FilmicToneMap(vec3 color)
 {
+	color *= exposure.x;
+	
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -158,6 +167,8 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
 {
     const float LUT_DIMS = 48.0;
 
+	color *= exposure.x;
+	
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -186,6 +197,8 @@ vec3 PBRNeutralToneMapping(vec3 color)
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
 
+	color *= exposure.x;
+	
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
     color -= offset;
@@ -271,8 +284,8 @@ vec3 AgXToneMapping(vec3 color)
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-    //color *= toneMappingExposure;
-
+	color *= exposure.x;
+	
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
 
     color = mul(color, AgXInsetMatrix);

@@ -8,6 +8,7 @@ FEATURES:
 - add "Surface" to the "Select Element" list
 
 - add additional tonemapper (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible and 'AgX' which is the default one used by Blender
+- also add a new 'exposure' property that adjust the overall scene exposure (like the corresponding camera control)
 
 FIXES:
 
