@@ -21,7 +21,7 @@
 
 FormBackglass::FormBackglass()
 {
-   SetName("formBackglass");
+   SetName("formBackglass"s);
 
    m_pB2SSettings = B2SSettings::GetInstance();
    m_pB2SData = B2SData::GetInstance();
@@ -1476,7 +1476,8 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, int angle)
 
    for (int y = 0; y < destination->h; ++y) {
       const float xoffs = center_x - center_x * cosine + ((float)y - center_y) * sine;
-      const float yoffs = center_y - center_x * sine   + ((float)y - center_y) * cosine;
+      const float yoffs = center_y + center_x * sine   + ((float)y - center_y) * cosine;
+
       for (int x = 0; x < destination->w; ++x) {
          const int old_x = (int)(round(xoffs + (float)x * cosine));
          const int old_y = (int)(round(yoffs - (float)x * sine));
