@@ -21,7 +21,7 @@
 
 FormBackglass::FormBackglass()
 {
-   SetName("formBackglass");
+   SetName("formBackglass"s);
 
    m_pB2SSettings = B2SSettings::GetInstance();
    m_pB2SData = B2SData::GetInstance();
@@ -31,8 +31,7 @@ FormBackglass::FormBackglass()
    m_rotateSlowDownSteps = 0;
    m_rotateRunTillEnd = false;
    m_rotateRunToFirstStep = false;
-   m_rotateSteps = 0;
-   m_rotateAngle = 0.0f;
+   m_rotateAngle = 0;
    m_rotateTimerInterval = 0;
    m_selectedLEDType = eLEDTypes_Undefined;
    m_pDarkImage4Authentic = NULL;
@@ -90,7 +89,7 @@ FormBackglass::FormBackglass()
       return; 
    }
 
-   m_pWindow = new FormWindow(this, "B2SBackglass",
+   m_pWindow = new FormWindow(this, "B2SBackglass"s,
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassX"s, B2S_SETTINGS_BACKGLASSX),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassY"s, B2S_SETTINGS_BACKGLASSY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SBackglassWidth"s, B2S_SETTINGS_BACKGLASSWIDTH),
@@ -126,7 +125,7 @@ void FormBackglass::OnPaint(VP::RendererGraphics* pGraphics)
                if (pIllu->GetZOrder() == 0)
                   DrawImage(pGraphics, pIllu);
             }
-            // now draw zordered images
+            // now draw z-ordered images
             for(const auto& [key, pIllus] : *m_pB2SData->GetZOrderImages()) {
                for (int i = 0; i < pIllus.size(); i++)
                   DrawImage(pGraphics, pIllus[i]);
@@ -178,21 +177,19 @@ void FormBackglass::StartupTimerTick(VP::Timer* pTimer)
 
 void FormBackglass::RotateTimerTick(VP::Timer* pTimer)
 {
-   static float currentAngleS = 0;
-   static int currentAngle = 0;
+   static int currentAngleS = 0;
 
    auto rotatingImages = m_pB2SData->GetRotatingImages();
-   if (rotatingImages && (*rotatingImages)[0].find(currentAngle) != (*rotatingImages)[0].end()) {
+   if (rotatingImages && (*rotatingImages)[0].find(currentAngleS) != (*rotatingImages)[0].end()) {
       auto rotatingPictureBox = m_pB2SData->GetRotatingPictureBox();
       if (rotatingPictureBox) {
          auto& pPicBox = (*rotatingPictureBox)[0];
-         pPicBox->SetBackgroundImage((*rotatingImages)[0][currentAngle]);
+         pPicBox->SetBackgroundImage((*rotatingImages)[0][currentAngleS]);
          pPicBox->SetVisible(true);
       }
       currentAngleS += m_rotateAngle;
-      if (currentAngleS >= 360.0f)
+      if (currentAngleS >= 360)
          currentAngleS = 0;
-      currentAngle = (int)currentAngleS;
    }
    else {
       m_pRotateTimer->Stop();
@@ -489,7 +486,7 @@ void FormBackglass::LoadB2SData()
             if (innerNode->FindAttribute("OffImage"))
                 pOffImage = Base64ToImage(innerNode->Attribute("OffImage"));
             B2SPictureBox* pPicbox = new B2SPictureBox();
-            bool isOnBackglass = (parent == "Backglass"s);
+            bool isOnBackglass = (parent == "Backglass");
             pPicbox->SetName("PictureBox" + std::to_string(id));
             pPicbox->SetGroupName(name);
             pPicbox->SetLocation(loc);
@@ -519,8 +516,8 @@ void FormBackglass::LoadB2SData()
                     m_pB2SData->GetZOrderImages()->Add(pPicbox);
                 }
                 if (romid > 0 && picboxtype == ePictureBoxType_StandardImage && romidtype != eRomIDType_Mech) {
-                   string key = string() + 
-                      (rominverted ? "I" : "") + (romidtype == eRomIDType_Lamp ? "L" : romidtype == eRomIDType_Solenoid ? "S" : "GI") + 
+                   string key = 
+                      (rominverted ? "I"s : string()) + (romidtype == eRomIDType_Lamp ? "L" : romidtype == eRomIDType_Solenoid ? "S" : "GI") + 
                       std::to_string(romid);
                    if (pPicbox->GetDualMode() == eDualMode_Both || pPicbox->GetDualMode() == eDualMode_Authentic)
                       roms4Authentic[key] += size.w * size.h;
@@ -551,12 +548,10 @@ void FormBackglass::LoadB2SData()
             // maybe do picture rotating
             if (picboxrotatesteps > 0) {
                if (picboxtype == ePictureBoxType_SelfRotatingImage && m_pB2SData->GetRotatingImages()->size() == 0) {
-                  m_rotateSteps = picboxrotatesteps;
                   m_rotateTimerInterval = picboxrotateinterval;
                   RotateImage(pPicbox, picboxrotatesteps, picboxrotationdirection, ePictureBoxType_SelfRotatingImage);
                }
                else if (picboxtype == ePictureBoxType_MechRotatingImage && m_pB2SData->GetRotatingImages()->size() == 0) {
-                  m_rotateSteps = picboxrotatesteps;
                   RotateImage(pPicbox, picboxrotatesteps, picboxrotationdirection, ePictureBoxType_MechRotatingImage, romidtype, romid);
                }
             }
@@ -612,9 +607,9 @@ void FormBackglass::LoadB2SData()
             string soundName;
 
             // set some tmp vars
-            bool isOnBackglass = (parent == "Backglass"s);
-            bool isDream7LEDs = string_starts_with_case_insensitive(reeltype, "dream7");
-            bool isRenderedLEDs = string_starts_with_case_insensitive(reeltype, "rendered");
+            bool isOnBackglass = (parent == "Backglass");
+            bool isDream7LEDs = string_starts_with_case_insensitive(reeltype, "dream7"s);
+            bool isRenderedLEDs = string_starts_with_case_insensitive(reeltype, "rendered"s);
             bool isReels = !isDream7LEDs && !isRenderedLEDs;
             SDL_FRect glowbulb = { 0.0f, 0.0f, 0.0f, 0.0f };
             int glow = d7glow;
@@ -705,7 +700,7 @@ void FormBackglass::LoadB2SData()
                      dream7b2sstartdigit++;
                }
                // add LED area
-               (*m_pB2SData->GetLEDAreas())[string("LEDArea") + std::to_string(id)] = new LEDAreaInfo({ loc.x, loc.y, size.w, size.h }, !isOnBackglass);
+               (*m_pB2SData->GetLEDAreas())["LEDArea" + std::to_string(id)] = new LEDAreaInfo({ loc.x, loc.y, size.w, size.h }, !isOnBackglass);
                // add or update player info collection
                if (b2splayerno > 0) {
                    m_pB2SData->SetPlayerAdded(true);
@@ -760,10 +755,10 @@ void FormBackglass::LoadB2SData()
                else if (isReels) {
                   // look for matching reel sound
                   soundName.clear();
-                  if (innerNode->FindAttribute(string("Sound" + std::to_string(i)).c_str())) {
-                     soundName = innerNode->Attribute(string("Sound" + std::to_string(i)).c_str());
+                  if (innerNode->FindAttribute(("Sound" + std::to_string(i)).c_str())) {
+                     soundName = innerNode->Attribute(("Sound" + std::to_string(i)).c_str());
                      if (soundName.empty())
-                        soundName = "stille";
+                        soundName = "stille"s;
                   }
                   // add reel or LED pictures
                   B2SReelBox* pReel = new B2SReelBox();
@@ -847,8 +842,8 @@ void FormBackglass::LoadB2SData()
                if (innerNode->FindAttribute("CountOfIntermediates")) {
                   int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                   for (int i = 1; i <= countOfIntermediates; i++) {
-                     string intname = name + "_" + std::to_string(i);
-                     SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(string("IntermediateImage" + std::to_string(i)).c_str()));
+                     string intname = name + '_' + std::to_string(i);
+                     SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                      if (!m_pB2SData->GetReelIntermediateImages()->contains(intname))
                         (*m_pB2SData->GetReelIntermediateImages())[intname] = intimage;
                   }
@@ -866,8 +861,8 @@ void FormBackglass::LoadB2SData()
                      if (innerNode->FindAttribute("CountOfIntermediates")) {
                         int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                         for (int i = 1; i <= countOfIntermediates; i++) {
-                           string intname = name + "_" + std::to_string(i);
-                           SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(string("IntermediateImage" + std::to_string(i)).c_str()));
+                           string intname = name + '_' + std::to_string(i);
+                           SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                            if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
                               (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = intimage;
                         }
@@ -878,7 +873,7 @@ void FormBackglass::LoadB2SData()
                   for (auto setnode = topnode->FirstChildElement("Reels")->FirstChildElement("IlluminatedImages")->FirstChildElement("Set"); setnode != nullptr; setnode = setnode->NextSiblingElement("Set")) {
                      int setid = setnode->IntAttribute("ID");
                      for (auto innerNode = setnode->FirstChildElement("IlluminatedImage"); innerNode != nullptr; innerNode = innerNode->NextSiblingElement("IlluminatedImage")) {
-                        string name = string(innerNode->Attribute("Name")) + "_" + std::to_string(setid);
+                        string name = string(innerNode->Attribute("Name")) + '_' + std::to_string(setid);
                         SDL_Surface* pImage = Base64ToImage(innerNode->Attribute("Image"));
                         if (!m_pB2SData->GetReelIlluImages()->contains(name))
                            (*m_pB2SData->GetReelIlluImages())[name] = pImage;
@@ -886,8 +881,8 @@ void FormBackglass::LoadB2SData()
                         if (innerNode->FindAttribute("CountOfIntermediates")) {
                            int countOfIntermediates = innerNode->IntAttribute("CountOfIntermediates");
                            for (int i = 1; i <= countOfIntermediates; i++) {
-                              string intname = name + "_" + std::to_string(i);
-                              SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(string("IntermediateImage" + std::to_string(i)).c_str()));
+                              string intname = name + '_' + std::to_string(i);
+                              SDL_Surface* intimage = Base64ToImage(innerNode->Attribute(("IntermediateImage" + std::to_string(i)).c_str()));
                               if (!m_pB2SData->GetReelIntermediateIlluImages()->contains(intname))
                                  (*m_pB2SData->GetReelIntermediateIlluImages())[intname] = intimage;
                            }
@@ -1156,21 +1151,21 @@ void FormBackglass::LoadB2SData()
                             id2 = std::stoi(idJoin.substr(2));
                          if (idJoin.length() >= 4 && is_string_numeric(idJoin.substr(3)))
                             id3 = std::stoi(idJoin.substr(3));
-                         if (string_starts_with_case_insensitive(idJoin, "L")) {
+                         if (string_starts_with_case_insensitive(idJoin, "L"s)) {
                             AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationLampIDs() : m_pB2SData->GetUsedAnimationLampIDs();
                             if (id1 > 0)
                                for (int i = 1; i <= randomquality; i++)
                                   pAnimations->Add(id1, new AnimationInfo(name, false));
                          }
-                         else if (string_starts_with_case_insensitive(idJoin, "S")) {
+                         else if (string_starts_with_case_insensitive(idJoin, "S"s)) {
                             AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationSolenoidIDs() : m_pB2SData->GetUsedAnimationSolenoidIDs();
                             if (id1 > 0)
                                for (int i = 1; i <= randomquality; i++)
                                   pAnimations->Add(id1, new AnimationInfo(name, false));
                          }
-                         else if (string_starts_with_case_insensitive(idJoin, "G")) {
+                         else if (string_starts_with_case_insensitive(idJoin, "G"s)) {
                             AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationGIStringIDs() : m_pB2SData->GetUsedAnimationGIStringIDs();
-                            if (string_starts_with_case_insensitive(idJoin, "GI")) {
+                            if (string_starts_with_case_insensitive(idJoin, "GI"s)) {
                                if (id2 > 0)
                                   pAnimations->Add(id2, new AnimationInfo(name, false));
                             }
@@ -1179,20 +1174,20 @@ void FormBackglass::LoadB2SData()
                                   pAnimations->Add(id1, new AnimationInfo(name, false));
                             }
                          }
-                         else if (string_starts_with_case_insensitive(idJoin, "I")) {
-                             if (string_starts_with_case_insensitive(idJoin, "IL")) {
+                         else if (string_starts_with_case_insensitive(idJoin, "I"s)) {
+                             if (string_starts_with_case_insensitive(idJoin, "IL"s)) {
                                 AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationLampIDs() : m_pB2SData->GetUsedAnimationLampIDs();
                                 if (id2 > 0)
                                    pAnimations->Add(id2, new AnimationInfo(name, true));
                              }
-                             else if (string_starts_with_case_insensitive(idJoin, "IS")) {
+                             else if (string_starts_with_case_insensitive(idJoin, "IS"s)) {
                                 AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationSolenoidIDs() : m_pB2SData->GetUsedAnimationSolenoidIDs();
                                 if (id2 > 0)
                                    pAnimations->Add(id2, new AnimationInfo(name, true));
                              }
-                             else if (string_starts_with_case_insensitive(idJoin, "IG")) {
+                             else if (string_starts_with_case_insensitive(idJoin, "IG"s)) {
                                 AnimationCollection* pAnimations = randomstart ? m_pB2SData->GetUsedRandomAnimationGIStringIDs() : m_pB2SData->GetUsedAnimationGIStringIDs();
-                                if (string_starts_with_case_insensitive(idJoin, "IGI")) {
+                                if (string_starts_with_case_insensitive(idJoin, "IGI"s)) {
                                    if (id3 > 0)
                                       pAnimations->Add(id3, new AnimationInfo(name, true));
                                 }
@@ -1362,15 +1357,15 @@ void FormBackglass::RotateImage(B2SPictureBox* pPicbox, int rotationsteps, eSnip
 
       // calc rotation angle
       m_rotateAngle = 360 / rotationsteps;
+      //assert(360%rotationsteps == 0);
 
       // rotate the image the whole circle
-      float rotatingangleS = 0.0f;
+      int rotatingAngle = 0;
       int index = 0;
-      while (rotatingangleS < 360.0f) {
-         int rotatingAngle = (int)rotatingangleS;
-         SDL_Surface* pImage = RotateSurface(pPicbox->GetBackgroundImage(), rotationdirection == eSnippitRotationDirection_AntiClockwise ? rotatingAngle : 360.0f - rotatingAngle);
+      while (rotatingAngle < 360) {
+         SDL_Surface* pImage = RotateSurface(pPicbox->GetBackgroundImage(), rotationdirection == eSnippitRotationDirection_AntiClockwise ? rotatingAngle : 360 - rotatingAngle);
          (*m_pB2SData->GetRotatingImages())[romid][pPicbox->GetPictureBoxType() == ePictureBoxType_MechRotatingImage ? index : rotatingAngle] = pImage;
-         rotatingangleS += m_rotateAngle;
+         rotatingAngle += m_rotateAngle;
          index++;
       }
    }
@@ -1463,28 +1458,34 @@ void FormBackglass::CheckBulbs(int romid, eRomIDType romidtype, bool rominverted
    }
 }
 
-SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, double angle)
+SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, int angle)
 {
    SDL_LockSurface(source);
 
-   SDL_Surface* destination = SDL_CreateRGBSurface(0, source->w, source->h, source->format->BitsPerPixel, source->format->Rmask, source->format->Gmask, source->format->Bmask, source->format->Amask);
+   SDL_Surface* const destination = SDL_CreateRGBSurface(0, source->w, source->h, source->format->BitsPerPixel, source->format->Rmask, source->format->Gmask, source->format->Bmask, source->format->Amask);
 
-   double radians = angle * (M_PI / 180.0);
-   float cosine = cos(radians);
-   float sine = sin(radians);
+   const float radians = -(float)angle * (float)(M_PI / 180.0);
+   const float cosine = cosf(radians);
+   const float sine = sinf(radians);
 
-   float center_x = source->w / 2.0f;
-   float center_y = source->h / 2.0f;
+   const float center_x = destination->w / 2.0f;
+   const float center_y = destination->h / 2.0f;
 
-   for (int y = 0; y < source->h; ++y) {
-      for (int x = 0; x < source->w; ++x) {
-         int new_x = (int)(round((x - center_x) * cosine + (y - center_y) * sine + center_x));
-         int new_y = (int)(round(-(x - center_x) * sine + (y - center_y) * cosine + center_y));
+   const UINT32* const __restrict src = ((UINT32*)source->pixels);
+   UINT32* const __restrict dest = ((UINT32*)destination->pixels);
 
-         if (/*new_x >= 0 &&*/ (unsigned int)new_x < (unsigned int)source->w && /*new_y >= 0 &&*/ (unsigned int)new_y < (unsigned int)source->h) {
-            UINT32 pixel = ((UINT32*)source->pixels)[y * source->w + x];
-            ((UINT32*)destination->pixels)[new_y * destination->w + new_x] = pixel;
-         }
+   for (int y = 0; y < destination->h; ++y) {
+      const float xoffs = center_x - center_x * cosine + ((float)y - center_y) * sine;
+      const float yoffs = center_y + center_x * sine   + ((float)y - center_y) * cosine;
+
+      for (int x = 0; x < destination->w; ++x) {
+         const int old_x = (int)(round(xoffs + (float)x * cosine));
+         const int old_y = (int)(round(yoffs - (float)x * sine));
+
+         if (/*old_x >= 0 &&*/ (unsigned int)old_x < (unsigned int)source->w && /*old_y >= 0 &&*/ (unsigned int)old_y < (unsigned int)source->h)
+            dest[y * destination->w + x] = src[old_y * source->w + old_x];
+         else
+            dest[y * destination->w + x] = 0; //!!?
       }
    }
 
