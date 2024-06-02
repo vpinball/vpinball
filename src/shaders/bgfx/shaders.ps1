@@ -153,7 +153,6 @@ New-Item -Path . -Name "../bgfx_tonemap.h" -ItemType "File" -Force -Value "// To
 New-Item -Path . -Name "../bgfx_blur.h" -ItemType "File" -Force -Value "// Blur Kernel Shaders`n"
 for($k = 0; $k -lt 2; $k++)
 {
-  Process-Shader "vs_postprocess_offseted.sc" "postprocess.h" ("vs_postprocess_offseted" + $stOutput[$k]) "vertex" @($stereo[$k])
   Process-Shader "vs_postprocess.sc" "postprocess.h" ("vs_postprocess" + $stOutput[$k]) "vertex" @($stereo[$k])
   Process-Shader "fs_pp_mirror.sc" "postprocess.h" ("fs_pp_mirror" + $stOutput[$k]) "fragment" @($stereo[$k])
   Process-Shader "fs_pp_copy.sc" "postprocess.h" ("fs_pp_copy" + $stOutput[$k]) "fragment" @($stereo[$k])
