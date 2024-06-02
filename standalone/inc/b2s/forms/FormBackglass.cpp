@@ -517,7 +517,7 @@ void FormBackglass::LoadB2SData()
                 }
                 if (romid > 0 && picboxtype == ePictureBoxType_StandardImage && romidtype != eRomIDType_Mech) {
                    string key = 
-                      (rominverted ? "I" : "") + (romidtype == eRomIDType_Lamp ? "L" : romidtype == eRomIDType_Solenoid ? "S" : "GI") + 
+                      (rominverted ? "I"s : string()) + (romidtype == eRomIDType_Lamp ? "L" : romidtype == eRomIDType_Solenoid ? "S" : "GI") + 
                       std::to_string(romid);
                    if (pPicbox->GetDualMode() == eDualMode_Both || pPicbox->GetDualMode() == eDualMode_Authentic)
                       roms4Authentic[key] += size.w * size.h;
@@ -1362,7 +1362,7 @@ void FormBackglass::RotateImage(B2SPictureBox* pPicbox, int rotationsteps, eSnip
       // rotate the image the whole circle
       int rotatingAngle = 0;
       int index = 0;
-      while (rotatingangle < 360) {
+      while (rotatingAngle < 360) {
          SDL_Surface* pImage = RotateSurface(pPicbox->GetBackgroundImage(), rotationdirection == eSnippitRotationDirection_AntiClockwise ? rotatingAngle : 360 - rotatingAngle);
          (*m_pB2SData->GetRotatingImages())[romid][pPicbox->GetPictureBoxType() == ePictureBoxType_MechRotatingImage ? index : rotatingAngle] = pImage;
          rotatingAngle += m_rotateAngle;
