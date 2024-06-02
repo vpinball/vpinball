@@ -859,6 +859,8 @@ public:
 
    ToneMapper GetToneMapper() const { return m_toneMapper; }
    void SetToneMapper(const ToneMapper& tm) { m_toneMapper = tm; }
+   float GetExposure() const { return m_exposure; }
+   void SetExposure(const float exposure) { m_exposure = exposure; }
 
 private:
    PinTableMDI *m_mdiTable = nullptr;
@@ -870,6 +872,7 @@ private:
    bool m_moving;
 
    ToneMapper m_toneMapper = ToneMapper::TM_TONY_MC_MAPFACE;
+   float m_exposure = 1.f;
 
    inline float ApplyDifficulty(float minValue, float MaxValue) const;
 };

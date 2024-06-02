@@ -1255,6 +1255,7 @@
 #define IDC_APPLICATION_SETTINGS        921
 #define IDC_TABLE_OVERRIDE              922
 #define IDC_TONEMAPPER                  923
+#define IDC_EXPOSURE                    927
 #define IDC_AR_LABEL2                   924
 #define IDC_SAVE_OVERRIDES              925
 #define IDC_INFOTEXT_EDIT               926
@@ -1454,7 +1455,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        676
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         927
+#define _APS_NEXT_CONTROL_VALUE         928
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif

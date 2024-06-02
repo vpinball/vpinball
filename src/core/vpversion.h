@@ -6,7 +6,7 @@
 #define VP_VERSION_MINOR    8  // Max 2 Digits
 #define VP_VERSION_REV      1  // Max 1 Digit
 
-#define CURRENT_FILE_FORMAT_VERSION  1080
+#define CURRENT_FILE_FORMAT_VERSION  1081
 #define NO_ENCRYPTION_FORMAT_VERSION 1050
 #define NEW_SOUND_FORMAT_VERSION     1031 // introduced surround option
 
