@@ -112,7 +112,6 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
    if (with_depth)
    {
-      // FIXME BGFX multi layer framebuffer with depth buffer are not bound for multilayered rendering (only layer 0 is rendered, without depth/stencil, both layer are rendered)
       bgfx::Attachment colorAttachment, depthAttachment;
       colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
       depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
@@ -516,10 +515,14 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #if defined(ENABLE_BGFX)
    if (w1 == w2 && h1 == h2)
    {
-      if (copyColor)
-         bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, px2, py2, m_color_tex, px1, py1, w1, h1);
-      if (m_has_depth && dest->m_has_depth && copyDepth)
-         bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, px2, py2, m_depth_tex, px1, py1, w1, h1);
+      // BGFX does not support blitting multiple layers at once on all target platform (supported on Vulkan, not supported on DX11, untested for the other backends)
+      for (int z = 0; z < nLayers; z++)
+      {
+         if (copyColor)
+            bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, 0, px2, py2, pz1 + z, m_color_tex, 0, px1, py1, pz2 + z, w1, h1, 1);
+         if (m_has_depth && dest->m_has_depth && copyDepth)
+            bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz1 + z, m_depth_tex, 0, px1, py1, pz2 + z, w1, h1, 1);
+      }
    }
    else
    {
