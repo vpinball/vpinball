@@ -1254,6 +1254,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_decal_notex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_classic_light_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
       //
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
@@ -1370,6 +1374,10 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex_noclip),         STEREO(fs_decal_notex_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_decal_tex_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean,            STEREO(vs_kicker_noclip),              STEREO(fs_basic_notex_noat_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture, STEREO(vs_basic_notex_noclip),         STEREO(fs_unshaded_notex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_unshaded_tex_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_noclip),  STEREO(fs_unshaded_notex_ballshadow_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_noclip),       STEREO(fs_unshaded_tex_ballshadow_noclip));
       break;
    case BALL_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));
