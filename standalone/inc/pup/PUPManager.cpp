@@ -164,6 +164,11 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
 
 void PUPManager::Start()
 {
+   if (!m_init)
+      return;
+
+   PLOGI.printf("PUP start");
+
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
    if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {

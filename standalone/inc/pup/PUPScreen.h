@@ -89,6 +89,7 @@ public:
    const string& GetBackgroundFilename() const { return m_backgroundFilename; }
    bool IsTransparent() const { return m_transparent; }
    float GetVolume() const { return m_volume; }
+   void SetVolume(float volume) { m_volume = volume; }
    PUPCustomPos* GetCustomPos() { return m_pCustomPos; }
    void AddChild(PUPScreen* pScreen);
    void SetParent(PUPScreen* pParent) { m_pParent = pParent; }

@@ -13,6 +13,7 @@ void OnPUPCaptureTrigger(uint16_t id, void* pUserData)
 
 PUPPlugin::PUPPlugin() : Plugin()
 {
+   m_pManager = PUPManager::GetInstance();
 }
 
 PUPPlugin::~PUPPlugin()
@@ -27,8 +28,6 @@ const std::string& PUPPlugin::GetName() const
 
 void PUPPlugin::PluginInit(const string& szTableFilename, const string& szRomName)
 {
-   m_pManager = PUPManager::GetInstance();
-
    if (m_pManager->IsInit()) {
       PLOGW.printf("PUP already initialized");
       return;

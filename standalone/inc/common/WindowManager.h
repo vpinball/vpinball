@@ -20,7 +20,7 @@ public:
 
    void RegisterWindow(Window* pWindow);
    void UnregisterWindow(Window* pWindow);
-   void Startup();
+   void Start();
    void ProcessEvent(const SDL_Event* event);
    void ProcessUpdates();
    void Render();

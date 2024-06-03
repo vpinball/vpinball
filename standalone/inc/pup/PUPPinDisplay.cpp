@@ -267,13 +267,27 @@ STDMETHODIMP PUPPinDisplay::SendMSG(BSTR cMSG)
                if (pScreen) {
                   int fn = json["FN"].as<int>();
                   switch (fn) {
+                     case 4:
+                        // set StayOnTop { "mt":301, "SN": XX, "FN":4, "FS":1/0 }
+                        PLOGW.printf("Stay on top requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        pScreen->SetMode((json["FS"s].exists() && json["FS"s].as<int>() == 1) ? PUP_SCREEN_MODE_FORCE_ON : PUP_SCREEN_MODE_FORCE_BACK);
+                        break;
                      case 6:
                         // Bring screen to the front
+                        PLOGW.printf("Bring screen to front requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         pScreen->SendToFront();
                         break;
+                     case 10:
+                        // set all displays all volume { "mt":301, "SN": XX, "FN":10, "VL":9}  VL=volume level
+                        PLOGE.printf("Set all displays all volume not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        break;
+                     case 11:
+                        // set all volume { "mt":301, "SN": XX, "FN":11, "VL":9}  VL=volume level
+                        PLOGW.printf("Set all volume requested: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        pScreen->SetVolume(std::stof(json["VL"].as_str()));
+                        break;
                      default:
-                        PLOGW.printf("Not implemented: screen={%s}, fn=%d, szMsg=%s",
-                           pScreen->ToString(false).c_str(), fn, szMsg.c_str());
+                        PLOGE.printf("Not implemented: screen={%s}, fn=%d, szMsg=%s", pScreen->ToString(false).c_str(), fn, szMsg.c_str());
                         break;
                   }
                }

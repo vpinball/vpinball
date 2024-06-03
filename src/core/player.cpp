@@ -698,7 +698,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
 #ifdef __STANDALONE__
    g_pStandalone = Standalone::GetInstance();
-   g_pStandalone->Start();
+   g_pStandalone->PreStartup();
 #endif
 
    PLOGI << "Starting script"; // For profiling
@@ -764,7 +764,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Startup done"; // For profiling
 
 #ifdef __STANDALONE__
-   g_pStandalone->StartupDone();
+   g_pStandalone->PostStartup();
 #endif
 
 #ifndef __STANDALONE__

@@ -100,8 +100,10 @@ void WindowManager::UnregisterWindow(Window* pWindow)
    }
 }
 
-void WindowManager::Startup()
+void WindowManager::Start()
 {
+   PLOGI.printf("Window manager start");
+
    {
       std::lock_guard<std::mutex> guard(m_mutex);
       for (Window* pWindow : m_windows) {

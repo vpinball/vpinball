@@ -1,6 +1,10 @@
 #pragma once
 
-#include "inc/common/WindowManager.h"
+class PUPManager;
+
+namespace VP {
+   class WindowManager;
+}
 
 class Standalone final
 {
@@ -9,8 +13,8 @@ public:
 
    static Standalone* GetInstance();
 
-   void Start();
-   void StartupDone();
+   void PreStartup();
+   void PostStartup();
    void ProcessEvent(const SDL_Event* pEvent);
    void ProcessUpdates();
    void Render();
@@ -19,5 +23,6 @@ private:
    Standalone();
 
    static Standalone* m_pInstance;
+   PUPManager* m_pPUPManager;
    VP::WindowManager* m_pWindowManager;
 };
