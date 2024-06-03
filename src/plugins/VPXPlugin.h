@@ -98,7 +98,7 @@ typedef void (*vpxpi_event_callback)(const unsigned int eventId, void* userData,
 #endif
 
 
-// For compability and ease of binding reasons we stick to C 89 syntax: no bool type, no nested typedef,...
+// For compability and ease of binding reasons we stick to C 89 syntax: no bool type, no nested typedef, explicit enum,...
 #ifndef BOOL
 typedef int                 BOOL;
 #endif
@@ -143,7 +143,7 @@ typedef struct VPXPluginAPI
 
    // User Interface
    enum OptionUnit { NONE, PERCENT };
-   float (*GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const OptionUnit unit, const char** values);
+   float (*GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const enum OptionUnit unit, const char** values);
    void* (*PushNotification)(const char* msg, const unsigned int lengthMs);
    void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
 

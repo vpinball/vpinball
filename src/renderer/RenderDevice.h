@@ -158,7 +158,6 @@ public:
       #endif
    }
 
-   bool SetMaximumPreRenderedFrames(const DWORD frames);
    void SetClipPlane(const vec4& plane);
 
    // Active (live on GPU) render state
@@ -275,6 +274,7 @@ private:
 #elif defined(ENABLE_DX9)
 public:
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
+   IDirect3DDevice9Ex* GetCoreDeviceEx() const { return m_pD3DDeviceEx; }
 
    IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
    IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;

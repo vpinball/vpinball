@@ -327,18 +327,38 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
 
+   // 0 means disable limiting of draw-ahead queue
+   int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
+   const string bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+   int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+   string supportedRendererLog = "BGFX available backends: ";
+   for (int i = 0; i < nRendererSupported; i++)
+      supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
+   PLOGI << supportedRendererLog;
+
+   switch (syncMode)
+   {
+   case VideoSyncMode::VSM_NONE: break;
+   case VideoSyncMode::VSM_VSYNC: break;
+   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   default: break;
+   }
+
    bgfx::Init init;
    
    // Untested implementations
    init.type = bgfx::RendererType::Direct3D12; // Fail on a call to CreateGraphicsPipelineState
    init.type = bgfx::RendererType::OpenGL;     // Needs explicit uniform handling
-   init.type = bgfx::RendererType::Metal;      // Unsupported under Windows
    init.type = bgfx::RendererType::OpenGLES;   // Unsupported under Windows
 
    // Tested & working backends
+   init.type = bgfx::RendererType::Metal;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
 
@@ -350,6 +370,18 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
+
+   init.resolution.maxFrameLatency = maxPrerenderedFrames;
+   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                               /* Flush (send data from CPU to GPU) after submission (bgfx::frame) */
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC) /* Wait for VSync */;
+   init.resolution.width = wnd->GetWidth();
+   init.resolution.height = wnd->GetHeight();
+   switch (m_outputWnd[0]->GetBitDepth())
+   {
+   case 32: back_buffer_format = colorFormat::RGBA8; init.resolution.format = bgfx::TextureFormat::RGBA8; break;
+   case 30: back_buffer_format = colorFormat::RGBA10; init.resolution.format = bgfx::TextureFormat::RGB10A2; break;
+   default: back_buffer_format = colorFormat::RGB5; init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
+   }
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    init.platformData.ndt = wmInfo.info.x11.display;
@@ -365,10 +397,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.platformData.context = nullptr;
    init.platformData.backBuffer = nullptr;
    init.platformData.backBufferDS = nullptr;
-   init.resolution.maxFrameLatency = 1;
-   init.resolution.reset = BGFX_RESET_NONE;
-   init.resolution.width = wnd->GetWidth();
-   init.resolution.height = wnd->GetHeight();
    #ifdef DEBUG
    init.debug = true;
    #endif
@@ -377,20 +405,10 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    // bgfx::renderFrame(); 
    if (!bgfx::init(init))
    {
-      PLOGE << "FAILED";
+      PLOGE << "BGFX initialization failed";
+      exit(-1);
    }
-   switch (syncMode)
-   {
-   case VideoSyncMode::VSM_NONE: break;
-   case VideoSyncMode::VSM_VSYNC: break;
-   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   default: break;
-   }
-   // Could be RGB8 but this is an emulated format from RGBA8 and Vulkan back end would fail
-   // FIXME BGFX use desktop or fullscreen backbuffer format
-   back_buffer_format = colorFormat::RGBA8;
-   bgfx::reset(wnd->GetWidth(), wnd->GetHeight(), syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGBA8);
+   PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend.";
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
@@ -760,6 +778,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // refreshrate = mode.RefreshRate;
    }
 
+   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
+   if (!EnableLegacyMaximumPreRenderedFrames && m_pD3DEx && maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
+   {
+      CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(maxPrerenderedFrames));
+   }
+
    /*if (m_outputWnd[0]->IsFullScreen())
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
@@ -1037,33 +1061,6 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
       m_stereoShader->UnbindSampler(sampler);
    if (m_ballShader)
       m_ballShader->UnbindSampler(sampler);
-}
-
-/*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
-{
-   IDirect3DQuery9* pEventQuery;
-   pd3dDevice->CreateQuery(D3DQUERYTYPE_EVENT, &pEventQuery);
-
-   if (pEventQuery)
-   {
-      pEventQuery->Issue(D3DISSUE_END);
-      while (S_FALSE == pEventQuery->GetData(nullptr, 0, D3DGETDATA_FLUSH))
-         ;
-      SAFE_RELEASE(pEventQuery);
-   }
-}*/
-
-bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
-{
-#if defined(ENABLE_DX9)
-   if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
-   {
-      CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
-      return true;
-   }
-   else
-#endif
-      return false;
 }
 
 void RenderDevice::WaitForVSync(const bool asynchronous)

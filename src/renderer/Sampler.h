@@ -80,7 +80,7 @@ private:
    bool m_ownTexture;
 #endif
    bool m_isLinear;
-   RenderDevice* m_rd;
+   RenderDevice* const m_rd;
    int m_width;
    int m_height;
    SamplerAddressMode m_clampu;
@@ -97,7 +97,7 @@ private:
    GLuint m_texture = 0;
    GLuint CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo);
 #elif defined(ENABLE_DX9)
-   IDirect3DTexture9* m_texture;
+   IDirect3DTexture9* m_texture = nullptr;
    IDirect3DTexture9* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
 #endif
 };

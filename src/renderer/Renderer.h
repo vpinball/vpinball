@@ -6,7 +6,6 @@
 #include "renderer/Texture.h"
 #include "parts/backGlass.h"
 
-class FrameQueueLimiter;
 class Renderable;
 
 class Renderer
@@ -185,7 +184,9 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   FrameQueueLimiter* m_limiter = nullptr;
+   #if defined(ENABLE_DX9)
+   class FrameQueueLimiter* m_limiter = nullptr;
+   #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    RenderTarget* m_envRadianceTexture = nullptr;
