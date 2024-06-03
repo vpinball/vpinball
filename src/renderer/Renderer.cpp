@@ -44,16 +44,6 @@ public:
       : m_pd3dDevice(pd3dDevice)
    {
       m_curIdx = 0;
-      const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-
-      // if available, use the official RenderDevice mechanism
-      if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
-      {
-          m_buffers.resize(0);
-          return;
-      }
-
-      // if not, fallback to cheating the driver
       m_buffers.resize(numFrames, nullptr);
       m_curIdx = 0;
    }
@@ -96,13 +86,6 @@ private:
    RenderDevice* const m_pd3dDevice;
    vector<MeshBuffer*> m_buffers;
    size_t m_curIdx;
-};
-#elif defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-class FrameQueueLimiter
-{
-public:
-   FrameQueueLimiter(RenderDevice* const pd3dDevice, const int numFrames) { }
-   void Execute() { }
 };
 #endif
 
@@ -426,9 +409,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-   // 0 means disable limiting of draw-ahead queue
-   int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-   m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
+   // TODO remove legacy frame limiter for Windows XP
+   const int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
+   if (EnableLegacyMaximumPreRenderedFrames || m_pd3dPrimaryDevice->GetCoreDeviceEx() == nullptr || maxPrerenderedFrames > 20)
+      m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
    #endif
 }
 
@@ -462,7 +447,9 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
+   #ifdef ENABLE_DX9
    delete m_limiter;
+   #endif
    delete m_pd3dPrimaryDevice;
 }
 
@@ -1242,9 +1229,10 @@ void Renderer::SubmitFrame()
       m_pd3dPrimaryDevice->FlushRenderFrame();
    }
    SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
-   // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+   #if defined(ENABLE_DX9)  // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
    if (m_limiter)
       m_limiter->Execute();
+   #endif
    g_frameProfiler.ExitProfileSection();
 }
 
