@@ -697,7 +697,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #endif
 
 #ifdef __STANDALONE__
-   Standalone::GetInstance()->Startup();
+   g_pStandalone = Standalone::GetInstance();
+   g_pStandalone->Start();
 #endif
 
    PLOGI << "Starting script"; // For profiling
@@ -763,8 +764,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Startup done"; // For profiling
 
 #ifdef __STANDALONE__
-   m_pWindowManager = VP::WindowManager::GetInstance();
-   m_pWindowManager->Startup();
+   g_pStandalone->StartupDone();
 #endif
 
 #ifndef __STANDALONE__
@@ -1918,8 +1918,7 @@ bool Player::FinishFrame()
    }
 
 #ifdef __STANDALONE__
-   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
-      m_pWindowManager->Render();
+   g_pStandalone->Render();
 #endif
 
    // Brute force stop: blast into space

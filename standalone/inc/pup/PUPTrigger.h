@@ -30,8 +30,8 @@ public:
    const string& GetDescription() const { return m_szDescript; }
    const string& GetTrigger() const { return m_szTrigger; }
    PUPScreen* GetScreen() const { return m_pScreen; }
-   const PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
-   const string& GetPlayFile();
+   PUPPlaylist* GetPlaylist() const { return m_pPlaylist; }
+   const string& GetPlayFile() const { return m_szPlayFile; }
    float GetVolume() const { return m_volume; }
    int GetPriority() const { return m_priority; }
    int GetLength() const { return m_length; }

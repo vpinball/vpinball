@@ -7,7 +7,7 @@
 #endif
 
 #ifdef __STANDALONE__
-#include "standalone/inc/common/WindowManager.h"
+#include "standalone/Standalone.h"
 #endif
 
 // from dinput.h, modernized to please clang
@@ -722,7 +722,7 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
       ImGui_ImplSDL2_ProcessEvent(&e);
 
       #ifdef __STANDALONE__
-      g_pplayer->m_pWindowManager->ProcessEvent(&e);
+      g_pStandalone->ProcessEvent(&e);
       #endif
 
       switch (e.type)
@@ -839,7 +839,7 @@ void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
    }
 
    #ifdef __STANDALONE__
-   g_pplayer->m_pWindowManager->ProcessUpdates();
+   g_pStandalone->ProcessUpdates();
    #endif
 
 #endif

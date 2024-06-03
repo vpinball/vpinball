@@ -25,20 +25,20 @@ PUPManager::~PUPManager()
 {
 }
 
-bool PUPManager::LoadConfig(const string& szRomName)
+void PUPManager::LoadConfig(const string& szRomName)
 {
    if (m_init) {
       PLOGW.printf("PUP already initialized");
-      return false;
+      return;
    }
 
    m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
    if (m_szRootPath.empty())
-      return false;
+      return;
 
    m_szPath = find_directory_case_insensitive(m_szRootPath, szRomName);
    if (m_szPath.empty())
-      return false;
+      return;
 
    PLOGI.printf("PUP path: %s", m_szPath.c_str());
 
@@ -60,7 +60,7 @@ bool PUPManager::LoadConfig(const string& szRomName)
    }
    else {
       PLOGE.printf("Unable to load %s", szScreensPath.c_str());
-      return false;
+      return;
    }
 
    // Determine child screens
@@ -92,7 +92,7 @@ bool PUPManager::LoadConfig(const string& szRomName)
 
    m_init = true;
 
-   return true;
+   return;
 }
 
 bool PUPManager::AddScreen(PUPScreen* pScreen)
@@ -164,57 +164,58 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
 
 void PUPManager::Start()
 {
-   QueueTriggerData({ 'D', 0, 1 });
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
+      AddWindow("Topper",
+         PUP_SCREEN_TOPPER,
+         PUP_SETTINGS_TOPPERX,
+         PUP_SETTINGS_TOPPERY,
+         PUP_SETTINGS_TOPPERWIDTH,
+         PUP_SETTINGS_TOPPERHEIGHT,
+         PUP_ZORDER_TOPPER);
+
+      AddWindow("Backglass",
+         PUP_SCREEN_BACKGLASS,
+         PUP_SETTINGS_BACKGLASSX,
+         PUP_SETTINGS_BACKGLASSY,
+         PUP_SETTINGS_BACKGLASSWIDTH,
+         PUP_SETTINGS_BACKGLASSHEIGHT,
+         PUP_ZORDER_BACKGLASS);
+
+      AddWindow("DMD",
+         PUP_SCREEN_DMD,
+         PUP_SETTINGS_DMDX,
+         PUP_SETTINGS_DMDY,
+         PUP_SETTINGS_DMDWIDTH,
+         PUP_SETTINGS_DMDHEIGHT,
+         PUP_ZORDER_DMD);
+
+      AddWindow("Playfield",
+         PUP_SCREEN_PLAYFIELD,
+         PUP_SETTINGS_PLAYFIELDX,
+         PUP_SETTINGS_PLAYFIELDY,
+         PUP_SETTINGS_PLAYFIELDWIDTH,
+         PUP_SETTINGS_PLAYFIELDHEIGHT,
+         PUP_ZORDER_PLAYFIELD);
+
+      AddWindow("FullDMD",
+         PUP_SCREEN_FULLDMD,
+         PUP_SETTINGS_FULLDMDX,
+         PUP_SETTINGS_FULLDMDY,
+         PUP_SETTINGS_FULLDMDWIDTH,
+         PUP_SETTINGS_FULLDMDHEIGHT,
+         PUP_ZORDER_FULLDMD);
+   }
+   else {
+      PLOGI.printf("PUP windows disabled");
+   }
 
    m_isRunning = true;
    m_thread = std::thread(&PUPManager::ProcessQueue, this);
 
-   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
-      PLOGI.printf("PUP windows disabled");
-      return;
-   }
-
-   AddWindow("Topper",
-      PUP_SCREEN_TOPPER,
-      PUP_SETTINGS_TOPPERX,
-      PUP_SETTINGS_TOPPERY,
-      PUP_SETTINGS_TOPPERWIDTH,
-      PUP_SETTINGS_TOPPERHEIGHT,
-      PUP_ZORDER_TOPPER);
-
-   AddWindow("Backglass",
-      PUP_SCREEN_BACKGLASS,
-      PUP_SETTINGS_BACKGLASSX,
-      PUP_SETTINGS_BACKGLASSY,
-      PUP_SETTINGS_BACKGLASSWIDTH,
-      PUP_SETTINGS_BACKGLASSHEIGHT,
-      PUP_ZORDER_BACKGLASS);
-
-   AddWindow("DMD",
-      PUP_SCREEN_DMD,
-      PUP_SETTINGS_DMDX,
-      PUP_SETTINGS_DMDY,
-      PUP_SETTINGS_DMDWIDTH,
-      PUP_SETTINGS_DMDHEIGHT,
-      PUP_ZORDER_DMD);
-
-   AddWindow("Playfield",
-      PUP_SCREEN_PLAYFIELD,
-      PUP_SETTINGS_PLAYFIELDX,
-      PUP_SETTINGS_PLAYFIELDY,
-      PUP_SETTINGS_PLAYFIELDWIDTH,
-      PUP_SETTINGS_PLAYFIELDHEIGHT,
-      PUP_ZORDER_PLAYFIELD);
-
-   AddWindow("FullDMD",
-      PUP_SCREEN_FULLDMD,
-      PUP_SETTINGS_FULLDMDX,
-      PUP_SETTINGS_FULLDMDY,
-      PUP_SETTINGS_FULLDMDWIDTH,
-      PUP_SETTINGS_FULLDMDHEIGHT,
-      PUP_ZORDER_FULLDMD);
+   for (auto& [key, pScreen] : m_screenMap)
+      pScreen->Start();
 }
 
 void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)

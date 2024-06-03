@@ -222,7 +222,7 @@ void PUPMediaPlayer::Run()
 
    Uint64 videoStart = 0;
    double videoFirstPTS = -1.0;
-
+   int count = 0;
    SDL_Renderer* pRenderer = nullptr;
 
    while (true) {
@@ -248,7 +248,10 @@ void PUPMediaPlayer::Run()
 
       if (!flushing) {
          if (av_read_frame(m_pFormatContext, pPacket) < 0) {
-            PLOGW.printf("End of stream, finishing decode: %s", m_szFilename.c_str());
+            if (count == 0)  {
+               PLOGW.printf("End of stream, finishing decode: %s", m_szFilename.c_str());
+            }
+
             if (m_pAudioContext)
                avcodec_flush_buffers(m_pAudioContext);
 
@@ -333,6 +336,7 @@ void PUPMediaPlayer::Run()
             }
          }
 
+         count++;
          flushing = false;
       }
    }

@@ -60,8 +60,8 @@ public:
    ~PUPManager();
 
    static PUPManager* GetInstance();
-   bool IsInit() const { return m_init; }
-   bool LoadConfig(const string& szRomName);
+   bool IsInit() { return m_init; }
+   void LoadConfig(const string& szRomName);
    const string& GetRootPath() { return m_szRootPath; }
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);

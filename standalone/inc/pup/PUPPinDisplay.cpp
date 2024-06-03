@@ -207,7 +207,6 @@ STDMETHODIMP PUPPinDisplay::put_SN(LONG Value)
 STDMETHODIMP PUPPinDisplay::B2SData(BSTR tIndex, int Value)
 {
    string szData = MakeString(tIndex);
-
    m_pManager->QueueTriggerData({ szData[0] , std::stoi(szData.substr(1)), Value });
 
    return S_OK;
@@ -248,10 +247,7 @@ STDMETHODIMP PUPPinDisplay::B2SInit(BSTR TName, BSTR RomName)
       return S_OK;
    }
 
-   string szRomName = MakeString(RomName);
-
-   if (m_pManager->LoadConfig(szRomName))
-      m_pManager->Start();
+   m_pManager->LoadConfig(MakeString(RomName));
 
    return S_OK;
 }

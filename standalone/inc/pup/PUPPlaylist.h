@@ -28,6 +28,7 @@ public:
    PUP_PLAYLIST_FUNCTION GetFunction() const { return m_function; }
    const string& GetPlayFile(const string& szFilename);
    const string& GetNextPlayFile();
+   string GetPlayFilePath(const string& szFilename);
    string ToString() const;
 
 private:
@@ -43,4 +44,5 @@ private:
    int m_lastIndex;
    vector<string> m_files;
    std::map<string, string> m_fileMap;
+   string m_szBasePath;
 };
