@@ -46,10 +46,7 @@ Dim ExtraKeyHelp ' Help string for game specific keys
 Dim vpmShowDips  ' Show DIPs function
 
 ' Check if VPX version offers FrameIndex property
-Dim HasFrameIndex : HasFrameIndex = False
-On Error Resume Next
-If FrameIndex = FrameIndex Then HasFrameIndex = True
-On Error Goto 0
+Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
 
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
