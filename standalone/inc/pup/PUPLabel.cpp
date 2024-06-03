@@ -143,6 +143,11 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_dirty = true;
             }
 
+            if (json["fonth"].exists()) {
+               m_size = std::stof(json["fonth"].as_str());
+               m_dirty = true;
+            }
+
             if (json["color"].exists()) {
                m_color = json["color"].as<int>();
                m_dirty = true;

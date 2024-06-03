@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 06/03/24
+    * Add support for updating PuP label font sizes using `fonth` (@francisdb)
+
 * 06/02/24
     * Split PuP requests into `PUPPinDisplayRequest` and `PUPTriggerRequest`
     * Rework PuP startup to run after "Startup done"
