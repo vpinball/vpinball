@@ -8,10 +8,6 @@
 #include "ui/LiveUI.h"
 #include "pininput.h"
 
-#ifdef __STANDALONE__
-#include "standalone/inc/common/WindowManager.h"
-#endif
-
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
 #define DEFAULT_PLAYER_FS_REFRESHRATE 60
@@ -492,10 +488,6 @@ public:
    int m_lastMaxChangeTime; // Used to update counters every seconds
    float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
-
-#ifdef __STANDALONE__
-   VP::WindowManager* m_pWindowManager;
-#endif
 
 #ifdef PLAYBACK
 public:

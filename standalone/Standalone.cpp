@@ -5,6 +5,7 @@
 #include "inc/b2s/plugin/PluginHost.h"
 #include "inc/dof/DOFPlugin.h"
 #include "inc/pup/PUPPlugin.h"
+#include "inc/pup/PUPManager.h"
 
 #include "DMDUtil/Config.h"
 
@@ -28,16 +29,17 @@ Standalone* Standalone::GetInstance()
 
 Standalone::Standalone()
 {
+   m_pWindowManager = VP::WindowManager::GetInstance();
 }
 
 Standalone::~Standalone()
 {
 }
 
-void Standalone::Startup()
+void Standalone::Start()
 {
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-   
+
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetLogCallback(OnDMDUtilLog);
    pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
@@ -59,4 +61,26 @@ void Standalone::Startup()
       if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPPlugin"s, true))
          PluginHost::GetInstance()->RegisterPlugin(new PUPPlugin());
    }
+}
+
+void Standalone::StartupDone()
+{
+   PUPManager::GetInstance()->Start();
+   m_pWindowManager->Startup();
+}
+
+void Standalone::ProcessEvent(const SDL_Event* pEvent)
+{
+   m_pWindowManager->ProcessEvent(pEvent);
+}
+
+void Standalone::ProcessUpdates()
+{
+   m_pWindowManager->ProcessUpdates();
+}
+
+void Standalone::Render()
+{
+   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
+      m_pWindowManager->Render();
 }

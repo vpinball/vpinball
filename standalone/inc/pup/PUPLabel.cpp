@@ -82,9 +82,9 @@ void PUPLabel::SetCaption(const string& szCaption)
             std::filesystem::path fs_path(normalize_path_separators(szText));
             PUPPlaylist* pPlaylist = m_pScreen->GetPlaylist(fs_path.parent_path());
             if (pPlaylist) {
-               string szFile = pPlaylist->GetPlayFile(fs_path.filename().string());
-               if (!szFile.empty()) {
-                  m_szPath = PUPManager::GetInstance()->GetPath() + pPlaylist->GetFolder() + PATH_SEPARATOR_CHAR + szFile;
+               string szPath = pPlaylist->GetPlayFilePath(fs_path.filename().string());
+               if (!szPath.empty()) {
+                  m_szPath = szPath;
                   m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
                }
             }

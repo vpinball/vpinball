@@ -141,11 +141,6 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    );
 }
 
-const string& PUPTrigger::GetPlayFile()
-{
-   return m_szPlayFile.empty() ? m_pPlaylist->GetNextPlayFile() : m_szPlayFile;
-}
-
 bool PUPTrigger::IsResting()
 {
    if (m_restSeconds <= 0)

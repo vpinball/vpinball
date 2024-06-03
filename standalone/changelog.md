@@ -4,6 +4,11 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 06/02/24
+    * Split PuP requests into `PUPPinDisplayRequest` and `PUPTriggerRequest`
+    * Rework PuP startup to run after "Startup done"
+    * Implement B2S commits af0c3cd, ca2e764, and fcbd891
+
 * 05/31/24
     * Prevent empty captions from resetting PuP image labels (@francisdb)
 

@@ -56,8 +56,8 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
    else
       m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
 
-   string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
-   for (const auto& entry : std::filesystem::directory_iterator(szFolderPath)) {
+   m_szBasePath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
+   for (const auto& entry : std::filesystem::directory_iterator(m_szBasePath)) {
       if (entry.is_regular_file()) {
          string szFilename = entry.path().filename();
          if (!szFilename.empty() && szFilename[0] != '.') {
@@ -136,6 +136,21 @@ const string& PUPPlaylist::GetNextPlayFile()
    }
 
    return m_files[rand() % m_files.size()];
+}
+
+string PUPPlaylist::GetPlayFilePath(const string& szFilename)
+{
+   static string emptyString = "";
+
+   if (!szFilename.empty()) {
+      std::map<string, string>::const_iterator it = m_fileMap.find(string_to_lower(szFilename));
+      if (it != m_fileMap.end())
+         return m_szBasePath + it->second;
+      else
+         return emptyString;
+   }
+   else
+      return m_szBasePath + GetNextPlayFile();
 }
 
 string PUPPlaylist::ToString() const {
