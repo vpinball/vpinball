@@ -365,18 +365,19 @@ void Light::UpdateAnimation(const float diff_time_msec)
          break;
       case FADER_INCANDESCENT:
       {
-         const double fadeSpeed = m_d.m_intensity / (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown); // Fade speed in ms
-         const double remaining_time = diff_time_msec * (0.001 * 40.0 / fadeSpeed); // Apply a speed factor (a bulb with this characteristics reach full power between 30 and 40ms so we modulate around this)
+         assert(m_d.m_intensity * m_d.m_intensity_scale > FLT_MIN);
+         const float inv_fadeSpeed = (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown) / (m_d.m_intensity * m_d.m_intensity_scale); // 1.0 / (Fade speed in ms)
+         const float remaining_time = diff_time_msec * (float)(0.001 * 40.0) * inv_fadeSpeed; // Apply a speed factor (a bulb with this characteristics reaches full power between 30 and 40ms so we modulate around this)
          if (lightState != 0.f)
          {
-            const double U = 6.3 * pow(lightState, 0.25); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
-            m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0);
+            const float U = 6.3f * sqrtf(sqrtf(lightState)); //=powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
+            m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0f);
          }
          else
          {
             m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_currentFilamentTemperature, remaining_time);
          }
-         m_currentIntensity = (float)(bulb_filament_temperature_to_emission(m_currentFilamentTemperature) * m_d.m_intensity * m_d.m_intensity_scale);
+         m_currentIntensity = bulb_filament_temperature_to_emission((float)m_currentFilamentTemperature) * (m_d.m_intensity * m_d.m_intensity_scale);
       }
       break;
       }
@@ -651,8 +652,8 @@ void Light::Render(const unsigned int renderMask)
       if (m_d.m_fader == FADER_INCANDESCENT)
       {
          float tint2700[3], tint[3];
-         bulb_filament_temperature_to_tint(2700, tint2700);
-         bulb_filament_temperature_to_tint(m_currentFilamentTemperature, tint);
+         bulb_filament_temperature_to_tint(2700.f, tint2700);
+         bulb_filament_temperature_to_tint((float)m_currentFilamentTemperature, tint);
          lightColor_intensity.x *= tint[0] / tint2700[0];
          lightColor_intensity.y *= tint[1] / tint2700[1];
          lightColor_intensity.z *= tint[2] / tint2700[2];
@@ -665,15 +666,13 @@ void Light::Render(const unsigned int renderMask)
       {
          m_rd->SetRenderStateDepthBias(0.0f);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       }
       else
       {
          m_rd->SetRenderStateDepthBias(-1.0f);
          m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       }
-
-      if (m_backglass)
-         m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
       Vertex2D centerHUD(m_d.m_vCenter.x, m_d.m_vCenter.y);
       if (m_backglass)
@@ -695,7 +694,7 @@ void Light::Render(const unsigned int renderMask)
          m_rd->lightShader->SetTechnique(SHADER_TECHNIQUE_bulb_light);
 
          m_rd->EnableAlphaBlend(false, false, false);
-         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the lightcontribution
+         //m_rd->SetRenderState(RenderState::SRCBLEND,  RenderState::SRC_ALPHA);  // add the light contribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
 
@@ -778,7 +777,7 @@ void Light::Render(const unsigned int renderMask)
          m_lightmapMeshBuffer->m_vb->unlock();
       }
 
-      Shader *shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->basicShader;
+      Shader *const shader = m_d.m_BulbLight ? m_rd->lightShader : m_rd->basicShader;
       shader->SetLightData(center_range);
       shader->SetLightColor2FalloffPower(lightColor2_falloff_power);
       lightColor_intensity.w = m_currentIntensity;
@@ -1129,11 +1128,10 @@ STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_ILight,
    };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
-   {
+   for (size_t i = 0; i < std::size(arr); i++)
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
-   }
+
    return S_FALSE;
 }
 
@@ -1669,7 +1667,7 @@ STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
 
 STDMETHODIMP Light::get_FilamentTemperature(float *pVal)
 {
-   double T = bulb_emission_to_filament_temperature(m_currentIntensity / m_d.m_intensity * m_d.m_intensity_scale); 
+   double T = bulb_emission_to_filament_temperature(m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)); 
    *pVal = (float)T;
 
    return S_OK;
