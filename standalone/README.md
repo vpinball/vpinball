@@ -74,6 +74,7 @@ To make a successful port, we would need tackle several tasks:
 >   - [Bug 56281](https://bugs.winehq.org/show_bug.cgi?id=56281) - vbscript: String number converted to ascii value instead of parsed value
 >   - [Bug 56464](https://bugs.winehq.org/show_bug.cgi?id=56464) - vbscript: Join on array with "empty" items fails
 >   - [Bug 56480](https://bugs.winehq.org/show_bug.cgi?id=56480) - vbscript: underscore line continue issues
+>   - ~~[Bug 56781](https://bugs.winehq.org/show_bug.cgi?id=56781) - srcrrun: Dictionary setting item to object fails~~
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:

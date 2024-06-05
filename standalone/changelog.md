@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 06/05/24
+    * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/5795) Implement putref_Item() method. (@francisdb)
+
 * 06/03/24
     * Add support for updating PuP label font sizes using `fonth` (@francisdb)
 
