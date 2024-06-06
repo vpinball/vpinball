@@ -62,7 +62,13 @@ public:
    static PUPManager* GetInstance();
    bool IsInit() { return m_init; }
    void LoadConfig(const string& szRomName);
-   const string& GetRootPath() { return m_szRootPath; }
+   const string& GetRootPath()
+   {
+      if (!m_init) {
+         PLOGW.printf("Getting root path before initialization");
+      }
+      return m_szRootPath;
+   }
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
    PUPScreen* GetScreen(int screenNum);

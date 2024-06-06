@@ -47,20 +47,23 @@ void PUPManager::LoadConfig(const string& szRomName)
    // Load screens
 
    string szScreensPath = find_path_case_insensitive(m_szPath + "screens.pup");
-   std::ifstream screensFile;
-   screensFile.open(szScreensPath, std::ifstream::in);
-   if (screensFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(screensFile, line)) {
-         if (++i == 1)
-            continue;
-         AddScreen(PUPScreen::CreateFromCSV(line));
+   if (szScreensPath.empty()) {
+      PLOGI.printf("No screens.pup file found");
+   } else {
+      std::ifstream screensFile;
+      screensFile.open(szScreensPath, std::ifstream::in);
+      if (screensFile.is_open()) {
+         string line;
+         int i = 0;
+         while (std::getline(screensFile, line)) {
+            if (++i == 1)
+               continue;
+            AddScreen(PUPScreen::CreateFromCSV(line));
+         }
       }
-   }
-   else {
-      PLOGE.printf("Unable to load %s", szScreensPath.c_str());
-      return;
+      else {
+         PLOGE.printf("Unable to load %s", szScreensPath.c_str());
+      }
    }
 
    // Determine child screens
@@ -68,7 +71,8 @@ void PUPManager::LoadConfig(const string& szRomName)
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
-         PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
+         std::map<int, PUPScreen*>::iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
+         PUPScreen* pParentScreen = it != m_screenMap.end() ? it->second : nullptr;
          if (pParentScreen && pScreen != pParentScreen)
             pParentScreen->AddChild(pScreen);
       }
@@ -98,9 +102,12 @@ void PUPManager::LoadConfig(const string& szRomName)
 bool PUPManager::AddScreen(PUPScreen* pScreen)
 {
    if (!pScreen)
+   {
+      PLOGE.printf("Null screen argument");
       return false;
+   }
 
-   if (GetScreen(pScreen->GetScreenNum())) {
+   if (m_screenMap.contains(pScreen->GetScreenNum())) {
       PLOGW.printf("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
       delete pScreen;
       return false;
@@ -115,6 +122,9 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
 
 PUPScreen* PUPManager::GetScreen(int screenNum)
 {
+   if (!m_init) {
+      PLOGE.printf("Getting screen before initialization");
+   }
    std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }

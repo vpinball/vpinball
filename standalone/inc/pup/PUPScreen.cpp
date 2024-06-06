@@ -120,6 +120,23 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
+PUPScreen* PUPScreen::Default(int screenNum)
+{
+    switch(screenNum) {
+        case PUP_SCREEN_TOPPER:
+            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr);
+        case PUP_SCREEN_DMD:
+            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr);
+        case PUP_SCREEN_BACKGLASS:
+            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr);
+        case PUP_SCREEN_PLAYFIELD:
+            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr);
+        default:
+           // these are mainly music and hidden by the scripts
+           return new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr);
+    }
+}
+
 PUPScreen* PUPScreen::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);

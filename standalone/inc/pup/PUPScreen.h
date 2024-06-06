@@ -79,7 +79,14 @@ class PUPScreen
 {
 public:
    ~PUPScreen();
-
+   /**
+    * Creates a default screen.
+    * For old pup packs that use PuPlayer.Init
+    *
+    * @param screenNum
+    * @return a new screen
+    */
+   static PUPScreen* Default(int screenNum);
    static PUPScreen* CreateFromCSV(const string& line);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
