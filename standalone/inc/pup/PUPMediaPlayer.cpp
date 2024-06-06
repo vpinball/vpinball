@@ -108,7 +108,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
       return;
    }
 
-   // Open video stream1
+   // Open video stream
    for (int i = 0; i < m_pFormatContext->nb_streams; i++) {
       if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
           !(m_pFormatContext->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
