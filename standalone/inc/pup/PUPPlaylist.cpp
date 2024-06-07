@@ -62,6 +62,7 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
       PLOGE.printf("Playlist folder not found: %s", szFolder.c_str());
       return;
    }
+
    for (const auto& entry : std::filesystem::directory_iterator(m_szBasePath)) {
       if (entry.is_regular_file()) {
          string szFilename = entry.path().filename();
@@ -72,17 +73,11 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
       }
    }
    std::sort(m_files.begin(), m_files.end());
-
 }
 
 PUPPlaylist::~PUPPlaylist()
 {
    m_files.clear();
-}
-
-PUPPlaylist* PUPPlaylist::Create(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority, PUP_PLAYLIST_FUNCTION function)
-{
-   return new PUPPlaylist(szFolder, szDescription, randomize, restSeconds, volume, priority);
 }
 
 PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)

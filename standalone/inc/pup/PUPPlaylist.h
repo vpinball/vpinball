@@ -16,23 +16,9 @@ const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value);
 class PUPPlaylist
 {
 public:
+   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
    ~PUPPlaylist();
 
-   /**
-    * Creates a new PUPPlaylist
-    * For old pup packs that use PuPlayer.playlistadd
-    *
-    * @param szFolder the folder for the playlist files
-    * @param szDescription a identifier for the playlist
-    * @param randomize for randomizing playback
-    * @param restSeconds cooldown period after playing a video before the playlist can play a next one
-    * @param volume
-    * @param priority if another video is playing the one with higher prioirty 'wins'
-    * @param function render modifiers
-    *
-    * @return a new Playlist
-    */
-   static PUPPlaylist* Create(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority, PUP_PLAYLIST_FUNCTION function);
    static PUPPlaylist* CreateFromCSV(const string& line);
    const string& GetFolder() const { return m_szFolder; }
    const string& GetDescription() const { return m_szDescription; }
@@ -47,8 +33,6 @@ public:
    string ToString() const;
 
 private:
-   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
-
    string m_szFolder;
    string m_szDescription;
    bool m_randomize;

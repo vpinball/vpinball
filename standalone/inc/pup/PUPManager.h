@@ -62,15 +62,10 @@ public:
    static PUPManager* GetInstance();
    bool IsInit() { return m_init; }
    void LoadConfig(const string& szRomName);
-   const string& GetRootPath()
-   {
-      if (!m_init) {
-         PLOGW.printf("Getting root path before initialization");
-      }
-      return m_szRootPath;
-   }
+   const string& GetRootPath();
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
+   bool HasScreen(int screenNum);
    PUPScreen* GetScreen(int screenNum);
    bool AddFont(TTF_Font* pFont, const string& szFilename);
    TTF_Font* GetFont(const string& szFamily);

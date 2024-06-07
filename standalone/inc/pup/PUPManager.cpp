@@ -47,9 +47,7 @@ void PUPManager::LoadConfig(const string& szRomName)
    // Load screens
 
    string szScreensPath = find_path_case_insensitive(m_szPath + "screens.pup");
-   if (szScreensPath.empty()) {
-      PLOGI.printf("No screens.pup file found");
-   } else {
+   if (!szScreensPath.empty()) {
       std::ifstream screensFile;
       screensFile.open(szScreensPath, std::ifstream::in);
       if (screensFile.is_open()) {
@@ -65,14 +63,16 @@ void PUPManager::LoadConfig(const string& szRomName)
          PLOGE.printf("Unable to load %s", szScreensPath.c_str());
       }
    }
+   else {
+      PLOGI.printf("No screens.pup file found");
+   }
 
    // Determine child screens
 
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
-         std::map<int, PUPScreen*>::iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
-         PUPScreen* pParentScreen = it != m_screenMap.end() ? it->second : nullptr;
+         PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
          if (pParentScreen && pScreen != pParentScreen)
             pParentScreen->AddChild(pScreen);
       }
@@ -99,15 +99,22 @@ void PUPManager::LoadConfig(const string& szRomName)
    return;
 }
 
+const string& PUPManager::GetRootPath()
+{
+   if (!m_init) {
+      PLOGW.printf("Getting root path before initialization");
+   }
+   return m_szRootPath;
+}
+
 bool PUPManager::AddScreen(PUPScreen* pScreen)
 {
-   if (!pScreen)
-   {
+   if (!pScreen) {
       PLOGE.printf("Null screen argument");
       return false;
    }
 
-   if (m_screenMap.contains(pScreen->GetScreenNum())) {
+   if (HasScreen(pScreen->GetScreenNum())) {
       PLOGW.printf("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
       delete pScreen;
       return false;
@@ -120,11 +127,18 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    return true;
 }
 
+bool PUPManager::HasScreen(int screenNum)
+{
+   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   return it != m_screenMap.end();
+}
+
 PUPScreen* PUPManager::GetScreen(int screenNum)
 {
    if (!m_init) {
       PLOGE.printf("Getting screen before initialization");
    }
+
    std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }

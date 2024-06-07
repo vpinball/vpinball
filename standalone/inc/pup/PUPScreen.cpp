@@ -120,23 +120,6 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
-PUPScreen* PUPScreen::Default(int screenNum)
-{
-    switch(screenNum) {
-        case PUP_SCREEN_TOPPER:
-            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr);
-        case PUP_SCREEN_DMD:
-            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr);
-        case PUP_SCREEN_BACKGLASS:
-            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr);
-        case PUP_SCREEN_PLAYFIELD:
-            return new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr);
-        default:
-           // these are mainly music and hidden by the scripts
-           return new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr);
-    }
-}
-
 PUPScreen* PUPScreen::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
@@ -170,6 +153,29 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line)
       parts[4] == "1", // transparent
       string_to_float(parts[6], 100.0f), // volume
       PUPCustomPos::CreateFromCSV(parts[7]));
+}
+
+PUPScreen* PUPScreen::CreateDefault(int screenNum)
+{
+   if (PUPManager::GetInstance()->HasScreen(screenNum)) {
+      PLOGW.printf("Screen already exists: screenNum=%d", screenNum);
+      return nullptr;
+   }
+
+   PUPScreen* pScreen = nullptr;
+   switch(screenNum) {
+      case PUP_SCREEN_TOPPER:
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr);
+      case PUP_SCREEN_DMD:
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr);
+      case PUP_SCREEN_BACKGLASS:
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr);
+      case PUP_SCREEN_PLAYFIELD:
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr);
+      default:
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr);
+   }
+   return pScreen;
 }
 
 void PUPScreen::LoadPlaylists()
