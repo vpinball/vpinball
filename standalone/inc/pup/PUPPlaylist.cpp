@@ -44,6 +44,7 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
    m_restSeconds = restSeconds;
    m_volume = volume;
    m_priority = priority;
+   m_lastIndex = 0;
 
    if (string_compare_case_insensitive(szFolder, "PUPOverlays"))
       m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
@@ -57,6 +58,11 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
       m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
 
    m_szBasePath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
+   if (m_szBasePath.empty()) {
+      PLOGE.printf("Playlist folder not found: %s", szFolder.c_str());
+      return;
+   }
+
    for (const auto& entry : std::filesystem::directory_iterator(m_szBasePath)) {
       if (entry.is_regular_file()) {
          string szFilename = entry.path().filename();
@@ -67,8 +73,6 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
       }
    }
    std::sort(m_files.begin(), m_files.end());
-
-   m_lastIndex = 0;
 }
 
 PUPPlaylist::~PUPPlaylist()

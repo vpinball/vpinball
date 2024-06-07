@@ -16,6 +16,7 @@ const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value);
 class PUPPlaylist
 {
 public:
+   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
    ~PUPPlaylist();
 
    static PUPPlaylist* CreateFromCSV(const string& line);
@@ -32,8 +33,6 @@ public:
    string ToString() const;
 
 private:
-   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
-
    string m_szFolder;
    string m_szDescription;
    bool m_randomize;

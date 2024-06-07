@@ -108,9 +108,18 @@ void PUPMediaPlayer::Play(const string& szFilename)
       return;
    }
 
+   // Find video stream
+
+   for (int i = 0; i < m_pFormatContext->nb_streams; i++) {
+      if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO &&
+         !(m_pFormatContext->streams[i]->disposition & AV_DISPOSITION_ATTACHED_PIC)) {
+         m_videoStream = i;
+         break;
+      }
+   }
+
    // Open video stream
 
-   m_videoStream = av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
    if (m_videoStream >= 0) {
       AVStream* pStream = m_pFormatContext->streams[m_videoStream];
       AVCodecParameters* pCodecParameters = pStream->codecpar;
@@ -126,10 +135,14 @@ void PUPMediaPlayer::Play(const string& szFilename)
       m_videoStream = -1;
    }
 
-   // Open audio stream
+   // Find audio stream
 
-   if (m_videoStream >= 0)
+   if (m_videoStream >= 0) {
       m_audioStream = av_find_best_stream(m_pFormatContext, AVMEDIA_TYPE_AUDIO, -1, m_videoStream, NULL, 0);
+      if (m_audioStream == AVERROR_DECODER_NOT_FOUND) {
+         PLOGW.printf("No audio stream found: filename=%s", szFilename.c_str());
+      }
+   }
    else {
       for (int i = 0; i < m_pFormatContext->nb_streams; i++) {
          if (m_pFormatContext->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
@@ -138,6 +151,9 @@ void PUPMediaPlayer::Play(const string& szFilename)
          }
       }
    }
+
+   // Open audio stream
+
    if (m_audioStream >= 0) {
       AVStream* pStream = m_pFormatContext->streams[m_audioStream];
       AVCodecParameters* pCodecParameters = pStream->codecpar;

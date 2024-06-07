@@ -81,6 +81,7 @@ public:
    ~PUPScreen();
 
    static PUPScreen* CreateFromCSV(const string& line);
+   static PUPScreen* CreateDefault(int screenNum);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
