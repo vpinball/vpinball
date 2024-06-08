@@ -403,8 +403,10 @@ float4 ps_main_fb_agxtonemap(const in VS_OUTPUT_2D IN) : COLOR
       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -477,8 +479,10 @@ float4 ps_main_fb_agxtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -536,8 +540,10 @@ float4 ps_main_fb_agxtonemap_no_filter(const in VS_OUTPUT_2D IN) : COLOR
       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -605,8 +611,10 @@ float4 ps_main_fb_agxtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
       result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   return float4(FBColorGrade(FBGamma(saturate(FBDither(result, IN.tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 

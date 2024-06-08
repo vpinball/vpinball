@@ -395,8 +395,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -483,8 +485,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -556,8 +560,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
@@ -638,8 +644,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = AgXToneMapping(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 
