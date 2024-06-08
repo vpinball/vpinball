@@ -11,7 +11,7 @@
 #define PINMAME_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
 #define PINMAME_SETTINGS_WINDOW_WIDTH  290
 #define PINMAME_SETTINGS_WINDOW_HEIGHT 75
-#define PINMAME_ZORDER                 200
+#define PINMAME_ZORDER                 350
 
 void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
 {
