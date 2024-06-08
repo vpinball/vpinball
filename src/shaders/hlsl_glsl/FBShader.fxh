@@ -194,88 +194,98 @@ float3 PBRNeutralToneMapping(float3 color)
 }
 
 
-#ifdef GLSL
-// Matrices for rec 2020 <> rec 709 color space conversion
-// matrix provided in row-major order so it has been transposed
-// https://www.itu.int/pub/R-REP-BT.2407-2017
-const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mat3(
-	vec3(1.6605, -0.1246, -0.0182),
-	vec3(-0.5876, 1.1329, -0.1006),
-	vec3(-0.0728, -0.0083, 1.1187)
-);
-
-const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mat3(
-	vec3(0.6274, 0.0691, 0.0164),
-	vec3(0.3293, 0.9195, 0.0880),
-	vec3(0.0433, 0.0113, 0.8956)
-);
-#else
-static const float3x3 LINEAR_REC2020_TO_LINEAR_SRGB =
-{
-    { 1.6605, -0.1246, -0.0182 },
-    { -0.5876, 1.1329, -0.1006 },
-    { -0.0728, -0.0083, 1.1187 }
-};
-static const float3x3 LINEAR_SRGB_TO_LINEAR_REC2020 =
-{
-    { 0.6274, 0.0691, 0.0164 },
-    { 0.3293, 0.9195, 0.0880 },
-    { 0.0433, 0.0113, 0.8956 }
-};
-#endif
+// AgX derived from the following references:
+// - Blog post: https://iolite-engine.com/blog_posts/minimal_agx_implementation
+// - Godot: https://github.com/godotengine/godot/pull/87260
+// - ThreeJS: https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js
+// - Filament: https://github.com/google/filament/blob/main/filament/src/ToneMapper.cpp
+// All of these trying to match Blender's implementation and reference OCIO profile.
+// TODO Add black/white point deifnition support when adding HDR output support
+// TODO Add 'punchy' look transform (less desaturated)
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
-// Mean error^2: 3.6705141e-06
 float3 agxDefaultContrastApprox(float3 x)
 {
-
+    #if 1
+    // 6th order polynomial approximation (used in three.js and Godot)
+    // Mean error^2: 3.6705141e-06
     float3 x2 = x * x;
     float3 x4 = x2 * x2;
-
     return +15.5 * x4 * x2
-		- 40.14 * x4 * x
-		+ 31.96 * x4
-		- 6.868 * x2 * x
-		+ 0.4298 * x2
-		+ 0.1191 * x
-		- 0.00232;
-
+            - 40.14 * x4 * x
+            + 31.96 * x4
+            - 6.868 * x2 * x
+            + 0.4298 * x2
+            + 0.1191 * x
+            - 0.00232;
+    #else
+    // 7th order polynomial approximation (used int Filament)
+    float3 x2 = x * x;
+    float3 x4 = x2 * x2;
+    float3 x6 = x4 * x2;
+    return -17.86 * x6 * x
+            + 78.01 * x6
+            - 126.7 * x4 * x
+            + 92.06 * x4
+            - 28.72 * x2 * x
+            + 4.361 * x2
+            - 0.1718 * x
+            + 0.002857;
+    #endif
 }
 
-// AgX Tone Mapping implementation taken from three.js, based on Filament, 
-// which in turn is based on Blender's implementation using rec 2020 primaries
-// https://github.com/google/filament/pull/7236
-// Inputs and outputs are encoded as Linear-sRGB.
-
+// AgX Tone Mapping implementation
+// Input is expected in 'linear sRGB' (direct output of VPX rendering), output is in sRGB (non linear)
 float3 AgXToneMapping(float3 color)
 {
-    #ifdef GLSL
-	// AgX constants
-    const mat3 AgXInsetMatrix = mat3(
-		vec3(0.856627153315983, 0.137318972929847, 0.11189821299995),
-		vec3(0.0951212405381588, 0.761241990602591, 0.0767994186031903),
-		vec3(0.0482516061458583, 0.101439036467562, 0.811302368396859)
-	);
-
-	// explicit AgXOutsetMatrix generated from Filaments AgXOutsetMatrixInv
-    const mat3 AgXOutsetMatrix = mat3(
-		vec3(1.1271005818144368, -0.1413297634984383, -0.14132976349843826),
-		vec3(-0.11060664309660323, 1.157823702216272, -0.11060664309660294),
-		vec3(-0.016493938717834573, -0.016493938717834257, 1.2519364065950405)
-	);
+    #if 0
+	// AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
+    // These operates on rec2020 value, therefore they require additional colorspace conversions
+    // (for AgXOutsetMatrix, the inverse is precomputed. Note that input and output matrices are not mutual inverses)
+    const float3x3 AgXInsetMatrix =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN 0.8566271533159830, 0.137318972929847, 0.1118982129999500 MAT_ROW_END,
+        MAT_ROW3_BEGIN 0.0951212405381588, 0.761241990602591, 0.0767994186031903 MAT_ROW_END,
+        MAT_ROW3_BEGIN 0.0482516061458583, 0.101439036467562, 0.8113023683968590 MAT_ROW_END
+    MAT_END;
+    const float3x3 AgXOutsetMatrix =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN  1.127100581814436800, -0.141329763498438300, -0.14132976349843826 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.110606643096603230,  1.157823702216272000, -0.11060664309660294 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.016493938717834573, -0.016493938717834257,  1.25193640659504050 MAT_ROW_END
+    MAT_END;
+    // Matrices for rec 2020 <> rec 709 color space conversion
+    // matrix provided in row-major order so it has been transposed
+    // https://www.itu.int/pub/R-REP-BT.2407-2017
+    const float3x3 LINEAR_REC2020_TO_LINEAR_SRGB =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN 1.6605, -0.1246, -0.0182 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.5876, 1.1329, -0.1006 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.0728, -0.0083, 1.1187 MAT_ROW_END
+    MAT_END;
+    const float3x3 LINEAR_SRGB_TO_LINEAR_REC2020 =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN 0.6274, 0.0691, 0.0164 MAT_ROW_END,
+        MAT_ROW3_BEGIN 0.3293, 0.9195, 0.0880 MAT_ROW_END,
+        MAT_ROW3_BEGIN 0.0433, 0.0113, 0.8956 MAT_ROW_END
+    MAT_END;
+    
     #else
-    static const float3x3 AgXInsetMatrix =
-    {
-        { 0.856627153315983, 0.137318972929847, 0.11189821299995 },
-        { 0.0951212405381588, 0.761241990602591, 0.0767994186031903 },
-        { 0.0482516061458583, 0.101439036467562, 0.811302368396859 }
-    };
-    static const float3x3 AgXOutsetMatrix =
-    {
-        { 1.1271005818144368, -0.1413297634984383, -0.14132976349843826 },
-        { -0.11060664309660323, 1.157823702216272, -0.11060664309660294 },
-        { -0.016493938717834573, -0.016493938717834257, 1.2519364065950405 }
-    };
+    // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
+    // It is supposed that they are ok for rec709 input values.
+    // (note that out transform is the inverse of in transform)
+    const float3x3 AgXInsetMatrix =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN  0.8424790622530940,  0.0423282422610123,  0.0423756549057051 MAT_ROW_END,
+        MAT_ROW3_BEGIN  0.0784335999999992,  0.8784686364697720,  0.0784336000000000 MAT_ROW_END,
+        MAT_ROW3_BEGIN  0.0792237451477643,  0.0791661274605434,  0.8791429737931040 MAT_ROW_END
+    MAT_END;
+    const float3x3 AgXOutsetMatrix =
+    MAT3_BEGIN
+        MAT_ROW3_BEGIN  1.1968790051201700, -0.0528968517574562, -0.0529716355144438 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.0980208811401368,  1.1519031299041700, -0.0980434501171241 MAT_ROW_END,
+        MAT_ROW3_BEGIN -0.0990297440797205, -0.0989611768448433,  1.1510736726411600 MAT_ROW_END
+    MAT_END;
     #endif
 
 	// LOG2_MIN      = -10.0
@@ -286,8 +296,10 @@ float3 AgXToneMapping(float3 color)
 
     color *= exposure;
 
-    color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
-
+    #if 0
+    color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020); // linear sRGB (rec709) to linear rec2020 expected by Blender/threeejs matrices
+    #endif
+    
     color = mul(color, AgXInsetMatrix);
 
 	// Log2 encoding
@@ -300,18 +312,16 @@ float3 AgXToneMapping(float3 color)
 	// Apply sigmoid
     color = agxDefaultContrastApprox(color);
 
-	// Apply AgX look
+	// TODO Apply AgX look
 	// v = agxLook(v, look);
 
     color = mul(color, AgXOutsetMatrix);
 
-	// Linearize
-    color = pow(max(float3(0.0, 0.0, 0.0), color), float3(2.2, 2.2, 2.2));
-
-    color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);
-
-	// Gamut mapping. Simple clamp for now.
-    color = clamp(color, 0.0, 1.0);
+    #if 0
+    color = pow(max(float3(0.0, 0.0, 0.0), color), float3(2.2, 2.2, 2.2)); // rec2020 to linear rec2020
+    color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);                     // linear rec2020 to linear rec709 (sRGB)
+    color = FBGamma(color);                                                // linear sRGB to sRGB
+    #endif
 
     return color;
 }
