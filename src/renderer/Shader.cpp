@@ -31,7 +31,6 @@ ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_I
 #include <fstream>
 #include <string>
 #include "robin_hood.h"
-#include <regex>
 #ifdef __STANDALONE__
 #include <sstream>
 #endif

@@ -549,6 +549,9 @@
     <ClCompile Include="src/utils/fileio.cpp">
       <Filter>utils</Filter>
     </ClCompile>
+    <ClCompile Include="src/utils/Logger.cpp">
+      <Filter>utils</Filter>
+    </ClCompile>
     <ClCompile Include="src/utils/lzwreader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
@@ -1214,10 +1217,31 @@
     <ClInclude Include="src/ui/properties/TableLightsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
+    <ClInclude Include="src/utils/BlackBox.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/bulb.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/CrashHandler.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="src/utils/eventproxy.h">
       <Filter>utils</Filter>
     </ClInclude>
+    <ClInclude Include="src/utils/fileio.h">
+      <Filter>utils</Filter>
+    </ClInclude>
     <ClInclude Include="src/utils/hash.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/helpers.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/hid.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/Logger.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/lzwwriter.h">
@@ -1226,25 +1250,16 @@
     <ClInclude Include="src/utils/lzwreader.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/fileio.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/helpers.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/BlackBox.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/CrashHandler.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="src/utils/MemoryStatus.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/StackTrace.h">
+    <ClInclude Include="src/utils/memutil.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/objloader.h">
+      <Filter>utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src/utils/StackTrace.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/variant.h">
@@ -1256,16 +1271,7 @@
     <ClInclude Include="src/utils/vectorsort.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/memutil.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="src/utils/wintimer.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/bulb.h">
-      <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="src/utils/hid.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/bass.h">
