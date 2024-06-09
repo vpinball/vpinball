@@ -90,14 +90,14 @@ vec3 RRTAndODTFit(vec3 v)
 }
 
 // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
-static const mat3 ACESInputMat = mtxFromRows3
+const mat3 ACESInputMat = mtxFromRows3
 (
     vec3(0.59719, 0.35458, 0.04823),
     vec3(0.07600, 0.90834, 0.01566),
     vec3(0.02840, 0.13383, 0.83777)
 );
 // ODT_SAT => XYZ => D60_2_D65 => sRGB
-static const mat3 ACESOutputMat = mtxFromRows3
+const mat3 ACESOutputMat = mtxFromRows3
 (
     vec3( 1.60475, -0.53108, -0.07367),
     vec3(-0.10208,  1.10813, -0.00605),
@@ -145,9 +145,9 @@ vec3 FilmicToneMap(vec3 color)
 
     // Filmic ACES fitted curve by Jim Hejl 
     // https://twitter.com/jimhejl/status/633777619998130176
-    /*const float4 vh = float4(color, 11.2); // 11.2 is whitepoint
-    const float4 va = 1.425*vh + 0.05;
-    const float4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
+    /*const vec4 vh = vec4(color, 11.2); // 11.2 is whitepoint
+    const vec4 va = 1.425*vh + 0.05;
+    const vec4 vf = (vh*va + 0.004)/(vh*(va+0.55) + 0.0491) - 0.0821;
     color = vf.rgb/vf.aaa;
     color = FBGamma(color); */
 
@@ -184,7 +184,7 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
     const float y = (1.0 - encoded.y + floor(encoded.z)) / LUT_DIMS;
     const vec3 a = texNoLod(tex_tonemap_lut, vec2(encoded.x, y)).rgb;
     const vec3 b = texNoLod(tex_tonemap_lut, vec2(encoded.x, y + 1.0 / LUT_DIMS)).rgb;
-    return mix(a, b, frac(encoded.z));
+    return mix(a, b, fract(encoded.z));
 }
 vec2 TonyMcMapfaceToneMap(vec2 color) { return color; } // Unimplemented
 float TonyMcMapfaceToneMap(float color) { return color; } // Unimplemented
@@ -271,13 +271,13 @@ vec3 AgXToneMapping(vec3 color)
     // AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
     // These operates on rec2020 value, therefore they require additional colorspace conversions
     // (for AgXOutsetMatrix, the inverse is precomputed. Note that input and output matrices are not mutual inverses)
-    static const mat3 AgXInsetMatrix = mtxFromRows3
+    const mat3 AgXInsetMatrix = mtxFromRows3
     (
         vec3( 0.8566271533159830, 0.137318972929847, 0.1118982129999500),
         vec3( 0.0951212405381588, 0.761241990602591, 0.0767994186031903),
         vec3( 0.0482516061458583, 0.101439036467562, 0.8113023683968590)
 	);
-    static const mat3 AgXOutsetMatrix = mtxFromRows3
+    const mat3 AgXOutsetMatrix = mtxFromRows3
     (
         vec3( 1.127100581814436800, -0.141329763498438300, -0.14132976349843826),
         vec3(-0.110606643096603230,  1.157823702216272000, -0.11060664309660294),
@@ -286,13 +286,13 @@ vec3 AgXToneMapping(vec3 color)
     // Matrices for rec 2020 <> rec 709 color space conversion
     // matrix provided in row-major order so it has been transposed
     // https://www.itu.int/pub/R-REP-BT.2407-2017
-    static const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mtxFromRows3
+    const mat3 LINEAR_REC2020_TO_LINEAR_SRGB = mtxFromRows3
     (
         vec3(1.6605, -0.1246, -0.0182),
         vec3(-0.5876, 1.1329, -0.1006),
         vec3(-0.0728, -0.0083, 1.1187)
     );
-    static const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
+    const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
     (
         vec3(0.6274, 0.0691, 0.0164),
         vec3(0.3293, 0.9195, 0.0880),
@@ -303,13 +303,13 @@ vec3 AgXToneMapping(vec3 color)
     // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
     // It is supposed that they are ok for rec709 input values.
     // (note that out transform is the inverse of in transform)
-    static const mat3 AgXInsetMatrix = mtxFromRows3
+    const mat3 AgXInsetMatrix = mtxFromRows3
     (
         vec3( 0.8424790622530940,  0.0423282422610123, 0.0423756549057051),
         vec3( 0.0784335999999992,  0.8784686364697720, 0.0784336000000000),
         vec3( 0.0792237451477643,  0.0791661274605434, 0.8791429737931040)
     );
-    static const mat3 AgXOutsetMatrix = mtxFromRows3
+    const mat3 AgXOutsetMatrix = mtxFromRows3
     (
         vec3( 1.1968790051201700, -0.0528968517574562, -0.0529716355144438),
         vec3(-0.0980208811401368,  1.1519031299041700, -0.0980434501171241),
@@ -379,24 +379,24 @@ vec3 AgXToneMapping(vec3 color)
    p = 1.-sqrt(p);
    return b ? p : -p;
 }
-float3 triangularPDF(const float3 r) // from -1..1, c=0 (with random no r=0..1)
+vec3 triangularPDF(const vec3 r) // from -1..1, c=0 (with random no r=0..1)
 {
-   return float3(triangularPDF(r.x), triangularPDF(r.y), triangularPDF(r.z));
+   return vec3(triangularPDF(r.x), triangularPDF(r.y), triangularPDF(r.z));
 }*/
 
-/*float DitherGradientNoise(const float2 tex0)
+/*float DitherGradientNoise(const vec2 tex0)
 {
    // Interleaved Gradient Noise from "NEXT GENERATION POST PROCESSING IN CALL OF DUTY: ADVANCED WARFARE" http://advances.realtimerendering.com/s2014/index.html
-   const float3 magic = float3(0.06711056, 0.00583715, 52.9829189);
+   const vec3 magic = vec3(0.06711056, 0.00583715, 52.9829189);
 
-   return frac(magic.z * frac(dot(tex0, magic.xy)));
+   return fract(magic.z * fract(dot(tex0, magic.xy)));
 }
 
-float Dither64(const float2 tex0, const float time)
+float Dither64(const vec2 tex0, const float time)
 {
-   const float3 k0 = float3(33., 52., 25.);
+   const vec3 k0 = vec3(33., 52., 25.);
 
-   return frac(dot(float3(tex0, time), k0 * (1.0/64.0)));
+   return fract(dot(vec3(tex0, time), k0 * (1.0/64.0)));
 }*/
 
 vec3 blue_gauss_noise(const vec2 c1, const vec3 rgb)
@@ -425,13 +425,13 @@ vec3 blue_gauss_noise(const vec2 c1, const vec3 rgb)
 
 #if 0
 // seems like everybody uses this, but the amount of flickering patterns generated is very noticeable
-float3 DitherVlachos(const float2 tex0, const float3 rgb)
+vec3 DitherVlachos(const vec2 tex0, const vec3 rgb)
 {
    // Vlachos 2016, "Advanced VR Rendering", but using a TPDF
    const float quantSteps = 256.0; //!! how to choose/select this for 5/6/5bit??
 
-   const float noise = dot(float2(171.0, 231.0), tex0);
-   const float3 noise3 = frac(noise * (1.0 / float3(103.0, 71.0, 97.0)));
+   const float noise = dot(vec2(171.0, 231.0), tex0);
+   const vec3 noise3 = fract(noise * (1.0 / vec3(103.0, 71.0, 97.0)));
 
    return rgb + triangularPDF(noise3)/*(noise3*2.0-1.0)*/ * (1.0/(quantSteps - 1.0));
 }

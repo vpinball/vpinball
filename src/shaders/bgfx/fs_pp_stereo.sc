@@ -166,13 +166,13 @@ vec3 DeghostAnaglyph(const vec3 lCol, const vec3 rCol)
 void main()
 {
    #if defined(TB)
-      gl_FragColor = vec4(gatherEyeColor(float2(v_texcoord0.x, v_texcoord0.y * 2.0), v_texcoord0.y < 0.5), 1.0);
+      gl_FragColor = vec4(gatherEyeColor(vec2(v_texcoord0.x, v_texcoord0.y * 2.0), v_texcoord0.y < 0.5), 1.0);
    #elif defined(SBS)
-      gl_FragColor = vec4(gatherEyeColor(float2(v_texcoord0.x * 2.0, v_texcoord0.y), v_texcoord0.x < 0.5), 1.0);
+      gl_FragColor = vec4(gatherEyeColor(vec2(v_texcoord0.x * 2.0, v_texcoord0.y), v_texcoord0.x < 0.5), 1.0);
    #elif defined(INT)
-      gl_FragColor = vec4(gatherEyeColor(v_texcoord0, frac(gl_FragCoord.y*0.5) < 0.5), 1.0);
+      gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) < 0.5), 1.0);
    #elif defined(FLIPPED_INT)
-      gl_FragColor = vec4(gatherEyeColor(v_texcoord0, frac(gl_FragCoord.y*0.5) >= 0.5), 1.0);
+      gl_FragColor = vec4(gatherEyeColor(v_texcoord0, fract(gl_FragCoord.y*0.5) >= 0.5), 1.0);
    #elif defined(ANAGLYPH)
       vec3 lCol, rCol;
       gatherLeftRightColors(v_texcoord0, lCol, rCol);

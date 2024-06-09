@@ -35,7 +35,7 @@ void main()
    vec3 irradiance = vec3_splat(0.);
    for (int i=0; i<NumSamples; ++i) {
       //const vec2 u = vec2(float(i) * InvNumSamples, radicalInverse_VdC(i));
-      const vec2 u = vec2(float(i) * InvNumSamples, frac(float(i) * g));
+      const vec2 u = vec2(float(i) * InvNumSamples, fract(float(i) * g));
       const vec3 Li = rotate_to_vector_upper(cos_hemisphere_sample(u), N);
       const vec2 uv = ray_to_equirectangular_uv(Li);
       irradiance += texNoLod(tex_env, uv).rgb * InvNumSamples;

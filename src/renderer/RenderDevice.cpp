@@ -352,18 +352,15 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    bgfx::Init init;
    
-   // Untested implementations
-   init.type = bgfx::RendererType::Direct3D12; // Fail on a call to CreateGraphicsPipelineState
-   init.type = bgfx::RendererType::OpenGL;     // Needs explicit uniform handling
-   init.type = bgfx::RendererType::OpenGLES;   // Unsupported under Windows
-
-   // Tested & working backends
+   // OpenGL & GL ES are tested and functional but needs a full review of upside down textures (ball reflections, AA offsets, reflection/refraction, ...)
+   // Metal is tested and functional excepted for stereo rendering
    init.type = bgfx::RendererType::Metal;
+   init.type = bgfx::RendererType::OpenGLES;
+   init.type = bgfx::RendererType::OpenGL;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
-
-   // Native platform
-   init.type = bgfx::RendererType::Count;
+   //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
+   init.type = bgfx::RendererType::Count; // Default backend for the running platform
 
    init.callback = &bgfxCallback;
 
@@ -831,7 +828,18 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
+   #if defined(ENABLE_BGFX)
+   static constexpr float reversedVerts[4 * 5] =
+   {
+       1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+      -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+       1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f
+   };
+   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, bgfx::getCaps()->originBottomLeft ? reversedVerts : verts, false, VertexFormat::VF_POS_TEX);
+   #else
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
+   #endif
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL)

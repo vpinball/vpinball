@@ -41,7 +41,7 @@ uniform vec4 u_basic_shade_mode;
 #define doNormalMapping     (u_basic_shade_mode.y != 0.0)
 #define doRefractions       (u_basic_shade_mode.z != 0.0)
 
-uniform float4 refractionTint_thickness;
+uniform vec4 refractionTint_thickness;
 #define refractionTint (refractionTint_thickness.rgb)
 #define refractionThickness (refractionTint_thickness.w)
 
@@ -57,7 +57,7 @@ uniform vec4 alphaTestValue; // FIXME Actually float but extended to vec4 for BG
 
 uniform vec4 w_h_height;
 
-uniform float4 mirrorNormal_factor;
+uniform vec4 mirrorNormal_factor;
 #define mirrorNormal (mirrorNormal_factor.xyz)
 #define mirrorFactor (mirrorNormal_factor.w)
 #define doReflections (mirrorNormal_factor.w > 0.0)
@@ -90,7 +90,7 @@ vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
    const vec3 tn = texture2D(tex_base_normalmap, uv).xyz * (255./127.) - (128./127.);
    BRANCH if (objectSpaceNormalMap.x != 0.0)
    { // Object space: this matches the object space, +X +Y +Z, export/baking in Blender with our trafo setup
-      return normalize(mul(matWorldViewInverseTranspose, float3(tn.x, tn.y, -tn.z)).xyz);
+      return normalize(mul(matWorldViewInverseTranspose, vec4(tn.x, tn.y, -tn.z, 0.0)).xyz);
    }
    else
    { // Tangent space
@@ -218,7 +218,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
       //color = vec4((N+1.0)*0.5,1.0); return; // visualize normals
 
-      color = float4(lightLoop(v_worldPos, N, V, diffuse, glossy, specular, edge, doMetal), pixel.a);
+      color = vec4(lightLoop(v_worldPos, N, V, diffuse, glossy, specular, edge, doMetal), pixel.a);
 
       BRANCH if (color.a < 1.0) // We may not opacify if we already are opaque
       {

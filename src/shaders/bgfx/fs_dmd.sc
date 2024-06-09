@@ -38,21 +38,21 @@ vec4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
 #if 0
 float nrand(const vec2 uv)
 {
-   return frac(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+   return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
 }
 #endif
 
 vec2 hash22(const vec2 uv)
 {
-   vec3 p3 = frac(uv.xyx * float3(.1031, .1030, .0973));
+   vec3 p3 = fract(uv.xyx * vec3(.1031, .1030, .0973));
    p3 += dot(p3, p3.yzx + 33.33);
-   return frac((p3.xx + p3.yz)*p3.zy);
+   return fract((p3.xx + p3.yz)*p3.zy);
 }
 
 #if 0
 float gold_noise(const vec2 xy, const float seed)
 {
-   return frac(tan(distance(xy * 1.61803398874989484820459, xy) * seed) * xy.x); // tan is usually slower than sin/cos
+   return fract(tan(distance(xy * 1.61803398874989484820459, xy) * seed) * xy.x); // tan is usually slower than sin/cos
 }
 #endif
 
@@ -62,7 +62,7 @@ float triangularPDF(const float r) // from -1..1, c=0 (with random no r=0..1)
    const bool b = (p > 1.);
    if (b)
       p = 2.-p;
-   p = 1.-sqrt(p); //!! handle 0 explicitly due to compiler doing 1/rsqrt(0)? but might be still 0 according to spec, as rsqrt(0) = inf and 1/inf = 0, but values close to 0 could be screwed up still
+   p = 1.-sqrt(p); //!! handle 0 explicitly due to compiler doing 1/inversesqrt(0)? but might be still 0 according to spec, as rsqrt(0) = inf and 1/inf = 0, but values close to 0 could be screwed up still
    return b ? p : -p;
 }
 
@@ -105,14 +105,14 @@ void main()
 	   const int samples = 13; //4,8,9,13,21,25,32 korobov,fibonacci
 	   UNROLL for (int i = 0; i < samples; ++i) // oversample the dots
 	   {
-		  const vec2 xi = vec2(frac(i* (1.0 / samples) + offs.x), frac(i* (8.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
+		  const vec2 xi = vec2(fract(i* (1.0 / samples) + offs.x), fract(i* (8.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
 		  //const vec2 gxi = gaussianPDF(xi);
 		  const vec2 uv = v_texcoord0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
 		  const vec4 rgba = texNoLod(tex_dmd, uv); //!! lots of tex access by doing this all the time, but (tex) cache should be able to catch all of it
 
 		  // simulate dot within the sampled texel
-		  const vec2 dist = (frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1) * dist_factor;
+		  const vec2 dist = (fract(uv*vRes_Alpha_time.xy)*2.2 - 1.1) * dist_factor;
 		  const float d = smoothstep(0., 1., 1.0 - sqr(dist.x*dist.x + dist.y*dist.y));
 
 		  if (rgba.a != 0.0)
