@@ -1,0 +1,237 @@
+<job>
+<resource id="scripttitle">Simple Replace v1.20 by Matthias "Maddes" Buecher (c) 2003-2010</resource>
+
+<comment>
+Developed with Windows Scripting Host (WSH) 5.6 and VBScript 5.6.7426 under Windows XP SP1
+Succesfully tested under Windows 98 SE (which has all MS recommended updates installed)
+WSH/VBScript updates and documentation are available for download at http://msdn.microsoft.com/scripting/
+Contact: http://www.maddes.net/
+
+    Copyright (C) 2003-2011  Matthias "Maddes" Buecher
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+    http://www.gnu.org/licenses/gpl-2.0.txt
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+
+</comment>
+
+<runtime>
+  <description></description>
+
+  <named name="in"  type="string" required="true"  helpstring="Input file" />
+  <named name="out" type="string" required="false" helpstring="Output file" />
+
+  <named name="search"  type="string" required="true" helpstring="Search phrase" />
+  <named name="replace" type="string" required="true" helpstring="Replace phrase" />
+
+  <named name="dblslash" type="simple" required="false" helpstring="Converts \ to \\ in search and replace phrase" />
+  <named name="hex" type="simple" required="false" helpstring="Converts replace phrase in a byte row for registry files" />
+
+  <named name="quotes" type="simple" required="false" helpstring="Converts ^' to a quote in search and replace phrase" />
+  <named name="searchquotes" type="simple" required="false" helpstring="Converts ^' to a quote in search phrase" />
+  <named name="replacequotes" type="simple" required="false" helpstring="Converts ^' to a quote in replace phrase" />
+
+  <example>Also check out the included text file with lots of more information</example>
+</runtime>
+
+
+<script language="VBScript">
+Option Explicit  'Only defined variables can be used
+
+Dim vScriptTitle, vDisplayString
+Dim vVersion
+Dim vInfoString, vEngError
+Dim oArgNamed, oArgUnnamed, vArgError
+Dim vSearchString, vReplaceString
+Dim vInFile, vOutFile
+Dim vDblSlash
+Dim vHexConvert, i, vReplaceStringTmp
+Dim vSearchQuotes, vReplaceQuotes
+
+' ScriptTitle for start information
+vScriptTitle = getResource("scripttitle")
+vDisplayString = vScriptTitle & vbNewLine _
+  & "This script comes with ABSOLUTELY NO WARRANTY." & vbNewLine _
+  & "This is free software, and you are welcome to redistribute it under certain conditions; see GPL.TXT for details." & vbNewLine
+
+' Create ScriptEngine information string
+vInfoString = "This Script was developed with Windows Scripting Host (WSH) 5.6" & vbNewLine _
+  & "and VBScript 5.6.7426 under Windows XP SP1." & vbNewLine
+vInfoString = vInfoString & vbNewLine _
+  & "You are currently using WSH " & WScript.Version _
+  & " and " _
+  & ScriptEngine & " Version " _
+  & ScriptEngineMajorVersion & "." _
+  & ScriptEngineMinorVersion & "." _
+  & ScriptEngineBuildVersion & vbNewLine
+vInfoString = vInfoString & vbNewLine _
+  & "Updates and documentation are available" & vbNewLine _
+  & "for download at http://msdn.microsoft.com/scripting/"
+
+
+' Check runtime versions
+vEngError = 0
+
+' Check WSH version (5.6 because of named/unnamed parameters, <runtime>, <named>, <resource>, <example>, ShowUsage)
+vVersion = Split(WScript.Version, ".")
+if (vVersion(0) < 5) or (vVersion(0) = 5 and vVersion(1) < 6) then
+  vInfoString = vInfoString & vbNewLine _
+    & vbNewLine & "You HAVE to update to WSH 5.6, if you WANT to use THIS script."
+  vEngError = 1
+end if
+
+' Check VBS version (2.0 because of const, replace function, etc.)
+if ScriptEngineMajorVersion < 2 then
+  vInfoString = vInfoString & vbNewLine _
+    & vbNewLine & "You HAVE to update to VBS 2.0, if you WANT to use THIS script."
+  vEngError = 1
+end if
+
+' Exit on version errors
+if vEngError > 0 then
+  vDisplayString = vDisplayString & vbNewLine & vInfoString & vbNewLine
+  WScript.Echo(vDisplayString)
+  WScript.Quit(1)
+end if
+
+' Parameter objects
+Set oArgNamed = WScript.Arguments.Named
+Set oArgUnnamed = WScript.Arguments.Unnamed
+
+' Check parameters
+vArgError = 0
+
+' Check input and output file paramters
+vInFile = ""
+if oArgNamed.Exists("in") then
+  vInFile = oArgNamed("in")
+end if
+vOutFile = ""
+if oArgNamed.Exists("out") then
+  vOutFile = oArgNamed("out")
+end if
+
+' Check search and replace paramters
+vSearchString = ""
+if oArgNamed.Exists("search") then
+  vSearchString = oArgNamed("search")
+' check for own escape sequence for double quotes
+  vSearchString = Replace (vSearchString, "``", """")
+end if
+vReplaceString = ""
+if oArgNamed.Exists("replace") then
+  vReplaceString = oArgNamed("replace")
+' check for own escape sequence for double quotes
+  vReplaceString = Replace (vReplaceString, "``", """")
+end if
+
+' Check reg parameter
+vDblSlash = oArgNamed.Exists("dblslash")
+vHexConvert = oArgNamed.Exists("hex")
+
+' Check quotes parameter
+vSearchQuotes = oArgNamed.Exists("searchquotes")
+if not vSearchQuotes then
+  vSearchQuotes = oArgNamed.Exists("quotes")
+end if
+vReplaceQuotes = oArgNamed.Exists("replacequotes")
+if not vReplaceQuotes then
+  vReplaceQuotes = oArgNamed.Exists("quotes")
+end if
+
+' Missing parameters
+if vInFile = "" then
+  vDisplayString = vDisplayString & vbNewLine & "Error: You have to state an input file with /in" & vbNewLine
+  vArgError = 1
+elseif vInFile = vOutFile then
+  vDisplayString = vDisplayString & vbNewLine & "WARNING: Input and output file are the same" & vbNewLine
+end if
+if vSearchString = "" then
+  vDisplayString = vDisplayString & vbNewLine & "Error: You have to state a search phrase" & vbNewLine
+  vArgError = 1
+end if
+
+' Convert search and replace string for registry files
+if vDblSlash then
+  vSearchString = Replace(vSearchString, "\", "\\")
+  vReplaceString = Replace(vReplaceString, "\", "\\")
+end if
+if vHexConvert then
+  vReplaceStringTmp = ""
+  for i = 1 to len(vReplaceString)
+    if i > 1 then
+      vReplaceStringTmp = vReplaceStringTmp + ","
+    end if
+    vReplaceStringTmp = vReplaceStringTmp + Hex(Asc(Mid(vReplaceString,i,1)))
+  next
+  vReplaceString = vReplaceStringTmp
+end if
+
+' Convert search and replace string due to quotes in strings and WSH's quote issue
+if vSearchQuotes then
+  vSearchString = Replace(vSearchString, "^'", """")
+end if
+if vReplaceQuotes then
+  vReplaceString = Replace(vReplaceString, "^'", """")
+end if
+
+if vArgError = 0 then
+  vDisplayString = vDisplayString & vbNewLine & _
+    "Reading """ & vInFile & """, replacing """ & vSearchString & """ with """ & vReplaceString & """"
+  if not vOutFile = "" then
+    vDisplayString = vDisplayString & ", writing """ & vOutFile & """"
+  end if
+  vDisplayString = vDisplayString & vbNewLine
+end if
+
+' Display start information
+WScript.Echo(vDisplayString)
+vDisplayString = ""
+
+' Exit on argument errors
+if vArgError > 0 then
+  WScript.Arguments.ShowUsage
+  WScript.Quit(1)
+end if
+
+' NOW WE ARE GOOD TO GO...
+Dim oFSO, oFileIn, oFileOut, vText
+
+Set oFSO = WScript.CreateObject("Scripting.FileSystemObject")
+
+if not oFSO.FileExists(vInFile) then
+  vDisplayString = vbNewLine & "Error: Input file """ & vInFile & """ not found" & vbNewLine
+  WScript.Echo(vDisplayString)
+  WScript.Quit(1)
+end if
+
+Set oFileIn = oFSO.OpenTextFile(vInFile, 1, false)
+vText = oFileIn.ReadAll()
+oFileIn.Close()
+
+vText = Replace(vText, vSearchString, vReplaceString)
+
+if not vOutFile = "" then
+  Set oFileOut = oFSO.CreateTextFile(vOutFile, true)
+  oFileOut.Write(vText)
+  oFileOut.Close()
+else
+  WScript.Echo(vText)
+end if
+
+WScript.Echo("Done.")
+WScript.quit(0)
+
+</script>
+</job>
