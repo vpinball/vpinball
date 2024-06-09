@@ -19,28 +19,14 @@
 #include "vpinball_i.c"
 #endif
 
+#ifdef __STANDALONE__
+#ifdef __ANDROID__
+#include <regex>
+#endif
+#endif
+
 #include <locale>
 #include <codecvt>
-
-#include <plog/Init.h>
-#include <plog/Formatters/TxtFormatter.h>
-#include <plog/Appenders/RollingFileAppender.h>
-#ifdef __STANDALONE__
-#ifndef __ANDROID__
-#include <plog/Appenders/ColorConsoleAppender.h>
-#else
-#include <plog/Appenders/AndroidAppender.h>
-#endif
-#endif
-
-#ifdef __ANDROID__
-#include <android/log.h>
-#include <regex>
-
-#define APPNAME "VPX"
-#define ALOGD(...) __android_log_print(ANDROID_LOG_DEBUG, APPNAME, __VA_ARGS__);
-#define ALOGE(...) __android_log_print(ANDROID_LOG_ERROR, APPNAME, __VA_ARGS__);
-#endif
 
 #ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall()
@@ -220,8 +206,6 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 int g_argc;
 char **g_argv;
 #endif
-
-void SetupLogger(const bool enable);
 
 robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
 
@@ -713,12 +697,12 @@ public:
             int prefPathFD = -1;
             try 
             {
-               ALOGD("Parsing fd %s", szArglist[i + 1]);
+               PLOGD.printf("Parsing fd %s", szArglist[i + 1]);
                prefPathFD = std::stoi(szArglist[i + 1]);
             } 
             catch (std::invalid_argument const& ex)
             {
-                  ALOGE("Invalid FD %s", ex.what());
+                  PLOGE.printf("Invalid FD %s", ex.what());
                   exit(1);
             }
 
@@ -728,7 +712,7 @@ public:
             auto fdFilename = "/proc/self/fd/" + std::to_string(prefPathFD);
             auto nbytes = readlink(fdFilename.c_str(), buf, PATH_MAX);
             m_szPrefPath = std::string(buf, nbytes);
-            ALOGD("SAF directory %s", m_szPrefPath.c_str());
+            PLOGD.printf("SAF directory %s", m_szPrefPath.c_str());
 
             // If the SAF path was in the mounted /sdcard
             // the path must use /sdcard instead of the physical path
@@ -739,14 +723,14 @@ public:
             // This logic may be handling external sdcards
             if (std::regex_search(m_szPrefPath, sdcardRegex)) 
             {
-               ALOGD("SAF pointing to a sdcard dir");
+               PLOGD.printf("SAF pointing to a sdcard dir");
                auto begin = std::sregex_iterator(m_szPrefPath.begin(), m_szPrefPath.end(), sdcardRegex);
                std::smatch match = *begin;
                auto match_str = match.str();
                m_szPrefPath = "/sdcard" + m_szPrefPath.substr(match_str.size());
             }
 
-            ALOGD("VPX path is %s", m_szPrefPath.c_str());
+            PLOGD.printf("VPX path is %s", m_szPrefPath.c_str());
 
             m_vpinball.UpdateMyPath(m_szPrefPath);
          }
@@ -933,9 +917,9 @@ public:
       m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
 
 #ifndef __STANDALONE__
-      SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
+      Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
 #else
-      SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, true));
+      Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, true));
 #endif
 
       PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
@@ -1275,73 +1259,13 @@ static void SetNVIDIAThreadOptimization(NvThreadOptimization threadedOptimizatio
 }
 #endif
 
-class DebugAppender : public plog::IAppender
-{
-public:
-   virtual void write(const plog::Record &record) PLOG_OVERRIDE
-   {
-      if (g_pvp == nullptr || g_pplayer == nullptr)
-         return;
-      auto table = g_pvp->GetActiveTable();
-      if (table == nullptr)
-         return;
-      #ifdef _WIN32
-      // Convert from wchar* to char* on Win32
-      auto msg = record.getMessage();
-      const int len = (int)lstrlenW(msg);
-      char *const szT = new char[len + 1];
-      WideCharToMultiByteNull(CP_ACP, 0, msg, -1, szT, len + 1, nullptr, nullptr);
-      table->m_pcv->AddToDebugOutput(szT);
-      delete [] szT;
-      #else
-      table->m_pcv->AddToDebugOutput(record.getMessage());
-      #endif
-   }
-};
-
-void SetupLogger(const bool enable)
-{
-   plog::Severity maxLogSeverity = plog::none;
-   if (enable)
-   {
-      static bool initialized = false;
-      if (!initialized)
-      {
-         initialized = true;
-         string szLogPath = g_pvp->m_szMyPrefPath + "vpinball.log";
-         static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
-         static DebugAppender debugAppender;
-         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);
-         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
-         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&fileAppender);
-
-#ifdef __STANDALONE__
-#ifndef __ANDROID__
-         static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&consoleAppender);
-         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&consoleAppender);
-#else
-         static plog::AndroidAppender<plog::TxtFormatter> androidAppender("vpinball");
-         plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&androidAppender);
-         plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->addAppender(&androidAppender);
-#endif
-#endif
-      }
-      #ifdef _DEBUG
-      maxLogSeverity = plog::debug;
-      #else
-      maxLogSeverity = plog::info;
-      #endif
-   }
-   plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
-   plog::Logger<PLOG_NO_DBG_OUT_INSTANCE_ID>::getInstance()->setMaxSeverity(maxLogSeverity);
-}
-
 extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR /*lpCmdLine*/, int /*nShowCmd*/)
 {
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
    static NvThreadOptimization s_OriginalNVidiaThreadOptimization = NV_THREAD_OPTIMIZATION_NO_SUPPORT;
    #endif
+
+   Logger::GetInstance()->Init();
 
    int retval;
    try
@@ -1364,9 +1288,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       #ifdef __STANDALONE__
          SDL_InitSubSystem(SDL_INIT_TIMER);
       #endif
-
-      plog::init<PLOG_DEFAULT_INSTANCE_ID>();
-      plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
 
       // Start Win32++
       VPApp theApp(hInstance);

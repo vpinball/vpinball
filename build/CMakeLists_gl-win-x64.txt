@@ -427,6 +427,8 @@ add_executable(vpinball WIN32
    src/utils/hash.h
    src/utils/objloader.cpp
    src/utils/objloader.h
+   src/utils/Logger.cpp
+   src/utils/Logger.h
    src/utils/BlackBox.cpp
    src/utils/BlackBox.h
    src/utils/CrashHandler.cpp
