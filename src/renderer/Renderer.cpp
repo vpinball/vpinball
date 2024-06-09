@@ -1898,13 +1898,20 @@ void Renderer::PrepareVideoBuffers()
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
 
-      const Vertex3D_TexelOnly shiftedVerts[4] =
+      Vertex3D_TexelOnly shiftedVerts[4] =
       {
          {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
          { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
          {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
          { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
       };
+      #if defined(ENABLE_BGFX)
+      if (bgfx::getCaps()->originBottomLeft)
+      {
+         shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f;
+         shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f;
+      }
+      #endif
       m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_FBShader, shiftedVerts);
       renderedRT = outputRT;
    }

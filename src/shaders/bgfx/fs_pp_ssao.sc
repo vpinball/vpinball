@@ -28,8 +28,8 @@ vec3 get_nonunit_normal(const float depth0, const vec2 u, const int v_eye) // us
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
 #endif
 {
-   const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
-   const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
+   const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   const float depth2 = texStereoNoLod(tex_depth, vec2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
@@ -66,9 +66,9 @@ void main()
 	float occlusion = 0.0;
 	UNROLL for(int i=0; i < samples; ++i) {
 		const vec2 r = vec2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
-		//const vec3 ray = sphere_sample(frac(r+ushift.xy)); // shift lattice // uniform variant
-		const vec2 ray = rotate_to_vector_upper(cos_hemisphere_sample(frac(r+ushift.xy)), normal).xy; // shift lattice
-		//!! maybe a bit worse distribution: const vec2 ray = cos_hemisphere_sample(normal,frac(r+ushift.xy)).xy; // shift lattice
+		//const vec3 ray = sphere_sample(fract(r+ushift.xy)); // shift lattice // uniform variant
+		const vec2 ray = rotate_to_vector_upper(cos_hemisphere_sample(fract(r+ushift.xy)), normal).xy; // shift lattice
+		//!! maybe a bit worse distribution: const vec2 ray = cos_hemisphere_sample(normal,fract(r+ushift.xy)).xy; // shift lattice
 		//const float rdotn = dot(ray,normal);
 		const vec2 hemi_ray = u + (radius_depth /** sign(rdotn) for uniform*/) * ray.xy;
 		const float occ_depth = texStereoNoLod(tex_depth, hemi_ray).x;

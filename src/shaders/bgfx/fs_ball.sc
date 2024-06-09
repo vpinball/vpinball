@@ -102,7 +102,7 @@ void main()
     #else
         // Spherical Map Reflections
         // calculate the intermediate value for the final texture coords. found here http://www.ozone3d.net/tutorials/glsl_texturing_p04.php
-        const float m = (1.0 - R.z > 0.) ? 0.3535533905932737622 * rsqrt(1.0 - R.z) : 0.; // 0.353...=0.5/sqrt(2)
+        const float m = (1.0 - R.z > 0.) ? 0.3535533905932737622 * inversesqrt(1.0 - R.z) : 0.; // 0.353...=0.5/sqrt(2)
         const vec2 uv = vec2(0.5 - m * R.x, 0.5 - m * R.y);
         ballImageColor = texture2DLod(tex_ball_color, uv, lod).rgb;
     #endif
@@ -134,7 +134,7 @@ void main()
     // No need to normalize here since the matWorldView matrix is normal (world is identity and view is always orthonormal)
     // No need to use a dedicated 'normal' matrix since the matWorldView is orthonormal (world is identity and view is always orthonormal)
     //const vec3 playfield_normal = normalize(mul(vec4(0.,0.,1.,0.), matWorldViewInverse).xyz); //!! normalize necessary? // actually: mul(vec4(0.,0.,1.,0.), matWorldViewInverseTranspose), but optimized to save one matrix
-    const vec3 playfield_normal = mul(matWorldView, float4(0.,0.,1.,0.)).xyz;
+    const vec3 playfield_normal = mul(matWorldView, vec4(0.,0.,1.,0.)).xyz;
     //const vec3 playfield_normal = matWorldView[2].xyz;
     const float NdotR = dot(playfield_normal, R);
 
@@ -165,11 +165,11 @@ void main()
             && !(t <= 0.)) // t < 0.0 may happen in some situation where ball intersects the playfield and the reflected point is inside the ball (like in kicker)
     {
         // NdotR allows to fade between playfield (down) and environment (up)
-        ballImageColor = lerp(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
+        ballImageColor = mix(ballImageColor, playfieldColor, smoothstep(0.0, 0.15, NdotR) * invTableRes_reflection.z);
     }
 
     // We can face infinite reflections (ball->playfield->ball->playfield->...) which would overflow, or very bright dots that would cause lighting artefacts, so we saturate to an arbitrary value
-    ballImageColor = min(ballImageColor, float3(15., 15., 15.));
+    ballImageColor = min(ballImageColor, vec3(15., 15., 15.));
 
     vec3 diffuse = cBase_Alpha.rgb*0.075;
     #ifndef DECAL

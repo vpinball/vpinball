@@ -122,10 +122,10 @@ void main()
 	vec3 sharpen = (e[4]-final_colour/Z) * sharpness;
 
 	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
-	sharpen = lerp(vec3_splat(gs_sharpen), sharpen, 0.5);
+	sharpen = mix(vec3_splat(gs_sharpen), sharpen, 0.5);
 
 	ampRGB *= saturate(sharpness);
-	ampRGB  = lerp(ampRGB, 1.0-ampRGB, balance);
+	ampRGB  = mix(ampRGB, 1.0-ampRGB, balance);
 
 	gl_FragColor = vec4(e[4] + sharpen*ampRGB, 1.0);
 }

@@ -73,8 +73,8 @@ void main()
    const float blurAmountHoriz   = saturate(edgeDetectHoriz / valueHoriz);
    const float blurAmountVert    = saturate(edgeDetectVert  / valueVert);
 
-   vec3 aaResult               = lerp( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
-   aaResult                      = lerp( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
+   vec3 aaResult               = mix( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
+   aaResult                      = mix( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
 
    // long edges
    const vec4 sampleVertNeg1   = sampleOffset(u, vec2(0.0, -3.5) );
@@ -110,15 +110,15 @@ void main()
         const float vy = (valueCenter == valueRight)  ? 0. : saturate(1.0 + ( valueVertLong  - valueCenter ) / (valueCenter - valueRight));
         const float hy = (valueCenter == valueBottom) ? 0. : saturate(1.0 + ( valueHorizLong - valueCenter ) / (valueCenter - valueBottom));
 
-        const vec3 longBlurVert  = lerp( sampleRight,
-                                           lerp( sampleLeft,  sampleCenter.xyz, vx ),
+        const vec3 longBlurVert  = mix( sampleRight,
+                                           mix( sampleLeft,  sampleCenter.xyz, vx ),
                                            vy );
-        const vec3 longBlurHoriz = lerp( sampleDown,
-                                           lerp( sampleTop,   sampleCenter.xyz, hx ),
+        const vec3 longBlurHoriz = mix( sampleDown,
+                                           mix( sampleTop,   sampleCenter.xyz, hx ),
                                            hy );
 
-        aaResult                   = lerp( aaResult, longBlurVert, pass1EdgeAvgVert * 0.5); //!! magic
-        aaResult                   = lerp( aaResult, longBlurHoriz, pass1EdgeAvgHoriz * 0.5); //!! magic
+        aaResult                   = mix( aaResult, longBlurVert, pass1EdgeAvgVert * 0.5); //!! magic
+        aaResult                   = mix( aaResult, longBlurHoriz, pass1EdgeAvgHoriz * 0.5); //!! magic
 
         //test: return vec4(aaResult,1.);
    }
