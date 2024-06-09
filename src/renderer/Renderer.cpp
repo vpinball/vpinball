@@ -1698,13 +1698,20 @@ void Renderer::Bloom()
 
    const double w = (double)GetBackBufferTexture()->GetWidth();
    const double h = (double)GetBackBufferTexture()->GetHeight();
-   const Vertex3D_TexelOnly shiftedVerts[4] =
+   Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
       { -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
       {  1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) },
       { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
    };
+   #if defined(ENABLE_BGFX)
+   if (bgfx::getCaps()->originBottomLeft)
+   {
+      shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f + (float)(2.25 / h);
+      shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f + (float)(2.25 / h);
+   }
+   #endif
    {
       m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 

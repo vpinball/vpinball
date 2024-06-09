@@ -351,16 +351,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    }
 
    bgfx::Init init;
-   
-   // OpenGL & GL ES are tested and functional but needs a full review of upside down textures (ball reflections, AA offsets, reflection/refraction, ...)
-   // Metal is tested and functional excepted for stereo rendering
-   init.type = bgfx::RendererType::Metal;
+   init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
+   init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
    init.type = bgfx::RendererType::OpenGLES;
-   init.type = bgfx::RendererType::OpenGL;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
    //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
-   init.type = bgfx::RendererType::Count; // Default backend for the running platform
+   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
 
    init.callback = &bgfxCallback;
 
@@ -385,6 +382,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.platformData.nwh = (void*)(uintptr_t)wmInfo.info.x11.window;
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = wmInfo.info.cocoa.window;
+   #elif BX_PLATFORM_IOS
+   init.platformData.nwh = wmInfo.info.uikit.window;
    #elif BX_PLATFORM_WINDOWS
    init.platformData.nwh = wmInfo.info.win.window;
    #elif BX_PLATFORM_STEAMLINK

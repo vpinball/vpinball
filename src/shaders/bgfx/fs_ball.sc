@@ -150,7 +150,12 @@ void main()
 	#else
     const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
 	#endif
+	#ifdef BGFX_SHADER_LANGUAGE_GLSL
+	// OpenGL and OpenGL ES have reversed render targets
+    const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, proj.y) * (0.5 / proj.w);
+	#else
     const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
+	#endif
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb
         + texStereo(tex_ball_playfield, uvp - vec2(w_h_disableLighting.x, 0.)).rgb
