@@ -333,10 +333,10 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
-   const string bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-   string supportedRendererLog = "BGFX available backends: ";
+   string supportedRendererLog = "BGFX available backends: "s;
    for (int i = 0; i < nRendererSupported; i++)
       supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
    PLOGI << supportedRendererLog;

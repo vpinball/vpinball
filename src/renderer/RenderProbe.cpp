@@ -372,7 +372,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       previousRT->m_name += '-';
    }
    else
-      m_rd->SetRenderTarget(""s, nullptr);
+      m_rd->SetRenderTarget(string(), nullptr);
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);

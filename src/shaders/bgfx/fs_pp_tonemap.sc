@@ -57,23 +57,23 @@ SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 #ifdef REINHARD
 float ReinhardToneMap(float l)
 {
-	l *= exposure.x;
-	
+    l *= exposure.x;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
 vec2 ReinhardToneMap(vec2 color)
 {
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 vec3 ReinhardToneMap(vec3 color)
 {
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -117,8 +117,8 @@ vec3 ACESFitted(vec3 color)
 // Warning: The retrned value is already gamam corrected
 vec3 FilmicToneMap(vec3 color)
 {
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -167,8 +167,8 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
 {
     const float LUT_DIMS = 48.0;
 
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -197,8 +197,8 @@ vec3 PBRNeutralToneMapping(vec3 color)
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
 
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
     color -= offset;
@@ -226,7 +226,7 @@ float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
 // - ThreeJS: https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js
 // - Filament: https://github.com/google/filament/blob/main/filament/src/ToneMapper.cpp
 // All of these trying to match Blender's implementation and reference OCIO profile.
-// TODO Add black/white point deifnition support when adding HDR output support
+// TODO Add black/white point definition support when adding HDR output support
 // TODO Add 'punchy' look transform (less desaturated)
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
@@ -237,26 +237,26 @@ vec3 agxDefaultContrastApprox(vec3 x)
     // Mean error^2: 3.6705141e-06
     vec3 x2 = x * x;
     vec3 x4 = x2 * x2;
-    return +15.5 * x4 * x2
-		- 40.14 * x4 * x
-		+ 31.96 * x4
-		- 6.868 * x2 * x
-		+ 0.4298 * x2
-		+ 0.1191 * x
-		- 0.00232;
+    return + 15.5 * x4 * x2
+           - 40.14 * x4 * x
+           + 31.96 * x4
+           - 6.868 * x2 * x
+           + 0.4298 * x2
+           + 0.1191 * x
+           - 0.00232;
     #else
-    // 7th order polynomial approximation (used int Filament)
+    // 7th order polynomial approximation (used in Filament)
     vec3 x2 = x * x;
     vec3 x4 = x2 * x2;
     vec3 x6 = x4 * x2;
-    return -17.86 * x6 * x
-            + 78.01 * x6
-            - 126.7 * x4 * x
-            + 92.06 * x4
-            - 28.72 * x2 * x
-            + 4.361 * x2
-            - 0.1718 * x
-            + 0.002857;
+    return - 17.86 * x6 * x
+           + 78.01 * x6
+           - 126.7 * x4 * x
+           + 92.06 * x4
+           - 28.72 * x2 * x
+           + 4.361 * x2
+           - 0.1718 * x
+           + 0.002857;
     #endif
 }
 
@@ -276,7 +276,7 @@ vec3 AgXToneMapping(vec3 color)
         vec3( 0.8566271533159830, 0.137318972929847, 0.1118982129999500),
         vec3( 0.0951212405381588, 0.761241990602591, 0.0767994186031903),
         vec3( 0.0482516061458583, 0.101439036467562, 0.8113023683968590)
-	);
+    );
     const mat3 AgXOutsetMatrix = mtxFromRows3
     (
         vec3( 1.127100581814436800, -0.141329763498438300, -0.14132976349843826),
@@ -317,32 +317,32 @@ vec3 AgXToneMapping(vec3 color)
     );
     #endif
 
-	// LOG2_MIN      = -10.0
-	// LOG2_MAX      =  +6.5
-	// MIDDLE_GRAY   =  0.18
+    // LOG2_MIN      = -10.0
+    // LOG2_MAX      =  +6.5
+    // MIDDLE_GRAY   =  0.18
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-	color *= exposure.x;
-	
+    color *= exposure.x;
+
     #if 0
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
     #endif
 
     color = mul(color, AgXInsetMatrix);
 
-	// Log2 encoding
-    color = max(color, 1e-10); // avoid 0 or negative numbers for log2
+    // Log2 encoding
+    color = max(color, FLT_MIN_VALUE); // avoid 0 or negative numbers for log2
     color = log2(color);
     color = (color - AgxMinEv) / (AgxMaxEv - AgxMinEv);
 
     color = clamp(color, 0.0, 1.0);
 
-	// Apply sigmoid
+    // Apply sigmoid
     color = agxDefaultContrastApprox(color);
 
-	// TODO Apply AgX look
-	// v = agxLook(v, look);
+    // TODO Apply AgX look
+    // v = agxLook(v, look);
 
     color = mul(color, AgXOutsetMatrix);
 
@@ -501,7 +501,7 @@ float FBDither(const float color, /*const int2 pos*/const vec2 tex0)
 vec3 FBColorGrade(vec3 color)
 {
    BRANCH if (!(color_grade.x > 0.))
-       return color;
+      return color;
 
    color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
    color.z *= 15.0;

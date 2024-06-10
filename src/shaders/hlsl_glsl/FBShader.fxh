@@ -27,14 +27,14 @@ sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 float ReinhardToneMap(float l)
 {
     l *= exposure;
-    
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
 float2 ReinhardToneMap(float2 color)
 {
     color *= exposure;
-    
+
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -200,7 +200,7 @@ float3 PBRNeutralToneMapping(float3 color)
 // - ThreeJS: https://github.com/mrdoob/three.js/blob/master/src/renderers/shaders/ShaderChunk/tonemapping_pars_fragment.glsl.js
 // - Filament: https://github.com/google/filament/blob/main/filament/src/ToneMapper.cpp
 // All of these trying to match Blender's implementation and reference OCIO profile.
-// TODO Add black/white point deifnition support when adding HDR output support
+// TODO Add black/white point definition support when adding HDR output support
 // TODO Add 'punchy' look transform (less desaturated)
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
@@ -219,7 +219,7 @@ float3 agxDefaultContrastApprox(float3 x)
             + 0.1191 * x
             - 0.00232;
     #else
-    // 7th order polynomial approximation (used int Filament)
+    // 7th order polynomial approximation (used in Filament)
     float3 x2 = x * x;
     float3 x4 = x2 * x2;
     float3 x6 = x4 * x2;
@@ -239,7 +239,7 @@ float3 agxDefaultContrastApprox(float3 x)
 float3 AgXToneMapping(float3 color)
 {
     #if 0
-	// AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
+    // AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
     // These operates on rec2020 value, therefore they require additional colorspace conversions
     // (for AgXOutsetMatrix, the inverse is precomputed. Note that input and output matrices are not mutual inverses)
     const float3x3 AgXInsetMatrix =
@@ -269,7 +269,7 @@ float3 AgXToneMapping(float3 color)
         MAT_ROW3_BEGIN 0.3293, 0.9195, 0.0880 MAT_ROW_END,
         MAT_ROW3_BEGIN 0.0433, 0.0113, 0.8956 MAT_ROW_END
     MAT_END;
-    
+
     #else
     // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
     // It is supposed that they are ok for rec709 input values.
@@ -288,9 +288,9 @@ float3 AgXToneMapping(float3 color)
     MAT_END;
     #endif
 
-	// LOG2_MIN      = -10.0
-	// LOG2_MAX      =  +6.5
-	// MIDDLE_GRAY   =  0.18
+    // LOG2_MIN      = -10.0
+    // LOG2_MAX      =  +6.5
+    // MIDDLE_GRAY   =  0.18
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
@@ -299,21 +299,21 @@ float3 AgXToneMapping(float3 color)
     #if 0
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020); // linear sRGB (rec709) to linear rec2020 expected by Blender/threeejs matrices
     #endif
-    
+
     color = mul(color, AgXInsetMatrix);
 
-	// Log2 encoding
-    color = max(color, 1e-10); // avoid 0 or negative numbers for log2
+    // Log2 encoding
+    color = max(color, FLT_MIN_VALUE); // avoid 0 or negative numbers for log2
     color = log2(color);
     color = (color - AgxMinEv) / (AgxMaxEv - AgxMinEv);
 
     color = clamp(color, 0.0, 1.0);
 
-	// Apply sigmoid
+    // Apply sigmoid
     color = agxDefaultContrastApprox(color);
 
-	// TODO Apply AgX look
-	// v = agxLook(v, look);
+    // TODO Apply AgX look
+    // v = agxLook(v, look);
 
     color = mul(color, AgXOutsetMatrix);
 
