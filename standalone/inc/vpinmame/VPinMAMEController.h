@@ -47,12 +47,12 @@ public:
    }
 
    STDMETHOD_(ULONG, Release)() {
-      m_dwRef--;
+      ULONG dwRef = --m_dwRef;
 
-      if (m_dwRef == 0)
+      if (dwRef == 0)
          delete this;
 
-      return m_dwRef;
+      return dwRef;
    }
 
    STDMETHOD(GetTypeInfoCount)(UINT *pCountTypeInfo) { *pCountTypeInfo = 0; return S_OK;  }

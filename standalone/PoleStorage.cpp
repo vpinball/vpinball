@@ -55,15 +55,15 @@ STDMETHODIMP_(ULONG) PoleStorage::AddRef()
 
 STDMETHODIMP_(ULONG) PoleStorage::Release()
 {
-   m_dwRef--;
+   ULONG dwRef = --m_dwRef;
 
-   if (m_dwRef == 0) {
+   if (dwRef == 0) {
       delete m_pPOLEStorage;
 
       delete this;
    }
 
-   return m_dwRef;
+   return dwRef;
 }
 
 STDMETHODIMP PoleStorage::CreateStream(LPCOLESTR pwcsName, DWORD grfMode, DWORD reserved1, DWORD reserved2, IStream **ppstm) { return E_NOTIMPL; }

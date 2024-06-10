@@ -25,9 +25,9 @@ STDMETHODIMP_(ULONG) PoleStream::AddRef()
 
 STDMETHODIMP_(ULONG) PoleStream::Release()
 {
-   m_dwRef--;
+   ULONG dwRef = --m_dwRef;
 
-   if (m_dwRef == 0) {
+   if (dwRef == 0) {
       delete m_pPOLEStream;
 
       m_pStorage->Release();
@@ -35,7 +35,7 @@ STDMETHODIMP_(ULONG) PoleStream::Release()
       delete this;
    }
 
-   return m_dwRef;
+   return dwRef;
 }
 
 STDMETHODIMP PoleStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)
