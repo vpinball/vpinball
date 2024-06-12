@@ -1344,7 +1344,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          {
             auto opt = m_live_table->m_settings.GetSettings()[activeTweakSetting - BS_Custom];
             float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
-            int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 30 - (int) (msec() - startOfPress) / 500); // discrete vs continuous sliding
+            int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(msec() - startOfPress) / 10); // discrete vs continuous sliding
             int nSteps = (msec() - m_lastTweakKeyDown) / nMsecPerStep;
             if (keyEvent == 1)
             {
