@@ -40,13 +40,12 @@ STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, 
       return S_OK;
    }
 
-   const string sFolder = MakeString(folder);
-   if (pScreen->GetPlaylist(sFolder)) {
-      PLOGW.printf("Playlist already exists: screenNum=%d, folder=%s", ScreenNum, sFolder.c_str());
+   if (pScreen->GetPlaylist(MakeString(folder))) {
+      PLOGW.printf("Playlist already exists: screenNum=%d, folder=%s", ScreenNum, MakeString(folder).c_str());
       return S_OK;
    }
 
-   pScreen->AddPlaylist(new PUPPlaylist(sFolder, "", sort, restSeconds, 100, 1));
+   pScreen->AddPlaylist(new PUPPlaylist(MakeString(folder), "", sort, restSeconds, 100, 1));
 
    return S_OK;
 }

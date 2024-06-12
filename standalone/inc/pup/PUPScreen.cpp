@@ -141,8 +141,12 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line)
       mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
    else if (string_compare_case_insensitive(parts[5], "MusicOnly"))
       mode = PUP_SCREEN_MODE_MUSIC_ONLY;
-   else
+   else if (string_compare_case_insensitive(parts[5], "Off"))
       mode = PUP_SCREEN_MODE_OFF;
+   else{
+      PLOGW.printf("Invalid screen mode: %s for ", parts[5].c_str());
+      mode = PUP_SCREEN_MODE_OFF;
+   }
 
    return new PUPScreen(
       mode,
