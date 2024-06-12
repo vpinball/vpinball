@@ -144,7 +144,7 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line)
    else if (string_compare_case_insensitive(parts[5], "Off"))
       mode = PUP_SCREEN_MODE_OFF;
    else{
-      PLOGW.printf("Invalid screen mode: %s for ", parts[5].c_str());
+      PLOGW.printf("Invalid screen mode: %s", parts[5].c_str());
       mode = PUP_SCREEN_MODE_OFF;
    }
 
