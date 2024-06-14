@@ -383,7 +383,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = wmInfo.info.cocoa.window;
    #elif BX_PLATFORM_IOS
-   init.platformData.nwh = wmInfo.info.uikit.window;
+   init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   #elif BX_PLATFORM_ANDROID
+   init.platformData.nwh = wmInfo.info.android.window;
    #elif BX_PLATFORM_WINDOWS
    init.platformData.nwh = wmInfo.info.win.window;
    #elif BX_PLATFORM_STEAMLINK
