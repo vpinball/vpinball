@@ -2495,12 +2495,50 @@ void PinTable::Play(const int playMode)
       const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
       c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
-      // create Player and init that one
+      m_vpinball->ToggleToolbar();
 
+      // create Player and switch to its main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
       PLOGI << "Creating player"; // For profiling
       new Player(this, live_table, playMode);
+      bool initError = false;
 
-      m_vpinball->ToggleToolbar();
+      #ifndef __STANDALONE__
+      auto processWindowMessages = [&initError]()
+      {
+         MSG msg;
+         while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+         {
+            if (msg.message == WM_QUIT)
+            {
+               if (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT)
+                  g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
+               return;
+            }
+            try
+            {
+               bool consumed = false;
+               if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
+                  consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(msg);
+               if (!consumed)
+               {
+                  TranslateMessage(&msg);
+                  DispatchMessage(&msg);
+               }
+            }
+            catch (...) // something failed on load/init
+            {
+               initError = true;
+            }
+         }
+      };
+      #else
+      auto processWindowMessages = []() {};
+      #endif
+      g_pplayer->GameLoop(processWindowMessages);
+      delete g_pplayer;
+      g_pplayer = nullptr;
+      if (initError)
+         HandleLoadFailure();
    }
    else
    {

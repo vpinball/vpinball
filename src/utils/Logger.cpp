@@ -17,6 +17,10 @@ class DebugAppender : public plog::IAppender
 public:
    virtual void write(const plog::Record &record) PLOG_OVERRIDE
    {
+      // FIXME BGFX add multithreading support
+      #ifdef ENABLE_BGFX
+      return;
+      #endif
       if (g_pvp == nullptr || g_pplayer == nullptr)
          return;
       auto table = g_pvp->GetActiveTable();

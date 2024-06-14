@@ -357,14 +357,19 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_rd->DrawFullscreenTexturedQuad(m_rd->m_FBShader);
       m_rd->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
 
-      m_rd->FlushRenderFrame();
+      m_rd->SubmitRenderFrame();
+      #if defined(ENABLE_BGFX)
+      // BGFX will only process the submitted render frame when the render surface is presented
+      m_rd->Flip();
+      #endif
+
    }
    m_rd->m_curDrawnTriangles += nTris;
 
    // copy back weighted antialiased color result to the static render target, keeping depth untouched
    m_rd->SetRenderTarget("PreRender Store Reflection"s, m_prerenderRT);
    m_rd->BlitRenderTarget(accumulationSurface, m_prerenderRT, true, false);
-   m_rd->FlushRenderFrame(); // Execute before destroying the render target
+   m_rd->SubmitRenderFrame(); // Execute before destroying the render target
    delete accumulationSurface;
    if (previousRT)
    {

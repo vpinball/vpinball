@@ -331,7 +331,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
    m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
    m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
 
@@ -1220,13 +1220,13 @@ void Renderer::SubmitFrame()
 {
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !g_pplayer->m_liveUI->IsTweakMode() && g_pplayer->m_liveUI->IsOpened())
    {
       m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       g_pplayer->m_liveUI->Update(m_pd3dPrimaryDevice->GetOutputBackBuffer());
       m_pd3dPrimaryDevice->RenderLiveUI();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
    }
    SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    #if defined(ENABLE_DX9)  // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
@@ -1393,8 +1393,12 @@ void Renderer::RenderStaticPrepass()
 
    TRACE_FUNCTION();
 
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    m_render_mask |= Renderer::STATIC_ONLY;
+   #if defined(ENABLE_BGFX)
+   // BGFX will only process the submitted render frame when the render surface is presented
+   m_pd3dPrimaryDevice->Flip();
+   #endif
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1437,7 +1441,7 @@ void Renderer::RenderStaticPrepass()
       // Direct all renders to the "static" buffer
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT, false);
       DrawBackground();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
 
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
 
@@ -1474,7 +1478,11 @@ void Renderer::RenderStaticPrepass()
       }
 
       // Finish the frame.
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
+      #if defined(ENABLE_BGFX)
+      // BGFX will only process the submitted render frame when the render surface is presented
+      m_pd3dPrimaryDevice->Flip();
+      #endif
    }
 
    if (accumulationSurface)
@@ -1482,7 +1490,7 @@ void Renderer::RenderStaticPrepass()
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT);
       m_pd3dPrimaryDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
-      m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render target
+      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render target
       delete accumulationSurface;
    }
 
@@ -1545,7 +1553,7 @@ void Renderer::RenderStaticPrepass()
 
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
-      m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
+      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render targets
 
       // Delete buffers: we won't need them anymore since dynamic AO is disabled
       m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_ao);
@@ -1559,7 +1567,7 @@ void Renderer::RenderStaticPrepass()
       InitLayout();
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRTmsaa, false);
       DrawBackground();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
       if (IsUsingStaticPrepass())
       {
          m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa);
@@ -1569,12 +1577,12 @@ void Renderer::RenderStaticPrepass()
          UpdateBasicShaderMatrix();
          for (Hitable* hitable : g_pplayer->m_vhitables)
             hitable->Render(m_render_mask);
-         m_pd3dPrimaryDevice->FlushRenderFrame();
+         m_pd3dPrimaryDevice->SubmitRenderFrame();
       }
       // Copy supersampled color buffer
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa);
       m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRTmsaa, true, false);
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
       // Replace with this new MSAA pre render
       RenderTarget *initialPreRender = m_staticPrepassRT;
       m_staticPrepassRT = renderRTmsaa;
@@ -1595,7 +1603,11 @@ void Renderer::RenderStaticPrepass()
    PLOGI << "Static PreRender done"; // For profiling
    
    m_render_mask &= ~Renderer::STATIC_ONLY;
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
+   #if defined(ENABLE_BGFX)
+   // BGFX will only process the submitted render frame when the render surface is presented
+   m_pd3dPrimaryDevice->Flip();
+   #endif
 }
 
 void Renderer::RenderDynamics()

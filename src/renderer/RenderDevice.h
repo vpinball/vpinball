@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "robin_hood.h"
 #include "typedefs3D.h"
 
@@ -126,7 +128,7 @@ public:
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
-   void FlushRenderFrame();
+   void SubmitRenderFrame();
 
    // RenderState used in submitted render command
    void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
@@ -233,7 +235,8 @@ public:
       if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 2) // Last view is reserved for ImGui
       {
          PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
-         FlushRenderFrame();
+         SubmitRenderFrame();
+         SubmitAndFlipFrame();
       }
       m_activeViewId++;
       bgfx::resetView(m_activeViewId);
@@ -252,6 +255,10 @@ public:
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
    uint64_t m_bgfxState = 0L;
+
+   std::thread m_renderThread;
+   int m_renderThreadState = 0;
+   static void RenderThreadFunc(RenderDevice* rd);
 
 #elif defined(ENABLE_OPENGL)
 public:
