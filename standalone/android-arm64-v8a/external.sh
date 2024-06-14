@@ -329,7 +329,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 # build bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_001"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
@@ -340,7 +340,6 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DCMAKE_SYSTEM_VERSION=30 \
       -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
       -DBGFX_BUILD_EXAMPLES=OFF \
-      -DBGFX_CONFIG_MULTITHREADED=OFF \
       -DBGFX_CONFIG_MAX_FRAME_BUFFERS=256 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
