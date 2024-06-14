@@ -168,10 +168,10 @@ Window::Window(const string& title, const string& settingsId, const int display,
       m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
       
       SDL_DisplayMode mode;
-      SDL_GetWindowDisplayMode(m_nwnd, &mode);
-      m_refreshrate = mode.refresh_rate;
       if (m_fullscreen)
       {
+         SDL_GetWindowDisplayMode(m_nwnd, &mode);
+         m_refreshrate = mode.refresh_rate;
          m_screenwidth = m_width;
          m_screenheight = m_height;
          if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
@@ -194,6 +194,12 @@ Window::Window(const string& title, const string& settingsId, const int display,
                PLOGE << "Failed to find a display mode matching the requested refresh rate [" << validatedFSRefreshRate << ']';
             }
          }
+      }
+      else
+      {
+         SDL_GetDesktopDisplayMode(m_display, &mode);
+         m_refreshrate = mode.refresh_rate;
+         SDL_GetWindowDisplayMode(m_nwnd, &mode);
       }
       PLOGI << "SDL display mode for window '" << settingsId << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
