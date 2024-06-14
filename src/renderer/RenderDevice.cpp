@@ -1,7 +1,5 @@
 #include "core/stdafx.h"
 
-#include <thread>
-
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
@@ -90,6 +88,17 @@ struct tBGFXCallback : public bgfx::CallbackI
    virtual void captureEnd() override { }
    virtual void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
 } bgfxCallback;
+
+void RenderDevice::RenderThreadFunc(RenderDevice* rd)
+{
+   // Tells BGFX that GPU submit thread is this one.
+   // This must be call before bgfx::init which tells BGFX the thread in charge of preparing the frame
+   bgfx::renderFrame();
+   rd->m_renderThreadState--;
+   while (rd->m_renderThreadState > 0)
+      // Flip output backbuffers, block until a frame is submited using bgfx::frame, submit frame to GPU for rendering
+      bgfx::renderFrame();
+}
 
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
@@ -350,6 +359,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    default: break;
    }
 
+   // Start render thread and wait for it to report that BGFX render thread has been marked
+   m_renderThreadState = 2;
+   m_renderThread = std::thread(&RenderThreadFunc, this);
+   while (m_renderThreadState > 1)
+   {
+   }
+
    bgfx::Init init;
    init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
    init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
@@ -366,7 +382,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
-   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                               /* Flush (send data from CPU to GPU) after submission (bgfx::frame) */
+   init.resolution.reset = 0
+                         /* | BGFX_RESET_FLUSH_AFTER_RENDER                               /* Flush (send data from CPU to GPU) after submission, not before (bgfx::frame) */
                          | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC) /* Wait for VSync */;
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
@@ -964,8 +981,10 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
-   //while (bgfx::RenderFrame::NoContext != bgfx::renderFrame() ) {};
    bgfx::shutdown();
+   m_renderThreadState = 0;
+   if (m_renderThread.joinable())
+      m_renderThread.join();
 
 #elif defined(ENABLE_OPENGL)
    for (auto binding : m_samplerBindings)
@@ -1114,14 +1133,11 @@ void RenderDevice::Flip()
    // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
 
-   // Ensure that all commands have been submitted to the CPU, then pushed to the GPU
-   FlushRenderFrame();
-
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    if (!m_isVR)
       g_frameProfiler.OnPresent();
    #if defined(ENABLE_BGFX)
-   // Nothing to do, since FlushRenderFrame trigger the flip
+   SubmitAndFlipFrame();
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
    #elif defined(ENABLE_DX9)
@@ -1450,18 +1466,12 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 #endif
 }
 
-void RenderDevice::FlushRenderFrame()
+void RenderDevice::SubmitRenderFrame()
 {
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
    if (rendered)
       m_logNextFrame = false;
-#ifdef ENABLE_BGFX
-   // FIXME BGFX (without this) would queue all command until a flip is performed to actually submit them to the GPU
-   // The drawback is that BGFX always perform a flip for each render queue submission (before or after) which is 
-   // not the expected behavior here. This may lead to some delay when prerendering static parts, or artefacts.
-   SubmitAndFlipFrame();
-#endif
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
