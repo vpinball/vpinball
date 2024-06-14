@@ -142,9 +142,12 @@ jobs:
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
       - name: Build Android App
         run: |
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          perl -i -pe"s/applicationId \"org.vpinball.app\"/applicationId \"org.vpinball-${TYPE}.app\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
           perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
           perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
           perl -i -pe"s/\"VPinballX.apk\"/\"VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/VPinballX/VPinballX_${{ matrix.type }}/g" standalone/android-${{ matrix.arch }}/android-project/app/src/main/res/values/strings.xml
           cd standalone/android-${{ matrix.arch }}/android-project
           ./gradlew assembleDebug
       - run: |
