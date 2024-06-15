@@ -833,7 +833,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
-            if (g_pplayer->m_vball[i] != pball) // Ball still exists? may have been deleted from list
+            if (i >= g_pplayer->m_vball.size() || g_pplayer->m_vball[i] != pball) // Ball still exists? may have been deleted from list
             {
                // collision script deleted the ball, back up one count
                --i;
