@@ -729,14 +729,14 @@ if(OPT_CODESIGN)
    file(APPEND ${SCRIPT_PATH} "    codesign --sign \"$2\" --timestamp --options runtime \"$file\"\n")
    file(APPEND ${SCRIPT_PATH} "  fi\n")
    file(APPEND ${SCRIPT_PATH} "done\n")
-   file(APPEND ${SCRIPT_PATH} "codesign --sign \"$2\" --timestamp --options runtime --entitlements \"$3\" \"$1\"\n")
+   file(APPEND ${SCRIPT_PATH} "codesign --sign \"$2\" --timestamp --options runtime \"$1\"\n")
    file(CHMOD ${SCRIPT_PATH} PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ GROUP_EXECUTE GROUP_READ WORLD_EXECUTE WORLD_READ)
 
    set(PATH_APP "${CMAKE_BINARY_DIR}/${APP_NAME}.app")
    set(PATH_APP_ZIPPED "${PATH_APP}.zip")
 
    add_custom_command(TARGET vpinball POST_BUILD
-      COMMAND /bin/sh ${SCRIPT_PATH} ${PATH_APP} ${CODESIGN_DEVELOPER_ID} "${CMAKE_SOURCE_DIR}/standalone/macos-arm64/entitlements.plist"
+      COMMAND /bin/sh ${SCRIPT_PATH} ${PATH_APP} ${CODESIGN_DEVELOPER_ID}
       COMMAND ditto -c -k --keepParent ${PATH_APP} ${PATH_APP_ZIPPED}
       COMMAND xcrun notarytool submit ${PATH_APP_ZIPPED} --wait --apple-id "${CODESIGN_APPLE_ID}" --password "${CODESIGN_PASSWORD}" --team-id "${CODESIGN_TEAM_ID}"
    )
