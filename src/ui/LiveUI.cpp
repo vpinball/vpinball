@@ -1249,10 +1249,15 @@ void LiveUI::Update(const RenderTarget *rt)
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, io.DisplaySize.y - 10 - height)); //10 + m_menubar_height + m_toolbar_height));
+      #if defined(ENABLE_BGFX)
+      if (!m_player->m_lastFrameSyncOnFPS)
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.5f, 0.f, 1.f)); // Not enough margin to perform low latency VPX - Controler sync
+      #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
       else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
+      #endif
       ImGui::Begin("FPS", nullptr, window_flags);
       const double frameLength = g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
@@ -1260,10 +1265,15 @@ void LiveUI::Update(const RenderTarget *rt)
          1e-3 * g_frameProfiler.GetSlidingInputLag(false), 1e-3 * g_frameProfiler.GetSlidingInputLag(true));
       height = ImGui::GetWindowHeight();
       ImGui::End();
+      #if defined(ENABLE_BGFX)
+      if (!m_player->m_lastFrameSyncOnFPS)
+         ImGui::PopStyleColor();
+      #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
          ImGui::PopStyleColor();
       else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
          ImGui::PopStyleColor();
+      #endif
    }
    if (m_show_fps == 2)
    {

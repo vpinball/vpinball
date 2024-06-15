@@ -2,6 +2,8 @@
 
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
 
+#include <thread>
+
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 #include "nvapi/nvapi.h"
 #endif
@@ -88,17 +90,6 @@ struct tBGFXCallback : public bgfx::CallbackI
    virtual void captureEnd() override { }
    virtual void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
 } bgfxCallback;
-
-void RenderDevice::RenderThreadFunc(RenderDevice* rd)
-{
-   // Tells BGFX that GPU submit thread is this one.
-   // This must be call before bgfx::init which tells BGFX the thread in charge of preparing the frame
-   bgfx::renderFrame();
-   rd->m_renderThreadState--;
-   while (rd->m_renderThreadState > 0)
-      // Flip output backbuffers, block until a frame is submited using bgfx::frame, submit frame to GPU for rendering
-      bgfx::renderFrame();
-}
 
 #elif defined(ENABLE_OPENGL)
 GLuint RenderDevice::m_samplerStateCache[3 * 3 * 5];
@@ -359,13 +350,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    default: break;
    }
 
-   // Start render thread and wait for it to report that BGFX render thread has been marked
-   m_renderThreadState = 2;
-   m_renderThread = std::thread(&RenderThreadFunc, this);
-   while (m_renderThreadState > 1)
-   {
-   }
-
    bgfx::Init init;
    init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
    init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
@@ -424,7 +408,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       exit(-1);
    }
    PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend.";
-
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
 
@@ -982,9 +965,6 @@ RenderDevice::~RenderDevice()
 
 #if defined(ENABLE_BGFX)
    bgfx::shutdown();
-   m_renderThreadState = 0;
-   if (m_renderThread.joinable())
-      m_renderThread.join();
 
 #elif defined(ENABLE_OPENGL)
    for (auto binding : m_samplerBindings)
