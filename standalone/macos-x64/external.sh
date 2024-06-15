@@ -97,7 +97,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_STATIC=OFF \
       -DSDL_TEST=OFF \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -132,7 +132,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
       -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -166,7 +166,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2TTF_VENDORED=ON \
       -DSDL2TTF_HARFBUZZ=ON \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -194,7 +194,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
    cmake \
       -DBUILD_STATIC=OFF \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -303,7 +303,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build FFMPEG libraries and copy to external
 #
 
-CACHE_NAME="FFmpeg-${FFMPEG_SHA}_001"
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
@@ -314,6 +314,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       --disable-static \
       --disable-programs \
       --disable-doc \
+      --disable-xlib \
       --enable-rpath \
       --prefix=. \
       --libdir=@rpath \
@@ -338,7 +339,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_002"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
@@ -350,7 +351,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DBGFX_CONFIG_MULTITHREADED=ON \
       -DBGFX_CONFIG_MAX_FRAME_BUFFERS=256 \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
