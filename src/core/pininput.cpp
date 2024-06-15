@@ -6,10 +6,6 @@
 #include "imgui/imgui_impl_sdl2.h"
 #endif
 
-#ifdef __STANDALONE__
-#include "standalone/Standalone.h"
-#endif
-
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X
 #undef DIJOFS_Y
@@ -695,93 +691,99 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 }
 
 #if defined(ENABLE_SDL_INPUT)
-void PinInput::HandleSDLEvent(SDL_Event &e) {
+void PinInput::HandleSDLEvent(SDL_Event &e)
+{
    assert(m_inputApi == PI_SDL);
    static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z, DIJOFS_RZ };
    static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };
-   switch (e.type) {
-   case SDL_KEYDOWN:
-   case SDL_KEYUP:
-      if (e.key.repeat == 0) {
-         const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
-         if (dik != ~0u) {
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = dik;
-            didod.dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
-            //didod.dwTimeStamp = curr_time_msec;
-            PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
+   switch (e.type) 
+   {
+      case SDL_KEYDOWN:
+      case SDL_KEYUP:
+         if (e.key.repeat == 0) {
+            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+            if (dik != ~0u) {
+               DIDEVICEOBJECTDATA didod;
+               didod.dwOfs = dik;
+               didod.dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+               //didod.dwTimeStamp = curr_time_msec;
+               PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
+            }
          }
-      }
-      break;
+         break;
 
-   #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
-   case SDL_FINGERDOWN:
-   case SDL_FINGERUP: {
-      POINT point;
-      point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
-      point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
-
-      for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-         if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
-            g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
-
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-            didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-            PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
+      #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
+      case SDL_FINGERDOWN:
+      case SDL_FINGERUP:
+         {
+            POINT point;
+            point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
+            point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
+            for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
+            {
+               if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN))
+                  && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point,
+                     fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
+               {
+                  g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
+                  DIDEVICEOBJECTDATA didod;
+                  didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+                  didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+                  PushQueue(&didod, APP_TOUCH /*, curr_time_msec*/);
+               }
+            }
          }
-      }
-      break;
-   #endif
+         break;
+      #endif
 
-   #ifdef ENABLE_SDL_GAMECONTROLLER
-   case SDL_CONTROLLERDEVICEADDED:
-   case SDL_CONTROLLERDEVICEREMOVED:
-      RefreshSDLGameController();
-      break;
-   case SDL_CONTROLLERAXISMOTION:
-      if (e.caxis.axis < 6) {
-         DIDEVICEOBJECTDATA didod;
-         didod.dwOfs = axes[e.caxis.axis];
-         const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
-         didod.dwData = (DWORD)(value);
-         PushQueue(&didod, APP_JOYSTICK(0));
-      }
-      break;
-   case SDL_CONTROLLERBUTTONDOWN:
-   case SDL_CONTROLLERBUTTONUP:
-      if (e.cbutton.button < 32) {
-         DIDEVICEOBJECTDATA didod;
-         didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
-         didod.dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
-         PushQueue(&didod, APP_JOYSTICK(0));
-      }
-      break;
-   #else
-   case SDL_JOYDEVICEADDED:
-   case SDL_JOYDEVICEREMOVED:
-      RefreshSDLJoystick();
-      break;
-   case SDL_JOYAXISMOTION:
-      if (e.jaxis.axis < 6) {
-         DIDEVICEOBJECTDATA didod;
-         didod.dwOfs = axes[e.jaxis.axis];
-         const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
-         didod.dwData = (DWORD)(value);
-         PushQueue(&didod, APP_JOYSTICK(0));
-      }
-      break;
-   case SDL_JOYBUTTONDOWN:
-   case SDL_JOYBUTTONUP:
-      if (e.jbutton.button < 32) {
-         DIDEVICEOBJECTDATA didod;
-         didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-         didod.dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
-         PushQueue(&didod, APP_JOYSTICK(0));
-      }
-      break;
+      #ifdef ENABLE_SDL_GAMECONTROLLER
+      case SDL_CONTROLLERDEVICEADDED:
+      case SDL_CONTROLLERDEVICEREMOVED:
+         RefreshSDLGameController();
+         break;
+      case SDL_CONTROLLERAXISMOTION:
+         if (e.caxis.axis < 6) {
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = axes[e.caxis.axis];
+            const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
+            didod.dwData = (DWORD)(value);
+            PushQueue(&didod, APP_JOYSTICK(0));
+         }
+         break;
+      case SDL_CONTROLLERBUTTONDOWN:
+      case SDL_CONTROLLERBUTTONUP:
+         if (e.cbutton.button < 32) {
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
+            didod.dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod, APP_JOYSTICK(0));
+         }
+         break;
+      #else
+      case SDL_JOYDEVICEADDED:
+      case SDL_JOYDEVICEREMOVED:
+         RefreshSDLJoystick();
+         break;
+      case SDL_JOYAXISMOTION:
+         if (e.jaxis.axis < 6) {
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = axes[e.jaxis.axis];
+            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
+            didod.dwData = (DWORD)(value);
+            PushQueue(&didod, APP_JOYSTICK(0));
+         }
+         break;
+      case SDL_JOYBUTTONDOWN:
+      case SDL_JOYBUTTONUP:
+         if (e.jbutton.button < 32) {
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
+            didod.dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+            PushQueue(&didod, APP_JOYSTICK(0));
+         }
+         break;
+      #endif
    }
-   #endif
 }
 #endif
 
