@@ -19,6 +19,7 @@
 #include "scalefx.h"
 #ifdef ENABLE_SDL_VIDEO
 #include <SDL2/SDL_syswm.h>
+#include "imgui/imgui_impl_sdl2.h"
 #endif
 
 #include "serial.h"
@@ -2502,7 +2503,66 @@ void PinTable::Play(const int playMode)
       new Player(this, live_table, playMode);
       bool initError = false;
 
-      #ifndef __STANDALONE__
+      #ifdef ENABLE_SDL_VIDEO
+      auto processWindowMessages = [&initError]()
+      {
+         SDL_Event e;
+         while (SDL_PollEvent(&e) != 0)
+         {
+            // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
+            // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
+            if (e.type == SDL_MOUSEMOTION)
+            {
+               e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+               e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+            }
+
+            ImGui_ImplSDL2_ProcessEvent(&e);
+
+            #ifdef __STANDALONE__
+            g_pStandalone->ProcessEvent(&e);
+            #endif
+
+            switch (e.type)
+            {
+            case SDL_QUIT:
+               g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
+               break;
+            case SDL_WINDOWEVENT:
+               switch (e.window.event)
+               {
+               case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
+               case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
+               case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
+               }
+               break;
+            case SDL_KEYDOWN:
+               g_pplayer->ShowMouseCursor(false);
+               break;
+            case SDL_MOUSEMOTION:
+               {
+                  static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
+                  if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
+                  {
+                     m_lastcursorx = e.motion.x;
+                     m_lastcursory = e.motion.y;
+                     g_pplayer->ShowMouseCursor(true);
+                  }
+               }
+               break;
+            }
+            #ifdef ENABLE_SDL_INPUT
+            if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
+               g_pplayer->m_pininput.HandleSDLEvent(e);
+            #endif
+         }
+
+         #ifdef __STANDALONE__
+         g_pStandalone->ProcessUpdates();
+         #endif
+      };
+
+      #elif !defined(__STANDALONE__)
       auto processWindowMessages = [&initError]()
       {
          MSG msg;

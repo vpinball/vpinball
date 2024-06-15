@@ -545,20 +545,17 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
 
    // same for joysticks 
    switch (m_inputApi) {
-   case 1:
-      HandleInputXI(didod);
-      break;
-   case 3:
-      HandleInputIGC(didod);
-      break;
-   case 0:
+   case PI_XINPUT:
+      HandleInputXI(didod); break;
+   case PI_SDL:
+      HandleInputSDL(didod); break;
+   case PI_GAMECONTROLLER:
+      HandleInputIGC(didod); break;
+   case PI_DIRECTINPUT:
    default:
       HandleInputDI(didod);
       break;
    }
-
-   // Always process events as they also need processing for windowing system
-   HandleSDLEvents(didod);
 }
 
 void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
@@ -697,151 +694,106 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 #endif
 }
 
-void PinInput::HandleSDLEvents(DIDEVICEOBJECTDATA* didod)
-{
-#if defined(ENABLE_SDL_INPUT) || defined(ENABLE_SDL_VIDEO)
-   #if !defined(ENABLE_SDL_VIDEO)
-   if (m_inputApi != 2)
-      return;
-   #endif
-   static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z , DIJOFS_RZ };
-   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256 , 256 };
-   SDL_Event e;
-   int j = 0;
-   while (SDL_PollEvent(&e) != 0 && j<32)
-   {
-      // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
-      // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-      if (e.type == SDL_MOUSEMOTION)
-      {
-         e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-         e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-      }
-
-   #ifdef ENABLE_SDL_VIDEO
-      ImGui_ImplSDL2_ProcessEvent(&e);
-
-      #ifdef __STANDALONE__
-      g_pStandalone->ProcessEvent(&e);
-      #endif
-
-      switch (e.type)
-      {
-      case SDL_QUIT: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
-      case SDL_WINDOWEVENT:
-         switch (e.window.event)
-         {
-         case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
-         case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
-         case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
+#if defined(ENABLE_SDL_INPUT)
+void PinInput::HandleSDLEvent(SDL_Event &e) {
+   assert(m_inputApi == PI_SDL);
+   static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z, DIJOFS_RZ };
+   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };
+   switch (e.type) {
+   case SDL_KEYDOWN:
+   case SDL_KEYUP:
+      if (e.key.repeat == 0) {
+         const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+         if (dik != ~0u) {
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = dik;
+            didod.dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+            //didod.dwTimeStamp = curr_time_msec;
+            PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
          }
-         break;
-      case SDL_KEYDOWN:
-         g_pplayer->ShowMouseCursor(false);
-         break;
-      case SDL_MOUSEMOTION:
-         {
-            static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
-            if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
-            {
-               m_lastcursorx = e.motion.x;
-               m_lastcursory = e.motion.y;
-               g_pplayer->ShowMouseCursor(true);
-            }
-         }
-         break;
       }
+      break;
+
+   #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
+   case SDL_FINGERDOWN:
+   case SDL_FINGERUP: {
+      POINT point;
+      point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
+      point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
+
+      for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
+         if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
+            g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
+
+            DIDEVICEOBJECTDATA didod;
+            didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
+            didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
+            PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
+         }
+      }
+      break;
    #endif
 
-   #ifdef ENABLE_SDL_INPUT
-      if (m_inputApi == 2) switch (e.type) {
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
-         if (e.key.repeat == 0) {
-            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
-            if (dik != ~0u) {
-               didod[j].dwOfs = dik;
-               didod[j].dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
-               //didod[j].dwTimeStamp = curr_time_msec;
-               PushQueue(&didod[j], APP_KEYBOARD/*, curr_time_msec*/);
-               j++; 
-            }
-         }
-         break;
-      #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
-      case SDL_FINGERDOWN:
-      case SDL_FINGERUP: {
-         POINT point;
-         point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
-         point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
-
-         for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
-            if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN)) && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point, fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f)) {
-               g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
-
-               DIDEVICEOBJECTDATA didod;
-               didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-               didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-               PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
-            }
-         }
-         break;
-      #endif
-      #ifdef ENABLE_SDL_GAMECONTROLLER
-      case SDL_CONTROLLERDEVICEADDED:
-      case SDL_CONTROLLERDEVICEREMOVED:
-         RefreshSDLGameController();
-         break;
-      case SDL_CONTROLLERAXISMOTION:
-         if (e.caxis.axis < 6) {
-              didod[j].dwOfs = axes[e.caxis.axis];
-              const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
-              didod[j].dwData = (DWORD)(value);
-              PushQueue(&didod[j], APP_JOYSTICK(0));
-              j++;
-          }
-          break;
-      case SDL_CONTROLLERBUTTONDOWN:
-      case SDL_CONTROLLERBUTTONUP:
-         if (e.cbutton.button < 32) {
-            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
-            didod[j].dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-      #else
-      case SDL_JOYDEVICEADDED:
-      case SDL_JOYDEVICEREMOVED:
-         RefreshSDLJoystick();
-         break;
-      case SDL_JOYAXISMOTION:
-         if (e.jaxis.axis < 6) {
-            didod[j].dwOfs = axes[e.jaxis.axis];
-            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
-            didod[j].dwData = (DWORD)(value);
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
-         if (e.jbutton.button < 32) {
-            didod[j].dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-            didod[j].dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
-            PushQueue(&didod[j], APP_JOYSTICK(0));
-            j++;
-         }
-         break;
-      #endif
+   #ifdef ENABLE_SDL_GAMECONTROLLER
+   case SDL_CONTROLLERDEVICEADDED:
+   case SDL_CONTROLLERDEVICEREMOVED:
+      RefreshSDLGameController();
+      break;
+   case SDL_CONTROLLERAXISMOTION:
+      if (e.caxis.axis < 6) {
+         DIDEVICEOBJECTDATA didod;
+         didod.dwOfs = axes[e.caxis.axis];
+         const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
+         didod.dwData = (DWORD)(value);
+         PushQueue(&didod, APP_JOYSTICK(0));
       }
-   #endif
+      break;
+   case SDL_CONTROLLERBUTTONDOWN:
+   case SDL_CONTROLLERBUTTONUP:
+      if (e.cbutton.button < 32) {
+         DIDEVICEOBJECTDATA didod;
+         didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
+         didod.dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
+         PushQueue(&didod, APP_JOYSTICK(0));
+      }
+      break;
+   #else
+   case SDL_JOYDEVICEADDED:
+   case SDL_JOYDEVICEREMOVED:
+      RefreshSDLJoystick();
+      break;
+   case SDL_JOYAXISMOTION:
+      if (e.jaxis.axis < 6) {
+         DIDEVICEOBJECTDATA didod;
+         didod.dwOfs = axes[e.jaxis.axis];
+         const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
+         didod.dwData = (DWORD)(value);
+         PushQueue(&didod, APP_JOYSTICK(0));
+      }
+      break;
+   case SDL_JOYBUTTONDOWN:
+   case SDL_JOYBUTTONUP:
+      if (e.jbutton.button < 32) {
+         DIDEVICEOBJECTDATA didod;
+         didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
+         didod.dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+         PushQueue(&didod, APP_JOYSTICK(0));
+      }
+      break;
    }
-
-   #ifdef __STANDALONE__
-   g_pStandalone->ProcessUpdates();
    #endif
+}
+#endif
 
+void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA* didod)
+{
+   // When SDL Video is used, SDL events are processed during the main application message loop, so we do not do it again here
+#if defined(ENABLE_SDL_INPUT) && !defined(ENABLE_SDL_VIDEO)
+   if (m_inputApi != PI_SDL)
+      return;
+   SDL_Event e;
+   while (SDL_PollEvent(&e) != 0)
+      HandleSDLEvent(e);
 #endif
 }
 
@@ -856,7 +808,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    if (m_rumbleMode == 0) return;
 
    switch (m_inputApi) {
-   case 1: //XInput
+   case PI_XINPUT:
 #ifdef ENABLE_XINPUT
       if (m_inputDeviceXI >= 0) {
          m_rumbleOffTime = ms_duration + timeGetTime();
@@ -872,7 +824,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       }
 #endif
       break;
-   case 2: //SDL2
+   case PI_SDL: //SDL2
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
       if (m_pSDLGameController && SDL_GameControllerHasRumble(m_pSDLGameController))
@@ -883,7 +835,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 #endif
 #endif
       break;
-   case 3: //IGameController
+   case PI_GAMECONTROLLER: //IGameController
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
       break;
@@ -974,23 +926,23 @@ void PinInput::Init()
    m_nextKeyPressedTime = 0;
    uShockType = 0;
 
-#ifndef __STANDALONE__
-   m_inputApi = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, 0);
+#if defined(ENABLE_SDL_INPUT)
+   m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL);
 #else
-   m_inputApi = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, 2);
+   m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_DIRECTINPUT);
 #endif
 
    switch (m_inputApi) {
-   case 1: //xInput
+   case PI_XINPUT:
 #ifdef ENABLE_XINPUT
       m_inputDeviceXI = -1;
       uShockType = USHOCKTYPE_GENERIC;
       m_rumbleRunning = false;
 #else
-      m_inputApi = 0;
+      m_inputApi = PI_DIRECTINPUT;
 #endif
       break;
-   case 2: //SDL2
+   case PI_SDL:
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
       RefreshSDLGameController();
@@ -999,24 +951,24 @@ void PinInput::Init()
 #endif
       uShockType = USHOCKTYPE_GENERIC;
 #else
-      m_inputApi = 0;
+      m_inputApi = PI_DIRECTINPUT;
 #endif
       break;
-   case 3: //iGameController
+   case PI_GAMECONTROLLER:
 #ifdef ENABLE_IGAMECONTROLLER
 #else
-      m_inputApi = 0;
+      m_inputApi = PI_DIRECTINPUT;
 #endif
       break;
    default:
-      m_inputApi = 0;
+      m_inputApi = PI_DIRECTINPUT;
       break;
    }
 
-   m_rumbleMode = (m_inputApi > 0) ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3) : 0;
+   m_rumbleMode = (m_inputApi != PI_DIRECTINPUT) ? g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3) : 0;
 
    #ifdef _WIN32
-      if (m_inputApi == 0) {
+      if (m_inputApi == PI_DIRECTINPUT) {
          #ifdef USE_DINPUT8
             m_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY); //enum Joysticks
          #else
