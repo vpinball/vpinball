@@ -48,6 +48,9 @@ Dim vpmShowDips  ' Show DIPs function
 ' Check if VPX version offers FrameIndex property
 Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
 
+' Does the controller supports synchronization through time fence
+Dim HasTimeFence : HasTimeFence = False
+
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
@@ -2423,6 +2426,9 @@ Public Sub vpmInit(aTable)
 		End If
 	End If
 
+	' Suspend emulation after startup to avoid having to catchup after VPX lengthy startup (static prerendering, ...)
+	If HasTimeFence Then Controller.TimeFence = 0.100
+
 	vpmFlips.Init
 End Sub
 
@@ -2506,6 +2512,9 @@ Sub PinMAMETimer_Timer
 	Dim ChgLamp,ChgSol,ChgGI,ChgLed, ii, tmp, idx
 	Dim DMDp
 	Dim ChgNVRAM
+
+	' If the Controller supports it, we synchronize the emulation with VPX physics & events for very low latency between them
+	If HasTimeFence Then Controller.TimeFence = GameTime / 1000.0
 
 	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX versions)
 	Dim UpdateVisual
