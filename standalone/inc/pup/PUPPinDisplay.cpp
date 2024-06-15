@@ -23,6 +23,10 @@ PUPPinDisplay::~PUPPinDisplay()
 
 STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
 {
+   if (PUPManager::GetInstance()->HasScreen(ScreenNum)) {
+      PLOGW.printf("Screen already exists: screenNum=%d", ScreenNum);
+      return S_OK;
+   }
    m_pManager->AddScreen(PUPScreen::CreateDefault(ScreenNum));
 
    return S_OK;
@@ -31,11 +35,17 @@ STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
 STDMETHODIMP PUPPinDisplay::playlistadd(LONG ScreenNum, BSTR folder, LONG sort, LONG restSeconds)
 {
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
-   if (pScreen)
-      pScreen->AddPlaylist(new PUPPlaylist(MakeString(folder), "", sort, restSeconds, 100, 1));
-   else {
+   if (!pScreen) {
       PLOGE.printf("Screen not found: screenNum=%d");
+      return S_OK;
    }
+
+   if (pScreen->GetPlaylist(MakeString(folder))) {
+      PLOGW.printf("Playlist already exists: screenNum=%d, folder=%s", ScreenNum, MakeString(folder).c_str());
+      return S_OK;
+   }
+
+   pScreen->AddPlaylist(new PUPPlaylist(MakeString(folder), "", sort, restSeconds, 100, 1));
 
    return S_OK;
 }
