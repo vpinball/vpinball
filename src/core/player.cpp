@@ -1617,7 +1617,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       m_physics->UpdatePhysics(); // Update physics (also trigerring events, syncing with controller)
       FireSyncController(); // Trigger script sync event (to sync solenoids back)
       m_syncLengths[syncLengthPos] = (unsigned int)(usec() - startTick);
-      syncLengthPos = (syncLengthPos + 1) % 512;
+      syncLengthPos = (syncLengthPos + 1) % (sizeof(m_syncLengths) / sizeof(m_syncLengths[0]));
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
       #endif
@@ -1664,7 +1664,8 @@ void Player::MultithreadedGameLoop(std::function<void(bool)> sync)
       for (int i = 0; i < 512; i++)
          maxSyncLength = maxSyncLength < m_syncLengths[i] ? m_syncLengths[i] : maxSyncLength;
       int delta = (1000000 / m_maxFramerate) - 500 - maxSyncLength;
-      if (delta > 0)
+      m_lastFrameSyncOnVBlank = delta > 0;
+      if (m_lastFrameSyncOnVBlank)
       {
          syncStopTimestamp += delta;
          while (usec() < syncStopTimestamp)
@@ -1888,11 +1889,10 @@ void Player::PrepareFrame()
          g_frameProfiler.ExitScriptSection(pht->m_name);
       }
 
+   #if defined(ENABLE_DX9)
    // Kill the profiler so that it does not affect performance
    if (m_infoMode != IF_PROFILING)
       m_renderer->m_gpu_profiler.Shutdown();
-
-   #if defined(ENABLE_DX9)
    if (GetProfilingMode() == PF_ENABLED)
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
    #endif
@@ -1900,9 +1900,6 @@ void Player::PrepareFrame()
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
    
    m_renderer->PrepareFrame();
-
-   if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));

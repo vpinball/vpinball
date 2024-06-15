@@ -1,7 +1,5 @@
 #pragma once
 
-#include <thread>
-
 #include "robin_hood.h"
 #include "typedefs3D.h"
 
@@ -255,10 +253,6 @@ public:
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
    uint64_t m_bgfxState = 0L;
-
-   std::thread m_renderThread;
-   int m_renderThreadState = 0;
-   static void RenderThreadFunc(RenderDevice* rd);
 
 #elif defined(ENABLE_OPENGL)
 public:
