@@ -66,6 +66,12 @@ public:
    #endif
    void UnInit();
 
+   enum InputAPI
+   {
+      PI_DIRECTINPUT, PI_XINPUT, PI_SDL, PI_GAMECONTROLLER
+   };
+   InputAPI GetInputAPI() const { return m_inputApi; }
+
    // implicitly sync'd with visuals as each keystroke is applied to the sim
    void FireKeyEvent(const int dispid, int keycode);
 
@@ -114,9 +120,13 @@ private:
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
    void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
+   void HandleInputSDL(DIDEVICEOBJECTDATA *didod);
 
-   // Handle SDLEvents (input but also video)
-   void HandleSDLEvents(DIDEVICEOBJECTDATA *didod);
+#if defined(ENABLE_SDL_INPUT)
+public:
+   void HandleSDLEvent(SDL_Event& e);
+private:
+#endif
 
 #ifdef _WIN32
    HWND m_focusHWnd = nullptr;
@@ -177,7 +187,7 @@ private:
    bool m_keyPressedState[28]; // =EnumAssignKeys::eCKeys
    DWORD m_nextKeyPressedTime;
 
-   int m_inputApi;   // 0=DirectInput 1=XInput, 2=SDL, 3=IGamecontroller
+   InputAPI m_inputApi;
    int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
    static constexpr int m_LeftMouseButtonID = 25;
