@@ -26,6 +26,7 @@
 static serial Serial;
 
 #ifdef __STANDALONE__
+#include "standalone/Standalone.h"
 #include "mINI/ini.h"
 #endif
 
