@@ -315,6 +315,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       --disable-programs \
       --disable-doc \
       --disable-xlib \
+      --disable-libxcb \
       --enable-rpath \
       --prefix=. \
       --libdir=@rpath \
