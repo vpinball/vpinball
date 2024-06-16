@@ -23,7 +23,7 @@
 #endif
 #define texStereoNoLod(tex, pos) texStereoLod(tex, pos, 0.0)
 
-#if defined(BGFX_SHADER_LANGUAGE_GLSL) || defined(BGFX_SHADER_LANGUAGE_SPIRV)
+#if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
 	// GLSL does not define the sincos function
     #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
 #endif
