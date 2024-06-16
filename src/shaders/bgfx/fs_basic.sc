@@ -130,7 +130,12 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
    #endif
    
+   #if BGFX_SHADER_LANGUAGE_GLSL
+   // OpenGL and OpenGL ES have reversed render targets
    vec2 uv = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
+   #else
+   vec2 uv = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
+   #endif
 
    // Check if the sample position is behind the object pos. If not take don't perform refraction as it would lead to refract things above us (so reflect)
    const float d = texStereo(tex_probe_depth, uv).x;
