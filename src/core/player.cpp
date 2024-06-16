@@ -722,6 +722,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       }
    }
    m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
+   m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();
@@ -757,6 +758,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_physics->StartPhysics();
 
    m_progressDialog.SetProgress("Starting..."s, 100);
+   m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
 
 #ifdef __STANDALONE__
    if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
@@ -1657,7 +1659,6 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
 
 void Player::MultithreadedGameLoop(std::function<void(bool)> sync)
 {
-
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
       #ifdef MSVC_CONCURRENCY_VIEWER
