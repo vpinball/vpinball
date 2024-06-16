@@ -248,9 +248,9 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       {
          // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
 		 #ifdef STEREO
-         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, cBase_Alpha.a);
+         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
 		 #else
-         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, cBase_Alpha.a);
+         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
 		 #endif
          color.a = 1.0;
       }
