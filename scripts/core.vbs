@@ -2426,9 +2426,6 @@ Public Sub vpmInit(aTable)
 		End If
 	End If
 
-	' Suspend emulation after startup to avoid having to catchup after VPX lengthy startup (static prerendering, ...)
-	If HasTimeFence Then Controller.TimeFence = 0.100
-
 	vpmFlips.Init
 End Sub
 
