@@ -1811,7 +1811,7 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 	// Get the font size
-	const int fontSize = SendMessage(m_hwndScintilla, SCI_STYLEGETSIZE, 0, 0);
+	const int fontSize = (int)SendMessage(m_hwndScintilla, SCI_STYLEGETSIZE, 0, 0);
 	//Update the margin width to fit the number of characters required to display the line number * font size
     SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10(scriptLines) + 2) : 1) * fontSize);
 }
