@@ -239,32 +239,29 @@ enum VPinballSharpen: CInt {
 
 enum VPinballToneMapper: CInt {
     case reinhard
+    case agx
     case filmic
     case neutral
-    case agx
     case agxPunchy
-    case wcgReinhard
 
     static let all: [VPinballToneMapper] = [.reinhard,
+                                            .agx,
                                             .filmic,
                                             .neutral,
-                                            .agx,
                                             .agxPunchy]
 
     var name: String {
         switch self {
         case .reinhard:
             return "Reinhard"
+        case .agx:
+            return "AgX"
         case .filmic:
             return "Filmic"
         case .neutral:
             return "Neutral"
-        case .agx:
-            return "AgX"
         case .agxPunchy:
             return "AgX Punchy"
-        case .wcgReinhard:
-            return "WCG Display"
         }
     }
 }
@@ -314,36 +311,44 @@ enum VPinballExternalDMD: CInt {
 // VPinball Event Enums
 
 enum VPinballEvent: CInt {
-    case archive
-    case loadItems
-    case loadSounds
-    case loadImages
-    case loadFonts
-    case loadCollections
+    case archiveUncompressing
+    case archiveCompressing
+    case loadingItems
+    case loadingSounds
+    case loadingImages
+    case loadingFonts
+    case loadingCollections
+    case playerStarting
     case windowCreated
     case metalLayerIOS
-    case prerender
-    case startupDone
+    case prerendering
+    case playerStarted
     case rumble
     case scriptError
-    case stop
     case liveUIToggle
     case liveUIUpdate
+    case playerClosing
+    case playerClosed
+    case stopped
     case webServer
 
     var name: String? {
         switch self {
-        case .loadItems:
+        case .archiveUncompressing:
+            return "Ucompressing"
+        case .archiveCompressing:
+            return "Compressing"
+        case .loadingItems:
             return "Loading Items"
-        case .loadSounds:
+        case .loadingSounds:
             return "Loading Sounds"
-        case .loadImages:
+        case .loadingImages:
             return "Loading Images"
-        case .loadFonts:
+        case .loadingFonts:
             return "Loading Fonts"
-        case .loadCollections:
+        case .loadingCollections:
             return "Loading Collections"
-        case .prerender:
+        case .prerendering:
             return "Prerendering Static Parts"
         default:
             return nil
@@ -379,89 +384,7 @@ enum VPinballOptionUnit: CInt {
     }
 }
 
-// VPinball Unit Converter
-
-enum VPinballUnitConverter {
-    static func cmToVPU(_ cm: Float) -> Float {
-        return cm * (50.0 / (2.54 * 1.0625))
-    }
-
-    static func vpuToCM(_ vpu: Float) -> Float {
-        return vpu * (2.54 * 1.0625 / 50.0)
-    }
-}
-
-// VPinball Structs
-
-struct VPinballProgressStruct {
-    var progress: CInt
-}
-
-struct VPinballWindowCreatedStruct {
-    var window: Unmanaged<UIWindow>?
-}
-
-struct VPinballScriptErrorStruct {
-    var error: CInt
-    var line: CInt
-    var position: CInt
-    var description: UnsafePointer<CChar>?
-}
-
-struct VPinballRumbleStruct {
-    var low_frequency_rumble: UInt16
-    var high_frequency_rumble: UInt16
-    var duration_ms: UInt32
-}
-
-struct VPinballStopEventStruct {
-    var error: CInt
-}
-
-struct VPinballWebServerStruct {
-    var url: UnsafePointer<CChar>?
-}
-
-struct VPinballTableOptions {
-    var globalEmissionScale: Float = 0.0
-    var globalDifficulty: Float = 0.0
-    var exposure: Float = 0.0
-    var toneMapper: CInt = 0
-    var musicVolume: CInt = 0
-    var soundVolume: CInt = 0
-}
-
-struct VPinballCustomTableOption {
-    var section: CInt = 0
-    var id: UnsafePointer<CChar>?
-    var name: UnsafePointer<CChar>?
-    var showMask: CInt = 0
-    var minValue: Float = 0.0
-    var maxValue: Float = 0.0
-    var step: Float = 0.0
-    var defaultValue: Float = 0.0
-    var unit: CInt = 0
-    var literals: UnsafePointer<CChar>?
-    var value: Float = 0.0
-}
-
-struct VPinballViewSetup {
-    var viewMode: CInt = 0
-    var sceneScaleX: Float = 0.0
-    var sceneScaleY: Float = 0.0
-    var sceneScaleZ: Float = 0.0
-    var viewX: Float = 0.0
-    var viewY: Float = 0.0
-    var viewZ: Float = 0.0
-    var lookAt: Float = 0.0
-    var viewportRotation: Float = 0.0
-    var fov: Float = 0.0
-    var layback: Float = 0.0
-    var viewHOfs: Float = 0.0
-    var viewVOfs: Float = 0.0
-    var windowTopZOfs: Float = 0.0
-    var windowBottomZOfs: Float = 0.0
-}
+// VPinball Touch Areas
 
 struct VPinballTouchArea {
     let left: CGFloat
@@ -529,7 +452,91 @@ let VPinballTouchAreas: [[VPinballTouchArea]] = [
                        label: "Start")],
 ]
 
+// VPinball Unit Converter
+
+enum VPinballUnitConverter {
+    static func cmToVPU(_ cm: Float) -> Float {
+        return cm * (50.0 / (2.54 * 1.0625))
+    }
+
+    static func vpuToCM(_ vpu: Float) -> Float {
+        return vpu * (2.54 * 1.0625 / 50.0)
+    }
+}
+
+// VPinball Objects
+
+struct VPinballProgressData {
+    var progress: CInt
+}
+
+struct VPinballWindowCreatedData {
+    var window: Unmanaged<UIWindow>?
+}
+
+struct VPinballScriptErrorData {
+    var error: CInt
+    var line: CInt
+    var position: CInt
+    var description: UnsafePointer<CChar>?
+}
+
+struct VPinballRumbleData {
+    var low_frequency_rumble: UInt16
+    var high_frequency_rumble: UInt16
+    var duration_ms: UInt32
+}
+
+struct VPinballWebServerData {
+    var url: UnsafePointer<CChar>?
+}
+
+struct VPinballTableOptions {
+    var globalEmissionScale: Float = 0.0
+    var globalDifficulty: Float = 0.0
+    var exposure: Float = 0.0
+    var toneMapper: CInt = 0
+    var musicVolume: CInt = 0
+    var soundVolume: CInt = 0
+}
+
+struct VPinballCustomTableOption {
+    var section: CInt = 0
+    var id: UnsafePointer<CChar>?
+    var name: UnsafePointer<CChar>?
+    var showMask: CInt = 0
+    var minValue: Float = 0.0
+    var maxValue: Float = 0.0
+    var step: Float = 0.0
+    var defaultValue: Float = 0.0
+    var unit: CInt = 0
+    var literals: UnsafePointer<CChar>?
+    var value: Float = 0.0
+}
+
+struct VPinballViewSetup {
+    var viewMode: CInt = 0
+    var sceneScaleX: Float = 0.0
+    var sceneScaleY: Float = 0.0
+    var sceneScaleZ: Float = 0.0
+    var viewX: Float = 0.0
+    var viewY: Float = 0.0
+    var viewZ: Float = 0.0
+    var lookAt: Float = 0.0
+    var viewportRotation: Float = 0.0
+    var fov: Float = 0.0
+    var layback: Float = 0.0
+    var viewHOfs: Float = 0.0
+    var viewVOfs: Float = 0.0
+    var windowTopZOfs: Float = 0.0
+    var windowBottomZOfs: Float = 0.0
+}
+
+// VPinball Callbacks
+
 typealias VPinballEventCallback = @convention(c) (CInt, UnsafeRawPointer?) -> UnsafeRawPointer?
+
+// VPinball C Definitions
 
 @_silgen_name("VPinballInit")
 func VPinballInit(_ callback: VPinballEventCallback)

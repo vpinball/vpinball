@@ -60,6 +60,12 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 - Version: ?
 - License: Original code is BSD, adapted by VPX team
 
+## Haze
+
+- Upstream: https://github.com/chrisbanes/haze
+- Version: 1.1.1
+- License: Apache-2.0 license
+
 ## HID
 
 - Upstream: ?

@@ -107,7 +107,7 @@ enum Credit {
         case .libzedmd:
             return "mkalkbrenner, jsm174, zesinger, bartdesign"
         case .libserum:
-            return "zesinger, mkalkbrenner, pinballpower, jsm174"
+            return "zesinger, mkalkbrenner, pinballpower, jsm174, toxieainc"
         case .libdof:
             return "zesinger, mkalkbrenner, jsm174"
         case .artwork:

@@ -12,10 +12,10 @@
 		C114190C2C277D9900582B6F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C114190B2C277D9900582B6F /* Preview Assets.xcassets */; };
 		C11419182C28C5C500582B6F /* Shimmer.metal in Sources */ = {isa = PBXBuildFile; fileRef = C11419162C28C5C500582B6F /* Shimmer.metal */; };
 		C117EF642C7F36D40073E395 /* FormattedActiveSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C117EF632C7F36D40073E395 /* FormattedActiveSlider.swift */; };
-		C119AF6E2C31CEE600A4E74D /* VPinballBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */; };
 		C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119B03A2C32D48A00A4E74D /* VPinballManager.swift */; };
 		C119B03D2C32F6F100A4E74D /* LiveUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119B03C2C32F6F100A4E74D /* LiveUIView.swift */; };
 		C120EA732CA703810048EB24 /* VPinballFramework.dSYM in Copy VPinballFramework.dSYM */ = {isa = PBXBuildFile; fileRef = C120EA722CA703810048EB24 /* VPinballFramework.dSYM */; };
+		C12124612D04725900EB0481 /* VPinballInterop.swift in Sources */ = {isa = PBXBuildFile; fileRef = C12124602D04725900EB0481 /* VPinballInterop.swift */; };
 		C1320CC02C85E5E3003EE322 /* LiveUIPointOfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */; };
 		C1320F5E2C8DED0100035C0F /* ArtworkSnapshotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */; };
 		C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */; };
@@ -89,11 +89,11 @@
 		C11419162C28C5C500582B6F /* Shimmer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shimmer.metal; sourceTree = "<group>"; };
 		C114191F2C28C9B800582B6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		C117EF632C7F36D40073E395 /* FormattedActiveSlider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FormattedActiveSlider.swift; sourceTree = "<group>"; };
-		C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballBridge.swift; sourceTree = "<group>"; };
 		C119B0392C32060400A4E74D /* VPinball.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VPinball.entitlements; sourceTree = "<group>"; };
 		C119B03A2C32D48A00A4E74D /* VPinballManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballManager.swift; sourceTree = "<group>"; };
 		C119B03C2C32F6F100A4E74D /* LiveUIView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUIView.swift; sourceTree = "<group>"; };
 		C120EA722CA703810048EB24 /* VPinballFramework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = VPinballFramework.dSYM; path = VPinball/Frameworks/dSYM/VPinballFramework.dSYM; sourceTree = "<group>"; };
+		C12124602D04725900EB0481 /* VPinballInterop.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPinballInterop.swift; sourceTree = "<group>"; };
 		C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUIPointOfView.swift; sourceTree = "<group>"; };
 		C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArtworkSnapshotView.swift; sourceTree = "<group>"; };
 		C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HUDOverlayView.swift; sourceTree = "<group>"; };
@@ -244,7 +244,7 @@
 				C1610F1F2C4D31350049ED87 /* Enums.swift */,
 				C16266402C29955E0002FD15 /* Extensions.swift */,
 				C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */,
-				C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */,
+				C12124602D04725900EB0481 /* VPinballInterop.swift */,
 				C119B03A2C32D48A00A4E74D /* VPinballManager.swift */,
 				C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */,
 			);
@@ -384,7 +384,6 @@
 				C1610F1E2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift in Sources */,
 				C1587DC42C969CF90015DF8F /* CustomTableOptionView.swift in Sources */,
 				C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */,
-				C119AF6E2C31CEE600A4E74D /* VPinballBridge.swift in Sources */,
 				C1A656722C85EA2500B6BE3C /* OverlayView.swift in Sources */,
 				C15DE57C2C75A324001F1D13 /* CodeWebView.swift in Sources */,
 				C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */,
@@ -405,6 +404,7 @@
 				C119B03D2C32F6F100A4E74D /* LiveUIView.swift in Sources */,
 				C1920AFA2C68E22E00483104 /* TableListButton.swift in Sources */,
 				C16266482C29955E0002FD15 /* Extensions.swift in Sources */,
+				C12124612D04725900EB0481 /* VPinballInterop.swift in Sources */,
 				C11419182C28C5C500582B6F /* Shimmer.metal in Sources */,
 				C1A656742C85ED8500B6BE3C /* LiveUITableOptions.swift in Sources */,
 				C16266442C29955E0002FD15 /* SettingsView.swift in Sources */,

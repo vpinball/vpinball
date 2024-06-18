@@ -16,6 +16,10 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
       set(CMAKE_OSX_SYSROOT iphonesimulator)
    endif()
    set(CMAKE_OSX_DEPLOYMENT_TARGET 18.0)
+elseif(PLATFORM STREQUAL "android")
+   set(CMAKE_SYSTEM_NAME Android)
+   set(CMAKE_SYSTEM_VERSION 30)
+   set(CMAKE_ANDROID_ARCH_ABI arm64-v8a)
 endif()
 
 file(READ src/core/vpversion.h version)
@@ -66,7 +70,7 @@ add_definitions(
    "-D__forceinline=__attribute__((always_inline)) inline" 
 )
 
-add_library(vpinball SHARED
+set(VPINBALL_SOURCES
    src/core/def.h
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
@@ -667,6 +671,14 @@ add_library(vpinball SHARED
    standalone/VPinball.cpp
 )
 
+if(PLATFORM STREQUAL "android")
+   list(APPEND VPINBALL_SOURCES 
+      standalone/VPinballJNI.cpp
+   )
+endif()
+
+add_library(vpinball SHARED ${VPINBALL_SOURCES})
+
 target_include_directories(vpinball PUBLIC
    ${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/include
    ${CMAKE_SOURCE_DIR}
@@ -715,9 +727,6 @@ target_link_libraries(vpinball PUBLIC
    SDL3
    SDL3_image
    SDL3_ttf
-   freetype
-   harfbuzz
-   freeimage
    bass
    pinmame.3.6
    altsound
@@ -727,36 +736,52 @@ target_link_libraries(vpinball PUBLIC
    pupdmd
    sockpp
    dof
-   avcodec
-   avdevice
-   avfilter
-   avformat
-   avutil
-   swresample
-   swscale
-   bz2
-   iconv
-   "-framework OpenGLES"
-   "-framework AVFAudio"
-   "-framework Metal"
-   "-framework Foundation"
-   "-framework QuartzCore"
-   "-framework CoreMotion"
-   "-framework CoreGraphics"
-   "-framework CoreMedia"
-   "-framework CoreVideo"
-   "-framework VideoToolbox"
-   "-framework GameController"
-   "-framework AudioToolbox"
-   "-framework CoreAudio"
-   "-framework CoreHaptics"
-   "-framework CoreServices"
-   "-framework CoreText"
-   "-framework AVFoundation"
-   "-framework ImageIO"
-   "-framework UIKit"
-   "-framework CoreBluetooth"
 )
+
+if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
+   target_link_libraries(vpinball PUBLIC
+      freetype
+      harfbuzz
+      freeimage
+      avcodec
+      avdevice
+      avfilter
+      avformat
+      avutil
+      swresample
+      swscale
+      bz2
+      iconv
+      "-framework OpenGLES"
+      "-framework AVFAudio"
+      "-framework Metal"
+      "-framework Foundation"
+      "-framework QuartzCore"
+      "-framework CoreMotion"
+      "-framework CoreGraphics"
+      "-framework CoreMedia"
+      "-framework CoreVideo"
+      "-framework VideoToolbox"
+      "-framework GameController"
+      "-framework AudioToolbox"
+      "-framework CoreAudio"
+      "-framework CoreHaptics"
+      "-framework CoreServices"
+      "-framework CoreText"
+      "-framework AVFoundation"
+      "-framework ImageIO"
+      "-framework UIKit"
+      "-framework CoreBluetooth"
+   )
+elseif(PLATFORM STREQUAL "android")
+   target_link_libraries(vpinball PUBLIC
+      FreeImage
+      EGL
+      GLESv3
+      android
+      log
+   )
+endif()
 
 add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/standalone/VPinball.h" "$<TARGET_FILE_DIR:vpinball>"
@@ -766,8 +791,18 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
-   COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>"
 )
+
+if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>"
+   )
+elseif(PLATFORM STREQUAL "android")
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/lib/*.so" "$<TARGET_FILE_DIR:vpinball>"
+      COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/lib/*.jar" "$<TARGET_FILE_DIR:vpinball>"
+   )
+endif()
 
 if((PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator") AND BUILD_FRAMEWORKS)
    add_custom_command(TARGET vpinball POST_BUILD

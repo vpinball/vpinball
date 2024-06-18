@@ -110,7 +110,7 @@ struct MainView: View {
                         }
                     }
                     ToolbarItem(placement: .principal) {
-                        Image("logo")
+                        Image("vpinball-logo")
                             .resizable()
                             .scaledToFit()
                             .frame(height: 33)

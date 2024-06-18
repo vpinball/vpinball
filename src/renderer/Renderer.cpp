@@ -1426,8 +1426,8 @@ void Renderer::RenderStaticPrepass()
       int progress = 70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1)));
       g_pplayer->m_progressDialog.SetProgress("Prerendering Static Parts..."s, progress);
 #ifdef __LIBVPINBALL__
-      VPinballLib::ProgressStruct progressStruct = { (n_iter - iter) * 100 / n_iter };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Prerender, &progressStruct);
+      VPinballLib::ProgressData progressData = { (n_iter - iter) * 100 / n_iter };
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Prerendering, &progressData);
 #endif
       m_renderDevice->m_curDrawnTriangles = 0;
 

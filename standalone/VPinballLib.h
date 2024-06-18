@@ -40,51 +40,51 @@ enum class OptionUnit {
 };
 
 enum class Event {
-   Archive,
-   LoadItems,
-   LoadSounds,
-   LoadImages,
-   LoadFonts,
-   LoadCollections,
+   ArchiveUncompressing,
+   ArchiveCompressing,
+   LoadingItems,
+   LoadingSounds,
+   LoadingImages,
+   LoadingFonts,
+   LoadingCollections,
+   PlayerStarting,
    WindowCreated,
    MetalLayerIOS,
-   Prerender,
-   StartupDone,
+   Prerendering,
+   PlayerStarted, 
    Rumble,
    ScriptError,
-   Stop,
    LiveUIToggle,
    LiveUIUpdate,
+   PlayerClosing,
+   PlayerClosed, 
+   Stopped,
    WebServer
 };
 
-struct ProgressStruct {
+struct ProgressData {
    int progress;
 };
 
-struct WindowCreatedStruct {
+struct WindowCreatedData {
    void* pWindow;
    const char* pTitle;
 };
 
-struct ScriptErrorStruct {
+struct RumbleData {
+   uint16_t lowFrequencyRumble;
+   uint16_t highFrequencyRumble;
+   uint32_t durationMs;
+};
+
+struct ScriptErrorData {
    ScriptErrorType error;
    int line;
    int position;
    const char* description;
 };
 
-struct RumbleStruct {
-   uint16_t lowFrequencyRumble;
-   uint16_t highFrequencyRumble;
-   uint32_t durationMs;
-};
-
-struct StopStruct {
-   int error;
-};
-
-struct WebServerStruct {
+struct WebServerData {
    const char* url;
 };
 
@@ -170,10 +170,8 @@ public:
    void SetDefaultViewSetup();
    void ResetViewSetup();
    void SaveViewSetup();
-
 private:
    VPinball();
-    
    static void GameLoop(void* pUserData);
    void ProcessSetTableOptions(const TableOptions& tableOptions);
    void ProcessSetDefaultTableOptions();

@@ -43,53 +43,53 @@ typedef enum {
 } VPINBALL_OPTION_UNIT;
 
 typedef enum {
-   VPINBALL_EVENT_ARCHIVE,
-   VPINBALL_EVENT_LOAD_ITEMS,
-   VPINBALL_EVENT_LOAD_SOUNDS,
-   VPINBALL_EVENT_LOAD_IMAGES,
-   VPINBALL_EVENT_LOAD_FONTS,
-   VPINBALL_EVENT_LOAD_COLLECTIONS,
+   VPINBALL_EVENT_ARCHIVE_UNCOMPRESSING,
+   VPINBALL_EVENT_ARCHIVE_COMPRESSING,
+   VPINBALL_EVENT_LOADING_ITEMS,
+   VPINBALL_EVENT_LOADING_SOUNDS,
+   VPINBALL_EVENT_LOADING_IMAGES,
+   VPINBALL_EVENT_LOADING_FONTS,
+   VPINBALL_EVENT_LOADING_COLLECTIONS,
+   VPINBALL_EVENT_PLAYER_STARTING,
    VPINBALL_EVENT_WINDOW_CREATED,
    VPINBALL_EVENT_METAL_LAYER_IOS,
-   VPINBALL_EVENT_PRERENDER,
-   VPINBALL_EVENT_STARTUP_DONE,
+   VPINBALL_EVENT_PRERENDERING,
+   VPINBALL_EVENT_PLAYER_STARTED,
    VPINBALL_EVENT_RUMBLE,
    VPINBALL_EVENT_SCRIPT_ERROR,
-   VPINBALL_EVENT_STOP,
    VPINBALL_EVENT_LIVEUI_TOGGLE,
    VPINBALL_EVENT_LIVEUI_UPDATE,
+   VPINBALL_EVENT_PLAYER_CLOSING,
+   VPINBALL_EVENT_PLAYER_CLOSED,
+   VPINBALL_EVENT_STOPPED,
    VPINBALL_EVENT_WEB_SERVER
 } VPINBALL_EVENT;
 
 typedef struct {
    int progress;
-} VPinballProgressStruct;
+} VPinballProgressData;
 
 typedef struct {
    void* pWindow;
    const char* pTitle;
-} VPinballWindowCreatedStruct;
+} VPinballWindowCreatedData;
 
 typedef struct {
    VPINBALL_SCRIPT_ERROR_TYPE error;
    int line;
    int position;
    const char* pDescription;
-} VPinballScriptErrorStruct;
+} VPinballScriptErrorData;
 
 typedef struct {
    uint16_t lowFrequencyRumble;
    uint16_t highFrequencyRumble;
    uint32_t durationMs;
-} VPinballRumbleStruct;
-
-typedef struct {
-   int error;
-} VPinballStopStruct;
+} VPinballRumbleData;
 
 typedef struct {
    const char* pUrl;
-} VPinballWebServerStruct;
+} VPinballWebServerData;
 
 typedef struct {
    float globalEmissionScale;

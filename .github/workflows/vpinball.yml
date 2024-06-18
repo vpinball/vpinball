@@ -12,7 +12,7 @@ defaults:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
@@ -271,9 +271,6 @@ jobs:
 
   build-linux:
     name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}
-    env:
-      CC: gcc-12
-      CXX: g++-12
     runs-on: ubuntu-22.04
     needs: [ version ]
     strategy:
@@ -285,7 +282,7 @@ jobs:
     steps:
       - run: |
           sudo apt-get update
-          sudo apt install cmake bison nasm zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v4
       - name: Calculate timestamp
         run: |

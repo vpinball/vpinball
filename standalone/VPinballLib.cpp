@@ -5,9 +5,7 @@
 #include "VPinballLib.h"
 #include "standalone/inc/webserver/WebServer.h"
 
-#include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-#include <SDL3/SDL_system.h>
 
 #include "miniz/miniz.h"
 
@@ -42,7 +40,10 @@ VPinball::VPinball()
 void VPinball::Init(std::function<void*(Event, void*)> callback)
 {
    SDL_SetMainReady();
+
+#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
    SDL_SetiOSEventPump(true);
+#endif
 
    SDL_InitSubSystem(SDL_INIT_VIDEO);
    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
@@ -96,6 +97,15 @@ void* VPinball::SendEvent(Event event, void* data)
       }
       return nullptr;
    }
+   else if (event == Event::PlayerStarted) {
+#ifdef __APPLE__
+      SDL_SetiOSAnimationCallback(g_pplayer->m_playfieldWnd->GetCore(), 1, &VPinball::GameLoop, nullptr);
+#endif
+   }
+   else if (event == Event::Stopped) {
+      s_instance.Cleanup();
+   }
+
    return s_instance.m_eventCallback ? s_instance.m_eventCallback(event, data) : nullptr;
 }
 
@@ -175,8 +185,8 @@ VPinballStatus VPinball::Uncompress(const string& source)
          continue;
       }
 
-      ProgressStruct progressStruct = { (i * 100) / file_count };
-      SendEvent(Event::Archive, &progressStruct);
+      ProgressData progressData = { (i * 100) / file_count };
+      SendEvent(Event::ArchiveUncompressing, &progressData);
    }
 
    mz_zip_reader_end(&zip_archive);
@@ -220,8 +230,8 @@ VPinballStatus VPinball::Compress(const string& source, const string& destinatio
             return false;
          processedFiles++;
 
-         ProgressStruct progressStruct = { (int)((processedFiles * 100) / totalFiles) };
-         SendEvent(Event::Archive, &progressStruct);
+         ProgressData progressData = { (int)((processedFiles * 100) / totalFiles) };
+         SendEvent(Event::ArchiveCompressing, &progressData);
       }
       return true;
    };
@@ -294,12 +304,7 @@ VPinballStatus VPinball::Play()
       return VPinballStatus::Failure;
 
    pActiveTable->Play(0);
-   if (!g_pplayer) {
-      Cleanup();
-      return VPinballStatus::Failure;
-   }
 
-   SDL_SetiOSAnimationCallback(g_pplayer->m_playfieldWnd->GetCore(), 1, &VPinball::GameLoop, nullptr);
    return VPinballStatus::Success;
 }
 
@@ -311,6 +316,7 @@ VPinballStatus VPinball::Stop()
       return VPinballStatus::Failure;
 
    pActiveTable->QuitPlayer(Player::CS_CLOSE_APP);
+
    return VPinballStatus::Success;
 }
 
@@ -381,6 +387,7 @@ void VPinball::SaveTableOptions()
    PinTable* pLiveTable = g_pplayer->m_ptable;
    pTable->m_settings.SaveValue(Settings::Player, "OverrideTableEmissionScale"s, true);
    pTable->m_settings.SaveValue(Settings::Player, "DynamicDayNight"s, false);
+   pTable->m_settings.SaveValue(Settings::Player, "EmissionScale"s, g_pplayer->m_renderer->m_globalEmissionScale);
    pTable->m_settings.SaveValue(Settings::TableOverride, "Exposure"s, g_pplayer->m_renderer->m_exposure);
    pTable->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, g_pplayer->m_renderer->m_toneMapper);
    pTable->m_settings.SaveValue(Settings::TableOverride, "Difficulty"s, pLiveTable->m_globalDifficulty);
@@ -537,23 +544,24 @@ void VPinball::SaveViewSetup()
 
 void VPinball::GameLoop(void* pUserData)
 {
+   if (!s_instance.m_gameLoop) {
+       return;
+   }
+
    if (g_pplayer && s_instance.m_gameLoop)
       s_instance.m_gameLoop();
 
    if (g_pplayer && (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT))
       return;
 
-   s_instance.m_gameLoop = nullptr;
-
    PLOGI.printf("Game Loop stopping");
+
+   s_instance.m_gameLoop = nullptr;
 
    delete g_pplayer;
    g_pplayer = nullptr;
 
-   s_instance.Cleanup();
-
-   StopStruct event = { 0 };
-   SendEvent(Event::Stop, &event);
+   SendEvent(Event::Stopped, nullptr);
 }
 
 void VPinball::ProcessSetTableOptions(const TableOptions& options)

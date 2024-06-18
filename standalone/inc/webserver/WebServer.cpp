@@ -359,8 +359,8 @@ void WebServer::Start()
          m_url.clear();
 
 #ifdef __LIBVPINBALL__
-      VPinballLib::WebServerStruct webServerStruct = { m_url.c_str() };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WebServer, &webServerStruct);
+      VPinballLib::WebServerData webServerData = { m_url.c_str() };
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WebServer, &webServerData);
 #endif
 
       m_pThread = new std::thread([this]() {

@@ -2262,7 +2262,7 @@ void PinTable::HandleLoadFailure()
    g_pvp->m_table_played_via_SelectTableOnStart = false;
 
 #ifdef __STANDALONE__
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+#if (defined(__APPLE__) && (defined(TARGET_OS_TV) && TARGET_OS_TV))
    PLOGE.printf("Load failure detected. Resetting LaunchTable to default.");
    g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
 #endif
@@ -2707,7 +2707,8 @@ void PinTable::Play(const int playMode)
       #endif
       g_pplayer->GameLoop(processWindowMessages);
 
-#ifdef __LIBVPINBALL__
+#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
+      // iOS has its own game loop so that it can handle OS events (screenshots, etc)
       return;
 #endif
 
@@ -2721,6 +2722,10 @@ void PinTable::Play(const int playMode)
       live_table->Release();
       HandleLoadFailure();
    }
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::Stopped, nullptr);
+#endif
 }
 
 HRESULT PinTable::InitVBA()
@@ -4050,8 +4055,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
 #ifdef __LIBVPINBALL__
-               VPinballLib::ProgressStruct progressStruct = { (i * 100) / csubobj };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadItems, &progressStruct);
+               VPinballLib::ProgressData progressData = { (i * 100) / csubobj };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingItems, &progressData);
 #endif
             }
 
@@ -4074,8 +4079,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
 #ifdef __LIBVPINBALL__
-               VPinballLib::ProgressStruct progressStruct = { (i * 100) / csounds };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadSounds, &progressStruct);
+               VPinballLib::ProgressData progressData = { (i * 100) / csounds };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingSounds, &progressData);
 #endif
             }
 
@@ -4105,8 +4110,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                      else
                         delete ppi;
                      #ifdef __LIBVPINBALL__
-                        VPinballLib::ProgressStruct progressStruct = { (++count * 100) / ctextures };
-                        VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadImages, &progressStruct);
+                        VPinballLib::ProgressData progressData = { (++count * 100) / ctextures };
+                        VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingImages, &progressData);
                      #endif
                      pstmItem->Release();
                      pstmItem = nullptr;
@@ -4208,8 +4213,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
 #ifdef __LIBVPINBALL__
-               VPinballLib::ProgressStruct progressStruct = { (i * 100) / cfonts };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadFonts, &progressStruct);
+               VPinballLib::ProgressData progressData = { (i * 100) / cfonts };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingFonts, &progressData);
 #endif
             }
 
@@ -4237,8 +4242,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
 #ifdef __LIBVPINBALL__
-               VPinballLib::ProgressStruct progressStruct = { (i * 100) / ccollection };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadCollections, &progressStruct);
+               VPinballLib::ProgressData progressData = { (i * 100) / ccollection };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingCollections, &progressData);
 #endif
             }
 
@@ -9635,7 +9640,7 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
 
 STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 {
-   *pVal = (BackglassIndex)(m_currentBackglassMode+DESKTOP);
+   *pVal = static_cast<BackglassIndex>(static_cast<int>(m_currentBackglassMode) + static_cast<int>(DESKTOP));
    return S_OK;
 }
 

@@ -144,7 +144,7 @@ In a terminal execute the following:
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 brew install autoconf automake libtool cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-arm64
 ./external.sh
 cd ../..
@@ -162,7 +162,7 @@ In a terminal execute the following:
 sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 brew install autoconf automake libtool cmake nasm bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/macos-x64
 ./external.sh
 cd ../..
@@ -195,7 +195,7 @@ In a terminal execute the following:
 ```
 brew install cmake bison curl ios-deploy fastlane
 export PATH="$(brew --prefix bison)/bin:$PATH"
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/tvos-arm64
 ./external.sh
 cd ../..
@@ -215,44 +215,25 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 17.0.11)
 export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
 export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
 export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
-git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/android
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
+cd vpinball/standalone/android-arm64-v8a
 ./external.sh
 cd ../..
-cp standalone/cmake/CMakeLists_gl-android-arm64-v8a.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build -- -j$(sysctl -n hw.ncpu)
-cd standalone/android-arm64-v8a/android-project
-./gradlew installDebug
-$ANDROID_HOME/platform-tools/adb shell am start -n org.vpinball.app/org.vpinball.app.VPinballActivity
-$ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
+cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android
+cmake --build build/android -- -j$(sysctl -n hw.ncpu)
 ```
 
-### Linux (Ubuntu 22.04)
+### Linux (Ubuntu 24.04)
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
-git clone -b standalone https://github.com/vpinball/vpinball
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curlzlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
 cd ../..
-cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
-cmake --build build -- -j$(nproc)
-```
-Note: Ubuntu repositories currently don't deliver a cmake version new enough to fulfill all dependency requirements (>3.25). Please consider adding an alternative apt repository, e.g. the one from the cmake maintainers [Kitware](https://apt.kitware.com/) first to get a newer version. 
-
-### Linux (Ubuntu 23.10)
-
-In a terminal execute the following:
-```
-sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
-git clone -b standalone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux-x64
-CC=gcc-13 CXX=g++-13 ./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+cp standalone/cmake/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
@@ -263,7 +244,7 @@ In a terminal execute the following:
 ```
 sudo dnf groupinstall "Development Tools"
 sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
 cd ../..
@@ -284,7 +265,7 @@ sudo apt update
 sudo apt dist-upgrade
 sudo apt install mali-g610-firmware rockchip-multimedia-config
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-aarch64
 ./external.sh
 cd ../..
@@ -298,7 +279,7 @@ cmake --build build
 Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/software/operating-systems/#raspberry-pi-os-64-bit) image and execute the following:
 ```
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-aarch64
 ./external.sh
 cd ../..
