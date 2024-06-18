@@ -45,6 +45,9 @@ SolCallbackInitialized = False
 Dim ExtraKeyHelp ' Help string for game specific keys
 Dim vpmShowDips  ' Show DIPs function
 
+' Check if VPX version offers FrameIndex property
+Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
+
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
@@ -2446,22 +2449,33 @@ Sub vpmDoLampUpdate(aNo, aEnabled)
 	On Error Goto 0
 End Sub
 
+Dim LastPinMameVisualSync : LastPinMameVisualSync = 0
 Sub PinMAMETimer_Timer
 	Dim ChgLamp, ChgSol,ChgGI, ii, tmp, idx, ChgLed
 	Dim DMDp
 	Dim ChgNVRAM
+	
+	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX version)
+	Dim UpdateVisual
+	If HasFrameIndex Then
+		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
+		If UpdateVisual Then LastPinMameVisualSync = FrameIndex
+	Else
+		UpdateVisual = GameTime - LastPinMameVisualSync > 10
+		If UpdateVisual Then LastPinMameVisualSync = GameTime
+	End If
 
 	'Me.Enabled = False 'this was supposed to be some kind of weird mutex, disable it
 
 	On Error Resume Next
-		If UseDMD Then
+		If UpdateVisual And UseDMD Then
 			DMDp = Controller.RawDmdPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
 				DMDHeight = Controller.RawDmdHeight
 				DMDPixels = DMDp
 			End If
-		ElseIf UseColoredDMD Then
+		ElseIf UpdateVisual And UseColoredDMD Then
 			DMDp = Controller.RawDmdColoredPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
@@ -2475,10 +2489,10 @@ Sub PinMAMETimer_Timer
 				If(Not IsEmpty(ChgNVRAM)) Then NVRAMCallback ChgNVRAM
 			End If
 		End If
-		If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
-		If UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
+		If UpdateVisual And UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
+		If UpdateVisual And UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
 		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
-		If (Not GICallback is Nothing) Or (Not GICallback2 is Nothing) Then ChgGI = Controller.ChangedGIStrings
+		If UpdateVisual And ((Not GICallback is Nothing) Or (Not GICallback2 is Nothing)) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
 

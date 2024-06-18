@@ -1,5 +1,6 @@
 New in 3.61 (Update by vbousquet, wiesshund)
 - Setup PinMameTimer to be a controller sync timer (interval = -2)
+- Update lights only once per frame or if FrameIndex is not available at 100Hz max
 - Added staged flippers functionality to all kinds of machine .vbs files
 - Changed "UseVPMModSol" to match the new VPinMAME 3.6 PWM support:
   True or 1 for the previous/legacy modulated solenoids (0..255 value), or 2 for physical solenoids/lamps/GI/AlphaNumSegments (0..1 value)
