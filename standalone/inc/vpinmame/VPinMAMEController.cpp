@@ -346,6 +346,8 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
 
 STDMETHODIMP VPinMAMEController::Stop()
 {
+   //PinmameSetTimeFence(0.0);
+
    if (PinmameIsRunning())
       PinmameStop();
 
@@ -1059,6 +1061,13 @@ STDMETHODIMP VPinMAMEController::put_ModOutputType(int output, int no, int newVa
       return S_FALSE;
 
    PinmameSetModOutputType(output, no, (PINMAME_MOD_OUTPUT_TYPE)newVal);
+
+   return S_OK;
+}
+
+STDMETHODIMP VPinMAMEController::put_TimeFence(double timeInS)
+{
+   //PinmameSetTimeFence(timeInS);
 
    return S_OK;
 }

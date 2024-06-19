@@ -258,6 +258,7 @@ import "ocidl.idl";
 		[propget, id(87), helpstring("property ROMName")] HRESULT ROMName([out, retval] BSTR *pVal);
 		[propget, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [out, retval] int *pVal);
 		[propput, id(88), helpstring("property ModOutputType")] HRESULT ModOutputType([in] int output, [in] int no, [in] int newVal);
+		[propput, id(89), helpstring("property TimeFence")] HRESULT TimeFence([in] double timeInS);
 	};
 
 	// WSHDlg and related interfaces

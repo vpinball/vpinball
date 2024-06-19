@@ -2061,6 +2061,9 @@ IController : public IDispatch
         int no,
         int newVal) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE put_TimeFence(
+        double timeInS) = 0;
+
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(IController, 0xce9ecc7c, 0x960f, 0x407e, 0xb2,0x7b, 0x62,0xe3,0x9a,0xb1,0xe3,0x0f)
@@ -2555,6 +2558,10 @@ typedef struct IControllerVtbl {
         int no,
         int newVal);
 
+    HRESULT (STDMETHODCALLTYPE *put_TimeFence)(
+        IController *This,
+        double timeInS);
+
     END_INTERFACE
 } IControllerVtbl;
 
@@ -2674,6 +2681,7 @@ interface IController {
 #define IController_get_ROMName(This,pVal) (This)->lpVtbl->get_ROMName(This,pVal)
 #define IController_get_ModOutputType(This,output,no,pVal) (This)->lpVtbl->get_ModOutputType(This,output,no,pVal)
 #define IController_put_ModOutputType(This,output,no,newVal) (This)->lpVtbl->put_ModOutputType(This,output,no,newVal)
+#define IController_put_TimeFence(This,timeInS) (This)->lpVtbl->put_TimeFence(This,timeInS)
 #else
 /*** IUnknown methods ***/
 static __WIDL_INLINE HRESULT IController_QueryInterface(IController* This,REFIID riid,void **ppvObject) {
@@ -2998,6 +3006,9 @@ static __WIDL_INLINE HRESULT IController_get_ModOutputType(IController* This,int
 }
 static __WIDL_INLINE HRESULT IController_put_ModOutputType(IController* This,int output,int no,int newVal) {
     return This->lpVtbl->put_ModOutputType(This,output,no,newVal);
+}
+static __WIDL_INLINE HRESULT IController_put_TimeFence(IController* This,double timeInS) {
+    return This->lpVtbl->put_TimeFence(This,timeInS);
 }
 #endif
 #endif

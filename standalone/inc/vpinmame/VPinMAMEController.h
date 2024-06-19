@@ -77,6 +77,7 @@ public:
    STDMETHOD(put_SolMask)(/*[in]*/ int nLow, /*[in]*/ LONG newVal);
    STDMETHOD(get_ModOutputType)(/*[in]*/int output,/*[in]*/ int no, /*[out, retval]*/ int* pVal);
    STDMETHOD(put_ModOutputType)(/*[in]*/int output, /*[in]*/int no, /*[in]*/ int newVal);
+   STDMETHOD(put_TimeFence)(/*[in]*/ double fenceIns);
    STDMETHOD(put_Mech)(/*[in]*/ int param, /*[in]*/ int newVal);
    STDMETHOD(get_LockDisplay)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_LockDisplay)(/*[in]*/ VARIANT_BOOL newVal);
