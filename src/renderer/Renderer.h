@@ -6,7 +6,6 @@
 #include "renderer/Texture.h"
 #include "parts/backGlass.h"
 
-class FrameQueueLimiter;
 class Renderable;
 
 class Renderer
@@ -97,6 +96,7 @@ public:
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
 
    ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
+   float m_exposure = 1.f;
 
    CGpuProfiler m_gpu_profiler;
 
@@ -184,7 +184,9 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   FrameQueueLimiter* m_limiter = nullptr;
+   #if defined(ENABLE_DX9)
+   class FrameQueueLimiter* m_limiter = nullptr;
+   #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    RenderTarget* m_envRadianceTexture = nullptr;

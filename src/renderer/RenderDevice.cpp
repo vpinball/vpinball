@@ -1,8 +1,8 @@
 #include "core/stdafx.h"
 
-#include <thread>
-
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
+
+#include <thread>
 
 #ifndef DISABLE_FORCE_NVIDIA_OPTIMUS
 #include "nvapi/nvapi.h"
@@ -327,23 +327,37 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
    colorFormat back_buffer_format;
 
+   // 0 means disable limiting of draw-ahead queue
+   int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
-   bgfx::Init init;
-   
-   // Untested implementations
-   init.type = bgfx::RendererType::Direct3D12; // To be tested
-   init.type = bgfx::RendererType::OpenGL;     // Needs explicit uniform handling
-   init.type = bgfx::RendererType::Metal;      // Unsupported under Windows
-   init.type = bgfx::RendererType::OpenGLES;   // Unsupported under Windows
+   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+   int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+   string supportedRendererLog = "BGFX available backends: "s;
+   for (int i = 0; i < nRendererSupported; i++)
+      supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
+   PLOGI << supportedRendererLog;
 
-   // Tested & working backends
+   switch (syncMode)
+   {
+   case VideoSyncMode::VSM_NONE: break;
+   case VideoSyncMode::VSM_VSYNC: break;
+   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
+   default: break;
+   }
+
+   bgfx::Init init;
+   init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
+   init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
+   init.type = bgfx::RendererType::OpenGLES;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
-
-   // Native platform
-   init.type = bgfx::RendererType::Count;
+   //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
+   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
 
    init.callback = &bgfxCallback;
 
@@ -351,11 +365,28 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
 
+   init.resolution.maxFrameLatency = maxPrerenderedFrames;
+   init.resolution.reset = 0
+                         /* | BGFX_RESET_FLUSH_AFTER_RENDER                               /* Flush (send data from CPU to GPU) after submission, not before (bgfx::frame) */
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC) /* Wait for VSync */;
+   init.resolution.width = wnd->GetWidth();
+   init.resolution.height = wnd->GetHeight();
+   switch (m_outputWnd[0]->GetBitDepth())
+   {
+   case 32: back_buffer_format = colorFormat::RGBA8; init.resolution.format = bgfx::TextureFormat::RGBA8; break;
+   case 30: back_buffer_format = colorFormat::RGBA10; init.resolution.format = bgfx::TextureFormat::RGB10A2; break;
+   default: back_buffer_format = colorFormat::RGB5; init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
+   }
+
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    init.platformData.ndt = wmInfo.info.x11.display;
    init.platformData.nwh = (void*)(uintptr_t)wmInfo.info.x11.window;
    #elif BX_PLATFORM_OSX
-   init.platformData.nwh = wmInfo.info.cocoa.window;
+   init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   #elif BX_PLATFORM_IOS
+   init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   #elif BX_PLATFORM_ANDROID
+   init.platformData.nwh = wmInfo.info.android.window;
    #elif BX_PLATFORM_WINDOWS
    init.platformData.nwh = wmInfo.info.win.window;
    #elif BX_PLATFORM_STEAMLINK
@@ -365,10 +396,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.platformData.context = nullptr;
    init.platformData.backBuffer = nullptr;
    init.platformData.backBufferDS = nullptr;
-   init.resolution.maxFrameLatency = 1;
-   init.resolution.reset = BGFX_RESET_NONE;
-   init.resolution.width = wnd->GetWidth();
-   init.resolution.height = wnd->GetHeight();
    #ifdef DEBUG
    init.debug = true;
    #endif
@@ -377,24 +404,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    // bgfx::renderFrame(); 
    if (!bgfx::init(init))
    {
-      PLOGE << "FAILED";
+      PLOGE << "BGFX initialization failed";
+      exit(-1);
    }
-   switch (syncMode)
-   {
-   case VideoSyncMode::VSM_NONE: break;
-   case VideoSyncMode::VSM_VSYNC: break;
-   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   default: break;
-   }
-   bgfx::reset(wnd->GetWidth(), wnd->GetHeight(), syncMode == VideoSyncMode::VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC, bgfx::TextureFormat::RGB8);
-
+   PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend.";
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
 
-   // FIXME BGFX use desktop or fullscreen backbuffer format
-   back_buffer_format = colorFormat::RGB8;
-   
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
    // OpenGL device initialization
@@ -760,6 +776,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // refreshrate = mode.RefreshRate;
    }
 
+   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
+   if (!EnableLegacyMaximumPreRenderedFrames && m_pD3DEx && maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
+   {
+      CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(maxPrerenderedFrames));
+   }
+
    /*if (m_outputWnd[0]->IsFullScreen())
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
@@ -807,7 +829,18 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
        1.0f, -1.0f, 0.0f, 1.0f, 1.0f,
       -1.0f, -1.0f, 0.0f, 0.0f, 1.0f
    };
+   #if defined(ENABLE_BGFX)
+   static constexpr float reversedVerts[4 * 5] =
+   {
+       1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+      -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
+       1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+      -1.0f, -1.0f, 0.0f, 0.0f, 0.0f
+   };
+   VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, bgfx::getCaps()->originBottomLeft ? reversedVerts : verts, false, VertexFormat::VF_POS_TEX);
+   #else
    VertexBuffer* quadVertexBuffer = new VertexBuffer(this, 4, verts, false, VertexFormat::VF_POS_TEX);
+   #endif
    m_quadMeshBuffer = new MeshBuffer(L"Fullscreen Quad"s, quadVertexBuffer);
 
    #if defined(ENABLE_OPENGL)
@@ -931,7 +964,6 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
-   //while (bgfx::RenderFrame::NoContext != bgfx::renderFrame() ) {};
    bgfx::shutdown();
 
 #elif defined(ENABLE_OPENGL)
@@ -1039,33 +1071,6 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
       m_ballShader->UnbindSampler(sampler);
 }
 
-/*static void FlushGPUCommandBuffer(IDirect3DDevice9* pd3dDevice)
-{
-   IDirect3DQuery9* pEventQuery;
-   pd3dDevice->CreateQuery(D3DQUERYTYPE_EVENT, &pEventQuery);
-
-   if (pEventQuery)
-   {
-      pEventQuery->Issue(D3DISSUE_END);
-      while (S_FALSE == pEventQuery->GetData(nullptr, 0, D3DGETDATA_FLUSH))
-         ;
-      SAFE_RELEASE(pEventQuery);
-   }
-}*/
-
-bool RenderDevice::SetMaximumPreRenderedFrames(const DWORD frames)
-{
-#if defined(ENABLE_DX9)
-   if (m_pD3DEx && frames > 0 && frames <= 20) // frames can range from 1 to 20, 0 resets to default DX
-   {
-      CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(frames));
-      return true;
-   }
-   else
-#endif
-      return false;
-}
-
 void RenderDevice::WaitForVSync(const bool asynchronous)
 {
    // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
@@ -1107,9 +1112,6 @@ void RenderDevice::Flip()
    // This matters and should be avoided since these blocking calls will delay the input/physics update (they catchup afterward) and that 
    // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
-
-   // Ensure that all commands have been submitted to the CPU, then pushed to the GPU
-   FlushRenderFrame();
 
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    if (!m_isVR)
@@ -1444,7 +1446,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 #endif
 }
 
-void RenderDevice::FlushRenderFrame()
+void RenderDevice::SubmitRenderFrame()
 {
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;

@@ -78,9 +78,22 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 
 #if defined(ENABLE_BGFX)
    bgfx::TextureFormat::Enum fmt;
+   uint64_t msaaFlags;
+   if (nMSAASamples > 8)
+      msaaFlags = BGFX_TEXTURE_RT_MSAA_X16;
+   else if (nMSAASamples > 4)
+      msaaFlags = BGFX_TEXTURE_RT_MSAA_X8;
+   else if (nMSAASamples > 2)
+      msaaFlags = BGFX_TEXTURE_RT_MSAA_X4;
+   else if (nMSAASamples > 1)
+      msaaFlags = BGFX_TEXTURE_RT_MSAA_X2;
+   else
+      msaaFlags = BGFX_TEXTURE_RT;
+   // FIXME BGFX add support for MSAA (not that obvious: resolving by blitting is not supported by bgfx, depth attachment must be write only... see https://github.com/bkaradzic/bgfx/issues/2862)
+   msaaFlags = BGFX_TEXTURE_RT;
    // FIXME most render target are not blit destination and are only used as write target (then GPU sampling, no readback) => BGFX_TEXTURE_READ_BACK
-   // FIXME add MSAA (BGFX_TEXTURE_RT_MSAA_X2 ...)
-   uint64_t flags = BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST;
+   const uint64_t colorFlags = BGFX_TEXTURE_BLIT_DST | msaaFlags;
+   const uint64_t depthFlags = BGFX_TEXTURE_BLIT_DST | msaaFlags /* MSAA depth buffer must be write only | BGFX_TEXTURE_RT_WRITE_ONLY */;
    switch (format)
    {
    case colorFormat::RED16F: fmt = bgfx::TextureFormat::R16F; break;
@@ -94,7 +107,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    case colorFormat::GREY8: fmt = bgfx::TextureFormat::R8; break;
    default: assert(false); // Unsupported texture format 
    }
-   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, flags);
+   m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
    m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
    m_color_sampler->SetName(name + ".Color"s);
    
@@ -105,14 +118,13 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    }
    else if (with_depth)
    {
-      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::D24, flags);
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::D24, depthFlags);
       m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
       m_depth_sampler->SetName(name + ".Depth"s);
    }
 
    if (with_depth)
    {
-      // FIXME BGFX multi layer framebuffer with depth buffer are not bound for multilayered rendering (only layer 0 is rendered, without depth/stencil, both layer are rendered)
       bgfx::Attachment colorAttachment, depthAttachment;
       colorAttachment.init(m_color_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
       depthAttachment.init(m_depth_tex, bgfx::Access::Write, 0, m_nLayers, 0, BGFX_RESOLVE_AUTO_GEN_MIPS);
@@ -516,10 +528,14 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
 #if defined(ENABLE_BGFX)
    if (w1 == w2 && h1 == h2)
    {
-      if (copyColor)
-         bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, px2, py2, m_color_tex, px1, py1, w1, h1);
-      if (m_has_depth && dest->m_has_depth && copyDepth)
-         bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, px2, py2, m_depth_tex, px1, py1, w1, h1);
+      // BGFX does not support blitting multiple layers at once on all target platform (supported on Vulkan, not supported on DX11, untested for the other backends)
+      for (int z = 0; z < nLayers; z++)
+      {
+         if (copyColor)
+            bgfx::blit(m_rd->m_activeViewId, dest->m_color_tex, 0, px2, py2, pz2 + z, m_color_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
+         if (m_has_depth && dest->m_has_depth && copyDepth)
+            bgfx::blit(m_rd->m_activeViewId, dest->m_depth_tex, 0, px2, py2, pz2 + z, m_depth_tex, 0, px1, py1, pz1 + z, w1, h1, 1);
+      }
    }
    else
    {

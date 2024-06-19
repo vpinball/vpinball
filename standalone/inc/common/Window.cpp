@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 
 #include "Window.h"
+#include "WindowManager.h"
 
 namespace VP {
 

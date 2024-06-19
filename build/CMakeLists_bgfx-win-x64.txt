@@ -36,7 +36,7 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GF>
    $<$<CONFIG:RELEASE>:/GS->
    $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
+   $<$<CONFIG:RELEASE>:/GR>
    $<$<CONFIG:RELEASE>:/Oy>
    $<$<CONFIG:RELEASE>:/GT>
    $<$<CONFIG:RELEASE>:/GL>
@@ -417,6 +417,8 @@ add_executable(vpinball WIN32
    src/utils/hash.h
    src/utils/objloader.cpp
    src/utils/objloader.h
+   src/utils/Logger.cpp
+   src/utils/Logger.h
    src/utils/BlackBox.cpp
    src/utils/BlackBox.h
    src/utils/CrashHandler.cpp
@@ -575,7 +577,7 @@ target_precompile_headers(vpinball PUBLIC
    src/core/stdafx.h
 )
 
-set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR- /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
+set(OPT_COMMON /Ob2 /O2 /Oi /fp:fast /fp:except- /Ot /GF /GS- /Gy /GR /Oy /GT /GL /w44005 /Zc:__cplusplus /std:c++20)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 

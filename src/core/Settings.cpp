@@ -27,6 +27,12 @@ Settings::Section Settings::GetSection(const string& name)
    return (Settings::Section)index;
 }
 
+const string &Settings::GetSectionName(const Section section)
+{
+   assert(0 <= section && section < m_settingKeys.size());
+   return m_settingKeys[section];
+}
+
 Settings::Settings(const Settings* parent)
    : m_parent(parent)
 {
@@ -412,11 +418,13 @@ bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
    return success;
 }
 
-void Settings::RegisterSetting(const Section section, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals)
+void Settings::RegisterSetting(const Section section, const string& id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals)
 {
    assert(section == TableOption || section >= Plugin00); // For the time being, this system is only used for custom table and plugin options (could be extend for all options to get the benefit of validation, fast access, and remove unneeded copied states...)
    OptionDef opt;
    opt.section = section;
+   opt.id = id;
+   opt.showMask = showMask;
    opt.name = name;
    opt.minValue = minValue;
    opt.maxValue = maxValue;
@@ -427,7 +435,7 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
    vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
    for (auto option = begin(options); option != end(options); ++option)
    {
-      if (option->section == section && option->name == name)
+      if (option->section == section && option->id == id)
       {
          *option = opt;
          return;

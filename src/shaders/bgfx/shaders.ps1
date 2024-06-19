@@ -39,7 +39,7 @@ $stOutput = @(("_"), ("_st_"))
 
 
 ################################
-# Basic material shaders (also 'classic' light)
+# Basic material shaders (also 'classic' light, decals, kickers and unshaded variants)
 Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
 New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
 foreach ($variant2 in @("CLIP", "NOCLIP"))
@@ -56,6 +56,8 @@ foreach ($variant2 in @("CLIP", "NOCLIP"))
       Process-Shader "fs_decal.sc"         "basic.h" ("fs_decal_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2)
       Process-Shader "vs_basic.sc"         "basic.h" ("vs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], "CLASSIC_LIGHT", $variant, $variant2)
       Process-Shader "fs_classic_light.sc" "basic.h" ("fs_classic_light_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOSHADOW")
+      Process-Shader "fs_unshaded.sc"      "basic.h" ("fs_unshaded_" + $variant.ToLower() + "_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "NOSHADOW")
+      Process-Shader "fs_unshaded.sc"      "basic.h" ("fs_unshaded_" + $variant.ToLower() + "_ballshadow_" + $variant2.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, "SHADOW")
 	}
   }
 }
@@ -153,7 +155,6 @@ New-Item -Path . -Name "../bgfx_tonemap.h" -ItemType "File" -Force -Value "// To
 New-Item -Path . -Name "../bgfx_blur.h" -ItemType "File" -Force -Value "// Blur Kernel Shaders`n"
 for($k = 0; $k -lt 2; $k++)
 {
-  Process-Shader "vs_postprocess_offseted.sc" "postprocess.h" ("vs_postprocess_offseted" + $stOutput[$k]) "vertex" @($stereo[$k])
   Process-Shader "vs_postprocess.sc" "postprocess.h" ("vs_postprocess" + $stOutput[$k]) "vertex" @($stereo[$k])
   Process-Shader "fs_pp_mirror.sc" "postprocess.h" ("fs_pp_mirror" + $stOutput[$k]) "fragment" @($stereo[$k])
   Process-Shader "fs_pp_copy.sc" "postprocess.h" ("fs_pp_copy" + $stOutput[$k]) "fragment" @($stereo[$k])
@@ -175,7 +176,17 @@ for($k = 0; $k -lt 2; $k++)
   {
 	 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
   }
-  foreach ($variant in @("REINHARD", "FILMIC", "TONY", "NEUTRAL"))
+  foreach ($variant in @("FILMIC", "TONY", "NEUTRAL", "AGX"))
+  {
+	 foreach ($variant2 in @("AO", "NOAO"))
+	 {
+		foreach ($variant3 in @("FILTER", "NOFILTER"))
+		{
+			Process-Shader "fs_pp_tonemap.sc" "tonemap.h" ("fs_pp_tonemap_"  + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, $variant3)
+		}
+	 }
+  }
+  foreach ($variant in @("REINHARD"))
   {
 	 foreach ($variant2 in @("AO", "NOAO"))
 	 {

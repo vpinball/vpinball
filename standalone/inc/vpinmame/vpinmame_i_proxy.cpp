@@ -810,6 +810,7 @@ STDMETHODIMP VPinMAMEController::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNa
 			{ L"Stop", 2 },
 			{ L"Switch", 7 },
 			{ L"Switches", 15 },
+			{ L"TimeFence", 89 },
 			{ L"updateDmdPixels", 62 },
 			{ L"Version", 48 },
 			{ L"WPCNumbering", 12 }
@@ -1839,6 +1840,17 @@ STDMETHODIMP VPinMAMEController::Invoke(DISPID dispIdMember, REFIID /*riid*/, LC
 				VariantClear(&var0);
 				VariantClear(&var1);
 				VariantClear(&var2);
+			}
+			break;
+		}
+		case 89: {
+			if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 261: [propput, id(89), helpstring("property TimeFence")] HRESULT TimeFence([in] double timeInS);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R8);
+				hres = put_TimeFence(V_R8(&var0));
+				VariantClear(&var0);
 			}
 			break;
 		}

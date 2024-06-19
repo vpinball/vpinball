@@ -119,12 +119,20 @@
 #define STRICT
 
 #ifndef _WIN32_WINNT
-#if defined(_WIN64) && defined(CRASH_HANDLER)
- #define _WIN32_WINNT 0x0501
-#else
- #define _WIN32_WINNT 0x0500
+  #if defined(ENABLE_DX9)
+    #if defined(_WIN64) && defined(CRASH_HANDLER)
+      // Windows XP
+      #define _WIN32_WINNT 0x0501
+    #else
+      // Windows 2000
+      #define _WIN32_WINNT 0x0500
+    #endif
+  #else
+    // Windows Vista
+    #define WINVER 0x0600
+  #endif
 #endif
-#endif
+
 
 #define _ATL_APARTMENT_THREADED
 

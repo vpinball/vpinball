@@ -4,17 +4,18 @@
 
 TableVisualsProperty::TableVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_VISUALS, pvsel)
 {
-    m_reflectionStrengthEdit.SetDialog(this);
-    m_ballReflectPlayfieldEdit.SetDialog(this);
-    m_ballDefaultBulbIntensScaleEdit.SetDialog(this);
-    m_imageCombo.SetDialog(this);
-    m_materialCombo.SetDialog(this);
-    m_ballImageCombo.SetDialog(this);
-    m_ballDecalCombo.SetDialog(this);
-    m_toneMapperCombo.SetDialog(this);
-    m_ambientOcclusionScaleEdit.SetDialog(this);
-    m_screenSpaceReflEdit.SetDialog(this);
-    m_bloomStrengthEdit.SetDialog(this);
+   m_reflectionStrengthEdit.SetDialog(this);
+   m_ballReflectPlayfieldEdit.SetDialog(this);
+   m_ballDefaultBulbIntensScaleEdit.SetDialog(this);
+   m_imageCombo.SetDialog(this);
+   m_materialCombo.SetDialog(this);
+   m_ballImageCombo.SetDialog(this);
+   m_ballDecalCombo.SetDialog(this);
+   m_toneMapperCombo.SetDialog(this);
+   m_ambientOcclusionScaleEdit.SetDialog(this);
+   m_screenSpaceReflEdit.SetDialog(this);
+   m_bloomStrengthEdit.SetDialog(this);
+   m_exposureEdit.SetDialog(this);
 }
 
 void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
@@ -51,6 +52,8 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         PropertyDialog::SetFloatTextbox(m_screenSpaceReflEdit, table->m_SSRScale);
     if (dispid == IDC_BLOOM_STRENGTH || dispid == -1)
         PropertyDialog::SetFloatTextbox(m_bloomStrengthEdit, table->m_bloom_strength);
+    if (dispid == IDC_EXPOSURE || dispid == -1)
+        PropertyDialog::SetFloatTextbox(m_exposureEdit, table->GetExposure());
     if (dispid == IDC_TONEMAPPER || dispid == -1)
     {
        if (m_toneMapperCombo.GetCount() < 2)
@@ -60,6 +63,7 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
           m_toneMapperCombo.AddString(_T("Tony McMapFace"));
           m_toneMapperCombo.AddString(_T("Filmic"));
           m_toneMapperCombo.AddString(_T("Neutral"));
+          m_toneMapperCombo.AddString(_T("AgX"));
        }
        m_toneMapperCombo.SetCurSel((int) table->GetToneMapper());
     }
@@ -115,6 +119,9 @@ void TableVisualsProperty::UpdateProperties(const int dispid)
         case IDC_BLOOM_STRENGTH:
             CHECK_UPDATE_ITEM(table->m_bloom_strength, PropertyDialog::GetFloatTextbox(m_bloomStrengthEdit), table);
             break;
+        case IDC_EXPOSURE:
+            CHECK_UPDATE_VALUE_SETTER(table->SetExposure, table->GetExposure, PropertyDialog::GetFloatTextbox, m_exposureEdit, table);
+            break;
         case IDC_TONEMAPPER:
             if (m_toneMapperCombo.GetCurSel() != CB_ERR && m_toneMapperCombo.GetCurSel() != table->GetToneMapper())
             {
@@ -145,6 +152,7 @@ BOOL TableVisualsProperty::OnInitDialog()
     m_hEnableSSRCheck = GetDlgItem(IDC_ENABLE_SSR).GetHwnd();
     m_screenSpaceReflEdit.AttachItem(IDC_SSR_STRENGTH);
     m_bloomStrengthEdit.AttachItem(IDC_BLOOM_STRENGTH);
+    m_exposureEdit.AttachItem(IDC_EXPOSURE);
     m_toneMapperCombo.AttachItem(IDC_TONEMAPPER);
 
     UpdateVisuals();
@@ -171,15 +179,17 @@ BOOL TableVisualsProperty::OnInitDialog()
 
     m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableAOCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
     m_resizer.AddChild(m_ambientOcclusionScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableSSRCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
     m_resizer.AddChild(m_screenSpaceReflEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
     m_resizer.AddChild(m_bloomStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_toneMapperCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
+    m_resizer.AddChild(m_exposureEdit, CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

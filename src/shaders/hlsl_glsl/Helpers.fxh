@@ -45,6 +45,10 @@
     #define float3x4 mat3x4
 
     #define to_float3x3 mat3
+    #define MAT3_BEGIN mat3(
+    #define MAT_END )
+    #define MAT_ROW3_BEGIN vec3(
+    #define MAT_ROW_END )
 
     //Not working :-(
     //vec4 pow(vec4 b, float e) {return pow(b,vec4(e));}
@@ -120,6 +124,10 @@
     #define UNROLL [unroll]
     #define UNIFORM const
     #define to_float3x3 (float3x3)
+    #define MAT3_BEGIN {
+    #define MAT_END }
+    #define MAT_ROW3_BEGIN {
+    #define MAT_ROW_END }
 #endif
 
 

@@ -20,7 +20,7 @@
 #define FLEXDMD_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
 #define FLEXDMD_SETTINGS_WINDOW_WIDTH  290
 #define FLEXDMD_SETTINGS_WINDOW_HEIGHT 75
-#define FLEXDMD_ZORDER                 200
+#define FLEXDMD_ZORDER                 350
 
 FlexDMD::FlexDMD()
 {

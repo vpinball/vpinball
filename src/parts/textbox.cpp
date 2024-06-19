@@ -484,9 +484,7 @@ void Textbox::Render(const unsigned int renderMask)
 
       m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      #if defined(ENABLE_BGFX)
-      // FIXME implement
-      #elif defined(ENABLE_OPENGL)
+      #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
       // If DMD capture is enabled check if external DMD exists and update m_texdmd with captured data (for capturing UltraDMD+P-ROC DMD)
       m_rd->m_DMDShader->SetTechnique(isExternalDMD ? SHADER_TECHNIQUE_basic_DMD_ext : SHADER_TECHNIQUE_basic_DMD); //!! DMD_UPSCALE ?? -> should just work
       if (g_pplayer->m_renderer->m_backGlass)

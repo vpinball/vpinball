@@ -19,12 +19,14 @@
 #include "scalefx.h"
 #ifdef ENABLE_SDL_VIDEO
 #include <SDL2/SDL_syswm.h>
+#include "imgui/imgui_impl_sdl2.h"
 #endif
 
 #include "serial.h"
 static serial Serial;
 
 #ifdef __STANDALONE__
+#include "standalone/Standalone.h"
 #include "mINI/ini.h"
 #endif
 
@@ -828,6 +830,16 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
       return E_POINTER;
 
    pballex->QueryInterface(IID_IBall, (void **)pVal);
+
+   return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::get_FrameIndex(long *pVal)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   *pVal = g_pplayer->m_overall_frames;
 
    return S_OK;
 }
@@ -2292,6 +2304,7 @@ void PinTable::Play(const int playMode)
    dst->m_enableAO = src->m_enableAO;
    dst->m_enableSSR = src->m_enableSSR;
    dst->m_toneMapper = src->m_toneMapper;
+   dst->m_exposure = src->m_exposure;
    dst->m_bloom_strength = src->m_bloom_strength;
    memcpy(dst->m_wzName, src->m_wzName, MAXNAMEBUFFER * sizeof(src->m_wzName[0]));
 
@@ -2484,12 +2497,109 @@ void PinTable::Play(const int playMode)
       const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
       c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
 
-      // create Player and init that one
+      m_vpinball->ToggleToolbar();
 
+      // create Player and switch to its main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
       PLOGI << "Creating player"; // For profiling
       new Player(this, live_table, playMode);
+      bool initError = false;
 
-      m_vpinball->ToggleToolbar();
+      #ifdef ENABLE_SDL_VIDEO
+      auto processWindowMessages = [&initError]()
+      {
+         SDL_Event e;
+         while (SDL_PollEvent(&e) != 0)
+         {
+            // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
+            // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
+            if (e.type == SDL_MOUSEMOTION)
+            {
+               e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+               e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+            }
+
+            ImGui_ImplSDL2_ProcessEvent(&e);
+
+            #ifdef __STANDALONE__
+            g_pStandalone->ProcessEvent(&e);
+            #endif
+
+            switch (e.type)
+            {
+            case SDL_QUIT:
+               g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
+               break;
+            case SDL_WINDOWEVENT:
+               switch (e.window.event)
+               {
+               case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
+               case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
+               case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
+               }
+               break;
+            case SDL_KEYDOWN:
+               g_pplayer->ShowMouseCursor(false);
+               break;
+            case SDL_MOUSEMOTION:
+               {
+                  static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
+                  if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
+                  {
+                     m_lastcursorx = e.motion.x;
+                     m_lastcursory = e.motion.y;
+                     g_pplayer->ShowMouseCursor(true);
+                  }
+               }
+               break;
+            }
+            #ifdef ENABLE_SDL_INPUT
+            if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
+               g_pplayer->m_pininput.HandleSDLEvent(e);
+            #endif
+         }
+
+         #ifdef __STANDALONE__
+         g_pStandalone->ProcessUpdates();
+         #endif
+      };
+
+      #elif !defined(__STANDALONE__)
+      auto processWindowMessages = [&initError]()
+      {
+         MSG msg;
+         while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+         {
+            if (msg.message == WM_QUIT)
+            {
+               if (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT)
+                  g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
+               return;
+            }
+            try
+            {
+               bool consumed = false;
+               if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
+                  consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(msg);
+               if (!consumed)
+               {
+                  TranslateMessage(&msg);
+                  DispatchMessage(&msg);
+               }
+            }
+            catch (...) // something failed on load/init
+            {
+               initError = true;
+            }
+         }
+      };
+      #else
+      auto processWindowMessages = []() {};
+      #endif
+      g_pplayer->GameLoop(processWindowMessages);
+      delete g_pplayer;
+      g_pplayer = nullptr;
+      if (initError)
+         HandleLoadFailure();
    }
    else
    {
@@ -3563,6 +3673,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    bw.WriteInt(FID(UAOC), m_enableAO);
    bw.WriteInt(FID(USSR), m_enableSSR);
    bw.WriteInt(FID(TMAP), m_toneMapper);
+   bw.WriteFloat(FID(EXPO), m_exposure);
    bw.WriteFloat(FID(BLST), m_bloom_strength);
 
    // Legacy material saving for backward compatibility
@@ -4221,6 +4332,7 @@ void PinTable::SetLoadDefaults()
    m_enableAO = true;
    m_enableSSR = true;
    m_toneMapper = TM_REINHARD;
+   m_exposure = 1.f;
 
    m_bloom_strength = 1.0f;
 
@@ -4434,6 +4546,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       }
       break;
    case FID(TMAP): pbr->GetInt(&m_toneMapper); break;
+   case FID(EXPO): pbr->GetFloat(m_exposure); break;
    case FID(UFXA):
       if (!hasIni) // Before 10.8, user tweaks were stored in the table file (now moved to a user ini file), we import the legacy settings if there is no user ini file
       {
@@ -10770,7 +10883,8 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
 
    float value = m_settings.LoadValueWithDefault(Settings::TableOption, name, defaultValue);
    *param = clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
@@ -10806,7 +10920,8 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
       SafeArrayUnaccessData(psa);
    }
    string name = MakeString(optionName);
-   m_settings.RegisterSetting(Settings::TableOption, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+   // FIXME we use the name literal as the option id which is not a good idea (risk of invalid INI, ...)
+   m_settings.RegisterSetting(Settings::TableOption, name, 2 /* show in tweak menu only */, name, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
    
    m_settings.SaveValue(Settings::TableOption, name, val);
 

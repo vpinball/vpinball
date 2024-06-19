@@ -8,10 +8,6 @@
 #include "ui/LiveUI.h"
 #include "pininput.h"
 
-#ifdef __STANDALONE__
-#include "standalone/inc/common/WindowManager.h"
-#endif
-
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
 #define DEFAULT_PLAYER_FS_REFRESHRATE 60
@@ -291,7 +287,7 @@ public:
 
 #pragma region Main Loop
 public:
-   void OnIdle();
+   void GameLoop(std::function<void()> ProcessOSMessages);
 
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    U64 m_lastPresentFrameTick = 0;
@@ -300,11 +296,16 @@ public:
 
 private:
    int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
-   int m_mainLoopPhase = 0;
    bool m_curFrameSyncOnVBlank = false;
    bool m_curFrameSyncOnFPS = false;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameEventId;
+   unsigned int m_syncLengths[512];
+
+   void MultithreadedGameLoop(std::function<void(bool)> sync);
+   void FramePacingGameLoop(std::function<void(bool)> sync);
+   void GPUQueueStuffingGameLoop(std::function<void(bool)> sync);
+
 #pragma endregion
 
 
@@ -403,7 +404,7 @@ public:
 private:
    void PrepareFrame();
    void SubmitFrame();
-   bool FinishFrame();
+   void FinishFrame();
 #pragma endregion
 
 
@@ -492,10 +493,6 @@ public:
    int m_lastMaxChangeTime; // Used to update counters every seconds
    float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
-
-#ifdef __STANDALONE__
-   VP::WindowManager* m_pWindowManager;
-#endif
 
 #ifdef PLAYBACK
 public:

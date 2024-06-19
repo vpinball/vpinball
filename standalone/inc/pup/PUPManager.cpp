@@ -18,8 +18,6 @@ PUPManager* PUPManager::GetInstance()
 PUPManager::PUPManager()
 {
    m_init = false;
-   m_pBackglassWindow = nullptr;
-   m_pTopperWindow = nullptr;
    m_isRunning = false;
 }
 
@@ -27,20 +25,20 @@ PUPManager::~PUPManager()
 {
 }
 
-bool PUPManager::LoadConfig(const string& szRomName)
+void PUPManager::LoadConfig(const string& szRomName)
 {
    if (m_init) {
       PLOGW.printf("PUP already initialized");
-      return false;
+      return;
    }
 
    m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
    if (m_szRootPath.empty())
-      return false;
+      return;
 
    m_szPath = find_directory_case_insensitive(m_szRootPath, szRomName);
    if (m_szPath.empty())
-      return false;
+      return;
 
    PLOGI.printf("PUP path: %s", m_szPath.c_str());
 
@@ -49,20 +47,24 @@ bool PUPManager::LoadConfig(const string& szRomName)
    // Load screens
 
    string szScreensPath = find_path_case_insensitive(m_szPath + "screens.pup");
-   std::ifstream screensFile;
-   screensFile.open(szScreensPath, std::ifstream::in);
-   if (screensFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(screensFile, line)) {
-         if (++i == 1)
-            continue;
-         AddScreen(PUPScreen::CreateFromCSV(line));
+   if (!szScreensPath.empty()) {
+      std::ifstream screensFile;
+      screensFile.open(szScreensPath, std::ifstream::in);
+      if (screensFile.is_open()) {
+         string line;
+         int i = 0;
+         while (std::getline(screensFile, line)) {
+            if (++i == 1)
+               continue;
+            AddScreen(PUPScreen::CreateFromCSV(line));
+         }
+      }
+      else {
+         PLOGE.printf("Unable to load %s", szScreensPath.c_str());
       }
    }
    else {
-      PLOGE.printf("Unable to load %s", szScreensPath.c_str());
-      return false;
+      PLOGI.printf("No screens.pup file found");
    }
 
    // Determine child screens
@@ -94,15 +96,25 @@ bool PUPManager::LoadConfig(const string& szRomName)
 
    m_init = true;
 
-   return true;
+   return;
+}
+
+const string& PUPManager::GetRootPath()
+{
+   if (!m_init) {
+      PLOGW.printf("Getting root path before initialization");
+   }
+   return m_szRootPath;
 }
 
 bool PUPManager::AddScreen(PUPScreen* pScreen)
 {
-   if (!pScreen)
+   if (!pScreen) {
+      PLOGE.printf("Null screen argument");
       return false;
+   }
 
-   if (GetScreen(pScreen->GetScreenNum())) {
+   if (HasScreen(pScreen->GetScreenNum())) {
       PLOGW.printf("Duplicate screen: screen={%s}", pScreen->ToString(false).c_str());
       delete pScreen;
       return false;
@@ -115,8 +127,18 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    return true;
 }
 
+bool PUPManager::HasScreen(int screenNum)
+{
+   std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
+   return it != m_screenMap.end();
+}
+
 PUPScreen* PUPManager::GetScreen(int screenNum)
 {
+   if (!m_init) {
+      PLOGE.printf("Getting screen before initialization");
+   }
+
    std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
    return it != m_screenMap.end() ? it->second : nullptr;
 }
@@ -166,57 +188,99 @@ void PUPManager::QueueTriggerData(PUPTriggerData data)
 
 void PUPManager::Start()
 {
-   m_isRunning = true;
-   m_thread = std::thread(&PUPManager::ProcessQueue, this);
+   if (!m_init)
+      return;
+
+   PLOGI.printf("PUP start");
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
+      AddWindow("Topper",
+         PUP_SCREEN_TOPPER,
+         PUP_SETTINGS_TOPPERX,
+         PUP_SETTINGS_TOPPERY,
+         PUP_SETTINGS_TOPPERWIDTH,
+         PUP_SETTINGS_TOPPERHEIGHT,
+         PUP_ZORDER_TOPPER);
+
+      AddWindow("Backglass",
+         PUP_SCREEN_BACKGLASS,
+         PUP_SETTINGS_BACKGLASSX,
+         PUP_SETTINGS_BACKGLASSY,
+         PUP_SETTINGS_BACKGLASSWIDTH,
+         PUP_SETTINGS_BACKGLASSHEIGHT,
+         PUP_ZORDER_BACKGLASS);
+
+      AddWindow("DMD",
+         PUP_SCREEN_DMD,
+         PUP_SETTINGS_DMDX,
+         PUP_SETTINGS_DMDY,
+         PUP_SETTINGS_DMDWIDTH,
+         PUP_SETTINGS_DMDHEIGHT,
+         PUP_ZORDER_DMD);
+
+      AddWindow("Playfield",
+         PUP_SCREEN_PLAYFIELD,
+         PUP_SETTINGS_PLAYFIELDX,
+         PUP_SETTINGS_PLAYFIELDY,
+         PUP_SETTINGS_PLAYFIELDWIDTH,
+         PUP_SETTINGS_PLAYFIELDHEIGHT,
+         PUP_ZORDER_PLAYFIELD);
+
+      AddWindow("FullDMD",
+         PUP_SCREEN_FULLDMD,
+         PUP_SETTINGS_FULLDMDX,
+         PUP_SETTINGS_FULLDMDY,
+         PUP_SETTINGS_FULLDMDWIDTH,
+         PUP_SETTINGS_FULLDMDHEIGHT,
+         PUP_ZORDER_FULLDMD);
+   }
+   else {
       PLOGI.printf("PUP windows disabled");
+   }
+
+   m_isRunning = true;
+   m_thread = std::thread(&PUPManager::ProcessQueue, this);
+
+   for (auto& [key, pScreen] : m_screenMap)
+      pScreen->Start();
+}
+
+void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
+{
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   string szPrefix = "PUP" + szWindowName;
+
+   PUPScreen* pScreen = GetScreen(pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Screen"s, screen));
+   if (!pScreen) {
+      PLOGW.printf("PUP %s screen not found", szWindowName.c_str());
       return;
    }
 
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindow"s, true)) {
-      PUPScreen* pScreen = GetScreen(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowScreen"s, 2));
-      if (pScreen) {
-         m_pBackglassWindow = new PUPWindow(pScreen, "PUPBackglass",
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowX"s, PUP_SETTINGS_BACKGLASSX),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowY"s, PUP_SETTINGS_BACKGLASSY),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowWidth"s, PUP_SETTINGS_BACKGLASSWIDTH),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowHeight"s, PUP_SETTINGS_BACKGLASSHEIGHT),
-            PUP_ZORDER_BACKGLASS,
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPBackglassWindowRotation"s, 0));
-         if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
-            m_pBackglassWindow->Show();
-      }
-      else {
-         PLOGW.printf("PUP Backglass screen not found");
-      }
-   }
-   else {
-      PLOGI.printf("PUP Backglass window disabled");
+   if (pScreen->HasParent()) {
+      PLOGI.printf("PUP %s screen is a child screen, window disabled", szWindowName.c_str());
+      return;
    }
 
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindow"s, true)) {
-      PUPScreen* pScreen = GetScreen(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowScreen"s, 0));
-      if (pScreen) {
-         m_pTopperWindow = new PUPWindow(pScreen, "PUPTopper",
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowX"s, PUP_SETTINGS_TOPPERX),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowY"s, PUP_SETTINGS_TOPPERY),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowWidth"s, PUP_SETTINGS_TOPPERWIDTH),
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowHeight"s, PUP_SETTINGS_TOPPERHEIGHT),
-            PUP_ZORDER_TOPPER,
-            pSettings->LoadValueWithDefault(Settings::Standalone, "PUPTopperWindowRotation"s, 0));
-         if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
-            m_pTopperWindow->Show();
-      }
-      else {
-         PLOGW.printf("PUP Topper screen not found");
-      }
+   if (!pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Window"s, true)) {
+      PLOGI.printf("PUP %s window disabled", szWindowName.c_str());
+      return;
    }
-   else {
-      PLOGI.printf("PUP Topper window disabled");
-   }
+
+   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix,
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowX"s, x),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowY"s, y),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowWidth"s, width),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowHeight"s, height),
+      zOrder,
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowRotation"s, 0));
+
+   if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
+      pWindow->Show();
+
+   m_windows.push_back(pWindow);
 }
 
 void PUPManager::ProcessQueue()
@@ -251,11 +315,10 @@ void PUPManager::Stop()
    if (m_thread.joinable())
       m_thread.join();
 
-   delete m_pBackglassWindow;
-   m_pBackglassWindow = nullptr;
+   for (auto pWindow : m_windows)
+      delete pWindow;
 
-   delete m_pTopperWindow;
-   m_pTopperWindow = nullptr;;
+   m_windows.clear();
 
    for (auto& [key, pScreen] : m_screenMap)
       delete pScreen;

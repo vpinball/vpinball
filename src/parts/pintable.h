@@ -859,6 +859,8 @@ public:
 
    ToneMapper GetToneMapper() const { return m_toneMapper; }
    void SetToneMapper(const ToneMapper& tm) { m_toneMapper = tm; }
+   float GetExposure() const { return m_exposure; }
+   void SetExposure(const float exposure) { m_exposure = exposure; }
 
 private:
    PinTableMDI *m_mdiTable = nullptr;
@@ -870,6 +872,7 @@ private:
    bool m_moving;
 
    ToneMapper m_toneMapper = ToneMapper::TM_TONY_MC_MAPFACE;
+   float m_exposure = 1.f;
 
    inline float ApplyDifficulty(float minValue, float MaxValue) const;
 };
@@ -892,6 +895,7 @@ public:
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
    STDMETHOD(GetCustomParam)(/*[in]*/ long index, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
+   STDMETHOD(get_FrameIndex)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);

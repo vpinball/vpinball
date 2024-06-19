@@ -2,11 +2,15 @@
 
 #include "Standalone.h"
 
+#include "inc/common/WindowManager.h"
 #include "inc/b2s/plugin/PluginHost.h"
 #include "inc/dof/DOFPlugin.h"
 #include "inc/pup/PUPPlugin.h"
+#include "inc/pup/PUPManager.h"
 
 #include "DMDUtil/Config.h"
+
+#include <csignal>
 
 void OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
 {
@@ -14,6 +18,12 @@ void OnDMDUtilLog(DMDUtil_LogLevel logLevel, const char* format, va_list args)
    vsnprintf(buffer, sizeof(buffer), format, args);
 
    PLOGI.printf("%s", buffer);
+}
+
+void OnSignalHandler(int signum)
+{
+   PLOGI.printf("Exiting from signal: %d", signum);
+   exit(-9999);
 }
 
 Standalone* Standalone::m_pInstance = NULL;
@@ -28,16 +38,26 @@ Standalone* Standalone::GetInstance()
 
 Standalone::Standalone()
 {
+   struct sigaction sigIntHandler;
+   sigIntHandler.sa_handler = OnSignalHandler;
+   sigemptyset(&sigIntHandler.sa_mask);
+   sigIntHandler.sa_flags = 0;
+   sigaction(SIGINT, &sigIntHandler, nullptr);
+
+   m_pPUPManager = PUPManager::GetInstance();
+   m_pWindowManager = VP::WindowManager::GetInstance();
 }
 
 Standalone::~Standalone()
 {
 }
 
-void Standalone::Startup()
+void Standalone::PreStartup()
 {
+   PLOGI.printf("Performing pre-startup standalone actions");
+
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
-   
+
    DMDUtil::Config* pConfig = DMDUtil::Config::GetInstance();
    pConfig->SetLogCallback(OnDMDUtilLog);
    pConfig->SetZeDMD(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMD"s, true));
@@ -59,4 +79,28 @@ void Standalone::Startup()
       if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPPlugin"s, true))
          PluginHost::GetInstance()->RegisterPlugin(new PUPPlugin());
    }
+}
+
+void Standalone::PostStartup()
+{
+   PLOGI.printf("Performing post-startup standalone actions");
+
+   m_pPUPManager->Start();
+   m_pWindowManager->Start();
+}
+
+void Standalone::ProcessEvent(const SDL_Event* pEvent)
+{
+   m_pWindowManager->ProcessEvent(pEvent);
+}
+
+void Standalone::ProcessUpdates()
+{
+   m_pWindowManager->ProcessUpdates();
+}
+
+void Standalone::Render()
+{
+   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
+      m_pWindowManager->Render();
 }

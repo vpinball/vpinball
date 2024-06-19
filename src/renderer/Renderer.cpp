@@ -44,16 +44,6 @@ public:
       : m_pd3dDevice(pd3dDevice)
    {
       m_curIdx = 0;
-      const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-
-      // if available, use the official RenderDevice mechanism
-      if (!EnableLegacyMaximumPreRenderedFrames && pd3dDevice->SetMaximumPreRenderedFrames(numFrames))
-      {
-          m_buffers.resize(0);
-          return;
-      }
-
-      // if not, fallback to cheating the driver
       m_buffers.resize(numFrames, nullptr);
       m_curIdx = 0;
    }
@@ -97,13 +87,6 @@ private:
    vector<MeshBuffer*> m_buffers;
    size_t m_curIdx;
 };
-#elif defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
-class FrameQueueLimiter
-{
-public:
-   FrameQueueLimiter(RenderDevice* const pd3dDevice, const int numFrames) { }
-   void Execute() { }
-};
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -120,6 +103,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
+   m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
    m_vrPreview = (VRPreviewMode)m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, (int)VRPREVIEW_LEFT);
@@ -347,7 +331,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
    m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
    m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
 
@@ -399,7 +383,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
-   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
+   // TODO we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
    //if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
       m_tonemapLUT = new Texture();
@@ -425,9 +409,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-   // 0 means disable limiting of draw-ahead queue
-   int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-   m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
+   // TODO remove legacy frame limiter for Windows XP
+   const int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
+   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
+   if (EnableLegacyMaximumPreRenderedFrames || m_pd3dPrimaryDevice->GetCoreDeviceEx() == nullptr || maxPrerenderedFrames > 20)
+      m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
    #endif
 }
 
@@ -461,7 +447,9 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
+   #ifdef ENABLE_DX9
    delete m_limiter;
+   #endif
    delete m_pd3dPrimaryDevice;
 }
 
@@ -1001,6 +989,8 @@ void Renderer::SetupShaders()
    m_pd3dPrimaryDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
+   m_pd3dPrimaryDevice->m_FBShader->SetFloat(SHADER_exposure, m_exposure);
+
    //m_pd3dPrimaryDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    m_table->m_Light[0].pos.x = m_table->m_right * 0.5f;
@@ -1230,18 +1220,19 @@ void Renderer::SubmitFrame()
 {
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !g_pplayer->m_liveUI->IsTweakMode() && g_pplayer->m_liveUI->IsOpened())
    {
       m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
       g_pplayer->m_liveUI->Update(m_pd3dPrimaryDevice->GetOutputBackBuffer());
       m_pd3dPrimaryDevice->RenderLiveUI();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
    }
    SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
-   // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+   #if defined(ENABLE_DX9)  // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
    if (m_limiter)
       m_limiter->Execute();
+   #endif
    g_frameProfiler.ExitProfileSection();
 }
 
@@ -1402,8 +1393,12 @@ void Renderer::RenderStaticPrepass()
 
    TRACE_FUNCTION();
 
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
    m_render_mask |= Renderer::STATIC_ONLY;
+   #if defined(ENABLE_BGFX)
+   // BGFX will only process the submitted render frame when the render surface is presented
+   m_pd3dPrimaryDevice->Flip();
+   #endif
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1446,7 +1441,7 @@ void Renderer::RenderStaticPrepass()
       // Direct all renders to the "static" buffer
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT, false);
       DrawBackground();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
 
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
 
@@ -1483,7 +1478,11 @@ void Renderer::RenderStaticPrepass()
       }
 
       // Finish the frame.
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
+      #if defined(ENABLE_BGFX)
+      // BGFX will only process the submitted render frame when the render surface is presented
+      m_pd3dPrimaryDevice->Flip();
+      #endif
    }
 
    if (accumulationSurface)
@@ -1491,7 +1490,7 @@ void Renderer::RenderStaticPrepass()
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT);
       m_pd3dPrimaryDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
-      m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render target
+      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render target
       delete accumulationSurface;
    }
 
@@ -1554,7 +1553,7 @@ void Renderer::RenderStaticPrepass()
 
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
-      m_pd3dPrimaryDevice->FlushRenderFrame(); // Execute before destroying the render targets
+      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render targets
 
       // Delete buffers: we won't need them anymore since dynamic AO is disabled
       m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_ao);
@@ -1568,7 +1567,7 @@ void Renderer::RenderStaticPrepass()
       InitLayout();
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRTmsaa, false);
       DrawBackground();
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
       if (IsUsingStaticPrepass())
       {
          m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa);
@@ -1578,12 +1577,12 @@ void Renderer::RenderStaticPrepass()
          UpdateBasicShaderMatrix();
          for (Hitable* hitable : g_pplayer->m_vhitables)
             hitable->Render(m_render_mask);
-         m_pd3dPrimaryDevice->FlushRenderFrame();
+         m_pd3dPrimaryDevice->SubmitRenderFrame();
       }
       // Copy supersampled color buffer
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa);
       m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRTmsaa, true, false);
-      m_pd3dPrimaryDevice->FlushRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame();
       // Replace with this new MSAA pre render
       RenderTarget *initialPreRender = m_staticPrepassRT;
       m_staticPrepassRT = renderRTmsaa;
@@ -1604,7 +1603,11 @@ void Renderer::RenderStaticPrepass()
    PLOGI << "Static PreRender done"; // For profiling
    
    m_render_mask &= ~Renderer::STATIC_ONLY;
-   m_pd3dPrimaryDevice->FlushRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame();
+   #if defined(ENABLE_BGFX)
+   // BGFX will only process the submitted render frame when the render surface is presented
+   m_pd3dPrimaryDevice->Flip();
+   #endif
 }
 
 void Renderer::RenderDynamics()
@@ -1707,13 +1710,20 @@ void Renderer::Bloom()
 
    const double w = (double)GetBackBufferTexture()->GetWidth();
    const double h = (double)GetBackBufferTexture()->GetHeight();
-   const Vertex3D_TexelOnly shiftedVerts[4] =
+   Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
       { -1.0f,  1.0f, 0.0f, 0.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
       {  1.0f, -1.0f, 0.0f, 1.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) },
       { -1.0f, -1.0f, 0.0f, 0.0f + (float)(2.25 / w), 1.0f + (float)(2.25 / h) }
    };
+   #if defined(ENABLE_BGFX)
+   if (bgfx::getCaps()->originBottomLeft)
+   {
+      shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f + (float)(2.25 / h);
+      shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f + (float)(2.25 / h);
+   }
+   #endif
    {
       m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
 
@@ -1764,7 +1774,7 @@ void Renderer::PrepareVideoBuffers()
    m_pd3dPrimaryDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
 
    // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
-   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
+   m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_depth, renderedRT->GetDepthSampler());
 
    // Compute bloom (to be applied later)
    Bloom();
@@ -1861,15 +1871,11 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      // Texture used for LUT color grading must be treated as if they were linear
-      #ifdef ENABLE_BGFX // FIXME BGFX color grade is not yet supported (sRGB vs linear bug)
-      m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, false);
-      #else
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
-         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true); // FIXME always honor the linear RGB
+         // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
+         m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      #endif
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_dither, m_pd3dPrimaryDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
       m_pd3dPrimaryDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
 
@@ -1884,9 +1890,10 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                                                   : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
-                                                   : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
-                                                                                            : SHADER_TECHNIQUE_fb_tmtonemap);
+                                                     : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                     : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
+                                                     : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
+                                                     : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
@@ -1901,18 +1908,29 @@ void Renderer::PrepareVideoBuffers()
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_nttonemap_AO : SHADER_TECHNIQUE_fb_nttonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_nttonemap    : SHADER_TECHNIQUE_fb_nttonemap_no_filter);
+      else if (m_toneMapper == TM_AGX)
+         m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
+              useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
+            : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter);
       else // TM_TONY_MC_MAPFACE
          m_pd3dPrimaryDevice->m_FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
 
-      const Vertex3D_TexelOnly shiftedVerts[4] =
+      Vertex3D_TexelOnly shiftedVerts[4] =
       {
          {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
          { -1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 0.0f },
          {  1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 1.0f },
          { -1.0f + m_ScreenOffset.x, -1.0f + m_ScreenOffset.y, 0.0f, 0.0f, 1.0f }
       };
+      #if defined(ENABLE_BGFX)
+      if (bgfx::getCaps()->originBottomLeft)
+      {
+         shiftedVerts[0].tv = shiftedVerts[1].tv = 1.0f;
+         shiftedVerts[2].tv = shiftedVerts[3].tv = 0.0f;
+      }
+      #endif
       m_pd3dPrimaryDevice->DrawTexturedQuad(m_pd3dPrimaryDevice->m_FBShader, shiftedVerts);
       renderedRT = outputRT;
    }
@@ -2001,6 +2019,7 @@ void Renderer::PrepareVideoBuffers()
       outputRT = GetPreviousBackBufferTexture(); // We don't need it anymore, so use it as a third postprocess buffer
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
+      m_pd3dPrimaryDevice->Clear(clearType::TARGET, 0, 1.0f, 0L); // Needed since shader uses discard
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
@@ -2009,8 +2028,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Blend weight calculation"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // BackBuffer RT
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_BlendWeightCalculation);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_edgesTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 
@@ -2018,8 +2037,8 @@ void Renderer::PrepareVideoBuffers()
       m_pd3dPrimaryDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_pd3dPrimaryDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
       m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT); // PostProcess RT 2
-      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
+      m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_blendTex, renderedRT->GetColorSampler());
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
       renderedRT = outputRT;
 #endif

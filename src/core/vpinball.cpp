@@ -1557,32 +1557,24 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
    bool consumed = false;
 
 #ifndef __STANDALONE__
-   if (g_pplayer == nullptr)
+   // check if message must be processed by the code editor
+   if (m_pcv && (GetZOrder(m_pcv->GetHwnd()) < GetZOrder(GetHwnd())))
    {
-      // check if message must be processed by the code editor
-      if (m_pcv && (GetZOrder(m_pcv->GetHwnd()) < GetZOrder(GetHwnd())))
-      {
-         consumed = m_pcv->PreTranslateMessage(pmsg);
+      consumed = m_pcv->PreTranslateMessage(pmsg);
 
-         if (m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
-            consumed = true;
-      }
-
-      if (!consumed)
-         // check/process events for other dialogs (material/sound/image manager, toolbar, properties)
-         consumed = processKeyInputForDialogs(pmsg);
-
-      if (!consumed)
-         consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
-
-      if (!consumed)
-         TranslateMessage(pmsg);
+      if (m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
+         consumed = true;
    }
-   else
-   {
-      if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
-         consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(*pmsg);
-   }
+
+   if (!consumed)
+      // check/process events for other dialogs (material/sound/image manager, toolbar, properties)
+      consumed = processKeyInputForDialogs(pmsg);
+
+   if (!consumed)
+      consumed = !!TranslateAccelerator(GetHwnd(), g_haccel, pmsg);
+
+   if (!consumed)
+      TranslateMessage(pmsg);
 #endif
 
    return consumed;
@@ -1591,39 +1583,22 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
 int VPinball::MainMsgLoop()
 {
    int retval = 0;
+#ifndef __STANDALONE__
    for (;;)
    {
-#ifndef __STANDALONE__
       MSG msg;
       if (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
       {
          if (msg.message == WM_QUIT)
             break;
-
-         try {
-            const bool consumed = ApcHost_OnTranslateMessage(&msg);
-            if (!consumed)
-            {
-               TranslateMessage(&msg);
-               DispatchMessage(&msg);
-            }
-         }
-         catch (...) // something failed on load/init
+         const bool consumed = ApcHost_OnTranslateMessage(&msg);
+         if (!consumed)
          {
-            delete g_pplayer;
-            g_pplayer = nullptr;
-            g_pvp->m_ptableActive->HandleLoadFailure();
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
          }
       }
-      else
-#endif
-      if (g_pplayer && g_pplayer->GetCloseState() != Player::CS_CLOSED)
-      {
-         // Let player do its job on idle
-         g_pplayer->OnIdle();
-      }
-#ifndef __STANDALONE__
-      else if (!g_pplayer && m_table_played_via_SelectTableOnStart)
+      else if (m_table_played_via_SelectTableOnStart)
       {
          // If player has been closed in the meantime, check if we should display the file open dialog again to select/play the next table
          // first close the current table
@@ -1635,7 +1610,7 @@ int VPinball::MainMsgLoop()
          if (m_table_played_via_SelectTableOnStart)
             DoPlay(false);
       }
-      else if (!g_pplayer && m_open_minimized)
+      else if (m_open_minimized)
       {
          // If started to play and for whatever reason (end of play, frontend closing the player window, failed loading,...)
          // we do not have a player, just close back to system.
@@ -1646,20 +1621,16 @@ int VPinball::MainMsgLoop()
          // Otherwise wait for input
          WaitMessage(); 
       }
-#else
-      else if (!g_pplayer)
-      {
-         CComObject<PinTable> *const pt = GetActiveTable();
-         if (pt) {
-            if (pt->m_pcv->m_scriptError)
-               retval = 1;
-            CloseTable(pt);
-         }
-
-         break;
-      }
-#endif
    }
+#else
+   CComObject<PinTable> *const pt = GetActiveTable();
+   if (pt)
+   {
+      if (pt->m_pcv->m_scriptError)
+         retval = 1;
+      CloseTable(pt);
+   }
+#endif
    return retval;
 }
 
@@ -1732,6 +1703,10 @@ void VPinball::PreRegisterClass(WNDCLASS& wc)
 
 void VPinball::OnClose()
 {
+   // Reject close if player was not closed before
+   if (g_pplayer)
+      return;
+
    CComObject<PinTable> * const ptable = GetActiveTable();
    m_closing = true;
 
@@ -1743,9 +1718,6 @@ void VPinball::OnClose()
          Sleep(THREADS_PAUSE);
 
 #ifndef __STANDALONE__
-   delete g_pplayer;
-   g_pplayer = nullptr;
-
    const bool canClose = CanClose();
    if (canClose)
    {

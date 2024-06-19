@@ -4,11 +4,29 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 06/07/24
+    * Add support for older pup packs (@francisdb)
+
+* 06/05/24
+    * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/5795) Implement putref_Item() method. (@francisdb)
+
+* 06/03/24
+    * Add support for updating PuP label font sizes using `fonth` (@francisdb)
+
+* 06/02/24
+    * Split PuP requests into `PUPPinDisplayRequest` and `PUPTriggerRequest`
+    * Rework PuP startup to run after "Startup done"
+    * Implement B2S commits af0c3cd, ca2e764, and fcbd891
+
+* 05/31/24
+    * Prevent empty captions from resetting PuP image labels (@francisdb)
+
 * 05/30/24
-    * Add support for multiline PuP Labels
-    * Replace `\\r` with `\n` in PuP Label captions
+    * Add support for multiline PuP labels
+    * Replace `\\r` with `\n` in PuP label captions
     * Add support for loading PuP fonts by filename and family name
     * Fix PUPPinDisplay `GetRoot` (@francisdb, @toccata10)
+    * Add support for PuP DMD, Playfield, and FullDMD windows
 
 * 05/29/24
     * Refactor PUP again

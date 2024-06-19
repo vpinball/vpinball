@@ -31,8 +31,8 @@ vec3 get_nonunit_normal(const float depth0, const vec2 u, const int v_eye) // us
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
 #endif
 {
-   const float depth1 = texStereoNoLod(tex_depth, float2(u.x, u.y + w_h_height.y)).x;
-   const float depth2 = texStereoNoLod(tex_depth, float2(u.x + w_h_height.x, u.y)).x;
+   const float depth1 = texStereoNoLod(tex_depth, vec2(u.x, u.y + w_h_height.y)).x;
+   const float depth2 = texStereoNoLod(tex_depth, vec2(u.x + w_h_height.x, u.y)).x;
    return vec3(w_h_height.y * (depth2 - depth0), (depth1 - depth0) * w_h_height.x, w_h_height.y * w_h_height.x); //!!
 }
 
@@ -85,7 +85,7 @@ void main()
 	vec3 normal_b = approx_bump_normal(u, 0.01 * w_h_height.xy / depth0, depth0 / (0.05*depth0 + 0.0001), 1000.0); //!! magic
 	#endif
 	normal_b = normalize(vec3(normal.xy*normal_b.z + normal_b.xy*normal.z, normal.z*normal_b.z));
-	normal_b = normalize(lerp(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
+	normal_b = normalize(mix(normal,normal_b, SSR_bumpHeight_fresnelRefl_scale_FS.x * normal_fade_factor(normal))); // have less impact of fake bump normals on playfield, etc
 	
 	const vec3 V = normalize(vec3(0.5 - vec2(u.x, 1.0 - u.y), -0.5)); // WTF?! cam is in 0,0,0 but why z=-0.5?
 
@@ -108,15 +108,15 @@ void main()
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(v_texcoord0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
-	                     /*frac(*/texNoLod(tex_ao_dither, v_texcoord0/(64.0*w_h_height.xy)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
-	const vec2 offsMul = normal_b.xy * (/*w_h_height.xy*/ vec2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./(float)samples)); //!! makes it more resolution independent?? test with 4xSSAA
+	                     /*fract(*/texNoLod(tex_ao_dither, v_texcoord0/(64.0*w_h_height.xy)).z /*+ w_h_height.z)*/; // use dither texture instead nowadays // 64 is the hardcoded dither texture size for AOdither.bmp
+	const vec2 offsMul = normal_b.xy * (/*w_h_height.xy*/ vec2(1.0/1920.0,1.0/1080.0) * ReflBlurWidth * (32./float(samples))); //!! makes it more resolution independent?? test with 4xSSAA
 
 	// loop in screen space, simply collect all pixels in the normal direction (not even a depth check done!)
 	vec3 refl = vec3(0.,0.,0.);
 	float color0w = 0.;
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
-		const vec2 offs = u + ((float)i+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
+		const vec2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
 		const vec3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
 
 		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
@@ -125,14 +125,14 @@ void main()
 		}
 		else
 		{*/
-			const float w = sqrt((float)(i-1)/(float)samples); //!! fake falloff for samples more far away
+			const float w = sqrt(float(i-1)/float(samples)); //!! fake falloff for samples more far away
 			refl += color*(1.0-w); //!! dampen large color values in addition?
 			color0w += w;
 		//}
 	}
 
 	refl += color0*color0w;
-	refl *= 1.0/(float)(samples-1); //!! -1 due to jitter
+	refl *= 1.0/float(samples-1); //!! -1 due to jitter
 
-	gl_FragColor = vec4(lerp(color0,refl, min(fresnel,1.0)), 1.0);
+	gl_FragColor = vec4(mix(color0,refl, min(fresnel,1.0)), 1.0);
 }

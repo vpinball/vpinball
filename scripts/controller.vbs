@@ -168,6 +168,10 @@ Sub LoadVPinMAME(VPMver, VBSfile, VBSver)
 	If Err Then MsgBox "Can't load VPinMAME." & vbNewLine & Err.Description
 	If VPMver > "" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
 	If VPinMAMEDriverVer < VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
+	On Error Resume Next
+	Controller.TimeFence = 0
+	If Err Then HasTimeFence = False Else HasTimeFence = True
+	Err.Clear
 	On Error Goto 0
 End Sub
 

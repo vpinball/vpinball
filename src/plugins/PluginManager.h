@@ -50,27 +50,28 @@ public:
    ~PluginManager();
 
    void ScanPluginFolder(const string& pluginDir);
+   VPXPlugin* GetPlugin(const string& pluginId) const;
 
    static PluginManager& GetInstance() { return s_instance; }
 
    // Event API implementation
    static unsigned int GetEventID(const char* name);
-   static void SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback);
+   static void SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback, void* userData);
    static void UnsubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback);
-   static void BroadcastEvent(const unsigned int eventId, void* data);
+   static void BroadcastEvent(const unsigned int eventId, void* eventData);
 
    // General information API
-   static void GetTableInfo(VPXPluginAPI::TableInfo* info);
+   static void GetTableInfo(VPXTableInfo* info);
 
    // User Interface
-   static float GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
+   static float GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
    static void* PushNotification(const char* msg, const unsigned int lengthMs);
    static void UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs);
 
    // View API implementation
-   static void DisableStaticPrerendering(const bool disable);
-   static void GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
-   static void SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view);
+   static void DisableStaticPrerendering(const BOOL disable);
+   static void GetActiveViewSetup(VPXViewSetupDef* view);
+   static void SetActiveViewSetup(VPXViewSetupDef* view);
 
 private:
    vector<VPXPlugin*> m_plugins;
@@ -79,7 +80,8 @@ private:
    // Event API implementation
    static robin_hood::unordered_map<string, unsigned int> s_eventIds;
    static constexpr unsigned int s_maxEventCallbacks = 500;
-   static vector<vpxpi_event_callback> s_eventCallbacks[s_maxEventCallbacks];
+   struct CallbackEntry { vpxpi_event_callback callback; void* userData; };
+   static vector<CallbackEntry> s_eventCallbacks[s_maxEventCallbacks];
    static unsigned int s_nextEventId;
    static PluginManager s_instance;
 };

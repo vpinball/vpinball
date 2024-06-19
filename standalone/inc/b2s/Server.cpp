@@ -65,6 +65,8 @@ void Server::TimerElapsed(VP::Timer* pTimer)
    static bool callSolenoids = false;
    static bool callGIStrings = false;
    static bool callLEDs = false;
+   static bool log = false;
+
    if (counter <= 25) {
       counter++;
       callLamps = !m_changedLampsCalled && (m_pB2SData->IsUseRomLamps() || m_pB2SData->IsUseAnimationLamps());
@@ -74,6 +76,17 @@ void Server::TimerElapsed(VP::Timer* pTimer)
    }
    else {
       if (m_pB2SSettings->IsROMControlled()) {
+         if (!log) {
+            log = true;
+            if (!callLamps && !callSolenoids && !callGIStrings && !callLEDs) {
+               pTimer->Stop();
+               PLOGI.printf("B2S polling disabled");
+            }
+            else {
+               PLOGI.printf("B2S polling enabled: lamps=%d, solenoids=%d, giStrings=%d, leds=%d", callLamps, callSolenoids, callGIStrings, callLEDs);
+            }
+         }
+
          if (callLamps) {
             VARIANT ret;
             VariantInit(&ret);
@@ -777,16 +790,10 @@ STDMETHODIMP Server::put_SolMask(VARIANT number, LONG pRetVal)
    // 1 = modulated (PWM) solenoid (exist for some years already)
    // 2 = new PWM mode (all solenoids but also lamps, and value if physic meaning, not smoothed out binary state)
    // For this new mode, we now hardcode a value 64, if the lamp intensity exceed this value, it is binary 1
-   if (V_I4(&var0) == 2) {
-      if (pRetVal == 2) {
-         m_lampThreshold = 64;
-         m_giStringThreshold = 64;
-      }
-      else {
-         m_lampThreshold = 0;
-         m_giStringThreshold = 4;
-      }
-   }
+   if (V_I4(&var0) == 2)
+      m_lampThreshold = (pRetVal == 2) ? 64 : 0;
+   if (V_I4(&var0) == 2)
+      m_giStringThreshold = (pRetVal == 2) ? 64 : 4;
 
    VariantClear(&var0);
 

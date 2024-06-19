@@ -126,7 +126,7 @@ public:
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
-   void FlushRenderFrame();
+   void SubmitRenderFrame();
 
    // RenderState used in submitted render command
    void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
@@ -158,7 +158,6 @@ public:
       #endif
    }
 
-   bool SetMaximumPreRenderedFrames(const DWORD frames);
    void SetClipPlane(const vec4& plane);
 
    // Active (live on GPU) render state
@@ -234,6 +233,7 @@ public:
       if (m_activeViewId == bgfx::getCaps()->limits.maxViews - 2) // Last view is reserved for ImGui
       {
          PLOGE << "Frame submitted and flipped since BGFX view limit was reached. [BGFX was compiled with a maximum of " << bgfx::getCaps()->limits.maxViews << " views]";
+         SubmitRenderFrame();
          SubmitAndFlipFrame();
       }
       m_activeViewId++;
@@ -275,6 +275,7 @@ private:
 #elif defined(ENABLE_DX9)
 public:
    IDirect3DDevice9* GetCoreDevice() const { return m_pD3DDevice; }
+   IDirect3DDevice9Ex* GetCoreDeviceEx() const { return m_pD3DDeviceEx; }
 
    IDirect3DVertexBuffer9* m_curVertexBuffer = nullptr;
    IDirect3DIndexBuffer9* m_curIndexBuffer = nullptr;

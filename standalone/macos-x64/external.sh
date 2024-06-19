@@ -3,15 +3,15 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.3
+SDL2_VERSION=2.30.4
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=74040732a4ab209edfcbaaee79d73d6608456da6
+PINMAME_SHA=df7abda19dd67b71d45d2eba61b59983e6c2bbc9
 LIBALTSOUND_SHA=9ac08a76e2aabc1fba57d3e5a3b87e7f63c09e07
 LIBDMDUTIL_SHA=fc29cd7d8271c34999a125fbbc123a71ace571c9
 LIBDOF_SHA=ac5d1e3487a4a6511953eb6aeef06ef5111510ea
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
-BGFX_CMAKE_VERSION=1.127.8725-465
+BGFX_CMAKE_VERSION=1.127.8765-472
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -97,7 +97,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_STATIC=OFF \
       -DSDL_TEST=OFF \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -132,7 +132,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
       -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -166,7 +166,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2TTF_VENDORED=ON \
       -DSDL2TTF_HARFBUZZ=ON \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=Release \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -194,7 +194,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
    cmake \
       -DBUILD_STATIC=OFF \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -303,7 +303,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build FFMPEG libraries and copy to external
 #
 
-CACHE_NAME="FFmpeg-${FFMPEG_SHA}_001"
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
@@ -314,6 +314,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       --disable-static \
       --disable-programs \
       --disable-doc \
+      --disable-xlib \
+      --disable-libxcb \
       --enable-rpath \
       --prefix=. \
       --libdir=@rpath \
@@ -347,10 +349,11 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake -S. \
       -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
-      -DBGFX_CONFIG_MULTITHREADED=OFF \
+      -DBGFX_CONFIG_MULTITHREADED=ON \
+      -DBGFX_CONFIG_MAX_FRAME_BUFFERS=256 \
       -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0 \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include

@@ -23,6 +23,11 @@
 #endif
 #define texStereoNoLod(tex, pos) texStereoLod(tex, pos, 0.0)
 
+#if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
+	// GLSL does not define the sincos function
+    #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
+#endif
+
 float sqr(const float v)
 {
     return v*v;
@@ -57,7 +62,7 @@ vec3 mul_w0(const vec3 v, const mat4x3 m)
 float acos_approx(const float v)
 {
     const float x = abs(v);
-    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./inversesqrt instead of sqrt
        return (v >= 0.) ? 0. : PI;
     const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : PI - res;
@@ -69,7 +74,7 @@ float acos_approx_divPI(const float v)
     //return acos(v)*(1./PI);
 
     const float x = abs(v);
-    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./inversesqrt instead of sqrt
        return (v >= 0.) ? 0. : 1.;
     const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? res : 1. - res;
@@ -111,7 +116,7 @@ float atan2_approx_div2PI(const float y, const float x)
 float asin_approx(const float v)
 {
     const float x = abs(v);
-    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./inversesqrt instead of sqrt
        return (v >= 0.) ? (0.5*PI) : -(0.5*PI);
     const float res = (-0.155972/*C1*/ * x + 1.56467/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? (0.5*PI) - res : -(0.5*PI) + res;
@@ -123,7 +128,7 @@ float asin_approx_divPI(const float v)
 	//return asin(v) / PI;
 
     const float x = abs(v);
-    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./rsqrt instead of sqrt
+    if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./inversesqrt instead of sqrt
        return (v >= 0.) ? 0.5 : -0.5;
     const float res = ((-0.155972/PI)/*C1*/ * x + (1.56467/PI)/*C0*/) * sqrt(1. - x);
     return (v >= 0.) ? 0.5 - res : -0.5 + res;

@@ -52,7 +52,7 @@ PluginManager::~PluginManager()
 
 unsigned int PluginManager::s_nextEventId = 0;
 robin_hood::unordered_map<string, unsigned int> PluginManager::s_eventIds;
-vector<vpxpi_event_callback> PluginManager::s_eventCallbacks[s_maxEventCallbacks];
+vector<PluginManager::CallbackEntry> PluginManager::s_eventCallbacks[s_maxEventCallbacks];
 
 unsigned int PluginManager::GetEventID(const char* name)
 {
@@ -71,35 +71,46 @@ unsigned int PluginManager::GetEventID(const char* name)
    return result.first->second;
 }
 
-void PluginManager::SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
+void PluginManager::SubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback, void* userData)
 {
    assert(callback != nullptr);
    assert(0 <= eventId && eventId < s_maxEventCallbacks);
-   assert(FindIndexOf(s_eventCallbacks[eventId], callback) == -1);
-   s_eventCallbacks[eventId].push_back(callback);
+   #ifdef DEBUG
+   // Callback are only allowed to be registered once per event Id
+   for (const CallbackEntry entry : s_eventCallbacks[eventId])
+      assert(entry.callback != callback);
+   #endif
+   s_eventCallbacks[eventId].push_back(CallbackEntry{ callback, userData });
 }
 
 void PluginManager::UnsubscribeEvent(const unsigned int eventId, const vpxpi_event_callback callback)
 {
    assert(callback != nullptr);
    assert(0 <= eventId && eventId < s_maxEventCallbacks);
-   typename vector<vpxpi_event_callback>::const_iterator it = std::find(s_eventCallbacks[eventId].begin(), s_eventCallbacks[eventId].end(), callback);
-   assert(it != s_eventCallbacks[eventId].end());
-   s_eventCallbacks[eventId].erase(it);
+   for (vector<CallbackEntry>::iterator it = s_eventCallbacks[eventId].begin(); it != s_eventCallbacks[eventId].end(); it++)
+   {
+      if (it->callback == callback)
+      {
+         s_eventCallbacks[eventId].erase(it);
+         return;
+      }
+   }
+   // Detect invalid subscribe/unsubscribe pairs
+   assert(false);
 }
 
-void PluginManager::BroadcastEvent(const unsigned int eventId, void* data)
+void PluginManager::BroadcastEvent(const unsigned int eventId, void* eventData)
 {
    assert(0 <= eventId && eventId < s_maxEventCallbacks); 
-   for (const vpxpi_event_callback cb : s_eventCallbacks[eventId])
-      cb(eventId, data);
+   for (const CallbackEntry entry : s_eventCallbacks[eventId])
+      entry.callback(eventId, entry.userData, eventData);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
-void PluginManager::GetTableInfo(VPXPluginAPI::TableInfo* info)
+void PluginManager::GetTableInfo(VPXTableInfo* info)
 {
    assert(g_pplayer); // Only allowed in game
    info->path = g_pplayer->m_ptable->m_szFileName.c_str();
@@ -111,7 +122,7 @@ void PluginManager::GetTableInfo(VPXPluginAPI::TableInfo* info)
 ///////////////////////////////////////////////////////////////////////////////
 // User Input API
 
-float PluginManager::GetOption(const char* pageId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
+float PluginManager::GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
    const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values)
 {
    // TODO handle showMask flag
@@ -136,8 +147,8 @@ float PluginManager::GetOption(const char* pageId, const unsigned int showMask, 
          for (int i = 0; i < nSteps; i++)
             literals.push_back(values[i]);
       }
-      settings.RegisterSetting(section, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
-      const float value = settings.LoadValueWithDefault(section, optionName, defaultValue);
+      settings.RegisterSetting(section, optionId, showMask, optionName, minValue, maxValue, step, defaultValue, (Settings::OptionUnit)unit, literals);
+      const float value = settings.LoadValueWithDefault(section, optionId, defaultValue);
       return clamp(minValue + step * roundf((value - minValue) / step), minValue, maxValue);
    }
 }
@@ -160,13 +171,13 @@ void PluginManager::UpdateNotification(const void* handle, const char* msg, cons
 ///////////////////////////////////////////////////////////////////////////////
 // View API
 
-void PluginManager::DisableStaticPrerendering(const bool disable)
+void PluginManager::DisableStaticPrerendering(const BOOL disable)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
 }
 
-void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+void PluginManager::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    const ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -191,7 +202,7 @@ void PluginManager::GetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 
-void PluginManager::SetActiveViewSetup(VPXPluginAPI::ViewSetupDef* view)
+void PluginManager::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -284,7 +295,7 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
             string api = unquote(ini["configuration"s]["vpx_api"s]);
             int nParsed, apiVersion[4];
             apiVersion[3] = 0;
-            nParsed = sscanf(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
+            nParsed = sscanf_s(api.c_str(), "%d.%d.%d.%d", &apiVersion[0], &apiVersion[1], &apiVersion[2], &apiVersion[3]);
             if ((nParsed == 3) || (nParsed == 4))
             {
                #define VERSION(a,b,c,d) (a * 1000000 + b * 10000 + c * 100 + d)
@@ -308,12 +319,29 @@ void PluginManager::ScanPluginFolder(const string& pluginDir)
                unquote(ini["configuration"s].get("link"s)),
                libraryPath);
             m_plugins.push_back(plugin);
-            // TODO this directly loads the plugin which is a security concern, the initial load should be requested/validated by the user
-            plugin->Load(&m_vpxAPI);
+            const char* enableDisable[] = { "Disabled", "Enabled" };
+            int enabled = (int)GetOption(id.c_str(), "enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
+            if (enabled)
+            {
+               plugin->Load(&m_vpxAPI);
+            }
+            else
+            {
+               PLOGI << "Plugin " << id << " was found but is disabled (" << plugin->m_library << ")";
+            }
          }
       }
    }
 }
+
+VPXPlugin* PluginManager::GetPlugin(const string& pluginId) const
+{
+   for (VPXPlugin* plugin : m_plugins)
+      if (plugin->m_id == pluginId)
+         return plugin;
+   return nullptr;
+}
+
 
 #ifdef _MSC_VER
 std::string GetLastErrorAsString()

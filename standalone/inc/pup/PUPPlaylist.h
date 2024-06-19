@@ -16,6 +16,7 @@ const char* PUP_PLAYLIST_FUNCTION_TO_STRING(PUP_PLAYLIST_FUNCTION value);
 class PUPPlaylist
 {
 public:
+   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
    ~PUPPlaylist();
 
    static PUPPlaylist* CreateFromCSV(const string& line);
@@ -28,11 +29,10 @@ public:
    PUP_PLAYLIST_FUNCTION GetFunction() const { return m_function; }
    const string& GetPlayFile(const string& szFilename);
    const string& GetNextPlayFile();
+   string GetPlayFilePath(const string& szFilename);
    string ToString() const;
 
 private:
-   PUPPlaylist(const string& szFolder, const string& szDescription, bool randomize, int restSeconds, float volume, int priority);
-
    string m_szFolder;
    string m_szDescription;
    bool m_randomize;
@@ -43,4 +43,5 @@ private:
    int m_lastIndex;
    vector<string> m_files;
    std::map<string, string> m_fileMap;
+   string m_szBasePath;
 };

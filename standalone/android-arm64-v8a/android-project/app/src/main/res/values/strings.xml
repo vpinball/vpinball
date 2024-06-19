@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">VPinballX_GL</string>
+    <string name="app_name">VPinballX</string>
     <string name="title_activity_vpx_launcher">Visual Pinball X</string>
     <string name="select_dir_msg">Select a directory for Visual Pinball files.</string>
     <string name="permissions_msg">VPX needs permission to read/write on your selected storage device. It\'s unfortunately needed by the native code used in VPX.</string>

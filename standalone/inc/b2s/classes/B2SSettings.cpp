@@ -37,6 +37,7 @@ void B2SSettings::Load(bool resetLogs)
 
    m_hideGrill = (B2SSettingsCheckedState)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideGrill"s, (int)B2SSettingsCheckedState_Indeterminate);
    m_hideB2SDMD = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideB2SDMD"s, false);
+   m_hideB2SBackglass = pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideB2SBackglass"s, false);
    m_hideDMD = (B2SSettingsCheckedState)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SHideDMD"s, (int)B2SSettingsCheckedState_Indeterminate);
    m_currentDualMode = (eDualMode)pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDualMode"s, (int)eDualMode_2_NotSet);
 }
@@ -61,6 +62,7 @@ void B2SSettings::ClearAll()
    m_defaultGlow = -1;
    m_hideGrill = B2SSettingsCheckedState_Indeterminate;
    m_hideB2SDMD = false;
+   m_hideB2SBackglass = false;
    m_hideDMD = B2SSettingsCheckedState_Indeterminate;
    m_animationSlowDowns.clear();
    m_allAnimationSlowDown = 1;

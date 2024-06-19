@@ -1249,10 +1249,15 @@ void LiveUI::Update(const RenderTarget *rt)
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, io.DisplaySize.y - 10 - height)); //10 + m_menubar_height + m_toolbar_height));
+      #if defined(ENABLE_BGFX)
+      if (!m_player->m_lastFrameSyncOnFPS)
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.5f, 0.f, 1.f)); // Not enough margin to perform low latency VPX - Controler sync
+      #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
       else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.75f, 0.f, 0.f, 1.f)); // Running slower than expected
+      #endif
       ImGui::Begin("FPS", nullptr, window_flags);
       const double frameLength = g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME);
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
@@ -1260,10 +1265,15 @@ void LiveUI::Update(const RenderTarget *rt)
          1e-3 * g_frameProfiler.GetSlidingInputLag(false), 1e-3 * g_frameProfiler.GetSlidingInputLag(true));
       height = ImGui::GetWindowHeight();
       ImGui::End();
+      #if defined(ENABLE_BGFX)
+      if (!m_player->m_lastFrameSyncOnFPS)
+         ImGui::PopStyleColor();
+      #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
          ImGui::PopStyleColor();
       else if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && !m_player->m_lastFrameSyncOnVBlank)
          ImGui::PopStyleColor();
+      #endif
    }
    if (m_show_fps == 2)
    {
@@ -1360,8 +1370,16 @@ void LiveUI::OpenTweakMode()
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
    m_tweakPages.push_back(TP_TableOption);
-   for (int i = 0; i < g_pvp->m_settings.GetNPluginSections(); i++)
-      m_tweakPages.push_back((TweakPage) (TP_Plugin00 + i));
+   for (int j = 0; j < g_pvp->m_settings.GetNPluginSections(); j++)
+   {
+      int nOptions = 0;
+      int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      for (int i = 0; i < nCustomOptions; i++)
+         if ((m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + j) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
+            nOptions++;
+      if (nOptions > 0)
+         m_tweakPages.push_back((TweakPage)(TP_Plugin00 + j));
+   }
    if (!m_table->m_szDescription.empty())
       m_tweakPages.push_back(TP_Info);
    m_activeTweakPageIndex = 0;
@@ -1436,6 +1454,7 @@ void LiveUI::UpdateTweakPage()
       for (int i = 0; i < nCustomOptions; i++)
          m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       m_tweakPageOptions.push_back(BS_DayNight);
+      m_tweakPageOptions.push_back(BS_Exposure);
       m_tweakPageOptions.push_back(BS_Tonemapper);
       m_tweakPageOptions.push_back(BS_Difficulty);
       m_tweakPageOptions.push_back(BS_MusicVolume);
@@ -1446,7 +1465,7 @@ void LiveUI::UpdateTweakPage()
    {
       int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
-         if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00))
+         if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       break;
    }
@@ -1572,14 +1591,21 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
+      case BS_Exposure:
+      {
+         m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
+         m_renderer->SetupShaders();
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+         break;
+      }
       case BS_Tonemapper:
       {
          if (keyEvent == 1)
          {
             int tm = m_renderer->m_toneMapper + (int)step;
             if (tm < 0)
-               tm = ToneMapper::TM_NEUTRAL;
-            if (tm > ToneMapper::TM_NEUTRAL)
+               tm = ToneMapper::TM_AGX;
+            if (tm > ToneMapper::TM_AGX)
                tm = ToneMapper::TM_REINHARD;
             m_renderer->m_toneMapper = (ToneMapper)tm;
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
@@ -1605,7 +1631,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                if (nSteps > 0)
                {
                   m_lastTweakKeyDown += nSteps * nMsecPerStep;
-                  float value = m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue);
+                  float value = m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
                   if (!opt.literals.empty())
                   {
                      value += (float)nSteps * opt.step * step;
@@ -1616,7 +1642,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   }
                   else
                      value = clamp(value + (float)nSteps * opt.step * step, opt.minValue, opt.maxValue);
-                  table->m_settings.SaveValue(opt.section, opt.name, value);
+                  table->m_settings.SaveValue(opt.section, opt.id, value);
                   if (opt.section == Settings::TableOption)
                      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
                   else
@@ -1674,6 +1700,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_table->m_settings.DeleteValue(Settings::Player, "EmissionScale"s);
             }
             m_tweakState[BS_DayNight] = 0;
+            // Exposure slider
+            if (m_tweakState[BS_Exposure] == 1)
+               m_table->m_settings.SaveValue(Settings::TableOverride, "Exposure"s, m_renderer->m_exposure);
+            else if (m_tweakState[BS_Exposure] == 2)
+               m_table->m_settings.DeleteValue(Settings::TableOverride, "Exposure"s);
+            m_tweakState[BS_Exposure] = 0;
             // Tonemapper
             if (m_tweakState[BS_Tonemapper] == 1)
                m_table->m_settings.SaveValue(Settings::TableOverride, "ToneMapper"s, m_renderer->m_toneMapper);
@@ -1713,9 +1745,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
-                     m_table->m_settings.DeleteValue(opt.section, opt.name);
+                     m_table->m_settings.DeleteValue(opt.section, opt.id);
                   else
-                     m_table->m_settings.SaveValue(opt.section, opt.name, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
+                     m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
                   m_tweakState[BS_Custom + i] = 0;
                }
             }
@@ -1740,11 +1772,14 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // FIXME we just default to the table value, missing the app settings being applied (like day/night from lat/lon,... see in player.cpp)
             m_tweakState[BS_DayNight] = 2;
             m_renderer->m_globalEmissionScale = m_table->m_globalEmissionScale;
-            m_renderer->SetupShaders();
+
+            // Exposure
+            m_tweakState[BS_Exposure] = 2;
+            m_renderer->m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
 
             // Tonemapper
             m_tweakState[BS_Tonemapper] = 2;
-            m_renderer->m_toneMapper = m_table->GetToneMapper();
+            m_renderer->m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
 
             // Remove custom difficulty and get back to the one of the table, eventually overriden by app (not table) settings
             m_tweakState[BS_Difficulty] = 2;
@@ -1753,6 +1788,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             // Music/sound volume
             m_player->m_MusicVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
             m_player->m_SoundVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
+
+            m_renderer->SetupShaders();
          }
          else if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
          {
@@ -1860,9 +1897,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
-                     m_table->m_settings.DeleteValue(opt.section, opt.name);
+                     m_table->m_settings.DeleteValue(opt.section, opt.id);
                   else
-                     m_table->m_settings.SaveValue(opt.section, opt.name, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
+                     m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue));
                   m_tweakState[BS_Custom + i] = 0;
                }
             }
@@ -1973,7 +2010,7 @@ void LiveUI::UpdateTweakModeUI()
             if (setting - BS_Custom >= (int)customOptions.size())
                continue;
             const Settings::OptionDef &opt = customOptions[setting - BS_Custom];
-            float value = table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue);
+            float value = table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue);
             const string label = opt.name + ": ";
             if (!opt.literals.empty()) // List of values
             {
@@ -1994,12 +2031,23 @@ void LiveUI::UpdateTweakModeUI()
          else switch (setting)
          {
          case BS_Page: {
-               CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s",
-                    m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"
-                  : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"
-                  : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"
-                                                                           : "Information",
-                  "");
+            const int page = m_tweakPages[m_activeTweakPageIndex];
+            string title;
+            if (page >= TP_Plugin00)
+            {
+               const string& sectionName = Settings::GetSectionName((Settings::Section)(Settings::Plugin00 + page - TP_Plugin00));
+               const VPXPlugin* plugin = sectionName.length() > 7 ? PluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
+               if (plugin)
+                  title = plugin->m_name + " Plugin";
+               else
+                  title = "Invalid Plugin"s;
+            }
+            else 
+               title = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? "Table Options"s
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"s
+                     : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"s
+                                                                              : "Information"s;
+            CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s", title.c_str(), "");
             CM_SKIP_LINE;
             break;
          }
@@ -2028,7 +2076,13 @@ void LiveUI::UpdateTweakModeUI()
             snprintf(label, 64, "Difficulty (%.2f° slope and trajectories scattering):", m_live_table->GetPlayfieldSlope());
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == 0 ? "Reinhard" : m_renderer->m_toneMapper == 1 ? "Tony McMapFace" : m_renderer->m_toneMapper == 2 ? "Filmic" : "Neutral", ""); break;
+         case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
+                                                                 : m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
+                                                                 : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
+                                                                 : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
+                                                                 :                                                  "AgX","");
+            break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
@@ -2407,7 +2461,7 @@ void LiveUI::UpdateMainUI()
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 128, 0, 255));
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
          for (auto pho : m_player->m_physics->GetUIObjects())
-            if (pho->m_editable == m_selection.editable)
+            if (pho->m_editable == m_selection.editable && overlayDrawList->VtxBuffer.Size < 40000)
                pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
@@ -2417,7 +2471,7 @@ void LiveUI::UpdateMainUI()
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 0, 0, 255)); // We abuse ImGui colors to pass render colors
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
-            if (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable))
+            if ((m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable)) && overlayDrawList->VtxBuffer.Size < 40000)
                pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
