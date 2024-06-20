@@ -136,7 +136,7 @@ bool PUPManager::HasScreen(int screenNum)
 PUPScreen* PUPManager::GetScreen(int screenNum)
 {
    if (!m_init) {
-      PLOGE.printf("Getting screen before initialization");
+      PLOGW.printf("Getting screen before initialization");
    }
 
    std::map<int, PUPScreen*>::iterator it = m_screenMap.find(screenNum);
