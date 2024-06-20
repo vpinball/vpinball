@@ -41,7 +41,7 @@ jobs:
 
   build-ios:
     name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: [ version ]
     strategy:
       fail-fast: false

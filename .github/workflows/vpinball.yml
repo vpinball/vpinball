@@ -198,7 +198,7 @@ jobs:
 
   build-macos:
     name: Build VPinballX_${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: [ version ]
     strategy:
       fail-fast: false

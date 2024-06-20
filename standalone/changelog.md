@@ -4,6 +4,17 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 06/20/24
+    * Bump ci to macos-latest (arm64)
+
+* 06/15/24
+    * Bump minimum macos to 14 to better support BGFX and future dev
+    * Remove X11 dependencies from FFMPEG macos builds
+
+* 06/14/24
+    * Move logger setup/init to Logger class (@YellowLabrador)
+    * Update standalone `android-project` to match 10.8.1 branch
+
 * 06/07/24
     * Add support for older pup packs (@francisdb)
 
