@@ -214,7 +214,7 @@ STDMETHODIMP Timer::put_Interval(long newVal)
 
    if (m_phittimer)
    {
-      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : -1;
+      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : max(-2l, newVal);
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
 
