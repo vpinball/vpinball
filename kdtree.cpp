@@ -364,8 +364,10 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
    m_items = items | (axis << 30);
 
    // copy temporary back //!! could omit this by doing everything inplace
-   memcpy(&m_hitoct->m_org_idx[m_children[0].m_start], &m_hitoct->tmp[m_children[0].m_start], m_children[0].m_items*sizeof(unsigned int));
-   memcpy(&m_hitoct->m_org_idx[m_children[1].m_start], &m_hitoct->tmp[m_children[1].m_start], m_children[1].m_items*sizeof(unsigned int));
+   if (m_children[0].m_items > 0)
+      memcpy(&m_hitoct->m_org_idx[m_children[0].m_start], &m_hitoct->tmp[m_children[0].m_start], m_children[0].m_items*sizeof(unsigned int));
+   if (m_children[1].m_items > 0)
+      memcpy(&m_hitoct->m_org_idx[m_children[1].m_start], &m_hitoct->tmp[m_children[1].m_start], m_children[1].m_items*sizeof(unsigned int));
 
    m_children[0].CreateNextLevel(level + 1, level_empty);
    m_children[1].CreateNextLevel(level + 1, level_empty);
