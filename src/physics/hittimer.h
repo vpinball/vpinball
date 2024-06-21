@@ -4,8 +4,8 @@ class HitTimer
 {
 public:
    HitTimer(const char* name, int interval, IFireEvents* handler)
-      : m_interval(interval >= 0 ? max(interval, MAX_TIMER_MSEC_INTERVAL) : -1)
-      , m_pfe(handler)
+      : m_pfe(handler)
+      , m_interval(interval >= 0 ? max(interval, MAX_TIMER_MSEC_INTERVAL) : max(-2, interval))
    {
       size_t len = strlen(name);
       char* nameCopy = new char[len + 1];

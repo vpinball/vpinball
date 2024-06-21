@@ -92,7 +92,7 @@ HRESULT IEditable::put_TimerInterval(long newVal, int *pti)
 
    if (m_phittimer)
    {
-      m_phittimer->m_interval = newVal >= 0 ? max(newVal, (long)MAX_TIMER_MSEC_INTERVAL) : -1;
+      m_phittimer->m_interval = newVal >= 0 ? max(newVal, (long)MAX_TIMER_MSEC_INTERVAL) : max(-2l, newVal);
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
 
