@@ -105,10 +105,14 @@ void wintimer_init()
    QueryPerformanceFrequency(&TimerFreq);
    QueryPerformanceCounter(&sTimerStart);
 
-   HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+#if _WIN32_WINNT >= 0x0600
+   HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
    highrestimer = !!timer;
    if (timer)
       CloseHandle(timer);
+#else
+   highrestimer = 0;
+#endif
 #else
    TimerFreq.QuadPart = SDL_GetPerformanceFrequency();
    sTimerStart.QuadPart = SDL_GetPerformanceCounter();
@@ -170,7 +174,7 @@ void uSleep(const unsigned long long u)
    {
       if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
          Sleep(1); // really pause thread for 1-2ms (depending on OS)
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && (_WIN32_WINNT >= 0x0600)
       else if (highrestimer && ((TimerEnd.QuadPart - TimerNow.QuadPart) > OneMSTimerTicks)) // pause thread for 0.5-1ms
       {
          HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
