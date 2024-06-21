@@ -6,6 +6,8 @@ The downside of this approach is not accurately keeping track of history:
 
 * 06/20/24
     * Bump ci to macos-latest (arm64)
+    * Send case insensitive pupvideos folder to libdmdutil
+    * Add support for case insensitive AltColor and pinmame folders
 
 * 06/15/24
     * Bump minimum macos to 14 to better support BGFX and future dev

@@ -50,17 +50,18 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
       || p_displayLayout->type == (PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDSEG)
       || p_displayLayout->type == (PINMAME_DISPLAY_TYPE_DMD | PINMAME_DISPLAY_TYPE_DMDNOAA)) {
       pDisplay->pDMD = new DMDUtil::DMD();
+      pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
 
       if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "AltColor"s, true)) {
-         string szAltColorPath = pController->m_szPath + "altcolor" + PATH_SEPARATOR_CHAR;
-         pDisplay->pDMD->SetAltColorPath(szAltColorPath.c_str());
-         pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
+         string szAltColorPath = find_directory_case_insensitive(pController->m_szPath, "AltColor");
+         if (!szAltColorPath.empty())
+            pDisplay->pDMD->SetAltColorPath(szAltColorPath.c_str());
       }
 
       if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false)) {
-         string szPupVideosPath = g_pvp->m_currentTablePath + "pupvideos" + PATH_SEPARATOR_CHAR;
-         pDisplay->pDMD->SetPUPVideosPath(szPupVideosPath.c_str());
-         pDisplay->pDMD->SetRomName(pController->m_pPinmameGame->name);
+         string szPupVideosPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
+         if (!szPupVideosPath.empty())
+            pDisplay->pDMD->SetPUPVideosPath(szPupVideosPath.c_str());
       }
 
       if (!pController->m_pActiveDisplay) {
@@ -155,9 +156,8 @@ VPinMAMEController::VPinMAMEController()
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   m_szPath = g_pvp->m_currentTablePath + "pinmame" + PATH_SEPARATOR_CHAR;
-
-   if (!DirExists(m_szPath)) {
+   m_szPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pinmame");
+   if (m_szPath.empty()) {
       m_szPath = pSettings->LoadValueWithDefault(Settings::Standalone, "PinMAMEPath"s, ""s);
 
       if (!m_szPath.empty()) {
@@ -166,7 +166,7 @@ VPinMAMEController::VPinMAMEController()
       }
       else {
 #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-         m_szPath = g_pvp->m_szMyPath + "pinmame" + PATH_SEPARATOR_CHAR;
+         m_szPath = find_directory_case_insensitive(g_pvp->m_szMyPath, "pinmame");
 #else
          m_szPath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".pinmame" + PATH_SEPARATOR_CHAR;
 #endif
@@ -177,10 +177,11 @@ VPinMAMEController::VPinMAMEController()
 
    PLOGI.printf("PinMAME path set to: %s", m_szPath.c_str());
 
-   m_szIniPath = m_szPath + "ini" + PATH_SEPARATOR_CHAR;
-
-   if (!DirExists(m_szIniPath))
+   m_szIniPath = find_directory_case_insensitive(m_szPath, "ini");
+   if (m_szIniPath.empty()) {
+      m_szIniPath = m_szPath + "ini" + PATH_SEPARATOR_CHAR;
       std::filesystem::create_directory(m_szIniPath);
+   }
 
    PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());
 
@@ -191,7 +192,7 @@ VPinMAMEController::VPinMAMEController()
 
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
-  
+
    m_pSolenoidBuffer = new PinmameSolenoidState[PinmameGetMaxSolenoids()];
    m_pLampBuffer = new PinmameLampState[PinmameGetMaxLamps()];
    m_pGIBuffer = new PinmameGIState[PinmameGetMaxGIs()];
