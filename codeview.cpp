@@ -1808,6 +1808,9 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 
    m_ignoreDirty = false;
    m_sdsDirty = eSaveClean;
+
+   // Allow updates to take now we know the script size
+   UpdateScinFromPrefs();
 }
 
 void CodeViewer::LoadFromFile(const string& filename)
@@ -3693,6 +3696,10 @@ void CodeViewer::UpdateScinFromPrefs()
 	prefVPcore->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200));
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
+
+	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+   //Update the margin width to fit the number of characters required to display the line number * font size
+   SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10(scriptLines) + 3) : 1) * m_prefEverythingElse->m_pointSize);
 }
 
 void CodeViewer::ResizeScintillaAndLastError()
