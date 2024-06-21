@@ -256,6 +256,20 @@ cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
 
+### Linux (Fedora Asahi Remix 41)
+In a terminal execute the following:
+```
+sudo dnf install @development-tools
+sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel
+git clone -b standalone https://github.com/vpinball/vpinball
+cd vpinball/standalone/linux-x64
+./external.sh
+cd ../..
+cp standalone/cmake/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+```
+
 ### RK3588 (Armbian)
 
 Start with a [Armbian 23.02 Jammy LI](https://www.armbian.com/orangepi-5/) image and execute the following:
