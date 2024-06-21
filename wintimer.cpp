@@ -1,6 +1,10 @@
 #include "stdafx.h"
 #include <ctime>
 
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+
 FrameProfiler g_frameProfiler;
 
 //#define USE_LOWLEVEL_PRECISION_SETTING // does allow to pick lower windows timer resolutions than 1ms (usually 0.5ms as of win10/2020) via undocumented API calls, BUT lead to sound distortion on some setups in PinMAME, so also disable it in VPX for now
@@ -79,6 +83,9 @@ void restore_win_timer_resolution()
 static unsigned int sTimerInit = 0;
 static LARGE_INTEGER TimerFreq;
 static LARGE_INTEGER sTimerStart;
+static LONGLONG OneMSTimerTicks;
+static LONGLONG TwoMSTimerTicks;
+static char highrestimer;
 
 // call before 1st use of msec,usec or uSleep
 void wintimer_init()
@@ -88,10 +95,20 @@ void wintimer_init()
 #ifdef _MSC_VER
    QueryPerformanceFrequency(&TimerFreq);
    QueryPerformanceCounter(&sTimerStart);
+
+   HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+   highrestimer = !!timer;
+   if (timer)
+      CloseHandle(timer);
 #else
    TimerFreq.QuadPart = SDL_GetPerformanceFrequency();
    sTimerStart.QuadPart = SDL_GetPerformanceCounter();
+
+   highrestimer = 0; //!! ???
 #endif
+
+   OneMSTimerTicks = (1000 * TimerFreq.QuadPart) / 1000000ull;
+   TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 }
 
 unsigned long long usec()
@@ -138,12 +155,20 @@ void uSleep(const unsigned long long u)
 #endif
    LARGE_INTEGER TimerEnd;
    TimerEnd.QuadPart = TimerNow.QuadPart + ((u * TimerFreq.QuadPart) / 1000000ull);
-   const LONGLONG TwoMSTimerTicks = (2000 * TimerFreq.QuadPart) / 1000000ull;
 
    while (TimerNow.QuadPart < TimerEnd.QuadPart)
    {
       if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
          Sleep(1); // really pause thread for 1-2ms (depending on OS)
+      else if (highrestimer && ((TimerEnd.QuadPart - TimerNow.QuadPart) > OneMSTimerTicks)) // pause thread for 0.5-1ms
+      {
+         HANDLE timer = CreateWaitableTimerExW(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+         LARGE_INTEGER ft;
+         ft.QuadPart = -10 * 500; // 500 usec //!! we could go lower if some future OS (>win10) actually supports this
+         SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+         WaitForSingleObject(timer, INFINITE);
+         CloseHandle(timer);
+      }
       else
          YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
 
