@@ -85,6 +85,11 @@ static LONGLONG OneMSTimerTicks;
 static LONGLONG TwoMSTimerTicks;
 static char highrestimer;
 
+#if _WIN32_WINNT < 0x0600
+typedef HANDLE(WINAPI *pCWTEA)(LPSECURITY_ATTRIBUTES lpTimerAttributes, LPCSTR lpTimerName, DWORD dwFlags, DWORD dwDesiredAccess);
+static pCWTEA CreateWaitableTimerEx = nullptr;
+#endif
+
 // call before 1st use of msec,usec or uSleep
 void wintimer_init()
 {
@@ -99,7 +104,16 @@ void wintimer_init()
    if (timer)
       CloseHandle(timer);
 #else
-   highrestimer = 0;
+   CreateWaitableTimerEx = (pCWTEA)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "CreateWaitableTimerExA");
+   if (CreateWaitableTimerEx)
+   {
+      HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
+      highrestimer = !!timer;
+      if (timer)
+         CloseHandle(timer);
+   }
+   else
+      highrestimer = 0;
 #endif
 
    OneMSTimerTicks = (1000 * TimerFreq.QuadPart) / 1000000ull;
@@ -143,7 +157,6 @@ void uSleep(const unsigned long long u)
    {
       if ((TimerEnd.QuadPart - TimerNow.QuadPart) > TwoMSTimerTicks)
          Sleep(1); // really pause thread for 1-2ms (depending on OS)
-#if (_WIN32_WINNT >= 0x0600)
       else if (highrestimer && ((TimerEnd.QuadPart - TimerNow.QuadPart) > OneMSTimerTicks)) // pause thread for 0.5-1ms
       {
          HANDLE timer = CreateWaitableTimerEx(NULL, NULL, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS); // ~0.5msec resolution (unless usec < ~10 requested, which most likely triggers a spin loop then), Win10 and above only, note that this timer variant then also would not require to call timeBeginPeriod(1) before!
@@ -153,7 +166,6 @@ void uSleep(const unsigned long long u)
          WaitForSingleObject(timer, INFINITE);
          CloseHandle(timer);
       }
-#endif
       else
          YieldProcessor(); // was: "SwitchToThread() let other threads on same core run" //!! could also try Sleep(0) or directly use _mm_pause() instead of YieldProcessor() here
 
