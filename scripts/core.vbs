@@ -48,6 +48,9 @@ Dim vpmShowDips  ' Show DIPs function
 ' Check if VPX version offers FrameIndex property
 Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
 
+' Check if VPX version offers PreciseGameTime property
+Dim HasPreciseGameTime : HasPreciseGameTime = Not IsEmpty(Eval("PreciseGameTime"))
+
 ' Does the controller supports synchronization through time fence
 Dim HasTimeFence : HasTimeFence = False
 
@@ -2511,7 +2514,13 @@ Sub PinMAMETimer_Timer
 	Dim ChgNVRAM
 
 	' If the Controller supports it, we synchronize the emulation with VPX physics & events for very low latency between them
-	If HasTimeFence Then Controller.TimeFence = PreciseGameTime
+	If HasTimeFence Then
+		If HasPreciseGameTime Then
+			Controller.TimeFence = PreciseGameTime
+		Else
+			Controller.TimeFence = GameTime / 1000.0
+		End If
+	End If
 
 	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX versions)
 	Dim UpdateVisual
