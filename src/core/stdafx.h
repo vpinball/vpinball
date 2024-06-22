@@ -121,16 +121,18 @@
 #ifndef _WIN32_WINNT
   #if defined(ENABLE_DX9)
     #if defined(_WIN64) && defined(CRASH_HANDLER)
-      // Windows XP
+      // Windows XP _WIN32_WINNT_WINXP
       #define _WIN32_WINNT 0x0501
     #else
-      // Windows 2000
+      // Windows 2000 _WIN32_WINNT_WIN2K
       #define _WIN32_WINNT 0x0500
     #endif
   #else
-    // Windows Vista
+    // Windows Vista _WIN32_WINNT_VISTA
     #define _WIN32_WINNT 0x0600
   #endif
+
+  #define WINVER _WIN32_WINNT
 #endif
 
 

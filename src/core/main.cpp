@@ -75,7 +75,7 @@ extern "C" { _declspec(dllexport) DWORD AmdPowerXpressRequestHighPerformance = 0
 #endif
 #endif
 
-#if (WINVER <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
+#if (_WIN32_WINNT <= 0x0601 /* _WIN32_WINNT_WIN7 */ )
 typedef enum ORIENTATION_PREFERENCE {
    ORIENTATION_PREFERENCE_NONE = 0x0,
    ORIENTATION_PREFERENCE_LANDSCAPE = 0x1,
@@ -427,7 +427,7 @@ public:
 
 #ifdef _MSC_VER
       // disable auto-rotate on tablets
-#if (WINVER <= 0x0601)
+#if (_WIN32_WINNT <= 0x0601)
       SetDisplayAutoRotationPreferences = (pSDARP)GetProcAddress(GetModuleHandle(TEXT("user32.dll")),
          "SetDisplayAutoRotationPreferences");
       if (SetDisplayAutoRotationPreferences)
