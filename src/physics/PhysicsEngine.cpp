@@ -592,10 +592,10 @@ void PhysicsEngine::UpdatePhysics()
 
    m_phys_iterations = 0;
 
-   while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physic (simulated) time catch up to current real time, still staying behind real time by up to one physic emulation step
+   while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
+      g_pplayer->m_time_sec = (double)(m_curPhysicsFrameTime - m_StartTime_usec) / 1000000.0;
       // Get time in milliseconds for timers
-      g_pplayer->m_time_sec = (m_curPhysicsFrameTime - m_StartTime_usec) / 1000000.0;
       g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
 
       m_phys_iterations++;
@@ -688,7 +688,7 @@ void PhysicsEngine::UpdatePhysics()
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
-   g_pplayer->m_time_sec = (min(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
+   g_pplayer->m_time_sec = (double)(min(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
    // g_pplayer->m_time_msec = (U32)((min(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
    g_frameProfiler.ExitProfileSection();

@@ -32,10 +32,10 @@
  * packets per frame on typical tables, instead of one), so with more optimizations to
  * draw calls/state changes, none of this may be needed anymore.
  */
-class DX9FLush
+class DX9Flush
 {
 public:
-   DX9FLush(RenderDevice* const pd3dDevice, const int numFrames)
+   DX9Flush(RenderDevice* const pd3dDevice, const int numFrames)
       : m_pd3dDevice(pd3dDevice)
    {
       m_curIdx = 0;
@@ -43,7 +43,7 @@ public:
       m_curIdx = 0;
    }
 
-   ~DX9FLush()
+   ~DX9Flush()
    {
       for (size_t i = 0; i < m_buffers.size(); ++i)
          delete m_buffers[i];
@@ -92,7 +92,7 @@ RenderFrame::RenderFrame(RenderDevice* renderDevice)
    const int maxPrerenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
    const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
    if (EnableLegacyMaximumPreRenderedFrames || renderDevice->GetCoreDeviceEx() == nullptr || maxPrerenderedFrames > 20)
-      m_DX9Flush = new DX9FLush(renderDevice, maxPrerenderedFrames);
+      m_DX9Flush = new DX9Flush(renderDevice, maxPrerenderedFrames);
    #endif
 }
 

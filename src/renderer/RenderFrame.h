@@ -28,6 +28,6 @@ private:
    vector<RenderCommand*> m_commandPool;
 
    #if defined(ENABLE_DX9)
-   class DX9FLush* m_DX9Flush = nullptr;
+   class DX9Flush* m_DX9Flush = nullptr;
    #endif
 };
