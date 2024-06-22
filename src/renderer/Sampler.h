@@ -88,6 +88,8 @@ private:
    SamplerFilter m_filter;
 
 #if defined(ENABLE_BGFX)
+   string m_name;
+   bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;
    bgfx::TextureHandle m_texture = BGFX_INVALID_HANDLE;
    bgfx::TextureHandle m_mips_texture = BGFX_INVALID_HANDLE;
    bgfx::FrameBufferHandle m_mips_framebuffer = BGFX_INVALID_HANDLE;

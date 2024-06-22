@@ -1135,12 +1135,6 @@ void Renderer::PrepareFrame()
 
 }
 
-void Renderer::SubmitFrame()
-{
-   // Submit to GPU render queue
-   m_pd3dPrimaryDevice->SubmitRenderFrame();
-}
-
 void Renderer::DrawBulbLightBuffer()
 {
    RenderDevice* p3dDevice = m_pd3dPrimaryDevice;
@@ -1377,10 +1371,6 @@ void Renderer::RenderStaticPrepass()
       }
 
       m_pd3dPrimaryDevice->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
-      #if defined(ENABLE_BGFX)
-      // BGFX will only process the submitted render frame when the render surface is presented
-      m_pd3dPrimaryDevice->Flip();
-      #endif
    }
 
    if (accumulationSurface)
@@ -1482,10 +1472,6 @@ void Renderer::RenderStaticPrepass()
       m_pd3dPrimaryDevice->AddEndOfFrameCmd([initialPreRender]() { delete initialPreRender; });
    }
    m_pd3dPrimaryDevice->SubmitRenderFrame(); // Submit frame as other rendering will not declare a dependency on the created passes and therefore they would be discarded
-   #if defined(ENABLE_BGFX)
-   // BGFX will only process the submitted render frame when the render surface is presented
-   m_pd3dPrimaryDevice->Flip();
-   #endif
 
    if (IsUsingStaticPrepass())
    {

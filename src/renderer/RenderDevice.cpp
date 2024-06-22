@@ -282,6 +282,64 @@ static pDF mDwmFlush = nullptr;
 typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
+// MSVC Concurrency Viewer support
+// This require to WINVER >= 0x0600 and to add the MSVC Concurrendy SDK to the project
+//#define MSVC_CONCURRENCY_VIEWER
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+extern marker_series series;
+#endif
+
+#if defined(ENABLE_BGFX)
+void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
+{
+   // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
+   // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
+   // render queue from the CPU to the GPU.
+   // Since VPX already splits the logic/prepare frame thread (CPU only) from the submit/flip (CPU-GPU)
+   // we do not really need BGFX to create its additional thread. Calling bgfx::renderFrame allows
+   // to do so, ending up with this thread being the only BGFX thread.
+   bgfx::renderFrame(); 
+   if (!bgfx::init(init))
+   {
+      PLOGE << "BGFX initialization failed";
+      exit(-1);
+   }
+   //bgfx::setDebug(BGFX_DEBUG_STATS);
+   //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
+   rd->m_frameReadySem.post();
+   while (rd->m_renderDeviceAlive)
+   {
+      // wait for a frame to be prepared by the logic thread
+      rd->m_frameReadySem.wait();
+
+      // lock prepared frame and submit it
+      rd->m_frameMutex.lock();
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      //series.write_flag(_T("Sync"));
+      span *tagSpan = new span(series, 1, _T("Submit"));
+      #endif
+      rd->SubmitRenderFrame();
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      delete tagSpan;
+      #endif
+      rd->m_frameMutex.unlock();
+
+      // Block until a flip happens then submit to GPU
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      //series.write_flag(_T("Sync"));
+      tagSpan = new span(series, 1, _T("Flip"));
+      #endif
+      rd->Flip();
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      delete tagSpan;
+      #endif
+   }
+   bgfx::shutdown();
+}
+#endif
+
 RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
    : m_isVR(isVR)
    , m_nEyes(nEyes)
@@ -341,14 +399,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
    PLOGI << supportedRendererLog;
 
-   switch (syncMode)
-   {
-   case VideoSyncMode::VSM_NONE: break;
-   case VideoSyncMode::VSM_VSYNC: break;
-   case VideoSyncMode::VSM_ADAPTIVE_VSYNC: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   case VideoSyncMode::VSM_FRAME_PACING: syncMode = VideoSyncMode::VSM_VSYNC; break; // Unsupported
-   default: break;
-   }
+   syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
 
    bgfx::Init init;
    init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
@@ -366,9 +417,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
-   init.resolution.reset = 0
-                         /* | BGFX_RESET_FLUSH_AFTER_RENDER                               /* Flush (send data from CPU to GPU) after submission, not before (bgfx::frame) */
-                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC) /* Wait for VSync */;
+   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
+                      // | BGFX_RESET_FLIP_AFTER_RENDER                                 /* No op since we are using multithreading */
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC); /* Wait for VSync */
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
    switch (m_outputWnd[0]->GetBitDepth())
@@ -400,16 +451,10 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.debug = true;
    #endif
    
-   // FIXME BGFX this disable BGFX multithreading but will fail on second run => therefore we use a single threaded build of BGFX (build with BGFX_CONFIG_MULTITHREADED=0 defined)
-   // bgfx::renderFrame(); 
-   if (!bgfx::init(init))
-   {
-      PLOGE << "BGFX initialization failed";
-      exit(-1);
-   }
+   m_renderDeviceAlive = true;
+   m_renderThread = std::thread(&RenderThread, this, init);
+   m_frameReadySem.wait();
    PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend.";
-   //bgfx::setDebug(BGFX_DEBUG_STATS);
-   //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
 
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
@@ -964,7 +1009,10 @@ RenderDevice::~RenderDevice()
    delete m_SMAAsearchTexture;
 
 #if defined(ENABLE_BGFX)
-   bgfx::shutdown();
+   m_renderDeviceAlive = false;
+   m_frameReadySem.post();
+   if (m_renderThread.joinable())
+      m_renderThread.join();
 
 #elif defined(ENABLE_OPENGL)
    for (auto binding : m_samplerBindings)
@@ -1113,16 +1161,8 @@ void RenderDevice::Flip()
    // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
 
-   // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
-   if (!m_isVR)
-      g_frameProfiler.OnPresent();
-   #if defined(ENABLE_BGFX)
-   SubmitAndFlipFrame();
-   #elif defined(ENABLE_OPENGL)
-   SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
-   #elif defined(ENABLE_DX9)
-   CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
-   #endif
+   // FIXME BGFX if (!m_isVR)
+   // FIXME BGFX    g_frameProfiler.OnPresent();
 
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
@@ -1141,6 +1181,15 @@ void RenderDevice::Flip()
    m_curTextureUpdates = 0;
    m_frameLockCalls = m_curLockCalls;
    m_curLockCalls = 0;
+
+   // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
+   #if defined(ENABLE_BGFX)
+   SubmitAndFlipFrame();
+   #elif defined(ENABLE_OPENGL)
+   SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
+   #elif defined(ENABLE_DX9)
+   CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
+   #endif
 }
 
 void RenderDevice::UploadAndSetSMAATextures()
@@ -1448,6 +1497,25 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
 
 void RenderDevice::SubmitRenderFrame()
 {
+   #ifdef ENABLE_BGFX
+   if (std::this_thread::get_id() != m_renderThread.get_id())
+   {
+      // post semaphore and wait for render thread to process frame
+      m_frameMutex.unlock(); // this thread holds the frame mutex, release it to let the render thread process any pending command
+      while (m_framePending)
+         Sleep(0);
+      m_frameMutex.lock(); // post the requested submit
+      m_framePending = true;
+      m_frameReadySem.post();
+      m_frameMutex.unlock(); // release the lock and wait for render thread
+      while (m_framePending)
+         Sleep(0);
+      m_frameMutex.lock();
+      return;
+   }
+   #endif
+
+   m_framePending = false;
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
    if (rendered)

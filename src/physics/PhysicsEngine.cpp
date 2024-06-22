@@ -688,8 +688,8 @@ void PhysicsEngine::UpdatePhysics()
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
-   g_pplayer->m_time_sec = (double)(min(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
-   // g_pplayer->m_time_msec = (U32)((min(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
+   g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
+   // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
    g_frameProfiler.ExitProfileSection();
 }

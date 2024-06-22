@@ -301,11 +301,10 @@ private:
    bool m_curFrameSyncOnFPS = false;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onPrepareFrameEventId;
-   unsigned int m_syncLengths[512];
 
-   void MultithreadedGameLoop(std::function<void(bool)> sync);
-   void FramePacingGameLoop(std::function<void(bool)> sync);
-   void GPUQueueStuffingGameLoop(std::function<void(bool)> sync);
+   void MultithreadedGameLoop(std::function<void()> sync);
+   void FramePacingGameLoop(std::function<void()> sync);
+   void GPUQueueStuffingGameLoop(std::function<void()> sync);
 
 #pragma endregion
 

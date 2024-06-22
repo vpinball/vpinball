@@ -20,6 +20,12 @@
 #include "SDL2/SDL.h"
 #endif
 
+#if defined(ENABLE_BGFX)
+#include <thread>
+#include <mutex>
+#include "bx/semaphore.h"
+#endif
+
 #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__)
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
 #endif
@@ -178,6 +184,8 @@ public:
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
    vector<SharedVertexBuffer*> m_pendingSharedVertexBuffers;
 
+   bool m_framePending = false;
+
    const int m_nEyes;
    Shader* m_basicShader = nullptr;
    Shader *m_DMDShader = nullptr;
@@ -246,15 +254,23 @@ public:
    }
    void SubmitAndFlipFrame()
    {
-      // BGFX always flips backbuffer when its render queue is submitted
-      bgfx::frame();
       RenderTarget::OnFrameFlushed();
       m_activeViewId = -1;
+      // BGFX always flips backbuffer when its render queue is submitted
+      bgfx::frame();
    }
    bgfx::VertexLayout* m_pVertexTexelDeclaration = nullptr;
    bgfx::VertexLayout* m_pVertexNormalTexelDeclaration = nullptr;
    int m_activeViewId = -1;
    uint64_t m_bgfxState = 0L;
+
+   bx::Semaphore m_frameReadySem;
+   std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
+
+private:
+   bool m_renderDeviceAlive;
+   std::thread m_renderThread;
+   static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
 
 #elif defined(ENABLE_OPENGL)
 public:
