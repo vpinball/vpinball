@@ -1874,6 +1874,12 @@ void Player::PrepareFrame()
 
    m_physics->OnPrepareFrame();
 
+   #ifdef EXT_CAPTURE
+   // Trigger captures
+   if (m_renderer->m_stereo3D == STEREO_VR)
+      UpdateExtCaptures();
+   #endif
+
    // Update visually animated parts (e.g. primitives, reels, gates, lights, bumper-skirts, hittargets, etc)
    if (IsPlaying())
    {
@@ -1940,13 +1946,10 @@ void Player::SubmitFrame()
    #ifdef MSVC_CONCURRENCY_VIEWER
    span* tagSpan = new span(series, 1, _T("Submit"));
    #endif
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_renderer->SubmitFrame();
+   g_frameProfiler.ExitProfileSection();
 
-   #ifdef EXT_CAPTURE
-   // Trigger captures
-   if (m_renderer->m_stereo3D == STEREO_VR)
-      UpdateExtCaptures();
-   #endif
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
    #endif
