@@ -165,6 +165,10 @@ Window::Window(const string& title, const string& settingsId, const int display,
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
+      #if defined(ENABLE_BGFX) && defined(__ANDROID__)
+         SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
+      #endif
+
       m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
       
       SDL_DisplayMode mode;

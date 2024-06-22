@@ -52,9 +52,10 @@ void main()
 	const float area = 0.06; //!!
 	const float falloff = 0.0002; //!!
 	const int samples = 8/*9*/; //4,8,9,13,16,21,25,32 korobov,fibonacci
+	const float samples_float = float(samples);
 	const float radius = 0.001+/*frac*/(ushift.z)*0.009; // sample radius
 	const float depth_threshold_normal = 0.005;
-	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples);
+	const float total_strength = AO_scale_timeblur.x * (/*1.0 for uniform*/0.5 / samples_float);
 	#ifdef STEREO
 	const vec3 normal = normalize(get_nonunit_normal(depth0, u, v_eye));
 	#else
@@ -65,7 +66,8 @@ void main()
 
 	float occlusion = 0.0;
 	UNROLL for(int i=0; i < samples; ++i) {
-		const vec2 r = vec2(i*(1.0 / samples), i*(5.0/*2.0*/ / samples)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
+		const float i_float = float(i);
+		const vec2 r = vec2(i_float * (1.0 / samples_float), i_float * (5.0/*2.0*/ / samples_float)); //1,5,2,8,4,13,7,7 korobov,fibonacci //!! could also use progressive/extensible lattice via rad_inv(i)*(1501825329, 359975893) (check precision though as this should be done in double or uint64)
 		//const vec3 ray = sphere_sample(fract(r+ushift.xy)); // shift lattice // uniform variant
 		const vec2 ray = rotate_to_vector_upper(cos_hemisphere_sample(fract(r+ushift.xy)), normal).xy; // shift lattice
 		//!! maybe a bit worse distribution: const vec2 ray = cos_hemisphere_sample(normal,fract(r+ushift.xy)).xy; // shift lattice

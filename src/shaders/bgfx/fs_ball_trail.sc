@@ -4,7 +4,7 @@ $input v_worldPos, v_normal, v_texcoord0, v_eye
 $input v_worldPos, v_normal, v_texcoord0
 #endif
 
-#include "bgfx_shader.sh"
+#include "common.sh"
 
 SAMPLER2D(tex_ball_color, 0);     // base texture (used as a reflection map)
 

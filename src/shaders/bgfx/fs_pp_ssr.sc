@@ -105,6 +105,7 @@ void main()
 	}
 
 	const int samples = 32; //!! reduce to ~24? would save ~1-4% overall frame time, depending on table
+	const float samples_float = float(samples);
 	const float ReflBlurWidth = 2.2; //!! magic, small enough to not collect too much, and large enough to have cool reflection effects
 
 	const float ushift = /*hash(v_texcoord0) + w_h_height.zw*/ // jitter samples via hash of position on screen and then jitter samples by time //!! see below for non-shifted variant
@@ -125,14 +126,14 @@ void main()
 		}
 		else
 		{*/
-			const float w = sqrt(float(i-1)/float(samples)); //!! fake falloff for samples more far away
+			const float w = sqrt(float(i-1)/samples_float); //!! fake falloff for samples more far away
 			refl += color*(1.0-w); //!! dampen large color values in addition?
 			color0w += w;
 		//}
 	}
 
 	refl += color0*color0w;
-	refl *= 1.0/float(samples-1); //!! -1 due to jitter
+	refl *= 1.0/(samples_float-1.0); //!! -1 due to jitter
 
 	gl_FragColor = vec4(mix(color0,refl, min(fresnel,1.0)), 1.0);
 }

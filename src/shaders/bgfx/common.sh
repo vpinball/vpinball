@@ -26,6 +26,7 @@
 #if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
 	// GLSL does not define the sincos function
     #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
+    #define const
 #endif
 
 float sqr(const float v)

@@ -123,7 +123,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    // Compute refracted visible position then project from world view position to probe UV
    // const vec4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const vec3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
-   const vec3 refracted_pos = pos + refractionThickness.x * R; // Shift ray by the thickness of the material
+   const vec3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
    #ifdef STEREO
       const vec4 proj = mul(matProj[v_eye], vec4(refracted_pos, 1.0));
    #else

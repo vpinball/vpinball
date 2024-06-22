@@ -103,9 +103,11 @@ void main()
 	   vec3 color2 = vec3_splat(0.);
 
 	   const int samples = 13; //4,8,9,13,21,25,32 korobov,fibonacci
+	   const float samples_float = float(samples);
 	   UNROLL for (int i = 0; i < samples; ++i) // oversample the dots
 	   {
-		  const vec2 xi = vec2(fract(i* (1.0 / samples) + offs.x), fract(i* (8.0 / samples) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
+		  const float i_float = float(i);
+		  const vec2 xi = vec2(fract(i_float * (1.0 / samples_float) + offs.x), fract(i_float * (8.0 / samples_float) + offs.y)); //1,5,2,8,13,7,7 korobov,fibonacci
 		  //const vec2 gxi = gaussianPDF(xi);
 		  const vec2 uv = v_texcoord0 + /*gxi.x*ddxs + gxi.y*ddys; /*/ triangularPDF(xi.x)*ddxs + triangularPDF(xi.y)*ddys; //!! lots of ALU
 
@@ -120,7 +122,7 @@ void main()
 		  else
 			 color2 += rgba.r * (255.9 / 100.) * d;
 	   }
-	   color2 *= vColor_Intensity.xyz * ((vColor_Intensity.w/samples) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
+	   color2 *= vColor_Intensity.xyz * ((vColor_Intensity.w/samples_float) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
 
 	   /*vec3 colorg = vec3(0,0,0);
 	   UNROLL for(int j = -1; j <= 1; ++j)
