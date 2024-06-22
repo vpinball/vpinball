@@ -14,6 +14,11 @@ public:
    Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D);
    ~Renderer();
 
+   void GetRenderSize(int& w, int& h) const { w = m_renderWidth, h = m_renderHeight; }
+   void GetRenderSizeAA(int& w, int& h) const { w = m_pOffscreenBackBufferTexture1->GetWidth(), h = m_pOffscreenBackBufferTexture1->GetHeight(); }
+   bool IsStereo() const { return m_pOffscreenBackBufferTexture1->m_type == SurfaceType::RT_STEREO; }
+   colorFormat GetRenderFormat() const { return m_pOffscreenBackBufferTexture1->GetColorFormat(); }
+
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
    const ModelViewProj& GetMVP() const { return *m_mvp; }
@@ -21,7 +26,6 @@ public:
    void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
    Vertex3Ds Unproject(const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const POINT& p);
-   void GetRenderSize(int& w, int& h) const { w = m_renderWidth, h = m_renderHeight; }
 
    void SetupShaders();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());

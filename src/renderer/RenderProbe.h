@@ -50,7 +50,7 @@ public:
    bool LoadToken(const int id, BiffReader* const pbr);
 
    // Rendering
-   void RenderSetup(RenderDevice* device);
+   void RenderSetup(class Renderer* renderer);
    void MarkDirty(); // Mark this probe as dirty, should be called when starting a new frame
    bool IsRendering() const;
    void PreRenderStatic(); // Allows to precompute static parts
@@ -79,6 +79,7 @@ private:
    bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
 
    // Properties used for rendering (not saved)
+   Renderer* m_renderer = nullptr;
    RenderDevice* m_rd = nullptr;
    RenderDeviceState* m_rdState = nullptr;
    bool m_dirty = true;

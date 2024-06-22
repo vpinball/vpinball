@@ -124,6 +124,7 @@ public:
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
    void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
+   void AddEndOfFrameCmd(std::function<void()> cmd) { m_endOfFrameCmds.push_back(cmd); }
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void SubmitRenderFrame();
@@ -212,6 +213,7 @@ private :
    RenderFrame m_renderFrame;
    RenderPass* m_currentPass = nullptr;
    RenderPass* m_nextRenderCommandDependency = nullptr;
+   vector<std::function<void()>> m_endOfFrameCmds;
 
    RenderState m_current_renderstate, m_renderstate, m_defaultRenderState;
    bool m_logNextFrame = false; // Output a log of next frame to main application log
