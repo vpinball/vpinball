@@ -22,7 +22,7 @@ process_shader() {
 #        '--platform windows -p s_5_0 -O 3'
         '--platform windows -p spirv     '
     )
-    local shaderc="/Users/jmillard/ooo/vpinball/standalone/macos-arm64/tmp/bgfx.cmake/build/cmake/bgfx/shaderc"
+    local shaderc="shaderc"
 
     local output_path="../bgfx_${output_file}"
     local short_name="${header:0:${#header}-1}"
