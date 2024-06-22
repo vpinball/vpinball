@@ -583,6 +583,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Initializing physics"; // For profiling
    m_progressDialog.SetProgress("Initializing Physics..."s, 30);
    // Need to set timecur here, for init functions that set timers
+   m_time_sec = 0.0;
    m_time_msec = m_last_frame_time_msec = 0;
    m_physics = new PhysicsEngine(m_ptable);
    const float minSlope = (m_ptable->m_overridePhysics ? m_ptable->m_fOverrideMinSlope : m_ptable->m_angletiltMin);
@@ -1600,27 +1601,6 @@ using namespace Concurrency::diagnostic;
 marker_series series;
 #endif
 
-#ifdef _MSC_VER
-// Sadly Windows does not offer a microsecond precise sleep function like unix does
-// using uSleep or Sleep results in bad precision and/or high CPU use.
-// Taken from https://www.c-plusplus.net/forum/topic/109539/usleep-unter-windows
-void usleep(unsigned int usec)
-{
-   HANDLE timer = CreateWaitableTimer(NULL, TRUE, NULL);
-   if (timer)
-   {
-      LARGE_INTEGER ft;
-      ft.QuadPart = -(10 * (__int64)usec); // microseconds to 100 nanoseconds intervals
-      SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
-      WaitForSingleObject(timer, INFINITE);
-      CloseHandle(timer);
-   }
-   else Sleep(0);
-}
-#else
-#include <unistd.h>
-#endif
-
 void Player::GameLoop(std::function<void()> ProcessOSMessages)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
@@ -1692,7 +1672,7 @@ void Player::MultithreadedGameLoop(std::function<void(bool)> sync)
          syncStopTimestamp += delta;
          while (usec() < syncStopTimestamp)
          {
-            usleep(100);
+            YieldProcessor();
             sync(true);
          }
       }
@@ -1835,7 +1815,7 @@ void Player::FramePacingGameLoop(std::function<void(bool)> sync)
       while (m_renderer->m_pd3dPrimaryDevice->m_vsyncCount == 0)
       {
          m_curFrameSyncOnVBlank = true;
-         usleep(100);
+         YieldProcessor();
          sync(false);
       }
 
@@ -1850,7 +1830,7 @@ void Player::FramePacingGameLoop(std::function<void(bool)> sync)
          while (now < m_lastPresentFrameTick + targetFrameLength)
          {
             m_curFrameSyncOnFPS = true;
-            usleep(100);
+            YieldProcessor();
             sync(false);
          }
          m_lastPresentFrameTick = now;

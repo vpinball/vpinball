@@ -854,6 +854,16 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
    return S_OK;
 }
 
+STDMETHODIMP ScriptGlobalTable::get_PreciseGameTime(double *pVal)
+{
+   if (!g_pplayer)
+      return E_POINTER;
+
+   *pVal = g_pplayer->m_time_sec;
+
+   return S_OK;
+}
+
 STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
 {
    if (!g_pplayer)

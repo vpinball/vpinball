@@ -274,6 +274,7 @@ public:
 
    ProgressDialog m_progressDialog;
 
+   double m_time_sec; // current physics time
    U32 m_time_msec; // current physics time
    U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
 

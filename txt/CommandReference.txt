@@ -8,6 +8,9 @@ Also see https://docs.orbitalpin.com/welcome for some more detailed help
 As for coding light sequences for original tables, please check this helper app: https://github.com/horseyhorsey/VpLightSequencing
 
 Changelog:
+10.8.1:
+- add PreciseGameTime (same as GameTime but using seconds and more precise for better emulation syncronization)
+
 10.8.0:
 - add LoadTexture to the globals
 - add DisableStaticPrerendering to the globals
@@ -125,6 +128,7 @@ Variables
 
 *FrameIndex(int) - index of the current frame, incremented for each new frame
 *GameTime(int) - gets the current internal game time in milliseconds
+*PreciseGameTime(double) - gets the current internal game time in seconds
 *SystemTime(int) - gets the current system time in milliseconds
 
 *GetCustomParam(int) - 1..9, i.e. GetCustomParam(1) to get "param1" and GetCustomParam(2) to get "param2" from the command line "VPinballX.exe -c1 param1 -c2 param2"

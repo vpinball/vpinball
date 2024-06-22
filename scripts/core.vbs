@@ -2511,7 +2511,7 @@ Sub PinMAMETimer_Timer
 	Dim ChgNVRAM
 
 	' If the Controller supports it, we synchronize the emulation with VPX physics & events for very low latency between them
-	If HasTimeFence Then Controller.TimeFence = GameTime / 1000.0
+	If HasTimeFence Then Controller.TimeFence = PreciseGameTime
 
 	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX versions)
 	Dim UpdateVisual
