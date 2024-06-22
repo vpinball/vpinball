@@ -1452,6 +1452,9 @@ void RenderDevice::SubmitRenderFrame()
    m_currentPass = nullptr;
    if (rendered)
       m_logNextFrame = false;
+   for (auto cmd : m_endOfFrameCmds)
+      cmd();
+   m_endOfFrameCmds.clear();
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
@@ -1463,6 +1466,7 @@ void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const b
    else if (m_currentPass == nullptr || !useRTContent || rt != m_currentPass->m_rt || forceNewPass)
    {
       m_currentPass = m_renderFrame.AddPass(name, rt);
+      m_currentPass->m_mergeable = !forceNewPass;
       if (useRTContent && rt->m_lastRenderPass != nullptr)
       {
          for (auto precursors : rt->m_lastRenderPass->m_dependencies)

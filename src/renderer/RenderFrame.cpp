@@ -204,7 +204,7 @@ void RenderFrame::SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedP
    for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end();)
    {
       std::vector<RenderPass*>::iterator nextPass = itPass + 1;
-      if (nextPass != sortedPasses.end() && (*itPass)->m_rt == (*nextPass)->m_rt)
+      if (nextPass != sortedPasses.end() && (*nextPass)->m_mergeable && (*itPass)->m_rt == (*nextPass)->m_rt)
       {
          (*nextPass)->m_depthReadback |= (*itPass)->m_depthReadback;
          (*nextPass)->m_commands.insert((*nextPass)->m_commands.begin(), (*itPass)->m_commands.begin(), (*itPass)->m_commands.end());

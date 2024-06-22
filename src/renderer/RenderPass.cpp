@@ -24,6 +24,7 @@ void RenderPass::Reset(const string& name, RenderTarget* const rt)
    m_areaOfInterest.x = m_areaOfInterest.y = m_areaOfInterest.z = m_areaOfInterest.w = FLT_MAX;
    m_depthReadback = false;
    m_sortKey = 0;
+   m_mergeable = true;
    m_commands.clear();
    m_dependencies.clear();
    m_referencedRT.clear();

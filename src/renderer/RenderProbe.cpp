@@ -77,10 +77,11 @@ bool RenderProbe::IsRendering() const
    return m_rendering;
 }
 
-void RenderProbe::RenderSetup(RenderDevice* device)
+void RenderProbe::RenderSetup(Renderer* renderer)
 {
    assert(m_rd == nullptr);
-   m_rd = device;
+   m_renderer = renderer;
+   m_rd = renderer->m_pd3dPrimaryDevice;
    m_rdState = new RenderDeviceState(m_rd);
    MarkDirty();
 }
@@ -88,6 +89,8 @@ void RenderProbe::RenderSetup(RenderDevice* device)
 void RenderProbe::RenderRelease()
 {
    assert(m_rd != nullptr);
+   m_renderer = nullptr;
+   m_rd = nullptr;
    delete m_rdState;
    m_rdState = nullptr;
    delete m_prerenderRT;
@@ -298,10 +301,12 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
    if (m_prerenderRT == nullptr)
    {
+      int w, h;
+      m_renderer->GetRenderSizeAA(w, h);
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
-      m_prerenderRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name + ".Stat", w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1,
-         "Failed to create plane reflection static render target", nullptr);
+      w /= downscale;
+      h /= downscale;
+      m_prerenderRT = new RenderTarget(m_rd, m_renderer->IsStereo() ? SurfaceType::RT_STEREO : SurfaceType::RT_DEFAULT, m_name + ".Stat", w, h, m_renderer->GetRenderFormat(), true, 1, "Failed to create plane reflection static render target", nullptr);
    }
 
    RenderTarget* accumulationSurface = m_prerenderRT->Duplicate("Accumulation"s);
@@ -357,7 +362,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_rd->DrawFullscreenTexturedQuad(m_rd->m_FBShader);
       m_rd->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
 
-      m_rd->SubmitRenderFrame();
+      m_rd->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
       #if defined(ENABLE_BGFX)
       // BGFX will only process the submitted render frame when the render surface is presented
       m_rd->Flip();
@@ -369,8 +374,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
    // copy back weighted antialiased color result to the static render target, keeping depth untouched
    m_rd->SetRenderTarget("PreRender Store Reflection"s, m_prerenderRT);
    m_rd->BlitRenderTarget(accumulationSurface, m_prerenderRT, true, false);
-   m_rd->SubmitRenderFrame(); // Execute before destroying the render target
-   delete accumulationSurface;
+   m_rd->AddEndOfFrameCmd([accumulationSurface]() { delete accumulationSurface; });
    if (previousRT)
    {
       m_rd->SetRenderTarget(previousRT->m_name, previousRT->m_rt);
@@ -401,10 +405,12 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    RenderPass* const previousRT = m_rd->GetCurrentPass();
    if (m_dynamicRT == nullptr)
    {
+      int w, h;
+      m_renderer->GetRenderSizeAA(w, h);
       const int downscale = GetRoughnessDownscale(m_roughness);
-      const int w = m_rd->GetCurrentRenderTarget()->GetWidth() / downscale, h = m_rd->GetCurrentRenderTarget()->GetHeight() / downscale;
-      m_dynamicRT = new RenderTarget(m_rd, m_rd->GetCurrentRenderTarget()->m_type, m_name + ".Dyn", w, h, m_rd->GetCurrentRenderTarget()->GetColorFormat(), true, 1,
-         "Failed to create plane reflection dynamic render target", nullptr);
+      w /= downscale;
+      h /= downscale;
+      m_dynamicRT = new RenderTarget(m_rd, m_renderer->IsStereo() ? SurfaceType::RT_STEREO : SurfaceType::RT_DEFAULT, m_name + ".Dyn", w, h, m_renderer->GetRenderFormat(), true, 1, "Failed to create plane reflection dynamic render target", nullptr);
    }
    m_rd->SetRenderTarget(m_name, m_dynamicRT);
    m_rd->ResetRenderState();

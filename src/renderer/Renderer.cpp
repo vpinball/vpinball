@@ -254,7 +254,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_env, envTex);
    m_pd3dPrimaryDevice->SetRenderTarget("Env Irradiance PreCalc"s, m_envRadianceTexture);
    m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
-   m_pd3dPrimaryDevice->SubmitRenderFrame();
+   m_pd3dPrimaryDevice->SubmitRenderFrame(); // Force submission as result users do not explicitly declare the dependency on this pass
    m_pd3dPrimaryDevice->m_basicShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
    m_pd3dPrimaryDevice->m_ballShader->SetTexture(SHADER_tex_diffuse_env, m_envRadianceTexture->GetColorSampler());
 
@@ -1298,12 +1298,7 @@ void Renderer::RenderStaticPrepass()
 
    TRACE_FUNCTION();
 
-   m_pd3dPrimaryDevice->SubmitRenderFrame();
    m_render_mask |= Renderer::STATIC_ONLY;
-   #if defined(ENABLE_BGFX)
-   // BGFX will only process the submitted render frame when the render surface is presented
-   m_pd3dPrimaryDevice->Flip();
-   #endif
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1344,11 +1339,10 @@ void Renderer::RenderStaticPrepass()
       InitLayout(u1, u2);
 
       // Direct all renders to the "static" buffer
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT, false);
+      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Background"s, renderRT, iter == 0, true); // First iteration needs to declare a dependency on what is already there (if any) to avoid discarding it in final render frame
       DrawBackground();
-      m_pd3dPrimaryDevice->SubmitRenderFrame();
 
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT);
+      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Draw"s, renderRT, true, true); // Force new pass to avoid sorting background draw calls with 3D rendering draw calls
 
       if (IsUsingStaticPrepass())
       {
@@ -1382,8 +1376,7 @@ void Renderer::RenderStaticPrepass()
          m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       }
 
-      // Finish the frame.
-      m_pd3dPrimaryDevice->SubmitRenderFrame();
+      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
       #if defined(ENABLE_BGFX)
       // BGFX will only process the submitted render frame when the render surface is presented
       m_pd3dPrimaryDevice->Flip();
@@ -1395,8 +1388,7 @@ void Renderer::RenderStaticPrepass()
       // copy back weighted antialiased color result to the static render target, keeping depth untouched
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender Store"s, renderRT);
       m_pd3dPrimaryDevice->BlitRenderTarget(accumulationSurface, renderRT, true, false);
-      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render target
-      delete accumulationSurface;
+      m_pd3dPrimaryDevice->AddEndOfFrameCmd([accumulationSurface]() { delete accumulationSurface; });
    }
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
@@ -1458,11 +1450,10 @@ void Renderer::RenderStaticPrepass()
 
       m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pd3dPrimaryDevice->m_FBShader);
 
-      m_pd3dPrimaryDevice->SubmitRenderFrame(); // Execute before destroying the render targets
-
       // Delete buffers: we won't need them anymore since dynamic AO is disabled
+      m_pd3dPrimaryDevice->AddEndOfFrameCmd([this]() { ReleaseAORenderTargets(); });
+
       m_pd3dPrimaryDevice->m_FBShader->SetTextureNull(SHADER_tex_ao);
-      ReleaseAORenderTargets();
    }
 
    if (GetMSAABackBufferTexture()->IsMSAA())
@@ -1472,47 +1463,42 @@ void Renderer::RenderStaticPrepass()
       InitLayout();
       m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Background"s, renderRTmsaa, false);
       DrawBackground();
-      m_pd3dPrimaryDevice->SubmitRenderFrame();
       if (IsUsingStaticPrepass())
       {
-         m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa);
+         m_pd3dPrimaryDevice->SetRenderTarget("PreRender MSAA Scene"s, renderRTmsaa, true, true); // Force new pass to avoid sorting scene calls with background calls
          m_pd3dPrimaryDevice->ResetRenderState();
          for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
             m_table->m_vrenderprobe[i]->MarkDirty();
          UpdateBasicShaderMatrix();
          for (Hitable* hitable : g_pplayer->m_vhitables)
             hitable->Render(m_render_mask);
-         m_pd3dPrimaryDevice->SubmitRenderFrame();
       }
       // Copy supersampled color buffer
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa);
+      m_pd3dPrimaryDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa, true, true); // Force new pass to avoid sorting blit call with background calls
       m_pd3dPrimaryDevice->BlitRenderTarget(m_staticPrepassRT, renderRTmsaa, true, false);
-      m_pd3dPrimaryDevice->SubmitRenderFrame();
       // Replace with this new MSAA pre render
       RenderTarget *initialPreRender = m_staticPrepassRT;
       m_staticPrepassRT = renderRTmsaa;
-      delete initialPreRender;
+      m_pd3dPrimaryDevice->AddEndOfFrameCmd([initialPreRender]() { delete initialPreRender; });
    }
+   m_pd3dPrimaryDevice->SubmitRenderFrame(); // Submit frame as other rendering will not declare a dependency on the created passes and therefore they would be discarded
+   #if defined(ENABLE_BGFX)
+   // BGFX will only process the submitted render frame when the render surface is presented
+   m_pd3dPrimaryDevice->Flip();
+   #endif
 
    if (IsUsingStaticPrepass())
    {
       PLOGI << "Starting Reflection Probe prerendering"; // For profiling
-      m_pd3dPrimaryDevice->SetRenderTarget("PreRender RenderProbe"s, m_staticPrepassRT);
       for (RenderProbe* probe : m_table->m_vrenderprobe)
          probe->PreRenderStatic();
    }
 
    // Store the total number of triangles prerendered (including ones done for render probes)
    m_statsDrawnStaticTriangles = m_pd3dPrimaryDevice->m_curDrawnTriangles;
+   m_render_mask &= ~Renderer::STATIC_ONLY;
 
    PLOGI << "Static PreRender done"; // For profiling
-   
-   m_render_mask &= ~Renderer::STATIC_ONLY;
-   m_pd3dPrimaryDevice->SubmitRenderFrame();
-   #if defined(ENABLE_BGFX)
-   // BGFX will only process the submitted render frame when the render surface is presented
-   m_pd3dPrimaryDevice->Flip();
-   #endif
 }
 
 void Renderer::RenderDynamics()

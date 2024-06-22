@@ -681,7 +681,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_vhitables.push_back(editable->GetIHitable());
       }
    for (RenderProbe* probe : m_ptable->m_vrenderprobe)
-      probe->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
+      probe->RenderSetup(m_renderer);
    for (Hitable* hitable : m_vhitables)
       hitable->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
 
