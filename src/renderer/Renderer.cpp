@@ -12,83 +12,6 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/VRDevice.h"
 
-#if defined(ENABLE_DX9)
-// Note: Nowadays the original code seems to be counter-productive, so we use the official
-// pre-rendered frame mechanism instead where possible
-// (e.g. all windows versions except for XP and no "EnableLegacyMaximumPreRenderedFrames" set in the registry)
-/*
- * Class to limit the length of the GPU command buffer queue to at most 'numFrames' frames.
- * Excessive buffering of GPU commands creates high latency and can create stuttery overlong
- * frames when the CPU stalls due to a full command buffer ring.
- *
- * Calling Execute() within a BeginScene() / EndScene() pair creates an artificial pipeline
- * stall by locking a vertex buffer which was rendered from (numFrames-1) frames ago. This
- * forces the CPU to wait and let the GPU catch up so that rendering doesn't lag more than
- * numFrames behind the CPU. It does *NOT* limit the framerate itself, only the drawahead.
- * Note that VP is currently usually GPU-bound.
- *
- * This is similar to Flush() in later DX versions, but doesn't flush the entire command
- * buffer, only up to a certain previous frame.
- *
- * Use of this class has been observed to effectively reduce stutter at least on an NVidia/
- * Win7 64 bit setup. The queue limiting effect can be clearly seen in GPUView.
- *
- * The initial cause for the stutter may be that our command buffers are too big (two
- * packets per frame on typical tables, instead of one), so with more optimizations to
- * draw calls/state changes, none of this may be needed anymore.
- */
-class FrameQueueLimiter
-{
-public:
-   FrameQueueLimiter(RenderDevice* const pd3dDevice, const int numFrames)
-      : m_pd3dDevice(pd3dDevice)
-   {
-      m_curIdx = 0;
-      m_buffers.resize(numFrames, nullptr);
-      m_curIdx = 0;
-   }
-
-   ~FrameQueueLimiter()
-   {
-      for (size_t i = 0; i < m_buffers.size(); ++i)
-         delete m_buffers[i];
-   }
-
-   void Execute()
-   {
-      if (m_buffers.empty())
-         return;
-
-      if (m_buffers[m_curIdx])
-      {
-         Vertex3Ds pos(0.f, 0.f, 0.f);
-         m_pd3dDevice->DrawMesh(m_pd3dDevice->m_basicShader, false, pos, 0.f, m_buffers[m_curIdx], RenderDevice::TRIANGLESTRIP, 0, 3);
-      }
-
-      m_curIdx = (m_curIdx + 1) % m_buffers.size();
-
-      if (!m_buffers[m_curIdx])
-      {
-         VertexBuffer* vb = new VertexBuffer(m_pd3dDevice, 1024);
-         m_buffers[m_curIdx] = new MeshBuffer(L"FrameLimiter"s,  vb);
-      }
-
-      // idea: locking a static vertex buffer stalls the pipeline if that VB is still
-      // in the GPU render queue. In effect, this lets the GPU catch up.
-      Vertex3D_NoTex2* buf;
-      m_buffers[m_curIdx]->m_vb->Lock(buf);
-      memset(buf, 0, 3 * sizeof(buf[0]));
-      buf[0].z = buf[1].z = buf[2].z = 1e5f;      // single triangle, degenerates to point far off screen
-      m_buffers[m_curIdx]->m_vb->Unlock();
-   }
-
-private:
-   RenderDevice* const m_pd3dDevice;
-   vector<MeshBuffer*> m_buffers;
-   size_t m_curIdx;
-};
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
@@ -409,11 +332,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE));
    CHECKD3D(m_pd3dPrimaryDevice->GetCoreDevice()->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR)); // default tfactor: 1,1,1,1
-   // TODO remove legacy frame limiter for Windows XP
-   const int maxPrerenderedFrames = m_stereo3D == STEREO_VR ? 0 : m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-   if (EnableLegacyMaximumPreRenderedFrames || m_pd3dPrimaryDevice->GetCoreDeviceEx() == nullptr || maxPrerenderedFrames > 20)
-      m_limiter = new FrameQueueLimiter(m_pd3dPrimaryDevice, maxPrerenderedFrames);
    #endif
 }
 
@@ -447,9 +365,6 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
-   #ifdef ENABLE_DX9
-   delete m_limiter;
-   #endif
    delete m_pd3dPrimaryDevice;
 }
 
@@ -1149,6 +1064,9 @@ void Renderer::UpdateStereoShaderState()
 
 void Renderer::PrepareFrame()
 {
+   // Keep previous render as a reflection probe for ball reflection and for hires motion blur
+   SwapBackBufferRenderTargets();
+
    // Update camera point of view
    #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR)
@@ -1214,26 +1132,13 @@ void Renderer::PrepareFrame()
       m_pd3dPrimaryDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
       initial_rt->m_name += '-';
    }
+
 }
 
 void Renderer::SubmitFrame()
 {
    // Submit to GPU render queue
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pd3dPrimaryDevice->SubmitRenderFrame();
-   if (m_stereo3D == STEREO_VR && m_vrPreview != VRPREVIEW_DISABLED && !g_pplayer->m_liveUI->IsTweakMode() && g_pplayer->m_liveUI->IsOpened())
-   {
-      m_pd3dPrimaryDevice->SetRenderTarget("ImgUI-Preview"s, m_pd3dPrimaryDevice->GetOutputBackBuffer(), false);
-      g_pplayer->m_liveUI->Update(m_pd3dPrimaryDevice->GetOutputBackBuffer());
-      m_pd3dPrimaryDevice->RenderLiveUI();
-      m_pd3dPrimaryDevice->SubmitRenderFrame();
-   }
-   SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
-   #if defined(ENABLE_DX9)  // (Optionally) force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
-   if (m_limiter)
-      m_limiter->Execute();
-   #endif
-   g_frameProfiler.ExitProfileSection();
 }
 
 void Renderer::DrawBulbLightBuffer()

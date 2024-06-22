@@ -184,10 +184,6 @@ private:
 
    Texture* m_tonemapLUT = nullptr;
 
-   #if defined(ENABLE_DX9)
-   class FrameQueueLimiter* m_limiter = nullptr;
-   #endif
-
    #if defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    RenderTarget* m_envRadianceTexture = nullptr;
    #else

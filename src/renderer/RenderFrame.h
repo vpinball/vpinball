@@ -26,4 +26,8 @@ private:
    vector<RenderPass*> m_passes;
    vector<RenderPass*> m_passPool;
    vector<RenderCommand*> m_commandPool;
+
+   #if defined(ENABLE_DX9)
+   class DX9FLush* m_DX9Flush = nullptr;
+   #endif
 };
