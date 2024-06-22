@@ -897,6 +897,7 @@ public:
    STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_FrameIndex)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_PreciseGameTime)(/*[out, retval]*/ double *pVal);
    STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
    STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
