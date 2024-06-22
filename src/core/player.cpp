@@ -752,7 +752,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Pre-render all non-changing elements such as static walls, rails, backdrops, etc. and also static playfield reflections
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    PLOGI << "Prerendering static parts"; // For profiling
+   #if defined(ENABLE_BGFX)
+   m_renderer->m_pd3dPrimaryDevice->m_frameMutex.lock();
    m_renderer->RenderStaticPrepass();
+   m_renderer->m_pd3dPrimaryDevice->m_frameMutex.unlock();
+   #else
+   m_renderer->RenderStaticPrepass();
+   #endif
 
    // Reset the perf counter to start time when physics starts
    wintimer_init();
@@ -1605,22 +1611,17 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
 {
    assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
 
-   int syncLengthPos = 0;
-   memset(m_syncLengths, 0, sizeof(m_syncLengths));
-   auto sync = [this, ProcessOSMessages, &syncLengthPos](bool updateTimings)
+   auto sync = [this, ProcessOSMessages]()
    {
       // Controller sync
       #ifdef MSVC_CONCURRENCY_VIEWER
       //series.write_flag(_T("Sync"));
       span *tagSpan = new span(series, 1, _T("Sync"));
       #endif
-      unsigned long long startTick = usec();
       ProcessOSMessages();
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
       m_physics->UpdatePhysics(); // Update physics (also trigerring events, syncing with controller)
       FireSyncController(); // Trigger script sync event (to sync solenoids back)
-      m_syncLengths[syncLengthPos] = (unsigned int)(usec() - startTick);
-      syncLengthPos = (syncLengthPos + 1) % (sizeof(m_syncLengths) / sizeof(m_syncLengths[0]));
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
       #endif
@@ -1637,59 +1638,37 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
    #endif
 }
 
-void Player::MultithreadedGameLoop(std::function<void(bool)> sync)
+void Player::MultithreadedGameLoop(std::function<void()> sync)
 {
+#ifdef ENABLE_BGFX
+   // Flush any pending frame
+   m_renderer->m_pd3dPrimaryDevice->m_frameReadySem.post();
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      series.write_flag(_T("Frame"));
-      #endif
-      unsigned long long syncStopTimestamp = usec();
-      g_frameProfiler.NewFrame(m_time_msec);
-      m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
-
-      // Process OS messages, input, physics and timers including synchronization with game controller like PinMame
-      sync(false);
-
-      // Prepare render frame
-      PrepareFrame();
-
-      sync(true);
-
-      // Submit render frame to backend
-      SubmitFrame();
-
-      sync(true);
-
-      // performs some syncs to limit IO latency and improve syncing between emulation/input/physics
-      unsigned int maxSyncLength = 0;
-      for (int i = 0; i < 512; i++)
-         maxSyncLength = maxSyncLength < m_syncLengths[i] ? m_syncLengths[i] : maxSyncLength;
-      int delta = (1000000 / m_maxFramerate) - 600 - maxSyncLength;
-      m_lastFrameSyncOnVBlank = delta > 0;
-      if (m_lastFrameSyncOnVBlank)
+      sync();
+      if (!m_renderer->m_pd3dPrimaryDevice->m_framePending && m_renderer->m_pd3dPrimaryDevice->m_frameMutex.try_lock())
       {
-         syncStopTimestamp += delta;
-         while (usec() < syncStopTimestamp)
-         {
-            YieldProcessor();
-            sync(true);
-         }
+         FinishFrame();
+         #ifdef MSVC_CONCURRENCY_VIEWER
+         series.write_flag(_T("Frame"));
+         #endif
+         g_frameProfiler.NewFrame(m_time_msec);
+         m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
+         PrepareFrame();
+         m_renderer->m_pd3dPrimaryDevice->m_framePending = true;
+         m_renderer->m_pd3dPrimaryDevice->m_frameReadySem.post();
+         m_renderer->m_pd3dPrimaryDevice->m_frameMutex.unlock();
       }
-
-      // Schedule present
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      span* tagSpan = new span(series, 1, _T("Flip"));
-      #endif
-      m_renderer->m_pd3dPrimaryDevice->Flip();
-      FinishFrame();
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      delete tagSpan;
-      #endif
+      else
+      // Very imprecise on Windows:
+      // std::this_thread::sleep_for(std::chrono::microseconds(10));
+      // usleep(100);
+      YieldProcessor();
    }
+#endif
 }
 
-void Player::GPUQueueStuffingGameLoop(std::function<void(bool)> sync)
+void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
 {
    // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing
    // the latency and causing syncing problems with PinMAME (which runs in realtime and expects realtime inputs, especially for video modes
@@ -1705,15 +1684,15 @@ void Player::GPUQueueStuffingGameLoop(std::function<void(bool)> sync)
       g_frameProfiler.NewFrame(m_time_msec);
       m_overall_frames++;
 
-      sync(false);
+      sync();
 
       PrepareFrame();
 
-      sync(false);
+      sync();
 
       SubmitFrame();
 
-      sync(false);
+      sync();
 
       // Present & VSync
       #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1748,7 +1727,7 @@ void Player::GPUQueueStuffingGameLoop(std::function<void(bool)> sync)
    }
 }
 
-void Player::FramePacingGameLoop(std::function<void(bool)> sync)
+void Player::FramePacingGameLoop(std::function<void()> sync)
 {
    // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
    // These 2 tasks are designed as follows:
@@ -1800,12 +1779,12 @@ void Player::FramePacingGameLoop(std::function<void(bool)> sync)
       g_frameProfiler.NewFrame(m_time_msec);
       m_overall_frames++;
 
-      sync(false);
+      sync();
 
       PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
       PrepareFrame();
 
-      sync(false);
+      sync();
 
       PLOGI_IF(debugLog) << "Frame Submit at " << usec();
       SubmitFrame();
@@ -1816,7 +1795,7 @@ void Player::FramePacingGameLoop(std::function<void(bool)> sync)
       {
          m_curFrameSyncOnVBlank = true;
          YieldProcessor();
-         sync(false);
+         sync();
       }
 
       // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
@@ -1831,7 +1810,7 @@ void Player::FramePacingGameLoop(std::function<void(bool)> sync)
          {
             m_curFrameSyncOnFPS = true;
             YieldProcessor();
-            sync(false);
+            sync();
          }
          m_lastPresentFrameTick = now;
       }
@@ -1947,7 +1926,7 @@ void Player::SubmitFrame()
    span* tagSpan = new span(series, 1, _T("Submit"));
    #endif
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
-   m_renderer->SubmitFrame();
+   m_renderer->m_pd3dPrimaryDevice->SubmitRenderFrame();
    g_frameProfiler.ExitProfileSection();
 
    #ifdef MSVC_CONCURRENCY_VIEWER

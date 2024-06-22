@@ -363,11 +363,6 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_rd->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
 
       m_rd->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
-      #if defined(ENABLE_BGFX)
-      // BGFX will only process the submitted render frame when the render surface is presented
-      m_rd->Flip();
-      #endif
-
    }
    m_rd->m_curDrawnTriangles += nTris;
 

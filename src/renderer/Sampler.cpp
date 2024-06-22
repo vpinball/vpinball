@@ -26,19 +26,18 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    m_rd->m_curTextureUpdates++;
 #if defined(ENABLE_BGFX)
    BaseTexture* upload = surf;
-   bgfx::TextureFormat::Enum bgfx_format;
    m_isLinear = true;
    bool add_alpha = false;
    switch (surf->m_format)
    {
-   case BaseTexture::SRGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
-   case BaseTexture::RGBA: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
-   case BaseTexture::SRGB: bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; add_alpha = true; break;
-   case BaseTexture::RGB: bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
-   case BaseTexture::RGBA_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
-   case BaseTexture::RGB_FP16: bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
-   //case BaseTexture::RGB_FP32: bgfx_format = bimg::TextureFormat::Enum::RGB32F; break;
-   case BaseTexture::BW: bgfx_format = bgfx::TextureFormat::Enum::R8; break;
+   case BaseTexture::SRGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; break;
+   case BaseTexture::RGBA: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; break;
+   case BaseTexture::SRGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA8; m_isLinear = force_linear_rgb; add_alpha = true; break;
+   case BaseTexture::RGB: m_bgfx_format = bgfx::TextureFormat::Enum::RGB8; break;
+   case BaseTexture::RGBA_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
+   case BaseTexture::RGB_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
+   //case BaseTexture::RGB_FP32: m_bgfx_format = bimg::TextureFormat::Enum::RGB32F; break;
+   case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
    default: assert(false); // Unsupported texture format
    }
 
@@ -60,30 +59,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 
    // Create a render target and blit texture on it to force BGFX mip map generation (BGFX does not support automatic mipmap generation for textures)
    const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-   m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, bgfx_format, flags, data); // Base texture without mipmaps
-   m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
-   m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
-   bgfx::Attachment m_mips_attachment;
-   m_mips_attachment.init(m_texture);
-   m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
-   // Blit to RT
-   if (m_rd->m_activeViewId < 0)
-      m_rd->NextView();
-   // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
-   // For a simple and readable reference, see (paramters: alpha=4, stretch=1, m_width=filter half width):
-   //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
-   //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
-   bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
-   // Force RT resolution, in turns causing mipmap generation
-   m_rd->NextView();
-   bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
-   // Get back to the rendering view
-   RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-   if (activeRT)
-   {
-      RenderTarget::OnFrameFlushed();
-      activeRT->Activate();
-   }
+   m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, data); // Base texture without mipmaps
 
 #elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
@@ -212,7 +188,8 @@ Sampler::~Sampler()
    m_rd->UnbindSampler(this);
    
    #if defined(ENABLE_BGFX)
-   bgfx::destroy(m_texture);
+   if (bgfx::isValid(m_texture))
+      bgfx::destroy(m_texture);
    if (bgfx::isValid(m_mips_framebuffer))
       bgfx::destroy(m_mips_framebuffer);
    if (bgfx::isValid(m_mips_texture))
@@ -232,14 +209,46 @@ Sampler::~Sampler()
 #if defined(ENABLE_BGFX)
 bgfx::TextureHandle Sampler::GetCoreTexture()
 {
-   if (bgfx::isValid(m_mips_texture) && bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
+   // Handle mipmap generation (on BGFX API thread)
+   if (bgfx::isValid(m_mips_texture))
    {
-      // Mipmaps have been generated, we can release the framebuffer and base version of the texture
-      bgfx::destroy(m_mips_texture);
-      bgfx::destroy(m_mips_framebuffer);
-      m_mips_texture = BGFX_INVALID_HANDLE;
-      m_mips_framebuffer = BGFX_INVALID_HANDLE;
-      m_mips_gpu_frame = 0;
+      if (!bgfx::isValid(m_texture))
+      {
+         m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
+         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
+         m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
+         bgfx::setName(m_texture, m_name.c_str());
+         bgfx::Attachment m_mips_attachment;
+         m_mips_attachment.init(m_texture);
+         m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
+         // Blit to RT
+         if (m_rd->m_activeViewId < 0)
+            m_rd->NextView();
+         // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
+         // For a simple and readable reference, see (paramters: alpha=4, stretch=1, m_width=filter half width):
+         //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
+         //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
+         bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
+         // Force RT resolution, in turns causing mipmap generation
+         m_rd->NextView();
+         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
+         // Get back to the rendering view
+         RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+         if (activeRT)
+         {
+            RenderTarget::OnFrameFlushed();
+            activeRT->Activate();
+         }
+      }
+      else if (bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
+      {
+         // Mipmaps have been generated, we can release the framebuffer and base version of the texture
+         bgfx::destroy(m_mips_texture);
+         bgfx::destroy(m_mips_framebuffer);
+         m_mips_texture = BGFX_INVALID_HANDLE;
+         m_mips_framebuffer = BGFX_INVALID_HANDLE;
+         m_mips_gpu_frame = 0;
+      }
    }
    return m_texture;
 }
@@ -334,7 +343,9 @@ void Sampler::SetFilter(const SamplerFilter filter)
 void Sampler::SetName(const string& name)
 {
    #if defined(ENABLE_BGFX)
-   bgfx::setName(m_texture, name.c_str());
+   m_name = name;
+   if (bgfx::isValid(m_texture))
+      bgfx::setName(m_texture, name.c_str());
    if (bgfx::isValid(m_mips_texture))
       bgfx::setName(m_mips_texture, name.c_str());
    #elif defined(ENABLE_OPENGL) && !defined(__OPENGLES__)

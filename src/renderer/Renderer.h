@@ -38,7 +38,6 @@ public:
    void RenderStaticPrepass();
 
    void PrepareFrame();
-   void SubmitFrame();
 
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
