@@ -225,6 +225,9 @@ FIXES:
 - timers with a -1 interval are always fired after physics and animation, but before rendering, allowing the script to update visual parts accordingly without any visual lag.
   This also applies to the new 'Animate' event which is designed for this purpose.
 
+- adapt physics ball-rest collision filter: its now based on ball travel distance instead of time
+- filter out ball hit events only if they happen in the same place during the next 2 physics iterations
+
 - fix visible depth range evaluation, allowing to simplify VR settings and to edit large VR rooms within the LiveUI.
   Note that loading pre-10.8 tables will take a bit longer (until they are saved again with 10.8) due to this, as these need to compute 3D-bounds for each part.
 
@@ -238,6 +241,7 @@ FIXES:
 - fix saving of custom keys for joypad input
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
+- reinitialize sounds each time their output device changes
 
 - fix longstanding textbox font size bug
 
@@ -287,6 +291,8 @@ FIXES:
 - fix gate two-way flag import from VP9/8 .vpts
 
 - improve UI scaling on high resolutions (e.g. 4K)
+
+- fix the resize of the line number column in the script editor to accommodate for larger font sizes and size of script loaded
 
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
