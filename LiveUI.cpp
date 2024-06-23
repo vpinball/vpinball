@@ -3289,8 +3289,8 @@ void LiveUI::CameraProperties(bool is_live)
    if (BEGIN_PROP_TABLE)
    {
       const ViewSetupID vsId = (ViewSetupID) m_selection.camera;
-      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
-      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
+      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s };
+      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode : 0;
       int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
       auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
       // View
@@ -3447,7 +3447,7 @@ void LiveUI::MaterialProperties(bool is_live)
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       static const string matType[] = { "Default"s, "Metal"s };
-      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 3, matType);
+      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 2, matType);
       if (material != nullptr)
       {
          PropRGB("Base Color", m_table, is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);
