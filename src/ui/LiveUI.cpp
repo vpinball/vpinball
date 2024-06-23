@@ -4084,7 +4084,7 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       
       PropSeparator();
-      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s, "AgX"s };
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;
       PinTable * const table = m_table;
@@ -4096,7 +4096,7 @@ void LiveUI::TableProperties(bool is_live)
          else
             table->SetToneMapper((ToneMapper)v);
       };
-      PropCombo("Tonemapper", m_table, is_live, &startup_mode, &live_mode, 4, tonemapperLabels, upd_tm);
+      PropCombo("Tonemapper", m_table, is_live, &startup_mode, &live_mode, std::size(tonemapperLabels), tonemapperLabels, upd_tm);
       ImGui::EndTable();
    }
 }
@@ -4127,12 +4127,12 @@ void LiveUI::CameraProperties(bool is_live)
    if (BEGIN_PROP_TABLE)
    {
       const ViewSetupID vsId = (ViewSetupID) m_selection.camera;
-      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s};
-      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode :0;
+      static const string layoutModeLabels[] = { "Relative"s, "Absolute"s };
+      int startup_mode = m_table ? (int)m_table->mViewSetups[vsId].mMode : 0;
       int live_mode = m_live_table ? (int)m_live_table->mViewSetups[vsId].mMode : 0;
       auto upd_mode = [table, vsId](bool is_live, int prev, int v) { table->mViewSetups[vsId].mMode = (ViewLayoutMode)v; };
       // View
-      PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, 2, layoutModeLabels, upd_mode);
+      PropCombo("Layout Mode", m_table, is_live, &startup_mode, &live_mode, std::size(layoutModeLabels), layoutModeLabels, upd_mode);
       PropFloat("Field Of View", m_table, is_live, &(m_table->mViewSetups[vsId].mFOV), m_live_table ? &(m_live_table->mViewSetups[vsId].mFOV) : nullptr, 0.2f, 1.0f);
       PropFloat("Layback", m_table, is_live, &(m_table->mViewSetups[vsId].mLayback), m_live_table ? &(m_live_table->mViewSetups[vsId].mLayback) : nullptr, 0.2f, 1.0f);
       // Player position
@@ -4317,7 +4317,7 @@ void LiveUI::MaterialProperties(bool is_live)
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       static const string matType[] = { "Default"s, "Metal"s };
-      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, 3, matType);
+      PropCombo("Type", m_table, is_live, startup_material ? (int *)&(startup_material->m_type) : nullptr, live_material ? (int *)&(live_material->m_type) : nullptr, std::size(matType), matType);
       if (material != nullptr)
       {
          PropRGB("Base Color", m_table, is_live, startup_material ? &(startup_material->m_cBase) : nullptr, live_material ? &(live_material->m_cBase) : nullptr);
@@ -4409,7 +4409,7 @@ void LiveUI::KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_ob
    {
       PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
       static const string shapes[] = { "Invisible"s, "Hole"s, "Cup"s, "Hole Simple"s, "Williams"s, "Gottlieb"s, "Cup 2"s };
-      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_kickertype) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_kickertype) : nullptr, 7, shapes);
+      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_kickertype) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_kickertype) : nullptr, std::size(shapes), shapes);
       PropFloat("Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Orientation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_orientation) : nullptr, live_obj ? &(live_obj->m_d.m_orientation) : nullptr, 0.1f, 0.5f, "%.1f");
       // Missing position
@@ -4448,7 +4448,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       PropSeparator("Light Settings");
       PropFloat("Intensity", startup_light, is_live, startup_light ? &(startup_light->m_d.m_intensity) : nullptr, live_light ? &(live_light->m_d.m_intensity) : nullptr, 0.1f, 1.0f, "%.1f", ImGuiInputTextFlags_CharsDecimal, upd_intensity);
       static const string faders[] = { "None"s, "Linear"s, "Incandescent"s };
-      PropCombo("Fader", startup_light, is_live, startup_light ? (int *)&(startup_light->m_d.m_fader) : nullptr, live_light ? (int *)&(live_light->m_d.m_fader) : nullptr, 3, faders);
+      PropCombo("Fader", startup_light, is_live, startup_light ? (int *)&(startup_light->m_d.m_fader) : nullptr, live_light ? (int *)&(live_light->m_d.m_fader) : nullptr, std::size(faders), faders);
       PropFloat("Fade Up (ms)", startup_light, is_live, startup_light ? &startup_fadeup : nullptr, live_light ? &live_fadeup : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_up);
       PropFloat("Fade Down (ms)", startup_light, is_live, startup_light ? &startup_fadedown : nullptr, live_light ? &live_fadedown : nullptr, 10.0f, 50.0f, "%.0f", ImGuiInputTextFlags_CharsDecimal, upd_fade_down);
       PropRGB("Light Color", startup_light, is_live, startup_light ? &(startup_light->m_d.m_color) : nullptr, live_light ? &(live_light->m_d.m_color) : nullptr);
@@ -4461,7 +4461,7 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
       int startup_mode = startup_light ? startup_light->m_d.m_visible ? startup_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
       int live_mode = live_light ? live_light->m_d.m_visible ? live_light->m_d.m_BulbLight ? 2 : 1 : 0 : -1;
       auto upd_mode = [light](bool is_live, bool prev, int v) { light->m_d.m_visible = (v != 0); light->m_d.m_BulbLight = (v != 1); };
-      PropCombo("Type", startup_light, is_live, startup_mode >= 0 ? &startup_mode : nullptr, live_mode >= 0 ? &live_mode : nullptr, 3, modes, upd_mode);
+      PropCombo("Type", startup_light, is_live, startup_mode >= 0 ? &startup_mode : nullptr, live_mode >= 0 ? &live_mode : nullptr, std::size(modes), modes, upd_mode);
       if (!light->m_d.m_visible)
       {
       }
@@ -4666,7 +4666,7 @@ void LiveUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *live
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
       PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
       static const string shapes[] = { "None"s, "Wire A"s, "Star"s, "Wire B"s, "Button"s, "Wire C"s, "Wire D"s, "Inder"s };
-      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_shape) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_shape) : nullptr, 8, shapes);
+      PropCombo("Shape", startup_obj, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_shape) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_shape) : nullptr, std::size(shapes), shapes);
       PropFloat("Wire Thickness", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_wireThickness) : nullptr, live_obj ? &(live_obj->m_d.m_wireThickness) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Star Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
       PropFloat("Rotation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_rotation) : nullptr, live_obj ? &(live_obj->m_d.m_rotation) : nullptr, 0.1f, 0.5f, "%.1f");
