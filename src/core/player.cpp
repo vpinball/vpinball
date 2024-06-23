@@ -622,6 +622,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                   int filter = 0, clampU = 0, clampV = 0;
                   bool linearRGB = false, preRenderOnly = false;
                   const char *name = node->GetText();
+                  if (name == nullptr)
+                     continue;
                   Texture *tex = m_ptable->GetImage(name);
                   if (tex == nullptr 
                      || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
@@ -870,7 +872,7 @@ Player::~Player()
       {
          for (Texture *image : m_ptable->m_vimage)
          {
-            if (image->m_pdsBuffer == memtex)
+            if (image->m_szName.length() > 0 && image->m_pdsBuffer == memtex)
             {
                tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
                node->SetText(image->m_szName.c_str());
