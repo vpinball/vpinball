@@ -104,6 +104,8 @@ public:
    void SetActiveTable(PinTable* ptable) { m_activeTable = ptable; m_layerTreeView.SetActiveTable(ptable); }
    vector<string> GetAllLayerNames();
 
+   void UpdateLayerInfo();
+
    void ExpandAll()
    {
       m_layerTreeView.ExpandAll();
