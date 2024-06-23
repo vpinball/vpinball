@@ -4895,7 +4895,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
    PROP_HELPER_END
 }
 
-void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, int n_values, const string labels[], OnIntPropChange chg_callback)
+void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], OnIntPropChange chg_callback)
 {
    PROP_HELPER_BEGIN(int)
    const char * const preview_value = labels[*v].c_str();

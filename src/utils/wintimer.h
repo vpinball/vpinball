@@ -181,10 +181,6 @@ public:
 
    void NewFrame(U32 gametime)
    {
-      #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
-      #endif
       assert(m_profileSectionStackPos == 0);
       m_frameIndex++;
       m_profileTimeStamp = usec();
@@ -233,10 +229,6 @@ public:
 
    void SetProfileSection(ProfileSection section)
    {
-      #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
-      #endif
       assert(0 <= section && section < PROFILE_COUNT);
       const unsigned long long ts = usec();
       m_profileData[m_profileIndex][m_profileSection] += (unsigned int) (ts - m_profileTimeStamp);
@@ -246,10 +238,6 @@ public:
 
    void EnterProfileSection(ProfileSection section)
    {
-      #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
-      #endif
       assert(0 <= section && section < PROFILE_COUNT);
       assert(m_profileSectionStackPos < STACK_SIZE);
       m_profileSectionStack[m_profileSectionStackPos] = m_profileSection;
@@ -260,8 +248,7 @@ public:
    void ExitProfileSection()
    {
       #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
+      //assert(std::this_thread::get_id() != g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_renderThread.get_id());
       #endif
       assert(m_profileSectionStackPos >= 0);
       m_profileSectionStackPos--;
@@ -270,10 +257,6 @@ public:
 
    void EnterScriptSection(DISPID id, const char* timer_name = nullptr)
    {
-      #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
-      #endif
       EnterProfileSection(PROFILE_SCRIPT);
       m_scriptEventDispID = id;
       // For the time being, just store a list of the timer called during the script profile section
@@ -296,10 +279,6 @@ public:
 
    void ExitScriptSection(const char* timer_name = nullptr)
    {
-      #ifdef ENABLE_BGFX
-      // BGFX FIXME make profiler multithreaded
-      return;
-      #endif
       unsigned long long profileTimeStamp = m_profileTimeStamp;
       ExitProfileSection();
       EventTick& et = m_scriptEventData[m_scriptEventDispID];
