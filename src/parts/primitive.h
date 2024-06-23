@@ -300,7 +300,7 @@ public:
    bool LoadMeshDialog() final;
    void ExportMeshDialog() final;
 
-   bool IsPlayfield() const { return _wcsicmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return wcsicmp(m_wzName, L"playfield_mesh") == 0; }
    bool IsBackglass() const { return lstrcmpi(m_d.m_szImage.c_str(), "backglassimage") == 0; }
 
    float GetAlpha() const { return m_d.m_alpha; }
