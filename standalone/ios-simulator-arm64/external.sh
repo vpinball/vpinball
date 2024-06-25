@@ -8,7 +8,7 @@ SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=a77c2d20270a3e4d72c3eee251457c53e17b1398
 LIBALTSOUND_SHA=f11354cf262263a30327b4a9a02953f4c3c36d9c
-LIBDMDUTIL_SHA=fc29cd7d8271c34999a125fbbc123a71ace571c9
+LIBDMDUTIL_SHA=a336d0c7339a5e8c129faf8da0909ef92de90b44
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 BGFX_CMAKE_VERSION=1.127.8765-472
@@ -38,8 +38,8 @@ echo ""
 
 CACHE_DIR="external/cache/${BUILD_TYPE}"
 
-rm -rf external/include external/lib
-mkdir -p external/include external/lib ${CACHE_DIR}
+rm -rf external/include external/lib external/framework
+mkdir -p external/include external/lib external/framework ${CACHE_DIR}
 
 rm -rf tmp
 mkdir tmp
@@ -56,10 +56,11 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://downloads.sourceforge.net/project/freeimage/Source%20Distribution/${FREEIMAGE_VERSION}/${FREEIMAGE_BASENAME}.zip -o ${FREEIMAGE_BASENAME}.zip
    unzip ${FREEIMAGE_BASENAME}.zip
    cd FreeImage
-   cp ../../freeimage/Makefile.macos .
-   make -f Makefile.macos -j${NUM_PROCS}
+   patch -i ../../freeimage/FreeImage3180.patch
+   cp ../../freeimage/Makefile.iphone-simulator.arm64 .
+   make -f Makefile.iphone-simulator.arm64 -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp Dist/libfreeimage-x86_64.a ../../${CACHE_DIR}/${CACHE_NAME}/lib/libfreeimage.a
+   cp Dist/libfreeimage-arm64-simulator.a ../../${CACHE_DIR}/${CACHE_NAME}/lib/libfreeimage.a
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
@@ -73,14 +74,17 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 CACHE_NAME="bass24"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://www.un4seen.com/files/bass24-osx.zip -o bass.zip
+   curl -sL https://www.un4seen.com/files/bass24-ios.zip -o bass.zip
    unzip bass.zip
    mkdir -p ../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp libbass.dylib ../${CACHE_DIR}/${CACHE_NAME}/lib
+   lipo bass.xcframework/ios-arm64_i386_x86_64-simulator/bass.framework/bass -extract arm64 -output libbass.dylib
+   install_name_tool -id @rpath/libbass.dylib libbass.dylib
+   codesign --remove-signature libbass.dylib
+   cp libbass.dylib ../${CACHE_DIR}/${CACHE_NAME}/lib/libbass.dylib
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 
 #
 # build SDL2 and copy to external
@@ -92,28 +96,23 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-${SDL2_VERSION}.zip -o SDL2-${SDL2_VERSION}.zip
    unzip SDL2-${SDL2_VERSION}.zip
    cd SDL2-${SDL2_VERSION}
-   cmake \
-      -DSDL_SHARED=ON \
-      -DSDL_STATIC=OFF \
-      -DSDL_TEST=OFF \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   # cmake does not make a symbolic link for libSDL2.dylib
-   ln -s libSDL2-2.0.0.dylib build/libSDL2.dylib
+   xcrun xcodebuild \
+      -project "Xcode/SDL/SDL.xcodeproj" \
+      -target "Static Library-iOS" \
+      -sdk iphonesimulator \
+      -configuration Release \
+      clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl-build"
    mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
    cp include/*.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
+   cp sdl-build/*.a ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache"
 fi
-
+ 
 mkdir -p ../external/include/SDL2
 cp -r ../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build SDL2_image and copy to external
@@ -125,27 +124,22 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL2_IMAGE_VERSION}/SDL2_image-${SDL2_IMAGE_VERSION}.zip -o SDL2_image-${SDL2_IMAGE_VERSION}.zip
    unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
    cd SDL2_image-${SDL2_IMAGE_VERSION}
-   touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DSDL2IMAGE_SAMPLES=OFF \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
+   xcrun xcodebuild \
+      -project "Xcode/SDL_image.xcodeproj" \
+      -target "Static Library" \
+      -sdk iphonesimulator \
+      -configuration Release \
+      clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl_image-build" HEADER_SEARCH_PATHS="$(pwd)/../../external/include/SDL2"
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp include/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp sdl_image-build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build SDL2_ttf and copy to external
@@ -157,29 +151,22 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
    unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
    cd SDL2_ttf-${SDL2_TTF_VERSION}
-   touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DSDL2TTF_SAMPLES=OFF \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
-      -DSDL2TTF_VENDORED=ON \
-      -DSDL2TTF_HARFBUZZ=ON \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
+   xcrun xcodebuild \
+      -project "Xcode/SDL_ttf.xcodeproj" \
+      -target "Static Library" \
+      -sdk iphonesimulator \
+      -configuration Release \
+      clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl_ttf-build"  HEADER_SEARCH_PATHS="$(pwd)/../../external/include/SDL2"
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp -r *.h ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp *.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp sdl_ttf-build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build libpinmame and copy to external
@@ -191,23 +178,22 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/vpinball/pinmame/archive/${PINMAME_SHA}.zip -o pinmame.zip
    unzip pinmame.zip
    cd pinmame-$PINMAME_SHA
-   cp cmake/libpinmame/CMakeLists_osx-x64.txt CMakeLists.txt
+   cp cmake/libpinmame/CMakeLists_ios-arm64.txt CMakeLists.txt
    cmake \
-      -DBUILD_STATIC=OFF \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+      -DCMAKE_OSX_SYSROOT=iphonesimulator \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp src/libpinmame/libpinmame.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp build/libpinmame.3.6.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build libaltsound and copy to external
@@ -219,24 +205,24 @@ if [ ! -f  "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/vpinball/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
    unzip libaltsound.zip
    cd libaltsound-$LIBALTSOUND_SHA
-   platforms/macos/x64/external.sh
+   platforms/ios-simulator/arm64/external.sh
    cmake \
-      -DPLATFORM=macos \
-      -DARCH=x64 \
-      -DBUILD_STATIC=OFF \
+      -DPLATFORM=ios-simulator \
+      -DARCH=arm64 \
+      -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp src/altsound.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build libdmdutil (and deps) and copy to external
@@ -245,14 +231,14 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 CACHE_NAME="libdmdutil-${LIBDMDUTIL_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/vpinball/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
+   curl -sL https://github.com/jsm174/libdmdutil/archive/${LIBDMDUTIL_SHA}.zip -o libdmdutil.zip
    unzip libdmdutil.zip
    cd libdmdutil-$LIBDMDUTIL_SHA
-   platforms/macos/x64/external.sh
+   platforms/ios-simulator/arm64/external.sh
    cmake \
-      -DPLATFORM=macos \
-      -DARCH=x64 \
-      -DBUILD_STATIC=OFF \
+      -DPLATFORM=ios-simulator \
+      -DARCH=arm64 \
+      -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -260,14 +246,14 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cp -r include/DMDUtil ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r third-party/include/sockpp ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a third-party/runtime-libs/macos/x64/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp third-party/build-libs/ios-simulator/arm64/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build libdof (and deps) and copy to external
@@ -279,62 +265,31 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/jsm174/libdof/archive/${LIBDOF_SHA}.zip -o libdof.zip
    unzip libdof.zip
    cd libdof-$LIBDOF_SHA
-   platforms/macos/x64/external.sh
+   platforms/ios-simulator/arm64/external.sh
    cmake \
-      -DPLATFORM=macos \
-      -DARCH=x64 \
-      -DBUILD_STATIC=OFF \
+      -DPLATFORM=ios-simulator \
+      -DARCH=arm64 \
+      -DBUILD_SHARED=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r include/DOF ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a third-party/runtime-libs/macos/x64/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp third-party/build-libs/ios-simulator/arm64/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build FFMPEG libraries and copy to external
 #
 
-CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
-   unzip ffmpeg.zip
-   cd ffmpeg-$FFMPEG_SHA
-   ./configure --enable-cross-compile \
-      --enable-shared \
-      --disable-static \
-      --disable-programs \
-      --disable-doc \
-      --disable-xlib \
-      --disable-libxcb \
-      --enable-rpath \
-      --prefix=. \
-      --libdir=@rpath \
-      --arch=x86_64 \
-      --cc='clang -arch x86_64' \
-      --extra-ldflags='-Wl,-ld_classic'
-   make -j${NUM_PROCS}
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   for lib in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
-      mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
-      cp ${lib}/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
-      cp -a ${lib}/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   done
-   cd ..
-   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
-fi
-
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+# TODO: build FFMPEG libraries for iOS
 
 #
 # build bgfx and copy to external
@@ -347,12 +302,13 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    cd bgfx.cmake
    cmake -S. \
-      -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
       -DBGFX_CONFIG_MULTITHREADED=ON \
       -DBGFX_CONFIG_MAX_FRAME_BUFFERS=256 \
-      -DCMAKE_OSX_ARCHITECTURES=x86_64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+      -DCMAKE_SYSTEM_NAME=iOS \
+      -DCMAKE_OSX_SYSROOT=iphonesimulator \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=17.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -361,10 +317,12 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cp -r bimg/include/bimg ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r bx/include/bx ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp build/cmake/bgfx/libbgfx.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/cmake/bgfx/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/cmake/bimg/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/cmake/bx/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
