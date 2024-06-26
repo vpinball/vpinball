@@ -2,7 +2,7 @@
 
 #include "DOFPlugin.h"
 
-void OnDOFLog(const char* format, va_list args)
+void OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list args)
 {
    char buffer[4096];
    vsnprintf(buffer, sizeof(buffer), format, args);

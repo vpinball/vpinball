@@ -15,7 +15,7 @@ set(APP_NAME "VPinballX_GL")
 
 project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 16.0)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
 set(CMAKE_OSX_ARCHITECTURES "arm64")
 
 set(CMAKE_SKIP_RPATH TRUE)
@@ -707,7 +707,7 @@ target_link_libraries(vpinball PUBLIC
    "-lSDL2_image"
    "-lSDL2_ttf"
    "-lfreeimage"
-   "-framework Bass"
+   "-lbass"
    "-lpinmame.3.6"
    "-laltsound"
    "-lzedmd"
@@ -746,9 +746,8 @@ set(TARGET_PROPERTIES
    XCODE_ATTRIBUTE_CURRENT_PROJECT_VERSION "${CMAKE_PROJECT_VERSION}"
    XCODE_ATTRIBUTE_MARKETING_VERSION "${CMAKE_PROJECT_VERSION}"
    XCODE_ATTRIBUTE_INSTALL_PATH "/Applications"
-   XCODE_ATTRIBUTE_FRAMEWORK_SEARCH_PATHS "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/framework"
    XCODE_ATTRIBUTE_LD_RUNPATH_SEARCH_PATHS "@executable_path/Frameworks"
-   XCODE_EMBED_FRAMEWORKS "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/framework/bass.framework"
+   XCODE_EMBED_FRAMEWORKS "${CMAKE_SOURCE_DIR}/standalone/ios-arm64/external/lib/libbass.dylib"
    XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "standalone/ios-arm64/ios-project/App.entitlements"
 )
 
