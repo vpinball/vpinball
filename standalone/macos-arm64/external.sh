@@ -7,8 +7,8 @@ SDL2_VERSION=2.30.4
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=a77c2d20270a3e4d72c3eee251457c53e17b1398
-LIBALTSOUND_SHA=f11354cf262263a30327b4a9a02953f4c3c36d9c
-LIBDMDUTIL_SHA=fc29cd7d8271c34999a125fbbc123a71ace571c9
+LIBALTSOUND_SHA=fb87d6d34335fdb36b5ff861e5a7ba91e8f46c5b
+LIBDMDUTIL_SHA=68b79671a105b058fcb477ec6968683f7fbb6919
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 BGFX_CMAKE_VERSION=1.127.8765-472
@@ -70,13 +70,15 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 # download bass24 and copy to external
 #
 
-CACHE_NAME="bass24"
+CACHE_NAME="bass24_002"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://www.un4seen.com/files/bass24-osx.zip -o bass.zip
    unzip bass.zip
+   lipo libbass.dylib -extract arm64 -output libbass-arm64.dylib
+   codesign --force --sign - libbass-arm64.dylib
    mkdir -p ../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp libbass.dylib ../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp libbass-arm64.dylib ../${CACHE_DIR}/${CACHE_NAME}/lib/libbass.dylib
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 

@@ -7,7 +7,7 @@ SDL2_VERSION=2.30.4
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=a77c2d20270a3e4d72c3eee251457c53e17b1398
-LIBALTSOUND_SHA=f11354cf262263a30327b4a9a02953f4c3c36d9c
+LIBALTSOUND_SHA=fb87d6d34335fdb36b5ff861e5a7ba91e8f46c5b
 LIBDMDUTIL_SHA=fc29cd7d8271c34999a125fbbc123a71ace571c9
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
@@ -71,15 +71,15 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 # download bass24 and copy to external
 #
 
-CACHE_NAME="bass24_001"
+CACHE_NAME="bass24_002"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://www.un4seen.com/files/bass24-ios.zip -o bass.zip
    unzip bass.zip
-   mkdir -p ../${CACHE_DIR}/${CACHE_NAME}/lib
    lipo bass.xcframework/ios-arm64_armv7_armv7s/bass.framework/bass -extract arm64 -output libbass.dylib
    install_name_tool -id @rpath/libbass.dylib libbass.dylib
-   codesign --remove-signature libbass.dylib
+   codesign --force --sign - libbass.dylib
+   mkdir -p ../${CACHE_DIR}/${CACHE_NAME}/lib
    cp libbass.dylib ../${CACHE_DIR}/${CACHE_NAME}/lib/libbass.dylib
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
