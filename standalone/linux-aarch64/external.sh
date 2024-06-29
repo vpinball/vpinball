@@ -96,8 +96,6 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST=OFF \
-      -DSDL_X11=ON \
-      -DSDL_KMSDRM=ON \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=Release \

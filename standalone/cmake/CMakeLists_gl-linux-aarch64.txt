@@ -22,7 +22,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 add_library(glad
-   third-party/include/glad/src/gles2.c
+   third-party/include/glad/src/gl.c
 )
 
 target_include_directories(glad PUBLIC
@@ -35,7 +35,6 @@ bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/par
 
 add_compile_definitions(
    __STANDALONE__
-   __OPENGLES__
 
    ENABLE_OPENGL
    ENABLE_SDL_VIDEO
