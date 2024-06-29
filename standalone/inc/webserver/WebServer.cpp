@@ -5,6 +5,8 @@
 
 #include <ifaddrs.h>
 
+static string myPath;
+
 void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 {
    WebServer* webServer = (WebServer*)fn_data;
@@ -29,7 +31,7 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, voi
       else if (mg_http_match_uri(hm, "/command"))
          webServer->Command(c, hm);
       else {
-         string path = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpx.html";
+         string path = myPath + "assets" + PATH_SEPARATOR_CHAR + "vpx.html";
 
          struct mg_http_serve_opts opts = {};
          mg_http_serve_file(c, hm, path.c_str(), &opts);
@@ -40,7 +42,12 @@ void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, voi
 WebServer::WebServer() 
 {
    m_run = false;
-   m_pThread = nullptr;
+   m_pThread = nullptr;  
+
+#ifndef __ANDROID__
+   m_szMyPrefPath = g_pvp->m_szMyPrefPath;
+   myPath = g_pvp->m_szMyPath;
+#endif
 }
 
 WebServer::~WebServer() 
@@ -52,6 +59,17 @@ WebServer::~WebServer()
       delete m_pThread;
    }
 }
+
+#ifdef __ANDROID__
+void WebServer::Init(string addr, int port, bool debug, string prefPath, string myServerPath)
+{
+   m_addr = addr;
+   m_port = port;
+   m_debug = debug;
+   myPath = myServerPath;
+   m_szMyPrefPath = prefPath;   
+}
+#endif
 
 bool WebServer::Unzip(const char* pSource)
 {
@@ -101,7 +119,7 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 
    PLOGI.printf("Retrieving file list: q=%s", q);
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    if (*q != '\0')
       path += PATH_SEPARATOR_CHAR;
@@ -167,7 +185,7 @@ void WebServer::Download(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    struct mg_http_serve_opts opts = {};
    mg_http_serve_file(c, hm, path.c_str(), &opts);
@@ -186,11 +204,15 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    if (!mg_http_upload(c, hm, &mg_fs_posix, path.c_str(), 1024 * 1024 * 500)) {
+// No need to reload VPinballX.ini when running in Android
+// It will be loaded when a table is launched 
+#ifndef __ANDROID__ 
       if (!strncmp(q, "VPinballX.ini", sizeof(q)))
          g_pvp->m_settings.LoadFromFile(path, false);
+#endif
    }
 }
 
@@ -205,7 +227,7 @@ void WebServer::Delete(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    if (std::filesystem::is_regular_file(path)) {
       if (std::filesystem::remove(path.c_str()))
@@ -234,7 +256,7 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    if (std::filesystem::create_directory(path))
       mg_http_reply(c, 200, "", "OK");
@@ -253,7 +275,7 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
       return;
    }
 
-   string path = g_pvp->m_szMyPrefPath + q;
+   string path = m_szMyPrefPath + q;
 
    if (std::filesystem::is_regular_file(path)) {
       if (extension_from_path(path) == "zip") {
@@ -273,6 +295,7 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
 
 void WebServer::Activate(struct mg_connection *c, struct mg_http_message* hm)
 {
+#ifndef __ANDROID__   
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
    mg_remove_double_dots(q);
@@ -287,6 +310,9 @@ void WebServer::Activate(struct mg_connection *c, struct mg_http_message* hm)
    g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, q);
 
    mg_http_reply(c, 200, "", "OK");
+#else
+   mg_http_reply(c, 500, "", "Not Supported");
+#endif
 }
 
 void WebServer::Command(struct mg_connection *c, struct mg_http_message* hm)
@@ -305,9 +331,13 @@ void WebServer::Command(struct mg_connection *c, struct mg_http_message* hm)
       mg_http_reply(c, 200, "", "OK");
    }
    else if (!strncmp(cmd, "shutdown", sizeof(cmd))) {
+#ifndef __ANDROID__
       g_pvp->GetActiveTable()->QuitPlayer(Player::CS_CLOSE_APP);
 
       mg_http_reply(c, 200, "", "OK");
+#else
+      mg_http_reply(c, 500, "", "Not Supported");
+#endif
    }
    else
       mg_http_reply(c, 400, "", "Bad request");
@@ -325,15 +355,18 @@ void WebServer::Start()
       return;
    }
 
-   if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerDebug"s, false)) {
+#ifndef __ANDROID__
+   m_debug = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerDebug"s, false);
+   m_addr = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerAddr"s, "0.0.0.0"s);
+   m_port = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerPort"s, 2112);
+#endif
+
+   if (m_debug) {
       mg_log_set(MG_LL_DEBUG);
       PLOGI.printf("Web server debug enabled");
    }
 
-   const string addr = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerAddr"s, "0.0.0.0"s);
-   const int port = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServerPort"s, 2112);
-
-   string bindUrl = "http://" + addr + ':' + std::to_string(port);
+   string bindUrl = "http://" + m_addr + ':' + std::to_string(m_port);
 
    PLOGI.printf("Starting web server at %s", bindUrl.c_str());
 
@@ -347,7 +380,7 @@ void WebServer::Start()
       string ip = GetIPAddress();
 
       if (!ip.empty()) {
-         m_url = "http://" + ip + ':' + std::to_string(port);
+         m_url = "http://" + ip + ':' + std::to_string(m_port);
 
          PLOGI.printf("To access the web server, in a browser go to: %s", m_url.c_str());
       }

@@ -34,9 +34,6 @@ android {
         }
     }
 
-    aaptOptions {
-        ignoreAssetsPattern ''
-    }
 
     buildTypes {
         release {
