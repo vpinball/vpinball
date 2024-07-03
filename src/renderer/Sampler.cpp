@@ -59,7 +59,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 
    // Create a render target and blit texture on it to force BGFX mip map generation (BGFX does not support automatic mipmap generation for textures)
    const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-   m_mips_texture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, data); // Base texture without mipmaps
+   m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, data); // Base texture without mipmaps
 
 #elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
@@ -123,7 +123,7 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTex
    , m_clampu(clampu)
    , m_clampv(clampv)
    , m_filter(filter)
-   , m_texture(bgfxTexture)
+   , m_mipsTexture(bgfxTexture)
    , m_width(width)
    , m_height(height)
    , m_isLinear(linear_rgb)
@@ -188,12 +188,12 @@ Sampler::~Sampler()
    m_rd->UnbindSampler(this);
    
    #if defined(ENABLE_BGFX)
-   if (bgfx::isValid(m_texture))
-      bgfx::destroy(m_texture);
-   if (bgfx::isValid(m_mips_framebuffer))
-      bgfx::destroy(m_mips_framebuffer);
-   if (bgfx::isValid(m_mips_texture))
-      bgfx::destroy(m_mips_texture);
+   if (bgfx::isValid(m_mipsTexture))
+      bgfx::destroy(m_mipsTexture);
+   if (bgfx::isValid(m_mipsFramebuffer))
+      bgfx::destroy(m_mipsFramebuffer);
+   if (bgfx::isValid(m_nomipsTexture))
+      bgfx::destroy(m_nomipsTexture);
 
    #elif defined(ENABLE_OPENGL)
    Unbind();
@@ -209,29 +209,53 @@ Sampler::~Sampler()
 #if defined(ENABLE_BGFX)
 bgfx::TextureHandle Sampler::GetCoreTexture()
 {
-   // Handle mipmap generation (on BGFX API thread)
-   if (bgfx::isValid(m_mips_texture))
+   assert(bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
+   // Handle texture update (on BGFX API thread)
+   if (m_textureUpdate)
    {
-      if (!bgfx::isValid(m_texture))
+      if (bgfx::isValid(m_nomipsTexture))
+      {
+         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+         bgfx::destroy(m_mipsTexture);
+         m_mipsTexture = BGFX_INVALID_HANDLE;
+         bgfx::destroy(m_mipsFramebuffer);
+         m_mipsFramebuffer = BGFX_INVALID_HANDLE;
+      }
+      else
+      {
+         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
+         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, m_textureUpdate); // Base texture without mipmaps
+         if (bgfx::isValid(m_mipsTexture))
+         {
+            bgfx::destroy(m_mipsTexture);
+            m_mipsTexture = BGFX_INVALID_HANDLE;
+         }
+      }
+      m_textureUpdate = nullptr;
+   }
+   // Handle mipmap generation (on BGFX API thread)
+   if (bgfx::isValid(m_nomipsTexture))
+   {
+      if (!bgfx::isValid(m_mipsFramebuffer))
       {
          m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
          const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-         m_texture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
-         bgfx::setName(m_texture, m_name.c_str());
-         bgfx::Attachment m_mips_attachment;
-         m_mips_attachment.init(m_texture);
-         m_mips_framebuffer = bgfx::createFrameBuffer(1, &m_mips_attachment);
+         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
+         bgfx::setName(m_mipsTexture, m_name.c_str());
+         bgfx::Attachment m_mipsAttachment;
+         m_mipsAttachment.init(m_mipsTexture);
+         m_mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsAttachment);
          // Blit to RT
          if (m_rd->m_activeViewId < 0)
             m_rd->NextView();
-         // FIXME BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
+         // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
          // For a simple and readable reference, see (paramters: alpha=4, stretch=1, m_width=filter half width):
          //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
          //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
-         bgfx::blit(m_rd->m_activeViewId, m_texture, 0, 0, m_mips_texture);
+         bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
          // Force RT resolution, in turns causing mipmap generation
          m_rd->NextView();
-         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mips_framebuffer);
+         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mipsFramebuffer);
          // Get back to the rendering view
          RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
          if (activeRT)
@@ -243,14 +267,13 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
       else if (bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
       {
          // Mipmaps have been generated, we can release the framebuffer and base version of the texture
-         bgfx::destroy(m_mips_texture);
-         bgfx::destroy(m_mips_framebuffer);
-         m_mips_texture = BGFX_INVALID_HANDLE;
-         m_mips_framebuffer = BGFX_INVALID_HANDLE;
-         m_mips_gpu_frame = 0;
+         bgfx::destroy(m_nomipsTexture);
+         m_nomipsTexture = BGFX_INVALID_HANDLE;
+         bgfx::destroy(m_mipsFramebuffer);
+         m_mipsFramebuffer = BGFX_INVALID_HANDLE;
       }
    }
-   return m_texture;
+   return bgfx::isValid(m_mipsTexture) ? m_mipsTexture : m_nomipsTexture;
 }
 #endif
 
@@ -270,9 +293,11 @@ void Sampler::Unbind()
 void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
 {
 #if defined(ENABLE_BGFX)
-   // FIXME BGFX guarantee that surf->data won't be deallaocated for the 2 next frames
-   // FIXME BGFX manage mipmaps for dynamic textures
-   bgfx::updateTexture2D(m_texture, 0, 0, 0, 0, m_width, m_height, bgfx::makeRef(surf->data(), surf->height() * surf->pitch()));
+   assert(force_linear_rgb == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
+   // TODO BGFX discard pending update instead of incoming one
+   if (m_textureUpdate != nullptr)
+      return;
+   m_textureUpdate = bgfx::copy(surf->data(), surf->height() * surf->pitch());
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
@@ -344,13 +369,13 @@ void Sampler::SetName(const string& name)
 {
    #if defined(ENABLE_BGFX)
    m_name = name;
-   if (bgfx::isValid(m_texture))
-      bgfx::setName(m_texture, name.c_str());
-   if (bgfx::isValid(m_mips_texture))
-      bgfx::setName(m_mips_texture, name.c_str());
+   if (bgfx::isValid(m_mipsTexture))
+      bgfx::setName(m_mipsTexture, name.c_str());
+   if (bgfx::isValid(m_nomipsTexture))
+      bgfx::setName(m_nomipsTexture, name.c_str());
    #elif defined(ENABLE_OPENGL) && !defined(__OPENGLES__)
    if (GLAD_GL_VERSION_4_3)
-      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei) name.length(), name.c_str());
+      glObjectLabel(GL_TEXTURE, m_texture, (GLsizei)name.length(), name.c_str());
    #endif
 }
 

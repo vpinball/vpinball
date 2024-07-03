@@ -1651,12 +1651,9 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       if (!m_renderer->m_pd3dPrimaryDevice->m_framePending && m_renderer->m_pd3dPrimaryDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
-         #ifdef MSVC_CONCURRENCY_VIEWER
-         series.write_flag(_T("Frame"));
-         #endif
          g_frameProfiler.NewFrame(m_time_msec);
          m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
-         PrepareFrame();
+         PrepareFrame(sync);
          m_renderer->m_pd3dPrimaryDevice->m_framePending = true;
          m_renderer->m_pd3dPrimaryDevice->m_frameReadySem.post();
          m_renderer->m_pd3dPrimaryDevice->m_frameMutex.unlock();
@@ -1688,7 +1685,7 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
 
       sync();
 
-      PrepareFrame();
+      PrepareFrame(sync);
 
       sync();
 
@@ -1784,7 +1781,7 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       sync();
 
       PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
-      PrepareFrame();
+      PrepareFrame(sync);
 
       sync();
 
@@ -1838,7 +1835,7 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
    }
 }
 
-void Player::PrepareFrame()
+void Player::PrepareFrame(std::function<void()> sync)
 {
    // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
@@ -1891,8 +1888,19 @@ void Player::PrepareFrame()
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
    #endif
 
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   delete tagSpan;
+   #endif
+   #if defined(ENABLE_BGFX)
+   // Since the script can be somewhat lengthy, we do an additional sync here
+   sync();
+   #endif
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   tagSpan = new span(series, 1, _T("Build.RF"));
+   #endif
+
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
-   
+
    m_renderer->PrepareFrame();
 
    // Check if we should turn animate the plunger light.

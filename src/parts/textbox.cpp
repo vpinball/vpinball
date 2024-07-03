@@ -519,7 +519,7 @@ void Textbox::Render(const unsigned int renderMask)
       const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
       #endif
       m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-      m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP); //!! or use linear RGB space? //!! mirror as edge?!
+      m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP, !isExternalDMD); //!! or use linear RGB space? //!! mirror as edge?!
       m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
    }
    else if (m_texture)
