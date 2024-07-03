@@ -402,7 +402,7 @@ public:
    bool m_scaleFX_DMD = false;
 
 private:
-   void PrepareFrame();
+   void PrepareFrame(std::function<void()> sync);
    void SubmitFrame();
    void FinishFrame();
 #pragma endregion

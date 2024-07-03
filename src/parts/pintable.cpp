@@ -1519,9 +1519,18 @@ PinTable::PinTable()
 
 PinTable::~PinTable()
 {
+   m_textureMap.clear();
+   m_materialMap.clear();
+   m_lightMap.clear();
+   m_renderprobeMap.clear();
+
    for (size_t i = 0; i < m_vedit.size(); i++)
       m_vedit[i]->Release();
 
+   // Stop all sounds
+   // In case we were playing any of the main buffers
+   for (size_t i = 0; i < m_vsound.size(); i++)
+      m_vsound[i]->Stop();
    m_vpinball->m_ps.ClearStoppedCopiedWavs();
 
    if (!m_isLiveInstance)
@@ -2616,30 +2625,6 @@ void PinTable::Play(const int playMode)
       live_table->Release();
       HandleLoadFailure();
    }
-}
-
-// Called on the live table when playing ends (normally or when startup failed)
-void PinTable::StopPlaying()
-{
-   assert(g_pplayer == nullptr || g_pplayer->m_ptable == this);
-   assert(m_isLiveInstance);
-
-   if (m_pcv)
-      m_pcv->CleanUpScriptEngine();
-
-   // Stop all sounds
-   // In case we were playing any of the main buffers
-   for (size_t i = 0; i < m_vsound.size(); i++)
-      m_vsound[i]->Stop();
-   // The usual case - copied sounds
-   m_vpinball->m_ps.StopAndClearCopiedWavs();
-
-   m_textureMap.clear();
-   m_materialMap.clear();
-   m_lightMap.clear();
-   m_renderprobeMap.clear();
-
-   PLOGI << "Ending Play mode [table: " << m_szTableName << ']';
 }
 
 HRESULT PinTable::InitVBA()

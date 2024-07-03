@@ -90,9 +90,10 @@ private:
 #if defined(ENABLE_BGFX)
    string m_name;
    bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;
-   bgfx::TextureHandle m_texture = BGFX_INVALID_HANDLE;
-   bgfx::TextureHandle m_mips_texture = BGFX_INVALID_HANDLE;
-   bgfx::FrameBufferHandle m_mips_framebuffer = BGFX_INVALID_HANDLE;
+   bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
+   bgfx::FrameBufferHandle m_mipsFramebuffer = BGFX_INVALID_HANDLE; // The framebuffer and texture where mipmaps are being generated
+   bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
+   const bgfx::Memory* m_textureUpdate = nullptr;
    uint32_t m_mips_gpu_frame = 0;
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;

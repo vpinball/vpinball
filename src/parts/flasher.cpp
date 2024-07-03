@@ -1330,7 +1330,7 @@ void Flasher::Render(const unsigned int renderMask)
 #endif
 
       if (texdmd != nullptr)
-         m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
+         m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
       // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
