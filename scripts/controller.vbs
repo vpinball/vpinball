@@ -168,11 +168,6 @@ Sub LoadVPinMAME(VPMver, VBSfile, VBSver)
 	If Err Then MsgBox "Can't load VPinMAME." & vbNewLine & Err.Description
 	If VPMver > "" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
 	If VPinMAMEDriverVer < VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
-	On Error Resume Next
-	Controller.TimeFence = 0
-	If Err Then HasTimeFence = False Else HasTimeFence = True
-	Err.Clear
-	On Error Goto 0
 End Sub
 
 'Try to load b2s.server and if not possible, load VPinMAME.Controller instead.
@@ -280,6 +275,13 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 			End If
 		End If
 	End If
+	' Check if controller supports syncing by an external clock (latest B2S and PinMame do)
+	On Error Resume Next
+	Err.Clear
+	Controller.TimeFence = 0
+	If Err Then HasTimeFence = False Else HasTimeFence = True
+	Err.Clear
+	On Error Goto 0
 End sub
 
 'Additional DOF sound vs toy/effect helpers:
