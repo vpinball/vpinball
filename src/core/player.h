@@ -292,8 +292,8 @@ public:
 
    VideoSyncMode m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
    U64 m_lastPresentFrameTick = 0;
-   bool m_lastFrameSyncOnVBlank;
-   bool m_lastFrameSyncOnFPS;
+   bool m_lastFrameSyncOnVBlank = false;
+   bool m_lastFrameSyncOnFPS = false;
 
 private:
    int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP

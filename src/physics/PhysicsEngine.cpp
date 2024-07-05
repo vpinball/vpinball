@@ -618,6 +618,7 @@ void PhysicsEngine::UpdatePhysics()
 
       // DJRobX's crazy latency-reduction code: Artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is)
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
+      #if !defined(ENABLE_BGFX)
       if (g_pplayer->m_minphyslooptime > 0)
       {
          const U64 basetime = usec();
@@ -632,6 +633,7 @@ void PhysicsEngine::UpdatePhysics()
             g_frameProfiler.ExitProfileSection();
          }
       }
+      #endif
       // end DJRobX's crazy code
       
       const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
@@ -648,14 +650,20 @@ void PhysicsEngine::UpdatePhysics()
       //const U32 sim_msec = (U32)(m_curPhysicsFrameTime / 1000);
       const U32 cur_time_msec = (U32)(cur_time_usec / 1000);
 
+      #if !defined(ENABLE_BGFX)
+      // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
       g_pplayer->m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
+      #endif
 
+      // FIXME remove ? move HID to a plugin, remove mixer or at least outside of physics loop
       mixer_update();
       hid_update(/*sim_msec*/cur_time_msec);
 
       #ifdef ACCURATETIMERS
       g_pplayer->ApplyDeferredTimerChanges();
+      #if !defined(ENABLE_BGFX)
       if (g_pplayer->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+      #endif
          g_pplayer->FireTimers(g_pplayer->m_time_msec);
       #endif
 
