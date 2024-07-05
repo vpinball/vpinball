@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -253,9 +253,6 @@ namespace Win32xx
 
         // Assign m_dockMDIClient as this docker's dock client.
         SetDockClient(m_dockMDIClient);
-
-        // Assign this CMDIDockFrame as the new dock client's docker.
-        m_dockMDIClient.SetDocker(this);
     }
 
     // Called when the frame window is created.

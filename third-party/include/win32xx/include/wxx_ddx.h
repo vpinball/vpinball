@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -283,8 +283,8 @@ namespace Win32xx
                 // Retrieve the control ID.
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
                 CString str;
-                str << _T("Warning: Date-Time data is out of range ")
-                        << _T("in control ID ") << id << _T(" \n");
+                str << _T("*** WARNING: Date-Time data is out of range ")
+                        << _T("in control ID ") << id << _T(". ***\n");
                 TRACE(str);
 
                 return;
@@ -314,7 +314,7 @@ namespace Win32xx
         if (!m_retrieveAndValidate)
         {
             // Just leave a debugging trace if writing to a control.
-            TRACE(_T("Warning: control data is out of range.\n"));
+            TRACE(_T("*** WARNING: control data is out of range. ***\n"));
             return; // don't throw
         }
 
@@ -353,7 +353,7 @@ namespace Win32xx
         // Just leave a debugging trace if writing to a control.
         if (!m_retrieveAndValidate)
         {
-            TRACE(_T("Warning: current control data is out of range.\n"));
+            TRACE(_T("*** WARNING: current control data is out of range. ***\n"));
             return;     // don't stop
         }
 
@@ -388,8 +388,8 @@ namespace Win32xx
             {
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
                 CString str;
-                str << _T("Warning: Calendar data is out of range ")
-                        << _T("in control ID ") << id << _T(" \n");
+                str << _T("*** WARNING: Calendar data is out of range ")
+                        << _T("in control ID ") << id << _T(". ***\n");
                 TRACE(str);
                 return;     // continue on
             }
@@ -432,8 +432,8 @@ namespace Win32xx
                 // Just leave a trace if writing to the control.
                 int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
                 CString str;
-                str << _T("Warning: slider position is outside given ")
-                        << _T("limits in the control with ID ") << id << _T(" \n");
+                str << _T("*** WARNING: slider position is outside given ")
+                        << _T("limits in the control with ID ") << id << _T(". ***\n");
                 TRACE(str);
     #endif
                 return;     // don't stop now
@@ -467,8 +467,8 @@ namespace Win32xx
             // just leave a debugging trace if writing to a control
             int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
             CString str;
-            str << _T("Warning: value is outside limits in control with ID ")
-                    << id << _T(" \n");
+            str << _T("*** WARNING: value is outside limits in control with ID ")
+                    << id << _T(". ***\n");
             TRACE(str);
             return;     // don't stop
         }
@@ -625,8 +625,8 @@ namespace Win32xx
             if (value < 0 || value > 2)
             {
                 CString str;
-                str << _T("Warning: dialog data checkbox value ")
-                        << value << _T(" out of range.\n");
+                str << _T("*** WARNING: dialog data checkbox value ")
+                        << value << _T(" out of range. ***\n");
                 TRACE(str);
                 value = 0;  // set default to off
             }
@@ -708,7 +708,7 @@ namespace Win32xx
             if (index == LB_ERR)
             {
                 // The value string was not found.
-                CString str = CString(_T("Warning: listbox item was not found:  ")) + value + _T(" \n");
+                CString str = CString(_T("*** WARNING: listbox item was not found:  ")) + value + _T(". ***\n");
                 TRACE(str);
             }
         }
@@ -845,8 +845,8 @@ namespace Win32xx
             }
             else
             {
-                TRACE(_T("Warning: there is a non-radio button in "));
-                TRACE(_T("a radio button group.\n"));
+                TRACE(_T("*** Warning: there is a non-radio button in "));
+                TRACE(_T("a radio button group. ***\n"));
             }
 
             // Check the next window in the group, if any.
@@ -1151,8 +1151,8 @@ namespace Win32xx
 
         if (!m_retrieveAndValidate)
         {
-            TRACE(_T("Warning: CDataExchange::Fail() called while "));
-            TRACE(_T("writing to a control.\n"));
+            TRACE(_T("*** WARNING: CDataExchange::Fail() called while "));
+            TRACE(_T("writing to a control. ***\n"));
         }
         else if (m_lastControl != NULL)
         {
@@ -1165,8 +1165,8 @@ namespace Win32xx
         }
         else
         {
-            TRACE(_T("Error: validation failed with no control to "));
-            TRACE(_T("restore focus to.\n"));
+            TRACE(_T("*** WARNING: validation failed with no control to "));
+            TRACE(_T("restore focus to. ***\n"));
         }
     }
 

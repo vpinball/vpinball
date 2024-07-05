@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -58,6 +58,22 @@
 namespace Win32xx
 {
 
+    struct MetaFileData   // A structure that contains the data members for CMetaFile.
+    {
+        // Constructor
+        MetaFileData() : metaFile(NULL) {}
+
+        HMETAFILE metaFile;
+    };
+
+    struct EnhMetaFileData    // A structure that contains the data members for CEnhMetaFile.
+    {
+        // Constructor
+        EnhMetaFileData() : enhMetaFile(NULL) {}
+
+        HENHMETAFILE enhMetaFile;
+    };
+
     ///////////////////////////////////////////////////////////////////////////////
     // CMetaFile wraps a HMETAFILE. CMetaFile can be used anywhere a HMETAFILE can
     // be used. CMetaFile objects are reference counted, so they can be safely
@@ -76,18 +92,10 @@ namespace Win32xx
         operator HMETAFILE() { return m_pData->metaFile; }
 
     private:
-        struct CMetaFile_Data   // A structure that contains the data members for CMetaFile.
-        {
-            // Constructor
-            CMetaFile_Data() : metaFile(NULL) {}
-
-            HMETAFILE metaFile;
-        };
-
         CMetaFile(HMETAFILE metaFile);
         void Release();
 
-        Shared_Ptr<CMetaFile_Data> m_pData;
+        MetaDataPtr m_pData;
     };
 
 
@@ -110,17 +118,9 @@ namespace Win32xx
         operator HENHMETAFILE() { return m_pData->enhMetaFile; }
 
     private:
-        struct CEnhMetaFile_Data    // A structure that contains the data members for CEnhMetaFile.
-        {
-            // Constructor
-            CEnhMetaFile_Data() : enhMetaFile(NULL) {}
-
-            HENHMETAFILE enhMetaFile;
-        };
-
         CEnhMetaFile(HENHMETAFILE enhMetaFile);
         void Release();
-        Shared_Ptr<CEnhMetaFile_Data> m_pData;
+        EnhMetaDataPtr m_pData;
     };
 
 }
@@ -134,15 +134,13 @@ namespace Win32xx
     /////////////////////////////////////////////////////
     // Definitions for the the CMetaFile class
     //
-    inline CMetaFile::CMetaFile()
+    inline CMetaFile::CMetaFile() : m_pData(new MetaFileData)
     {
-        m_pData = new CMetaFile_Data;
     }
 
     // A private constructor used by CMetaFileDC.
-    inline CMetaFile::CMetaFile(HMETAFILE metaFile)
+    inline CMetaFile::CMetaFile(HMETAFILE metaFile) : m_pData(new MetaFileData)
     {
-        m_pData = new CMetaFile_Data;
         m_pData->metaFile = metaFile;
     }
 
@@ -185,15 +183,14 @@ namespace Win32xx
     /////////////////////////////////////////////////////
     // Definitions for the the CEnhMetaFile class
     //
-    inline CEnhMetaFile::CEnhMetaFile()
+    inline CEnhMetaFile::CEnhMetaFile() : m_pData(new EnhMetaFileData)
     {
-        m_pData = new CEnhMetaFile_Data;
     }
 
     // A private constructor used by CEnhMetaFileDC.
     inline CEnhMetaFile::CEnhMetaFile(HENHMETAFILE enhMetaFile)
+        : m_pData(new EnhMetaFileData)
     {
-        m_pData = new CEnhMetaFile_Data;
         m_pData->enhMetaFile = enhMetaFile;
     }
 

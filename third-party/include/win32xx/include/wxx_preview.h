@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -66,8 +66,8 @@
 // 3) Use SetSource to specify to where to call the PrintPage function.
 //    Alternatively, specify the source in CPrintPreview's constructor.
 // 4) Declare a PrintPage function in the source for printing and previewing:
-//     void  PrintPage(CDC& dc, UINT page);
-// 5) Call DoPrintPreview(HWND ownerWindow, UINT maxPage = 1) to initiate the
+//     void  PrintPage(CDC& dc, int page);
+// 5) Call DoPrintPreview(HWND ownerWindow, int maxPage = 1) to initiate the
 //    print preview.
 // 6) Create the preview window, and swap it into the frame's view.
 // 7) Handle UWM_PREVIEWCLOSE to swap back to the default view when the preview
@@ -162,13 +162,13 @@ namespace Win32xx
         CPreviewPane& GetPreviewPane() const { return *m_pPreviewPane; }
         void SetPreviewPane(CPreviewPane& previewPane) { m_pPreviewPane = &previewPane; }
 
-        virtual void DoPrintPreview(HWND ownerWindow, UINT maxPage = 1);
+        virtual void DoPrintPreview(HWND ownerWindow, int maxPage = 1);
         virtual BOOL OnCloseButton();
         virtual BOOL OnNextButton();
         virtual BOOL OnPrevButton();
         virtual BOOL OnPrintButton();
         virtual BOOL OnPrintSetup();
-        virtual void PreviewPage(UINT page);
+        virtual void PreviewPage(int page);
         virtual void SetSource(T& source) { m_pSource = &source; }
         virtual void UpdateButtons();
 
@@ -474,7 +474,7 @@ namespace Win32xx
     // Initiate the print preview.
     // ownerWindow: Print Preview's notifications are sent to this window.
     template <typename T>
-    inline void CPrintPreview<T>::DoPrintPreview(HWND ownerWindow, UINT maxPage)
+    inline void CPrintPreview<T>::DoPrintPreview(HWND ownerWindow, int maxPage)
     {
         m_ownerWindow = ownerWindow;
         assert(maxPage >= 1);
@@ -490,7 +490,7 @@ namespace Win32xx
     // information that would be printed on a page.
     // A CResourceException is thrown if there is no default printer.
     template <typename T>
-    inline void CPrintPreview<T>::PreviewPage(UINT page)
+    inline void CPrintPreview<T>::PreviewPage(int page)
     {
         // Get the device context of the default or currently chosen printer.
         CPrintDialog printDlg;

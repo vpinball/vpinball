@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -723,7 +723,7 @@ namespace Win32xx
         bool isExplorer = (m_ofn.Flags & OFN_EXPLORER) != 0;
         TCHAR delimiter = (isExplorer ? _T('\0') : _T(' '));
         int maxFileSize = static_cast<int>(m_ofn.nMaxFile);
-        int bufferSize = MIN(MAX_PATH, maxFileSize - pos);
+        int bufferSize = std::min(MAX_PATH, maxFileSize - pos);
         CString fileNames(m_ofn.lpstrFile + pos, bufferSize); // strFile can contain NULLs
         int index = 0;
         if (pos == 0)
@@ -1015,21 +1015,23 @@ namespace Win32xx
         SetFilter(ofn.lpstrFilter);
         SetTitle(ofn.lpstrFileTitle);
 
+        DWORD maxPath = MAX_PATH;
+
         m_ofn.lStructSize       = StructSize;
         m_ofn.hwndOwner         = NULL;            // Set this in DoModal.
         m_ofn.hInstance         = GetApp()->GetInstanceHandle();
         m_ofn.lpstrCustomFilter = ofn.lpstrCustomFilter;
-        m_ofn.nMaxCustFilter    = MAX(MAX_PATH, ofn.nMaxCustFilter);
+        m_ofn.nMaxCustFilter    = std::max(maxPath, ofn.nMaxCustFilter);
         m_ofn.nFilterIndex      = ofn.nFilterIndex;
 
         // Allocate a bigger buffer for multiple files.
         if (ofn.Flags & OFN_ALLOWMULTISELECT)
-            m_ofn.nMaxFile = MAX(MAX_PATH * 256, ofn.nMaxFile);
+            m_ofn.nMaxFile = std::max(maxPath * 256, ofn.nMaxFile);
         else
-            m_ofn.nMaxFile = MAX(MAX_PATH, ofn.nMaxFile);
+            m_ofn.nMaxFile = std::max(maxPath, ofn.nMaxFile);
 
         m_ofn.lpstrFileTitle    = ofn.lpstrFileTitle;
-        m_ofn.nMaxFileTitle     = MAX(MAX_PATH, ofn.nMaxFileTitle);
+        m_ofn.nMaxFileTitle     = std::max(maxPath, ofn.nMaxFileTitle);
         m_ofn.lpstrInitialDir   = ofn.lpstrInitialDir;
         m_ofn.Flags             = ofn.Flags;
         m_ofn.nFileOffset       = ofn.nFileOffset;
@@ -1254,7 +1256,7 @@ namespace Win32xx
         if (fr.lpstrFindWhat)
         {
             m_findWhat = fr.lpstrFindWhat;
-            maxChars = MAX(maxChars, lstrlen(fr.lpstrFindWhat));
+            maxChars = std::max(maxChars, lstrlen(fr.lpstrFindWhat));
         }
         else
             m_findWhat.Empty();
@@ -1262,10 +1264,12 @@ namespace Win32xx
         if (fr.lpstrReplaceWith)
         {
             m_replaceWith = fr.lpstrReplaceWith;
-            maxChars = MAX(maxChars, lstrlen(fr.lpstrReplaceWith));
+            maxChars = std::max(maxChars, lstrlen(fr.lpstrReplaceWith));
         }
         else
             m_replaceWith.Empty();
+
+        WORD maxCharsWord = static_cast<WORD>(maxChars);
 
         m_fr.lStructSize        = sizeof(m_fr);
         m_fr.hwndOwner          = NULL;        // Set this in Create
@@ -1273,8 +1277,8 @@ namespace Win32xx
         m_fr.Flags              = fr.Flags;
         m_fr.lpstrFindWhat      = const_cast<LPTSTR>(m_findWhat.c_str());
         m_fr.lpstrReplaceWith   = const_cast<LPTSTR>(m_replaceWith.c_str());
-        m_fr.wFindWhatLen       = static_cast<WORD>(MAX(fr.wFindWhatLen, maxChars));
-        m_fr.wReplaceWithLen    = static_cast<WORD>(MAX(fr.wReplaceWithLen, maxChars));
+        m_fr.wFindWhatLen       = std::max(fr.wFindWhatLen, maxCharsWord);
+        m_fr.wReplaceWithLen    = std::max(fr.wReplaceWithLen, maxCharsWord);
         m_fr.lCustData          = reinterpret_cast<LPARAM>(this);
         m_fr.lpfnHook           = reinterpret_cast<LPCCHOOKPROC>(CDHookProc);
         m_fr.lpTemplateName     = fr.lpTemplateName;

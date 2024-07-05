@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -72,8 +72,8 @@
 
 //  On systems where time_t is defined as a 32-bit integer, there is an
 //  upper date limit of January 18, 19:14:07, 2038. This issue can affect
-//  code compiled with Visual Studio 6 and Visual Studio 2003.
-//  Visual Studio 2005 and later defines time_t as a 64 bit integer.
+//  code compiled with Visual Studio 2003. Visual Studio 2005 and later
+//  defines time_t as a 64 bit integer.
 
 //  Windows also has other time types that also interface with the CTime
 //  type. These are FILETIME, SYSTEMTIME, and MS-DOS date and time, each
@@ -237,8 +237,14 @@ namespace Win32xx
     (defined(__GNUC__) && (__GNUC__ >= 11)) || \
     defined(__clang_major__))
 
+#if defined(__BORLANDC__)
+        if (::gmtime_s(&t, &atm) == 0)
+            ptm = NULL;
+#else
         if (::gmtime_s(&atm, &t) != 0)
             ptm = NULL;
+#endif
+
 #else
         tm* ptmTemp = ::gmtime(&t);
         if (ptmTemp != NULL)
@@ -263,8 +269,14 @@ namespace Win32xx
     (defined(__GNUC__) && (__GNUC__ >= 11)) || \
     defined(__clang_major__))
 
+#if defined(__BORLANDC__)
+        if (::localtime_s(&t, &atm) == 0)
+            ptm = NULL;
+#else
         if (::localtime_s(&atm, &t) != 0)
             ptm = NULL;
+#endif
+
 #else
         tm* ptmTemp = ::localtime(&t);
         if (ptmTemp != NULL)

@@ -1,6 +1,55 @@
+Version 9.6
+===========
+This version adds support for std::min and std::max. The MIN and MAX macros
+are now depricated. Users should use std::min and std::max in place of the
+MIN and MAX macros.
+
+Support has been added for the C++ compiler from Embarcadero.
+
+This version also adds the ScintillaDemo sample. Scintilla is a free source code
+and text editing component. On Windows, Scintilla is a Windows control that can be
+as a direct replacement for a RichEdit control. Scintilla has a number of features
+missing RichEdit controls and has better support for printing.
+
+Scintilla can be downloaded from:
+https://www.scintilla.org/ScintillaDownload.html
+
+New Features and Enhancements
+-----------------------------
+ * Added support for the C++ compilers from Embarcadero. 
+    The samples include the project files for C++Builder 11 Community Edition
+    from Embarcadero.
+ 
+ * Added support for std::min and std::max.
+
+ * The MIN and MAX macros are are now depricated and will be removed in future
+    versions. Users should use std::min and std::max in place of the MIN and
+    MAX macros.
+
+ * Added the ScintillaDemo sample.
+    This sample demonstrates how to use the Scintilla control with Win32++
+    to develop a simple text editor.
+
+* The samples now use larger icons.
+    Larger icons are suitable for applications that are placed on the desktop
+    on higher resolution monitors.
+
+Changes in detail
+-----------------
+Added:   CString::Append
+Added:   CTab::SetTabIcon         Additional overload.
+
+Added:   ScintillaDemo sample.
+
+Added    Support for std::min and std::max.
+Removed: Support for Visual Studio 6.
+
+
 Version 9.5.2
 =============
-Changes:
+
+New Features and Enhancements
+-----------------------------
  * Updated CString.
     The CString constructor, operator+, operator+=, and operator<< overloads
     now support CStringA and CStringW arguments in addition to the arguments
@@ -461,92 +510,6 @@ New Features and Enhancements
 * Added the TitlebarFrame sample.
   This sample demonstrates how to use a customized title bar with a frame.
   It demonstrates the frame in two modes: mini-frame and full-frame.
-
-
-Changes in Detail
------------------
-Moved the Alignment enum used by CResizer from global scope to CResizer.
-
-Added wxx_criticalsection.h  Win32++ library file
-Added wxx_hglobal.h          Win32++ library file
-Added wxx_messagepump.h      Win32++ library file
-Added wxx_setup.h            Win32++ library file
-Added wxx_thread.h           Win32++ library file
-
-Added PrintDialogEx          sample
-Added Titlebar               sample
-Added TitlebarFrame          sample
-
-Added CMessagePump           class
-Added CThreadT               class template
-Added CWorkThread            class, inherits from CThreadT<CObject>
-Modified CWinApp             inherits from CMessagePump
-Modified CWinThread          inherits from CThreadT<CMessagePump>
-
-Added MenuTheme::clrText     member variable
-
-Moved CWinThread::GetAcceleratorTable   to CMessagePump::GetAcceleratorTable
-Moved CWinThread::GetAcceleratorsWindow to CMessagePump::GetAcceleratorsWindow
-Moved CWinThread::InitInstance          to CMessagePump::InitInstance
-Moved CWinThread::MessageLoop           to CMessagePump::MessageLoop
-Moved CWinThread::OnIdle                to CMessagePump::OnIdle
-Moved CWinThread::PreTranslateMessage   to CMessagePump::PreTranslateMessage
-Moved CWinThread::Run                   to CMessagePump::Run
-Moved CWinThread::SetAccelerators       to CMessagePump::SetAccelerators
-
-Renamed UWM_PRINTNOW    to UWM_PREVIEWPRINT
-Renamed UWM_PRINTSETUP  to UWM_PREVIEWSETUP
-Renamed MAX_STRING_SIZE to WXX_MAX_STRING_SIZE
-
-Added template <class V>   CStringA ToCStringA(V)              global function template
-Added template <class V>   CStringW ToCStringW(V)              global function template
-Added template <class V>   CString  ToCString(V)               global function template
-Added template <class V>   CString& operator << (CString&, V)  global function template
-
-Added CAtoA::c_str                                             member function
-Added CAtoW::c_str                                             member function
-Added CDialog::Dialog                                          constructor
-Added CDialog::SetDialogFromID                                 member function
-Added CDialog::SetDialogResource                               member function
-Added CDialog::SetDialogTemplate                               member function
-Added CFrameT::SetMenuBar                                      member function
-Added CFrameT::SetReBar                                        member function
-Added CFrameT::SetStatusBar                                    member function
-Added CFrameT::SetStatusParts                                  member function
-Added CFrameT::SetToolBar                                      member function
-Added CRegKey::QueryBoolValue                                  member function
-Added CRegKey::SetBoolValue                                    member function
-Added CTab::SetListDialog                                      member function
-Added CWtoA::c_str                                             member function
-Added CWtoW::c_str                                             member function
-
-Modified CFrameT::GetMenuBar        no longer virtual          member function
-Modified CFrameT::GetReBar          no longer virtual          member function
-Modified CFrameT::GetStatusBar      no longer virtual          member function
-Modified CFrameT::SetToolBar        no longer virtual          member function
-
-Removed CDocker::IsDragAutoResize                              member function
-Removed CDocker::SetDragAutoResize                             member function
-Removed CRegKey::SetKeyValue                                   member function
-Removed CString(int)                                           constructor
-Removed CString(double)                                        constructor
-Removed CString operator+(const CString&, int)               global operator overload
-Removed CString operator+(const CString&, double)            global operator overload
-Removed CString operator+(int, const CString&)               global operator overload
-Removed CString operator+(double, const CString&)            global operator overload
-Removed CString& operator+=(int)                             global operator overload
-Removed CString& operator+=(double)                          global operator overload
-Removed CString& operator << (CString&, const TCHAR*)          global operator overload
-Removed CString& operator << (CString&, TCHAR)                 global operator overload
-Removed CString& operator << (CString&, int)                   global operator overload
-Removed CString& operator << (CString&, double)                global operator overload
-
-Removed WXX_MAX_MENU_STRING                                    global constant
-
-Updated CFile::CFile        added attributes parameter         constructor
-Updated CFile::Open         added attributes parameter         member function
-
-Removed support for WinCE.
 
 
 Version 8.9.1

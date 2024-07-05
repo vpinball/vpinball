@@ -5,8 +5,6 @@ The various directories may contain the following types of files:
 Extension | Description
 ----------+------------
 cbp       | A project file used by CodeBlocks
-dsp       | A project file used by Visual Studio 6
-dsw       | A project file used by Visual Studio 6
 sln       | A project file used by Visual Studio 2003 and above
 vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
 vcxproj   | A project file used by Visual Studio 2010 and above
@@ -34,7 +32,6 @@ Win32++ supports the following:
 * Dev-C++
 * MinGW GCC Compiler
 * MinGW GCC x64 Compiler
-* Visual Studio 6
 * Visual Studio.net 2003
 * Visual C++ Toolkit 2003
 * Visual Studio 2005

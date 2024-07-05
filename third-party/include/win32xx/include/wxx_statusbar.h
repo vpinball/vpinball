@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,9 +54,9 @@ namespace Win32xx
         virtual ~CStatusBar() {}
 
         // Overridables
-        virtual HWND Create(HWND hParent);
         virtual BOOL OnEraseBkgnd(CDC& dc);
         virtual void PreCreate(CREATESTRUCT& cs);
+        virtual void PreRegisterClass(WNDCLASS& wc);
 
         // Accessors and mutators
         int GetParts() const;
@@ -91,29 +91,6 @@ namespace Win32xx
     //
     inline CStatusBar::CStatusBar()
     {
-    }
-
-    // Creates the window. This is the default method of window creation.
-    inline HWND CStatusBar::Create(HWND parent)
-    {
-        // Acquire the CREATESTRUCT parameters.
-        CREATESTRUCT cs;
-        ZeroMemory(&cs, sizeof(cs));
-
-        // Add the gripper style if the parent window is resizable.
-        DWORD dwParentStyle = static_cast<DWORD>(::GetWindowLongPtr(parent, GWL_STYLE));
-        if (dwParentStyle & WS_THICKFRAME)
-        {
-            cs.style |= SBARS_SIZEGRIP;
-        }
-
-        PreCreate(cs);
-
-        // Create the status bar window.
-        HWND wnd = CreateEx(cs.dwExStyle, STATUSCLASSNAME, NULL, static_cast<DWORD>(cs.style),
-            cs.x, cs.y, cs.cx, cs.cy, parent, 0, cs.lpCreateParams);
-
-        return wnd;
     }
 
     // Sets the number of parts in a status window and the coordinate of the right edge of each part.
@@ -195,11 +172,24 @@ namespace Win32xx
             reinterpret_cast<WPARAM>(&dc), reinterpret_cast<LPARAM>(this)));
     }
 
-    // Called by CStatusBar::Create to set some window parameters
+    // Called by Create to set the window creation parameters.
     inline void CStatusBar::PreCreate(CREATESTRUCT& cs)
     {
-        // cs.style is preset to SBARS_SIZEGRIP if the parent has the WS_THICKFRAME style.
         cs.style |= WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | CCS_BOTTOM;
+
+        // Add the gripper style if the parent window is resizable.
+        HWND parent = cs.hwndParent;
+        DWORD dwParentStyle = static_cast<DWORD>(::GetWindowLongPtr(parent, GWL_STYLE));
+        if (dwParentStyle & WS_THICKFRAME)
+        {
+            cs.style |= SBARS_SIZEGRIP;
+        }
+    }
+
+    // Called by Create to set the window class parameters.
+    inline void CStatusBar::PreRegisterClass(WNDCLASS& wc)
+    {
+        wc.lpszClassName = STATUSCLASSNAME;
     }
 
     // Set the text in a status bar part.
@@ -252,7 +242,7 @@ namespace Win32xx
             reinterpret_cast<LPARAM>(pPartWidthArray));
 
         // Fill the NewPartWidths vector with the new width of the StatusBar parts.
-        int newPartsCount = MAX(part+1, partsCount);
+        int newPartsCount = std::max(part+1, partsCount);
         size_t newParts = static_cast<size_t>(newPartsCount);
         std::vector<int> newPartWidths(newParts, 0);
         newPartWidths = partWidths;

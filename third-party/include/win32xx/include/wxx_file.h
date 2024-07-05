@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -75,7 +75,7 @@ namespace Win32xx
         operator HANDLE() const;
 
         void Close();
-        void Flush();
+        void Flush() const;
         CString GetFileDirectory() const;
         const CString& GetFileName() const;
         CString GetFileNameExt() const;
@@ -87,18 +87,19 @@ namespace Win32xx
         HANDLE GetHandle() const;
         ULONGLONG GetLength() const;
         ULONGLONG GetPosition() const;
-        void LockRange(ULONGLONG pos, ULONGLONG count);
-        void Open(LPCTSTR fileName, UINT openFlags, DWORD attributes = FILE_ATTRIBUTE_NORMAL);
-        UINT Read(void* buffer, UINT count);
-        void Remove(LPCTSTR fileName);
-        void Rename(LPCTSTR oldName, LPCTSTR newName);
-        ULONGLONG Seek(LONGLONG seekTo, UINT method);
-        void SeekToBegin();
-        ULONGLONG SeekToEnd();
+        void LockRange(ULONGLONG pos, ULONGLONG count) const;
+        void Open(LPCTSTR fileName, UINT openFlags,
+                  DWORD attributes = FILE_ATTRIBUTE_NORMAL);
+        UINT Read(void* buffer, UINT count) const;
+        void Remove(LPCTSTR fileName) const;
+        void Rename(LPCTSTR oldName, LPCTSTR newName) const;
+        ULONGLONG Seek(LONGLONG seekTo, UINT method) const;
+        void SeekToBegin() const;
+        ULONGLONG SeekToEnd() const;
         void SetFilePath(LPCTSTR fileName);
-        void SetLength(LONGLONG length);
-        void UnlockRange(ULONGLONG pos, ULONGLONG count);
-        void Write(const void* buffer, UINT count);
+        void SetLength(LONGLONG length) const;
+        void UnlockRange(ULONGLONG pos, ULONGLONG count) const;
+        void Write(const void* buffer, UINT count) const;
 
     private:
         CFile(const CFile&);               // Disable copy construction
@@ -188,7 +189,7 @@ namespace Win32xx
 
     // Causes any remaining data in the file buffer to be written to the file.
     // Refer to FlushFileBuffers in the Windows API documentation for more information.
-    inline void CFile::Flush()
+    inline void CFile::Flush() const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
         if ( !::FlushFileBuffers(m_file))
@@ -297,7 +298,7 @@ namespace Win32xx
 
     // Locks a range of bytes in and open file.
     // Refer to LockFile in the Windows API documentation for more information.
-    inline void CFile::LockRange(ULONGLONG pos, ULONGLONG count)
+    inline void CFile::LockRange(ULONGLONG pos, ULONGLONG count) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
@@ -381,7 +382,7 @@ namespace Win32xx
 
     // Reads from the file, storing the contents in the specified buffer.
     // Refer to ReadFile in the Windows API documentation for more information.
-    inline UINT CFile::Read(void* buffer, UINT count)
+    inline UINT CFile::Read(void* buffer, UINT count) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
@@ -398,7 +399,7 @@ namespace Win32xx
 
     // Renames the specified file.
     // Refer to MoveFile in the Windows API documentation for more information.
-    inline void CFile::Rename(LPCTSTR oldName, LPCTSTR newName)
+    inline void CFile::Rename(LPCTSTR oldName, LPCTSTR newName) const
     {
         if (!::MoveFile(oldName, newName))
             throw CFileException(oldName, GetApp()->MsgFileRename());
@@ -406,7 +407,7 @@ namespace Win32xx
 
     // Deletes the specified file.
     // Refer to DeleteFile in the Windows API documentation for more information.
-    inline void CFile::Remove(LPCTSTR fileName)
+    inline void CFile::Remove(LPCTSTR fileName) const
     {
         if (!::DeleteFile(fileName))
             throw CFileException(fileName, GetApp()->MsgFileRemove());
@@ -415,7 +416,7 @@ namespace Win32xx
     // Positions the current file pointer.
     // Permitted values for method are: FILE_BEGIN, FILE_CURRENT, or FILE_END.
     // Refer to SetFilePointer in the Windows API documentation for more information.
-    inline ULONGLONG CFile::Seek(LONGLONG seekTo, UINT method)
+    inline ULONGLONG CFile::Seek(LONGLONG seekTo, UINT method) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
         assert(method == FILE_BEGIN || method == FILE_CURRENT || method == FILE_END);
@@ -431,7 +432,7 @@ namespace Win32xx
 
     // Sets the current file pointer to the beginning of the file.
     // Refer to Seek in the Windows API documentation for more information.
-    inline void CFile::SeekToBegin()
+    inline void CFile::SeekToBegin() const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
         Seek(0, FILE_BEGIN);
@@ -439,7 +440,7 @@ namespace Win32xx
 
     // Sets the current file pointer to the end of the file.
     // Refer to Seek in the Windows API documentation for more information.
-    inline ULONGLONG CFile::SeekToEnd()
+    inline ULONGLONG CFile::SeekToEnd() const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
         return Seek(0, FILE_END);
@@ -469,7 +470,7 @@ namespace Win32xx
 
     // Changes the length of the file to the specified value.
     // Refer to SetEndOfFile in the Windows API documentation for more information.
-    inline void CFile::SetLength(LONGLONG length)
+    inline void CFile::SetLength(LONGLONG length) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
@@ -480,7 +481,7 @@ namespace Win32xx
 
     // Unlocks a range of bytes in an open file.
     // Refer to UnlockFile in the Windows API documentation for more information.
-    inline void CFile::UnlockRange(ULONGLONG pos, ULONGLONG count)
+    inline void CFile::UnlockRange(ULONGLONG pos, ULONGLONG count) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 
@@ -495,7 +496,7 @@ namespace Win32xx
 
     // Writes the specified buffer to the file.
     // Refer to WriteFile in the Windows API documentation for more information.
-    inline void CFile::Write(const void* buffer, UINT count)
+    inline void CFile::Write(const void* buffer, UINT count) const
     {
         assert(m_file != INVALID_HANDLE_VALUE);
 

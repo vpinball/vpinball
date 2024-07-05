@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -196,10 +196,11 @@ namespace Win32xx
         }
 
         int maxPosX = m_totalSize.cx - GetClientRect().Width();
-        newPos.x = MAX(0, MIN(newPos.x, maxPosX));
+        int newPosX = newPos.x;
+        newPos.x = std::max(0, std::min(newPosX, maxPosX));
 
         // Scroll the window
-        int deltaX = newPos.x - m_currentPos.x;
+        int deltaX = newPosX - m_currentPos.x;
         ScrollWindowEx(-deltaX, 0, NULL, NULL, 0, NULL, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
@@ -260,8 +261,10 @@ namespace Win32xx
         {
             int maxPosX = m_totalSize.cx - GetClientRect().Width();
             int maxPosY = m_totalSize.cy - GetClientRect().Height();
-            newPos.x = MAX(0, MIN(newPos.x, maxPosX));
-            newPos.y = MAX(0, MIN(newPos.y, maxPosY));
+            int newPosX = newPos.x;
+            int newPosY = newPos.y;
+            newPos.x = std::max(0, std::min(newPosX, maxPosX));
+            newPos.y = std::max(0, std::min(newPosY, maxPosY));
 
             // Scroll the window.
             int deltaX = newPos.x - m_currentPos.x;
@@ -317,9 +320,9 @@ namespace Win32xx
         int cyPos = ::MulDiv(WheelDelta, m_lineSize.cy, WHEEL_DELTA);
         CPoint newPos = GetScrollPosition();
         newPos.y -= cyPos;
-
+        int newPosY = newPos.y;
         int maxPosY = m_totalSize.cy - GetClientRect().Height();
-        newPos.y = MAX(0, MIN(newPos.y, maxPosY));
+        newPos.y = std::max(0, std::min(newPosY, maxPosY));
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
@@ -367,7 +370,8 @@ namespace Win32xx
         }
 
         int maxPosY = m_totalSize.cy - GetClientRect().Height();
-        newPos.y = MAX(0, MIN(newPos.y, maxPosY));
+        int newPosY = newPos.y;
+        newPos.y = std::max(0, std::min(newPosY, maxPosY));
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
@@ -537,11 +541,13 @@ namespace Win32xx
                 int cyScroll = ::GetSystemMetrics(SM_CYHSCROLL) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                 cxScroll = IsVScrollVisible() ? cxScroll : 0;
                 cyScroll = IsHScrollVisible() ? cyScroll : 0;
-                int xNewPos = MIN(m_currentPos.x, totalRect.Width() - viewRect.Width() + cxScroll);
-                xNewPos = MAX(xNewPos, 0);
+                int currentPosX = m_currentPos.x;
+                int currentPosY = m_currentPos.y;
+                int xNewPos = std::min(currentPosX, totalRect.Width() - viewRect.Width() + cxScroll);
+                xNewPos = std::max(xNewPos, 0);
                 int xDelta = xNewPos - m_currentPos.x;
-                int yNewPos = MIN(m_currentPos.y, totalRect.Height() - viewRect.Height() + cyScroll);
-                yNewPos = MAX(yNewPos, 0);
+                int yNewPos = std::min(currentPosY, totalRect.Height() - viewRect.Height() + cyScroll);
+                yNewPos = std::max(yNewPos, 0);
                 int yDelta = yNewPos - m_currentPos.y;
                 ScrollWindowEx(-xDelta, -yDelta, NULL, NULL, 0, NULL, SW_INVALIDATE);
 

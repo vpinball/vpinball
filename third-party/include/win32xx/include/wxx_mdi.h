@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -760,7 +760,7 @@ namespace Win32xx
             if (menuItems > 0)
             {
                 // The Window menu is typically second from the right
-                int windowItem = MAX(menuItems - 2, 0);
+                int windowItem = std::max(menuItems - 2, 0);
                 CMenu menuWindow = menu.GetSubMenu(windowItem);
 
                 if (menuWindow.GetHandle())

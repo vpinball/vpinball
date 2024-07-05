@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -463,64 +463,69 @@ namespace Win32xx
         void CreateIC(LPCTSTR driver, LPCTSTR device, LPCTSTR output, const DEVMODE* pInitData);
 
         // Create Bitmaps
-        void CreateBitmap(int cx, int cy, UINT planes, UINT bitsPerPixel, LPCVOID pColors);
-        void CreateCompatibleBitmap(HDC dc, int cx, int cy);
+        void CreateBitmap(int cx, int cy, UINT planes, UINT bitsPerPixel, LPCVOID pColors) const;
+        void CreateCompatibleBitmap(HDC dc, int cx, int cy) const;
         void CreateDIBSection(HDC dc, const LPBITMAPINFO pBMI, UINT usage, LPVOID* ppBits,
-                                        HANDLE section, DWORD offset);
-        CBitmap DetachBitmap();
+                              HANDLE section, DWORD offset) const;
+        CBitmap DetachBitmap() const;
 
-        BOOL LoadBitmap(UINT id);
-        BOOL LoadBitmap(LPCTSTR resName);
-        BOOL LoadImage(UINT id, UINT flags);
-        BOOL LoadImage(LPCTSTR resName, UINT flags);
-        BOOL LoadOEMBitmap(UINT bitmapID); // for OBM_/OCR_/OIC
+        BOOL LoadBitmap(UINT id) const;
+        BOOL LoadBitmap(LPCTSTR resName) const;
+        BOOL LoadImage(UINT id, UINT flags) const;
+        BOOL LoadImage(LPCTSTR resName, UINT flags) const;
+        BOOL LoadImage(UINT id, int cxDesired, int cyDesired, UINT flags) const;
+        BOOL LoadImage(LPCTSTR resourceName, int cxDesired, int cyDesired, UINT flags) const;
+        BOOL LoadOEMBitmap(UINT bitmapID) const; // for OBM_/OCR_/OIC
 
-        void CreateBitmapIndirect(const BITMAP& bitmap);
+        void CreateBitmapIndirect(const BITMAP& bitmap) const;
         void CreateDIBitmap(HDC dc, const BITMAPINFOHEADER& pBMIH, DWORD init, LPCVOID pInit,
-                                        const LPBITMAPINFO pBMI, UINT usage);
-        void CreateMappedBitmap(UINT bitmapID, UINT flags /*= 0*/, LPCOLORMAP pColorMap /*= NULL*/, int mapSize /*= 0*/);
+                            const LPBITMAPINFO pBMI, UINT usage) const;
+        void CreateMappedBitmap(UINT bitmapID, UINT flags /*= 0*/, LPCOLORMAP pColorMap /*= NULL*/,
+                                int mapSize /*= 0*/) const;
 
         // Create Brushes
-        void CreateBrushIndirect(const LOGBRUSH& logBrush);
-        void CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec);
-        void CreateDIBPatternBrushPt(LPCVOID pPackedDIB, UINT usage);
-        void CreateHatchBrush(int style, COLORREF color);
-        void CreatePatternBrush(HBITMAP bitmap);
-        void CreateSolidBrush(COLORREF color);
+        void CreateBrushIndirect(const LOGBRUSH& logBrush) const;
+        void CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec) const;
+        void CreateDIBPatternBrushPt(LPCVOID pPackedDIB, UINT usage) const;
+        void CreateHatchBrush(int style, COLORREF color) const;
+        void CreatePatternBrush(HBITMAP bitmap) const;
+        void CreateSolidBrush(COLORREF color) const;
 
         // Create Fonts
-        void CreateFontIndirect(const LOGFONT& lf);
-        void CreatePointFont(int pointSize, LPCTSTR faceName, HDC dc = NULL, BOOL isBold = FALSE, BOOL isItalic = FALSE);
-        void CreatePointFontIndirect(const LOGFONT& logFont, HDC dc = NULL);
+        void CreateFontIndirect(const LOGFONT& lf) const;
+        void CreatePointFont(int pointSize, LPCTSTR faceName, HDC dc = NULL,
+                             BOOL isBold = FALSE, BOOL isItalic = FALSE) const;
+        void CreatePointFontIndirect(const LOGFONT& logFont, HDC dc = NULL) const;
 
         void CreateFont(int height, int width, int escapement, int orientation, int weight,
                             DWORD italic, DWORD underline, DWORD strikeOut, DWORD charSet,
                             DWORD outputPrecision, DWORD clipPrecision, DWORD quality,
-                            DWORD pitchAndFamily, LPCTSTR faceName);
+                            DWORD pitchAndFamily, LPCTSTR faceName) const;
 
         // Create Palettes
-        void CreatePalette(LPLOGPALETTE pLogPalette, BOOL forceBkgnd);
-        void CreateHalftonePalette(BOOL forceBkgnd);
+        void CreatePalette(LPLOGPALETTE pLogPalette, BOOL forceBkgnd) const;
+        void CreateHalftonePalette(BOOL forceBkgnd) const;
 
         // Create Pens
-        void CreatePen(int style, int width, COLORREF color);
-        void CreatePenIndirect(const LOGPEN& logPen);
-        void ExtCreatePen(int penStyle, int width, const LOGBRUSH& logBrush, int styleCount, const DWORD* pStyle);
+        void CreatePen(int style, int width, COLORREF color) const;
+        void CreatePenIndirect(const LOGPEN& logPen) const;
+        void ExtCreatePen(int penStyle, int width, const LOGBRUSH& logBrush,
+                          int styleCount, const DWORD* pStyle) const;
 
         // Retrieve and Select Stock Objects
         HGDIOBJ GetStockObject(int index) const;
         HGDIOBJ SelectStockObject(int index) const;
 
         // Create Regions
-        int CreateEllipticRgn(int left, int top, int right, int bottom);
-        int CreateEllipticRgnIndirect(const RECT& rc);
-        int CreatePolygonRgn(LPPOINT pPointArray, int points, int polyFillMode);
-        int CreatePolyPolygonRgn(LPPOINT pPointArray, LPINT pPolyCounts, int count, int polyFillMode);
-        int CreateRectRgn(int left, int top, int right, int bottom);
-        int CreateRectRgnIndirect(const RECT& rc);
-        int CreateRgnFromData(const XFORM* pXform, int count, const RGNDATA* pRgnData);
-        int CreateRgnFromPath(HDC dc);
-        int CreateRoundRectRgn(int x1, int y1, int x2, int y2, int x3, int y3);
+        int CreateEllipticRgn(int left, int top, int right, int bottom) const;
+        int CreateEllipticRgnIndirect(const RECT& rc) const;
+        int CreatePolygonRgn(LPPOINT pPointArray, int points, int polyFillMode) const;
+        int CreatePolyPolygonRgn(LPPOINT pPointArray, LPINT pPolyCounts, int count, int polyFillMode) const;
+        int CreateRectRgn(int left, int top, int right, int bottom) const;
+        int CreateRectRgnIndirect(const RECT& rc) const;
+        int CreateRgnFromData(const XFORM* pXform, int count, const RGNDATA* pRgnData) const;
+        int CreateRgnFromPath(HDC dc) const;
+        int CreateRoundRectRgn(int x1, int y1, int x2, int y2, int x3, int y3) const;
 
         // Wrappers for WinAPI functions
         int EnumObjects(int objectType, GOBJENUMPROC pObjectFunc, LPARAM lparam) const;
@@ -761,9 +766,9 @@ namespace Win32xx
         void Assign(HDC object);
         PAINTSTRUCT* GetPaintStruct() const { return &m_pData->ps; }
         void Release();
-        void SetManaged(bool isManaged) { m_pData->isManagedHDC = isManaged; }
-        void SetPaintDC(bool isPaintDC) { m_pData->isPaintDC = isPaintDC; }
-        void SetWindow(HWND wnd) { m_pData->wnd = wnd; }
+        void SetManaged(bool isManaged) const { m_pData->isManagedHDC = isManaged; }
+        void SetPaintDC(bool isPaintDC) const { m_pData->isPaintDC = isPaintDC; }
+        void SetWindow(HWND wnd) const { m_pData->wnd = wnd; }
 
     private:
         void AddToMap();
@@ -1271,7 +1276,7 @@ namespace Win32xx
                     (bits[index + 1] != GetGValue(mask)) ||
                     (bits[index + 2] != GetBValue(mask)))
                 {
-                    BYTE byGray = BYTE(70 + (bits[index + 2] * 3 + bits[index + 1] * 6 + bits[index + 0]) / 14);
+                    BYTE byGray = BYTE(110 + (bits[index + 2] * 3 + bits[index + 1] * 6 + bits[index + 0]) / 20);
                     bits[index] = byGray;
                     bits[index + 1] = byGray;
                     bits[index + 2] = byGray;
@@ -1484,12 +1489,12 @@ namespace Win32xx
         UINT widthBytes = bmiHeader.biSizeImage/bmiHeader.biHeight;
 
         // Ensure sane color correction values.
-        cBlue  = MIN(cBlue, 255);
-        cBlue  = MAX(cBlue, -255);
-        cRed   = MIN(cRed, 255);
-        cRed   = MAX(cRed, -255);
-        cGreen = MIN(cGreen, 255);
-        cGreen = MAX(cGreen, -255);
+        cBlue  = std::min(cBlue, 255);
+        cBlue  = std::max(cBlue, -255);
+        cRed   = std::min(cRed, 255);
+        cRed   = std::max(cRed, -255);
+        cGreen = std::min(cGreen, 255);
+        cGreen = std::max(cGreen, -255);
 
         // Pre-calculate the RGB modification values.
         int b1 = 256 - cBlue;
@@ -2722,7 +2727,7 @@ namespace Win32xx
 
     // Creates and selects a bitmap compatible with the specified device context.
     // Refer to CreateCompatibleBitmap in the Windows API documentation for more information.
-    inline void CDC::CreateCompatibleBitmap(HDC dc, int cx, int cy)
+    inline void CDC::CreateCompatibleBitmap(HDC dc, int cx, int cy) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2733,7 +2738,7 @@ namespace Win32xx
 
     // Creates a bitmap and selects it into the device context.
     // Refer to CreateBitmap in the Windows API documentation for more information.
-    inline void CDC::CreateBitmap(int cx, int cy, UINT planes, UINT bitsPerPixel, LPCVOID pColors)
+    inline void CDC::CreateBitmap(int cx, int cy, UINT planes, UINT bitsPerPixel, LPCVOID pColors) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2744,7 +2749,7 @@ namespace Win32xx
 
     // Creates a bitmap and selects it into the device context.
     // Refer to CreateBitmapIndirect in the Windows API documentation for more information.
-    inline void CDC::CreateBitmapIndirect (const BITMAP& bitmap)
+    inline void CDC::CreateBitmapIndirect (const BITMAP& bitmap) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2757,7 +2762,7 @@ namespace Win32xx
     // A CBitmapInfoPtr object can be used for the LPBITMAPINFO parameter.
     // Refer to CreateDIBitmap in the Windows API documentation for more information.
     inline void CDC::CreateDIBitmap(HDC dc, const BITMAPINFOHEADER& bmih, DWORD init, LPCVOID pInit,
-                                        const LPBITMAPINFO pBMI,  UINT flags)
+                                        const LPBITMAPINFO pBMI,  UINT flags) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2770,7 +2775,7 @@ namespace Win32xx
     // A CBitmapInfoPtr object can be used for the LPBITMAPINFO parameter.
     // Refer to CreateDIBSection in the Windows API documentation for more information.
     inline void CDC::CreateDIBSection(HDC dc, const LPBITMAPINFO pBMI, UINT usage, LPVOID* pBits,
-                                        HANDLE hSection, DWORD offset)
+                                        HANDLE hSection, DWORD offset) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2782,7 +2787,7 @@ namespace Win32xx
     // Provides a convenient method of detaching a bitmap from a memory device context.
     // Returns the CBitmap detached from the DC.
     // Usage:  CBitmap bitmap = memDC.DetachBitmap();
-    inline CBitmap CDC::DetachBitmap()
+    inline CBitmap CDC::DetachBitmap() const
     {
         assert(m_pData->dc != NULL);
 
@@ -2858,7 +2863,7 @@ namespace Win32xx
     // Loads a bitmap from the resource and selects it into the device context.
     // Returns TRUE if successful.
     // Refer to LoadBitmap in the Windows API documentation for more information.
-    inline BOOL CDC::LoadBitmap(UINT id)
+    inline BOOL CDC::LoadBitmap(UINT id) const
     {
         return LoadBitmap(MAKEINTRESOURCE(id));
     }
@@ -2866,7 +2871,7 @@ namespace Win32xx
     // Loads a bitmap from the resource and selects it into the device context.
     // Returns TRUE if successful.
     // Refer to LoadBitmap in the Windows API documentation for more information.
-    inline BOOL CDC::LoadBitmap(LPCTSTR resourceName)
+    inline BOOL CDC::LoadBitmap(LPCTSTR resourceName) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2886,7 +2891,7 @@ namespace Win32xx
     // LR_LOADFROMFILE, LR_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED and LR_VGACOLOR.
     // Returns TRUE if successful.
     // Refer to LoadImage in the Windows API documentation for more information.
-    inline BOOL CDC::LoadImage(UINT id, UINT flags)
+    inline BOOL CDC::LoadImage(UINT id, UINT flags) const
     {
         return LoadImage(MAKEINTRESOURCE(id), flags);
     }
@@ -2896,7 +2901,7 @@ namespace Win32xx
     // LR_LOADFROMFILE, LR_LOADTRANSPARENT, LR_MONOCHROME, LR_SHARED and LR_VGACOLOR.
     // Returns TRUE if successful.
     // Refer to LoadImage in the Windows API documentation for more information.
-    inline BOOL CDC::LoadImage(LPCTSTR resourceName, UINT flags)
+    inline BOOL CDC::LoadImage(LPCTSTR resourceName, UINT flags) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2911,10 +2916,36 @@ namespace Win32xx
         return IsLoaded;
     }
 
+    // Loads a bitmap from a resource using the resource ID.
+    // Refer to LoadImage in the Windows API documentation for more information.
+    inline BOOL CDC::LoadImage(UINT id, int cxDesired, int cyDesired, UINT flags) const
+    {
+        return LoadImage(MAKEINTRESOURCE(id), cxDesired, cyDesired, flags);
+    }
+
+    // Loads a bitmap from a resource using the resource string.
+    // Refer to LoadImage in the Windows API documentation for more information.
+    inline BOOL CDC::LoadImage(LPCTSTR resourceName, int cxDesired, int cyDesired, UINT flags) const
+    {
+        {
+            assert(m_pData->dc != NULL);
+
+            CBitmap bitmap;
+            BOOL isLoaded = bitmap.LoadImage(resourceName, cxDesired, cyDesired, flags);
+
+            if (isLoaded)
+            {
+                SelectObject(bitmap);
+            }
+
+            return isLoaded;
+        }
+    }
+
     // Loads a predefined system bitmap and selects it into the device context.
     // Returns TRUE if successful.
     // Refer to LoadBitmap in the Windows API documentation for more information.
-    inline BOOL CDC::LoadOEMBitmap(UINT bitmapID) // for OBM_/OCR_/OIC_
+    inline BOOL CDC::LoadOEMBitmap(UINT bitmapID) const // for OBM_/OCR_/OIC_
     {
         assert(m_pData->dc != NULL);
 
@@ -2932,7 +2963,8 @@ namespace Win32xx
     // Creates and selects a new bitmap using the bitmap data and colors specified by
     // the bitmap resource and the color mapping information.
     // Refer to CreateMappedBitmap in the Windows API documentation for more information.
-    inline void CDC::CreateMappedBitmap(UINT bitmapID, UINT flags /*= 0*/, LPCOLORMAP pColorMap /*= NULL*/, int mapSize /*= 0*/)
+    inline void CDC::CreateMappedBitmap(UINT bitmapID, UINT flags /*= 0*/,
+        LPCOLORMAP pColorMap /*= NULL*/, int mapSize /*= 0*/) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2946,7 +2978,7 @@ namespace Win32xx
 
     // Creates the brush with the specified pattern, and selects it into the device context.
     // Refer to CreatePatternBrush in the Windows API documentation for more information.
-    inline void CDC::CreatePatternBrush(HBITMAP bitmap)
+    inline void CDC::CreatePatternBrush(HBITMAP bitmap) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2957,7 +2989,7 @@ namespace Win32xx
 
     // Creates the brush with the specified color, and selects it into the device context.
     // Refer to CreateSolidBrush in the Windows API documentation for more information.
-    inline void CDC::CreateSolidBrush(COLORREF color)
+    inline void CDC::CreateSolidBrush(COLORREF color) const
     {
         assert(m_pData->dc != NULL);
 
@@ -2989,7 +3021,7 @@ namespace Win32xx
 
     // Creates the brush and selects it into the device context.
     // Refer to CreateBrushIndirect in the Windows API documentation for more information.
-    inline void CDC::CreateBrushIndirect(const LOGBRUSH& logBrush)
+    inline void CDC::CreateBrushIndirect(const LOGBRUSH& logBrush) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3000,7 +3032,7 @@ namespace Win32xx
 
     // Creates a brush with the specified hatch pattern and color, and selects it into the device context.
     // Refer to CreateHatchBrush in the Windows API documentation for more information.
-    inline void CDC::CreateHatchBrush(int style, COLORREF color)
+    inline void CDC::CreateHatchBrush(int style, COLORREF color) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3011,7 +3043,7 @@ namespace Win32xx
 
     // Creates a logical from the specified device-independent bitmap (DIB), and selects it into the device context.
     // Refer to CreateDIBPatternBrush in the Windows API documentation for more information.
-    inline void CDC::CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec)
+    inline void CDC::CreateDIBPatternBrush(HGLOBAL hDIBPacked, UINT colorSpec) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3022,7 +3054,7 @@ namespace Win32xx
 
     // Creates a logical from the specified device-independent bitmap (DIB), and selects it into the device context.
     // Refer to CreateDIBPatternBrushPt in the Windows API documentation for more information.
-    inline void CDC::CreateDIBPatternBrushPt(LPCVOID pPackedDIB, UINT usage)
+    inline void CDC::CreateDIBPatternBrushPt(LPCVOID pPackedDIB, UINT usage) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3059,7 +3091,7 @@ namespace Win32xx
 
     // Creates a logical font and selects it into the device context.
     // Refer to CreateFontIndirect in the Windows API documentation for more information.
-    inline void CDC::CreateFontIndirect(const LOGFONT& lf)
+    inline void CDC::CreateFontIndirect(const LOGFONT& lf) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3070,7 +3102,8 @@ namespace Win32xx
 
     // Creates a font of a specified typeface and point size and selects it into the device context.
     // Refer to CreateFontIndirect in the Windows API documentation for more information.
-    inline void CDC::CreatePointFont(int pointSize, LPCTSTR faceName, HDC dc /*= NULL*/, BOOL isBold /*= FALSE*/, BOOL isItalic /*= FALSE*/)
+    inline void CDC::CreatePointFont(int pointSize, LPCTSTR faceName, HDC dc /*= NULL*/,
+        BOOL isBold /*= FALSE*/, BOOL isItalic /*= FALSE*/) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3083,7 +3116,7 @@ namespace Win32xx
     // This function automatically converts the height in lfHeight to logical
     // units using the specified device context.
     // Refer to CreateFontIndirect in the Windows API documentation for more information.
-    inline void CDC::CreatePointFontIndirect(const LOGFONT& logFont, HDC dc)
+    inline void CDC::CreatePointFontIndirect(const LOGFONT& logFont, HDC dc) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3130,7 +3163,7 @@ namespace Win32xx
                     DWORD quality,            // output quality
                     DWORD pitchAndFamily,     // pitch and family
                     LPCTSTR faceName          // typeface name
-                    )
+                    ) const
 
     {
         assert(m_pData->dc != NULL);
@@ -3149,7 +3182,7 @@ namespace Win32xx
 
     // Creates and selects a palette.
     // Refer to CreatePalette in the Windows API documentation for more information.
-    inline void CDC::CreatePalette(LPLOGPALETTE pLogPalette, BOOL forceBkgnd)
+    inline void CDC::CreatePalette(LPLOGPALETTE pLogPalette, BOOL forceBkgnd) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3186,7 +3219,7 @@ namespace Win32xx
 
     // Creates and selects halftone palette.
     // Refer to CreateHalftonePalette in the Windows API documentation for more information.
-    inline void CDC::CreateHalftonePalette(BOOL forceBkgnd)
+    inline void CDC::CreateHalftonePalette(BOOL forceBkgnd) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3227,7 +3260,7 @@ namespace Win32xx
 
     // Creates the pen and selects it into the device context.
     // Refer to CreatePen in the Windows API documentation for more information.
-    inline void CDC::CreatePen (int style, int width, COLORREF color)
+    inline void CDC::CreatePen (int style, int width, COLORREF color) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3238,7 +3271,7 @@ namespace Win32xx
 
     // Creates the pen and selects it into the device context.
     // Refer to CreatePenIndirect in the Windows API documentation for more information.
-    inline void CDC::CreatePenIndirect (const LOGPEN& logPen)
+    inline void CDC::CreatePenIndirect (const LOGPEN& logPen) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3249,7 +3282,8 @@ namespace Win32xx
 
     // Creates a logical cosmetic or geometric pen that has the specified style, width, and brush attributes.
     // Refer to ExtCreatePen in the Windows API documentation for more information.
-    inline void CDC::ExtCreatePen(int penStyle, int width, const LOGBRUSH& logBrush, int styleCount , const DWORD* pStyle)
+    inline void CDC::ExtCreatePen(int penStyle, int width, const LOGBRUSH& logBrush,
+        int styleCount , const DWORD* pStyle) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3316,7 +3350,7 @@ namespace Win32xx
     // Creates a rectangular region from the rectangle co-ordinates.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreateRectRgn in the Windows API documentation for more information.
-    inline int CDC::CreateRectRgn(int left, int top, int right, int bottom)
+    inline int CDC::CreateRectRgn(int left, int top, int right, int bottom) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3329,7 +3363,7 @@ namespace Win32xx
     // Creates a rectangular region from the rectangle co-ordinates.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreateRectRgnIndirect in the Windows API documentation for more information.
-    inline int CDC::CreateRectRgnIndirect(const RECT& rc)
+    inline int CDC::CreateRectRgnIndirect(const RECT& rc) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3344,7 +3378,7 @@ namespace Win32xx
     // Notes: GetRegionData can be used to get a region's data
     //        If the XFROM pointer is NULL, the identity transformation is used.
     // Refer to ExtCreateRegion in the Windows API documentation for more information.
-    inline int CDC::CreateRgnFromData(const XFORM* pXform, int count, const RGNDATA* pRgnData)
+    inline int CDC::CreateRgnFromData(const XFORM* pXform, int count, const RGNDATA* pRgnData) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3358,7 +3392,7 @@ namespace Win32xx
     // and selects it into the device context.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreateEllipticRgn in the Windows API documentation for more information.
-    inline int CDC::CreateEllipticRgn(int left, int top, int right, int bottom)
+    inline int CDC::CreateEllipticRgn(int left, int top, int right, int bottom) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3372,7 +3406,7 @@ namespace Win32xx
     // and selects it into the device context.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreateEllipticRgnIndirect in the Windows API documentation for more information.
-    inline int CDC::CreateEllipticRgnIndirect(const RECT& rc)
+    inline int CDC::CreateEllipticRgnIndirect(const RECT& rc) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3387,7 +3421,7 @@ namespace Win32xx
     // the device context. The polygon is presumed closed.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreatePolygonRgn in the Windows API documentation for more information.
-    inline int CDC::CreatePolygonRgn(LPPOINT pPointArray, int points, int polyFillMode)
+    inline int CDC::CreatePolygonRgn(LPPOINT pPointArray, int points, int polyFillMode) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3400,7 +3434,7 @@ namespace Win32xx
     // Creates the polygon region from a series of polygons.The polygons can overlap.
     // The return value specifies the region's complexity: NULLREGION;SIMPLEREGION;COMPLEXREGION;ERROR.
     // Refer to CreatePolyPolygonRgn in the Windows API documentation for more information.
-    inline int CDC::CreatePolyPolygonRgn(LPPOINT pPointArray, LPINT pCount, int count, int polyFillMode)
+    inline int CDC::CreatePolyPolygonRgn(LPPOINT pPointArray, LPINT pCount, int count, int polyFillMode) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3414,7 +3448,7 @@ namespace Win32xx
     // Creates a region from the path that is selected into the specified device context.
     // The resulting region uses device coordinates.
     // Refer to PathToRegion in the Windows API documentation for more information.
-    inline int CDC::CreateRgnFromPath(HDC dc)
+    inline int CDC::CreateRgnFromPath(HDC dc) const
     {
         assert(m_pData->dc != NULL);
 
@@ -3426,7 +3460,7 @@ namespace Win32xx
 
     // Creates a rectangular region with rounded corners.
     // Refer to CreateRoundRectRgn in the Windows API documentation for more information.
-    inline int CDC::CreateRoundRectRgn(int x1, int y1, int x2, int y2, int x3, int y3)
+    inline int CDC::CreateRoundRectRgn(int x1, int y1, int x2, int y2, int x3, int y3) const
     {
         assert(m_pData->dc != NULL);
 

@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -211,7 +211,8 @@ namespace Win32xx
     inline CRichEdit::~CRichEdit()
     {
         // Destroy the window before freeing the DLL.
-        Destroy();
+        if (IsWindow())
+            ::DestroyWindow(*this);
 
         ::FreeLibrary(m_rich1);
         if (m_rich2)
@@ -236,9 +237,12 @@ namespace Win32xx
         wc.lpszClassName = RICHEDIT_CLASS;
 
         // For RichEdit version 4.1 (available on XP and above).
+        // Requires Unicode.
 #if defined MSFTEDIT_CLASS && defined UNICODE
         if (m_rich4_1 != NULL)
             wc.lpszClassName = MSFTEDIT_CLASS;
+#else
+        TRACE("\n*** WARNING: Using an old version of the RichEdit control ***\n\n");
 #endif
 
     }

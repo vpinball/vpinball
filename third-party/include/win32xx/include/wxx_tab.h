@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -139,6 +139,7 @@ namespace Win32xx
         void SetOwnerDraw(BOOL isEnabled);
         void SetShowButtons(BOOL show);
         void SetTabFont(HFONT font);
+        void SetTabIcon(int tab, UINT iconID);
         void SetTabIcon(int tab, HICON icon);
         void SetTabsAtTop(BOOL isAtTop);
         void SetTabText(int tab, LPCTSTR text);
@@ -622,7 +623,8 @@ namespace Win32xx
 
                     // Draw the text.
                     dc.SelectObject(m_tabFont);
-                    dc.DrawText(str, -1, rcText, DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS);
+                    dc.DrawText(str, -1, rcText, DT_LEFT | DT_VCENTER |
+                        DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX);
                 }
             }
         }
@@ -644,7 +646,8 @@ namespace Win32xx
 
         if (!isBottomTab)
         {
-            bottom = MAX(rc.top, GetTabHeight() + gap + 1);
+            int rcTop = rc.top;
+            bottom = std::max(rcTop, GetTabHeight() + gap + 1);
             top = bottom - gap;
         }
 
@@ -735,12 +738,12 @@ namespace Win32xx
         }
 
         // Add the menu items.
-        for (UINT u = 0; u < MIN(GetAllTabs().size(), 9); ++u)
+        for (size_t i = 0; i < std::min(GetAllTabs().size(), size_t(9)); ++i)
         {
             CString menuString;
-            CString tabText = GetAllTabs()[u].tabText;
-            menuString.Format(_T("&%d %s"), u+1, tabText.c_str());
-            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(u), menuString);
+            CString tabText = GetAllTabs()[i].tabText;
+            menuString.Format(_T("&%d %s"), i+1, tabText.c_str());
+            m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + UINT_PTR(i), menuString);
         }
         if (GetAllTabs().size() >= 10)
             m_listMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD +9, _T("More Tabs"));
@@ -822,8 +825,8 @@ namespace Win32xx
     inline int CTab::GetTabHeight() const
     {
         int heightGap = DpiScaleInt(5);
-        CSize iconSize = m_images.GetIconSize();
-        return MAX(iconSize.cy, GetTextHeight()) + heightGap;
+        int iconSizeX = m_images.GetIconSize().cx;
+        return std::max(iconSizeX, GetTextHeight()) + heightGap;
     }
 
     // Returns the index of the tab given its view window.
@@ -1346,6 +1349,13 @@ namespace Win32xx
     }
 
     // Changes or sets the tab's icon.
+    inline void CTab::SetTabIcon(int tab, UINT iconID)
+    {
+        HICON icon = static_cast<HICON>(GetApp()->LoadImage(iconID, IMAGE_ICON, 0, 0, LR_SHARED));
+        SetTabIcon(tab, icon);
+    }
+
+    // Changes or sets the tab's icon.
     inline void CTab::SetTabIcon(int tab, HICON icon)
     {
         assert (GetItemCount() > tab);
@@ -1397,8 +1407,9 @@ namespace Win32xx
                 if (m_isShowingButtons)
                     padding = GetCloseRect().Width() + GetListRect().Width() + DpiScaleInt(4);
 
-                int itemWidth = MIN(GetMaxTabSize().cx, (rc.Width() - padding) / GetItemCount());
-                itemWidth = MAX(itemWidth, 0);
+                int maxTabSizeX = GetMaxTabSize().cx;
+                int itemWidth = std::min(maxTabSizeX, (rc.Width() - padding) / GetItemCount());
+                itemWidth = std::max(itemWidth, 0);
                 SetItemSize(itemWidth, GetTabHeight());
                 NotifyChanged();
             }

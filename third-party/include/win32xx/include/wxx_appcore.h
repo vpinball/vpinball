@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -549,11 +549,9 @@ namespace Win32xx
         TLSData* pTLSData = GetTlsData();
         if (pTLSData == NULL)
         {
-            pTLSData = new TLSData;
-            TLSDataPtr dataPtr(pTLSData);
-            m_allTLSData.push_back(dataPtr); // Store as a smart pointer.
-
-            VERIFY(::TlsSetValue(m_tlsData, pTLSData));
+            TLSDataPtr dataPtr(new TLSData);
+            m_allTLSData.push_back(dataPtr);
+            VERIFY(::TlsSetValue(m_tlsData, dataPtr.get()));
         }
     }
 

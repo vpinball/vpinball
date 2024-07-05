@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -139,7 +139,7 @@ namespace Win32xx
         }
         else
         {
-            TRACE("InitInstance failed!  Terminating the thread\n");
+            TRACE("\n*** ERROR:InitInstance failed!  Terminating the thread. ***\n\n");
             ::PostQuitMessage(-1);
             return -1;
         }

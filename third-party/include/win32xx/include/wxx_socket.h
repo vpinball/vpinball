@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -117,8 +117,7 @@
 //    "experimental" support, which can be enabled by entering "ipv6 install"
 //    at a command prompt.
 // * IPv6 is not supported by all compilers and development environments. In
-//    particular, it is not supported by Dev-C++ or Borland 5.5. A modern
-//    Platform SDK needs to be added to Visual Studio 6 for it to support IPv6.
+//    particular, it is not by Borland 5.5.
 // * IsIPV6Supported returns false if either the operating system or the
 //    development environment fails to support IPv6.
 //

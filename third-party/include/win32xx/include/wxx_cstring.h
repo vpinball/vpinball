@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -174,6 +174,7 @@ namespace Win32xx
 
         // Operations
         BSTR     AllocSysString() const;
+        void     Append(const std::basic_string<T>& str);
         void     AppendFormat(const T* format,...);
         void     AppendFormat(UINT formatID, ...);
         void     Assign(const T* text, int count);
@@ -485,7 +486,14 @@ namespace Win32xx
         return bstr;
     }
 
-    // Appends formatted data to an the CStringT content.
+    // Appends a std::basic_string<T> to this CStringT.
+    template <class T>
+    inline void CStringT<T>::Append(const std::basic_string<T>& str)
+    {
+        m_str.append(str);
+    }
+
+    // Appends formatted data to this CStringT.
     template <class T>
     inline void CStringT<T>::AppendFormat(const T* format,...)
     {
@@ -900,7 +908,7 @@ namespace Win32xx
         assert(index >= 0);
         assert(ch);
 
-        index = MIN(index, GetLength());
+        index = std::min(index, GetLength());
         m_str.insert(index, &ch, 1);
 
         return static_cast<int>(m_str.size());
@@ -912,7 +920,7 @@ namespace Win32xx
     {
         assert(index >= 0);
 
-        index = MIN(index, GetLength());
+        index = std::min(index, GetLength());
         m_str.insert(index, str);
 
         return static_cast<int>(m_str.size());
@@ -1009,7 +1017,7 @@ namespace Win32xx
 
         assert(m_buf.size() > 0);
         assert(newLength <= static_cast<int>(m_buf.size() -1));
-        newLength = MIN(newLength, static_cast<int>(m_buf.size() -1));
+        newLength = std::min(newLength, static_cast<int>(m_buf.size() -1));
 
         T ch = 0;
         m_str.assign(static_cast<size_t>(newLength), ch);
@@ -1129,7 +1137,7 @@ namespace Win32xx
         assert(count >= 0);
 
         CStringT str;
-        count = MIN(count, GetLength());
+        count = std::min(count, GetLength());
         str.m_str.assign(m_str, m_str.size() - static_cast<size_t>(count), static_cast<size_t>(count));
         return str;
     }
@@ -1412,7 +1420,7 @@ namespace Win32xx
     inline CStringA operator+(const CStringA& string1, const CStringA& string2)
     {
         CStringA str(string1);
-        str.m_str.append(string2.m_str);
+        str.Append(string2.GetString());
         return str;
     }
 
@@ -1420,7 +1428,7 @@ namespace Win32xx
     inline CStringW operator+(const CStringW& string1, const CStringW& string2)
     {
         CStringW str(string1);
-        str.m_str.append(string2.m_str);
+        str.Append(string2.GetString());
         return str;
     }
 
@@ -1428,7 +1436,7 @@ namespace Win32xx
     inline CStringA operator+(const CStringA& string1, const CHAR* text)
     {
         CStringA str(string1);
-        str.m_str.append(text);
+        str.Append(text);
         return str;
     }
 
@@ -1436,7 +1444,7 @@ namespace Win32xx
     inline CStringW operator+(const CStringW& string1, const WCHAR* text)
     {
         CStringW str(string1);
-        str.m_str.append(text);
+        str.Append(text);
         return str;
     }
 
@@ -1444,7 +1452,8 @@ namespace Win32xx
     inline CStringA operator+(const CStringA& string1, CHAR ch)
     {
         CStringA str(string1);
-        str.m_str.append(1, ch);
+        CStringA string2(ch);
+        str.Append(string2.GetString());
         return str;
     }
 
@@ -1452,7 +1461,8 @@ namespace Win32xx
     inline CStringW operator+(const CStringW& string1, WCHAR ch)
     {
         CStringW str(string1);
-        str.m_str.append(1, ch);
+        CStringW string2(ch);
+        str.Append(string2.GetString());
         return str;
     }
 
@@ -1460,7 +1470,7 @@ namespace Win32xx
     inline CStringA operator+(const CHAR* text, const CStringA& string1)
     {
         CStringA str(text);
-        str.m_str.append(string1);
+        str.Append(string1.GetString());
         return str;
     }
 
@@ -1468,7 +1478,7 @@ namespace Win32xx
     inline CStringW operator+(const WCHAR* text, const CStringW& string1)
     {
         CStringW str(text);
-        str.m_str.append(string1);
+        str.Append(string1.GetString());
         return str;
     }
 
@@ -1476,7 +1486,7 @@ namespace Win32xx
     inline CStringA operator+(CHAR ch, const CStringA& string1)
     {
         CStringA str(ch);
-        str.m_str.append(string1);
+        str.Append(string1.GetString());
         return str;
     }
 
@@ -1484,7 +1494,7 @@ namespace Win32xx
     inline CStringW operator+(WCHAR ch, const CStringW& string1)
     {
         CStringW str(ch);
-        str.m_str.append(string1);
+        str.Append(string1.GetString());
         return str;
     }
 

@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -44,8 +44,8 @@
 #ifndef _WIN32XX_WINCORE0_H_
 #define _WIN32XX_WINCORE0_H_
 
-#include "wxx_rect.h"
 #include "wxx_appcore0.h"
+#include "wxx_rect.h"
 
 // Ensure these macros are defined.
 #ifndef BTNS_DROPDOWN
@@ -193,8 +193,10 @@ namespace Win32xx
     friend class CWinThread;
 
     public:
-        CWnd();             // Constructor
-        virtual ~CWnd();    // Destructor
+        CWnd();                            // Constructor
+        CWnd(const CWnd& rhs);             // Copy constructor
+        CWnd& operator=(const CWnd& rhs);  // Assignment operator
+        virtual ~CWnd();                   // Destructor
 
         // These virtual functions can be overridden.
         virtual BOOL Attach(HWND wnd);
@@ -395,8 +397,6 @@ namespace Win32xx
         virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CWnd(const CWnd&);              // Disable copy construction.
-        CWnd& operator=(const CWnd&);   // Disable assignment operator.
         CWnd(HWND wnd);                 // Private constructor used internally.
 
         static LRESULT CALLBACK StaticWindowProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);

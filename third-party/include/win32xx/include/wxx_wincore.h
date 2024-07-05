@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -292,18 +292,42 @@ namespace Win32xx
         // Note: m_wnd is set in CWnd::CreateEx(...).
     }
 
-    inline CWnd::CWnd(HWND wnd) : m_prevWindowProc(NULL)
+    // A private constructor, used internally.
+    inline CWnd::CWnd(HWND wnd) : m_wnd(wnd), m_prevWindowProc(NULL)
     {
-        // A private constructor, used internally.
-
-        m_wnd = wnd;
     }
 
+    // Creates a copy of this CWnd without adding its pointer to the map.
+    // GetCWndPtr on this object will return NULL.
+    inline CWnd::CWnd(const CWnd& rhs)
+    {
+        m_wnd = rhs.m_wnd;
+        m_prevWindowProc = rhs.m_prevWindowProc;
+    }
+
+    // Assigns a copy of this CWnd without adding its pointer to the map.
+    // GetCWndPtr on this object will return NULL.
+    inline CWnd& CWnd::operator=(const CWnd& rhs)
+    {
+        // This CWnd must not own a managed window.
+        std::map<HWND, CWnd*, CompareHWND>::iterator m;
+        for (m = GetApp()->m_mapHWND.begin(); m != GetApp()->m_mapHWND.end(); ++m)
+        {
+            assert(this != m->second);
+        }
+
+        m_wnd = rhs.m_wnd;
+        m_prevWindowProc = rhs.m_prevWindowProc;
+        return *this;
+    }
+
+    // Destructor
     inline CWnd::~CWnd()
     {
         if (CWinApp::SetnGetThis() != NULL) // Is the CWinApp object still valid?
         {
-            if (GetCWndPtr(*this) == this)  // Is window managed by Win32++?
+            // Only destroy windows managed by C++.
+            if (GetCWndPtr(*this) == this)
             {
                 if (IsWindow())
                     ::DestroyWindow(*this);
@@ -454,27 +478,24 @@ namespace Win32xx
     // are used. A failure to create a window throws an exception.
     inline HWND CWnd::Create(HWND parent /* = NULL */)
     {
+        // Set the WNDCLASS parameters to reasonable defaults.
         WNDCLASS wc;
         ZeroMemory(&wc, sizeof(wc));
 
+        // Allow the WNDCLASS parameters to be modified.
+        PreRegisterClass(wc);
+
+        // Register the window class if the class name is specified.
+        if (wc.lpszClassName)
+            VERIFY(RegisterClass(wc));
+
+        // Set the CREATESTUCT parameters to reasonable defaults.
         CREATESTRUCT cs;
         ZeroMemory(&cs, sizeof(cs));
-
-        // Set the WNDCLASS parameters
-        PreRegisterClass(wc);
-        if (wc.lpszClassName)
-        {
-            RegisterClass(wc);
-            cs.lpszClass = wc.lpszClassName;
-        }
-        else
-            cs.lpszClass = _T("Win32++ Window");
-
-        // Set a reasonable default window style.
         LONG dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
         cs.style = WS_VISIBLE | ((parent)? WS_CHILD : dwOverlappedStyle );
+        cs.hwndParent = parent;
 
-        // Set a reasonable default window position.
         if (parent == NULL)
         {
             cs.x  = CW_USEDEFAULT;
@@ -482,6 +503,8 @@ namespace Win32xx
             cs.y  = CW_USEDEFAULT;
             cs.cy = CW_USEDEFAULT;
         }
+
+        cs.lpszClass = wc.lpszClassName;
 
         // Allow the CREATESTRUCT parameters to be modified.
         PreCreate(cs);
@@ -491,14 +514,18 @@ namespace Win32xx
 
         // Create the window.
         wnd = CreateEx(cs.dwExStyle, cs.lpszClass, cs.lpszName, style,
-                cs.x, cs.y, cs.cx, cs.cy, parent,
+                cs.x, cs.y, cs.cx, cs.cy, cs.hwndParent,
                 cs.hMenu, cs.lpCreateParams);
 
+        // Show the window maximized, minimized, or normal.
         if (cs.style & WS_VISIBLE)
         {
-            if      (cs.style & WS_MAXIMIZE) ShowWindow(SW_MAXIMIZE);
-            else if (cs.style & WS_MINIMIZE) ShowWindow(SW_MINIMIZE);
-            else    ShowWindow();
+            if (cs.style & WS_MAXIMIZE)
+                ShowWindow(SW_MAXIMIZE);
+            else if (cs.style & WS_MINIMIZE)
+                ShowWindow(SW_MINIMIZE);
+            else
+                ShowWindow();
         }
 
         return wnd;
@@ -547,20 +574,16 @@ namespace Win32xx
         wc.hCursor       = ::LoadCursor(NULL, IDC_ARROW);
 
         // Register the window class (if not already registered).
-        if (RegisterClass(wc) == 0)
-        {
-            TRACE("*** RegisterClass failed ***\n");
-            assert( 0 );
-        }
+        VERIFY(RegisterClass(wc));
 
-        // Retrieve this thread's TLS data
+        // Retrieve this thread's TLS data.
         TLSData* pTLSData = GetApp()->GetTlsData();
 
         // Store the CWnd pointer in thread local storage.
         pTLSData->pWnd = this;
         m_wnd = NULL;
 
-        // Create window
+        // Create the window.
         HWND wnd = ::CreateWindowEx(exStyle, classString, windowName, style, x, y, width, height,
                                 parent, idOrMenu, GetApp()->GetInstanceHandle(), lparam);
 
@@ -714,7 +737,7 @@ namespace Win32xx
     inline CBitmap CWnd::DpiScaleUpBitmap(CBitmap bitmap) const
     {
         int dpi = GetWindowDpi(*this);
-        int scale = MAX(1, dpi / USER_DEFAULT_SCREEN_DPI);
+        int scale = std::max(1, dpi / USER_DEFAULT_SCREEN_DPI);
 
         return ScaleUpBitmap(bitmap, scale);
     }
@@ -780,7 +803,7 @@ namespace Win32xx
     // Returns NULL if a CWnd object doesn't already exist for this HWND.
     inline CWnd* CWnd::GetCWndPtr(HWND wnd)
     {
-        return wnd ? GetApp()->GetCWndFromMap(wnd) : 0;
+        return wnd ? GetApp()->GetCWndFromMap(wnd) : NULL;
     }
 
     // Retrieves the title or text associated with a control in a dialog box.
@@ -1087,7 +1110,7 @@ namespace Win32xx
     // class prior to window creation.
     inline BOOL CWnd::RegisterClass(WNDCLASS& wc)
     {
-        assert( (_T('\0') != wc.lpszClassName[0] && ( lstrlen(wc.lpszClassName) <=  WXX_MAX_STRING_SIZE) ) );
+        assert((wc.lpszClassName != NULL) && (lstrlen(wc.lpszClassName) <=  WXX_MAX_STRING_SIZE));
 
         // Check to see if this classname is already registered.
         WNDCLASS wcTest;

@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -73,7 +73,7 @@
   #endif
 #endif
 
-#ifdef __BORLANDC__
+#if defined (__BORLANDC__) && (__BORLANDC__ < 0x600)
   #pragma option -w-8026            // functions with exception specifications are not expanded inline
   #pragma option -w-8027            // function not expanded inline
   #pragma option -w-8030            // Temporary used for 'rhs'
@@ -82,9 +82,10 @@
 #endif
 
 
+#ifndef NOMINMAX
+#define NOMINMAX        // Allow std::min and std::max. Must be defined before windows.h
+#endif
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#include "wxx_shared_ptr.h"
 
 #include <WinSock2.h>   // must include before windows.h
 #include <Windows.h>
@@ -101,6 +102,8 @@
 #include <stdarg.h>
 #include <tchar.h>
 #include <process.h>
+
+#include "wxx_shared_ptr.h"
 
 // Required by compilers lacking Win64 support.
 #ifndef  GetWindowLongPtr
@@ -158,7 +161,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0952     // Win32++ version 9.5.2
+#define _WIN32XX_VER 0x0960     // Win32++ version 9.6
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger
@@ -183,9 +186,8 @@ using namespace Win32xx;
 #endif
 
 // A macro to support noexcept for new compilers and throw for old compilers.
-// VS2015 and higher, Borland >= version 6), (GNU >= 11), or Clang.
+// VS2015 and higher, (GNU >= 11), or Clang.
 #if ((defined (_MSC_VER) && (_MSC_VER >= 1900)) || \
-        (defined(__BORLANDC__) && (__BORLANDC__ >= 0x600)) || \
         (defined(__GNUC__) && (__GNUC__ >= 11)) || \
         (defined(__clang_major__)))
 

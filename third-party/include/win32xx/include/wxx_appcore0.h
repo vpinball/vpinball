@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -87,7 +87,9 @@ namespace Win32xx
     class CWindowDC;
     class CWnd;
     struct CDC_Data;
+    struct EnhMetaFileData;
     struct MenuItemData;
+    struct MetaFileData;
     struct TLSData;
 
     // Define the maximum size for TCHAR strings
@@ -96,16 +98,21 @@ namespace Win32xx
     // Some useful smart pointers
     // Note: Modern C++ compilers can use these typedefs instead.
     // typedef std::shared_ptr<CDocker> DockPtr;
+    // typedef std::shared_ptr<EnhMetaFileData> EnhMetaDataPtr;
     // typedef std::shared_ptr<CMDIChild> MDIChildPtr;
     // typedef std::shared_ptr<MenuItemData> MenuItemDataPtr;
+    // typedef std::shared_ptr<MetaFileData> MetaDataPtr;
     // typedef std::shared_ptr<CPropertyPage> PropertyPagePtr;
     // typedef std::shared_ptr<TLSData> TLSDataPtr;
     // typedef std::shared_ptr<CWinThread> WinThreadPtr;
     // typedef std::shared_ptr<CWorkThread> WorkThreadPtr;
     // typedef std::shared_ptr<CWnd> WndPtr;
+
     typedef Shared_Ptr<CDocker> DockPtr;
+    typedef Shared_Ptr<EnhMetaFileData> EnhMetaDataPtr;
     typedef Shared_Ptr<CMDIChild> MDIChildPtr;
     typedef Shared_Ptr<MenuItemData> MenuItemDataPtr;
+    typedef Shared_Ptr<MetaFileData> MetaDataPtr;
     typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
     typedef Shared_Ptr<TLSData> TLSDataPtr;
     typedef Shared_Ptr<CWinThread> WinThreadPtr;

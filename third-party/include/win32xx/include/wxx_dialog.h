@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -516,7 +516,7 @@ namespace Win32xx
         pTLSData->pWnd = this;
 
         HINSTANCE instance = GetApp()->GetInstanceHandle();
-        HWND wnd;
+        HWND wnd = NULL;
 
         // Create the modeless dialog.
         if (m_pDlgTemplate != NULL)
@@ -975,10 +975,10 @@ namespace Win32xx
         }
 
         // Scroll the window.
-        xNewPos = MAX(0, xNewPos);
+        xNewPos = std::max(0, xNewPos);
         CRect rc;
         VERIFY(::GetClientRect(m_parent, &rc));
-        xNewPos = MIN( xNewPos, GetMinRect().Width() - rc.Width() );
+        xNewPos = std::min( xNewPos, GetMinRect().Width() - rc.Width() );
         int xDelta = xNewPos - m_xScrollPos;
         m_xScrollPos = xNewPos;
         VERIFY(::ScrollWindow(m_parent, -xDelta, 0, NULL, NULL));
@@ -1036,10 +1036,10 @@ namespace Win32xx
         }
 
         // Scroll the window.
-        yNewPos = MAX(0, yNewPos);
+        yNewPos = std::max(0, yNewPos);
         CRect rc;
         VERIFY(::GetClientRect(m_parent, &rc));
-        yNewPos = MIN( yNewPos, GetMinRect().Height() - rc.Height() );
+        yNewPos = std::min( yNewPos, GetMinRect().Height() - rc.Height() );
         int yDelta = yNewPos - m_yScrollPos;
         m_yScrollPos = yNewPos;
         VERIFY(::ScrollWindow(m_parent, 0, -yDelta, NULL, NULL));
@@ -1068,8 +1068,8 @@ namespace Win32xx
         VERIFY(::GetClientRect(m_parent, &currentRect));
 
         // Adjust the scrolling if required
-        m_xScrollPos = MIN(m_xScrollPos, MAX(0, m_minRect.Width()  - currentRect.Width() ) );
-        m_yScrollPos = MIN(m_yScrollPos, MAX(0, m_minRect.Height() - currentRect.Height()) );
+        m_xScrollPos = std::min(m_xScrollPos, std::max(0, m_minRect.Width()  - currentRect.Width() ) );
+        m_yScrollPos = std::min(m_yScrollPos, std::max(0, m_minRect.Height() - currentRect.Height()) );
         SCROLLINFO si;
         ZeroMemory(&si, sizeof(si));
         si.cbSize = sizeof(si);
@@ -1087,12 +1087,12 @@ namespace Win32xx
         // we get it again.
         VERIFY(::GetClientRect(m_parent, &currentRect));
 
-        currentRect.right  = MAX(currentRect.Width(),  m_minRect.Width() );
-        currentRect.bottom = MAX(currentRect.Height(), m_minRect.Height() );
+        currentRect.right  = std::max(currentRect.Width(),  m_minRect.Width() );
+        currentRect.bottom = std::max(currentRect.Height(), m_minRect.Height() );
         if (!m_maxRect.IsRectEmpty())
         {
-            currentRect.right  = MIN(currentRect.Width(),  m_maxRect.Width() );
-            currentRect.bottom = MIN(currentRect.Height(), m_maxRect.Height() );
+            currentRect.right  = std::min(currentRect.Width(),  m_maxRect.Width() );
+            currentRect.bottom = std::min(currentRect.Height(), m_maxRect.Height() );
         }
 
         int dpi = GetWindowDpi(m_parent);

@@ -1,5 +1,5 @@
-// Win32++   Version 9.5.2
-// Release Date: 20th May 2024
+// Win32++   Version 9.6
+// Release Date: 5th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -169,7 +169,7 @@ namespace Win32xx
         const CMenuMetrics& GetMenuMetrics() const        { return m_menuMetrics; }
         const std::vector<CString>& GetMRUEntries() const { return m_mruEntries; }
         CString GetMRUEntry(UINT index);
-        UINT GetMRULimit() const                          { return m_maxMRU; }
+        size_t GetMRULimit() const                          { return m_maxMRU; }
         CString GetRegistryKeyName() const                { return m_keyName; }
         const ReBarTheme& GetReBarTheme() const           { return m_rbTheme; }
         CFont GetStatusBarFont() const                    { return m_statusBarFont; }
@@ -341,7 +341,7 @@ namespace Win32xx
         ToolBarTheme m_tbTheme;             // struct of theme info for the ToolBar
         HACCEL m_accel;                     // handle to the frame's accelerator table (used by MDI without MDI child)
         CWnd* m_pView;                      // pointer to the View CWnd object
-        UINT m_maxMRU;                      // maximum number of MRU entries
+        size_t m_maxMRU;                      // maximum number of MRU entries
         HWND m_oldFocus;                    // The window that had focus prior to the app's deactivation
         HHOOK m_kbdHook;                    // Keyboard hook.
 
@@ -549,7 +549,8 @@ namespace Win32xx
         if (scale > 0)
         {
             bitmap = ScaleUpBitmap(bitmap, scale);
-            int newSize = MAX(bitmap.GetSize().cy, 16);
+            int bitmapSizeY = bitmap.GetSize().cy;
+            int newSize = std::max(bitmapSizeY, 16);
 
             // Create the ImageList.
             m_menuImages.Create(newSize, newSize, ILC_COLOR32 | ILC_MASK, images, 0);
@@ -574,7 +575,8 @@ namespace Win32xx
                 if (scale > 0)
                 {
                     disabled = ScaleUpBitmap(disabled, scale);
-                    newSize = MAX(disabled.GetSize().cy, 16);
+                    int disabledSizeY = disabled.GetSize().cy;
+                    newSize = std::max(disabledSizeY, 16);
                     m_menuDisabledImages.Create(newSize, newSize, ILC_COLOR32 | ILC_MASK, images, 0);
                     m_menuDisabledImages.Add(disabled, mask);
                 }
@@ -685,6 +687,8 @@ namespace Win32xx
     inline void CFrameT<T>::ClearMenuIcons()
     {
         m_menuItemIDs.clear();
+        m_menuImages.DeleteImageList();
+        m_menuDisabledImages.DeleteImageList();
     }
 
     // Creates the frame's toolbar. Additional toolbars can be added with AddToolBarBand
@@ -712,7 +716,7 @@ namespace Win32xx
         }
         else
         {
-            TRACE("Warning ... No resource IDs assigned to the toolbar\n");
+            TRACE("\n*** WARNING: No resource IDs assigned to the toolbar. ***\n\n");
             ShowToolBar(FALSE);
         }
 
@@ -1002,7 +1006,9 @@ namespace Win32xx
                         {
                             // Calculate the text position
                             int width = rc.right - rc.left - (isDropDown ? dropDownWidth : 0);
-                            CRect textRect(0, 0, MIN(textSize.cx, width), textSize.cy);
+                            int textSizeX = textSize.cx;
+                            int textSizeY = textSize.cy;
+                            CRect textRect(0, 0, std::min(textSizeX, width), textSizeY);
 
                             int xOffset = rc.left + (rc.Width() - textRect.Width()) / 2;
                             if (isDropDown)
@@ -1461,12 +1467,14 @@ namespace Win32xx
                     CRect bandRect = GetReBar().GetBandRect(j);
                     if (isVertical)
                     {
-                        bandRect.top = MAX(0, rebarRect.top - 4);
+                        int rebarTop = rebarRect.top;
+                        bandRect.top = std::max(0, rebarTop - 4);
                         bandRect.right +=2;
                     }
                     else
                     {
-                        bandRect.left = MAX(0, rebarRect.left - 4);
+                        int rebarLeft = rebarRect.left;
+                        bandRect.left = std::max(0, rebarLeft - 4);
                         bandRect.bottom +=2;
                     }
                     memDC.DrawEdge(bandRect, EDGE_ETCHED, BF_BOTTOM | BF_ADJUST);
@@ -1671,7 +1679,7 @@ namespace Win32xx
         assert(pBitmap->GetHandle());
         BITMAP data = pBitmap->GetBitmapData();
         int cy = data.bmHeight;
-        int cx = MAX(data.bmHeight, 16);
+        int cx = std::max(cy, 16);
 
         return CSize(cx, cy);
     }
@@ -1762,7 +1770,7 @@ namespace Win32xx
                     else
                     {
                         pathName.ReleaseBuffer();
-                        TRACE(_T("LoadRegistryMRUSettings: QueryStringValue failed\n"));
+                        TRACE(_T("\n*** WARNING: LoadRegistryMRUSettings: QueryStringValue failed. ***\n"));
                     }
                 }
             }
@@ -1853,7 +1861,7 @@ namespace Win32xx
 
             catch (const CUserException&)
             {
-                TRACE("*** Failed to load values from registry, using defaults. ***\n");
+                TRACE("*** ERROR: Failed to load values from registry, using defaults. ***\n");
 
                 // Delete the bad key from the registry.
                 const CString appKeyName = _T("Software\\") + m_keyName;
@@ -1891,8 +1899,9 @@ namespace Win32xx
         if (~pMID->mii.fType & MFT_SEPARATOR)  // if the type is not a separator.
         {
             // Account for icon height.
-            int iconGap = T::DpiScaleInt(6);
-            size.cy = MAX(size.cy, GetMenuIconHeight() + iconGap);
+            int iconGap = T::DpiScaleInt(4);
+            int sizeY = size.cy;
+            size.cy = std::max(sizeY, GetMenuIconHeight() + iconGap);
         }
 
         // Fill the MEASUREITEMSTRUCT struct with the new size.
@@ -2739,7 +2748,7 @@ namespace Win32xx
 
                 CString subKeyName;
                 CString pathName;
-                for (UINT i = 0; i < m_maxMRU; ++i)
+                for (size_t i = 0; i < m_maxMRU; ++i)
                 {
                     subKeyName.Format(_T("File %d"), i + 1);
 
@@ -2756,7 +2765,7 @@ namespace Win32xx
 
         catch (const CUserException&)
         {
-            TRACE("*** Failed to save registry MRU settings. ***\n");
+            TRACE("*** ERROR: Failed to save registry MRU settings. ***\n");
 
             const CString appKeyName = _T("Software\\") + m_keyName;
             CRegKey appKey;
@@ -2828,7 +2837,7 @@ namespace Win32xx
 
             catch (const CUserException&)
             {
-                TRACE("*** Failed to save registry settings. ***\n");
+                TRACE("*** ERROR: Failed to save registry settings. ***\n");
 
                 const CString appKeyName = _T("Software\\") + m_keyName;
                 CRegKey appKey;
@@ -2929,7 +2938,7 @@ namespace Win32xx
 
     // Sets the menu icons. Any previous menu icons are removed.
     template <class T>
-    inline UINT CFrameT<T>::SetMenuIcons(const std::vector<UINT>& menuData, COLORREF mask, UINT toolBarID, UINT toolBarDisabledID)
+    inline UINT CFrameT<T>::SetMenuIcons(const std::vector<UINT>& menuData, COLORREF mask, UINT toolBarID, UINT)
     {
         // Remove any existing menu icons.
         ClearMenuIcons();
@@ -2938,7 +2947,7 @@ namespace Win32xx
         if (toolBarID == 0) return 0;
 
         // Add the menu icons from the bitmap IDs.
-        return AddMenuIcons(menuData, mask, toolBarID, toolBarDisabledID);
+        return AddMenuIcons(menuData, mask, toolBarID, 0);
     }
 
     // Sets the minimum width of the MenuBar band to the width of the rebar.
@@ -3070,7 +3079,8 @@ namespace Win32xx
 
             // Get the coordinates of the window's client area.
             CRect clientRect = T::GetClientRect();
-            int width = MAX(300, clientRect.right);
+            int clientRight = clientRect.right;
+            int width = std::max(300, clientRight);
 
             // Create 4 panes.
             GetStatusBar().SetPartWidth(0, width - (capSize.cx + numSize.cx + scrlSize.cx + cxGripper));
@@ -3646,19 +3656,12 @@ namespace Win32xx
                 mii.wID = IDW_FILE_MRU_FILE1 + pos;
                 mii.dwTypeData = const_cast<LPTSTR>(mruStrings[index].c_str());
 
-                BOOL result;
                 if (item == maxMRUIndex)
                     // Replace the last MRU entry first.
-                    result = fileMenu.SetMenuItemInfo(IDW_FILE_MRU_FILE1, mii, FALSE);
+                    VERIFY(fileMenu.SetMenuItemInfo(IDW_FILE_MRU_FILE1, mii, FALSE));
                 else
                     // Insert the other MRU entries next.
-                    result = fileMenu.InsertMenuItem(IDW_FILE_MRU_FILE1 + pos + 1, mii, FALSE);
-
-                if (!result)
-                {
-                    TRACE("Failed to set MRU menu item\n");
-                    break;
-                }
+                    VERIFY(fileMenu.InsertMenuItem(IDW_FILE_MRU_FILE1 + pos + 1, mii, FALSE));
             }
         }
 
