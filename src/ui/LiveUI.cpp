@@ -1250,8 +1250,8 @@ void LiveUI::Update(const RenderTarget *rt)
       ImGui::SetNextWindowBgAlpha(0.75f);
       ImGui::SetNextWindowPos(ImVec2(10, io.DisplaySize.y - 10 - height)); //10 + m_menubar_height + m_toolbar_height));
       #if defined(ENABLE_BGFX)
-      if (!m_player->m_lastFrameSyncOnFPS)
-         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.5f, 0.f, 1.f)); // Not enough margin to perform low latency VPX - Controler sync
+      if (m_player->m_lastFrameSyncOnFPS)
+         ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.5f, 0.f, 1.f)); // Rendering at target framerate => green background
       #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.75f, 1.f)); // Running at app regulated speed (not hardware)
@@ -1266,7 +1266,7 @@ void LiveUI::Update(const RenderTarget *rt)
       height = ImGui::GetWindowHeight();
       ImGui::End();
       #if defined(ENABLE_BGFX)
-      if (!m_player->m_lastFrameSyncOnFPS)
+      if (m_player->m_lastFrameSyncOnFPS)
          ImGui::PopStyleColor();
       #else
       if (m_player->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING && m_player->m_lastFrameSyncOnFPS)

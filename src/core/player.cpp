@@ -1652,6 +1652,7 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       {
          FinishFrame();
          g_frameProfiler.NewFrame(m_time_msec);
+         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
          m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
          PrepareFrame(sync);
          m_renderer->m_pd3dPrimaryDevice->m_framePending = true;
