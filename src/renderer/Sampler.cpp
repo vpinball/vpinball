@@ -215,21 +215,21 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
    {
       if (bgfx::isValid(m_nomipsTexture))
       {
-         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
-         bgfx::destroy(m_mipsTexture);
-         m_mipsTexture = BGFX_INVALID_HANDLE;
-         bgfx::destroy(m_mipsFramebuffer);
-         m_mipsFramebuffer = BGFX_INVALID_HANDLE;
-      }
-      else
-      {
-         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, m_textureUpdate); // Base texture without mipmaps
          if (bgfx::isValid(m_mipsTexture))
          {
             bgfx::destroy(m_mipsTexture);
             m_mipsTexture = BGFX_INVALID_HANDLE;
+            bgfx::destroy(m_mipsFramebuffer);
+            m_mipsFramebuffer = BGFX_INVALID_HANDLE;
          }
+         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+      }
+      else
+      {
+         bgfx::destroy(m_mipsTexture);
+         m_mipsTexture = BGFX_INVALID_HANDLE;
+         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
+         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, m_textureUpdate); // Base texture without mipmaps
       }
       m_textureUpdate = nullptr;
    }
