@@ -253,6 +253,7 @@ void RenderProbe::RenderScreenSpaceTransparency()
       const int w = renderedPass->m_rt->GetWidth() / downscale, h = renderedPass->m_rt->GetHeight() / downscale;
       m_dynamicRT = new RenderTarget(m_rd, renderedPass->m_rt->m_type, m_name, w, h, renderedPass->m_rt->GetColorFormat(), true, 1, "Failed to create refraction render target", nullptr);
    }
+   m_rd->m_basicShader->SetTextureNull(SHADER_tex_refraction);
    m_rd->SetRenderTarget(m_name, m_dynamicRT, false);
    m_rd->BlitRenderTarget(renderedPass->m_rt, m_dynamicRT, true, true);
    ApplyRoughness(m_dynamicRT, m_roughness);
@@ -444,6 +445,7 @@ void RenderProbe::DoRenderReflectionProbe(const bool render_static, const bool r
    // Reverse cull mode since we multiply by a reversing matrix (mirror also has a reversing matrix)
    m_rd->SetRenderState(RenderState::CULLMODE, g_pplayer->m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CCW : RenderState::CULL_CW);
    m_rd->SetDefaultRenderState();
+   m_rd->m_basicShader->SetTextureNull(SHADER_tex_reflection);
 
    // Flip camera
    Matrix3D viewMat, initialViewMat;
