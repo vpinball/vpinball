@@ -284,7 +284,11 @@ BOOL VideoOptionsDialog::OnInitDialog()
       AddToolTip("This saves memory on your graphics card but harms quality of the textures.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TEX_COMPRESS).GetHwnd());
       AddToolTip("Disable Windows Desktop Composition (only works on Windows Vista and Windows 7 systems).\r\nMay reduce lag and improve performance on some setups.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DISABLE_DWM).GetHwnd());
       AddToolTip("Activate this if you have issues using an Intel graphics chip.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_SOFTWARE_VP).GetHwnd());
+      #if defined(ENABLE_BGFX)
+      AddToolTip("None: Use this if your display supports variable refresh rate or if you are experiencing stutters.\r\n\r\nVertical Sync: Synchronize on display sync.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
+      #else
       AddToolTip("None: No synchronization.\r\nVertical Sync: Synchronize on video sync which avoids video tearing, but has higher input latency.\r\nAdaptive Sync: Synchronize on video sync, except for late frames (below target FPS), also has higher input latency.\r\nFrame Pacing: Targets real time simulation with low input- and video-latency (also dynamically adjusts framerate).", hwndDlg, toolTipHwnd, GetDlgItem(IDC_VIDEO_SYNC_MODE).GetHwnd());
+      #endif
       AddToolTip("Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_FPS).GetHwnd());
       AddToolTip("Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_MAX_PRE_FRAMES).GetHwnd());
       AddToolTip("Changes the visual effect/screen shaking when nudging the table.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_NUDGE_STRENGTH).GetHwnd());
@@ -337,8 +341,10 @@ BOOL VideoOptionsDialog::OnInitDialog()
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "No Sync");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Vertical Sync");
+   #if !defined(ENABLE_BGFX)
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Adaptive Sync");
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Frame Pacing");
+   #endif
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    hwnd = GetDlgItem(IDC_SUPER_SAMPLING_COMBO).GetHwnd();
@@ -515,10 +521,13 @@ void VideoOptionsDialog::LoadSettings()
    }
    if (maxFPS < 0)
       maxFPS = 0;
-   if (syncMode == VideoSyncMode::VSM_INVALID)
-      syncMode = VideoSyncMode::VSM_FRAME_PACING;
    SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
 
+   #if defined(ENABLE_BGFX)
+   syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
+   #else
+   syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_FRAME_PACING);
+   #endif
    SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_SETCURSEL, syncMode, 0);
 
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
