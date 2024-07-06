@@ -29,6 +29,7 @@ if "%vsv%" == "2015" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v140_xp" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
 	cscript "simplereplace.wsf" //nologo /search:"<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>" /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
     cscript "simplereplace.wsf" //nologo /search:"<LanguageStandard>stdcpp20</LanguageStandard>" /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
+    cscript "simplereplace.wsf" //nologo /search:"/Zc:preprocessor " /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
 	rem perhaps we should remove as well <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
 )
 
@@ -37,6 +38,7 @@ if "%vsv%" == "2017" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v141_xp" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
 	cscript "simplereplace.wsf" //nologo /search:"<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>" /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
     cscript "simplereplace.wsf" //nologo /search:"<LanguageStandard>stdcpp20</LanguageStandard>" /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
+    cscript "simplereplace.wsf" //nologo /search:"/Zc:preprocessor " /replace:"" /in:"../VisualPinball.vcxproj" /out:"../VisualPinball.vcxproj"
 	rem perhaps we should remove as well <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
 )
 

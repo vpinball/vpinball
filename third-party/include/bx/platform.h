@@ -30,7 +30,6 @@
 
 // C Runtime
 #define BX_CRT_BIONIC 0
-#define BX_CRT_BSD    0
 #define BX_CRT_GLIBC  0
 #define BX_CRT_LIBCXX 0
 #define BX_CRT_MINGW  0
@@ -59,6 +58,7 @@
 #define BX_PLATFORM_PS4        0
 #define BX_PLATFORM_PS5        0
 #define BX_PLATFORM_RPI        0
+#define BX_PLATFORM_VISIONOS   0
 #define BX_PLATFORM_WINDOWS    0
 #define BX_PLATFORM_WINRT      0
 #define BX_PLATFORM_XBOXONE    0
@@ -196,6 +196,9 @@
 	|| defined(__ENVIRONMENT_TV_OS_VERSION_MIN_REQUIRED__)
 #	undef  BX_PLATFORM_IOS
 #	define BX_PLATFORM_IOS 1
+#elif defined(__has_builtin) && __has_builtin(__is_target_os) && __is_target_os(xros)
+#	undef  BX_PLATFORM_VISIONOS
+#	define BX_PLATFORM_VISIONOS 1
 #elif defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__)
 #	undef  BX_PLATFORM_OSX
 #	define BX_PLATFORM_OSX __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
@@ -232,33 +235,23 @@
 #	if defined(__BIONIC__)
 #		undef  BX_CRT_BIONIC
 #		define BX_CRT_BIONIC 1
-#	elif defined(_MSC_VER)
-#		undef  BX_CRT_MSVC
-#		define BX_CRT_MSVC 1
 #	elif defined(__GLIBC__)
 #		undef  BX_CRT_GLIBC
 #		define BX_CRT_GLIBC (__GLIBC__ * 10000 + __GLIBC_MINOR__ * 100)
-#	elif defined(__MINGW32__) || defined(__MINGW64__)
+#	elif defined(__MINGW32__) \
+	||   defined(__MINGW64__)
 #		undef  BX_CRT_MINGW
 #		define BX_CRT_MINGW 1
-#	elif defined(__apple_build_version__) || defined(__ORBIS__) || defined(__EMSCRIPTEN__) || defined(__llvm__) || defined(__HAIKU__)
+#	elif defined(_MSC_VER)
+#		undef  BX_CRT_MSVC
+#		define BX_CRT_MSVC 1
+#	elif defined(__apple_build_version__) \
+	||   BX_PLATFORM_PS4                  \
+	||   BX_PLATFORM_EMSCRIPTEN           \
+	||   defined(__llvm__)
 #		undef  BX_CRT_LIBCXX
 #		define BX_CRT_LIBCXX 1
-#	elif BX_PLATFORM_BSD
-#		undef  BX_CRT_BSD
-#		define BX_CRT_BSD 1
 #	endif //
-
-#	if !BX_CRT_BIONIC \
-	&& !BX_CRT_BSD    \
-	&& !BX_CRT_GLIBC  \
-	&& !BX_CRT_LIBCXX \
-	&& !BX_CRT_MINGW  \
-	&& !BX_CRT_MSVC   \
-	&& !BX_CRT_NEWLIB
-#		undef  BX_CRT_NONE
-#		define BX_CRT_NONE 1
-#	endif // BX_CRT_*
 #endif // !BX_CRT_NONE
 
 ///
@@ -275,6 +268,7 @@
 	||  BX_PLATFORM_PS4        \
 	||  BX_PLATFORM_PS5        \
 	||  BX_PLATFORM_RPI        \
+	||  BX_PLATFORM_VISIONOS   \
 	)
 
 ///
@@ -291,6 +285,7 @@
 	||  BX_PLATFORM_PS4        \
 	||  BX_PLATFORM_PS5        \
 	||  BX_PLATFORM_RPI        \
+	||  BX_PLATFORM_VISIONOS   \
 	||  BX_PLATFORM_WINDOWS    \
 	||  BX_PLATFORM_WINRT      \
 	||  BX_PLATFORM_XBOXONE    \
@@ -387,13 +382,15 @@
 #elif BX_PLATFORM_NX
 #	define BX_PLATFORM_NAME "NX"
 #elif BX_PLATFORM_OSX
-#	define BX_PLATFORM_NAME "OSX"
+#	define BX_PLATFORM_NAME "macOS"
 #elif BX_PLATFORM_PS4
 #	define BX_PLATFORM_NAME "PlayStation 4"
 #elif BX_PLATFORM_PS5
 #	define BX_PLATFORM_NAME "PlayStation 5"
 #elif BX_PLATFORM_RPI
 #	define BX_PLATFORM_NAME "RaspberryPi"
+#elif BX_PLATFORM_VISIONOS
+#	define BX_PLATFORM_NAME "visionOS"
 #elif BX_PLATFORM_WINDOWS
 #	define BX_PLATFORM_NAME "Windows"
 #elif BX_PLATFORM_WINRT
@@ -420,8 +417,6 @@
 
 #if BX_CRT_BIONIC
 #	define BX_CRT_NAME "Bionic libc"
-#elif BX_CRT_BSD
-#	define BX_CRT_NAME "BSD libc"
 #elif BX_CRT_GLIBC
 #	define BX_CRT_NAME "GNU C Library"
 #elif BX_CRT_MSVC
@@ -435,7 +430,7 @@
 #elif BX_CRT_NONE
 #	define BX_CRT_NAME "None"
 #else
-#	error "Unknown BX_CRT!"
+#	define BX_CRT_NAME "Unknown CRT"
 #endif // BX_CRT_
 
 #if BX_ARCH_32BIT
@@ -445,12 +440,12 @@
 #endif // BX_ARCH_
 
 #if defined(__cplusplus)
-#	if defined(_MSVC_LANG) && _MSVC_LANG != __cplusplus
-#			error "When using MSVC you must set /Zc:__cplusplus compiler option."
-#	endif // defined(_MSVC_LANG) && _MSVC_LANG != __cplusplus
+#	if BX_COMPILER_MSVC && defined(_MSVC_LANG) && _MSVC_LANG != __cplusplus
+#		error "When using MSVC you must set /Zc:__cplusplus compiler option."
+#	endif // BX_COMPILER_MSVC && defined(_MSVC_LANG) && _MSVC_LANG != __cplusplus
 
 #	if   __cplusplus < BX_LANGUAGE_CPP17
-#		error "C++17 standard support is required to build."
+#		define BX_CPP_NAME "C++Unsupported"
 #	elif __cplusplus < BX_LANGUAGE_CPP20
 #		define BX_CPP_NAME "C++17"
 #	elif __cplusplus < BX_LANGUAGE_CPP23
@@ -463,23 +458,35 @@
 #	define BX_CPP_NAME "C++Unknown"
 #endif // defined(__cplusplus)
 
-#if BX_PLATFORM_OSX && BX_PLATFORM_OSX < 130000
-//#error "Minimum supported macOS version is 13.00.\n"
-#elif BX_PLATFORM_IOS && BX_PLATFORM_IOS < 160000
-//#error "Minimum supported macOS version is 16.00.\n"
-#endif // BX_PLATFORM_OSX < 130000
+#if BX_COMPILER_MSVC && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
+#	error "When using MSVC you must set /Zc:preprocessor compiler option."
+#endif // BX_COMPILER_MSVC && (!defined(_MSVC_TRADITIONAL) || _MSVC_TRADITIONAL)
 
-#if BX_CPU_ENDIAN_BIG
-static_assert(false, "\n\n"
+#if defined(__cplusplus)
+
+static_assert(__cplusplus >= BX_LANGUAGE_CPP17, "\n\n"
+	"\t** IMPORTANT! **\n\n"
+	"\tC++17 standard support is required to build.\n"
+	"\t\n");
+
+// https://releases.llvm.org/
+static_assert(!BX_COMPILER_CLANG || BX_COMPILER_CLANG >= 110000, "\n\n"
+	"\t** IMPORTANT! **\n\n"
+	"\tMinimum supported Clang version is 11.0 (October 12, 2020).\n"
+	"\t\n");
+
+// https://gcc.gnu.org/releases.html
+static_assert(!BX_COMPILER_GCC || BX_COMPILER_GCC >= 80400, "\n\n"
+	"\t** IMPORTANT! **\n\n"
+	"\tMinimum supported GCC version is 8.4 (March 4, 2020).\n"
+	"\t\n");
+
+static_assert(!BX_CPU_ENDIAN_BIG, "\n\n"
 	"\t** IMPORTANT! **\n\n"
 	"\tThe code was not tested for big endian, and big endian CPU is considered unsupported.\n"
 	"\t\n");
-#endif // BX_CPU_ENDIAN_BIG
 
-#if BX_PLATFORM_BSD   \
- || BX_PLATFORM_HAIKU \
- || BX_PLATFORM_HURD
-static_assert(false, "\n\n"
+static_assert(!BX_PLATFORM_BSD || !BX_PLATFORM_HAIKU || !BX_PLATFORM_HURD, "\n\n"
 	"\t** IMPORTANT! **\n\n"
 	"\tYou're compiling for unsupported platform!\n"
 	"\tIf you wish to support this platform, make your own fork, and modify code for _yourself_.\n"
@@ -488,6 +495,7 @@ static_assert(false, "\n\n"
 	"\tto test on these platforms, and over years there wasn't any serious contributor who wanted to take\n"
 	"\tburden of maintaining code for these platforms.\n"
 	"\t\n");
-#endif // BX_PLATFORM_*
+
+#endif // defined(__cplusplus)
 
 #endif // BX_PLATFORM_H_HEADER_GUARD
