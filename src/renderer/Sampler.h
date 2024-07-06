@@ -48,6 +48,7 @@ public:
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    bgfx::TextureHandle GetCoreTexture();
+   uintptr_t GetNativeTexture();
 #elif defined(ENABLE_OPENGL)
    Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    GLuint GetCoreTexture() const { return m_texture; }
@@ -95,6 +96,7 @@ private:
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
    const bgfx::Memory* m_textureUpdate = nullptr;
    uint32_t m_mips_gpu_frame = 0;
+   uintptr_t m_texture_override = 0;
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;

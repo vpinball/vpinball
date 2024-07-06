@@ -209,8 +209,27 @@ bool VRDevice::IsVRReady() const
 
 void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
 {
-   #if defined(ENABLE_VR) && defined (ENABLE_OPENGL)
-   vr::Texture_t leftEyeTexture = { (void*)(__int64)leftEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+#if defined(ENABLE_VR)
+   #if defined(ENABLE_OPENGL)
+      vr::Texture_t leftEyeTexture = { (void*)(__int64)leftEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+      vr::Texture_t rightEyeTexture = { (void*)(__int64)rightEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+   #elif defined(ENABLE_BGFX)
+      vr::ETextureType textureType;
+      switch (bgfx::getRendererType())
+      {
+      case bgfx::RendererType::Enum::Direct3D11: textureType = vr::TextureType_DirectX; break;
+      case bgfx::RendererType::Enum::Direct3D12: textureType = vr::TextureType_DirectX12; break;
+      case bgfx::RendererType::Enum::OpenGL:     textureType = vr::TextureType_OpenGL; break;
+      case bgfx::RendererType::Enum::OpenGLES:   textureType = vr::TextureType_OpenGL; break;
+      case bgfx::RendererType::Enum::Vulkan:     textureType = vr::TextureType_Vulkan; break;
+      case bgfx::RendererType::Enum::Metal:      textureType = vr::TextureType_Metal;
+         assert(false); // FIXME implement metal protocol (multi layer texture)
+         break;
+      default: return;
+      }
+      vr::Texture_t leftEyeTexture = { (void*)(__int64)leftEye->GetNativeTexture(), textureType, vr::ColorSpace_Gamma };
+      vr::Texture_t rightEyeTexture = { (void*)(__int64)rightEye->GetNativeTexture(), textureType, vr::ColorSpace_Gamma };
+   #endif
    vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
    if (errorLeft != vr::VRCompositorError_None)
    {
@@ -218,7 +237,6 @@ void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
       sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %d", errorLeft);
       ShowError(msg);
    }
-   vr::Texture_t rightEyeTexture = { (void*)(__int64)rightEye->GetCoreTexture(), vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
    vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
    if (errorRight != vr::VRCompositorError_None)
    {
@@ -226,8 +244,11 @@ void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
       sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %d", errorRight);
       ShowError(msg);
    }
-   glFlush();
+   #if defined(ENABLE_OPENGL)
+      glFlush();
    #endif
+   //vr::VRCompositor()->PostPresentHandoff(); // PostPresentHandoff gives mixed results, improved GPU frametime for some, worse CPU frametime for others, troublesome enough to not warrants it's usage for now
+#endif
 }
 
 void VRDevice::UpdateVRPosition(ModelViewProj& mvp)

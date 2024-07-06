@@ -203,7 +203,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    else
       m_backGlass = nullptr;
 
-   #if defined(ENABLE_OPENGL) && defined(ENABLE_VR)
+   #if defined(ENABLE_VR)
    if (m_stereo3D == STEREO_VR) {
       //AMD Debugging
       colorFormat renderBufferFormatVR;
@@ -1940,7 +1940,7 @@ void Renderer::PrepareVideoBuffers()
    // Apply stereo
    if (stereo)
    {
-      #if defined(ENABLE_OPENGL) && defined(ENABLE_VR)
+      #if defined(ENABLE_VR)
       // For STEREO_OFF, STEREO_TB, STEREO_SBS, this won't do anything. The previous postprocess steps should already have written to OutputBackBuffer
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
