@@ -8,6 +8,7 @@
 #include <bx/endian.h>
 #include <bx/math.h>
 #include <bimg/decode.h>
+#include <bgfx/platform.h>
 #endif
 
 Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
@@ -274,6 +275,17 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
       }
    }
    return bgfx::isValid(m_mipsTexture) ? m_mipsTexture : m_nomipsTexture;
+}
+
+uintptr_t Sampler::GetNativeTexture()
+{
+   if (m_texture_override == 0)
+   {
+      // Lazily create a texture override
+      bgfx::TextureHandle handle = GetCoreTexture();
+      m_texture_override = bgfx::overrideInternal(handle, m_width, m_height, 0, m_bgfx_format, BGFX_TEXTURE_BLIT_DST | BGFX_SAMPLER_NONE);
+   }
+   return m_texture_override;
 }
 #endif
 

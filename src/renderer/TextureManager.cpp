@@ -15,6 +15,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
    {
       MapEntry entry;
       entry.sampler = new Sampler(&m_rd, memtex, force_linear_rgb, clampU, clampV, filter2);
+      #ifdef DEBUG
       if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_envTexture != nullptr && g_pplayer->m_renderer->m_envTexture->m_pdsBuffer == memtex)
          entry.sampler->SetName("Env"s);
       else if (g_pplayer->m_renderer && g_pplayer->m_renderer->m_pinballEnvTexture.m_pdsBuffer == memtex)
@@ -33,6 +34,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
             }
          }
       }
+      #endif
       entry.sampler->m_dirty = false;
       entry.clampU = clampU;
       entry.clampV = clampV;

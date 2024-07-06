@@ -539,7 +539,8 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    }
    else
    {
-      assert(false); // Not yet implemented
+      // FIXME BGFX Not yet implemented, needed for VR preview
+      // assert(false);
    }
    
 #elif defined(ENABLE_OPENGL)
