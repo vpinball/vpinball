@@ -162,6 +162,20 @@ namespace bx
 		return _a * _a;
 	}
 
+	inline void sinCosApprox(float& _outSinApprox, float& _outCos, float _a)
+	{
+		const float aa     = _a - floor(_a*kInvPi2)*kPi2;
+		const float absA   = abs(aa);
+		const float cosA   = cos(absA);
+		const float cosASq = square(cosA);
+		const float tmp0   = sqrt(1.0f - cosASq);
+		const float tmp1   = aa > 0.0f && aa < kPi ? 1.0f : -1.0f;
+		const float sinA   = mul(tmp0, tmp1);
+
+		_outSinApprox = sinA;
+		_outCos = cosA;
+	}
+
 	inline BX_CONST_FUNC float sin(float _a)
 	{
 		return cos(_a - kPiHalf);
