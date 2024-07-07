@@ -16,14 +16,23 @@ The following features are only offered by the DirectX 9 version:
 ## OpenGL
 This build was initially started to add support for Virtual Reality Headsets. It was merged back into 10.8, adding a bunch of unique features. It needs a computer with OpenGL 4.3 and is unlikely to run on older Windows version (anything before Windows 10 may work but is not tested nor supported).
 
-The following features are only offered by the OpenGL version:
+The following features were introduced by the OpenGL version:
 - Virtual Reality support (via OpenVR),
 - Real stereo rendering for 3D-stereo TVs or anaglyph glasses,
 - Hardware Multisample Antialiasing (MSAA) with support for antialiasing of pre-rendered and dynamically rendered parts,
 - Hardware Adaptive sync (a way of synchronizing between CPU and GPU, which leads to slightly better synchronization when using the 'Adaptive Sync' settings in the video preferences),
 - Enhanced texture compression (gives more performance with lower quality impact).
 
+## BGFX
+This build was introduced with version 10.8.1. It uses the BGFX library to run VPX using the latest graphic backends like Vulkan, Metal, DirectX 11, latest OpenGL & OpenGL ES.
+
+The following features are offered by the BGFX version:
+- Real stereo rendering for 3D-stereo TVs or anaglyph glasses,
+- Enhanced texture compression (gives more performance with lower quality impact),
+- Variable Refresh Rate display support,
+- Multithreaded engine that decouples rendering from gameplay allowing very low and stable input latency.
+
 ## Standalone player
 The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms, but without the windows UI. It is targeted at devices supporting OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and sbc) with GLSL 3.0.
 
-<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>

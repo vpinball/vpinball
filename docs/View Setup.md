@@ -45,4 +45,4 @@ Once this information is defined, the view can be adjusted per table with the fo
 
 The existing implementation does not perform (yet) perspective distortion compensation. Sadly, this may lead to some distortion at the back of the screen.
 
-<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
