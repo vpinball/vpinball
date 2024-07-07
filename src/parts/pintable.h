@@ -373,8 +373,6 @@ public:
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
    bool ExportImage(const Texture *const ppi, const char *const filename);
    Texture* ImportImage(const string &filename, const string &imageName);
-   void ListImages(HWND hwndListView);
-   int AddListImage(HWND hwndListView, Texture *const ppi);
    void RemoveImage(Texture *const ppi);
    HRESULT LoadImageFromStream(IStream *pstm, size_t idx, int version, bool resize_on_low_mem);
    Texture *GetImage(const string &szName) const;
