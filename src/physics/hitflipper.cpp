@@ -871,7 +871,7 @@ float HitFlipper::HitTestFlipperFace(const BallS& ball, const float dtime, Colli
 
 void HitFlipper::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
    const Vertex3Ds normal = coll.m_hitnormal;
 
    const Vertex3Ds rB = -pball->m_d.m_radius * normal;
@@ -1037,7 +1037,7 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
 void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
 
    const Vertex3Ds normal = coll.m_hitnormal;
 

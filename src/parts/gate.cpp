@@ -19,7 +19,7 @@ Gate::~Gate()
    assert(m_rd == nullptr);
 }
 
-Gate *Gate::CopyForPlay(PinTable *live_table)
+Gate *Gate::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Gate, live_table)
    return dst;
@@ -306,7 +306,7 @@ void Gate::EndPlay() { IEditable::EndPlay(); }
 // Ported at: VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
 //
 
-void Gate::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -338,7 +338,7 @@ void Gate::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
           m_plineseg->m_elasticity = m_d.m_elasticity;
           m_plineseg->SetFriction(m_d.m_friction);
           m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
-          pvho.push_back(m_plineseg);
+          physics->AddCollider(m_plineseg, this, isUI);
       }
 
       m_phitgate = new HitGate(this, height);
@@ -346,21 +346,21 @@ void Gate::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       m_phitgate->m_obj = (IFireEvents *)this;
       m_phitgate->m_fe = true;
       m_phitgate->m_enabled = m_d.m_collidable;
-      pvho.push_back(m_phitgate);
+      physics->AddCollider(m_phitgate, this, isUI);
 
       if (m_d.m_showBracket)
       {
           HitCircle *phitcircle;
           phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-          pvho.push_back(phitcircle);
+          physics->AddCollider(phitcircle, this, isUI);
 
           phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-          pvho.push_back(phitcircle);
+          physics->AddCollider(phitcircle, this, isUI);
       }
    }
 }
 
-void Gate::PhysicRelease(const bool isUI)
+void Gate::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {

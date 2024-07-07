@@ -824,12 +824,12 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
    if (!pVal || !g_pplayer || !g_pplayer->m_pactiveball)
       return E_POINTER;
 
-   BallEx *pballex = g_pplayer->m_pactiveball->m_pballex;
+   Ball *pBall = g_pplayer->m_pactiveball->m_pBall;
 
-   if (!pballex)
+   if (!pBall)
       return E_POINTER;
 
-   pballex->QueryInterface(IID_IBall, (void **)pVal);
+   pBall->QueryInterface(IID_IBall, (void **)pVal);
 
    return S_OK;
 }
@@ -1199,12 +1199,12 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
 
    for (size_t i = 0; i < g_pplayer->m_vball.size(); ++i)
    {
-      BallEx *pballex = g_pplayer->m_vball[i]->m_pballex;
+      Ball *pBall = g_pplayer->m_vball[i]->m_pBall;
 
-      if (!pballex)
+      if (!pBall)
          return E_POINTER;
 
-      CComVariant v = static_cast<IDispatch*>(pballex);
+      CComVariant v = static_cast<IDispatch*>(pBall);
       v.Detach(&balls[(int)i]);
    }
 
@@ -2363,6 +2363,7 @@ void PinTable::Play(const int playMode)
       IEditable *edit_dst = nullptr;
       switch (src->m_vedit[i]->GetItemType())
       {
+      case eItemBall:      edit_dst = ((Ball *)   src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemBumper:    edit_dst = ((Bumper *)   src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemDecal:     edit_dst = ((Decal *)    src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemDispReel:  edit_dst = ((DispReel *) src->m_vedit[i])->CopyForPlay(live_table); break;
@@ -10730,7 +10731,7 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    return S_OK;
 }
 
-void PinTable::InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, float hitVelocity)
+void PinTable::InvokeBallBallCollisionCallback(const HitBall *b1, const HitBall *b2, float hitVelocity)
 {
    if (g_pplayer)
    {
@@ -10748,8 +10749,8 @@ void PinTable::InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, f
          // note: arguments are passed in reverse order
          CComVariant rgvar[3] = {
             CComVariant(hitVelocity),
-            CComVariant(static_cast<IDispatch*>(b2->m_pballex)),
-            CComVariant(static_cast<IDispatch*>(b1->m_pballex))
+            CComVariant(static_cast<IDispatch*>(b2->m_pBall)),
+            CComVariant(static_cast<IDispatch*>(b1->m_pBall))
          };
          DISPPARAMS dispparams = { rgvar, nullptr, 3, 0 };
 

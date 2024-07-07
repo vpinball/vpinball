@@ -120,8 +120,6 @@ public:
    float GetSurfaceHeight(float x, float y) const;
    bool isHabitrail() const;
 
-   Ramp *CopyForPlay(PinTable *live_table);
-
    RampData m_d;
 
 private:
@@ -170,11 +168,11 @@ private:
 
    void AssignHeightToControlPoint(const RenderVertex3D &v, const float height);
 
-   void AddJoint(vector<HitObject *> &pvho, const Vertex3Ds &v1, const Vertex3Ds &v2, const bool isUI);
-   void AddJoint2D(vector<HitObject *> &pvho, const Vertex2D &p, const float zlow, const float zhigh, const bool isUI);
-   void CheckJoint(vector<HitObject *> &pvho, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI);
-   void AddWallLineSeg(vector<HitObject *> &pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI);
-   void SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI);
+   void AddJoint(class PhysicsEngine *physics, const Vertex3Ds &v1, const Vertex3Ds &v2, const bool isUI);
+   void AddJoint2D(class PhysicsEngine *physics, const Vertex2D &p, const float zlow, const float zhigh, const bool isUI);
+   void CheckJoint(class PhysicsEngine *physics, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI);
+   void AddWallLineSeg(class PhysicsEngine* physics, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI);
+   void SetupHitObject(class PhysicsEngine* physics, HitObject *obj, const bool isUI);
 
    void GenerateVertexBuffer();
    void CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvBuf);

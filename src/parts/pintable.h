@@ -547,7 +547,7 @@ public:
 
    bool RenderSolid() const { return m_renderSolid; }
 
-   void InvokeBallBallCollisionCallback(const Ball *b1, const Ball *b2, float hitVelocity);
+   void InvokeBallBallCollisionCallback(const class HitBall *b1, const class HitBall *b2, float hitVelocity);
 
    BEGIN_COM_MAP(PinTable)
    COM_INTERFACE_ENTRY(ITable)

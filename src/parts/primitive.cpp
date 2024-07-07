@@ -224,7 +224,7 @@ Primitive::~Primitive()
    assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
-Primitive *Primitive::CopyForPlay(PinTable *live_table)
+Primitive *Primitive::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive, live_table)
    dst->m_mesh = m_mesh;
@@ -483,7 +483,7 @@ void Primitive::EndPlay()
 
 #pragma region physic
 
-void Primitive::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    m_d.m_useAsPlayfield = IsPlayfield();
 
@@ -562,11 +562,11 @@ void Primitive::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          rgv3D[2].x = prog_vertices[i1].x;
          rgv3D[2].y = prog_vertices[i1].y;
          rgv3D[2].z = prog_vertices[i1].z;
-         SetupHitObject(pvho, new HitTriangle(rgv3D), isUI);
+         SetupHitObject(physics, new HitTriangle(rgv3D), isUI);
 
-         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
-         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
-         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
+         AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
+         AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
+         AddHitEdge(physics, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
       }
 
       prog_new_indices.clear();
@@ -574,7 +574,7 @@ void Primitive::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       // add collision vertices
       if (!isUI)
          for (size_t i = 0; i < prog_vertices.size(); ++i)
-            SetupHitObject(pvho, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z), isUI);
+            SetupHitObject(physics, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z), isUI);
    }
 
    //
@@ -597,21 +597,21 @@ void Primitive::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          rgv3D[0] = m_vertices[i0];
          rgv3D[1] = m_vertices[i2];
          rgv3D[2] = m_vertices[i1];
-         SetupHitObject(pvho, new HitTriangle(rgv3D), isUI);
+         SetupHitObject(physics, new HitTriangle(rgv3D), isUI);
 
-         AddHitEdge(pvho, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
-         AddHitEdge(pvho, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
-         AddHitEdge(pvho, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
+         AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
+         AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
+         AddHitEdge(physics, addedEdges, i2, i0, rgv3D[1], rgv3D[0], isUI);
       }
 
       // add collision vertices
       if (!isUI)
          for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
-            SetupHitObject(pvho, new HitPoint(m_vertices[i]), isUI);
+            SetupHitObject(physics, new HitPoint(m_vertices[i]), isUI);
    }
 }
 
-void Primitive::PhysicRelease(const bool isUI)
+void Primitive::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
       m_vhoCollidable.clear();
@@ -622,19 +622,19 @@ void Primitive::PhysicRelease(const bool isUI)
 // Ported at: VisualPinball.Engine/Math/EdgeSet.cs
 //
 
-void Primitive::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI)
+void Primitive::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
-      SetupHitObject(pvho, new HitLine3D(vi, vj), isUI);
+      SetupHitObject(physics, new HitLine3D(vi, vj), isUI);
 }
 
 //
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Primitive::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI)
+void Primitive::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (m_d.m_useAsPlayfield)
@@ -666,7 +666,7 @@ void Primitive::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const 
    obj->m_e = 1;
    obj->m_fe = m_d.m_hitEvent;
 
-   pvho.push_back(obj);
+   physics->AddCollider(obj, this, isUI);
    
    if (!isUI)
       m_vhoCollidable.push_back(obj); // remember hit components of primitive

@@ -11,7 +11,7 @@ Plunger::~Plunger()
    assert(m_rd == nullptr);
 }
 
-Plunger* Plunger::CopyForPlay(PinTable *live_table)
+Plunger *Plunger::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Plunger, live_table)
    return dst;
@@ -150,7 +150,7 @@ void Plunger::EndPlay()
 
 #pragma region Physics
 
-void Plunger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -162,13 +162,13 @@ void Plunger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 
       HitPlunger *const php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width, zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y, this);
 
-      pvho.push_back(php);
+      physics->AddCollider(php, this, isUI);
       php->m_pplunger = this;
       m_phitplunger = php;
    }
 }
 
-void Plunger::PhysicRelease(const bool isUI)
+void Plunger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
       m_phitplunger = nullptr; // possible memory leak here?
@@ -1347,7 +1347,7 @@ STDMETHODIMP Plunger::put_SpringEndLoops(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
+STDMETHODIMP Plunger::CreateBall(IBall **pResult)
 {
    if (m_phitplunger)
    {
@@ -1356,10 +1356,10 @@ STDMETHODIMP Plunger::CreateBall(IBall **pBallEx)
 
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, x, y);
 
-      Ball * const pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
+      HitBall *const pball = g_pplayer->CreateBall(x, y, height, 0.1f, 0, 0);
 
-      *pBallEx = pball->m_pballex;
-      pball->m_pballex->AddRef();
+      *pResult = pball->m_pBall;
+      pball->m_pBall->AddRef();
    }
 
    return S_OK;

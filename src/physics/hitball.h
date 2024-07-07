@@ -11,25 +11,24 @@ public:
    void UpdateDisplacements(const float dtime) override;
    void UpdateVelocities() override;
 
-   Ball *m_pball;
+   HitBall* m_pHitBall;
 };
 
 struct BallS
 {
+   Vertex3Ds m_pos = Vertex3Ds(0.f, 0.f, 0.f);
+   Vertex3Ds m_vel = Vertex3Ds(0.f, 0.f, 0.f); // ball velocity
+   float m_radius = 25.f;
+   float m_mass   = 1.f;
+   bool m_lockedInKicker = false;
    vector<IFireEvents*>* m_vpVolObjs; // vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
-   Vertex3Ds m_pos;
-   Vertex3Ds m_vel; // ball velocity
-   float m_radius;
-   float m_mass;
-   bool m_lockedInKicker;
 };
 
-class Ball : public HitObject
+class HitBall : public HitObject
 {
 public:
-   Ball();
-
-   void Init(const float mass);
+   HitBall();
+   ~HitBall();
 
    void UpdateDisplacements(const float dtime);
    void UpdateVelocities();
@@ -56,7 +55,7 @@ public:
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
 
    // Per frame info
-   CCO(BallEx) *m_pballex;   // Object model version of the ball
+   Ball *m_pBall = nullptr;   // Object model version of the ball
 
    CollisionEvent m_coll;    // collision information, may not be a actual hit if something else happens first
 
@@ -67,34 +66,17 @@ public:
    Vertex3Ds m_oldVel;       // hack for kicker hole handling only
 
    Vertex3Ds m_lastEventPos; // last hit event position (to filter hit 'equal' hit events)
-   float m_lastEventSqrDist; // distance travelled since last event
+   float m_lastEventSqrDist = 0.f; // distance travelled since last event
 
    Vertex3Ds m_angularmomentum;
-
-#ifdef C_DYNAMIC
-   int m_dynamic;            // used to determine static ball conditions and velocity quenching
-   float m_drsq;             // square of distance moved
-#endif
-
-   unsigned int m_id;        // unique ID for each ball
-   static unsigned int ballID; // increased for each ball created to have an unique ID for scripts for each ball
 
    Matrix3 m_orientation;
 
    Vertex3Ds m_oldpos[MAX_BALL_TRAIL_POS]; // used for killing spin and for ball trails
-   unsigned int m_ringcounter_oldpos;
+   unsigned int m_ringcounter_oldpos = 0;
 
-   // rendering only (to be moved to parts/ball):
-   bool m_reflectionEnabled;
-   bool m_forceReflection;
-   bool m_visible;
-   bool m_decalMode;
-   string m_image;
-   string m_imageDecal;
-   float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
-   float m_playfieldReflectionStrength;
-   COLORREF m_color;
-   Texture* m_pinballEnv;
-   bool m_pinballEnvSphericalMapping;
-   Texture* m_pinballDecal;
+#ifdef C_DYNAMIC
+   int m_dynamic = C_DYNAMIC; // used to determine static ball conditions and velocity quenching
+   float m_drsq = 0.0f;       // square of distance moved
+#endif
 };

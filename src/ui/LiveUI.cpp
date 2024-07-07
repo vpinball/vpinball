@@ -1130,7 +1130,7 @@ void LiveUI::Update(const RenderTarget *rt)
          const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(point);
          for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
          {
-            Ball *const pBall = g_pplayer->m_vball[i];
+            HitBall *const pBall = g_pplayer->m_vball[i];
             const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
             const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
             if (dx < pBall->m_d.m_radius * 2.f && dy < pBall->m_d.m_radius * 2.f)
@@ -1175,7 +1175,7 @@ void LiveUI::Update(const RenderTarget *rt)
 
             if (m_player->m_ballControl)
             { // If Ball Control and Throw Balls are both checked, that means we want ball throwing behavior with the sensed active ball, instead of creating new ones
-               Ball *const pBall = m_player->m_pactiveballBC;
+               HitBall *const pBall = m_player->m_pactiveballBC;
                if (pBall)
                {
                   pBall->m_d.m_pos.x = vert.x;
@@ -1191,7 +1191,7 @@ void LiveUI::Update(const RenderTarget *rt)
                {
                   for (size_t i = 0; i < m_player->m_vball.size(); i++)
                   {
-                     Ball *const pBall = m_player->m_vball[i];
+                     HitBall *const pBall = m_player->m_vball[i];
                      const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
                      const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
                      if (dx < pBall->m_d.m_radius * 2.f && dy < pBall->m_d.m_radius * 2.f)
@@ -1201,7 +1201,7 @@ void LiveUI::Update(const RenderTarget *rt)
                         pBall->m_d.m_pos.y = vert.y;
                         pBall->m_d.m_vel.x = vx;
                         pBall->m_d.m_vel.y = vy;
-                        pBall->Init(1.f);
+                        pBall->m_d.m_mass = 1.f;
                         break;
                      }
                   }
@@ -1209,8 +1209,8 @@ void LiveUI::Update(const RenderTarget *rt)
                if (!ballGrabbed)
                {
                   const float z = ImGui::IsMouseReleased(ImGuiMouseButton_Middle) ? m_live_table->m_glassTopHeight : 0.f;
-                  Ball *const pball = m_player->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)m_player->m_debugBallSize * 0.5f, m_player->m_debugBallMass);
-                  pball->m_pballex->AddRef();
+                  HitBall *const pball = m_player->CreateBall(vertex.x, vertex.y, z, vx, vy, 0, (float)m_player->m_debugBallSize * 0.5f, m_player->m_debugBallMass);
+                  pball->m_pBall->AddRef();
                }
             }
          }
@@ -1227,7 +1227,7 @@ void LiveUI::Update(const RenderTarget *rt)
          {
             // Double click.  Move the ball directly to the target if possible.
             // Drop it from the glass height, so it will appear over any object (or on a raised playfield)
-            Ball *const pBall = m_player->m_pactiveballBC;
+            HitBall *const pBall = m_player->m_pactiveballBC;
             if (pBall && !pBall->m_d.m_lockedInKicker)
             {
                 pBall->m_d.m_pos.x = m_player->m_pBCTarget->x;
@@ -2477,7 +2477,7 @@ void LiveUI::UpdateMainUI()
       }
    }
 
-   // Handle uncaught mouse & keyboard interaction
+   // Handle uncaught mouse & keyboard shortcuts
    if (!ImGui::GetIO().WantCaptureMouse)
    {
       // Zoom in/out with mouse wheel
@@ -2588,20 +2588,14 @@ void LiveUI::UpdateMainUI()
             {
                if (i < vhoHit.size() && m_selection.type == Selection::S_EDITABLE && vhoHit[i].m_obj->m_editable == m_selection.editable)
                   selectionIndex = i + 1;
-               else if (i < vhoHit.size() && m_selection.type == Selection::S_BALL && vhoHit[i].m_obj == m_player->m_vball[m_selection.ball_index])
-                  selectionIndex = i + 1;
                if (i == selectionIndex)
                {
                   size_t p = selectionIndex % vhoHit.size();
                   if (vhoHit[p].m_obj->m_editable)
                      m_selection = Selection(true, vhoHit[p].m_obj->m_editable);
-                  else
-                     for (size_t t = 0; t < m_player->m_vball.size(); t++)
-                        if (m_player->m_vball[t] == vhoHit[p].m_obj)
-                           m_selection = Selection(Selection::SelectionType::S_BALL, true, (int)t);
                }
             }
-            // TODO add debug action to make ball active: g_pplayer->m_pactiveballDebug = m_pball;
+            // TODO add debug action to make ball active: g_pplayer->m_pactiveballDebug = m_pHitBall;
          }
       }
    }
@@ -2769,6 +2763,13 @@ void LiveUI::UpdateMainUI()
 
 bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 {
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
+   {
+      Ball *const ball = (Ball *)m_selection.editable;
+      transform = Matrix3D::MatrixTranslate(ball->m_hitBall.m_d.m_pos);
+      return true;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
@@ -2813,13 +2814,6 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       Surface *const obj = (Surface *)m_selection.editable;
       Vertex2D center = obj->GetPointCenter();
       transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop));
-      return true;
-   }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
-   {
-      Ball * const ball = m_player->m_vball[m_selection.ball_index];
-      transform = Matrix3D::MatrixTranslate(ball->m_d.m_pos);
       return true;
    }
 
@@ -2871,6 +2865,14 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    if (clearRotation)
       rotX = rotY = rotZ = 0.f;
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
+   {
+      Ball *const ball = (Ball *)m_selection.editable;
+      ball->m_hitBall.m_d.m_pos.x = posX;
+      ball->m_hitBall.m_d.m_pos.y = posY;
+      ball->m_hitBall.m_d.m_pos.z = posZ;
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
       Flasher * const p = (Flasher *)m_selection.editable;
@@ -2921,14 +2923,6 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       obj->TranslatePoints(Vertex2D(posX - px, posY - py));
       obj->m_d.m_heightbottom += posZ - pz;
       obj->m_d.m_heighttop += posZ - pz;
-   }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_BALL)
-   {
-      Ball * const ball = m_player->m_vball[m_selection.ball_index];
-      ball->m_d.m_pos.x = posX;
-      ball->m_d.m_pos.y = posY;
-      ball->m_d.m_pos.z = posZ;
    }
 }
 
@@ -3049,12 +3043,6 @@ void LiveUI::UpdateOutlinerUI()
                            m_selection = sel;
                      }
                   }
-                  for (size_t t = 0; t < m_player->m_vball.size(); t++)
-                  {
-                     Selection sel(Selection::SelectionType::S_BALL, is_live, (int)t);
-                     if (ImGui::Selectable("Ball #"s.append(std::to_string(m_player->m_vball[t]->m_id)).c_str(), m_selection == sel))
-                        m_selection = sel;
-                  }
                   ImGui::TreePop();
                }
                // Very very inefficient...
@@ -3143,7 +3131,6 @@ void LiveUI::UpdatePropertyUI()
             case Selection::SelectionType::S_NONE: TableProperties(is_live); break; // Use header tab for live since table is displayed when there si no selection
             case Selection::SelectionType::S_CAMERA: CameraProperties(is_live); break;
             case Selection::SelectionType::S_MATERIAL: MaterialProperties(is_live); break;
-            case Selection::SelectionType::S_BALL: BallProperties(is_live); break;
             case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(is_live); break;
             case Selection::SelectionType::S_EDITABLE:
             {
@@ -3163,6 +3150,7 @@ void LiveUI::UpdatePropertyUI()
                   {
                   // eItemFlipper, eItemTimer, eItemPlunger, eItemTextbox, eItemDecal, eItemGate, eItemSpinner, eItemTable,
                   // eItemLightCenter, eItemDragPoint, eItemCollection, eItemDispReel, eItemLightSeq, eItemHitTarget,
+                  case eItemBall: BallProperties(is_live, (Ball *)startup_obj, (Ball *)live_obj); break;
                   case eItemBumper: BumperProperties(is_live, (Bumper *)startup_obj, (Bumper *)live_obj); break;
                   case eItemFlasher: FlasherProperties(is_live, (Flasher *)startup_obj, (Flasher *)live_obj); break;
                   case eItemKicker: KickerProperties(is_live, (Kicker *)startup_obj, (Kicker *)live_obj); break;
@@ -3256,7 +3244,7 @@ void LiveUI::UpdateVideoOptionsModal()
          {
             g_pvp->m_settings.SaveValue(Settings::Player, "BallAntiStretch"s, antiStretch);
             for (auto ball : m_player->m_vball)
-               ball->m_pballex->m_antiStretch = antiStretch;
+               ball->m_pBall->m_antiStretch = antiStretch;
          }
       }
 
@@ -4264,40 +4252,6 @@ void LiveUI::RenderProbeProperties(bool is_live)
    }
 }
 
-void LiveUI::BallProperties(bool is_live)
-{
-   if (!is_live)
-      return;
-   Ball * const ball = m_player->m_vball[m_selection.ball_index];
-   HelpTextCentered("Ball #"s.append(std::to_string(ball->m_id)));
-   ImGui::Separator();
-   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
-   {
-      auto upd_ball_tex = [this, ball](bool is_live, const string& prev, const string& v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_image); };
-      auto upd_ball_decal = [this, ball](bool is_live, const string& prev, const string& v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_imageDecal); };
-      PropCheckbox("Visible", nullptr, is_live, nullptr, ball ? &(ball->m_visible) : nullptr);
-      PropRGB("Color", nullptr, is_live, nullptr, ball ? &(ball->m_color) : nullptr);
-      PropImageCombo("Image", nullptr, is_live, nullptr, ball ? &(ball->m_image) : nullptr, m_live_table, upd_ball_tex);
-      PropCheckbox("Spherical Map", nullptr, is_live, nullptr, ball ? &(ball->m_pinballEnvSphericalMapping) : nullptr);
-      PropImageCombo("Decal", nullptr, is_live, nullptr, ball ? &(ball->m_imageDecal) : nullptr, m_live_table, upd_ball_decal);
-      PropCheckbox("Decal mode", nullptr, is_live, nullptr, ball ? &(ball->m_decalMode) : nullptr);
-      PropFloat("PF Reflection Strength", nullptr, is_live, nullptr, ball ? &(ball->m_playfieldReflectionStrength) : nullptr, 0.02f, 0.1f);
-      PropFloat("Bulb Intensity Scale", nullptr, is_live, nullptr, ball ? &(ball->m_bulb_intensity_scale) : nullptr, 0.02f, 0.1f);
-      PropCheckbox("Reflection enabled", nullptr, is_live, nullptr, ball ? &(ball->m_reflectionEnabled) : nullptr);
-      PropCheckbox("Reflection forced", nullptr, is_live, nullptr, ball ? &(ball->m_forceReflection) : nullptr);
-      ImGui::EndTable();
-   }
-   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
-   {
-      PropVec3("Position", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_pos) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
-      PropFloat("Radius", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_radius) : nullptr, 0.02f, 0.1f);
-      PropFloat("Mass", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_mass) : nullptr, 0.02f, 0.1f);
-      PropVec3("Velocity", nullptr, is_live, nullptr, ball ? &(ball->m_d.m_vel) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
-      PropVec3("Angular Momentum", nullptr, is_live, nullptr, ball ? &(ball->m_angularmomentum) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
-      ImGui::EndTable();
-   }
-}
-
 void LiveUI::MaterialProperties(bool is_live)
 {
    Material * const live_material = (Material *)(m_selection.is_live ? m_selection.editable : m_live_table->m_startupToLive[m_selection.editable]);
@@ -4340,6 +4294,37 @@ void LiveUI::MaterialProperties(bool is_live)
       PropFloat("Edge Opacity", m_table, is_live, startup_material ? &(startup_material->m_fEdgeAlpha) : nullptr, live_material ? &(live_material->m_fEdgeAlpha) : nullptr, 0.02f, 0.1f);
       PropFloat("Thickness", m_table, is_live, startup_material ? &(startup_material->m_fThickness) : nullptr, live_material ? &(live_material->m_fThickness) : nullptr, 0.02f, 0.1f);
       PropRGB("Refraction Tint", m_table, is_live, startup_material ? &(startup_material->m_cRefractionTint) : nullptr, live_material ? &(live_material->m_cRefractionTint) : nullptr);
+      ImGui::EndTable();
+   }
+}
+
+void LiveUI::BallProperties(bool is_live, Ball *startup_obj, Ball *live_obj)
+{
+   m_renderer->ReinitRenderable(live_obj);
+   Ball *const ball = (is_live ? live_obj : startup_obj);
+   if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      auto upd_ball_tex = [this, ball](bool is_live, const string &prev, const string &v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_d.m_szImage); };
+      auto upd_ball_decal = [this, ball](bool is_live, const string &prev, const string &v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_d.m_imageDecal); };
+      PropCheckbox("Visible", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
+      PropRGB("Color", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
+      PropImageCombo("Image", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_live_table, upd_ball_tex);
+      PropCheckbox("Spherical Map", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_pinballEnvSphericalMapping) : nullptr);
+      PropImageCombo("Decal", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_imageDecal) : nullptr, m_live_table, upd_ball_decal);
+      PropCheckbox("Decal mode", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_decalMode) : nullptr);
+      PropFloat("PF Reflection Strength", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_playfieldReflectionStrength) : nullptr, 0.02f, 0.1f);
+      PropFloat("Bulb Intensity Scale", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_bulb_intensity_scale) : nullptr, 0.02f, 0.1f);
+      PropCheckbox("Reflection enabled", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
+      PropCheckbox("Reflection forced", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_forceReflection) : nullptr);
+      ImGui::EndTable();
+   }
+   if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropVec3("Position", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_pos) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropFloat("Radius", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_radius) : nullptr, 0.02f, 0.1f);
+      PropFloat("Mass", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_mass) : nullptr, 0.02f, 0.1f);
+      PropVec3("Velocity", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_vel) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Angular Momentum", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_angularmomentum) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
       ImGui::EndTable();
    }
 }

@@ -27,7 +27,7 @@ Trigger::~Trigger()
    assert(m_rd == nullptr);
 }
 
-Trigger *Trigger::CopyForPlay(PinTable *live_table)
+Trigger *Trigger::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Trigger, live_table, m_vdpoint)
    return dst;
@@ -326,7 +326,7 @@ void Trigger::EndPlay()
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
 //
 
-void Trigger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
@@ -340,7 +340,7 @@ void Trigger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          assert(m_ptriggerhitcircle == nullptr);
          m_ptriggerhitcircle = hitcircle;
       }
-      pvho.push_back(hitcircle);
+      physics->AddCollider(hitcircle, this, isUI);
    }
    else
    {
@@ -364,7 +364,7 @@ void Trigger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          plineseg->v2.x = pv2.x;
          plineseg->v2.y = pv2.y;
          plineseg->CalcNormal();
-         pvho.push_back(plineseg);
+         physics->AddCollider(plineseg, this, isUI);
       }
 
       Vertex3Ds *const rgv3D = new Vertex3Ds[count];
@@ -382,11 +382,11 @@ void Trigger::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          assert(m_ptriggerhitpoly == nullptr);
          m_ptriggerhitpoly = ph3dpoly;
       }
-      pvho.push_back(ph3dpoly);
+      physics->AddCollider(ph3dpoly, this, isUI);
    }
 }
 
-void Trigger::PhysicRelease(const bool isUI)
+void Trigger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {
@@ -1160,7 +1160,7 @@ STDMETHODIMP Trigger::BallCntOver(int *pVal)
    {
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball * const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
 
          if (pball->m_d.m_vpVolObjs && FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj
          {
@@ -1183,7 +1183,7 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
    {
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball * const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
 
          int j;
          if (pball->m_d.m_vpVolObjs && (j = FindIndexOf(*(pball->m_d.m_vpVolObjs), (IFireEvents*)this)) >= 0) // cast to IFireEvents necessary, as it is stored like this in HitObject.m_obj

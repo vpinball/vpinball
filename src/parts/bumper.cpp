@@ -18,7 +18,7 @@ Bumper::~Bumper()
    assert(m_rd == nullptr);
 }
 
-Bumper *Bumper::CopyForPlay(PinTable *live_table)
+Bumper *Bumper::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Bumper, live_table)
    return dst;
@@ -198,13 +198,13 @@ void Bumper::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
-void Bumper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Bumper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    if (isUI)
    {
       HitCircle *const pcircle = new HitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
-      pvho.push_back(pcircle);
+      physics->AddCollider(pcircle, this, isUI);
    }
    else
    {
@@ -214,11 +214,11 @@ void Bumper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
       phitcircle->m_pbumper = this;
       m_pbumperhitcircle = phitcircle;
-      pvho.push_back(phitcircle);
+      physics->AddCollider(phitcircle, this, isUI);
    }
 }
 
-void Bumper::PhysicRelease(const bool isUI)
+void Bumper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
       m_pbumperhitcircle = nullptr;

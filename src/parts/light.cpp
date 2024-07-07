@@ -34,7 +34,7 @@ Light::~Light()
    assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
-Light *Light::CopyForPlay(PinTable *live_table)
+Light *Light::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, live_table, m_vdpoint)
    // Light specific copy and live data (not really needed)
@@ -272,7 +272,7 @@ void Light::EndPlay()
    IEditable::EndPlay();
 }
 
-void Light::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -284,8 +284,7 @@ void Light::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       default:
       {
          Hit3DPoly *const pcircle = new Hit3DPoly(m_d.m_vCenter.x, m_d.m_vCenter.y, height, m_d.m_falloff, 32);
-         pvho.push_back(pcircle);
-
+         physics->AddCollider(pcircle, this, isUI);
          break;
       }
 
@@ -305,15 +304,14 @@ void Light::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          }
 
          Hit3DPoly *const ph3dp = new Hit3DPoly(rgv3d, cvertex);
-         pvho.push_back(ph3dp);
-
+         physics->AddCollider(ph3dp, this, isUI);
          break;
       }
       }
    }
 }
 
-void Light::PhysicRelease(const bool isUI) { }
+void Light::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
 
 float Light::GetDepth(const Vertex3Ds& viewDir) const
 {

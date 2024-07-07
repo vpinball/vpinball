@@ -438,6 +438,12 @@
     <ClCompile Include="src/ui/properties/PlungerVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
+    <ClCompile Include="src/ui/properties/BallPhysicsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/properties/BallVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
     <ClCompile Include="src/ui/properties/BumperPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
@@ -1128,6 +1134,12 @@
       <Filter>ui\properties</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/properties/PlungerVisualsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BallPhysicsProperty.h">
+      <Filter>ui\properties</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/properties/BallVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/properties/BumperPhysicsProperty.h">

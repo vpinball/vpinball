@@ -1339,6 +1339,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_INSERT_FLIPPER, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_INSERT_PLUNGER, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_INSERT_BUMPER, ptCur->IsLocked() ? grayed : enabled);
+      mainMenu.EnableMenuItem(ID_INSERT_BALL, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_INSERT_SPINNER, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_INSERT_TIMER, ptCur->IsLocked() ? grayed : enabled);
       mainMenu.EnableMenuItem(ID_INSERT_TRIGGER, ptCur->IsLocked() ? grayed : enabled);
@@ -1405,6 +1406,7 @@ void VPinball::SetEnableMenuItems()
       mainMenu.EnableMenuItem(ID_INSERT_FLIPPER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_PLUNGER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_BUMPER, grayed);
+      mainMenu.EnableMenuItem(ID_INSERT_BALL, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_SPINNER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_TIMER, grayed);
       mainMenu.EnableMenuItem(ID_INSERT_TRIGGER, grayed);

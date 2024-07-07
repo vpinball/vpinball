@@ -12,6 +12,6 @@ public:
 
    virtual EventProxyBase *GetEventProxyBase() = 0;
 
-   virtual void PhysicSetup(vector<HitObject *> &pvho, const bool isUI) = 0;
-   virtual void PhysicRelease(const bool isUI) = 0;
+   virtual void PhysicSetup(class PhysicsEngine* physics, const bool isUI) = 0;
+   virtual void PhysicRelease(class PhysicsEngine* physics, const bool isUI) = 0;
 };

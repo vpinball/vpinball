@@ -152,8 +152,6 @@ public:
        m_d.m_updateinterval = max((int)5, interval);
    }
 
-   DispReel *CopyForPlay(PinTable *live_table);
-
    DispReelData m_d;
 
 private:

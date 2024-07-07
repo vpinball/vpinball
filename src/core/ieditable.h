@@ -120,6 +120,7 @@ public:
         obj->Init(ptable, x, y, true); \
         return obj; \
     } \
+   T *CopyForPlay(PinTable *live_table) const; \
 	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
 	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
@@ -149,8 +150,8 @@ public:
 	/* Hitable implementation */ \
 	virtual void BeginPlay(vector<HitTimer*> &pvht); \
 	virtual void EndPlay(); \
-	virtual void PhysicSetup(vector<HitObject *> &pvho, const bool isUI); \
-	virtual void PhysicRelease(const bool isUI); \
+	virtual void PhysicSetup(PhysicsEngine* physics, const bool isUI); \
+	virtual void PhysicRelease(PhysicsEngine* physics, const bool isUI); \
 	/* IRenderable implementation */ \
 	virtual void RenderSetup(RenderDevice *device); \
 	virtual void UpdateAnimation(const float diff_time_msec); \
@@ -182,17 +183,17 @@ public:
       dst->points[i]->Release(); \
    dst->points.clear(); \
    CComObject<DragPoint> *pdp; \
-   for (size_t i = 0; i < points.size(); i++) \
+   for (auto dpt : m_vdpoint) \
    { \
       CComObject<DragPoint>::CreateInstance(&pdp); \
       if (pdp) \
       { \
          pdp->AddRef(); \
-         pdp->Init(this, points[i]->m_v.x, points[i]->m_v.y, points[i]->m_v.z, points[i]->m_smooth); \
-         pdp->m_slingshot = points[i]->m_slingshot; \
-         pdp->m_calcHeight = points[i]->m_calcHeight; \
-         pdp->m_autoTexture = points[i]->m_autoTexture; \
-         pdp->m_texturecoord = points[i]->m_texturecoord; \
+         pdp->Init(dst, dpt->m_v.x, dpt->m_v.y, dpt->m_v.z, dpt->m_smooth); \
+         pdp->m_slingshot = dpt->m_slingshot; \
+         pdp->m_calcHeight = dpt->m_calcHeight; \
+         pdp->m_autoTexture = dpt->m_autoTexture; \
+         pdp->m_texturecoord = dpt->m_texturecoord; \
          dst->points.push_back(pdp); \
       } \
    }

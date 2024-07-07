@@ -27,6 +27,7 @@ enum ItemTypeEnum : unsigned int
    eItemRubber,
    eItemHitTarget,
    //eItemLightSeqCenter,
+   eItemBall,
    eItemTypeCount,
    eItemInvalid = 0xffffffff // Force enum to be 32 bits
 };

@@ -142,14 +142,12 @@ public:
       return false;
    }
 
-   Surface *CopyForPlay(PinTable *live_table);
-
    SurfaceData m_d;
    bool m_disabled;
 
 private:
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, const bool isUI);
-   void AddLine(vector<HitObject *> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI);
+   void SetupHitObject(class PhysicsEngine *physics, HitObject *const obj, const bool isUI);
+   void AddLine(class PhysicsEngine *physics, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI);
 
    void GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices);
 

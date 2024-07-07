@@ -91,8 +91,6 @@ public:
 
    void WriteRegDefaults() final;
 
-   Kicker *CopyForPlay(PinTable *live_table);
-
    KickerData m_d;
 
    vector<Vertex3Ds> m_hitMesh;
@@ -132,9 +130,9 @@ public:
    STDMETHOD(KickXYZ)(float angle, float speed, float inclination, float x, float y, float z);
    //STDMETHOD(DestroyBall)();
    STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(CreateBall)(IBall **pBallEx);
-   STDMETHOD(CreateSizedBall)(/*[in]*/float radius, /*out, retval]*/ IBall **pBallEx);
-   STDMETHOD(CreateSizedBallWithMass)(/*[in]*/float radius, /*[in]*/float mass, /*out, retval]*/ IBall **pBallEx);
+   STDMETHOD(CreateBall)(IBall **pBall);
+   STDMETHOD(CreateSizedBall)(/*[in]*/float radius, /*out, retval]*/ IBall **pBall);
+   STDMETHOD(CreateSizedBallWithMass)(/*[in]*/float radius, /*[in]*/float mass, /*out, retval]*/ IBall **pBall);
    STDMETHOD(BallCntOver)(/*[out, retval]*/ int *pVal);
 
    STDMETHOD(get_Scatter)(/*[out, retval]*/ float *pVal);
@@ -160,21 +158,18 @@ public:
    KickerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
       : HitCircle(c,r,zlow,zhigh)
    {
-      m_pball = nullptr;
-      m_lastCapturedBall = nullptr;
-      m_pkicker = nullptr;
    }
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const final;
    int GetType() const final { return eTrigger; }
    void Collide(const CollisionEvent& coll) final { DoCollide(coll.m_ball, coll.m_hitnormal, coll.m_hitflag, false); }
 
-   void DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const;
-   void DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitbit, const bool newBall);
+   void DoChangeBallVelocity(HitBall *const pball, const Vertex3Ds &hitnormal) const;
+   void DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal, const bool hitbit, const bool newBall);
 
-   Kicker *m_pkicker;
-   Ball *m_pball;  // The ball inside this kicker
-   Ball *m_lastCapturedBall; // same as m_pball but this one won't be nulled only overwritten from another captured ball
+   Kicker *m_pkicker = nullptr;
+   HitBall *m_pHitBall = nullptr; // The ball inside this kicker
+   HitBall *m_lastCapturedBall = nullptr; // same as m_pHitBall but this one won't be nulled only overwritten from another captured ball
 };
 
 #endif // !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)

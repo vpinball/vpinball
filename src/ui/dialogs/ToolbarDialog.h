@@ -33,6 +33,7 @@ private:
     CButton m_rampButton;
     CButton m_flipperButton;
     CButton m_plungerButton;
+    CButton m_ballButton;
     CButton m_bumperButton;
     CButton m_spinnerButton;
     CButton m_timerButton;
