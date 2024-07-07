@@ -212,10 +212,10 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
 {
    assert(bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    // Handle texture update (on BGFX API thread)
-   const bgfx::Memory* texUpdate = m_textureUpdate[0].load(std::memory_order::memory_order_relaxed);
+   const bgfx::Memory* texUpdate = m_textureUpdate[0].load(std::memory_order_relaxed);
    if (texUpdate)
    {
-      m_textureUpdate[0].store(nullptr, std::memory_order::memory_order_relaxed);
+      m_textureUpdate[0].store(nullptr, std::memory_order_relaxed);
       if (bgfx::isValid(m_nomipsTexture))
       {
          if (bgfx::isValid(m_mipsTexture))
@@ -238,10 +238,10 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
       // TODO BGFX we do process them in sequence istead of just the last because BGFX does not give access to the memory deallocator...
       for (int i = 1; i < 16; i++)
       {
-         texUpdate = m_textureUpdate[i].load(std::memory_order::memory_order_relaxed);
+         texUpdate = m_textureUpdate[i].load(std::memory_order_relaxed);
          if (texUpdate == nullptr)
             break;
-         m_textureUpdate[i].store(nullptr, std::memory_order::memory_order_relaxed);
+         m_textureUpdate[i].store(nullptr, std::memory_order_relaxed);
          bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, texUpdate);
       }
    }
@@ -319,9 +319,9 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    assert(force_linear_rgb == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
    for (int i = 0; i < 16; i++)
    {
-      if (m_textureUpdate[i].load(std::memory_order::memory_order_relaxed) == nullptr)
+      if (m_textureUpdate[i].load(std::memory_order_relaxed) == nullptr)
       {
-         m_textureUpdate[i].store(bgfx::copy(surf->data(), surf->height() * surf->pitch()), std::memory_order::memory_order_relaxed);
+         m_textureUpdate[i].store(bgfx::copy(surf->data(), surf->height() * surf->pitch()), std::memory_order_relaxed);
          break;
       }
    }

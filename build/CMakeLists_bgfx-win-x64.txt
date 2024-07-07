@@ -42,6 +42,7 @@ add_compile_options(
    $<$<CONFIG:RELEASE>:/GL>
    $<$<CONFIG:RELEASE>:/w44005>
    /Zc:__cplusplus
+   /Zc:preprocessor
    /std:c++20
 )
 
