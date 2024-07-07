@@ -29,6 +29,9 @@ private:
    void SavePosition();
    void UpdateImages();
 
+   void ListImages(HWND hwndListView);
+   int AddListImage(HWND hwndListView, Texture *const ppi);
+
    static int m_columnSortOrder;
    static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion
 };

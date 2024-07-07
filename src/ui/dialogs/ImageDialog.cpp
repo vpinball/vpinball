@@ -110,9 +110,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          lvcol.fmt = LVCFMT_CENTER;
          ListView_InsertColumn(hListView, 5, &lvcol);
 
-         CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-         if (pt)
-            pt->ListImages(hListView);
+         ListImages(hListView);
 
          char textBuf[16];
          strncpy_s(textBuf, "128", sizeof(textBuf)-1);
@@ -192,7 +190,11 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                   ListView_GetItem(GetDlgItem(IDC_SOUNDLIST).GetHwnd(), &lvitem);
                   Texture * const ppi = (Texture *)lvitem.lParam;
                   if (ppi != nullptr)
+                  {
                      SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(255.f * ppi->m_alphaTestValue).c_str());
+                     GetDlgItem(IDC_ALPHA_MASK_EDIT).ShowWindow(ppi->m_pdsBuffer && ppi->m_pdsBuffer->has_alpha());
+                     GetDlgItem(IDC_STATIC_ALPHA).ShowWindow(ppi->m_pdsBuffer && ppi->m_pdsBuffer->has_alpha());
+                  }
                }
                ::InvalidateRect(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), nullptr, fTrue);
             }
@@ -418,7 +420,7 @@ void ImageDialog::Import()
          Texture *tex = pt->ImportImage(file, "");
          if (tex != nullptr)
          {
-            const int index = pt->AddListImage(hImageList, tex);
+            const int index = AddListImage(hImageList, tex);
             ListView_SetItemState(hImageList, index, LVIS_SELECTED, LVIS_SELECTED);
          }
       }
@@ -778,4 +780,201 @@ void ImageDialog::SavePosition()
     g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngWidth"s, w);
     const int h = rect.bottom - rect.top;
     g_pvp->m_settings.SaveValue(Settings::Editor, "ImageMngHeight"s, h);
+}
+
+void ImageDialog::ListImages(HWND hwndListView)
+{
+   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   if (pt)
+      for (auto img : pt->m_vimage)
+         AddListImage(hwndListView, img);
+}
+
+int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
+{
+#ifndef __STANDALONE__
+   char sizeString[MAXTOKEN];
+   constexpr char usedStringYes[] = "X";
+   constexpr char usedStringNo[] = " ";
+
+   LVITEM lvitem;
+   lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+   lvitem.iItem = 0;
+   lvitem.iSubItem = 0;
+   lvitem.pszText = (LPSTR)ppi->m_szName.c_str();
+   lvitem.lParam = (size_t)ppi;
+
+   if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
+   else if (ppi->m_realWidth > ppi->m_width || ppi->m_realHeight > ppi->m_height)
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i downsized to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
+   else
+      _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i upscaled to %ix%i", ppi->m_realWidth, ppi->m_realHeight, ppi->m_width, ppi->m_height);
+   const int index = ListView_InsertItem(hwndListView, &lvitem);
+
+   ListView_SetItemText(hwndListView, index, 1, (LPSTR)ppi->m_szPath.c_str());
+   ListView_SetItemText(hwndListView, index, 2, sizeString);
+   ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
+
+   char *const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
+   ListView_SetItemText(hwndListView, index, 4, sizeConv);
+
+   if (ppi->m_pdsBuffer == nullptr)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "-");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGB)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGB");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::SRGBA)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "sRGBA");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP16)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 16F");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP16)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 16F");
+   }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGB_FP32)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 32F");
+   }
+   else
+      assert(!"unknown format");
+
+   CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+   if (pt)
+   {
+      if ((lstrcmpi(pt->m_image.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_ballImage.c_str(), ppi->m_szName.c_str()) == 0)
+         || (lstrcmpi(pt->m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_envImage.c_str(), ppi->m_szName.c_str()) == 0)
+         || (lstrcmpi(pt->m_BG_image[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_BG_image[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
+         || (lstrcmpi(pt->m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
+      {
+         ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
+      }
+      else
+      {
+         for (size_t i = 0; i < pt->m_vedit.size(); i++)
+         {
+            bool inUse = false;
+            IEditable *const pEdit = pt->m_vedit[i];
+            if (pEdit == nullptr)
+               continue;
+
+            switch (pEdit->GetItemType())
+            {
+            case eItemDispReel:
+            {
+               const DispReel *const pReel = (DispReel *)pEdit;
+               if (lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemPrimitive:
+            {
+               const Primitive *const pPrim = (Primitive *)pEdit;
+               if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0))
+                  inUse = true;
+               break;
+            }
+            case eItemRamp:
+            {
+               const Ramp *const pRamp = (Ramp *)pEdit;
+               if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemSurface:
+            {
+               const Surface *const pSurf = (Surface *)pEdit;
+               if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0))
+                  inUse = true;
+               break;
+            }
+            case eItemDecal:
+            {
+               const Decal *const pDecal = (Decal *)pEdit;
+               if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemFlasher:
+            {
+               const Flasher *const pFlash = (Flasher *)pEdit;
+               if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0))
+                  inUse = true;
+               break;
+            }
+            case eItemFlipper:
+            {
+               const Flipper *const pFlip = (Flipper *)pEdit;
+               if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemHitTarget:
+            {
+               const HitTarget *const pHit = (HitTarget *)pEdit;
+               if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemLight:
+            {
+               const Light *const pLight = (Light *)pEdit;
+               if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemPlunger:
+            {
+               const Plunger *const pPlung = (Plunger *)pEdit;
+               if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemRubber:
+            {
+               const Rubber *const pRub = (Rubber *)pEdit;
+               if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            case eItemSpinner:
+            {
+               const Spinner *const pSpin = (Spinner *)pEdit;
+               if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+                  inUse = true;
+               break;
+            }
+            default:
+            {
+               break;
+            }
+            }
+
+            if (inUse)
+            {
+               ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
+               break;
+            }
+         } //for
+      } //else
+   }
+   return index;
+#else
+   return 0L;
+#endif
 }
