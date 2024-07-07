@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include "robin_hood.h"
 #include "typedefs3D.h"
 
