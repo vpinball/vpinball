@@ -93,7 +93,7 @@ Flipper::~Flipper()
    delete m_meshBuffer;
 }
 
-Flipper *Flipper::CopyForPlay(PinTable *live_table)
+Flipper *Flipper::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Flipper, live_table)
    return dst;
@@ -241,7 +241,7 @@ void Flipper::UpdatePhysicsSettings()
    }
 }
 
-void Flipper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    UpdatePhysicsSettings();
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_Center.x, m_d.m_Center.y);
@@ -256,7 +256,7 @@ void Flipper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    {
       // FIXME This is very imprecise. We could use the same as physics or create more hit geometry
       Hit3DPoly *const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
-      pvho.push_back(pcircle);
+      physics->AddCollider(pcircle, this, isUI);
    }
    else
    {
@@ -265,11 +265,11 @@ void Flipper::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       phf->m_flipperMover.m_enabled = m_d.m_enabled;
       phf->m_flipperMover.m_visible = m_d.m_visible;
       m_phitflipper = phf;
-      pvho.push_back(phf);
+      physics->AddCollider(phf, this, isUI);
    }
 }
 
-void Flipper::PhysicRelease(const bool isUI)
+void Flipper::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
       m_phitflipper = nullptr;

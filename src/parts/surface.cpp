@@ -21,7 +21,7 @@ Surface::~Surface()
    assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
-Surface *Surface::CopyForPlay(PinTable *live_table)
+Surface *Surface::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Surface, live_table, m_vdpoint)
    dst->m_isWall = m_isWall;
@@ -351,7 +351,7 @@ void Surface::EndPlay()
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 //
 
-void Surface::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    vector<RenderVertex> vvertex;
    GetRgVertex(vvertex);
@@ -381,20 +381,20 @@ void Surface::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       const RenderVertex &pv2 = vvertex[(i + 1) % count];
       const RenderVertex &pv3 = vvertex[(i + 2) % count];
 
-      AddLine(pvho, pv2, pv3, isUI);
+      AddLine(physics, pv2, pv3, isUI);
    }
 
    Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt, count);
-   SetupHitObject(pvho, ph3dpolyt, isUI);
+   SetupHitObject(physics, ph3dpolyt, isUI);
 
    if (m_d.m_isBottomSolid || isUI)
    {
       Hit3DPoly * const ph3dpolyb = new Hit3DPoly(rgv3Db, count);
-      SetupHitObject(pvho, ph3dpolyb, isUI);
+      SetupHitObject(physics, ph3dpolyb, isUI);
    }
 }
 
-void Surface::PhysicRelease(const bool isUI)
+void Surface::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {
@@ -408,7 +408,7 @@ void Surface::PhysicRelease(const bool isUI)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, const bool isUI)
+void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_overwritePhysics)
@@ -435,7 +435,7 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, co
       obj->m_threshold = m_d.m_threshold;
    }
 
-   pvho.push_back(obj);
+   physics->AddCollider(obj, this, isUI);
    if (!isUI)
    {
       m_vhoCollidable.push_back(obj); //remember hit components of wall
@@ -449,7 +449,7 @@ void Surface::SetupHitObject(vector<HitObject*> &pvho, HitObject * const obj, co
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 //
 
-void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI)
+void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI)
 {
    const float bottom = m_d.m_heightbottom;
    const float top = m_d.m_heighttop;
@@ -471,7 +471,7 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
          m_vlinesling.push_back(plinesling);
    }
 
-   SetupHitObject(pvho, plineseg, isUI);
+   SetupHitObject(physics, plineseg, isUI);
 
    if (pv1.slingshot)  // slingshots always have hit events
    {
@@ -482,20 +482,20 @@ void Surface::AddLine(vector<HitObject*> &pvho, const RenderVertex &pv1, const R
 
    // add lower edge as a line
    if (!isUI && m_d.m_heightbottom != 0.f)
-      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
+      SetupHitObject(physics, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
 
    // add upper edge as a line
    if (!isUI)
-      SetupHitObject(pvho, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
+      SetupHitObject(physics, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
 
    // create vertical joint between the two line segments
-   SetupHitObject(pvho, new HitLineZ(pv1, bottom, top), isUI);
+   SetupHitObject(physics, new HitLineZ(pv1, bottom, top), isUI);
 
    // add upper and lower end points of line
    if (!isUI && m_d.m_heightbottom != 0.f)
-      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)), isUI);
+      SetupHitObject(physics, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)), isUI);
    if (!isUI)
-      SetupHitObject(pvho, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
+      SetupHitObject(physics, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
 }
 
 //

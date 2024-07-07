@@ -1,9 +1,12 @@
 #pragma once
 
 #include "ui/resource.h"
+#include "physics/hitable.h"
+#include "physics/hitball.h"
 #include "renderer/Renderable.h"
+#include "parts/timer.h"
 
-class Ball;
+class HitBall;
 
 // Helper class used for projecting sphere points, which is then used to compensate for projection stretch if anti-ball-stretch is enabled
 class AntiStretchHelper
@@ -34,47 +37,101 @@ public:
    }
 };
 
-class BallEx :
+class BallData final : public BaseProperty
+{
+public:
+   TimerDataRoot m_tdr;
+   // Vertex3Ds m_pos; implemented in HitBall to avoid duplication
+   // float m_radius; implemented in HitBall to avoid duplication
+   // float m_mass; implemented in HitBall to avoid duplication
+   bool m_forceReflection;
+
+   bool m_useTableRenderSettings;
+   bool m_decalMode;
+   string m_imageDecal;
+   float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
+   float m_playfieldReflectionStrength;
+   COLORREF m_color;
+   bool m_pinballEnvSphericalMapping;
+};
+
+class Ball :
    public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<BallEx, &CLSID_Ball>,
    public IDispatchImpl<IBall, &IID_IBall, &LIBID_VPinballLib>,
+   //public CComObjectRoot,
+   public CComCoClass<Ball, &CLSID_Ball>,
+   public EventProxy<Ball, &DIID_IBallEvents>,
+   public IConnectionPointContainerImpl<Ball>,
+   public IProvideClassInfo2Impl<&CLSID_Ball, &DIID_IBallEvents, &LIBID_VPinballLib>,
+
+   public ISelect,
+   public IEditable,
+   public Hitable,
+   public IScriptable,
    public IFireEvents,
-   public Renderable
+   public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
 #ifdef __STANDALONE__
 public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS *const pdispparams) override;
 #endif
 public:
-   BallEx();
-   ~BallEx();
-
-   DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
+   Ball();
+   ~Ball();
 
    DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-   BEGIN_COM_MAP(BallEx)
-      COM_INTERFACE_ENTRY(IBall)
+   BEGIN_COM_MAP(Ball)
       COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY(IBall)
+
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
    END_COM_MAP()
 
-   void RenderSetup(RenderDevice *device) override;
-   void UpdateAnimation(const float diff_time_msec) override;
-   void Render(const unsigned int renderMask) override;
-   void RenderRelease() override;
+   STANDARD_EDITABLE_DECLARES(Ball, eItemBall, BALL, 1)
+
+   BEGIN_CONNECTION_POINT_MAP(Ball)
+      CONNECTION_POINT_ENTRY(DIID_IBallEvents)
+   END_CONNECTION_POINT_MAP()
+   
+   DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
+
+   // Multi-object manipulation
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D &pv) final;
+
+   void RenderBlueprint(Sur *psur, const bool solid) final;
+
+   ItemTypeEnum HitableGetItemType() const final { return eItemBall; }
+
+   void WriteRegDefaults() final;
+
+   BallData m_d;
+   HitBall m_hitBall;
 
    bool m_antiStretch = false;
+   Texture *m_pinballEnv = nullptr;
+   Texture *m_pinballDecal = nullptr;
+
+   static unsigned int m_nextBallID; // increased for each ball created to have an unique ID for scripts for each ball
 
 private:
+   PinTable *m_ptable = nullptr;
    RenderDevice *m_rd = nullptr;
    static const AntiStretchHelper m_ash;
+   const unsigned int m_id; // unique ID for each ball
+   static unsigned int GetNextBallID();
 
    // IBall
 public:
-   STDMETHOD(get_Name)(/*[out, retval]*/ BSTR *pVal);
-   STDMETHOD(put_Name)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_FrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_FrontDecal)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -111,8 +168,6 @@ public:
    STDMETHOD(put_Radius)(/*[in]*/ float newVal);
    STDMETHOD(get_Mass)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Mass)(/*[in]*/ float newVal);
-   STDMETHOD(get_UserValue)(/*[out, retval]*/ VARIANT *pVal);
-   STDMETHOD(put_UserValue)(VARIANT *newVal);
    STDMETHOD(get_ID)(/*[out, retval]*/ int *pVal);
    STDMETHOD(put_ID)(/*[in]*/ int newVal);
    STDMETHOD(DestroyBall)(/*[out, retval]*/ int *pVal);
@@ -126,13 +181,4 @@ public:
    STDMETHOD(put_ForceReflection)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-
-   void FireGroupEvent(const int dispid) final {}
-   IDispatch *GetDispatch() final { return ((IDispatch *) this); }
-   const IDispatch *GetDispatch() const final { return ((const IDispatch *) this); }
-
-   Ball *m_pball;
-
-private:
-   VARIANT m_uservalue;
 };

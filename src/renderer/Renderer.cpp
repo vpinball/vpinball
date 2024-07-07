@@ -1206,21 +1206,20 @@ void Renderer::DrawStatics()
 
 void Renderer::DrawDynamics(bool onlyBalls)
 {
-   if (!onlyBalls)
+   const unsigned int mask = m_render_mask;
+   m_render_mask |= Renderer::DYNAMIC_ONLY;
+   if (onlyBalls)
    {
-      // Update Bulb light buffer and set up render pass dependencies
+      for (HitBall* ball : g_pplayer->m_vball)
+         ball->m_pBall->Render(m_render_mask);
+   }
+   else
+   {
       DrawBulbLightBuffer();
-
-      // Draw all parts
-      const unsigned int mask = m_render_mask;
-      m_render_mask |= Renderer::DYNAMIC_ONLY;
       for (Hitable* hitable : g_pplayer->m_vhitables)
          hitable->Render(m_render_mask);
-      m_render_mask = mask;
    }
-
-   for (Ball* ball : g_pplayer->m_vball)
-      ball->m_pballex->Render(m_render_mask);
+   m_render_mask = mask;
 }
 
 void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop)
@@ -1512,8 +1511,8 @@ void Renderer::RenderDynamics()
    int p = 0;
    for (size_t i = 0; i < g_pplayer->m_vball.size() && p < MAX_BALL_SHADOW; i++)
    {
-      Ball* const pball = g_pplayer->m_vball[i];
-      if (!pball->m_visible)
+      HitBall* const pball = g_pplayer->m_vball[i];
+      if (!pball->m_pBall->m_d.m_visible)
          continue;
       balls[p] = vec4(pball->m_d.m_pos.x, pball->m_d.m_pos.y, pball->m_d.m_pos.z, pball->m_d.m_radius);
       p++;
@@ -1535,8 +1534,6 @@ void Renderer::RenderDynamics()
    DrawBulbLightBuffer();
    for (Hitable* hitable : g_pplayer->m_vhitables)
       hitable->Render(m_render_mask);
-   for (Ball* ball : g_pplayer->m_vball)
-      ball->m_pballex->Render(m_render_mask);
    m_render_mask = Renderer::DEFAULT;
    
    m_pd3dPrimaryDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again

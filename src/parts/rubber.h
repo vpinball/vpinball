@@ -111,13 +111,12 @@ public:
 #if 0
    float GetSurfaceHeight(float x, float y) const;
 #endif
-   Rubber *CopyForPlay(PinTable *live_table);
 
    RubberData m_d;
 
 private:
-   void AddHitEdge(vector<HitObject *> &pvho, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool isUI);
+   void AddHitEdge(class PhysicsEngine *physics, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI);
+   void SetupHitObject(class PhysicsEngine *physics, HitObject *obj, const bool isUI);
 
    PinTable *m_ptable;
 

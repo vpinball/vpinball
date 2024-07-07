@@ -140,8 +140,6 @@ public:
 
    void setInPlayState(const bool newVal);
 
-   Flasher *CopyForPlay(PinTable *live_table);
-
    FlasherData m_d;
 
    bool m_lockedByLS;

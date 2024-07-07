@@ -159,8 +159,6 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-   Plunger* CopyForPlay(PinTable *live_table);
-
    PlungerData m_d;
 
 private:
@@ -200,7 +198,7 @@ public:
    STDMETHOD(put_Width)(/*[in]*/ float newVal);
    STDMETHOD(put_ZAdjust)(/*[in]*/ float newVal);
    STDMETHOD(get_ZAdjust)(/*[out, retval]*/ float *pVal);
-   STDMETHOD(CreateBall)(IBall **pBallEx);
+   STDMETHOD(CreateBall)(IBall **pBall);
    STDMETHOD(get_FireSpeed)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_FireSpeed)(/*[in]*/ float newVal);
    STDMETHOD(get_PullSpeed)(/*[out, retval]*/ float *pVal);

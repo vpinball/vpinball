@@ -11,6 +11,8 @@
 #include "ui/properties/DragpointVisualsProperty.h"
 #include "ui/properties/PlungerVisualsProperty.h"
 #include "ui/properties/PlungerPhysicsProperty.h"
+#include "ui/properties/BallVisualsProperty.h"
+#include "ui/properties/BallPhysicsProperty.h"
 #include "ui/properties/BumperVisualsProperty.h"
 #include "ui/properties/BumperPhysicsProperty.h"
 #include "ui/properties/SpinnerVisualsProperty.h"
@@ -194,6 +196,20 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         m_elementTypeName.SetWindowText("Plunger");
         m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PlungerVisualsProperty(&pvsel), _T("Visuals")));
         m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PlungerPhysicsProperty(&pvsel), _T("Physics")));
+        m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
+        if (m_tab.m_activeTabText == CString("Visuals"))
+            activePage = 0;
+        else if (m_tab.m_activeTabText == CString("Physics"))
+            activePage = 1;
+        else if (m_tab.m_activeTabText == CString("Timer"))
+            activePage = 2;
+        break;
+    }
+    case eItemBall:
+    {
+        m_elementTypeName.SetWindowText("Ball");
+        m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BallVisualsProperty(&pvsel), _T("Visuals")));
+        m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new BallPhysicsProperty(&pvsel), _T("Physics")));
         m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
         if (m_tab.m_activeTabText == CString("Visuals"))
             activePage = 0;

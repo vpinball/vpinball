@@ -10,7 +10,7 @@ DispReel::~DispReel()
    assert(m_rd == nullptr);
 }
 
-DispReel *DispReel::CopyForPlay(PinTable *live_table)
+DispReel *DispReel::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(DispReel, live_table)
    return dst;
@@ -190,7 +190,7 @@ void DispReel::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
-void DispReel::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void DispReel::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -198,7 +198,7 @@ void DispReel::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void DispReel::PhysicRelease(const bool isUI) { }
+void DispReel::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
 
 #pragma endregion
 

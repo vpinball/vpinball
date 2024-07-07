@@ -265,9 +265,12 @@
 #define IDS_TB_PRIMITIVE                186
 #define IDS_VISUALS2                    187
 #define IDS_POSITION_TRANSLATION        188
+#define IDI_BALL                        188
 #define IDC_FLIPPER_EOS_T_D_A           189
 #define IDS_PASTE_ELEMENT               189
+#define IDC_BALL                        189
 #define IDS_PASTE_AT_ELEMENT            190
+#define IDC_MASS                        190
 #define IDS_DELETE_ELEMENTS             191
 #define IDS_IMAGE_RAW_SIZE              192
 #define IDS_STRING193                   193
@@ -520,6 +523,7 @@
 #define IDS_HANG                        346
 #define IDC_ROTATION_EDIT2              346
 #define IDC_STAR_RADIUS_EDIT            346
+#define IDC_RADIUS_EDIT                 346
 #define IDD_PROPKICKER_VISUALS          347
 #define IDC_ACTIVEX4                    347
 #define IDC_CUSTOMNAME                  347
@@ -775,6 +779,7 @@
 #define IDC_REEL_VISIBLE                458
 #define IDC_VISIBLE_CHECK               458
 #define IDC_BG_NIGHT_DAY                459
+#define IDC_USE_TABLE_SETTINGS          459
 #define IDC_CORRECTION_X                460
 #define IDC_CORRECTION_Y                461
 #define IDC_MAT_ELASTICITY_FALLOFF      461
@@ -993,8 +998,12 @@
 #define IDC_JOYSTAGEDLFLIPCOMBO         673
 #define IDC_JOYSTAGEDRFLIPCOMBO         674
 #define IDD_INFOTEXT                    675
-#define IDD_DEVICE_DIALOG               676
-#define IDD_INPUT_DEVICES               676
+#define IDS_TB_BALL                     676
+#define ID_INSERT_BALL                  677
+#define IDD_PROPBALL_VISUALS            678
+#define IDD_PROPBALL_PHYSICS            679
+#define IDD_DEVICE_DIALOG               680
+#define IDD_INPUT_DEVICES               680
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1461,9 +1470,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        678
+#define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         939
-#define _APS_NEXT_SYMED_VALUE           188
+#define _APS_NEXT_CONTROL_VALUE         929
+#define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

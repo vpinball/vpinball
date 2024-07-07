@@ -14,8 +14,9 @@ public:
    const Vertex3Ds& GetGravity() const { return m_gravity; }
 
    // For the time being, beside the colliders loaded from the table in the constructor, only ball can added/removed
-   void AddBall(Ball *const ball);
-   void RemoveBall(Ball *const ball);
+   void AddBall(HitBall *const ball);
+   void RemoveBall(HitBall *const ball);
+   void AddCollider(HitObject * collider, IEditable * editable, const bool isUI);
 
    void OnPrepareFrame();
    void OnFinishFrame();

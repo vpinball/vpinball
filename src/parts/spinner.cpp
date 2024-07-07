@@ -17,7 +17,7 @@ Spinner::~Spinner()
    assert(m_rd == nullptr);
 }
 
-Spinner *Spinner::CopyForPlay(PinTable *live_table)
+Spinner *Spinner::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Spinner, live_table)
    return dst;
@@ -198,7 +198,7 @@ void Spinner::EndPlay()
 // Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
 //
 
-void Spinner::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -218,7 +218,7 @@ void Spinner::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       HitSpinner *const phitspinner = new HitSpinner(this, height);
       m_phitspinner = phitspinner;
 
-      pvho.push_back(phitspinner);
+      physics->AddCollider(phitspinner, this, isUI);
 
       if (m_d.m_showBracket)
       {
@@ -230,15 +230,15 @@ void Spinner::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 
             HitCircle *phitcircle;
             phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs * halflength, m_d.m_vCenter.y + sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
-            pvho.push_back(phitcircle);
+            physics->AddCollider(phitcircle, this, isUI);
 
             phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs * halflength, m_d.m_vCenter.y - sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
-            pvho.push_back(phitcircle);
+            physics->AddCollider(phitcircle, this, isUI);
       }
    }
 }
 
-void Spinner::PhysicRelease(const bool isUI)
+void Spinner::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {
@@ -263,7 +263,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
-   PhysicSetup(dummyHitObj, false);
+   // FIXME is this realluy needed PhysicSetup(dummyHitObj, false);
 
    if (m_d.m_showBracket)
    {

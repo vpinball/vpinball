@@ -14118,7 +14118,42 @@ STDMETHODIMP Rubber::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDoc
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP BallEx::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
+HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
+	static struct {
+		DISPID dispId;
+		const WCHAR *name;
+	} idsNamesList[] = {
+			{ NULL },
+			{ DISPID_GameEvents_Init, L"_Init" },
+			{ DISPID_TimerEvents_Timer, L"_Timer" }
+	};
+
+	static WCHAR wzName[MAXSTRING];
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
+	int r;
+	while(min <= max) {
+		i = (min + max) / 2;
+		if (idsNamesList[i].dispId == dispid) {
+			wcscpy(wzName, m_wzName);
+			wcscat(wzName, idsNamesList[i].name);
+			LPOLESTR fnNames = (LPOLESTR)wzName;
+			DISPID tDispid;
+			CComPtr<IDispatch> disp;
+			g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);
+			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
+			}
+			return DISP_E_MEMBERNOTFOUND;
+		}
+		else if (idsNamesList[i].dispId < dispid)
+		   min = i+1;
+		else
+		   max = i-1;
+	}
+	return DISP_E_MEMBERNOTFOUND;
+}
+
+STDMETHODIMP Ball::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
 		DISPID dispId;
@@ -14170,7 +14205,7 @@ STDMETHODIMP BallEx::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 	return DISP_E_MEMBERNOTFOUND;
 }
 
-STDMETHODIMP BallEx::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
+STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
 	int index = pDispParams->cArgs;
 	VARIANT res;
 	HRESULT hres = DISP_E_UNKNOWNNAME;
@@ -14624,7 +14659,7 @@ STDMETHODIMP BallEx::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	return hres;
 }
 
-STDMETHODIMP BallEx::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+STDMETHODIMP Ball::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
 	if (index == MEMBERID_NIL) {
 		*pBstrName = SysAllocString(L"IBall");
 		return S_OK;

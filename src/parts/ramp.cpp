@@ -25,7 +25,7 @@ Ramp::~Ramp()
       delete[] m_rgheightInit;
 }
 
-Ramp *Ramp::CopyForPlay(PinTable *live_table)
+Ramp *Ramp::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Ramp, live_table, m_vdpoint)
    return dst;
@@ -567,7 +567,7 @@ void Ramp::EndPlay()
 
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
 
-void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    float *rgheight1;
    int cvertex;
@@ -620,14 +620,14 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          const Vertex2D &pv2 = rgvLocal[i];
          const Vertex2D &pv3 = rgvLocal[i + 1];
 
-         AddWallLineSeg(pvho, pv2, pv3, (i > 0), rgheight1[i], rgheight1[i + 1], wallheightright, isUI);
-         AddWallLineSeg(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[i], rgheight1[i + 1], wallheightright, isUI);
+         AddWallLineSeg(physics, pv2, pv3, (i > 0), rgheight1[i], rgheight1[i + 1], wallheightright, isUI);
+         AddWallLineSeg(physics, pv3, pv2, (i < (cvertex - 2)), rgheight1[i], rgheight1[i + 1], wallheightright, isUI);
 
          // add joints at start and end of right wall
          if (i == 0)
-            AddJoint2D(pvho, pv2, rgheight1[0], rgheight1[0] + wallheightright, isUI);
+            AddJoint2D(physics, pv2, rgheight1[0], rgheight1[0] + wallheightright, isUI);
          if (i == cvertex - 2)
-            AddJoint2D(pvho, pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright, isUI);
+            AddJoint2D(physics, pv3, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightright, isUI);
       }
    }
 
@@ -639,14 +639,14 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          const Vertex2D &pv2 = rgvLocal[cvertex + i];
          const Vertex2D &pv3 = rgvLocal[cvertex + i + 1];
 
-         AddWallLineSeg(pvho, pv2, pv3, (i > 0), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft, isUI);
-         AddWallLineSeg(pvho, pv3, pv2, (i < (cvertex - 2)), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft, isUI);
+         AddWallLineSeg(physics, pv2, pv3, (i > 0), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft, isUI);
+         AddWallLineSeg(physics, pv3, pv2, (i < (cvertex - 2)), rgheight1[cvertex - i - 2], rgheight1[cvertex - i - 1], wallheightleft, isUI);
 
          // add joints at start and end of left wall
          if (i == 0)
-            AddJoint2D(pvho, pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft, isUI);
+            AddJoint2D(physics, pv2, rgheight1[cvertex - 1], rgheight1[cvertex - 1] + wallheightleft, isUI);
          if (i == cvertex - 2)
-            AddJoint2D(pvho, pv3, rgheight1[0], rgheight1[0] + wallheightleft, isUI);
+            AddJoint2D(physics, pv3, rgheight1[0], rgheight1[0] + wallheightleft, isUI);
       }
    }
 
@@ -677,10 +677,10 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
 
             // add joint for starting edge of ramp
             if (i == 0)
-               AddJoint(pvho, rgv3D[0], rgv3D[1], isUI);
+               AddJoint(physics, rgv3D[0], rgv3D[1], isUI);
 
             // add joint for left edge
-            AddJoint(pvho, rgv3D[0], rgv3D[2], isUI);
+            AddJoint(physics, rgv3D[0], rgv3D[2], isUI);
 
             HitTriangle *const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
 
@@ -690,9 +690,9 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
             }
             else
             {
-               SetupHitObject(pvho, ph3dpoly, isUI);
+               SetupHitObject(physics, ph3dpoly, isUI);
 
-               CheckJoint(pvho, ph3dpolyOld, ph3dpoly, isUI);
+               CheckJoint(physics, ph3dpolyOld, ph3dpoly, isUI);
                ph3dpolyOld = ph3dpoly;
             }
          }
@@ -701,7 +701,7 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3->x, pv3->y, rgheight1[i + 1]), Vertex3Ds(pv1->x, pv1->y, rgheight1[i]), Vertex3Ds(pv4->x, pv4->y, rgheight1[i + 1]) };
 
          // add joint for right edge
-         AddJoint(pvho, rgv3D[1], rgv3D[2], isUI);
+         AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
 
          HitTriangle *const ph3dpoly = new HitTriangle(rgv3D);
          if (ph3dpoly->IsDegenerate())
@@ -710,9 +710,9 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          }
          else
          {
-            SetupHitObject(pvho, ph3dpoly, isUI);
+            SetupHitObject(physics, ph3dpoly, isUI);
 
-            CheckJoint(pvho, ph3dpolyOld, ph3dpoly, isUI);
+            CheckJoint(physics, ph3dpolyOld, ph3dpoly, isUI);
             ph3dpolyOld = ph3dpoly;
          }
       }
@@ -722,7 +722,7 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          // add joint for final edge of ramp
          const Vertex3Ds v1(pv4->x, pv4->y, rgheight1[cvertex - 1]);
          const Vertex3Ds v2(pv3->x, pv3->y, rgheight1[cvertex - 1]);
-         AddJoint(pvho, v1, v2, isUI);
+         AddJoint(physics, v1, v2, isUI);
       }
    }
 
@@ -750,7 +750,7 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
          }
          else
          {
-            SetupHitObject(pvho, ph3dpoly, isUI);
+            SetupHitObject(physics, ph3dpoly, isUI);
          }
       }
 
@@ -764,7 +764,7 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       }
       else
       {
-         SetupHitObject(pvho, ph3dpoly, isUI);
+         SetupHitObject(physics, ph3dpoly, isUI);
       }
    }
 
@@ -772,13 +772,13 @@ void Ramp::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    delete[] rgvLocal;
 }
 
-void Ramp::PhysicRelease(const bool isUI)
+void Ramp::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
       m_vhoCollidable.clear();
 }
 
-void Ramp::CheckJoint(vector<HitObject *> &pvho, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI)
+void Ramp::CheckJoint(PhysicsEngine *physics, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI)
 {
    if (ph3d1)   // may be null in case of degenerate triangles
    {
@@ -789,41 +789,41 @@ void Ramp::CheckJoint(vector<HitObject *> &pvho, const HitTriangle *const ph3d1,
 
    // By convention of the calling function, points 1 [0] and 2 [1] of the second polygon will
    // be the common-edge points
-   AddJoint(pvho, ph3d2->m_rgv[0], ph3d2->m_rgv[1], isUI);
+   AddJoint(physics, ph3d2->m_rgv[0], ph3d2->m_rgv[1], isUI);
 }
 
-void Ramp::AddJoint(vector<HitObject*> &pvho, const Vertex3Ds& v1, const Vertex3Ds& v2, const bool isUI)
+void Ramp::AddJoint(PhysicsEngine* physics, const Vertex3Ds& v1, const Vertex3Ds& v2, const bool isUI)
 {
-   SetupHitObject(pvho, new HitLine3D(v1, v2), isUI);
+   SetupHitObject(physics, new HitLine3D(v1, v2), isUI);
 }
 
-void Ramp::AddJoint2D(vector<HitObject*> &pvho, const Vertex2D& p, const float zlow, const float zhigh, const bool isUI)
+void Ramp::AddJoint2D(PhysicsEngine* physics, const Vertex2D& p, const float zlow, const float zhigh, const bool isUI)
 {
-   SetupHitObject(pvho, new HitLineZ(p, zlow, zhigh), isUI);
+   SetupHitObject(physics, new HitLineZ(p, zlow, zhigh), isUI);
 }
 
-void Ramp::AddWallLineSeg(vector<HitObject*> &pvho, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI)
+void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI)
 {
    //!! Hit-walls are still done via 2D line segments with only a single lower and upper border, so the wall will always reach below and above the actual ramp -between- two points of the ramp
 
    // Thus, subdivide until at some point the approximation error is 'subtle' enough so that one will usually not notice (i.e. dependent on ball size)
    if (height2-height1 > (float)(2.0*PHYS_SKIN)) //!! use ballsize
    {
-      AddWallLineSeg(pvho, pv1, (pv1+pv2)*0.5f, pv3_exists, height1, (height1+height2)*0.5f, wallheight, isUI);
-      AddWallLineSeg(pvho, (pv1+pv2)*0.5f, pv2, true,       (height1+height2)*0.5f, height2, wallheight, isUI);
+      AddWallLineSeg(physics, pv1, (pv1+pv2)*0.5f, pv3_exists, height1, (height1+height2)*0.5f, wallheight, isUI);
+      AddWallLineSeg(physics, (pv1+pv2)*0.5f, pv2, true,       (height1+height2)*0.5f, height2, wallheight, isUI);
    }
    else
    {
       LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2+wallheight);
 
-      SetupHitObject(pvho, plineseg, isUI);
+      SetupHitObject(physics, plineseg, isUI);
 
       if (pv3_exists)
-         AddJoint2D(pvho, pv1, height1, height2+wallheight, isUI);
+         AddJoint2D(physics, pv1, height1, height2+wallheight, isUI);
    }
 }
 
-void Ramp::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool isUI)
+void Ramp::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
    if (!m_d.m_overwritePhysics)
@@ -846,7 +846,7 @@ void Ramp::SetupHitObject(vector<HitObject *> &pvho, HitObject *obj, const bool 
    obj->m_obj = (IFireEvents*)this;
    obj->m_fe = m_d.m_hitEvent;
 
-   pvho.push_back(obj);
+   physics->AddCollider(obj, this, isUI);
    if (!isUI)
       m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }

@@ -14,7 +14,7 @@ Textbox::~Textbox()
    SAFE_RELEASE(m_pIFont);
 }
 
-Textbox *Textbox::CopyForPlay(PinTable *live_table)
+Textbox *Textbox::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
    if (m_pIFont)
@@ -391,7 +391,7 @@ void Textbox::EndPlay()
 
 #pragma region Physics
 
-void Textbox::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Textbox::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -399,7 +399,7 @@ void Textbox::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void Textbox::PhysicRelease(const bool isUI)
+void Textbox::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
 }
 

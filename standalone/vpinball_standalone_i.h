@@ -330,6 +330,14 @@ interface IBall;
 #endif /* __cplusplus */
 #endif
 
+#ifndef __IBallEvent_FWD_DEFINED__
+#define __IBallEvent_FWD_DEFINED__
+typedef interface IBallEvent IBallEvent;
+#ifdef __cplusplus
+interface IBallEvent;
+#endif /* __cplusplus */
+#endif
+
 #ifndef __IRampEvents_FWD_DEFINED__
 #define __IRampEvents_FWD_DEFINED__
 typedef interface IRampEvents IRampEvents;
@@ -19305,6 +19313,116 @@ static __WIDL_INLINE HRESULT IBall_DestroyBall(IBall* This,int *pVal) {
 
 
 #endif  /* __IBall_INTERFACE_DEFINED__ */
+
+/*****************************************************************************
+ * IBallEvents dispinterface
+ */
+#ifndef __IBallEvents_DISPINTERFACE_DEFINED__
+#define __IBallEvents_DISPINTERFACE_DEFINED__
+
+DEFINE_GUID(DIID_IBallEvents, 0x8A6F5E18, 0x748F, 0x4404, 0xA1,0x6F, 0x49,0x97,0x9F,0x4E,0xC0,0xAA);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("8A6F5E18-748F-4404-A16F-49979F4EC0AA")
+IBallEvents : public IDispatch
+{
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IBallEvents, 0x8A6F5E18, 0x748F, 0x4404, 0xA1,0x6F, 0x49,0x97,0x9F,0x4E,0xC0,0xAA)
+#endif
+#else
+typedef struct IBallEventsVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IBallEvents *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IBallEvents *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IBallEvents *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        IBallEvents *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        IBallEvents *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        IBallEvents *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        IBallEvents *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    END_INTERFACE
+} IBallEventsVtbl;
+
+interface IBallEvents {
+    CONST_VTBL IBallEventsVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define IBallEvents_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IBallEvents_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IBallEvents_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define IBallEvents_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define IBallEvents_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define IBallEvents_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define IBallEvents_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+#else
+/*** IUnknown methods ***/
+static __WIDL_INLINE HRESULT IBallEvents_QueryInterface(IBallEvents* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static __WIDL_INLINE ULONG IBallEvents_AddRef(IBallEvents* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static __WIDL_INLINE ULONG IBallEvents_Release(IBallEvents* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static __WIDL_INLINE HRESULT IBallEvents_GetTypeInfoCount(IBallEvents* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static __WIDL_INLINE HRESULT IBallEvents_GetTypeInfo(IBallEvents* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static __WIDL_INLINE HRESULT IBallEvents_GetIDsOfNames(IBallEvents* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static __WIDL_INLINE HRESULT IBallEvents_Invoke(IBallEvents* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+#endif
+#endif
+
+#endif
+
+#endif  /* __IBallEvents_DISPINTERFACE_DEFINED__ */
 
 /*****************************************************************************
  * IRampEvents dispinterface

@@ -8,7 +8,7 @@ Timer::~Timer()
 {
 }
 
-Timer *Timer::CopyForPlay(PinTable *live_table)
+Timer *Timer::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Timer, live_table)
    return dst;
@@ -105,7 +105,7 @@ void Timer::EndPlay()
 
 #pragma region Physics
 
-void Timer::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Timer::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -113,7 +113,7 @@ void Timer::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void Timer::PhysicRelease(const bool isUI)
+void Timer::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
 }
 

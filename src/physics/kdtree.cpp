@@ -383,7 +383,7 @@ collisions
 
 */
 
-void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) const
+void HitKDNode::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
 #ifdef KDTREE_SSE_LEAFTEST
    /// with SSE optimizations ///////////////////////
@@ -452,7 +452,7 @@ void HitKDNode::HitTestBall(const Ball * const pball, CollisionEvent& coll) cons
 //
 
 #ifdef KDTREE_SSE_LEAFTEST
-void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const
+void HitKDNode::HitTestBallSse(const HitBall* const pball, CollisionEvent& coll) const
 {
    const HitKDNode* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
    unsigned int stackpos = 0;
@@ -605,7 +605,7 @@ void HitKDNode::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) c
 }
 #endif
 
-void HitKDNode::HitTestXRay(const Ball * const pball, vector<HitTestResult> &pvhoHit, CollisionEvent& coll) const
+void HitKDNode::HitTestXRay(const HitBall* const pball, vector<HitTestResult> &pvhoHit, CollisionEvent& coll) const
 {
    const unsigned int org_items = (m_items & 0x3FFFFFFF);
    const unsigned int axis = (m_items >> 30);

@@ -278,9 +278,9 @@ public:
    U32 m_time_msec; // current physics time
    U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
 
-   Ball *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
-   Ball *m_pactiveballDebug = nullptr; // ball the debugger will use as Activeball when firing events
-   Ball *m_pactiveballBC = nullptr; // ball that the ball control UI will use
+   HitBall *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
+   HitBall *m_pactiveballDebug = nullptr; // ball the debugger will use as Activeball when firing events
+   HitBall *m_pactiveballBC = nullptr; // ball that the ball control UI will use
    Vertex3Ds *m_pBCTarget = nullptr; // if non-null, the target location for the ball to roll towards
 
    void FireSyncController();
@@ -352,12 +352,12 @@ private:
 
 #pragma region Physics
 public:
-   Ball *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
-   void DestroyBall(Ball *pball);
+   HitBall *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
+   void DestroyBall(HitBall *pball);
 
    PhysicsEngine* m_physics = nullptr;
 
-   vector<Ball *> m_vball;
+   vector<HitBall *> m_vball;
    vector<Hitable *> m_vhitables; // all Hitables obtained from the table's list of Editables
 
    int m_minphyslooptime; // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)

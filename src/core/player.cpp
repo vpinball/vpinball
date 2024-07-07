@@ -518,7 +518,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_accelerometer = Vertex2D(0.f, 0.f);
 
-   Ball::ballID = 0;
+   Ball::m_nextBallID = 0;
 
    // Add a playfield primitive if it is missing
    bool hasExplicitPlayfield = false;
@@ -676,16 +676,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    // Start the frame.
+   for (RenderProbe *probe : m_ptable->m_vrenderprobe)
+      probe->RenderSetup(m_renderer);
    for (auto editable : m_ptable->m_vedit)
       if (editable->GetIHitable())
-      {
-         editable->GetIHitable()->BeginPlay(m_vht);
          m_vhitables.push_back(editable->GetIHitable());
-      }
-   for (RenderProbe* probe : m_ptable->m_vrenderprobe)
-      probe->RenderSetup(m_renderer);
-   for (Hitable* hitable : m_vhitables)
+   for (Hitable *hitable : m_vhitables)
+   {
+      hitable->BeginPlay(m_vht);
       hitable->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
+      if (hitable->HitableGetItemType() == ItemTypeEnum::eItemBall)
+         m_vball.push_back(&((Ball*)hitable)->m_hitBall);
+   }
 
    // Setup anisotropic filtering
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
@@ -926,10 +928,10 @@ Player::~Player()
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
       renderable->RenderRelease();
-   for (auto ball : m_vball)
-      ball->m_pballex->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
+   assert(m_vballDelete.size() == 0);
+   m_vball.clear();
 
    if (m_implicitPlayfieldMesh)
    {
@@ -957,25 +959,6 @@ Player::~Player()
    m_controlclsidsafe.clear();
 
    m_changed_vht.clear();
-
-   //!! cleanup the whole mem management for balls, this is a mess!
-   // balls are added to the octree, but not the hit object vector
-   for (size_t i = 0; i < m_vball.size(); i++)
-   {
-      Ball *const pball = m_vball[i];
-      if (pball->m_pballex)
-      {
-         pball->m_pballex->m_pball = nullptr;
-         pball->m_pballex->Release();
-      }
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
-   }
-   //!! see above
-   //for (size_t i=0;i<m_vho_dynamic.size();i++)
-   //      delete m_vho_dynamic[i];
-   //m_vho_dynamic.clear();
-   m_vball.clear();
 
    delete m_pBCTarget;
    delete m_ptable;
@@ -1167,53 +1150,45 @@ void Player::UpdateCursorState() const
    }
 }
 
-Ball *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
+HitBall *Player::CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius, const float mass)
 {
-   Ball * const pball = new Ball();
-   pball->m_d.m_radius = radius;
-   pball->m_d.m_pos.x = x;
-   pball->m_d.m_pos.y = y;
-   pball->m_d.m_pos.z = z + pball->m_d.m_radius;
-   pball->m_d.m_vel.x = vx;
-   pball->m_d.m_vel.y = vy;
-   pball->m_d.m_vel.z = vz;
-   pball->m_bulb_intensity_scale = m_ptable->m_defaultBulbIntensityScaleOnBall;
-
-   pball->Init(mass); // Call this after radius set to get proper inertial tensor set up
-
-   CComObject<BallEx>::CreateInstance(&pball->m_pballex);
-   pball->m_pballex->AddRef();
-   pball->m_pballex->m_pball = pball;
-   pball->m_pballex->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
-
-   // FIXME set m_editable when balls will be editable parts
-   //pball->m_editable = pball->m_pballex;
-
-   pball->CalcHitBBox(); // need to update here, as only done lazily
-
+   CComObject<Ball>* m_pBall;
+   CComObject<Ball>::CreateInstance(&m_pBall);
+   m_pBall->AddRef();
+   m_pBall->Init(m_ptable, x, y, false, true);
+   m_pBall->m_hitBall.m_d.m_pos.z = z + radius;
+   m_pBall->m_hitBall.m_d.m_mass = mass;
+   m_pBall->m_hitBall.m_d.m_radius = radius;
+   m_pBall->m_hitBall.m_d.m_vel.x = vx;
+   m_pBall->m_hitBall.m_d.m_vel.y = vy;
+   m_pBall->m_hitBall.m_d.m_vel.z = vz;
+   m_pBall->m_hitBall.CalcHitBBox(); // need to update here, as only done lazily
+   m_pBall->m_d.m_useTableRenderSettings = true;
+   m_ptable->m_vedit.push_back(m_pBall);
+   m_vhitables.push_back(m_pBall);
+   m_pBall->BeginPlay(m_vht);
+   m_pBall->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
+   m_pBall->PhysicSetup(m_physics, false);
    if (!m_pactiveballDebug)
-      m_pactiveballDebug = pball;
-
-   m_vball.push_back(pball);
-
-   m_physics->AddBall(pball);
-
-   return pball;
+      m_pactiveballDebug = &m_pBall->m_hitBall;
+   m_vball.push_back(&m_pBall->m_hitBall);
+   return &m_pBall->m_hitBall;
 }
 
-void Player::DestroyBall(Ball *pball)
+void Player::DestroyBall(HitBall *pHitBall)
 {
-   if (!pball) return;
+   assert(pHitBall);
+   if (!pHitBall) return;
 
-   RemoveFromVectorSingle(m_vball, pball);
-   m_vballDelete.push_back(pball);
-   m_physics->RemoveBall(pball);
+   RemoveFromVectorSingle(m_vball, pHitBall);
+   m_vballDelete.push_back(pHitBall->m_pBall);
+   pHitBall->m_pBall->PhysicRelease(m_physics, false);
 
-   if (m_pactiveball == pball)
+   if (m_pactiveball == pHitBall)
       m_pactiveball = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_pactiveballDebug == pball)
+   if (m_pactiveballDebug == pHitBall)
       m_pactiveballDebug = m_vball.empty() ? nullptr : m_vball.front();
-   if (m_pactiveballBC == pball)
+   if (m_pactiveballBC == pHitBall)
       m_pactiveballBC = nullptr;
 }
 
@@ -1232,7 +1207,7 @@ void Player::FireSyncController()
 
 void Player::FireTimers(const unsigned int simulationTime)
 {
-   Ball *const old_pactiveball = g_pplayer->m_pactiveball;
+   HitBall *const old_pactiveball = g_pplayer->m_pactiveball;
    g_pplayer->m_pactiveball = nullptr; // No ball is the active ball for timers/key events
    for (HitTimer *const pht : m_vht)
    {
@@ -1976,13 +1951,13 @@ void Player::FinishFrame()
       SetPlayState(false);
 
    // Memory clean up for balls that may have been destroyed from scripts
-   for (const Ball *const pball : m_vballDelete)
+   for (Ball *const pBall : m_vballDelete)
    {
-      pball->m_pballex->RenderRelease();
-      pball->m_pballex->m_pball = nullptr;
-      pball->m_pballex->Release();
-      delete pball->m_d.m_vpVolObjs;
-      delete pball;
+      pBall->RenderRelease();
+      pBall->EndPlay();
+      pBall->Release();
+      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable*) pBall);
+      RemoveFromVectorSingle(m_vhitables, (Hitable *)pBall);
    }
    m_vballDelete.clear();
 

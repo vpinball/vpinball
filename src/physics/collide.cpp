@@ -12,7 +12,7 @@ float c_hardScatter = 0.0f;
 
 void HitObject::Contact(CollisionEvent& coll, const float dtime) { coll.m_ball->HandleStaticContact(coll, m_friction, dtime); }
 
-void HitObject::FireHitEvent(Ball * const pball)
+void HitObject::FireHitEvent(HitBall* const pball)
 {
    if (m_obj && m_fe && m_enabled)
    {
@@ -600,7 +600,7 @@ void HitPoint::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dr
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEvent& coll)
+void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionEvent& coll)
 {
    if (pho == nullptr || pball == nullptr
       || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped)) //!! why is this done here and not in corresponding HitTest()?
@@ -615,7 +615,7 @@ void DoHitTest(const Ball *const pball, const HitObject *const pho, CollisionEve
    const bool validhit = ((newtime >= 0.f) && !sign(newtime) && (newtime <= coll.m_hittime));
    if (validhit)
    {
-      newColl.m_ball = const_cast<Ball*>(pball); //!! meh, but will not be changed in here
+      newColl.m_ball = const_cast<HitBall*>(pball); //!! meh, but will not be changed in here
       newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
       newColl.m_hittime = newtime;
       if (!newColl.m_isContact || !g_pplayer->m_physics->RecordContact(newColl))

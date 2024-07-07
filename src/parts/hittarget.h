@@ -179,8 +179,6 @@ public:
    void SetMeshType(const TargetType type);
    void UpdateStatusBarInfo() final;
 
-   HitTarget *CopyForPlay(PinTable *live_table);
-
    HitTargetData m_d;
 
    bool             m_hitEvent;
@@ -188,8 +186,9 @@ public:
 private:
 
    void UpdateTarget();
-   void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject, const bool isUI);
-   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject, const bool isUI);
+   void SetupHitObject(class PhysicsEngine* physics, HitObject * obj, const bool setHitObject, const bool isUI);
+   void AddHitEdge(class PhysicsEngine *physics, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi,
+      const Vertex3Ds &vj, const bool setHitObject, const bool isUI);
 
    PinTable        *m_ptable = nullptr;
 
