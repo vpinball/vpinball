@@ -212,8 +212,10 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
 {
    assert(bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    // Handle texture update (on BGFX API thread)
-   if (m_textureUpdate)
+   const bgfx::Memory* texUpdate = m_textureUpdate[0].load(std::memory_order::memory_order_relaxed);
+   if (texUpdate)
    {
+      m_textureUpdate[0].store(nullptr, std::memory_order::memory_order_relaxed);
       if (bgfx::isValid(m_nomipsTexture))
       {
          if (bgfx::isValid(m_mipsTexture))
@@ -223,16 +225,25 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
             bgfx::destroy(m_mipsFramebuffer);
             m_mipsFramebuffer = BGFX_INVALID_HANDLE;
          }
-         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, texUpdate);
       }
       else
       {
          bgfx::destroy(m_mipsTexture);
          m_mipsTexture = BGFX_INVALID_HANDLE;
          const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, m_textureUpdate); // Base texture without mipmaps
+         m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags, texUpdate); // Base texture without mipmaps
       }
-      m_textureUpdate = nullptr;
+      // Process other pending texture update if any
+      // TODO BGFX we do process them in sequence istead of just the last because BGFX does not give access to the memory deallocator...
+      for (int i = 1; i < 16; i++)
+      {
+         texUpdate = m_textureUpdate[i].load(std::memory_order::memory_order_relaxed);
+         if (texUpdate == nullptr)
+            break;
+         m_textureUpdate[i].store(nullptr, std::memory_order::memory_order_relaxed);
+         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, texUpdate);
+      }
    }
    // Handle mipmap generation (on BGFX API thread)
    if (bgfx::isValid(m_nomipsTexture))
@@ -306,10 +317,14 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 {
 #if defined(ENABLE_BGFX)
    assert(force_linear_rgb == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
-   // TODO BGFX discard pending update instead of incoming one
-   if (m_textureUpdate != nullptr)
-      return;
-   m_textureUpdate = bgfx::copy(surf->data(), surf->height() * surf->pitch());
+   for (int i = 0; i < 16; i++)
+   {
+      if (m_textureUpdate[i].load(std::memory_order::memory_order_relaxed) == nullptr)
+      {
+         m_textureUpdate[i].store(bgfx::copy(surf->data(), surf->height() * surf->pitch()), std::memory_order::memory_order_relaxed);
+         break;
+      }
+   }
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;
