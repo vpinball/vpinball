@@ -42,7 +42,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    default: assert(false); // Unsupported texture format
    }
 
-   // TODO this is overkill since this leads to allocating/copying evrything twice
+   // TODO this is overkill since this leads to allocating/copying everything twice
    if (add_alpha && upload != nullptr)
    {
       upload = new BaseTexture(m_width, m_height, surf->m_format);
@@ -245,8 +245,8 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
          bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, texUpdate);
       }
    }
-   // Handle mipmap generation (on BGFX API thread)
-   if (bgfx::isValid(m_nomipsTexture))
+   // Handle mipmap generation (on BGFX API thread), we defer mipmap generation if we are approaching BGFX limits (using magic margins)
+   if (bgfx::isValid(m_nomipsTexture) && m_rd->m_activeViewId < (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 && m_rd->m_activeViewId < (int)bgfx::getCaps()->limits.maxViews - 32)
    {
       if (!bgfx::isValid(m_mipsFramebuffer))
       {
