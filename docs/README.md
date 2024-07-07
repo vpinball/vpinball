@@ -13,4 +13,4 @@
 3. Upgrading to new version
    1. [Upgrading to VPX 10.8](<Upgrading Table 10.8.md>)
 
-<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>

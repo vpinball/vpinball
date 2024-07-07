@@ -11,6 +11,10 @@ FEATURES:
   and the 'AgX' tonemapper which is the default one used by Blender
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control)
 
+- add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to intefrace with latest rendering backends (Vulakn, Metal, DirectX11, OpenGL,...) with some unique benefits:
+  . it supports Variable Refresh Rate display (when VSync is switched off)
+  . it uses multiple CPU core to process separately the rendering from the game simulation, allowing lower input latency, more stable gameplay emulation as well as a performance boost.
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)
