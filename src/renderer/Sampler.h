@@ -94,7 +94,7 @@ private:
    bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
    bgfx::FrameBufferHandle m_mipsFramebuffer = BGFX_INVALID_HANDLE; // The framebuffer and texture where mipmaps are being generated
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
-   const bgfx::Memory* m_textureUpdate = nullptr;
+   std::atomic<const bgfx::Memory*> m_textureUpdate[16] = { nullptr };
    uint32_t m_mips_gpu_frame = 0;
    uintptr_t m_texture_override = 0;
 #elif defined(ENABLE_OPENGL)
