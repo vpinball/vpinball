@@ -1,110 +1,21 @@
 #include "core/stdafx.h"
 
-unsigned int Ball::ballID = 0;
-
-Ball::Ball()
+HitBall::HitBall()
 {
-   m_id = ballID;
-   ballID++;
-
    m_coll.m_ball = this;   // TODO: this needs to move somewhere else
    m_coll.m_obj = nullptr;
-   m_pballex = nullptr;
-   m_d.m_vpVolObjs = nullptr; // should be nullptr ... only real balls have this value
-   m_pinballEnv = nullptr;
-   m_pinballDecal = nullptr;
-   m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
-   m_lastEventSqrDist = 0.f;
-   m_d.m_lockedInKicker = false;
-   m_color = RGB(255, 255, 255);
-#ifdef C_DYNAMIC
-   m_dynamic = C_DYNAMIC; // assume dynamic
-   m_drsq = 0.0f;
-#endif
-   m_d.m_vel.SetZero();
+   m_d.m_vpVolObjs = new vector<IFireEvents*>;
+   m_mover.m_pHitBall = this;
    m_angularmomentum.SetZero();
-   m_d.m_mass = 1.0f;
-   m_d.m_radius = 25.0f;
    m_orientation.SetIdentity();
-   m_bulb_intensity_scale = 1.0f;
-   m_playfieldReflectionStrength = 1.0f;
-   m_reflectionEnabled = true;
-   m_forceReflection = false;
-   m_visible = true;
-   m_decalMode = g_pplayer ? g_pplayer->m_ptable->m_BallDecalMode : false;
-   m_ringcounter_oldpos = 0;
    for (int i = 0; i < MAX_BALL_TRAIL_POS; ++i)
       m_oldpos[i].x = FLT_MAX;
+   m_lastEventPos.x = m_lastEventPos.y = m_lastEventPos.z = -10000.0f; // last pos is far far away
 }
 
-void Ball::Init(const float mass)
+HitBall::~HitBall()
 {
-   // Only called by real balls, not temporary objects created for physics/rendering
-   m_d.m_mass = mass;
-
-   m_orientation.SetIdentity();
-   m_angularmomentum.SetZero();
-
-   m_mover.m_pball = this;
-
-   m_d.m_lockedInKicker = false;
-
-   m_playfieldReflectionStrength = 1.0f;
-   m_reflectionEnabled = true;
-   m_forceReflection = false;
-   m_visible = true;
-   m_decalMode = g_pplayer->m_ptable->m_BallDecalMode;
-
-   m_coll.m_obj = nullptr;
-#ifdef C_DYNAMIC
-   m_dynamic = C_DYNAMIC; // assume dynamic
-#endif
-
-   if(!m_d.m_vpVolObjs)
-       m_d.m_vpVolObjs = new vector<IFireEvents*>;
-
-   m_color = RGB(255, 255, 255);
-
-   // override table ball image with global ball image?
-   if (g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_ballImage)
-   {
-       m_pinballEnv = g_pplayer->m_renderer->m_ballImage;
-       m_pinballEnvSphericalMapping = true;
-   }
-   else
-   {
-       if (g_pplayer->m_ptable->m_ballImage.empty())
-       {
-           m_image.clear();
-           m_pinballEnv = nullptr;
-           m_pinballEnvSphericalMapping = true;
-       }
-       else
-       {
-           m_image = g_pplayer->m_ptable->m_ballImage;
-           m_pinballEnv = g_pplayer->m_ptable->GetImage(m_image);
-           m_pinballEnvSphericalMapping = g_pplayer->m_ptable->m_ballSphericalMapping;
-       }
-   }
-
-   // override table ball logo/decal image with global ball logo/decal image?
-   if (g_pplayer->m_renderer->m_overwriteBallImages && g_pplayer->m_renderer->m_decalImage)
-       m_pinballDecal = g_pplayer->m_renderer->m_decalImage;
-   else
-   {
-       if (g_pplayer->m_ptable->m_ballImageDecal.empty())
-       {
-           m_imageDecal.clear();
-           m_pinballDecal = nullptr;
-       }
-       else
-       {
-           m_imageDecal = g_pplayer->m_ptable->m_ballImageDecal;
-           m_pinballDecal = g_pplayer->m_ptable->GetImage(m_imageDecal);
-       }
-   }
-
-   m_bulb_intensity_scale = g_pplayer->m_ptable->m_defaultBulbIntensityScaleOnBall;
+   delete m_d.m_vpVolObjs;
 }
 
 
@@ -113,7 +24,7 @@ void Ball::Init(const float mass)
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallCollider.cs
 //
 
-void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle)
+void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle)
 {
    //speed normal to wall
    float dot = m_d.m_vel.Dot(hitNormal);
@@ -190,7 +101,7 @@ void Ball::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const flo
    }
 }
 
-float Ball::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
+float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
    const Vertex3Ds d = m_d.m_pos - ball.m_pos;  // delta position
 
@@ -289,9 +200,9 @@ float Ball::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) 
    return hittime;
 }
 
-void Ball::Collide(const CollisionEvent& coll)
+void HitBall::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
 
    // make sure we process each ball/ball collision only once
    // (but if we are frozen, there won't be a second collision event, so deal with it now!)
@@ -358,7 +269,7 @@ void Ball::Collide(const CollisionEvent& coll)
 #endif
 }
 
-void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
+void HitBall::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
 {
    const float normVel = m_d.m_vel.Dot(coll.m_hitnormal);   // this should be zero, but only up to +/- C_CONTACTVEL
 
@@ -391,7 +302,7 @@ void Ball::HandleStaticContact(const CollisionEvent& coll, const float friction,
    }
 }
 
-void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff)
+void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff)
 {
    const Vertex3Ds surfP = -m_d.m_radius * hitnormal;    // surface contact point relative to center of mass
 
@@ -444,12 +355,12 @@ void Ball::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const fl
       ApplySurfaceImpulse((dtime * fric) * cp, (dtime * fric) * slipDir);
 }
 
-Vertex3Ds Ball::SurfaceVelocity(const Vertex3Ds& surfP) const
+Vertex3Ds HitBall::SurfaceVelocity(const Vertex3Ds& surfP) const
 {
    return m_d.m_vel + CrossProduct(m_angularmomentum / Inertia(), surfP); // linear velocity plus tangential velocity due to rotation
 }
 
-Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
+Vertex3Ds HitBall::SurfaceAcceleration(const Vertex3Ds& surfP) const
 {
    const Vertex3Ds angularvelocity = m_angularmomentum / Inertia();
    // if we had any external torque, we would have to add "(deriv. of ang.vel.) x surfP" here
@@ -457,7 +368,7 @@ Vertex3Ds Ball::SurfaceAcceleration(const Vertex3Ds& surfP) const
       + CrossProduct(angularvelocity, CrossProduct(angularvelocity, surfP)); // centripetal acceleration
 }
 
-void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
+void HitBall::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
 {
    m_d.m_vel += impulse/m_d.m_mass;
 
@@ -467,7 +378,7 @@ void Ball::ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse)
    //   m_angularmomentum *= (Inertia()*135.0f) / aml;
 }
 
-void Ball::CalcHitBBox()
+void HitBall::CalcHitBBox()
 {
    /* this would be okay if travelling only in vel direction, but the ball could also be reflected by something
    m_hitBBox.left   = min(m_pos.x, m_pos.x + m_vel.x) - (m_radius + 0.1f);
@@ -489,10 +400,10 @@ void Ball::CalcHitBBox()
 
 void BallMoverObject::UpdateDisplacements(const float dtime)
 {
-   m_pball->UpdateDisplacements(dtime);
+   m_pHitBall->UpdateDisplacements(dtime);
 }
 
-void Ball::UpdateDisplacements(const float dtime)
+void HitBall::UpdateDisplacements(const float dtime)
 {
    if (!m_d.m_lockedInKicker)
    {
@@ -518,10 +429,10 @@ void Ball::UpdateDisplacements(const float dtime)
 
 void BallMoverObject::UpdateVelocities()
 {
-   m_pball->UpdateVelocities();
+   m_pHitBall->UpdateVelocities();
 }
 
-void Ball::UpdateVelocities()
+void HitBall::UpdateVelocities()
 {
    if (!m_d.m_lockedInKicker)  // Gravity
    {

@@ -1214,6 +1214,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp" />
     <ClCompile Include="src/ui/properties/BackglassCameraProperty.cpp" />
     <ClCompile Include="src/ui/properties/BackglassVisualsProperty.cpp" />
+    <ClCompile Include="src/ui/properties/BallPhysicsProperty.cpp" />
+    <ClCompile Include="src/ui/properties/BallVisualsProperty.cpp" />
     <ClCompile Include="src/ui/properties/BumperPhysicsProperty.cpp" />
     <ClCompile Include="src/ui/properties/BumperVisualsProperty.cpp" />
     <ClCompile Include="src/ui/properties/DecalVisualsProperty.cpp" />
@@ -1642,6 +1644,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/ui/dialogs/VROptionsDialog.h" />
     <ClInclude Include="src/ui/properties/BackglassCameraProperty.h" />
     <ClInclude Include="src/ui/properties/BackglassVisualsProperty.h" />
+    <ClInclude Include="src/ui/properties/BallPhysicsProperty.h" />
+    <ClInclude Include="src/ui/properties/BallVisualsProperty.h" />
     <ClInclude Include="src/ui/properties/BumperPhysicsProperty.h" />
     <ClInclude Include="src/ui/properties/BumperVisualsProperty.h" />
     <ClInclude Include="src/ui/properties/DecalVisualsProperty.h" />

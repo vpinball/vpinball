@@ -1037,6 +1037,7 @@ public:
       InitCommonControlsEx(&iccex);
 #endif
 
+      EditableRegistry::RegisterEditable<Ball>();
       EditableRegistry::RegisterEditable<Bumper>();
       EditableRegistry::RegisterEditable<Decal>();
       EditableRegistry::RegisterEditable<DispReel>();

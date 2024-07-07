@@ -40,7 +40,7 @@ float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionE
 
 void LineSegSlingshot::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel); // normal velocity to slingshot
@@ -668,7 +668,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
 void Hit3DPoly::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
    if (m_ObjType != eTrigger)
@@ -843,7 +843,7 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
 
 void HitTriangle::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
    const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
@@ -1052,7 +1052,7 @@ float HitLine3D::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
 void HitLine3D::Collide(const CollisionEvent& coll)
 {
-   Ball *const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
    const Vertex3Ds& hitnormal = coll.m_hitnormal;
 
    const float dot = -(hitnormal.Dot(pball->m_d.m_vel));
@@ -1101,7 +1101,7 @@ float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEve
 
 void TriggerLineSeg::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
 
    if ((m_ObjType != eTrigger) ||
       (!pball->m_d.m_vpVolObjs)) return;
@@ -1135,7 +1135,7 @@ float TriggerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionE
 
 void TriggerHitCircle::Collide(const CollisionEvent& coll)
 {
-   Ball * const pball = coll.m_ball;
+   HitBall* const pball = coll.m_ball;
 
    if ((m_ObjType < eTrigger) || // triggers and kickers
       (!pball->m_d.m_vpVolObjs)) return;

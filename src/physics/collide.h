@@ -30,7 +30,7 @@ extern float c_hardScatter;
 
 // forward declarations
 struct BallS;
-class Ball;
+class HitBall;
 class HitObject;
 struct ImDrawList;
 
@@ -66,7 +66,7 @@ struct CollisionEvent
 {
    CollisionEvent() : m_ball(0), m_obj(0), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false), /*m_hitRigid(false),*/ m_isContact(false) {}
 
-   Ball* m_ball;         // the ball that collided with smth
+   HitBall* m_ball; // the ball that collided with smth
    HitObject* m_obj;     // what the ball collided with
 
    float m_hittime;      // when the collision happens (relative to current physics state)
@@ -108,7 +108,7 @@ public:
    virtual MoverObject *GetMoverObject() { return nullptr; }
 
    void SetFriction(const float friction)  { m_friction = friction; }
-   void FireHitEvent(Ball * const pball);
+   void FireHitEvent(HitBall* const pball);
 
    virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const = 0;
 
@@ -232,4 +232,4 @@ struct HitTestResult
 // Callback for the broadphase collision test.
 // Perform the actual hittest between ball and hit object and update
 // collision information if a hit occurred.
-void DoHitTest(const Ball * const pball, const HitObject * const pho, CollisionEvent& coll);
+void DoHitTest(const HitBall* const pball, const HitObject* const pho, CollisionEvent& coll);

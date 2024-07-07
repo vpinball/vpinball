@@ -154,8 +154,6 @@ public:
 
    void RenderOutline(Sur *const psur);
 
-   Light *CopyForPlay(PinTable *live_table);
-
    // Light definition
    LightData m_d;
 

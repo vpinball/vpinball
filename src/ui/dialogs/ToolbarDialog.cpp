@@ -41,6 +41,7 @@ BOOL ToolbarDialog::OnInitDialog()
     AttachItem(ID_INSERT_RAMP, m_rampButton);
     AttachItem(ID_INSERT_FLIPPER, m_flipperButton);
     AttachItem(ID_INSERT_PLUNGER, m_plungerButton);
+    AttachItem(ID_INSERT_BALL, m_ballButton);
     AttachItem(ID_INSERT_BUMPER, m_bumperButton);
     AttachItem(ID_INSERT_SPINNER, m_spinnerButton);
     AttachItem(ID_INSERT_TIMER, m_timerButton);
@@ -69,6 +70,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_tooltip.AddTool(m_rampButton, _T("Insert Ramp"));
     m_tooltip.AddTool(m_flipperButton, _T("Insert Flipper"));
     m_tooltip.AddTool(m_plungerButton, _T("Insert Plunger"));
+    m_tooltip.AddTool(m_ballButton, _T("Insert Ball"));
     m_tooltip.AddTool(m_bumperButton, _T("Insert Bumper"));
     m_tooltip.AddTool(m_spinnerButton, _T("Insert Spinner"));
     m_tooltip.AddTool(m_timerButton, _T("Insert Timer"));
@@ -120,6 +122,9 @@ BOOL ToolbarDialog::OnInitDialog()
 
     hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_BUMPER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_bumperButton.SetIcon((HICON)hIcon);
+
+    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_BALL), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+    m_ballButton.SetIcon((HICON)hIcon);
 
     hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_SPINNER), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
     m_spinnerButton.SetIcon((HICON)hIcon);
@@ -175,6 +180,7 @@ BOOL ToolbarDialog::OnInitDialog()
     m_resizer.AddChild(m_rampButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_flipperButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_plungerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_ballButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_bumperButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_spinnerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(m_timerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
@@ -231,6 +237,7 @@ void ToolbarDialog::EnableButtons()
         m_rampButton.EnableWindow(FALSE);
         m_flipperButton.EnableWindow(FALSE);
         m_plungerButton.EnableWindow(FALSE);
+        m_ballButton.EnableWindow(FALSE);
         m_bumperButton.EnableWindow(FALSE);
         m_spinnerButton.EnableWindow(FALSE);
         m_triggerButton.EnableWindow(FALSE);
@@ -266,6 +273,7 @@ void ToolbarDialog::EnableButtons()
         m_rampButton.EnableWindow(FALSE);
         m_flipperButton.EnableWindow(FALSE);
         m_plungerButton.EnableWindow(FALSE);
+        m_ballButton.EnableWindow(FALSE);
         m_bumperButton.EnableWindow(FALSE);
         m_spinnerButton.EnableWindow(FALSE);
         m_triggerButton.EnableWindow(FALSE);
@@ -291,6 +299,7 @@ void ToolbarDialog::EnableButtons()
         m_rampButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
         m_flipperButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
         m_plungerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
+        m_ballButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
         m_bumperButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
         m_spinnerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
         m_triggerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
@@ -336,6 +345,7 @@ BOOL ToolbarDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         case ID_INSERT_FLIPPER:
         case ID_INSERT_PLUNGER:
         case ID_INSERT_BUMPER:
+        case ID_INSERT_BALL:
         case ID_INSERT_SPINNER:
         case ID_INSERT_TIMER:
         case ID_INSERT_TRIGGER:

@@ -38,11 +38,11 @@ public:
 #endif
 
 #ifndef USE_EMBREE
-   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
 #else
-   void HitTestBall(vector<Ball*> ball) const;
+   void HitTestBall(vector<HitBall*> ball) const;
 #endif
-   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
+   void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
 
 
 private:
@@ -50,7 +50,7 @@ private:
 
 #ifndef USE_EMBREE
    void CreateNextLevel(const FRect& bounds, const unsigned int level, unsigned int level_empty); // FRect3D for an octree
-   void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBallSse(const HitBall* const pball, CollisionEvent& coll) const;
 
    IFireEvents* __restrict m_unique; // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable),
                                      // so this is actually cast then to a Primitive* or HitTarget*

@@ -109,8 +109,6 @@ public:
    void TriggerAnimationHit();
    void TriggerAnimationUnhit();
 
-   Trigger *CopyForPlay(PinTable *live_table);
-
    TriggerData m_d;
 
 private:

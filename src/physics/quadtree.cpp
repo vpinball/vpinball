@@ -335,7 +335,7 @@ void HitQuadtree::InitSseArrays()
 */
 
 #ifndef USE_EMBREE
-void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
 #ifdef QUADTREE_SSE_LEAFTEST
 
@@ -389,7 +389,7 @@ void HitQuadtree::HitTestBall(const Ball * const pball, CollisionEvent& coll) co
 }
 
 #ifdef QUADTREE_SSE_LEAFTEST
-void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBallSse(const HitBall* const pball, CollisionEvent& coll) const
 {
    const HitQuadtree* stack[128]; //!! should be enough, but better implement test in construction to not exceed this
    unsigned int stackpos = 0;
@@ -537,7 +537,7 @@ void HitQuadtree::HitTestBallSse(const Ball * const pball, CollisionEvent& coll)
 #endif
 #endif
 
-void HitQuadtree::HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
+void HitQuadtree::HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
 {
 #ifdef USE_EMBREE
    ShowError("HitTestXRay not implemented yet");
@@ -588,7 +588,7 @@ void HitQuadtree::HitTestXRay(const Ball* const pball, vector<HitTestResult>& pv
 #ifdef USE_EMBREE
 void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
 {
-    const Ball* const ball = (*((const vector<Ball*>*)args->geometryUserPtr))[args->primID];
+    const HitBall* const ball = (*((const vector<HitBall*>*)args->geometryUserPtr))[args->primID];
 
     args->bounds_o->lower_x = ball->m_hitBBox.left;
     args->bounds_o->lower_y = ball->m_hitBBox.top;
@@ -601,7 +601,7 @@ void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
 struct VPCollisions
 {
     const vector<HitObject*> *vho;
-    const vector<Ball*> *ball;
+    const vector<HitBall*> *ball;
 };
 
 
@@ -611,7 +611,7 @@ void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, con
 
    for (unsigned int i = 0; i < num_collisions; ++i)
    {
-      Ball* const ball = (*vpc->ball)[collisions[i].primID1];
+      HitBall* const ball = (*vpc->ball)[collisions[i].primID1];
       const HitObject* const ho = (*vpc->vho)[collisions[i].primID0];
    
       if (!ball->m_d.m_lockedInKicker
@@ -637,7 +637,7 @@ void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, con
    }
 }
 
-void HitQuadtree::HitTestBall(vector<Ball*> ball) const
+void HitQuadtree::HitTestBall(vector<HitBall*> ball) const
 {
    RTCScene scene = rtcNewScene(m_embree_device);
    rtcSetSceneBuildQuality(scene, RTC_BUILD_QUALITY_HIGH);

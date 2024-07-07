@@ -15,6 +15,8 @@ FEATURES:
   . it supports Variable Refresh Rate display (when VSync is switched off)
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost.
 
+- balls can now be created and edited directly from the editor like all other parts, and not only from the script
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)

@@ -41,6 +41,7 @@ public:
       TableOption,
 
       // Optional user defaults for each element
+      DefaultPropsBall,
       DefaultPropsBumper,
       DefaultPropsDecal,
       DefaultPropsEMReel,

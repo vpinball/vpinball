@@ -21,7 +21,7 @@ Kicker::~Kicker()
    assert(m_rd == nullptr);
 }
 
-Kicker *Kicker::CopyForPlay(PinTable *live_table)
+Kicker *Kicker::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Kicker, live_table)
    return dst;
@@ -156,7 +156,7 @@ void Kicker::EndPlay() { IEditable::EndPlay(); }
 // Ported at: VisualPinball.Engine/VPT/Kicker/KickerHit.cs
 //
 
-void Kicker::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    const float radius = m_d.m_radius * (m_d.m_legacyMode ? (m_d.m_fallThrough ? 0.75f : 0.6f) // reduce the hit circle radius because only the inner circle of the kicker should start a hit event
@@ -166,7 +166,7 @@ void Kicker::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       HitCircle *const phitcircle = new HitCircle(m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
       phitcircle->m_ObjType = eKicker;
       phitcircle->m_obj = (IFireEvents *)this;
-      pvho.push_back(phitcircle);
+      physics->AddCollider(phitcircle, this, isUI);
    }
    else
    {
@@ -190,11 +190,11 @@ void Kicker::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
       phitcircle->m_obj = (IFireEvents *)this;
       phitcircle->m_pkicker = this;
       m_phitkickercircle = phitcircle;
-      pvho.push_back(phitcircle);
+      physics->AddCollider(phitcircle, this, isUI);
    }
 }
 
-void Kicker::PhysicRelease(const bool isUI)
+void Kicker::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
    if (!isUI)
    {
@@ -650,17 +650,17 @@ STDMETHODIMP Kicker::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float mass, /*out, retval]*/ IBall **pBallEx)
+STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/ float radius, /*[in]*/ float mass, /*out, retval]*/ IBall **pResult)
 {
    if (m_phitkickercircle)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
+      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
          m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius, mass);
 
-      *pBallEx = pball->m_pballex;
-      pball->m_pballex->AddRef();
+      *pResult = pball->m_pBall;
+      pball->m_pBall->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
@@ -670,17 +670,17 @@ STDMETHODIMP Kicker::CreateSizedBallWithMass(/*[in]*/float radius, /*[in]*/float
    return S_OK;
 }
 
-STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBall **pBallEx)
+STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/ float radius, /*out, retval]*/ IBall **pResult)
 {
    if (m_phitkickercircle)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
+      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x,
          m_phitkickercircle->center.y, height, 0.1f, 0, 0, radius);
 
-      *pBallEx = pball->m_pballex;
-      pball->m_pballex->AddRef();
+      *pResult = pball->m_pBall;
+      pball->m_pBall->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
@@ -690,16 +690,16 @@ STDMETHODIMP Kicker::CreateSizedBall(/*[in]*/float radius, /*out, retval]*/ IBal
    return S_OK;
 }
 
-STDMETHODIMP Kicker::CreateBall(IBall **pBallEx)
+STDMETHODIMP Kicker::CreateBall(IBall **pResult)
 {
    if (m_phitkickercircle)
    {
       const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-      Ball * const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x, m_phitkickercircle->center.y, height, 0.1f, 0, 0);
+      HitBall *const pball = g_pplayer->CreateBall(m_phitkickercircle->center.x, m_phitkickercircle->center.y, height, 0.1f, 0, 0);
 
-      *pBallEx = pball->m_pballex;
-      pball->m_pballex->AddRef();
+      *pResult = pball->m_pBall;
+      pball->m_pBall->AddRef();
 
       pball->m_coll.m_hitflag = true;           // HACK: avoid capture leaving kicker
       const Vertex3Ds hitnormal(FLT_MAX, FLT_MAX, FLT_MAX); // unused due to newBall being true
@@ -714,12 +714,12 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
 {
    int cnt = 0;
 
-   if (m_phitkickercircle && m_phitkickercircle->m_pball)
+   if (m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
       _ASSERTE(g_pplayer);
       ++cnt;
-      Ball * const b = m_phitkickercircle->m_pball;
-      m_phitkickercircle->m_pball = nullptr;
+      HitBall *const b = m_phitkickercircle->m_pHitBall;
+      m_phitkickercircle->m_pHitBall = nullptr;
       g_pplayer->DestroyBall(b);
    }
 
@@ -735,14 +735,14 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
 
 STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
 {
-   if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pball)
+   if (g_pplayer && m_phitkickercircle && m_phitkickercircle->m_pHitBall)
    {
 	   if (g_pplayer->m_pactiveballBC == nullptr)
 	   {
 		   // Ball control most recently kicked if none currently.  
-		   g_pplayer->m_pactiveballBC = m_phitkickercircle->m_pball;
+		   g_pplayer->m_pactiveballBC = m_phitkickercircle->m_pHitBall;
 	   }
-	   if (g_pplayer->m_pactiveballBC == m_phitkickercircle->m_pball)
+	   if (g_pplayer->m_pactiveballBC == m_phitkickercircle->m_pHitBall)
 	   {
 		  // Clear any existing ball control target to allow kickout to work correctly.
 		   delete g_pplayer->m_pBCTarget;
@@ -767,25 +767,25 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
       if (speedz > 0.0f)
          speed *= cosf(inclination);
 
-      m_phitkickercircle->m_pball->m_angularmomentum.SetZero();
-      m_phitkickercircle->m_pball->m_coll.m_hitdistance = 0.0f;
-      m_phitkickercircle->m_pball->m_coll.m_hittime = -1.0f;
-      m_phitkickercircle->m_pball->m_coll.m_hitnormal.SetZero();
-      m_phitkickercircle->m_pball->m_coll.m_hitvel.SetZero();
-      m_phitkickercircle->m_pball->m_coll.m_hitflag = false;
-      m_phitkickercircle->m_pball->m_coll.m_isContact = false;
-      m_phitkickercircle->m_pball->m_coll.m_hitmoment_bit = true;
-      m_phitkickercircle->m_pball->m_d.m_pos.x += x; // brian's suggestion
-      m_phitkickercircle->m_pball->m_d.m_pos.y += y;
-      m_phitkickercircle->m_pball->m_d.m_pos.z += z;
-      m_phitkickercircle->m_pball->m_d.m_vel.x =  sinf(anglerad) * speed;
-      m_phitkickercircle->m_pball->m_d.m_vel.y = -cosf(anglerad) * speed;
-      m_phitkickercircle->m_pball->m_d.m_vel.z = speedz;
-      m_phitkickercircle->m_pball->m_d.m_lockedInKicker = false;
+      m_phitkickercircle->m_pHitBall->m_angularmomentum.SetZero();
+      m_phitkickercircle->m_pHitBall->m_coll.m_hitdistance = 0.0f;
+      m_phitkickercircle->m_pHitBall->m_coll.m_hittime = -1.0f;
+      m_phitkickercircle->m_pHitBall->m_coll.m_hitnormal.SetZero();
+      m_phitkickercircle->m_pHitBall->m_coll.m_hitvel.SetZero();
+      m_phitkickercircle->m_pHitBall->m_coll.m_hitflag = false;
+      m_phitkickercircle->m_pHitBall->m_coll.m_isContact = false;
+      m_phitkickercircle->m_pHitBall->m_coll.m_hitmoment_bit = true;
+      m_phitkickercircle->m_pHitBall->m_d.m_pos.x += x; // brian's suggestion
+      m_phitkickercircle->m_pHitBall->m_d.m_pos.y += y;
+      m_phitkickercircle->m_pHitBall->m_d.m_pos.z += z;
+      m_phitkickercircle->m_pHitBall->m_d.m_vel.x =  sinf(anglerad) * speed;
+      m_phitkickercircle->m_pHitBall->m_d.m_vel.y = -cosf(anglerad) * speed;
+      m_phitkickercircle->m_pHitBall->m_d.m_vel.z = speedz;
+      m_phitkickercircle->m_pHitBall->m_d.m_lockedInKicker = false;
 #ifdef C_DYNAMIC
-      m_phitkickercircle->m_pball->m_dynamic = C_DYNAMIC;
+      m_phitkickercircle->m_pHitBall->m_dynamic = C_DYNAMIC;
 #endif
-      m_phitkickercircle->m_pball = nullptr;
+      m_phitkickercircle->m_pHitBall = nullptr;
    }
 
    return S_OK;
@@ -1077,13 +1077,13 @@ STDMETHODIMP Kicker::get_LastCapturedBall(IBall **pVal)
         return E_POINTER;
     }
 
-    BallEx * const pballex = m_phitkickercircle->m_lastCapturedBall->m_pballex;
+    Ball * const pBall = m_phitkickercircle->m_lastCapturedBall->m_pBall;
 
-    if (!pballex)
+    if (!pBall)
     {
         return E_POINTER;
     }
-    pballex->QueryInterface(IID_IBall, (void **)pVal);
+    pBall->QueryInterface(IID_IBall, (void **)pVal);
 
     return S_OK;
 }
@@ -1098,7 +1098,7 @@ float KickerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEv
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Kicker/KickerCollider.cs
 //
 
-void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& hitnormal) const
+void KickerHitCircle::DoChangeBallVelocity(HitBall *const pball, const Vertex3Ds &hitnormal) const
 {
     float minDist_sqr = FLT_MAX;
     unsigned int idx = ~0u;
@@ -1166,16 +1166,18 @@ void KickerHitCircle::DoChangeBallVelocity(Ball * const pball, const Vertex3Ds& 
     }
 }
 
-void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, const bool hitbit, const bool newBall)
+void KickerHitCircle::DoCollide(HitBall *const pball, const Vertex3Ds &hitnormal, const bool hitbit, const bool newBall)
 {
-   if (m_pball) return;                              // a previous ball already in kicker
+   if (m_pHitBall) return;                              // a previous ball already in kicker
 
    const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // check if kicker in ball's volume set
 
    if (newBall || ((!hitbit) == (i < 0)))            // New or (Hit && !Vol || UnHit && Vol)
    {
       if (m_pkicker->m_d.m_legacyMode || newBall)
-         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;  // move ball slightly forward
+      {
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
+      }
 
       if (i < 0) // entering Kickers volume
       {
@@ -1205,7 +1207,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
             if (pball->m_d.m_lockedInKicker)
             {
                pball->m_d.m_vpVolObjs->push_back(m_obj);		// add kicker to ball's volume set
-               m_pball = pball;
+               m_pHitBall = pball;
                m_lastCapturedBall = pball;
                if (pball == g_pplayer->m_pactiveballBC)
                   g_pplayer->m_pactiveballBC = nullptr;
@@ -1236,7 +1238,7 @@ void KickerHitCircle::DoCollide(Ball * const pball, const Vertex3Ds& hitnormal, 
                   pball->m_d.m_pos.z = m_hitBBox.zlow + pball->m_d.m_radius/**pball->m_radius/radius*/;
             }
             else
-               m_pball = nullptr; // make sure
+               m_pHitBall = nullptr; // make sure
          }
       }
       else // exiting kickers volume

@@ -29,7 +29,7 @@ Flasher::~Flasher()
    assert(m_rd == nullptr); // RenderRelease must be explicitely called before deleting this object
 }
 
-Flasher *Flasher::CopyForPlay(PinTable *live_table)
+Flasher *Flasher::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Flasher, live_table, m_vdpoint)
    return dst;
@@ -262,7 +262,7 @@ void Flasher::EndPlay()
    m_lockedByLS = false;
 }
 
-void Flasher::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -270,7 +270,7 @@ void Flasher::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void Flasher::PhysicRelease(const bool isUI)
+void Flasher::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
 }
 

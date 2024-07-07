@@ -308,10 +308,15 @@ add_executable(vpinball WIN32
    src/ui/dialogs/ToolbarDialog.h
    src/ui/dialogs/VideoOptionsDialog.cpp
    src/ui/dialogs/VideoOptionsDialog.h
+   
    src/ui/properties/BackglassCameraProperty.cpp
    src/ui/properties/BackglassCameraProperty.h
    src/ui/properties/BackglassVisualsProperty.cpp
    src/ui/properties/BackglassVisualsProperty.h
+   src/ui/properties/BallPhysicsProperty.cpp
+   src/ui/properties/BallPhysicsProperty.h
+   src/ui/properties/BallVisualsProperty.cpp
+   src/ui/properties/BallVisualsProperty.h
    src/ui/properties/BumperPhysicsProperty.cpp
    src/ui/properties/BumperPhysicsProperty.h
    src/ui/properties/BumperVisualsProperty.cpp

@@ -58,12 +58,7 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
             g_pplayer->m_progressDialog.SetProgress(wzDst);
          }
 #endif
-         const size_t currentsize = m_vho.size();
-         ph->PhysicSetup(m_vho, false);
-         const size_t newsize = m_vho.size();
-         // Save the objects the trouble of having to set the idispatch pointer themselves
-         for (size_t hitloop = currentsize; hitloop < newsize; hitloop++)
-            m_vho[hitloop]->m_editable = pe;
+         ph->PhysicSetup(this, false);
       }
    }
 
@@ -119,7 +114,7 @@ PhysicsEngine::~PhysicsEngine()
       {
          editables.push_back(m_vho[i]->m_editable);
          if (m_vho[i]->m_editable->GetIHitable())
-            m_vho[i]->m_editable->GetIHitable()->PhysicRelease(false);
+            m_vho[i]->m_editable->GetIHitable()->PhysicRelease(this, false);
       }
       delete m_vho[i];
    }
@@ -132,7 +127,7 @@ PhysicsEngine::~PhysicsEngine()
       {
          editables.push_back(m_vUIHitObjects[i]->m_editable);
          if (m_vUIHitObjects[i]->m_editable->GetIHitable())
-            m_vUIHitObjects[i]->m_editable->GetIHitable()->PhysicRelease(true);
+            m_vUIHitObjects[i]->m_editable->GetIHitable()->PhysicRelease(this, true);
       }
       delete m_vUIHitObjects[i];
    }
@@ -200,18 +195,25 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void PhysicsEngine::AddBall(Ball *const ball)
+void PhysicsEngine::AddBall(HitBall *const ball)
 {
    m_vmover.push_back(&ball->m_mover); // balls are always added separately to this list!
    m_vho_dynamic.push_back(ball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
 }
 
-void PhysicsEngine::RemoveBall(Ball *const ball)
+void PhysicsEngine::RemoveBall(HitBall *const ball)
 {
    RemoveFromVectorSingle<MoverObject *>(m_vmover, &ball->m_mover);
    RemoveFromVectorSingle<HitObject *>(m_vho_dynamic, ball);
    m_hitoctree_dynamic.FillFromVector(m_vho_dynamic);
+}
+
+void PhysicsEngine::AddCollider(HitObject * collider, IEditable * editable, const bool isUI)
+{
+   assert((isUI ? m_UIOctree : m_hitoctree).GetObjectCount() == 0); // For the time being, collider can only be added during octree initialization
+   (isUI ? m_vUIHitObjects : m_vho).push_back(collider);
+   collider->m_editable = editable;
 }
 
 bool PhysicsEngine::RecordContact(const CollisionEvent& newColl)
@@ -436,26 +438,14 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    if (uiCast && m_vUIHitObjects.empty())
    {
       for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
-      {
          if (pe->GetIHitable())
-         {
-            const size_t currentsize = m_vUIHitObjects.size();
-            pe->GetIHitable()->PhysicSetup(m_vUIHitObjects, true);
-            // Save the objects the trouble of having the set the idispatch pointer themselves
-            for (size_t hitloop = currentsize, newsize = m_vUIHitObjects.size(); hitloop < newsize; hitloop++)
-            {
-               m_vUIHitObjects[hitloop]->m_editable = pe;
-               m_vUIHitObjects[hitloop]->CalcHitBBox(); // maybe needed to update here, as only done lazily for some objects (i.e. balls!)
-               m_UIOctree.AddElement(m_vUIHitObjects[hitloop]);
-            }
-         }
-      }
+            pe->GetIHitable()->PhysicSetup(this, true);
       const FRect3D bbox = g_pplayer->m_ptable->GetBoundingBox();
       m_UIOctree.Initialize(FRect(bbox.left, bbox.right, bbox.top, bbox.bottom));
    }
 
    // Create a ray (ball) that travels in 3D space along the given ray, and find what it intersects with.
-   Ball ballT;
+   HitBall ballT;
    ballT.m_d.m_pos = source;
    ballT.m_d.m_vel = target - source;
    ballT.m_d.m_radius = 0.01f;
@@ -681,7 +671,7 @@ void PhysicsEngine::UpdatePhysics()
       //ball trail, keep old pos of balls
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
          pball->m_oldpos[pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME)] = pball->m_d.m_pos;
 
          pball->m_ringcounter_oldpos++;
@@ -751,7 +741,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
 
          if (!pball->m_d.m_lockedInKicker
 #ifdef C_DYNAMIC
@@ -827,7 +817,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++) // use m_vball.size(), in case script deletes a ball
       {
-         Ball *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
 
          if (
 #ifdef C_DYNAMIC
@@ -904,7 +894,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
       // hacky killing of ball spin on resting balls (very low and very high spinning)
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
-         Ball *const pball = g_pplayer->m_vball[i];
+         HitBall *const pball = g_pplayer->m_vball[i];
 
          const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
          const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;

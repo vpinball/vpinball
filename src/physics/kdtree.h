@@ -16,13 +16,13 @@ class HitKDNode final
 private:
    void Reset() { m_children = nullptr; m_hitoct = nullptr; m_start = 0; m_items = 0; }
 
-   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const;
-   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
+   void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
+   void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
 
    void CreateNextLevel(const unsigned int level, unsigned int level_empty);
 
 #ifdef KDTREE_SSE_LEAFTEST
-   void HitTestBallSse(const Ball * const pball, CollisionEvent& coll) const;
+   void HitTestBallSse(const HitBall* const pball, CollisionEvent& coll) const;
 #endif
 
    FRect3D m_rectbounds;
@@ -62,7 +62,7 @@ public:
    unsigned int GetObjectCount() const { return m_num_items; }
    unsigned int GetNLevels() const { return m_nLevels; }
 
-   void HitTestBall(const Ball * const pball, CollisionEvent& coll) const
+   void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
    {
 #ifdef KDTREE_SSE_LEAFTEST
       m_rootNode.HitTestBallSse(pball, coll);
@@ -71,7 +71,7 @@ public:
 #endif
    }
 
-   void HitTestXRay(const Ball* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
+   void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
    {
       m_rootNode.HitTestXRay(pball, pvhoHit, coll);
    }

@@ -8,7 +8,7 @@ LightSeq::~LightSeq()
 {
 }
 
-LightSeq *LightSeq::CopyForPlay(PinTable *live_table)
+LightSeq *LightSeq::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq, live_table)
    dst->m_backglass = m_backglass;
@@ -185,7 +185,7 @@ void LightSeq::EndPlay()
    IEditable::EndPlay();
 }
 
-void LightSeq::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void LightSeq::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -193,7 +193,7 @@ void LightSeq::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void LightSeq::PhysicRelease(const bool isUI)
+void LightSeq::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
 }
 

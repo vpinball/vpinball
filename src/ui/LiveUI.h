@@ -84,10 +84,10 @@ private:
    // UI Selection & properties
    void ImageProperties();
    void RenderProbeProperties(bool is_live);
-   void BallProperties(bool is_live);
    void CameraProperties(bool is_live);
    void MaterialProperties(bool is_live);
    void TableProperties(bool is_live);
+   void BallProperties(bool is_live, Ball *startup_obj, Ball *live_obj);
    void BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_obj);
    void FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj);
    void KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_obj);
@@ -139,7 +139,7 @@ private:
    bool m_staticPrepassDisabled = false;
    struct Selection
    {
-      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_IMAGE, S_BALL, S_EDITABLE, S_RENDERPROBE } type = S_NONE;
+      enum SelectionType { S_NONE, S_CAMERA, S_MATERIAL, S_IMAGE, S_EDITABLE, S_RENDERPROBE } type = S_NONE;
       bool is_live;
       union
       {
@@ -166,7 +166,6 @@ private:
          case S_CAMERA: return camera == s.camera;
          case S_MATERIAL: return material == s.material;
          case S_IMAGE: return image == s.image;
-         case S_BALL: return ball_index == s.ball_index;
          case S_EDITABLE: return editable == s.editable;
          case S_RENDERPROBE: return renderprobe == s.renderprobe;
          }

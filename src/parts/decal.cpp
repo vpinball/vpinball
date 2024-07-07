@@ -17,7 +17,7 @@ Decal::~Decal()
    SAFE_RELEASE(m_pIFont);
 }
 
-Decal *Decal::CopyForPlay(PinTable *live_table)
+Decal *Decal::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal, live_table)
    dst->m_backglass = m_backglass;
@@ -523,7 +523,7 @@ void Decal::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
-void Decal::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
+void Decal::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
@@ -531,7 +531,7 @@ void Decal::PhysicSetup(vector<HitObject *> &pvho, const bool isUI)
    }
 }
 
-void Decal::PhysicRelease(const bool isUI) { }
+void Decal::PhysicRelease(PhysicsEngine* physics, const bool isUI) { }
 
 #pragma endregion
 
