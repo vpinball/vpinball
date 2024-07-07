@@ -111,10 +111,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    m_mvp = new ModelViewProj(m_stereo3D == STEREO_OFF ? 1 : 2);
 
-   #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
+   #if defined(ENABLE_OPENGL)
    const int nMSAASamples = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
-   #elif defined(ENABLE_DX9)
+   #elif defined(ENABLE_DX9) || defined(ENABLE_BGFX)
    // Sadly DX9 does not support resolving an MSAA depth buffer, making MSAA implementation complex for it. So just disable for now
+   // BGFX MSAA is likely possible but not yet implemented
    constexpr int nMSAASamples = 1;
    #endif
    const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);

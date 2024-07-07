@@ -443,24 +443,27 @@ BOOL VideoOptionsDialog::OnInitDialog()
    GetDlgItem(IDC_DISABLE_DWM).EnableWindow(false);
    GetDlgItem(IDC_10BIT_VIDEO).EnableWindow(false);
    GetDlgItem(IDC_3D_STEREO_ZPD).EnableWindow(false);
-#else
+#endif
+
+#if defined(ENABLE_BGFX) || defined(ENABLE_DX9)
    // adapt layout for the hidden MSAA control
    GetDlgItem(IDC_MSAA_LABEL).ShowWindow(false);
    GetDlgItem(IDC_MSAA_COMBO).ShowWindow(false);
    GetDlgItem(IDC_MSAA_COMBO).EnableWindow(false);
-#define SHIFT_WND(id, amount) \
-   { \
-   CRect rc = GetDlgItem(id).GetClientRect(); \
-   GetDlgItem(id).MapWindowPoints(this->GetHwnd(), rc); \
-   rc.OffsetRect(0, amount); \
-   GetDlgItem(id).MoveWindow(rc); \
-   }
+   #define SHIFT_WND(id, amount) \
+      { \
+      CRect rc = GetDlgItem(id).GetClientRect(); \
+      GetDlgItem(id).MapWindowPoints(this->GetHwnd(), rc); \
+      rc.OffsetRect(0, amount); \
+      GetDlgItem(id).MoveWindow(rc); \
+      }
    SHIFT_WND(IDC_SUPER_SAMPLING_LABEL, -14)
    SHIFT_WND(IDC_SUPER_SAMPLING_COMBO, -14)
    SHIFT_WND(IDC_POST_PROCESS_AA_LABEL, -9)
    SHIFT_WND(IDC_POST_PROCESS_COMBO, -9)
    SHIFT_WND(IDC_SHARPEN_LABEL, -4)
    SHIFT_WND(IDC_SHARPEN_COMBO, -4)
+   #undef SHIFT_WND
 #endif
 
    UpdateFullscreenModesList();
