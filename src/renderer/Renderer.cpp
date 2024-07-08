@@ -312,6 +312,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    {
       m_tonemapLUT = new Texture();
       m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
+      m_pd3dPrimaryDevice->m_texMan.LoadTexture(m_tonemapLUT->m_pdsBuffer, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true)->SetName("TonyMcMapFaceLUT");
       m_pd3dPrimaryDevice->m_FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    }
 
