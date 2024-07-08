@@ -919,8 +919,8 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    void* const dst = boundState->m_state + m_stateOffsets[uniformName];
    if (memcmp(dst, src, m_stateSizes[uniformName]) == 0)
    {
-      #if defined(ENABLE_OPENGL)
-      // TODO review for BGFX
+      #if defined(ENABLE_BGFX)
+      // FIXME BGFX implement uniform caching
       #elif defined(ENABLE_OPENGL)
       if (shaderUniformNames[uniformName].type == SUT_DataBlock)
       {
@@ -1062,73 +1062,77 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
       {
          #if defined(ENABLE_BGFX)
          Sampler* texel = *(Sampler**)src;
-         if (texel && bgfx::isValid(texel->GetCoreTexture()))
-         {
-            SamplerFilter filter = texel->GetFilter();
-            SamplerAddressMode clampu = texel->GetClampU();
-            SamplerAddressMode clampv = texel->GetClampV();
-            if (filter == SF_UNDEFINED)
-            {
-               filter = shaderUniformNames[uniformName].default_filter;
-               if (filter == SF_UNDEFINED)
-                  filter = SF_NONE;
-            }
-            if (clampu == SA_UNDEFINED)
-            {
-               clampu = shaderUniformNames[uniformName].default_clampu;
-               if (clampu == SA_UNDEFINED)
-                  clampu = SA_CLAMP;
-            }
-            if (clampv == SA_UNDEFINED)
-            {
-               clampv = shaderUniformNames[uniformName].default_clampv;
-               if (clampv == SA_UNDEFINED)
-                  clampv = SA_CLAMP;
-            }
-            uint32_t flags = 0;
-            switch (filter)
-            {
-            case SF_NONE:
-               flags |= BGFX_SAMPLER_MIN_POINT;
-               flags |= BGFX_SAMPLER_MAG_POINT;
-               break;
-            case SF_POINT:
-               flags |= BGFX_SAMPLER_MIN_POINT;
-               flags |= BGFX_SAMPLER_MAG_POINT;
-               break;
-            case SF_BILINEAR:
-               /* Default is linear. No flag to set. */
-               break;
-            case SF_TRILINEAR:
-               /* Default is linear. No flag to set. */
-               break;
-            case SF_ANISOTROPIC:
-               // flags |= BGFX_SAMPLER_MIN_ANISOTROPIC;
-               // flags |= BGFX_SAMPLER_MAG_ANISOTROPIC;
-               break;
-            default:
-               break;
-            }
-            switch (clampu)
-            {
-            case SA_CLAMP: flags |= BGFX_SAMPLER_U_CLAMP; break;
-            case SA_MIRROR: flags |= BGFX_SAMPLER_U_MIRROR; break;
-            case SA_REPEAT: /* Default mode, no flag to set */ break;
-            default: break;
-            }
-            switch (clampv)
-            {
-            case SA_CLAMP: flags |= BGFX_SAMPLER_V_CLAMP; break;
-            case SA_MIRROR: flags |= BGFX_SAMPLER_V_MIRROR; break;
-            case SA_REPEAT: /* Default mode, no flag to set */ break;
-            default: break;
-            }
-            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, texel->GetCoreTexture(), flags);
-         }
-         else
+         if (texel == nullptr)
          {
             bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture());
+            return;
          }
+         bgfx::TextureHandle texHandle = texel->GetCoreTexture();
+         if (!bgfx::isValid(texel->GetCoreTexture()))
+         {
+            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture());
+            return;
+         }
+         SamplerFilter filter = texel->GetFilter();
+         SamplerAddressMode clampu = texel->GetClampU();
+         SamplerAddressMode clampv = texel->GetClampV();
+         if (filter == SF_UNDEFINED)
+         {
+            filter = shaderUniformNames[uniformName].default_filter;
+            if (filter == SF_UNDEFINED)
+               filter = SF_NONE;
+         }
+         if (clampu == SA_UNDEFINED)
+         {
+            clampu = shaderUniformNames[uniformName].default_clampu;
+            if (clampu == SA_UNDEFINED)
+               clampu = SA_CLAMP;
+         }
+         if (clampv == SA_UNDEFINED)
+         {
+            clampv = shaderUniformNames[uniformName].default_clampv;
+            if (clampv == SA_UNDEFINED)
+               clampv = SA_CLAMP;
+         }
+         uint32_t flags = 0;
+         switch (filter)
+         {
+         case SF_NONE:
+            flags |= BGFX_SAMPLER_MIN_POINT;
+            flags |= BGFX_SAMPLER_MAG_POINT;
+            break;
+         case SF_POINT:
+            flags |= BGFX_SAMPLER_MIN_POINT;
+            flags |= BGFX_SAMPLER_MAG_POINT;
+            break;
+         case SF_BILINEAR:
+            /* Default is linear. No flag to set. */
+            break;
+         case SF_TRILINEAR:
+            /* Default is linear. No flag to set. */
+            break;
+         case SF_ANISOTROPIC:
+            flags |= BGFX_SAMPLER_MIN_ANISOTROPIC;
+            flags |= BGFX_SAMPLER_MAG_ANISOTROPIC;
+            break;
+         default:
+            break;
+         }
+         switch (clampu)
+         {
+         case SA_CLAMP: flags |= BGFX_SAMPLER_U_CLAMP; break;
+         case SA_MIRROR: flags |= BGFX_SAMPLER_U_MIRROR; break;
+         case SA_REPEAT: /* Default mode, no flag to set */ break;
+         default: break;
+         }
+         switch (clampv)
+         {
+         case SA_CLAMP: flags |= BGFX_SAMPLER_V_CLAMP; break;
+         case SA_MIRROR: flags |= BGFX_SAMPLER_V_MIRROR; break;
+         case SA_REPEAT: /* Default mode, no flag to set */ break;
+         default: break;
+         }
+         bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, texHandle, flags);
       
          #elif defined(ENABLE_OPENGL)
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.

@@ -50,7 +50,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       upload->AddAlpha();
    }
 
-   // Trigger texture loading and mipmap generation
+   // Trigger texture creation, upload and mipmap generation (on BGFX API thread)
    const bgfx::Memory* data;
    if (upload == nullptr)
       data = nullptr;
@@ -58,12 +58,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       data = bgfx::copy(upload->data(), m_height * upload->pitch());
    else
       data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete [] (BYTE*)_userData; }, upload);
-   if (data)
-   {
-      const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
-      m_textureUpdate[0] = data;
-      m_textureUpdatePendingPos = (m_textureUpdatePendingPos + 1) % 16;
-   }
+   m_textureUpdate = data;
 
 #elif defined(ENABLE_OPENGL)
    m_texTarget = GL_TEXTURE_2D;
@@ -187,15 +182,21 @@ Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTextur
 }
 #endif
 
+#if defined(ENABLE_BGFX)
+// BGFX does not expose the release function in its API so we access it directly somewhat hackily
+// The cleaner way would be to declare our own memory allocator and use it to release unused texture update (AllocatorStub in bgfx.cpp)
+namespace bgfx { extern void release(const bgfx::Memory* _mem); }
+#endif
+
 Sampler::~Sampler()
 {
    m_rd->UnbindSampler(this);
    
    #if defined(ENABLE_BGFX)
+   if (m_textureUpdate)
+      bgfx::release(m_textureUpdate);
    if (bgfx::isValid(m_mipsTexture))
       bgfx::destroy(m_mipsTexture);
-   if (bgfx::isValid(m_mipsFramebuffer))
-      bgfx::destroy(m_mipsFramebuffer);
    if (bgfx::isValid(m_nomipsTexture))
       bgfx::destroy(m_nomipsTexture);
 
@@ -213,79 +214,55 @@ Sampler::~Sampler()
 #if defined(ENABLE_BGFX)
 bgfx::TextureHandle Sampler::GetCoreTexture()
 {
-   assert((m_textureUpdatePendingPos != m_textureUpdatePos) || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
-   // Handle texture update (on BGFX API thread)
-   if (m_textureUpdatePendingPos != m_textureUpdatePos)
+   assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
+   // Handle texture initial creation loading and updates on BGFX API thread
+   if (m_textureUpdate)
    {
       const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
-      if (bgfx::isValid(m_mipsTexture))
+      const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
+      if (!bgfx::isValid(m_mipsTexture))
       {
-         bgfx::destroy(m_mipsTexture);
-         m_mipsTexture = BGFX_INVALID_HANDLE;
-      }
-      if (bgfx::isValid(m_mipsFramebuffer))
-      {
-         bgfx::destroy(m_mipsFramebuffer);
-         m_mipsFramebuffer = BGFX_INVALID_HANDLE;
+         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+         bgfx::setName(m_mipsTexture, m_name.c_str());
       }
       if (!bgfx::isValid(m_nomipsTexture))
       {
-         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
          m_nomipsTexture = bgfx::createTexture2D(m_width, m_height, false, 1, m_bgfx_format, flags);
+         bgfx::setName(m_mipsTexture, (m_name + ".MipMap").c_str());
       }
-      // TODO BGFX we process all updates instead of just the last one because BGFX does not give easy access to the memory deallocator (needs to create our own and pass through Init)
-      while (m_textureUpdatePendingPos != m_textureUpdatePos)
-      {
-         const bgfx::Memory* texUpdate = m_textureUpdate[m_textureUpdatePos];
-         #ifdef DEBUG
-         assert(texUpdate != nullptr);
-         m_textureUpdate[m_textureUpdatePos] = nullptr;
-         #endif
-         bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, texUpdate);
-         m_textureUpdatePos = (m_textureUpdatePos + 1) % 16;
-      }
+      bgfx::updateTexture2D(m_nomipsTexture, 0, 0, 0, 0, m_width, m_height, m_textureUpdate);
+      m_textureUpdate = nullptr;
    }
-   // Handle mipmap generation (on BGFX API thread), we defer mipmap generation if we are approaching BGFX limits (using magic margins)
-   if (bgfx::isValid(m_nomipsTexture) && m_rd->m_activeViewId < (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 && m_rd->m_activeViewId < (int)bgfx::getCaps()->limits.maxViews - 32)
+   // Handle mipmap generation on BGFX API thread
+   if (bgfx::isValid(m_nomipsTexture))
    {
-      if (!bgfx::isValid(m_mipsFramebuffer))
-      {
-         m_mips_gpu_frame = bgfx::getStats()->gpuFrameNum;
-         const uint64_t flags = m_isLinear ? BGFX_TEXTURE_NONE : BGFX_TEXTURE_SRGB;
-         m_mipsTexture = bgfx::createTexture2D(m_width, m_height, true, 1, m_bgfx_format, flags | BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST); // FIXME explicitely handle sRGB
-         bgfx::setName(m_mipsTexture, m_name.c_str());
-         bgfx::Attachment m_mipsAttachment;
-         m_mipsAttachment.init(m_mipsTexture);
-         m_mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsAttachment);
-         // Blit to RT
-         if (m_rd->m_activeViewId < 0)
-            m_rd->NextView();
-         // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger render target mipmap generation, to be refactored when fixing dynamic texture
-         // For a simple and readable reference, see (paramters: alpha=4, stretch=1, m_width=filter half width):
-         //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
-         //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
-         bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
-         // Force RT resolution, in turns causing mipmap generation
+      // Defer mipmap generation if we are approaching BGFX limits (using magic margins)
+      if (m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 // We approximate the number of framebuffer used by the view index
+       || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxViews - 32)
+         return m_nomipsTexture;
+      // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger default's driver render target mipmap generation
+      // For a simple and readable reference, see (parameters: alpha=4, stretch=1, m_width=filter half width):
+      //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L257
+      //   https://github.com/castano/nvidia-texture-tools/blob/aeddd65f81d36d8cb7b169b469ef25156666077e/src/nvimage/Filter.cpp#L64
+      // Create a frame buffer and blit texture to it
+      if (m_rd->m_activeViewId < 0)
          m_rd->NextView();
-         bgfx::setViewFrameBuffer(m_rd->m_activeViewId, m_mipsFramebuffer);
-         // Get back to the rendering view
-         RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-         if (activeRT)
-         {
-            RenderTarget::OnFrameFlushed();
-            activeRT->Activate();
-         }
-      }
-      else if (bgfx::getStats()->gpuFrameNum >= m_mips_gpu_frame + 2)
-      {
-         // Mipmaps have been generated, we can release the framebuffer and base version of the texture
-         bgfx::destroy(m_nomipsTexture);
-         m_nomipsTexture = BGFX_INVALID_HANDLE;
-         bgfx::destroy(m_mipsFramebuffer);
-         m_mipsFramebuffer = BGFX_INVALID_HANDLE;
-      }
+      bgfx::FrameBufferHandle mipsFramebuffer = bgfx::createFrameBuffer(1, &m_mipsTexture);
+      bgfx::blit(m_rd->m_activeViewId, m_mipsTexture, 0, 0, m_nomipsTexture);
+      // Force frame buffer resolution, in turns causing mipmap generation
+      m_rd->NextView();
+      bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
+      // Get back to the rendering view
+      RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
+      assert(activeRT);
+      RenderTarget::OnFrameFlushed();
+      activeRT->Activate();
+      // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
+      bgfx::destroy(mipsFramebuffer);
+      bgfx::destroy(m_nomipsTexture);
+      m_nomipsTexture = BGFX_INVALID_HANDLE;
    }
-   return bgfx::isValid(m_mipsTexture) ? m_mipsTexture : m_nomipsTexture;
+   return m_mipsTexture;
 }
 
 uintptr_t Sampler::GetNativeTexture()
@@ -318,12 +295,9 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
 #if defined(ENABLE_BGFX)
    assert(force_linear_rgb == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
-   unsigned int nextPos = (m_textureUpdatePendingPos + 1) % 16;
-   if (nextPos != m_textureUpdatePos)
-   {
-      m_textureUpdate[m_textureUpdatePendingPos] = bgfx::copy(surf->data(), surf->height() * surf->pitch());
-      m_textureUpdatePendingPos = nextPos;
-   }
+   if (m_textureUpdate)
+      bgfx::release(m_textureUpdate);
+   m_textureUpdate = bgfx::copy(surf->data(), surf->height() * surf->pitch());
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;

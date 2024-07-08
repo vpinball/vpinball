@@ -93,13 +93,9 @@ private:
    string m_name;
    bgfx::TextureFormat::Enum m_bgfx_format = bgfx::TextureFormat::Enum::Count;
    bgfx::TextureHandle m_nomipsTexture = BGFX_INVALID_HANDLE; // The texture without any mipmaps
-   bgfx::FrameBufferHandle m_mipsFramebuffer = BGFX_INVALID_HANDLE; // The framebuffer and texture where mipmaps are being generated
    bgfx::TextureHandle m_mipsTexture = BGFX_INVALID_HANDLE;
-   unsigned int m_textureUpdatePos = 0;
-   unsigned int m_textureUpdatePendingPos = 0;
    std::mutex m_textureUpdateMutex;
-   const bgfx::Memory* m_textureUpdate[16] = { nullptr };
-   uint32_t m_mips_gpu_frame = 0;
+   const bgfx::Memory* m_textureUpdate = nullptr;
    uintptr_t m_texture_override = 0;
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
