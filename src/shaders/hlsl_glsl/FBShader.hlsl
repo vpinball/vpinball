@@ -303,26 +303,26 @@ VS_OUTPUT_2D vs_main_no_trafo_subpixel(const in float4 vPosition : POSITION0, co
 // For reference, see https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
 float3 bloom_cutoff(const float3 c)
 {
-    const float Threshold = 2.5; //!! magic
-    const float SoftThreshold = 1.0;
-    const float Knee = Threshold * SoftThreshold;
+   const float Threshold = 2.5; //!! magic
+   const float SoftThreshold = 1.0;
+   const float Knee = Threshold * SoftThreshold;
 
-    const float brightness = max(c.r, max(c.g, c.b));
-    float soft = brightness - (Threshold - Knee);
-    soft = clamp(soft, 0., 2. * Knee);
-    soft *= soft * (1.0 / (4. * Knee + 0.00006103515625)); // 0.00006103515625 due to 16bit half float
-    const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00006103515625); // dto.
-    return c * contribution;
+   const float brightness = max(c.r, max(c.g, c.b));
+   float soft = brightness - (Threshold - Knee);
+   soft = clamp(soft, 0., 2. * Knee);
+   soft *= soft * (1.0 / (4. * Knee + 0.00006103515625)); // 0.00006103515625 due to 16bit half float
+   const float contribution = max(soft, brightness - Threshold) / max(brightness, 0.00006103515625); // dto.
+   return c * contribution;
 }
 
 float4 ps_main_fb_bloom(const in VS_OUTPUT_2D IN) : COLOR
 {
-    // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
-    const float3 result = (texNoLod(tex_fb_filtered, IN.tex0 - w_h_height.xy).xyz
-                        +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
-                        +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
-                        +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
-    return float4(max(bloom_cutoff(ReinhardToneMap(result)), float3(0., 0., 0.)) * w_h_height.z, 1.0);
+   // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
+   const float3 result = (texNoLod(tex_fb_filtered, IN.tex0 - w_h_height.xy).xyz
+                       +  texNoLod(tex_fb_filtered, IN.tex0 + w_h_height.xy).xyz
+                       +  texNoLod(tex_fb_filtered, IN.tex0 + float2(w_h_height.x,-w_h_height.y)).xyz
+                       +  texNoLod(tex_fb_filtered, IN.tex0 + float2(-w_h_height.x,w_h_height.y)).xyz)*0.25; //!! offset for useAA?
+   return float4(max(bloom_cutoff(ReinhardToneMap(result)), float3(0., 0., 0.)) * w_h_height.z, 1.0);
 }
 
 float4 ps_main_fb_AO(const in VS_OUTPUT_2D IN) : COLOR
@@ -374,15 +374,15 @@ float4 ps_main_fb_tmtonemap(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_fmtonemap(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
-    BRANCH if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
-    else
-        result = FBGamma(saturate(FBDither(result, IN.tex0)));
-    return float4(FBColorGrade(result), 1.0);
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 float4 ps_main_fb_nttonemap(const in VS_OUTPUT_2D IN) : COLOR
@@ -441,18 +441,18 @@ float4 ps_main_fb_tmtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_fmtonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
-    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
-    // moving AO before tonemap does not really change the look
-    result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-    BRANCH if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
-    else
-        result = FBGamma(saturate(FBDither(result, IN.tex0)));
-    return float4(FBColorGrade(result), 1.0);
+   float3 result = texStereoNoLod(tex_fb_filtered, IN.tex0).rgb;
+   // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 float4 ps_main_fb_nttonemap_AO(const in VS_OUTPUT_2D IN) : COLOR
@@ -511,15 +511,15 @@ float4 ps_main_fb_tmtonemap_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_fmtonemap_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
-    BRANCH if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
-    else
-        result = FBGamma(saturate(FBDither(result, IN.tex0)));
-    return float4(FBColorGrade(result), 1.0);
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 float4 ps_main_fb_nttonemap_no_filter(const in VS_OUTPUT_2D IN) : COLOR
@@ -576,17 +576,17 @@ float4 ps_main_fb_tmtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_fmtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
-    // moving AO before tonemap does not really change the look
-    result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
-    BRANCH if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
-    else
-        result = FBGamma(saturate(FBDither(result, IN.tex0)));
-    return float4(FBColorGrade(result), 1.0);
+   float3 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rgb;
+   // moving AO before tonemap does not really change the look
+   result *= texStereoNoLod(tex_ao, IN.tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
+   BRANCH if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rgb; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = saturate(FBDither(FilmicToneMap(result), IN.tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, IN.tex0)));
+   return float4(FBColorGrade(result), 1.0);
 }
 
 float4 ps_main_fb_nttonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
@@ -621,30 +621,30 @@ float4 ps_main_fb_agxtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 
 float4 ps_main_fb_rhtonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float2 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rg;
+   float2 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rg;
    BRANCH
-    if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).rg; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).rg; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH
-    if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = ReinhardToneMap(result);
-    const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)))));
-    return float4(rg, rg, rg, 1.0);
+   if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)))));
+   return float4(rg, rg, rg, 1.0);
 }
 
 float4 ps_main_fb_rhtonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
 {
-    float result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).r;
+   float result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).r;
    BRANCH
-    if (do_bloom)
-        result += texStereoNoLod(tex_bloom, IN.tex0).r; //!! offset?
-    const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
+   if (do_bloom)
+      result += texStereoNoLod(tex_bloom, IN.tex0).r; //!! offset?
+   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
    BRANCH
-    if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-        result = ReinhardToneMap(result);
-    const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
-    return float4(gray, gray, gray, 1.0);
+   if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+      result = ReinhardToneMap(result);
+   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
+   return float4(gray, gray, gray, 1.0);
 }
 
 

@@ -283,7 +283,7 @@ void RendererGraphics::FillPath(GraphicsPath* pPath)
                   SDL_RenderDrawLine(m_pRenderer, (int)minx + x0, yi, (int)minx + xi, yi);
                }
                else {
-                  SDL_SetRenderDrawColor(m_pRenderer, r, g, b, (UINT8)(a * strip[xi]));
+                  SDL_SetRenderDrawColor(m_pRenderer, r, g, b, (UINT8)((float)a * strip[xi]));
                   SDL_RenderDrawPoint(m_pRenderer, (int)minx + xi, yi);
                }
             }

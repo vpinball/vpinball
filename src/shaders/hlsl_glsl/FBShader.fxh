@@ -211,7 +211,7 @@ float3 agxDefaultContrastApprox(float3 x)
     // Mean error^2: 3.6705141e-06
     float3 x2 = x * x;
     float3 x4 = x2 * x2;
-    return +15.5 * x4 * x2
+    return  + 15.5 * x4 * x2
             - 40.14 * x4 * x
             + 31.96 * x4
             - 6.868 * x2 * x
@@ -223,7 +223,7 @@ float3 agxDefaultContrastApprox(float3 x)
     float3 x2 = x * x;
     float3 x4 = x2 * x2;
     float3 x6 = x4 * x2;
-    return -17.86 * x6 * x
+    return  - 17.86 * x6 * x
             + 78.01 * x6
             - 126.7 * x4 * x
             + 92.06 * x4
@@ -271,6 +271,7 @@ float3 AgXToneMapping(float3 color)
     MAT_END;
 
     #else
+
     // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
     // It is supposed that they are ok for rec709 input values.
     // (note that out transform is the inverse of in transform)
@@ -292,7 +293,7 @@ float3 AgXToneMapping(float3 color)
     // LOG2_MAX      =  +6.5
     // MIDDLE_GRAY   =  0.18
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
-    const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
+    const float AgxMaxEv =  4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
     color *= exposure;
 

@@ -11,9 +11,9 @@ FEATURES:
   and the 'AgX' tonemapper which is the default one used by Blender
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control)
 
-- add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to intefrace with latest rendering backends (Vulakn, Metal, DirectX11, OpenGL,...) with some unique benefits:
+- add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off)
-  . it uses multiple CPU core to process separately the rendering from the game simulation, allowing lower input latency, more stable gameplay emulation as well as a performance boost.
+  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost.
 
 FIXES:
 

@@ -878,7 +878,7 @@ Player::~Player()
       {
          for (Texture *image : m_ptable->m_vimage)
          {
-            if (image->m_szName.length() > 0 && image->m_pdsBuffer == memtex)
+            if (!image->m_szName.empty() && image->m_pdsBuffer == memtex)
             {
                tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
                node->SetText(image->m_szName.c_str());
@@ -1601,7 +1601,7 @@ void Player::LockForegroundWindow(const bool enable)
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 // MSVC Concurrency Viewer support
-// This require to WINVER >= 0x0600 and to add the MSVC Concurrendy SDK to the project
+// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
@@ -2051,7 +2051,7 @@ void Player::FinishFrame()
    // TODO hacky Win32 management: try to bring PinMAME, B2S, Freezy's DMD, Pup window back on top (to be removed when these extensions will be cleanly handled by cleaned up plugins)
    if (m_overall_frames < 10)
    {
-      const vector<string> overlaylist = { "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
+      static const vector<string> overlaylist = { "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
       for (const string &windowtext : overlaylist)
       {
          HWND hVPMWnd = FindWindow(nullptr, windowtext.c_str());

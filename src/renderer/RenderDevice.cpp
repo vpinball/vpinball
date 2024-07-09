@@ -283,7 +283,7 @@ typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
 static pDEC mDwmEnableComposition = nullptr;
 
 // MSVC Concurrency Viewer support
-// This require to WINVER >= 0x0600 and to add the MSVC Concurrendy SDK to the project
+// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>

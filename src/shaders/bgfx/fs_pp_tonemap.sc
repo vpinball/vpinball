@@ -49,7 +49,7 @@ SAMPLER2D      (tex_ao_dither,    5); // Ambient Occlusion Dither
 SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tonemapping
 
 #define MAX_BURST 1000.0
@@ -300,6 +300,7 @@ vec3 AgXToneMapping(vec3 color)
     );
 
     #else
+
     // AgX transformation constants taken from https://iolite-engine.com/blog_posts/minimal_agx_implementation (also used in Godot)
     // It is supposed that they are ok for rec709 input values.
     // (note that out transform is the inverse of in transform)
@@ -356,7 +357,7 @@ vec3 AgXToneMapping(vec3 color)
 }
 #endif
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Dithering
 
 /*const float bayer_dither_pattern[8][8] = float[][] (
@@ -470,7 +471,7 @@ vec3 FBDither(const vec3 color, /*const int2 pos*/const vec2 tex0)
    return color + dither*min(color + blackLimit, amount);*/
 
    //const vec3 amount = InvGamma(FBGamma(color) + (4. / quantSteps)) - color;
-   
+
    //const float luma = saturate(dot(color,vec3(0.212655,0.715158,0.072187)));
    //const vec3 amount = mix(
    //  InvGamma(4. / quantSteps), //!! precalc? would also solve 5/6/5bit issue!
@@ -495,7 +496,7 @@ float FBDither(const float color, /*const int2 pos*/const vec2 tex0)
 }
 
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Color grading
 
 vec3 FBColorGrade(vec3 color)
@@ -513,7 +514,7 @@ vec3 FBColorGrade(vec3 color)
 }
 
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main fragment shader
 
 void main()
@@ -560,7 +561,7 @@ void main()
          float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
       #endif
       gl_FragColor = vec4(grey, grey, grey, 1.0);
-   
+
    #else
       #if defined(FILMIC) || defined(AGX)
          result =         saturate(FBDither(result, v_texcoord0));

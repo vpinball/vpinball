@@ -46,7 +46,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    if (add_alpha && upload != nullptr)
    {
       upload = new BaseTexture(m_width, m_height, surf->m_format);
-      memcpy(upload->data(), surf->data(), surf->pitch() * surf->height());
+      memcpy(upload->data(), surf->data(), (size_t)surf->pitch() * surf->height());
       upload->AddAlpha();
    }
 
@@ -297,7 +297,7 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
-   m_textureUpdate = bgfx::copy(surf->data(), surf->height() * surf->pitch());
+   m_textureUpdate = bgfx::copy(surf->data(), (size_t)surf->height() * surf->pitch());
 
 #elif defined(ENABLE_OPENGL)
    colorFormat format;

@@ -3338,20 +3338,20 @@ void LiveUI::UpdateVideoOptionsModal()
                const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
 
                if (ImGui::InputText("Name", &name[glassesIndex]))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Name"s, name[glassesIndex]);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Name", name[glassesIndex]);
                static const char *filter_items[] = { "None", "Dubois", "Luminance", "Deghost" };
-               int anaglyphFilter = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter"s, 4);
+               int anaglyphFilter = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter", 4);
                if (ImGui::Combo("Filter", &anaglyphFilter, filter_items, IM_ARRAYSIZE(filter_items)))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Filter"s, anaglyphFilter);
-               float anaglyphDynDesat = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "DynDesat"s, 1.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Filter", anaglyphFilter);
+               float anaglyphDynDesat = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "DynDesat", 1.f);
                if (ImGui::InputFloat("Dyn. Desaturation", &anaglyphDynDesat, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "DynDesat"s, anaglyphDynDesat);
-               float anaglyphDeghost = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Deghost"s, 0.f);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "DynDesat", anaglyphDynDesat);
+               float anaglyphDeghost = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Deghost", 0.f);
                if (ImGui::InputFloat("Deghost", &anaglyphDeghost, 0.01f, 0.1f))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Deghost"s, anaglyphDeghost);
-               bool srgbDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB"s, true);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Deghost", anaglyphDeghost);
+               bool srgbDisplay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB", true);
                if (ImGui::Checkbox("Calibrated sRGB Display", &srgbDisplay))
-                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "sRGB"s, srgbDisplay);
+                  g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "sRGB", srgbDisplay);
 
                Anaglyph anaglyph;
                anaglyph.LoadSetupFromRegistry(glassesIndex);
@@ -3374,13 +3374,13 @@ void LiveUI::UpdateVideoOptionsModal()
                ImGui::SameLine();
                if (ImGui::Button("Reset to default"))
                {
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "Name"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftRed"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftGreen"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftBlue"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightRed"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightGreen"s);
-                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightBlue"s);
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "Name");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftRed");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftGreen");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "LeftBlue");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightRed");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightGreen");
+                  g_pvp->m_settings.DeleteValue(Settings::Player, prefKey + "RightBlue");
                }
             }
             if (modeChanged)
