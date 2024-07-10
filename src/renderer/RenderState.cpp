@@ -120,7 +120,7 @@ const string RenderState::GetLog() const
 void RenderState::Apply(RenderDevice* device)
 {
 #if defined(ENABLE_BGFX)
-   uint64_t bgfx_state = BGFX_STATE_MSAA;
+   uint64_t bgfx_state = BGFX_STATE_NONE; // FIXME BGFX add MSAA support BGFX_STATE_MSAA;
 
    if (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE)
    {
