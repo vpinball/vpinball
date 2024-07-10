@@ -707,7 +707,7 @@ void Light::Render(const unsigned int renderMask)
          if (m_d.m_BulbLight && g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER))
             lightColor_intensity.w *= m_d.m_transmissionScale;
          m_rd->m_lightShader->SetLightColorIntensity(lightColor_intensity);
-         m_rd->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.00001f); // additive, but avoid full 0, as it disables the blend
+         m_rd->m_lightShader->SetFloat(SHADER_blend_modulate_vs_add, 0.0001f); // additive, but avoid full 0, as it disables the blend
 
          Vertex3Ds bulbPos(m_boundingSphereCenter.x, m_boundingSphereCenter.y, m_boundingSphereCenter.z + m_d.m_height);
          if (m_bulbLightMeshBuffer) // FIXME will be null if started without a bulb, then activated from the LiveUI. Prevent the crash. WOuld be nicer to actually build the buffer if needed
@@ -808,11 +808,11 @@ void Light::Render(const unsigned int renderMask)
       }
       else
       {
-         m_rd->EnableAlphaBlend(false, false, false);
-         //m_rd->SetRenderState(RenderDevice::SRCBLEND,  RenderDevice::SRC_ALPHA);  // add the lightcontribution
+         m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);  // add the lightcontribution
          m_rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_COLOR); // but also modulate the light first with the underlying elements by (1+lightcontribution, e.g. a very crude approximation of real lighting)
          m_rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_REVSUBTRACT);
-         shader->SetFloat(SHADER_blend_modulate_vs_add, !g_pplayer->m_renderer->IsRenderPass(Renderer::LIGHT_BUFFER) ? clamp(m_d.m_modulate_vs_add, 0.00001f, 0.9999f) : 0.00001f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
+         shader->SetFloat(SHADER_blend_modulate_vs_add, isLightBuffer ? 0.0001f : clamp(m_d.m_modulate_vs_add, 0.0001f, 0.9999f)); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes // in the separate bulb light render stage only enable additive
          shader->SetTechnique(m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS ? SHADER_TECHNIQUE_bulb_light_with_ball_shadows : SHADER_TECHNIQUE_bulb_light);
       }
 
