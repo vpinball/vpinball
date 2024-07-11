@@ -79,7 +79,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_dx9-${{ matrix.platform }}.txt CMakeLists.txt
+          cp make/CMakeLists_dx9-${{ matrix.platform }}.txt CMakeLists.txt
           # cmake can't find fxc.exe so copy one into the a directory in the path
           cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x86/fxc.exe" /mingw64/bin
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
@@ -126,7 +126,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_gl-${{ matrix.platform }}.txt CMakeLists.txt
+          cp make/CMakeLists_gl-${{ matrix.platform }}.txt CMakeLists.txt
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             cmake -G "Visual Studio 17 2022" -A x64 -B build
           else
@@ -172,7 +172,7 @@ jobs:
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp build/CMakeLists_bgfx-${{ matrix.platform }}.txt CMakeLists.txt
+          cp make/CMakeLists_bgfx-${{ matrix.platform }}.txt CMakeLists.txt
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             cmake -G "Visual Studio 17 2022" -A x64 -B build
           else
