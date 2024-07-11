@@ -87,16 +87,16 @@ jobs:
             elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
               OPTIONS="-DBUILD_RK3588=ON"
             fi
-            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
-            cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B make/${{ matrix.config }}
+            cmake --build make/${{ matrix.config }} -- -j${NUM_PROCS}
             mkdir tmp
-            cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
-            cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
-            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
-            cp -r build/${{ matrix.config }}/assets tmp
-            cp -r build/${{ matrix.config }}/scripts tmp
-            cp -r build/${{ matrix.config }}/tables tmp
-            cp -r build/${{ matrix.config }}/docs tmp
+            cp make/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
+            cp -a make/${{ matrix.config }}/*.{so,so.*} tmp
+            cp -r make/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+            cp -r make/${{ matrix.config }}/assets tmp
+            cp -r make/${{ matrix.config }}/scripts tmp
+            cp -r make/${{ matrix.config }}/tables tmp
+            cp -r make/${{ matrix.config }}/docs tmp
             cd tmp
             tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
       - uses: actions/cache/save@v4
