@@ -104,6 +104,9 @@ public:
    
    DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
 
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
+
    // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
