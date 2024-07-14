@@ -247,9 +247,6 @@ public:
 
    void ExitProfileSection()
    {
-      #ifdef ENABLE_BGFX
-      //assert(std::this_thread::get_id() != g_pplayer->m_renderer->m_pd3dPrimaryDevice->m_renderThread.get_id());
-      #endif
       assert(m_profileSectionStackPos >= 0);
       m_profileSectionStackPos--;
       SetProfileSection(m_profileSectionStack[m_profileSectionStackPos]);

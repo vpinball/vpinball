@@ -53,7 +53,7 @@ public:
    int GetAOMode() const // 0=Off, 1=Static, 2=Dynamic
    {
       // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
-      if (m_disableAO || !m_table->m_enableAO || !m_pd3dPrimaryDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
+      if (m_disableAO || !m_table->m_enableAO || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
          return 0;
       if (m_dynamicAO)
          return 2;
@@ -103,7 +103,7 @@ public:
 
    CGpuProfiler m_gpu_profiler;
 
-   RenderDevice* m_pd3dPrimaryDevice = nullptr;
+   RenderDevice* m_renderDevice = nullptr;
 
    Texture* m_envTexture = nullptr;
    Texture m_pinballEnvTexture; // loaded from assets folder

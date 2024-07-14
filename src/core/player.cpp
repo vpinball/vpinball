@@ -457,7 +457,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    if (m_headTracking || (stereo3D == STEREO_VR))
       m_renderer->DisableStaticPrePass(true);
 
-   m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 1;
+   m_renderer->m_renderDevice->m_vsyncCount = 1;
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
@@ -512,8 +512,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Initialize default state
    RenderState state;
    state.SetRenderState(RenderState::CULLMODE, m_ptable->m_tblMirrorEnabled ? RenderState::CULL_CW : RenderState::CULL_CCW);
-   m_renderer->m_pd3dPrimaryDevice->CopyRenderStates(false, state);
-   m_renderer->m_pd3dPrimaryDevice->SetDefaultRenderState();
+   m_renderer->m_renderDevice->CopyRenderStates(false, state);
+   m_renderer->m_renderDevice->SetDefaultRenderState();
    m_renderer->InitLayout();
 
    m_accelerometer = Vertex2D(0.f, 0.f);
@@ -625,7 +625,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                   if (tex != nullptr && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                   {
                      PLOGI << "Texture preloading: '" << name << '\'';
-                     m_renderer->m_pd3dPrimaryDevice->UploadTexture(tex->m_pdsBuffer, linearRGB);
+                     m_renderer->m_renderDevice->UploadTexture(tex->m_pdsBuffer, linearRGB);
                   }
                }
             }
@@ -671,14 +671,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    for (Hitable *hitable : m_vhitables)
    {
       hitable->BeginPlay(m_vht);
-      hitable->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
+      hitable->RenderSetup(m_renderer->m_renderDevice);
       if (hitable->HitableGetItemType() == ItemTypeEnum::eItemBall)
          m_vball.push_back(&((Ball*)hitable)->m_hitBall);
    }
 
    // Setup anisotropic filtering
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   m_renderer->m_pd3dPrimaryDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   m_renderer->m_renderDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    #if defined(EXT_CAPTURE)
    if (m_renderer->m_stereo3D == STEREO_VR)
@@ -728,7 +728,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // We need to initialize the perf counter before creating the UI which uses it
    wintimer_init();
-   m_liveUI = new LiveUI(m_renderer->m_pd3dPrimaryDevice);
+   m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    m_onPrepareFrameEventId = PluginManager::GetEventID(VPX_EVT_ON_PREPARE_FRAME);
@@ -744,9 +744,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // This is done after starting the script and firing the Init event to allow script to adjust static parts on startup
    PLOGI << "Prerendering static parts"; // For profiling
    #if defined(ENABLE_BGFX)
-   m_renderer->m_pd3dPrimaryDevice->m_frameMutex.lock();
+   m_renderer->m_renderDevice->m_frameMutex.lock();
    m_renderer->RenderStaticPrepass();
-   m_renderer->m_pd3dPrimaryDevice->m_frameMutex.unlock();
+   m_renderer->m_renderDevice->m_frameMutex.unlock();
    #else
    m_renderer->RenderStaticPrepass();
    #endif
@@ -895,7 +895,7 @@ Player::~Player()
          xmlDoc.InsertEndChild(root);
       }
 
-      vector<BaseTexture *> textures = m_renderer->m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
+      vector<BaseTexture *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
          auto tex = std::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_szName.empty()) && (x->m_pdsBuffer == memtex); });
@@ -912,7 +912,7 @@ Player::~Player()
             node->DeleteAttribute("clampv");
             node->DeleteAttribute("filter");
             node->DeleteAttribute("prerender");
-            node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
+            node->SetAttribute("linear", m_renderer->m_renderDevice->m_texMan.IsLinearRGB(memtex));
             node->SetAttribute("age", 0);
          }
       }
@@ -963,8 +963,8 @@ Player::~Player()
 
    if (m_texdmd)
    {
-      m_renderer->m_pd3dPrimaryDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-      m_renderer->m_pd3dPrimaryDevice->m_texMan.UnloadTexture(m_texdmd);
+      m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+      m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_texdmd);
       delete m_texdmd;
       m_texdmd = nullptr;
    }
@@ -1187,7 +1187,7 @@ HitBall *Player::CreateBall(const float x, const float y, const float z, const f
    m_ptable->m_vedit.push_back(m_pBall);
    m_vhitables.push_back(m_pBall);
    m_pBall->BeginPlay(m_vht);
-   m_pBall->RenderSetup(m_renderer->m_pd3dPrimaryDevice);
+   m_pBall->RenderSetup(m_renderer->m_renderDevice);
    m_pBall->PhysicSetup(m_physics, false);
    if (!m_pactiveballDebug)
       m_pactiveballDebug = &m_pBall->m_hitBall;
@@ -1520,13 +1520,13 @@ string Player::GetPerfInfo()
       m_lastMaxChangeTime = m_time_msec;
 
    // Renderer additional information
-   info << "Triangles: " << ((m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
-        << ((m_renderer->GetNPrerenderTris() + m_renderer->m_pd3dPrimaryDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
+   info << "Triangles: " << ((m_renderer->m_renderDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
+        << ((m_renderer->GetNPrerenderTris() + m_renderer->m_renderDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
         << "%%\n";
-   info << "Draw calls: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumLockCalls() << " Locks)\n";
-   info << "State changes: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumStateChanges() << "\n";
-   info << "Texture changes: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
-   info << "Shader/Parameter changes: " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_pd3dPrimaryDevice->Perf_GetNumParameterChanges() << "\n";
+   info << "Draw calls: " << m_renderer->m_renderDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_renderDevice->Perf_GetNumLockCalls() << " Locks)\n";
+   info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << "\n";
+   info << "Texture changes: " << m_renderer->m_renderDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_renderDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
+   info << "Shader/Parameter changes: " << m_renderer->m_renderDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_renderDevice->Perf_GetNumParameterChanges() << "\n";
    info << "Objects: " << (unsigned int)m_vhitables.size() << "\n";
    info << "\n";
 
@@ -1639,20 +1639,20 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
 {
 #ifdef ENABLE_BGFX
    // Flush any pending frame
-   m_renderer->m_pd3dPrimaryDevice->m_frameReadySem.post();
+   m_renderer->m_renderDevice->m_frameReadySem.post();
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
       sync();
-      if (!m_renderer->m_pd3dPrimaryDevice->m_framePending && m_renderer->m_pd3dPrimaryDevice->m_frameMutex.try_lock())
+      if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
          g_frameProfiler.NewFrame(m_time_msec);
          m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
          m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
          PrepareFrame(sync);
-         m_renderer->m_pd3dPrimaryDevice->m_framePending = true;
-         m_renderer->m_pd3dPrimaryDevice->m_frameReadySem.post();
-         m_renderer->m_pd3dPrimaryDevice->m_frameMutex.unlock();
+         m_renderer->m_renderDevice->m_framePending = true;
+         m_renderer->m_renderDevice->m_frameReadySem.post();
+         m_renderer->m_renderDevice->m_frameMutex.unlock();
       }
       else
       // Very imprecise on Windows:
@@ -1694,10 +1694,10 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
       span* tagSpan = new span(series, 1, _T("Flip"));
       #endif
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-      m_renderer->m_pd3dPrimaryDevice->Flip();
+      m_renderer->m_renderDevice->Flip();
       #if defined(ENABLE_DX9) // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
       if (m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC && m_fps > m_maxFramerate * ADAPT_VSYNC_FACTOR)
-         m_renderer->m_pd3dPrimaryDevice->WaitForVSync(false);
+         m_renderer->m_renderDevice->WaitForVSync(false);
       #endif
       g_frameProfiler.ExitProfileSection();
 
@@ -1786,7 +1786,7 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
 
       // Wait for at least one VBlank after last frame submission (adaptive sync)
-      while (m_renderer->m_pd3dPrimaryDevice->m_vsyncCount == 0)
+      while (m_renderer->m_renderDevice->m_vsyncCount == 0)
       {
          m_curFrameSyncOnVBlank = true;
          YieldProcessor();
@@ -1817,11 +1817,11 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       m_lastFrameSyncOnVBlank = m_curFrameSyncOnVBlank;
       m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
       PLOGI_IF(debugLog) << "Frame Scheduled at " << usec() << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
-      m_renderer->m_pd3dPrimaryDevice->m_vsyncCount = 0;
+      m_renderer->m_renderDevice->m_vsyncCount = 0;
       g_frameProfiler.ExitProfileSection(); // Out of Sleep section
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
-      m_renderer->m_pd3dPrimaryDevice->Flip();
-      m_renderer->m_pd3dPrimaryDevice->WaitForVSync(true);
+      m_renderer->m_renderDevice->Flip();
+      m_renderer->m_renderDevice->WaitForVSync(true);
       g_frameProfiler.ExitProfileSection();
       FinishFrame();
       m_curFrameSyncOnVBlank = m_curFrameSyncOnFPS = false;
@@ -1833,9 +1833,9 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
 
 void Player::PrepareFrame(std::function<void()> sync)
 {
-   // Rendering outputs to m_pd3dPrimaryDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
-   // Then it is tonemapped/bloom/dither/... to m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
-   // The optional postprocessing is done from m_pd3dPrimaryDevice->GetPostProcessRenderTarget1() to the main output framebuffer
+   // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
+   // Then it is tonemapped/bloom/dither/... to m_renderDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
+   // The optional postprocessing is done from m_renderDevice->GetPostProcessRenderTarget1() to the main output framebuffer
    #ifdef MSVC_CONCURRENCY_VIEWER
    span* tagSpan = new span(series, 1, _T("Prepare"));
    #endif
@@ -1881,7 +1881,7 @@ void Player::PrepareFrame(std::function<void()> sync)
    if (m_infoMode != IF_PROFILING)
       m_renderer->m_gpu_profiler.Shutdown();
    if (GetProfilingMode() == PF_ENABLED)
-      m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_pd3dPrimaryDevice->GetCoreDevice());
+      m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_renderDevice->GetCoreDevice());
    #endif
 
    #ifdef MSVC_CONCURRENCY_VIEWER
@@ -1932,7 +1932,7 @@ void Player::SubmitFrame()
    span* tagSpan = new span(series, 1, _T("Submit"));
    #endif
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
-   m_renderer->m_pd3dPrimaryDevice->SubmitRenderFrame();
+   m_renderer->m_renderDevice->SubmitRenderFrame();
    g_frameProfiler.ExitProfileSection();
 
    #ifdef MSVC_CONCURRENCY_VIEWER

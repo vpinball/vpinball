@@ -81,7 +81,7 @@ void RenderProbe::RenderSetup(Renderer* renderer)
 {
    assert(m_rd == nullptr);
    m_renderer = renderer;
-   m_rd = renderer->m_pd3dPrimaryDevice;
+   m_rd = renderer->m_renderDevice;
    m_rdState = new RenderDeviceState(m_rd);
    MarkDirty();
 }
