@@ -1184,9 +1184,24 @@ void RenderDevice::Flip()
 
    // Schedule frame presentation (non blocking call, simply queueing the present command in the driver's render queue with a schedule for execution)
    #if defined(ENABLE_BGFX)
+   // Process pending texture upload/mipmap generation before flipping the frame
+   for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
+   {
+      (*it)->GetCoreTexture();
+      if ((*it)->IsMipMapGenerated())
+      {
+         it = m_pendingTextureUploads.erase(it);
+      }
+      else
+      {
+         ++it;
+      }
+   }
    SubmitAndFlipFrame();
+
    #elif defined(ENABLE_OPENGL)
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
+
    #elif defined(ENABLE_DX9)
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    #endif
@@ -1292,6 +1307,15 @@ void RenderDevice::UploadAndSetSMAATextures()
 
    m_FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
    m_FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+}
+
+void RenderDevice::UploadTexture(BaseTexture* texture, const bool linearRGB)
+{
+   Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_NONE, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, linearRGB);
+   #if defined(ENABLE_BGFX)
+   // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
+   m_pendingTextureUploads.push_back(sampler);
+   #endif
 }
 
 void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v)

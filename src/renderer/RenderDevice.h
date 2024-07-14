@@ -173,6 +173,7 @@ public:
 
    void SetMainTextureDefaultFiltering(const SamplerFilter filter);
 
+   void UploadTexture(BaseTexture* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);
    void UnbindSampler(Sampler* sampler);
    Sampler* m_nullTexture = nullptr;
@@ -271,6 +272,7 @@ private:
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
+   vector<Sampler*> m_pendingTextureUploads;
 
 #elif defined(ENABLE_OPENGL)
 public:
