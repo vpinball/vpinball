@@ -307,8 +307,8 @@ void Primitive::CreateRenderGroup(const Collection * const collection)
          prims[i]->m_d.m_skipRendering = false;
    }
 
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_renderer->m_pd3dPrimaryDevice, m_numGroupVertices);
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_renderer->m_pd3dPrimaryDevice, indices);
+   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_renderer->m_renderDevice, m_numGroupVertices);
+   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_renderer->m_renderDevice, indices);
    unsigned int ofs = 0;
    Vertex3D_NoTex2 *buf;
    vertexBuffer->Lock(buf);
