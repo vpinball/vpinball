@@ -4335,20 +4335,20 @@ void LiveUI::BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_ob
    m_renderer->ReinitRenderable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropMaterialCombo("Cap Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szCapMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szCapMaterial) : nullptr, m_table);
-      PropMaterialCombo("Base Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szBaseMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szBaseMaterial) : nullptr, m_table);
-      PropMaterialCombo("Skirt Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szSkirtMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szSkirtMaterial) : nullptr, m_table);
-      PropMaterialCombo("Ring Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szRingMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szRingMaterial) : nullptr, m_table);
-      PropFloat("Radius", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_radius) : nullptr, live_obj ? &(live_obj->m_d.m_radius) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Height Scale", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_heightScale) : nullptr, live_obj ? &(live_obj->m_d.m_heightScale) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Orientation", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_orientation) : nullptr, live_obj ? &(live_obj->m_d.m_orientation) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Ring Speed", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringSpeed) : nullptr, live_obj ? &(live_obj->m_d.m_ringSpeed) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropFloat("Ring Drop", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringDropOffset) : nullptr, live_obj ? &(live_obj->m_d.m_ringDropOffset) : nullptr, 0.1f, 0.5f, "%.1f");
-      PropCheckbox("Reflection Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_reflectionEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
-      PropCheckbox("Cap Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_capVisible) : nullptr, live_obj ? &(live_obj->m_d.m_capVisible) : nullptr);
-      PropCheckbox("Base Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_baseVisible) : nullptr, live_obj ? &(live_obj->m_d.m_baseVisible) : nullptr);
-      PropCheckbox("Skirt Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_skirtVisible) : nullptr, live_obj ? &(live_obj->m_d.m_skirtVisible) : nullptr);
-      PropCheckbox("Ring Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_ringVisible) : nullptr, live_obj ? &(live_obj->m_d.m_ringVisible) : nullptr);
+      PropMaterialCombo("Cap Material", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szCapMaterial), m_table);
+      PropMaterialCombo("Base Material", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szBaseMaterial), m_table);
+      PropMaterialCombo("Skirt Material", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szSkirtMaterial), m_table);
+      PropMaterialCombo("Ring Material", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szRingMaterial), m_table);
+      PropFloat("Radius", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_radius), 0.1f, 0.5f, "%.1f");
+      PropFloat("Height Scale", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_heightScale), 0.1f, 0.5f, "%.1f");
+      PropFloat("Orientation", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_orientation), 0.1f, 0.5f, "%.1f");
+      PropFloat("Ring Speed", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_ringSpeed), 0.1f, 0.5f, "%.1f");
+      PropFloat("Ring Drop", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_ringDropOffset), 0.1f, 0.5f, "%.1f");
+      PropCheckbox("Reflection Enabled", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_reflectionEnabled));
+      PropCheckbox("Cap Visible", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_capVisible));
+      PropCheckbox("Base Visible", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_baseVisible));
+      PropCheckbox("Skirt Visible", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_skirtVisible));
+      PropCheckbox("Ring Visible", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_ringVisible));
       // Missing position
       ImGui::EndTable();
    }
