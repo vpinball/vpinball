@@ -1,11 +1,6 @@
-// Bumper.h: Definition of the Bumper class
-//
-//////////////////////////////////////////////////////////////////////
 #pragma once
-#if !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
-#define AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
+#include "ui/resource.h"
 
 class BumperData final : public BaseProperty
 {
@@ -84,57 +79,22 @@ public:
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
+   // ISelect implementation
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
-
-   // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
-
    void SetDefaultPhysics(const bool fromMouseClick) final;
    void ExportMesh(ObjLoader &loader) final;
+
+   // IEditable implementation
    void RenderBlueprint(Sur *psur, const bool solid) final;
-
-   ItemTypeEnum HitableGetItemType() const final { return eItemBumper; }
-
    void WriteRegDefaults() final;
 
-   BumperData m_d;
-
-   BumperHitCircle *m_pbumperhitcircle = nullptr;
-
-private:
-   void UpdateSkirt(const bool doCalculation);
-   void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
-   void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
-   void GenerateRingMesh(Vertex3D_NoTex2 *buf);
-   void GenerateCapMesh(Vertex3D_NoTex2 *buf);
-
-   PinTable *m_ptable;
-
-   RenderDevice *m_rd = nullptr;
-   MeshBuffer *m_baseMeshBuffer = nullptr;
-   MeshBuffer *m_socketMeshBuffer = nullptr;
-   MeshBuffer *m_ringMeshBuffer = nullptr;
-   MeshBuffer *m_capMeshBuffer = nullptr;
-
-   Matrix3D m_fullMatrix;
-   Vertex3D_NoTex2 *m_ringVertices = nullptr;
-   Texture m_ringTexture;
-   Texture m_skirtTexture;
-   Texture m_baseTexture;
-   Texture m_capTexture;
-
-   float   m_baseHeight;
-   float   m_skirtCounter = 0.0f;
-   bool    m_updateSkirt = false;
-   bool    m_doSkirtAnimation = false;
-   bool    m_enableSkirtAnimation = true;
-   bool    m_ringDown = false;
-   bool    m_ringAnimate = false;
+   // IHitable implementation
+   ItemTypeEnum HitableGetItemType() const final { return eItemBumper; }
 
    // IBumper
-public:
    STDMETHOD(get_BaseMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BaseMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_SkirtMaterial)(/*[out, retval]*/ BSTR *pVal);
@@ -183,6 +143,38 @@ public:
    STDMETHOD(get_EnableSkirtAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableSkirtAnimation)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(PlayHit)();
-};
 
-#endif // !defined(AFX_BUMPER_H__9A202FF0_7FAE_49BF_AA4C_C01C692E6DD9__INCLUDED_)
+   BumperData m_d;
+
+private:
+   void UpdateSkirt(const bool doCalculation);
+   void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
+   void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
+   void GenerateRingMesh(Vertex3D_NoTex2 *buf);
+   void GenerateCapMesh(Vertex3D_NoTex2 *buf);
+
+   PinTable *m_ptable;
+
+   RenderDevice *m_rd = nullptr;
+   MeshBuffer *m_baseMeshBuffer = nullptr;
+   MeshBuffer *m_socketMeshBuffer = nullptr;
+   MeshBuffer *m_ringMeshBuffer = nullptr;
+   MeshBuffer *m_capMeshBuffer = nullptr;
+
+   Matrix3D m_fullMatrix;
+   Vertex3D_NoTex2 *m_ringVertices = nullptr;
+   Texture m_ringTexture;
+   Texture m_skirtTexture;
+   Texture m_baseTexture;
+   Texture m_capTexture;
+
+   float   m_baseHeight;
+   float   m_skirtCounter = 0.0f;
+   bool    m_updateSkirt = false;
+   bool    m_doSkirtAnimation = false;
+   bool    m_enableSkirtAnimation = true;
+   bool    m_ringDown = false;
+   bool    m_ringAnimate = false;
+
+   BumperHitCircle *m_pbumperhitcircle = nullptr;
+};
