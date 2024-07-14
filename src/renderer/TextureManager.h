@@ -26,21 +26,14 @@ public:
    void UnloadAll();
 
    vector<BaseTexture*> GetLoadedTextures() const;
-   SamplerFilter GetFilter(BaseTexture* memtex) const;
-   SamplerAddressMode GetClampU(BaseTexture* memtex) const;
-   SamplerAddressMode GetClampV(BaseTexture* memtex) const;
    bool IsLinearRGB(BaseTexture* memtex) const;
-   bool IsPreRenderOnly(BaseTexture* memtex) const;
 
 private:
    struct MapEntry
    {
-      Sampler* sampler;
       string name;
-      SamplerFilter filter;
-      SamplerAddressMode clampU, clampV;
+      Sampler* sampler;
       bool forceLinearRGB;
-      bool preRenderOnly;
    };
    RenderDevice& m_rd;
    robin_hood::unordered_map<BaseTexture*, MapEntry> m_map;

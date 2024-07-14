@@ -605,9 +605,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          string path = dir + "used_textures.xml";
          if (FileExists(path))
          {
-#ifdef __STANDALONE__
             PLOGI.printf("Texture cache found at %s", path.c_str());
-#endif
             std::stringstream buffer;
             std::ifstream myFile(path);
             buffer << myFile.rdbuf();
@@ -619,27 +617,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                auto root = xmlDoc.FirstChildElement("textures");
                for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
                {
-                  int filter = 0, clampU = 0, clampV = 0;
-                  bool linearRGB = false, preRenderOnly = false;
+                  bool linearRGB = false;
                   const char *name = node->GetText();
                   if (name == nullptr)
                      continue;
                   Texture *tex = m_ptable->GetImage(name);
-                  if (tex == nullptr 
-                     || node->QueryBoolAttribute("linear", &linearRGB) != tinyxml2::XML_SUCCESS
-                     || node->QueryIntAttribute("clampu", &clampU) != tinyxml2::XML_SUCCESS
-                     || node->QueryIntAttribute("clampv", &clampV) != tinyxml2::XML_SUCCESS 
-                     || node->QueryIntAttribute("filter", &filter) != tinyxml2::XML_SUCCESS
-                     || node->QueryBoolAttribute("prerender", &preRenderOnly) != tinyxml2::XML_SUCCESS)
+                  if (tex != nullptr && node->QueryBoolAttribute("linear", &linearRGB) == tinyxml2::XML_SUCCESS)
                   {
-                     PLOGE << "Texture preloading failed for '" << name << "'. Preloading aborted";
-                     break; // Stop preloading on first error
+                     PLOGI << "Texture preloading: '" << name << '\'';
+                     m_renderer->m_pd3dPrimaryDevice->UploadTexture(tex->m_pdsBuffer, linearRGB);
                   }
-                  // For dynamic modes (VR, head tracking,...) mark all preloaded textures as static only
-                  // This will make the cache wrong for the next non static run but it will rebuild, while the opposite would not (all preloads would stay as not prerender only)
-                  m_renderer->m_render_mask = (!m_renderer->IsUsingStaticPrepass() || preRenderOnly) ? Renderer::STATIC_ONLY : Renderer::DEFAULT;
-                  m_renderer->m_pd3dPrimaryDevice->m_texMan.LoadTexture(tex->m_pdsBuffer, (SamplerFilter)filter, (SamplerAddressMode)clampU, (SamplerAddressMode)clampV, linearRGB);
-                  PLOGI << "Texture preloading: '" << name << '\'';
                }
             }
          }
@@ -849,57 +836,90 @@ Player::~Player()
       string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
       std::filesystem::create_directories(std::filesystem::path(dir));
 
-      std::map<string, bool> prevPreRenderOnly;
-      if (!m_renderer->IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
+      tinyxml2::XMLDocument xmlDoc;
+      tinyxml2::XMLElement* root;
+      std::map<string, tinyxml2::XMLElement*> textureAge;
+      string path = dir + "used_textures.xml";
+      if (FileExists(path))
       {
-         std::ifstream myFile(dir + "used_textures.xml");
+         std::ifstream myFile(path);
          std::stringstream buffer;
+         vector<tinyxml2::XMLElement *> toRemove;
          buffer << myFile.rdbuf();
          myFile.close();
          auto xml = buffer.str();
-         tinyxml2::XMLDocument xmlDoc;
          if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
          {
-            auto root = xmlDoc.FirstChildElement("textures");
-            for (auto node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
+            int age;
+            root = xmlDoc.FirstChildElement("textures");
+            for (tinyxml2::XMLElement* node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
             {
-               bool preRenderOnly = false;
                const char *name = node->GetText();
-               if (node->QueryBoolAttribute("prerender", &preRenderOnly) == tinyxml2::XML_SUCCESS)
-                  prevPreRenderOnly[name] = preRenderOnly;
+               if (name)
+               {
+                  if (textureAge.count(name) == 1)
+                     toRemove.push_back(textureAge[name]);
+                  textureAge[name] = node;
+                  if (node->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS)
+                     node->SetAttribute("age", age + 1);
+                  else
+                     node->SetAttribute("age", 0);
+               }
+               else
+               {
+                  toRemove.push_back(node);
+               }
             }
+            // Remove old entries (texture that were not used during a high number of play count)
+            for (auto it = textureAge.cbegin(); it != textureAge.cend();)
+            {
+               if (it->second->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS && age >= 100)
+               {
+                  toRemove.push_back(it->second);
+                  it = textureAge.erase(it);
+               }
+               else
+               {
+                  it++;
+               }
+            }
+            // Delete too old, duplicates and invalid nodes
+            for (tinyxml2::XMLElement* node : toRemove)
+               root->DeleteChild(node);
          }
       }
+      else
+      {
+         root = xmlDoc.NewElement("textures");
+         xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
+         xmlDoc.InsertEndChild(root);
+      }
 
-      tinyxml2::XMLDocument xmlDoc;
-      tinyxml2::XMLElement *root = xmlDoc.NewElement("textures");
-      xmlDoc.InsertEndChild(xmlDoc.NewDeclaration());
-      xmlDoc.InsertEndChild(root);
       vector<BaseTexture *> textures = m_renderer->m_pd3dPrimaryDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
-         for (Texture *image : m_ptable->m_vimage)
+         auto tex = std::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_szName.empty()) && (x->m_pdsBuffer == memtex); });
+         if (tex != m_ptable->m_vimage.end())
          {
-            if (!image->m_szName.empty() && image->m_pdsBuffer == memtex)
+            tinyxml2::XMLElement *node = textureAge[(*tex)->m_szName];
+            if (node == nullptr)
             {
-               tinyxml2::XMLElement *node = xmlDoc.NewElement("texture");
-               node->SetText(image->m_szName.c_str());
-               node->SetAttribute("filter", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetFilter(memtex));
-               node->SetAttribute("clampu", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampU(memtex));
-               node->SetAttribute("clampv", (int)m_renderer->m_pd3dPrimaryDevice->m_texMan.GetClampV(memtex));
-               node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
-               bool preRenderOnly = !m_renderer->IsUsingStaticPrepass() ? (prevPreRenderOnly.find(image->m_szName) != prevPreRenderOnly.end() ? prevPreRenderOnly[image->m_szName] : true)
-                                                                        : m_renderer->m_pd3dPrimaryDevice->m_texMan.IsPreRenderOnly(memtex);
-               node->SetAttribute("prerender", preRenderOnly);
+               node = xmlDoc.NewElement("texture");
+               node->SetText((*tex)->m_szName.c_str());
                root->InsertEndChild(node);
-               break;
             }
+            node->DeleteAttribute("clampu");
+            node->DeleteAttribute("clampv");
+            node->DeleteAttribute("filter");
+            node->DeleteAttribute("prerender");
+            node->SetAttribute("linear", m_renderer->m_pd3dPrimaryDevice->m_texMan.IsLinearRGB(memtex));
+            node->SetAttribute("age", 0);
          }
       }
+
+      std::ofstream myfile(path);
       tinyxml2::XMLPrinter prn;
       xmlDoc.Print(&prn);
-
-      std::ofstream myfile(dir + "used_textures.xml");
       myfile << prn.CStr();
       myfile.close();
    }
