@@ -494,7 +494,7 @@ void Ball::Render(const unsigned int renderMask)
       const float pointSize = 5.f * (float)m_rd->GetCurrentRenderTarget()->GetWidth() / 1920.0f;
       // this is buggy as we set the point size directly while the render command is used later on, but this is the only place where point rendering is used so it's ok for now
       #if defined(ENABLE_BGFX)
-      // FIXME implement
+      // FIXME BGFX implement
       #elif defined(ENABLE_OPENGL)
       glPointSize(pointSize);
       #elif defined(ENABLE_DX9)

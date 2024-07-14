@@ -518,7 +518,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_accelerometer = Vertex2D(0.f, 0.f);
 
-   Ball::m_nextBallID = 0;
+   Ball::ResetBallIDCounter();
 
    // Add a playfield primitive if it is missing
    bool hasExplicitPlayfield = false;
