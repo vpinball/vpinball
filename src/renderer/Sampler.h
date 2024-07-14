@@ -49,6 +49,7 @@ public:
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    bgfx::TextureHandle GetCoreTexture();
+   bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
 #elif defined(ENABLE_OPENGL)
    Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);

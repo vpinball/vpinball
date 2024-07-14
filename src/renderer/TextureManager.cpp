@@ -36,11 +36,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       }
       #endif
       entry.sampler->m_dirty = false;
-      entry.clampU = clampU;
-      entry.clampV = clampV;
-      entry.filter = filter2;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly = isPreRender;
       m_map[memtex] = entry;
       return entry.sampler;
    }
@@ -54,11 +50,7 @@ Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter fi
       }
       entry.sampler->SetClamp(clampU, clampV);
       entry.sampler->SetFilter(filter2);
-      entry.clampU = clampU;
-      entry.clampV = clampV;
-      entry.filter = filter2;
       entry.forceLinearRGB = force_linear_rgb;
-      entry.preRenderOnly &= isPreRender;
       return entry.sampler;
    }
 }
@@ -71,34 +63,10 @@ vector<BaseTexture*> TextureManager::GetLoadedTextures() const
    return keys;
 }
 
-SamplerFilter TextureManager::GetFilter(BaseTexture* memtex) const
-{
-   auto it = m_map.find(memtex);
-   return it == m_map.end() ? SamplerFilter::SF_UNDEFINED : it->second.filter;
-}
-
-SamplerAddressMode TextureManager::GetClampU(BaseTexture* memtex) const
-{
-   auto it = m_map.find(memtex);
-   return it == m_map.end() ? SamplerAddressMode::SA_UNDEFINED : it->second.clampU;
-}
-
-SamplerAddressMode TextureManager::GetClampV(BaseTexture* memtex) const
-{
-   auto it = m_map.find(memtex);
-   return it == m_map.end() ? SamplerAddressMode::SA_UNDEFINED : it->second.clampV;
-}
-
 bool TextureManager::IsLinearRGB(BaseTexture* memtex) const
 {
    auto it = m_map.find(memtex);
    return it == m_map.end() ? false : it->second.forceLinearRGB;
-}
-
-bool TextureManager::IsPreRenderOnly(BaseTexture* memtex) const
-{
-   auto it = m_map.find(memtex);
-   return it == m_map.end() ? false : it->second.preRenderOnly;
 }
 
 void TextureManager::SetDirty(BaseTexture* memtex)
