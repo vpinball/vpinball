@@ -76,7 +76,7 @@
       ImGui::TableSetupColumn("Property", ImGuiTableColumnFlags_WidthStretch); \
       ImGui::TableSetupColumn("Sync", ImGuiTableColumnFlags_WidthFixed); \
    }
-
+#define PROP_ACCESS(startup_obj, live_obj, prop) startup_obj ? &(startup_obj->prop) : nullptr, live_obj ? &(live_obj->prop) : nullptr
 
 #define ICON_SAVE ICON_FK_FLOPPY_O
 
@@ -3244,7 +3244,7 @@ void LiveUI::UpdateVideoOptionsModal()
          {
             g_pvp->m_settings.SaveValue(Settings::Player, "BallAntiStretch"s, antiStretch);
             for (auto ball : m_player->m_vball)
-               ball->m_pBall->m_antiStretch = antiStretch;
+               m_renderer->ReinitRenderable(ball->m_pBall);
          }
       }
 
@@ -4304,27 +4304,28 @@ void LiveUI::BallProperties(bool is_live, Ball *startup_obj, Ball *live_obj)
    Ball *const ball = (is_live ? live_obj : startup_obj);
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto upd_ball_tex = [this, ball](bool is_live, const string &prev, const string &v) { ball->m_pinballEnv = m_live_table->GetImage(ball->m_d.m_szImage); };
-      auto upd_ball_decal = [this, ball](bool is_live, const string &prev, const string &v) { ball->m_pinballDecal = m_live_table->GetImage(ball->m_d.m_imageDecal); };
-      PropCheckbox("Visible", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);
-      PropRGB("Color", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
-      PropImageCombo("Image", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_live_table, upd_ball_tex);
-      PropCheckbox("Spherical Map", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_pinballEnvSphericalMapping) : nullptr);
-      PropImageCombo("Decal", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_imageDecal) : nullptr, m_live_table, upd_ball_decal);
-      PropCheckbox("Decal mode", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_decalMode) : nullptr);
-      PropFloat("PF Reflection Strength", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_playfieldReflectionStrength) : nullptr, 0.02f, 0.1f);
-      PropFloat("Bulb Intensity Scale", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_bulb_intensity_scale) : nullptr, 0.02f, 0.1f);
-      PropCheckbox("Reflection enabled", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_reflectionEnabled) : nullptr);
-      PropCheckbox("Reflection forced", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_d.m_forceReflection) : nullptr);
+      PropCheckbox("Visible", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_visible));
+      PropCheckbox("Reflection enabled", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_reflectionEnabled));
+      PropCheckbox("Reflection forced", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_forceReflection));
+      PropCheckbox("Use Table Settings", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_useTableRenderSettings));
+      ImGui::BeginDisabled(ball->m_d.m_useTableRenderSettings);
+      PropRGB("Color", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_color));
+      PropImageCombo("Image", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szImage), m_table);
+      PropCheckbox("Spherical Map", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_pinballEnvSphericalMapping));
+      PropImageCombo("Decal", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_imageDecal), m_table);
+      PropCheckbox("Decal mode", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_decalMode));
+      PropFloat("PF Reflection Strength", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_playfieldReflectionStrength), 0.02f, 0.1f);
+      PropFloat("Bulb Intensity Scale", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_bulb_intensity_scale), 0.02f, 0.1f);
+      ImGui::EndDisabled();
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Physics", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      PropVec3("Position", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_pos) : nullptr, "%.0f", ImGuiInputTextFlags_CharsDecimal);
-      PropFloat("Radius", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_radius) : nullptr, 0.02f, 0.1f);
-      PropFloat("Mass", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_mass) : nullptr, 0.02f, 0.1f);
-      PropVec3("Velocity", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_d.m_vel) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
-      PropVec3("Angular Momentum", startup_obj, is_live, nullptr, live_obj ? &(live_obj->m_hitBall.m_angularmomentum) : nullptr, "%.3f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Position", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_hitBall.m_d.m_pos), "%.0f", ImGuiInputTextFlags_CharsDecimal);
+      PropFloat("Radius", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_hitBall.m_d.m_radius), 0.02f, 0.1f);
+      PropFloat("Mass", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_hitBall.m_d.m_mass), 0.02f, 0.1f);
+      PropVec3("Velocity", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_hitBall.m_d.m_vel), "%.3f", ImGuiInputTextFlags_CharsDecimal);
+      PropVec3("Angular Momentum", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_hitBall.m_angularmomentum), "%.3f", ImGuiInputTextFlags_CharsDecimal);
       ImGui::EndTable();
    }
 }

@@ -104,37 +104,20 @@ public:
    
    DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
 
+   // ISelect implementation
    void MoveOffset(const float dx, const float dy) final;
    void SetObjectPos() final;
-
-   // Multi-object manipulation
    Vertex2D GetCenter() const final;
    void PutCenter(const Vertex2D &pv) final;
 
+   // IEditable implementation
    void RenderBlueprint(Sur *psur, const bool solid) final;
-
-   ItemTypeEnum HitableGetItemType() const final { return eItemBall; }
-
    void WriteRegDefaults() final;
 
-   BallData m_d;
-   HitBall m_hitBall;
+   // IHitable implementation
+   ItemTypeEnum HitableGetItemType() const final { return eItemBall; }
 
-   bool m_antiStretch = false;
-   Texture *m_pinballEnv = nullptr;
-   Texture *m_pinballDecal = nullptr;
-
-   static unsigned int m_nextBallID; // increased for each ball created to have an unique ID for scripts for each ball
-
-private:
-   PinTable *m_ptable = nullptr;
-   RenderDevice *m_rd = nullptr;
-   static const AntiStretchHelper m_ash;
-   const unsigned int m_id; // unique ID for each ball
-   static unsigned int GetNextBallID();
-
-   // IBall
-public:
+   // IBall implementation
    STDMETHOD(get_FrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_FrontDecal)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_DecalMode)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -184,4 +167,21 @@ public:
    STDMETHOD(put_ForceReflection)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
+
+   static void ResetBallIDCounter() { m_nextBallID = 0; };
+
+   BallData m_d;
+   HitBall m_hitBall;
+
+private:
+   static const AntiStretchHelper m_ash;
+   static unsigned int m_nextBallID; // increased for each ball created to have an unique ID for scripts for each ball
+   static unsigned int GetNextBallID();
+
+   const unsigned int m_id; // unique ID for each ball
+   PinTable *m_ptable = nullptr;
+   RenderDevice *m_rd = nullptr;
+   Texture *m_pinballEnv = nullptr;
+   Texture *m_pinballDecal = nullptr;
+   bool m_antiStretch = false;
 };
