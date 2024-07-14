@@ -19,6 +19,9 @@ Ball::Ball() : m_id(GetNextBallID())
    m_d.m_forceReflection = false;
    m_d.m_visible = true;
    m_d.m_decalMode = false;
+   m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
+   m_hitBall.m_d.m_radius = 25.f;
+   m_hitBall.m_d.m_mass = 1.f;
    m_hitBall.m_pBall = this;
    m_hitBall.m_editable = this;
    m_hitBall.CalcHitBBox(); // need to update here, as only done lazily
@@ -47,8 +50,19 @@ HRESULT Ball::Init(PinTable *const ptable, const float x, const float y, const b
    SetDefaults(fromMouseClick);
    m_hitBall.m_d.m_pos.x = x;
    m_hitBall.m_d.m_pos.y = y;
-   m_hitBall.m_d.m_pos.z = 0.0f;
+   m_hitBall.m_d.m_pos.z = m_hitBall.m_d.m_radius;
    return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
+}
+
+void Ball::SetObjectPos()
+{
+    m_vpinball->SetObjectPosCur(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y);
+}
+
+void Ball::MoveOffset(const float dx, const float dy)
+{
+   m_hitBall.m_d.m_pos.x += dx;
+   m_hitBall.m_d.m_pos.y += dy;
 }
 
 Vertex2D Ball::GetCenter() const
