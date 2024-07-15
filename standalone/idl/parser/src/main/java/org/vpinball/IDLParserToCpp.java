@@ -98,7 +98,7 @@ public class IDLParserToCpp {
 
 		FileOutputStream outputStream = new FileOutputStream(out);
 
-		outputStream.write("#include \"stdafx.h\"\n".getBytes());
+		outputStream.write("#include \"core/stdafx.h\"\n".getBytes());
 		outputStream.write("#include \"olectl.h\"\n".getBytes());
 		outputStream.write("\n".getBytes());
 
@@ -1003,6 +1003,7 @@ public class IDLParserToCpp {
 				new IDLInterface("ILightSeqEvents", "LightSeq"),
 				new IDLInterface("IVPDebug", "DebuggerModule", "VPDebug"),
 				new IDLInterface("IDecal", "Decal"),
-				new IDLInterface("IBall", "BallEx", "IBall")));
+				new IDLInterface("IBall", "Ball", "IBall"),
+				new IDLInterface("IBallEvents", "Ball")));
 	}
 }

@@ -14118,41 +14118,6 @@ STDMETHODIMP Rubber::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDoc
 	return E_NOTIMPL;
 }
 
-HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
-	static struct {
-		DISPID dispId;
-		const WCHAR *name;
-	} idsNamesList[] = {
-			{ NULL },
-			{ DISPID_GameEvents_Init, L"_Init" },
-			{ DISPID_TimerEvents_Timer, L"_Timer" }
-	};
-
-	static WCHAR wzName[MAXSTRING];
-	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
-	int r;
-	while(min <= max) {
-		i = (min + max) / 2;
-		if (idsNamesList[i].dispId == dispid) {
-			wcscpy(wzName, m_wzName);
-			wcscat(wzName, idsNamesList[i].name);
-			LPOLESTR fnNames = (LPOLESTR)wzName;
-			DISPID tDispid;
-			CComPtr<IDispatch> disp;
-			g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);
-			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
-				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
-			}
-			return DISP_E_MEMBERNOTFOUND;
-		}
-		else if (idsNamesList[i].dispId < dispid)
-		   min = i+1;
-		else
-		   max = i-1;
-	}
-	return DISP_E_MEMBERNOTFOUND;
-}
-
 STDMETHODIMP Ball::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
@@ -14667,6 +14632,41 @@ STDMETHODIMP Ball::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocSt
 	return E_NOTIMPL;
 }
 
+HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
+	static struct {
+		DISPID dispId;
+		const WCHAR *name;
+	} idsNamesList[] = {
+			{ NULL },
+			{ DISPID_GameEvents_Init, L"_Init" },
+			{ DISPID_TimerEvents_Timer, L"_Timer" }
+	};
+
+	static WCHAR wzName[MAXSTRING];
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
+	int r;
+	while(min <= max) {
+		i = (min + max) / 2;
+		if (idsNamesList[i].dispId == dispid) {
+			wcscpy(wzName, m_wzName);
+			wcscat(wzName, idsNamesList[i].name);
+			LPOLESTR fnNames = (LPOLESTR)wzName;
+			DISPID tDispid;
+			CComPtr<IDispatch> disp;
+			g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);
+			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
+			}
+			return DISP_E_MEMBERNOTFOUND;
+		}
+		else if (idsNamesList[i].dispId < dispid)
+		   min = i+1;
+		else
+		   max = i-1;
+	}
+	return DISP_E_MEMBERNOTFOUND;
+}
+
 HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static struct {
 		DISPID dispId;
@@ -14839,12 +14839,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_DispReel_BackColor: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2420: [propget, id(DISPID_DispReel_BackColor), helpstring("property BackColor")] HRESULT BackColor([out, retval] OLE_COLOR *pVal);
+				// line 2431: [propget, id(DISPID_DispReel_BackColor), helpstring("property BackColor")] HRESULT BackColor([out, retval] OLE_COLOR *pVal);
 				V_VT(&res) = VT_UI4;
 				hres = get_BackColor(&V_UI4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2421: [propput, id(DISPID_DispReel_BackColor), helpstring("property BackColor")] HRESULT BackColor([in] OLE_COLOR newVal);
+				// line 2432: [propput, id(DISPID_DispReel_BackColor), helpstring("property BackColor")] HRESULT BackColor([in] OLE_COLOR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_UI4);
@@ -14855,12 +14855,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Image: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2422: [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
+				// line 2433: [propget, id(DISPID_Image), helpstring("property Image")] HRESULT Image([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Image(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2423: [propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
+				// line 2434: [propput, id(DISPID_Image), helpstring("property Image")] HRESULT Image([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -14871,12 +14871,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 11: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2424: [propget, id(11), helpstring("property Reels")] HRESULT Reels([out, retval] float *pVal);
+				// line 2435: [propget, id(11), helpstring("property Reels")] HRESULT Reels([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Reels(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2425: [propput, id(11), helpstring("property Reels")] HRESULT Reels([in] float newVal);
+				// line 2436: [propput, id(11), helpstring("property Reels")] HRESULT Reels([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -14887,12 +14887,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 5: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2426: [propget, id(5), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
+				// line 2437: [propget, id(5), helpstring("property Width")] HRESULT Width([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Width(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2427: [propput, id(5), helpstring("property Width")] HRESULT Width([in] float newVal);
+				// line 2438: [propput, id(5), helpstring("property Width")] HRESULT Width([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -14903,12 +14903,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 6: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2428: [propget, id(6), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
+				// line 2439: [propget, id(6), helpstring("property Height")] HRESULT Height([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Height(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2429: [propput, id(6), helpstring("property Height")] HRESULT Height([in] float newVal);
+				// line 2440: [propput, id(6), helpstring("property Height")] HRESULT Height([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -14919,12 +14919,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 7: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2430: [propget, id(7), helpstring("property Spacing")] HRESULT Spacing([out, retval] float *pVal);
+				// line 2441: [propget, id(7), helpstring("property Spacing")] HRESULT Spacing([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Spacing(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2431: [propput, id(7), helpstring("property Spacing")] HRESULT Spacing([in] float newVal);
+				// line 2442: [propput, id(7), helpstring("property Spacing")] HRESULT Spacing([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -14935,12 +14935,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 12: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2432: [propget, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([out, retval] VARIANT_BOOL *pVal);
+				// line 2443: [propget, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_IsTransparent(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2433: [propput, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([in] VARIANT_BOOL newVal);
+				// line 2444: [propput, id(12), helpstring("property IsTransparent")] HRESULT IsTransparent([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -14951,12 +14951,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Sound: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2434: [propget, id(DISPID_Sound), helpstring("property Sound")] HRESULT Sound([out, retval] BSTR *pVal);
+				// line 2445: [propget, id(DISPID_Sound), helpstring("property Sound")] HRESULT Sound([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Sound(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2435: [propput, id(DISPID_Sound), helpstring("property Sound")] HRESULT Sound([in] BSTR newVal);
+				// line 2446: [propput, id(DISPID_Sound), helpstring("property Sound")] HRESULT Sound([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -14967,12 +14967,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 8: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2436: [propget, id(8), helpstring("property Steps")] HRESULT Steps([out, retval] float *pVal);
+				// line 2447: [propget, id(8), helpstring("property Steps")] HRESULT Steps([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Steps(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2437: [propput, id(8), helpstring("property Steps")] HRESULT Steps([in] float newVal);
+				// line 2448: [propput, id(8), helpstring("property Steps")] HRESULT Steps([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -14983,12 +14983,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Enabled: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2438: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+				// line 2449: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_TimerEnabled(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2439: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+				// line 2450: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -14999,12 +14999,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Interval: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2440: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+				// line 2451: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_TimerInterval((long*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2441: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+				// line 2452: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15015,12 +15015,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 9: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2442: [propget, id(9), helpstring("property X")] HRESULT X([out, retval] float *pVal);
+				// line 2453: [propget, id(9), helpstring("property X")] HRESULT X([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_X(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2443: [propput, id(9), helpstring("property X")] HRESULT X([in] float newVal);
+				// line 2454: [propput, id(9), helpstring("property X")] HRESULT X([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15031,12 +15031,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 10: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2444: [propget, id(10), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
+				// line 2455: [propget, id(10), helpstring("property Y")] HRESULT Y([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Y(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2445: [propput, id(10), helpstring("property Y")] HRESULT Y([in] float newVal);
+				// line 2456: [propput, id(10), helpstring("property Y")] HRESULT Y([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15047,12 +15047,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 14: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2446: [propget, id(14), helpstring("property Range")] HRESULT Range([out, retval] float *pVal);
+				// line 2457: [propget, id(14), helpstring("property Range")] HRESULT Range([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_Range(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2447: [propput, id(14), helpstring("property Range")] HRESULT Range([in] float newVal);
+				// line 2458: [propput, id(14), helpstring("property Range")] HRESULT Range([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15063,12 +15063,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Name: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2448: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+				// line 2459: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Name(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2449: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+				// line 2460: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -15079,12 +15079,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 15: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2450: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
+				// line 2461: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_UpdateInterval((long*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2451: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
+				// line 2462: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15095,11 +15095,11 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_UserValue: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2452: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+				// line 2463: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 				hres = get_UserValue(&res);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2453: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+				// line 2464: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -15110,12 +15110,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 17: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2454: [propget, id(17), helpstring("property UseImageGrid")] HRESULT UseImageGrid([out, retval] VARIANT_BOOL *pVal);
+				// line 2465: [propget, id(17), helpstring("property UseImageGrid")] HRESULT UseImageGrid([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_UseImageGrid(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2455: [propput, id(17), helpstring("property UseImageGrid")] HRESULT UseImageGrid([in] VARIANT_BOOL newVal);
+				// line 2466: [propput, id(17), helpstring("property UseImageGrid")] HRESULT UseImageGrid([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -15126,12 +15126,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 458: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2456: [propget, id(458), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
+				// line 2467: [propget, id(458), helpstring("property Visible")] HRESULT Visible([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_Visible(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2457: [propput, id(458), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
+				// line 2468: [propput, id(458), helpstring("property Visible")] HRESULT Visible([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -15142,12 +15142,12 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 18: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2458: [propget, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([out, retval] long *pVal);
+				// line 2469: [propget, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_ImagesPerGridRow((long*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2459: [propput, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([in] long newVal);
+				// line 2470: [propput, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15158,7 +15158,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 30: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2461: [id(30), helpstring("method AddValue")] HRESULT AddValue([in] long Value);
+				// line 2472: [id(30), helpstring("method AddValue")] HRESULT AddValue([in] long Value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15169,14 +15169,14 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 31: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2462: [id(31), helpstring("method ResetToZero")] HRESULT ResetToZero();
+				// line 2473: [id(31), helpstring("method ResetToZero")] HRESULT ResetToZero();
 				hres = ResetToZero();
 			}
 			break;
 		}
 		case 32: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2463: [id(32), helpstring("method SpinReel")] HRESULT SpinReel([in] long ReelNumber, [in] long PulseCount);
+				// line 2474: [id(32), helpstring("method SpinReel")] HRESULT SpinReel([in] long ReelNumber, [in] long PulseCount);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15191,7 +15191,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 33: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2464: [id(33), helpstring("method SetValue")] HRESULT SetValue([in] long Value);
+				// line 2475: [id(33), helpstring("method SetValue")] HRESULT SetValue([in] long Value);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15312,12 +15312,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Name: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2488: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+				// line 2499: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Name(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2489: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+				// line 2500: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -15328,12 +15328,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Collection: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2490: [propget, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([out, retval] BSTR *pVal);
+				// line 2501: [propget, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Collection(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2491: [propput, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([in] BSTR newVal);
+				// line 2502: [propput, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -15344,12 +15344,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 9: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2492: [propget, id(9), helpstring("property CenterX")] HRESULT CenterX([out, retval] float *pVal);
+				// line 2503: [propget, id(9), helpstring("property CenterX")] HRESULT CenterX([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_CenterX(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2493: [propput, id(9), helpstring("property CenterX")] HRESULT CenterX([in] float newVal);
+				// line 2504: [propput, id(9), helpstring("property CenterX")] HRESULT CenterX([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15360,12 +15360,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 10: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2494: [propget, id(10), helpstring("property CenterY")] HRESULT CenterY([out, retval] float *pVal);
+				// line 2505: [propget, id(10), helpstring("property CenterY")] HRESULT CenterY([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_CenterY(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2495: [propput, id(10), helpstring("property CenterY")] HRESULT CenterY([in] float newVal);
+				// line 2506: [propput, id(10), helpstring("property CenterY")] HRESULT CenterY([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15376,12 +15376,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 15: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2496: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
+				// line 2507: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_UpdateInterval((long*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2497: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
+				// line 2508: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15392,12 +15392,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Enabled: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2498: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+				// line 2509: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_TimerEnabled(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2499: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+				// line 2510: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -15408,12 +15408,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Interval: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2500: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+				// line 2511: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_TimerInterval((long*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2501: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+				// line 2512: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15424,11 +15424,11 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_UserValue: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2502: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+				// line 2513: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 				hres = get_UserValue(&res);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2503: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+				// line 2514: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -15439,7 +15439,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 32: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2504: [id(32), helpstring("method Play")] HRESULT Play([in] SequencerState Animation, [defaultvalue(0)] long TailLength, [defaultvalue(1)] long Repeat, [defaultvalue(0)] long Pause);
+				// line 2515: [id(32), helpstring("method Play")] HRESULT Play([in] SequencerState Animation, [defaultvalue(0)] long TailLength, [defaultvalue(1)] long Repeat, [defaultvalue(0)] long Pause);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15465,7 +15465,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 33: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2505: [id(33), helpstring("method StopPlay")] HRESULT StopPlay();
+				// line 2516: [id(33), helpstring("method StopPlay")] HRESULT StopPlay();
 				hres = StopPlay();
 			}
 			break;
@@ -15528,3 +15528,4 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	}
 	return DISP_E_MEMBERNOTFOUND;
 }
+

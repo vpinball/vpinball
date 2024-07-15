@@ -841,6 +841,8 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 #ifdef ENABLE_IGAMECONTROLLER
 #endif
       break;
+   default:
+      break;
    }
 }
 
