@@ -1493,13 +1493,15 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
-#if defined(ENABLE_BGFX)
-   // FIXME BGFX implement
-   /* m_DMDShader->SetVector(SHADER_clip_plane, &plane);
+#if defined(__OPENGLES__)
+   // FIXME GLES implement (or use BGFX OpenGL ES implementation)
+   return;
+#elif defined(ENABLE_BGFX)
+   m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
    m_lightShader->SetVector(SHADER_clip_plane, &plane);
    m_flasherShader->SetVector(SHADER_clip_plane, &plane);
-   m_ballShader->SetVector(SHADER_clip_plane, &plane);*/
+   m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #elif defined(ENABLE_OPENGL)
    m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
@@ -1507,7 +1509,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    m_flasherShader->SetVector(SHADER_clip_plane, &plane);
    m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #elif defined(ENABLE_DX9)
-   // FIXME shouldn't we set the Model matrix to identity first ?
+   // FIXME DX9 shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0); // = world * view * proj
    mT.Invert();
    mT.Transpose();
