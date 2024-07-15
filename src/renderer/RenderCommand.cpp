@@ -231,7 +231,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          break;
       }
 
-   #if 1
       case RC_DRAW_MESH:
       {
          unsigned int np; 
@@ -348,7 +347,6 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          }
          break;
       }
-#endif
       default: break;
       }
       m_shader->End();

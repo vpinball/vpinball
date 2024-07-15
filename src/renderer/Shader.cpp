@@ -23,8 +23,6 @@
 #pragma pop_macro("_WIN64")
 #endif
 
-ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // FIXME move to render device
-
 #elif defined(ENABLE_OPENGL)
 #include <windows.h>
 #include <iostream>
@@ -455,7 +453,10 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    shaderUniformNames[SHADER_matProj].count = nEyes;
    shaderUniformNames[SHADER_matWorldViewProj].count = nEyes;
    for (int i = 0; i < SHADER_TECHNIQUE_COUNT; i++)
+   {
       m_techniques[i] = BGFX_INVALID_HANDLE;
+      m_clipPlaneTechniques[i] = BGFX_INVALID_HANDLE;
+   }
    for (int i = 0; i < SHADER_UNIFORM_COUNT; i++)
    {
       ShaderUniform u = shaderUniformNames[i];
@@ -623,6 +624,10 @@ void Shader::Begin()
    assert(current_shader == nullptr);
    assert(m_technique != SHADER_TECHNIQUE_INVALID);
    current_shader = this;
+   
+   #if defined(ENABLE_BGFX)
+
+   #else
    if (m_boundTechnique != m_technique)
    {
       m_renderDevice->m_curTechniqueChanges++;
@@ -640,8 +645,11 @@ void Shader::Begin()
       }
       #endif
    }
+   #endif
+   
    for (const auto& uniformName : m_uniforms[m_technique])
       ApplyUniform(uniformName);
+   
    #if defined(ENABLE_DX9)
    unsigned int cPasses;
    CHECKD3D(m_shader->Begin(&cPasses, 0));
@@ -1264,9 +1272,16 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
 ///////////////////////////////////////////////////////////////////////////////
 // BGFX specific implementation
 
-void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques technique, const char* vsName, const char* fsName)
+bgfx::ProgramHandle Shader::GetCore() const
 {
-   assert(!bgfx::isValid(m_techniques[technique]));
+   return (m_renderDevice->GetActiveRenderState().GetRenderState(RenderState::CLIPPLANEENABLE) == RenderState::RS_TRUE) && bgfx::isValid(m_clipPlaneTechniques[m_technique])
+      ? m_clipPlaneTechniques[m_technique]
+      : m_techniques[m_technique];
+}
+
+void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques technique, const char* vsName, const char* fsName, const bool isClipVariant)
+{
+   assert(!bgfx::isValid(isClipVariant ? m_clipPlaneTechniques[technique] : m_techniques[technique]));
    bgfx::RendererType::Enum type = bgfx::getRendererType();
    bgfx::ShaderHandle vsh = bgfx::createEmbeddedShader(embeddedShaders, type, vsName);
    bgfx::ShaderHandle fsh = bgfx::createEmbeddedShader(embeddedShaders, type, fsName);
@@ -1276,13 +1291,14 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
       m_hasError = true;
       return;
    }
-   m_techniques[technique] = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
-   if (!bgfx::isValid(m_techniques[technique]))
+   bgfx::ProgramHandle ph = bgfx::createProgram(vsh, fsh, true /* destroy shaders when program is destroyed */);
+   if (!bgfx::isValid(ph))
    {
       PLOGE << "Failed to build program from " << vsName << " / " << fsName;
       m_hasError = true;
       return;
    }
+   (isClipVariant ? m_clipPlaneTechniques[technique] : m_techniques[technique]) = ph;
 
    // Create uniforms from informations gathered by BGFX
    if (bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGL || bgfx::getRendererType() == bgfx::RendererType::Enum::OpenGLES)
@@ -1292,6 +1308,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    }
    else
    {
+      m_uniforms[technique].clear();
       for (int j = 0; j < 2; j++)
       {
          bgfx::UniformHandle uniforms[SHADER_UNIFORM_COUNT];
@@ -1312,7 +1329,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             }
          }
       }
-      /* Can be used to update hte list of used uniforms for OpenGL / OpenGL ES backends
+      /* Can be used to update the list of used uniforms for OpenGL / OpenGL ES backends
       std::sort(m_uniforms[technique].begin(), m_uniforms[technique].end());
       std::stringstream ss;
       ss << "SHADER_TECHNIQUE(" << GetTechniqueName(technique);
@@ -1345,6 +1362,7 @@ void Shader::Load()
    #define BGFX_EMBEDDED_SHADER_ST_CLIP(a) BGFX_EMBEDDED_SHADER_ST(a##_clip), BGFX_EMBEDDED_SHADER_ST(a##_noclip)
    static const bgfx::EmbeddedShader embeddedShaders[] =
    {
+      // Basic material shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_basic_notex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_kicker),
@@ -1362,7 +1380,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
-      //
+      // Ball shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_decal),
@@ -1370,20 +1388,20 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_decal),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
-      //
+      // DMD & Sprite shaders
       BGFX_EMBEDDED_SHADER(vs_dmd_noworld),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
       BGFX_EMBEDDED_SHADER_CLIP(fs_dmd_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
-      //
+      // Bulb light shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_light),
       BGFX_EMBEDDED_SHADER_CLIP(fs_light_noshadow),
       BGFX_EMBEDDED_SHADER_CLIP(fs_light_ballshadow),
-      //
+      // Flasher shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_flasher),
       BGFX_EMBEDDED_SHADER_CLIP(fs_flasher),
-      //
+      // Stereo post-processes
       BGFX_EMBEDDED_SHADER_ST(vs_postprocess),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_tb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_sbs),
@@ -1394,7 +1412,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_srgb_dyndesat),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_lin_gamma_dyndesat),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_stereo_anaglyph_deghost),
-      //
+      // Tonemappers
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
@@ -1417,7 +1435,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
-      //
+      // Screen Space post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_display),
@@ -1427,7 +1445,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_copy),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
-      //
+      // Anti-Aliasing as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_nfaa),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa_edge),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa),
@@ -1442,7 +1460,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER(fs_pp_smaa_blendweightcalculation),
       BGFX_EMBEDDED_SHADER(vs_pp_smaa_neighborhoodblending),
       BGFX_EMBEDDED_SHADER(fs_pp_smaa_neighborhoodblending),
-      //
+      // Blur shaders
       BGFX_EMBEDDED_SHADER_ST(fs_blur_7_h),
       BGFX_EMBEDDED_SHADER_ST(fs_blur_7_v),
       BGFX_EMBEDDED_SHADER_ST(fs_blur_9_h),
@@ -1482,6 +1500,20 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture,    STEREO(vs_basic_tex_noclip),           STEREO(fs_unshaded_tex_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_noclip),  STEREO(fs_unshaded_notex_ballshadow_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_noclip),       STEREO(fs_unshaded_tex_ballshadow_noclip));
+      // Variants with a clipping plane
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture,       STEREO(vs_basic_tex_clip),           STEREO(fs_basic_tex_noat_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_with_texture_at,    STEREO(vs_basic_tex_clip),           STEREO(fs_basic_tex_at_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_without_texture,    STEREO(vs_basic_notex_clip),         STEREO(fs_basic_notex_noat_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_reflection_only,    STEREO(vs_basic_tex_clip),           STEREO(fs_basic_refl_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_with_texture,       STEREO(vs_classic_light_tex_clip),   STEREO(fs_classic_light_tex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_light_without_texture,    STEREO(vs_classic_light_notex_clip), STEREO(fs_classic_light_notex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_without_texture, STEREO(vs_basic_notex_clip),         STEREO(fs_decal_notex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bg_decal_with_texture,    STEREO(vs_basic_tex_clip),           STEREO(fs_decal_tex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_kickerBoolean,            STEREO(vs_kicker_clip),              STEREO(fs_basic_notex_noat_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture, STEREO(vs_basic_notex_clip),         STEREO(fs_unshaded_notex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture,    STEREO(vs_basic_tex_clip),           STEREO(fs_unshaded_tex_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_clip),  STEREO(fs_unshaded_notex_ballshadow_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_clip),       STEREO(fs_unshaded_tex_ballshadow_clip), true);
       break;
    case BALL_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));
@@ -1490,6 +1522,13 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball_noclip), STEREO(fs_ball_spherical_decal_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_noclip), STEREO(fs_ball_debug_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_noclip), STEREO(fs_ball_trail_noclip));
+      // Variants with a clipping plane
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_clip), STEREO(fs_ball_equirectangular_nodecal_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode,              STEREO(vs_ball_clip), STEREO(fs_ball_equirectangular_decal_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap,           STEREO(vs_ball_clip), STEREO(fs_ball_spherical_nodecal_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball_clip), STEREO(fs_ball_spherical_decal_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_clip), STEREO(fs_ball_debug_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_clip), STEREO(fs_ball_trail_clip), true);
       break;
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
@@ -1498,14 +1537,22 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       "vs_dmd_noworld",            "fs_sprite_tex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_dmd_noworld",            "fs_sprite_notex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
+      // Variants with a clipping plane
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_tex_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_clip), "fs_sprite_tex_clip", true);
       break;
    case DMD_VR_SHADER: assert(false); break;
    case FLASHER_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher_noclip), "fs_flasher_noclip");
+      // Variants with a clipping plane
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher_clip), "fs_flasher_clip", true);
       break;
    case LIGHT_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, STEREO(vs_light_noclip), "fs_light_noshadow_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light_noclip), "fs_light_ballshadow_noclip");
+      // Variants with a clipping plane
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light, STEREO(vs_light_clip), "fs_light_noshadow_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_bulb_light_with_ball_shadows, STEREO(vs_light_clip), "fs_light_ballshadow_clip", true);
       break;
    case STEREO_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_stereo_SBS, STEREO(vs_postprocess), STEREO(fs_pp_stereo_sbs));

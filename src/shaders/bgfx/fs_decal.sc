@@ -1,7 +1,9 @@
-#ifdef STEREO
-$input v_worldPos, v_tablePos, v_normal, v_texcoord0, v_eye
-#else
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
+#ifdef STEREO
+	$input v_eye
+#endif
+#ifdef CLIP
+	$input v_clipDistance
 #endif
 
 #include "common.sh"
@@ -12,6 +14,10 @@ uniform vec4 alphaTestValue; // FIXME Actually float but extended to vec4 for BG
 #ifdef TEX
 SAMPLER2D(tex_base_color, 0);
 void main() {
+   #ifdef CLIP
+   if (v_clipDistance < 0.0)
+      discard;
+   #endif
    vec4 pixel = texture2D(tex_base_color, v_texcoord0);
    if (pixel.a <= alphaTestValue.x)
       discard;
@@ -19,7 +25,15 @@ void main() {
 }
 
 #else
-EARLY_DEPTH_STENCIL void main() {
+
+#if !defined(CLIP)
+EARLY_DEPTH_STENCIL
+#endif
+void main() {
+   #ifdef CLIP
+   if (v_clipDistance < 0.0)
+      discard;
+   #endif
    gl_FragColor = cBase_Alpha;
 }
 
