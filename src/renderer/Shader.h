@@ -688,14 +688,14 @@ private:
    // caches
 #if defined(ENABLE_BGFX)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per program, so per technique)
-   static ShaderTechniques m_boundTechnique; // TODO => move to render device ? This is global 
    bgfx::ProgramHandle m_techniques[SHADER_TECHNIQUE_COUNT];
+   bgfx::ProgramHandle m_clipPlaneTechniques[SHADER_TECHNIQUE_COUNT];
    bgfx::UniformHandle m_uniformHandles[SHADER_UNIFORM_COUNT];
 
-   void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques tech, const char* vsName, const char* fsName);
+   void loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTechniques tech, const char* vsName, const char* fsName, const bool isClipVariant = false);
 
 public:
-   bgfx::ProgramHandle GetCore() const { return m_techniques[m_technique]; }
+   bgfx::ProgramHandle GetCore() const;
 
 #elif defined(ENABLE_OPENGL)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per technique for OpenGL)
