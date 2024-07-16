@@ -28,10 +28,11 @@ uniform mat4 matWorldViewInverseTranspose;
 void main()
 {
     vec4 pos = vec4(a_position, 1.0);
-    v_tablePos = mul(matWorld, pos).xyz;
+	vec4 tpos = mul(matWorld, pos);
+    v_tablePos = tpos.xyz;
     v_worldPos = mul(matWorldView, pos).xyz;
 	#ifdef CLIP
-		v_clipDistance = dot(clip_plane, v_tablePos);
+		v_clipDistance = dot(clip_plane, tpos);
 	#endif
     // Due to layback, we use non affine transform so we need to use inverse transpose of the world view matrix
     v_normal = normalize(mul(matWorldViewInverseTranspose, vec4(a_normal, 0.0)).xyz);

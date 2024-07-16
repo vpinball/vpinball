@@ -402,8 +402,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
 
    bgfx::Init init;
-   init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
-   init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
+   init.type = bgfx::RendererType::Metal;
+   init.type = bgfx::RendererType::OpenGL;
    init.type = bgfx::RendererType::OpenGLES;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;

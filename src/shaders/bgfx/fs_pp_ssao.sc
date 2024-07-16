@@ -23,7 +23,7 @@ SAMPLER2D      (tex_ao_dither,    5); // AO Dither
 
 
 #ifdef STEREO
-vec3 get_nonunit_normal(const float depth0, const vec2 u, const int v_eye) // use neighboring pixels // quite some tex access by this
+vec3 get_nonunit_normal(const float depth0, const vec2 u, const float v_eye) // use neighboring pixels // quite some tex access by this
 #else
 vec3 get_nonunit_normal(const float depth0, const vec2 u) // use neighboring pixels // quite some tex access by this
 #endif

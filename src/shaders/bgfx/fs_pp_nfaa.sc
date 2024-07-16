@@ -36,7 +36,7 @@ float GetLuminance(const vec3 l)
 
 #ifndef NFAA_USE_COLOR
 #ifdef STEREO
-vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread, const int v_eye)
+vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread, const float v_eye)
 #else
 vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread)
 #endif
@@ -72,7 +72,7 @@ vec2 findContrastByLuminance(const vec2 XYCoord, const float filterSpread)
 #else
 
 #ifdef STEREO
-vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread, const int v_eye)
+vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread, const float v_eye)
 #else
 vec2 findContrastByColor(const vec2 XYCoord, const float filterSpread)
 #endif

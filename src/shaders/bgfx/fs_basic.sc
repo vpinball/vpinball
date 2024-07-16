@@ -101,7 +101,7 @@ vec3 normal_map(const vec3 N, const vec3 V, const vec2 uv)
 // Compute reflections from reflection probe (screen space coordinates)
 // This is a simplified reflection model where reflected light is added instead of being mixed according to the fresnel coefficient (stronger reflection hiding the object's color at grazing angles)
 #ifdef STEREO
-vec3 compute_reflection(const vec2 screenCoord, const vec3 N, const int v_eye)
+vec3 compute_reflection(const vec2 screenCoord, const vec3 N, const float v_eye)
 #else
 vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
 #endif
@@ -115,7 +115,7 @@ vec3 compute_reflection(const vec2 screenCoord, const vec3 N)
 
 // Compute refractions from screen space probe
 #ifdef STEREO
-vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, const vec3 V, const int v_eye)
+vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, const vec3 V, const float v_eye)
 #else
 vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, const vec3 V)
 #endif
@@ -125,7 +125,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    const vec3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const vec3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
    #ifdef STEREO
-      const vec4 proj = mul(matProj[v_eye], vec4(refracted_pos, 1.0));
+      const vec4 proj = mul(matProj[int(v_eye)], vec4(refracted_pos, 1.0));
    #else
       const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
    #endif
