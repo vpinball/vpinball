@@ -265,7 +265,6 @@
 #define IDS_TB_PRIMITIVE                186
 #define IDS_VISUALS2                    187
 #define IDS_POSITION_TRANSLATION        188
-#define IDI_BALL                        188
 #define IDC_FLIPPER_EOS_T_D_A           189
 #define IDS_PASTE_ELEMENT               189
 #define IDC_BALL                        189
@@ -313,6 +312,7 @@
 #define IDI_VPINBALL                    218
 #define IDC_STEP                        218
 #define IDC_STATUSNAME                  218
+#define IDI_BALL                        219
 #define IDR_SURFACEMENU                 221
 #define IDD_ROTATE                      222
 #define IDR_MULTIMENU                   222
