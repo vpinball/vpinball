@@ -19,13 +19,14 @@ $output v_tablePos, v_texcoord0
 
 void main()
 {
+	vec4 pos = vec4(a_position, 1.0);
     v_tablePos = a_position.xyz;
     v_texcoord0 = a_texcoord0;
 	#ifdef STEREO
 		gl_Layer = gl_InstanceID;
 	#endif
 	#ifdef CLIP
-		v_clipDistance = dot(clip_plane, vec4(a_position, 1.0));
+		v_clipDistance = dot(clip_plane, pos);
 	#endif
-	gl_Position = mul(mvp, vec4(a_position, 1.0));
+	gl_Position = mul(mvp, pos);
 }

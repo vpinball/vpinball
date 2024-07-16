@@ -32,7 +32,7 @@ float luma(const vec3 l)
 
 // Approximation of FXAA
 #ifdef STEREO
-vec4 fxaa1(const vec2 u, const int v_eye)
+vec4 fxaa1(const vec2 u, const float v_eye)
 #else
 vec4 fxaa1(const vec2 u)
 #endif
@@ -86,7 +86,7 @@ vec4 fxaa1(const vec2 u)
 
 // Full mid-quality PC FXAA 3.11
 #ifdef STEREO
-vec4 fxaa2(const vec2 u, const int v_eye)
+vec4 fxaa2(const vec2 u, const float v_eye)
 #else
 vec4 fxaa2(const vec2 u)
 #endif
@@ -235,7 +235,7 @@ vec4 fxaa2(const vec2 u)
 
 // Full extreme-quality PC FXAA 3.11
 #ifdef STEREO
-vec4 fxaa3(const vec2 u, const int v_eye)
+vec4 fxaa3(const vec2 u, const float v_eye)
 #else
 vec4 fxaa3(const vec2 u)
 #endif

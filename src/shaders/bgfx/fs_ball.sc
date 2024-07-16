@@ -146,7 +146,7 @@ void main()
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
 	#ifdef STEREO
-    const vec4 proj = mul(matProj[v_eye], vec4(playfield_hit, 1.0));
+    const vec4 proj = mul(matProj[int(v_eye)], vec4(playfield_hit, 1.0));
 	#else
     const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
 	#endif

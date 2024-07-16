@@ -19,14 +19,15 @@ $output v_texcoord0
 
 void main()
 {
+	vec4 pos = vec4(a_position, 1.0);
     v_texcoord0 = a_texcoord0;
 	#ifdef WORLD
-		gl_Position = mul(mvp, vec4(a_position, 1.0));
+		gl_Position = mul(mvp, pos);
 		#ifdef STEREO
 			gl_Layer = gl_InstanceID;
 		#endif
 		#ifdef CLIP
-			v_clipDistance = dot(clip_plane, vec4(a_position, 1.0));
+			v_clipDistance = dot(clip_plane, pos);
 		#endif
 	#else
 		// Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo
