@@ -382,7 +382,7 @@ void Ball::Render(const unsigned int renderMask)
 
    // now for a weird hack: make material more rough, depending on how near the nearest lightsource is, to 'emulate' the area of the bulbs (as VP only features point lights so far)
    float Roughness = 0.8f;
-   if (reflectedLights[0] != nullptr)
+   if (!reflectedLights.empty() && reflectedLights[0] != nullptr)
    {
        const float dist = Vertex3Ds(reflectedLights[0]->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, reflectedLights[0]->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, reflectedLights[0]->m_d.m_meshRadius + reflectedLights[0]->m_surfaceHeight - m_hitBall.m_d.m_pos.z).Length(); //!! z pos
        Roughness = min(max(dist*0.006f, 0.4f), Roughness);
