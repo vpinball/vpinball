@@ -3353,9 +3353,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_BALL                ICON                    "res\\ball.ico"
-
 IDI_VPINBALL            ICON                    "res\\vpinball.ico"
+
+IDI_BALL                ICON                    "res\\ball.ico"
 
 IDI_SCRIPT              ICON                    "res\\script.ico"
 
@@ -4052,4 +4052,3 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-
