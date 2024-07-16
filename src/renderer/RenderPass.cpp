@@ -94,9 +94,11 @@ void RenderPass::SortCommands()
          // Move kickers before other draw calls.
          // Kickers disable depth test to be visible through playfield. This would make them to be rendered after opaques, but since they hack depth, they need to be rendered before balls
          // > The right fix would be to remove the kicker hack (use stencil masking, alpha punch or CSG on playfield), this would also solve rendering kicker in VR
-         if (r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
-            return true;
-         if (r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal)
+         const bool isKicker1 = r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r1->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
+         const bool isKicker2 = r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean || r2->GetShaderTechnique() == SHADER_TECHNIQUE_kickerBoolean_isMetal;
+         if (isKicker1)
+            return isKicker2 ? r1->GetDepth() > r2->GetDepth() : true;
+         else if (isKicker2)
             return false;
             
          // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
@@ -165,7 +167,7 @@ void RenderPass::Submit(RenderCommand* command)
       for (RenderCommand* cmd : m_commands)
          delete cmd;
       m_commands.clear();
-      // FIXME remove dependencies on this render target (but not on others)
+      // TODO optimize rendering by removing dependencies on this render target (but not on others)
    }
    m_commands.push_back(command);
 }
