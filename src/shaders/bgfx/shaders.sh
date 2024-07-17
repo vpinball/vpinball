@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 process_shader() {
     local source="$1"
     local output_file="$2"
