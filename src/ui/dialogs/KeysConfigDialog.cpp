@@ -1,6 +1,7 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "KeysConfigDialog.h"
+#include "InputDeviceDialog.h"
 
 static char rgszKeyName[][10] = {
     "",
@@ -407,6 +408,8 @@ BOOL KeysConfigDialog::OnInitDialog()
     const float legacyNudgeStrength = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LegacyNudgeStrength"s, 1.f);
     SetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, quantizeUnsignedPercent(legacyNudgeStrength), FALSE);
 
+    SendDlgItemMessage(IDC_DEVICES_BUTTON, BM_SETSTYLE, BS_PUSHBUTTON, 0);
+
     for (unsigned int i = 0; i <= 34; ++i)
     {
         bool hr;
@@ -663,7 +666,16 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       GetDlgItem(IDC_LEGACY_NUDGE_STRENGTH).EnableWindow(checked ? TRUE : FALSE);
       break;
    }
+   case IDC_DEVICES_BUTTON:
+   {
+      CRect pos = GetWindowRect();
+      InputDeviceDialog *const deviceConfigDlg = new InputDeviceDialog(&pos);
+      deviceConfigDlg->DoModal();
+      delete deviceConfigDlg;
+      break;
    }
+   }
+
     if (HIWORD(wParam) == BN_CLICKED)
     {
         switch (LOWORD(wParam))

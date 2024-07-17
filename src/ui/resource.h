@@ -993,6 +993,8 @@
 #define IDC_JOYSTAGEDLFLIPCOMBO         673
 #define IDC_JOYSTAGEDRFLIPCOMBO         674
 #define IDD_INFOTEXT                    675
+#define IDD_DEVICE_DIALOG               676
+#define IDD_INPUT_DEVICES               676
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
 #define IDC_CVP_BUT_COL_COMPS           703
@@ -1061,6 +1063,7 @@
 #define IDC_COLOR_BUTTON1               765
 #define IDC_DELETE_LAYER_BUTTON         765
 #define IDC_RESET_WINDOW                765
+#define IDC_DEVICES_BUTTON              765
 #define IDC_LAYER_FILTER_CASE_BUTTON    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_SAVE_ALL                    766
@@ -1164,6 +1167,7 @@
 #define IDC_TREE1                       837
 #define IDC_LAYER_TREEVIEW              837
 #define IDC_NEAR_LABEL                  837
+#define IDC_TREE_DEVICES                837
 #define IDC_LAYER_FILTER_STATIC         838
 #define IDC_FAR_LABEL                   838
 #define IDC_CAP_PUP                     839
@@ -1260,11 +1264,14 @@
 #define IDC_INFOTEXT_EDIT               926
 #define IDC_EXPOSURE                    927
 #define IDC_SYNC                        928
+#define NEW_SOUND_FORMAT_VERSION        1031
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
 #define IDC_OVERWRITE_PHYSICS_COMBO     1043
 #define IDC_3D_STEREO_OFFSET_EDIT       1045
+#define NO_ENCRYPTION_FORMAT_VERSION    1050
+#define CURRENT_FILE_FORMAT_VERSION     1081
 #define IDC_GRAVITY_EDIT                1100
 #define IDC_PLAYFIELD_FRICTION_EDIT     1101
 #define IDC_DEFAULT_SCATTER_EDIT        1102
@@ -1454,9 +1461,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        676
+#define _APS_NEXT_RESOURCE_VALUE        678
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         929
+#define _APS_NEXT_CONTROL_VALUE         939
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
