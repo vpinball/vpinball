@@ -12,6 +12,7 @@ LIBDMDUTIL_SHA=71378daabb9a66bde3d88bcda8738c540aacf7f2
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
 BGFX_CMAKE_VERSION=1.128.8777-475
+BGFX_PATCH_SHA=b701418bd14892641474a716cb17f91b9557ac70
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -291,18 +292,19 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 # TODO: build FFMPEG libraries for tvOS
 
 #
-# build bgfx and copy to external
+# build patched bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_002"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
+   curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.zip -o bgfx.tar.gz
+   tar -xzvf bgfx.tar.gz
+   rm -rf bgfx.cmake/bgfx
+   mv bgfx-${BGFX_PATCH_SHA} bgfx.cmake/bgfx
    cd bgfx.cmake
-   cd bgfx
-   patch -i ../../../bgfx/bgfx.patch
-   cd ..
    cmake -S. \
       -DCMAKE_SYSTEM_NAME=tvOS \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \
