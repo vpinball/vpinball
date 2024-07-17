@@ -2,42 +2,21 @@ diff --git a/src/bgfx.cpp b/src/bgfx.cpp
 index 00e90c17b..68cfc3410 100644
 --- a/src/bgfx.cpp
 +++ b/src/bgfx.cpp
-@@ -3637,6 +3637,7 @@ namespace bgfx
- 			s_allocatorStub = NULL;
- 		}
- 
+@@ -3639,0 +3640 @@ namespace bgfx
 +		s_renderFrameCalled = false;
- 		s_threadIndex = 0;
- 		g_callback    = NULL;
- 		g_allocator   = NULL;
-@@ -4023,8 +4024,8 @@ namespace bgfx
- 		uint32_t dstWidth  = bx::max<uint32_t>(1, dst.m_width  >> _dstMip);
- 		uint32_t dstHeight = bx::max<uint32_t>(1, dst.m_height >> _dstMip);
- 
+@@ -4026,2 +4027,2 @@ namespace bgfx
 -		uint32_t srcDepth  = src.isCubeMap() ? 6 : bx::max<uint32_t>(1, src.m_depth >> _srcMip);
 -		uint32_t dstDepth  = dst.isCubeMap() ? 6 : bx::max<uint32_t>(1, dst.m_depth >> _dstMip);
 +		uint32_t srcDepth = src.isCubeMap() ? 6 * src.m_numLayers : src.m_numLayers > 1 ? src.m_numLayers : bx::max<uint32_t>(1, src.m_depth >> _srcMip);
 +		uint32_t dstDepth = dst.isCubeMap() ? 6 * src.m_numLayers : src.m_numLayers > 1 ? src.m_numLayers : bx::max<uint32_t>(1, dst.m_depth >> _dstMip);
- 
- 		BX_ASSERT(_srcX < srcWidth && _srcY < srcHeight && _srcZ < srcDepth
- 			, "Blit src coordinates out of range (%d, %d, %d) >= (%d, %d, %d)"
 diff --git a/tools/shaderc/shaderc.cpp b/tools/shaderc/shaderc.cpp
 index 34480f00d..395193097 100644
 --- a/tools/shaderc/shaderc.cpp
 +++ b/tools/shaderc/shaderc.cpp
-@@ -6,6 +6,8 @@
- #include "shaderc.h"
- #include <bx/commandline.h>
- #include <bx/filepath.h>
+@@ -8,0 +9,2 @@
 +#include <string>
 +#include <sstream>
- 
- #define MAX_TAGS 256
- extern "C"
-@@ -2537,6 +2539,23 @@ namespace bgfx
- 							}
- 							else
- 							{
+@@ -2539,0 +2542,17 @@ namespace bgfx
 +								const bool usesTextureArray = !bx::findIdentifierMatch(input, s_textureArray).isEmpty();
 +								const bool usesViewportLayerArray = !bx::findIdentifierMatch(input, s_ARB_shader_viewport_layer_array).isEmpty();
 +
@@ -55,13 +34,7 @@ index 34480f00d..395193097 100644
 +									);
 +								}
 +
- 								bx::stringPrintf(code, "#version %d\n", glsl_profile);
- 
- 								if (120 < glsl_profile)
-@@ -2573,6 +2592,36 @@ namespace bgfx
- 									);
- 							}
- 
+@@ -2575,0 +2595,30 @@ namespace bgfx
 +							std::istringstream stream(code);
 +							std::string line;
 +							std::vector<std::string> extensions;
@@ -92,6 +65,3 @@ index 34480f00d..395193097 100644
 +							}
 +							code = output.str();
 +
- 							if ( (profile->lang == ShadingLang::GLSL && glsl_profile > 400)
- 							||   (profile->lang == ShadingLang::ESSL && glsl_profile > 300) )
- 							{
