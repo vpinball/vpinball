@@ -3,7 +3,7 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.4
+SDL2_VERSION=2.30.5
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=8689b73c3b79c30f32daed333853a79c9d6f2fc5
@@ -329,12 +329,15 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 # build bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_001"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    cd bgfx.cmake
+   cd bgfx
+   patch -i ../../../bgfx/bgfx.patch
+   cd ..
    cmake -S. \
       -DCMAKE_SYSTEM_NAME=Android \
       -DCMAKE_SYSTEM_VERSION=30 \

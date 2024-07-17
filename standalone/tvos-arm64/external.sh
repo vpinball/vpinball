@@ -3,7 +3,7 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.4
+SDL2_VERSION=2.30.5
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=8689b73c3b79c30f32daed333853a79c9d6f2fc5
@@ -100,7 +100,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -project "Xcode/SDL/SDL.xcodeproj" \
       -target "Static Library-tvOS" \
       -sdk appletvos \
-      -configuration Release \
+      -configuration ${BUILD_TYPE} \
       clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl-build"
    mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
    cp include/*.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
@@ -127,7 +127,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    xcrun xcodebuild \
       -project "Xcode/SDL_image.xcodeproj" \
       -target "Static Library" \
-      -sdk appletvos -configuration Release \
+      -sdk appletvos \
+      -configuration ${BUILD_TYPE} \
       clean build CONFIGURATION_BUILD_DIR="$(pwd)/sdl_image-build"
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp include/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include
@@ -293,12 +294,15 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 # build bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_001"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    cd bgfx.cmake
+   cd bgfx
+   patch -i ../../../bgfx/bgfx.patch
+   cd ..
    cmake -S. \
       -DCMAKE_SYSTEM_NAME=tvOS \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=16.0 \

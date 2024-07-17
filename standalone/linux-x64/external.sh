@@ -3,7 +3,7 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.4
+SDL2_VERSION=2.30.5
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
 PINMAME_SHA=8689b73c3b79c30f32daed333853a79c9d6f2fc5
@@ -98,7 +98,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_TEST=OFF \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    # cmake does not make a symbolic link for libSDL2.so
@@ -136,7 +136,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
@@ -170,7 +170,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2TTF_HARFBUZZ=ON \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
@@ -333,12 +333,15 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
 # build bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}_001"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    cd bgfx.cmake
+   cd bgfx
+   patch -i ../../../bgfx/bgfx.patch
+   cd ..
    cmake -S. \
       -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
