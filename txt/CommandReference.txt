@@ -196,7 +196,7 @@ EndMusic
 FireKnocker(int Count)
 QuitPlayer(int CloseType)
 Version - returns VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REVISION
-VPBuildVersion - same, deprecated
+VPBuildVersion - same as Version but with build number as decimal
 VersionMajor - major VP version number
 VersionMinor - minor VP version number
 VersionRevision - VP version revision
