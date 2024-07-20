@@ -344,16 +344,16 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 # build patched bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_001"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_002"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.zip -o bgfx.zip
    unzip bgfx.zip
-   rm -rf bgfx.cmake/bgfx
-   mv bgfx-${BGFX_PATCH_SHA} bgfx.cmake/bgfx
-   cd bgfx.cmake
+   cd bgfx.cmake   
+   rm -rf bgfx
+   mv ../bgfx-${BGFX_PATCH_SHA} bgfx
    cmake -S. \
       -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
