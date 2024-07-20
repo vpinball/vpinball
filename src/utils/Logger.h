@@ -13,6 +13,7 @@ public:
 
    void Init();
    void SetupLogger(const bool enable);
+   void Truncate();
 
 private:
    Logger() {}

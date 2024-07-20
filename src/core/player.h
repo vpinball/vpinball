@@ -286,6 +286,10 @@ public:
    // Temporary API used to communicate between VPinMame and VPinballX
    PinMame::core_tGlobalOutputState *m_pStateMappedMem = nullptr; // mapped shared memory used to share output states
 
+#ifdef __LIBVPINBALL__
+   bool m_liveUIOverride = false;
+#endif
+
 private:
    bool m_playing = true;
    bool m_focused = false;

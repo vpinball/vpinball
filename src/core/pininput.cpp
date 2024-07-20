@@ -8,6 +8,10 @@
 #include "imgui/imgui_impl_sdl2.h"
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 // from dinput.h, modernized to please clang
 #undef DIJOFS_X
 #undef DIJOFS_Y
@@ -886,6 +890,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 #endif
       break;
    case PI_SDL: //SDL2
+   {
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
       if (m_pSDLGameController && SDL_GameControllerHasRumble(m_pSDLGameController))
@@ -895,6 +900,15 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
          SDL_HapticRumblePlay(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
 #endif
 #endif
+#ifdef __LIBVPINBALL__
+      VPinballLib::RumbleStruct rumbleStruct = {
+         (Uint16)(saturate(lowFrequencySpeed) * 65535.f),
+         (Uint16)(saturate(highFrequencySpeed) * 65535.f),
+         (Uint32)ms_duration
+      };
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Rumble, &rumbleStruct);
+#endif
+   }
       break;
    case PI_GAMECONTROLLER: //IGameController
 #ifdef ENABLE_IGAMECONTROLLER

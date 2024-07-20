@@ -93,3 +93,10 @@ void Logger::Init()
    plog::init<PLOG_DEFAULT_INSTANCE_ID>();
    plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
 }
+
+void Logger::Truncate()
+{
+   std::string szLogPath = g_pvp->m_szMyPrefPath + "vpinball.log";
+   std::ofstream ofs(szLogPath, std::ofstream::out | std::ofstream::trunc);
+   ofs.close();
+}

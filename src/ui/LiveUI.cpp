@@ -603,6 +603,11 @@ void LiveUI::UpdateTouchUI()
    if (!g_pplayer->m_supportsTouch)
       return;
 
+#ifdef __LIBVPINBALL__
+   if (g_pplayer->m_liveUIOverride)
+      return;
+#endif
+
    ImGuiIO &io = ImGui::GetIO();
 
    float screenWidth = io.DisplaySize.x;
@@ -1084,7 +1089,7 @@ void LiveUI::Update(const RenderTarget *rt)
 
    // Display notification (except when script has an unaligned rotation)
    const U32 tick = msec();
-   float notifY = io.DisplaySize.y * 0.5f;
+   float notifY = io.DisplaySize.y * 0.25f;
    const bool showNotifications = isVR || ((float)m_rotate * 90.0f == m_player->m_ptable->mViewSetups[m_player->m_ptable->m_BG_current_set].GetRotation(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()));
    ImGui::PushFont(m_overlayFont);
    for (int i = (int)m_notifications.size() - 1; i >= 0; i--)
@@ -1095,16 +1100,61 @@ void LiveUI::Update(const RenderTarget *rt)
       }
       else if (showNotifications)
       {
-         ImFont *const font = ImGui::GetFont();
-         ImVec2 textSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, m_notifications[i].message.c_str()) + ImVec2(30.f, 30.f);
-         constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
-         ImGui::SetNextWindowBgAlpha(0.666f);
-         ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - textSize.x) / 2, notifY));
-         ImGui::SetNextWindowSize(textSize);
-         ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
-         ImGui::Text("%s", m_notifications[i].message.c_str());
-         ImGui::End();
-         notifY += textSize.y + 10.f;
+          ImFont *const font = ImGui::GetFont();
+
+          constexpr float padding = 50.f;
+          const float maxWidth = io.DisplaySize.x - padding;
+
+          vector<string> lines;
+          ImVec2 text_size(0, 0);
+
+          string line;
+          std::istringstream iss(m_notifications[i].message);
+          while (std::getline(iss, line)) {
+              const char *textEnd = line.c_str();
+              if (*textEnd == '\0') {
+                 lines.push_back(line);
+                 continue;
+              }
+              while (*textEnd) {
+                 const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
+                 ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
+                 if (lineSize.x > maxWidth)
+                 {
+                    const char *wrapPoint = font->CalcWordWrapPositionA(font->Scale, textEnd, nextLineTextEnd, maxWidth);
+                    if (wrapPoint == textEnd)
+                       wrapPoint++;
+                    nextLineTextEnd = wrapPoint;
+                    lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, wrapPoint);
+                 }
+
+                 string newLine(textEnd, nextLineTextEnd);
+                 lines.push_back(newLine);
+
+                 if (lineSize.x > text_size.x)
+                    text_size.x = lineSize.x;
+
+                 textEnd = nextLineTextEnd;
+
+                 while (*textEnd == ' ')
+                    textEnd++;
+              }
+          }
+          text_size.x += (padding / 2.f);
+          text_size.y = ((float)lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2.f);
+
+          constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+          ImGui::SetNextWindowBgAlpha(0.666f);
+          ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - text_size.x) / 2, notifY));
+          ImGui::SetNextWindowSize(text_size);
+          ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
+          for (string line : lines) {
+             ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
+             ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
+             ImGui::Text(line.c_str());
+          }
+          ImGui::End();
+          notifY += text_size.y + 10.f;
       }
    }
    ImGui::PopFont();
@@ -3937,6 +3987,7 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::GetIO().MousePos.y = 0;
       }
 #endif
+#ifndef __LIBVPINBALL__
       bool webServerRunning = g_pvp->m_webServer.IsRunning();
       if (ImGui::Button(webServerRunning ? "Disable Web Server" : "Enable Web Server", size))
       {
@@ -3952,6 +4003,7 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::GetIO().MousePos.y = 0;
 #endif
       }
+#endif
 
       if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
@@ -3960,7 +4012,7 @@ void LiveUI::UpdateMainSplashModal()
          m_table->QuitPlayer(Player::CS_CLOSE_APP);
       }
 
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
       ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
       ImGui::Separator();
       ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
@@ -3985,6 +4037,7 @@ void LiveUI::UpdateMainSplashModal()
       ImGui::PopItemWidth();
 #endif
 
+#ifndef __LIBVPINBALL__
       string url = g_pvp->m_webServer.GetUrl();
       if (!url.empty())
       {
@@ -3994,6 +4047,7 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(url.c_str()).x) * 0.5f));
          ImGui::Text("%s", url.c_str());
       }
+#endif
 
 #endif
       const ImVec2 pos = ImGui::GetWindowPos();

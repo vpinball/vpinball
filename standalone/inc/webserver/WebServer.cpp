@@ -5,6 +5,10 @@
 
 #include <ifaddrs.h>
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
 {
    WebServer* webServer = (WebServer*)fn_data;
@@ -354,6 +358,11 @@ void WebServer::Start()
       else
          m_url.clear();
 
+#ifdef __LIBVPINBALL__
+      VPinballLib::WebServerStruct webServerStruct = { m_url.c_str() };
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WebServer, &webServerStruct);
+#endif
+
       m_pThread = new std::thread([this]() {
          while (m_run)
             mg_mgr_poll(&m_mgr, 1000);
@@ -362,10 +371,18 @@ void WebServer::Start()
          m_url.clear();
 
          PLOGI.printf("Web server closed");
+
+#ifdef __LIBVPINBALL__
+         VPinballLib::VPinball::SendEvent(VPinballLib::Event::WebServer, nullptr);
+#endif
       });
    }
    else {
       PLOGE.printf("Unable to start web server");
+
+#ifdef __LIBVPINBALL__
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WebServer, nullptr);
+#endif
    }
 }
 

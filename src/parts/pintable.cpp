@@ -32,6 +32,10 @@ static serial Serial;
 #include "mINI/ini.h"
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 #define HASHLENGTH 16
 
 constexpr unsigned char TABLE_KEY[] = "Visual Pinball";
@@ -1442,8 +1446,15 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
       *pVal = 2; // VR
    else if ((g_pplayer->m_renderer->m_stereo3D != STEREO_OFF) && g_pplayer->m_renderer->m_stereo3Denabled)
       *pVal = 1; // Stereo 3D (3DTV or anaglyph)
-   else
+   else {
+#ifndef __STANDALONE__
       *pVal = 0; // 2D
+#else
+      int val = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "RenderingModeOverride"s, -1);
+      *pVal = (val == -1) ? 0 : val;
+#endif
+   }
+
    return S_OK;
 }
 
@@ -2700,6 +2711,11 @@ void PinTable::Play(const int playMode)
       auto processWindowMessages = []() {};
       #endif
       g_pplayer->GameLoop(processWindowMessages);
+
+#ifdef __LIBVPINBALL__
+      return;
+#endif
+
       delete g_pplayer;
       g_pplayer = nullptr;
       if (initError)
@@ -4027,6 +4043,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 #ifndef __STANDALONE__
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
+#ifdef __LIBVPINBALL__
+               VPinballLib::ProgressStruct progressStruct = { (i * 100) / csubobj };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadItems, &progressStruct);
+#endif
             }
 
             PLOGI << "GameItem loaded"; // For profiling
@@ -4047,6 +4067,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 #ifndef __STANDALONE__
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
+#ifdef __LIBVPINBALL__
+               VPinballLib::ProgressStruct progressStruct = { (i * 100) / csounds };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadSounds, &progressStruct);
+#endif
             }
 
             PLOGI << "Sound loaded"; // For profiling
@@ -4056,9 +4080,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             {
                ThreadPool pool(g_pvp->m_logicalNumberOfProcessors); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
 
+               int count = 0;
                for (int i = 0; i < ctextures; i++)
                {
-                  pool.enqueue([i, loadfileversion, pstgData, this] {
+                  pool.enqueue([i, loadfileversion, pstgData, this, &count, ctextures] {
                      const string szStmName = "Image" + std::to_string(i);
                      MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
@@ -4069,6 +4094,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                         hr = LoadImageFromStream(pstmItem, i, loadfileversion, false);
                         if (FAILED(hr))
                            return hr;
+                        #ifdef __LIBVPINBALL__
+                           VPinballLib::ProgressStruct progressStruct = { (++count * 100) / ctextures };
+                           VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadImages, &progressStruct);
+                        #endif
                         pstmItem->Release();
                         pstmItem = nullptr;
                      }
@@ -4156,6 +4185,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 #ifndef __STANDALONE__
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
 #endif
+#ifdef __LIBVPINBALL__
+               VPinballLib::ProgressStruct progressStruct = { (i * 100) / cfonts };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadFonts, &progressStruct);
+#endif
             }
 
             PLOGI << "Font loaded"; // For profiling
@@ -4180,6 +4213,10 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                cloadeditems++;
 #ifndef __STANDALONE__
                ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
+#endif
+#ifdef __LIBVPINBALL__
+               VPinballLib::ProgressStruct progressStruct = { (i * 100) / ccollection };
+               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadCollections, &progressStruct);
 #endif
             }
 

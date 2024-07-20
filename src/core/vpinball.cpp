@@ -173,7 +173,7 @@ void VPinball::GetMyPath()
 #else
 #ifdef __ANDROID__
    m_szMyPath = string(SDL_AndroidGetInternalStoragePath()) + PATH_SEPARATOR_CHAR;
-#elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS
+#elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    char *szPath = SDL_GetPrefPath("../..", "Documents");
    m_szMyPath = szPath;
    SDL_free(szPath);
@@ -1274,6 +1274,15 @@ void VPinball::CloseTable(const PinTable * const ppt)
       if (m_notesDialog && m_notesDialog->IsWindow())
          m_notesDialog->Disable();
    }
+#else
+    auto it = std::find_if(m_vtable.begin(), m_vtable.end(),
+      [ppt](CComObject<PinTable>* obj) { return obj == ppt; });
+
+    if (it != m_vtable.end()) {
+       CComObject<PinTable>* obj = *it;
+       m_vtable.erase(it);
+       obj->Release();
+    }
 #endif
 }
 
@@ -1890,7 +1899,9 @@ void VPinball::OnInitialUpdate()
 
    // all done, let's go
 
+#ifndef __STANDALONE__
    firstRun = false;
+#endif
 }
 
 BOOL VPinball::OnCommand(WPARAM wparam, LPARAM lparam)

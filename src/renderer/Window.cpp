@@ -7,6 +7,11 @@
 #include <SDL2/SDL_image.h>
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#include <SDL2/SDL_syswm.h>
+#endif
+
 namespace VPX
 {
 
@@ -192,7 +197,15 @@ Window::Window(const string &title, const Settings::Section section, const strin
       #endif
 
       m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
-      
+
+#ifdef __LIBVPINBALL__
+      SDL_SysWMinfo wmInfo;
+      SDL_VERSION(&wmInfo.version);
+      SDL_GetWindowWMInfo(m_nwnd, &wmInfo);
+      VPinballLib::WindowCreatedStruct windowCreatedStruct = { (void*)wmInfo.info.uikit.window, title.c_str() };
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedStruct);
+#endif
+
       SDL_DisplayMode mode;
       if (m_fullscreen)
       {
