@@ -1085,7 +1085,7 @@ void main()
 	ampRGB = rsqrt(ampRGB);
 
 	const float peak = -3.0 * Contrast + 8.0;
-	const float3 wRGB = -rcp(ampRGB * peak);
+	const float3 wRGB = rcp(ampRGB * -peak);
 
 	const float3 rcpWeightRGB = float3(1.0) / (4.0 * wRGB + float3(1.0));
 
@@ -1186,7 +1186,47 @@ void main()
 		}
 	}
 
+
+#if 0
+	// RCAS (without Better Diagonals)
+
+	// RCAS also supports a define to enable a more expensive path to avoid some sharpening of noise.
+	// Better to apply film grain after RCAS sharpening instead of using this define.
+	#define RCAS_DENOISE 0 // 1 if there is noise, such as film grain // seems to be not worth it in our variant here, barely noticeable
+
+	const float RCASLimit = -0.25; // should be only 0.0 .. 0.1875 though?! but then too sharp single pixel highlights! // Limits how much pixels can be sharpened. Lower values reduce artifacts, but reduce sharpening. It's recommended to lower this value when using a very high (> 1.2) sharpness value
+
+	#if RCAS_DENOISE == 1 // Noise detection.
+		const float bL = LI(e[1]);
+		const float dL = LI(e[3]);
+		const float eL = LI(e[4]);
+		const float fL = LI(e[5]);
+		const float hL = LI(e[7]);
+
+		float nz = ((bL + dL) + (fL + hL))*-0.25 + eL;
+		const float range = max(max(max(dL, eL), max(fL, bL)), hL) - min(min(min(dL, eL), min(fL, bL)), hL);
+		nz = 1.0 - 0.5*saturate(abs(nz) * rcp(range));
+	#endif
+
+	const float3 mnRGB = min(min(e[1], e[3]), min(e[5], e[7]));
+	const float3 mxRGB = max(max(e[1], e[3]), max(e[5], e[7]));
+
+	const float3 hitMin = mnRGB * rcp(mxRGB);
+	float3 hitMax = rcp(mnRGB - 1.0);
+	hitMax = mxRGB * hitMax - hitMax;
+	const float3 lobeRGB = min(hitMin, hitMax);
+	float lobe = min(RCASLimit*4.0, max(min(lobeRGB.r, min(lobeRGB.g, lobeRGB.b)), 0.0)) * (saturate(sharpness) * -0.25); // sharpness could be larger than 0..1 according to the reshade variant (up to 1.3), but doesn't look great
+
+	#if RCAS_DENOISE == 1 // Apply noise removal.
+		lobe *= nz;
+	#endif
+
+	// Resolve, which needs medium precision rcp approximation to avoid visible tonality changes.
+	float3 ampRGB = saturate((((e[1] + e[3]) + (e[5] + e[7]))*lobe + e[4]) * rcp(4.0*lobe + 1.0));
+
+#else
 	// CAS (without Better Diagonals)
+
 	const float b = LI(e[1]);
 	const float d = LI(e[3]);
 	const float f = LI(e[5]);
@@ -1199,14 +1239,16 @@ void main()
 	// Smooth minimum distance to signal limit divided by smooth max.
 	const float rcpMRGB = rcp(mxRGB);
 	float ampRGB = saturate(min(mnRGB, 1.0-mxRGB) * rcpMRGB);
+	ampRGB *= saturate(sharpness);
+
+#endif
+
+	ampRGB  = lerp(ampRGB, 1.0-ampRGB, balance);
 
 	float3 sharpen = (e[4]-final_colour/Z) * sharpness;
 
 	const float gs_sharpen = (sharpen.x+sharpen.y+sharpen.z) * 0.333333333333;
 	sharpen = lerp(float3(gs_sharpen), sharpen, 0.5);
-
-	ampRGB *= saturate(sharpness);
-	ampRGB  = lerp(ampRGB, 1.0-ampRGB, balance);
 
 	color = float4(e[4] + sharpen*ampRGB, 1.0);
 }
