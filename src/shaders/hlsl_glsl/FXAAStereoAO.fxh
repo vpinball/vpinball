@@ -996,7 +996,7 @@ float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 u = IN.tex0;
 
-	const float3 e = texStereoNoLod(tex_fb_unfiltered, u).xyz;
+	const float3 e = texStereoNoLod(tex_fb_unfiltered, u).rgb;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = texStereoNoLod(tex_depth, u).x;
@@ -1013,14 +1013,14 @@ float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float2 um1 = u - w_h_height.xy;
 	const float2 up1 = u + w_h_height.xy;
 
-	const float3 a = texStereoNoLod(tex_fb_unfiltered,        um1          ).xyz;
-	const float3 b = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   um1.y)).xyz;
-	const float3 c = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, um1.y)).xyz;
-	const float3 d = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, u.y  )).xyz;
-	const float3 g = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, up1.y)).xyz; 
-	const float3 f = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, u.y  )).xyz;
-	const float3 h = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   up1.y)).xyz;
-	const float3 i = texStereoNoLod(tex_fb_unfiltered,        up1          ).xyz;
+	const float3 a = texStereoNoLod(tex_fb_unfiltered,        um1          ).rgb;
+	const float3 b = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   um1.y)).rgb;
+	const float3 c = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, um1.y)).rgb;
+	const float3 d = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, u.y  )).rgb;
+	const float3 g = texStereoNoLod(tex_fb_unfiltered, float2(um1.x, up1.y)).rgb;
+	const float3 f = texStereoNoLod(tex_fb_unfiltered, float2(up1.x, u.y  )).rgb;
+	const float3 h = texStereoNoLod(tex_fb_unfiltered, float2(u.x,   up1.y)).rgb;
+	const float3 i = texStereoNoLod(tex_fb_unfiltered,        up1          ).rgb;
 
 	// Soft min and max.
 	//  a b c             b
@@ -1049,7 +1049,7 @@ float4 ps_main_CAS(const in VS_OUTPUT_2D IN) : COLOR
 
 	//                          0 w 0
 	//  Filter shape:           w 1 w
-	//                          0 w 0  
+	//                          0 w 0
 	const float3 window = (b + d) + (f + h);
 	const float3 outColor = saturate((window * wRGB + e) * rcpWeightRGB);
 
@@ -1065,7 +1065,10 @@ float normpdf(const float3 v, const float sigma)
 
 float LI(const float3 l)
 {
-	return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
+	return (l.x*0.5 + l.y) + l.z*0.5; // experimental, red and blue should not suffer too much //!! scaled by 2, so that we save a mul, factors out below, except for one constant! (see below)
+
+	//!! if using weights that sum up to 1, change constant in CAS section from 2.0 to 1.0 again!
+	//return dot(l, float3(0.25,0.5,0.25)); // experimental, red and blue should not suffer too much
 	//return dot(l, float3(0.2126, 0.7152, 0.0722));
 }
 
@@ -1076,7 +1079,7 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 
 	const float2 u = IN.tex0;
 
-	const float3 mid = texStereoNoLod(tex_fb_unfiltered, u).xyz;
+	const float3 mid = texStereoNoLod(tex_fb_unfiltered, u).rgb;
 	BRANCH if(w_h_height.w == 1.0) // depth buffer available?
 	{
 		const float depth0 = texStereoNoLod(tex_depth, u).x;
@@ -1087,17 +1090,17 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	}
 
 	const float3 e[9] = {
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y -w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y -w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y -w_h_height.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y -w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y -w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y -w_h_height.y)).rgb,
 
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y)).rgb,
 		mid,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y)).xyz,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y)).rgb,
 
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y +w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y +w_h_height.y)).xyz,
-		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y +w_h_height.y)).xyz};
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x -w_h_height.x, u.y +w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x              , u.y +w_h_height.y)).rgb,
+		texStereoNoLod(tex_fb_unfiltered, float2(u.x +w_h_height.x, u.y +w_h_height.y)).rgb};
 
 	// Bilateral Blur (crippled)
 	float3 final_colour = float3(0.,0.,0.);
@@ -1186,14 +1189,14 @@ float4 ps_main_BilateralSharp_CAS(const in VS_OUTPUT_2D IN) : COLOR
 	const float d = LI(e[3]);
 	const float f = LI(e[5]);
 	const float h = LI(e[7]);
-	const float e1 = LI(e[4]);
+	const float e4 = LI(e[4]);
 
-	const float mnRGB = min(min(min(d, e1), min(f, b)), h);
-	const float mxRGB = max(max(max(d, e1), max(f, b)), h);
+	const float mnRGB = min(min(min(d, e4), min(f, b)), h);
+	const float mxRGB = max(max(max(d, e4), max(f, b)), h);
 
 	// Smooth minimum distance to signal limit divided by smooth max.
 	const float rcpMRGB = rcp(mxRGB);
-	float ampRGB = saturate(min(mnRGB, 1.0-mxRGB) * rcpMRGB);
+	float ampRGB = saturate(min(mnRGB, 2.0-mxRGB) * rcpMRGB); //!! 2.0 instead of 1.0, as LI() is scaled by x2!
 	ampRGB *= saturate(sharpness);
 
 #endif
