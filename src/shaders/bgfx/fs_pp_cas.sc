@@ -50,7 +50,7 @@ void main()
 	const vec3 b = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   um1.y)).xyz;
 	const vec3 c = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, um1.y)).xyz;
 	const vec3 d = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, u.y  )).xyz;
-	const vec3 g = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, up1.y)).xyz; 
+	const vec3 g = texStereoNoLod(tex_fb_unfiltered, vec2(um1.x, up1.y)).xyz;
 	const vec3 f = texStereoNoLod(tex_fb_unfiltered, vec2(up1.x, u.y  )).xyz;
 	const vec3 h = texStereoNoLod(tex_fb_unfiltered, vec2(u.x,   up1.y)).xyz;
 	const vec3 i = texStereoNoLod(tex_fb_unfiltered,        up1          ).xyz;
@@ -82,7 +82,7 @@ void main()
 
 	//                          0 w 0
 	//  Filter shape:           w 1 w
-	//                          0 w 0  
+	//                          0 w 0
 	const vec3 window = (b + d) + (f + h);
 	const vec3 outColor = saturate((window * wRGB + e) * rcpWeightRGB);
 
