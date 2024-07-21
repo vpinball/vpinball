@@ -402,8 +402,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
 
    bgfx::Init init;
-   init.type = bgfx::RendererType::Metal; // Metal is tested and functional excepted for stereo rendering
-   init.type = bgfx::RendererType::OpenGL; // GL/GLES are tested and functional excepted for stereo: BGFX does not add the extension as it should (#extension GL_ARB_shader_viewport_layer_array : enable)
+   init.type = bgfx::RendererType::Metal;
+   init.type = bgfx::RendererType::OpenGL;
    init.type = bgfx::RendererType::OpenGLES;
    init.type = bgfx::RendererType::Vulkan;
    init.type = bgfx::RendererType::Direct3D11;
@@ -1493,13 +1493,15 @@ void RenderDevice::CopyRenderStates(const bool copyTo, RenderDeviceState& state)
 
 void RenderDevice::SetClipPlane(const vec4 &plane)
 {
-#if defined(ENABLE_BGFX)
-   // FIXME BGFX implement
-   /* m_DMDShader->SetVector(SHADER_clip_plane, &plane);
+#if defined(__OPENGLES__)
+   // FIXME GLES implement (or use BGFX OpenGL ES implementation)
+   return;
+#elif defined(ENABLE_BGFX)
+   m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
    m_lightShader->SetVector(SHADER_clip_plane, &plane);
    m_flasherShader->SetVector(SHADER_clip_plane, &plane);
-   m_ballShader->SetVector(SHADER_clip_plane, &plane);*/
+   m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #elif defined(ENABLE_OPENGL)
    m_DMDShader->SetVector(SHADER_clip_plane, &plane);
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
@@ -1507,7 +1509,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    m_flasherShader->SetVector(SHADER_clip_plane, &plane);
    m_ballShader->SetVector(SHADER_clip_plane, &plane);
 #elif defined(ENABLE_DX9)
-   // FIXME shouldn't we set the Model matrix to identity first ?
+   // FIXME DX9 shouldn't we set the Model matrix to identity first ?
    Matrix3D mT = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0); // = world * view * proj
    mT.Invert();
    mT.Transpose();

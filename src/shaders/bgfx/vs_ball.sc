@@ -28,9 +28,10 @@ void main()
 {
 	// apply spinning and move the ball to it's actual position
 	vec4 pos = vec4(a_position, 1.0);
-	pos.xyz = mul(orientation, pos).xyz;
+	vec4 tpos = mul(orientation, pos);
+	pos.xyz = tpos.xyz;
 	#ifdef CLIP
-		v_clipDistance = dot(clip_plane, pos);
+		v_clipDistance = dot(clip_plane, tpos);
 	#endif
 
 	// apply spinning to the normals too to get the sphere mapping effect

@@ -7,6 +7,12 @@
 #undef max
 #endif
 
+#ifdef __STANDALONE__
+#if defined(__APPLE__)
+#include <TargetConditionals.h>
+#endif
+#endif
+
 template <typename T>
 __forceinline T min(const T x, const T y)
 {

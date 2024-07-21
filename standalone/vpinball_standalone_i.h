@@ -330,11 +330,11 @@ interface IBall;
 #endif /* __cplusplus */
 #endif
 
-#ifndef __IBallEvent_FWD_DEFINED__
-#define __IBallEvent_FWD_DEFINED__
-typedef interface IBallEvent IBallEvent;
+#ifndef __IBallEvents_FWD_DEFINED__
+#define __IBallEvents_FWD_DEFINED__
+typedef interface IBallEvents IBallEvents;
 #ifdef __cplusplus
-interface IBallEvent;
+interface IBallEvents;
 #endif /* __cplusplus */
 #endif
 
@@ -19320,14 +19320,14 @@ static __WIDL_INLINE HRESULT IBall_DestroyBall(IBall* This,int *pVal) {
 #ifndef __IBallEvents_DISPINTERFACE_DEFINED__
 #define __IBallEvents_DISPINTERFACE_DEFINED__
 
-DEFINE_GUID(DIID_IBallEvents, 0x8A6F5E18, 0x748F, 0x4404, 0xA1,0x6F, 0x49,0x97,0x9F,0x4E,0xC0,0xAA);
+DEFINE_GUID(DIID_IBallEvents, 0x8a6f5e18, 0x748f, 0x4404, 0xa1,0x6f, 0x49,0x97,0x9f,0x4e,0xc0,0xaa);
 #if defined(__cplusplus) && !defined(CINTERFACE)
-MIDL_INTERFACE("8A6F5E18-748F-4404-A16F-49979F4EC0AA")
+MIDL_INTERFACE("8a6f5e18-748f-4404-a16f-49979f4ec0aa")
 IBallEvents : public IDispatch
 {
 };
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(IBallEvents, 0x8A6F5E18, 0x748F, 0x4404, 0xA1,0x6F, 0x49,0x97,0x9F,0x4E,0xC0,0xAA)
+__CRT_UUID_DECL(IBallEvents, 0x8a6f5e18, 0x748f, 0x4404, 0xa1,0x6f, 0x49,0x97,0x9f,0x4e,0xc0,0xaa)
 #endif
 #else
 typedef struct IBallEventsVtbl {

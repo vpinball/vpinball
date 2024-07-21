@@ -140,7 +140,9 @@
 #endif
 
 /* Define MINIZ_NO_ARCHIVE_WRITING_APIS to disable all writing related ZIP archive API's. */
+#ifndef __STANDALONE__
 #define MINIZ_NO_ARCHIVE_WRITING_APIS
+#endif
 
 /* Define MINIZ_NO_ZLIB_APIS to remove all ZLIB-style compression/decompression API's. */
 /*#define MINIZ_NO_ZLIB_APIS */

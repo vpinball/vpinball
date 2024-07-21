@@ -3,15 +3,16 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.4
+SDL2_VERSION=2.30.5
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=2c4116642c1c15644e47c0054e3268af47559f9a
+PINMAME_SHA=8689b73c3b79c30f32daed333853a79c9d6f2fc5
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
-LIBDMDUTIL_SHA=0eb20528c6ff8aa79d04d467a3c64029e070cdce
+LIBDMDUTIL_SHA=71378daabb9a66bde3d88bcda8738c540aacf7f2
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
-BGFX_CMAKE_VERSION=1.127.8765-472
+BGFX_CMAKE_VERSION=1.128.8777-475
+BGFX_PATCH_SHA=b701418bd14892641474a716cb17f91b9557ac70
 
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
@@ -26,6 +27,7 @@ echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
 echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
+echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
 echo ""
 
 if [ -z "${BUILD_TYPE}" ]; then
@@ -100,7 +102,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_TEST=OFF \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    # cmake does not make a symbolic link for libSDL2.dylib
@@ -135,7 +137,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
@@ -169,7 +171,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL2TTF_HARFBUZZ=ON \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
@@ -339,15 +341,19 @@ cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 
 #
-# build bgfx and copy to external
+# build patched bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_002"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
    tar -xvzf bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
-   cd bgfx.cmake
+   curl -sL https://github.com/vbousquet/bgfx/archive/${BGFX_PATCH_SHA}.zip -o bgfx.zip
+   unzip bgfx.zip
+   cd bgfx.cmake   
+   rm -rf bgfx
+   mv ../bgfx-${BGFX_PATCH_SHA} bgfx
    cmake -S. \
       -DBGFX_LIBRARY_TYPE=SHARED \
       -DBGFX_BUILD_EXAMPLES=OFF \
