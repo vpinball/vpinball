@@ -76,7 +76,7 @@ void main()
 	ampRGB = inversesqrt(ampRGB);
 
 	const float peak = -3.0 * Contrast + 8.0;
-	const vec3 wRGB = -rcp(ampRGB * peak);
+	const vec3 wRGB = rcp(ampRGB * -peak);
 
 	const vec3 rcpWeightRGB = rcp(4.0 * wRGB + 1.0);
 
