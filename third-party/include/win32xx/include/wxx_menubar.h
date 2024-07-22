@@ -1108,12 +1108,12 @@ namespace Win32xx
         CMenuBar* pMenuBar = pTLSData->pMenuBar;
         assert(dynamic_cast<CMenuBar*>(pMenuBar));
 
-        if (MSGF_MENU == code)
+        if (MSGF_MENU == code && pMenuBar)
             pMenuBar->OnMenuInput(pMsg->message, pMsg->wParam, pMsg->lParam);
 
         // The HHOOK parameter in CallNextHookEx should be supplied for Win95, Win98 and WinME.
         // The HHOOK parameter is ignored for Windows NT and above.
-        return ::CallNextHookEx(pMenuBar->m_msgHook, code, wparam, lparam);
+        return pMenuBar ? ::CallNextHookEx(pMenuBar->m_msgHook, code, wparam, lparam) : 0;
     }
 
     inline LRESULT CMenuBar::SysCommand(UINT msg, WPARAM wparam, LPARAM lparam)
