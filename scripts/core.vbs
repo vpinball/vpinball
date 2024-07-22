@@ -1598,7 +1598,7 @@ Class cvpmMech
 	End Sub
 
 	Public Sub AddPulseSwNew(aSwNo, aInterval, aStart, aEnd)
-		If Controller.Version >= "01200000" Then
+		If Controller.Version >= 01200000 Then
 			mSw(mNextSw) = Array(aSwNo, aStart, aEnd, aInterval)
 		Else
 			mSw(mNextSw) = Array(aSwNo, -aInterval, aEnd - aStart + 1, 0)
@@ -2212,7 +2212,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 			'str = "init successful" &vbnewline& _
 			'	"Sol=" & Solenoid & " " & sol &vbnewline& str
 			'msgbox str
-			'vpmFlips.DebugTestInit = True	'removed debug stuff for the moment
+			'vpmFlips.DebugTestInit = True 'removed debug stuff for the moment
 		End If
 	End Sub
 
@@ -2357,7 +2357,7 @@ Public Sub vpmInit(aTable)
 		If Not IsObject(GetRef(aTable.name & "_UnPaused")) Or Err Then Err.Clear : vpmBuildEvent aTable, "UnPaused", "Controller.Pause = False"
 		If Not IsObject(GetRef(aTable.name & "_Exit")) Or Err Then Err.Clear : vpmBuildEvent aTable, "Exit", "Controller.Pause = False:Controller.Stop"
 	End If
-	
+
 	' FIXME PROC does not support Modulated solenoid and will fail
 	If UseModSol Then
 		If Controller.Version >= 03060000 Then
@@ -2370,7 +2370,7 @@ Public Sub vpmInit(aTable)
 			UseModSol=0
 		End If
 	End If
-	
+
 	vpmFlips.Init
 End Sub
 
@@ -2419,7 +2419,7 @@ Private vpmTrueFalse : vpmTrueFalse = Array(" True", " False"," True")
 Sub InitSolCallbacks
 	If SolCallbackInitialized Then Exit Sub
 
-	' Calling Execute can be an heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
+	' Calling Execute can be a heavy operation depending on user setup as it seems that security programs like Microsoft Defender are triggered by this call
 	' Therefore we add the callbacks to the script during vpmInit using ExecuteGlobal to prevent stutters during play
 	Dim sol, cbs: cbs = ""
 	For sol = 0 To UBound(SolCallback)
@@ -2454,8 +2454,8 @@ Sub PinMAMETimer_Timer
 	Dim ChgLamp, ChgSol,ChgGI, ii, tmp, idx, ChgLed
 	Dim DMDp
 	Dim ChgNVRAM
-	
-	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX version)
+
+	' To limit the performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VP(X) versions)
 	Dim UpdateVisual
 	If HasFrameIndex Then
 		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
