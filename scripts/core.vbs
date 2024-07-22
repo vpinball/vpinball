@@ -51,7 +51,7 @@ Dim HasFrameIndex : HasFrameIndex = Not IsEmpty(Eval("FrameIndex"))
 ' Check if VPX version offers PreciseGameTime property
 Dim HasPreciseGameTime : HasPreciseGameTime = Not IsEmpty(Eval("PreciseGameTime"))
 
-' Does the controller supports synchronization through time fence
+' Does the controller support synchronization through time fence
 Dim HasTimeFence : HasTimeFence = False
 
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
@@ -2522,7 +2522,7 @@ Sub PinMAMETimer_Timer
 		End If
 	End If
 
-	' To limit performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VPX versions)
+	' To limit the performance impact, lights are updated at most once per frame (or at most at 100Hz if FrameIndex is not available on older VP(X) versions)
 	Dim UpdateVisual
 	If HasFrameIndex Then
 		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
