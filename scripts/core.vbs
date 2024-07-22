@@ -1591,7 +1591,7 @@ Class cvpmMech
 	End Sub
 
 	Public Sub AddPulseSwNew(aSwNo, aInterval, aStart, aEnd)
-		If Controller.Version >= "01200000" Then
+		If Controller.Version >= 01200000 Then
 			mSw(mNextSw) = Array(aSwNo, aStart, aEnd, aInterval)
 		Else
 			mSw(mNextSw) = Array(aSwNo, -aInterval, aEnd - aStart + 1, 0)
@@ -2228,11 +2228,11 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 
 	Public Property Let Flip(aIdx, ByVal aEnabled) 'Key Flip: Indexed base flip... may keep may not
 		aEnabled = abs(aEnabled) 'True / False is not region safe with execute. Convert to 1 or 0 instead.
-		ButtonState(aIDX) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
+		ButtonState(aIdx) = aEnabled 'track flipper button states: the game-on sol flips immediately if the button is held down
 		'debug.print "Key Flip " & aIdx &" @ " & gametime & " FF ON: " & OnOff & " Circuit On? " & FlippersEnabled
 		If OnOff and FlippersEnabled or DebugOn then
 			execute FlipperSub(aIdx) & " " & aEnabled
-			FlipAt(aIDX) = GameTime
+			FlipAt(aIdx) = GameTime
 		end If
 	End Property
 
@@ -2245,7 +2245,7 @@ Class cvpmFlips2 'test fastflips switches to rom control after 100ms or so delay
 		SolState(aIdx) = aEnabled
 
 		If Not OnOff OR GameTime >= FlipAt(aIdx) + RomControlDelay Then
-			Execute FlipperSub(aIDX) & " " & aEnabled
+			Execute FlipperSub(aIdx) & " " & aEnabled
 			'tb.text = "Rom Flip " & aIdx & " state:" & aEnabled &vbnewline&_
 			'GameTime & " >= " & FlipAt(aIdx) & "+" & RomControlDelay
 			'debug.print "rom flip @ " & gametime & "solenoid:" & sol & ": " & FlippersEnabled
