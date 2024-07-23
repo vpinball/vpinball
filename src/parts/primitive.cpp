@@ -38,6 +38,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    idx++;
    name = name.substr(0,idx);
    string sname = name + "*.obj";
+#ifndef __STANDALONE__
    WIN32_FIND_DATA data;
    const HANDLE h = FindFirstFile(sname.c_str(), &data);
    vector<string> allFiles;
@@ -82,6 +83,7 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
    }
    sname = std::to_string(frameCounter)+" frames imported!";
    g_pvp->MessageBox(sname.c_str(), "Info", MB_OK | MB_ICONEXCLAMATION);
+#endif
    return true;
 }
 
@@ -541,7 +543,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
       //
 
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < prog_new_indices.size(); ++i)
@@ -575,7 +577,7 @@ void Primitive::GetHitShapes(vector<HitObject*> &pvho)
 
    else
    {
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
@@ -611,10 +613,10 @@ void Primitive::GetHitShapesDebug(vector<HitObject*> &pvho)
 // Ported at: VisualPinball.Engine/Math/EdgeSet.cs
 //
 
-void Primitive::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
+void Primitive::AddHitEdge(vector<HitObject*> &pvho, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.insert(p).second) // edge not yet added?
       SetupHitObject(pvho, new HitLine3D(vi, vj));
@@ -1955,6 +1957,7 @@ HRESULT Primitive::InitPostLoad()
 
 INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+#ifndef __STANDALONE__
    static Primitive *prim = nullptr;
    switch (uMsg)
    {
@@ -2116,12 +2119,15 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
          }
       }
    }
+#endif
    return FALSE;
 }
 
 bool Primitive::BrowseFor3DMeshFile()
 {
+#ifndef __STANDALONE__
    DialogBoxParam(m_vpinball->theInstance, MAKEINTRESOURCE(IDD_MESH_IMPORT_DIALOG), m_vpinball->GetHwnd(), ObjImportProc, (size_t)this);
+#endif
 #if 1
    return false;
 #else
@@ -2269,6 +2275,7 @@ bool Primitive::LoadMeshDialog()
 
 void Primitive::ExportMeshDialog()
 {
+#ifndef __STANDALONE__
    string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "ImportDir"s, PATH_TABLES);
 
    vector<string> szFileName;
@@ -2285,7 +2292,7 @@ void Primitive::ExportMeshDialog()
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       m_mesh.SaveWavefrontObj(szFileName[0], m_d.m_use3DMesh ? string(name) : "Primitive"s);
    }
-
+#endif
 }
 
 float Primitive::GetDepth(const Vertex3Ds& viewDir) const
