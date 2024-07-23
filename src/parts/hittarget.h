@@ -6,7 +6,7 @@
 #define AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_
 
 #include "resource.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 // Indices for RotAndTra:
 //     RotX = 0
@@ -57,6 +57,13 @@ class HitTarget :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    static const float DROP_TARGET_LIMIT;
 
@@ -141,8 +148,8 @@ public:
    STDMETHOD(put_LegacyMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
-   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
+   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_RaiseDelay)(/*[in]*/ LONG newVal);
    STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
@@ -182,7 +189,7 @@ private:
 
    void UpdateTarget();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj, const bool setHitObject);
-   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
+   void AddHitEdge(vector<HitObject*> &pvho, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject = true);
 
    PinTable        *m_ptable = nullptr;
 

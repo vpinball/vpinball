@@ -211,6 +211,7 @@ UndoRecord::~UndoRecord()
 
 void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
 {
+#ifndef __STANDALONE__
    if (FindIndexOf(m_vieMark, pie) != -1) // Been marked already
       return;
 
@@ -228,6 +229,7 @@ void UndoRecord::MarkForUndo(IEditable * const pie, const bool saveForUndo)
    pie->SaveData(pstm, 0, true);
 
    m_vstm.push_back(pstm);
+#endif
 }
 
 void UndoRecord::MarkForCreate(IEditable * const pie)
