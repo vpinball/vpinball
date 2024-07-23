@@ -49,6 +49,13 @@ class Flasher :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    Flasher();
    virtual ~Flasher();
@@ -100,6 +107,10 @@ protected:
    RenderDevice *m_rd = nullptr;
 
 public:
+#ifdef __STANDALONE__
+   void UpdatePoint(int index, int x, int y);
+#endif
+
    float GetDepth(const Vertex3Ds& viewDir) const final
    {
       return m_d.m_depthBias + viewDir.x * m_d.m_vCenter.x + viewDir.y * m_d.m_vCenter.y + viewDir.z * m_d.m_height;
@@ -184,8 +195,8 @@ public:
    STDMETHOD(put_RotY)(/*[in]*/ float newVal);
    STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
-   STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
+   STDMETHOD(get_Opacity)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Opacity)(/*[in]*/ LONG newVal);
    STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
    STDMETHOD(get_ModulateVsAdd)(/*[out, retval]*/ float *pVal);
@@ -204,8 +215,8 @@ public:
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
    STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
-   STDMETHOD(put_VideoCapWidth)(/*[in]*/ long cWidth);
-   STDMETHOD(put_VideoCapHeight)(/*[in]*/ long cHeight);
+   STDMETHOD(put_VideoCapWidth)(/*[in]*/ LONG cWidth);
+   STDMETHOD(put_VideoCapHeight)(/*[in]*/ LONG cHeight);
    STDMETHOD(put_VideoCapUpdate)(/*[in]*/ BSTR cWinTitle);
 
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
@@ -214,8 +225,8 @@ public:
    STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
    STDMETHOD(get_Filter)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Filter)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_Amount)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Amount)(/*[in]*/ long newVal);
+   STDMETHOD(get_Amount)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Amount)(/*[in]*/ LONG newVal);
 };
 
 #endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)
