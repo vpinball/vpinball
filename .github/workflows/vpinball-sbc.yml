@@ -1,0 +1,111 @@
+name: vpinball-sbc
+on:
+  push:
+
+env:
+  VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.version.outputs.revision }}
+      version_short: ${{ steps.version.outputs.version_short }}
+      version_full: ${{ steps.version.outputs.version_full }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+          VERSION_FULL="${VERSION_SHORT}.${REVISION}"
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
+          echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build-sbc:
+    name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL ]
+        config: [ Release ]  
+        arch: [ aarch64 ]
+        board: [ rpi, rk3588 ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - uses: pguyot/arm-runner-action@v2
+        id: arm_runner_make
+        with:
+          base_image: raspios_lite_arm64:latest
+          image_additional_mb: 4096
+          cpu: cortex-a53
+          cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
+          bind_mount_repository: true
+          shell: /bin/bash
+          commands: |
+            apt-get update -y --allow-releaseinfo-change
+            apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev libx11-dev libxrandr-dev
+            perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+            perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+            NUM_PROCS=$(nproc)
+            cd standalone/linux-${{ matrix.arch }}
+            BUILD_TYPE=${{ matrix.config }} ./external.sh
+            cd ../..
+            TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+            cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
+            OPTIONS=""
+            if [[ "${{ matrix.board }}" == "rpi" ]]; then
+              OPTIONS="-DBUILD_RPI=ON"
+            elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
+              OPTIONS="-DBUILD_RK3588=ON"
+            fi
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+            mkdir tmp
+            cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
+            cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
+            cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+            cp -r build/${{ matrix.config }}/assets tmp
+            cp -r build/${{ matrix.config }}/scripts tmp
+            cp -r build/${{ matrix.config }}/tables tmp
+            cp -r build/${{ matrix.config }}/docs tmp
+            cd tmp
+            tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}
+          path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz
+

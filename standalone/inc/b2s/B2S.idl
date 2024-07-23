@@ -1,0 +1,1749 @@
+// Generated .IDL file (by the OLE/COM Object Viewer)
+// 
+// typelib filename: <could not determine filename>
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+  uuid(4E596935-CB6B-40D8-81F9-428397C654CF),
+  version(2.0),
+  custom(90883F05-3D28-11D2-8F17-00A0C9A6186D, "B2SBackglassServer, Version=2.0.3.0, Culture=neutral, PublicKeyToken=null")
+
+]
+library B2SBackglassServer
+{
+    // TLib :  : {215D64D2-031C-33C7-96E3-61794CD1EE61}
+    importlib("System.Windows.Forms.tlb");
+    // TLib :  : {BEE4BFEC-6683-3E67-9167-3C0CBC68F40A}
+    importlib("System.tlb");
+    // TLib : mscorlib.dll : {BED7F4EA-1A96-11D2-8F08-00A0C9A6186D}
+    importlib("mscorlib.tlb");
+    // TLib : OLE Automation : {00020430-0000-0000-C000-000000000046}
+    importlib("stdole2.tlb");
+
+    // Forward declare all types defined in this typelib
+    interface _Server;
+    interface _B2SAnimation;
+    interface _B2SData;
+    interface _B2SLED;
+    interface _B2SReelDisplay;
+    interface _B2SScreen;
+    interface _B2SSettings;
+    interface _B2SStatistics;
+    interface _Processes;
+    interface _B2SBaseBox;
+    interface _B2SLEDBox;
+    interface _B2SPictureBox;
+    interface _B2SReelBox;
+    interface _B2SSnifferPanel;
+    interface _Dream7Display;
+    interface _formBackglass;
+    interface _formDMD;
+    interface _formMode;
+    interface _formSettings;
+    interface _formSettingsMore;
+    interface _Statistics;
+    interface _Log;
+    interface _Plugin;
+    interface _PluginHost;
+    interface _PluginWindow;
+    interface _B2SAnimationBase;
+    interface _TimerAnimation;
+    interface _PictureBoxAnimation;
+    interface _PictureBoxAnimationEntry;
+    interface _PictureBoxAnimationCollection;
+    interface _PictureBoxAnimationCollectionEntry;
+    interface _CollectData;
+    interface _AnimationInfo;
+    interface _LEDAreaInfo;
+    interface _LEDDisplayDigitLocation;
+    interface _ControlInfo;
+    interface _StatsCollection;
+    interface _StatsEntry;
+    interface _ReelRollOverEventArgs;
+    interface _ReelRollOverEventHandler;
+    interface _FinishedEventHandler;
+    interface _FinishedEventHandler_2;
+
+    [
+      uuid(703807B5-9DC2-3789-9E80-4FC198AAED4E),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation")
+    ]
+    coclass B2SAnimation {
+        [default] interface _B2SAnimation;
+        interface _Object;
+    };
+
+    [
+      uuid(E575E3C7-E580-3749-8817-011703FD76C8),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SCollectData")
+    ]
+    coclass B2SCollectData {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    [
+      uuid(59E7D353-6D58-37B3-AEE6-2BEAFA1C4354),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData")
+    ]
+    coclass B2SData {
+        [default] interface _B2SData;
+        interface _Object;
+    };
+
+    [
+      uuid(BB2907EC-86B7-3FC6-9567-556DE03A24D5),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SLED")
+    ]
+    coclass B2SLED {
+        [default] interface _B2SLED;
+        interface _Object;
+    };
+
+    [
+      uuid(155B2DE6-38F5-369C-BA2F-31BEDAED1F60),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPlayer")
+    ]
+    coclass B2SPlayer {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    [
+      uuid(015C0C18-B2CB-3FB2-9CCE-1BDAA9329ECF),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelDisplay")
+    ]
+    coclass B2SReelDisplay {
+        [default] interface _B2SReelDisplay;
+        interface _Object;
+        interface IDisposable;
+    };
+
+    [
+      uuid(2E929B95-1121-3E5D-8271-C158DD7FC3BC),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SScreen")
+    ]
+    coclass B2SScreen {
+        [default] interface _B2SScreen;
+        interface _Object;
+    };
+
+    [
+      uuid(DC1D1C65-9BEF-389B-9751-3F0FE921693B),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings")
+    ]
+    coclass B2SSettings {
+        [default] interface _B2SSettings;
+        interface _Object;
+    };
+
+    [
+      uuid(9674FEDA-91BA-3A48-96D9-9DB1F41F2485),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics")
+    ]
+    coclass B2SStatistics {
+        [default] interface _B2SStatistics;
+        interface _Object;
+    };
+
+    [
+      uuid(BB2CC0CE-0927-32F5-BA09-7FC0E06715DF),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Processes")
+    ]
+    coclass Processes {
+        [default] interface _Processes;
+        interface _Object;
+    };
+
+    [
+      uuid(F278AF37-7A8D-37F6-9634-FC9B29A10AD3),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SBaseBox")
+    ]
+    coclass B2SBaseBox {
+        [default] interface _B2SBaseBox;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(8293C4F8-FA8A-3980-9058-102C9A3B24B1),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SLEDBox")
+    ]
+    coclass B2SLEDBox {
+        [default] interface _B2SLEDBox;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(F5323223-B199-35D7-9E12-DBED2CF0CC4E),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPictureBox")
+    ]
+    coclass B2SPictureBox {
+        [default] interface _B2SPictureBox;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(4D78C14D-C1EA-36A6-A48F-29787BF7DA17),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox")
+    ]
+    coclass B2SReelBox {
+        [default] interface _B2SReelBox;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(B86F0ED8-C18C-3B7C-AE0D-A1B9CD46190D),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSnifferPanel")
+    ]
+    coclass B2SSnifferPanel {
+        [default] interface _B2SSnifferPanel;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(52089EE8-D61F-3429-A857-E1AA08FBEFA1),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Dream7Display")
+    ]
+    coclass Dream7Display {
+        [default] interface _Dream7Display;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    typedef [uuid(6879E7D3-3348-3002-AD77-72DAA106FA1C), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.ScaleMode")    
+]
+    enum {
+        ScaleMode_Manual = 0,
+        ScaleMode_Stretch = 1,
+        ScaleMode_Zoom = 2
+    } ScaleMode;
+
+    typedef [uuid(81A1CD7A-99A6-3D0A-B9FC-D71753DB10DE), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.SegmentNumberType")    
+]
+    enum {
+        SegmentNumberType_SevenSegment = 7,
+        SegmentNumberType_TenSegment = 10,
+        SegmentNumberType_FourteenSegment = 14
+    } SegmentNumberType;
+
+    [
+      uuid(41E018DE-ADE2-3D8F-97B4-382F88FC553B),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formBackglass")
+    ]
+    coclass formBackglass {
+        [default] interface _formBackglass;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(22E7AB66-F194-3512-A61E-0EF052CF5342),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formDMD")
+    ]
+    coclass formDMD {
+        [default] interface _formDMD;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(BABCC6BD-6710-3554-9DD3-B40FF086FCF9),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formMode")
+    ]
+    coclass formMode {
+        [default] interface _formMode;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(74A040BE-21B4-3FF9-89C3-0925E218F125),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formSettings")
+    ]
+    coclass formSettings {
+        [default] interface _formSettings;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(F36A696B-15D6-338D-9F22-94C9342B1C60),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formSettingsMore")
+    ]
+    coclass formSettingsMore {
+        [default] interface _formSettingsMore;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(B550EB0D-886E-3D1C-82CD-BF5A58D11757),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Statistics")
+    ]
+    coclass Statistics {
+        [default] interface _Statistics;
+        interface _Object;
+    };
+
+    [
+      uuid(0E21F7B4-601B-3052-B9CD-4B7C42578C90),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Log")
+    ]
+    coclass Log {
+        [default] interface _Log;
+        interface _Object;
+    };
+
+    typedef [uuid(01E1B97A-A2E2-3FA8-90A8-5ABBF7A3E249), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginStatusEnum")    
+]
+    enum {
+        PluginStatusEnum_Active = 0,
+        PluginStatusEnum_Disabled = 1,
+        PluginStatusEnum_DisabledDueToException = 2
+    } PluginStatusEnum;
+
+    [
+      uuid(2D89ECE4-BA92-345C-98DC-A7BC20E9E8FF),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Plugin")
+    ]
+    coclass Plugin {
+        [default] interface _Plugin;
+        interface _Object;
+    };
+
+    [
+      uuid(7622DE45-3760-3569-A634-CAF9063B6D16),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginHost")
+    ]
+    coclass PluginHost {
+        [default] interface _PluginHost;
+        interface _Object;
+    };
+
+    [
+      uuid(AC12A926-813F-3843-AE67-0A1E3F6DB842),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginList")
+    ]
+    coclass PluginList {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IList;
+        interface ICollection;
+    };
+
+    [
+      uuid(D7261B20-A7BE-3254-B4AE-008E551A272B),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginWindow")
+    ]
+    coclass PluginWindow {
+        [default] interface _PluginWindow;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+        interface IWin32Window;
+    };
+
+    [
+      uuid(09E233A3-CC79-457A-B49E-F637588891E5),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Server")
+    ]
+    coclass Server {
+        interface _Object;
+        [default] interface _Server;
+        interface IDisposable;
+    };
+
+    typedef [uuid(C16CDA91-F70C-3A94-8678-49BC32CC28EF), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+eType")    
+]
+    enum {
+        eType_Undefined = 0,
+        eType_ImageCollectionAtForm = 1,
+        eType_ImageCollectionAtPictureBox = 2,
+        eType_PictureBoxCollection = 3
+    } eType;
+
+    typedef [uuid(D7FDCCD1-897A-3840-9D58-BE1A5B6775A8), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+eLightsStateAtAnimationStart")    
+]
+    enum {
+        eLightsStateAtAnimationStart_Undefined = 0,
+        eLightsStateAtAnimationStart_InvolvedLightsOff = 1,
+        eLightsStateAtAnimationStart_InvolvedLightsOn = 2,
+        eLightsStateAtAnimationStart_LightsOff = 3,
+        eLightsStateAtAnimationStart_NoChange = 4
+    } eLightsStateAtAnimationStart;
+
+    typedef [uuid(EA53E8A2-BBBC-33AC-BF66-C6596F81EB58), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+eLightsStateAtAnimationEnd")    
+]
+    enum {
+        eLightsStateAtAnimationEnd_Undefined = 0,
+        eLightsStateAtAnimationEnd_InvolvedLightsOff = 1,
+        eLightsStateAtAnimationEnd_InvolvedLightsOn = 2,
+        eLightsStateAtAnimationEnd_LightsReseted = 3,
+        eLightsStateAtAnimationEnd_NoChange = 4
+    } eLightsStateAtAnimationEnd;
+
+    typedef [uuid(26FC9388-2102-3AB9-9D0A-D27D1416CF00), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+eAnimationStopBehaviour")    
+]
+    enum {
+        eAnimationStopBehaviour_Undefined = 0,
+        eAnimationStopBehaviour_StopImmediatelly = 1,
+        eAnimationStopBehaviour_RunAnimationTillEnd = 2,
+        eAnimationStopBehaviour_RunAnimationToFirstStep = 3
+    } eAnimationStopBehaviour;
+
+    [
+      uuid(79602B83-EBDE-366C-9359-800F4F6C7DCE),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+B2SAnimationBase")
+    ]
+    coclass B2SAnimationBase {
+        [default] interface _B2SAnimationBase;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+    };
+
+    [
+      uuid(285AAA5B-B3D2-3A52-A21C-19100834F981),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+TimerAnimation")
+    ]
+    coclass TimerAnimation {
+        [default] interface _TimerAnimation;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+    };
+
+    [
+      uuid(C5FBE4B8-EB11-3828-AB1A-52F760AD8F6A),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimation")
+    ]
+    coclass PictureBoxAnimation {
+        [default] interface _PictureBoxAnimation;
+        interface _Object;
+        interface IComponent;
+        interface IDisposable;
+    };
+
+    [
+      uuid(17B5F964-5CE8-32A3-87EF-D0DEE66B2D5E),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationEntry")
+    ]
+    coclass PictureBoxAnimationEntry {
+        [default] interface _PictureBoxAnimationEntry;
+        interface _Object;
+    };
+
+    [
+      uuid(374F2F95-2C4B-35A9-98DC-0BC583ABECB9),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationCollection")
+    ]
+    coclass PictureBoxAnimationCollection {
+        [default] interface _PictureBoxAnimationCollection;
+        interface _Object;
+    };
+
+    [
+      uuid(6C3DDCD4-8003-3C2A-A903-1010E48FC224),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationCollectionEntry")
+    ]
+    coclass PictureBoxAnimationCollectionEntry {
+        [default] interface _PictureBoxAnimationCollectionEntry;
+        interface _Object;
+    };
+
+    typedef [uuid(D33AA96A-8414-3C27-8D92-5FF13897BD71), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SCollectData+eCollectedDataType")    
+]
+    enum {
+        eCollectedDataType_TopImage = 1,
+        eCollectedDataType_SecondImage = 2,
+        eCollectedDataType_Standard = 4,
+        eCollectedDataType_Animation = 8
+    } eCollectedDataType;
+
+    [
+      uuid(689EAC8E-9138-310B-B37E-690CEF21EBFF),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SCollectData+CollectData")
+    ]
+    coclass CollectData {
+        [default] interface _CollectData;
+        interface _Object;
+    };
+
+    typedef [uuid(FA09A627-07D1-3872-AB67-DC450EA62F7A), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+eDMDType")    
+]
+    enum {
+        eDMDType_NotDefined = 0,
+        eDMDType_NoB2SDMD = 1,
+        eDMDType_B2SAlwaysOnSecondMonitor = 2,
+        eDMDType_B2SAlwaysOnThirdMonitor = 3,
+        eDMDType_B2SOnSecondOrThirdMonitor = 4
+    } eDMDType;
+
+    typedef [uuid(F0B8277F-20E9-3EFB-8E12-E92076A2988A), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+eDualMode")    
+]
+    enum {
+        eDualMode_Both = 0,
+        eDualMode_Authentic = 1,
+        eDualMode_Fantasy = 2
+    } eDualMode;
+
+    [
+      uuid(4752D05A-F95E-348E-8EF8-0521F629CBD2),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+PictureBoxCollection")
+    ]
+    coclass PictureBoxCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+    };
+
+    [
+      uuid(E829E1D3-1AEC-3AC4-B623-3A386D62DA80),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+ReelBoxCollection")
+    ]
+    coclass ReelBoxCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    [
+      uuid(6019C772-1C73-3D75-BE91-54D10C6E46EF),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+ZOrderCollection")
+    ]
+    coclass ZOrderCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+    };
+
+    [
+      uuid(0B42CD23-99A8-37F1-8246-D612503C22BA),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+AnimationInfo")
+    ]
+    coclass AnimationInfo {
+        [default] interface _AnimationInfo;
+        interface _Object;
+    };
+
+    [
+      uuid(24607C71-413F-3EC5-A39C-056EFE926EC0),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+AnimationCollection")
+    ]
+    coclass AnimationCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    [
+      uuid(92390D93-A2F2-3591-B47C-BE48851C42AD),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+IlluminationGroupCollection")
+    ]
+    coclass IlluminationGroupCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    [
+      uuid(3D38E61E-1540-3B1A-8951-4A9081B6DC01),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+LEDAreaInfo")
+    ]
+    coclass LEDAreaInfo {
+        [default] interface _LEDAreaInfo;
+        interface _Object;
+    };
+
+    [
+      uuid(3689038E-7A56-319F-8698-8950A32BC2C2),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+LEDDisplayDigitLocation")
+    ]
+    coclass LEDDisplayDigitLocation {
+        [default] interface _LEDDisplayDigitLocation;
+        interface _Object;
+    };
+
+    typedef [uuid(E4A4CD6A-E0DA-35F9-A9DA-267A70D1DF19), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SLED+eLEDType")    
+]
+    enum {
+        eLEDType_Undefined = 0,
+        eLEDType_LED8 = 1,
+        eLEDType_LED10 = 2,
+        eLEDType_LED14 = 3,
+        eLEDType_LED16 = 4
+    } eLEDType;
+
+    typedef [uuid(567F64D5-E519-3FB1-B2D1-C25F66BD37F5), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPlayer+eControlType")    
+]
+    enum {
+        eControlType_NotDefined = 0,
+        eControlType_LEDBox = 1,
+        eControlType_Dream7LEDDisplay = 2,
+        eControlType_ReelBox = 3,
+        eControlType_ReelDisplay = 4
+    } eControlType;
+
+    [
+      uuid(A8138C07-892E-36BC-B911-B9615D8CFF76),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPlayer+ControlCollection")
+    ]
+    coclass ControlCollection {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IList;
+        interface ICollection;
+    };
+
+    [
+      uuid(1BFDFD06-8E67-34B0-A08D-ABC4371364A7),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPlayer+ControlInfo")
+    ]
+    coclass ControlInfo {
+        [default] interface _ControlInfo;
+        interface _Object;
+    };
+
+    typedef [uuid(9E37A537-DC5E-32D8-8A23-42E67C75119F), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SScreen+eDMDViewMode")    
+]
+    enum {
+        eDMDViewMode_NotDefined = 0,
+        eDMDViewMode_NoDMD = 1,
+        eDMDViewMode_ShowDMD = 2,
+        eDMDViewMode_ShowDMDOnlyAtDefaultLocation = 3,
+        eDMDViewMode_DoNotShowDMDAtDefaultLocation = 4
+    } eDMDViewMode;
+
+    typedef [uuid(2A9C863B-9DBF-378D-BB6C-BB223A718996), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings+eDefaultStartMode")    
+]
+    enum {
+        eDefaultStartMode_Standard = 1,
+        eDefaultStartMode_EXE = 2
+    } eDefaultStartMode;
+
+    typedef [uuid(5A342FA6-6D9F-33B3-86B3-403D88E75F2D), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings+eDMDTypes")    
+]
+    enum {
+        eDMDTypes_Standard = 0,
+        eDMDTypes_TwoMonitorSetup = 1,
+        eDMDTypes_ThreeMonitorSetup = 2,
+        eDMDTypes_Hidden = 3
+    } eDMDTypes;
+
+    typedef [uuid(371308EC-3AA0-3B8C-AE1B-C2C6A55A5FC8), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings+eLEDTypes")    
+]
+    enum {
+        eLEDTypes_Undefined = 0,
+        eLEDTypes_Rendered = 1,
+        eLEDTypes_Dream7 = 2
+    } eLEDTypes;
+
+    typedef [uuid(0EAEA61B-4199-303E-B816-C18D68A3030F), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings+eImageFileType")    
+]
+    enum {
+        eImageFileType_PNG = 0,
+        eImageFileType_JPG = 1,
+        eImageFileType_GIF = 2,
+        eImageFileType_BMP = 3
+    } eImageFileType;
+
+    [
+      uuid(0671E2A7-CED6-380A-A5C7-A28BD24A649E),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics+StatsCollection")
+    ]
+    coclass StatsCollection {
+        [default] interface _StatsCollection;
+        interface _Object;
+    };
+
+    [
+      uuid(D7E864CC-5BA3-3376-8AE5-CAAEA0DEB2AC),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics+StatsEntry")
+    ]
+    coclass StatsEntry {
+        [default] interface _StatsEntry;
+        interface _Object;
+    };
+
+    typedef [uuid(A3C05D31-A5BD-3423-8D18-57CAC3AC90FA), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SBaseBox+eRomIDType")    
+]
+    enum {
+        eRomIDType_NotDefined = 0,
+        eRomIDType_Lamp = 1,
+        eRomIDType_Solenoid = 2,
+        eRomIDType_GIString = 3,
+        eRomIDType_Mech = 4
+    } eRomIDType;
+
+    typedef [uuid(41A07A73-B7F8-3C01-9164-5B7F651CD302), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPictureBox+ePictureBoxType")    
+]
+    enum {
+        ePictureBoxType_StandardImage = 0,
+        ePictureBoxType_SelfRotatingImage = 1,
+        ePictureBoxType_MechRotatingImage = 2
+    } ePictureBoxType;
+
+    typedef [uuid(6844DB9B-BDCB-379A-AD6E-15B61E20187D), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPictureBox+eSnippitRotationDirection")    
+]
+    enum {
+        eSnippitRotationDirection_Clockwise = 0,
+        eSnippitRotationDirection_AntiClockwise = 1
+    } eSnippitRotationDirection;
+
+    typedef [uuid(FDE79B77-B640-33BE-B1C8-E7D351B40DDE), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPictureBox+eSnippitRotationStopBehaviour")    
+]
+    enum {
+        eSnippitRotationStopBehaviour_SpinOff = 0,
+        eSnippitRotationStopBehaviour_StopImmediatelly = 1,
+        eSnippitRotationStopBehaviour_RunAnimationTillEnd = 2,
+        eSnippitRotationStopBehaviour_RunAnimationToFirstStep = 3
+    } eSnippitRotationStopBehaviour;
+
+    typedef [uuid(AD25559C-A045-3055-B9AA-80EB30BF3796), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox+eScoreType")    
+]
+    enum {
+        eScoreType_NotUsed = 0,
+        eScoreType_Scores = 1,
+        eScoreType_Credits = 2
+    } eScoreType;
+
+    [
+      uuid(EBE204CE-785F-366A-9D64-58314874AC25),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox+ReelRollOverEventArgs")
+    ]
+    coclass ReelRollOverEventArgs {
+        [default] interface _ReelRollOverEventArgs;
+        interface _Object;
+    };
+
+    [
+      uuid(BAAA5D5D-630A-3C7A-AA4D-6E329B73BC88),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox+ReelRollOverEventHandler")
+    ]
+    coclass ReelRollOverEventHandler {
+        [default] interface _ReelRollOverEventHandler;
+        interface _Delegate;
+        interface _Object;
+        interface ICloneable;
+        interface ISerializable;
+    };
+
+    [
+      odl,
+      uuid(5693C68C-5834-466D-AAAC-A86922076EFD),
+      version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Server+_Server")    
+
+    ]
+    interface _Server : IDispatch {
+        [id(0x00000001)]
+        HRESULT Dispose();
+        [id(0x00000002), propget]
+        HRESULT B2SServerVersion([out, retval] BSTR* pRetVal);
+        [id(0x00000003), propget]
+        HRESULT B2SServerDirectory([out, retval] BSTR* pRetVal);
+        [id(0x00000004), propget]
+        HRESULT GameName([out, retval] BSTR* pRetVal);
+        [id(0x00000004), propput]
+        HRESULT GameName([in] BSTR pRetVal);
+        [id(0x00000005), propget]
+        HRESULT ROMName([out, retval] BSTR* pRetVal);
+        [id(0x00000006), propget]
+        HRESULT B2SName([out, retval] BSTR* pRetVal);
+        [id(0x00000006), propput]
+        HRESULT B2SName([in] BSTR pRetVal);
+        [id(0x00000007), propget]
+        HRESULT TableName([out, retval] BSTR* pRetVal);
+        [id(0x00000007), propput]
+        HRESULT TableName([in] BSTR pRetVal);
+        [id(0x00000008), propput]
+        HRESULT WorkingDir([in] BSTR rhs);
+        [id(0x00000009)]
+        HRESULT SetPath([in] BSTR path);
+        [id(0x0000000a), propget]
+        HRESULT Games(
+                        [in] BSTR GameName, 
+                        [out, retval] VARIANT* pRetVal);
+        [id(0x0000000b), propget]
+        HRESULT Settings([out, retval] VARIANT* pRetVal);
+        [id(0x0000000c), propget]
+        HRESULT Running([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x0000000d), propget]
+        HRESULT Pause([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x0000000d), propput]
+        HRESULT Pause([in] VARIANT_BOOL pRetVal);
+        [id(0x0000000e), propget]
+        HRESULT Version([out, retval] BSTR* pRetVal);
+        [id(0x0000000f)]
+        HRESULT Run([in, optional] VARIANT handle);
+        [id(0x00000010)]
+        HRESULT Stop();
+        [id(0x00000011), propget]
+        HRESULT LaunchBackglass([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000011), propput]
+        HRESULT LaunchBackglass([in] VARIANT_BOOL pRetVal);
+        [id(0x00000012), propget]
+        HRESULT SplashInfoLine([out, retval] BSTR* pRetVal);
+        [id(0x00000012), propput]
+        HRESULT SplashInfoLine([in] BSTR pRetVal);
+        [id(0x00000013), propget]
+        HRESULT ShowFrame([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000013), propput]
+        HRESULT ShowFrame([in] VARIANT_BOOL pRetVal);
+        [id(0x00000014), propget]
+        HRESULT ShowTitle([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000014), propput]
+        HRESULT ShowTitle([in] VARIANT_BOOL pRetVal);
+        [id(0x00000015), propget]
+        HRESULT ShowDMDOnly([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000015), propput]
+        HRESULT ShowDMDOnly([in] VARIANT_BOOL pRetVal);
+        [id(0x00000016), propget]
+        HRESULT ShowPinDMD([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000016), propput]
+        HRESULT ShowPinDMD([in] VARIANT_BOOL pRetVal);
+        [id(0x00000017), propget]
+        HRESULT LockDisplay([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000017), propput]
+        HRESULT LockDisplay([in] VARIANT_BOOL pRetVal);
+        [id(0x00000018), propget]
+        HRESULT DoubleSize([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000018), propput]
+        HRESULT DoubleSize([in] VARIANT_BOOL pRetVal);
+        [id(0x00000019), propget]
+        HRESULT Hidden([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000019), propput]
+        HRESULT Hidden([in] VARIANT_BOOL pRetVal);
+        [id(0x0000001a)]
+        HRESULT SetDisplayPosition(
+                        [in] VARIANT x, 
+                        [in] VARIANT y, 
+                        [in, optional] VARIANT handle);
+        [id(0x0000001b)]
+        HRESULT ShowOptsDialog([in] VARIANT handle);
+        [id(0x0000001c)]
+        HRESULT ShowPathesDialog([in] VARIANT handle);
+        [id(0x0000001d)]
+        HRESULT ShowAboutDialog([in] VARIANT handle);
+        [id(0x0000001e)]
+        HRESULT CheckROMS(
+                        [in] VARIANT showoptions, 
+                        [in] VARIANT handle);
+        [id(0x0000001f), propget]
+        HRESULT PuPHide([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x0000001f), propput]
+        HRESULT PuPHide([in] VARIANT_BOOL pRetVal);
+        [id(0x00000020), propget]
+        HRESULT HandleKeyboard([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000020), propput]
+        HRESULT HandleKeyboard([in] VARIANT_BOOL pRetVal);
+        [id(0x00000021), propget]
+        HRESULT HandleMechanics([out, retval] short* pRetVal);
+        [id(0x00000021), propput]
+        HRESULT HandleMechanics([in] short pRetVal);
+        [id(0x00000022), propget]
+        HRESULT ChangedLamps([out, retval] VARIANT* pRetVal);
+        [id(0x00000023), propget]
+        HRESULT ChangedSolenoids([out, retval] VARIANT* pRetVal);
+        [id(0x00000024), propget]
+        HRESULT ChangedGIStrings([out, retval] VARIANT* pRetVal);
+        [id(0x00000025), propget]
+        HRESULT ChangedLEDs(
+                        [in] VARIANT mask2, 
+                        [in] VARIANT mask1, 
+                        [in, optional] VARIANT mask3, 
+                        [in, optional] VARIANT mask4, 
+                        [out, retval] VARIANT* pRetVal);
+        [id(0x00000026), propget]
+        HRESULT NewSoundCommands([out, retval] VARIANT* pRetVal);
+        [id(0x00000027), propget]
+        HRESULT Lamp(
+                        [in] VARIANT number, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000028), propget]
+        HRESULT Solenoid(
+                        [in] VARIANT number, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000029), propget]
+        HRESULT GIString(
+                        [in] VARIANT number, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x0000002a), propget]
+        HRESULT Switch(
+                        [in] VARIANT number, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x0000002a), propput]
+        HRESULT Switch(
+                        [in] VARIANT number, 
+                        [in] VARIANT_BOOL pRetVal);
+        [id(0x0000002b), propget]
+        HRESULT Mech(
+                        [in] VARIANT number, 
+                        [out, retval] long* pRetVal);
+        [id(0x0000002b), propput]
+        HRESULT Mech(
+                        [in] VARIANT number, 
+                        [in] long pRetVal);
+        [id(0x0000002c), propget]
+        HRESULT GetMech(
+                        [in] VARIANT number, 
+                        [out, retval] VARIANT* pRetVal);
+        [id(0x0000002d), propget]
+        HRESULT Dip(
+                        [in] VARIANT number, 
+                        [out, retval] long* pRetVal);
+        [id(0x0000002d), propput]
+        HRESULT Dip(
+                        [in] VARIANT number, 
+                        [in] long pRetVal);
+        [id(0x0000002e), propget]
+        HRESULT SolMask(
+                        [in] VARIANT number, 
+                        [out, retval] long* pRetVal);
+        [id(0x0000002e), propput]
+        HRESULT SolMask(
+                        [in] VARIANT number, 
+                        [in] long pRetVal);
+        [id(0x0000002f), propget]
+        HRESULT RawDmdWidth([out, retval] long* pRetVal);
+        [id(0x00000030), propget]
+        HRESULT RawDmdHeight([out, retval] long* pRetVal);
+        [id(0x00000031), propget]
+        HRESULT RawDmdPixels([out, retval] VARIANT* pRetVal);
+        [id(0x00000032), propget]
+        HRESULT RawDmdColoredPixels([out, retval] VARIANT* pRetVal);
+        [id(0x00000033), propget]
+        HRESULT ChangedNVRAM([out, retval] VARIANT* pRetVal);
+        [id(0x00000034), propget]
+        HRESULT NVRAM([out, retval] VARIANT* pRetVal);
+        [id(0x00000035), propget]
+        HRESULT SoundMode([out, retval] long* pRetVal);
+        [id(0x00000035), propput]
+        HRESULT SoundMode([in] long pRetVal);
+        [id(0x00000036)]
+        HRESULT B2SSetData(
+                        [in] VARIANT idORname, 
+                        [in] VARIANT value);
+        [id(0x00000037)]
+        HRESULT B2SPulseData([in] VARIANT idORname);
+        [id(0x00000038)]
+        HRESULT B2SSetIllumination(
+                        [in] VARIANT name, 
+                        [in] VARIANT value);
+        [id(0x00000039)]
+        HRESULT B2SSetLED(
+                        [in] VARIANT digit, 
+                        [in] VARIANT valueORtext);
+        [id(0x0000003a)]
+        HRESULT B2SSetLEDDisplay(
+                        [in] VARIANT display, 
+                        [in] VARIANT text);
+        [id(0x0000003b)]
+        HRESULT B2SSetReel(
+                        [in] VARIANT digit, 
+                        [in] VARIANT value);
+        [id(0x0000003c)]
+        HRESULT B2SSetScore(
+                        [in] VARIANT display, 
+                        [in] VARIANT value);
+        [id(0x0000003d)]
+        HRESULT B2SSetScorePlayer(
+                        [in] VARIANT playerno, 
+                        [in] VARIANT score);
+        [id(0x0000003e)]
+        HRESULT B2SSetScorePlayer1([in] VARIANT score);
+        [id(0x0000003f)]
+        HRESULT B2SSetScorePlayer2([in] VARIANT score);
+        [id(0x00000040)]
+        HRESULT B2SSetScorePlayer3([in] VARIANT score);
+        [id(0x00000041)]
+        HRESULT B2SSetScorePlayer4([in] VARIANT score);
+        [id(0x00000042)]
+        HRESULT B2SSetScorePlayer5([in] VARIANT score);
+        [id(0x00000043)]
+        HRESULT B2SSetScorePlayer6([in] VARIANT score);
+        [id(0x00000044)]
+        HRESULT B2SSetScoreDigit(
+                        [in] VARIANT digit, 
+                        [in] VARIANT value);
+        [id(0x00000045)]
+        HRESULT B2SSetScoreRollover(
+                        [in] VARIANT id, 
+                        [in] VARIANT value);
+        [id(0x00000046)]
+        HRESULT B2SSetScoreRolloverPlayer1([in] VARIANT value);
+        [id(0x00000047)]
+        HRESULT B2SSetScoreRolloverPlayer2([in] VARIANT value);
+        [id(0x00000048)]
+        HRESULT B2SSetScoreRolloverPlayer3([in] VARIANT value);
+        [id(0x00000049)]
+        HRESULT B2SSetScoreRolloverPlayer4([in] VARIANT value);
+        [id(0x0000004a)]
+        HRESULT B2SSetCredits(
+                        [in] VARIANT digitORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x0000004b)]
+        HRESULT B2SSetPlayerUp(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x0000004c)]
+        HRESULT B2SSetCanPlay(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x0000004d)]
+        HRESULT B2SSetBallInPlay(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x0000004e)]
+        HRESULT B2SSetTilt(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x0000004f)]
+        HRESULT B2SSetMatch(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x00000050)]
+        HRESULT B2SSetGameOver(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x00000051)]
+        HRESULT B2SSetShootAgain(
+                        [in] VARIANT idORvalue, 
+                        [in, optional] VARIANT value);
+        [id(0x00000052)]
+        HRESULT B2SStartAnimation(
+                        [in] BSTR animationname, 
+                        [in, optional] VARIANT_BOOL playreverse);
+        [id(0x00000053)]
+        HRESULT B2SStartAnimationReverse([in] BSTR animationname);
+        [id(0x00000054)]
+        HRESULT B2SStopAnimation([in] BSTR animationname);
+        [id(0x00000055)]
+        HRESULT B2SStopAllAnimations();
+        [id(0x00000056)]
+        HRESULT B2SIsAnimationRunning(
+                        [in] BSTR animationname, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x00000057)]
+        HRESULT StartAnimation(
+                        [in] BSTR animationname, 
+                        [in, optional] VARIANT_BOOL playreverse);
+        [id(0x00000058)]
+        HRESULT StopAnimation([in] BSTR animationname);
+        [id(0x00000059)]
+        HRESULT B2SStartRotation();
+        [id(0x0000005a)]
+        HRESULT B2SStopRotation();
+        [id(0x0000005b)]
+        HRESULT B2SShowScoreDisplays();
+        [id(0x0000005c)]
+        HRESULT B2SHideScoreDisplays();
+        [id(0x0000005d)]
+        HRESULT B2SStartSound([in] BSTR soundname);
+        [id(0x0000005e)]
+        HRESULT B2SPlaySound([in] BSTR soundname);
+        [id(0x0000005f)]
+        HRESULT B2SStopSound([in] BSTR soundname);
+        [id(0x00000060)]
+        HRESULT B2SMapSound(
+                        [in] VARIANT digit, 
+                        [in] BSTR soundname);
+        [id(0x00000061), propput]
+        HRESULT TimeFence([in] VARIANT timeInS);
+    };
+
+    [
+      uuid(A82BA555-5BEC-31F2-A80B-300B5EC3893D),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+TimerAnimation+FinishedEventHandler")
+    ]
+    coclass FinishedEventHandler {
+        [default] interface _FinishedEventHandler;
+        interface _Delegate;
+        interface _Object;
+        interface ICloneable;
+        interface ISerializable;
+    };
+
+    [
+      uuid(F31F135A-82F9-3858-A0C1-9C54DDF2BBCD),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelDisplay+ReelBoxCollection")
+    ]
+    coclass ReelBoxCollection_2 {
+        interface _Object;
+        [default] interface IEnumerable;
+        interface IDictionary;
+        interface ICollection;
+        interface ISerializable;
+        interface IDeserializationCallback;
+    };
+
+    typedef [uuid(ECD63BAE-C7B0-3FA5-8C4C-D494C234F5E9), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings+eDualMode")    
+]
+    enum {
+        eDualMode_2_NotSet = 0,
+        eDualMode_2_Authentic = 1,
+        eDualMode_2_Fantasy = 2
+    } eDualMode_2;
+
+    typedef [uuid(3628C4ED-281E-3094-A1E5-3A719C07550C), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SBaseBox+eType")    
+]
+    enum {
+        eType_2_NotDefined = 0,
+        eType_2_OnBackglass = 1,
+        eType_2_OnDMD = 2
+    } eType_2;
+
+    [
+      uuid(D47F6892-58D3-3C89-B371-8818334EE9DE),
+      version(1.0),
+      noncreatable,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimation+FinishedEventHandler")
+    ]
+    coclass FinishedEventHandler_2 {
+        [default] interface _FinishedEventHandler_2;
+        interface _Delegate;
+        interface _Object;
+        interface ICloneable;
+        interface ISerializable;
+    };
+
+    [
+      odl,
+      uuid(BB3A6D69-C0DB-3357-B86B-77665A722F6C),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation")    
+
+    ]
+    interface _B2SAnimation : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(B051B2DD-FCFD-3698-AF6C-75BBB1E12761),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData")    
+
+    ]
+    interface _B2SData : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(9AFC80DC-D8C5-3754-8CFD-F6AC2FE26ECA),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SLED")    
+
+    ]
+    interface _B2SLED : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(447CD217-5BCE-3EB1-B06D-DA4F70992824),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelDisplay")    
+
+    ]
+    interface _B2SReelDisplay : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(8A67A0F0-75CD-3B0D-9BBD-3CD9F99A30A6),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SScreen")    
+
+    ]
+    interface _B2SScreen : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(64B1444F-9B3E-37C0-9157-BFC6301909A0),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSettings")    
+
+    ]
+    interface _B2SSettings : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(0D85DB55-E28C-3165-B9D0-E4C5ECF2701A),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics")    
+
+    ]
+    interface _B2SStatistics : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(23B8880A-DB20-3B4B-96B6-A03138F9FF73),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Processes")    
+
+    ]
+    interface _Processes : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(D8774A88-6C6A-338C-BAD1-5926F0BA051F),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SBaseBox")    
+
+    ]
+    interface _B2SBaseBox : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(DEEF2D0B-84F6-35B5-94FF-68E230877C2E),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SLEDBox")    
+
+    ]
+    interface _B2SLEDBox : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(B47357B4-CB2E-3A74-ACF9-9605BC0BFC4E),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPictureBox")    
+
+    ]
+    interface _B2SPictureBox : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(ABE7C98B-E450-3CCE-A514-B384E403EBE9),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox")    
+
+    ]
+    interface _B2SReelBox : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(DFD89246-85DB-325C-8E7E-C78694B0BCC3),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SSnifferPanel")    
+
+    ]
+    interface _B2SSnifferPanel : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(F104B349-4715-3831-B568-D05F67301A0E),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Dream7Display")    
+
+    ]
+    interface _Dream7Display : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(B617AD73-9F14-3834-AD53-2CF201B96AAE),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formBackglass")    
+
+    ]
+    interface _formBackglass : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(4D0CE464-1727-3DE8-9C81-F36B9E84C6BC),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formDMD")    
+
+    ]
+    interface _formDMD : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(BA3C57DF-AB86-3F41-A1E6-81B6F770BD4C),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formMode")    
+
+    ]
+    interface _formMode : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(74F1BC23-3701-3022-9CB7-DEC7E7B79A79),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formSettings")    
+
+    ]
+    interface _formSettings : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(FBBC52AC-E4D5-3966-96C1-418B13C680F4),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.formSettingsMore")    
+
+    ]
+    interface _formSettingsMore : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(601025C2-CD71-3C29-8DE9-8AC2427D5D4A),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Statistics")    
+
+    ]
+    interface _Statistics : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(B48D5FC4-0896-35CF-BDA2-025DD7C64C27),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Log")    
+
+    ]
+    interface _Log : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(BA321893-568B-3DDF-B4E2-154A343156F3),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.Plugin")    
+
+    ]
+    interface _Plugin : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(AABB1D6C-6C19-385E-869F-E418D9DEA7F8),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginHost")    
+
+    ]
+    interface _PluginHost : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(EBE49D74-2985-382D-93A4-09539AFCBB5B),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.PluginWindow")    
+
+    ]
+    interface _PluginWindow : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(93A9DB8D-FDDF-37C2-8D9F-5EBA587C6915),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+B2SAnimationBase")    
+
+    ]
+    interface _B2SAnimationBase : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(F8EFE9DE-BC50-3FE6-924C-66F80C7DCDB2),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+TimerAnimation")    
+
+    ]
+    interface _TimerAnimation : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(9C808D89-DEA5-3DF3-9395-C15BA5200CD3),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimation")    
+
+    ]
+    interface _PictureBoxAnimation : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(472F1C42-B9F5-397F-AC93-2514C71931FA),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationEntry")    
+
+    ]
+    interface _PictureBoxAnimationEntry : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(B2D80BA2-D58B-339F-B78C-0E3075AA402B),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationCollection")    
+
+    ]
+    interface _PictureBoxAnimationCollection : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(00AF4EB2-9009-36A6-8D37-1C1106DD8CB5),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimationCollectionEntry")    
+
+    ]
+    interface _PictureBoxAnimationCollectionEntry : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(E08DD18A-3637-3F50-A2AD-39C1DD9FC785),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SCollectData+CollectData")    
+
+    ]
+    interface _CollectData : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(AD63A63E-A903-39B6-B439-C8B9E34AB8C2),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+AnimationInfo")    
+
+    ]
+    interface _AnimationInfo : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(9DF0641C-AEDC-3263-8FD3-A0895345E2C2),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+LEDAreaInfo")    
+
+    ]
+    interface _LEDAreaInfo : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(5329BFF0-F0E3-390F-92BE-9F020F5202F2),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SData+LEDDisplayDigitLocation")    
+
+    ]
+    interface _LEDDisplayDigitLocation : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(233C5BFA-EE42-3B02-A58D-87319DC7A833),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SPlayer+ControlInfo")    
+
+    ]
+    interface _ControlInfo : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(0CACE85A-354B-3A04-BF4E-C1109DF45CA7),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics+StatsCollection")    
+
+    ]
+    interface _StatsCollection : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(28EEEE25-FD56-34FC-92B9-0ED98C095CF2),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SStatistics+StatsEntry")    
+
+    ]
+    interface _StatsEntry : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(C1419520-5413-3003-AC6D-889F530D7847),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox+ReelRollOverEventArgs")    
+
+    ]
+    interface _ReelRollOverEventArgs : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(21B3AA8E-DE1E-3834-A4F9-12BAA4A0FC6A),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SReelBox+ReelRollOverEventHandler")    
+
+    ]
+    interface _ReelRollOverEventHandler : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(95116B65-8CB7-3F42-B26D-12DCAFD4F01D),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+TimerAnimation+FinishedEventHandler")    
+
+    ]
+    interface _FinishedEventHandler : IDispatch {
+    };
+
+    [
+      odl,
+      uuid(4075122A-7059-3D11-94C8-0E83F87704AF),
+      hidden,
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "B2S.B2SAnimation+PictureBoxAnimation+FinishedEventHandler")    
+
+    ]
+    interface _FinishedEventHandler_2 : IDispatch {
+    };
+};
