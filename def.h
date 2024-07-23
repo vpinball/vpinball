@@ -90,7 +90,9 @@ inline int FindIndexOf(const vector<T>& v, const T& val)
 #define fTrue 1
 #define fFalse 0
 
+#ifndef __STANDALONE__
 #define BOOL int
+#endif
 
 typedef uint32_t        U32;
 typedef int32_t         S32;
@@ -632,3 +634,42 @@ char* replace(const char* const original, const char* const pattern, const char*
  * @brief Detect whether the program is running on the Wine compatibility layer
  */
 bool IsOnWine();
+
+#ifdef __STANDALONE__
+#include "typedefs3D.h"
+
+#include <filesystem>
+#include <fstream>
+
+void copy_folder(const string& srcPath, const string& dstPath);
+vector<string> find_files_by_extension(const string& directoryPath, const string& extension);
+string find_path_case_insensitive(const string& szPath);
+string find_directory_case_insensitive(const std::string& szParentPath, const std::string& szDirName);
+string extension_from_path(const string& path);
+string normalize_path_separators(const string& szPath);
+bool path_has_extension(const string& path, const string& extension);
+bool try_parse_int(const string& str, int& value);
+bool try_parse_float(const string& str, float& value);
+bool try_parse_color(const string& str, OLE_COLOR& value);
+bool is_string_numeric(const string& str);
+int string_to_int(const string& str, int default_value = 0);
+float string_to_float(const string& str, float default_value = 0.0f);
+string trim_string(const string& str);
+vector<string> parse_csv_line(const string& line);
+string color_to_hex(OLE_COLOR color);
+bool string_contains_case_insensitive(const string& str1, const string& str2);
+bool string_compare_case_insensitive(const string& str1, const string& str2);
+bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
+string string_to_lower(const string& str);
+string string_replace_all(const string& szStr, const string& szFrom, const string& szTo);
+string create_hex_dump(const UINT8* buffer, size_t size);
+vector<unsigned char> base64_decode(const string &encoded_string);
+const char* gl_to_string(GLuint value);
+vector<string> add_line_numbers(const char* src);
+
+extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage **ppstgOpen);
+extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
+extern "C" void external_log_info(const char* format, ...);
+extern "C" void external_log_debug(const char* format, ...);
+extern "C" void external_log_error(const char* format, ...);
+#endif

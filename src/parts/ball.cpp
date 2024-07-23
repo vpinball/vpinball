@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "vpinball.h"
 #include "meshes/ballMesh.h"
 
 AntiStretchHelper BallEx::m_ash;
