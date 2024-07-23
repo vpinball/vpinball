@@ -1,6 +1,6 @@
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 typedef IEditable*(*CreateFuncType)();
 typedef IEditable*(*CreateAndInitFuncType)(PinTable *pt, float x, float y);
@@ -50,7 +50,7 @@ public:
 
    static ItemTypeEnum TypeFromToolID(int toolID)
    {
-      for (robin_hood::unordered_map<ItemTypeEnum, EditableInfo>::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
+      for (ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo>::const_iterator it = m_map.begin(); it != m_map.end(); ++it)
       {
          if (it->second.toolID == toolID)
             return it->second.type;
@@ -69,11 +69,11 @@ public:
    }
 
 private:
-   static robin_hood::unordered_map<ItemTypeEnum, EditableInfo> m_map;
+   static ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo> m_map;
 
    static EditableInfo* FindOrFail(ItemTypeEnum type)
    {
-      const robin_hood::unordered_map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
+      const ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo>::iterator it = m_map.find(type);
       if (it == m_map.end())
       {
          ShowError("Editable type not found.");

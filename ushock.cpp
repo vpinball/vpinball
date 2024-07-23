@@ -21,13 +21,16 @@
 // opening them for read/write access, which is the bulk of this module's
 // function.  Numerous similar tutorials can be found on the Web.)
 
+#ifndef __STANDALONE__
 extern "C" {
 #include "setupapi.h"
 #include "hidsdi.h"
 }
+#endif
 
 HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
+#ifndef __STANDALONE__
    GUID hidGUID;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
    ULONG requiredSize;
@@ -97,10 +100,14 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    SetupDiDestroyDeviceInfoList(hardwareDeviceInfoSet);
    free(deviceDetail);
    return deviceHandle;
+#else 
+   return 0L;
+#endif
 }
 
 static HANDLE ushock_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
 {
+#ifndef __STANDALONE__
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
 
@@ -129,17 +136,21 @@ static HANDLE ushock_connect(U32 vendorID, U32 productID, U32 *versionNumber = n
 
       index++;
    }
+#endif
 
    return INVALID_HANDLE_VALUE;
 }
 
 static HANDLE hnd = ushock_connect(0x04b4, 0x6470);
+#ifndef __STANDALONE__
 static OVERLAPPED ol;
 static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
+#endif
 
 void ushock_init()
 {
+#ifndef __STANDALONE__
    // 0x4b4 == Ultracade, 0x6470 == Ushock
 
    if (hnd != INVALID_HANDLE_VALUE)
@@ -196,6 +207,7 @@ void ushock_init()
    {
       printf("ushock_init: Could not connect or find the PBW controller\n");
    }
+#endif
 }
 
 
@@ -240,6 +252,7 @@ void ushock_knock(const int count)
 
 void ushock_update(const U32 cur_time_msec)
 {
+#ifndef __STANDALONE__
    U08 mask = (U08)(sMask & 0xff);
 
    if (sKnockStamp)
@@ -306,6 +319,7 @@ void ushock_update(const U32 cur_time_msec)
          printed = 1;
       }
    }
+#endif
 }
 
 void ushock_shutdown()
@@ -313,6 +327,8 @@ void ushock_shutdown()
    if (hnd != INVALID_HANDLE_VALUE)
    {
       hnd = INVALID_HANDLE_VALUE;
+#ifndef __STANDALONE__
       CloseHandle(hnd);
+#endif
    }
 }
