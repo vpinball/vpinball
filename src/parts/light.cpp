@@ -1047,11 +1047,13 @@ void Light::PutPointCenter(const Vertex2D& pv)
 
 void Light::EditMenu(CMenu &menu)
 {
+#ifndef __STANDALONE__
     menu.EnableMenuItem(ID_WALLMENU_FLIP, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_MIRROR, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_ROTATE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_SCALE, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
     menu.EnableMenuItem(ID_WALLMENU_ADDPOINT, MF_BYCOMMAND | ((m_d.m_shape != ShapeCustom) ? MF_GRAYED : MF_ENABLED));
+#endif
 }
 
 void Light::AddPoint(int x, int y, const bool smooth)
@@ -1316,14 +1318,14 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_BlinkInterval(long *pVal)
+STDMETHODIMP Light::get_BlinkInterval(LONG *pVal)
 {
    *pVal = m_d.m_blinkinterval;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_BlinkInterval(long newVal)
+STDMETHODIMP Light::put_BlinkInterval(LONG newVal)
 {
    m_d.m_blinkinterval = newVal;
    if (g_pplayer)
@@ -1333,7 +1335,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 }
 
 
-STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
+STDMETHODIMP Light::Duration(float startState, LONG newVal, float endState)
 {
     m_inPlayState = clampLightState(startState);
     m_duration = newVal;
@@ -1549,28 +1551,28 @@ STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_Shadows(long *pVal)
+STDMETHODIMP Light::get_Shadows(LONG *pVal)
 {
    *pVal = (long) m_d.m_shadows;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Shadows(long newVal)
+STDMETHODIMP Light::put_Shadows(LONG newVal)
 {
    m_d.m_shadows = (ShadowMode) newVal;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::get_Fader(long *pVal)
+STDMETHODIMP Light::get_Fader(LONG *pVal)
 {
    *pVal = (long)m_d.m_fader;
 
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Fader(long newVal)
+STDMETHODIMP Light::put_Fader(LONG newVal)
 {
    m_d.m_fader = (Fader)newVal;
 

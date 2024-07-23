@@ -36,7 +36,7 @@ private:
    struct MapEntry
    {
       Sampler* sampler;
-      std::string name;
+      string name;
       SamplerFilter filter;
       SamplerAddressMode clampU, clampV;
       bool forceLinearRGB;

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 
+#ifndef __STANDALONE__
 #include <DxErr.h>
+#endif
 #include <thread>
 
 // Undefine this if you want to debug VR mode without a VR headset
@@ -22,7 +24,9 @@
 #include "typedefs3D.h"
 #include "TextureManager.h"
 #include <SDL2/SDL_syswm.h>
+#ifndef __STANDALONE__
 #include "captureExt.h"
+#endif
 
 #else // DirectX 9
 #include "Material.h"
@@ -65,6 +69,7 @@ static pRGV mRtlGetVersion = nullptr;
 
 bool IsWindows10_1803orAbove()
 {
+#ifndef __STANDALONE__
    if (mRtlGetVersion == nullptr)
       mRtlGetVersion = (pRGV)GetProcAddress(GetModuleHandle(TEXT("ntdll")), "RtlGetVersion"); // apparently the only really reliable solution to get the OS version (as of Win10 1803)
 
@@ -83,10 +88,14 @@ bool IsWindows10_1803orAbove()
    }
 
    return false;
+#else
+   return true;
+#endif
 }
 
 bool IsWindowsVistaOr7()
 {
+#ifndef __STANDALONE__
    OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0, { 0 }, 0, 0, 0, 0, 0 };
    const DWORDLONG dwlConditionMask = //VerSetConditionMask(
       VerSetConditionMask(VerSetConditionMask(0, VER_MAJORVERSION, VER_EQUAL), VER_MINORVERSION, VER_EQUAL) /*,
@@ -106,6 +115,9 @@ bool IsWindowsVistaOr7()
    const bool win7 = VerifyVersionInfoW(&osvi2, VER_MAJORVERSION | VER_MINORVERSION /*| VER_SERVICEPACKMAJOR*/, dwlConditionMask) != FALSE;
 
    return vista || win7;
+#else
+   return false;
+#endif
 }
 
 static unsigned int ComputePrimitiveCount(const RenderDevice::PrimitiveTypes type, const int vertexCount)
@@ -147,9 +159,9 @@ static const char* glErrorToString(const int error) {
 
 void ReportFatalError(const HRESULT hr, const char *file, const int line)
 {
-   char msg[2048+128];
+   char msg[2176];
 #ifdef ENABLE_SDL
-   sprintf_s(msg, sizeof(msg), "GL Fatal Error 0x%0002X %s in %s:%d", hr, glErrorToString(hr), file, line);
+   sprintf_s(msg, sizeof(msg), "GL Fatal Error 0x%08X %s in %s:%d", hr, glErrorToString(hr), file, line);
 #else
    sprintf_s(msg, sizeof(msg), "Fatal error %s (0x%x: %s) at %s:%d", DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
 #endif
@@ -162,7 +174,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 {
    char msg[16384];
 #ifdef ENABLE_SDL
-   sprintf_s(msg, sizeof(msg), "GL Error 0x%0002X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
+   sprintf_s(msg, sizeof(msg), "GL Error 0x%08X %s in %s:%d\n%s", hr, glErrorToString(hr), file, line, errorText);
    ShowError(msg);
 #else
    sprintf_s(msg, sizeof(msg), "%s %s (0x%x: %s) at %s:%d", errorText, DXGetErrorString(hr), hr, DXGetErrorDescription(hr), file, line);
@@ -328,6 +340,7 @@ void EnumerateDisplayModes(const int display, vector<VideoMode>& modes)
 #endif
 }
 
+#ifndef __STANDALONE__
 BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __in  LPRECT lprcMonitor, __in  LPARAM dwData)
 {
    std::map<string,DisplayConfig>* data = reinterpret_cast<std::map<string,DisplayConfig>*>(dwData);
@@ -346,6 +359,7 @@ BOOL CALLBACK MonitorEnumList(__in  HMONITOR hMonitor, __in  HDC hdcMonitor, __i
    data->insert(std::pair<string, DisplayConfig>(config.DeviceName, config));
    return TRUE;
 }
+#endif
 
 int getDisplayList(vector<DisplayConfig>& displays)
 {
@@ -533,6 +547,7 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
     NVAPIinit = false;
 #endif
 
+#ifndef __STANDALONE__
     mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
     mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
     mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
@@ -554,6 +569,10 @@ RenderDevice::RenderDevice(const HWND hwnd, const int width, const int height, c
         m_dwm_was_enabled = false;
         m_dwm_enabled = false;
     }
+#else
+    m_dwm_was_enabled = false;
+    m_dwm_enabled = false;
+#endif
 }
 
 void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT adapterIndex)
@@ -587,6 +606,7 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
 #ifdef __OPENGLES__
    case SDL_PIXELFORMAT_ABGR8888: back_buffer_format = colorFormat::RGBA8; break;
    case SDL_PIXELFORMAT_RGBX8888: back_buffer_format = colorFormat::RGBA8; break;
+   case SDL_PIXELFORMAT_RGBA8888: back_buffer_format = colorFormat::RGBA8; break;
 #endif
    default:
    {
@@ -601,11 +621,14 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    SDL_SysWMinfo wmInfo;
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
+#ifndef __STANDALONE__
    m_windowHwnd = wmInfo.info.win.window;
+#endif
 
    m_sdl_context = SDL_GL_CreateContext(m_sdl_playfieldHwnd);
 
    SDL_GL_MakeCurrent(m_sdl_playfieldHwnd, m_sdl_context);
+   SDL_RaiseWindow(g_pplayer->m_sdl_playfieldHwnd);
 
 #ifndef __OPENGLES__
    if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
@@ -617,6 +640,13 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
       exit(-1);
    }
 
+#ifdef __STANDALONE__
+   unsigned int num_exts_i = 0;
+   glad_glGetIntegerv(GL_NUM_EXTENSIONS, (int*) &num_exts_i);
+   PLOGD.printf("%d extensions available", num_exts_i);
+   for(int index = 0; index < num_exts_i; index++) {
+      PLOGD.printf("%s", glad_glGetStringi(GL_EXTENSIONS, index));
+   }
 #ifdef __OPENGLES__
    int range[2];
    int precision;
@@ -625,12 +655,14 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    glGetShaderPrecisionFormat(GL_FRAGMENT_SHADER, GL_HIGH_FLOAT, range, &precision);
    PLOGD.printf("Fragment shader high precision float range: %d %d precision: %d", range[0], range[1], precision);
 #endif
+#endif
 
    int gl_majorVersion = 0;
    int gl_minorVersion = 0;
    glGetIntegerv(GL_MAJOR_VERSION, &gl_majorVersion);
    glGetIntegerv(GL_MINOR_VERSION, &gl_minorVersion);
 
+#ifndef __STANDALONE__
    if (gl_majorVersion < 3 || (gl_majorVersion == 3 && gl_minorVersion < 2))
    {
       char errorMsg[256];
@@ -638,6 +670,7 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
       ShowError(errorMsg);
       exit(-1);
    }
+#endif
 
    m_GLversion = gl_majorVersion * 100 + gl_minorVersion;
 
@@ -699,6 +732,7 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    case VideoSyncMode::VSM_VSYNC: SDL_GL_SetSwapInterval(1); break;
    case VideoSyncMode::VSM_ADAPTIVE_VSYNC: SDL_GL_SetSwapInterval(-1); break;
    case VideoSyncMode::VSM_FRAME_PACING: SDL_GL_SetSwapInterval(0); break;
+   default: break;
    }
 
    m_maxaniso = 0;
@@ -966,6 +1000,17 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    int backBufferWidth, backBufferHeight;
 #ifdef ENABLE_SDL
    SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &backBufferWidth, &backBufferHeight);
+   PLOGI.printf("Drawable Size: width=%d, height=%d", backBufferWidth, backBufferHeight);
+#ifdef __STANDALONE__
+   float backBufferScale = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "BackBufferScale"s, 1.0f);
+   if (backBufferScale != 1.0f) {
+      backBufferWidth *= backBufferScale;
+      backBufferHeight *= backBufferScale;
+      PLOGI.printf("Scaled Drawable Size: width=%d, height=%d", backBufferWidth, backBufferHeight);
+   }
+   m_width = backBufferWidth;
+   m_height = backBufferHeight;
+#endif
 #else
    backBufferWidth = m_width;
    backBufferHeight = m_height;
@@ -973,7 +1018,11 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    m_pBackBuffer = new RenderTarget(this, backBufferWidth, backBufferHeight, back_buffer_format);
 
 #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
+#else
+   const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
+#endif
 #else
    const colorFormat render_format = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
 #endif
@@ -1072,7 +1121,9 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
 #endif
 
    // Always load the (small) SMAA textures since SMAA can be toggled at runtime through the live UI
+#ifndef __OPENGLES__
    UploadAndSetSMAATextures();
+#endif
 
    // Force applying a defined initial render state
    m_current_renderstate.m_state = (~m_renderstate.m_state) & ((1 << 21) - 1);
@@ -1097,6 +1148,7 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
    // DXGI VSync source (Windows 7+, only used in OpenGL build)
    else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
    {
+#ifndef __STANDALONE__
       DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_windowHwnd);
       if (out != nullptr)
          m_DXGIOutput = out->m_Output;
@@ -1105,6 +1157,9 @@ void RenderDevice::CreateDevice(int& refreshrate, VideoSyncMode& syncMode, UINT 
 	      PLOGI << "VSync source set to DXGI WaitForBlank";
          hasVSync = true;
       }
+#else
+      hasVSync = false;
+#endif
    }
    #endif
    if (syncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
@@ -1124,7 +1179,11 @@ bool RenderDevice::LoadShaders()
 #ifdef ENABLE_SDL // OpenGL
    basicShader = new Shader(this, "BasicShader.glfx"s);
    DMDShader = new Shader(this, m_stereo3D == STEREO_VR ? "DMDShaderVR.glfx"s : "DMDShader.glfx"s);
+#ifndef __OPENGLES__
    FBShader = new Shader(this, "FBShader.glfx"s, "SMAA.glfx"s);
+#else
+   FBShader = new Shader(this, "FBShader.glfx"s);
+#endif
    flasherShader = new Shader(this, "FlasherShader.glfx"s);
    lightShader = new Shader(this, "LightShader.glfx"s);
    StereoShader = new Shader(this, "StereoShader.glfx"s);
@@ -1149,8 +1208,10 @@ bool RenderDevice::LoadShaders()
    basicShader->SetVector(SHADER_w_h_height, (float)(1.0 / (double)GetMSAABackBufferTexture()->GetWidth()), (float)(1.0 / (double)GetMSAABackBufferTexture()->GetHeight()), 0.0f, 0.0f);
    basicShader->SetVector(SHADER_staticColor_Alpha, 1.0f, 1.0f, 1.0f, 1.0f); // No tinting
    DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f); // No alpha clipping
+#ifndef __OPENGLES__
    FBShader->SetTexture(SHADER_areaTex, m_SMAAareaTexture);
    FBShader->SetTexture(SHADER_searchTex, m_SMAAsearchTexture);
+#endif
 
    return true;
 }
@@ -1423,6 +1484,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
    //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
    auto lambda = [this]()
    {
+#ifndef __STANDALONE__
       if (m_dwm_enabled && mDwmFlush != nullptr)
          mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
       #ifdef ENABLE_SDL
@@ -1433,6 +1495,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
       else if (m_pD3DDeviceEx != nullptr)
          m_pD3DDeviceEx->WaitForVBlank(0);
       #endif
+#endif
       m_vsyncCount++;
       const U64 now = usec();
       m_lastVSyncUs = now;
