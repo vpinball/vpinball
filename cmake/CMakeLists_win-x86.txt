@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.25)
 
 file(READ vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -19,26 +19,6 @@ add_compile_definitions(
 
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
-)
-
-add_compile_options(
-   $<$<CONFIG:RELEASE>:/Ob2>
-   $<$<CONFIG:RELEASE>:/O2>
-   $<$<CONFIG:RELEASE>:/Oi>
-   $<$<CONFIG:RELEASE>:/arch:SSE2>
-   $<$<CONFIG:RELEASE>:/fp:fast>
-   $<$<CONFIG:RELEASE>:/fp:except->
-   $<$<CONFIG:RELEASE>:/Ot>
-   $<$<CONFIG:RELEASE>:/GF>
-   $<$<CONFIG:RELEASE>:/GS->
-   $<$<CONFIG:RELEASE>:/Gy>
-   $<$<CONFIG:RELEASE>:/GR->
-   $<$<CONFIG:RELEASE>:/Oy>
-   $<$<CONFIG:RELEASE>:/GT>
-   $<$<CONFIG:RELEASE>:/GL>
-   $<$<CONFIG:RELEASE>:/w44005>
-   /Zc:__cplusplus
-   /std:c++20
 )
 
 set_source_files_properties(
@@ -276,6 +256,8 @@ add_executable(vpinball WIN32
    iselect.h
    LiveUI.cpp
    LiveUI.h
+   Logger.cpp
+   Logger.h
    Material.h
    memutil.cpp
    memutil.h

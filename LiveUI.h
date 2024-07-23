@@ -64,6 +64,9 @@ private:
    void UpdateTweakPage();
    void UpdateTweakModeUI();
 
+   // Touch UI
+   void UpdateTouchUI();
+
    // Main UI frame & panels
    void UpdateMainUI();
    void UpdateOutlinerUI();

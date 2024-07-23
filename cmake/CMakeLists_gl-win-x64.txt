@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.25)
 
 file(READ vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -241,6 +241,8 @@ add_executable(vpinball WIN32
    iselect.h
    LiveUI.cpp
    LiveUI.h
+   Logger.cpp
+   Logger.h
    Material.h
    memutil.cpp
    memutil.h
@@ -649,7 +651,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/LightShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Material_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"  
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SMAA.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/SSR_GL.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/Stereo.fxh" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/shader/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shader${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"

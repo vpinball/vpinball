@@ -161,13 +161,13 @@ public:
    COLORREF m_cGlossy;
    COLORREF m_cClearcoat;
    bool m_bOpacityActive;
-   COLORREF m_cRefractionTint; // 10.8+ only
 
    // physic properties
    float m_fElasticity;
    float m_fElasticityFalloff;
    float m_fFriction;
    float m_fScatterAngle;
+   COLORREF m_cRefractionTint; // 10.8+ only
    
    size_t GetSaveSize() const
    {

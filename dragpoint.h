@@ -20,6 +20,12 @@ class DragPoint :
    public ISelect
 {
 public:
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+#endif
    DragPoint() { }
 
    void Init(IHaveDragPoints *pihdp, const float x, const float y, const float z, const bool smooth);

@@ -62,6 +62,7 @@ public:
       value = val;
       return hr;
    }
+#ifndef __STANDALONE__
    HRESULT GetInt(unsigned int &value)
    {
       int val;
@@ -69,6 +70,7 @@ public:
       value = val;
       return hr;
    }
+#endif
    HRESULT GetInt(long &value)
    {
       int val;

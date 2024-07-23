@@ -528,21 +528,21 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
+STDMETHODIMP LightSeq::get_UpdateInterval(LONG *pVal)
 {
    *pVal = GetUpdateInterval();
 
    return S_OK;
 }
 
-STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
+STDMETHODIMP LightSeq::put_UpdateInterval(LONG newVal)
 {
    SetUpdateInterval(newVal);
 
    return S_OK;
 }
 
-STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repeat, long Pause)
+STDMETHODIMP LightSeq::Play(SequencerState Animation, LONG TailLength, LONG Repeat, LONG Pause)
 {
    HRESULT rc = S_OK;
 

@@ -1,0 +1,1041 @@
+// Generated .IDL file (by the OLE/COM Object Viewer)
+// 
+// typelib filename: <could not determine filename>
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+#define int64_t INT64
+
+typedef float single;
+typedef int64_t int64;
+
+typedef void* _Bitmap;
+
+[
+  uuid(B863555A-A234-43F4-A0FD-34E6A0E00547),
+  version(1.8),
+  helpstring("A DMD rendering library"),
+  //custom(90883F05-3D28-11D2-8F17-00A0C9A6186D, "FlexDMD, Version=1.8.1.0, Culture=neutral, PublicKeyToken=7144ae60aec212e0")
+
+]
+library FlexDMD
+{
+    // TLib : System.Drawing.dll : {D37E2A3E-8545-3A39-9F4F-31827C9124AB}
+    importlib("System.Drawing.tlb");
+    // TLib : mscorlib.dll : {BED7F4EA-1A96-11D2-8F08-00A0C9A6186D}
+    importlib("mscorlib.tlb");
+    // TLib : OLE Automation : {00020430-0000-0000-C000-000000000046}
+    importlib("stdole2.tlb");
+
+    // Forward declare all types defined in this typelib
+    interface ICompositeAction;
+    interface ITweenAction;
+    interface IActionFactory;
+    interface IActor;
+    interface IGroupActor;
+    interface IFrameActor;
+    interface IImageActor;
+    interface IVideoActor;
+    interface ILabelActor;
+    interface IFlexDMD;
+    dispinterface IDMDObjectEvents;
+    dispinterface IUltraDMD;
+
+    typedef [uuid(3ABF2DA1-819B-462E-AC1C-6BF8BF625D36), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.Interpolation")
+]
+
+    enum {
+        Interpolation_Linear = 0,
+        Interpolation_ElasticIn = 1,
+        Interpolation_ElasticOut = 2,
+        Interpolation_ElasticInOut = 3,
+        Interpolation_QuadIn = 4,
+        Interpolation_QuadOut = 5,
+        Interpolation_QuadInOut = 6,
+        Interpolation_CubeIn = 7,
+        Interpolation_CubeOut = 8,
+        Interpolation_CubeInOut = 9,
+        Interpolation_QuartIn = 10,
+        Interpolation_QuartOut = 11,
+        Interpolation_QuartInOut = 12,
+        Interpolation_QuintIn = 13,
+        Interpolation_QuintOut = 14,
+        Interpolation_QuintInOut = 15,
+        Interpolation_SineIn = 16,
+        Interpolation_SineOut = 17,
+        Interpolation_SineInOut = 18,
+        Interpolation_BounceIn = 19,
+        Interpolation_BounceOut = 20,
+        Interpolation_BounceInOut = 21,
+        Interpolation_CircIn = 22,
+        Interpolation_CircOut = 23,
+        Interpolation_CircInOut = 24,
+        Interpolation_ExpoIn = 25,
+        Interpolation_ExpoOut = 26,
+        Interpolation_ExpoInOut = 27,
+        Interpolation_BackIn = 28,
+        Interpolation_BackOut = 29,
+        Interpolation_BackInOut = 30
+    } Interpolation;
+
+    typedef [uuid(3ABF2DA1-819B-462E-AC1C-6BF8BF625D3A), version(1.0)    ,
+      //custom(3ABF2DA1-819B-462E-AC1C-6BF8BF625D3A, "FlexDMD.Alignment")
+]
+    enum {
+        Alignment_TopLeft = 0,
+        Alignment_Top = 1,
+        Alignment_TopRight = 2,
+        Alignment_Left = 3,
+        Alignment_Center = 4,
+        Alignment_Right = 5,
+        Alignment_BottomLeft = 6,
+        Alignment_Bottom = 7,
+        Alignment_BottomRight = 8
+    } Alignment;
+
+    [
+      odl,
+      uuid(DCA215A5-EF1B-4924-B5EA-BF108398A318),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.ICompositeAction")    
+
+    ]
+    interface ICompositeAction : IDispatch {
+        [id(0x60020000)]
+        HRESULT Add(
+                        [in] IUnknown* action, 
+                        [out, retval] ICompositeAction** pRetVal);
+    };
+
+    [
+      odl,
+      uuid(7A165BD9-9825-488D-B292-87CAAC46CB3C),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.ITweenAction")    
+
+    ]
+    interface ITweenAction : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Ease([out, retval] Interpolation* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Ease([in] Interpolation pRetVal);
+    };
+
+    [
+      odl,
+      uuid(DE32F29E-F8C8-4E79-AEE1-4725A320B0B6),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IActionFactory")    
+
+    ]
+    interface IActionFactory : IDispatch {
+        [id(0x60020000)]
+        HRESULT Wait(
+                        [in] single secondsToWait, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020001)]
+        HRESULT Delayed(
+                        [in] single secondsToWait, 
+                        [in] IUnknown* action, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020002)]
+        HRESULT Parallel([out, retval] ICompositeAction** pRetVal);
+        [id(0x60020003)]
+        HRESULT Sequence([out, retval] ICompositeAction** pRetVal);
+        [id(0x60020004)]
+        HRESULT Repeat(
+                        [in] IUnknown* action, 
+                        [in] long count, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020005)]
+        HRESULT Blink(
+                        [in] single secondsShow, 
+                        [in] single secondsHide, 
+                        [in] long Repeat, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020006)]
+        HRESULT Show(
+                        [in] VARIANT_BOOL visible, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020007)]
+        HRESULT AddTo(
+                        [in] IGroupActor* parent, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020008)]
+        HRESULT RemoveFromParent([out, retval] IUnknown** pRetVal);
+        [id(0x60020009)]
+        HRESULT AddChild(
+                        [in] IUnknown* child, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x6002000a)]
+        HRESULT RemoveChild(
+                        [in] IUnknown* child, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x6002000b)]
+        HRESULT Seek(
+                        [in] single pos, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x6002000c)]
+        HRESULT MoveTo(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single duration, 
+                        [out, retval] ITweenAction** pRetVal);
+    };
+
+    [
+      odl,
+      uuid(6F205A9B-B007-4DCD-A635-51B2C939A796),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IActor")    
+
+    ]
+    interface IActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+    };
+
+    [
+      odl,
+      uuid(1BF9F8AE-1BA0-4FA2-AD03-48E9FD0F4C92),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IGroupActor")    
+
+    ]
+    interface IGroupActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+        [id(0x6002001b), propget]
+        HRESULT Clip([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002001b), propput]
+        HRESULT Clip([in] VARIANT_BOOL pRetVal);
+        [id(0x6002001d), propget]
+        HRESULT ChildCount([out, retval] long* pRetVal);
+        [id(0x6002001e)]
+        HRESULT HasChild(
+                        [in] BSTR Name, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002001f)]
+        HRESULT GetGroup(
+                        [in] BSTR Name, 
+                        [out, retval] IGroupActor** pRetVal);
+        [id(0x60020020)]
+        HRESULT GetFrame(
+                        [in] BSTR Name, 
+                        [out, retval] IFrameActor** pRetVal);
+        [id(0x60020021)]
+        HRESULT GetLabel(
+                        [in] BSTR Name, 
+                        [out, retval] ILabelActor** pRetVal);
+        [id(0x60020022)]
+        HRESULT GetVideo(
+                        [in] BSTR Name, 
+                        [out, retval] IVideoActor** pRetVal);
+        [id(0x60020023)]
+        HRESULT GetImage(
+                        [in] BSTR Name, 
+                        [out, retval] IImageActor** pRetVal);
+        [id(0x60020024)]
+        HRESULT RemoveAll();
+        [id(0x60020025)]
+        HRESULT AddActor([in] IUnknown* child);
+        [id(0x60020026)]
+        HRESULT RemoveActor([in] IUnknown* child);
+    };
+
+    [
+      odl,
+      uuid(05E06A6B-94DB-4F7F-B7A8-F8E09716A041),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IFrameActor")    
+
+    ]
+    interface IFrameActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+        [id(0x6002001b), propget]
+        HRESULT Thickness([out, retval] long* pRetVal);
+        [id(0x6002001b), propput]
+        HRESULT Thickness([in] long pRetVal);
+        [id(0x6002001d), propget]
+        HRESULT BorderColor([out, retval] OLE_COLOR* pRetVal);
+        [id(0x6002001d), propput]
+        HRESULT BorderColor([in] OLE_COLOR pRetVal);
+        [id(0x6002001f), propget]
+        HRESULT Fill([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002001f), propput]
+        HRESULT Fill([in] VARIANT_BOOL pRetVal);
+        [id(0x60020021), propget]
+        HRESULT FillColor([out, retval] OLE_COLOR* pRetVal);
+        [id(0x60020021), propput]
+        HRESULT FillColor([in] OLE_COLOR pRetVal);
+    };
+
+    [
+      odl,
+      uuid(42CAEB83-C045-443D-9528-4304E9F27A20),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IImageActor")    
+
+    ]
+    interface IImageActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+        [id(0x6002001b), propget]
+        HRESULT Bitmap([out, retval] _Bitmap** pRetVal);
+        [id(0x6002001b), propputref]
+        HRESULT Bitmap([in] _Bitmap* pRetVal);
+    };
+
+    [
+      odl,
+      uuid(CF9AFD55-03A3-458D-8EAB-119C55090BAB),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IVideoActor")    
+
+    ]
+    interface IVideoActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+        [restricted] void Missing34();
+        [restricted] void Missing35();
+        [restricted] void Missing36();
+        [restricted] void Missing37();
+        [id(0x6002001f), propget]
+        HRESULT Length([out, retval] single* pRetVal);
+        [id(0x60020020), propget]
+        HRESULT Loop([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020020), propput]
+        HRESULT Loop([in] VARIANT_BOOL pRetVal);
+        [id(0x60020022), propget]
+        HRESULT Paused([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020022), propput]
+        HRESULT Paused([in] VARIANT_BOOL pRetVal);
+        [id(0x60020024), propget]
+        HRESULT PlaySpeed([out, retval] single* pRetVal);
+        [id(0x60020024), propput]
+        HRESULT PlaySpeed([in] single pRetVal);
+        [id(0x60020026)]
+        HRESULT Seek([in] single posInSeconds);
+    };
+
+    [
+      odl,
+      uuid(A8AAD77F-4F01-433B-B653-B6F14234F4F2),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.ILabelActor")    
+
+    ]
+    interface ILabelActor : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Name([out, retval] BSTR* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT Name([in] BSTR pRetVal);
+        [id(0x60020002), propget]
+        HRESULT x([out, retval] single* pRetVal);
+        [id(0x60020002), propput]
+        HRESULT x([in] single pRetVal);
+        [id(0x60020004), propget]
+        HRESULT y([out, retval] single* pRetVal);
+        [id(0x60020004), propput]
+        HRESULT y([in] single pRetVal);
+        [id(0x60020006), propget]
+        HRESULT Width([out, retval] single* pRetVal);
+        [id(0x60020006), propput]
+        HRESULT Width([in] single pRetVal);
+        [id(0x60020008), propget]
+        HRESULT Height([out, retval] single* pRetVal);
+        [id(0x60020008), propput]
+        HRESULT Height([in] single pRetVal);
+        [id(0x6002000a), propget]
+        HRESULT visible([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a), propput]
+        HRESULT visible([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000c), propget]
+        HRESULT FillParent([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000c), propput]
+        HRESULT FillParent([in] VARIANT_BOOL pRetVal);
+        [id(0x6002000e), propget]
+        HRESULT ClearBackground([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000e), propput]
+        HRESULT ClearBackground([in] VARIANT_BOOL pRetVal);
+        [id(0x60020010)]
+        HRESULT SetBounds(
+                        [in] single x, 
+                        [in] single y, 
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020011)]
+        HRESULT SetPosition(
+                        [in] single x, 
+                        [in] single y);
+        [id(0x60020012)]
+        HRESULT SetAlignedPosition(
+                        [in] single x, 
+                        [in] single y,
+                        [in] Alignment alignment);
+        [id(0x60020013)]
+        HRESULT SetSize(
+                        [in] single Width, 
+                        [in] single Height);
+        [id(0x60020014), propget]
+        HRESULT PrefWidth([out, retval] single* pRetVal);
+        [id(0x60020015), propget]
+        HRESULT PrefHeight([out, retval] single* pRetVal);
+        [id(0x60020016)]
+        HRESULT Pack();
+        [id(0x60020017)]
+        HRESULT Remove();
+        [id(0x60020018), propget]
+        HRESULT ActionFactory([out, retval] IActionFactory** pRetVal);
+        [id(0x60020019)]
+        HRESULT AddAction([in] IUnknown* action);
+        [id(0x6002001a)]
+        HRESULT ClearActions();
+        [id(0x6002001b), propget]
+        HRESULT AutoPack([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002001b), propput]
+        HRESULT AutoPack([in] VARIANT_BOOL pRetVal);
+        [restricted] void Missing36();
+        [restricted] void Missing37();
+        [id(0x6002001f), propget]
+        HRESULT Font([out, retval] IUnknown** pRetVal);
+        [id(0x6002001f), propputref]
+        HRESULT Font([in] IUnknown* pRetVal);
+        [id(0x60020021), propget]
+        HRESULT Text([out, retval] BSTR* pRetVal);
+        [id(0x60020021), propput]
+        HRESULT Text([in] BSTR pRetVal);
+    };
+
+    typedef [uuid(77FB8996-E143-42A4-B695-14E0314D92FC), version(1.0)    ,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.RenderMode")    
+]
+    enum {
+        RenderMode_DMD_GRAY_2 = 0,
+        RenderMode_DMD_GRAY_4 = 1,
+        RenderMode_DMD_RGB = 2,
+        RenderMode_SEG_2x16Alpha = 3,
+        RenderMode_SEG_2x20Alpha = 4,
+        RenderMode_SEG_2x7Alpha_2x7Num = 5,
+        RenderMode_SEG_2x7Alpha_2x7Num_4x1Num = 6,
+        RenderMode_SEG_2x7Num_2x7Num_4x1Num = 7,
+        RenderMode_SEG_2x7Num_2x7Num_10x1Num = 8,
+        RenderMode_SEG_2x7Num_2x7Num_4x1Num_gen7 = 9,
+        RenderMode_SEG_2x7Num10_2x7Num10_4x1Num = 10,
+        RenderMode_SEG_2x6Num_2x6Num_4x1Num = 11,
+        RenderMode_SEG_2x6Num10_2x6Num10_4x1Num = 12,
+        RenderMode_SEG_4x7Num10 = 13,
+        RenderMode_SEG_6x4Num_4x1Num = 14,
+        RenderMode_SEG_2x7Num_4x1Num_1x16Alpha = 15,
+        RenderMode_SEG_1x16Alpha_1x16Num_1x7Num = 16
+    } RenderMode;
+
+    [
+      odl,
+      uuid(B592E61D-9553-4D91-A0F5-FDF111E28F5E),
+      //version(1.0),
+      dual,
+      oleautomation,
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IFlexDMD")    
+
+    ]
+    interface IFlexDMD : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT Version([out, retval] long* pRetVal);
+        [id(0x60020001), propget]
+        HRESULT RuntimeVersion([out, retval] long* pRetVal);
+        [id(0x60020001), propput]
+        HRESULT RuntimeVersion([in] long pRetVal);
+        [id(0x60020003), propget]
+        HRESULT Run([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020003), propput]
+        HRESULT Run([in] VARIANT_BOOL pRetVal);
+        [id(0x60020005), propget]
+        HRESULT Show([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020005), propput]
+        HRESULT Show([in] VARIANT_BOOL pRetVal);
+        [id(0x60020007), propget]
+        HRESULT GameName([out, retval] BSTR* pRetVal);
+        [id(0x60020007), propput]
+        HRESULT GameName([in] BSTR pRetVal);
+        [id(0x60020009), propget]
+        HRESULT Width([out, retval] unsigned short* pRetVal);
+        [id(0x60020009), propput]
+        HRESULT Width([in] unsigned short pRetVal);
+        [id(0x6002000b), propget]
+        HRESULT Height([out, retval] unsigned short* pRetVal);
+        [id(0x6002000b), propput]
+        HRESULT Height([in] unsigned short pRetVal);
+        [id(0x6002000d), propget]
+        HRESULT Color([out, retval] OLE_COLOR* pRetVal);
+        [id(0x6002000d), propput]
+        HRESULT Color([in] OLE_COLOR pRetVal);
+        [id(0x6002000f), propget]
+        HRESULT RenderMode([out, retval] RenderMode* pRetVal);
+        [id(0x6002000f), propput]
+        HRESULT RenderMode([in] RenderMode pRetVal);
+        [id(0x60020011), propget]
+        HRESULT ProjectFolder([out, retval] BSTR* pRetVal);
+        [id(0x60020011), propput]
+        HRESULT ProjectFolder([in] BSTR pRetVal);
+        [id(0x60020013), propget]
+        HRESULT TableFile([out, retval] BSTR* pRetVal);
+        [id(0x60020013), propput]
+        HRESULT TableFile([in] BSTR pRetVal);
+        [id(0x60020015), propget]
+        HRESULT Clear([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020015), propput]
+        HRESULT Clear([in] VARIANT_BOOL pRetVal);
+        [id(0x60020017), propget]
+        HRESULT DmdColoredPixels([out, retval] VARIANT* pRetVal);
+        [id(0x60020018), propget]
+        HRESULT DmdPixels([out, retval] VARIANT* pRetVal);
+        [id(0x60020019), propputref]
+        HRESULT Segments([in] VARIANT rhs);
+        [id(0x6002001a), propget]
+        HRESULT Stage([out, retval] IGroupActor** pRetVal);
+        [id(0x6002001b)]
+        HRESULT LockRenderThread();
+        [id(0x6002001c)]
+        HRESULT UnlockRenderThread();
+        [id(0x6002001d)]
+        HRESULT NewGroup(
+                        [in] BSTR Name, 
+                        [out, retval] IGroupActor** pRetVal);
+        [id(0x6002001e)]
+        HRESULT NewFrame(
+                        [in] BSTR Name, 
+                        [out, retval] IFrameActor** pRetVal);
+        [id(0x6002001f)]
+        HRESULT NewLabel(
+                        [in] BSTR Name, 
+                        [in] IUnknown* Font, 
+                        [in] BSTR Text, 
+                        [out, retval] ILabelActor** pRetVal);
+        [id(0x60020020)]
+        HRESULT NewVideo(
+                        [in] BSTR Name, 
+                        [in] BSTR video, 
+                        [out, retval] IVideoActor** pRetVal);
+        [id(0x60020021)]
+        HRESULT NewImage(
+                        [in] BSTR Name, 
+                        [in] BSTR image, 
+                        [out, retval] IImageActor** pRetVal);
+        [id(0x60020022)]
+        HRESULT NewFont(
+                        [in] BSTR Font, 
+                        [in] OLE_COLOR tint, 
+                        [in] OLE_COLOR borderTint, 
+                        [in] long borderSize, 
+                        [out, retval] IUnknown** pRetVal);
+        [id(0x60020023)]
+        HRESULT NewUltraDMD([out, retval] IUltraDMD** pRetVal);
+    };
+
+    [
+      uuid(83FBF3E4-B4F4-415A-9A5B-7C2F635FF83B),
+      //version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IDMDObjectEvents")    
+
+    ]
+    dispinterface IDMDObjectEvents {
+        properties:
+        methods:
+            [id(0x00000001)]
+            void onDMDChanged();
+    };
+
+    [
+      uuid(F7E68187-251F-4DFB-AF79-F1D4D69EE188),
+      //version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.IUltraDMD")    
+
+    ]
+    dispinterface IUltraDMD {
+        properties:
+        methods:
+            [id(0x60020000)]
+            void LoadSetup();
+            [id(0x60020001)]
+            void Init();
+            [id(0x60020002)]
+            void Uninit();
+            [id(0x60020003)]
+            long GetMajorVersion();
+            [id(0x60020004)]
+            long GetMinorVersion();
+            [id(0x60020005)]
+            long GetBuildNumber();
+            [id(0x60020006)]
+            VARIANT_BOOL SetVisibleVirtualDMD([in] VARIANT_BOOL bHide);
+            [id(0x60020007)]
+            VARIANT_BOOL SetFlipY([in] VARIANT_BOOL flipY);
+            [id(0x60020008)]
+            VARIANT_BOOL IsRendering();
+            [id(0x60020009)]
+            void CancelRendering();
+            [id(0x6002000a)]
+            void CancelRenderingWithId([in] BSTR sceneId);
+            [id(0x6002000b)]
+            void Clear();
+            [id(0x6002000c)]
+            void SetProjectFolder([in] BSTR basePath);
+            [id(0x6002000d)]
+            void SetVideoStretchMode([in] long mode);
+            [id(0x6002000e)]
+            void SetScoreboardBackgroundImage(
+                            [in] BSTR filename, 
+                            [in] long selectedBrightness, 
+                            [in] long unselectedBrightness);
+            [id(0x6002000f)]
+            long CreateAnimationFromImages(
+                            [in] long fps, 
+                            [in] VARIANT_BOOL Loop, 
+                            [in] BSTR imagelist);
+            [id(0x60020010)]
+            long RegisterVideo(
+                            [in] long videoStretchMode, 
+                            [in] VARIANT_BOOL Loop, 
+                            [in] BSTR videoFilename);
+            [id(0x60020011)]
+            void DisplayVersionInfo();
+            [id(0x60020012)]
+            void DisplayScoreboard(
+                            [in] long cPlayers, 
+                            [in] long highlightedPlayer, 
+                            [in] int64 score1, 
+                            [in] int64 score2, 
+                            [in] int64 score3, 
+                            [in] int64 score4, 
+                            [in] BSTR lowerLeft, 
+                            [in] BSTR lowerRight);
+            [id(0x60020013)]
+            void DisplayScoreboard00(
+                            [in] long cPlayers, 
+                            [in] long highlightedPlayer, 
+                            [in] int64 score1, 
+                            [in] int64 score2, 
+                            [in] int64 score3, 
+                            [in] int64 score4, 
+                            [in] BSTR lowerLeft, 
+                            [in] BSTR lowerRight);
+            [id(0x60020014)]
+            void DisplayScene00(
+                            [in] BSTR background, 
+                            [in] BSTR toptext, 
+                            [in] long topBrightness, 
+                            [in] BSTR bottomtext, 
+                            [in] long bottomBrightness, 
+                            [in] long animateIn, 
+                            [in] long pauseTime, 
+                            [in] long animateOut);
+            [id(0x60020015)]
+            void DisplayScene00Ex(
+                            [in] BSTR background, 
+                            [in] BSTR toptext, 
+                            [in] long topBrightness, 
+                            [in] long topOutlineBrightness, 
+                            [in] BSTR bottomtext, 
+                            [in] long bottomBrightness, 
+                            [in] long bottomOutlineBrightness, 
+                            [in] long animateIn, 
+                            [in] long pauseTime, 
+                            [in] long animateOut);
+            [id(0x60020016)]
+            void DisplayScene00ExWithId(
+                            [in] BSTR sceneId, 
+                            [in] VARIANT_BOOL cancelPrevious, 
+                            [in] BSTR background, 
+                            [in] BSTR toptext, 
+                            [in] long topBrightness, 
+                            [in] long topOutlineBrightness, 
+                            [in] BSTR bottomtext, 
+                            [in] long bottomBrightness, 
+                            [in] long bottomOutlineBrightness, 
+                            [in] long animateIn, 
+                            [in] long pauseTime, 
+                            [in] long animateOut);
+            [id(0x60020017)]
+            void ModifyScene00(
+                            [in] BSTR id, 
+                            [in] BSTR toptext, 
+                            [in] BSTR bottomtext);
+            [id(0x60020018)]
+            void ModifyScene00Ex(
+                            [in] BSTR id, 
+                            [in] BSTR toptext, 
+                            [in] BSTR bottomtext, 
+                            [in] long pauseTime);
+            [id(0x60020019)]
+            void DisplayScene01(
+                            [in] BSTR sceneId, 
+                            [in] BSTR background, 
+                            [in] BSTR Text, 
+                            [in] long textBrightness, 
+                            [in] long textOutlineBrightness, 
+                            [in] long animateIn, 
+                            [in] long pauseTime, 
+                            [in] long animateOut);
+            [id(0x6002001a)]
+            void DisplayText(
+                            [in] BSTR Text, 
+                            [in] long textBrightness, 
+                            [in] long textOutlineBrightness);
+            [id(0x6002001b)]
+            void ScrollingCredits(
+                            [in] BSTR background, 
+                            [in] BSTR Text, 
+                            [in] long textBrightness, 
+                            [in] long animateIn, 
+                            [in] long pauseTime, 
+                            [in] long animateOut);
+    };
+
+    [
+      uuid(766E10D3-DFE3-4E1B-AC99-C4D2BE16E91F),
+      //version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "FlexDMD.FlexDMD")
+    ]
+    coclass FlexDMD {
+        interface _Object;
+        [default] interface IFlexDMD;
+        [default, source] dispinterface IDMDObjectEvents;
+    };
+};

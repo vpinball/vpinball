@@ -2,7 +2,6 @@
 #include "resource.h"
 #include <windowsx.h>
 #include "Debugger.h"
-#include <string>
 
 #define RECOMPUTEBUTTONCHECK WM_USER+100
 #define RESIZE_FROM_EXPAND   WM_USER+101

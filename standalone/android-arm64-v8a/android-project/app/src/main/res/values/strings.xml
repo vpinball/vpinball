@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">VPinballX</string>
+    <string name="title_activity_vpx_launcher">Visual Pinball X</string>
+    <string name="select_dir_msg">Select a directory for Visual Pinball files.</string>
+    <string name="permissions_msg">VPX needs permission to read/write on your selected storage device. It\'s unfortunately needed by the native code used in VPX.</string>
+    <string name="dialog_title">Missing Permission</string>
+    <string name="dialog_text">VPX needs access to your selected storage device to load tables</string>
+    <string name="button_select_dir">Select VPX directory</string>
+    <string name="main_title">Visual Pinball Tables</string>
+    <string name="button_refresh">Refresh</string>
+    <string name="new_dir_selection">VPX directory</string>
+    <string name="new_dir_explanation">Switch VPX directory</string>
+    <string name="button_new_dir">Choose Dir</string>
+    <string name="copying_assets_message">Copying all required files to the VPX directory. This can take a minute. Please wait.</string>
+    <string name="settings">Settings</string>
+    <string name="share_logs">Share Logs</string>
+    <string name="share_logs_subtext">Send VPX logs to another app</string>
+    <string name="logs_button">Logs</string>
+</resources>

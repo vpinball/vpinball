@@ -26,6 +26,9 @@ in vec3 tablePos_gs[];
 out vec3 tablePos;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 ////FRAGMENT
 uniform vec4 lightColor_intensity;
@@ -34,8 +37,11 @@ uniform vec4 lightCenter_maxRange;
 uniform float blend_modulate_vs_add;
 
 in vec3 tablePos;
-out vec4 color;
 
+out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 ////vs_lightbulb_main
 void main()
@@ -51,7 +57,7 @@ void main()
 ////gs_lightbulb_main
 void main()
 {
-    gl_Layer = eye_gs[0];
+    GS_LAYER_COPY;
     for (int i=0;i<gl_in.length();i++) {
         gl_Position = matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position;
         //Disabled since this would move backdrop lights behind other backdrop parts (rendered at z = 0), this could be readded with a max at 0, but I don't get why we would need this type of hack
@@ -67,6 +73,7 @@ void main()
 ////PS_BulbLight
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float3 light_dir = tablePos - lightCenter_maxRange.xyz;
    const float light_dist = length(light_dir);
    const float len = light_dist * lightCenter_maxRange.w;
@@ -81,6 +88,7 @@ void main()
 #include "BallShadows.fxh"
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float3 light_dir = tablePos - lightCenter_maxRange.xyz;
    const float light_dist = length(light_dir);
    const float len = light_dist * lightCenter_maxRange.w;

@@ -24,6 +24,12 @@ ForkAwesome
 - License: SIL OFL 1.1
 Using generator from https://github.com/juliettef/IconFontCppHeaders
 
+## FFmpeg
+
+- Upstream: https://github.com/FFmpeg/FFmpeg
+- Version: ?
+- License: GPL-2.0, GPL-3.0, LGPL-3.0
+
 ## Forsyth
 
 - Upstream: ?
@@ -114,11 +120,11 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 - Version: ?
 - License: custom permissive
 
-## robin hood
+## RSJparser
 
-- Upstream: https://github.com/martinus/robin-hood-hashing
+- Upstream: https://github.com/subh83/RSJp-cpp
 - Version: ?
-- License: MIT
+- License: GPL-3
 
 ## ScaleFX
 
@@ -161,6 +167,12 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 - Upstream: https://github.com/leethomason/tinyxml2
 - Version: ?
 - License: ZLib
+
+## unordered_dense
+
+- Upstream: https://github.com/martinus/unordered_dense
+- Version: ?
+- License: MIT
 
 ## win32xx
 

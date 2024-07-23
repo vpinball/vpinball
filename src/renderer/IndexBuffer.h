@@ -52,8 +52,8 @@ public:
    virtual bool IsUploaded() const = 0;
 
    const Fmt m_format;
-   const bool m_isStatic;
    const unsigned int m_bytePerElement;
+   const bool m_isStatic;
 
    struct PendingUpload
    {
@@ -113,10 +113,10 @@ public:
 
    RenderDevice* const m_rd;
    const unsigned int m_count;
-   const unsigned int m_sizePerIndex;
-   const unsigned int m_size;
-   const bool m_isStatic;
    const Format m_indexFormat;
+   const unsigned int m_sizePerIndex;
+   const bool m_isStatic;
+   const unsigned int m_size;
 
    #ifdef ENABLE_SDL
    GLuint GetBuffer() const;

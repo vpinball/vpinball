@@ -19,8 +19,11 @@ uniform samplerStereo   tex_stereo_depth; // Depth, only used for fake stereo by
 #include "Stereo.fxh"
 
 in float2 tex0;
-out vec4 color;
 
+out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 
 ////vs_main_no_trafo

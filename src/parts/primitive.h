@@ -6,7 +6,7 @@
 #define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
 
 #include "resource.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 class Mesh final
 {
@@ -118,6 +118,13 @@ class Primitive :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    static constexpr int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
 
@@ -293,7 +300,7 @@ public:
    bool LoadMeshDialog() final;
    void ExportMeshDialog() final;
 
-   bool IsPlayfield() const { return _wcsicmp(m_wzName, L"playfield_mesh") == 0; }
+   bool IsPlayfield() const { return wcsicmp(m_wzName, L"playfield_mesh") == 0; }
    bool IsBackglass() const { return lstrcmpi(m_d.m_szImage.c_str(), "backglassimage") == 0; }
 
    float GetAlpha() const { return m_d.m_alpha; }
@@ -353,7 +360,7 @@ private:
 
    bool BrowseFor3DMeshFile();
    void SetupHitObject(vector<HitObject*> &pvho, HitObject * obj);
-   void AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
+   void AddHitEdge(vector<HitObject*> &pvho, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj);
 
    void CalculateBuiltinOriginal();
    void WaitForMeshDecompression();

@@ -5,13 +5,21 @@
 #if !defined(AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_)
 #define AFX_PINTABLE_H__D14A2DAB_2984_4FE7_A102_D0283ECE31B4__INCLUDED_
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 #include <atomic>
 #include "hash.h"
+#ifndef __STANDALONE__
 #include "SearchSelectDialog.h"
+#endif
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
+
+#ifdef __STANDALONE__
+#include <iostream>
+#include <unordered_map>
+class Light;
+#endif
 
 #define VIEW_PLAYFIELD 1
 #define VIEW_BACKGLASS 2
@@ -67,14 +75,33 @@ class ProgressDialog : public CDialog
 {
 public:
    ProgressDialog();
-   void SetProgress(const int value) { m_progressBar.SetPos(value); }
+   void SetProgress(const int value) {
+#ifndef __STANDALONE__
+      m_progressBar.SetPos(value);
+#else
+      if (m_progress != value) {
+         PLOGI.printf("%s %d%%", m_szName.c_str(), value);
+      }
+      m_progress = value;
+#endif
+   }
 
-   void SetName(const string &text) { m_progressName.SetWindowText(text.c_str()); }
+   void SetName(const string &text) { 
+#ifndef __STANDALONE__
+      m_progressName.SetWindowText(text.c_str());
+#else
+      m_szName = text;
+#endif
+   }
 
 protected:
    BOOL OnInitDialog() final;
 
 private:
+#ifdef __STANDALONE__
+   string m_szName;
+   int m_progress;
+#endif
    CProgressBar m_progressBar;
    CStatic m_progressName;
 };
@@ -94,13 +121,20 @@ class PinTable : public CWnd,
                  public IEditable,
                  public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
    // deprecated
-   STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_YieldTime)(/*[out, retval]*/ LONG *pVal);
    // deprecated
-   STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
+   STDMETHOD(put_YieldTime)(/*[in]*/ LONG newVal);
    STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);
 
@@ -548,7 +582,7 @@ public:
    float Get3DOffset() const;
 
    FRect3D GetBoundingBox() const;
-   void ComputeNearFarPlane(const Matrix3D& matWorldView, const float scale, float &near, float &far) const;
+   void ComputeNearFarPlane(const Matrix3D& matWorldView, const float scale, float &zNear, float &zFar) const;
 
    bool RenderSolid() const { return m_renderSolid; }
 
@@ -612,8 +646,8 @@ public:
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    bool m_isLiveInstance = false; // true for live shallow copy of a table
-   robin_hood::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
-   robin_hood::unordered_map<void *, void *> m_liveToStartup;
+   ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
+   ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
    // editor viewport
    Vertex2D m_offset;
@@ -869,10 +903,10 @@ public:
 private:
    PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;
-   robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
-   robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
-   robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
-   robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
+   ankerl::unordered_dense::map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
+   ankerl::unordered_dense::map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   ankerl::unordered_dense::map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
+   ankerl::unordered_dense::map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
    bool m_moving;
 
    ToneMapper m_toneMapper = ToneMapper::TM_AGX;
@@ -883,18 +917,24 @@ class ScriptGlobalTable :
    public IDispatchImpl<ITableGlobal, &IID_ITableGlobal, &LIBID_VPinballLib>, 
    public IScriptable
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+#endif
 public:
    // Headers to support communication between the game and the script.
    STDMETHOD(EndModal)();
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
-   STDMETHOD(GetCustomParam)(/*[in]*/ long index, /*[out, retval]*/ BSTR *param);
+   STDMETHOD(GetCustomParam)(/*[in]*/ LONG index, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
-   STDMETHOD(get_FrameIndex)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_FrameIndex)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_GameTime)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_SystemTime)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
    STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
    STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
@@ -903,7 +943,7 @@ public:
 #ifdef _WIN64
    STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
 #else
-   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ LONG *pVal);
 #endif
    STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_TablesDirectory)(/*[out, retval]*/ BSTR *pVal);
@@ -913,18 +953,18 @@ public:
    STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformBits)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ShowCursor)(/*[in]*/ VARIANT_BOOL enable);
-   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(PlayMusic)(BSTR str, float volume);
    STDMETHOD(put_MusicVolume)(float volume);
    STDMETHOD(EndMusic)();
-   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
@@ -944,7 +984,7 @@ public:
 
    STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 
-   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
+   STDMETHOD(PlaySound)(BSTR bstr, LONG LoopCount, float volume, float pan, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
@@ -955,12 +995,12 @@ public:
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
    STDMETHOD(get_Name)(BSTR *pVal);
-   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_JoyCustomKey)(/*[in]*/ long index, /*[out, retval]*/ long *pVal);
+   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_ExitGame)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_JoyCustomKey)(/*[in]*/ LONG index, /*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);

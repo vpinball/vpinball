@@ -6,7 +6,9 @@
 #else
  #include <glad/gles2.h>
 #endif
+#ifndef __STANDALONE__
  #include <SDL2/SDL_opengl.h>
+#endif
  #include <SDL2/SDL.h>
 #else
  #include "minid3d9.h"
@@ -77,7 +79,11 @@ enum colorFormat {
    GREY_ALPHA = GL_RG8,
    RG16F = GL_RG16F,
 
+#ifndef __OPENGLES__
    RGB5 = GL_RGB5,
+#else
+   RGB5 = 0xFFFF,
+#endif
    RGB = GL_RGB8,
    RGB8 = GL_RGB8,
    RGB10 = GL_RGB10_A2,
@@ -93,6 +99,7 @@ enum colorFormat {
    RGBA8 = GL_RGBA8,
    RGBA10 = GL_RGB10_A2,
    DXT5 = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT,
+#ifndef __OPENGLES__
 #ifdef GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT
    BC6S = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT,
    BC6U = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT,
@@ -101,6 +108,11 @@ enum colorFormat {
    BC6S = GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT_ARB,
    BC6U = GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT_ARB,
    BC7 = GL_COMPRESSED_RGBA_BPTC_UNORM_ARB,
+#endif
+#else
+    BC6S = 0xFFFF,
+    BC6U = 0xFFFF,
+    BC7 = 0xFFFF,
 #endif
 
    SRGBA = GL_SRGB8_ALPHA8,

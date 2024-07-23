@@ -187,7 +187,9 @@ void RenderState::Apply(RenderDevice* device)
          renderstate_mask &= RENDER_STATE_CLEAR_MASK_CLIPPLANEENABLE;
          val = m_state & RENDER_STATE_MASK_CLIPPLANEENABLE;
          #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
          if (val) glEnable(GL_CLIP_DISTANCE0); else glDisable(GL_CLIP_DISTANCE0);
+#endif
          #else
          CHECKD3D(d3dDevice->SetRenderState(D3DRS_CLIPPLANEENABLE, val ? 1 : 0));
          #endif

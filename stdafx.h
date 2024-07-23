@@ -25,7 +25,9 @@
 
 #define COMPRESS_MESHES // uses miniz for compressing the meshes
 
+#ifndef __STANDALONE__
 #define CRASH_HANDLER
+#endif
 
 //#define _CRTDBG_MAP_ALLOC
 
@@ -108,8 +110,10 @@
 //VR Support
 
 #ifdef ENABLE_SDL
+#ifndef __STANDALONE__
 //No VR support with DX9 possible, only with DX11 and OpenGL
 #define ENABLE_VR
+#endif
 #endif
 
 //
@@ -134,11 +138,13 @@
 
 #define _ATL_APARTMENT_THREADED
 
+#ifndef __STANDALONE__
 #ifndef APPX_E_BLOCK_HASH_INVALID
 #define APPX_E_BLOCK_HASH_INVALID _HRESULT_TYPEDEF_(0x80080207L)
 #endif
 #ifndef APPX_E_CORRUPT_CONTENT
 #define APPX_E_CORRUPT_CONTENT _HRESULT_TYPEDEF_(0x80080206L)
+#endif
 #endif
 
 //#include <vld.h>
@@ -151,7 +157,6 @@
  #define WM_UNINITMENUPOPUP              0x0125
 #endif
 #include "main.h"
-
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

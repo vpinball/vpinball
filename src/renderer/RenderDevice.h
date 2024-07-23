@@ -1,6 +1,6 @@
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 #include "typedefs3D.h"
 
 #include "Material.h"
@@ -20,7 +20,9 @@
 #endif
 
 #ifdef ENABLE_SDL
+#ifndef __STANDALONE__
 #include <d3d11.h> // Used to get a VSync source if DWM is not available
+#endif
 #endif
 
 #ifndef ENABLE_SDL
@@ -107,7 +109,9 @@ public:
 
    SDL_Window* m_sdl_playfieldHwnd = nullptr;
    SDL_GLContext m_sdl_context = nullptr;
+#ifndef __STANDALONE__
    IDXGIOutput* m_DXGIOutput = nullptr;
+#endif
 
 #else
    enum PrimitiveTypes

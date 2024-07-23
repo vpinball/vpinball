@@ -1,6 +1,6 @@
 #pragma once
 
-#include <unordered_set>
+#include "unordered_dense.h"
 
 class ObjLoader final
 {
@@ -63,7 +63,7 @@ private:
    vector<Vertex3Ds> m_tmpVerts;
    vector<Vertex3Ds> m_tmpNorms;
    vector<Vertex2D> m_tmpTexel;
-   std::unordered_set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator> m_tmpCombined; // only used to find duplicate vertices quickly
+   ankerl::unordered_dense::set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator> m_tmpCombined; // only used to find duplicate vertices quickly
    vector<MyPoly> m_tmpFaces;
    vector<Vertex3D_NoTex2> m_verts;
    vector<unsigned int> m_indices;

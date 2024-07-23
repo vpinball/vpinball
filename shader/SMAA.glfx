@@ -99,6 +99,9 @@ uniform samplerStereo tex_fb_filtered; // Framebuffer (filtered)
 
 out vec4 color;
 
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 //-----------------------------------------------------------------------------
 // Vertex shaders
@@ -176,6 +179,9 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 in vec2 texcoord_gs[];
 out vec2 texcoord;
@@ -186,7 +192,7 @@ out vec4[3] offset;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];
@@ -206,7 +212,7 @@ out vec2 pixcoord;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];
@@ -225,7 +231,7 @@ out vec4 offset;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       texcoord = texcoord_gs[i];
@@ -247,6 +253,7 @@ in vec4[3] offset;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     color = vec4(SMAAColorEdgeDetectionPS(texcoord, offset, colorGammaTex), 0.0, 0.0);
 }
 
@@ -258,6 +265,7 @@ in vec2 pixcoord;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     color = SMAABlendingWeightCalculationPS(texcoord, pixcoord, offset, edgesTex, areaTex, searchTex, vec4(0.0));
 }
 
@@ -268,6 +276,7 @@ in vec4 offset;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     color = SMAANeighborhoodBlendingPS(texcoord, offset, colorTex, blendTex);
 }
 

@@ -262,7 +262,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
 
     if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
     {
-       robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+       ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
        Matrix3D fullMatrix, tempMatrix;
        fullMatrix.SetIdentity();
@@ -341,7 +341,7 @@ void HitTarget::GetHitShapes(vector<HitObject*> &pvho)
     }
     else
     {
-       robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+       ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
        // add collision triangles and edges
        for (unsigned i = 0; i < m_numIndices; i += 3)
        {
@@ -371,10 +371,10 @@ void HitTarget::GetHitShapesDebug(vector<HitObject*> &pvho)
 {
 }
 
-void HitTarget::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
+void HitTarget::AddHitEdge(vector<HitObject*> &pvho, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.insert(p).second) // edge not yet added?
       SetupHitObject(pvho, new HitLine3D(vi, vj), setHitObject);
@@ -1423,14 +1423,14 @@ void HitTarget::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
-STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
+STDMETHODIMP HitTarget::get_RaiseDelay(LONG *pVal)
 {
     *pVal = m_d.m_raiseDelay;
 
     return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
+STDMETHODIMP HitTarget::put_RaiseDelay(LONG newVal)
 {
     m_d.m_raiseDelay = newVal;
 

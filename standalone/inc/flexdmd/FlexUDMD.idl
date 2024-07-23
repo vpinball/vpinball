@@ -1,0 +1,33 @@
+// Generated .IDL file (by the OLE/COM Object Viewer)
+// 
+// typelib filename: <could not determine filename>
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+  uuid(62F0E6A3-D1AF-45CF-8893-846ECEB38DFE),
+  version(1.8),
+  custom(90883F05-3D28-11D2-8F17-00A0C9A6186D, "FlexUDMD, Version=1.8.0.0, Culture=neutral, PublicKeyToken=7144ae60aec212e0")
+
+]
+library FlexUDMD
+{
+    // TLib : <??filename??> : {FFC13791-DDF0-4D14-BD64-575ABA119190}
+    // NOTE: There most likely was an "importlib()" statement in the source. It is possible this imported type lib is not registered. This version of OLEViewer does not support identifying and displaying it.
+    // TLib : mscorlib.dll : {BED7F4EA-1A96-11D2-8F08-00A0C9A6186D}
+    importlib("mscorlib.tlb");
+
+    // Forward declare all types defined in this typelib
+
+    [
+      uuid(E1612654-304A-4E07-A236-EB64D6D4F511),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "UltraDMD.DMDObject")
+    ]
+    coclass DMDObject {
+        interface _Object;
+        [default] dispinterface IUltraDMD;
+        [default, source] dispinterface IDMDObjectEvents;
+    };
+};

@@ -69,6 +69,7 @@
     <ClCompile Include="src/audio/audioplayer.cpp" />
     <ClCompile Include="math\math.cpp" />
     <ClCompile Include="BlackBox.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="MemoryStatus.cpp" />
     <ClCompile Include="StackTrace.cpp" />
@@ -1138,6 +1139,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="BlackBox.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Logger.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="CrashHandler.h">

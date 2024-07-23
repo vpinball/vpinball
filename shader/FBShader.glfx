@@ -29,6 +29,10 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
+
 in vec2 tex0_gs[];
 out vec2 tex0;
 
@@ -55,6 +59,9 @@ in float2 tex0;
 flat in float eye;
 
 out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 /*const float bayer_dither_pattern[8][8] = float[][] (
     {( 0/64.0-0.5)/255.0, (32/64.0-0.5)/255.0, ( 8/64.0-0.5)/255.0, (40/64.0-0.5)/255.0, ( 2/64.0-0.5)/255.0, (34/64.0-0.5)/255.0, (10/64.0-0.5)/255.0, (42/64.0-0.5)/255.0},   
@@ -244,7 +251,7 @@ void main()
 flat out float eye;
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       tex0 = tex0_gs[i];
@@ -278,6 +285,7 @@ float3 bloom_cutoff(const float3 c)
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     // collect clipped contribution of the 4x4 texels (via box blur, NOT gaussian, as this is wrong) from original FB
     const float3 result = (texStereoNoLod(tex_fb_filtered, tex0 - w_h_height.xy).xyz
                         +  texStereoNoLod(tex_fb_filtered, tex0 + w_h_height.xy).xyz
@@ -290,6 +298,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float result = texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    result = FBGamma(saturate(result));
    color = float4(result,result,result, 1.0);
@@ -299,6 +308,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    const float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz // moving AO before tonemap does not really change the look
                        * texStereoNoLod(tex_ao,          tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -309,6 +319,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb
                        * texStereoNoLod(tex_ao,            tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    color = float4(result, 1.0);
@@ -321,6 +332,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
@@ -334,6 +346,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
@@ -364,6 +377,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
@@ -380,6 +394,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).rgb;
    // tex0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
    // moving AO before tonemap does not really change the look
@@ -416,6 +431,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
@@ -429,6 +445,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
@@ -495,6 +512,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float2 result = texStereoNoLod(tex_fb_unfiltered, tex0).rg;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).rg; //!! offset?
@@ -509,6 +527,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float result = texStereoNoLod(tex_fb_unfiltered, tex0).r;
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, tex0).r; //!! offset?
@@ -524,6 +543,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).rgb;
    // moving AO before tonemap does not really change the look
    result *= texStereoNoLod(tex_ao, tex0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
@@ -548,6 +568,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -561,6 +582,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset7x7[2] = float[]( 0.53473, 2.05896 ); //no center!
    const float weight7x7[2] = float[]( 0.45134, 0.04866 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -574,6 +596,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset9x9[3] = float[]( 0.0, 1.3846153846153846, 3.2307692307692304 );
    const float weight9x9[3] = float[]( 0.22697126013264554, 0.31613854089904203, 0.070253009088676 );
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight9x9[0];
@@ -587,6 +610,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset9x9[3] = float[]( 0.0, 1.3846153846153846, 3.2307692307692304 );
    const float weight9x9[3] = float[]( 0.22697126013264554, 0.31613854089904203, 0.070253009088676 );
    float3 result = texStereoNoLod(tex_fb_unfiltered, tex0).xyz*weight9x9[0];
@@ -600,6 +624,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -613,6 +638,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset11x11[3] = float[]( 0.62195, 2.27357, 4.14706 ); //no center!
    const float weight11x11[3] = float[]( 0.32993, 0.15722, 0.01285 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -626,6 +652,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset13x13[4] = float[]( 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 );
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
@@ -639,6 +666,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset13x13[4] = float[]( 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 );
    const float weight13x13[4] = float[]( 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 );
    float3 result = texStereoNoLod(tex_fb_filtered, tex0).xyz*weight13x13[0];
@@ -652,6 +680,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -665,6 +694,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset15x15[4] = float[]( 0.64417, 2.37795, 4.28970, 6.21493 ); //no center!
    const float weight15x15[4] = float[]( 0.25044, 0.19233, 0.05095, 0.00628 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -678,6 +708,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -691,6 +722,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset19x19[5] = float[]( 0.65323, 2.42572, 4.36847, 6.31470, 8.26547 ); //no center!
    const float weight19x19[5] = float[]( 0.19923, 0.18937, 0.08396, 0.02337, 0.00408 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -713,6 +745,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -726,6 +759,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset19x19h[5] = float[]( 0.63918, 2.35282, 4.25124, 6.17117, 8.11278 ); //no center!
    const float weight19x19h[5] = float[]( 0.27233, 0.18690, 0.03767, 0.00301, 0.00009 ); //no center!
    float3 result = float3(0.0, 0.0, 0.0);
@@ -739,6 +773,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // smoother fadeout on edges
    const float offset23x23[6] = float[]( //0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 //23 (no center!)
       0.64851, 2.40054, 4.32612, 6.25954, 8.20247, 10.15531
@@ -757,6 +792,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // smoother fadeout on edges
    const float offset23x23[6] = float[]( //0.65769, 2.45001, 4.41069, 6.37247, 8.33578, 10.30098 //23 (no center!)
       0.64851, 2.40054, 4.32612, 6.25954, 8.20247, 10.15531
@@ -775,6 +811,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // 'h'-versions:  (smoother fadeout on edges)
    const float weight27x27[7] = float[] ( /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
       0.20227,0.19003,0.08192,0.02181,0.00358,0.00036,0.00002
@@ -796,6 +833,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // 'h'-versions:  (smoother fadeout on edges)
    const float weight27x27[7] = float[] ( /*0.19592,0.18829,0.08573,0.02488,0.00460,0.00054,0.00004*/
       0.20227,0.19003,0.08192,0.02181,0.00358,0.00036,0.00002
@@ -817,6 +855,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // smoother fadeout on edges
    const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
                                          /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
@@ -835,6 +874,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float offset39x39[10] = float[] ( 0.66063, 2.46625, 4.43946, 6.41301, 8.38706, 10.36173, 12.33715, 14.31341, 16.29062, 18.26884
                                          /*0.66214, 2.47462, 4.45440, 6.43433, 8.41447, 10.39489, 12.37564, 14.35677, 16.33834, 18.32039*/
                                          /*0.66368, 2.48326, 4.46990, 6.45658, 8.44332, 10.43015, 12.41707, 14.40410, 16.39127, 18.37859*/ ); //no center!
@@ -852,6 +892,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    color = float4(texStereo(tex_fb_unfiltered, tex0).rgb * (1. / w_h_height.z), 1.0);
 }
 
@@ -884,6 +925,7 @@ float radicalInverse_VdC(uint bits)
 // cos_hemisphere_sample & rotate_to_vector_upper are defined in FXAAStereoAO
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    // Compute sample direction
    const float phi   = PI + tex0.x * (2.0 * PI);
    const float theta =      tex0.y        * PI;

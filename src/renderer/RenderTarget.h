@@ -47,13 +47,13 @@ public:
 
 private:
    RenderDevice* const m_rd;
+   const bool m_is_back_buffer;
+   const colorFormat m_format;
    int m_width;
    int m_height;
-   const colorFormat m_format;
-   const bool m_is_back_buffer;
+   const int m_nMSAASamples;
    const bool m_has_depth;
    const bool m_shared_depth;
-   const int m_nMSAASamples;
    Sampler* m_color_sampler;
    Sampler* m_depth_sampler;
 

@@ -1,0 +1,419 @@
+#!/bin/bash
+# ---------------------------------------------------------------------------
+# vpxm - Generate a mobile VPX package
+# ---------------------------------------------------------------------------
+
+PROGNAME=${0##*/}
+VERSION="0.1"
+
+clean_up() { # Perform pre-exit housekeeping
+  return
+}
+
+error_exit() {
+  echo -e "${PROGNAME}: ${1:-"Unknown Error"}" >&2
+  clean_up
+  exit 1
+}
+
+graceful_exit() {
+  clean_up
+  exit
+}
+
+signal_exit() { # Handle trapped signals
+  case $1 in
+    INT)
+      error_exit "Program interrupted by user" ;;
+    TERM)
+      echo -e "\n$PROGNAME: Program terminated" >&2
+      graceful_exit ;;
+    *)
+      error_exit "$PROGNAME: Terminating on unknown signal" ;;
+  esac
+}
+
+usage() {
+  echo -e "Usage: $PROGNAME [-h|--help] [-p|--platform PLATFORM] [-t|--table TABLE] [-m|--music MUSIC] [-r|--rom ROM] [-nv|--nvram NVRAM] [-ac|--altcolor ALTCOLOR]  [-ai|--appid APP_ID] [-an|--appname APP_NAME] [-mt|--maxtex MAX_TEX] [-b|--builddir BUILD_DIR] [-e|--externaldir EXTERNAL_DIR] [-on|--outputname OUTPUT_NAME] [-d|--destdir DEST_DIR] [-ti|--teamid TEAM_ID]"
+}
+
+help_message() {
+  cat <<- _EOF_
+$PROGNAME $VERSION
+Generate a VPX build from source for iOS, tvOS, or Android.
+
+$(usage)
+
+Options:
+-h,  --help                      Display this help message and exit.
+-p,  --platform PLATFORM         Specify platform. (ios|tvos|android)
+-t,  --table TABLE               Specify table.
+-fd, --flexdmddir FLEXDMD_DIR    Specify flexdmd folder.
+-m,  --music MUSIC               Specify music.
+-r,  --rom ROM                   Specify rom file.
+-nv, --nvram NVRAM               Specify nvram file.
+-ac, --altcolor ALTCOLOR         Specify altcolor file.
+-ai, --appid APP_ID              Specify application id.
+-an, --appname APP_NAME          Specify application name.
+-mt, --maxtex MAX_TEX            Specify a max texture limit.
+-b,  --builddir BUILD_DIR        Specify build directory.
+-e,  --externaldir EXTERNAL_DIR  Specify external directory.
+-on, --outputname OUTPUT_NAME    Specify ipa or apk name for binary.
+-d,  --destdir DEST_DIR          Specify path to copy ipa or apk to after build.
+-ti, --teamid TEAM_ID            Specify team id for iOS and tvOS.
+
+_EOF_
+  return
+}
+
+generate_build_ios() {
+  if [ -n "$TABLE" ]; then
+    cp "$TABLE" standalone/$PLATFORM/$PLATFORM-project/assets/tables
+
+    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default_VPinballX.ini"
+
+    if [ -n "$VBS" ]; then
+      cp "$VBS" standalone/$PLATFORM/$PLATFORM-project/assets/tables
+    fi
+
+    if [ -n "$POV" ]; then
+      cp "$POV" standalone/$PLATFORM/$PLATFORM-project/assets/tables
+    fi
+
+    if [ -n "$FLEXDMD_DIR" ]; then
+      cp -r "$FLEXDMD_DIR" standalone/$PLATFORM/$PLATFORM-project/assets/tables
+    fi
+  fi
+
+  for music in "${MUSIC[@]}"
+  do
+    if [ -d "$music" ]; then
+      cp -r "$music" standalone/$PLATFORM/$PLATFORM-project/assets/music
+    else
+      cp "$music" standalone/$PLATFORM/$PLATFORM-project/assets/music
+    fi
+  done
+
+  if [ -n "$ROM" ]; then
+    cp "$ROM" standalone/$PLATFORM/$PLATFORM-project/assets/pinmame/roms
+  fi
+
+  if [ -n "$NVRAM" ]; then
+    cp "$NVRAM" standalone/$PLATFORM/$PLATFORM-project/assets/pinmame/nvram
+  fi
+
+  if [ -n "$ALTCOLOR" ]; then
+     NAME=$(basename "$ALTCOLOR")
+     NAME="${NAME%.*}"
+     mkdir "standalone/$PLATFORM/$PLATFORM-project/assets/pinmame/altcolor/${NAME}"
+     cp "$ALTCOLOR" "standalone/$PLATFORM/$PLATFORM-project/assets/pinmame/altcolor/${NAME}"
+  fi
+  
+  if [ -n "$MAX_TEX" ]; then
+     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/$PLATFORM/$PLATFORM-project/assets/Default_VPinballX.ini"
+  fi
+
+  if [ -n "$APP_NAME" ]; then
+    /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $APP_NAME" standalone/$PLATFORM/$PLATFORM-project/Info.plist
+  fi
+
+  cd standalone/$PLATFORM
+
+  if [ -n "$EXTERNAL_DIR" ]; then
+    cp -r "$EXTERNAL_DIR" .
+  else
+    ./external.sh
+
+    if [[ $PLATFORM == "tvos" ]]; then
+      xxd -ps -c 0 external/framework/bass.framework/bass | sed 's/2500000010000000/2f00000010000000/g' | xxd -r -ps > bass_tmp
+      mv bass_tmp external/framework/bass.framework/bass
+    fi
+  fi
+
+  cd ../..
+  cp standalone/cmake/CMakeLists_gl-$PLATFORM-arm64.txt CMakeLists.txt
+
+  if [ -n "$APP_ID" ]; then
+    perl -i -pe"s/\"org.vpinball.vpinballx-gl\"/\"${APP_ID}\"/g" CMakeLists.txt
+  fi
+
+  if [ -n "$TEAM_ID" ]; then
+    perl -i -pe"s/\"\"/\"${TEAM_ID}\"/g" CMakeLists.txt
+  fi
+
+  if [ -z "$OUTPUT_NAME" ]; then
+    OUTPUT_NAME="VPinballX_GL.ipa"
+  fi
+
+  cmake -G Xcode -B XCode
+  cd XCode
+
+  fastlane gym --export_method development -n "$OUTPUT_NAME"
+
+  if [ -n "$DEST_DIR" ]; then
+     cp "$OUTPUT_NAME" "$DEST_DIR"
+  else
+     DEST_DIR="$(pwd)"
+  fi
+
+  echo "To install:"
+  echo "ios-deploy --id \"device id\" --bundle $DEST_DIR/$OUTPUT_NAME"
+  echo ""
+}
+
+generate_build_android() {
+  if [ -n "$TABLE" ]; then
+    cp "$TABLE" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
+
+    perl -i -pe"s/LaunchTable = assets\/exampleTable.vpx/LaunchTable = tables\/${TABLE##*/}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default_VPinballX.ini"
+
+    if [ -n "$VBS" ]; then
+      cp "$VBS" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
+    fi
+
+    if [ -n "$POV" ]; then
+      cp "$POV" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
+    fi
+
+    if [ -n "$FLEXDMD_DIR" ]; then
+      cp -r "$FLEXDMD_DIR" standalone/android-arm64-v8a/android-project/app/src/main/assets/tables
+    fi
+  fi
+
+  for music in "${MUSIC[@]}"
+  do
+    if [ -d "$music" ]; then
+      cp -r "$music" standalone/android-arm64-v8a/android-project/app/src/main/assets/music
+    else
+      cp "$music" standalone/android-arm64-v8a/android-project/app/src/main/assets/music
+    fi
+  done
+
+  if [ -n "$ROM" ]; then
+    cp "$ROM" standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/roms
+  fi
+
+  if [ -n "$NVRAM" ]; then
+    cp "$NVRAM" standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/nvram
+  fi
+
+  if [ -n "$ALTCOLOR" ]; then
+     NAME=$(basename "$ALTCOLOR")
+     NAME="${NAME%.*}"
+     mkdir "standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
+     cp "$ALTCOLOR" "standalone/android-arm64-v8a/android-project/app/src/main/assets/pinmame/altcolor/${NAME}"
+  fi
+
+  if [ -n "$MAX_TEX" ]; then
+     perl -i -pe"s/MaxTexDimension = 1024/MaxTexDimension = ${MAX_TEX}/g" "standalone/android-arm64-v8a/android-project/app/src/main/assets/Default_VPinballX.ini"
+  fi
+
+  if [ -n "$APP_ID" ]; then
+    perl -i -pe"s/org.vpinball.app/$APP_ID/g" standalone/android-arm64-v8a/android-project/app/build.gradle
+  else
+    APP_ID="org.vpinball.app"
+  fi
+
+  if [ -n "$OUTPUT_NAME" ]; then
+    perl -i -pe"s/VPinballX_GL.apk/$OUTPUT_NAME/g" standalone/android-arm64-v8a/android-project/app/build.gradle
+  else
+    OUTPUT_NAME="VPinballX_GL.apk"
+  fi
+
+  if [ -n "$APP_NAME" ]; then
+    perl -i -pe"s/VPinballX_GL/$APP_NAME/g" standalone/android-arm64-v8a/android-project/app/src/main/res/values/strings.xml
+  fi
+
+  cd standalone/android
+
+  if [ -n "$EXTERNAL_DIR" ]; then
+    cp -r "$EXTERNAL_DIR" .
+  else
+    ./external.sh
+  fi
+
+  cd ../..
+
+  cp standalone/cmake/CMakeLists_gl-android-arm64-v8a.txt CMakeLists.txt
+  cmake -DCMAKE_BUILD_TYPE=Release -B build
+  cmake --build build -- -j${NUM_PROCS}
+
+  cd standalone/android/android-project
+  ./gradlew assembleDebug
+
+  if [ -n "$DEST_DIR" ]; then
+     cp "app/build/outputs/apk/debug/$OUTPUT_NAME" "$DEST_DIR"
+  else
+     DEST_DIR="$(pwd)/app/build/outputs/apk/debug"
+  fi
+
+  echo "To install:"
+  echo "$ANDROID_HOME/platform-tools/adb install $DEST_DIR/$OUTPUT_NAME"
+  echo ""
+
+  echo "To launch:"
+  echo "$ANDROID_HOME/platform-tools/adb shell am start -n $APP_ID/org.vpinball.app.VPinballActivity"
+  echo ""
+
+  echo "To view logs:"
+  echo "$ANDROID_HOME/platform-tools/adb -d logcat $APP_ID"
+  echo ""
+}
+
+append_music() {
+  while (($#)) && [[ $1 != -* ]]; do MUSIC+=("$1"); shift; done
+}
+
+# Trap signals
+trap "signal_exit TERM" TERM HUP
+trap "signal_exit INT"  INT
+
+declare -a MUSIC=()
+
+while (($#)); do
+  case $1 in
+    -h | --help)
+      help_message; graceful_exit ;;
+    -p | --platform)
+      shift; PLATFORM="$1" ;;
+    -t | --table)
+      shift; TABLE="$1" ;;
+    -fd | --flexdmddir)
+      shift; FLEXDMD_DIR="$1" ;;
+    -m | --music)
+      shift; append_music "${@:1}" ;;
+    -r | --rom)
+      shift; ROM="$1" ;;
+    -nv | --nvram)
+      shift; NVRAM="$1" ;;
+    -ac | --altcolor)
+      shift; ALTCOLOR="$1" ;;
+    -ai | --appid)
+      shift; APP_ID="$1" ;;
+    -an | --appname)
+      shift; APP_NAME="$1" ;;
+    -mt | --maxtex)
+      shift; MAX_TEX="$1" ;;
+    -b | --builddir)
+      shift; BUILD_DIR="$1" ;;
+    -e | --externaldir)
+      shift; EXTERNAL_DIR="$1" ;;
+    -on | --outputname)
+      shift; OUTPUT_NAME="$1" ;;
+    -d | --destdir)
+      shift; DEST_DIR="$1" ;;
+    -ti | --teamid)
+      shift; TEAM_ID="$1" ;;
+    -* | --*)
+      usage
+      error_exit "Unknown option $1" ;;
+    *)
+  esac
+  shift
+done
+
+# Main logic
+#
+
+if [[ ! $PLATFORM =~ ^(ios|tvos|android)$ ]]; then
+  error_exit "Platform not specified or invalid."
+fi
+
+if [ -n "$TABLE" ]; then
+  if [ ! -f "$TABLE" ]; then
+    error_exit "$TABLE not found."
+  fi
+
+  if [ -f "${TABLE%.*}.vbs" ]; then
+    VBS="${TABLE%.*}.vbs"
+  fi
+
+  if [ -f "${TABLE%.*}.pov" ]; then
+    POV="${TABLE%.*}.pov"
+  fi
+
+  if [ -n "$FLEXDMD_DIR" ]; then
+    if [ ! -d "$FLEXDMD_DIR" ]; then
+      error_exit "$FLEXDMD_DIR directory not found."
+    fi
+  fi
+fi
+
+if [ -n "$ROM" ]; then
+  if [ ! -f "$ROM" ]; then
+    error_exit "$ROM not found."
+  fi
+fi
+
+if [ -n "$NVRAM" ]; then
+  if [ ! -f "$NVRAM" ]; then
+    error_exit "$NVRAM not found."
+  fi
+fi
+
+if [ -n "$ALTCOLOR" ]; then
+  if [ ! -f "$ALTCOLOR" ]; then
+    error_exit "$ALTCOLOR not found."
+  fi
+fi
+
+if [ -n "$EXTERNAL_DIR" ]; then
+  if [ ! -d "$EXTERNAL_DIR" ]; then
+    error_exit "External directory not found."
+  fi
+fi
+
+if [ -z "$BUILD_DIR" ]; then
+  error_exit "Build directory not specified."
+fi
+
+if [ -d "$BUILD_DIR" ]; then
+  error_exit "Build directory already exists."
+fi
+
+if [ -n "$DEST_DIR" ]; then
+  if [ ! -d "$DEST_DIR" ]; then
+    error_exit "Destination directory not found."
+  fi
+fi
+
+if [[ $(uname) == "Linux" ]]; then
+  NUM_PROCS=$(nproc)
+elif [[ $(uname) == "Darwin" ]]; then
+  NUM_PROCS=$(sysctl -n hw.ncpu)
+else
+  NUM_PROCS=1
+fi
+
+echo ""
+echo "PLATFORM: $PLATFORM"
+echo "TABLE: $TABLE"
+echo "VBS: $VBS"
+echo "POV: $POV"
+echo "FLEXDMD_DIR: $FLEXDMD_DIR"
+echo "MUSIC: ${MUSIC[@]}"
+echo "ROM: $ROM"
+echo "NVRAM: $NVRAM"
+echo "ALTCOLOR: $ALTCOLOR"
+echo "MAX_TEX: $MAX_TEX"
+echo "APP_ID: $APP_ID"
+echo "APP_NAME: $APP_NAME"
+echo "BUILD_DIR: $BUILD_DIR"
+echo "EXTERNAL_DIR: $EXTERNAL_DIR"
+echo "OUTPUT_NAME: $OUTPUT_NAME"
+echo "DEST_DIR: $DEST_DIR"
+echo "TEAM_ID: $TEAM_ID"
+echo "NUM_PROCS: $NUM_PROCS"
+echo ""
+
+git clone -b standalone git@github.com:vpinball/vpinball.git "$BUILD_DIR"
+cd "$BUILD_DIR"
+
+if [[ $PLATFORM == "ios" || $PLATFORM == "tvos" ]]; then
+  generate_build_ios
+else
+  generate_build_android
+fi
+
+graceful_exit
+

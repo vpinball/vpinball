@@ -61,6 +61,7 @@
 
     #if (N_EYES == 1)
         #define samplerStereo sampler2D
+        #define FS_LAYER_TO_GLOBAL
         #define texStereo(tex, pos) texture(tex, pos)
         #define texStereolod(tex, pos) textureLod(tex, (pos).xy, (pos).w)
         #define texStereoNoLod(tex, pos) textureLod(tex, pos, 0.)
@@ -69,12 +70,25 @@
         #define texStereoGather(tex, pos) textureGather(tex, pos)
     #else
         #define samplerStereo sampler2DArray
+#if !defined(SHADER_GL410)
+        #define GS_LAYER_COPY gl_Layer = eye_gs[0]
+        #define FS_LAYER_TO_GLOBAL
         #define texStereo(tex, pos) texture(tex, vec3(vec2(pos).x, vec2(pos).y, gl_Layer))
         #define texStereolod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), (pos).w)
         #define texStereoNoLod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, gl_Layer), 0.)
         #define texStereoOffset(tex, pos, offset) textureOffset(tex, vec3((pos).x, (pos).y, gl_Layer), offset)
         #define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, vec3((pos).x, (pos).y, gl_Layer), 0.0, offset)
         #define texStereoGather(tex, pos) textureGather(tex, vec3((pos).x, (pos).y, gl_Layer))
+#else
+        #define GS_LAYER_COPY gl_Layer = eye_gs[0]; glLayer_gs = gl_Layer
+        #define FS_LAYER_TO_GLOBAL g_glLayer = glLayer_gs
+        #define texStereo(tex, pos) texture(tex, vec3(vec2(pos).x, vec2(pos).y, g_glLayer))
+        #define texStereolod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, g_glLayer), (pos).w)
+        #define texStereoNoLod(tex, pos) textureLod(tex, vec3((pos).x, (pos).y, g_glLayer), 0.)
+        #define texStereoOffset(tex, pos, offset) textureOffset(tex, vec3((pos).x, (pos).y, g_glLayer), offset)
+        #define texStereoOffsetNoLod(tex, pos, offset) textureLodOffset(tex, vec3((pos).x, (pos).y, g_glLayer), 0.0, offset)
+        #define texStereoGather(tex, pos) textureGather(tex, vec3((pos).x, (pos).y, g_glLayer))
+#endif
     #endif
 
     #if USE_GEOMETRY_SHADER
@@ -119,6 +133,10 @@
 
 //**************************************************************************
 // Common definitions for OpenGL & HLSL
+
+#ifdef SHADER_GL410
+int g_glLayer = 0;
+#endif
 
 #define PI 3.1415926535897932384626433832795
 

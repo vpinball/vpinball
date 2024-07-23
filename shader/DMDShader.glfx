@@ -22,6 +22,9 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 ////FRAGMENT
 
@@ -29,6 +32,9 @@ uniform sampler2D tex_dmd; // base texture for DMD (unfiltered)
 uniform sampler2D tex_sprite; // base texture for sprites (filtered)
 
 out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 //
 // VS function output structures
@@ -78,7 +84,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = gl_in[i].gl_Position;
       tex0 = tex0_gs[i];
@@ -94,7 +100,7 @@ out vec2 tex0;
 
 void main()
 {
-   gl_Layer = eye_gs[0];
+   GS_LAYER_COPY;
    for (int i=0;i<gl_in.length();i++) {
       gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
       gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -174,6 +180,7 @@ in vec2 tex0;
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float blur = /*gaussian: 4.0; /*/ 1.5; // 1.0..2.0 looks best (between sharp and blurry), and 1.5 matches the intention of the triangle filter (see triangularPDF calls below)!
    const float2 ddxs = dFdx(tex0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
    const float2 ddys = dFdy(tex0)*blur;
@@ -226,6 +233,7 @@ in vec2 tex0;
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    color.rgb = texture(tex_dmd, tex0).rgb;
    color.a = vRes_Alpha_time.z;
 }
@@ -236,6 +244,7 @@ in vec2 tex0;
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float4 l = tex2D(tex_sprite, tex0);
    if (l.a < alphaTestValue)
       discard; //stop the pixel shader if alpha test should reject pixel to avoid writing to the depth buffer
@@ -246,6 +255,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    color = float4(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w), 1.0);
 }
 

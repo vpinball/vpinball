@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key>
+    <string>en</string>
+    <key>CFBundleExecutable</key>
+    <string>VPinballX_GL</string>
+    <key>CFBundleIdentifier</key>
+    <string>org.vpinball.VPinballX_GL</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+    <key>CFBundleName</key>
+    <string>VPinballX_GL</string>
+    <key>CFBundleIconFile</key>
+    <string>VPinballX_GL.icns</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleShortVersionString</key>
+    <string></string>
+    <key>CFBundleVersion</key>
+    <string></string>
+	<key>CFBundleSupportedPlatforms</key>
+	<array>
+		<string>MacOSX</string>
+	</array>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+       <dict>
+          <key>CFBundleTypeExtensions</key> 
+          <array>
+             <string>vpx</string>
+          </array>
+          <key>CFBundleTypeName</key>
+          <string>Visual Pinball X Table</string>
+          <key>CFBundleTypeRole</key>
+          <string>Viewer</string>
+        </dict>
+    </array>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.games</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+</dict>
+</plist>

@@ -30,6 +30,7 @@ float normal_fade_factor(const float3 n)
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float2 u = tex0;
 
 	const float3 color0 = texStereoNoLod(tex_fb_unfiltered, u).xyz; // original pixel

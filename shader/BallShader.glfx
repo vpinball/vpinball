@@ -32,6 +32,9 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 ////FRAGMENT
 
@@ -57,6 +60,9 @@ uniform float4  w_h_disableLighting;
 #define disableLighting (w_h_disableLighting.z != 0.)
 
 out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 ////vsBall
 VS_OUT(vec4, normal_t0x);
@@ -106,7 +112,7 @@ flat out float eye;
 
 void main()
 {
-    gl_Layer = eye_gs[0];
+    GS_LAYER_COPY;
     for (int i=0;i<gl_in.length();i++) {
         gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
         gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -125,7 +131,7 @@ out vec3 tex0_alpha;
 
 void main()
 {
-    gl_Layer = eye_gs[0];
+    GS_LAYER_COPY;
     for (int i=0;i<gl_in.length();i++) {
         gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
         tex0_alpha = tex0_alpha_gs[i];
@@ -179,6 +185,7 @@ flat in float eye;
 
 void main()
 {
+    FS_LAYER_TO_GLOBAL;
     const float3 V = normalize(/*camera=0,0,0,1*/-worldPos_t0y.xyz);
     const float3 N = normalize(normal_t0x.xyz);
     const float3 R = reflect(V, N);
@@ -289,6 +296,7 @@ in vec3 tex0_alpha;
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float3 ballImageColor = texture(tex_ball_color, tex0_alpha.xy).rgb;
    if (disableLighting)
       color = float4(ballImageColor, tex0_alpha.z);

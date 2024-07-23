@@ -42,6 +42,13 @@ class Timer :
    public Hitable
    //public EditableImpl<Timer>
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    Timer();
    virtual ~Timer();
@@ -83,8 +90,8 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // ITimer
-   STDMETHOD(get_Interval)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Interval)(/*[in]*/ long newVal);
+   STDMETHOD(get_Interval)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Interval)(/*[in]*/ LONG newVal);
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
 

@@ -190,7 +190,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       tmp.nx = m_tmpNorms[m_tmpFaces[i].ni0].x;
       tmp.ny = m_tmpNorms[m_tmpFaces[i].ni0].y;
       tmp.nz = m_tmpNorms[m_tmpFaces[i].ni0].z;
-      std::unordered_set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator>::const_iterator idx = m_tmpCombined.find(std::pair<const Vertex3D_NoTex2*, const unsigned int>(&tmp, 0)); // idx is ignored when searching via find
+      ankerl::unordered_dense::set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator>::const_iterator idx = m_tmpCombined.find(std::pair<const Vertex3D_NoTex2*, const unsigned int>(&tmp, 0)); // idx is ignored when searching via find
       if (idx == m_tmpCombined.end())
       {
          m_verts.push_back(tmp);
@@ -333,6 +333,7 @@ void ObjLoader::Save(const string& filename, const string& description, const Me
 
 bool ObjLoader::ExportStart(const string& filename)
 {
+#ifndef __STANDALONE__
    const int len = min((int)filename.length(), MAX_PATH - 1);
    int i;
    for (i = len; i >= 0; i--)
@@ -371,6 +372,7 @@ bool ObjLoader::ExportStart(const string& filename)
    m_faceIndexOffset = 0;
    fprintf_s(m_fHandle, "# Visual Pinball table OBJ file\n");
    fprintf_s(m_fHandle, "mtllib %s\n", nameOnly);
+#endif
    return true;
 }
 
@@ -433,6 +435,7 @@ void ObjLoader::WriteFaceInfoList(const WORD* faces, const unsigned int numIndic
 
 bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
 {
+#ifndef __STANDALONE__
    FILE* f;
    if ((fopen_s(&f, filename.c_str(), "r") != 0) || !f)
       return false;
@@ -506,6 +509,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       }
    }
    fclose(f);
+#endif
    return true;
 }
 
