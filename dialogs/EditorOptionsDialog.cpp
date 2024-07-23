@@ -6,9 +6,6 @@
 
 #define AUTOSAVE_DEFAULT_TIME 10
 
-// Implemented in main.cpp, update application logger settings
-extern void SetupLogger(const bool enable);
-
 EditorOptionsDialog::EditorOptionsDialog() : CDialog(IDD_EDITOR_OPTIONS)
 {
     m_toolTip = nullptr;
@@ -320,7 +317,7 @@ void EditorOptionsDialog::OnOK()
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_LOGGING) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "EnableLog"s, checked);
-    SetupLogger(checked);
+    Logger::GetInstance()->SetupLogger(checked);
 
     checked = (IsDlgButtonChecked(IDC_ENABLE_SCRIPT_LOGGING) == BST_CHECKED);
     g_pvp->m_settings.SaveValue(Settings::Editor, "LogScriptOutput"s, checked);

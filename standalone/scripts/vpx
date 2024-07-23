@@ -1,0 +1,70 @@
+#!/bin/bash
+
+VPX_PATH="/Users/jmillard/vpinball/build"
+TABLES_PATH="/Users/jmillard/tables"
+
+SAVEIFS=$IFS
+IFS=$(echo -en "\n\b")
+
+insert_game() {
+    local element="$1"
+
+    local index=0
+    while [[ $index -lt ${#games[@]} && "${games[index]##*/}" < "${1##*/}" ]]; do
+       ((index++))
+    done
+
+    for ((i=${#games[@]}; i > index; i--)); do
+        games[i]=${games[i-1]}
+    done
+
+    games[index]=$element
+}
+
+while :; do
+   games=()
+
+   for file in `find "$TABLES_PATH" -type f -name "*.vpx"`
+   do
+      insert_game "$file"
+   done
+
+   if [[ "$(uname)" != "Darwin" ]]; then
+      games=("$VPX_PATH/assets/exampleTable.vpx" "${games[@]}")
+   else
+      games=("$VPX_PATH/VPinballX_GL.app/Contents/Resources/assets/exampleTable.vpx" "${games[@]}")
+   fi
+
+   printf "\nTables:\n\n"
+
+   for index in "${!games[@]}"; do
+      printf "%s\t%s\n" "$index" "${games[$index]##*/}"
+   done
+
+   printf "\nTable number (Q to quit)? "
+   read game_no
+
+   if [[ "$game_no" != "Q" ]] && [ "$game_no" != "q" ]; then
+      if [[ "$(uname)" != "Darwin" ]]; then
+         BIN_PATH="$VPX_PATH/VPinballX_GL"
+      else
+         BIN_PATH="$VPX_PATH/VPinballX_GL.app/Contents/MacOS/VPinballX_GL"
+      fi
+
+      if [[ "$*" == *"-extractvbs"* ]]; then
+         ${BIN_PATH} -extractvbs "${games[$game_no]}"
+      elif [[ "$*" == *"-povedit"* ]]; then
+         ${BIN_PATH} -DisableTrueFullscreen -povedit "${games[$game_no]}"
+      elif [[ "$*" == *"-pov"* ]]; then
+         ${BIN_PATH} -pov "${games[$game_no]}"
+      elif [[ "$*" == *"-fullscreen"* ]]; then
+         ${BIN_PATH} -play "${games[$game_no]}"
+      else
+         ${BIN_PATH} -DisableTrueFullscreen -play "${games[$game_no]}"
+      fi
+   else
+      exit
+   fi
+done
+
+IFS=$SAVEIFS
