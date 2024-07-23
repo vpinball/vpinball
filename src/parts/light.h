@@ -83,6 +83,13 @@ class Light :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    Light();
    virtual ~Light();
@@ -230,8 +237,8 @@ public:
    STDMETHOD(put_TransmissionScale)(/*[in]*/ float newVal);
    STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
-   STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_BlinkInterval)(/*[in]*/ long newVal);
+   STDMETHOD(get_BlinkInterval)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_BlinkInterval)(/*[in]*/ LONG newVal);
    STDMETHOD(get_BlinkPattern)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BlinkPattern)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_Y)(/*[out, retval]*/ float *pVal);
@@ -272,13 +279,13 @@ public:
    STDMETHOD(put_BulbHaloHeight)(/*[in]*/ float newVal);
    STDMETHOD(get_ShowReflectionOnBall)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ShowReflectionOnBall)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_Shadows)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Shadows)(/*[in]*/ long newVal);
-   STDMETHOD(get_Fader)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Fader)(/*[in]*/ long newVal);
+   STDMETHOD(get_Shadows)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Shadows)(/*[in]*/ LONG newVal);
+   STDMETHOD(get_Fader)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Fader)(/*[in]*/ LONG newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/long newVal, /*[in]*/float endState);
+   STDMETHOD(Duration)(/*[in]*/float startState, /*[in]*/LONG newVal, /*[in]*/float endState);
    STDMETHOD(get_FilamentTemperature)(/*[out, retval]*/ float *pVal);
    STDMETHOD(GetInPlayState)(/*[out, retval]*/ float* pVal);
    STDMETHOD(GetInPlayStateBool)(/*[out, retval]*/ VARIANT_BOOL* pVal);

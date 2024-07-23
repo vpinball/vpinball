@@ -230,7 +230,8 @@ void IEditable::SetName(const string& name)
     STARTUNDO
     // first update name in the codeview before updating it in the element itself
     pt->m_pcv->ReplaceName(GetScriptable(), newName);
-    lstrcpynW(GetScriptable()->m_wzName, newName, sizeof(oldName));
+    lstrcpynW(GetScriptable()->m_wzName, newName, sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0]));
+#ifndef __STANDALONE__
     g_pvp->GetLayersListDialog()->UpdateElement(this);
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
 
@@ -257,6 +258,7 @@ void IEditable::SetName(const string& name)
        else if (pedit->GetItemType() == ItemTypeEnum::eItemTrigger && ((Trigger *)pedit)->m_d.m_szSurface == oldName)
           ((Trigger *)pedit)->m_d.m_szSurface = name;
     }
+#endif
     STOPUNDO
 }
 
