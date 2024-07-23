@@ -1,0 +1,7 @@
+# Add SDL Game Controller DB entries here
+
+# Windows
+
+# Mac OS
+
+# Linux
