@@ -1,0 +1,2376 @@
+--- /Users/jmillard/wine/include/winternl.h	2024-10-01 07:40:19
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/include/winternl.h	2024-10-01 16:57:19
+@@ -20,8 +20,16 @@
+ 
+ #ifndef __WINE_WINTERNL_H
+ #define __WINE_WINTERNL_H
++
++#ifdef __STANDALONE__
++typedef void* EVENT_TYPE;
++typedef void* RTL_BALANCED_NODE;
++typedef void* TIMER_TYPE;
++#endif
+ 
++#ifndef __STANDALONE__
+ #include <ntdef.h>
++#endif
+ #include <windef.h>
+ 
+ #ifdef __cplusplus
+--- /Users/jmillard/wine/include/winnt.h	2024-10-01 07:40:19
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/include/winnt.h	2024-10-01 16:57:20
+@@ -430,10 +430,14 @@
+ 
+ /* Compile time assertion */
+ 
++#ifndef __STANDALONE__
+ #if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 201112L)
+ #define C_ASSERT(e) _Static_assert(e, #e)
+ #else
+ #define C_ASSERT(e) extern void __C_ASSERT__(int [(e)?1:-1])
++#endif
++#else
++#define C_ASSERT(e)
+ #endif
+ 
+ /* Eliminate Microsoft C/C++ compiler warning 4715 */
+@@ -2465,6 +2469,7 @@
+ 
+ struct _TEB;
+ 
++#ifndef __STANDALONE__
+ #ifdef WINE_UNIX_LIB
+ # ifdef __GNUC__
+ NTSYSAPI struct _TEB * WINAPI NtCurrentTeb(void) __attribute__((pure));
+@@ -2526,6 +2531,13 @@
+ }
+ #elif !defined(RC_INVOKED)
+ # error You must define NtCurrentTeb() for your architecture
++#endif
++#else
++static FORCEINLINE struct _TEB * WINAPI NtCurrentTeb(void)
++{
++    static char _teb[8192] = { 0 };
++    return (struct _TEB *)_teb;
++}
+ #endif
+ 
+ #ifdef NONAMELESSUNION
+--- /Users/jmillard/wine/include/windef.h	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/include/windef.h	2024-10-01 16:57:20
+@@ -21,6 +21,11 @@
+ #ifndef _WINDEF_
+ #define _WINDEF_
+ 
++#if defined(__STANDALONE__) && defined(__clang__)
++#pragma clang diagnostic ignored "-Wpragma-pack"
++#pragma clang diagnostic ignored "-Wformat"
++#endif
++
+ #ifndef WINVER
+ #define WINVER 0x0500
+ #endif
+@@ -61,6 +66,7 @@
+ #undef __fastcall
+ #undef __thiscall
+ 
++#ifndef __STANDALONE__
+ #ifdef WINE_UNIX_LIB
+ # define __stdcall
+ # define __cdecl
+@@ -103,6 +109,15 @@
+ #endif  /* WINE_UNIX_LIB */
+ 
+ #endif  /* _MSC_VER || __MINGW32__ */
++#endif
++
++#ifdef __STANDALONE__
++#undef __stdcall
++#define __stdcall
++
++#define __cdecl
++#define __ms_va_list va_list
++#endif
+ 
+ #if !defined(__ms_va_list) && !defined(WINE_UNIX_LIB)
+ # define __ms_va_list va_list
+@@ -437,6 +452,13 @@
+ #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE    ((DPI_AWARENESS_CONTEXT)-3)
+ #define DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 ((DPI_AWARENESS_CONTEXT)-4)
+ #define DPI_AWARENESS_CONTEXT_UNAWARE_GDISCALED    ((DPI_AWARENESS_CONTEXT)-5)
++
++#ifdef __STANDALONE__
++ #undef wcsncpy
++ #include <wchar.h>
++ int wcsicmp( LPCWSTR str1, LPCWSTR str2 );
++ int wcsnicmp( LPCWSTR str1, LPCWSTR str2, size_t n );
++#endif
+ 
+ #ifdef __cplusplus
+ }
+--- /Users/jmillard/wine/dlls/atl/atl.c	2024-10-01 07:40:14
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/atl/atl.c	2024-10-01 16:57:20
+@@ -967,6 +967,7 @@
+     return _ATL_VER;
+ }
+ 
++#ifndef __STANDALONE__
+ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
+ {
+     TRACE("(0x%p, %ld, %p)\n", hinstDLL, fdwReason, lpvReserved);
+@@ -983,3 +984,4 @@
+ 
+     return TRUE;
+ }
++#endif
+--- /Users/jmillard/wine/dlls/kernelbase/locale.c	2024-10-01 07:40:14
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/kernelbase/locale.c	2024-10-01 16:57:20
+@@ -595,6 +595,7 @@
+ 
+ static const NLS_LOCALE_LCID_INDEX *find_lcid_entry( LCID lcid )
+ {
++#ifndef __STANDALONE__
+     int min = 0, max = locale_table->nb_lcids - 1;
+ 
+     while (min <= max)
+@@ -604,6 +605,7 @@
+         else if (lcid > lcids_index[pos].id) min = pos + 1;
+         else return &lcids_index[pos];
+     }
++#endif
+     return NULL;
+ }
+ 
+@@ -661,6 +663,7 @@
+ 
+ static const struct sortguid *get_language_sort( const WCHAR *name )
+ {
++#ifndef __STANDALONE__
+     const NLS_LOCALE_LCNAME_INDEX *entry;
+     const NLS_LOCALE_DATA *locale;
+     WCHAR guidstr[39];
+@@ -712,6 +715,9 @@
+     if (!ret) ret = &sort.guids[0];
+     locale_sorts[entry - lcnames_index] = ret;
+     return ret;
++#else
++    return 0;
++#endif
+ }
+ 
+ 
+@@ -1628,7 +1634,11 @@
+ 
+     if (id != CAL_GREGORIAN && type != CAL_ITWODIGITYEARMAX)
+     {
++#ifndef __STANDALONE__
+         const USHORT *ids = locale_strings + locale->scalendartype;
++#else
++        const USHORT *ids = (const USHORT *)(locale_strings + locale->scalendartype);
++#endif
+         for (i = 0; i < ids[0]; i++) if (ids[1 + i] == id) break;
+         if (i == ids[0]) goto invalid;
+     }
+@@ -2120,7 +2130,11 @@
+     if (pos >> 13)
+     {
+         if (get_char_props( norm_info, ch ) != 0xbf) return NULL;
++#ifndef __STANDALONE__
+         ret = (const USHORT *)norm_info + norm_info->decomp_seq + (pos & 0x1fff);
++#else
++        ret = (const WCHAR *)((const USHORT *)norm_info + norm_info->decomp_seq + (pos & 0x1fff));
++#endif
+         len = pos >> 13;
+     }
+     else
+@@ -2135,7 +2149,11 @@
+         for ( ; pos < end; pos++)
+         {
+             if (pairs[pos].src != (WCHAR)ch) continue;
++#ifndef __STANDALONE__
+             ret = (const USHORT *)norm_info + norm_info->decomp_seq + (pairs[pos].dst & 0x1fff);
++#else
++            ret = (const WCHAR *)((const USHORT *)norm_info + norm_info->decomp_seq + (pairs[pos].dst & 0x1fff));
++#endif
+             len = pairs[pos].dst >> 13;
+             break;
+         }
+@@ -2152,7 +2170,11 @@
+ static WCHAR compose_chars( WCHAR ch1, WCHAR ch2 )
+ {
+     const USHORT *table = (const USHORT *)norm_info + norm_info->comp_hash;
++#ifndef __STANDALONE__
+     const WCHAR *chars = (const USHORT *)norm_info + norm_info->comp_seq;
++#else
++    const WCHAR *chars = (const WCHAR *)((const USHORT *)norm_info + norm_info->comp_seq);
++#endif
+     unsigned int hash, start, end, i;
+     WCHAR ch[3];
+ 
+@@ -2197,6 +2219,11 @@
+ {
+     static const CPTABLEINFO utf7_cpinfo = { CP_UTF7, 5, '?', 0xfffd, '?', '?' };
+     static const CPTABLEINFO utf8_cpinfo = { CP_UTF8, 4, '?', 0xfffd, '?', '?' };
++
++#ifdef __STANDALONE__
++    ansi_cpinfo = utf8_cpinfo;
++#endif
++
+     unsigned int i;
+     USHORT *ptr;
+     SIZE_T size;
+@@ -3830,6 +3857,7 @@
+ static int compare_string( const struct sortguid *sortid, DWORD flags,
+                            const WCHAR *src1, int srclen1, const WCHAR *src2, int srclen2 )
+ {
++#ifndef __STANDALONE__
+     struct sortkey_state s1;
+     struct sortkey_state s2;
+     BYTE primary1[32];
+@@ -3890,6 +3918,12 @@
+     free_sortkey_state( &s1 );
+     free_sortkey_state( &s2 );
+     return ret;
++#else
++    if (flags & NORM_IGNORECASE)
++        return wcsicmp(src1, src2);
++    else
++        return wcscmp(src1, src2);
++#endif
+ }
+ 
+ 
+@@ -4332,7 +4366,11 @@
+     if (id == ENUM_ALL_CALENDARS)
+     {
+         count = locale_strings[locale->scalendartype];
++#ifndef __STANDALONE__
+         calendars = locale_strings + locale->scalendartype + 1;
++#else
++        calendars = (const USHORT *)(locale_strings + locale->scalendartype + 1);
++#endif
+     }
+     else if (id <= CAL_UMALQURA)
+     {
+@@ -4410,7 +4448,11 @@
+         return FALSE;
+     }
+ 
++#ifndef __STANDALONE__
+     calendars = locale_strings + locale->scalendartype;
++#else
++    calendars = (const USHORT *)(locale_strings + locale->scalendartype);
++#endif
+ 
+     switch (flags & ~LOCALE_USE_CP_ACP)
+     {
+@@ -4747,7 +4789,9 @@
+         return 0;
+     }
+ 
++#ifndef __STANDALONE__
+     if (!(sortid = get_language_sort( locale ))) return 0;
++#endif
+ 
+     if (!str1 || !str2)
+     {
+@@ -4865,6 +4909,7 @@
+     case LOCALE_CUSTOM_UI_DEFAULT:
+         break;
+     default:
++#ifndef __STANDALONE__
+         if (lcid == user_lcid || lcid == system_lcid) break;
+         if (!(entry = find_lcid_entry( lcid )))
+         {
+@@ -4873,6 +4918,7 @@
+             return 0;
+         }
+         locale = locale_strings + entry->name + 1;
++#endif
+         break;
+     }
+ 
+@@ -5792,6 +5838,7 @@
+ BOOL WINAPI DECLSPEC_HOTPATCH GetFileMUIInfo( DWORD flags, const WCHAR *path,
+                                               FILEMUIINFO *info, DWORD *size )
+ {
++#ifndef __STANDALONE__
+     DWORD off, mui_size, type = MUI_FILETYPE_NOT_LANGUAGE_NEUTRAL;
+     struct mui_resource *mui = NULL;
+     HMODULE hmod;
+@@ -5946,6 +5993,9 @@
+ 
+     FreeLibrary( hmod );
+     return TRUE;
++#else
++    return FALSE;
++#endif
+ }
+ 
+ 
+--- /Users/jmillard/wine/dlls/scrrun/dictionary.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/scrrun/dictionary.c	2024-10-01 16:57:20
+@@ -20,6 +20,9 @@
+ 
+ #include <stdarg.h>
+ #include <math.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "windef.h"
+ #include "winbase.h"
+\ No newline at end of file
+@@ -188,10 +191,12 @@
+     {
+         return hash == pair->hash && numeric_key_eq(key, &pair->key);
+     }
++#ifdef __STANDALONE__
+     else if (V_VT(&pair->key) == VT_EMPTY || V_VT(&pair->key) == VT_NULL)
+     {
+         return V_VT(&pair->key) == V_VT(key);
+     }
++#endif
+     else
+     {
+         WARN("Unexpected key type %#x.\n", V_VT(key));
+\ No newline at end of file
+@@ -521,7 +526,11 @@
+     return get_typeinfo(IDictionary_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI dictionary_GetIDsOfNames(IDictionary *iface, REFIID riid, LPOLESTR *rgszNames,
++                UINT cNames, LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI dictionary_GetIDsOfNames(IDictionary *iface, REFIID riid, LPOLESTR *rgszNames,
+                 UINT cNames, LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -538,7 +547,13 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI dictionary_Invoke(IDictionary *iface, DISPID dispIdMember, REFIID riid,
++                LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
+ static HRESULT WINAPI dictionary_Invoke(IDictionary *iface, DISPID dispIdMember, REFIID riid,
+                 LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult,
+                 EXCEPINFO *pExcepInfo, UINT *puArgErr)
+\ No newline at end of file
+@@ -558,6 +573,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI dictionary_putref_Item(IDictionary *iface, VARIANT *key, VARIANT *item)
+ {
+\ No newline at end of file
+@@ -988,3 +1004,7 @@
+ 
+     return S_OK;
+ }
++
++#ifdef __STANDALONE__
++#include "dictionary_proxy.c"
++#endif
+\ No newline at end of file
+--- /Users/jmillard/wine/dlls/scrrun/filesystem.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/scrrun/filesystem.c	2024-10-01 16:57:20
+@@ -22,6 +22,9 @@
+ #include <limits.h>
+ #include <assert.h>
+ #include <wchar.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "windef.h"
+ #include "winbase.h"
+\ No newline at end of file
+@@ -349,6 +352,11 @@
+     return get_typeinfo(ITextStream_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI textstream_GetIDsOfNames(ITextStream *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
+ static HRESULT WINAPI textstream_GetIDsOfNames(ITextStream *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+\ No newline at end of file
+@@ -367,7 +375,14 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI textstream_Invoke(ITextStream *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
+ static HRESULT WINAPI textstream_Invoke(ITextStream *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
+\ No newline at end of file
+@@ -389,6 +404,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI textstream_get_Line(ITextStream *iface, LONG *line)
+ {
+\ No newline at end of file
+@@ -1044,8 +1060,13 @@
+     return get_typeinfo(IDrive_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI drive_GetIDsOfNames(IDrive *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI drive_GetIDsOfNames(IDrive *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -1062,7 +1083,14 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI drive_Invoke(IDrive *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
+ static HRESULT WINAPI drive_Invoke(IDrive *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
+\ No newline at end of file
+@@ -1084,6 +1112,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI drive_get_Path(IDrive *iface, BSTR *path)
+ {
+\ No newline at end of file
+@@ -1877,8 +1906,13 @@
+     return get_typeinfo(IFolderCollection_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI foldercoll_GetIDsOfNames(IFolderCollection *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI foldercoll_GetIDsOfNames(IFolderCollection *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -1895,10 +1929,17 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI foldercoll_Invoke(IFolderCollection *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else                                   
++static HRESULT WINAPI foldercoll_Invoke(IFolderCollection *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
+                                       EXCEPINFO *pExcepInfo, UINT *puArgErr)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -1917,6 +1958,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI foldercoll_Add(IFolderCollection *iface, BSTR name, IFolder **folder)
+ {
+\ No newline at end of file
+@@ -2269,8 +2311,13 @@
+     return get_typeinfo(IDriveCollection_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI drivecoll_GetIDsOfNames(IDriveCollection *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI drivecoll_GetIDsOfNames(IDriveCollection *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -2287,10 +2334,17 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI drivecoll_Invoke(IDriveCollection *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
++static HRESULT WINAPI drivecoll_Invoke(IDriveCollection *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
+                                       EXCEPINFO *pExcepInfo, UINT *puArgErr)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -2309,6 +2363,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI drivecoll_get_Item(IDriveCollection *iface, VARIANT key, IDrive **drive)
+ {
+\ No newline at end of file
+@@ -2443,6 +2498,11 @@
+     return get_typeinfo(IFolder_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI folder_GetIDsOfNames(IFolder *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
+ static HRESULT WINAPI folder_GetIDsOfNames(IFolder *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+\ No newline at end of file
+@@ -2461,7 +2521,14 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
++static HRESULT WINAPI folder_Invoke(IFolder *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
+ static HRESULT WINAPI folder_Invoke(IFolder *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
+\ No newline at end of file
+@@ -2483,6 +2550,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI folder_get_Path(IFolder *iface, BSTR *path)
+ {
+\ No newline at end of file
+@@ -2820,7 +2888,11 @@
+     return get_typeinfo(IFile_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI file_GetIDsOfNames(IFile *iface, REFIID riid,
++        LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI file_GetIDsOfNames(IFile *iface, REFIID riid,
+         LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -2836,8 +2908,13 @@
+     }
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI file_Invoke(IFile *iface, DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
++        DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
++static HRESULT WINAPI file_Invoke(IFile *iface, DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
+         DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -2855,6 +2932,7 @@
+     }
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI file_get_Path(IFile *iface, BSTR *path)
+ {
+\ No newline at end of file
+@@ -3215,8 +3293,13 @@
+     return get_typeinfo(IFileSystem3_tid, ppTInfo);
+ }
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI filesys_GetIDsOfNames(IFileSystem3 *iface, REFIID riid,
+                                         LPOLESTR *rgszNames, UINT cNames,
++                                        LCID lcid, DISPID *rgDispId);
++#else
++static HRESULT WINAPI filesys_GetIDsOfNames(IFileSystem3 *iface, REFIID riid,
++                                        LPOLESTR *rgszNames, UINT cNames,
+                                         LCID lcid, DISPID *rgDispId)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -3233,10 +3316,17 @@
+ 
+     return hr;
+ }
++#endif
+ 
++#ifdef __STANDALONE__
+ static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
+                                       REFIID riid, LCID lcid, WORD wFlags,
+                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
++                                      EXCEPINFO *pExcepInfo, UINT *puArgErr);
++#else
++static HRESULT WINAPI filesys_Invoke(IFileSystem3 *iface, DISPID dispIdMember,
++                                      REFIID riid, LCID lcid, WORD wFlags,
++                                      DISPPARAMS *pDispParams, VARIANT *pVarResult,
+                                       EXCEPINFO *pExcepInfo, UINT *puArgErr)
+ {
+     ITypeInfo *typeinfo;
+\ No newline at end of file
+@@ -3255,6 +3345,7 @@
+ 
+     return hr;
+ }
++#endif
+ 
+ static HRESULT WINAPI filesys_get_Drives(IFileSystem3 *iface, IDriveCollection **ppdrives)
+ {
+\ No newline at end of file
+@@ -4179,3 +4270,7 @@
+     init_classinfo(&CLSID_FileSystemObject, (IUnknown *)&filesystem.IFileSystem3_iface, &filesystem.classinfo);
+     return IFileSystem3_QueryInterface(&filesystem.IFileSystem3_iface, riid, ppv);
+ }
++
++#ifdef __STANDALONE__
++#include "filesystem_proxy.c"
++#endif
+\ No newline at end of file
+--- /Users/jmillard/wine/dlls/scrrun/scrrun.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/scrrun/scrrun.c	2024-10-01 16:57:20
+@@ -234,6 +234,7 @@
+     classinfo->guid = guid;
+ }
+ 
++#ifndef __STANDALONE__
+ BOOL WINAPI DllMain( HINSTANCE hinst, DWORD reason, LPVOID reserved )
+ {
+     TRACE("%p, %lu, %p\n", hinst, reason, reserved);
+@@ -250,6 +251,7 @@
+     }
+     return TRUE;
+ }
++#endif
+ 
+ /***********************************************************************
+  *      DllGetClassObject (scrrun.@)
+--- /Users/jmillard/wine/dlls/vbscript/compile.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/compile.c	2024-10-01 16:57:20
+@@ -1074,7 +1074,9 @@
+         break;
+     case EXPR_CALL:
+         call_expr = (call_expression_t*)left;
++#ifndef __STANDALONE__
+         assert(call_expr->call_expr->type == EXPR_MEMBER);
++#endif
+         member_expr = (member_expression_t*)call_expr->call_expr;
+         break;
+     default:
+@@ -1898,14 +1900,22 @@
+     for(i = 0; i < var_cnt; i++) {
+         if(lookup_script_identifier(ctx, script, vars[i].name)) {
+             FIXME("%s: redefined\n", debugstr_w(vars[i].name));
++#ifndef __STANDALONE__
+             return E_FAIL;
++#else
++        external_log_info("%s redefined", debugstr_w(vars[i].name));
++#endif
+         }
+     }
+ 
+     for(class = ctx->code->classes; class; class = class->next) {
+         if(lookup_script_identifier(ctx, script, class->name)) {
+             FIXME("%s: redefined\n", debugstr_w(class->name));
++#ifndef __STANDALONE__
+             return E_FAIL;
++#else
++        external_log_info("%s redefined", debugstr_w(class->name));
++#endif
+         }
+     }
+ 
+--- /Users/jmillard/wine/dlls/vbscript/vbdisp.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/vbdisp.c	2024-10-01 16:57:20
+@@ -128,7 +128,11 @@
+                 return DISP_E_MEMBERNOTFOUND; /* That's what tests show */
+             }
+ 
++#ifndef __STANDALONE__
+             if (FAILED(hres = array_access(V_ARRAY(v), dp, &v)))
++#else
++            if (FAILED(hres = array_access(!V_ISBYREF(v) ? V_ARRAY(v) : *V_ARRAYREF(v), dp, &v)))
++#endif
+             {
+                 WARN("failed to access array element\n");
+                 return hres;
+@@ -149,6 +153,31 @@
+             return hres;
+ 
+         if(arg_cnt(dp)) {
++#ifdef __STANDALONE__
++            if (V_ISARRAY(v)) {
++                 SAFEARRAY *array = NULL;
++
++                 if (V_VT(v) == (VT_ARRAY|VT_BYREF|VT_VARIANT)) {
++                     array = *V_ARRAYREF(v);
++                 }
++                 else if (V_VT(v) == (VT_ARRAY|VT_VARIANT)) {
++                     array = V_ARRAY(v);
++                 }
++
++                 if(!array) {
++                    FIXME("null array\n");
++                    return E_FAIL;
++                 }
++
++                 hres = array_access(array, dp, &v);
++                 if(FAILED(hres))
++                     return hres;
++
++                 hres = assign_value_script_ctx(ctx, v, dp->rgvarg, flags);
++
++                 return hres;
++            }
++#endif
+             FIXME("Arguments not supported\n");
+             return E_NOTIMPL;
+         }
+@@ -227,6 +256,12 @@
+             }
+ 
+             func = This->desc->funcs[id].entries[V_VT(dp.rgvarg) == VT_DISPATCH ? VBDISP_SET : VBDISP_LET];
++#ifdef __STANDALONE__
++            if (!func) {
++                func = This->desc->funcs[id].entries[VBDISP_LET];
++                needs_release = FALSE;
++            }
++#endif
+             if(!func) {
+                 FIXME("no letter/setter\n");
+                 if(dp.rgvarg != buf)
+@@ -291,8 +326,194 @@
+ 
+     for(i=0; i < This->desc->prop_cnt; i++)
+         VariantClear(This->props+i);
++}
++
++#ifdef __STANDALONE__
++typedef struct {
++    ITypeInfo ITypeInfo_iface;
++    LONG ref;
++
++    vbdisp_t *disp;
++} VBDispTypeInfo;
++
++static inline VBDispTypeInfo *VBDispTypeInfo_from_ITypeInfo(ITypeInfo *iface)
++{
++    return CONTAINING_RECORD(iface, VBDispTypeInfo, ITypeInfo_iface);
++}
++
++static HRESULT WINAPI VBDispTypeInfo_QueryInterface(ITypeInfo *iface, REFIID riid, void **ppv)
++{
++    VBDispTypeInfo *This = VBDispTypeInfo_from_ITypeInfo(iface);
++
++    if (IsEqualGUID(&IID_IUnknown, riid) || IsEqualGUID(&IID_ITypeInfo, riid))
++        *ppv = &This->ITypeInfo_iface;
++    else
++    {
++        WARN("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
++        *ppv = NULL;
++        return E_NOINTERFACE;
++    }
++
++    TRACE("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
++    IUnknown_AddRef((IUnknown*)*ppv);
++    return S_OK;
++}
++
++static ULONG WINAPI VBDispTypeInfo_AddRef(ITypeInfo *iface)
++{
++    VBDispTypeInfo *This = VBDispTypeInfo_from_ITypeInfo(iface);
++    LONG ref = InterlockedIncrement(&This->ref);
++
++    TRACE("(%p) ref=%ld\n", This, ref);
++
++    return ref;
++}
++
++static ULONG WINAPI VBDispTypeInfo_Release(ITypeInfo *iface)
++{
++    VBDispTypeInfo *This = VBDispTypeInfo_from_ITypeInfo(iface);
++    LONG ref = InterlockedDecrement(&This->ref);
++    UINT i;
++
++    TRACE("(%p) ref=%ld\n", This, ref);
++
++    if (!ref)
++    {
++        IDispatchEx_Release(&This->disp->IDispatchEx_iface);
++        free(This);
++    }
++    return ref;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetTypeAttr(ITypeInfo *iface, TYPEATTR **ppTypeAttr)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetTypeComp(ITypeInfo *iface, ITypeComp **ppTComp)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetFuncDesc(ITypeInfo *iface, UINT index, FUNCDESC **ppFuncDesc)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetVarDesc(ITypeInfo *iface, UINT index, VARDESC **ppVarDesc)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetNames(ITypeInfo *iface, MEMBERID memid, BSTR *rgBstrNames,
++        UINT cMaxNames, UINT *pcNames)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetRefTypeOfImplType(ITypeInfo *iface, UINT index, HREFTYPE *pRefType)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetImplTypeFlags(ITypeInfo *iface, UINT index, INT *pImplTypeFlags)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetIDsOfNames(ITypeInfo *iface, LPOLESTR *rgszNames, UINT cNames,
++        MEMBERID *pMemId)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_Invoke(ITypeInfo *iface, PVOID pvInstance, MEMBERID memid, WORD wFlags,
++        DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetDocumentation(ITypeInfo *iface, MEMBERID memid, BSTR *pBstrName,
++        BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile)
++{
++    VBDispTypeInfo *This = VBDispTypeInfo_from_ITypeInfo(iface);
++
++    if (memid == MEMBERID_NIL) {
++        *pBstrName = SysAllocString(This->disp->desc->name);
++        return S_OK;
++    }
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetDllEntry(ITypeInfo *iface, MEMBERID memid, INVOKEKIND invKind,
++        BSTR *pBstrDllName, BSTR *pBstrName, WORD *pwOrdinal)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetRefTypeInfo(ITypeInfo *iface, HREFTYPE hRefType, ITypeInfo **ppTInfo)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_AddressOfMember(ITypeInfo *iface, MEMBERID memid, INVOKEKIND invKind, PVOID *ppv)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_CreateInstance(ITypeInfo *iface, IUnknown *pUnkOuter, REFIID riid, PVOID *ppvObj)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetMops(ITypeInfo *iface, MEMBERID memid, BSTR *pBstrMops)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI VBDispTypeInfo_GetContainingTypeLib(ITypeInfo *iface, ITypeLib **ppTLib, UINT *pIndex)
++{
++    return E_NOTIMPL;
+ }
+ 
++static void WINAPI VBDispTypeInfo_ReleaseTypeAttr(ITypeInfo *iface, TYPEATTR *pTypeAttr)
++{
++}
++
++static void WINAPI VBDispTypeInfo_ReleaseFuncDesc(ITypeInfo *iface, FUNCDESC *pFuncDesc)
++{
++}
++
++static void WINAPI VBDispTypeInfo_ReleaseVarDesc(ITypeInfo *iface, VARDESC *pVarDesc)
++{
++}
++
++static const ITypeInfoVtbl VBDispTypeInfoVtbl = {
++    VBDispTypeInfo_QueryInterface,
++    VBDispTypeInfo_AddRef,
++    VBDispTypeInfo_Release,
++    VBDispTypeInfo_GetTypeAttr,
++    VBDispTypeInfo_GetTypeComp,
++    VBDispTypeInfo_GetFuncDesc,
++    VBDispTypeInfo_GetVarDesc,
++    VBDispTypeInfo_GetNames,
++    VBDispTypeInfo_GetRefTypeOfImplType,
++    VBDispTypeInfo_GetImplTypeFlags,
++    VBDispTypeInfo_GetIDsOfNames,
++    VBDispTypeInfo_Invoke,
++    VBDispTypeInfo_GetDocumentation,
++    VBDispTypeInfo_GetDllEntry,
++    VBDispTypeInfo_GetRefTypeInfo,
++    VBDispTypeInfo_AddressOfMember,
++    VBDispTypeInfo_CreateInstance,
++    VBDispTypeInfo_GetMops,
++    VBDispTypeInfo_GetContainingTypeLib,
++    VBDispTypeInfo_ReleaseTypeAttr,
++    VBDispTypeInfo_ReleaseFuncDesc,
++    VBDispTypeInfo_ReleaseVarDesc
++};
++#endif
++
+ static inline vbdisp_t *impl_from_IDispatchEx(IDispatchEx *iface)
+ {
+     return CONTAINING_RECORD(iface, vbdisp_t, IDispatchEx_iface);
+@@ -362,8 +583,29 @@
+                                               ITypeInfo **ppTInfo)
+ {
+     vbdisp_t *This = impl_from_IDispatchEx(iface);
++#ifndef __STANDALONE__
+     FIXME("(%p)->(%u %lu %p)\n", This, iTInfo, lcid, ppTInfo);
+     return E_NOTIMPL;
++#else
++    VBDispTypeInfo *type_info;
++
++    TRACE("(%p)->(%u %lu %p)\n", This, iTInfo, lcid);
++
++    if(iTInfo)
++        return DISP_E_BADINDEX;
++
++    if(!(type_info = malloc(sizeof(*type_info))))
++        return E_OUTOFMEMORY;
++
++    type_info->ITypeInfo_iface.lpVtbl = &VBDispTypeInfoVtbl;
++    type_info->ref = 1;
++    type_info->disp = This;
++
++    IDispatchEx_AddRef(&This->IDispatchEx_iface);
++
++    *ppTInfo = &type_info->ITypeInfo_iface;
++    return S_OK;
++#endif
+ }
+ 
+ static HRESULT WINAPI DispatchEx_GetIDsOfNames(IDispatchEx *iface, REFIID riid,
+--- /Users/jmillard/wine/dlls/vbscript/vbscript.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.c	2024-10-01 16:57:20
+@@ -91,7 +91,11 @@
+         || This->state == SCRIPTSTATE_DISCONNECTED;
+ }
+ 
++#ifndef __STANDALONE__
+ static HRESULT exec_global_code(script_ctx_t *ctx, vbscode_t *code, VARIANT *res)
++#else
++HRESULT exec_global_code(script_ctx_t *ctx, vbscode_t *code, VARIANT *res)
++#endif
+ {
+     ScriptDisp *obj = ctx->script_obj;
+     function_t *func_iter, **new_funcs;
+--- /Users/jmillard/wine/dlls/vbscript/lex.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/lex.c	2024-10-01 16:57:20
+@@ -19,6 +19,9 @@
+ #include <assert.h>
+ #include <limits.h>
+ #include <math.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "vbscript.h"
+ #include "parse.h"
+--- /Users/jmillard/wine/dlls/vbscript/interp.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/interp.c	2024-10-01 16:57:20
+@@ -629,6 +629,12 @@
+             return variant_call(ctx, ref.u.v, arg_cnt, res);
+ 
+         if(!res) {
++#ifdef __STANDALONE__
++            if (V_VT(ref.u.v) == VT_DISPATCH) {
++                vbstack_to_dp(ctx, arg_cnt, FALSE, &dp);
++                return disp_call(ctx->script, V_DISPATCH(ref.u.v), DISPID_VALUE, &dp, res);
++            }
++#endif
+             FIXME("REF_VAR no res\n");
+             return E_NOTIMPL;
+         }
+@@ -649,12 +655,30 @@
+             return hres;
+         break;
+     case REF_OBJ:
++#ifndef __STANDALONE__
+         if(arg_cnt) {
+             FIXME("arguments on object\n");
+             return E_NOTIMPL;
+         }
++#endif
+ 
+         if(res) {
++#ifdef __STANDALONE__
++            if (arg_cnt) {
++                vbstack_to_dp(ctx, arg_cnt, FALSE, &dp);
++
++                hres = IDispatch_Invoke(ref.u.obj, DISPID_VALUE, &IID_NULL,
++                        LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &dp, res,
++                            NULL, NULL);
++
++                if(FAILED(hres))
++                    return hres;
++
++                IDispatch_AddRef(V_DISPATCH(res));
++
++                break;
++            }
++#endif
+             IDispatch_AddRef(ref.u.obj);
+             V_VT(res) = VT_DISPATCH;
+             V_DISPATCH(res) = ref.u.obj;
+@@ -809,6 +833,34 @@
+     return stack_push(ctx, &v);
+ }
+ 
++#ifdef __STANDALONE__
++HRESULT assign_value_script_ctx(script_ctx_t *ctx, VARIANT *dst, VARIANT *src, WORD flags)
++{
++    VARIANT value;
++    HRESULT hres;
++
++    V_VT(&value) = VT_EMPTY;
++    hres = VariantCopyInd(&value, src);
++    if(FAILED(hres))
++        return hres;
++
++    if(V_VT(&value) == VT_DISPATCH && !(flags & DISPATCH_PROPERTYPUTREF)) {
++        IDispatch *disp = V_DISPATCH(&value);
++
++        V_VT(&value) = VT_EMPTY;
++        hres = get_disp_value(ctx, disp, &value);
++        if(disp)
++            IDispatch_Release(disp);
++        if(FAILED(hres))
++            return hres;
++    }
++
++    VariantClear(dst);
++    *dst = value;
++    return S_OK;
++}
++#endif
++
+ static HRESULT assign_value(exec_ctx_t *ctx, VARIANT *dst, VARIANT *src, WORD flags)
+ {
+     VARIANT value;
+@@ -1317,8 +1369,13 @@
+     }
+ 
+     if(ref.type != REF_VAR) {
++#ifndef __STANDALONE__
+         FIXME("got ref.type = %d\n", ref.type);
+         return E_FAIL;
++#else
++        ref.type = REF_VAR;
++        hres = add_dynamic_var(ctx, identifier, FALSE, &ref.u.v);
++#endif
+     }
+ 
+     v = ref.u.v;
+@@ -1327,11 +1384,13 @@
+         v = V_VARIANTREF(v);
+     }
+ 
++#ifndef __STANDALONE__
+     if(V_ISARRAY(v)) {
+         SAFEARRAY *sa = V_ISBYREF(v) ? *V_ARRAYREF(v) : V_ARRAY(v);
+         if(sa->fFeatures & FADF_FIXEDSIZE)
+             return MAKE_VBSERROR(VBSE_ARRAY_LOCKED);
+     }
++#endif
+ 
+     hres = array_bounds_from_stack(ctx, dim_cnt, &bounds);
+     if(FAILED(hres))
+@@ -1664,6 +1723,20 @@
+     }else {
+         named_item_t *item;
+         disp = NULL;
++#ifdef __STANDALONE__
++        if (ctx->func->name != NULL) {
++            wchar_t* ptr = wcsrchr(ctx->func->name, L'_');
++            if (ptr != NULL) {
++                wchar_t name[255];
++                wcscpy(name, ctx->func->name);
++                name[wcslen(ctx->func->name) - wcslen(ptr)] = L'\0';
++                named_item_t* item = lookup_named_item(ctx->script, name, SCRIPTITEM_ISVISIBLE);
++                if (item)
++                    disp = item->disp;
++            }
++        }
++        if (!disp)
++#endif
+         LIST_FOR_EACH_ENTRY(item, &ctx->script->named_items, named_item_t, entry) {
+             if(!(item->flags & SCRIPTITEM_GLOBALMEMBERS)) continue;
+             disp = item->disp;
+--- /Users/jmillard/wine/dlls/vbscript/regexp.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/regexp.c	2024-10-01 16:57:20
+@@ -32,6 +32,9 @@
+  */
+ 
+ #include <assert.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "vbscript.h"
+ #include "regexp.h"
+--- /Users/jmillard/wine/dlls/vbscript/vbscript.h	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.h	2024-10-01 16:57:20
+@@ -32,6 +32,12 @@
+ #include "vbscript_defs.h"
+ 
+ #include "wine/list.h"
++
++#ifdef __STANDALONE__
++HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
++void external_log_info(const char* format, ...);
++void external_log_debug(const char* format, ...);
++#endif
+ 
+ typedef struct {
+     void **blocks;
+@@ -390,6 +396,12 @@
+ HRESULT compile_script(script_ctx_t*,const WCHAR*,const WCHAR*,const WCHAR*,DWORD_PTR,unsigned,DWORD,vbscode_t**);
+ HRESULT compile_procedure(script_ctx_t*,const WCHAR*,const WCHAR*,const WCHAR*,DWORD_PTR,unsigned,DWORD,class_desc_t**);
+ HRESULT exec_script(script_ctx_t*,BOOL,function_t*,vbdisp_t*,DISPPARAMS*,VARIANT*);
++
++#ifdef __STANDALONE__
++HRESULT exec_global_code(script_ctx_t *ctx, vbscode_t *code, VARIANT *res);
++HRESULT assign_value_script_ctx(script_ctx_t *ctx, VARIANT *dst, VARIANT *src, WORD flags);
++#endif
++
+ void release_dynamic_var(dynamic_var_t*);
+ named_item_t *lookup_named_item(script_ctx_t*,const WCHAR*,unsigned);
+ void release_named_item(named_item_t*);
+--- /Users/jmillard/wine/dlls/vbscript/vbscript_main.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/vbscript_main.c	2024-10-01 16:57:20
+@@ -39,7 +39,115 @@
+ BSTR get_vbscript_string(int id)
+ {
+     WCHAR buf[512];
++#ifndef __STANDALONE__
+     if(!LoadStringW(vbscript_hinstance, id, buf, ARRAY_SIZE(buf))) return NULL;
++#else
++    switch (id) {
++        case VBSE_ILLEGAL_FUNC_CALL:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_ILLEGAL_FUNC_CALL");
++            break;
++        case VBSE_OVERFLOW:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OVERFLOW");
++            break;
++        case VBSE_OUT_OF_MEMORY:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OUT_OF_MEMORY");
++            break;
++        case VBSE_OUT_OF_BOUNDS:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OUT_OF_BOUNDS");
++            break;
++        case VBSE_ARRAY_LOCKED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_ARRAY_LOCKED");
++            break;
++        case VBSE_TYPE_MISMATCH:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_TYPE_MISMATCH");
++            break;
++        case VBSE_FILE_NOT_FOUND:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_FILE_NOT_FOUND");
++            break;
++        case VBSE_IO_ERROR:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_IO_ERROR");
++            break;
++        case VBSE_FILE_ALREADY_EXISTS:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_FILE_ALREADY_EXISTS");
++            break;
++        case VBSE_DISK_FULL:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_DISK_FULL");
++            break;
++        case VBSE_TOO_MANY_FILES:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_TOO_MANY_FILES");
++            break;
++        case VBSE_PERMISSION_DENIED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_PERMISSION_DENIED");
++            break;
++        case VBSE_PATH_FILE_ACCESS:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_PATH_FILE_ACCESS");
++            break;
++        case VBSE_PATH_NOT_FOUND:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_PATH_NOT_FOUND");
++            break;
++        case VBSE_OBJECT_VARIABLE_NOT_SET:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OBJECT_VARIABLE_NOT_SET");
++            break;
++        case VBSE_ILLEGAL_NULL_USE:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_ILLEGAL_NULL_USE");
++            break;
++        case VBSE_CANT_CREATE_TMP_FILE:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_CANT_CREATE_TMP_FILE");
++            break;
++        case VBSE_CANT_CREATE_OBJECT:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_CANT_CREATE_OBJECT");
++            break;
++        case VBSE_OLE_NOT_SUPPORTED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OLE_NOT_SUPPORTED");
++            break;
++        case VBSE_OLE_FILE_NOT_FOUND:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OLE_FILE_NOT_FOUND");
++            break;
++        case VBSE_OLE_NO_PROP_OR_METHOD:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_OLE_NO_PROP_OR_METHOD");
++            break;
++        case VBSE_ACTION_NOT_SUPPORTED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_ACTION_NOT_SUPPORTED");
++            break;
++        case VBSE_NAMED_ARGS_NOT_SUPPORTED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_NAMED_ARGS_NOT_SUPPORTED");
++            break;
++        case VBSE_LOCALE_SETTING_NOT_SUPPORTED:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_LOCALE_SETTING_NOT_SUPPORTED");
++            break;
++        case VBSE_NAMED_PARAM_NOT_FOUND:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_NAMED_PARAM_NOT_FOUND");
++            break;
++        case VBSE_PARAMETER_NOT_OPTIONAL:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_PARAMETER_NOT_OPTIONAL");
++            break;
++        case VBSE_FUNC_ARITY_MISMATCH:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_FUNC_ARITY_MISMATCH");
++            break;
++        case VBSE_NOT_ENUM:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_NOT_ENUM");
++            break;
++        case VBSE_INVALID_DLL_FUNCTION_NAME:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_INVALID_DLL_FUNCTION_NAME");
++            break;
++        case VBSE_INVALID_TYPELIB_VARIABLE:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_INVALID_TYPELIB_VARIABLE");
++            break;
++        case VBSE_SERVER_NOT_FOUND:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_SERVER_NOT_FOUND");
++            break;
++        case VBSE_UNQUALIFIED_REFERENCE:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBSE_UNQUALIFIED_REFERENCE");
++            break;
++        case VBS_UNKNOWN_RUNTIME_ERROR:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBS_UNKNOWN_RUNTIME_ERROR");
++            break;
++        default:
++            swprintf(buf, ARRAY_SIZE(buf), L"VBS_UNKNOWN_ERROR (%d)", id);
++            break;
++        break;
++    }
++#endif
+     return SysAllocString(buf);
+ }
+ 
+@@ -258,6 +366,7 @@
+ /******************************************************************
+  *              DllMain (vbscript.@)
+  */
++#ifndef __STANDALONE__
+ BOOL WINAPI DllMain(HINSTANCE hInstDLL, DWORD fdwReason, LPVOID lpv)
+ {
+     TRACE("(%p %ld %p)\n", hInstDLL, fdwReason, lpv);
+@@ -276,10 +385,12 @@
+ 
+     return TRUE;
+ }
++#endif
+ 
+ /***********************************************************************
+  *		DllGetClassObject	(vbscript.@)
+  */
++#ifndef __STANDALONE__
+ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID *ppv)
+ {
+     if(IsEqualGUID(&CLSID_VBScript, rclsid)) {
+@@ -293,3 +404,4 @@
+     FIXME("%s %s %p\n", debugstr_guid(rclsid), debugstr_guid(riid), ppv);
+     return CLASS_E_CLASSNOTAVAILABLE;
+ }
++#endif
+--- /Users/jmillard/wine/dlls/vbscript/parser.y	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/parser.y	2024-10-01 16:57:20
+@@ -150,11 +150,11 @@
+ %type <elseif> ElseIfs_opt ElseIfs ElseIf
+ %type <class_decl> ClassDeclaration ClassBody
+ %type <uint> Storage Storage_opt IntegerValue
+-%type <dim_decl> DimDeclList DimDecl
++%type <dim_decl> DimDeclList DimDecl MemberDeclList MemberDecl
+ %type <dim_list> DimList
+ %type <redim_decl> ReDimDeclList ReDimDecl
+ %type <const_decl> ConstDecl ConstDeclList
+-%type <string> Identifier
++%type <string> Identifier MemberIdentifier
+ %type <case_clausule> CaseClausules
+ 
+ %%
+@@ -254,6 +254,15 @@
+ Preserve_opt
+     : /* empty */                           { $$ = FALSE; }
+     | tPRESERVE                             { $$ = TRUE; }
++
++MemberDeclList
++    : MemberDecl                            { $$ = $1; }
++    | MemberDecl ',' MemberDeclList          { $1->next = $3; $$ = $1; }
++
++MemberDecl
++    : MemberIdentifier                      { $$ = new_dim_decl(ctx, $1, FALSE, NULL); CHECK_ERROR; }
++    | MemberIdentifier '(' DimList ')'            { $$ = new_dim_decl(ctx, $1, TRUE, $3); CHECK_ERROR; }
++    | MemberIdentifier tEMPTYBRACKETS             { $$ = new_dim_decl(ctx, $1, TRUE, NULL); CHECK_ERROR; }
+ 
+ ReDimDecl
+     : tIdentifier '(' ArgumentList ')'      { $$ = new_redim_decl(ctx, $1, $3); CHECK_ERROR; }
+@@ -456,13 +465,10 @@
+     : /* empty */                                 { $$ = new_class_decl(ctx); }
+     | FunctionDecl                                { $$ = add_class_function(ctx, new_class_decl(ctx), $1); CHECK_ERROR; }
+     | FunctionDecl StSep ClassBody                { $$ = add_class_function(ctx, $3, $1); CHECK_ERROR; }
+-    /* FIXME: We should use DimDecl here to support arrays, but that conflicts with PropertyDecl. */
+-    | Storage tIdentifier                         { dim_decl_t *dim_decl = new_dim_decl(ctx, $2, FALSE, NULL); CHECK_ERROR;
+-                                                  $$ = add_dim_prop(ctx, new_class_decl(ctx), dim_decl, $1); CHECK_ERROR; }
+-    | Storage tIdentifier StSep ClassBody         { dim_decl_t *dim_decl = new_dim_decl(ctx, $2, FALSE, NULL); CHECK_ERROR;
+-                                                  $$ = add_dim_prop(ctx, $4, dim_decl, $1); CHECK_ERROR; }
+-    | tDIM DimDecl                                { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, 0); CHECK_ERROR; }
+-    | tDIM DimDecl StSep ClassBody                { $$ = add_dim_prop(ctx, $4, $2, 0); CHECK_ERROR; }
++    | Storage MemberDeclList                      { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, $1); CHECK_ERROR; }
++    | Storage MemberDeclList StSep ClassBody      { $$ = add_dim_prop(ctx, $4, $2, $1); CHECK_ERROR; }
++    | tDIM DimDeclList                            { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, 0); CHECK_ERROR; }
++    | tDIM DimDeclList StSep ClassBody            { $$ = add_dim_prop(ctx, $4, $2, 0); CHECK_ERROR; }
+     | PropertyDecl                                { $$ = add_class_function(ctx, new_class_decl(ctx), $1); CHECK_ERROR; }
+     | PropertyDecl StSep ClassBody                { $$ = add_class_function(ctx, $3, $1); CHECK_ERROR; }
+ 
+@@ -512,11 +518,14 @@
+ 
+ /* these keywords may also be an identifier, depending on context */
+ Identifier
++    : MemberIdentifier { $$ = $1; }
++    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
++
++MemberIdentifier
+     : tIdentifier    { $$ = $1; }
+     | tDEFAULT       { ctx->last_token = tIdentifier; $$ = $1; }
+     | tERROR         { ctx->last_token = tIdentifier; $$ = $1; }
+     | tEXPLICIT      { ctx->last_token = tIdentifier; $$ = $1; }
+-    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
+     | tSTEP          { ctx->last_token = tIdentifier; $$ = $1; }
+ 
+ StSep_opt
+@@ -1133,14 +1142,22 @@
+ 
+ static class_decl_t *add_dim_prop(parser_ctx_t *ctx, class_decl_t *class_decl, dim_decl_t *dim_decl, unsigned storage_flags)
+ {
++    dim_decl_t *iter;
++
+     if(storage_flags & STORAGE_IS_DEFAULT) {
+         FIXME("variant prop can't be default value\n");
+         ctx->hres = E_FAIL;
+         return NULL;
+     }
+ 
+-    dim_decl->is_public = !(storage_flags & STORAGE_IS_PRIVATE);
+-    dim_decl->next = class_decl->props;
++    iter = dim_decl;
++    while(1) {
++        iter->is_public = !(storage_flags & STORAGE_IS_PRIVATE);
++        if (!iter->next) break;
++        iter = iter->next;
++    }
++
++    iter->next = class_decl->props;
+     class_decl->props = dim_decl;
+     return class_decl;
+ }
+--- /Users/jmillard/wine/dlls/vbscript/global.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/vbscript/global.c	2024-10-01 16:57:20
+@@ -18,6 +18,9 @@
+ 
+ #include <assert.h>
+ #include <math.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "vbscript.h"
+ #include "vbscript_defs.h"
+@@ -28,6 +31,11 @@
+ 
+ #include "wine/debug.h"
+ 
++#ifdef __STANDALONE__
++#include <locale.h>
++#include "standalone/inc/wine/dlls/scrrun/scrrun_private.h"
++#endif
++
+ WINE_DEFAULT_DEBUG_CHANNEL(vbscript);
+ 
+ #define VB_E_CANNOT_CREATE_OBJ 0x800a01ad
+@@ -36,6 +44,152 @@
+ /* Defined as extern in urlmon.idl, but not exported by uuid.lib */
+ const GUID GUID_CUSTOM_CONFIRMOBJECTSAFETY =
+     {0x10200490,0xfa38,0x11d0,{0xac,0x0e,0x00,0xa0,0xc9,0xf,0xff,0xc0}};
++
++#ifdef __STANDALONE__
++typedef struct {
++    IDispatch IDispatch_iface;
++    LONG ref;
++    WCHAR* name;
++    function_t* func;
++    script_ctx_t* ctx;
++} GetRefDisp;
++
++static inline GetRefDisp *ref_impl_from_IDispatch(IDispatch *iface)
++{
++    return CONTAINING_RECORD(iface, GetRefDisp, IDispatch_iface);
++}
++
++static HRESULT WINAPI GetRef_QueryInterface(IDispatch *iface, REFIID riid, void **ppv)
++{
++    GetRefDisp *This = ref_impl_from_IDispatch(iface);
++
++    if(IsEqualGUID(&IID_IUnknown, riid)) {
++        TRACE("(%p)->(IID_IUnknown %p)\n", This, ppv);
++        *ppv = &This->IDispatch_iface;
++    }else if(IsEqualGUID(&IID_IDispatch, riid)) {
++        TRACE("(%p)->(IID_IDispatch %p)\n", This, ppv);
++        *ppv = &This->IDispatch_iface;
++    }else {
++        if(!IsEqualGUID(riid, &IID_IDispatchEx))
++            WARN("(%p)->(%s %p)\n", This, debugstr_guid(riid), ppv);
++        *ppv = NULL;
++        return E_NOINTERFACE;
++    }
++
++    IUnknown_AddRef((IUnknown*)*ppv);
++    return S_OK;
++}
++
++static ULONG WINAPI GetRef_AddRef(IDispatch *iface)
++{
++    GetRefDisp *This = ref_impl_from_IDispatch(iface);
++    LONG ref = InterlockedIncrement(&This->ref);
++
++    TRACE("(%p) ref=%ld\n", This, ref);
++
++    return ref;
++}
++
++static ULONG WINAPI GetRef_Release(IDispatch *iface)
++{
++    GetRefDisp *This = ref_impl_from_IDispatch(iface);
++    LONG ref = InterlockedDecrement(&This->ref);
++
++    TRACE("(%p) ref=%ld\n", This, ref);
++
++    if(!ref) {
++        free(This->name);
++        free(This);
++    }
++
++    return ref;
++}
++
++static HRESULT WINAPI GetRef_GetTypeInfoCount(IDispatch *iface, UINT *pctinfo)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI GetRef_GetTypeInfo(IDispatch *iface, UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo)
++{
++    return E_NOTIMPL;
++}
++
++static HRESULT WINAPI GetRef_GetIDsOfNames(IDispatch *iface, REFIID riid, LPOLESTR *names, UINT name_cnt,
++                                            LCID lcid, DISPID *ids)
++{
++    return E_NOTIMPL;
++}
++
++static function_t* getref_lookup_function(script_ctx_t *ctx, const WCHAR* name) {
++    function_t **funcs = ctx->script_obj->global_funcs;
++    size_t i, cnt = ctx->script_obj->global_funcs_cnt;
++
++    for(i = 0; i < cnt; i++)
++        if(!wcsicmp(funcs[i]->name, name))
++           return funcs[i];
++
++    return NULL;
++}
++
++static HRESULT WINAPI GetRef_Invoke(IDispatch *iface, DISPID id, REFIID riid, LCID lcid, WORD flags,
++                                     DISPPARAMS *dp, VARIANT *res, EXCEPINFO *ei, UINT *err)
++{
++    GetRefDisp *This = ref_impl_from_IDispatch(iface);
++
++    if (!This->func)
++       This->func = getref_lookup_function(This->ctx, This->name);
++
++    if (!This->func)
++       return E_FAIL;
++
++    if (id == DISPID_VALUE && (flags & DISPATCH_METHOD)) {
++       if (dp->cArgs == 0 && (flags & DISPATCH_PROPERTYGET)) {
++          IDispatch *disp = &This->IDispatch_iface;
++          IDispatch_AddRef(disp);
++          V_VT(res) = VT_DISPATCH;
++          V_DISPATCH(res) = disp;
++
++          return S_OK;
++       }
++       else {
++          return exec_script(This->ctx, FALSE, This->func, NULL, dp, res);
++       }
++    }
++
++    return DISP_E_UNKNOWNNAME;
++}
++
++static const IDispatchVtbl GetRefDispVtbl = {
++    GetRef_QueryInterface,
++    GetRef_AddRef,
++    GetRef_Release,
++    GetRef_GetTypeInfoCount,
++    GetRef_GetTypeInfo,
++    GetRef_GetIDsOfNames,
++    GetRef_Invoke
++};
++
++static HRESULT create_getref_dispatch(script_ctx_t *ctx, BSTR name, GetRefDisp **ret)
++{
++    GetRefDisp *disp;
++    size_t size;
++
++    if(!(disp = malloc(sizeof(*disp))))
++        return E_OUTOFMEMORY;
++
++    disp->IDispatch_iface.lpVtbl = &GetRefDispVtbl;
++    disp->ref = 1;
++    size = (lstrlenW(name)+1)*sizeof(WCHAR);
++    disp->name = (WCHAR*)malloc(size);
++    memcpy(disp->name, name, size);
++    disp->func = getref_lookup_function(ctx, name);
++    disp->ctx = ctx;
++
++    *ret = disp;
++    return S_OK;
++}
++#endif
+ 
+ #define BP_GET      1
+ #define BP_GETPUT   2
+@@ -536,6 +690,7 @@
+     if(FAILED(hres))
+         return NULL;
+ 
++#ifndef __STANDALONE__
+     hres = IClassFactory_QueryInterface(cf, &IID_IClassFactoryEx, (void**)&cfex);
+     if(SUCCEEDED(hres)) {
+         FIXME("Use IClassFactoryEx\n");
+@@ -543,6 +698,17 @@
+     }
+ 
+     hres = IClassFactory_CreateInstance(cf, NULL, &IID_IUnknown, (void**)&obj);
++#else
++    if (!wcsicmp(progid, L"Scripting.FileSystemObject")) {
++        hres = FileSystem_CreateInstance(cf, NULL, &IID_IUnknown, (void**)&obj);
++    }
++    else if (!wcsicmp(progid, L"Scripting.Dictionary")) {
++        hres = Dictionary_CreateInstance(cf, NULL, &IID_IUnknown, (void**)&obj);
++    }
++    else {
++        hres = external_create_object(progid, cf, (IUnknown*)&obj);
++    }
++#endif
+     if(FAILED(hres))
+         return NULL;
+ 
+@@ -1186,7 +1352,11 @@
+         break;
+     case VT_EMPTY:
+     case VT_NULL:
++#ifndef __STANDALONE__
+         return MAKE_VBSERROR(VBSE_TYPE_MISMATCH);
++#else
++        return return_int(res, 0);
++#endif
+     default:
+         FIXME("arg %s not supported\n", debugstr_variant(arg));
+         return E_NOTIMPL;
+@@ -1227,7 +1397,11 @@
+         break;
+     case VT_EMPTY:
+     case VT_NULL:
++#ifndef __STANDALONE__
+         return MAKE_VBSERROR(VBSE_TYPE_MISMATCH);
++#else
++        return return_int(res, 0);
++#endif
+     default:
+         FIXME("arg %s not supported\n", debugstr_variant(arg));
+         return E_NOTIMPL;
+@@ -2180,8 +2354,12 @@
+ 
+ static HRESULT Global_SetLocale(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    return S_OK;
++#endif
+ }
+ 
+ static HRESULT Global_DateValue(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+@@ -2298,9 +2476,16 @@
+         hres = E_NOTIMPL;
+     }
+ 
++#ifndef __STANDALONE__
+     if(SUCCEEDED(hres))
+         hres = show_msgbox(This->ctx, prompt, type, title, res);
+-
++#else
++    if(SUCCEEDED(hres)) {
++        char buf[2048];
++        WideCharToMultiByte(CP_ACP, 0, prompt, -1, buf, sizeof(buf) - 1, NULL, NULL);
++        external_log_info("MsgBox: prompt=%s", buf);
++    }
++#endif
+     SysFreeString(prompt);
+     SysFreeString(title);
+     return hres;
+@@ -2319,8 +2504,16 @@
+     }
+ 
+     obj = create_object(This->ctx, V_BSTR(arg));
++#ifndef __STANDALONE__
+     if(!obj)
+         return VB_E_CANNOT_CREATE_OBJ;
++#else
++    if(!obj) {
++        V_VT(res) = VT_DISPATCH;
++        V_DISPATCH(res) = NULL;
++        return S_OK;
++    }
++#endif
+ 
+     if(res) {
+         hres = IUnknown_QueryInterface(obj, &IID_IDispatch, (void**)&V_DISPATCH(res));
+@@ -2456,14 +2649,129 @@
+ 
+ static HRESULT Global_DateDiff(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
++    return E_NOTIMPL;
++#else
++    SYSTEMTIME st1, st2;
++    FILETIME ft1, ft2;
++    ULARGE_INTEGER ui1, ui2;
++    BSTR interval;
++    double date1, date2;
++    HRESULT hr;
++
++    assert(3 <= args_cnt && args_cnt <= 5);
++
++    if (V_VT(arg) != VT_BSTR || !(V_VT(arg + 1) == VT_DATE || V_VT(arg + 1) == VT_BSTR) || V_VT(arg + 2) != VT_DATE)
++        return E_INVALIDARG;
++
++    interval = V_BSTR(arg);
++    date1 = V_DATE(arg + 1);
++    date2 = V_DATE(arg + 2);
++
++    VariantTimeToSystemTime(date1, &st1);
++    SystemTimeToFileTime(&st1, &ft1);
++
++    VariantTimeToSystemTime(date2, &st2);
++    SystemTimeToFileTime(&st2, &ft2);
++
++    LONGLONG diff = 0;
++
++    if (!wcsicmp(interval, L"yyyy"))
++        diff = st2.wYear - st1.wYear;
++    else if (!wcsicmp(interval, L"q"))
++        diff = ((st2.wYear - st1.wYear) * 4) + (st2.wMonth - 1) / 3 - (st1.wMonth - 1) / 3;
++    else if (!wcsicmp(interval, L"m"))
++        diff = (st2.wYear - st1.wYear) * 12 + (st2.wMonth - st1.wMonth);
++    else if (!wcsicmp(interval, L"y"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"d"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"w"))
+     return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"ww"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"h")) {
++        ui1.LowPart = ft1.dwLowDateTime;
++        ui1.HighPart = ft1.dwHighDateTime;
++        ui2.LowPart = ft2.dwLowDateTime;
++        ui2.HighPart = ft2.dwHighDateTime;
++        diff = (ui2.QuadPart - ui1.QuadPart) / (10000LL * 1000 * 60 * 60);
+ }
++    else if (!wcsicmp(interval, L"n")) {
++        ui1.LowPart = ft1.dwLowDateTime;
++        ui1.HighPart = ft1.dwHighDateTime;
++        ui2.LowPart = ft2.dwLowDateTime;
++        ui2.HighPart = ft2.dwHighDateTime;
++        diff = (ui2.QuadPart - ui1.QuadPart) / (10000LL * 1000 * 60);
++    }
++    else if (!wcsicmp(interval, L"s")) {
++        ui1.LowPart = ft1.dwLowDateTime;
++        ui1.HighPart = ft1.dwHighDateTime;
++        ui2.LowPart = ft2.dwLowDateTime;
++        ui2.HighPart = ft2.dwHighDateTime;
++        diff = (ui2.QuadPart - ui1.QuadPart) / (10000LL * 1000);
++    }
++    else
++        return E_INVALIDARG;
+ 
++    V_VT(res) = VT_I4;
++    V_I4(res) = (int)diff;
++
++    return S_OK;
++#endif
++}
++
+ static HRESULT Global_DatePart(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    SYSTEMTIME st;
++    BSTR interval;
++    double date;
++    HRESULT hr;
++
++    assert(2 <= args_cnt && args_cnt <= 4);
++
++    if (V_VT(arg) != VT_BSTR || V_VT(arg + 1) != VT_DATE)
++        return E_INVALIDARG;
++
++    interval = V_BSTR(arg);
++    date = V_DATE(arg + 1);
++
++    VariantTimeToSystemTime(date, &st);
++
++    int result;
++    if (!wcsicmp(interval, L"yyyy"))
++        result = st.wYear;
++    else if (!wcsicmp(interval, L"q"))
++        result = (st.wMonth - 1) / 3 + 1;
++    else if (!wcsicmp(interval, L"m"))
++        result = st.wMonth;
++    else if (!wcsicmp(interval, L"y"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"d"))
++        result = st.wDay;
++    else if (!wcsicmp(interval, L"w"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"ww"))
++        return E_NOTIMPL;
++    else if (!wcsicmp(interval, L"h"))
++        result = st.wHour;
++    else if (!wcsicmp(interval, L"n"))
++        result = st.wMinute;
++    else if (!wcsicmp(interval, L"s"))
++        result = st.wSecond;
++    else
++        return E_INVALIDARG;
++
++    V_VT(res) = VT_I4;
++    V_I4(res) = result;
++
++    return S_OK;
++#endif
+ }
+ 
+ static HRESULT Global_TypeName(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+@@ -2578,12 +2886,113 @@
+     return E_NOTIMPL;
+ }
+ 
+-static HRESULT Global_Join(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
++static HRESULT Global_Join(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    BSTR string, tmp, str, conv_str = NULL, delimiter = NULL;
++    SAFEARRAY *sa;
++    HRESULT hres;
++    int i, delimiterlen, stringLen, strLen;
++    LONG lbound, ubound;
++
++    switch(V_VT(args)) {
++    case VT_VARIANT|VT_ARRAY:
++        sa = V_ARRAY(args);
++        break;
++    case VT_VARIANT|VT_ARRAY|VT_BYREF:
++        sa = *V_ARRAYREF(args);
++        break;
++    default:
++        return E_NOTIMPL;
+ }
+ 
++    if (SafeArrayGetDim(sa) != 1) {
++        return E_NOTIMPL;
++    }
++
++    hres = SafeArrayGetLBound(sa, 1, &lbound);
++    if(FAILED(hres))
++        return hres;
++
++    hres = SafeArrayGetUBound(sa, 1, &ubound);
++    if(FAILED(hres))
++        return hres;
++
++    VARIANT *data;
++    hres = SafeArrayAccessData(sa, (void**)&data);
++    if (FAILED(hres))
++        return hres;
++
++    if (args_cnt == 2) {
++        if(V_VT(args+1) != VT_BSTR) {
++            hres = to_string(args+1, &delimiter);
++            if(FAILED(hres)) {
++                SafeArrayUnaccessData(sa);
++                return hres;
++            }
++        }
++        else
++            delimiter = V_BSTR(args+1);
++    }
++    else
++        delimiter = SysAllocString(L" ");
++
++    delimiterlen = SysStringLen(delimiter);
++
++    string = SysAllocString(L"");
++
++    for (i = lbound; i <= ubound; i++) {
++        if(V_VT(&data[i]) != VT_BSTR) {
++            hres = to_string(&data[i], &conv_str);
++            if(FAILED(hres)) {
++                SafeArrayUnaccessData(sa);
++                SysFreeString(string);
++
++                if (args_cnt == 2)
++                    if(V_VT(args+1) != VT_BSTR)
++                        SysFreeString(delimiter);
++
++                return hres;
++            }
++            str = conv_str;
++        }
++        else
++            str = V_BSTR(&data[i]);
++
++        if (i > lbound) {
++            stringLen = SysStringLen(string);
++            tmp = SysAllocStringLen(string,  stringLen + delimiterlen);
++            memcpy(tmp + stringLen, delimiter, delimiterlen * sizeof(WCHAR));
++            SysFreeString(string);
++            string = tmp;
++        }
++
++        stringLen = SysStringLen(string);
++        strLen = SysStringLen(str);
++        tmp = SysAllocStringLen(string, stringLen + strLen);
++        memcpy(tmp + stringLen, str, strLen * sizeof(WCHAR));
++        SysFreeString(string);
++        string = tmp;
++
++        if (conv_str) {
++            SysFreeString(conv_str);
++            conv_str = NULL;
++        }
++    }
++
++    SafeArrayUnaccessData(sa);
++
++    if (args_cnt == 2)
++        if(V_VT(args+1) != VT_BSTR)
++            SysFreeString(delimiter);
++
++    return return_bstr(res, string);
++#endif
++}
++
+ static HRESULT Global_Split(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
+     BSTR string, delimiter = NULL;
+@@ -2962,6 +3371,7 @@
+ 
+ static HRESULT Global_FormatNumber(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     union
+     {
+         struct
+@@ -2990,8 +3400,90 @@
+     if (FAILED(hres)) return hres;
+ 
+     return return_bstr(res, str);
++#else
++    HRESULT hres;
++    float number;
++    int decimal_places = 2;
++    int inc_leading_zero = -1;
++    int use_parenthesis = 0;
++    int group_digits = 0;
++    char* saved_locale;
++
++    hres = to_float(args, &number);
++    if (FAILED(hres))
++        return hres;
++
++    if (args_cnt > 1) {
++        if (V_VT(args+1) != VT_ERROR) {
++           hres = to_int(args+1, &decimal_places);
++           if (FAILED(hres))
++              return hres;
++        }
++    }
++
++    if (args_cnt > 2) {
++        if (V_VT(args+2) != VT_ERROR) {
++           hres = to_int(args+2, &inc_leading_zero);
++           if (FAILED(hres))
++              return hres;
++        }
++    }
++
++    if (args_cnt > 3) {
++        if (V_VT(args+3) != VT_ERROR) {
++           hres = to_int(args+3, &use_parenthesis);
++           if (FAILED(hres))
++              return hres;
++        }
++    }
++
++    if (args_cnt > 4) {
++        if (V_VT(args+4) != VT_ERROR) {
++           hres = to_int(args+4, &group_digits);
++           if (FAILED(hres))
++              return hres;
++        }
++    }
++    WCHAR format[128];
++
++    if (group_digits != -1)
++        swprintf(format, ARRAY_SIZE(format), L"%%.%df", decimal_places);
++    else {
++        saved_locale = strdup(setlocale(LC_NUMERIC, NULL));
++        setlocale(LC_NUMERIC, "");
++
++        swprintf(format, ARRAY_SIZE(format), L"%%'.%df", decimal_places);
+ }
+ 
++    WCHAR buf[128];
++    swprintf(buf, ARRAY_SIZE(buf), format, number);
++
++    WCHAR tmp_buf[128];
++
++    if (inc_leading_zero != -1) {
++        if (*buf == L'0') {
++            wcscpy(tmp_buf, buf + 1);
++            wcscpy(buf, tmp_buf);
++        }
++        else if (*buf == L'-' && *(buf+1) == L'0') {
++            wcscpy(tmp_buf, buf + 2);
++            swprintf(buf, ARRAY_SIZE(buf), L"-%ls", tmp_buf);
++        }
++    }
++
++    if (use_parenthesis == -1 && number < 0) {
++        wcscpy(tmp_buf, buf);
++        swprintf(buf, ARRAY_SIZE(buf), L"(%ls)", tmp_buf);
++    }
++
++    if (group_digits == -1) {
++        setlocale(LC_NUMERIC, saved_locale);
++        free(saved_locale);
++    }
++    return return_string(res, buf);
++#endif
++}
++
+ static HRESULT Global_FormatCurrency(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
+ {
+     union
+@@ -3210,26 +3702,145 @@
+ 
+ static HRESULT Global_Eval(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    BSTR str;
++    HRESULT hres;
++
++    hres = to_string(arg, &str);
++
++    if(FAILED(hres))
++        return hres;
++
++#ifdef _DEBUG
++    static char buf[128];
++    WideCharToMultiByte(CP_ACP, 0, str, -1, buf, sizeof(buf) - 1, NULL, NULL);
++    external_log_debug("Eval: enter - str=\"%s\"", buf);
++#endif
++
++    vbscode_t *code;
++    hres = compile_script(This->ctx, str, 0, 0, 0, 0, SCRIPTTEXT_ISEXPRESSION, &code);
++
++    if (SUCCEEDED(hres))
++        hres = exec_global_code(This->ctx, code, res);
++
++#ifdef _DEBUG
++    external_log_debug("Eval: exit - hr=0x%08x", hres);
++#endif
++
++    SysFreeString(str);
++
++    return hres;
++#endif
+ }
+ 
+ static HRESULT Global_Execute(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    BSTR str;
++    HRESULT hres;
++
++    hres = to_string(arg, &str);
++
++    if(FAILED(hres))
++        return hres;
++
++#ifdef _DEBUG
++    static char buf[128];
++    WideCharToMultiByte(CP_ACP, 0, str, -1, buf, sizeof(buf) - 1, NULL, NULL);
++    external_log_debug("Execute: enter - str=\"%s\"", buf);
++#endif
++
++    vbscode_t *code;
++    hres = compile_script(This->ctx, str, 0, 0, 0, 0, SCRIPTTEXT_ISVISIBLE, &code);
++
++    if (SUCCEEDED(hres))
++        hres = exec_global_code(This->ctx, code, res);
++
++#ifdef _DEBUG
++    external_log_debug("Execute: exit - hr=0x%08x", hres);
++#endif
++
++    SysFreeString(str);
++
++    return hres;
++#endif
+ }
+ 
+ static HRESULT Global_ExecuteGlobal(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    BSTR str;
++    HRESULT hres;
++
++    hres = to_string(arg, &str);
++
++    if(FAILED(hres))
++        return hres;
++
++#ifdef _DEBUG
++    static char buf[128];
++    WideCharToMultiByte(CP_ACP, 0, str, -1, buf, sizeof(buf) - 1, NULL, NULL);
++    external_log_debug("ExecuteGlobal: enter - str=\"%s\"", buf);
++#endif
++
++    vbscode_t *code;
++    hres = compile_script(This->ctx, str, 0, 0, 0, 0, SCRIPTTEXT_ISVISIBLE, &code);
++
++    if (SUCCEEDED(hres))
++        hres = exec_global_code(This->ctx, code, res);
++
++#ifdef _DEBUG
++    external_log_debug("ExecuteGlobal: exit - hr=0x%08x", hres);
++#endif
++
++    SysFreeString(str);
++
++    return hres;
++#endif
+ }
+ 
+ static HRESULT Global_GetRef(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+ {
++#ifndef __STANDALONE__
+     FIXME("\n");
+     return E_NOTIMPL;
++#else
++    BSTR str;
++    HRESULT hres;
++
++    hres = to_string(arg, &str);
++
++    if(FAILED(hres))
++        return hres;
++
++    GetRefDisp *disp;
++
++    hres = create_getref_dispatch(This->ctx, str, &disp);
++
++    SysFreeString(str);
++
++    if(FAILED(hres))
++        return hres;
++
++    hres = IUnknown_QueryInterface((IUnknown*)&disp->IDispatch_iface, &IID_IDispatch, (void**)&V_DISPATCH(res));
++
++    if(FAILED(hres))
++       return hres;
++
++    V_VT(res) = VT_DISPATCH;
++
++    IUnknown_Release((IUnknown*)&disp->IDispatch_iface);
++    return S_OK;
++#endif
+ }
+ 
+ static HRESULT Global_Err(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
+--- /Users/jmillard/wine/dlls/oleaut32/oleaut.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/oleaut32/oleaut.c	2024-10-01 16:57:20
+@@ -282,9 +282,13 @@
+ 
+     bstr = bstr_from_str(str);
+ 
++#ifndef __STANDALONE__
+     alloc_size = IMalloc_GetSize(malloc, bstr);
+     if (alloc_size == ~0UL)
+         return;
++#else
++    alloc_size = 0;
++#endif
+ 
+     cache_entry = get_cache_entry_from_alloc_size(alloc_size);
+     if(cache_entry) {
+@@ -1161,6 +1165,7 @@
+ /***********************************************************************
+  *		DllGetClassObject (OLEAUT32.@)
+  */
++#ifndef __STANDALONE__
+ HRESULT WINAPI DllGetClassObject(REFCLSID rclsid, REFIID iid, LPVOID *ppv)
+ {
+     *ppv = NULL;
+@@ -1191,10 +1196,12 @@
+ 
+     return OLEAUTPS_DllGetClassObject(rclsid, iid, ppv);
+ }
++#endif
+ 
+ /*****************************************************************************
+  *              DllMain         [OLEAUT32.@]
+  */
++#ifndef __STANDALONE__
+ BOOL WINAPI DllMain(HINSTANCE hInstDll, DWORD fdwReason, LPVOID lpvReserved)
+ {
+     if(fdwReason == DLL_PROCESS_ATTACH)
+@@ -1202,6 +1209,7 @@
+ 
+     return OLEAUTPS_DllMain( hInstDll, fdwReason, lpvReserved );
+ }
++#endif
+ 
+ /***********************************************************************
+  *		DllRegisterServer (OLEAUT32.@)
+--- /Users/jmillard/wine/dlls/oleaut32/variant.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/oleaut32/variant.c	2024-10-01 16:57:20
+@@ -28,6 +28,9 @@
+ #include <string.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #define COBJMACROS
+ #include "windef.h"
+--- /Users/jmillard/wine/dlls/oleaut32/vartype.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/oleaut32/vartype.c	2024-10-01 16:57:20
+@@ -18,6 +18,10 @@
+  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+  */
+ 
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
++
+ #define COBJMACROS
+ #include "wine/debug.h"
+ #include "winbase.h"
+@@ -6540,15 +6544,21 @@
+ static HRESULT VARIANT_BstrFromReal(DOUBLE dblIn, LCID lcid, ULONG dwFlags,
+                                     BSTR* pbstrOut, int ndigits)
+ {
++#ifndef __STANDALONE__
+   _locale_t locale;
++#endif
+   WCHAR *e, buff[256];
+   int len;
+ 
+   if (!pbstrOut)
+     return E_INVALIDARG;
+ 
++#ifndef __STANDALONE__
+   if (!(locale = _create_locale(LC_ALL, "C"))) return E_OUTOFMEMORY;
+   len = _swprintf_l(buff, ARRAY_SIZE(buff), L"%.*G", locale, ndigits, dblIn);
++#else
++  len = swprintf(buff, ARRAY_SIZE(buff), L"%.*G", ndigits, dblIn);
++#endif
+   e = wcschr(buff, 'E');
+   if (e)
+   {
+@@ -6559,12 +6569,18 @@
+       extra_decimals = dot ? e - dot - 2 : 0;
+       if (labs(wcstol(e+1, NULL, 10)) + extra_decimals < ndigits)
+       {
++#ifndef __STANDALONE__
+           len = _swprintf_l(buff, ARRAY_SIZE(buff), L"%.*f", locale, ndigits, dblIn);
++#else
++          len = swprintf(buff, ARRAY_SIZE(buff), L"%.*f", ndigits, dblIn);
++#endif
+           while (len > 0 && (buff[len-1] == '0')) len--;
+       }
+   }
+   buff[len] = 0;
++#ifndef __STANDALONE__
+   _free_locale(locale);
++#endif
+ 
+   /* Negative zeroes are disallowed (some applications depend on this).
+      If buff starts with a minus, and then nothing follows but zeroes
+@@ -6837,6 +6853,7 @@
+ 
+   *pbstrOut = NULL;
+ 
++#ifndef __STANDALONE__
+   if (dwFlags & VAR_CALENDAR_THAI)
+       st.wYear += 553; /* Use the Thai buddhist calendar year */
+   else if (dwFlags & (VAR_CALENDAR_HIJRI|VAR_CALENDAR_GREGORIAN))
+@@ -6870,6 +6887,11 @@
+     if (!GetTimeFormatW(lcid, dwFormatFlags, &st, NULL, time, ARRAY_SIZE(date)-(time-date)))
+       return E_INVALIDARG;
+   }
++#else
++    swprintf(date, ARRAY_SIZE(date), L"%02d/%02d/%04d %02d:%02d:%02d",
++             st.wMonth, st.wDay, st.wYear,
++             st.wHour, st.wMinute, st.wSecond);
++#endif
+ 
+   *pbstrOut = SysAllocString(date);
+   if (*pbstrOut)
+@@ -6934,6 +6956,12 @@
+     dwResId++; /* Use negative form */
+ 
+ VarBstrFromBool_GetLocalised:
++#ifdef __STANDALONE__
++  if (dwResId == 100 || dwResId == 101) {
++    *pbstrOut = SysAllocString((dwResId == 100) ? L"True" : L"False");
++    return *pbstrOut ? S_OK : E_OUTOFMEMORY;
++  }
++#endif
+   if (VARIANT_GetLocalisedText(langId, dwResId, szBuff))
+   {
+     *pbstrOut = SysAllocString(szBuff);
+--- /Users/jmillard/wine/dlls/oleaut32/varformat.c	2024-10-01 07:40:15
++++ /Users/jmillard/vpx-standalone/vpinball/standalone/inc/wine/dlls/oleaut32/varformat.c	2024-10-01 16:57:20
+@@ -29,6 +29,9 @@
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <stdio.h>
++#if defined(__STANDALONE__)
++#include <wctype.h>
++#endif
+ 
+ #include "windef.h"
+ #include "winbase.h"

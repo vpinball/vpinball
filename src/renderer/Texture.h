@@ -93,7 +93,7 @@ public:
 
    bool IsHDR() const
    {
-      return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32);
+      return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32);
    }
 
    void SetSizeFrom(const BaseTexture* const tex)
@@ -179,6 +179,7 @@ template<bool bgr>
 inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
     static int ssse3_supported = -1;
     if (ssse3_supported == -1)
     {
@@ -186,6 +187,9 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
        __cpuid(cpuInfo, 1);
        ssse3_supported = (cpuInfo[2] & (1 << 9));
     }
+#else
+    constexpr bool ssse3_supported = true;
+#endif
 #endif
 
     size_t o = 0;
@@ -258,6 +262,7 @@ inline void copy_rgb_rgba(unsigned int* const __restrict dst, const unsigned cha
 inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned char* const __restrict src, const size_t size)
 {
 #ifdef ENABLE_SSE_OPTIMIZATIONS // actually uses SSSE3
+#if !(defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
     static int ssse3_supported = -1;
     if (ssse3_supported == -1)
     {
@@ -265,6 +270,9 @@ inline void copy_bgr_rgb(unsigned char* const __restrict dst, const unsigned cha
        __cpuid(cpuInfo, 1);
        ssse3_supported = (cpuInfo[2] & (1 << 9));
     }
+#else
+    constexpr bool ssse3_supported = true;
+#endif
 #endif
 
     size_t o = 0;
