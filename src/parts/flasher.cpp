@@ -2,7 +2,9 @@
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
+#ifndef __STANDALONE__
 #include "captureExt.h"
+#endif
 
 Flasher::Flasher()
 {
@@ -374,6 +376,16 @@ void Flasher::AddPoint(int x, int y, const bool smooth)
       STOPUNDO
 }
 
+#ifdef __STANDALONE__
+void Flasher::UpdatePoint(int index, int x, int y)
+{
+     CComObject<DragPoint> *pdp = m_vdpoint[index];
+     pdp->m_v.x = x;
+     pdp->m_v.y = y;
+
+}
+#endif
+
 HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
    BiffWriter bw(pstm, hcrypthash);
@@ -715,13 +727,13 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Opacity(long *pVal)
+STDMETHODIMP Flasher::get_Opacity(LONG *pVal)
 {
    *pVal = m_d.m_alpha;
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Opacity(long newVal)
+STDMETHODIMP Flasher::put_Opacity(LONG newVal)
 {
    SetAlpha(newVal);
    return S_OK;
@@ -751,13 +763,13 @@ STDMETHODIMP Flasher::put_ModulateVsAdd(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Amount(long *pVal)
+STDMETHODIMP Flasher::get_Amount(LONG *pVal)
 {
    *pVal = m_d.m_filterAmount;
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Amount(long newVal)
+STDMETHODIMP Flasher::put_Amount(LONG newVal)
 {
    SetFilterAmount(newVal);
    return S_OK;
@@ -920,7 +932,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
+STDMETHODIMP Flasher::put_VideoCapWidth(LONG cWidth)
 {
     if (m_videoCapWidth != cWidth) ResetVideoCap(); //resets capture
     m_videoCapWidth = cWidth;
@@ -928,7 +940,7 @@ STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
     return S_OK;
 }
 
-STDMETHODIMP Flasher::put_VideoCapHeight(long cHeight)
+STDMETHODIMP Flasher::put_VideoCapHeight(LONG cHeight)
 {
     if (m_videoCapHeight != cHeight) ResetVideoCap(); //resets capture
     m_videoCapHeight = cHeight;
@@ -951,6 +963,7 @@ void Flasher::ResetVideoCap()
 //if PASSED a blank title then we treat this as STOP capture and free resources.
 STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 {
+#ifndef __STANDALONE__
     if (m_videoCapWidth == 0 || m_videoCapHeight == 0) return S_FALSE; //safety.  VideoCapWidth/Height needs to be set prior to this call
 
     char szWinTitle[MAXNAMEBUFFER];
@@ -1043,6 +1056,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
     ReleaseDC(m_videoCapHwnd, hdcWindow);
     DeleteObject(hbmScreen);
     DeleteObject(hdcMemDC);
+#endif
 
     return S_OK;
 }
@@ -1314,9 +1328,11 @@ void Flasher::Render(const unsigned int renderMask)
       #endif
       m_rd->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
+#ifndef __STANDALONE__
       // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
       if (HasDMDCapture())
          m_rd->DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
+#endif
 
       if (texdmd != nullptr)
          m_rd->DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP);
