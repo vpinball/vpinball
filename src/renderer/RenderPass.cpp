@@ -284,12 +284,14 @@ bool RenderPass::Execute(const bool log)
    }
 
 #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
    {
       std::stringstream passName;
       passName << m_name << " [RT=" << m_rt->m_name << ']';
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
    }
+#endif
 #endif
    if (log)
    {
@@ -369,8 +371,10 @@ bool RenderPass::Execute(const bool log)
       m_rt->UpdateDepthSampler(true);
 
    #ifdef ENABLE_SDL
+#ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
       glPopDebugGroup();
+#endif
    #endif
 
    return true;

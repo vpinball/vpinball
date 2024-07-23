@@ -86,7 +86,7 @@ UNIFORM float4x4 Stereo_RightMat;
 // identify this situation by applying the filters to incoming colors and if needed adjust the colors to allow them to pass the 2 
 // filters instead of 1 (at least a little to satisfy the viewer brain and allow it to merge the 2 images, solving the retinal 
 // rivalry). There are two ways to do this:
-// - desaturation of the incoming colors (turn to gray), accounting for the loss of perceived luminance (Helmholtz–Kohlrausch effect)
+// - desaturation of the incoming colors (turn to gray), accounting for the loss of perceived luminance (Helmholtzï¿½Kohlrausch effect)
 // - hue shifting which allows to keep saturated colors, but not the right ones (tested but without generally satisfying results).
 UNIFORM float4 Stereo_LeftLuminance_Gamma;
 UNIFORM float4 Stereo_RightLuminance_DynDesat;

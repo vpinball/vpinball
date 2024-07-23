@@ -64,10 +64,18 @@ public:
 
          if (pcollection!=nullptr)
          {
+#ifndef __STANDALONE__
             CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
+#else
+            CComVariant rgvar[1] = { CComVariant(pT->m_viEventCollection[i]) };
+#endif
             DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
 
+#ifndef __STANDALONE__
             pcollection->FireDispID(dispid, &dispparams);
+#else
+            ((EventProxyBase*)pcollection)->FireDispID(dispid, &dispparams);
+#endif
          }
       }
 

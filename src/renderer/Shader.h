@@ -16,6 +16,12 @@
 
 #include <string>
 
+#ifdef __OPENGLES__
+#define FLT_MIN_VALUE 0.00006103515625
+#else
+#define FLT_MIN_VALUE 0.0000001
+#endif
+
 // Declaration of all available techniques (shader program)
 // When changed, this list must also be copied unchanged to Shader.cpp (for its implementation)
 #define SHADER_TECHNIQUE(name) SHADER_TECHNIQUE_##name
@@ -143,9 +149,11 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_noLight),
    SHADER_TECHNIQUE(bulb_light),
    SHADER_TECHNIQUE(bulb_light_with_ball_shadows),
+#ifndef __OPENGLES__
    SHADER_TECHNIQUE(SMAA_ColorEdgeDetection),
    SHADER_TECHNIQUE(SMAA_BlendWeightCalculation),
    SHADER_TECHNIQUE(SMAA_NeighborhoodBlending),
+#endif
    SHADER_TECHNIQUE(stereo_SBS),
    SHADER_TECHNIQUE(stereo_TB),
    SHADER_TECHNIQUE(stereo_Int),
@@ -434,7 +442,11 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
+#ifndef __OPENGLES__
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
+#else
+         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
+#endif
       }
       float GetFloat(const ShaderUniforms uniformName)
       {
@@ -453,6 +465,19 @@ public:
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
+#ifdef __OPENGLES__
+         for (int i = 0; i < count; i++) {
+             vec4* p = const_cast<vec4*>(&pData[i]);
+             if (p->x > 0 && p->x < FLT_MIN_VALUE) p->x = FLT_MIN_VALUE;
+             if (p->x < 0 && p->x > -FLT_MIN_VALUE) p->x = -FLT_MIN_VALUE;
+             if (p->y > 0 && p->y < FLT_MIN_VALUE) p->y = FLT_MIN_VALUE;
+             if (p->y < 0 && p->y > -FLT_MIN_VALUE) p->y = -FLT_MIN_VALUE;
+             if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) p->z = FLT_MIN_VALUE;
+             if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) p->z = -FLT_MIN_VALUE;
+             if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) p->w = FLT_MIN_VALUE;
+             if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) p->w = -FLT_MIN_VALUE;
+         }
+#endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
       }
       vec4 GetVector(const ShaderUniforms uniformName)
@@ -476,6 +501,13 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
+#ifdef __OPENGLES__
+         for (int i = 0; i < count * 16; i++) {
+             float* const p = const_cast<float*>(&pMatrix[i]);
+             if (*p > 0 && *p < FLT_MIN_VALUE) *p = FLT_MIN_VALUE;
+             if (*p < 0 && *p > -FLT_MIN_VALUE) *p = -FLT_MIN_VALUE;
+         }
+#endif
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
       }
       void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
@@ -566,6 +598,9 @@ private:
    bool parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string>& values, const string& parentMode);
    string analyzeFunction(const string& shaderCodeName, const string& technique, const string& functionName, const robin_hood::unordered_map<string, string>& values);
    ShaderTechnique* compileGLShader(const ShaderTechniques technique, const string& fileNameRoot, const string& shaderCodeName, const string& vertex, const string& geometry, const string& fragment);
+#ifdef __STANDALONE__
+   string preprocessGLShader(const string& shaderCode);
+#endif
 
 #else // DirectX 9
    struct UniformDesc
