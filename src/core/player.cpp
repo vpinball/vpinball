@@ -4,13 +4,22 @@
 #include <SDL2/SDL_syswm.h>
 #endif
 
+#ifdef __STANDALONE__
+#include <SDL2/SDL_image.h>
+#endif
+
+#ifndef __STANDALONE__
 #include "BAM/BAMView.h"
+#endif
 
 #ifdef _MSC_VER
 #include "imgui/imgui_impl_win32.h"
 #endif
 
-#include <algorithm>
+#ifdef __STANDALONE__
+#include "standalone/Standalone.h"
+#endif
+
 #include <ctime>
 #include <fstream>
 #include <sstream>
@@ -20,7 +29,9 @@
 #include "renderer/Anaglyph.h"
 #include "renderer/RenderCommand.h"
 #include "typedefs3D.h"
+#ifndef __STANDALONE__
 #include "captureExt.h"
+#endif
 #include "../math/bluenoise.h"
 #ifdef _MSC_VER
 #include "winsdk/legacy_touch.h"
@@ -33,6 +44,10 @@
 #else
 #define stable_sort std::stable_sort
 #define sort std::sort
+#endif
+
+#ifdef __STANDALONE__
+#include <map>
 #endif
 
 #if !(_WIN32_WINNT >= 0x0500)
@@ -56,6 +71,24 @@ static unsigned int stats_drawn_static_triangles = 0;
  #define detect_no_sse !__builtin_cpu_supports("sse")
  #define detect_sse2 __builtin_cpu_supports("sse2")
 #endif
+#endif
+
+#ifdef __ANDROID__
+#include "jni.h"
+#include <android/log.h>
+
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"VPX",__VA_ARGS__)
+
+static WebServer android_webServer;
+
+extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(JNIEnv* env, jobject obj, jboolean state) {
+   if (state) 
+      //android_webServer.Start();
+      LOGE("-> Start Web Server");
+   else
+      //android_webServer.Stop();
+      LOGE("-> Stop Web Server");
+}
 #endif
 
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
@@ -250,6 +283,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
    m_showTouchMessage = (numberOfTimesToShowTouchMessage != 0);
 
+   m_showTouchOverlay = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TouchOverlay"s, false);
+
    m_showWindowedCaption = false;
    m_showDebugger = false;
 
@@ -313,6 +348,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_ScreenOffset = Vertex2D(0.f, 0.f);
 
    m_implicitPlayfieldMesh = nullptr;
+
+#ifdef ENABLE_SDL_INPUT
+   m_wnd_scale_x=0;
+   m_wnd_scale_y=0;
+#endif
 }
 
 Player::~Player()
@@ -332,8 +372,10 @@ void Player::PreRegisterClass(WNDCLASS& wc)
     wc.style = 0;
     wc.hInstance = g_pvp->theInstance;
     wc.lpszClassName = "VPPlayer"; // leave as-is as e.g. VPM relies on this
+#ifndef __STANDALONE__
     wc.hIcon = LoadIcon(g_pvp->theInstance, MAKEINTRESOURCE(IDI_TABLE));
     wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
+#endif
     wc.lpszMenuName = nullptr;
 }
 
@@ -394,7 +436,6 @@ void Player::PreCreate(CREATESTRUCT& cs)
       x += (m_screenwidth - m_wnd_width) / 2;
       y += (m_screenheight - m_wnd_height) / 2;
 
-#ifdef _MSC_VER
       // is this a non-fullscreen window? -> get previously saved window position
       if ((m_wnd_height != m_screenheight) || (m_wnd_width != m_screenwidth))
       {
@@ -405,13 +446,29 @@ void Player::PreCreate(CREATESTRUCT& cs)
          r.top = yn;
          r.right = xn + m_wnd_width;
          r.bottom = yn + m_wnd_height;
+#ifdef _MSC_VER
          if (MonitorFromRect(&r, MONITOR_DEFAULTTONULL) != nullptr) // window is visible somewhere, so use the coords from the registry
+#endif
          {
             x = xn;
             y = yn;
          }
-#endif
       }
+
+#ifdef __STANDALONE__
+      int sx = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosX"s, -1);
+      int sy = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "WindowPosY"s, -1);
+      int sw = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, -1);
+      int sh = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, -1);
+      if (display == -1 && sx != -1 && sy != -1 && sw != -1 && sh != -1) {
+        x = sx;
+        y = sy;
+        m_wnd_width = sw;
+        m_wnd_height = sh;
+
+        PLOGI.printf("Window resolution override: %dx%d+%d,%d", m_wnd_width, m_wnd_height, x, y);
+      }
+#endif
    }
 
     int windowflags;
@@ -461,6 +518,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
 
    // Set the WNDCLASS parameters
    PreRegisterClass(wc);
+#ifndef __STANDALONE__
    if (wc.lpszClassName)
    {
       ::RegisterClass(&wc);
@@ -469,6 +527,7 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    else
       cs.lpszClass = _T("Win32++ Window");
    SDL_RegisterApp(wc.lpszClassName, 0, g_pvp->theInstance);
+#endif
 
    // Set a reasonable default window style.
    DWORD dwOverlappedStyle = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
@@ -503,11 +562,9 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 
-#ifdef __OPENGLES__
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__) && defined(TARGET_OS_MAC)
+#ifndef __OPENGLES__
+#if defined(__APPLE__) && defined(TARGET_OS_MAC)
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -516,6 +573,11 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug information,...)
    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+#endif
+#else
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #endif
 
    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -534,23 +596,36 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    Uint32 flags = SDL_WINDOW_OPENGL;
 #ifdef _MSC_VER
    flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
-#elif defined(__APPLE__) && !TARGET_OS_TV
-   if (LoadValueWithDefault(Settings::Player, "HighDPI"s, true))
+#endif
+
+#ifdef __STANDALONE__
+   Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
+
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
       flags |= SDL_WINDOW_ALLOW_HIGHDPI;
 #endif
 
-#ifndef _MSC_VER
-   cs.x = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
-   cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
+   // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
+#ifndef __STANDALONE__
+   SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
+#endif
+
+   // Prevent full screen window from minimizing when re-arranging external windows
+#ifdef __STANDALONE__
+   SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 #endif
 
    PLOGI << "Creating main window"; // For profiling (SDL create window is fairly slow, can be more than 1 second, but there doesn't seem to be any workaround)
 
    if (m_fullScreen)
    {
+#ifndef __STANDALONE__
       //FIXME we have a bug somewhere that will prevent SDL from keeping the focus when in fullscreen mode, so we just run in scaled windowed mode...
       //m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, displayWidth, displayHeight, flags | SDL_WINDOW_FULLSCREEN);
+#else
+      m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, displayX, displayY, m_wnd_width, m_wnd_height, flags | SDL_WINDOW_FULLSCREEN);
+#endif
       // Adjust refresh rate
       SDL_DisplayMode mode;
       SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
@@ -560,24 +635,51 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       for (int index = 0; index < indices; index++)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
+#ifndef __STANDALONE__
          // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)
          if (mode.w == displayWidth && mode.h == displayHeight && mode.refresh_rate == m_refreshrate && mode.format == format)
+#else
+         if (mode.w == m_wnd_width && mode.h == m_wnd_height && (m_refreshrate == 0 || mode.refresh_rate == m_refreshrate) && mode.format == format)
+#endif
          {
             SDL_SetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
             found = true;
             break;
          }
       }
-      if (!found)
+      if (!found) {
          PLOGE << "Failed to find a display mode matching the requested refresh rate [" << m_refreshrate << ']';
+      }
    }
    else
    {
+#ifndef __STANDALONE__
       // Don't ask fullscreen desktop as it will likely cause issue with overlaying DMD, B2S, Pup,... above VPX
       //if (cs.cx == displayWidth && cs.cy == displayHeight)
       //   flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+#else
+      for (vector<DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf) {
+         if (dispConf->left == cs.x && dispConf->top == cs.y && dispConf->width == cs.cx && dispConf->height == cs.cy) {
+            flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            break;
+         }
+      }
+#endif
       m_sdl_playfieldHwnd = SDL_CreateWindow(cs.lpszName, cs.x, cs.y, cs.cx, cs.cy, flags);
    }
+
+#ifdef __STANDALONE__
+   const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
+   SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
+   if (pIcon) {
+      SDL_SetWindowIcon(m_sdl_playfieldHwnd, pIcon);
+      SDL_FreeSurface(pIcon);
+   }
+   else {
+      PLOGE << "Failed to load window icon: " << SDL_GetError();
+   }
+#endif
+
    SDL_DisplayMode mode;
    SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
    PLOGI << "SDL display mode: " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
@@ -586,9 +688,14 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    SDL_VERSION(&wmInfo.version);
    SDL_GetWindowWMInfo(m_sdl_playfieldHwnd, &wmInfo);
 
+#ifndef __STANDALONE__
    // Attach it (raise a WM_CREATE which in turns call OnInitialUpdate)
    Attach(wmInfo.info.win.window);
+#else
+   OnInitialUpdate();
+#endif
 
+#ifndef __STANDALONE__
    if (cs.style & WS_VISIBLE)
    {
       if (cs.style & WS_MAXIMIZE)
@@ -598,7 +705,9 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       else
          SDL_ShowWindow(m_sdl_playfieldHwnd);
    }
-
+#else
+   SDL_ShowWindow(m_sdl_playfieldHwnd);
+#endif
 #else
    PLOGI << "Creating main window"; // For profiling
    Create();
@@ -717,7 +826,7 @@ void Player::OnClose()
       string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
       std::filesystem::create_directories(std::filesystem::path(dir));
 
-      std::map<string, bool> prevPreRenderOnly;
+      ankerl::unordered_dense::map<string, bool> prevPreRenderOnly;
       if (!IsUsingStaticPrepass() && FileExists(dir + "used_textures.xml"))
       {
          std::ifstream myFile(dir + "used_textures.xml");
@@ -782,9 +891,11 @@ void Player::OnClose()
     mixer_shutdown();
     ushock_shutdown();
 
+#ifndef __STANDALONE__
     StopCaptures();
 #ifdef ENABLE_SDL
    g_DXGIRegistry.ReleaseAll();
+#endif
 #endif
 
    delete m_liveUI;
@@ -893,10 +1004,13 @@ void Player::OnClose()
 #ifndef __STANDALONE__
    if (appExitRequested)
    {
+#ifndef __STANDALONE__
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
+#endif
    }
    else
    {
+#ifndef __STANDALONE__
       g_pvp->GetPropertiesDocker()->EnableWindow();
       g_pvp->GetLayersDocker()->EnableWindow();
       g_pvp->GetToolbarDocker()->EnableWindow();
@@ -911,9 +1025,15 @@ void Player::OnClose()
       m_pEditorTable->SetDirtyDraw();
       m_pEditorTable->RefreshProperties();
       m_pEditorTable->BeginAutoSaveCounter();
+#endif
    }
 #endif
 
+#ifdef __STANDALONE__
+   g_pStandalone->Shutdown();
+#endif
+
+   PLOGI << "Player closed.";
    // Destroy this player
    delete this; // Win32xx call Window destroy for us from destructor, don't call it directly or it will crash due to dual destruction
    PLOGI << "Player closed.";
@@ -1281,6 +1401,15 @@ HRESULT Player::Init()
 
    PLOGI << "Initializing renderer (global states & resources)"; // For profiling
 
+#ifdef ENABLE_SDL
+   SDL_GL_GetDrawableSize(m_sdl_playfieldHwnd, &m_wnd_width, &m_wnd_height);
+   PLOGI.printf("Drawable Size: width=%d, height=%d", m_wnd_width, m_wnd_height);
+   int realWindowWidth, realWindowHeight;
+   SDL_GetWindowSize(g_pplayer->m_sdl_playfieldHwnd, &realWindowWidth, &realWindowHeight);
+   m_wnd_scale_x = static_cast<float>(m_wnd_width) / realWindowWidth;
+   m_wnd_scale_y = static_cast<float>(m_wnd_height) / realWindowHeight;
+#endif
+
    // colordepth & refreshrate are only defined if fullscreen is true.
    // width and height may be modified during initialization (for example for VR, they are adapted to the headset resolution)
    int w = m_wnd_width, h = m_wnd_height;
@@ -1318,6 +1447,7 @@ HRESULT Player::Init()
 
    m_pininput.Init(GetHwnd());
 
+#ifndef __STANDALONE__
    //
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
    const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
@@ -1330,8 +1460,10 @@ HRESULT Player::Init()
       m_pin3d.GetMVP().SetFlip(rotation == 0 || rotation == 2 ? ModelViewProj::FLIPX : ModelViewProj::FLIPY);
    }
    else
+#endif
       m_ptable->m_tblMirrorEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "mirror"s, false);
 
+#ifndef __STANDALONE__
    // if left flipper or shift hold during load, then swap DT/FS view (for quick testing)
    if (m_ptable->m_BG_current_set != BG_FSS &&
        !m_ptable->m_tblMirrorEnabled &&
@@ -1346,6 +1478,7 @@ HRESULT Player::Init()
       }
       m_ptable->UpdateCurrentBGSet();
    }
+#endif
 
    // Initialize default state
    RenderState state;
@@ -1560,10 +1693,14 @@ HRESULT Player::Init()
       try {
          string dir = g_pvp->m_szMyPrefPath + "Cache" + PATH_SEPARATOR_CHAR + m_ptable->m_szTitle + PATH_SEPARATOR_CHAR;
          std::filesystem::create_directories(std::filesystem::path(dir));
-         if (FileExists(dir + "used_textures.xml"))
+         string path = dir + "used_textures.xml";
+         if (FileExists(path))
          {
+#ifdef __STANDALONE__
+            PLOGI.printf("Texture cache found at %s", path.c_str());
+#endif
             std::stringstream buffer;
-            std::ifstream myFile(dir + "used_textures.xml");
+            std::ifstream myFile(path);
             buffer << myFile.rdbuf();
             myFile.close();
             auto xml = buffer.str();
@@ -1675,6 +1812,7 @@ HRESULT Player::Init()
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_pin3d.m_pd3dPrimaryDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
+#ifndef __STANDALONE__
    #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
    {
@@ -1684,6 +1822,12 @@ HRESULT Player::Init()
          StartPUPCapture();
    }
    #endif
+#endif
+
+#ifdef __STANDALONE__
+   g_pStandalone = Standalone::GetInstance();
+   g_pStandalone->PreStartup();
+#endif
 
    m_pEditorTable->m_progressDialog.SetName("Starting Game Scripts..."s);
    PLOGI << "Starting script"; // For profiling
@@ -1742,8 +1886,19 @@ HRESULT Player::Init()
 
    m_pEditorTable->m_progressDialog.SetProgress(100);
    m_pEditorTable->m_progressDialog.SetName("Starting..."s);
+
+#ifdef __STANDALONE__
+   if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
+      g_pvp->m_webServer.Start();
+#endif
+
    PLOGI << "Startup done"; // For profiling
 
+#ifdef __STANDALONE__
+   g_pStandalone->PostStartup();
+#endif
+
+#ifndef __STANDALONE__
    g_pvp->GetPropertiesDocker()->EnableWindow(FALSE);
    g_pvp->GetLayersDocker()->EnableWindow(FALSE);
    g_pvp->GetToolbarDocker()->EnableWindow(FALSE);
@@ -1761,9 +1916,12 @@ HRESULT Player::Init()
    SetFocus();
 
    LockForegroundWindow(true);
+#endif
 
+#ifndef __STANDALONE__
    if (m_detectScriptHang)
       g_pvp->PostWorkToWorkerThread(HANG_SNOOP_START, NULL);
+#endif
 
    // 0 means disable limiting of draw-ahead queue
    m_limiter.Init(m_pin3d.m_pd3dPrimaryDevice, m_maxPrerenderedFrames);
@@ -1808,6 +1966,10 @@ void Player::RenderStaticPrepass()
 
    if (!m_isStaticPrepassDirty)
       return;
+
+#ifdef __STANDALONE__
+   SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, m_pin3d.m_pd3dPrimaryDevice->m_sdl_context);
+#endif
 
    m_isStaticPrepassDirty = false;
 
@@ -1894,8 +2056,10 @@ void Player::RenderStaticPrepass()
 
       // Finish the frame.
       m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
+#ifndef __STANDALONE__
       if (m_pEditorTable->m_progressDialog.IsWindow())
          m_pEditorTable->m_progressDialog.SetProgress(70 +(((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
+#endif
    }
 
    if (accumulationSurface)
@@ -3480,7 +3644,11 @@ void Player::PrepareVideoBuffers()
    const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_pin3d.m_pd3dPrimaryDevice->DepthBufferReadBackAvailable()));
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
+#ifndef __OPENGLES__
    const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
+#else
+   const bool SMAA = false;
+#endif
    const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
    const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
    const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
@@ -3717,6 +3885,7 @@ void Player::PrepareVideoBuffers()
    }
    else if (SMAA)
    {
+#ifndef __OPENGLES__
       assert(renderedRT == m_pin3d.m_pd3dPrimaryDevice->GetPostProcessRenderTarget1());
       // SMAA use 3 passes, all of them using the initial render, so since tonemap use postprocess RT 1, we use the back buffer and post process RT 2
       RenderTarget *sourceRT = renderedRT;
@@ -3750,6 +3919,7 @@ void Player::PrepareVideoBuffers()
       m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_NeighborhoodBlending);
       m_pin3d.m_pd3dPrimaryDevice->DrawFullscreenTexturedQuad(m_pin3d.m_pd3dPrimaryDevice->FBShader);
       renderedRT = outputRT;
+#endif
    }
 
    // Performs sharpening
@@ -4232,6 +4402,9 @@ void Player::PrepareFrame()
 
 void Player::SubmitFrame()
 {
+#ifdef __STANDALONE__
+   SDL_GL_MakeCurrent(g_pplayer->m_sdl_playfieldHwnd, m_pin3d.m_pd3dPrimaryDevice->m_sdl_context);
+#endif
    // Submit to GPU render queue
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
    m_pin3d.m_pd3dPrimaryDevice->FlushRenderFrame();
@@ -4245,11 +4418,13 @@ void Player::SubmitFrame()
    m_pin3d.m_pd3dPrimaryDevice->SwapBackBufferRenderTargets(); // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    g_frameProfiler.ExitProfileSection();
 
+#ifndef __STANDALONE__
    // Trigger captures
    #ifdef ENABLE_SDL
    if (m_stereo3D == STEREO_VR)
       UpdateExtCaptures();
    #endif
+#endif
 }
 
 bool Player::FinishFrame()
@@ -4328,8 +4503,10 @@ bool Player::FinishFrame()
       m_pauseTimeTarget = 0;
       m_userDebugPaused = true;
       RecomputePseudoPauseState();
+#ifndef __STANDALONE__
       if(m_debuggerDialog.IsWindow())
         m_debuggerDialog.SendMessage(RECOMPUTEBUTTONCHECK, 0, 0);
+#endif
    }
    #endif
 
@@ -4370,6 +4547,10 @@ bool Player::FinishFrame()
          m_liveUI->OpenMainSplash();
    }
 
+#ifdef __STANDALONE__
+   g_pStandalone->Render();
+#endif
+
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)
       exit(-9999); 
@@ -4389,6 +4570,7 @@ bool Player::FinishFrame()
       while(ShowCursor(FALSE) >= 0) ;
       while(ShowCursor(TRUE) < 0) ;
 
+#ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
       {
          m_debuggerDialog.Create(GetHwnd());
@@ -4398,8 +4580,10 @@ bool Player::FinishFrame()
          m_debuggerDialog.SetForegroundWindow();
 
       EndDialog( g_pvp->GetHwnd(), ID_DEBUGWINDOW );
+#endif
    }
 
+#ifndef __STANDALONE__
    // Try to bring PinMAME window back on top
    if (m_overall_frames < 10)
    {
@@ -4414,6 +4598,7 @@ bool Player::FinishFrame()
          }
       }
    }
+#endif
 
    return false;
 }
@@ -4484,15 +4669,18 @@ struct DebugMenuItem
 
 void AddEventToDebugMenu(const char *sz, int index, int dispid, LPARAM lparam)
 {
+#ifndef __STANDALONE__
    const DebugMenuItem * const pdmi = (DebugMenuItem *)lparam;
    const HMENU hmenu = pdmi->hmenu;
    const int menuid = ((pdmi->objectindex + 1) << 16) | (int)pdmi->pvdispid->size();
    pdmi->pvdispid->push_back(dispid);
    AppendMenu(hmenu, MF_STRING, menuid, sz);
+#endif
 }
 
 void Player::DoDebugObjectMenu(const int x, const int y)
 {
+#ifndef __STANDALONE__
    if (m_vdebugho.empty())
    {
       // First time the debug hit-testing has been used
@@ -4644,10 +4832,12 @@ void Player::DoDebugObjectMenu(const int x, const int y)
       delete vvdispid[i];
 
    UnpauseMusic();
+#endif
 }
 
 LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+#ifndef __STANDALONE__
     if (ImGui_ImplWin32_WndProcHandler(GetHwnd(), uMsg, wParam, lParam))
       return true;
 
@@ -4740,7 +4930,7 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                         DIDEVICEOBJECTDATA didod;
                         didod.dwOfs = m_rgKeys[touchkeymap[i]];
                         didod.dwData = m_touchregion_pressed[i] ? 0x80 : 0;
-                        m_pininput.PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
+                        m_pininput.PushQueue(&didod, APP_TOUCH/*, curr_time_msec*/);
                     }
             }
         }
@@ -4788,6 +4978,9 @@ LRESULT Player::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     return WndProcDefault(uMsg, wParam, lParam);
+#else
+    return 0L;
+#endif
 }
 
 #ifdef PLAYBACK

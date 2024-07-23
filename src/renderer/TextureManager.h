@@ -1,6 +1,6 @@
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 #include "stdafx.h"
 #include "Texture.h"
@@ -36,13 +36,13 @@ private:
    struct MapEntry
    {
       Sampler* sampler;
-      std::string name;
+      string name;
       SamplerFilter filter;
       SamplerAddressMode clampU, clampV;
       bool forceLinearRGB;
       bool preRenderOnly;
    };
    RenderDevice& m_rd;
-   robin_hood::unordered_map<BaseTexture*, MapEntry> m_map;
-   typedef robin_hood::unordered_map<BaseTexture*, MapEntry>::iterator Iter;
+   ankerl::unordered_dense::map<BaseTexture*, MapEntry> m_map;
+   typedef ankerl::unordered_dense::map<BaseTexture*, MapEntry>::iterator Iter;
 };

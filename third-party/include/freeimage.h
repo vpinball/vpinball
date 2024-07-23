@@ -3,7 +3,7 @@
 //
 // Design and implementation by
 // - Floris van den Berg (flvdberg@wxs.nl)
-// - Hervé Drolon (drolon@infonie.fr)
+// - Hervï¿½ Drolon (drolon@infonie.fr)
 //
 // Contributors:
 // - see changes log named 'Whatsnew.txt', see header of each .h and .cpp file
@@ -155,8 +155,10 @@ typedef uint8_t BYTE;
 typedef uint16_t WORD;
 typedef uint32_t DWORD;
 typedef int32_t LONG;
+#ifndef __STANDALONE__
 typedef int64_t INT64;
 typedef uint64_t UINT64;
+#endif
 #else
 // MS is not C99 ISO compliant
 typedef long BOOL;
@@ -174,6 +176,7 @@ typedef unsigned __int64 UINT64;
 #pragma pack(1)
 #endif // WIN32
 
+#ifndef __STANDALONE__
 typedef struct tagRGBQUAD {
 #if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR
   BYTE rgbBlue;
@@ -198,6 +201,7 @@ typedef struct tagRGBTRIPLE {
   BYTE rgbtBlue;
 #endif // FREEIMAGE_COLORORDER
 } RGBTRIPLE;
+#endif
 
 #if (defined(_WIN32) || defined(__WIN32__))
 #pragma pack(pop)
@@ -205,6 +209,7 @@ typedef struct tagRGBTRIPLE {
 #pragma pack()
 #endif // WIN32
 
+#ifndef __STANDALONE__
 typedef struct tagBITMAPINFOHEADER{
   DWORD biSize;
   LONG  biWidth; 
@@ -223,6 +228,7 @@ typedef struct tagBITMAPINFO {
   BITMAPINFOHEADER bmiHeader; 
   RGBQUAD          bmiColors[1];
 } BITMAPINFO, *PBITMAPINFO;
+#endif
 
 #endif // _WINDOWS_
 
