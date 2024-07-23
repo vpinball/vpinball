@@ -548,7 +548,7 @@ void Rubber::GetTimers(vector<HitTimer*> &pvht)
 
 void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 {
-   robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+   ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
    GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
    UpdateRubber(false, m_d.m_hitHeight);
@@ -583,10 +583,10 @@ void Rubber::GetHitShapes(vector<HitObject*> &pvho)
 // end of license:GPLv3+, back to 'old MAME'-like
 //
 
-void Rubber::AddHitEdge(vector<HitObject*> &pvho, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
+void Rubber::AddHitEdge(vector<HitObject*> &pvho, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
 
    if (addedEdges.insert(p).second) // edge not yet added?
    {
