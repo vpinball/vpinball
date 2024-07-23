@@ -1,0 +1,27 @@
+#!/bin/bash
+
+WINE_PATH=/Users/jmillard/vpx/wine-655de4b0bf09746cd163dc771abd2c0f3c777447
+
+${WINE_PATH}/tools/widl/widl -o ../vpinball_standalone_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../../vpinball.idl
+${WINE_PATH}/tools/widl/widl -u -o ../vpinball_standalone_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../../vpinball.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/vpinmame/vpinmame_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/vpinmame/VPinMAME.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/vpinmame/vpinmame_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/vpinmame/VPinMAME.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/wmp/wmp_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/wmp/wmp.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/wmp/wmp_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/wmp/wmp.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/flexdmd/flexdmd_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/flexdmd/FlexDMD.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/flexdmd/flexdmd_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/flexdmd/FlexDMD.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/flexdmd/flexudmd_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/flexdmd/FlexUDMD.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/flexdmd/flexudmd_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/flexdmd/FlexUDMD.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/ultradmd/ultradmd_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/ultradmd/UltraDMD.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/ultradmd/ultradmd_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/ultradmd/UltraDMD.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/pup/pup_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/pup/PUP.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/pup/pup_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/pup/PUP.idl
+
+${WINE_PATH}/tools/widl/widl -o ../inc/b2s/b2s_i.h --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/b2s/B2S.idl
+${WINE_PATH}/tools/widl/widl -u -o ../inc/b2s/b2s_i.c --nostdinc -Ldlls/\* -I${WINE_PATH}/include -D__WINESRC__ -D_UCRT ../inc/b2s/B2S.idl
