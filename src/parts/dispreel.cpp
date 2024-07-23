@@ -579,6 +579,7 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
    case FID(UPTM): pbr->GetInt(m_d.m_updateinterval); break;
    case FID(FONT): //!! deprecated, only here to support loading of old tables
    {
+#ifndef __STANDALONE__
       IFont *pIFont;
       FONTDESC fd;
       fd.cbSizeofstruct = sizeof(FONTDESC);
@@ -598,6 +599,18 @@ bool DispReel::LoadToken(const int id, BiffReader * const pbr)
       ips->Load(pbr->m_pistream);
 
       pIFont->Release();
+#else
+      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+      char data[255];
+
+      ULONG read;
+      pbr->ReadBytes(data, 3, &read);
+      pbr->ReadBytes(data, 1, &read); // Italic
+      pbr->ReadBytes(data, 2, &read); // Weight
+      pbr->ReadBytes(data, 4, &read); // Size
+      pbr->ReadBytes(data, 1, &read); // nameLen
+      pbr->ReadBytes(data, (int)data[0], &read); // name
+#endif
 
       break;
    }
@@ -796,14 +809,14 @@ STDMETHODIMP DispReel::put_Range(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
+STDMETHODIMP DispReel::get_UpdateInterval(LONG *pVal)
 {
    *pVal = GetUpdateInterval();
 
    return S_OK;
 }
 
-STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
+STDMETHODIMP DispReel::put_UpdateInterval(LONG newVal)
 {
    SetUpdateInterval((int)newVal);
    if (g_pplayer)
@@ -840,21 +853,21 @@ STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
+STDMETHODIMP DispReel::get_ImagesPerGridRow(LONG *pVal)
 {
    *pVal = GetImagesPerGridRow();
 
    return S_OK;
 }
 
-STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
+STDMETHODIMP DispReel::put_ImagesPerGridRow(LONG newVal)
 {
    SetImagesPerGridRow((int)newVal);
 
    return S_OK;
 }
 
-STDMETHODIMP DispReel::AddValue(long Value)
+STDMETHODIMP DispReel::AddValue(LONG Value)
 {
    const bool bNegative = (Value < 0);
 
@@ -884,7 +897,7 @@ STDMETHODIMP DispReel::AddValue(long Value)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::SetValue(long Value)
+STDMETHODIMP DispReel::SetValue(LONG Value)
 {
    // ensure a positive number
    long val = labs(Value);
@@ -943,7 +956,7 @@ STDMETHODIMP DispReel::ResetToZero()
    return S_OK;
 }
 
-STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
+STDMETHODIMP DispReel::SpinReel(LONG ReelNumber, LONG PulseCount)
 {
    if ((ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount))
    {
