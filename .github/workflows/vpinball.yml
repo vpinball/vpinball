@@ -24,15 +24,17 @@ jobs:
           fetch-depth: 0
       - id: version
         run: |
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
-          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          VERSION_FULL="${VERSION_SHORT}.${REVISION}"
           SHA7="${GITHUB_SHA::7}"
           TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
-          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
+          echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
@@ -62,8 +64,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [win-x64, win-x86]
-        config: [Release, Debug]
+        platform: [ win-x64, win-x86 ]
+        config: [ Release, Debug ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -99,7 +101,7 @@ jobs:
           cp -r build/${{ matrix.config }}/docs tmp
       - uses: actions/upload-artifact@v4
         with:
-          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: DO-NOT-USE-VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
 
   build-gl:
@@ -109,8 +111,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [win-x64, win-x86]
-        config: [Release, Debug]
+        platform: [ win-x64, win-x86 ]
+        config: [ Release, Debug ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -145,5 +147,140 @@ jobs:
           cp -r build/${{ matrix.config }}/docs tmp
       - uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: DO-NOT-USE-VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
+
+  build-macos:
+    name: Build VPinballX_${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: macos-latest
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL ]
+        config: [ Release ]  
+        arch: [ arm64, x64 ]
+    steps:
+      - run: |
+          brew install bison autoconf automake libtool nasm
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v4
+      - run: |
+          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
+             KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+             echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
+             security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+             security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+             security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+             security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+             security list-keychain -d user -s $KEYCHAIN_PATH
+          fi
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/macos-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/macos-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/macos-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          NUM_PROCS=$(sysctl -n hw.ncpu)
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-macos-${{ matrix.arch }}.txt CMakeLists.txt
+          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
+             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+                -DOPT_CODESIGN=ON \
+                -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
+                -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
+                -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
+                -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" \
+                -B build/${{ matrix.config }}
+          else
+             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+          fi
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+          cd build/${{ matrix.config }}
+          cpack
+      - run: |
+          mkdir tmp
+          cp build/${{ matrix.config }}/*.dmg tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-${{ matrix.arch }}
+          path: tmp
+
+  build-linux:
+    name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}
+    env:
+      CC: gcc-12
+      CXX: g++-12
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL ]
+        config: [ Release ]  
+        arch: [ x64 ]
+    steps:
+      - run: |
+          sudo apt-get update
+          sudo apt install cmake bison nasm zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/linux-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/linux-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          NUM_PROCS=$(nproc)
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+      - run: |
+          mkdir tmp
+          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
+          cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
+          cp -r build/${{ matrix.config }}/flexdmd tmp
+          cp -r build/${{ matrix.config }}/shader${{ needs.version.outputs.version_short }} tmp
+          cp -r build/${{ matrix.config }}/assets tmp
+          cp -r build/${{ matrix.config }}/scripts tmp
+          cp -r build/${{ matrix.config }}/tables tmp
+          cp -r build/${{ matrix.config }}/docs tmp
+      - run: |
+          cd tmp
+          tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz *
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}
+          path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz

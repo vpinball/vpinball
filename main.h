@@ -4,19 +4,34 @@
 #define NOMINMAX
 
 #ifdef ENABLE_SDL
+#ifndef __STANDALONE__
  #include <d3d11_1.h>
  #include <dxgi1_2.h>
  #pragma comment(lib,"d3d11.lib")
  #pragma comment(lib,"dxgi.lib")
 #endif
+#endif
+
+#ifdef __STANDALONE__
+#define __null 0
+#define ONLY_USE_BASS
+#endif
 
 #include <windows.h>
 #include <mmsystem.h>
+
+#ifdef __STANDALONE__
+#undef PlaySound
+#endif
 
 #ifdef USE_DINPUT8
  #define DIRECTINPUT_VERSION 0x0800
 #else
  #define DIRECTINPUT_VERSION 0x0700
+#endif
+
+#ifdef __STANDALONE__
+#define RPC_NO_WINDOWS_H
 #endif
 #include <dinput.h>
 
@@ -29,12 +44,20 @@
 
 #include <dsound.h>
 
-
 //#include <richedit.h>
 //#include <atlcom.h>
+#ifndef __STANDALONE__
 #include <atlbase.h>
+#else
+extern "C" {
+   #include <atlbase.h>
+}
+#endif
 //#include <atlhost.h>
+
+#ifndef __STANDALONE__
 #include <atlctl.h>
+#endif
 //#include <cassert>
 
 //#include <commctrl.h>
@@ -42,27 +65,30 @@
 //#include <cstdio>
 //#include "wchar.h"
 
+#ifdef __STANDALONE__
+#undef strncpy
+#include <wchar.h>
+#endif
+
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
 #define PATH_SEPARATOR_WCHAR L'\\'
-#define PATH_TABLES  ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "tables"  + PATH_SEPARATOR_CHAR)
-#define PATH_SCRIPTS ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR)
-#define PATH_MUSIC   ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "music"   + PATH_SEPARATOR_CHAR)
-#define PATH_USER    ("c:"s + PATH_SEPARATOR_CHAR + "Visual Pinball" + PATH_SEPARATOR_CHAR + "user"    + PATH_SEPARATOR_CHAR)
 #else
 #define PATH_SEPARATOR_CHAR '/'
 #define PATH_SEPARATOR_WCHAR L'/'
-#define PATH_TABLES  (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "tables"  + PATH_SEPARATOR_CHAR)
-#define PATH_SCRIPTS (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "scripts" + PATH_SEPARATOR_CHAR)
-#define PATH_MUSIC   (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "music"   + PATH_SEPARATOR_CHAR)
-#define PATH_USER    (string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".vpinball" + PATH_SEPARATOR_CHAR + "user"    + PATH_SEPARATOR_CHAR)
 #endif
+#define PATH_TABLES  (g_pvp->m_szMyPrefPath + "tables"  + PATH_SEPARATOR_CHAR)
+#define PATH_SCRIPTS (g_pvp->m_szMyPrefPath + "scripts" + PATH_SEPARATOR_CHAR)
+#define PATH_MUSIC   (g_pvp->m_szMyPrefPath + "music"   + PATH_SEPARATOR_CHAR)
+#define PATH_USER    (g_pvp->m_szMyPrefPath + "user"    + PATH_SEPARATOR_CHAR)
 
 #include <oleauto.h>
 
 #include <wincrypt.h>
 
+#ifndef __STANDALONE__
 #include <intrin.h>
+#endif
 #if defined(_M_IX86) || (defined(_M_IX86_FP) && _M_IX86_FP >= 2) || defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
  #define ENABLE_SSE_OPTIMIZATIONS
  #include <xmmintrin.h>
@@ -71,9 +97,14 @@
  #include "sse2neon.h"
 #endif
 
+#ifdef __SSSE3__
+ #include <tmmintrin.h>
+#endif
+
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iomanip>
 #include <commdlg.h>
 
 using namespace std::string_literals;
@@ -84,11 +115,13 @@ using std::vector;
 // try to load the file from the current directory
 // if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
 // if that also fails, try the standard installation path
-static const string defaultFileNameSearch[] = { string(), string(), string(), string(), PATH_USER, PATH_SCRIPTS, PATH_TABLES };
+static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
 static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
 
 #include <dlgs.h>
 #include <cderr.h>
+
+#ifndef __STANDALONE__
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
@@ -123,12 +156,120 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include <wxx_treeview.h>		// Add CTreeView
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
 #include <wxx_wincore.h>
+#endif
 
-#define PLOG_OMIT_LOG_DEFINES 
-#define PLOG_NO_DBG_OUT_INSTANCE_ID 1
-#include <plog/Log.h>
+#ifdef __STANDALONE__
+#define fopen_s(pFile, filename, mode) (((*(pFile)) = fopen((filename), (mode))) == NULL)
+#define fprintf_s fprintf
+#define fread_s(buffer, bufferSize, elementSize, count, stream) fread(buffer, bufferSize, count, stream)
+#define fscanf_s fscanf
+
+#define sscanf_s sscanf
+
+#define localtime_s(x, y) localtime_r(y, x)
+#define gmtime_s(x, y) gmtime_r(y, x)
+
+#define _aligned_malloc(size, align) aligned_alloc(align, size)
+#define _aligned_free free
+
+#undef lstrlen
+#define lstrlen lstrlenA
+
+#undef lstrcmpi
+#define lstrcmpi lstrcmpiA
+
+#undef lstrcmp
+#define lstrcmp lstrcmpA
+
+#define strcpy_s(A, B, C) strncpy(A, C, B)
+#define strnlen_s strnlen
+#define sprintf_s snprintf
+#define _snprintf_s snprintf
+#define swprintf_s swprintf
+#define StrStrI strcasestr
+#define CString string
+
+#define STRNCPY_S3(a, b, c) strncpy(a, b, c)
+#define STRNCPY_S4(a, b, c, d) strncpy(a, c, d)
+#define GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
+#define strncpy_s(...) \
+  GET_MACRO(__VA_ARGS__, STRNCPY_S4, STRNCPY_S3)(__VA_ARGS__)
+
+#define _T(x) x
+#define AtoT(x) x
+#define _ASSERTE(expr) ((void)0)
+
+#undef GetCurrentDirectory
+#define GetCurrentDirectory GetCurrentDirectoryA
+
+#undef SetCurrentDirectory
+#define SetCurrentDirectory SetCurrentDirectoryA
+
+#undef GetModuleFileName
+#define GetModuleFileName GetModuleFileNameA
+
+#undef MessageBox
+#define MessageBox MessageBoxA
+
+#undef OutputDebugString
+#define OutputDebugString OutputDebugStringA
+
+#undef CharLowerBuff
+#define CharLowerBuff CharLowerBuffA
+
+#define FINDREPLACE FINDREPLACEA
+#define CREATESTRUCT CREATESTRUCTA
+#define WNDCLASS WNDCLASSA
+#define LOGFONT LOGFONTA
+#define MONITORINFOEX MONITORINFOEXA
+
+typedef LPSTR LPTSTR;
+typedef LPCSTR LPCTSTR;
+
+class SearchSelectDialog { };
+class LayersListDialog { };
+class ImageDialog { };
+class SoundDialog { };
+class AudioOptionsDialog { };
+class VideoOptionsDialog { };
+class VROptionsDialog { };
+class EditorOptionsDialog { };
+class CollectionManagerDialog { };
+class PhysicsOptionsDialog { };
+class TableInfoDialog { };
+class DimensionDialog { };
+class RenderProbeDialog { };
+class MaterialDialog { };
+class AboutDialog { };
+class ToolbarDialog { };
+class NotesDialog { };
+class PropertyDialog { };
+class ColorButton { };
+class SCNotification { };
+#endif
+
+#include "Logger.h"
+
+#ifdef __STANDALONE__
+#include "standalone/inc/atl/atldef.h"
+#include "standalone/inc/atl/atlbase.h"
+#include "standalone/inc/atl/atlcom.h"
+#include "standalone/inc/atl/atlcomcli.h"
+#include "standalone/inc/atl/atlsafe.h"
+
+#include "standalone/inc/atlmfc/afx.h"
+#include "standalone/inc/atlmfc/afxdlgs.h"
+#include "standalone/inc/atlmfc/afxwin.h"
+#include "standalone/inc/atlmfc/atltypes.h"
+
+#include "standalone/inc/win32xx/win32xx.h"
+#endif
 
 #include "helpers.h"
+
+#ifdef __STANDALONE__
+#include <cstdint>
+#endif
 
 #include "def.h"
 
@@ -147,7 +288,11 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "variant.h"
 #include "vector.h"
 #include "vectorsort.h"
+#ifndef __STANDALONE__
 #include "vpinball.h"
+#else
+#include "standalone/vpinball_standalone_i.h"
+#endif
 #include "core/Settings.h"
 
 #include "idebug.h"
@@ -169,7 +314,9 @@ static const string defaultPathSearch[]     = { string(), "user"s +PATH_SEPARATO
 #include "media/lzwreader.h"
 #include "media/lzwwriter.h"
 
+#ifndef __STANDALONE__
 #include "audio/wavread.h"
+#endif
 
 #include "audio/pinsound.h"
 #include "pinbinary.h"

@@ -1,0 +1,159 @@
+name: vpinball-mobile
+on:
+  push:
+
+env:
+  VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.version.outputs.revision }}
+      version_short: ${{ steps.version.outputs.version_short }}
+      version_full: ${{ steps.version.outputs.version_full }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
+          VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+          VERSION_FULL="${VERSION_SHORT}.${REVISION}"
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
+          echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  build-ios:
+    name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: macos-latest
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL ]
+        config: [ Release ]  
+        arch: [ arm64 ]
+    steps:
+      - run: |
+          brew install bison autoconf automake libtool
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/ios-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/ios-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/ios-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          NUM_PROCS=$(sysctl -n hw.ncpu)
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-ios-${{ matrix.arch }}.txt CMakeLists.txt
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version_short }}" "standalone/ios-${{ matrix.arch }}/ios-project/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.version_full }}" "standalone/ios-${{ matrix.arch }}/ios-project/Info.plist"
+          cmake -G Xcode -B build
+          cmake --build build --config ${{ matrix.config }}
+          cd build/${{ matrix.config }}-iphoneos
+          mkdir Payload
+          mv VPinballX_${{ matrix.type }}.app Payload
+          zip -r VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa Payload
+      - run: |
+          mkdir tmp
+          cp -r build/${{ matrix.config }}-iphoneos/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
+          path: tmp
+
+  build-android:
+    name: Build VPinballX_${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: ubuntu-22.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ GL ]
+        config: [ Release ]  
+        arch: [ arm64-v8a ]
+    steps:
+      - run: |
+          sudo apt install bison
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/android-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/android-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/android-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build VPinball
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          NUM_PROCS=$(nproc)
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE}-android-${{ matrix.arch }}.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+      - name: Build Android App
+        run: |
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          perl -i -pe"s/applicationId \"org.vpinball.app\"/applicationId \"org.vpinball.app.${TYPE}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/versionCode [0-9]+/versionCode ${{ needs.version.outputs.revision }}/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/versionName \"[0-9\.]+\"/versionName \"${{ needs.version.outputs.tag }}\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/\"VPinballX.apk\"/\"VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.apk\"/g" standalone/android-${{ matrix.arch }}/android-project/app/build.gradle
+          perl -i -pe"s/VPinballX/VPinballX_${{ matrix.type }}/g" standalone/android-${{ matrix.arch }}/android-project/app/src/main/res/values/strings.xml
+          cd standalone/android-${{ matrix.arch }}/android-project
+          ./gradlew assembleDebug
+      - run: |
+          mkdir tmp
+          cp standalone/android-${{ matrix.arch }}/android-project/app/build/outputs/apk/debug/VPinballX_${{ matrix.type }}-*.apk tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android-${{ matrix.arch }}
+          path: tmp

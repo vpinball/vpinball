@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "renderer/Shader.h"
+#ifndef __STANDALONE__
 #include "captureExt.h"
+#endif
 
 Textbox::Textbox()
 {
@@ -15,7 +17,8 @@ Textbox::~Textbox()
 Textbox *Textbox::CopyForPlay(PinTable *live_table)
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
-   m_pIFont->Clone(&dst->m_pIFont);
+   if (m_pIFont)
+      m_pIFont->Clone(&dst->m_pIFont);
    return dst;
 }
 
@@ -40,9 +43,11 @@ void Textbox::SetDefaults(const bool fromMouseClick)
    m_backglass = true;
    m_d.m_visible = true;
 
+#ifndef __STANDALONE__
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
    bool free_lpstrName = false;
+#endif
 
    if (!fromMouseClick)
    {
@@ -56,6 +61,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_isDMD = false;
       m_d.m_sztext.clear();
 
+#ifndef __STANDALONE__
       fd.cySize.int64 = (LONGLONG)(14.25f * 10000.0f);
       fd.lpstrName = (LPOLESTR)(L"Arial");
       fd.sWeight = FW_NORMAL;
@@ -63,6 +69,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       fd.fItalic = 0;
       fd.fUnderline = 0;
       fd.fStrikethrough = 0;
+#endif
    }
    else
    {
@@ -75,6 +82,7 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       m_d.m_transparent = g_pvp->m_settings.LoadValueWithDefault(regKey, "Transparent"s, false);
       m_d.m_isDMD = g_pvp->m_settings.LoadValueWithDefault(regKey, "DMD"s, false);
 
+#ifndef __STANDALONE__
       float fontsize = g_pvp->m_settings.LoadValueWithDefault(regKey, "FontSize"s, 14.25f);
       fd.cySize.int64 = (LONGLONG)(fontsize * 10000.0f);
 
@@ -102,13 +110,15 @@ void Textbox::SetDefaults(const bool fromMouseClick)
       hr = g_pvp->m_settings.LoadValue(regKey, "Text"s, m_d.m_sztext);
       if (!hr)
          m_d.m_sztext.clear();
+#endif
    }
 
+#ifndef __STANDALONE__
    SAFE_RELEASE(m_pIFont);
    OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
    if (free_lpstrName)
       free(fd.lpstrName);
-
+#endif
 #undef regKey
 }
 
@@ -123,6 +133,7 @@ void Textbox::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "Transparent"s, m_d.m_transparent);
    g_pvp->m_settings.SaveValue(regKey, "DMD"s, m_d.m_isDMD);
 
+#ifndef __STANDALONE__
    FONTDESC fd;
    fd.cbSizeofstruct = sizeof(FONTDESC);
    m_pIFont->get_Size(&fd.cySize);
@@ -151,6 +162,7 @@ void Textbox::WriteRegDefaults()
    g_pvp->m_settings.SaveValue(regKey, "Text"s, m_d.m_sztext);
 
 #undef regKey
+#endif
 }
 
 
@@ -215,6 +227,7 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
    case FID(IDMD): pbr->GetBool(m_d.m_isDMD); break;
    case FID(FONT):
    {
+#ifndef __STANDALONE__
       if (!m_pIFont)
       {
          FONTDESC fd;
@@ -233,6 +246,19 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       m_pIFont->QueryInterface(IID_IPersistStream, (void **)&ips);
       ips->Load(pbr->m_pistream);
       SAFE_RELEASE_NO_RCC(ips);
+#else
+      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
+
+      char data[255];
+
+      ULONG read;
+      pbr->ReadBytes(data, 3, &read);
+      pbr->ReadBytes(data, 1, &read); // Italic
+      pbr->ReadBytes(data, 2, &read); // Weight
+      pbr->ReadBytes(data, 4, &read); // Size
+      pbr->ReadBytes(data, 1, &read); // nameLen
+      pbr->ReadBytes(data, (int)data[0], &read); // name
+#endif
       break;
    }
    default: ISelect::LoadToken(id, pbr); break;
@@ -263,6 +289,7 @@ char * Textbox::GetFontName()
 
 HFONT Textbox::GetFont()
 {
+#ifndef __STANDALONE__
     FONTDESC fd;
     fd.cbSizeofstruct = sizeof(FONTDESC);
     m_pIFont->get_Size(&fd.cySize);
@@ -289,6 +316,9 @@ HFONT Textbox::GetFont()
 
     const HFONT hFont = CreateFontIndirect(&lf);
     return hFont;
+#else
+   return 0L;
+#endif
 }
 
 STDMETHODIMP Textbox::InterfaceSupportsErrorInfo(REFIID riid)
@@ -381,12 +411,14 @@ void Textbox::RenderSetup(RenderDevice *device)
    assert(m_rd == nullptr);
    m_rd = device;
 
+#ifndef __STANDALONE__
    m_pIFont->Clone(&m_pIFontPlay);
 
    CY size;
    m_pIFontPlay->get_Size(&size);
    size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_wnd_height * g_pplayer->m_wnd_width);
    m_pIFontPlay->put_Size(size);
+#endif
 
    const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
    const int height = (int)max(m_d.m_v1.y, m_d.m_v2.y) - (int)min(m_d.m_v1.y, m_d.m_v2.y);
@@ -442,7 +474,11 @@ void Textbox::Render(const unsigned int renderMask)
 
    if (dmd)
    {
+#ifndef __STANDALONE__
       const bool isExternalDMD = HasDMDCapture();
+#else
+      const bool isExternalDMD = false;
+#endif
 
       m_rd->ResetRenderState();
       m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -489,7 +525,7 @@ void Textbox::Render(const unsigned int renderMask)
       if (m_textureDirty)
       {
          m_textureDirty = false;
-
+#ifndef __STANDALONE__
          RECT rect;
          rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
          rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
@@ -566,12 +602,22 @@ void Textbox::Render(const unsigned int renderMask)
             dest += m_texture->pitch() / 4 - m_texture->width();
          }
 
-         m_rd->m_texMan.SetDirty(m_texture);
-
          SelectObject(hdc, oldFont);
          SelectObject(hdc, oldBmp);
          DeleteDC(hdc);
          DeleteObject(hbm);
+#else
+         //!! temporary workaround
+         if (m_d.m_transparent)
+            memset(m_texture->data(), 0, m_texture->height()*m_texture->width() * 4);
+         else
+         {
+            unsigned int *const __restrict dest = (unsigned int *)m_texture->data();
+            for (size_t i = 0; i < (size_t)m_texture->height()*m_texture->width(); ++i)
+               dest[i] = 0xFF000000u;
+         }
+#endif
+         m_rd->m_texMan.SetDirty(m_texture);
       }
 
       m_rd->ResetRenderState();

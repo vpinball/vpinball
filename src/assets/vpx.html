@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>VPX</title>
+    <style>
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .container {
+        height: 80%;
+      }
+      ul {
+        list-style-type: none;
+        padding: 0;
+        width: 50%;
+      }
+      li {
+        margin-bottom: 5px;
+        display: grid;
+        grid-template-columns: auto 100px 200px;
+        grid-gap: 10px;
+        align-items: center;
+      }
+      li.row:hover {
+        background-color: #f5f5f5;
+      }
+      li a {
+        text-decoration: none;
+        color: #007bff;
+      }
+      li.header a {
+        color: #000000;
+        font-weight: bold;
+      }
+      .actions span {
+        height: 1em;
+        width: 1em;
+        background-repeat: no-repeat;
+        background-position: center;
+        display: inline-block;
+        margin: 0 5px;
+      }
+      .action-icon {
+        cursor: pointer;
+      }
+      .edit-icon {
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/></svg>');
+      }
+      .delete-icon {
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>');
+      }
+      .extract-icon {
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M64 464c-8.8 0-16-7.2-16-16V64c0-8.8 7.2-16 16-16h48c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16h48v80c0 17.7 14.3 32 32 32h80V448c0 8.8-7.2 16-16 16H64zM64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V154.5c0-17-6.7-33.3-18.7-45.3L274.7 18.7C262.7 6.7 246.5 0 229.5 0H64zm48 112c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H128c-8.8 0-16 7.2-16 16zm0 64c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H128c-8.8 0-16 7.2-16 16zm-6.3 71.8L82.1 335.9c-1.4 5.4-2.1 10.9-2.1 16.4c0 35.2 28.8 63.7 64 63.7s64-28.5 64-63.7c0-5.5-.7-11.1-2.1-16.4l-23.5-88.2c-3.7-14-16.4-23.8-30.9-23.8H136.6c-14.5 0-27.2 9.7-30.9 23.8zM128 336h32c8.8 0 16 7.2 16 16s-7.2 16-16 16H128c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>');
+      }
+      .activate-icon {
+        background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M32 0C49.7 0 64 14.3 64 32V48l69-17.2c38.1-9.5 78.3-5.1 113.5 12.5c46.3 23.2 100.8 23.2 147.1 0l9.6-4.8C423.8 28.1 448 43.1 448 66.1V345.8c0 13.3-8.3 25.3-20.8 30l-34.7 13c-46.2 17.3-97.6 14.6-141.7-7.4c-37.9-19-81.3-23.7-122.5-13.4L64 384v96c0 17.7-14.3 32-32 32s-32-14.3-32-32V400 334 64 32C0 14.3 14.3 0 32 0zM64 187.1l64-13.9v65.5L64 252.6V318l48.8-12.2c5.1-1.3 10.1-2.4 15.2-3.3V238.7l38.9-8.4c8.3-1.8 16.7-2.5 25.1-2.1l0-64c13.6 .4 27.2 2.6 40.4 6.4l23.6 6.9v66.7l-41.7-12.3c-7.3-2.1-14.8-3.4-22.3-3.8v71.4c21.8 1.9 43.3 6.7 64 14.4V244.2l22.7 6.7c13.5 4 27.3 6.4 41.3 7.4V194c-7.8-.8-15.6-2.3-23.2-4.5l-40.8-12v-62c-13-3.8-25.8-8.8-38.2-15c-8.2-4.1-16.9-7-25.8-8.8v72.4c-13-.4-26 .8-38.7 3.6L128 173.2V98L64 114v73.1zM320 335.7c16.8 1.5 33.9-.7 50-6.8l14-5.2V251.9l-7.9 1.8c-18.4 4.3-37.3 5.7-56.1 4.5v77.4zm64-149.4V115.4c-20.9 6.1-42.4 9.1-64 9.1V194c13.9 1.4 28 .5 41.7-2.6l22.3-5.2z"/></svg>');
+      }
+      #editor {
+        display: none;
+      }
+      #editor-content {
+        height: 90%;
+        width: 90%;
+      }
+    </style>
+  </head>
+  <body ondragover="event.preventDefault()">
+    <div id="main" class="container">
+      <h1>VPX</h1>
+      <p>
+        <button onclick="sendCommand('fps')">Toggle FPS</button>
+        <button onclick="sendCommand('shutdown')">Shutdown</button>
+      </p>
+      <h4 id="main-path"></h4>
+      <p>
+        <button onclick="newFolder()">New Folder</button>
+        <button onclick="uploadFile()">Upload</button> <span id="main-status"></span>
+      </p>
+      <ul id="file-list-header">
+        <li class="header">
+          <a href="#" onclick="toggleSort('name')">Name</a>
+          <span></span>
+          <span><a href="#" onclick="toggleSort('size')">Size</a></span>
+        </li>
+      </ul>
+      <ul id="file-list"></ul>
+    </div>
+    <div id="editor" class="container">
+      <h1>VPX</h1>
+      <h4 id="editor-path"></h4>
+      <p>
+        <button id="save-button">Save</button>
+        <button onclick="closeEditor()">Close</button> <span id="editor-status"></span>
+      </p>
+      <textarea id="editor-content"></textarea>
+    </div>
+    <script>
+      var _directory;
+      var _data;
+      var _lastSort = "name";
+      var _sortOrders = {
+        name: "asc",
+        size: "asc",
+      };
+
+      function fetchFiles(directory) {
+        fetch(`files?q=${encodeURIComponent(directory)}`)
+          .then((response) => response.json())
+          .then((data) => {
+            _directory = directory;
+            _data = data;
+
+            document.getElementById("main-path").innerHTML = `Index of /${directory ? directory : ""}`;
+
+            sortFiles(_lastSort);
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function updateFilesList() {
+        document.getElementById("file-list").innerHTML = "";
+
+        if (_directory !== "") {
+          var parentDirectory = _directory.substring(0, _directory.lastIndexOf("/"));
+          parentDirectory = parentDirectory.replace("'", "\\'");
+          document.getElementById(
+            "file-list"
+          ).innerHTML += `<li class="row"><a href="#" onclick="fetchFiles('${parentDirectory}')">..</a></li>`;
+        }
+
+        _data.forEach((file) => {
+          var listItem = `<li class="row">`;
+
+          if (file.isDir) {
+            var subdirectory = _directory ? `${_directory}/${file.name}` : file.name;
+            subdirectory = subdirectory.replace("'", "\\'");
+            listItem += `<a href="#" onclick="fetchFiles('${subdirectory}')">${file.name}/</a>`;
+          } else {
+            const filePath = _directory ? `${_directory}/${file.name}` : file.name;
+            listItem += `<a href="download?q=${encodeURIComponent(filePath)}">${file.name}</a>`;
+          }
+
+          var actionsSpan = `<span class="actions">`;
+          var fileName = file.name.replace("'", "\\'");
+
+          if (["vbs", "ini", "txt", "log", "html", "json", "xml", "fnt", "glfx", "fxh"].includes(file.ext)) {
+            actionsSpan += `<span class="action-icon edit-icon" onclick="editFile('${fileName}')"></span>`;
+          } else {
+            actionsSpan += `<span></span>`;
+          }
+
+          actionsSpan += `<span class="action-icon delete-icon" onclick="deleteFile('${fileName}')"></span>`;
+
+          if (file.ext == "zip") {
+            actionsSpan += `<span class="action-icon extract-icon" onclick="extractFile('${fileName}')"></span>`;
+          } else if (file.ext == "vpx") {
+            actionsSpan += `<span class="action-icon activate-icon" onclick="activateFile('${fileName}')"></span>`;
+          } else {
+            actionsSpan += `<span></span>`;
+          }
+
+          actionsSpan += "</span>";
+          listItem += actionsSpan;
+
+          listItem += `<span>${formatFileSize(file.size)}</span>`;
+
+          listItem += `</li>`;
+
+          document.getElementById("file-list").innerHTML += listItem;
+        });
+      }
+
+      function toggleSort(column) {
+        if (_sortOrders[column] === "asc") {
+          _sortOrders[column] = "desc";
+        } else {
+          _sortOrders[column] = "asc";
+        }
+
+        sortFiles(column);
+      }
+
+      function sortFiles(column) {
+        _data.sort((a, b) => {
+          if (column === "name") {
+            if (_sortOrders[column] === "asc") {
+              return a.name.localeCompare(b.name);
+            } else {
+              return b.name.localeCompare(a.name);
+            }
+          } else if (column === "size") {
+            if (_sortOrders[column] === "asc") {
+              return a.size - b.size;
+            } else {
+              return b.size - a.size;
+            }
+          }
+        });
+
+        _lastSort = column;
+
+        updateFilesList();
+      }
+
+      function formatFileSize(size) {
+        if (size === 0) return "0 Bytes";
+        const units = ["Bytes", "KB", "MB", "GB", "TB"];
+        const i = Math.floor(Math.log(size) / Math.log(1024));
+        return `${(size / Math.pow(1024, i)).toFixed(2)} ${units[i]}`;
+      }
+
+      function newFolder() {
+        var folderName = prompt("Enter the folder name:");
+        if (folderName !== null && folderName.trim() !== "") {
+          folderName = folderName.trim();
+          const filePath = _directory ? `${_directory}/${folderName}` : folderName;
+          fetch(`folder?q=${encodeURIComponent(filePath)}`, { method: "POST" })
+            .then((response) => {
+              if (response.ok) {
+                _directory = filePath;
+                fetchFiles(_directory);
+              }
+            })
+            .catch((error) => console.error("Error:", error));
+        }
+      }
+
+      function uploadFile() {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+
+        fileInput.addEventListener("change", () => {
+          var file = fileInput.files[0];
+          var reader = new FileReader();
+          reader.readAsArrayBuffer(file);
+          reader.onload = function () {
+            const filePath = _directory ? `${_directory}/${file.name}` : file.name;
+            const data = new Uint8Array(reader.result);
+            sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
+              fetchFiles(_directory);
+            });
+          };
+        });
+
+        fileInput.click();
+      }
+
+      function editFile(fileName) {
+        const filePath = _directory ? `${_directory}/${fileName}` : fileName;
+        fetch(`download?q=${encodeURIComponent(filePath)}`)
+          .then((response) => {
+            if (response.ok) {
+              return response.text();
+            }
+          })
+          .then((text) => {
+            document.getElementById("editor-path").innerHTML = `Editing file /${filePath}`;
+
+            document.getElementById("save-button").onclick = function () {
+              const data = new Uint8Array(new TextEncoder().encode(document.getElementById("editor-content").value));
+              sendChunk(filePath, data, 0, 1024 * 512, "editor-status", () => {
+                fetchFiles(_directory);
+              });
+            };
+
+            document.getElementById("editor-content").value = text;
+
+            document.getElementById("main").style.display = "none";
+            document.getElementById("editor").style.display = "block";
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function closeEditor() {
+        document.getElementById("main").style.display = "block";
+        document.getElementById("editor").style.display = "none";
+      }
+
+      function deleteFile(fileName) {
+        if (confirm(`Are you sure you want to delete ${fileName}?`)) {
+          const filePath = _directory ? `${_directory}/${fileName}` : fileName;
+          fetch(`delete?q=${encodeURIComponent(filePath)}`, { method: "DELETE" })
+            .then((response) => {
+              if (response.ok) {
+                fetchFiles(_directory);
+              }
+            })
+            .catch((error) => console.error("Error:", error));
+        }
+      }
+
+      function extractFile(fileName) {
+        const filePath = _directory ? `${_directory}/${fileName}` : fileName;
+        fetch(`extract?q=${encodeURIComponent(filePath)}`, { method: "POST" })
+          .then((response) => {
+            if (response.ok) {
+              fetchFiles(_directory);
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function activateFile(fileName) {
+        if (confirm(`Are you sure you want to activate ${fileName}?`)) {
+          const filePath = _directory ? `${_directory}/${fileName}` : fileName;
+          fetch(`activate?q=${encodeURIComponent(filePath)}`, { method: "POST" }).catch((error) =>
+            console.error("Error:", error)
+          );
+        }
+      }
+
+      function sendCommand(cmd) {
+        if (cmd == "shutdown") {
+          if (confirm(`Are you sure you want to shutdown VPX?`)) {
+            fetch(`command?cmd=${cmd}`, { method: "POST" }).catch((error) => console.error("Error:", error));
+          }
+        } else {
+          fetch(`command?cmd=${cmd}`, { method: "POST" }).catch((error) => console.error("Error:", error));
+        }
+      }
+
+      function sendChunk(filePath, data, offset, chunkSize, statusId, callback) {
+        var ok;
+        const progressPercentage = (offset / data.length) * 100;
+        document.getElementById(statusId).innerHTML = `Sending (${progressPercentage.toFixed(2)}%)`;
+        var chunk = data.subarray(offset, offset + chunkSize) || "";
+        fetch(`/upload?offset=${offset}&q=${encodeURIComponent(filePath)}`, { method: "POST", body: chunk })
+          .then(function (res) {
+            if (res.ok && chunk.length > 0) {
+              sendChunk(filePath, data, offset + chunk.length, chunkSize, statusId, callback);
+            }
+            ok = res.ok;
+            return res.text();
+          })
+          .then(function (text) {
+            if (!ok) {
+              document.getElementById(statusId).innerHTML = `Error ${text}`;
+            } else {
+              if (text === "0") {
+                document.getElementById(statusId).innerHTML = `Success!`;
+                setTimeout(() => {
+                  document.getElementById(statusId).innerHTML = "";
+                }, 2000);
+                if (callback) {
+                  callback();
+                }
+              }
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function startup() {
+        document.getElementById("file-list").addEventListener("dragenter", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+        });
+
+        document.getElementById("file-list").addEventListener("drop", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          const files = e.dataTransfer.files;
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+            reader.onload = function () {
+              const filePath = _directory ? `${_directory}/${file.name}` : file.name;
+              const data = new Uint8Array(reader.result);
+              sendChunk(filePath, data, 0, 1024 * 512, "main-status", () => {
+                fetchFiles(_directory);
+              });
+            };
+            reader.readAsArrayBuffer(file);
+          }
+        });
+
+        fetchFiles("");
+      }
+
+      startup();
+    </script>
+  </body>
+</html>

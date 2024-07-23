@@ -1,0 +1,214 @@
+// Generated .IDL file (by the OLE/COM Object Viewer)
+// 
+// typelib filename: <could not determine filename>
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+typedef float single;
+
+[
+  uuid(30B5CCD9-5104-41A8-A697-2A9E861FBC2A),
+  version(1.0),
+  helpstring("DMD system accessible from VBScript"),
+  custom(90883F05-3D28-11D2-8F17-00A0C9A6186D, "UltraDMD, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null")
+
+]
+library UltraDMD
+{
+    // TLib : mscorlib.dll : {BED7F4EA-1A96-11D2-8F08-00A0C9A6186D}
+    importlib("mscorlib.tlb");
+    // TLib : OLE Automation : {00020430-0000-0000-C000-000000000046}
+    importlib("stdole2.tlb");
+
+    // Forward declare all types defined in this typelib
+    interface IDMDObject;
+    dispinterface IDMDObjectEvents;
+
+    [
+      odl,
+      uuid(F7E68187-251F-4DFB-AF79-F1D4D69EE188),
+      version(1.0),
+      dual,
+      oleautomation,
+      custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "UltraDMD.IDMDObject")    
+
+    ]
+    interface IDMDObject : IDispatch {
+        [id(0x60020000), propget]
+        HRESULT FloatProperty([out, retval] single* pRetVal);
+        [id(0x60020000), propput]
+        HRESULT FloatProperty([in] single pRetVal);
+        [id(0x60020002)]
+        HRESULT Init();
+        [id(0x60020003)]
+        HRESULT Uninit();
+        [id(0x60020004)]
+        HRESULT GetMajorVersion([out, retval] long* pRetVal);
+        [id(0x60020005)]
+        HRESULT GetMinorVersion([out, retval] long* pRetVal);
+        [id(0x60020006)]
+        HRESULT GetBuildNumber([out, retval] long* pRetVal);
+        [id(0x60020007)]
+        HRESULT SetVisibleVirtualDMD(
+                        [in] VARIANT_BOOL bHide, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020008)]
+        HRESULT SetFlipY(
+                        [in] VARIANT_BOOL flipY, 
+                        [out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x60020009)]
+        HRESULT IsRendering([out, retval] VARIANT_BOOL* pRetVal);
+        [id(0x6002000a)]
+        HRESULT CancelRendering();
+        [id(0x6002000b)]
+        HRESULT CancelRenderingWithId([in] BSTR sceneId);
+        [id(0x6002000c)]
+        HRESULT Clear();
+        [id(0x6002000d)]
+        HRESULT SetProjectFolder([in] BSTR basePath);
+        [id(0x6002000e)]
+        HRESULT SetVideoStretchMode([in] long mode);
+        [id(0x6002000f)]
+        HRESULT SetScoreboardBackgroundImage(
+                        [in] BSTR filename, 
+                        [in] long selectedBrightness, 
+                        [in] long unselectedBrightness);
+        [id(0x60020010)]
+        HRESULT CreateAnimationFromImages(
+                        [in] long fps, 
+                        [in] VARIANT_BOOL loop, 
+                        [in] BSTR imagelist, 
+                        [out, retval] long* pRetVal);
+        [id(0x60020011)]
+        HRESULT RegisterVideo(
+                        [in] long videoStretchMode, 
+                        [in] VARIANT_BOOL loop, 
+                        [in] BSTR videoFilename, 
+                        [out, retval] long* pRetVal);
+        [id(0x60020012)]
+        HRESULT RegisterFont(
+                        [in] BSTR file, 
+                        [out, retval] long* pRetVal);
+        [id(0x60020013)]
+        HRESULT UnregisterFont([in] long registeredFont);
+        [id(0x60020014)]
+        HRESULT DisplayVersionInfo();
+        [id(0x60020015)]
+        HRESULT DisplayScoreboard(
+                        [in] long cPlayers, 
+                        [in] long highlightedPlayer, 
+                        [in] long score1, 
+                        [in] long score2, 
+                        [in] long score3, 
+                        [in] long score4, 
+                        [in] BSTR lowerLeft, 
+                        [in] BSTR lowerRight);
+        [id(0x60020016)]
+        HRESULT DisplayScoreboard00(
+                        [in] long cPlayers, 
+                        [in] long highlightedPlayer, 
+                        [in] long score1, 
+                        [in] long score2, 
+                        [in] long score3, 
+                        [in] long score4, 
+                        [in] BSTR lowerLeft, 
+                        [in] BSTR lowerRight);
+        [id(0x60020017)]
+        HRESULT DisplayScene00(
+                        [in] BSTR background, 
+                        [in] BSTR toptext, 
+                        [in] long topBrightness, 
+                        [in] BSTR bottomtext, 
+                        [in] long bottomBrightness, 
+                        [in] long animateIn, 
+                        [in] long pauseTime, 
+                        [in] long animateOut);
+        [id(0x60020018)]
+        HRESULT DisplayScene00Ex(
+                        [in] BSTR background, 
+                        [in] BSTR toptext, 
+                        [in] long topBrightness, 
+                        [in] long topOutlineBrightness, 
+                        [in] BSTR bottomtext, 
+                        [in] long bottomBrightness, 
+                        [in] long bottomOutlineBrightness, 
+                        [in] long animateIn, 
+                        [in] long pauseTime, 
+                        [in] long animateOut);
+        [id(0x60020019)]
+        HRESULT DisplayScene00ExWithId(
+                        [in] BSTR sceneId, 
+                        [in] VARIANT_BOOL cancelPrevious, 
+                        [in] BSTR background, 
+                        [in] BSTR toptext, 
+                        [in] long topBrightness, 
+                        [in] long topOutlineBrightness, 
+                        [in] BSTR bottomtext, 
+                        [in] long bottomBrightness, 
+                        [in] long bottomOutlineBrightness, 
+                        [in] long animateIn, 
+                        [in] long pauseTime, 
+                        [in] long animateOut);
+        [id(0x6002001a)]
+        HRESULT ModifyScene00(
+                        [in] BSTR id, 
+                        [in] BSTR toptext, 
+                        [in] BSTR bottomtext);
+        [id(0x6002001b)]
+        HRESULT ModifyScene00Ex(
+                        [in] BSTR id, 
+                        [in] BSTR toptext, 
+                        [in] BSTR bottomtext, 
+                        [in] long pauseTime);
+        [id(0x6002001c)]
+        HRESULT DisplayScene01(
+                        [in] BSTR sceneId, 
+                        [in] BSTR background, 
+                        [in] BSTR text, 
+                        [in] long textBrightness, 
+                        [in] long textOutlineBrightness, 
+                        [in] long animateIn, 
+                        [in] long pauseTime, 
+                        [in] long animateOut);
+        [id(0x6002001d)]
+        HRESULT DisplayText(
+                        [in] BSTR text, 
+                        [in] long textBrightness, 
+                        [in] long textOutlineBrightness);
+        [id(0x6002001e)]
+        HRESULT ScrollingCredits(
+                        [in] BSTR background, 
+                        [in] BSTR text, 
+                        [in] long textBrightness, 
+                        [in] long animateIn, 
+                        [in] long pauseTime, 
+                        [in] long animateOut);
+    };
+
+    [
+      uuid(E1612654-304A-4E07-A236-EB64D6D4F511),
+      version(1.0),
+      //custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "UltraDMD.DMDObject")
+    ]
+    coclass DMDObject {
+        interface _Object;
+        [default] interface IDMDObject;
+        [default, source] dispinterface IDMDObjectEvents;
+    };
+
+    [
+      uuid(0DECFF48-5492-43E7-AB6C-BFD9245F2EAD),
+      //version(1.0),
+      custom(0F21F359-AB84-41E8-9A78-36D110E6D2F9, "UltraDMD.IDMDObjectEvents")    
+
+    ]
+    dispinterface IDMDObjectEvents {
+        properties:
+        methods:
+            [id(0x00000001)]
+            void FloatPropertyChanging(
+                            [in] single NewValue, 
+                            [in, out] VARIANT_BOOL* Cancel);
+    };
+};
