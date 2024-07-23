@@ -30,6 +30,9 @@ layout(triangles) in;
 layout(triangle_strip, max_vertices = 3) out;
 
 in int eye_gs[];
+#ifdef SHADER_GL410
+flat out int glLayer_gs;
+#endif
 
 
 ////FRAGMENT
@@ -53,6 +56,9 @@ uniform sampler2D tex_flasher_B; // second image
 
 in vec2 tex0;
 out vec4 color;
+#ifdef SHADER_GL410
+flat in int glLayer_gs;
+#endif
 
 ////vs_simple_main
 
@@ -76,7 +82,7 @@ out vec2 tex0;
 
 void main()
 {
-	gl_Layer = eye_gs[0];
+	GS_LAYER_COPY;
 	for (int i=0;i<gl_in.length();i++) {
 		gl_Position = (matWorldViewProj[eye_gs[i]]*gl_in[i].gl_Position);
 		gl_ClipDistance[0] = gl_in[i].gl_ClipDistance[0];
@@ -95,6 +101,7 @@ in vec3 tablePos;
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    float4 pixel1,pixel2;
    BRANCH if (amount_blend_modulate_vs_add_flasherMode.z < 2.) // Mode 0 & 1
    {

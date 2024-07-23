@@ -180,6 +180,7 @@ float3 decompress_normal(const float2 c)
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float2 u = tex0;
 	const float2 uv0 = u - w_h_height.xy * 0.5 + w_h_height.xy; // half pixel shift in x & y for filter
 	const float2 uv1 = u - w_h_height.xy * 0.5; // dto.
@@ -315,6 +316,7 @@ float2 findContrastByColor(const float2 XYCoord, const float filterSpread, const
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 #ifndef NFAA_VARIANT2
  #ifdef NFAA_VARIANT
 	const float filterStrength = 1.0;
@@ -399,6 +401,7 @@ float avg(const float3 l)
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float2 u = tex0;
 
    const float3 sCenter    = sampleOffset(u, float2( 0.0,  0.0), eye);
@@ -417,6 +420,7 @@ void main()
 
 void main()
 {
+   FS_LAYER_TO_GLOBAL;
    const float2 u = tex0;
 
    const float4 sampleCenter = sampleOffseta(u, float2(0.0, 0.0), eye);
@@ -534,6 +538,7 @@ float luma(const float3 l)
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float2 u = tex0;
 
 	const float3 rMc = texStereoNoLod(tex_fb_unfiltered, u).xyz;
@@ -591,6 +596,7 @@ void main()
 // Full mid-quality PC FXAA 3.11
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float2 u = tex0;
 
 	const float3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
@@ -746,6 +752,7 @@ void main()
 // Full extreme-quality PC FXAA 3.11
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float2 u = tex0;
 
 	const float3 rgbyM = texStereoNoLod(tex_fb_unfiltered, u).xyz;
@@ -1011,6 +1018,7 @@ void main()
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	// variant with better diagonals
 
 	const float Contrast   = 0.0; // 0..1, Adjusts the range the shader adapts to high contrast (0 is not all the way off).  Higher values = more high contrast sharpening.
@@ -1095,6 +1103,7 @@ float LI(const float3 l)
 
 void main()
 {
+	FS_LAYER_TO_GLOBAL;
 	const float sharpness = 0.625*3.1; // ~0.1..~2 *3.1
 	const float balance = 0.0;         // [0..1]
 
