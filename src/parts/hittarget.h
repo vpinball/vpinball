@@ -57,6 +57,13 @@ class HitTarget :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
+#ifdef __STANDALONE__
+public:
+   STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
+   STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
+   STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
+   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+#endif
 public:
    static const float DROP_TARGET_LIMIT;
 
@@ -141,8 +148,8 @@ public:
    STDMETHOD(put_LegacyMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
-   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
+   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_RaiseDelay)(/*[in]*/ LONG newVal);
    STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);

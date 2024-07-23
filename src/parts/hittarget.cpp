@@ -1423,14 +1423,14 @@ void HitTarget::GetTimers(vector<HitTimer*> &pvht)
       pvht.push_back(m_phittimer);
 }
 
-STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
+STDMETHODIMP HitTarget::get_RaiseDelay(LONG *pVal)
 {
     *pVal = m_d.m_raiseDelay;
 
     return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
+STDMETHODIMP HitTarget::put_RaiseDelay(LONG newVal)
 {
     m_d.m_raiseDelay = newVal;
 
