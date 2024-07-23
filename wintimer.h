@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __STANDALONE__
+#include <climits>
+#endif
+
 // call if msec,usec or uSleep, etc. should be more precise
 void set_lowest_possible_win_timer_resolution();
 // and then call this after being finished with precise measurements to allow the OS to better save power
@@ -141,7 +145,7 @@ public:
                      if (v.first == 1300)
                      {
                         struct info { int calls; U32 lengths; };
-                        robin_hood::unordered_map<string, info> infos;
+                        ankerl::unordered_dense::map<string, info> infos;
                         size_t pos = 0;
                         while (pos < m_profileWorstProfileTimersLen[i])
                         {
@@ -426,7 +430,7 @@ private:
       unsigned int totalLength = 0;
    };
    DISPID m_scriptEventDispID = 0;
-   robin_hood::unordered_map<DISPID, EventTick> m_scriptEventData;
+   ankerl::unordered_dense::map<DISPID, EventTick> m_scriptEventData;
 
    // Overall frame
    unsigned int m_frameIndex = -1;
@@ -457,7 +461,7 @@ private:
    unsigned int m_profileWorstGameTime[N_WORST];
    char m_profileWorstProfileTimers[N_WORST][MAX_TIMER_LOG];
    size_t m_profileWorstProfileTimersLen[N_WORST];
-   robin_hood::unordered_map<DISPID, EventTick> m_worstScriptEventData[N_WORST];
+   ankerl::unordered_dense::map<DISPID, EventTick> m_worstScriptEventData[N_WORST];
 };
 
 extern FrameProfiler g_frameProfiler;

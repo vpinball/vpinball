@@ -85,8 +85,10 @@ void PinSound::UnInitialize()
 {
    if (IsWav())
    {
+#ifndef __STANDALONE__
       SAFE_PINSOUND_RELEASE(m_pDS3DBuffer);
       SAFE_PINSOUND_RELEASE(m_pDSBuffer);
+#endif
    }
    else
    {
@@ -139,6 +141,7 @@ HRESULT PinSound::ReInitialize()
 	   return S_OK;
    }
 
+#ifndef __STANDALONE__
    // else old wav code:
 
    PinDirectSound * const pds = GetPinDirectSound();
@@ -234,6 +237,7 @@ HRESULT PinSound::ReInitialize()
 
    if (SoundMode3D != SNDCFG_SND3D2CH)
       Get3DBuffer();
+#endif
 
    return S_OK;
 }
@@ -342,8 +346,10 @@ void PinSound::Stop()
 
 PinDirectSound::~PinDirectSound()
 {
+#ifndef __STANDALONE__
    SAFE_PINSOUND_RELEASE(m_pDSListener);
    SAFE_PINSOUND_RELEASE(m_pDS);
+#endif
 }
 
 BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
@@ -366,6 +372,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 #ifdef DEBUG_NO_SOUND
    return;
 #endif
+#ifndef __STANDALONE__
    SAFE_PINSOUND_RELEASE(m_pDSListener);
    SAFE_PINSOUND_RELEASE(m_pDS);
 
@@ -453,22 +460,34 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 	   m_pDSListener->SetPosition(0.0f, 0.0f, 0.0f, DS3D_IMMEDIATE);
    }
    SAFE_PINSOUND_RELEASE(pDSBPrimary);
+#endif
 
    //return S_OK;
 }
 
 void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND hwnd)
 {
+#ifndef __STANDALONE__
    const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
    const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
+#else
+   const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, -1);
+   const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, -1);
+#endif
    const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    //---- Initialize BASS Audio Library
 
    int prevBassStdIdx = bass_STD_idx;
    int prevBassBGIdx = bass_BG_idx;
+#ifndef __STANDALONE__
    bass_STD_idx = -1;
    bass_BG_idx = -1;
+#else
+   bass_STD_idx = DSidx1;
+   bass_BG_idx  = DSidx2;
+#endif
+#ifndef __STANDALONE__
    for (unsigned int idx = 0; idx < 2; ++idx)
    {
       const int DSidx = (idx == 0) ? DSidx1 : DSidx2;
@@ -498,6 +517,7 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
          }
       }
    }
+#endif
 
    //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_FLOATDSP, fTrue);
    BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_PAN, fTrue); // logarithmic scale, similar to DSound (although BASS still takes a 0..1 range)
@@ -549,6 +569,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 
    if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
    {
+#ifndef __STANDALONE__
 	   // Create a new wave file class
 	   CWaveSoundRead* const pWaveSoundRead = new CWaveSoundRead();
 
@@ -630,6 +651,7 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
          // Update the UI controls to show the sound as the file is loaded
          //SetFileUI( hDlg, strFileName );
          //OnEnablePlayUI( hDlg, TRUE );
+#endif
    }
    else
    {
@@ -850,6 +872,7 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
 
 PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
 {
+#ifndef __STANDALONE__
 	m_ppsOriginal = pOriginal;
 
 	if (this != pOriginal)
@@ -860,10 +883,12 @@ PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
 		if (m_pDSBuffer && pOriginal->m_pDS3DBuffer != nullptr)
 			Get3DBuffer();
 	}
+#endif
 }
 
 void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
 {
+#ifndef __STANDALONE__
 	m_pDSBuffer->SetVolume((LONG)convert2decibelvolume(volume));
 
 	// Frequency tweaks are relative to original sound.  If the copy failed for some reason, don't alter original
@@ -918,10 +943,12 @@ void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randomp
 		m_pDSBuffer->Play(0, 0, flags);
 	else if (restart)
 		m_pDSBuffer->SetCurrentPosition(0);
+#endif
 }
 
 HRESULT PinDirectSoundWavCopy::Get3DBuffer()
 {
+#ifndef __STANDALONE__
 	const HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
 	if (FAILED(hr))
 	{
@@ -932,4 +959,23 @@ HRESULT PinDirectSoundWavCopy::Get3DBuffer()
 	else
 		m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
 	return hr;
+#else
+    return S_OK;
+#endif
 }
+
+#ifdef __STANDALONE__
+void EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
+{
+   audioDevices.clear();
+
+   BASS_DEVICEINFO info;
+   for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
+      AudioDevice audioDevice = {};
+      audioDevice.id = i;
+      strncpy((char*)audioDevice.name, info.name, MAX_DEVICE_IDENTIFIER_STRING);
+      audioDevice.enabled = (info.flags & BASS_DEVICE_ENABLED);
+      audioDevices.push_back(audioDevice);
+   }
+}
+#endif
