@@ -727,6 +727,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="bulb.cpp" />
     <ClCompile Include="captureExt.cpp" />
     <ClCompile Include="codeviewedit.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="CrashHandler.cpp" />
     <ClCompile Include="Debugger.cpp" />
     <ClCompile Include="dialogs\AboutDialog.cpp" />

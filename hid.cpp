@@ -4,13 +4,16 @@
 // the following URL:
 // http://www.edn.com/article/CA243218.html
 
+#ifndef __STANDALONE__
 extern "C" {
 #include "setupapi.h"
 #include "hidsdi.h"
 }
+#endif
 
 HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
+#ifndef __STANDALONE__
    GUID hidGUID;
    SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
    ULONG requiredSize;
@@ -80,10 +83,14 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    SetupDiDestroyDeviceInfoList(hardwareDeviceInfoSet);
    free(deviceDetail);
    return deviceHandle;
+#else 
+   return 0L;
+#endif
 }
 
 static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
 {
+#ifndef __STANDALONE__
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
 
@@ -112,17 +119,21 @@ static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = null
 
       index++;
    }
+#endif
 
    return INVALID_HANDLE_VALUE;
 }
 
 static HANDLE hnd = hid_connect(0x04b4, 0x6470);
+#ifndef __STANDALONE__
 static OVERLAPPED ol;
 static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
+#endif
 
 void hid_init()
 {
+#ifndef __STANDALONE__
    // 0x4b4 == Ultracade, 0x6470 == Ushock
 
    if (hnd != INVALID_HANDLE_VALUE)
@@ -179,6 +190,7 @@ void hid_init()
    {
       printf("hid_init: Could not connect or find the PBW controller\n");
    }
+#endif
 }
 
 
@@ -223,6 +235,7 @@ void hid_knock(const int count)
 
 void hid_update(const U32 cur_time_msec)
 {
+#ifndef __STANDALONE__
    U08 mask = (U08)(sMask & 0xff);
 
    if (sKnockStamp)
@@ -289,6 +302,7 @@ void hid_update(const U32 cur_time_msec)
          printed = 1;
       }
    }
+#endif
 }
 
 void hid_shutdown()
@@ -296,6 +310,8 @@ void hid_shutdown()
    if (hnd != INVALID_HANDLE_VALUE)
    {
       hnd = INVALID_HANDLE_VALUE;
+#ifndef __STANDALONE__
       CloseHandle(hnd);
+#endif
    }
 }
