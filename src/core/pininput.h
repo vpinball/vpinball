@@ -38,7 +38,7 @@
 #define APP_TOUCH      3
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
-#define PININ_JOYMXCNT 4
+#define PININ_JOYMXCNT 8
 
 #define JOYRANGEMN (-65536)
 #define JOYRANGEMX (+65536)
@@ -89,6 +89,10 @@ public:
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
+
+   #ifdef _WIN32
+   LPDIRECTINPUTDEVICE GetJoystick(int index);
+   #endif
 
    uint64_t m_leftkey_down_usec;
    unsigned int m_leftkey_down_frame;

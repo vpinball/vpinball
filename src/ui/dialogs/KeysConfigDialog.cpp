@@ -669,7 +669,8 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DEVICES_BUTTON:
    {
       CRect pos = GetWindowRect();
-      InputDeviceDialog *const deviceConfigDlg = new InputDeviceDialog(&pos);
+      KeyWindowStruct *const pksw = (KeyWindowStruct *)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
+      InputDeviceDialog *const deviceConfigDlg = new InputDeviceDialog(&pos, &pksw->pi);
       deviceConfigDlg->DoModal();
       delete deviceConfigDlg;
       break;

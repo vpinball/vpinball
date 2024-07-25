@@ -1741,6 +1741,17 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       }
    }
 
+   // Wipe key state if we're not the foreground window as we miss key-up events
+   #ifdef _WIN32
+   if (m_focusHWnd != GetForegroundWindow())
+   {
+      for (int i = 0; i < eCKeys; i++)
+      {
+         m_keyPressedState[i] = false;
+      }
+   }
+   #endif
+
    const DIDEVICEOBJECTDATA * __restrict input;
    while ((input = GetTail(/*curr_sim_msec*/)))
    {
@@ -1977,3 +1988,16 @@ int PinInput::GetNextKey() // return last valid keyboard key
 
    return 0;
 }
+
+#ifdef _WIN32
+LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
+{ 
+    LPDIRECTINPUTDEVICE joy = nullptr;
+    if (index < PININ_JOYMXCNT)
+    {
+      joy = m_pJoystick[index];
+    }
+
+    return joy;
+}
+#endif
