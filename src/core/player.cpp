@@ -18,6 +18,7 @@
 #include <ctime>
 #include <fstream>
 #include <sstream>
+#include <array>
 #include <filesystem>
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
@@ -927,6 +928,8 @@ Player::~Player()
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
+
+   m_ptable->StopAllSounds();
 
    if (m_audio)
       m_audio->MusicPause();
@@ -2046,7 +2049,7 @@ void Player::FinishFrame()
    // TODO hacky Win32 management: try to bring PinMAME, B2S, Freezy's DMD, Pup window back on top (to be removed when these extensions will be cleanly handled by cleaned up plugins)
    if (m_overall_frames < 10)
    {
-      static const vector<string> overlaylist = { "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
+      static const std::array<string,11> overlaylist{ "MAME"s, "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s, "PUPSCREEN2"s, "Form1"s /* Old B2S */, "B2S Backglass Server"s, "B2S Background"s, "B2S DMD"s };
       for (const string &windowtext : overlaylist)
       {
          HWND hVPMWnd = FindWindow(nullptr, windowtext.c_str());

@@ -1531,7 +1531,7 @@ PinTable::~PinTable()
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
       m_vsound[i]->Stop();
-   m_vpinball->m_ps.ClearStoppedCopiedWavs();
+   m_vpinball->m_ps.StopAndClearCopiedWavs();
 
    if (!m_isLiveInstance)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
