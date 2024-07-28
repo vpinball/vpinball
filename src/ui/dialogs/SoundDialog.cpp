@@ -504,7 +504,7 @@ void SoundDialog::SoundPosition()
 	{
 		LVITEM lvitem;
 		int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED); //next selected item 	
-			
+
 		lvitem.mask = LVIF_PARAM;
 		lvitem.iItem = sel;
 		lvitem.iSubItem = 0;
@@ -756,7 +756,7 @@ void SoundPositionDialog::TestSound()
 	const float front_rear_fade = dequantizeSignedPercent(m_fade);
 
 	m_pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
-   m_pps->SetOutputTarget(iOutputTargetTmp);
+	m_pps->SetOutputTarget(iOutputTargetTmp);
 }
 
 void SoundPositionDialog::OnOK()

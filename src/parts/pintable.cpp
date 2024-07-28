@@ -75,7 +75,7 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 }
 
 
-STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivty)
+STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivity)
 {
 	int tmp;
 
@@ -90,7 +90,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 	if (g_pvp->m_settings.LoadValue(Settings::Player, "DeadZone"s, tmp))
 		CComVariant(tmp).Detach(DeadZone);
 	if (g_pvp->m_settings.LoadValue(Settings::Player, "TiltSensitivity"s, tmp))
-		CComVariant(tmp).Detach(TiltSensitivty);
+		CComVariant(tmp).Detach(TiltSensitivity);
 
 	return S_OK;
 }
@@ -3180,7 +3180,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    pps->m_szPath = tmp;
    delete[] tmp;
 
-   // deprecated lower case name, but not used anymore nowadays, so 10.8+ stores only 1,'\0'
+   // was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
        delete pps;
