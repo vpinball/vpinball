@@ -4887,7 +4887,7 @@ void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int
    const char * const preview_value = labels[*v].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      for (int i = 0; i < n_values; i++)
+      for (int i = 0; i < (int)n_values; i++)
       {
          if (ImGui::Selectable(labels[i].c_str()))
          {

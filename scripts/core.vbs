@@ -2528,7 +2528,7 @@ Sub PinMAMETimer_Timer
 		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
 		If UpdateVisual Then LastPinMameVisualSync = FrameIndex
 	Else
-		UpdateVisual = GameTime - LastPinMameVisualSync > 10
+		UpdateVisual = (GameTime - LastPinMameVisualSync > 10)
 		If UpdateVisual Then LastPinMameVisualSync = GameTime
 	End If
 

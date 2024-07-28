@@ -263,7 +263,7 @@ void Spinner::ExportMesh(ObjLoader& loader)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    m_posZ = height + m_d.m_height;
 
-   // FIXME is this realluy needed PhysicSetup(dummyHitObj, false);
+   // FIXME is this really needed PhysicSetup(dummyHitObj, false);
 
    if (m_d.m_showBracket)
    {
