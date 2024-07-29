@@ -1,4 +1,5 @@
 #include "core/stdafx.h"
+#include "ui/resource.h"
 #include "InputDeviceDialog.h"
 
 //-------------------------------
@@ -30,54 +31,52 @@ bool DeviceTreeView::AddDevice(const string& name, bool checked)
 {
    hCurrentDeviceItem = AddItem(hRootItem, name.c_str(), nullptr, 1);
    SetItemCheck(hCurrentDeviceItem, checked);
+
+   m_deviceItems.insert(std::pair<string, HTREEITEM>(name, hCurrentDeviceItem));
+
    return hCurrentDeviceItem != nullptr;
 }
 
-bool DeviceTreeView::AddElement(const string& name, IEditable* const pedit) 
+string DeviceTreeView::GetCurrentDeviceName() const { return string(GetItemText(hCurrentDeviceItem)); }
+
+void DeviceTreeView::SetAllItemStates(const bool checked) 
 { 
-    return AddElementToDevice(hCurrentDeviceItem, name, pedit); 
-}
+   TVITEM tvItem = {};
+   tvItem.mask = TVIF_PARAM;
 
-bool DeviceTreeView::AddElementToDevice(const HTREEITEM hDeviceItem, const string& name, IEditable* const pedit)
-{
-   hCurrentElementItem = AddItem(hDeviceItem, name.c_str(), pedit, 2);
-   ISelect* const psel = pedit->GetISelect();
-   if (psel != nullptr)
+   vector<HTREEITEM> children = GetAllDeviceItems();
+   for (const HTREEITEM child : children)
    {
-      SetItemCheck(hCurrentElementItem, psel->m_isVisible);
-      if (psel->m_isVisible)
-         SetItemCheck(hDeviceItem, true);
+      TreeView_SetCheckState(GetHwnd(), child, checked);
+      HTREEITEM subItem = GetChild(child);
+      while (subItem)
+      {
+         tvItem.hItem = subItem;
+         if (GetItem(tvItem))
+         {
+            IEditable* const pedit = (IEditable*)tvItem.lParam;
+            if (pedit != nullptr)
+            {
+               ISelect* const psel = pedit->GetISelect();
+               if (psel != nullptr)
+                  psel->m_isVisible = checked;
+            }
+         }
+
+         TreeView_SetCheckState(GetHwnd(), subItem, checked);
+         subItem = GetNextItem(subItem, TVGN_NEXT);
+      }
    }
-   return hCurrentElementItem != nullptr;
 }
 
-string DeviceTreeView::GetCurrentDeviceName() const { return ""; }
-void DeviceTreeView::SetAllItemStates(const bool checked) { }
 void DeviceTreeView::DeleteAll() { }
 void DeviceTreeView::SetActiveDevice(const string& name) { }
 
-bool DeviceTreeView::PreTranslateMessage(MSG* msg) { return TRUE; }
-
-vector<string> DeviceTreeView::GetAllDeviceNames() 
-{ 
-   vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-
-   vector<string> deviceList;
-   deviceList.reserve(children.size());
-
-   for (const auto& device : children)
-   {
-      deviceList.push_back(GetItemText(device).c_str());
-   }
-
-   return deviceList;
+bool DeviceTreeView::IsDeviceChecked(string name)
+{
+   auto itemIt = m_deviceItems.find(name);
+   HTREEITEM item = itemIt->second;
+   return IsItemChecked(item);
 }
 
 void DeviceTreeView::OnAttach()
@@ -179,7 +178,7 @@ bool DeviceTreeView::IsItemChecked(HTREEITEM hItem) const
    tvItem.stateMask = TVIS_STATEIMAGEMASK;
    tvItem.hItem = hItem;
    GetItem(tvItem);
-   return ((tvItem.state >> 12) - 1) == 0;
+   return ((tvItem.state >> 12) - 1) != 0;
 }
 
 void DeviceTreeView::SetItemCheck(HTREEITEM item, bool checked)
@@ -222,44 +221,7 @@ LRESULT DeviceTreeView::OnNMClick(LPNMHDR lpnmh)
          SetAllItemStates(IsItemChecked(hRootItem));
       else
       {
-         TVITEM tvItem = {};
-         tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
-         tvItem.hItem = ht.hItem;
-         if (GetItem(tvItem))
-         {
-            if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
-            {
-               const bool checked = IsItemChecked(tvItem.hItem);
-               HTREEITEM subItem = GetChild(tvItem.hItem);
-               while (subItem)
-               {
-                  tvItem.hItem = subItem;
-                  if (GetItem(tvItem))
-                  {
-                     IEditable* const pedit = (IEditable*)tvItem.lParam;
-                     if (pedit != nullptr)
-                     {
-                        ISelect* const psel = pedit->GetISelect();
-                        if (psel != nullptr)
-                           psel->m_isVisible = checked;
-                     }
-                  }
-
-                  TreeView_SetCheckState(GetHwnd(), subItem, checked);
-                  subItem = GetNextItem(subItem, TVGN_NEXT);
-               }
-            }
-            else // element checkbox was clicked
-            {
-               IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != nullptr)
-               {
-                  ISelect* const psel = pedit->GetISelect();
-                  if (psel != nullptr)
-                     psel->m_isVisible = IsItemChecked(tvItem.hItem);
-               }
-            }
-         }
+         string checkName = string(GetItemText(ht.hItem));
       }
    }
 
@@ -276,13 +238,7 @@ LRESULT DeviceTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
    {
       if (tvItem.hItem != hRootItem)
       {
-         if (GetSubItemsCount(tvItem.hItem) > 0)
-            hCurrentDeviceItem = tvItem.hItem;
-         else
-         {
-            hCurrentElementItem = tvItem.hItem;
-            hCurrentDeviceItem = GetDeviceByItem(tvItem.hItem);
-         }
+         hCurrentDeviceItem = tvItem.hItem;
       }
    }
 
@@ -314,20 +270,98 @@ INT_PTR InputDeviceDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-//BOOL InputDeviceDialog::OnCommand(WPARAM wParam, LPARAM lParam)
-//{
-//   UNREFERENCED_PARAMETER(lParam);
-//   switch (LOWORD(wParam))
-//   {
-//      case IDC_WEBSITE:
-//      case IDC_TRANSSITE:
-//      {
-//         return TRUE;
-//      }
-//   }
-//
-//   return FALSE;
-//}
+InputDeviceInfo InputDeviceDialog::LoadDevicePrefs(int index)
+{
+   const int kMaxNameStrLen = 16;
+   const string kDefaultName = "None";
+
+   char tmp[kMaxNameStrLen];
+   InputDeviceInfo info;
+
+   sprintf_s(tmp, kMaxNameStrLen, "Device%d_Name", index);
+   string deviceNameKey = string(tmp);
+   info.name = g_pvp->m_settings.LoadValueWithDefault(Settings::ControllerDevices, deviceNameKey, kDefaultName);
+
+   sprintf_s(tmp, kMaxNameStrLen, "Device%d_State", index);
+   string deviceStateKey = string(tmp);
+   info.state = g_pvp->m_settings.LoadValueWithDefault(Settings::ControllerDevices, deviceStateKey, true);
+
+   return info;
+}
+
+void InputDeviceDialog::SaveDevicePrefs()
+{
+   const int kMaxNameStrLen = 16;
+   char tmp[kMaxNameStrLen];
+
+   const size_t numDevices = m_attachedDeviceInfo.size();
+   for (int i = 0; i < numDevices; i++)
+   {
+      InputDeviceInfo info = m_attachedDeviceInfo[i];
+
+      sprintf_s(tmp, kMaxNameStrLen, "Device%d_Name", i);
+      string deviceNameKey = string(tmp);
+      g_pvp->m_settings.SaveValue(Settings::ControllerDevices, deviceNameKey, info.name);
+
+      sprintf_s(tmp, kMaxNameStrLen, "Device%d_State", i);
+      string deviceStateKey = string(tmp);
+      g_pvp->m_settings.SaveValue(Settings::ControllerDevices, deviceStateKey, info.state);
+   }
+
+   g_pvp->m_settings.Save();
+}
+
+void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
+{ 
+   // First, get any saved device prefs
+   vector<InputDeviceInfo> deviceInfoPrefs;
+
+   for (int i = 0; i < PININ_JOYMXCNT; i++)
+   {
+       deviceInfoPrefs.push_back(LoadDevicePrefs(i));
+   }
+
+   // Build the list of currently-attached devices
+   m_attachedDeviceInfo.clear();
+
+   for (int i = 0; i < PININ_JOYMXCNT; i++)
+   {
+      LPDIRECTINPUTDEVICE joystick = pinInput->GetJoystick(i);
+      if (joystick != nullptr)
+      {
+         DIDEVICEINSTANCE deviceInfo;
+         deviceInfo.dwSize = sizeof(DIDEVICEINSTANCE);
+         joystick->GetDeviceInfo(&deviceInfo);
+
+         InputDeviceInfo info;
+         info.name = deviceInfo.tszInstanceName;
+         info.state = true;
+         m_attachedDeviceInfo.push_back(info);
+      }
+   }
+
+   // See if any attached devices have a corresponding saved preference
+   size_t numDevices = m_attachedDeviceInfo.size();
+   for (int i = 0; i < numDevices; i++)
+   {
+      string lookForName = m_attachedDeviceInfo[i].name;
+      for (int j = 0; j < PININ_JOYMXCNT; j++)
+      {
+         InputDeviceInfo testInfo = deviceInfoPrefs[j];
+         if (lookForName.compare(testInfo.name) == 0)
+         {
+            m_attachedDeviceInfo[i].state = testInfo.state;
+            break;
+         }
+      }
+   }
+
+   // Finally, add reconciled devices to the dialog
+   for (int i = 0; i < numDevices; i++)
+   {
+      AddDevice(m_attachedDeviceInfo[i].name, m_attachedDeviceInfo[i].state);
+   }
+}
 
 BOOL InputDeviceDialog::OnInitDialog()
 {
@@ -338,26 +372,7 @@ BOOL InputDeviceDialog::OnInitDialog()
 
    AttachItem(IDC_TREE_DEVICES, m_deviceTreeView);
 
-   LPDIRECTINPUTDEVICE joystick = nullptr;
-   int joyIndex = 0;
-   for (int i = 0; i < PININ_JOYMXCNT; i++)
-   {
-      joystick = pinInput->GetJoystick(joyIndex++);
-      if (joystick != nullptr)
-      {
-         //CString joyName = joystick->GetDeviceInfo();
-         const int strLen = 261;
-         char nameStr[strLen];
-
-         DIDEVICEINSTANCE deviceInfo;
-         deviceInfo.dwSize = sizeof(DIDEVICEINSTANCE);
-
-         joystick->GetDeviceInfo(&deviceInfo);
-         std::snprintf(nameStr, strLen, "%s\n", deviceInfo.tszInstanceName);
-
-         AddDevice(nameStr, true);
-      }
-   }
+   LoadAndReconcileInputDevicePrefs();
 
    m_deviceTreeView.ExpandRoot();
 
@@ -367,14 +382,27 @@ BOOL InputDeviceDialog::OnInitDialog()
 bool InputDeviceDialog::AddDevice(const string& name, bool checked)
 {
    bool success = m_deviceTreeView.AddDevice(name, checked);
-
    if (success)
-         m_deviceTreeView.InvalidateRect();
+   {
+      m_deviceTreeView.InvalidateRect();
+   }
 
    return success;
 }
 
+void InputDeviceDialog::UpdateDeviceStates()
+{
+   size_t numDevices = m_attachedDeviceInfo.size();
+   for (int i = 0; i < numDevices; i++)
+   {
+      InputDeviceInfo info = m_attachedDeviceInfo[i];
+      m_attachedDeviceInfo[i].state = m_deviceTreeView.IsDeviceChecked(info.name);
+   }
+}
+
 void InputDeviceDialog::OnOK()
 {
+   UpdateDeviceStates();
+   SaveDevicePrefs();
    CDialog::OnOK();
 }

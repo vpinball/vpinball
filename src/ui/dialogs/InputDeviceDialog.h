@@ -10,8 +10,6 @@ public:
    void ExpandRoot();
    virtual HTREEITEM AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
    bool AddDevice(const string& name, bool checked);
-   bool AddElement(const string& name, IEditable* const pedit);
-   bool AddElementToDevice(const HTREEITEM hDeviceItem, const string& name, IEditable* const pedit);
    string GetCurrentDeviceName() const;
    bool IsItemChecked(HTREEITEM hItem) const;
    void SetItemCheck(HTREEITEM item, bool checked);
@@ -24,9 +22,7 @@ public:
    HTREEITEM GetDeviceByItem(HTREEITEM hChildItem);
    vector<HTREEITEM> GetAllDeviceItems() const;
    string GetDeviceName(HTREEITEM item) { return string { GetItemText(item) }; }
-   bool PreTranslateMessage(MSG* msg);
-   vector<string> GetAllDeviceNames();
-
+   bool IsDeviceChecked(string name);
 
 protected:
    virtual void OnAttach();
@@ -37,18 +33,22 @@ protected:
    virtual LRESULT OnNMClick(LPNMHDR lpnmh);
    virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
-private:
    vector<HTREEITEM> GetSubItems(HTREEITEM hParent);
    int GetSubItemsCount(HTREEITEM hParent) const;
 
-	
+private:
    HTREEITEM hRootItem;
    HTREEITEM hCurrentDeviceItem;
-   HTREEITEM hCurrentElementItem;
    CImageList m_normalImages;
+   std::map<string, HTREEITEM> m_deviceItems;
 };
 
 
+struct InputDeviceInfo
+{
+   string name;
+   bool state;
+};
 
 class InputDeviceDialog : public CDialog
 {
@@ -60,13 +60,19 @@ protected:
    void OnDestroy() override;
    BOOL OnInitDialog() override;
    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   void OnOK() override;
    bool AddDevice(const string& name, bool checked);
+   InputDeviceInfo LoadDevicePrefs(int index);
+   void SaveDevicePrefs();
+   void LoadAndReconcileInputDevicePrefs();
+   void UpdateDeviceStates();
+   void OnOK() override;
 
 private:
    CRect* startPos;
    DeviceTreeView m_deviceTreeView;
    PinInput* pinInput;
+   
+   vector<InputDeviceInfo> m_attachedDeviceInfo;
 };
 
 #endif

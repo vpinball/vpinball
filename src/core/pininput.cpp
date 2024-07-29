@@ -209,6 +209,25 @@ void PinInput::LoadSettings(const Settings& settings)
    m_enableCameraModeFlyAround = settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
+
+   const string kDefaultName = "None";
+   const int maxStrLen = 16;
+   char tmp[maxStrLen];
+
+   for (int i = 0; i < PININ_JOYMXCNT; i++)
+   {
+      InputDeviceInfo info;
+
+      sprintf_s(tmp, maxStrLen, "Device%d_Name", i);
+      string deviceName = tmp;
+      info.name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
+
+      sprintf_s(tmp, maxStrLen, "Device%d_State", i);
+      string deviceState = tmp;
+      info.state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+
+      m_inputDeviceInfo.push_back(info);
+   }
 }
 
 #ifdef ENABLE_SDL_INPUT

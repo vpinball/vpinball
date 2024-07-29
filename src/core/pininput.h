@@ -181,6 +181,14 @@ private:
    int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
+
+   struct InputDeviceInfo
+   {
+      string name;
+      bool state;
+   };
+   vector<InputDeviceInfo> m_inputDeviceInfo;
+
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;
 
