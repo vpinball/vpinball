@@ -552,13 +552,13 @@ constexpr __forceinline bool IsWhitespace(const char ch)
 
 __forceinline string upperCase(string input)
 {
-   std::transform(input.begin(), input.end(), input.begin(), ::toupper);
+   std::transform(input.begin(), input.end(), input.begin(), cUpper);
    return input;
 }
 
 __forceinline string lowerCase(string input)
 {
-   std::transform(input.begin(), input.end(), input.begin(), ::tolower);
+   StrToLower(input);
    return input;
 }
 
@@ -597,24 +597,4 @@ inline string ParseRemoveVBSLineComments(string &Line)
     else
         Line.clear();
     return RetVal;
-}
-
-inline void szLower(char * pC)
-{
-    while (*pC)
-    {
-        if (*pC >= 'A' && *pC <= 'Z')
-            *pC += ('a' - 'A');
-        pC++;
-    }
-}
-
-inline void szUpper(char * pC)
-{
-    while (*pC)
-    {
-        if (*pC >= 'a' && *pC <= 'z')
-            *pC -= ('a' - 'A');
-        pC++;
-    }
 }

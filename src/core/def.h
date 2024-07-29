@@ -695,16 +695,50 @@ inline int MultiByteToWideCharNull(
     return res;
 }
 
+inline char cLower(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c ^= 32; //ASCII convention
+    return c;
+}
+
+inline void szLower(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'A' && *pC <= 'Z')
+            *pC ^= 32; //ASCII convention
+        pC++;
+    }
+}
+
+inline char cUpper(char c)
+{
+    if (c >= 'a' && c <= 'z')
+        c ^= 32; //ASCII convention
+    return c;
+}
+
+inline void szUpper(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'a' && *pC <= 'z')
+            *pC ^= 32; //ASCII convention
+        pC++;
+    }
+}
+
 inline void StrToLower(string& str)
 {
-   std::transform(str.begin(), str.end(), str.begin(), tolower);
+   std::transform(str.begin(), str.end(), str.begin(), cLower);
 }
 
 inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
-   return strA.size() == strB.size()
+   return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(), 
-         [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
+         [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement);

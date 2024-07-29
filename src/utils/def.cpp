@@ -646,7 +646,7 @@ bool string_contains_case_insensitive(const string& str1, const string& str2)
 
 bool string_compare_case_insensitive(const string& str1, const string& str2)
 {
-   return string_to_lower(str1) == string_to_lower(str2);
+   return StrCompareNoCase(str1, str2);
 }
 
 bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix)
@@ -655,12 +655,10 @@ bool string_starts_with_case_insensitive(const std::string& str, const std::stri
    return string_compare_case_insensitive(str.substr(0, prefix.size()), prefix);
 }
 
-string string_to_lower(const string& str)
+string string_to_lower(string str)
 {
-   string lowerStr = str;
-   std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(),
-                   [](unsigned char c) { return std::tolower(c); });
-   return lowerStr;
+   StrToLower(str);
+   return str;
 }
 
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo)
