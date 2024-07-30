@@ -5301,6 +5301,12 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
             key = 0;
          SetDlgItemInt(hwndDlg, IDC_GLOBALROTATION, key, FALSE);
 
+         hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALACCVEL);
+         hr = GetRegInt("Player", "AccelVelocityInput", &key);
+         if (hr != S_OK)
+             key = 0;
+         SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
+
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
          hr = GetRegInt("Player", "TiltSensCB", &key);
          if (hr != S_OK)
@@ -5356,6 +5362,11 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          if (hr != S_OK)
             key = 150;
          SetDlgItemInt(hwndDlg, IDC_UDAXISGAIN, key, FALSE);
+
+         hr = GetRegInt("Player", "PlungerSpeedScale", &key);
+         if (hr != S_OK)
+             key = 100;
+         SetDlgItemInt(hwndDlg, IDC_PLUNGERSPEEDSCALE, key, FALSE);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_ENABLE_MOUSE_PLAYER);
          hr = GetRegInt("Player", "EnableMouseInPlayer", &key);
@@ -5451,6 +5462,20 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 1"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 2"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_SETCURSEL, selected, 0);
+
+         hr = GetRegInt("Player", "PlungerSpeedAxis", &selected);
+         if (hr != S_OK)
+             selected = 0; // disabled by default
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"X Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_SETCURSEL, selected, 0);
 
          hr = GetRegInt("Player", "LRAxis", &selected);
          if (hr != S_OK)
@@ -6093,6 +6118,16 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                      selected = 3; // assume Z Axis as standard
                   SetRegValue("Player", "PlungerAxis", REG_DWORD, &selected, 4);
 
+                  hwndControl = GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS);
+                  selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
+                  if (selected == LB_ERR)
+                      selected = 0; // disabled by default
+                  SetRegValue("Player", "PlungerSpeedAxis", REG_DWORD, &selected, 4);
+
+                  newvalue = GetDlgItemInt(hwndDlg, IDC_PLUNGERSPEEDSCALE, NULL, TRUE);
+                  if (newvalue < 0) { newvalue = 0; }
+                  SetRegValue("Player", "PlungerSpeedScale", REG_DWORD, &newvalue, 4);
+
                   hwndControl = GetDlgItem(hwndDlg, IDC_LRAXISCOMBO);
                   selected = SendMessage(hwndControl, CB_GETCURSEL, 0, 0);
                   if (selected == LB_ERR)
@@ -6145,6 +6180,10 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
                   hwndControl = GetDlgItem(hwndDlg, IDC_GLOBALNMOUNT);
                   selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
                   SetRegValue("Player", "PBWNormalMount", REG_DWORD, &selected, 4);
+
+                  hwndControl = GetDlgItem(hwndDlg, IDC_CBGLOBALACCVEL);
+                  selected = SendMessage(hwndControl, BM_GETCHECK, 0, 0);
+                  SetRegValue("Player", "AccelVelocityInput", REG_DWORD, &selected, 4);
 
                   hwndControl = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
                   key = SendMessage(hwndControl, BM_GETCHECK, 0, 0);

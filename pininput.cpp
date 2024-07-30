@@ -31,6 +31,7 @@ PinInput::PinInput()
 	uShockType = 0;
 
 	m_plunger_axis = 3;
+	m_plunger_speed_axis = 0;
 	m_lr_axis = 1;
 	m_ud_axis = 2;
 	m_plunger_reverse = 0;
@@ -93,6 +94,9 @@ PinInput::PinInput()
 
 	hr = GetRegInt("Player", "PlungerAxis", &tmp);
 	if (hr == S_OK) m_plunger_axis = tmp;
+
+	hr = GetRegInt("Player", "PlungerSpeedAxis", &tmp);
+	if (hr == S_OK) m_plunger_speed_axis = tmp;
 
 	hr = GetRegInt("Player", "ReversePlungerAxis", &tmp);
 	if (hr == S_OK) m_plunger_reverse = tmp;
@@ -344,7 +348,7 @@ BOOL CALLBACK DIEnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 			ppinput->uShockDevice = ppinput->e_JoyCnt;	// remember uShock
 			ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; //set type 4 = VirtuaPin Controller
 		}
-        else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
+        else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
         {
             ppinput->uShockDevice = ppinput->e_JoyCnt;  // remember uShock
             ppinput->uShockType = USHOCKTYPE_GENERIC;   //set type = Generic
@@ -1312,7 +1316,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 					deadu -= m_deadz;
 				
 				switch (input->dwOfs)	// Axis, Sliders and POV
-				{	// with selectable axes added to menu, giving prioity in this order... X Axis (the Left/Right Axis), Y Axis
+				{	// with selectable axes added to menu, giving priority in this order... X Axis (the Left/Right Axis), Y Axis
 					case DIJOFS_X: 
 						if( g_pplayer ) //joyk  rotLeftManual
 						{
@@ -1340,7 +1344,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 1)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 1)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1371,7 +1381,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 2)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 2)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1380,16 +1396,16 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 						if( g_pplayer )
 						{
 							if (uShockType == USHOCKTYPE_ULTRACADE)
-								g_pplayer->mechPlungerIn((int)input->dwData);
+								g_pplayer->mechPlungerIn((int)input->dwData, joyk);
 							if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || (m_override_default_buttons == 0))
 							{											// with the ability to use rZ for plunger, checks to see if
 								if (uShockType == USHOCKTYPE_PBWIZARD) 	// the override is used and if so, if Plunger is set to Rz or
 								{										// disabled. If override isn't used, uses default assignment
-									g_pplayer->mechPlungerIn(-(int)input->dwData);		// of the Z axis.
+									g_pplayer->mechPlungerIn(-(int)input->dwData, joyk);		// of the Z axis.
 								}
 							}
 							if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-								g_pplayer->mechPlungerIn(-(int)input->dwData);
+								g_pplayer->mechPlungerIn(-(int)input->dwData, joyk);
 							if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
@@ -1401,7 +1417,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 3)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 3)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1420,7 +1442,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 4)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 4)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1439,7 +1467,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 5)
 							{	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 5)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1448,7 +1482,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 						if( g_pplayer )
 						{
 							if ((uShockType == USHOCKTYPE_PBWIZARD) && (m_override_default_buttons == 1) && (m_plunger_axis == 6))
-								g_pplayer->mechPlungerIn((int)input->dwData);
+								g_pplayer->mechPlungerIn((int)input->dwData, joyk);
 							if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
@@ -1460,7 +1494,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 6)
 							{
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 6)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1469,7 +1509,7 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 						if( g_pplayer )
 						{
 							if (uShockType == USHOCKTYPE_SIDEWINDER)
-								g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+								g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
 							{ // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
 								// Axis Deadzone
@@ -1481,7 +1521,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 7)
 							{
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 7)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;
@@ -1500,7 +1546,13 @@ void PinInput::ProcessKeys(PinTable * const ptable/*, const U32 curr_sim_msec*/,
 							else if (m_plunger_axis == 8)
 							{
 								if (uShockType == USHOCKTYPE_GENERIC)
-									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData);
+									g_pplayer->mechPlungerIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
+							}
+							else if (m_plunger_speed_axis == 8)
+							{
+								// not nudge X/Y or plunger
+								if (uShockType == USHOCKTYPE_GENERIC)
+									g_pplayer->mechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
 							}
 						}
 						break;

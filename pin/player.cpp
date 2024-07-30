@@ -184,6 +184,7 @@ Player::Player()
         m_fThrowBalls = false;
         m_fAccelerometer = fTrue;       // true if electronic Accelerometer enabled 
         m_AccelNormalMount = fTrue;     // normal mounting (left hand coordinates)
+        m_fAccelVelocityInput = fFalse; // acceleration-based nudging by default
         m_AccelAngle = 0;                       // 0 degrees (GUI is lefthand coordinates)
         m_AccelAmp = 1.5f;                      // Accelerometer gain 
         m_AccelAmpX = m_AccelAmp;       // Accelerometer gain X axis
@@ -202,6 +203,8 @@ Player::Player()
         for(int i = 0; i < PININ_JOYMXCNT; ++i) {
                 m_curAccel_x[i] = 0;
                 m_curAccel_y[i] = 0;
+                m_curPlunger[i] = 0;
+                m_curPlungerSpeed[i] = 0;
         }
 
         m_sleeptime = 0;
@@ -209,7 +212,10 @@ Player::Player()
         m_pxap = NULL;
         m_pactiveball = NULL;
 
-        m_curPlunger = JOYRANGEMN-1;
+        m_plungerSpeedScale = 1.0f;
+        m_curMechPlungerPos = 0;
+        m_curMechPlungerSpeed = 0;
+        m_fExtPlungerSpeed = fFalse;
 
         int shadow;
         HRESULT hr = GetRegInt("Player", "BallShadows", &shadow);
@@ -728,6 +734,16 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
         m_AccelAmpY = m_ptable->m_tblAccelAmpY;
         m_AccelMAmp = m_ptable->m_tblAccelManualAmp;                    // manual input gain, generally from joysticks
 
+        // global settings
+        m_fAccelVelocityInput = fFalse;
+        if (GetRegInt("Player", "AccelVelocityInput", &m_fAccelVelocityInput) == S_OK)
+                m_fAccelVelocityInput = (m_fAccelVelocityInput != fFalse);
+
+        m_plungerSpeedScale = 1.0f;
+        int intTmp = 0;
+        if (GetRegInt("Player", "PlungerSpeedScale", &intTmp) == S_OK && intTmp > 0)
+                m_plungerSpeedScale = (float)intTmp / 100.0f;
+
         m_jolt_amount = (U32)m_ptable->m_jolt_amount;
         m_tilt_amount = (U32)m_ptable->m_tilt_amount;
         m_jolt_trigger_time = (U32)m_ptable->m_jolt_trigger_time;
@@ -827,8 +843,13 @@ HRESULT Player::Init(PinTable * const ptable, const HWND hwndProgress, const HWN
 
         m_NudgeX = 0;
         m_NudgeY = 0;
+        m_NudgeVX = 0;
+        m_NudgeVY = 0;
+        m_NudgeDVX = 0;
+        m_NudgeDVY = 0;
         m_nudgetime = 0;
         m_movedPlunger = 0;     // has plunger moved, must have moved at least three times
+        m_fExtPlungerSpeed = fFalse;
 
         SendMessage(hwndProgress, PBM_SETPOS, 50, 0);
         SetWindowText(hwndProgressName, "Initalizing Physics...");
@@ -1460,12 +1481,12 @@ void Player::NudgeUpdate()      // called on every integral physics frame
                 return;
         }       
 
-        m_NudgeX = 0;   // accumlate over joysticks, these acceleration values are used in update ball velocity calculations
+        m_NudgeX = 0;   // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
         m_NudgeY = 0;   // and are required to be acceleration values (not velocity or displacement)
 
         if(!m_fAccelerometer) return;   // uShock is disabled 
 
-        //rotate to match hardware mounting orentation, including left or right coordinates
+        //rotate to match hardware mounting orientation, including left or right coordinates
         const float cna = cosf(m_AccelAngle);
         const float sna = sinf(m_AccelAngle);
 
@@ -1478,6 +1499,22 @@ void Player::NudgeUpdate()      // called on every integral physics frame
                 m_NudgeX += m_AccelAmpX*(dx*cna + dy*sna) * (1.0f - nudge_get_sensitivity());  //calc Green's transform component for X
                 const float nugY = m_AccelAmpY*(dy*cna - dx*sna) * (1.0f - nudge_get_sensitivity()); // calc Green transform component for Y...
                 m_NudgeY = m_AccelNormalMount ? (m_NudgeY + nugY) : (m_NudgeY - nugY);  // add as left or right hand coordinate system
+        }
+
+        // If using velocity input, interpret the joystick reading as a velocity
+        if (m_fAccelVelocityInput)
+        {
+                // calculate the differential velocity
+                m_NudgeDVX = m_NudgeX - m_NudgeVX;
+                m_NudgeDVY = m_NudgeY - m_NudgeVY;
+
+                // remember the new velocity
+                m_NudgeVX = m_NudgeX;
+                m_NudgeVY = m_NudgeY;
+
+                // clear the acceleration
+                m_NudgeX = 0.0f;
+                m_NudgeY = 0.0f;
         }
 }
 
@@ -1500,6 +1537,14 @@ const float b [IIR_Order+1] = {
 
 void Player::PlungerUpdate()    // called on every integral physics frame
 {       
+        // if we're receiving speed inputs, take a current snapshot
+        if (m_fExtPlungerSpeed)
+        {
+                // compute the sum over joysticks
+                m_curMechPlungerSpeed = 0;
+                for (int i = 0 ; i < PININ_JOYMXCNT ; m_curMechPlungerSpeed += m_curPlungerSpeed[i++]);
+        }
+    
         static int init = IIR_Order;    // first time call
         static float x [IIR_Order+1] = {0,0,0,0,0};
         static float y [IIR_Order+1] = {0,0,0,0,0};     
@@ -1515,13 +1560,17 @@ void Player::PlungerUpdate()    // called on every integral physics frame
                 return; // not until a real value is entered
         }
 
+        // get the sum of current plunger inputs across joysticks
+        float cur = 0;
+        for (int i = 0 ; i < PININ_JOYMXCNT ; cur += (float)m_curPlunger[i++]);
+
         if (!c_plungerFilter)
         { 
-                m_curMechPlungerPos = (float)m_curPlunger;
+                m_curMechPlungerPos = cur;
                 return;
         }
 
-        x[0] = (float)m_curPlunger; //initialize filter
+        x[0] = cur; //initialize filter
         do
         {
                 y[0] = a[0]*x[0];         // initial
@@ -1539,13 +1588,19 @@ void Player::PlungerUpdate()    // called on every integral physics frame
         m_curMechPlungerPos = y[0];
 }
 
+int Player::GetMechPlungerSpeed() const
+{
+    return m_curMechPlungerSpeed;
+}
+
+
 // mechPlunger NOTE: Normalized position is from 0.0 to +1.0f
 // +1.0 is fully retracted, 0.0 is all the way forward.
 //
 // The traditional method requires calibration in control panel game controllers to work right.
 // The calibrated zero value should match the rest position of the mechanical plunger.
 // The method below uses a dual - piecewise linear function to map the mechanical pull and push 
-// onto the virtual plunger position from 0..1, the pulunger properties has a ParkPosition setting 
+// onto the virtual plunger position from 0..1, the plunger properties has a ParkPosition setting 
 // that matches the mechanical plunger zero position
 //
 // If the plunger device is a "linear plunger", we replace that calculation with a single linear
@@ -1574,11 +1629,80 @@ float PlungerAnimObject::mechPlunger() const
     }
 }
 
-void Player::mechPlungerIn(const int z)
+// Mechanical plunger speed, from I/O controller speed input, if configured.
+// This takes input from the Plunger Speed axis, separate from the Plunger
+// Position axis, allowing the controller to report instantaneous speeds
+// along with position.  I/O controllers can usually measure the physical
+// plunger's speed accurately thanks to their high-speed access to the raw
+// sensor data.  It's impossible for the host to accurately compute the
+// speed from position reports alone (via a first derivative of sequential
+// position reports), because USB HID reports don't provide sufficient time
+// resolution - physical plungers simply move too fast, so taking the first
+// derivative results in pretty much random garbage a lot of the time.  The
+// I/O controller can typically take readings at a high enough sampling
+// rate to accurate track the speed, so we use its speed reports if they're
+// available in preference to our internal speed calculations, which are
+// unreliable at best.
+float PlungerAnimObject::mechPlungerSpeed() const
 {
-        m_curPlunger = -z; //axis reversal
+        // Get the current speed reading
+        float v = (float)g_pplayer->GetMechPlungerSpeed();
+
+        // normalized the joystick input to -1..+1
+        v *= (1.0f/(JOYRANGEMX - JOYRANGEMN));
+
+        // The joystick report is device-defined speed units.  We
+        // need to convert these to local speed units.  Since the
+        // report units are device-specific, the conversion factor
+        // is also device-specific, so the most general way to
+        // handle it is as a user-adjustable setting.  This also
+        // has the benefit that it allows the user to fine-tune the
+        // feel to their liking.
+        // 
+        // For reference, Pinscape Pico uses units where 1.0 (after
+        // normalization) is the plunger travel length per
+        // centisecond (10ms).  After scaling to the simulated
+        // plunger length, that happens to equal VP9's native speed
+        // units, so the scaling factor should be set to about 100%
+        // when a Pinscape Pico is in use.
+        v *= g_pplayer->m_plungerSpeedScale;
+
+        // Scale to the virtual plunger we're operating.  The device
+        // units are inherently relative to the length of the actual
+        // mechanical plunger, so after conversion to simulation
+        // units, they should maintain that proportionality to the
+        // simulated plunger length.
+        v *= m_frameLen;
+
+        // Now apply the "mechanical strength" scaling.  This lets
+        // the game set the relative strength of the plunger to be
+        // higher or lower than "standard" (which is an arbitrary
+        // reference point).  The strength is relative to the mass.
+        // (The mass is actually a fixed constant, so including it
+        // doesn't have any practical effect other than changing
+        // the scale of the user-adjustable unit conversion factor
+        // above, but we'll include it for consistency with other
+        // places in the code where the mech strength is used.)
+        v *= m_plunger->m_d.m_mechStrength/m_mass;
+
+        // Return the result
+        return v;
+}
+
+void Player::mechPlungerIn(const int z, const int joystickIndex)
+{
+        m_curPlunger[joystickIndex] = -z; //axis reversal
 
         if (++m_movedPlunger == 0x7ffffff) m_movedPlunger = 3; //restart at 3
+}
+
+void Player::mechPlungerSpeedIn(const int z, const int joystickIndex)
+{
+        // record it
+        m_curPlungerSpeed[joystickIndex] = -z;
+
+        // flag that an external speed setting has been applied
+        m_fExtPlungerSpeed = fTrue;
 }
 
 void Player::SetGravity(float slopeDeg, float strength)
@@ -1634,7 +1758,7 @@ void Player::SetGravity(float slopeDeg, float strength)
 // The point of the filter is to make the results *feel* more
 // realistic by reducing visible artifacts from the measurement
 // inaccuracies.  We thus have to take care that the filter's
-// meedling hand doesn't itself become apparent as another
+// meddling hand doesn't itself become apparent as another
 // visible artifact.  We try to keep the filter's effects subtle
 // by trying to limit its intervention to small adjustments.
 // For the most part, it kicks in at the point in a nudge where

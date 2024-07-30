@@ -581,8 +581,8 @@ void Ball::UpdateVelocities()
 		else
 			vel.z += g * 0.001f;			  // don't add so much energy if already on the world floor
 
-		vel.x += nx;
-		vel.y += ny;
+		vel.x += nx + g_pplayer->m_NudgeDVX;
+		vel.y += ny + g_pplayer->m_NudgeDVY;
 	}
 
 	const float mag = vel.LengthSquared(); //speed check 

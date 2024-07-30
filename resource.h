@@ -14,6 +14,7 @@
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
 #define DISPID_SIZE_X                   5
+#define VP_VERSION_REV                  5
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
@@ -659,8 +660,11 @@
 #define IDC_GLOBALNMOUNT                526
 #define IDC_GLOBALROTATION              527
 #define IDC_GLOBALJOLT                  528
+#define IDC_PLUNGERSPEEDAXIS            528
 #define IDC_CBGLOBALROTATION            529
 #define IDC_CBGLOBALJOLT                530
+#define IDC_CBGLOBALROTATION2           530
+#define IDC_CBGLOBALACCVEL              530
 #define IDC_JOYPMBUYIN                  531
 #define IDC_JOYPMCOIN3                  532
 #define IDC_JOYPMCOIN4                  533
@@ -675,6 +679,8 @@
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
 #define IDC_3D_STEREO_AA                543
+#define IDC_LRAXISGAIN2                 543
+#define IDC_PLUNGERSPEEDSCALE           543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546
@@ -841,7 +847,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        816
+#define _APS_NEXT_RESOURCE_VALUE        817
 #define _APS_NEXT_COMMAND_VALUE         32895
 #define _APS_NEXT_CONTROL_VALUE         443
 #define _APS_NEXT_SYMED_VALUE           188
