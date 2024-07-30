@@ -152,6 +152,8 @@ private:
          LPDIRECTINPUTDEVICE m_pKeyboard = nullptr;
       #endif
    #endif
+
+    LPDIDEVICEINSTANCE m_pAttachedDeviceInfo[PININ_JOYMXCNT];
 #endif
 
    BYTE m_oldMouseButtonState[3];
@@ -182,12 +184,7 @@ private:
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
 
-   struct InputDeviceInfo
-   {
-      string name;
-      bool state;
-   };
-   vector<InputDeviceInfo> m_inputDeviceInfo;
+   std::map<string, bool> m_inputDeviceSettingsInfo;
 
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;

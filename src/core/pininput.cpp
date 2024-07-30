@@ -42,7 +42,10 @@ PinInput::PinInput()
    m_num_joy = 0;
 #ifdef _WIN32
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
+   {
       m_pJoystick[k] = nullptr;
+      m_pAttachedDeviceInfo[k] = nullptr;
+   }
 #endif
 
    uShockType = 0;
@@ -216,17 +219,15 @@ void PinInput::LoadSettings(const Settings& settings)
 
    for (int i = 0; i < PININ_JOYMXCNT; i++)
    {
-      InputDeviceInfo info;
-
       sprintf_s(tmp, maxStrLen, "Device%d_Name", i);
-      string deviceName = tmp;
-      info.name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
+      string deviceName = string(tmp);
+      string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
 
       sprintf_s(tmp, maxStrLen, "Device%d_State", i);
-      string deviceState = tmp;
-      info.state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+      string deviceState = string(tmp);
+      bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
 
-      m_inputDeviceInfo.push_back(info);
+      m_inputDeviceSettingsInfo.insert(std::pair(name, state));
    }
 }
 
@@ -583,8 +584,22 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
          #else
             const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
          #endif
+
          if (pjoy)
          {
+            // Ignore any disabled input devices.
+            // Unfortunately, there's no guarantee that the settings order of the devices is the same as the currently enumerated ones.
+            // Therefore we can't simply use the index here; that's why we saved the device setting into a map and the device info into a new array.
+            bool inputDeviceState = true;
+            const auto deviceIt = m_inputDeviceSettingsInfo.find(m_pAttachedDeviceInfo[k]->tszInstanceName);
+            if (deviceIt != m_inputDeviceSettingsInfo.end())
+            {
+               inputDeviceState = deviceIt->second;
+            }
+
+            // Bail out here if the device is disabled
+            if (!inputDeviceState) continue;
+
             HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
             if (hr == S_OK || hr == S_FALSE)
             {
@@ -998,6 +1013,16 @@ void PinInput::Init()
             m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
          #endif
       }
+
+      // Store input device info
+      for (int i = 0; i < PININ_JOYMXCNT; i++)
+      {
+         LPDIRECTINPUTDEVICE joystick = m_pJoystick[i];
+         LPDIDEVICEINSTANCE deviceInfo = new DIDEVICEINSTANCE;
+         deviceInfo->dwSize = sizeof(DIDEVICEINSTANCE);
+         joystick->GetDeviceInfo(m_pAttachedDeviceInfo[i]);
+      }
+
    #endif
 
    m_mixerKeyDown = false;
@@ -1299,6 +1324,8 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
     const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
+
+    //input->
 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
