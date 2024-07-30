@@ -229,7 +229,7 @@ $ANDROID_HOME/platform-tools/adb -d logcat org.vpinball.app
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake libtool cmake bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
+sudo apt install git build-essential autoconf automake libtool cmake bison nasm zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
@@ -238,6 +238,7 @@ cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
+Note: Ubuntu repositories currently don't deliver a cmake version new enough to fulfill all dependency requirements (>3.25). Please consider adding an alternative apt repository, e.g. the one from the cmake maintainers [Kitware](https://apt.kitware.com/) first to get a newer version. 
 
 ### Linux (Ubuntu 23.10)
 
