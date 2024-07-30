@@ -309,7 +309,7 @@ public:
    STDMETHOD(put_EnvironmentImage)(/*[in]*/ BSTR newVal);
 
    STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ double *pVal);
    STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
@@ -971,7 +971,7 @@ public:
    STDMETHOD(get_ActiveTable)(/*[out, retval]*/ ITable **pVal);
 
    STDMETHOD(get_Version)(/*[out, retval]*/ int *pVal);
-   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ int *pVal);
+   STDMETHOD(get_VPBuildVersion)(/*[out, retval]*/ double *pVal);
    STDMETHOD(get_VersionMajor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionMinor)(/*[out, retval]*/ int *pVal);
    STDMETHOD(get_VersionRevision)(/*[out, retval]*/ int *pVal);
