@@ -1168,9 +1168,9 @@ STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(double *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
 	return S_OK;
 }
 
@@ -10391,9 +10391,9 @@ STDMETHODIMP PinTable::get_Version(int *pVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP PinTable::get_VPBuildVersion(double *pVal)
 {
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
    return S_OK;
 }
 
