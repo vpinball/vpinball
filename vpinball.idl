@@ -684,7 +684,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
                 [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
                 [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] DOUBLE *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] double *pVal);
 
                 [propget, id(230), helpstring("property Option")] HRESULT Option([in] BSTR OptionName, [in] float MinValue, [in] float MaxValue, [in] float Step, [in] float DefaultValue, [in] int Unit, [in, optional] VARIANT values, [out, retval] float *pVal);
                 [propput, id(230), helpstring("property Option")] HRESULT Option([in] BSTR OptionName, [in] float MinValue, [in] float MaxValue, [in] float Step, [in] float DefaultValue, [in] int Unit, [in, optional] VARIANT values, [in] float val);
@@ -773,7 +773,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [propget, id(38), helpstring("property VersionMajor")] HRESULT VersionMajor([out, retval] int *pVal);
                 [propget, id(39), helpstring("property VersionMinor")] HRESULT VersionMinor([out, retval] int *pVal);
                 [propget, id(40), helpstring("property VersionRevision")] HRESULT VersionRevision([out, retval] int *pVal);
-                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] DOUBLE *pVal);
+                [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] double *pVal);
 
                 [id(249), helpstring("method GetSerialDevices")] HRESULT GetSerialDevices([out, retval] VARIANT *pVal);
                 [id(250), helpstring("method OpenSerial")] HRESULT OpenSerial([in] BSTR device);
