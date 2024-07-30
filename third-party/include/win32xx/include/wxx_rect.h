@@ -1,5 +1,5 @@
-// Win32++   Version 9.6
-// Release Date: 5th July 2024
+// Win32++   Version 9.6.1
+// Release Date: 29th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -230,7 +230,7 @@ namespace Win32xx
     inline CPoint GetCursorPos()
     {
         CPoint pt;
-        VERIFY(::GetCursorPos(&pt));
+        ::GetCursorPos(&pt);
         return pt;
     }
 

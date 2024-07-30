@@ -1,5 +1,5 @@
-// Win32++   Version 9.6
-// Release Date: 5th July 2024
+// Win32++   Version 9.6.1
+// Release Date: 29th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -161,7 +161,7 @@ using namespace Win32xx;
 #define MIN(a,b)        (((a) < (b)) ? (a) : (b))
 
 // Version macro
-#define _WIN32XX_VER 0x0960     // Win32++ version 9.6
+#define _WIN32XX_VER 0x0961     // Win32++ version 9.6.1
 
 // Define the TRACE Macro.
 // In debug mode, TRACE send text to the debug/output pane, or an external debugger

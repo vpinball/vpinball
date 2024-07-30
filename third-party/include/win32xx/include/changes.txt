@@ -1,3 +1,7 @@
+Version 9.6.1
+=============
+This version contains minor updates to CDocker and the docking samples.
+
 Version 9.6
 ===========
 This version adds support for std::min and std::max. The MIN and MAX macros

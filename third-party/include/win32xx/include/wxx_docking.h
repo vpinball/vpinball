@@ -1,5 +1,5 @@
-// Win32++   Version 9.6
-// Release Date: 5th July 2024
+// Win32++   Version 9.6.1
+// Release Date: 29th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -1616,7 +1616,7 @@ namespace Win32xx
                 rgn.CombineRgn(rgn2, RGN_OR);
 
                 // Assign the region.
-                SetWindowRgn(rgn, FALSE);
+                SetWindowRgn(rgn, TRUE);
             }
         }
         else
@@ -1676,8 +1676,14 @@ namespace Win32xx
         {
             CBitmap image = DpiScaleUpBitmap(m_image);
             CSize imageSize = image.GetSize();
+            CRect rc = GetClientRect();
 
-            dc.DrawBitmap(0, 0, imageSize.cx, imageSize.cy, image, RGB(255, 0, 255));
+            // Draw the dock target.
+            // Support dock targets split across different monitors.
+            CMemDC memDC(dc);
+            memDC.CreateCompatibleBitmap(dc, imageSize.cx, imageSize.cy);
+            memDC.DrawBitmap(0, 0, imageSize.cx, imageSize.cy, image, RGB(255, 0, 255));
+            dc.StretchBlt(0, 0, rc.Width(), rc.Height(), memDC, 0, 0, imageSize.cx, imageSize.cy, SRCCOPY);
         }
         else
             TRACE("\n*** WARNING: Missing docking resource. ***\n");
@@ -1885,21 +1891,36 @@ namespace Win32xx
             CSize szBottom = bmBottom.GetSize();
 
             // Draw the dock targets.
-            dc.DrawBitmap(0, 0, szBig.cx, szBig.cy, m_image, RGB(255, 0, 255));
+            // Support dock targets split across different monitors.
+            CRect rc = GetClientRect();
+            CMemDC memDC(dc);
+            memDC.CreateCompatibleBitmap(dc, szBig.cx, szBig.cy);
+
+            memDC.DrawBitmap(0, 0, szBig.cx, szBig.cy, m_image, RGB(255, 0, 255));
             int midleft = (szBig.cy - szLeft.cy) / 2;
             int midright = szBig.cx - szRight.cx;
-            dc.DrawBitmap(0, midleft, szLeft.cx, szLeft.cy, bmLeft, RGB(255, 0, 255));
-            dc.DrawBitmap(midleft, 0, szTop.cx, szTop.cy, bmTop, RGB(255, 0, 255));
-            dc.DrawBitmap(midright, midleft, szRight.cx, szRight.cy, bmRight, RGB(255, 0, 255));
-            dc.DrawBitmap(midleft, midright, szBottom.cx, szBottom.cy, bmBottom, RGB(255, 0, 255));
+            memDC.DrawBitmap(0, midleft, szLeft.cx, szLeft.cy, bmLeft, RGB(255, 0, 255));
+            memDC.DrawBitmap(midleft, 0, szTop.cx, szTop.cy, bmTop, RGB(255, 0, 255));
+            memDC.DrawBitmap(midright, midleft, szRight.cx, szRight.cy, bmRight, RGB(255, 0, 255));
+            memDC.DrawBitmap(midleft, midright, szBottom.cx, szBottom.cy, bmBottom, RGB(255, 0, 255));
+
+            CBitmap bmMiddle = DpiScaleUpBitmap(CBitmap(IDW_SDMIDDLE));
+            CSize szMiddle = bmMiddle.GetSize();
+            int xMid = (szBig.cx - szMiddle.cx) / 2;
+            int yMid = (szBig.cy - szMiddle.cy) / 2;
+            CBrush grey(RGB(224, 224, 224));
+            dc.FillRect(rc, grey);
+            int height3 = rc.Height() / 3;
+            int width3 = rc.Width() /3;
+            dc.StretchBlt(0, height3,width3, height3, memDC, 0, midleft, szLeft.cx, szLeft.cy, SRCCOPY);
+            dc.StretchBlt(width3, 0, width3, height3, memDC, midleft, 0, szTop.cx, szTop.cy, SRCCOPY);
+            dc.StretchBlt(2* width3, height3, width3, height3, memDC, midright, midleft, szRight.cx, szRight.cy, SRCCOPY);
+            dc.StretchBlt(width3, 2* height3, width3, height3, memDC, midleft, midright, szBottom.cx, szBottom.cy, SRCCOPY);
 
             if (IsOverContainer())
             {
-                CBitmap bmMiddle = DpiScaleUpBitmap(CBitmap(IDW_SDMIDDLE));
-                CSize szMiddle = bmMiddle.GetSize();
-                int xMid = (szBig.cx - szMiddle.cx) / 2;
-                int yMid = (szBig.cy - szMiddle.cy) / 2;
-                dc.DrawBitmap(xMid, yMid, szMiddle.cx, szMiddle.cy, bmMiddle, RGB(255, 0, 255));
+                memDC.DrawBitmap(xMid, yMid, szMiddle.cx, szMiddle.cy, bmMiddle, RGB(255, 0, 255));
+                dc.StretchBlt(rc.Width()/3, rc.Height() / 3, (rc.Width() / 3), (rc.Height() / 3), memDC, xMid, yMid, szMiddle.cx, szMiddle.cy, SRCCOPY);
             }
         }
     }
