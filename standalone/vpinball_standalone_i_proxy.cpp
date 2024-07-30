@@ -1617,9 +1617,9 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 24: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 687: [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
-				V_VT(&res) = VT_I4;
-				hres = get_VPBuildVersion((int*)&V_I4(&res));
+				// line 687: [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] double *pVal);
+				V_VT(&res) = VT_R8;
+				hres = get_VPBuildVersion((double*)&V_R8(&res));
 			}
 			break;
 		}
@@ -2669,9 +2669,9 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		}
 		case 24: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 777: [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] int *pVal);
-				V_VT(&res) = VT_I4;
-				hres = get_VPBuildVersion((int*)&V_I4(&res));
+				// line 777: [propget, id(24), helpstring("property VPBuildVersion")] HRESULT VPBuildVersion([out, retval] double *pVal);
+				V_VT(&res) = VT_R8;
+				hres = get_VPBuildVersion((double*)&V_R8(&res));
 			}
 			break;
 		}
