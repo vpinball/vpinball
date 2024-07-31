@@ -153,7 +153,7 @@ private:
       #endif
    #endif
 
-    LPDIDEVICEINSTANCE m_pAttachedDeviceInfo[PININ_JOYMXCNT];
+    LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT];
 #endif
 
    BYTE m_oldMouseButtonState[3];
@@ -184,7 +184,7 @@ private:
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
 
-   std::map<string, bool> m_inputDeviceSettingsInfo;
+   std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;

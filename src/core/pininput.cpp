@@ -44,9 +44,11 @@ PinInput::PinInput()
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
    {
       m_pJoystick[k] = nullptr;
-      m_pAttachedDeviceInfo[k] = nullptr;
+      m_attachedDeviceInfo[k] = nullptr;
    }
 #endif
+
+   m_pInputDeviceSettingsInfo = std::unique_ptr<std::map<string, bool>>(new std::map<string, bool>);
 
    uShockType = 0;
 
@@ -213,9 +215,12 @@ void PinInput::LoadSettings(const Settings& settings)
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 
+   // Load input device settings
    const string kDefaultName = "None";
    const int maxStrLen = 16;
    char tmp[maxStrLen];
+
+   m_pInputDeviceSettingsInfo->clear();
 
    for (int i = 0; i < PININ_JOYMXCNT; i++)
    {
@@ -227,7 +232,8 @@ void PinInput::LoadSettings(const Settings& settings)
       string deviceState = string(tmp);
       bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
 
-      m_inputDeviceSettingsInfo.insert(std::pair(name, state));
+      if (!m_pInputDeviceSettingsInfo->contains(name))
+         m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
    }
 }
 
@@ -588,11 +594,12 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
          if (pjoy)
          {
             // Ignore any disabled input devices.
-            // Unfortunately, there's no guarantee that the settings order of the devices is the same as the currently enumerated ones.
-            // Therefore we can't simply use the index here; that's why we saved the device setting into a map and the device info into a new array.
+            // Unfortunately, there's no guarantee that the order of the devices in settings is the same as the currently enumerated ones.
+            // Therefore we can't simply use the joystick index here; that's why we saved the device setting into a map and the device info
+            // into a new array.
             bool inputDeviceState = true;
-            const auto deviceIt = m_inputDeviceSettingsInfo.find(m_pAttachedDeviceInfo[k]->tszInstanceName);
-            if (deviceIt != m_inputDeviceSettingsInfo.end())
+            const auto deviceIt = m_pInputDeviceSettingsInfo->find(m_attachedDeviceInfo[k]->tszInstanceName);
+            if (deviceIt != m_pInputDeviceSettingsInfo->end())
             {
                inputDeviceState = deviceIt->second;
             }
@@ -1018,9 +1025,14 @@ void PinInput::Init()
       for (int i = 0; i < PININ_JOYMXCNT; i++)
       {
          LPDIRECTINPUTDEVICE joystick = m_pJoystick[i];
-         LPDIDEVICEINSTANCE deviceInfo = new DIDEVICEINSTANCE;
-         deviceInfo->dwSize = sizeof(DIDEVICEINSTANCE);
-         joystick->GetDeviceInfo(m_pAttachedDeviceInfo[i]);
+
+         if (joystick != nullptr)
+         {
+             LPDIDEVICEINSTANCE deviceInfo = new DIDEVICEINSTANCE;
+             deviceInfo->dwSize = sizeof(DIDEVICEINSTANCE);
+             joystick->GetDeviceInfo(deviceInfo);
+             m_attachedDeviceInfo[i] = deviceInfo;
+         }
       }
 
    #endif
@@ -1065,14 +1077,24 @@ void PinInput::UnInit()
    //
 
    for (int k = 0; k < m_num_joy; ++k)
+   {
       if (m_pJoystick[k])
       {
-         // Unacquire the device one last time just in case 
+         // Unacquire the device one last time just in case
          // the app tried to exit while the device is still acquired.
          m_pJoystick[k]->Unacquire();
          m_pJoystick[k]->Release();
          m_pJoystick[k] = nullptr;
       }
+
+      if (m_attachedDeviceInfo[k])
+      {
+         delete m_attachedDeviceInfo[k];
+         m_attachedDeviceInfo[k] = nullptr;
+      }
+   }
+
+   m_pInputDeviceSettingsInfo->clear();
 
    // Release any DirectInput objects.
    SAFE_RELEASE(m_pDI);
