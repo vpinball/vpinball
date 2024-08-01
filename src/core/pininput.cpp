@@ -1026,7 +1026,11 @@ void PinInput::Init()
       // Store input device info
       for (int i = 0; i < PININ_JOYMXCNT; i++)
       {
-         LPDIRECTINPUTDEVICE joystick = m_pJoystick[i];
+            #ifdef USE_DINPUT8
+            LPDIRECTINPUTDEVICE8 joystick = m_pJoystick[i];
+            #else
+            LPDIRECTINPUTDEVICE joystick = m_pJoystick[i];
+            #endif
 
          if (joystick != nullptr)
          {
@@ -2062,14 +2066,17 @@ int PinInput::GetNextKey() // return last valid keyboard key
 }
 
 #ifdef _WIN32
+#ifdef USE_DINPUT8
+LPDIRECTINPUTDEVICE8 PinInput::GetJoystick(int index)
+#else
 LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
+#endif
 { 
-    LPDIRECTINPUTDEVICE joy = nullptr;
     if (index < PININ_JOYMXCNT)
     {
-      joy = m_pJoystick[index];
+       return m_pJoystick[index];
     }
 
-    return joy;
+    return nullptr;
 }
 #endif

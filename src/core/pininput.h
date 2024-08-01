@@ -91,7 +91,11 @@ public:
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
 
    #ifdef _WIN32
+   #ifdef USE_DINPUT8
+   LPDIRECTINPUTDEVICE8 GetJoystick(int index);
+   #else
    LPDIRECTINPUTDEVICE GetJoystick(int index);
+   #endif
    #endif
 
    uint64_t m_leftkey_down_usec;
