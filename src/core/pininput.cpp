@@ -233,7 +233,7 @@ void PinInput::LoadSettings(const Settings& settings)
       string deviceState = string(tmp);
       bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
 
-      if (!m_pInputDeviceSettingsInfo->contains(name))
+      if (m_pInputDeviceSettingsInfo->count(name) == 0)
          m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
    }
 #endif
