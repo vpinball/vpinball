@@ -71,7 +71,7 @@ jobs:
           path: DXSDK
           key: cache-dxsdk
       - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
       - name: Build
         run: |
@@ -118,7 +118,7 @@ jobs:
           path: DXSDK
           key: cache-dxsdk
       - run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
       - name: Build
         run: |
