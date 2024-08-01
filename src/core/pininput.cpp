@@ -46,9 +46,9 @@ PinInput::PinInput()
       m_pJoystick[k] = nullptr;
       m_attachedDeviceInfo[k] = nullptr;
    }
-#endif
 
    m_pInputDeviceSettingsInfo = std::unique_ptr<std::map<string, bool>>(new std::map<string, bool>);
+#endif
 
    uShockType = 0;
 

@@ -184,7 +184,9 @@ private:
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
 
+#if _WIN32
    std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
+#endif
 
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;
