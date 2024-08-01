@@ -2,6 +2,7 @@
 
 #include "git_version.h"
 
+// Update VERSION_START_SHA in .github\workflows\vpinball.yml to point to the latest commit.
 #define VP_VERSION_MAJOR    10 // X Digits
 #define VP_VERSION_MINOR    8  // Max 2 Digits
 #define VP_VERSION_REV      0  // Max 1 Digit
