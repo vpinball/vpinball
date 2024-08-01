@@ -184,7 +184,7 @@ private:
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
 
-#if _WIN32
+#ifdef _WIN32
    std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 #endif
 

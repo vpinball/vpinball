@@ -215,6 +215,7 @@ void PinInput::LoadSettings(const Settings& settings)
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 
+#ifdef _WIN32
    // Load input device settings
    const string kDefaultName = "None";
    const int maxStrLen = 16;
@@ -235,6 +236,7 @@ void PinInput::LoadSettings(const Settings& settings)
       if (!m_pInputDeviceSettingsInfo->contains(name))
          m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
    }
+#endif
 }
 
 #ifdef ENABLE_SDL_INPUT
