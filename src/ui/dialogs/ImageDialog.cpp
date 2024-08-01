@@ -857,10 +857,10 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
    if (pt)
    {
-      if ((lstrcmpi(pt->m_image.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_ballImage.c_str(), ppi->m_szName.c_str()) == 0)
-         || (lstrcmpi(pt->m_ballImageDecal.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_envImage.c_str(), ppi->m_szName.c_str()) == 0)
-         || (lstrcmpi(pt->m_BG_image[BG_DESKTOP].c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_BG_image[BG_FSS].c_str(), ppi->m_szName.c_str()) == 0)
-         || (lstrcmpi(pt->m_BG_image[BG_FULLSCREEN].c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pt->m_imageColorGrade.c_str(), ppi->m_szName.c_str()) == 0))
+      if (StrCompareNoCase(pt->m_image, ppi->m_szName) || StrCompareNoCase(pt->m_ballImage, ppi->m_szName)
+       || StrCompareNoCase(pt->m_ballImageDecal, ppi->m_szName) || StrCompareNoCase(pt->m_envImage, ppi->m_szName)
+       || StrCompareNoCase(pt->m_BG_image[BG_DESKTOP], ppi->m_szName) || StrCompareNoCase(pt->m_BG_image[BG_FSS], ppi->m_szName)
+       || StrCompareNoCase(pt->m_BG_image[BG_FULLSCREEN], ppi->m_szName) || StrCompareNoCase(pt->m_imageColorGrade, ppi->m_szName))
       {
          ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringYes);
       }
@@ -878,84 +878,84 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
             case eItemDispReel:
             {
                const DispReel *const pReel = (DispReel *)pEdit;
-               if (lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pReel->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemPrimitive:
             {
                const Primitive *const pPrim = (Primitive *)pEdit;
-               if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0))
+               if (StrCompareNoCase(pPrim->m_d.m_szImage, ppi->m_szName) || StrCompareNoCase(pPrim->m_d.m_szNormalMap, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemRamp:
             {
                const Ramp *const pRamp = (Ramp *)pEdit;
-               if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pRamp->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemSurface:
             {
                const Surface *const pSurf = (Surface *)pEdit;
-               if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0))
+               if (StrCompareNoCase(pSurf->m_d.m_szImage, ppi->m_szName) || StrCompareNoCase(pSurf->m_d.m_szSideImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemDecal:
             {
                const Decal *const pDecal = (Decal *)pEdit;
-               if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pDecal->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemFlasher:
             {
                const Flasher *const pFlash = (Flasher *)pEdit;
-               if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0) || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0))
+               if (StrCompareNoCase(pFlash->m_d.m_szImageA, ppi->m_szName) || StrCompareNoCase(pFlash->m_d.m_szImageB, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemFlipper:
             {
                const Flipper *const pFlip = (Flipper *)pEdit;
-               if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pFlip->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemHitTarget:
             {
                const HitTarget *const pHit = (HitTarget *)pEdit;
-               if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pHit->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemLight:
             {
                const Light *const pLight = (Light *)pEdit;
-               if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pLight->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemPlunger:
             {
                const Plunger *const pPlung = (Plunger *)pEdit;
-               if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pPlung->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemRubber:
             {
                const Rubber *const pRub = (Rubber *)pEdit;
-               if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pRub->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }
             case eItemSpinner:
             {
                const Spinner *const pSpin = (Spinner *)pEdit;
-               if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+               if (StrCompareNoCase(pSpin->m_d.m_szImage, ppi->m_szName))
                   inUse = true;
                break;
             }

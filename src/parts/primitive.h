@@ -301,7 +301,7 @@ public:
    void ExportMeshDialog() final;
 
    bool IsPlayfield() const { return wcsicmp(m_wzName, L"playfield_mesh") == 0; }
-   bool IsBackglass() const { return lstrcmpi(m_d.m_szImage.c_str(), "backglassimage") == 0; }
+   bool IsBackglass() const { return StrCompareNoCase(m_d.m_szImage, "backglassimage"s); }
 
    float GetAlpha() const { return m_d.m_alpha; }
    void SetAlpha(const float value) { m_d.m_alpha = max(value, 0.f); }

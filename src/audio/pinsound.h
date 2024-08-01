@@ -96,7 +96,7 @@ public:
       const size_t pos = m_szPath.find_last_of('.');
       if(pos == string::npos)
          return true;
-      return (lstrcmpi(m_szPath.substr(pos+1).c_str(), "wav") == 0);
+      return StrCompareNoCase(m_szPath.substr(pos+1).c_str(), "wav"s);
    }
 #else
    bool IsWav() const
@@ -104,7 +104,7 @@ public:
       const size_t pos = m_szPath.find_last_of('.');
       if(pos == string::npos)
          return true;
-      return (lstrcmpi(m_szPath.substr(pos+1).c_str(), "wav") == 0);
+      return StrCompareNoCase(m_szPath.substr(pos+1), "wav"s);
    }
    bool IsWav2() const { return IsWav(); }
 #endif
@@ -190,13 +190,13 @@ public:
 		return (outputTarget == SNDOUT_BACKGLASS) ? m_pbackglassds : &m_pds;
 	}
 
-	void StopCopiedWav(const char* const szName)
+	void StopCopiedWav(const string& name)
 	{
 #ifndef __STANDALONE__
 		for (size_t i = 0; i < m_copiedwav.size(); i++)
 		{
 			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-			if (!lstrcmpi(ppsc->m_ppsOriginal->m_szName.c_str(), szName))
+			if (StrCompareNoCase(ppsc->m_ppsOriginal->m_szName, name))
 			{
 				ppsc->m_pDSBuffer->Stop();
 				break;

@@ -20,8 +20,8 @@ struct BallS
    Vertex3Ds m_vel = Vertex3Ds(0.f, 0.f, 0.f); // ball velocity
    float m_radius = 25.f;
    float m_mass   = 1.f;
-   bool m_lockedInKicker = false;
    vector<IFireEvents*>* m_vpVolObjs; // vector of triggers and kickers we are now inside (stored as IFireEvents* though, as HitObject.m_obj stores it like that!)
+   bool m_lockedInKicker = false;
 };
 
 class HitBall : public HitObject

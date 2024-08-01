@@ -1688,7 +1688,7 @@ ITable : public IDispatch
         int *pVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE get_VPBuildVersion(
-        int *pVal) = 0;
+        double *pVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE get_Option(
         BSTR OptionName,
@@ -2439,7 +2439,7 @@ typedef struct ITableVtbl {
 
     HRESULT (STDMETHODCALLTYPE *get_VPBuildVersion)(
         ITable *This,
-        int *pVal);
+        double *pVal);
 
     HRESULT (STDMETHODCALLTYPE *get_Option)(
         ITable *This,
@@ -3186,7 +3186,7 @@ static __WIDL_INLINE HRESULT ITable_get_VersionMinor(ITable* This,int *pVal) {
 static __WIDL_INLINE HRESULT ITable_get_VersionRevision(ITable* This,int *pVal) {
     return This->lpVtbl->get_VersionRevision(This,pVal);
 }
-static __WIDL_INLINE HRESULT ITable_get_VPBuildVersion(ITable* This,int *pVal) {
+static __WIDL_INLINE HRESULT ITable_get_VPBuildVersion(ITable* This,double *pVal) {
     return This->lpVtbl->get_VPBuildVersion(This,pVal);
 }
 static __WIDL_INLINE HRESULT ITable_get_Option(ITable* This,BSTR OptionName,float MinValue,float MaxValue,float Step,float DefaultValue,int Unit,VARIANT values,float *pVal) {
@@ -3444,7 +3444,7 @@ ITableGlobal : public IDispatch
         int *pVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE get_VPBuildVersion(
-        int *pVal) = 0;
+        double *pVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE GetSerialDevices(
         VARIANT *pVal) = 0;
@@ -3892,7 +3892,7 @@ typedef struct ITableGlobalVtbl {
 
     HRESULT (STDMETHODCALLTYPE *get_VPBuildVersion)(
         ITableGlobal *This,
-        int *pVal);
+        double *pVal);
 
     HRESULT (STDMETHODCALLTYPE *GetSerialDevices)(
         ITableGlobal *This,
@@ -4335,7 +4335,7 @@ static __WIDL_INLINE HRESULT ITableGlobal_get_VersionMinor(ITableGlobal* This,in
 static __WIDL_INLINE HRESULT ITableGlobal_get_VersionRevision(ITableGlobal* This,int *pVal) {
     return This->lpVtbl->get_VersionRevision(This,pVal);
 }
-static __WIDL_INLINE HRESULT ITableGlobal_get_VPBuildVersion(ITableGlobal* This,int *pVal) {
+static __WIDL_INLINE HRESULT ITableGlobal_get_VPBuildVersion(ITableGlobal* This,double *pVal) {
     return This->lpVtbl->get_VPBuildVersion(This,pVal);
 }
 static __WIDL_INLINE HRESULT ITableGlobal_GetSerialDevices(ITableGlobal* This,VARIANT *pVal) {

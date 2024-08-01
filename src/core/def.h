@@ -695,16 +695,50 @@ inline int MultiByteToWideCharNull(
     return res;
 }
 
+inline char cLower(char c)
+{
+    if (c >= 'A' && c <= 'Z')
+        c ^= 32; //ASCII convention
+    return c;
+}
+
+inline void szLower(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'A' && *pC <= 'Z')
+            *pC ^= 32; //ASCII convention
+        pC++;
+    }
+}
+
+inline char cUpper(char c)
+{
+    if (c >= 'a' && c <= 'z')
+        c ^= 32; //ASCII convention
+    return c;
+}
+
+inline void szUpper(char * pC)
+{
+    while (*pC)
+    {
+        if (*pC >= 'a' && *pC <= 'z')
+            *pC ^= 32; //ASCII convention
+        pC++;
+    }
+}
+
 inline void StrToLower(string& str)
 {
-   std::transform(str.begin(), str.end(), str.begin(), tolower);
+   std::transform(str.begin(), str.end(), str.begin(), cLower);
 }
 
 inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
-   return strA.size() == strB.size()
+   return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(), 
-         [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
+         [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
 char* replace(const char* const original, const char* const pattern, const char* const replacement);
@@ -741,7 +775,7 @@ string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
-string string_to_lower(const string& str);
+string string_to_lower(string str);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo);
 string create_hex_dump(const UINT8* buffer, size_t size);
 vector<unsigned char> base64_decode(const string &encoded_string);

@@ -1,5 +1,5 @@
-// Win32++   Version 9.6
-// Release Date: 5th July 2024
+// Win32++   Version 9.6.1
+// Release Date: 29th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -52,7 +52,7 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 // The CDockFrame class adds support for docking to a Single Document Interface
-// (SDI) frame. CDockFrame inherits from CFrameT<Docker>. CDockFrame has access
+// (SDI) frame. CDockFrame inherits from CFrameT<CDocker>. CDockFrame has access
 // to the public and protected functions defined by CFrameT and CDocker, as well
 // as those defined by CWnd.
 //
@@ -112,10 +112,10 @@ namespace Win32xx
         virtual int OnCreate(CREATESTRUCT& cs);
 
     private:
-        CMDIDockFrame(const CMDIDockFrame&);              // Disable copy construction
-        CMDIDockFrame& operator=(const CMDIDockFrame&);   // Disable assignment operator
+        CMDIDockFrame(const CMDIDockFrame&);                // Disable copy construction
+        CMDIDockFrame& operator=(const CMDIDockFrame&);     // Disable assignment operator
 
-        CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // MDIClient for docking
+        CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // Both a DockClient and MDIClient
     };
 
 }

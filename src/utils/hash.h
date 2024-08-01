@@ -9,7 +9,7 @@ inline size_t StringHash(const string& str)
 
    const size_t l = str.length();
    for (size_t i = 0; i < l; ++i)
-      hash = ((hash << 5) + hash) ^ tolower(str[i]); /* hash * 33 ^ str[i] */
+      hash = ((hash << 5) + hash) ^ cLower(str[i]); /* hash * 33 ^ str[i] */
 
    return hash;
 }
@@ -49,7 +49,7 @@ struct StringComparator
    bool operator()(const string& str1, const string& str2) const
    {
       // use case-insensitive compare because user can enter the names in lower case from the script
-      return lstrcmpi(str1.c_str(), str2.c_str()) == 0;
+      return StrCompareNoCase(str1, str2);
    }
 };
 

@@ -1013,8 +1013,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 		{
 			VBWord.m_uniqueKey = VBWord.m_keyName = szWord;
 			// Capitalize first letter
-			const char fl = VBWord.m_keyName[0];
-			if (fl >= 'a' && fl <= 'z') VBWord.m_keyName[0] = fl - ('a' - 'A');
+			VBWord.m_keyName[0] = cUpper(VBWord.m_keyName[0]);
 		}
 		FindOrInsertUD(m_VBwordsDict, VBWord);
 	}
@@ -3245,11 +3244,11 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 
 	//Send the collected func/subs to scintilla for highlighting - always as lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
-	std::transform(sSubFunOut.begin(), sSubFunOut.end(), sSubFunOut.begin(), ::tolower);
+	StrToLower(sSubFunOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
-	std::transform(strCompOut.begin(), strCompOut.end(), strCompOut.begin(), ::tolower);
+	StrToLower(strCompOut);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2, (LPARAM)strCompOut.c_str());
-	std::transform(strVPcoreWords.begin(), strVPcoreWords.end(), strVPcoreWords.begin(), ::tolower);
+	StrToLower(strVPcoreWords);
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3, (LPARAM)strVPcoreWords.c_str());
 #endif
 }

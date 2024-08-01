@@ -2792,7 +2792,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
 #endif
 
    for(size_t i = 0; i < cchar; ++i)
-      szText[i] = tolower(szText[i]);
+      szText[i] = cLower(szText[i]);
 
    const char* textPos = szText;
    const char* const textEnd = szText+cchar;

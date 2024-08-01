@@ -718,9 +718,9 @@ bool Texture::LoadFromFile(const string& filename, const bool setName)
 {
    const string szextension = ExtensionFromFilename(filename);
 
-   const bool binary = !!lstrcmpi(szextension.c_str(), "bmp");
+   const bool binary = !StrCompareNoCase(szextension, "bmp"s);
 
-   PinBinary *ppb = 0;
+   PinBinary *ppb = nullptr;
    if (binary)
    {
       ppb = new PinBinary();

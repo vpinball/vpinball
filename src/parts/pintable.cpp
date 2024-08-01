@@ -75,7 +75,7 @@ STDMETHODIMP ScriptGlobalTable::Nudge(float Angle, float Force)
 }
 
 
-STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivty)
+STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax, VARIANT *XGain, VARIANT *YGain, VARIANT *DeadZone, VARIANT *TiltSensitivity)
 {
 	int tmp;
 
@@ -90,7 +90,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 	if (g_pvp->m_settings.LoadValue(Settings::Player, "DeadZone"s, tmp))
 		CComVariant(tmp).Detach(DeadZone);
 	if (g_pvp->m_settings.LoadValue(Settings::Player, "TiltSensitivity"s, tmp))
-		CComVariant(tmp).Detach(TiltSensitivty);
+		CComVariant(tmp).Detach(TiltSensitivity);
 
 	return S_OK;
 }
@@ -1272,9 +1272,9 @@ STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
 	return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(double *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
 	return S_OK;
 }
 
@@ -1531,7 +1531,7 @@ PinTable::~PinTable()
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
       m_vsound[i]->Stop();
-   m_vpinball->m_ps.ClearStoppedCopiedWavs();
+   m_vpinball->m_ps.StopAndClearCopiedWavs();
 
    if (!m_isLiveInstance)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
@@ -3180,7 +3180,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    pps->m_szPath = tmp;
    delete[] tmp;
 
-   // deprecated lower case name, but not used anymore nowadays, so 10.8+ stores only 1,'\0'
+   // was the lower case name, but not used anymore since 10.7+, 10.8+ also only stores 1,'\0'
    if (FAILED(hr = pstm->Read(&len, sizeof(len), &read)))
    {
        delete pps;
@@ -3257,7 +3257,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
    else
 #endif
-	   pps->m_pdata = new char[pps->m_cdata];
+      pps->m_pdata = new char[pps->m_cdata];
 
    //LZWReader lzwreader(pstm, (int *)pps->m_pdata, pps->m_cdata, 1, pps->m_cdata); // TODO could compress wav data
    //lzwreader.Decoder();
@@ -3283,45 +3283,45 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
       SoundOutTypes outputTarget;
-	   if (FAILED(hr = pstm->Read(&outputTarget, sizeof(char), &read)))
-	   {
+      if (FAILED(hr = pstm->Read(&outputTarget, sizeof(char), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
+      }
       pps->SetOutputTarget(outputTarget);
-	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
-	   {
+      if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_balance, sizeof(int), &read)))
-	   {
+      }
+      if (FAILED(hr = pstm->Read(&pps->m_balance, sizeof(int), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_fade, sizeof(int), &read)))
-	   {
+      }
+      if (FAILED(hr = pstm->Read(&pps->m_fade, sizeof(int), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
-	   if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
-	   {
+      }
+      if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
+      }
    }
    else
    {
-	   bool toBackglassOutput = false; // false: for pre-VPX tables
-	   if (FAILED(hr = pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
-	   {
+      bool toBackglassOutput = false; // false: for pre-VPX tables
+      if (FAILED(hr = pstm->Read(&toBackglassOutput, sizeof(bool), &read)))
+      {
 		   delete pps;
 		   return hr;
-	   }
+      }
 
-	   pps->SetOutputTarget((StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr)
-                        || (lstrcmpi(pps->m_szPath.c_str(), "* Backglass Output *") == 0) // legacy behavior, where the BG selection was encoded into the strings directly
-	                     || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
+      pps->SetOutputTarget((StrStrI(pps->m_szName.c_str(), "bgout_") != nullptr)
+                        || StrCompareNoCase(pps->m_szPath, "* Backglass Output *"s) // legacy behavior, where the BG selection was encoded into the strings directly
+                        || toBackglassOutput ? SNDOUT_BACKGLASS : SNDOUT_TABLE);
    }
 
    if (FAILED(hr = pps->ReInitialize()))
@@ -7352,16 +7352,17 @@ HRESULT PinTable::StopSound(BSTR Sound)
 {
    char szName[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, Sound, -1, szName, MAXSTRING, nullptr, nullptr);
+   const string name(szName);
 
    // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmpi(m_vsound[i]->m_szName.c_str(), szName))
+      if (StrCompareNoCase(m_vsound[i]->m_szName, name))
       {
          m_vsound[i]->Stop();
          break;
       }
 
-   m_vpinball->m_ps.StopCopiedWav(szName);
+   m_vpinball->m_ps.StopCopiedWav(name);
 
    return S_OK;
 }
@@ -7380,20 +7381,21 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 {
    char szName[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szName, MAXSTRING, nullptr, nullptr);
+   const string name(szName);
 
-   if (!lstrcmpi("knock", szName) || !lstrcmpi("knocker", szName))
+   if (StrCompareNoCase("knock"s, name) || StrCompareNoCase("knocker"s, name))
       hid_knock();
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
-      if (!lstrcmpi(m_vsound[i]->m_szName.c_str(), szName))
+      if (StrCompareNoCase(m_vsound[i]->m_szName, name))
          break;
 
    if (i == m_vsound.size()) // did not find it
    {
-      if (szName[0] && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
+      if (!name.empty() && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
       {
-         const string logmsg = "Request to play \""s + szName + "\", but sound not found.";
+         const string logmsg = "Request to play \"" + name + "\", but sound not found.";
          m_pcv->AddToDebugOutput(logmsg.c_str());
       }
       return S_OK;
@@ -7429,7 +7431,7 @@ RenderProbe *PinTable::GetRenderProbe(const string &szName) const
    }
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
-      if (!lstrcmpi(m_vrenderprobe[i]->GetName().c_str(), szName.c_str()))
+      if (StrCompareNoCase(m_vrenderprobe[i]->GetName(), szName))
          return m_vrenderprobe[i];
 
    return nullptr;
@@ -7477,7 +7479,7 @@ Texture* PinTable::GetImage(const string &szName) const
    }
 
    for (size_t i = 0; i < m_vimage.size(); i++)
-      if (!lstrcmpi(m_vimage[i]->m_szName.c_str(), szName.c_str()))
+      if (StrCompareNoCase(m_vimage[i]->m_szName, szName))
          return m_vimage[i];
 
    return nullptr;
@@ -7736,85 +7738,85 @@ int PinTable::AddListMaterial(HWND hwndListView, Material * const pmat)
          case eItemPrimitive:
          {
             const Primitive * const pPrim = (Primitive*)pEdit;
-            if ((lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pPrim->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pPrim->m_d.m_szPhysicsMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemRamp:
          {
             const Ramp * const pRamp = (Ramp*)pEdit;
-            if ((lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pRamp->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pRamp->m_d.m_szPhysicsMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemSurface:
          {
             const Surface * const pSurf = (Surface*)pEdit;
-            if ((lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pSurf->m_d.m_szPhysicsMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szSideMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szTopMaterial, pmat->m_szName) || StrCompareNoCase(pSurf->m_d.m_szSlingShotMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemDecal:
          {
             const Decal * const pDecal = (Decal*)pEdit;
-            if ((lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pDecal->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemFlipper:
          {
             const Flipper * const pFlip = (Flipper*)pEdit;
-            if ((lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pFlip->m_d.m_szRubberMaterial, pmat->m_szName) || StrCompareNoCase(pFlip->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemHitTarget:
          {
             const HitTarget * const pHit = (HitTarget*)pEdit;
-            if ((lstrcmpi(pHit->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pHit->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pHit->m_d.m_szPhysicsMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemPlunger:
          {
             const Plunger * const pPlung = (Plunger*)pEdit;
-            if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (StrCompareNoCase(pPlung->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemSpinner:
          {
             const Spinner * const pSpin = (Spinner*)pEdit;
-            if (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (StrCompareNoCase(pSpin->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemRubber:
          {
             const Rubber * const pRub = (Rubber*)pEdit;
-            if ((lstrcmpi(pRub->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pRub->m_d.m_szMaterial, pmat->m_szName) || StrCompareNoCase(pRub->m_d.m_szPhysicsMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemBumper:
          {
             const Bumper * const pBump = (Bumper*)pEdit;
-            if ((lstrcmpi(pBump->m_d.m_szCapMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pBump->m_d.m_szBaseMaterial.c_str(), pmat->m_szName.c_str()) == 0) ||
-                (lstrcmpi(pBump->m_d.m_szSkirtMaterial.c_str(), pmat->m_szName.c_str()) == 0) || (lstrcmpi(pBump->m_d.m_szRingMaterial.c_str(), pmat->m_szName.c_str()) == 0))
+            if (StrCompareNoCase(pBump->m_d.m_szCapMaterial, pmat->m_szName) || StrCompareNoCase(pBump->m_d.m_szBaseMaterial, pmat->m_szName) ||
+                StrCompareNoCase(pBump->m_d.m_szSkirtMaterial, pmat->m_szName) || StrCompareNoCase(pBump->m_d.m_szRingMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemKicker:
          {
             const Kicker * const pKick = (Kicker*)pEdit;
-            if (lstrcmpi(pKick->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (StrCompareNoCase(pKick->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
          case eItemTrigger:
          {
             const Trigger * const pTrig = (Trigger*)pEdit;
-            if (lstrcmpi(pTrig->m_d.m_szMaterial.c_str(), pmat->m_szName.c_str()) == 0)
+            if (StrCompareNoCase(pTrig->m_d.m_szMaterial, pmat->m_szName))
                inUse = true;
             break;
          }
@@ -7844,7 +7846,7 @@ void PinTable::RemoveMaterial(Material * const pmat)
 
 bool PinTable::GetImageLink(const Texture * const ppi) const
 {
-   return (!lstrcmpi(ppi->m_szName.c_str(), m_szScreenShot.c_str()));
+   return StrCompareNoCase(ppi->m_szName, m_szScreenShot);
 }
 
 PinBinary *PinTable::GetImageLinkBinary(const int id)
@@ -10634,9 +10636,9 @@ STDMETHODIMP PinTable::get_Version(int *pVal)
    return S_OK;
 }
 
-STDMETHODIMP PinTable::get_VPBuildVersion(int *pVal)
+STDMETHODIMP PinTable::get_VPBuildVersion(double *pVal)
 {
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
    return S_OK;
 }
 

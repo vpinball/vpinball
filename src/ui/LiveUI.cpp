@@ -501,8 +501,8 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& l
          string str1 = map(a), str2 = map(b);
          for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
          {
-            const auto cl1 = tolower(static_cast<unsigned char>(*c1));
-            const auto cl2 = tolower(static_cast<unsigned char>(*c2));
+            const auto cl1 = cLower(*c1);
+            const auto cl2 = cLower(*c2);
             if (cl1 > cl2)
                return false;
             if (cl1 < cl2)
@@ -2930,10 +2930,10 @@ bool LiveUI::IsOutlinerFiltered(const string& name)
 {
    if (m_outlinerFilter.empty())
       return true;
-   string name_lcase = string(name);
-   std::transform(name_lcase.begin(), name_lcase.end(), name_lcase.begin(), [](unsigned char c) { return std::tolower(c); });
-   string filter_lcase = string(m_outlinerFilter);
-   std::transform(filter_lcase.begin(), filter_lcase.end(), filter_lcase.begin(), [](unsigned char c) { return std::tolower(c); });
+   string name_lcase = name;
+   StrToLower(name_lcase);
+   string filter_lcase = m_outlinerFilter;
+   StrToLower(filter_lcase);
    return name_lcase.find(filter_lcase) != std::string::npos;
 }
 
@@ -4887,7 +4887,7 @@ void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int
    const char * const preview_value = labels[*v].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
-      for (int i = 0; i < n_values; i++)
+      for (int i = 0; i < (int)n_values; i++)
       {
          if (ImGui::Selectable(labels[i].c_str()))
          {

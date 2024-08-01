@@ -1,5 +1,5 @@
-// Win32++   Version 9.6
-// Release Date: 5th July 2024
+// Win32++   Version 9.6.1
+// Release Date: 29th July 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -434,6 +434,9 @@ namespace Win32xx
     // operations, and a path for painting and drawing operations.
     class CDC
     {
+        friend class CEnhMetaFileDC;
+        friend class CMetaFileDC;
+
     public:
         CDC();                                  // Constructs a new CDC without assigning a HDC.
         CDC(HDC dc);                            // Constructs a new CDC and assigns a HDC.
@@ -5127,12 +5130,15 @@ namespace Win32xx
 
     inline  CMetaFileDC::~CMetaFileDC()
     {
-        // Assert here if the metafile was created but not closed.
-        assert(GetHDC() == NULL);
-
-        if (GetHDC())
+        if (m_pData->count == 1)
         {
-            ::DeleteMetaFile(Close());
+            // Assert here if the metafile was created but not closed.
+            assert(GetHDC() == NULL);
+
+            if (GetHDC())
+            {
+                ::DeleteMetaFile(Close());
+            }
         }
     }
 
@@ -5187,12 +5193,15 @@ namespace Win32xx
 
     inline CEnhMetaFileDC::~CEnhMetaFileDC()
     {
-        // Assert here if the enhanced metafile was created but not closed.
-        assert(GetHDC() == NULL);
-
-        if (GetHDC())
+        if (m_pData->count == 1)
         {
-            ::DeleteEnhMetaFile(CloseEnhanced());
+            // Assert here if the enhanced metafile was created but not closed.
+            assert(GetHDC() == NULL);
+
+            if (GetHDC())
+            {
+                ::DeleteEnhMetaFile(CloseEnhanced());
+            }
         }
     }
 
