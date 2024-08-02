@@ -281,7 +281,7 @@ InputDeviceInfo InputDeviceDialog::LoadDevicePrefs(int index)
 void InputDeviceDialog::SaveDevicePrefs()
 {
    const size_t numDevices = m_attachedDeviceInfo.size();
-   for (int i = 0; i < numDevices; i++)
+   for (size_t i = 0; i < numDevices; i++)
    {
       InputDeviceInfo info = m_attachedDeviceInfo[i];
 
@@ -331,7 +331,7 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
 
    // See if any attached devices have a corresponding saved preference
    const size_t numDevices = m_attachedDeviceInfo.size();
-   for (int i = 0; i < numDevices; i++)
+   for (size_t i = 0; i < numDevices; i++)
    {
       const string lookForName = m_attachedDeviceInfo[i].name;
       for (int j = 0; j < PININ_JOYMXCNT; j++)
@@ -346,7 +346,7 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
    }
 
    // Finally, add reconciled devices to the dialog
-   for (int i = 0; i < numDevices; i++)
+   for (size_t i = 0; i < numDevices; i++)
    {
       AddDevice(m_attachedDeviceInfo[i].name, m_attachedDeviceInfo[i].state);
    }
@@ -382,7 +382,7 @@ bool InputDeviceDialog::AddDevice(const string& name, bool checked)
 void InputDeviceDialog::UpdateDeviceStates()
 {
    const size_t numDevices = m_attachedDeviceInfo.size();
-   for (int i = 0; i < numDevices; i++)
+   for (size_t i = 0; i < numDevices; i++)
    {
       m_attachedDeviceInfo[i].state = m_deviceTreeView.IsDeviceChecked(m_attachedDeviceInfo[i].name);
    }

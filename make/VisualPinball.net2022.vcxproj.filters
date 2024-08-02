@@ -369,6 +369,9 @@
     <ClCompile Include="src/ui/dialogs/ImageDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src/ui/dialogs/InputDeviceDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
@@ -1056,6 +1059,9 @@
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/dialogs/ImageDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/InputDeviceDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/dialogs/SearchSelectDialog.h">

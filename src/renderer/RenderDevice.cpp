@@ -850,7 +850,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    // create default vertex declarations for shaders
    #if defined(ENABLE_BGFX)
-   m_pVertexTexelDeclaration = new bgfx::VertexLayout; // FIXME delete
+   m_pVertexTexelDeclaration = new bgfx::VertexLayout; // TODO remove Pos/TexCoord format and only use one Pos/Normal/TexCoord
    m_pVertexTexelDeclaration->begin()
       .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
       .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
@@ -1161,9 +1161,6 @@ void RenderDevice::Flip()
    // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
 
-   // FIXME BGFX if (!m_isVR)
-   // FIXME BGFX    g_frameProfiler.OnPresent();
-
    // reset performance counters
    m_frameDrawCalls = m_curDrawCalls;
    m_curDrawCalls = 0;
@@ -1200,9 +1197,13 @@ void RenderDevice::Flip()
    SubmitAndFlipFrame();
 
    #elif defined(ENABLE_OPENGL)
+   if (!m_isVR)
+      g_frameProfiler.OnPresent();
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
 
    #elif defined(ENABLE_DX9)
+   if (!m_isVR)
+      g_frameProfiler.OnPresent();
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
    #endif
 }

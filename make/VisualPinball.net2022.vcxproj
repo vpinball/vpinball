@@ -1199,6 +1199,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/ui/dialogs/DrawingOrderDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/EditorOptionsDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/ImageDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/InputDeviceDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/KeysConfigDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/LayersListDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp" />
@@ -1674,6 +1675,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/ui/dialogs/DrawingOrderDialog.h" />
     <ClInclude Include="src/ui/dialogs/EditorOptionsDialog.h" />
     <ClInclude Include="src/ui/dialogs/ImageDialog.h" />
+    <ClInclude Include="src/ui/dialogs/InputDeviceDialog.h" />
     <ClInclude Include="src/ui/dialogs/KeysConfigDialog.h" />
     <ClInclude Include="src/ui/dialogs/LayersListDialog.h" />
     <ClInclude Include="src/ui/dialogs/MaterialDialog.h" />
