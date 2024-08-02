@@ -368,7 +368,7 @@ void RenderState::Apply(RenderDevice* device)
       active_state.m_depthBias = m_depthBias;
       device->m_curStateChanges++;
       #if defined(ENABLE_BGFX)
-      // FIXME implement for BGFX
+      // FIXME implement depth bias for BGFX
       
       #elif defined(ENABLE_OPENGL)
       if (m_depthBias == 0.0f)
