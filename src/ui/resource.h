@@ -1002,7 +1002,6 @@
 #define ID_INSERT_BALL                  677
 #define IDD_PROPBALL_VISUALS            678
 #define IDD_PROPBALL_PHYSICS            679
-#define IDD_DEVICE_DIALOG               680
 #define IDD_INPUT_DEVICES               680
 #define IDC_CVP_BUT_CANCEL              701
 #define IDC_CVP_BUT_OK                  702
@@ -1273,14 +1272,11 @@
 #define IDC_INFOTEXT_EDIT               926
 #define IDC_EXPOSURE                    927
 #define IDC_SYNC                        928
-#define NEW_SOUND_FORMAT_VERSION        1031
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
 #define IDC_OVERWRITE_PHYSICS_COMBO     1043
 #define IDC_3D_STEREO_OFFSET_EDIT       1045
-#define NO_ENCRYPTION_FORMAT_VERSION    1050
-#define CURRENT_FILE_FORMAT_VERSION     1081
 #define IDC_GRAVITY_EDIT                1100
 #define IDC_PLAYFIELD_FRICTION_EDIT     1101
 #define IDC_DEFAULT_SCATTER_EDIT        1102
