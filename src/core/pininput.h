@@ -38,7 +38,7 @@
 #define APP_TOUCH      3
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
-#define PININ_JOYMXCNT 4
+#define PININ_JOYMXCNT 8
 
 #define JOYRANGEMN (-65536)
 #define JOYRANGEMX (+65536)
@@ -89,6 +89,14 @@ public:
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
+
+   #ifdef _WIN32
+   #ifdef USE_DINPUT8
+   LPDIRECTINPUTDEVICE8 GetJoystick(int index);
+   #else
+   LPDIRECTINPUTDEVICE GetJoystick(int index);
+   #endif
+   #endif
 
    uint64_t m_leftkey_down_usec;
    unsigned int m_leftkey_down_frame;
@@ -148,6 +156,8 @@ private:
          LPDIRECTINPUTDEVICE m_pKeyboard = nullptr;
       #endif
    #endif
+
+    LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT];
 #endif
 
    BYTE m_oldMouseButtonState[3];
@@ -177,6 +187,11 @@ private:
    int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
+
+#ifdef _WIN32
+   std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
+#endif
+
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;
 

@@ -42,7 +42,12 @@ PinInput::PinInput()
    m_num_joy = 0;
 #ifdef _WIN32
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
+   {
       m_pJoystick[k] = nullptr;
+      m_attachedDeviceInfo[k] = nullptr;
+   }
+
+   m_pInputDeviceSettingsInfo = std::unique_ptr<std::map<string, bool>>(new std::map<string, bool>);
 #endif
 
    uShockType = 0;
@@ -209,6 +214,29 @@ void PinInput::LoadSettings(const Settings& settings)
    m_enableCameraModeFlyAround = settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
+
+#ifdef _WIN32
+   // Load input device settings
+   const string kDefaultName = "None";
+   const int maxStrLen = 16;
+   char tmp[maxStrLen];
+
+   m_pInputDeviceSettingsInfo->clear();
+
+   for (int i = 0; i < PININ_JOYMXCNT; i++)
+   {
+      sprintf_s(tmp, maxStrLen, "Device%d_Name", i);
+      string deviceName = string(tmp);
+      string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
+
+      sprintf_s(tmp, maxStrLen, "Device%d_State", i);
+      string deviceState = string(tmp);
+      bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+
+      if (m_pInputDeviceSettingsInfo->count(name) == 0)
+         m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
+   }
+#endif
 }
 
 #ifdef ENABLE_SDL_INPUT
@@ -564,8 +592,23 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
          #else
             const LPDIRECTINPUTDEVICE pjoy = m_pJoystick[k];
          #endif
+
          if (pjoy)
          {
+            // Ignore any disabled input devices.
+            // Unfortunately, there's no guarantee that the order of the devices in settings is the same as the currently enumerated ones.
+            // Therefore we can't simply use the joystick index here; that's why we saved the device setting into a map and the device info
+            // into a new array.
+            bool inputDeviceState = true;
+            const auto deviceIt = m_pInputDeviceSettingsInfo->find(m_attachedDeviceInfo[k]->tszInstanceName);
+            if (deviceIt != m_pInputDeviceSettingsInfo->end())
+            {
+               inputDeviceState = deviceIt->second;
+            }
+
+            // Bail out here if the device is disabled
+            if (!inputDeviceState) continue;
+
             HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
             if (hr == S_OK || hr == S_FALSE)
             {
@@ -979,6 +1022,25 @@ void PinInput::Init()
             m_pDI->EnumDevices(DIDEVTYPE_JOYSTICK, EnumJoystickCallbackDI, this, DIEDFL_ATTACHEDONLY);   //enum Joysticks
          #endif
       }
+
+      // Store input device info
+      for (int i = 0; i < PININ_JOYMXCNT; i++)
+      {
+            #ifdef USE_DINPUT8
+            LPDIRECTINPUTDEVICE8 joystick = m_pJoystick[i];
+            #else
+            LPDIRECTINPUTDEVICE joystick = m_pJoystick[i];
+            #endif
+
+         if (joystick != nullptr)
+         {
+             LPDIDEVICEINSTANCE deviceInfo = new DIDEVICEINSTANCE;
+             deviceInfo->dwSize = sizeof(DIDEVICEINSTANCE);
+             joystick->GetDeviceInfo(deviceInfo);
+             m_attachedDeviceInfo[i] = deviceInfo;
+         }
+      }
+
    #endif
 
    m_mixerKeyDown = false;
@@ -1021,14 +1083,24 @@ void PinInput::UnInit()
    //
 
    for (int k = 0; k < m_num_joy; ++k)
+   {
       if (m_pJoystick[k])
       {
-         // Unacquire the device one last time just in case 
+         // Unacquire the device one last time just in case
          // the app tried to exit while the device is still acquired.
          m_pJoystick[k]->Unacquire();
          m_pJoystick[k]->Release();
          m_pJoystick[k] = nullptr;
       }
+
+      if (m_attachedDeviceInfo[k])
+      {
+         delete m_attachedDeviceInfo[k];
+         m_attachedDeviceInfo[k] = nullptr;
+      }
+   }
+
+   m_pInputDeviceSettingsInfo->clear();
 
    // Release any DirectInput objects.
    SAFE_RELEASE(m_pDI);
@@ -1280,6 +1352,8 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
     const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
+
+    //input->
 
     if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
     {
@@ -1743,6 +1817,17 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       }
    }
 
+   // Wipe key state if we're not the foreground window as we miss key-up events
+   #ifdef _WIN32
+   if (m_focusHWnd != GetForegroundWindow())
+   {
+      for (int i = 0; i < eCKeys; i++)
+      {
+         m_keyPressedState[i] = false;
+      }
+   }
+   #endif
+
    const DIDEVICEOBJECTDATA * __restrict input;
    while ((input = GetTail(/*curr_sim_msec*/)))
    {
@@ -1979,3 +2064,19 @@ int PinInput::GetNextKey() // return last valid keyboard key
 
    return 0;
 }
+
+#ifdef _WIN32
+#ifdef USE_DINPUT8
+LPDIRECTINPUTDEVICE8 PinInput::GetJoystick(int index)
+#else
+LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
+#endif
+{ 
+    if (index < PININ_JOYMXCNT)
+    {
+       return m_pJoystick[index];
+    }
+
+    return nullptr;
+}
+#endif
