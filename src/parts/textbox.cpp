@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "renderer/Shader.h"
+#include "renderer/RenderCommand.h"
 #include "captureExt.h"
 
 Textbox::Textbox()
@@ -483,6 +484,8 @@ void Textbox::Render(const unsigned int renderMask)
       m_rd->DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
       m_rd->DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP);
       m_rd->DrawTexturedQuad(m_rd->DMDShader, vertices);
+      m_rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
+      m_rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
    }
    else if (m_texture)
    {
