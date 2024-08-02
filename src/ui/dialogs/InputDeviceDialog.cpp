@@ -183,14 +183,7 @@ bool DeviceTreeView::IsItemChecked(HTREEITEM hItem) const
 
 void DeviceTreeView::SetItemCheck(HTREEITEM item, bool checked)
 {
-   if (checked)
-   {
-      TreeView_SetCheckState(GetHwnd(), item, 1);
-   }
-   else
-   {
-      TreeView_SetCheckState(GetHwnd(), item, 0);
-   }
+   TreeView_SetCheckState(GetHwnd(), item, checked ? 1 : 0);
 }
 
 LRESULT DeviceTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
@@ -221,7 +214,7 @@ LRESULT DeviceTreeView::OnNMClick(LPNMHDR lpnmh)
          SetAllItemStates(IsItemChecked(hRootItem));
       else
       {
-         string checkName = string(GetItemText(ht.hItem));
+         //string checkName = string(GetItemText(ht.hItem));
       }
    }
 
@@ -272,18 +265,14 @@ INT_PTR InputDeviceDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 InputDeviceInfo InputDeviceDialog::LoadDevicePrefs(int index)
 {
-   const int kMaxNameStrLen = 16;
-   const string kDefaultName = "None";
+   static const string kDefaultName = "None"s;
 
-   char tmp[kMaxNameStrLen];
    InputDeviceInfo info;
 
-   sprintf_s(tmp, kMaxNameStrLen, "Device%d_Name", index);
-   string deviceNameKey = string(tmp);
+   const string deviceNameKey = "Device" + std::to_string(index) + "_Name";
    info.name = g_pvp->m_settings.LoadValueWithDefault(Settings::ControllerDevices, deviceNameKey, kDefaultName);
 
-   sprintf_s(tmp, kMaxNameStrLen, "Device%d_State", index);
-   string deviceStateKey = string(tmp);
+   const string deviceStateKey = "Device" + std::to_string(index) + "_State";
    info.state = g_pvp->m_settings.LoadValueWithDefault(Settings::ControllerDevices, deviceStateKey, true);
 
    return info;
@@ -291,20 +280,15 @@ InputDeviceInfo InputDeviceDialog::LoadDevicePrefs(int index)
 
 void InputDeviceDialog::SaveDevicePrefs()
 {
-   const int kMaxNameStrLen = 16;
-   char tmp[kMaxNameStrLen];
-
    const size_t numDevices = m_attachedDeviceInfo.size();
    for (int i = 0; i < numDevices; i++)
    {
       InputDeviceInfo info = m_attachedDeviceInfo[i];
 
-      sprintf_s(tmp, kMaxNameStrLen, "Device%d_Name", i);
-      string deviceNameKey = string(tmp);
+      const string deviceNameKey = "Device" + std::to_string(i) + "_Name";
       g_pvp->m_settings.SaveValue(Settings::ControllerDevices, deviceNameKey, info.name);
 
-      sprintf_s(tmp, kMaxNameStrLen, "Device%d_State", i);
-      string deviceStateKey = string(tmp);
+      const string deviceStateKey = "Device" + std::to_string(i) + "_State";
       g_pvp->m_settings.SaveValue(Settings::ControllerDevices, deviceStateKey, info.state);
    }
 
@@ -346,13 +330,13 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
    }
 
    // See if any attached devices have a corresponding saved preference
-   size_t numDevices = m_attachedDeviceInfo.size();
+   const size_t numDevices = m_attachedDeviceInfo.size();
    for (int i = 0; i < numDevices; i++)
    {
-      string lookForName = m_attachedDeviceInfo[i].name;
+      const string lookForName = m_attachedDeviceInfo[i].name;
       for (int j = 0; j < PININ_JOYMXCNT; j++)
       {
-         InputDeviceInfo testInfo = deviceInfoPrefs[j];
+         const InputDeviceInfo testInfo = deviceInfoPrefs[j];
          if (lookForName.compare(testInfo.name) == 0)
          {
             m_attachedDeviceInfo[i].state = testInfo.state;
@@ -397,11 +381,10 @@ bool InputDeviceDialog::AddDevice(const string& name, bool checked)
 
 void InputDeviceDialog::UpdateDeviceStates()
 {
-   size_t numDevices = m_attachedDeviceInfo.size();
+   const size_t numDevices = m_attachedDeviceInfo.size();
    for (int i = 0; i < numDevices; i++)
    {
-      InputDeviceInfo info = m_attachedDeviceInfo[i];
-      m_attachedDeviceInfo[i].state = m_deviceTreeView.IsDeviceChecked(info.name);
+      m_attachedDeviceInfo[i].state = m_deviceTreeView.IsDeviceChecked(m_attachedDeviceInfo[i].name);
    }
 }
 
