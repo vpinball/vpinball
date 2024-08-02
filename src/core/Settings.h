@@ -39,6 +39,7 @@ public:
       CVEdit,
       TableOverride,
       TableOption,
+      ControllerDevices,
 
       // Optional user defaults for each element
       DefaultPropsBall,
