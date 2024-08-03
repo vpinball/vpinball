@@ -723,12 +723,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // using the specialized initializer is not needed
    // ImGui_ImplSDL2_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
    ImGui_ImplSDL2_InitForOther(m_player->m_playfieldWnd->GetCore());
-   #if defined(__ANDROID__) || defined(WIN32)
    int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_playfieldWnd->GetCore());
    float ddpi, hdpi, vdpi;
    if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
       m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
-   #endif
 #else // Win32 Windowing
    ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());
