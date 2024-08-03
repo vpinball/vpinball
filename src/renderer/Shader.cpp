@@ -584,6 +584,9 @@ Shader::~Shader()
          if (bgfx::isValid(m_techniques[j]))
             bgfx::destroy(m_techniques[j]);
          m_techniques[j] = BGFX_INVALID_HANDLE;
+         if (bgfx::isValid(m_clipPlaneTechniques[j]))
+            bgfx::destroy(m_clipPlaneTechniques[j]);
+         m_clipPlaneTechniques[j] = BGFX_INVALID_HANDLE;
       }
       for (int i = 0; i < SHADER_UNIFORM_COUNT; i++)
       {
