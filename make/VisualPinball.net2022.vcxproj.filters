@@ -2222,4 +2222,8 @@
       <Filter>ui\res</Filter>
     </Midl>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="make\vpinball.natvis" />
+    <Natvis Include="make\bgfx.natvis" />
+  </ItemGroup>
 </Project>
