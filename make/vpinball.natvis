@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="bool2"><DisplayString>{{ x={x} y={y} }}</DisplayString></Type>
+  <Type Name="short2"><DisplayString>{{ x={x} y={y} }}</DisplayString></Type>
+  <Type Name="int2"><DisplayString>{{ x={x} y={y} }}</DisplayString></Type>
+  <Type Name="Vertex2D"><DisplayString>{{ x={x} y={y} }}</DisplayString></Type>
+  <Type Name="Vertex3Ds"><DisplayString>{{ x={x} y={y} z={z} }}</DisplayString></Type>
+  <Type Name="bool4"><DisplayString>{{ x={x} y={y} z={z} w={w} }}</DisplayString></Type>
+  <Type Name="Vertex4D"><DisplayString>{{ x={x} y={y} z={z} w={w} }}</DisplayString></Type>
+  
+  <Type Name="Vertex3D_TexelOnly"><DisplayString>{{ Pos(x={x} y={y} z={z}) N(x={nx} y={ny} z={nz}) }}</DisplayString></Type>
+  <Type Name="Vertex3D_NoTex2"><DisplayString>{{ Pos(x={x} y={y} z={z}) N(x={nx} y={ny} z={nz}) Tex(u={tu} v={tv}) }}</DisplayString></Type>
+</AutoVisualizer>
