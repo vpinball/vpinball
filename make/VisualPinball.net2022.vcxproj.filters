@@ -2223,7 +2223,11 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="make\vpinball.natvis" />
-    <Natvis Include="make\bgfx.natvis" />
+    <Natvis Include="make\vpinball.natvis">
+      <Filter>utils</Filter>
+    </Natvis>
+    <Natvis Include="make\bgfx.natvis">
+      <Filter>utils</Filter>
+    </Natvis>
   </ItemGroup>
 </Project>
