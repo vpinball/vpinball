@@ -209,10 +209,10 @@ open XCode/vpinball.xcodeproj
 ```
 brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
-export JAVA_HOME=$(/usr/libexec/java_home -v 11.0.16.1)
+export JAVA_HOME=$(/usr/libexec/java_home -v 17.0.11)
 export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
-export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/25.1.8937393
-export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/25.1.8937393
+export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/26.3.11579264
+export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/26.3.11579264
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/android
 ./external.sh
@@ -239,6 +239,7 @@ cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
+Note: Ubuntu repositories currently don't deliver a cmake version new enough to fulfill all dependency requirements (>3.25). Please consider adding an alternative apt repository, e.g. the one from the cmake maintainers [Kitware](https://apt.kitware.com/) first to get a newer version. 
 
 ### Linux (Ubuntu 23.10)
 

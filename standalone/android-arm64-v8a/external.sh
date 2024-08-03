@@ -11,7 +11,7 @@ LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=2f507682e4e44669b916031091d7e89dd2391824
 LIBDOF_SHA=42160a6835ead9d64f101e687dc277a0fe766f25
 FFMPEG_SHA=e38092ef9395d7049f871ef4d5411eb410e283e0
-BGFX_CMAKE_VERSION=1.128.8777-475
+BGFX_CMAKE_VERSION=1.128.8786-480
 BGFX_PATCH_SHA=b701418bd14892641474a716cb17f91b9557ac70
 
 if [[ $(uname) == "Linux" ]]; then
@@ -69,7 +69,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
       APP_BUILD_SCRIPT=Android.mk \
       APP_STL="c++_static" \
-      APP_PLATFORM=android-19 \
+      APP_PLATFORM=android-30 \
       APP_ABI=arm64-v8a \
       NDK_OUT=obj \
       NDK_LIBS_OUT=libs \
@@ -112,7 +112,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
    $ANDROID_NDK_HOME/ndk-build \
       NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
       APP_BUILD_SCRIPT=Android.mk \
-      APP_PLATFORM=android-19 \
+      APP_PLATFORM=android-30 \
       APP_ABI=arm64-v8a \
       NDK_OUT=obj \
       NDK_LIBS_OUT=libs \
@@ -150,7 +150,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    $ANDROID_NDK_HOME/ndk-build \
       NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
       APP_BUILD_SCRIPT=Android.mk \
-      APP_PLATFORM=android-19 \
+      APP_PLATFORM=android-30 \
       APP_ABI=arm64-v8a \
       APP_ALLOW_MISSING_DEPS=true \
       NDK_OUT=obj \
@@ -188,7 +188,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    $ANDROID_NDK_HOME/ndk-build \
       NDK_PROJECT_PATH=$ANDROID_NDK_HOME \
       APP_BUILD_SCRIPT=Android.mk \
-      APP_PLATFORM=android-19 \
+      APP_PLATFORM=android-30 \
       APP_ABI=arm64-v8a \
       APP_ALLOW_MISSING_DEPS=true \
       NDK_OUT=obj \
@@ -331,7 +331,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 # build patched bgfx and copy to external
 #
 
-CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}_002"
+CACHE_NAME="BGFX_CMAKE-${BGFX_CMAKE_VERSION}-${BGFX_PATCH_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/bkaradzic/bgfx.cmake/releases/download/v${BGFX_CMAKE_VERSION}/bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz -o bgfx.cmake.v${BGFX_CMAKE_VERSION}.tar.gz
