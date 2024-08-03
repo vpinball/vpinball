@@ -32,6 +32,15 @@
 #endif
 #include "tinyxml2/tinyxml2.h"
 
+// MSVC Concurrency Viewer support
+// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+//#define MSVC_CONCURRENCY_VIEWER
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+marker_series series;
+#endif
+
 #if __cplusplus >= 202002L && !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
 #define sort std::ranges::sort
@@ -746,10 +755,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Prerendering static parts"; // For profiling
    #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.lock();
+   #endif
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   span *tagSpan = new span(series, 1, _T("PreRender"));
+   #endif
    m_renderer->RenderStaticPrepass();
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   delete tagSpan;
+   #endif
+   #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.unlock();
-   #else
-   m_renderer->RenderStaticPrepass();
    #endif
 
    // Reset the perf counter to start time when physics starts
@@ -1597,15 +1612,6 @@ void Player::LockForegroundWindow(const bool enable)
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-// MSVC Concurrency Viewer support
-// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
-//#define MSVC_CONCURRENCY_VIEWER
-#ifdef MSVC_CONCURRENCY_VIEWER
-#include <cvmarkersobj.h>
-using namespace Concurrency::diagnostic;
-marker_series series;
-#endif
 
 void Player::GameLoop(std::function<void()> ProcessOSMessages)
 {
