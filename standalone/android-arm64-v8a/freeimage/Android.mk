@@ -33,7 +33,8 @@ LOCAL_C_INCLUDES   := $(LOCAL_PATH)/Source \
 LOCAL_SRC_FILES        := $(SRCS)
 LOCAL_ADDITIONAL_FLAGS := -O3 -fPIC -D__ANSI__ -DDISABLE_PERF_MEASUREMENT -DHAVE_MALLOC_H -DHAVE_PTHREAD -DWEBP_USE_THREAD -DPNG_ARM_NEON_OPT=0 
 LOCAL_CPPFLAGS         := $(LOCAL_ADDITIONAL_FLAGS) -std=c++11 -frtti -fexceptions
-LOCAL_CFLAGS           := $(LOCAL_ADDITIONAL_FLAGS) 
+# See: https://github.com/android/ndk/wiki/Changelog-r26#changes
+LOCAL_CFLAGS           := $(LOCAL_ADDITIONAL_FLAGS) -Wno-error=implicit-function-declaration
 LOCAL_ARM_MODE         := arm
 
 LOCAL_STATIC_LIBRARIES := cpufeatures 
