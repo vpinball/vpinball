@@ -756,13 +756,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.lock();
    #endif
-   #ifdef MSVC_CONCURRENCY_VIEWER
-   span *tagSpan = new span(series, 1, _T("PreRender"));
-   #endif
    m_renderer->RenderStaticPrepass();
-   #ifdef MSVC_CONCURRENCY_VIEWER
-   delete tagSpan;
-   #endif
    #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.unlock();
    #endif

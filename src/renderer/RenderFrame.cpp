@@ -218,126 +218,134 @@ void RenderFrame::SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedP
 
 bool RenderFrame::Execute(const bool log)
 {
-   if (m_passes.empty())
-      return false;
-
-   // Save render/shader states
-   if (m_rdState == nullptr)
-      m_rdState = new RenderDeviceState(m_rd);
-   m_rd->CopyRenderStates(true, *m_rdState);
-
-   // Clear last render pass to avoid cross frame references
-   for (RenderPass* pass : m_passes)
-      pass->m_rt->m_lastRenderPass = nullptr;
-
-   if (log)
-   {
-      PLOGI << "Rendering Frame";
-      std::stringstream ss1;
-      ss1 << "Submitted passes: [";
-      for (RenderPass* pass : m_passes)
-      {
-         if (pass != m_passes[0])
-            ss1 << ", ";
-         ss1 << '\'' << pass->m_name << '\'';
-         #ifdef LOG_PASS_SORTING
-         std::stringstream ss;
-         ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
-         bool first = true;
-         for (RenderPass* dep : pass->m_dependencies)
-         {
-            if (!first)
-               ss << ", ";
-            first = false;
-            ss << dep->m_name;
-         }
-         ss << ']';
-         PLOGI << ss.str();
-         #endif
-      }
-      PLOGI << ss1.str() << ']';
-   }
-
-   // Sort passes to satisfy dependencies, avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
-   vector<RenderPass*> sortedPasses; // FIXME use list since we are populating through insertions
-   SortPasses(m_passes.back(), sortedPasses);
-   // Sort commands & split on command level dependencies (commands that needs a pass to be executed just before them, used for refracting parts that uses a screen copy just before using it as a shading texture)
-   for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); ++itPass)
-   {
-      (*itPass)->SortCommands();
-      for (std::vector<RenderCommand*>::iterator it = (*itPass)->m_commands.begin(); it != (*itPass)->m_commands.end(); ++it)
-      {
-         if ((*it)->m_dependency != nullptr && (*it)->m_dependency->m_sortKey == 0)
-         { // [Warning, dependencies are not updated (not needed) making the log after sort incorrect]
-            // Add the pass just before the rendercommand. Warning: this only supports the refraction use scheme where we add a single pass to perform the screen copy
-            (*it)->m_dependency->m_sortKey = 1;
-            RenderPass* const splitPass = AddPass((*itPass)->m_name + " [Split before " + (*it)->m_dependency->m_name + "]", (*itPass)->m_rt);
-            splitPass->m_commands.insert(splitPass->m_commands.begin(), (*itPass)->m_commands.begin(), it);
-            (*itPass)->m_commands.erase((*itPass)->m_commands.begin(), it);
-            it = (*itPass)->m_commands.begin(); // Continue with remaining commands after split
-            itPass = sortedPasses.insert(itPass, splitPass) + 1; // itPass points to the pass after the inserted pass (so the remaining part of the initial pass)
-            vector<RenderPass*> subPasses;
-            SortPasses((*it)->m_dependency, subPasses);
-            for (RenderPass* subPass : subPasses)
-               itPass = sortedPasses.insert(itPass, subPass) + 1; // itPass points after the added dependency pass
-         }
-      }
-   }
-
-   if (log)
-   {
-      std::stringstream ss1;
-      ss1 << "Sorted passes: [";
-      for (RenderPass* pass : sortedPasses)
-      {
-         if (pass != sortedPasses[0])
-            ss1 << ", ";
-         ss1 << '\'' << pass->m_name << '\'';
-         #ifdef LOG_PASS_SORTING
-         std::stringstream ss;
-         ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
-         bool first = true;
-         for (RenderPass* dep : pass->m_dependencies)
-         {
-            if (!first)
-               ss << ", ";
-            first = false;
-            ss << dep->m_name;
-         }
-         ss << ']';
-         PLOGI << ss.str();
-         #endif
-      }
-      PLOGI << ss1.str() << ']';
-   }
-
-   #if defined(ENABLE_DX9)
-   CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
-   #endif
-   
    bool rendered = false;
-   for (RenderPass* pass : sortedPasses)
-      rendered |= pass->Execute(log);
+   if (!m_passes.empty())
+   {
+      // Save render/shader states
+      if (m_rdState == nullptr)
+         m_rdState = new RenderDeviceState(m_rd);
+      m_rd->CopyRenderStates(true, *m_rdState);
+
+      // Clear last render pass to avoid cross frame references
+      for (RenderPass* pass : m_passes)
+         pass->m_rt->m_lastRenderPass = nullptr;
+
+      if (log)
+      {
+         PLOGI << "Rendering Frame";
+         std::stringstream ss1;
+         ss1 << "Submitted passes: [";
+         for (RenderPass* pass : m_passes)
+         {
+            if (pass != m_passes[0])
+               ss1 << ", ";
+            ss1 << '\'' << pass->m_name << '\'';
+            #ifdef LOG_PASS_SORTING
+            std::stringstream ss;
+            ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
+            bool first = true;
+            for (RenderPass* dep : pass->m_dependencies)
+            {
+               if (!first)
+                  ss << ", ";
+               first = false;
+               ss << dep->m_name;
+            }
+            ss << ']';
+            PLOGI << ss.str();
+            #endif
+         }
+         PLOGI << ss1.str() << ']';
+      }
+
+      // Sort passes to satisfy dependencies, avoid useless render target switching, allow merging passes for better draw call sorting/batching, drop passes that do not contribute to the final pass
+      vector<RenderPass*> sortedPasses; // FIXME use list since we are populating through insertions
+      SortPasses(m_passes.back(), sortedPasses);
+      // Sort commands & split on command level dependencies (commands that needs a pass to be executed just before them, used for refracting parts that uses a screen copy just before using it as a shading texture)
+      for (std::vector<RenderPass*>::iterator itPass = sortedPasses.begin(); itPass != sortedPasses.end(); ++itPass)
+      {
+         (*itPass)->SortCommands();
+         for (std::vector<RenderCommand*>::iterator it = (*itPass)->m_commands.begin(); it != (*itPass)->m_commands.end(); ++it)
+         {
+            if ((*it)->m_dependency != nullptr && (*it)->m_dependency->m_sortKey == 0)
+            { // [Warning, dependencies are not updated (not needed) making the log after sort incorrect]
+               // Add the pass just before the rendercommand. Warning: this only supports the refraction use scheme where we add a single pass to perform the screen copy
+               (*it)->m_dependency->m_sortKey = 1;
+               RenderPass* const splitPass = AddPass((*itPass)->m_name + " [Split before " + (*it)->m_dependency->m_name + "]", (*itPass)->m_rt);
+               splitPass->m_commands.insert(splitPass->m_commands.begin(), (*itPass)->m_commands.begin(), it);
+               (*itPass)->m_commands.erase((*itPass)->m_commands.begin(), it);
+               it = (*itPass)->m_commands.begin(); // Continue with remaining commands after split
+               itPass = sortedPasses.insert(itPass, splitPass) + 1; // itPass points to the pass after the inserted pass (so the remaining part of the initial pass)
+               vector<RenderPass*> subPasses;
+               SortPasses((*it)->m_dependency, subPasses);
+               for (RenderPass* subPass : subPasses)
+                  itPass = sortedPasses.insert(itPass, subPass) + 1; // itPass points after the added dependency pass
+            }
+         }
+      }
+
+      if (log)
+      {
+         std::stringstream ss1;
+         ss1 << "Sorted passes: [";
+         for (RenderPass* pass : sortedPasses)
+         {
+            if (pass != sortedPasses[0])
+               ss1 << ", ";
+            ss1 << '\'' << pass->m_name << '\'';
+            #ifdef LOG_PASS_SORTING
+            std::stringstream ss;
+            ss << "> Pass '" << pass->m_name << "' [RT=" << pass->m_rt->m_name << ", " << pass->m_commands.size() << " commands, Dependencies:";
+            bool first = true;
+            for (RenderPass* dep : pass->m_dependencies)
+            {
+               if (!first)
+                  ss << ", ";
+               first = false;
+               ss << dep->m_name;
+            }
+            ss << ']';
+            PLOGI << ss.str();
+            #endif
+         }
+         PLOGI << ss1.str() << ']';
+      }
+
+      #if defined(ENABLE_DX9)
+      CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
+      #endif
    
-   #if defined(ENABLE_BGFX)
-   #elif defined(ENABLE_OPENGL)
-   if (rendered)
-      glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
-   #elif defined(ENABLE_DX9)
-   CHECKD3D(m_rd->GetCoreDevice()->EndScene());
-   // (Optionally) hack to force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
-   if (m_DX9Flush)
-      m_DX9Flush->Execute();
-   #endif
+      for (RenderPass* pass : sortedPasses)
+         rendered |= pass->Execute(log);
+   
+      #if defined(ENABLE_BGFX)
+      #elif defined(ENABLE_OPENGL)
+      if (rendered)
+         glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
+      #elif defined(ENABLE_DX9)
+      CHECKD3D(m_rd->GetCoreDevice()->EndScene());
+      // (Optionally) hack to force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+      if (m_DX9Flush)
+         m_DX9Flush->Execute();
+      #endif
 
-   // Recycle commands & passes
-   for (RenderPass* pass : m_passes)
-      pass->RecycleCommands(m_commandPool);
-   m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
-   m_passes.clear();
+      // Recycle commands & passes
+      for (RenderPass* pass : m_passes)
+         pass->RecycleCommands(m_commandPool);
+      m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
+      m_passes.clear();
 
-   // Restore render/shader states
-   m_rd->CopyRenderStates(false, *m_rdState);
+      // Restore render/shader states
+      m_rd->CopyRenderStates(false, *m_rdState);
+   }
+
+   if (!m_endOfFrameCmds.empty())
+   {
+      rendered = true;
+      for (auto cmd : m_endOfFrameCmds)
+         cmd();
+      m_endOfFrameCmds.clear();
+   }
 
    return rendered;
 }

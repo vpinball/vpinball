@@ -1276,6 +1276,14 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
+// MSVC Concurrency Viewer support
+// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+extern marker_series series;
+#endif
+
 void Renderer::RenderStaticPrepass()
 {
    // For VR, we don't use any static pre-rendering
@@ -1317,6 +1325,10 @@ void Renderer::RenderStaticPrepass()
    int n_iter = IsUsingStaticPrepass() ? (STATIC_PRERENDER_ITERATIONS - 1) : 0;
    for (int iter = n_iter; iter >= 0; --iter) // just do one iteration if in dynamic camera/light/material tweaking mode
    {
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      span* tagSpan = new span(series, 1, _T("PreRender"));
+      #endif
+
       g_pplayer->m_progressDialog.SetProgress("Prerendering Static Parts..."s, 70 + (((30 * (n_iter + 1 - iter)) / (n_iter + 1))));
       m_renderDevice->m_curDrawnTriangles = 0;
 
@@ -1370,6 +1382,10 @@ void Renderer::RenderStaticPrepass()
          m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
          m_renderDevice->m_FBShader->SetTextureNull(SHADER_tex_fb_unfiltered);
       }
+
+      #ifdef MSVC_CONCURRENCY_VIEWER
+      delete tagSpan;
+      #endif
 
       m_renderDevice->SubmitRenderFrame(); // Submit to avoid stacking up all prerender passes in a huge render frame
    }

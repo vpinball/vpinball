@@ -30,7 +30,7 @@ Settings::Section Settings::GetSection(const string& name)
 
 const string &Settings::GetSectionName(const Section section)
 {
-   assert(0 <= section && section < m_settingKeys.size());
+   assert(0 <= section && section < (int) m_settingKeys.size());
    return m_settingKeys[section];
 }
 
