@@ -265,7 +265,8 @@ public:
    int m_activeViewId = -1;
    uint64_t m_bgfxState = 0L;
 
-   bx::Semaphore m_frameReadySem;
+   bool m_frameNoSync = false; // Flag set when the next frame should be submitted without VBlank sync disabled
+   bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
 private:
