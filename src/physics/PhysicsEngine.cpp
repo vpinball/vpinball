@@ -526,41 +526,24 @@ void PhysicsEngine::UpdatePhysics()
       initial_time_usec -= delta_frame;
    }
 
-   if (g_pplayer->m_noTimeCorrect) // After debugging script
+   // When paused or after debugging, shift whole game forward in time
+   // TODO not sure why we would need noTimeCorrect, as pause should should alreayd have shifted the timings
+   if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
    {
-      // Shift whole game forward in time
-      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
-      m_curPhysicsFrameTime   = initial_time_usec; // 0 time frame
+      const U64 curPhysicsFrameTime = m_StartTime_usec + (U64) (g_pplayer->m_time_sec * 1000000.0);
+      const U64 timeShift = initial_time_usec - curPhysicsFrameTime;
+      m_StartTime_usec += timeShift;
+      m_nextPhysicsFrameTime += timeShift;
+      m_curPhysicsFrameTime += timeShift;
       g_pplayer->m_noTimeCorrect = false;
    }
 
-#ifndef EVENPHYSICSTIME
-   if (!g_pplayer->IsPlaying())
+   // Walk a single physics step forward
+   if (g_pplayer->m_step)
    {
-      // Shift whole game forward in time
-      m_StartTime_usec       += initial_time_usec - m_curPhysicsFrameTime;
-      m_nextPhysicsFrameTime += initial_time_usec - m_curPhysicsFrameTime;
-      if (g_pplayer->m_step)
-      {
-         // Walk one physics step forward
-         m_curPhysicsFrameTime = initial_time_usec - PHYSICS_STEPTIME;
-         g_pplayer->m_step = false;
-      }
-      else
-         m_curPhysicsFrameTime = initial_time_usec; // 0 time frame
-   }
-#endif
-
-#ifdef EVENPHYSICSTIME
-   if (g_pplayer->IsPlaying() || g_pplayer->m_step)
-   {
-      initial_time_usec = m_curPhysicsFrameTime - 3547811060 + 3547825450;
+      m_curPhysicsFrameTime -= PHYSICS_STEPTIME;
       g_pplayer->m_step = false;
    }
-   else
-      initial_time_usec = m_curPhysicsFrameTime;
-#endif
 
 #ifdef LOG
    const double timepassed = (double)(initial_time_usec - m_curPhysicsFrameTime) / 1000000.0;
@@ -584,9 +567,8 @@ void PhysicsEngine::UpdatePhysics()
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
-      g_pplayer->m_time_sec = (double)(m_curPhysicsFrameTime - m_StartTime_usec) / 1000000.0;
-      // Get time in milliseconds for timers
-      g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000);
+      g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_StartTime_usec) / 1000000.0); // First iteration is done before precise time
+      g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // Get time in milliseconds for timers
 
       m_phys_iterations++;
 
@@ -685,8 +667,14 @@ void PhysicsEngine::UpdatePhysics()
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
    } // end while (m_curPhysicsFrameTime < initial_time_usec)
 
+   assert(m_curPhysicsFrameTime < m_nextPhysicsFrameTime);
+   assert(m_curPhysicsFrameTime <= initial_time_usec);
+   assert(initial_time_usec <= m_nextPhysicsFrameTime);
+   assert(g_pplayer->m_time_sec <= (double)(initial_time_usec - m_StartTime_usec) / 1000000.0);
+
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
-   g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
+   g_pplayer->m_time_sec = (double)(initial_time_usec - m_StartTime_usec) / 1000000.0;
+   //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
    // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
    g_frameProfiler.ExitProfileSection();

@@ -2527,6 +2527,7 @@ void PinTable::Play(const int playMode)
       #ifdef ENABLE_SDL_VIDEO
       auto processWindowMessages = [&initError]()
       {
+         unsigned long long startTick = usec();
          SDL_Event e;
          while (SDL_PollEvent(&e) != 0)
          {
@@ -2576,6 +2577,10 @@ void PinTable::Play(const int playMode)
             if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
                g_pplayer->m_pininput.HandleSDLEvent(e);
             #endif
+
+            // Limit to 1ms of OS message processing per call
+            if ((usec() - startTick) > 1000ull)
+               break;
          }
 
          #ifdef __STANDALONE__
@@ -2586,6 +2591,7 @@ void PinTable::Play(const int playMode)
       #elif !defined(__STANDALONE__)
       auto processWindowMessages = [&initError]()
       {
+         unsigned long long startTick = usec();
          MSG msg;
          while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
          {
@@ -2610,6 +2616,10 @@ void PinTable::Play(const int playMode)
             {
                initError = true;
             }
+
+            // Limit to 1ms of OS message processing per call
+            if ((usec() - startTick) > 1000ull)
+               break;
          }
       };
       #else
