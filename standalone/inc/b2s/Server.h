@@ -173,6 +173,10 @@ public:
 
 private:
    void TimerElapsed(VP::Timer* pTimer);
+   HRESULT GetChangedLamps(VARIANT *pRetVal);
+   HRESULT GetChangedSolenoids(VARIANT *pRetVal);
+   HRESULT GetChangedGIStrings(VARIANT *pRetVal);
+   HRESULT GetChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3, VARIANT mask4, VARIANT *pRetVal);
    void CheckGetMech(int number, int mech);
    void CheckLamps(SAFEARRAY* psa);
    void CheckSolenoids(SAFEARRAY* psa);

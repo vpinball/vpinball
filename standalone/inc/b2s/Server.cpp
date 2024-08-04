@@ -65,7 +65,7 @@ void Server::TimerElapsed(VP::Timer* pTimer)
    static bool callSolenoids = false;
    static bool callGIStrings = false;
    static bool callLEDs = false;
-   static bool log = false;
+   static bool logged = false;
 
    if (counter <= 25) {
       counter++;
@@ -76,52 +76,75 @@ void Server::TimerElapsed(VP::Timer* pTimer)
    }
    else {
       if (m_pB2SSettings->IsROMControlled()) {
-         if (!log) {
-            log = true;
-            if (!callLamps && !callSolenoids && !callGIStrings && !callLEDs) {
-               pTimer->Stop();
-               PLOGI.printf("B2S polling disabled");
+         bool changed = false;
+         if (callLamps) {
+            if (!m_changedLampsCalled) {
+               VARIANT ret;
+               VariantInit(&ret);
+               GetChangedLamps(&ret);
+               VariantClear(&ret);
             }
             else {
-               PLOGI.printf("B2S polling enabled: lamps=%d, solenoids=%d, giStrings=%d, leds=%d", callLamps, callSolenoids, callGIStrings, callLEDs);
+               callLamps = false;
+               changed = true;
+            }
+         }
+         if (callSolenoids) {
+            if (!m_changedSolenoidsCalled) {
+               VARIANT ret;
+               VariantInit(&ret);
+               GetChangedSolenoids(&ret);
+               VariantClear(&ret);
+            }
+            else {
+               callSolenoids = false;
+               changed = true;
+            }
+         }
+         if (callGIStrings) {
+            if (!m_changedGIStringsCalled) {
+               VARIANT ret;
+               VariantInit(&ret);
+               GetChangedGIStrings(&ret);
+               VariantClear(&ret);
+            }
+            else {
+               callGIStrings = false;
+               changed = true;
+            }
+         }
+         if (callLEDs) {
+            if (!m_changedLEDsCalled) {
+               VARIANT varMask1;
+               VariantInit(&varMask1);
+               V_VT(&varMask1) = VT_I4;
+               V_I4(&varMask1) = 0xFFFFFFFF;
+
+               VARIANT varMask2;
+               VariantInit(&varMask2);
+               V_VT(&varMask2) = VT_I4;
+               V_I4(&varMask2) = 0;
+
+               VARIANT ret;
+               VariantInit(&ret);
+               GetChangedLEDs(varMask1, varMask1, varMask2, varMask2, &ret);
+               VariantClear(&ret);
+               VariantClear(&varMask1);
+               VariantClear(&varMask2);
+            }
+            else {
+               callLEDs = false;
+               changed = true;
             }
          }
 
-         if (callLamps) {
-            VARIANT ret;
-            VariantInit(&ret);
-            get_ChangedLamps(&ret);
-            VariantClear(&ret);
-         }
-         if (callSolenoids) {
-            VARIANT ret;
-            VariantInit(&ret);
-            get_ChangedSolenoids(&ret);
-            VariantClear(&ret);
-         }
-         if (callGIStrings) {
-            VARIANT ret;
-            VariantInit(&ret);
-            get_ChangedGIStrings(&ret);
-            VariantClear(&ret);
-         }
-         if (callLEDs) {
-            VARIANT varMask1;
-            VariantInit(&varMask1);
-            V_VT(&varMask1) = VT_I4;
-            V_I4(&varMask1) = 0xFFFFFFFF;
+         if (!logged || changed) {
+            PLOGI.printf("B2S polling status: lamps=%d, solenoids=%d, giStrings=%d, leds=%d", callLamps, callSolenoids, callGIStrings, callLEDs);
 
-            VARIANT varMask2;
-            VariantInit(&varMask2);
-            V_VT(&varMask2) = VT_I4;
-            V_I4(&varMask2) = 0;
+            if (!callLamps && !callSolenoids && !callGIStrings && !callLEDs)
+               pTimer->Stop();
 
-            VARIANT ret;
-            VariantInit(&ret);
-            get_ChangedLEDs(varMask1, varMask1, varMask2, varMask2, &ret);
-            VariantClear(&ret);
-            VariantClear(&varMask1);
-            VariantClear(&varMask2);
+            logged = true;
          }
       }
    }
@@ -535,90 +558,25 @@ STDMETHODIMP Server::put_HandleMechanics(short pRetVal)
 STDMETHODIMP Server::get_ChangedLamps(VARIANT *pRetVal)
 {
    m_changedLampsCalled = true;
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLamps(pRetVal);
-
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsLampsData())
-      CheckLamps(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('L', psa);
-
-   return hres;
+   return GetChangedLamps(pRetVal);
 }
 
 STDMETHODIMP Server::get_ChangedSolenoids(VARIANT *pRetVal)
 {
    m_changedSolenoidsCalled = true;
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedSolenoids(pRetVal);
-
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsSolenoidsData())
-      CheckSolenoids(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('S', psa);
-
-   return hres;
+   return GetChangedSolenoids(pRetVal);
 }
 
 STDMETHODIMP Server::get_ChangedGIStrings(VARIANT *pRetVal)
 {
    m_changedGIStringsCalled = true;
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedGIStrings(pRetVal);
-
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsGIStringsData())
-      CheckGIStrings(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('G', psa);
-
-   return hres;
+   return GetChangedGIStrings(pRetVal);
 }
 
 STDMETHODIMP Server::get_ChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3, VARIANT mask4, VARIANT *pRetVal)
 {
    m_changedLEDsCalled = true;
-
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &mask2, 0, VT_I4);
-
-   VARIANT var1;
-   V_VT(&var1) = VT_EMPTY;
-   VariantChangeType(&var1, &mask1, 0, VT_I4);
-
-   VARIANT var2;
-   V_VT(&var2) = VT_EMPTY;
-   VariantChangeType(&var2, &mask3, 0, VT_I4);
-
-   VARIANT var3;
-   V_VT(&var3) = VT_EMPTY;
-   VariantChangeType(&var3, &mask4, 0, VT_I4);
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLEDs(V_I4(&var0), V_I4(&var1), V_I4(&var2), V_I4(&var3), pRetVal);
-
-   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
-
-   if (m_pB2SData->IsLEDsData())
-      CheckLEDs(psa);
-
-   if (m_pB2SSettings->ArePluginsOn())
-      m_pB2SSettings->GetPluginHost()->DataReceive('D', psa);
-
-   VariantClear(&var0);
-   VariantClear(&var1);
-   VariantClear(&var2);
-   VariantClear(&var3);
-
-   return hres;
+   return GetChangedLEDs(mask2, mask1, mask3, mask4, pRetVal);
 }
 
 STDMETHODIMP Server::get_NewSoundCommands(VARIANT *pRetVal)
@@ -1454,6 +1412,87 @@ STDMETHODIMP Server::B2SStopSound(BSTR soundname)
 STDMETHODIMP Server::B2SMapSound(VARIANT digit, BSTR soundname)
 {
    return S_OK;
+}
+
+HRESULT Server::GetChangedLamps(VARIANT *pRetVal)
+{
+   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLamps(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
+   if (m_pB2SData->IsLampsData())
+      CheckLamps(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('L', psa);
+
+   return hres;
+}
+
+HRESULT Server::GetChangedSolenoids(VARIANT *pRetVal)
+{
+   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedSolenoids(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
+   if (m_pB2SData->IsSolenoidsData())
+      CheckSolenoids(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('S', psa);
+
+   return hres;
+}
+
+HRESULT Server::GetChangedGIStrings(VARIANT *pRetVal)
+{
+   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedGIStrings(pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
+   if (m_pB2SData->IsGIStringsData())
+      CheckGIStrings(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('G', psa);
+
+   return hres;
+}
+
+HRESULT Server::GetChangedLEDs(VARIANT mask2, VARIANT mask1, VARIANT mask3, VARIANT mask4, VARIANT *pRetVal)
+{
+   VARIANT var0;
+   V_VT(&var0) = VT_EMPTY;
+   VariantChangeType(&var0, &mask2, 0, VT_I4);
+
+   VARIANT var1;
+   V_VT(&var1) = VT_EMPTY;
+   VariantChangeType(&var1, &mask1, 0, VT_I4);
+
+   VARIANT var2;
+   V_VT(&var2) = VT_EMPTY;
+   VariantChangeType(&var2, &mask3, 0, VT_I4);
+
+   VARIANT var3;
+   V_VT(&var3) = VT_EMPTY;
+   VariantChangeType(&var3, &mask4, 0, VT_I4);
+
+   HRESULT hres = m_pB2SData->GetVPinMAME()->get_ChangedLEDs(V_I4(&var0), V_I4(&var1), V_I4(&var2), V_I4(&var3), pRetVal);
+
+   SAFEARRAY* psa = pRetVal && V_VT(pRetVal) == (VT_ARRAY | VT_VARIANT) ? V_ARRAY(pRetVal) : NULL;
+
+   if (m_pB2SData->IsLEDsData())
+      CheckLEDs(psa);
+
+   if (m_pB2SSettings->ArePluginsOn())
+      m_pB2SSettings->GetPluginHost()->DataReceive('D', psa);
+
+   VariantClear(&var0);
+   VariantClear(&var1);
+   VariantClear(&var2);
+   VariantClear(&var3);
+
+   return hres;
 }
 
 void Server::CheckGetMech(int number, int mech)
