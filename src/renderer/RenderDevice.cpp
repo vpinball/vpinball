@@ -308,6 +308,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
    }
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
+   const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
+   bool vsync = useVSync;
    rd->m_frameReadySem.post();
    while (rd->m_renderDeviceAlive)
    {
@@ -320,6 +322,13 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
       //series.write_flag(_T("Sync"));
       span *tagSpan = new span(series, 1, _T("Submit"));
       #endif
+      const bool needsVSync = useVSync && !rd->m_frameNoSync;
+      if (vsync != needsVSync)
+      {
+         vsync = needsVSync;
+         bgfx::reset(init.resolution.width, init.resolution.height, (init.resolution.reset & ~BGFX_RESET_VSYNC) | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+      }
+      rd->m_frameNoSync = false;
       rd->SubmitRenderFrame();
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
@@ -418,7 +427,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
    init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
-                      // | BGFX_RESET_FLIP_AFTER_RENDER                                 /* No op since we are using multithreading */
+                         | BGFX_RESET_FLIP_AFTER_RENDER                                 /*  */
                          | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC); /* Wait for VSync */
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
@@ -1533,6 +1542,7 @@ void RenderDevice::SubmitRenderFrame()
          Sleep(0);
       m_frameMutex.lock(); // post the requested submit
       m_framePending = true;
+      m_frameNoSync = true;
       m_frameReadySem.post();
       m_frameMutex.unlock(); // release the lock and wait for render thread
       while (m_framePending)
