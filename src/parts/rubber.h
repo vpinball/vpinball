@@ -123,6 +123,10 @@ private:
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
    bool m_dynamicVertexBufferRegenerate;
+   Vertex3Ds m_boundingSphereCenter;
+   bool m_bboxDirty = true;
+   Vertex3Ds m_bboxMin;
+   Vertex3Ds m_bboxMax;
 
    int m_numVertices;      // this goes along with dynamicVertexBuffer
    int m_numIndices;
@@ -143,10 +147,7 @@ private:
    void GenerateMesh(const int _accuracy = -1, const bool createHitShape = false);
    void DrawRubberMesh(Sur * const psur);
 
-   Vertex3Ds m_boundingSphereCenter;
-   void UpdateBounds();
-
-   // IRamp
+   // IRubber
 public:
    STDMETHOD(get_Image)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Image)(/*[in]*/ BSTR newVal);

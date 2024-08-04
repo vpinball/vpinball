@@ -272,45 +272,50 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *c
    if (legacy_bounds == nullptr && !m_d.m_visible)
       return;
 
-   //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
-   int cvertex;
-   const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr);
-
-   //if(m_d.m_visible) bounds.reserve(bounds.size() + cvertex * 2);
-   Vertex3Ds bbox_min(FLT_MAX, FLT_MAX, FLT_MAX);
-   Vertex3Ds bbox_max(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-   for (int i = 0; i < cvertex; i++)
+   if (m_bboxDirty)
    {
-	  {
-	  const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	  //if(m_d.m_visible) bounds.push_back(pv);
-	  bbox_min.x = min(bbox_min.x, pv.x);
-	  bbox_min.y = min(bbox_min.y, pv.y);
-	  bbox_min.z = min(bbox_min.z, pv.z);
-	  bbox_max.x = max(bbox_max.x, pv.x);
-	  bbox_max.y = max(bbox_max.y, pv.y);
-	  bbox_max.z = max(bbox_max.z, pv.z);
-	  }
+      m_bboxDirty = false;
 
-	  const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	  //if(m_d.m_visible) bounds.push_back(pv);
-	  bbox_min.x = min(bbox_min.x, pv.x);
-	  bbox_min.y = min(bbox_min.y, pv.y);
-	  bbox_min.z = min(bbox_min.z, pv.z);
-	  bbox_max.x = max(bbox_max.x, pv.x);
-	  bbox_max.y = max(bbox_max.y, pv.y);
-	  bbox_max.z = max(bbox_max.z, pv.z);
+      //!! meh, this is delivering something loosely related to the bounding vertices, but its only used in the cam fitting code so far, so keep for legacy reasons
+      int cvertex;
+      const Vertex2D * const rgvLocal = GetSplineVertex(cvertex, nullptr, nullptr);
+
+      //if(m_d.m_visible) bounds.reserve(bounds.size() + cvertex * 2);
+      m_bboxMin = Vertex3Ds(FLT_MAX, FLT_MAX, FLT_MAX);
+      m_bboxMax = Vertex3Ds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+      for (int i = 0; i < cvertex; i++)
+      {
+	     {
+	     const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	     //if(m_d.m_visible) bounds.push_back(pv);
+        m_bboxMin.x = min(m_bboxMin.x, pv.x);
+        m_bboxMin.y = min(m_bboxMin.y, pv.y);
+        m_bboxMin.z = min(m_bboxMin.z, pv.z);
+        m_bboxMax.x = max(m_bboxMax.x, pv.x);
+        m_bboxMax.y = max(m_bboxMax.y, pv.y);
+        m_bboxMax.z = max(m_bboxMax.z, pv.z);
+	     }
+
+	     const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+	     //if(m_d.m_visible) bounds.push_back(pv);
+        m_bboxMin.x = min(m_bboxMin.x, pv.x);
+        m_bboxMin.y = min(m_bboxMin.y, pv.y);
+        m_bboxMin.z = min(m_bboxMin.z, pv.z);
+        m_bboxMax.x = max(m_bboxMax.x, pv.x);
+        m_bboxMax.y = max(m_bboxMax.y, pv.y);
+        m_bboxMax.z = max(m_bboxMax.z, pv.z);
+      }
+
+      delete[] rgvLocal;
    }
-
-   delete[] rgvLocal;
 
    // returns all 8 corners as this will be used for further transformations later-on
    for (int i = 0; i < 8; i++)
    {
 	   const Vertex3Ds pv(
-		   (i & 1) ? bbox_min.x : bbox_max.x,
-		   (i & 2) ? bbox_min.y : bbox_max.y,
-		   (i & 4) ? bbox_min.z : bbox_max.z);
+		   (i & 1) ? m_bboxMin.x : m_bboxMax.x,
+		   (i & 2) ? m_bboxMin.y : m_bboxMax.y,
+		   (i & 4) ? m_bboxMin.z : m_bboxMax.z);
 
 	   if (m_d.m_visible)
 		   bounds.push_back(pv);
@@ -689,26 +694,21 @@ float Rubber::GetDepth(const Vertex3Ds& viewDir) const
    return viewDir.x * center2D.x + viewDir.y * center2D.y + viewDir.z * m_d.m_height;
 }
 
-void Rubber::UpdateBounds()
-{
-   const Vertex2D center2D = GetPointCenter();
-   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
-}
-
 void Rubber::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
    m_rd = device;
-   UpdateBounds();
+   m_bboxDirty = true;
 
    GenerateMesh();
 
    VertexBuffer *dynamicVertexBuffer = new VertexBuffer(m_rd, m_numVertices, (float *)m_vertices.data() , !m_d.m_staticRendering);
    IndexBuffer *dynamicIndexBuffer = new IndexBuffer(m_rd, m_ringIndices);
    m_meshBuffer = new MeshBuffer(m_wzName, dynamicVertexBuffer, dynamicIndexBuffer, true);
-
    UpdateRubber(true, m_d.m_height);
-   m_dynamicVertexBufferRegenerate = false;
+
+   const Vertex2D center2D = GetPointCenter();
+   m_boundingSphereCenter.Set(center2D.x, center2D.y, m_d.m_height);
 }
 
 void Rubber::RenderRelease()
@@ -956,6 +956,7 @@ STDMETHODIMP Rubber::put_Height(float newVal)
    {
       m_d.m_height = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      m_bboxDirty = true;
    }
 
    return S_OK;
@@ -987,6 +988,7 @@ STDMETHODIMP Rubber::put_Thickness(int newVal)
    {
       m_d.m_thickness = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      m_bboxDirty = true;
    }
 
    return S_OK;
@@ -1203,6 +1205,7 @@ STDMETHODIMP Rubber::put_RotX(float newVal)
    {
       m_d.m_rotX = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      m_bboxDirty = true;
    }
 
    return S_OK;
@@ -1221,6 +1224,7 @@ STDMETHODIMP Rubber::put_RotY(float newVal)
    {
       m_d.m_rotY = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      m_bboxDirty = true;
    }
 
    return S_OK;
@@ -1239,6 +1243,7 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
    {
       m_d.m_rotZ = newVal;
       m_dynamicVertexBufferRegenerate = true;
+      m_bboxDirty = true;
    }
 
    return S_OK;
@@ -1302,13 +1307,13 @@ void Rubber::ExportMesh(ObjLoader& loader)
 
 void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! hack, createHitShape==true needs adaption below if changing detail level for hitshape
 {
-   int accuracy;
-   if (m_ptable->GetDetailLevel() < 5)
+   int accuracy = m_ptable->GetDetailLevel();
+   if (accuracy < 5)
       accuracy = 6;
-   else if (m_ptable->GetDetailLevel() >= 5 && m_ptable->GetDetailLevel() < 8)
+   else if (accuracy < 8)
       accuracy = 8;
    else
-      accuracy = (int)((float)m_ptable->GetDetailLevel()*1.3f); // see also below
+      accuracy = (int)((float)accuracy * 1.3f); // see also below
 
    // as solid rubbers are rendered into the static buffer, always use maximum precision
    if (m_d.m_staticRendering)

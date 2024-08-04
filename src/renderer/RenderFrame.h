@@ -13,10 +13,11 @@ public:
    RenderFrame(RenderDevice* renderDevice);
    ~RenderFrame();
 
-   RenderPass* AddPass(const string& name, RenderTarget* const rt);
-   bool Execute(const bool log = false);
-
    RenderCommand* NewCommand();
+
+   RenderPass* AddPass(const string& name, RenderTarget* const rt);
+   void AddEndOfFrameCmd(std::function<void()> cmd) { m_endOfFrameCmds.push_back(cmd); }
+   bool Execute(const bool log = false);
 
 private:
    void SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedPasses);
@@ -26,6 +27,7 @@ private:
    vector<RenderPass*> m_passes;
    vector<RenderPass*> m_passPool;
    vector<RenderCommand*> m_commandPool;
+   vector<std::function<void()>> m_endOfFrameCmds;
 
    #if defined(ENABLE_DX9)
    class DX9Flush* m_DX9Flush = nullptr;

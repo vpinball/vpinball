@@ -315,35 +315,39 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
    {
       // wait for a frame to be prepared by the logic thread
       rd->m_frameReadySem.wait();
+      if (!rd->m_framePending)
+         continue;
 
       // lock prepared frame and submit it
-      rd->m_frameMutex.lock();
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      //series.write_flag(_T("Sync"));
-      span *tagSpan = new span(series, 1, _T("Submit"));
-      #endif
-      const bool needsVSync = useVSync && !rd->m_frameNoSync;
-      if (vsync != needsVSync)
       {
-         vsync = needsVSync;
-         bgfx::reset(init.resolution.width, init.resolution.height, (init.resolution.reset & ~BGFX_RESET_VSYNC) | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+         std::lock_guard lock(rd->m_frameMutex);
+         rd->m_framePending = false;
+         #ifdef MSVC_CONCURRENCY_VIEWER
+         span *tagSpan = new span(series, 1, _T("Submit"));
+         #endif
+         const bool needsVSync = useVSync && !rd->m_frameNoSync;
+         if (vsync != needsVSync)
+         {
+            vsync = needsVSync;
+            bgfx::reset(init.resolution.width, init.resolution.height, (init.resolution.reset & ~BGFX_RESET_VSYNC) | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+         }
+         rd->SubmitRenderFrame();
+         rd->m_frameNoSync = false;
+         #ifdef MSVC_CONCURRENCY_VIEWER
+         delete tagSpan;
+         #endif
       }
-      rd->m_frameNoSync = false;
-      rd->SubmitRenderFrame();
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      delete tagSpan;
-      #endif
-      rd->m_frameMutex.unlock();
 
       // Block until a flip happens then submit to GPU
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      //series.write_flag(_T("Sync"));
-      tagSpan = new span(series, 1, _T("Flip"));
-      #endif
-      rd->Flip();
-      #ifdef MSVC_CONCURRENCY_VIEWER
-      delete tagSpan;
-      #endif
+      {
+         #ifdef MSVC_CONCURRENCY_VIEWER
+         span* tagSpan = new span(series, 1, _T("Flip"));
+         #endif
+         rd->Flip();
+         #ifdef MSVC_CONCURRENCY_VIEWER
+         delete tagSpan;
+         #endif
+      }
    }
    bgfx::shutdown();
 }
@@ -1537,29 +1541,22 @@ void RenderDevice::SubmitRenderFrame()
    if (std::this_thread::get_id() != m_renderThread.get_id())
    {
       // post semaphore and wait for render thread to process frame
-      m_frameMutex.unlock(); // this thread holds the frame mutex, release it to let the render thread process any pending command
-      while (m_framePending)
-         Sleep(0);
-      m_frameMutex.lock(); // post the requested submit
       m_framePending = true;
       m_frameNoSync = true;
+      m_frameMutex.unlock(); // release the lock and wait for render thread to process the frame
       m_frameReadySem.post();
-      m_frameMutex.unlock(); // release the lock and wait for render thread
       while (m_framePending)
+         //YieldProcessor();
          Sleep(0);
       m_frameMutex.lock();
       return;
    }
    #endif
 
-   m_framePending = false;
-   bool rendered = m_renderFrame.Execute(m_logNextFrame);
    m_currentPass = nullptr;
+   bool rendered = m_renderFrame.Execute(m_logNextFrame);
    if (rendered)
       m_logNextFrame = false;
-   for (auto cmd : m_endOfFrameCmds)
-      cmd();
-   m_endOfFrameCmds.clear();
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
