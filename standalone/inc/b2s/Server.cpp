@@ -287,6 +287,19 @@ STDMETHODIMP Server::get_Running(VARIANT_BOOL *pRetVal)
    return m_pB2SData->GetVPinMAME()->get_Running(pRetVal);
 }
 
+STDMETHODIMP Server::put_TimeFence(VARIANT timeInS)
+{
+   VARIANT var0;
+   V_VT(&var0) = VT_EMPTY;
+   VariantChangeType(&var0, &timeInS, 0, VT_R8);
+
+   HRESULT hres = m_pB2SData->GetVPinMAME()->put_TimeFence(V_R8(&var0));
+
+   VariantClear(&var0);
+
+   return hres;
+}
+
 STDMETHODIMP Server::get_Pause(VARIANT_BOOL *pRetVal)
 {
    return m_pB2SData->GetVPinMAME()->get_Pause(pRetVal);

@@ -2348,6 +2348,9 @@ _Server : public IDispatch
         VARIANT digit,
         BSTR soundname) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE put_TimeFence(
+        VARIANT timeInS) = 0;
+
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(_Server, 0x5693c68c, 0x5834, 0x466d, 0xaa,0xac, 0xa8,0x69,0x22,0x07,0x6e,0xfd)
@@ -2901,6 +2904,10 @@ typedef struct _ServerVtbl {
         VARIANT digit,
         BSTR soundname);
 
+    HRESULT (STDMETHODCALLTYPE *put_TimeFence)(
+        _Server *This,
+        VARIANT timeInS);
+
     END_INTERFACE
 } _ServerVtbl;
 
@@ -3037,6 +3044,7 @@ interface _Server {
 #define _Server_B2SPlaySound(This,soundname) (This)->lpVtbl->B2SPlaySound(This,soundname)
 #define _Server_B2SStopSound(This,soundname) (This)->lpVtbl->B2SStopSound(This,soundname)
 #define _Server_B2SMapSound(This,digit,soundname) (This)->lpVtbl->B2SMapSound(This,digit,soundname)
+#define _Server_put_TimeFence(This,timeInS) (This)->lpVtbl->put_TimeFence(This,timeInS)
 #else
 /*** IUnknown methods ***/
 static __WIDL_INLINE HRESULT _Server_QueryInterface(_Server* This,REFIID riid,void **ppvObject) {
@@ -3412,6 +3420,9 @@ static __WIDL_INLINE HRESULT _Server_B2SStopSound(_Server* This,BSTR soundname) 
 }
 static __WIDL_INLINE HRESULT _Server_B2SMapSound(_Server* This,VARIANT digit,BSTR soundname) {
     return This->lpVtbl->B2SMapSound(This,digit,soundname);
+}
+static __WIDL_INLINE HRESULT _Server_put_TimeFence(_Server* This,VARIANT timeInS) {
+    return This->lpVtbl->put_TimeFence(This,timeInS);
 }
 #endif
 #endif

@@ -68,6 +68,7 @@ public:
    STDMETHOD(get_Games)(BSTR GameName, VARIANT *pRetVal);
    STDMETHOD(get_Settings)(VARIANT *pRetVal);
    STDMETHOD(get_Running)(VARIANT_BOOL *pRetVal);
+   STDMETHOD(put_TimeFence)(VARIANT timeInS);
    STDMETHOD(get_Pause)(VARIANT_BOOL *pRetVal);
    STDMETHOD(put_Pause)(VARIANT_BOOL pRetVal);
    STDMETHOD(get_Version)(BSTR *pRetVal);
