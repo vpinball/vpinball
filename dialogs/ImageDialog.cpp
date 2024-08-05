@@ -416,6 +416,8 @@ void ImageDialog::Import()
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
+      ListView_SetItemState(hImageList, -1, 0, LVIS_SELECTED); // select nothing
+
       for (const string &file : szFileName)
          pt->ImportImage(hSoundList, file);
 

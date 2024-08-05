@@ -45,6 +45,8 @@ FIXES:
 
 - fix .bmp export in the Image Manager
 
+- fix Image manager overwriting alpha mask value for selected images on import
+
 - fix gate two-way flag import from VP9/8 .vpts
 
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
