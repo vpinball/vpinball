@@ -123,27 +123,27 @@ BOOL BackglassVisualsProperty::OnInitDialog()
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton1);
     UpdateVisuals();
 
-    m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
+    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8).GetHwnd(), CResizer::topleft, 0);
     m_resizer.AddChild(m_hApplyNightDayCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_dtImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_fsImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_fssImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_colorGradingCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_dtImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fsImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fssImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorGradingCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_hEnableEMReelCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_hEnableDecal, CResizer::topleft, 0);
     m_resizer.AddChild(m_hOverwriteGlobalStereoSettingsCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dStereoSeparationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_3dSteroZPDEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_colorButton1, CResizer::topleft, 0);
+    m_resizer.AddChild(m_3dStereoOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dStereoSeparationEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_3dSteroZPDEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton1.GetHwnd(), CResizer::topleft, 0);
 
     return TRUE;
 }

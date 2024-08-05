@@ -128,7 +128,7 @@ BOOL SearchSelectDialog::OnInitDialog()
 
    m_switchSortOrder = false;
 
-   m_resizer.Initialize(*this, CRect(0, 0, 650, 400));
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 650, 400));
    m_resizer.AddChild(GetDlgItem(IDC_ELEMENT_LIST).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), CResizer::topright, 0);

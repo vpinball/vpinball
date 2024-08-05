@@ -166,35 +166,35 @@ BOOL ToolbarDialog::OnInitDialog()
     m_rubberButton.SetIcon((HICON)hIcon);
 
 
-    m_resizer.Initialize(*this, CRect(0, 0, 90, 600));
-    m_resizer.AddChild(m_magnifyButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_selectButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_scriptButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_backglassButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_playButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_playCameraButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 90, 600));
+    m_resizer.AddChild(m_magnifyButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_selectButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_scriptButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_backglassButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_playButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_playCameraButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC_ELEMENTS).GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
-    m_resizer.AddChild(m_wallButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_gateButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rampButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_flipperButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_plungerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_ballButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_bumperButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_spinnerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_timerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_triggerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lightButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_kickerButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_targetButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_decalButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_textboxButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_reelButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_lightseqButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_primitiveButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_flasherButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
-    m_resizer.AddChild(m_rubberButton, CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_wallButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_gateButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_rampButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_flipperButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_plungerButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_ballButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_bumperButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_spinnerButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_timerButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_triggerButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_lightButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_kickerButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_targetButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_decalButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_textboxButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_reelButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_lightseqButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_primitiveButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_flasherButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(m_rubberButton.GetHwnd(), CResizer::center, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
 
     m_resizer.RecalcLayout();
 

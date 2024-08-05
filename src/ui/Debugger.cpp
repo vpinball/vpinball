@@ -56,7 +56,7 @@ BOOL DebuggerDialog::OnInitDialog()
 
     m_ballMassEdit.SetWindowText(f2sz(g_pplayer->m_debugBallMass).c_str());
 
-    m_resizer.Initialize(*this, GetWindowRect());
+    m_resizer.Initialize(this->GetHwnd(), GetWindowRect());
     m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::bottomright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
     m_resizer.AddChild(g_pplayer->m_hwndDebugOutput, CResizer::bottomright, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
     m_resizer.AddChild(GetDlgItem(IDC_GUIDE1).GetHwnd(), CResizer::topleft, 0);

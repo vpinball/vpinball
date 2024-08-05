@@ -53,7 +53,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case WM_INITDIALOG:
       {
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-         m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
+         m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 720, 450));
          m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
@@ -415,9 +415,11 @@ void ImageDialog::Import()
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
+      ListView_SetItemState(hImageList, -1, 0, LVIS_SELECTED); // select nothing
+
       for (const string &file : szFileName)
       {
-         Texture *tex = pt->ImportImage(file, "");
+         Texture * const tex = pt->ImportImage(file, string());
          if (tex != nullptr)
          {
             const int index = AddListImage(hImageList, tex);
@@ -816,7 +818,7 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    ListView_SetItemText(hwndListView, index, 2, sizeString);
    ListView_SetItemText(hwndListView, index, 3, (LPSTR)usedStringNo);
 
-   char *const sizeConv = StrFormatByteSize64(ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
+   char *const sizeConv = StrFormatByteSize64((size_t)ppi->m_pdsBuffer->height() * ppi->m_pdsBuffer->pitch(), sizeString, MAXTOKEN);
    ListView_SetItemText(hwndListView, index, 4, sizeConv);
 
    if (ppi->m_pdsBuffer == nullptr)

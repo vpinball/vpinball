@@ -40,9 +40,9 @@ BOOL BallPhysicsProperty::OnInitDialog()
    m_massEdit.AttachItem(IDC_MASS);
 
    UpdateVisuals();
-   m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-   m_resizer.AddChild(m_massEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_massEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
 
    return TRUE;
 }

@@ -225,14 +225,14 @@ BOOL LayersListDialog::OnInitDialog()
    AddToolTip("Filter tree. Only elements that match the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
    AddToolTip("Enable case sensitive filtering", GetHwnd(), toolTipHwnd, m_layerFilterCaseButton.GetHwnd());
 
-   m_resizer.Initialize(*this, CRect(0, 0, 200, 200));
-   m_resizer.AddChild(m_layerTreeView, CResizer::topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_addLayerButton, CResizer::topright, 0);
-   m_resizer.AddChild(m_deleteLayerButton, CResizer::topright, 0);
-   m_resizer.AddChild(m_assignButton, CResizer::topleft, 0);
-   m_resizer.AddChild(m_layerFilterCaseButton, CResizer::topright, 0);
-   m_resizer.AddChild(m_expandCollapseButton, CResizer::topleft, 0);
-   m_resizer.AddChild(m_layerFilterEditBox, CResizer::topright, RD_STRETCH_WIDTH);
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 200, 200));
+   m_resizer.AddChild(m_layerTreeView.GetHwnd(), CResizer::topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
+   m_resizer.AddChild(m_addLayerButton.GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(m_deleteLayerButton.GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(m_assignButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_layerFilterCaseButton.GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(m_expandCollapseButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_layerFilterEditBox.GetHwnd(), CResizer::topright, RD_STRETCH_WIDTH);
    m_resizer.RecalcLayout();
 
    return TRUE;

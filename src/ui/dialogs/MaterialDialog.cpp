@@ -65,7 +65,7 @@ BOOL MaterialDialog::OnInitDialog()
    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
-   m_resizer.Initialize(*this, CRect(0, 0, 780, 520));
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 780, 520));
    m_resizer.AddChild(m_hMaterialList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd(), CResizer::topright, 0);

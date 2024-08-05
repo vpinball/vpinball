@@ -159,41 +159,41 @@ BOOL BackglassCameraProperty::OnInitDialog()
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
     // Labels
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC1).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC2).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC3).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC4).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC5).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC7).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC9).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC10).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC11).GetHwnd(), CResizer::topleft, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12).GetHwnd(), CResizer::topleft, 0);
     // Group boxes
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC22), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC23), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC24), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC25), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC21).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC22).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC23).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC24).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC25).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
     // Controls
     m_resizer.AddChild(m_hFssModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_testOverrideCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_viewCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_modeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_inclinationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_fovEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_laybackEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_xyRotationEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_xScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_yScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_zScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_xViewOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_yViewOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_xOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_yOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_zOffsetEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_testOverrideCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_viewCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_modeCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_inclinationEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_fovEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_laybackEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xyRotationEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xScaleEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yScaleEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_zScaleEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xViewOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yViewOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_xOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_yOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_zOffsetEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
 
     return TRUE;
 }

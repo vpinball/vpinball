@@ -23,7 +23,7 @@ NotesDialog::NotesDialog() : CDialog(IDD_NOTES_DIALOG)
 
 BOOL NotesDialog::OnInitDialog()
 {
-   m_resizer.Initialize(*this, CRect(0, 0, 400 , 300));
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 400 , 300));
    AttachItem(IDC_NOTES_EDIT, m_notesEdit);
    m_resizer.AddChild(m_notesEdit.GetHwnd(), CResizer::topright, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
 

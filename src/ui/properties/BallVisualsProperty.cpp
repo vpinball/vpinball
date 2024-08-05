@@ -127,37 +127,37 @@ BOOL BallVisualsProperty::OnInitDialog()
 
    UpdateVisuals();
 
-   m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
+   m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 0, 0));
    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_hReflectionEnabledCheck, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_hForceReflectionCheck, CResizer::topleft, RD_STRETCH_WIDTH);
    
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC16).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_hUseTableSettings, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC5).GetHwnd(), CResizer::topleft, 0);
    m_resizer.AddChild(m_hSphericalCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_imageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topleft, 0);
+   m_resizer.AddChild(m_imageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC6).GetHwnd(), CResizer::topleft, 0);
    m_resizer.AddChild(m_hDecalModeCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_decalImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-   m_resizer.AddChild(m_colorButton, CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(m_decalImageCombo.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC9).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_colorButton.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
 
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-   m_resizer.AddChild(m_pfReflectionStrengthEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topleft, 0);
-   m_resizer.AddChild(m_bulbIntensityScaleEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC15).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC7).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_pfReflectionStrengthEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC8).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_bulbIntensityScaleEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
 
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
-   m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, 0);
-   m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
-   m_resizer.AddChild(m_posZEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
-   m_resizer.AddChild(m_radiusEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC10).GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC11).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_posXEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC12).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_posYEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC13).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_posZEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(GetDlgItem(IDC_STATIC14).GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_radiusEdit.GetHwnd(), CResizer::topleft, RD_STRETCH_WIDTH);
 
    return TRUE;
 }
