@@ -416,7 +416,7 @@ void ImageDialog::Import()
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
-      ListView_SetItemState(hImageList, -1, 0, LVIS_SELECTED); // select nothing
+      ListView_SetItemState(hSoundList, -1, 0, LVIS_SELECTED); // select nothing
 
       for (const string &file : szFileName)
          pt->ImportImage(hSoundList, file);
@@ -435,7 +435,7 @@ void ImageDialog::Export()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
-      
+
    if (selectedItemsCount)	// if some items are selected???
    {
       int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
