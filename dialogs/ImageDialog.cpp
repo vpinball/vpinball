@@ -413,9 +413,11 @@ void ImageDialog::Import()
       CCO(PinTable) * const pt = g_pvp->GetActiveTable();
       const HWND hImageList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
 
+      ListView_SetItemState(hImageList, -1, 0, LVIS_SELECTED); // select nothing
+
       for (const string &file : szFileName)
       {
-         Texture *tex = pt->ImportImage(file, "");
+         Texture * const tex = pt->ImportImage(file, "");
          if (tex != nullptr)
          {
             const int index = pt->AddListImage(hImageList, tex);
