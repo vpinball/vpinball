@@ -98,6 +98,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST=OFF \
+      -DSDL_CMAKE_DEBUG_POSTFIX="" \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -134,6 +135,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake \
       -DBUILD_SHARED_LIBS=ON \
       -DSDL2IMAGE_SAMPLES=OFF \
+      -DSDL2IMAGE_DEBUG_POSTFIX="" \
       -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
       -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
@@ -166,10 +168,11 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake \
       -DBUILD_SHARED_LIBS=ON \
       -DSDL2TTF_SAMPLES=OFF \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
       -DSDL2TTF_VENDORED=ON \
       -DSDL2TTF_HARFBUZZ=ON \
+      -DSDL2TTF_DEBUG_POSTFIX="" \
+      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
+      -DSDL2_LIBRARY=../../external/lib/libSDL2.so \
       -DCMAKE_BUILD_WITH_INSTALL_RPATH=TRUE \
       -DCMAKE_INSTALL_RPATH="\$ORIGIN" \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \

@@ -100,6 +100,7 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
       -DSDL_TEST=OFF \
+      -DSDL_CMAKE_DEBUG_POSTFIX="" \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
@@ -133,6 +134,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake \
       -DBUILD_SHARED_LIBS=ON \
       -DSDL2IMAGE_SAMPLES=OFF \
+      -DSDL2IMAGE_DEBUG_POSTFIX="" \
       -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
       -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
@@ -165,10 +167,11 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake \
       -DBUILD_SHARED_LIBS=ON \
       -DSDL2TTF_SAMPLES=OFF \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DSDL2TTF_VENDORED=ON \
       -DSDL2TTF_HARFBUZZ=ON \
+      -DSDL2TTF_DEBUG_POSTFIX="" \
+      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
+      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
