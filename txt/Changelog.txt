@@ -288,6 +288,8 @@ FIXES:
 
 - fix .bmp export in the Image Manager
 
+- fix Image manager overwriting alpha mask value for selected images on import
+
 - fix gate two-way flag import from VP9/8 .vpts
 
 - improve UI scaling on high resolutions (e.g. 4K)
@@ -350,6 +352,8 @@ FIXES:
 - fix deleting of sub part included in a collection warning
 
 - fix .bmp export in the Image Manager
+
+- fix Image manager overwriting alpha mask value for selected images on import
 
 - fix gate two-way flag import from VP9/8 .vpts
 
