@@ -1191,6 +1191,8 @@ library B2SBackglassServer
         HRESULT B2SMapSound(
                         [in] VARIANT digit, 
                         [in] BSTR soundname);
+        [id(0x00000061), propput]
+        HRESULT TimeFence([in] VARIANT timeInS);
     };
 
     [

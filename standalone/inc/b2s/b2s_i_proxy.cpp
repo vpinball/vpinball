@@ -103,6 +103,7 @@ STDMETHODIMP Server::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cN
 			{ L"StopAnimation", 0x00000058 },
 			{ L"Switch", 0x0000002a },
 			{ L"TableName", 0x00000007 },
+			{ L"TimeFence", 0x00000061 },
 			{ L"Version", 0x0000000e },
 			{ L"WorkingDir", 0x00000008 }
 	};
@@ -1356,6 +1357,17 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			}
 			break;
 		}
+		case 0x00000061: {
+			if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 1194: [id(0x00000061), propput]HRESULT TimeFence([in] VARIANT timeInS);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
+				hres = put_TimeFence(var0);
+				VariantClear(&var0);
+			}
+			break;
+		}
 		default:
 		break;
 	}
@@ -1370,3 +1382,4 @@ STDMETHODIMP Server::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 	}
 	return hres;
 }
+
