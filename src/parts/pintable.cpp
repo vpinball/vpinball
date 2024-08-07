@@ -2529,28 +2529,18 @@ void PinTable::Play(const int playMode)
       {
          unsigned long long startTick = usec();
          SDL_Event e;
+         bool isPFWnd = true;
+         static int2 dragStart;
+         static int dragging = 0;
          while (SDL_PollEvent(&e) != 0)
          {
-            // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
-            // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-            if (e.type == SDL_MOUSEMOTION)
-            {
-               e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-               e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-            }
-
-            ImGui_ImplSDL2_ProcessEvent(&e);
-
-            #ifdef __STANDALONE__
-            g_pStandalone->ProcessEvent(&e);
-            #endif
-
             switch (e.type)
             {
             case SDL_QUIT:
                g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
                break;
             case SDL_WINDOWEVENT:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                switch (e.window.event)
                {
                case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
@@ -2558,11 +2548,35 @@ void PinTable::Play(const int playMode)
                case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
                }
                break;
+            case SDL_KEYUP:
             case SDL_KEYDOWN:
+               isPFWnd = SDL_GetWindowFromID(e.key.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                g_pplayer->ShowMouseCursor(false);
                break;
-            case SDL_MOUSEMOTION:
+            case SDL_TEXTINPUT:
+               isPFWnd = SDL_GetWindowFromID(e.text.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               break;
+            case SDL_MOUSEWHEEL:
+               isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               break;
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
+               isPFWnd = SDL_GetWindowFromID(e.button.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               if (!isPFWnd)
                {
+                  if (e.type == SDL_MOUSEBUTTONUP)
+                     dragging = 0;
+                  else if (e.type == SDL_MOUSEBUTTONDOWN && dragging == 0)
+                     dragging = 1;
+               }
+               break;
+            case SDL_MOUSEMOTION:
+               isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               if (isPFWnd) {
+                  // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
+                  // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
+                  e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
+                  e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
                   static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
                   if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
                   {
@@ -2571,8 +2585,36 @@ void PinTable::Play(const int playMode)
                      g_pplayer->ShowMouseCursor(true);
                   }
                }
+               else if (dragging)
+               {
+                  // Handle dragging of auxiliary windows
+                  SDL_Window * sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+                  VPX::Window *windows[] = { g_pplayer->m_dmdWnd, g_pplayer->m_backglassWnd };
+                  for (int i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
+                  {
+                     if (windows[i] && sdlWnd == windows[i]->GetCore())
+                     {
+                        int x, y;
+                        windows[i]->GetPos(x, y);
+                        int2 click(x + e.motion.x, y + e.motion.y);
+                        if (dragging > 1)
+                           windows[i]->SetPos(x + click.x - dragStart.x, y + click.y - dragStart.y);
+                        dragStart = click;
+                        dragging = 2;
+                        break;
+                     }
+                  }
+               }
                break;
             }
+
+            if (isPFWnd)
+               ImGui_ImplSDL2_ProcessEvent(&e);
+
+            #ifdef __STANDALONE__
+            g_pStandalone->ProcessEvent(&e);
+            #endif
+
             #ifdef ENABLE_SDL_INPUT
             if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
                g_pplayer->m_pininput.HandleSDLEvent(e);

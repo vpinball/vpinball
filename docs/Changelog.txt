@@ -9,13 +9,16 @@ FEATURES:
 
 - add additional tonemapper (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
   and the 'AgX' tonemapper which is the default one used by Blender
-- also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control)
+- also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL,...) with some unique benefits:
-  . it supports Variable Refresh Rate display (when VSync is switched off)
-  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost.
+  . it supports Variable Refresh Rate display (when VSync is switched off),
+  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost,
+  . it supports renderint to multiple output (windows).
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
+
+- add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
 FIXES:
 

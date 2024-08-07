@@ -164,6 +164,11 @@ public:
         //UpdateWindow();
     }
 
+    COLORREF GetColor() const
+    {
+        return m_color;
+    }
+
     virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
     {
         // get the device context and attach the button handle to it

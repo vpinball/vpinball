@@ -1102,6 +1102,50 @@ RenderDevice::~RenderDevice()
    assert(m_pendingSharedVertexBuffers.empty());
 }
 
+void RenderDevice::AddWindow(VPX::Window* wnd)
+{
+   assert(wnd->GetBackBuffer() == nullptr);
+   if (m_nOutputWnd >= 8)
+      return;
+
+#if defined(ENABLE_BGFX) && (ENABLE_SDL_VIDEO)
+   if ((bgfx::getCaps()->supported & BGFX_CAPS_SWAP_CHAIN) == 0)
+      return;
+
+   colorFormat fmt;
+   switch (wnd->GetBitDepth())
+   {
+   case 32: fmt = colorFormat::RGBA8; break;
+   case 30: fmt = colorFormat::RGBA10; break;
+   default: fmt = colorFormat::RGB5; break;
+   }
+   SDL_Window* sdlWnd = wnd->GetCore();
+   SDL_SysWMinfo wmInfo;
+   SDL_VERSION(&wmInfo.version);
+   SDL_GetWindowWMInfo(wnd->GetCore(), &wmInfo);
+   void* nwh;
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+   nwh = (void*)(uintptr_t)wmInfo.info.x11.window;
+#elif BX_PLATFORM_OSX
+   nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(wnd->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+#elif BX_PLATFORM_IOS
+   nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(wnd->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+#elif BX_PLATFORM_ANDROID
+   nwh = wmInfo.info.android.window;
+#elif BX_PLATFORM_WINDOWS
+   nwh = wmInfo.info.win.window;
+#elif BX_PLATFORM_STEAMLINK
+   nwh = wmInfo.info.vivante.window;
+#else
+   return nullptr;
+#endif // BX_PLATFORM_
+   bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(nwh, uint16_t(wnd->GetWidth()), uint16_t(wnd->GetHeight()));
+   m_outputWnd[m_nOutputWnd] = wnd;
+   m_nOutputWnd++;
+   wnd->SetBackBuffer(new RenderTarget(this, fbh, "BackBuffer #"s + std::to_string(m_nOutputWnd), wnd->GetWidth(), wnd->GetHeight(), fmt));
+#endif
+}
+
 bool RenderDevice::DepthBufferReadBackAvailable()
 {
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)

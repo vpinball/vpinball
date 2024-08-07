@@ -14,7 +14,7 @@ namespace VPX
 class Window final
 {
 public:
-   Window(const string &title, const string &settingsId, const int display, const int w, const int h, const bool fullscreen, const int fsBitDeth, const int fsRefreshRate);
+   Window(const string &title, const Settings::Section section, const string &settingsPrefix);
    ~Window();
 
    void GetPos(int&x, int &y) const;
@@ -26,8 +26,9 @@ public:
    int GetBitDepth() const { return m_bitdepth; }
    float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
 
-   void ShowAndFocus();
    void SetPos(const int x, const int y);
+   void Show(const bool show = true);
+   void RaiseAndFocus(const bool raise = true);
 
    void SetBackBuffer(RenderTarget* rt) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
@@ -70,7 +71,8 @@ private:
    bool m_fullscreen;
    int m_refreshrate;
    int m_bitdepth;
-   string m_settingsId;
+   const Settings::Section m_settingsSection;
+   const string m_settingsPrefix;
 
    class RenderTarget* m_backBuffer = nullptr;
 

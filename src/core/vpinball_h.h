@@ -304,7 +304,6 @@ private:
    ImageDialog m_imageMngDlg;
    SoundDialog m_soundMngDlg;
    AudioOptionsDialog m_audioOptDialog;
-   VideoOptionsDialog m_videoOptDialog;
    EditorOptionsDialog m_editorOptDialog;
    CollectionManagerDialog m_collectionMngDlg;
    PhysicsOptionsDialog m_physicsOptDialog;

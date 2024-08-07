@@ -37,8 +37,10 @@ public:
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
    void RenderStaticPrepass();
 
-   void PrepareFrame();
+   void RenderFrame();
+   void RenderDMD(const int w, const int h, BaseTexture* dmd, RenderTarget* rt);
 
+   void SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop = false);
@@ -78,7 +80,6 @@ public:
    Texture* m_decalImage = nullptr;
 
    // Post processing
-   void PrepareVideoBuffers();
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
    bool m_bloomOff;
    int m_FXAA; // =FXAASettings
@@ -123,6 +124,7 @@ private:
    void RenderDynamics();
    void DrawBackground();
    void DrawBulbLightBuffer();
+   void PrepareVideoBuffers();
    void Bloom();
    void SSRefl();
    BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
@@ -192,4 +194,12 @@ private:
    #else
    BaseTexture* m_envRadianceTexture = nullptr;
    #endif
+
+   // DMD rendering
+   vec4 m_dmdViewDot; // External window dot color and brightness
+   float m_dmdViewExposure; // External window dot color and brightness
+   bool m_dmdUseNewRenderer;
+   vec4 m_dmdDotProperties; // size, sharpness, rounding, glow
+   vec4 m_dmdUnlitDotColor; // unlit color and back glow
+   RenderTarget* m_dmdBlurs[4] = { nullptr };
 };

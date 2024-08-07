@@ -164,6 +164,9 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_ext, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD2, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_exposure, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity),
@@ -380,6 +383,9 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
    SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
+   SHADER_SAMPLER(dmdDotGlow, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+   SHADER_SAMPLER(dmdBackGlow, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+   SHADER_SAMPLER(dmdGlass, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),

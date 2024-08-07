@@ -4005,24 +4005,27 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::OpenPopup(ID_BAM_SETTINGS);
 
       // Handle dragging mouse to allow dragging the main application window
-      max.x += pos.x;
-      max.y += pos.y;
-      static ImVec2 initial_pos;
-      if (m_player && !m_player->m_fullScreen && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+      if (m_player)
       {
-         if (!hovered && !(pos.x <= initial_pos.x && initial_pos.x <= max.x && pos.y <= initial_pos.y && initial_pos.y <= max.y))
+         static ImVec2 initialDragPos;
+         if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
          {
-            const ImVec2 drag = ImGui::GetMouseDragDelta();
-            int x, y;
-            m_player->m_playfieldWnd->GetPos(x, y);
-            x += (int)drag.x;
-            y += (int)drag.y;
-            m_player->m_playfieldWnd->SetPos(x, y);
+            max.x += pos.x;
+            max.y += pos.y;
+            if (!hovered && !(pos.x <= initialDragPos.x && initialDragPos.x <= max.x && pos.y <= initialDragPos.y && initialDragPos.y <= max.y) // Don't drag if mouse is over UI components
+             && !g_pplayer->m_playfieldWnd->IsFullScreen()) // Don't drag if window is fullscreen
+            {
+               const ImVec2 pos = ImGui::GetMousePos();
+               const ImVec2 drag = ImGui::GetMouseDragDelta();
+               int x, y;
+               m_player->m_playfieldWnd->GetPos(x, y);
+               m_player->m_playfieldWnd->SetPos(x + (int)drag.x, y + (int)drag.y);
+            }
          }
-      }
-      else
-      {
-         initial_pos = ImGui::GetMousePos();
+         else
+         {
+            initialDragPos = ImGui::GetMousePos();
+         }
       }
    }
    else

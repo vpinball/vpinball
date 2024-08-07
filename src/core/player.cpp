@@ -274,32 +274,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          #endif
       #endif
       
-      int wnd_width, wnd_height;
-      if (stereo3D == STEREO_VR)
-      {
-         m_fullScreen = false;
-         wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
-         wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 480);
-      }
-      else
-      {
-         m_fullScreen = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "FullScreen"s, IsWindows10_1803orAbove());
-         // command line override
-         if (g_pvp->m_disEnableTrueFullscreen == 0)
-            m_fullScreen = false;
-         else if (g_pvp->m_disEnableTrueFullscreen == 1)
-            m_fullScreen = true;
-         wnd_width = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Width"s, m_fullScreen ? -1 : DEFAULT_PLAYER_WIDTH);
-         wnd_height = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Height"s, wnd_width * 9 / 16);
-      }
-      const int display = g_pvp->m_primaryDisplay ? -1 : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Display"s, -1);
-      const int requestedRefreshRate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "RefreshRate"s, 0);
-      const bool video10bit = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Render10Bit"s, false);
-      const int colordepth = (video10bit && m_fullScreen && stereo3D != STEREO_VR) ? 30 : 32;
-      if (!m_fullScreen && video10bit)
-         ShowError("10Bit-Monitor support requires 'Force exclusive Fullscreen Mode' to be also enabled!");
-
-      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, "Playfield", display, wnd_width, wnd_height, m_fullScreen, colordepth, requestedRefreshRate);
+      m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
       int pfRefreshRate = m_playfieldWnd->GetRefreshRate();
       m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
@@ -461,6 +436,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       sprintf_s(szFoo, sizeof(szFoo), "Renderer initialization error code: %x", hr);
       ShowError(szFoo);
       throw hr;
+   }
+
+   if (m_ptable->m_settings.LoadValueWithDefault(Settings::DMD, "ViewMode"s, 0) > 0)
+   {
+      m_dmdWnd = new VPX::Window(_T("Visual Pinball - DMD"), Settings::DMD, "DMD");
+      m_renderer->m_renderDevice->AddWindow(m_dmdWnd);
+   }
+
+   if (m_ptable->m_settings.LoadValueWithDefault(Settings::Backglass, "ViewMode"s, 0) > 0)
+   {
+      m_backglassWnd = new VPX::Window(_T("Visual Pinball - Backglass"), Settings::Backglass, "Backglass");
+      m_renderer->m_renderDevice->AddWindow(m_backglassWnd);
    }
 
    // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
@@ -802,7 +789,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Show the window (for VR, even without preview, we need to create a window).
    m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
-   m_playfieldWnd->ShowAndFocus();
+   if (m_dmdWnd && false) // FIXME We only show DMD if there is actually a DMD (so when we receive the first DMD frame), allowing to share the same display for DMD & the still to write Alpha view
+      m_dmdWnd->Show();
+   m_playfieldWnd->Show();
+   m_playfieldWnd->RaiseAndFocus();
 
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
@@ -996,6 +986,8 @@ Player::~Player()
    delete m_ptable;
    delete m_renderer;
    delete m_playfieldWnd;
+   delete m_dmdWnd;
+   delete m_backglassWnd;
 
    g_pplayer = nullptr;
 
@@ -1136,7 +1128,7 @@ void Player::OnFocusChanged(const bool isGameFocused)
 
    #ifdef _MSC_VER
    // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
-   if (!isGameFocused && m_time_msec < 5000)
+   if (!isGameFocused && m_time_msec < 5000 && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
    {
       #ifdef ENABLE_SDL_VIDEO
       SDL_RaiseWindow(m_playfieldWnd->GetCore());
@@ -1597,8 +1589,9 @@ void Player::LockForegroundWindow(const bool enable)
 {
 #ifdef _MSC_VER
 #if(_WIN32_WINNT >= 0x0500)
-    if (m_fullScreen) // revert special tweaks of exclusive fullscreen app
-       ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
+   // TODO how do we handle this situation with multiple windows, some being fullscreen, other not ?
+   if (m_playfieldWnd->IsFullScreen()) // revert special tweaks of exclusive fullscreen app
+      ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
 #endif
@@ -1879,6 +1872,25 @@ void Player::PrepareFrame(std::function<void()> sync)
          g_frameProfiler.ExitScriptSection(pht->m_name);
       }
 
+   // Check if we should turn animate the plunger light.
+   hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+
+   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+   if (m_renderer->m_stereo3D != STEREO_VR)
+      m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
+   else if (m_liveUI->IsTweakMode())
+      m_liveUI->Update(m_renderer->GetOffscreenVR(0));
+   g_frameProfiler.ExitProfileSection();
+
+   // Shake screne when nudging
+   if (m_NudgeShake > 0.0f)
+   {
+      Vertex2D offset = m_physics->GetScreenNudge();
+      m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
+   }
+   else
+      m_renderer->SetScreenOffset(0.f, 0.f);
+
    #if defined(ENABLE_DX9)
    // Kill the profiler so that it does not affect performance
    if (m_infoMode != IF_PROFILING)
@@ -1900,28 +1912,16 @@ void Player::PrepareFrame(std::function<void()> sync)
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
 
-   m_renderer->PrepareFrame();
+   if (m_dmdWnd && m_texdmd)
+      m_renderer->RenderDMD(m_dmd.x, m_dmd.y, m_texdmd, m_dmdWnd->GetBackBuffer());
 
-   // Check if we should turn animate the plunger light.
-   hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+   m_renderer->RenderFrame();
 
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   if (m_renderer->m_stereo3D != STEREO_VR)
-      m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
-   else if (m_liveUI->IsTweakMode())
-      m_liveUI->Update(m_renderer->GetOffscreenVR(0));
-   g_frameProfiler.ExitProfileSection();
-
-   // Shake screne when nudging
-   if (m_NudgeShake > 0.0f)
+   if (m_dmdWnd && m_texdmd)
    {
-      Vertex2D offset = m_physics->GetScreenNudge();
-      m_renderer->SetScreenOffset(m_NudgeShake * offset.x, m_NudgeShake * offset.y);
+      m_dmdWnd->Show();
+      m_renderer->m_renderDevice->AddRenderTargetDependency(m_dmdWnd->GetBackBuffer());
    }
-   else
-      m_renderer->SetScreenOffset(0.f, 0.f);
-
-   m_renderer->PrepareVideoBuffers();
 
    g_frameProfiler.ExitProfileSection();
    #ifdef MSVC_CONCURRENCY_VIEWER

@@ -926,7 +926,9 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    }
    case ID_EDIT_VIDEOOPTIONS:
    {
-      m_videoOptDialog.DoModal(GetHwnd());
+      VideoOptionProperties * videoOptProperties = new VideoOptionProperties(GetHwnd());
+      videoOptProperties->DoModal();
+      delete videoOptProperties;
       return true;
    }
 #ifdef ENABLE_VR
@@ -2408,8 +2410,6 @@ void VPinball::CloseAllDialogs()
       m_audioOptDialog.Destroy();
    if (m_editorOptDialog.IsWindow())
       m_editorOptDialog.Destroy();
-   if (m_videoOptDialog.IsWindow())
-      m_videoOptDialog.Destroy();
    if (m_collectionMngDlg.IsWindow())
       m_collectionMngDlg.Destroy();
    if (m_physicsOptDialog.IsWindow())
