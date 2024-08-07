@@ -76,6 +76,8 @@ public:
    RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disable_dwm, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
+   void AddWindow(VPX::Window* wnd);
+
    #if defined(ENABLE_BGFX)
       enum PrimitiveTypes
       {

@@ -38,6 +38,9 @@ $stereo = @("NOSTEREO", "STEREO")
 $stOutput = @(("_"), ("_st_"))
 
 
+
+
+
 ################################
 # Basic material shaders (also 'classic' light, decals, kickers and unshaded variants)
 Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
@@ -90,14 +93,16 @@ New-Item -Path . -Name "../bgfx_dmd.h" -ItemType "File" -Force -Value "// DMD Sh
 Process-Shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_"  "vertex"
 foreach ($variant3 in @("CLIP", "NOCLIP"))
 {
-  Process-Shader "vs_dmd.sc" "dmd.h" ("vs_dmd_world_" + $variant3.ToLower() + "_")    "vertex" @("WORLD", $variant3)
-  Process-Shader "vs_dmd.sc" "dmd.h" ("vs_dmd_world_" + $variant3.ToLower() + "_st_") "vertex" @("WORLD", "STEREO", $variant3)
+  Process-Shader "vs_dmd.sc" "dmd.h"  ("vs_dmd_world_" + $variant3.ToLower() + "_")    "vertex" @("WORLD", $variant3)
+  Process-Shader "vs_dmd.sc" "dmd.h"  ("vs_dmd_world_" + $variant3.ToLower() + "_st_") "vertex" @("WORLD", "STEREO", $variant3)
+  Process-Shader "fs_dmd.sc" "dmd.h"  ("fs_dmd_"  + $variant3.ToLower() + "_") "fragment" @("DMD", $variant3)
+  foreach ($variant2 in @("RGB", "SRGB"))
+  {
+    Process-Shader "fs_dmd2.sc" "dmd.h" ("fs_dmd2_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant2, $variant3)
+  }
   foreach ($variant2 in @("TEX", "NOTEX"))
   {
-    foreach ($variant in @("DMD", "SPRITE"))
-	{
-	  Process-Shader "fs_dmd.sc" "dmd.h" ("fs_" + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant, $variant2, $variant3)
-	}
+    Process-Shader "fs_dmd.sc" "dmd.h" ("fs_sprite_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @("SPRITE", $variant2, $variant3)
   }
 }
 

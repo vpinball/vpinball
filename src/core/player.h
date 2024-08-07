@@ -396,6 +396,8 @@ public:
 #pragma region Rendering
 public:
    VPX::Window *m_playfieldWnd = nullptr;
+   VPX::Window *m_dmdWnd = nullptr;
+   VPX::Window *m_backglassWnd = nullptr;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
@@ -474,8 +476,6 @@ public:
    bool m_detectScriptHang;
    int m_LastKnownGoodCounter = 0;
    int m_ModalRefCount = 0;
-
-   bool m_fullScreen;
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
 

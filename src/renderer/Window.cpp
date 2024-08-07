@@ -8,8 +8,30 @@
 namespace VPX
 {
 
-Window::Window(const string& title, const string& settingsId, const int display, const int w, const int h, const bool fullscreen, const int fsBitDeth, const int fsRefreshRate)
+Window::Window(const string &title, const Settings::Section section, const string &settingsPrefix)
+   : m_settingsSection(section)
+   , m_settingsPrefix(settingsPrefix)
 {
+   const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
+   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen"s, IsWindows10_1803orAbove());
+   // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
+   if (m_settingsSection == Settings::Player)
+   {
+      if (g_pvp->m_disEnableTrueFullscreen == 0)
+         m_fullscreen = false;
+      else if (g_pvp->m_disEnableTrueFullscreen == 1)
+         m_fullscreen = true;
+   }
+   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width"s, m_fullscreen ? -1 : DEFAULT_PLAYER_WIDTH);
+   int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height"s, w * 9 / 16);
+   const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display"s, -1);
+   const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit"s, false);
+   const int fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate"s, 0);
+   // FIXME FIXME FIXME
+   const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
+   if (video10bit && !m_fullscreen)
+      ShowError("10Bit-Monitor support requires 'Fullscreen Mode' to be also enabled!");
+   
    int wnd_x, wnd_y;
    vector<DisplayConfig> displays;
    GetDisplays(displays);
@@ -41,8 +63,6 @@ Window::Window(const string& title, const string& settingsId, const int display,
    
    m_width = w <= 0 ? m_screenwidth : w;
    m_height = h <= 0 ? m_screenheight : h;
-   m_fullscreen = fullscreen;
-   m_settingsId = settingsId;
    
    // FIXME implement bit depth validation and selection (only used for DX9 10bit monitors to limit banding and dithering needs)
    m_bitdepth = fsBitDeth;
@@ -108,8 +128,8 @@ Window::Window(const string& title, const string& settingsId, const int display,
       // Restore saved position of non fullscreen windows
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndX"s, wnd_x);
-         const int yn = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, m_settingsId + "WndY"s, wnd_y);
+         const int xn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX"s, wnd_x);
+         const int yn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY"s, wnd_y);
          // Only apply saved position if they fit inside a display
          #ifdef ENABLE_SDL_VIDEO // SDL Windowing
             for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
@@ -205,7 +225,7 @@ Window::Window(const string& title, const string& settingsId, const int display,
          m_refreshrate = mode.refresh_rate;
          SDL_GetWindowDisplayMode(m_nwnd, &mode);
       }
-      PLOGI << "SDL display mode for window '" << settingsId << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
+      PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
 
       #if defined(__APPLE__)
          // FIXME remove when porting to SDL3: horrible hack to handle the (strange) way Apple apply DPI: user DPI is applied as other OS but HiDPI of Retina display is applied internally
@@ -278,15 +298,28 @@ Window::~Window()
    #endif
 }
 
-void Window::ShowAndFocus()
+void Window::Show(const bool show)
 {
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
-      SDL_ShowWindow(m_nwnd);
-      SDL_RaiseWindow(m_nwnd);
-      //SDL_SetWindowInputFocus(m_nwnd);
+      if (show)
+         SDL_ShowWindow(m_nwnd);
+      else
+         SDL_HideWindow(m_nwnd);
    #else // Win32 Windowing
-      ShowWindow(m_nwnd, SW_SHOW);
-      SetForegroundWindow(m_nwnd);
+      ShowWindow(m_nwnd, show ? SW_SHOW : SW_HIDE);
+   #endif
+}
+
+void Window::RaiseAndFocus(const bool raise)
+{
+   #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
+      if (raise)
+         SDL_RaiseWindow(m_nwnd);
+      else
+         SDL_SetWindowInputFocus(m_nwnd);
+   #else // Win32 Windowing
+      if (raise)
+         SetForegroundWindow(m_nwnd);
       SetFocus(m_nwnd);
    #endif
 }
@@ -314,8 +347,9 @@ void Window::SetPos(const int x, const int y)
       rect.top = y;
       SetWindowPos(m_nwnd, nullptr, x, y, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
    #endif
-   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndX"s, x);
-   g_pvp->m_settings.SaveValue(Settings::Player, m_settingsId + "WndY"s, y);
+   Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
+   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndX"s, x);
+   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndY"s, y);
 }
 
 

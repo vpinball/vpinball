@@ -61,6 +61,26 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    #endif
 }
 
+#if defined(ENABLE_BGFX)
+RenderTarget::RenderTarget(RenderDevice* const rd, bgfx::FrameBufferHandle fbh, const string& name, const int width, const int height, const colorFormat format)
+   : m_name(name)
+   , m_type(SurfaceType::RT_DEFAULT)
+   , m_is_back_buffer(true)
+   , m_nLayers(1)
+   , m_rd(rd)
+   , m_format(format)
+   , m_width(width)
+   , m_height(height)
+   , m_nMSAASamples(1)
+   , m_has_depth(false)
+   , m_shared_depth(false)
+   , m_color_sampler(nullptr)
+   , m_depth_sampler(nullptr)
+   , m_framebuffer(fbh)
+{
+}
+#endif
+
 RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth)
    : m_name(name)
    , m_type(type)

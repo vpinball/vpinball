@@ -316,6 +316,30 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    }
 
+   // Cache DMD renderer properties
+   {
+      const int dmdProfile = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "RenderProfile"s, 0);
+      const string prefix = "User."s + std::to_string(dmdProfile + 1) + "."s;
+      // DMD View
+      m_dmdViewExposure = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 1.f);
+      m_dmdViewDot = convertColor(
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint"s, 0x0088BBFF),
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness"s, 1.0f));
+      // DMD Renderer
+      m_dmdUseNewRenderer = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "Legacy"s, false);
+      #if !defined(ENABLE_BGFX)
+         m_dmdUseNewRenderer = false; // Only available for BGFX
+      #endif
+      m_dmdDotProperties.x = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSize"s, 0.85f);
+      m_dmdDotProperties.y = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSharpness"s, 0.8f);
+      m_dmdDotProperties.z = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotRounding"s, 0.85f);
+      m_dmdDotProperties.w = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow"s, 0.3f);
+      m_dmdUnlitDotColor = convertColor(
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor"s, 0x00020202),
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow"s, 0.4f));
+   }
+
+
    m_renderDevice->ResetRenderState();
    #if defined(ENABLE_DX9)
    D3DVIEWPORT9 viewPort;
@@ -1064,7 +1088,7 @@ void Renderer::UpdateStereoShaderState()
    }
 }
 
-void Renderer::PrepareFrame()
+void Renderer::RenderFrame()
 {
    // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    SwapBackBufferRenderTargets();
@@ -1135,37 +1159,129 @@ void Renderer::PrepareFrame()
       initial_rt->m_name += '-';
    }
 
+   PrepareVideoBuffers();
+}
+
+void Renderer::RenderDMD(const int w, const int h, BaseTexture* dmd, RenderTarget* rt)
+{
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_renderDevice->SetRenderTarget("DMDView", rt, false);
+   SetupDMDRender(m_dmdViewDot, dmd, 1.f, true);
+   m_renderDevice->m_DMDShader->SetFloat(SHADER_exposure, m_dmdViewExposure);
+   Vertex3D_NoTex2 vertices[4] = {
+      {  1.f, -1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+      { -1.f, -1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+      {  1.f,  1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+      { -1.f,  1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
+   };
+   m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
+}
+
+void Renderer::SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB)
+{
+   // Legacy DMD renderer
+   if (m_dmdUseNewRenderer)
+   {
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
+      #ifdef DMD_UPSCALE
+         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)(dmd->width() * 3), (float)(dmd->height() * 3), alpha, (float)(g_pplayer->m_overall_frames % 2048));
+      #else
+         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
+      #endif
+      m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
+   }
+   // New DMD renderer
+   else
+   {
+      static int lastFrame = -1;
+      static BaseTexture* lastDmd = nullptr;
+      const vec4 dotColor(color.x, color.y, color.z, 0.f);
+      const float brightness = color.w;
+      Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, true);
+      if (m_dmdBlurs[0] == nullptr || m_dmdBlurs[0]->GetWidth() != dmdSampler->GetWidth() || m_dmdBlurs[0]->GetHeight() != dmdSampler->GetHeight())
+      {
+         lastFrame = -1;
+         for (int i = 0; i < 4; i++)
+         {
+            delete m_dmdBlurs[i];
+            m_dmdBlurs[i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RG16F, false, 1, "");
+         }
+      }
+      if (g_pplayer->m_overall_frames != lastFrame || lastDmd != dmd)
+      {
+         lastDmd = dmd;
+         lastFrame = g_pplayer->m_overall_frames;
+         RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+         for (int i = 0; i < 3; i++)
+         {
+            {
+               m_renderDevice->SetRenderTarget("DMD HBlur "s + std::to_string(i + 1), m_dmdBlurs[0], false);
+               if (i > 0)
+                  m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[i]);
+               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, i == 0 ? dmdSampler : m_dmdBlurs[i]->GetColorSampler());
+               m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
+               m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_horiz7x7 : SHADER_TECHNIQUE_fb_blur_horiz9x9);
+               m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+            }
+            {
+               m_renderDevice->SetRenderTarget("DMD VBlur "s + std::to_string(i + 1), m_dmdBlurs[i + 1], false);
+               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[0]);
+               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[0]->GetColorSampler());
+               m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
+               m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_vert7x7 : SHADER_TECHNIQUE_fb_blur_vert9x9);
+               m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+            }
+         }
+         m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
+         initial_rt->m_name += '-';
+      }
+      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, m_dmdDotProperties.x /* size */, m_dmdDotProperties.y /* sharpness */, m_dmdDotProperties.z /* rounding */, 0.f /* unused */);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, dotColor.x * brightness, dotColor.y * brightness, dotColor.z * brightness, brightness); // dot color (only used if we received brightness data, premultiplied by overall brightness) and overall brightness (used for colored date)
+      m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, m_dmdUnlitDotColor.x, m_dmdUnlitDotColor.y, m_dmdUnlitDotColor.z, 0.f /* unused */);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), m_dmdDotProperties.w /* dot glow */ * brightness, m_dmdUnlitDotColor.w /* back glow */ * brightness);
+
+      m_renderDevice->m_DMDShader->SetTechnique(sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb : SHADER_TECHNIQUE_basic_DMD2);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
+      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[1]);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[1]->GetColorSampler());
+      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[3]);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[3]->GetColorSampler()); // FIXME why don't we directly blur from 1 to 3 ?
+   }
 }
 
 void Renderer::DrawBulbLightBuffer()
 {
-   RenderDevice* p3dDevice = m_renderDevice;
-   RenderPass* const initial_rt = p3dDevice->GetCurrentPass();
+   RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
    static int id = 0; id++;
 
    // switch to 'bloom' output buffer to collect all bulb lights
-   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", GetBloomBufferTexture(), false);
-   p3dDevice->ResetRenderState();
-   p3dDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+   m_renderDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", GetBloomBufferTexture(), false);
+   m_renderDevice->ResetRenderState();
+   m_renderDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
 
    // Draw bulb lights
    m_render_mask |= Renderer::LIGHT_BUFFER;
-   p3dDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), GetBloomBufferTexture(), true, true);
-   p3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
+   m_renderDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), GetBloomBufferTexture(), true, true);
+   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
    for (Hitable *hitable : g_pplayer->m_vhitables)
       if (hitable->HitableGetItemType() == eItemLight)
          hitable->Render(m_render_mask);
    m_render_mask &= ~Renderer::LIGHT_BUFFER;
 
-   bool hasLight = p3dDevice->GetCurrentPass()->GetCommandCount() > 0;
+   bool hasLight = m_renderDevice->GetCurrentPass()->GetCommandCount() > 0;
    if (hasLight)
    { // Only apply blur if we have actually rendered some lights
-      RenderPass* renderPass = p3dDevice->GetCurrentPass();
-      p3dDevice->DrawGaussianBlur(
+      RenderPass* renderPass = m_renderDevice->GetCurrentPass();
+      m_renderDevice->DrawGaussianBlur(
          GetBloomBufferTexture(), 
          GetBloomTmpBufferTexture(), 
          GetBloomBufferTexture(), 19.f); // FIXME kernel size should depend on buffer resolution
-      RenderPass *blurPass2 = p3dDevice->GetCurrentPass();
+      RenderPass *blurPass2 = m_renderDevice->GetCurrentPass();
       RenderPass *blurPass1 = blurPass2->m_dependencies[0];
       constexpr float margin = 0.05f; // margin for the blur
       blurPass1->m_areaOfInterest.x = renderPass->m_areaOfInterest.x - margin;
@@ -1176,7 +1292,7 @@ void Renderer::DrawBulbLightBuffer()
    }
 
    // Restore state and render target
-   p3dDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+   m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
    initial_rt->m_name += '-';
 
    #if defined(ENABLE_DX9)
@@ -1187,11 +1303,11 @@ void Renderer::DrawBulbLightBuffer()
    {
       // Declare dependency on Bulb Light buffer (actually rendered to the bloom buffer texture)
       m_renderDevice->AddRenderTargetDependency(GetBloomBufferTexture());
-      p3dDevice->m_basicShader->SetTexture(SHADER_tex_base_transmission, GetBloomBufferTexture()->GetColorSampler());
+      m_renderDevice->m_basicShader->SetTexture(SHADER_tex_base_transmission, GetBloomBufferTexture()->GetColorSampler());
    } 
    else
    {
-      p3dDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission);
+      m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission);
    }
 }
 

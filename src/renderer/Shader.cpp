@@ -163,6 +163,9 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(basic_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_DMD_ext, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
+   SHADER_TECHNIQUE(basic_DMD2, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_exposure, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity, SHADER_clip_plane),
@@ -369,6 +372,9 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
    SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
+   SHADER_SAMPLER(dmdDotGlow, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+   SHADER_SAMPLER(dmdBackGlow, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+   SHADER_SAMPLER(dmdGlass, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
@@ -1399,7 +1405,9 @@ void Shader::Load()
       // DMD & Sprite shaders
       BGFX_EMBEDDED_SHADER(vs_dmd_noworld),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd_tex),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_rgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_srgb),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       // Bulb light shaders
@@ -1540,13 +1548,17 @@ void Shader::Load()
       break;
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         "vs_dmd_noworld",            "fs_dmd_tex_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         "vs_dmd_noworld",            "fs_dmd_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        "vs_dmd_noworld",            "fs_dmd2_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   "vs_dmd_noworld",            "fs_dmd2_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_rgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       "vs_dmd_noworld",            "fs_sprite_tex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_dmd_noworld",            "fs_sprite_notex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
       // Variants with a clipping plane
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_tex_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_clip), "fs_dmd2_rgb_clip", true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_clip), "fs_sprite_tex_clip", true);
       break;
    case DMD_VR_SHADER: assert(false); break;

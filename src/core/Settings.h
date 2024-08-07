@@ -32,7 +32,10 @@ public:
       // UI and Player stuff
       Editor,
       Standalone,
-      Player,
+      Player, /* Main playfield Rendering & Display */
+      DMD, /* DMD Rendering & Display */
+      Alpha, /* Alpha segment Rendering & Display */
+      Backglass, /* Backglass Rendering & Display */
       PlayerVR,
       RecentDir,
       Version,

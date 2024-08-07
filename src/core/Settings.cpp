@@ -4,9 +4,8 @@
 #include <cstdio>
 #include <filesystem>
 
-static const string regKey[Settings::Plugin00] = { 
-      "Controller"s, "Editor"s, "Standalone"s, "Player"s, "PlayerVR"s, "RecentDir"s, 
-      "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
+static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "Standalone"s, "Player"s, "DMD"s, "Alpha"s, "Backglass"s,
+      "PlayerVR"s, "RecentDir"s, "Version"s, "CVEdit"s, "TableOverride"s, "TableOption"s, "ControllerDevices"s,
       "DefaultProps\\Ball"s, "DefaultProps\\Bumper"s, "DefaultProps\\Decal"s, "DefaultProps\\EMReel"s, "DefaultProps\\Flasher"s, "DefaultProps\\Flipper"s,
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
       "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
