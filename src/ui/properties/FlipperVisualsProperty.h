@@ -1,13 +1,12 @@
-#ifndef H_FLIPPER_VISUALS_PROPERTY
-#define H_FLIPPER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class FlipperVisualsProperty: public BasePropertyDialog
 {
 public:
     FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~FlipperVisualsProperty()
-    {
-    }
+    virtual ~FlipperVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -34,5 +33,3 @@ private:
     EditBox   m_heightEdit;
     EditBox   m_maxDifficultLengthEdit;
 };
-
-#endif // !H_FLIPPER_VISUALS_PROPERTY

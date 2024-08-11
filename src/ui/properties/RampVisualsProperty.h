@@ -1,14 +1,13 @@
-#ifndef H_RAMP_VISUALS_PROPERTY
-#define H_RAMP_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class RampVisualsProperty: public BasePropertyDialog
 {
 
 public:
     RampVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~RampVisualsProperty()
-    {
-    }
+    virtual ~RampVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -36,5 +35,3 @@ private:
     vector<string> m_imageModeList;
     HWND      m_hApplyImageToWallCheck;
 };
-
-#endif

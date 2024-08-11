@@ -1,13 +1,12 @@
-#ifndef H_SPINNER_VISUALS_PROPERTY
-#define H_SPINNER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class SpinnerVisualsProperty: public BasePropertyDialog
 {
 public:
     SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~SpinnerVisualsProperty()
-    {
-    }
+    virtual ~SpinnerVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -30,5 +29,3 @@ private:
     ComboBox  m_surfaceCombo;
     HWND      m_hShowBracketCheck;
 };
-
-#endif

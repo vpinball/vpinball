@@ -1,13 +1,12 @@
-#ifndef H_PLUNGER_VISUALS_PROPERTY
-#define H_PLUNGER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class PlungerVisualsProperty: public BasePropertyDialog
 {
 public:
     PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PlungerVisualsProperty()
-    {
-    }
+    virtual ~PlungerVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -37,5 +36,3 @@ private:
     EditBox   m_posYEdit;
     vector<string> m_typeList;
 };
-
-#endif // !H_PLUNGER_VISUALS_PROPERTY

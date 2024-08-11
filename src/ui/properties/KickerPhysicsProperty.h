@@ -1,13 +1,12 @@
-#ifndef H_KICKER_PHYSICS_PROPERTY
-#define H_KICKER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class KickerPhysicsProperty: public BasePropertyDialog
 {
 public:
     KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~KickerPhysicsProperty()
-    {
-    }
+    virtual ~KickerPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -24,5 +23,3 @@ private:
     EditBox m_hitAccuracyEdit;
     EditBox m_hitHeightEdit;
 };
-
-#endif // !H_KICKER_PHYSICS_PROPERTY

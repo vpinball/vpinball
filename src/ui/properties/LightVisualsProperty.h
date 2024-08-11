@@ -1,13 +1,12 @@
-#ifndef H_LIGHT_VISUALS_PROPERTY
-#define H_LIGHT_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class LightVisualsProperty: public BasePropertyDialog
 {
 public:
     LightVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~LightVisualsProperty()
-    {
-    }
+    virtual ~LightVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -44,5 +43,3 @@ private:
     ColorButton m_colorButton1;
     ColorButton m_colorButton2;
 };
-
-#endif // !H_LIGHT_VISUALS_PROPERTY

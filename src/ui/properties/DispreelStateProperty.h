@@ -1,13 +1,12 @@
-#ifndef H_DISPREEL_STATE_PROPERTY
-#define H_DISPREEL_STATE_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class DispreelStateProperty: public BasePropertyDialog
 {
 public:
     DispreelStateProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~DispreelStateProperty()
-    {
-    }
+    virtual ~DispreelStateProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -21,5 +20,3 @@ private:
     EditBox     m_motorStepsEdit;
     EditBox     m_updateIntervalEdit;
 };
-
-#endif // !H_DISPREEL_STATE_PROPERTY

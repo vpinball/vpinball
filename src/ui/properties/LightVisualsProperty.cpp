@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ui/properties/LightVisualsProperty.h"
 #include <WindowsX.h>

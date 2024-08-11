@@ -1,5 +1,6 @@
-#ifndef H_TEXTBOX_VISUALS_PROPERTY
-#define H_TEXTBOX_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class TextboxVisualsProperty : public BasePropertyDialog
 {
@@ -15,11 +16,11 @@ protected:
     virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
-    HWND        m_hTransparentCheck;
-    HWND        m_hUseScriptDMDCheck;
-    ComboBox    m_alignmentCombo;
-    CButton     m_fontDialogButton;
-    CFontDialog m_fontDialog;
+    HWND         m_hTransparentCheck;
+    HWND         m_hUseScriptDMDCheck;
+    ComboBox     m_alignmentCombo;
+    CButton      m_fontDialogButton;
+    CFontDialog  m_fontDialog;
     ColorButton  m_backgroundColorButton;
     ColorButton  m_textColorButton;
     CColorDialog m_colorDialog;
@@ -32,5 +33,3 @@ private:
     CFont       *m_font;
     vector<string> m_alignList;
 };
-
-#endif

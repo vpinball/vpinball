@@ -1,13 +1,12 @@
-#ifndef H_PLUNGER_PHYSICS_PROPERTY
-#define H_PLUNGER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class PlungerPhysicsProperty: public BasePropertyDialog
 {
 public:
     PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PlungerPhysicsProperty()
-    {
-    }
+    virtual ~PlungerPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -27,5 +26,3 @@ private:
     HWND    m_hEnableMechPlungerCheck;
     HWND    m_hAutoPlungerCheck;
 };
-
-#endif // !H_PLUNGER_PHYSICS_PROPERTY

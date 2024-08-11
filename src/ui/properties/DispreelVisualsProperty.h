@@ -1,13 +1,12 @@
-#ifndef H_DISPREEL_VISUALS_PROPERTY
-#define H_DISPREEL_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class DispreelVisualsProperty: public BasePropertyDialog
 {
 public:
     DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~DispreelVisualsProperty()
-    {
-    }
+    virtual ~DispreelVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -31,5 +30,3 @@ private:
     EditBox      m_reelHeightEdit;
     EditBox      m_reelSpacingEdit;
 };
-
-#endif // !H_DISPREEL_VISUALS_PROPERTY

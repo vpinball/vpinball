@@ -1,13 +1,12 @@
-#ifndef H_TABLE_LIGHTS_PROPERTY
-#define H_TABLE_LIGHTS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class TableLightsProperty: public BasePropertyDialog
 {
 public:
     TableLightsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TableLightsProperty()
-    {
-    }
+    virtual ~TableLightsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -27,5 +26,3 @@ private:
     EditBox     m_envEmissionScaleEdit;
     EditBox     m_sceneLightScaleEdit;
 };
-
-#endif

@@ -1,13 +1,12 @@
-#ifndef H_BUMPER_VISUALS_PROPERTY
-#define H_BUMPER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class BumperVisualsProperty: public BasePropertyDialog
 {
 public:
     BumperVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~BumperVisualsProperty()
-    {
-    }
+    virtual ~BumperVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -31,8 +30,6 @@ private:
     HWND      m_hBaseVisibleCheck;
     HWND      m_hRingVisibleCheck;
     HWND      m_hSkirtVisibleCheck;
-    EditBox     m_posXEdit;
-    EditBox     m_posYEdit;
+    EditBox   m_posXEdit;
+    EditBox   m_posYEdit;
 };
-
-#endif // !H_BUMPER_VISUALS_PROPERTY

@@ -1,5 +1,6 @@
-#ifndef H_PROPERTY_DIALOG
-#define H_PROPERTY_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 #pragma region BasePropertyDialog
 
@@ -120,6 +121,7 @@ public:
         m_id = id;
         m_basePropertyDialog->AttachItem(id, *this);
     }
+
 protected:
     virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -178,7 +180,7 @@ public:
         dc.Attach(lpDrawItemStruct->hDC);
         // determine the button rectangle
         CRect rect = lpDrawItemStruct->rcItem;
-        
+
         // draw in the button text
         dc.DrawText(GetWindowText(), -1, rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE);
         // get the current state of the button
@@ -352,7 +354,6 @@ private:
     CStatic  m_multipleElementsStatic;
     CStatic  m_elementTypeName;
     HACCEL   m_accel;
-
 };
 #pragma endregion
 
@@ -393,14 +394,14 @@ private:
 }
 
 #define CHECK_UPDATE_VALUE_SETTER(classSetter, classGetter, uiGetter, uiGetterParameter, element) \
-{ \
+{\
     auto value = uiGetter(uiGetterParameter); \
     if (classGetter() != value) \
     { \
         PropertyDialog::StartUndo(element); \
         classSetter(value); \
         PropertyDialog::EndUndo(element); \
-    } \
+    }\
 }
 
 #define CHECK_UPDATE_COMBO_VALUE_SETTER(classSetter, classGetter, uiComboValue, element) \
@@ -411,7 +412,7 @@ private:
       PropertyDialog::StartUndo(element); \
       classSetter(value); \
       PropertyDialog::EndUndo(element); \
-   } \
+   }\
 }
 
 #pragma endregion
@@ -450,5 +451,3 @@ private:
     CContainProperties m_propContainer;
 };
 #pragma endregion
-
-#endif

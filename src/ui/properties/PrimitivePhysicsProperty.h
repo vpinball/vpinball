@@ -1,13 +1,12 @@
-#ifndef H_PRIMITIVE_PHYSICS_PROPERTY
-#define H_PRIMITIVE_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class PrimitivePhysicsProperty: public BasePropertyDialog
 {
 public:
     PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PrimitivePhysicsProperty()
-    {
-    }
+    virtual ~PrimitivePhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -26,5 +25,3 @@ private:
     EditBox   m_scatterAngleEdit;
     ComboBox  m_physicsMaterialCombo;
 };
-
-#endif

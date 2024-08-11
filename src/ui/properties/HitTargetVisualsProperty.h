@@ -1,13 +1,12 @@
-#ifndef H_HIT_TARGET_VISUALS_PROPERTY
-#define H_HIT_TARGET_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class HitTargetVisualsProperty: public BasePropertyDialog
 {
 public:
     HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~HitTargetVisualsProperty()
-    {
-    }
+    virtual ~HitTargetVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -34,5 +33,3 @@ private:
     EditBox     m_scaleZEdit;
     EditBox     m_orientationEdit;
 };
-
-#endif

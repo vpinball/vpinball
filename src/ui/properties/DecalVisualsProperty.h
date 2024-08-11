@@ -1,5 +1,6 @@
-#ifndef H_DECAL_VISUALS_PROPERTY
-#define H_DECAL_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class DecalVisualsProperty: public BasePropertyDialog
 {
@@ -35,5 +36,3 @@ private:
     vector<string> m_typeList;
     vector<string> m_sizingList;
 };
-
-#endif // !H_DECAL_VISUALS_PROPERTY

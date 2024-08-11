@@ -1,13 +1,12 @@
-#ifndef H_PRIMITIVE_POSITION_PROPERTY
-#define H_PRIMITIVE_POSITION_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class PrimitivePositionProperty : public BasePropertyDialog
 {
 public:
     PrimitivePositionProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PrimitivePositionProperty()
-    {
-    }
+    virtual ~PrimitivePositionProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -33,5 +32,3 @@ private:
     EditBox   m_objRotYEdit;
     EditBox   m_objRotZEdit;
 };
-
-#endif // !H_PRIMITIVE_POSITION_PROPERTY

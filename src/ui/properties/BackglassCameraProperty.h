@@ -1,13 +1,12 @@
-#ifndef H_BACKGLASS_CAMERA_PROPERTY
-#define H_BACKGLASS_CAMERA_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class BackglassCameraProperty : public BasePropertyDialog
 {
 public:
     BackglassCameraProperty(const VectorProtected<ISelect>* pvsel);
-    virtual ~BackglassCameraProperty()
-    {
-    }
+    virtual ~BackglassCameraProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -37,5 +36,3 @@ private:
     vector<string>  m_modeList;
     vector<string>  m_overrideList;
 };
-
-#endif // !H_BACKGLASS_CAMERA_PROPERTY

@@ -1,5 +1,6 @@
-#pragma once
+// license:GPLv3+
 
+#pragma once
 
 class BallVisualsProperty : public BasePropertyDialog
 {

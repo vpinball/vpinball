@@ -1,13 +1,12 @@
-#ifndef H_FLIPPER_PHYSICS_PROPERTY
-#define H_FLIPPER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class FlipperPhysicsProperty: public BasePropertyDialog
 {
 public:
     FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~FlipperPhysicsProperty()
-    {
-    }
+    virtual ~FlipperPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -30,5 +29,3 @@ private:
     ComboBox m_overwriteSettingsCombo;
     vector<string> m_physicSetList;
 };
-
-#endif

@@ -1,13 +1,12 @@
-#ifndef H_FLASHER_VISUALS_PROPERTY
-#define H_FLASHER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class FlasherVisualsProperty: public BasePropertyDialog
 {
 public:
     FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~FlasherVisualsProperty()
-    {
-    }
+    virtual ~FlasherVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -18,7 +17,7 @@ protected:
 
     void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);
 
-private :
+private:
     ComboBox    m_imageACombo;
     ComboBox    m_imageBCombo;
     ComboBox    m_modeCombo;
@@ -45,5 +44,3 @@ private :
     vector<string> m_filterList;
     vector<string> m_imageAlignList;
 };
-
-#endif

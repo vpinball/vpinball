@@ -1,13 +1,12 @@
-#ifndef H_RUBBER_PHYSICS_PROPERTY
-#define H_RUBBER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class RubberPhysicsProperty: public BasePropertyDialog
 {
 public:
     RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~RubberPhysicsProperty()
-    {
-    }
+    virtual ~RubberPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -24,5 +23,3 @@ private:
     EditBox     m_scatterAngleEdit;
     EditBox     m_hitHeightEdit;
 };
-
-#endif // !H_RUBBER_PHYSICS_PROPERTY

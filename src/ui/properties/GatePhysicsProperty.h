@@ -1,13 +1,12 @@
-#ifndef H_GATE_PHYSICS_PROPERTY
-#define H_GATE_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class GatePhysicsProperty: public BasePropertyDialog
 {
 public:
     GatePhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~GatePhysicsProperty()
-    {
-    }
+    virtual ~GatePhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -22,5 +21,3 @@ private:
     EditBox    m_dampingEdit;
     EditBox    m_gravityFactorEdit;
 };
-
-#endif

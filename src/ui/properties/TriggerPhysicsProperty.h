@@ -1,13 +1,12 @@
-#ifndef H_TRIGGER_PHYSICS_PROPERTY
-#define H_TRIGGER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class TriggerPhysicsProperty: public BasePropertyDialog
 {
 public:
     TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TriggerPhysicsProperty()
-    {
-    }
+    virtual ~TriggerPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -20,5 +19,3 @@ private:
     HWND    m_hEnableCheck;
     EditBox m_hitHeightEdit;
 };
-
-#endif // !H_TRIGGER_PHYSICS_PROPERTY

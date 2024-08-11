@@ -1,13 +1,12 @@
-#ifndef H_HIT_TARGET_PHYSICS_PROPERTY
-#define H_HIT_TARGET_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class HitTargetPhysicsProperty: public BasePropertyDialog
 {
 public:
     HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~HitTargetPhysicsProperty()
-    {
-    }
+    virtual ~HitTargetPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -26,5 +25,3 @@ private:
     HWND        m_hLegacyModeCheck;
     HWND        m_hIsDroppedCheck;
 };
-
-#endif // !H_HIT_TARGET_PHYSICS_PROPERTY

@@ -1,13 +1,12 @@
-#ifndef H_KICKER_VISUALS_PROPERTY
-#define H_KICKER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class KickerVisualsProperty: public BasePropertyDialog
 {
 public:
     KickerVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~KickerVisualsProperty()
-    {
-    }
+    virtual ~KickerVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -26,5 +25,3 @@ private:
     EditBox   m_posYEdit;
     vector<string> m_typeList;
 };
-
-#endif // !H_KICKER_VISUALS_PROPERTY

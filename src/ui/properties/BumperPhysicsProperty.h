@@ -1,13 +1,12 @@
-#ifndef H_BUMPER_PHYSICS_PROPERTY
-#define H_BUMPER_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class BumperPhysicsProperty: public BasePropertyDialog
 {
 public:
     BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~BumperPhysicsProperty()
-    {
-    }
+    virtual ~BumperPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -21,5 +20,3 @@ private:
     EditBox   m_hitThresholdEdit;
     EditBox   m_scatterAngleEdit;
 };
-
-#endif

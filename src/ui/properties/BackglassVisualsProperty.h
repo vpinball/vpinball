@@ -1,13 +1,12 @@
-#ifndef H_BACKGLASS_VISUALS_PROPERTY
-#define H_BACKGLASS_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class BackglassVisualsProperty : public BasePropertyDialog
 {
 public:
     BackglassVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~BackglassVisualsProperty()
-    {
-    }
+    virtual ~BackglassVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -32,5 +31,3 @@ private:
     CColorDialog m_colorDialog;
     ColorButton m_colorButton1;
 };
-
-#endif // !H_BACKGLASS_VISUALS_PROPERTY

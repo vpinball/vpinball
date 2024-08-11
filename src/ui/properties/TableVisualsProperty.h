@@ -1,5 +1,6 @@
-#ifndef H_TABLE_VISUALS_PROPERTY
-#define H_TABLE_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class TableVisualsProperty: public BasePropertyDialog
 {
@@ -32,5 +33,3 @@ private:
     EditBox     m_screenSpaceReflEdit;
     EditBox     m_bloomStrengthEdit;
 };
-
-#endif

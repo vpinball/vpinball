@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ui/properties/HitTargetVisualsProperty.h"
 #include <WindowsX.h>
@@ -65,7 +67,7 @@ void HitTargetVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_scaleZEdit, target->m_d.m_vSize.z);
         if (dispid == DISPID_ROT_Z || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_orientationEdit, target->m_d.m_rotZ);
-        
+
         UpdateBaseVisuals(target, &target->m_d, dispid);
         //only show the first element on multi-select
         break;

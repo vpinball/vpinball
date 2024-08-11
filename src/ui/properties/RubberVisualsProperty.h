@@ -1,13 +1,12 @@
-#ifndef H_RUBBER_VISUALS_PROPERTY
-#define H_RUBBER_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class RubberVisualsProperty: public BasePropertyDialog
 {
 public:
     RubberVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~RubberVisualsProperty()
-    {
-    }
+    virtual ~RubberVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -27,5 +26,3 @@ private:
     EditBox     m_rotZEdit;
     HWND        m_hShowInEditorCheck;
 };
-
-#endif

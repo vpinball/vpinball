@@ -1,13 +1,12 @@
-#ifndef H_PRIMITIVE_VISUALS_PROPERTY
-#define H_PRIMITIVE_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class PrimitiveVisualsProperty: public BasePropertyDialog
 {
 public:
     PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PrimitiveVisualsProperty()
-    {
-    }
+    virtual ~PrimitiveVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -47,5 +46,3 @@ private:
     EditBox     m_legacySidesEdit;
     EditBox     m_edgeFactorUIEdit;
 };
-
-#endif // !H_PRIMITIVE_VISUALS_PROPERTY

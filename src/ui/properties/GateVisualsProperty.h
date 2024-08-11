@@ -1,13 +1,12 @@
-#ifndef H_GATE_VISUALS_PROPERTY
-#define H_GATE_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class GateVisualsProperty: public BasePropertyDialog
 {
 public:
     GateVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~GateVisualsProperty()
-    {
-    }
+    virtual ~GateVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -29,5 +28,3 @@ private:
     EditBox   m_closeAngleEdit;
     vector<string> m_typeList;
 };
-
-#endif

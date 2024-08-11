@@ -1,13 +1,12 @@
-#ifndef H_WALL_PHYSICS_PROPERTY
-#define H_WALL_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class WallPhysicsProperty: public BasePropertyDialog
 {
 public:
     WallPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~WallPhysicsProperty()
-    {
-    }
+    virtual ~WallPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -28,5 +27,3 @@ private:
     HWND      m_hCanDrop;
     HWND      m_hIsBottomCollidable;
 };
-
-#endif

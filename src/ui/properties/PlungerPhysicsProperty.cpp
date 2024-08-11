@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ui/properties/PlungerPhysicsProperty.h"
 #include <WindowsX.h>

@@ -1,13 +1,12 @@
-#ifndef H_TABLE_PHYSICS_PROPERTY
-#define H_TABLE_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class TablePhysicsProperty: public BasePropertyDialog
 {
 public:
     TablePhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TablePhysicsProperty()
-    {
-    }
+    virtual ~TablePhysicsProperty() { }
 
     void UpdateVisuals(const int dispid = -1);
     void UpdateProperties(const int dispid);
@@ -41,5 +40,3 @@ private:
     HWND    m_hOverwriteFlipperCheck;
     vector<string> m_physicSetList;
 };
-
-#endif // !H_TABLE_PHYSICS_PROPERTY

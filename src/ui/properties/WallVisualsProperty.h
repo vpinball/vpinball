@@ -1,11 +1,12 @@
-#ifndef H_WALL_VISUALS_PROPERTY
-#define H_WALL_VISUALS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class WallVisualsProperty: public BasePropertyDialog
 {
 public:
     WallVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~WallVisualsProperty() {}
+    virtual ~WallVisualsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -30,5 +31,3 @@ private:
     HWND      m_hAnimateSlingshot;
     HWND      m_hFlipbook;
 };
-
-#endif 

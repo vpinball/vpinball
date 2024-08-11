@@ -1,13 +1,12 @@
-#ifndef H_RAMP_PHYSICS_PROPERTY
-#define H_RAMP_PHYSICS_PROPERTY
+// license:GPLv3+
+
+#pragma once
 
 class RampPhysicsProperty: public BasePropertyDialog
 {
 public:
     RampPhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~RampPhysicsProperty()
-    {
-    }
+    virtual ~RampPhysicsProperty() { }
 
     void UpdateVisuals(const int dispid=-1);
     void UpdateProperties(const int dispid);
@@ -25,5 +24,3 @@ private:
     EditBox   m_frictionEdit;
     EditBox   m_scatterAngleEdit;
 };
-
-#endif 
