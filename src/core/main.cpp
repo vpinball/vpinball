@@ -1,4 +1,6 @@
-// VPinball.cpp : Implementation of WinMain
+// license:GPLv3+
+
+// Implementation of (Win)Main
 
 #include "core/stdafx.h"
 
@@ -326,7 +328,7 @@ static bool compare_option(const char *const arg, const option_names option)
            (lstrcmpi(arg, ('/'+options[option]).c_str()) == 0));
 }
 
-class VPApp : public CWinApp
+class VPApp final : public CWinApp
 {
 private:
    bool m_run;

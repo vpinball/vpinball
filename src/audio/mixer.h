@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 bool mixer_init(const HWND wnd);

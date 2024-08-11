@@ -1,5 +1,6 @@
-#include "core/stdafx.h"
+// license:GPLv3+
 
+#include "core/stdafx.h"
 
 ISelect::ISelect()
 {

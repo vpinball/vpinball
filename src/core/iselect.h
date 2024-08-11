@@ -1,6 +1,8 @@
+// license:GPLv3+
+
 #pragma once
 
-// NB: these are used for file I/O and must not be changed/reordered!
+// these are used for file I/O and must not be changed/reordered!
 enum ItemTypeEnum : unsigned int
 {
    eItemSurface,

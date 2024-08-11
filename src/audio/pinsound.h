@@ -1,9 +1,6 @@
-// PinSound.h: interface for the PinSound class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
 #pragma once
-#if !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)
-#define AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_
 
 #include "core/Settings.h"
 
@@ -321,5 +318,3 @@ struct AudioDevice
 
 void EnumerateAudioDevices(vector<AudioDevice>& devices);
 #endif
-
-#endif // !defined(AFX_PINSOUND_H__61491D0B_9950_480C_B453_911B3A2CDB8E__INCLUDED_)

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "renderer/VRDevice.h"
 
@@ -308,17 +310,14 @@ void PinInput::RefreshSDLJoystick()
 #endif
 #endif
 
+#ifdef _WIN32
 //
 // DirectInput:
 //
 
-//-----------------------------------------------------------------------------
-// Name: EnumObjectsCallbackDI()
-// Desc: Callback function for enumerating objects (axes, buttons, POVs) on a 
-//		joystick. This function enables user interface elements for objects
-//		that are found to exist, and scales axes min/max values.
-//-----------------------------------------------------------------------------
-#ifdef _WIN32
+// Callback function for enumerating objects (axes, buttons, POVs) on a 
+// joystick. This function enables user interface elements for objects
+// that are found to exist, and scales axes min/max values.
 BOOL CALLBACK PinInput::EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdidoi,
    VOID* pContext)
 {
@@ -465,7 +464,7 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
 
    const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
 
-   // If we've simulated to or beyond the timestamp of when this control was received then process the control into the system
+   // If we've simulated to or beyond the timestamp of when this control was received, then process the control into the system
    //if ( curr_sim_msec >= ptr->dwTimeStamp ) //!! time stamp disabled to save a bit of lag
    {
       m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE; // advance tail of queue

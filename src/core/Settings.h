@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #define MINI_CASE_SENSITIVE

@@ -1,22 +1,11 @@
-//-----------------------------------------------------------------------------
-// File: WavRead.h
-//
-// Desc: Support for loading and playing Wave files using DirectSound sound
-//       buffers.
-//
-// Copyright (c) 1999 Microsoft Corp. All rights reserved.
-//-----------------------------------------------------------------------------
+// license:GPLv3+
 
 #pragma once
 
 #include <mmreg.h>
 #include <mmsystem.h>
 
-
-//-----------------------------------------------------------------------------
-// Name: class CWaveSoundRead
-// Desc: A class to read in sound data from a Wave file
-//-----------------------------------------------------------------------------
+// A class to read in sound data from a Wave file
 class CWaveSoundRead final
 {
 public:

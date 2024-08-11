@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifndef __STANDALONE__

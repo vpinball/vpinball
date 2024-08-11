@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
@@ -225,26 +227,26 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 typedef LPSTR LPTSTR;
 typedef LPCSTR LPCTSTR;
 
-class SearchSelectDialog { };
-class LayersListDialog { };
-class ImageDialog { };
-class SoundDialog { };
-class AudioOptionsDialog { };
-class VideoOptionsDialog { };
-class VROptionsDialog { };
-class EditorOptionsDialog { };
-class CollectionManagerDialog { };
-class PhysicsOptionsDialog { };
-class TableInfoDialog { };
-class DimensionDialog { };
-class RenderProbeDialog { };
-class MaterialDialog { };
-class AboutDialog { };
-class ToolbarDialog { };
-class NotesDialog { };
-class PropertyDialog { };
-class ColorButton { };
-class SCNotification { };
+class SearchSelectDialog final { };
+class LayersListDialog final { };
+class ImageDialog final { };
+class SoundDialog final { };
+class AudioOptionsDialog final { };
+class VideoOptionsDialog final { };
+class VROptionsDialog final { };
+class EditorOptionsDialog final { };
+class CollectionManagerDialog final { };
+class PhysicsOptionsDialog final { };
+class TableInfoDialog final { };
+class DimensionDialog final { };
+class RenderProbeDialog final { };
+class MaterialDialog final { };
+class AboutDialog final { };
+class ToolbarDialog final { };
+class NotesDialog final { };
+class PropertyDialog final { };
+class ColorButton final { };
+class SCNotification final { };
 #endif
 
 #include "utils/Logger.h"
