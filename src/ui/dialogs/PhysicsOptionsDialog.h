@@ -1,5 +1,6 @@
-#ifndef H_PHYSICS_OPTIONS_DIALOG
-#define H_PHYSICS_OPTIONS_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class PhysicsOptionsDialog : public CDialog
 {
@@ -12,12 +13,10 @@ protected:
     virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
     virtual void OnOK();
     virtual void OnDestroy();
+
 private:
     bool LoadSetting();
     CString GetItemText(int id);
     void SetItemText(int id, float value);
     void SaveCurrentPhysicsSetting();
-
 };
-
-#endif

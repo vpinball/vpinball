@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "ImageDialog.h"
@@ -441,7 +443,7 @@ void ImageDialog::Export()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
    const int selectedItemsCount = ListView_GetSelectedCount(hSoundList);
-      
+
    if (selectedItemsCount)	// if some items are selected???
    {
       int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);

@@ -1,5 +1,6 @@
-#ifndef H_EDITOR_OPTIONS_DIALOG
-#define H_EDITOR_OPTIONS_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 #include <dlgs.h>
 #include <cderr.h>
@@ -31,5 +32,3 @@ private:
     ColorButton m_colorButton5;
     ColorButton m_colorButton6;
 };
-
-#endif // !H_EDITOR_OPTIONS_DIALOG

@@ -1,5 +1,6 @@
-#ifndef H_ABOUT_DIALOG
-#define H_ABOUT_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class AboutDialog : public CDialog
 {
@@ -16,5 +17,3 @@ protected:
 
    string m_urlString;
 };
-
-#endif

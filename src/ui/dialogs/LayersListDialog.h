@@ -1,5 +1,6 @@
-#ifndef H_LAYERS_LIST_DIALOG
-#define  H_LAYERS_LIST_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 #include <memory>
 
@@ -194,5 +195,3 @@ public:
 private:
    CContainLayers m_layersContainer;
 };
-
-#endif

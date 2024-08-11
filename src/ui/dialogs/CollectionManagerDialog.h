@@ -1,5 +1,6 @@
-#ifndef H_COLLECTION_MANAGER_DIALOG
-#define H_COLLECTION_MANAGER_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class CollectionDialogStruct
 {
@@ -43,5 +44,3 @@ protected:
 private:
     CollectionDialogStruct &pCurCollection;
 };
-
-#endif

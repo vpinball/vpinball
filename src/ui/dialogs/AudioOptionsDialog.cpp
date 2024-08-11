@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "AudioOptionsDialog.h"
@@ -226,4 +228,3 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
    
    g_pvp->ReInitSound();
 }
-

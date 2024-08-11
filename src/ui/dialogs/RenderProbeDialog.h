@@ -1,5 +1,6 @@
-#ifndef H_RENDERPROBE_DIALOG
-#define H_RENDERPROBE_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class RenderProbe;
 
@@ -24,5 +25,3 @@ private:
 
    HWND hListHwnd;
 };
-
-#endif

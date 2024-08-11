@@ -1,5 +1,6 @@
-#ifndef H_MATERIAL_DIALOG
-#define H_MATERIAL_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 #include <dlgs.h>
 #include <cderr.h>
@@ -38,5 +39,3 @@ private:
    ColorButton m_colorButton3;
    ColorButton m_colorButton4;
 };
-
-#endif // !H_MATERIAL_DIALOG

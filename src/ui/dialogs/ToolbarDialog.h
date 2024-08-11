@@ -1,5 +1,6 @@
-#ifndef H_TOOLBAR_DIALOG
-#define H_TOOLBAR_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class ToolbarDialog : public CDialog
 {
@@ -84,4 +85,3 @@ public:
 private:
     CContainToolbar m_toolbarContainer;
 };
-#endif // H_TOOLBAR_DIALOG

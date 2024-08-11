@@ -1,5 +1,6 @@
-#ifndef H_KEYS_CONFIG_DIALOG
-#define H_KEYS_CONFIG_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class KeysConfigDialog :public CDialog
 {
@@ -23,4 +24,3 @@ private:
     void SetValue(int nID, const Settings::Section& section, const string& key);
     void StartTimer(int nID);
 };
-#endif

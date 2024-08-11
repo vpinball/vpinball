@@ -1,5 +1,6 @@
-#ifndef H_SOUND_DIALOG
-#define H_SOUND_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class SoundDialog : public CDialog
 {
@@ -15,6 +16,7 @@ protected:
     virtual BOOL OnCommand( WPARAM wParam, LPARAM lParam );
     virtual void OnOK();
     virtual void OnCancel();
+
 private:
     void Import();
     void ReImport();
@@ -53,6 +55,7 @@ protected:
 	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 	virtual void OnOK();
 	virtual void OnCancel();
+
 private:
 	CSlider m_Volume;
 	CSlider m_Fader;
@@ -63,5 +66,3 @@ private:
 	//int SliderToValue(const int Slider);
 	//int ValueToSlider(const int Value);
 };
-
-#endif

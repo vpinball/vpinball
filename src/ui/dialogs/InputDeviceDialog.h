@@ -1,5 +1,6 @@
-#ifndef H_INPUT_DEVICE_DIALOG
-#define H_INPUT_DEVICE_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class DeviceTreeView : public CTreeView
 {
@@ -71,8 +72,6 @@ private:
    CRect* startPos;
    DeviceTreeView m_deviceTreeView;
    PinInput* pinInput;
-   
+
    vector<InputDeviceInfo> m_attachedDeviceInfo;
 };
-
-#endif

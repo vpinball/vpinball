@@ -1,5 +1,6 @@
-#ifndef H_SEARCH_SELECT_DIALOG
-#define H_SEARCH_SELECT_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class SearchSelectDialog : public CDialog
 {
@@ -30,5 +31,3 @@ private:
    static bool m_columnSortOrder;
    static bool m_switchSortOrder;
 };
-
-#endif // !H_SEARCH_SELECT_DIALOG

@@ -1,5 +1,6 @@
-#ifndef H_IMAGE_DIALOG
-#define H_IMAGE_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class ImageDialog : public CDialog
 {
@@ -35,5 +36,3 @@ private:
    static int m_columnSortOrder;
    static bool m_doNotChange;  // to avoid triggering LVN_ITEMCHANGING or LVN_ITEMCHANGED code on deletion
 };
-
-#endif // !H_IMAGE_DIALOG

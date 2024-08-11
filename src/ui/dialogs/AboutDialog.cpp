@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "AboutDialog.h"
 #include "core/vpversion.h"

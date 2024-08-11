@@ -1,5 +1,6 @@
-#ifndef H_DRAWING_ORDER_DIALOG
-#define H_DRAWING_ORDER_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class DrawingOrderDialog : public CDialog
 {
@@ -18,4 +19,3 @@ private:
    HWND hOrderList;
    bool m_drawingOrderSelect;
 };
-#endif

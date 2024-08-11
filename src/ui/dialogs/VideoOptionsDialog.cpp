@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include <memory>
 #include "VideoOptionsDialog.h"
@@ -18,7 +20,7 @@ protected:
    void PropChanged() { if (m_loading == 0) PropSheet_Changed(GetParent(), GetHwnd()); }
    void EndLoad() { m_loading--; }
    void ApplyChanges();
-   
+
    void InitDisplayControls(Settings::Section wndSection, string wndSettingPrefix);
    void LoadDisplaySettings();
    void SaveDisplaySettings();

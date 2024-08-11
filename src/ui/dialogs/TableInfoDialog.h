@@ -1,5 +1,6 @@
-#ifndef H_TABLE_INFO_DIALOG
-#define H_TABLE_INFO_DIALOG
+// license:GPLv3+
+
+#pragma once
 
 class TableInfoDialog : public CDialog
 {
@@ -33,5 +34,3 @@ private:
    CComboBox m_screenshotCombo;
    CResizer m_resizer;
 };
-
-#endif // !H_TABLE_INFO_DIALOG
