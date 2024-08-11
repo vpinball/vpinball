@@ -10,7 +10,7 @@ of the mechanical plunger, but also the instantaneous speed at which
 it's moving.  The simulator can use this information to improve the
 simulation accuracy.
 
-## Why it's *useful* to calculate velocity externally
+## Why it's *useful* to calculate velocity on the I/O controller
 
 Put simply, it's because the ball shooter moves faster than USB
 reports.
@@ -45,7 +45,7 @@ typical cases, but it's easy to fool, and it can produce anomalies
 when it guesses wrong.
 
 
-## Why it's *possible* to calculate the velocity externally
+## Why it's *possible* to calculate the velocity on the I/O controller
 
 Plunger position sensors are never connected directly to a PC.
 They're instead always connected to some kind of external processor,
@@ -127,18 +127,24 @@ derivative of position readings over time.
 "Firing events" are the heuristic that VP uses to improve its speed
 calculations for fast-moving plunger events.  VP declares a firing
 event when it detects two sequential readings that indicate that the
-plunger has moved forward at a very high speed.  A typical mechanical
+plunger has moved forward at a high speed.  A typical mechanical
 plunger takes about 30ms to travel all the way forward after being
 pulled back and released, so VP has better than even odds of seeing at
 least two USB reports in the course of this.  
 
-(It might seem like a certainty that VP would see two USB reports over
+It might seem like a certainty that VP would see two HID reports over
 30ms given the 10ms interval between them, but this unfortunately
-isn't so, because VP isn't guaranteed to receive every USB report that
-comes in.  The three polling cycles involved - VP's cycle,
-DirectInput's, and the USB HID driver - aren't always in phase with
-each other, so some reports get dropped.  It's entirely possible for
-VP to see only one report in 20ms or 30ms of real time.)
+isn't so, because VP isn't guaranteed to receive every HID report that
+comes in.  That's not because USB is unreliable or anything like that;
+it's because HID by design only delivers the latest report at the time
+an application asks for one.  Anything that came in while an
+application wasn't looking is ignored, by design.  VP's polling cycle
+doesn't always align with the hardware HID input cycle, so VP misses
+some reports.  As a result, it's perfectly possible for VP to see only
+one HID report over a stretch of 20ms or 30ms - it might ask twice in
+that time, but still only get one actual input report, because the
+second request was made just before a new report came in on the wire,
+hence VP sees the same report twice instead of two distinct reports.
 
 Two reports isn't enough to accurately calculate speed, especially
 given the aliasing problem discussed earlier (where the plunger

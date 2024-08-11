@@ -5461,6 +5461,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 1"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 2"); 
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERAXIS), CB_SETCURSEL, selected, 0);
 
          hr = GetRegInt("Player", "PlungerSpeedAxis", &selected);
@@ -5475,6 +5476,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 1");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+         SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
          SendMessage(GetDlgItem(hwndDlg, IDC_PLUNGERSPEEDAXIS), CB_SETCURSEL, selected, 0);
 
          hr = GetRegInt("Player", "LRAxis", &selected);
@@ -5489,6 +5491,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"rZ Axis"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Slider 1"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Slider 2"); 
+         SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
          SendMessage(GetDlgItem(hwndDlg, IDC_LRAXISCOMBO), CB_SETCURSEL, selected, 0);
 
          hr = GetRegInt("Player", "UDAxis", &selected);
@@ -5503,6 +5506,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"rZ Axis"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Slider 1"); 
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"Slider 2"); 
+         SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
          SendMessage(GetDlgItem(hwndDlg, IDC_UDAXISCOMBO), CB_SETCURSEL, selected, 0);
 
          hr = GetRegInt("Player","LFlipKey", &key);

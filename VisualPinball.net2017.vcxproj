@@ -60,6 +60,7 @@
     <ProjectGuid>{11B81620-ADF1-46FB-98B0-AF83AB34CAAC}</ProjectGuid>
     <RootNamespace>VPinball</RootNamespace>
     <Keyword>AtlProj</Keyword>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release MinDependency Fast+SSE|Win32'" Label="Configuration">
@@ -383,6 +384,7 @@
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
       <LargeAddressAware>true</LargeAddressAware>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
       <Command>%40echo off

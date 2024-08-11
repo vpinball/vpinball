@@ -33,7 +33,7 @@ acceleration input.
 
 Use the "Keys" dialog to set up the accelerometer.  The setup for
 velocity input is almost the same as for any other accelerometer.  The
-only difference is that you check the box labeled "Treat Input as
+only difference is that you check the box labeled "Nudge Input is
 Velocity".
 
 * Select the X and Y axis assignments where you've assigned the
@@ -48,9 +48,10 @@ these are the axes you've assigned to **nudge.vx** and **nudge.vy**.
 with these to find the appropriate scale for your system.  The
 Nudge Test Table is an easy way to check the effect.
 
-* Check **Treat Input as Velocity**
+* Check **Nudge Input is Velocity**
 
 * Remember that you must **close all tables in the editor** after changing
 any of these settings before they'll go into effect in the player.
 
-
+The **Enable Nudge Filter** option has no effect when velocity-based
+nudging is selected.
