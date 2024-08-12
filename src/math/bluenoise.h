@@ -1,4 +1,6 @@
-// precomputed blue-noiseish points for oversampling the static pre-rendered objects
+// license:GPLv3+
+
+// precomputed blue-noise'ish points for oversampling the static pre-rendered objects
 
 #define STATIC_PRERENDER_ITERATIONS /*32*//*64*/128
 /*   static const float xyLDBNbnot[STATIC_PRERENDER_ITERATIONS*2] = {
