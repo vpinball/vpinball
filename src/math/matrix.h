@@ -33,7 +33,6 @@ public:
    }
 
 //
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
 //
 
@@ -43,10 +42,6 @@ public:
       m_d[1][0] = pv3D.z;  m_d[1][1] = 0.f;     m_d[1][2] = -pv3D.x;
       m_d[2][0] = -pv3D.y; m_d[2][1] = pv3D.x;  m_d[2][2] = 0.f;
    }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
    Matrix3 operator* (const float scalar) const
    {
@@ -139,7 +134,6 @@ public:
    }
 
 //
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
 //
 
@@ -239,10 +233,6 @@ public:
       m_d[2][2] = axis.z*axis.z + rcos*(1.0f - axis.z*axis.z);
    }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
    void RotationAroundAxis(const Vertex3Ds& axis, const float rsin, const float rcos)
    {
       m_d[0][0] = axis.x*axis.x + rcos*(1.0f - axis.x*axis.x);
@@ -297,7 +287,6 @@ public:
    }
 
 //
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
 //
 
@@ -674,11 +663,6 @@ public:
 
 #pragma endregion MatrixOperations
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-
 #pragma region VectorOperations
 
    // If matrix defines and orthonormal transformation (like a view or model matrix), these functions return the defining vectors
@@ -713,7 +697,6 @@ public:
    }
 
 //
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
 //
 
@@ -740,11 +723,6 @@ public:
 
       return Vertex3Ds{xp,yp,zp};
    }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 
    template <class VecType>
    Vertex3Ds MultiplyVectorNoTranslateNormal(const VecType& vIn) const

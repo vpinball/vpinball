@@ -287,10 +287,6 @@ inline float GetCos(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoin
    return dot / sqrtf((vt1.x * vt1.x + vt1.y * vt1.y)*(vt2.x * vt2.x + vt2.y * vt2.y));
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 /*
 inline float GetAngle(const Vertex2D * const pvEnd1, const Vertex2D * const pvJoint, const Vertex2D * const pvEnd2)
 {
@@ -422,10 +418,6 @@ inline void ClosestPointOnPolygon(const VtxContType &rgv, const Vertex2D &pvin, 
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 enum WindingOrder
 {
     Clockwise,
@@ -496,7 +488,6 @@ inline WindingOrder DetermineWindingOrder(const RenderVertexCont& vertices)
 }
 
 //
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Mesh.cs
 //
 
