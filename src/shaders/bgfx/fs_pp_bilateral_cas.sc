@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef STEREO
 $input v_texcoord0, v_eye
 #else
@@ -51,7 +53,7 @@ void main()
 			return;
 		}
 	}
-	
+
 	const ARRAY_BEGIN(vec3, e, 9)
 		texStereoNoLod(tex_fb_unfiltered, vec2(u.x -w_h_height.x, u.y -w_h_height.y)).xyz,
 		texStereoNoLod(tex_fb_unfiltered, vec2(u.x              , u.y -w_h_height.y)).xyz,

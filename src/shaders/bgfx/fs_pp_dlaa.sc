@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef STEREO
 $input v_texcoord0, v_eye
 #else
@@ -35,9 +37,9 @@ void main()
    {
       const float depth0 = texStereoNoLod(tex_depth, u).x;
       BRANCH if((depth0 == 1.0) || (depth0 == 0.0)) // early out if depth too large (=BG) or too small (=DMD,etc)
-	  {
+      {
          gl_FragColor = vec4(sampleCenter.xyz, 1.0);
-		 return;
+         return;
       }
    }
 
@@ -64,8 +66,8 @@ void main()
    const float edgeDetectHoriz   = 3.0 * valueEdgeHoriz - 0.1; //!! magic params
    const float edgeDetectVert    = 3.0 * valueEdgeVert  - 0.1;
 
-   const vec3 avgHoriz         = (sumHoriz + sampleCenter.xyz) * (1.0/3.0);
-   const vec3 avgVert          = (sumVert  + sampleCenter.xyz) * (1.0/3.0);
+   const vec3 avgHoriz           = (sumHoriz + sampleCenter.xyz) * (1.0/3.0);
+   const vec3 avgVert            = (sumVert  + sampleCenter.xyz) * (1.0/3.0);
 
    const float valueHoriz        = avg(avgHoriz);
    const float valueVert         = avg(avgVert);
@@ -73,7 +75,7 @@ void main()
    const float blurAmountHoriz   = saturate(edgeDetectHoriz / valueHoriz);
    const float blurAmountVert    = saturate(edgeDetectVert  / valueVert);
 
-   vec3 aaResult               = mix( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
+   vec3 aaResult                 = mix( sampleCenter.xyz, avgHoriz, blurAmountVert * 0.5); //!! magic sharpen
    aaResult                      = mix( aaResult,         avgVert,  blurAmountHoriz * 0.5); //!! magic sharpen
 
    // long edges

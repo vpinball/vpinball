@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef STEREO
 $input v_texcoord0, v_eye
 #else
@@ -87,8 +89,8 @@ void main()
 	// weight with result(s) from previous frames
 	const float ao = 1.0 - total_strength * occlusion;
 	gl_FragColor = vec4((texStereoNoLod(tex_fb_filtered, uv0).x //abuse bilerp for filtering (by using half texel/pixel shift)
-                        +texStereoNoLod(tex_fb_filtered, uv1).x
-                        +texStereoNoLod(tex_fb_filtered, vec2(uv0.x,uv1.y)).x
-                        +texStereoNoLod(tex_fb_filtered, vec2(uv1.x,uv0.y)).x)
+	                    +texStereoNoLod(tex_fb_filtered, uv1).x
+	                    +texStereoNoLod(tex_fb_filtered, vec2(uv0.x,uv1.y)).x
+	                    +texStereoNoLod(tex_fb_filtered, vec2(uv1.x,uv0.y)).x)
 		*(0.25*(1.0-AO_scale_timeblur.y))+saturate(ao /*+base*/)*AO_scale_timeblur.y, 0.,0.,0.);
 }

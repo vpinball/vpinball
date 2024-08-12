@@ -1,6 +1,8 @@
 ////GLOBAL
 #version 430
 
+// license:GPLv3+
+
 ////DEFINES
 #define NUM_BALL_LIGHTS 8
 

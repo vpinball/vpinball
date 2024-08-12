@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_texcoord0, v_texcoord2
 
 #include "common.sh"

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef STEREO
 $input v_texcoord0, v_eye
 #else
@@ -176,29 +178,28 @@ void main()
    #elif defined(ANAGLYPH)
       vec3 lCol, rCol;
       gatherLeftRightColors(v_texcoord0, lCol, rCol);
-	  #if defined(DEGHOST)
+      #if defined(DEGHOST)
          gl_FragColor = vec4(DeghostAnaglyph(lCol, rCol), 1.0);
       #else
-	     #ifdef SRGB
-	        lCol = InvGamma(lCol);
-		    rCol = InvGamma(rCol);
-	     #elif defined(GAMMA)
+         #ifdef SRGB
+            lCol = InvGamma(lCol);
+            rCol = InvGamma(rCol);
+         #elif defined(GAMMA)
             lCol = pow(lCol, vec3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
             rCol = pow(rCol, vec3(Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w, Stereo_LeftLuminance_Gamma.w));
-	     #endif
-	     #ifdef DYNDESAT
+         #endif
+         #ifdef DYNDESAT
             vec3 lColDesat, rColDesat;
             DynamicDesatAnaglyph(lCol, rCol, lColDesat, rColDesat);
-		    lCol = lColDesat;
-		    rCol = rColDesat;
-	     #endif
-	     vec3 color = LinearAnaglyph(lCol, rCol);
-	     #ifdef SRGB
+            lCol = lColDesat;
+            rCol = rColDesat;
+         #endif
+         vec3 color = LinearAnaglyph(lCol, rCol);
+         #ifdef SRGB
             gl_FragColor = vec4(FBGamma(color), 1.0);
-	     #elif defined(GAMMA)
+         #elif defined(GAMMA)
             gl_FragColor = vec4(pow(color, vec3(1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w, 1./Stereo_LeftLuminance_Gamma.w)), 1.0);
-		 #endif
-	  #endif
+         #endif
+      #endif
    #endif
 }
-

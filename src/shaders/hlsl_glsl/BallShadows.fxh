@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 // Shared shader file used by bulb lights and basic shaders (OpenGL and DX9)
 
 #define NUM_BALLS 8

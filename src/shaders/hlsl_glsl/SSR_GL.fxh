@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 ////ps_main_fb_ss_refl
 
 // uses tex_fb_filtered, tex_fb_unfiltered, tex_ao_dither & tex_depth & w_h_height.xy

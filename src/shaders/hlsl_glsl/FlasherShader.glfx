@@ -1,6 +1,8 @@
 ////GLOBAL
 #version 400
 
+// license:GPLv3+
+
 ////DEFINES
 #include "Helpers.fxh"
 

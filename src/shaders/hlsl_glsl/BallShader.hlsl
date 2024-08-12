@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 //!! always adapt to changes from BasicShader.fx
 //!! add playfield color, glossy, etc for more precise reflections of playfield
 
@@ -67,7 +69,7 @@ struct vin
     float3 normal     : NORMAL;
     float2 tex0       : TEXCOORD0;
 };
- 
+
 //vertex to pixel shader structure
 struct vout
 {

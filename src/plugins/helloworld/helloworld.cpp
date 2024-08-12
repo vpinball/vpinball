@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "VPXPlugin.h"
 
 VPXPluginAPI* vpx = nullptr;

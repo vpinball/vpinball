@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 //!! split into pure sprite & pure DMD?
 
 #include "Helpers.fxh"
@@ -204,11 +206,11 @@ technique basic_DMD
 
 technique basic_DMD_world
 {
-    pass P0
-    {
-        VertexShader = compile vs_3_0 vs_simple_world();
-        PixelShader  = compile ps_3_0 ps_main_DMD();
-    }
+   pass P0
+   {
+      VertexShader = compile vs_3_0 vs_simple_world();
+      PixelShader  = compile ps_3_0 ps_main_DMD();
+   }
 }
 
 

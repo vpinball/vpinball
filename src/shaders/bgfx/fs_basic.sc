@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 #ifdef STEREO
 	$input v_eye
@@ -129,7 +131,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    #else
       const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
    #endif
-   
+
    #if BGFX_SHADER_LANGUAGE_GLSL
    // OpenGL and OpenGL ES have reversed render targets
    vec2 uv = vec2(0.5, 0.5) + proj.xy * (0.5 / proj.w);
@@ -141,7 +143,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    const float d = texStereo(tex_probe_depth, uv).x;
    if (d < screenCoord.z)
       uv = screenCoord.xy * w_h_height.xy;
-      
+
    // The following code gives a smoother transition but depends too much on the POV since it uses homogeneous depth to lerp instead of fragment's world depth
    //const vec3 unbiased = vec3(1.0, 0.0, 0.0);
    //const vec3 biased = vec3(0.0, 1.0, 0.0);
@@ -166,7 +168,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 	EARLY_DEPTH_STENCIL
 	#endif
 	void main() {
-	   // Reflection only pass variant of the basic material shading
+		// Reflection only pass variant of the basic material shading
 		#ifdef CLIP
 		if (v_clipDistance < 0.0)
 		   discard;
@@ -197,11 +199,11 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
             if (pixel.a <= alphaTestValue.x)
                discard; //stop the pixel shader if alpha test should reject pixel
          #endif
-         
+
          pixel.a *= cBase_Alpha.a;
          if (fDisableLighting_top_below.x < 1.0) // if there is lighting applied, make sure to clamp the values (as it could be coming from a HDR tex)
             pixel.rgb = clamp(pixel.rgb, vec3_splat(0.0), vec3_splat(1.0));
-         
+
          const vec3 diffuse  = pixel.rgb * cBase_Alpha.rgb;
          const vec3 glossy   = doMetal ? diffuse : (pixel.rgb * cGlossy_ImageLerp.w + (1.0-cGlossy_ImageLerp.w)) * cGlossy_ImageLerp.rgb * 0.08; //!! use AO for glossy? specular?
       #else
@@ -211,7 +213,7 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       #endif
       const vec3 specular = cClearcoat_EdgeAlpha.rgb * 0.08;
       const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
-      
+
       const vec3 V = normalize(-v_worldPos);
       #ifdef TEX
          vec3 N = normalize(v_normal);
@@ -252,11 +254,11 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       BRANCH if (doRefractions)
       {
          // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
-		 #ifdef STEREO
+         #ifdef STEREO
          color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
-		 #else
+         #else
          color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
-		 #endif
+         #endif
          color.a = 1.0;
       }
 

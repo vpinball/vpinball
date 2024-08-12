@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 //!! have switch to choose if texture is weighted by diffuse/glossy or is just used raw?
 
 #define NUM_BALL_LIGHTS 0 // just to avoid having too much constant mem allocated

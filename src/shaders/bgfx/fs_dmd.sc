@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_texcoord0
 #ifdef CLIP
 	$input v_clipDistance
@@ -85,7 +87,7 @@ void main()
 {
 	#ifdef CLIP
 	if (v_clipDistance < 0.0)
-       discard;
+	   discard;
 	#endif
 
 	//!! this is incredibly heavy for a supposedly simple DMD output shader, but then again this is pretty robust for all kinds of scales and input resolutions now, plus also for 'distorted' output (via the flashers)!
@@ -135,7 +137,7 @@ void main()
 	   //   gl_FragColor = vec4(InvGamma(min(color2,vec3(1.5,1.5,1.5))/*+colorg*/), 0.5);
 	   //else
 	   gl_FragColor = vec4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
-	   
+
 	#else // No DMD (sprite rendering)
 		#ifdef TEX
 			const vec4 l = texture2D(tex_sprite, v_texcoord0);
@@ -145,6 +147,6 @@ void main()
 		#else
 			gl_FragColor = vec4(InvGamma(vColor_Intensity.xyz * vColor_Intensity.w), 1.0);
 		#endif
-		
+
 	#endif
 }

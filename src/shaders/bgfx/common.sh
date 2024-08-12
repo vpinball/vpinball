@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "bgfx_shader.sh"
 
 #define PI 3.1415926535897932384626433832795
@@ -24,7 +26,7 @@
 #define texStereoNoLod(tex, pos) texStereoLod(tex, pos, 0.0)
 
 #if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV
-	// GLSL does not define the sincos function
+    // GLSL does not define the sincos function
     #define sincos(phi,sp,cp) {sp=sin(phi);cp=cos(phi);}
     #define const
 #endif
@@ -126,7 +128,7 @@ float asin_approx(const float v)
 
 float asin_approx_divPI(const float v)
 {
-	//return asin(v) / PI;
+    //return asin(v) / PI;
 
     const float x = abs(v);
     if(1. - x <= FLT_MIN_VALUE) // necessary due to compiler doing 1./inversesqrt instead of sqrt
@@ -486,4 +488,3 @@ vec3 rotate_to_vector_upper(const vec3 vec, const vec3 normal)
 	const vec3 spherePoint = vec3(sqrt(1.0 - uv.y * uv.y) * vec2(ct, st), uv.y);
 	return normal + spherePoint;
 }*/
-

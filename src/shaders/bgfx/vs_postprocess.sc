@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input a_position, a_texcoord0
 #ifdef STEREO
 $output v_texcoord0, v_eye

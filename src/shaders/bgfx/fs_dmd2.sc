@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_texcoord0
 #ifdef CLIP
 	$input v_clipDistance
@@ -34,8 +36,8 @@ uniform vec4 exposure;
 // from http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
 float udRoundBox(vec2 p, float b, float r)
 {
-	vec2 q = abs(p) - b + r;
-	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; // SDF with negative values inside the dot
+    vec2 q = abs(p) - b + r;
+    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r; // SDF with negative values inside the dot
     // return length(max(q, 0.0)) - r; // SDF with 0 distance inside the dot
 }
 
@@ -262,15 +264,15 @@ void main()
 		color += glass.rgb * glassLight.rgb;
 	#endif
 
-    #ifdef SRGB
-    // Tonemapping and sRGB conversion.
+	#ifdef SRGB
+	// Tonemapping and sRGB conversion.
 	gl_FragColor = vec4(AgXToneMapping(color), 1.0);
 	//gl_FragColor = vec4(FBGamma(ReinhardToneMap(color)), 1.0);
 	//gl_FragColor = vec4(FBGamma(color), 1.0);
 
-    #else
-    // Rendering to a surface part of larger rendering process including tonemapping and sRGB conversion
+	#else
+	// Rendering to a surface part of larger rendering process including tonemapping and sRGB conversion
 	gl_FragColor = vec4(color, 1.0);
 
-    #endif
+	#endif
 }

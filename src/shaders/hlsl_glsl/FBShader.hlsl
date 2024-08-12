@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "Helpers.fxh"
 
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides

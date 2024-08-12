@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 // Shared shader file used for stereo rendering (OpenGL and DX9)
 
 UNIFORM float4 Stereo_Saturation;

@@ -1,6 +1,8 @@
 ////GLOBAL
 #version 450 core
 
+// license:GPLv3+
+
 ////DEFINES
 #include "Helpers.fxh"
 
@@ -1146,4 +1148,3 @@ CAS:P0:vs_main_no_trafo():gs_main():ps_main_CAS()
 BilateralSharp_CAS:P0:vs_main_no_trafo():gs_main():ps_main_BilateralSharp_CAS()
 SSReflection:P0:vs_main_no_trafo():gs_main():ps_main_fb_ss_refl()
 irradiance:P0:vs_main_no_trafo():gs_main():ps_main_fb_irradiance()
-

@@ -1,5 +1,7 @@
 ////GLOBAL
 
+// license:GPLv3+
+
 //**************************************************************************
 // GLSL defines to support common shader code
 #ifdef GLSL

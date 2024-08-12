@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 // This file is included and compiled within the Basic shader effect file (perhaps we could move the code directly inside it)
 
 //!! This shader and the accompanying code in light.cpp is a bit messy for the backglass mode of lights!

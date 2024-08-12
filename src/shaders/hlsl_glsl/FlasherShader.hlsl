@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "Helpers.fxh"
 
 #define Filter_None     0.

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 constexpr unsigned int basicBallMidNumVertices=181;
 constexpr unsigned int basicBallMidNumFaces=320*3;
 constexpr Vertex3D_NoTex2 basicBallMid[181]=

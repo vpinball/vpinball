@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_worldPos, v_tablePos, v_normal, v_texcoord0
 #ifdef STEREO
 	$input v_eye
@@ -24,7 +26,7 @@ void main()
 {
 	#ifdef CLIP
 	if (v_clipDistance < 0.0)
-       discard;
+		discard;
 	#endif
 	
 	vec4 result = staticColor_Alpha;
@@ -32,7 +34,7 @@ void main()
 	#ifdef TEX
 		result *= texture2D(tex_base_color, v_texcoord0);
 	#endif
- 
+
 	#ifdef SHADOW
 		const vec3 light_dir = v_tablePos.xyz - lightCenter_doShadow.xyz;
 		const float light_dist = length(light_dir);

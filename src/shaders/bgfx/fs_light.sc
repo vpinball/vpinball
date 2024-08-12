@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_tablePos
 #ifdef CLIP
 	$input v_clipDistance

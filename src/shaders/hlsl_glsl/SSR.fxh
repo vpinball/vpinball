@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 // uses tex_depth & tex_fb_unfiltered,tex_fb_filtered & tex_ao_dither & w_h_height.xy
 
 const float4 SSR_bumpHeight_fresnelRefl_scale_FS;

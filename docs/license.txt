@@ -5,6 +5,9 @@ As of October 2020, we, the Visual Pinball team, are working on replacing
 the inherited 'old MAME'-like license (listed directly below) by
 the GPLv3+ License (listed at the very end of this file).
 
+So note that all new contributions (e.g. via pull requests) being made will
+automatically be considered as GPLv3+ based.
+
 Each source file/snippet that is already under GPLv3+ will have its
 very first line marked with
 // license:GPLv3+

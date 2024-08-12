@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_worldPos, v_normal, v_texcoord0
 #ifdef STEREO
 	$input v_eye

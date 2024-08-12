@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_tablePos, v_texcoord0
 #ifdef CLIP
 	$input v_clipDistance
@@ -24,10 +26,10 @@ SAMPLER2D(tex_flasher_B, 1); // second image
 // Flasher don't write to depth buffer, so they can have EARLY_DEPTH_STENCIL even when using discard for clip plane
 EARLY_DEPTH_STENCIL void main()
 {
-	#ifdef CLIP
-	if (v_clipDistance < 0.0)
-       discard;
-	#endif
+   #ifdef CLIP
+   if (v_clipDistance < 0.0)
+      discard;
+   #endif
 
    vec4 pixel1,pixel2;
 

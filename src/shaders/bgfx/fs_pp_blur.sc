@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef STEREO
 $input v_texcoord0, v_eye
 #else
@@ -30,23 +32,23 @@ void main()
    #define ARRAY_SIZE 2
    const ARRAY_BEGIN(float, offset, ARRAY_SIZE) 0.53473, 2.05896 ARRAY_END();
    const ARRAY_BEGIN(float, weight, ARRAY_SIZE) 0.45134, 0.04866 ARRAY_END();
-   
+
 #elif defined(BLUR_9)
    #define ARRAY_SIZE 3
    const ARRAY_BEGIN(float, offset, ARRAY_SIZE) 0.0, 1.3846153846153846, 3.2307692307692304 ARRAY_END();
    const ARRAY_BEGIN(float, weight, ARRAY_SIZE) 0.22697126013264554, 0.31613854089904203, 0.070253009088676 ARRAY_END();
-   
+
 #elif defined(BLUR_11)
    #define NO_CENTER
    #define ARRAY_SIZE 3
    const ARRAY_BEGIN(float, offset, ARRAY_SIZE) 0.62195, 2.27357, 4.14706 ARRAY_END();
    const ARRAY_BEGIN(float, weight, ARRAY_SIZE) 0.32993, 0.15722, 0.01285 ARRAY_END();
-   
+
 #elif defined(BLUR_13)
    #define ARRAY_SIZE 4
    const ARRAY_BEGIN(float, offset, ARRAY_SIZE) 0.0, 1.4117647058823528, 3.2941176470588234, 5.176470588235294 ARRAY_END();
    const ARRAY_BEGIN(float, weight, ARRAY_SIZE) 0.1964795505549364, 0.2969024319496817, 0.09446895562035326, 0.010381203914324535 ARRAY_END();
-   
+
 #elif defined(BLUR_15)
    #define NO_CENTER
    #define ARRAY_SIZE 4
@@ -108,5 +110,5 @@ void main()
                 +texStereoNoLod(tex_fb_filtered, v_texcoord0.xy - OFS).rgb) * weight[i];
 #endif
 
-	gl_FragColor = vec4(result, 1.0);
+   gl_FragColor = vec4(result, 1.0);
 }

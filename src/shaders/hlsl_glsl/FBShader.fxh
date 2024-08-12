@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #ifdef GLSL
 uniform float exposure; // overaal scene exposure
 uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT

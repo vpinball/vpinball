@@ -1,16 +1,15 @@
 ////GLOBAL
 #version 330
 
+// license:GPLv3+
 
 ////DEFINES
 #include "Helpers.fxh"
-
 
 ////VERTEX
 layout(location=0) in vec3 vPosition;
 layout(location=1) in float2 tc;
 out float2 tex0;
-
 
 ////FRAGMENT
 uniform samplerStereo   tex_stereo_fb;    // Render buffer with either a single render for fake stereo by depth reconstruction or 2 renders in a layered texture

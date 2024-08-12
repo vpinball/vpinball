@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 //!! add reflection direction occlusion, so that that will be used for blocking reflection/envmap?
 //!! opt.?
 

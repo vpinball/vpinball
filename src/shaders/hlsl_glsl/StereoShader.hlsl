@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "Helpers.fxh"
 
 texture Texture0; // FB

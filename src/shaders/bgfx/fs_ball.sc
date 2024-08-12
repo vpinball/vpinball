@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input v_worldPos, v_normal, v_texcoord0
 #ifdef STEREO
 	$input v_eye
@@ -79,15 +81,15 @@ EARLY_DEPTH_STENCIL
 #endif
 void main()
 {
-	#ifdef CLIP
-	if (v_clipDistance < 0.0)
+    #ifdef CLIP
+    if (v_clipDistance < 0.0)
        discard;
-	#endif
+    #endif
 
     const vec3 V = normalize(/*camera=0,0,0,1*/-v_worldPos.xyz);
     const vec3 N = normalize(v_normal.xyz);
     const vec3 R = reflect(V, N);
-    
+
     vec3 ballImageColor;
     const float edge = dot(V, R);
     // edge falloff to reduce aliasing on edges (picks smaller mipmap -> more blur)
@@ -116,7 +118,7 @@ void main()
         ballImageColor += decalColor;
     #else
         ballImageColor = ScreenHDR(ballImageColor, decalColor);
-	    
+
     #endif
 
     BRANCH if (disableLighting)
@@ -140,22 +142,22 @@ void main()
 
     const vec3 playfield_p0 = mul(matWorldView, vec4(/*playfield_pos=*/0.,0.,0.,1.0)).xyz;
     //const vec3 playfield_p0 = matWorldView[3].xyz;
-	const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
+    const float t = dot(playfield_normal, v_worldPos.xyz - playfield_p0) / NdotR;
     const vec3 playfield_hit = v_worldPos.xyz - t * R;
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-	#ifdef STEREO
+    #ifdef STEREO
     const vec4 proj = mul(matProj[int(v_eye)], vec4(playfield_hit, 1.0));
-	#else
+    #else
     const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
-	#endif
-	#if BGFX_SHADER_LANGUAGE_GLSL
-	// OpenGL and OpenGL ES have reversed render targets
+    #endif
+    #if BGFX_SHADER_LANGUAGE_GLSL
+    // OpenGL and OpenGL ES have reversed render targets
     const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, proj.y) * (0.5 / proj.w);
-	#else
+    #else
     const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
-	#endif
+    #endif
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb
         + texStereo(tex_ball_playfield, uvp - vec2(w_h_disableLighting.x, 0.)).rgb
@@ -182,7 +184,7 @@ void main()
     #endif
 
     const vec3 glossy = max(diffuse*2.0, vec3(0.1,0.1,0.1)); //!! meh
-    
+
     vec3 specular = ballImageColor * cBase_Alpha.rgb; //!! meh, too, as only added in ballLightLoop anyhow
     #ifndef DECAL
        specular *= vec3(1.,1.,1.)-decalColor; // see above

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 $input a_position, a_texcoord0
 $output v_texcoord0
 #ifdef CLIP
@@ -20,7 +22,7 @@ $output v_texcoord0
 void main()
 {
 	vec4 pos = vec4(a_position, 1.0);
-    v_texcoord0 = a_texcoord0;
+	v_texcoord0 = a_texcoord0;
 	#ifdef WORLD
 		gl_Position = mul(mvp, pos);
 		#ifdef STEREO
