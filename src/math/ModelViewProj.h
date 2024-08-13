@@ -2,7 +2,7 @@
 
 #pragma once
 
-class ModelViewProj
+class ModelViewProj final
 {
 public:
    enum FlipMode { NONE, FLIPX, FLIPY };

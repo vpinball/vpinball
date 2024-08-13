@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 // Disable Warning C4635: XML document comment target: badly-formed XML

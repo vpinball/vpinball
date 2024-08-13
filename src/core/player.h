@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "renderer/typedefs3D.h"
@@ -248,24 +250,20 @@ struct TimerOnOff
 };
 
 
-class Player
+class Player final
 {
 public:
    Player(PinTable *const editor_table, PinTable *const live_table, const int playMode);
-   virtual ~Player();
+   ~Player();
 
    void LockForegroundWindow(const bool enable);
 
    string GetPerfInfo();
 
-private:
-   bool m_playing = true;
-   bool m_focused = false;
-   void ApplyPlayingState(const bool play);
-public:
    void SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
    inline bool IsPlaying(const bool applyWndFocus = true) const { return applyWndFocus ? (m_playing && m_focused) : m_focused; }
    void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
+
    U32 m_pauseTimeTarget = 0;
    bool m_step = false; // If set to true, the physics engine will do a single physic step and stop simulation (turning this flag to false)
 
@@ -285,6 +283,10 @@ public:
 
    void FireSyncController();
 
+private:
+   bool m_playing = true;
+   bool m_focused = false;
+   void ApplyPlayingState(const bool play);
 
 #pragma region Main Loop
 public:
@@ -488,14 +490,12 @@ public:
 
    unsigned int m_overall_frames = 0; // amount of rendered frames since start
 
-public:
    // all kinds of stats tracking, incl. FPS measurement
    int m_lastMaxChangeTime; // Used to update counters every seconds
    float m_fps;             // Average number of frames per second, updated once per second
    U32 m_script_max;
 
 #ifdef PLAYBACK
-public:
    float ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2);
 
 private:

@@ -1,6 +1,6 @@
-// VPinball.cpp: implementation of the VPinball class.
-//
-////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// implementation of the VPinball class.
 
 #include "core/stdafx.h"
 #include "ui/resource.h"
@@ -328,7 +328,7 @@ void VPinball::InitRegValues()
 }
 
 void VPinball::AddMDITable(PinTableMDI* mdiTable) 
-{ 
+{
     AddMDIChild(mdiTable); 
 }
 

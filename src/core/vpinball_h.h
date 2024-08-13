@@ -1,16 +1,13 @@
-// VPinball.h: interface for the VPinball class.
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)
-#define AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_
+// license:GPLv3+
 
-#ifndef __STANDALONE__
-#include <wxx_dockframe.h>
-#endif
+// interface for the VPinball class.
+
+#pragma once
+
 #include "core/Settings.h"
 #include "renderer/RenderDevice.h"
 #ifndef __STANDALONE__
+#include <wxx_dockframe.h>
 #include "ui/dialogs/ImageDialog.h"
 #include "ui/dialogs/SoundDialog.h"
 #include "ui/dialogs/EditorOptionsDialog.h"
@@ -325,6 +322,3 @@ private:
    NotesDialog *m_notesDialog = nullptr;
    CDockNotes* m_dockNotes = nullptr;
 };
-
-
-#endif // !defined(AFX_VPINBALL_H__4D32616D_55B5_4FE0_87D9_3D4CB0BE3C76__INCLUDED_)

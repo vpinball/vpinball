@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #ifdef ENABLE_SDL_VIDEO
@@ -13,6 +15,7 @@
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
+#include <map>
 #endif
 
 #include <ctime>
@@ -29,6 +32,9 @@
 #endif
 #ifdef _MSC_VER
 #include "winsdk/legacy_touch.h"
+// Used to log which program steals the focus from VPX
+#include "psapi.h"
+#pragma comment(lib, "Psapi")
 #endif
 #include "tinyxml2/tinyxml2.h"
 
@@ -49,21 +55,9 @@ marker_series series;
 #define sort std::sort
 #endif
 
-#ifdef __STANDALONE__
-#include <map>
-#endif
-
-#ifdef _MSC_VER
-// Used to log which program steals the focus from VPX
-#include "psapi.h"
-#pragma comment(lib, "Psapi")
-#endif
-
-
 #if !(_WIN32_WINNT >= 0x0500)
  #define KEYEVENTF_SCANCODE    0x0008
 #endif /* _WIN32_WINNT >= 0x0500 */
-
 
 //
 
@@ -474,7 +468,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #endif
 
 #ifndef __STANDALONE__
-   //
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
    const unsigned int rflip = get_vk(m_rgKeys[eRightFlipperKey]);
 
