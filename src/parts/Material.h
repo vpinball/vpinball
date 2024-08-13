@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 // only used for backward compatibility loading and saving (VPX version < 10.8)
@@ -43,7 +45,8 @@ public:
    };
 
    inline Material() :
-         m_type(MaterialType::BASIC)
+         m_szName("dummyMaterial"s)
+       , m_type(MaterialType::BASIC)
        , m_fWrapLighting(0.0f)
        , m_fRoughness(0.0f)
        , m_fGlossyImageLerp(1.0f)
@@ -61,13 +64,13 @@ public:
        , m_fScatterAngle(0.0f)
        , m_cRefractionTint(0xFFFFFF)
    {
-      m_szName = "dummyMaterial";
    }
 
    inline Material(MaterialType type, float wrapLighting, float roughness, float glossyImageLerp, float thickness, float edge, float edgeAlpha, float opacity,
        COLORREF base, COLORREF glossy, COLORREF clearcoat, bool opacityActive,
        float elasticity, float elasticityFalloff, float friction, float scatterAngle, COLORREF refractionTint) :
-         m_type(type)
+         m_szName("dummyMaterial"s)
+       , m_type(type)
        , m_fWrapLighting(wrapLighting)
        , m_fRoughness(roughness)
        , m_fGlossyImageLerp(glossyImageLerp)
@@ -85,11 +88,11 @@ public:
        , m_fScatterAngle(scatterAngle)
        , m_cRefractionTint(refractionTint)
    {
-      m_szName = "dummyMaterial";
    }
 
    inline Material(const Material * const pmat) :
-         m_type(pmat->m_type)
+         m_szName(pmat->m_szName)
+       , m_type(pmat->m_type)
        , m_fWrapLighting(pmat->m_fWrapLighting)
        , m_fRoughness(pmat->m_fRoughness)
        , m_fGlossyImageLerp(pmat->m_fGlossyImageLerp)
@@ -107,7 +110,6 @@ public:
        , m_fScatterAngle(pmat->m_fScatterAngle)
        , m_cRefractionTint(pmat->m_cRefractionTint)
    {
-      m_szName = pmat->m_szName;
    }
 
    inline unsigned long long hash() const

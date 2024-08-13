@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 //#include "forsyth.h"
 #include "utils/objloader.h"
@@ -146,7 +148,7 @@ void Ramp::WriteRegDefaults()
 
 void Ramp::UIRenderPass1(Sur * const psur)
 {
-   //make 1 wire ramps look unique in editor - uses ramp color
+   //make 1-wire ramps look unique in editor - uses ramp color
    psur->SetFillColor(m_ptable->RenderSolid() ? m_vpinball->m_fillColor : -1);
    psur->SetBorderColor(-1, false, 0);
    psur->SetObject(this);
@@ -328,10 +330,7 @@ void Ramp::AssignHeightToControlPoint(const RenderVertex3D &v, const float heigh
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
-//
 
 /*
  * Compute the vertices and additional information for the ramp shape.
@@ -545,10 +544,6 @@ float Ramp::GetSurfaceHeight(float x, float y) const
 
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Ramp::BeginPlay(vector<HitTimer*> &pvht)
 {
@@ -780,7 +775,7 @@ void Ramp::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 void Ramp::CheckJoint(PhysicsEngine *physics, const HitTriangle *const ph3d1, const HitTriangle *const ph3d2, const bool isUI)
 {
-   if (ph3d1)   // may be null in case of degenerate triangles
+   if (ph3d1) // may be null in case of degenerate triangles
    {
       const Vertex3Ds vjointnormal = CrossProduct(ph3d1->m_normal, ph3d2->m_normal);
       if (vjointnormal.LengthSquared() < 1e-8f)
@@ -850,10 +845,6 @@ void Ramp::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isU
    if (!isUI)
       m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 #pragma endregion
 
@@ -1000,10 +991,7 @@ void Ramp::UpdateBounds()
    m_boundingSphereCenter.Set(center2D.x, center2D.y, 0.5f * (m_d.m_heightbottom + m_d.m_heighttop));
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
-//
 
 bool Ramp::isHabitrail() const
 {
@@ -1184,10 +1172,6 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
       delete[] middlePoints;
    delete[] tmpPoints;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Ramp::PrepareHabitrail()
 {
@@ -1553,7 +1537,6 @@ STDMETHODIMP Ramp::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Ramp::get_HeightBottom(float *pVal)
 {
    *pVal = m_d.m_heightbottom;
-
    return S_OK;
 }
 
@@ -1571,7 +1554,6 @@ STDMETHODIMP Ramp::put_HeightBottom(float newVal)
 STDMETHODIMP Ramp::get_HeightTop(float *pVal)
 {
    *pVal = m_d.m_heighttop;
-
    return S_OK;
 }
 
@@ -1589,7 +1571,6 @@ STDMETHODIMP Ramp::put_HeightTop(float newVal)
 STDMETHODIMP Ramp::get_WidthBottom(float *pVal)
 {
    *pVal = m_d.m_widthbottom;
-
    return S_OK;
 }
 
@@ -1642,7 +1623,6 @@ STDMETHODIMP Ramp::put_Material(BSTR newVal)
 STDMETHODIMP Ramp::get_Type(RampType *pVal)
 {
    *pVal = m_d.m_type;
-
    return S_OK;
 }
 
@@ -1689,7 +1669,6 @@ STDMETHODIMP Ramp::put_Image(BSTR newVal)
 STDMETHODIMP Ramp::get_ImageAlignment(RampImageAlignment *pVal)
 {
    *pVal = m_d.m_imagealignment;
-
    return S_OK;
 }
 
@@ -1707,7 +1686,6 @@ STDMETHODIMP Ramp::put_ImageAlignment(RampImageAlignment newVal)
 STDMETHODIMP Ramp::get_HasWallImage(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_imageWalls);
-
    return S_OK;
 }
 
@@ -1725,7 +1703,6 @@ STDMETHODIMP Ramp::put_HasWallImage(VARIANT_BOOL newVal)
 STDMETHODIMP Ramp::get_LeftWallHeight(float *pVal)
 {
    *pVal = m_d.m_leftwallheight;
-
    return S_OK;
 }
 
@@ -1745,7 +1722,6 @@ STDMETHODIMP Ramp::put_LeftWallHeight(float newVal)
 STDMETHODIMP Ramp::get_RightWallHeight(float *pVal)
 {
    *pVal = m_d.m_rightwallheight;
-
    return S_OK;
 }
 
@@ -1765,7 +1741,6 @@ STDMETHODIMP Ramp::put_RightWallHeight(float newVal)
 STDMETHODIMP Ramp::get_VisibleLeftWallHeight(float *pVal)
 {
    *pVal = m_d.m_leftwallheightvisible;
-
    return S_OK;
 }
 
@@ -1785,7 +1760,6 @@ STDMETHODIMP Ramp::put_VisibleLeftWallHeight(float newVal)
 STDMETHODIMP Ramp::get_VisibleRightWallHeight(float *pVal)
 {
    *pVal = m_d.m_rightwallheightvisible;
-
    return S_OK;
 }
 
@@ -1805,21 +1779,18 @@ STDMETHODIMP Ramp::put_VisibleRightWallHeight(float newVal)
 STDMETHODIMP Ramp::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Friction(float *pVal)
 {
    *pVal = m_d.m_friction;
-
    return S_OK;
 }
 
@@ -1834,14 +1805,12 @@ STDMETHODIMP Ramp::put_Friction(float newVal)
 STDMETHODIMP Ramp::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_Scatter(float newVal)
 {
    m_d.m_scatter = newVal;
-
    return S_OK;
 }
 
@@ -1870,28 +1839,24 @@ STDMETHODIMP Ramp::put_Collidable(VARIANT_BOOL newVal)
 STDMETHODIMP Ramp::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_hitEvent);
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    m_d.m_hitEvent = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::get_Threshold(float *pVal)
 {
    *pVal = m_d.m_threshold;
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_Threshold(float newVal)
 {
    m_d.m_threshold = newVal;
-
    return S_OK;
 }
 
@@ -1899,7 +1864,6 @@ STDMETHODIMP Ramp::put_Threshold(float newVal)
 STDMETHODIMP Ramp::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
@@ -1912,21 +1876,18 @@ STDMETHODIMP Ramp::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Ramp::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Ramp::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
-
    return S_OK;
 }
 
@@ -1939,7 +1900,6 @@ STDMETHODIMP Ramp::put_DepthBias(float newVal)
 STDMETHODIMP Ramp::get_WireDiameter(float *pVal)
 {
    *pVal = m_d.m_wireDiameter;
-
    return S_OK;
 }
 
@@ -1957,7 +1917,6 @@ STDMETHODIMP Ramp::put_WireDiameter(float newVal)
 STDMETHODIMP Ramp::get_WireDistanceX(float *pVal)
 {
    *pVal = m_d.m_wireDistanceX;
-
    return S_OK;
 }
 
@@ -1975,7 +1934,6 @@ STDMETHODIMP Ramp::put_WireDistanceX(float newVal)
 STDMETHODIMP Ramp::get_WireDistanceY(float *pVal)
 {
    *pVal = m_d.m_wireDistanceY;
-
    return S_OK;
 }
 
@@ -1992,34 +1950,32 @@ STDMETHODIMP Ramp::put_WireDistanceY(float newVal)
 
 STDMETHODIMP Ramp::get_PhysicsMaterial(BSTR *pVal)
 {
-    WCHAR wz[MAXNAMEBUFFER];
-    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
-    *pVal = SysAllocString(wz);
+   WCHAR wz[MAXNAMEBUFFER];
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   *pVal = SysAllocString(wz);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::put_PhysicsMaterial(BSTR newVal)
 {
-    char buf[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-    m_d.m_szPhysicsMaterial = buf;
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
+   m_d.m_szPhysicsMaterial = buf;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_overwritePhysics);
-
-    return S_OK;
+   *pVal = FTOVB(m_d.m_overwritePhysics);
+   return S_OK;
 }
 
 STDMETHODIMP Ramp::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    m_d.m_overwritePhysics = VBTOb(newVal);
-
-    return S_OK;
+   m_d.m_overwritePhysics = VBTOb(newVal);
+   return S_OK;
 }
 
 
@@ -2192,10 +2148,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampMeshGenerator.cs
-//
 
 void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
 {
@@ -2383,10 +2336,6 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    if (rgratio)
       delete[] rgratio;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Ramp::GenerateVertexBuffer()
 {

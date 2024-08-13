@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 
@@ -16,9 +18,7 @@ DispReel *DispReel::CopyForPlay(PinTable *live_table) const
    return dst;
 }
 
-// This function is called when ever a new instance of this object is created
-// (along with the constructor (above))
-//
+// called whenever a new instance of this object is created along with the constructor
 HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
    m_ptable = ptable;
@@ -30,10 +30,8 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
    return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
-// set the defaults for the objects persistent data (m_d.*) in case this
-// is a new instance of this object or there is a backwards compatability
-// issue (old version of object doesn't contain all the needed fields)
-//
+// set the defaults for the objects persistent data (m_d.*) in case this is a new instance of this object
+// or there is a backwards compatibility issue (e.g. old version of object doesn't contain all the needed fields)
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
 #define regKey Settings::DefaultPropsEMReel
@@ -107,11 +105,7 @@ STDMETHODIMP DispReel::InterfaceSupportsErrorInfo(REFIID riid)
    return S_FALSE;
 }
 
-// this function draws the shape of the object with a solid fill
-// only used in the editor and not the game
-//
-// this is called before the grid lines are drawn on the map
-//
+// draw the shape of the object with a solid fill, only used in the editor/UI and not in-game
 void DispReel::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(-1, false, 0);
@@ -138,12 +132,7 @@ void DispReel::UIRenderPass1(Sur * const psur)
    }
 }
 
-// this function draws the shape of the object with a black outline (no solid fill)
-// only used in the editor and not the game
-//
-// this is called after the grid lines have been drawn on the map.  draws a solid
-// outline over the grid lines
-//
+// draw the shape of the object with a black outline (no solid fill), only used in the editor/UI and not in-game
 void DispReel::UIRenderPass2(Sur * const psur)
 {
    if (!GetPTable()->GetEMReelsEnabled()) return;
@@ -172,12 +161,8 @@ void DispReel::UIRenderPass2(Sur * const psur)
    }
 }
 
-// Registers the timer with the game call which then makes a call back when the interval
-// has expired.
-//
-// for this sort of object (reel driver) it is basically not really required but hey, somebody
-// might use it..
-//
+// Register the timer with the game call which then makes a call back when the interval has expired.
+// for this sort of object (reel driver) it is basically not really required, but its standard functionality
 void DispReel::BeginPlay(vector<HitTimer*> &pvht)
 {
    IEditable::BeginPlay();
@@ -300,9 +285,8 @@ void DispReel::RenderRelease()
    m_rd = nullptr;
 }
 
-// This function is called each frame.  It basically check to see if the update
-// interval has expired and if so handles the rolling of the reels according to the
-// number of motor steps queued up for each reel
+// Called each frame. Checks to see if the update interval has expired and if so, handles the rolling
+// of the reels according to the number of motor steps queued up for each reel
 void DispReel::UpdateAnimation(const float diff_time_msec)
 {
    assert(m_rd != nullptr);
@@ -622,62 +606,54 @@ HRESULT DispReel::InitPostLoad()
    return S_OK;
 }
 
-// These methods provide the interface to the object through both the editor
-// and the script for a of the object properties
-//
+// The following methods provide the interface to the object through both the editor
+// and the script for all of the object properties
+
 STDMETHODIMP DispReel::get_BackColor(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_backcolor;
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_BackColor(OLE_COLOR newVal)
 {
    m_d.m_backcolor = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Reels(float *pVal)
 {
    *pVal = (float)GetReels();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Reels(float newVal)
 {
    SetReels((int)newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Width(float *pVal)
 {
    *pVal = GetWidth();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Width(float newVal)
 {
    SetWidth(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Height(float *pVal)
 {
    *pVal = GetHeight();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Height(float newVal)
 {
    SetHeight(newVal);
-
    return S_OK;
 }
 
@@ -692,35 +668,30 @@ STDMETHODIMP DispReel::get_X(float *pVal)
 STDMETHODIMP DispReel::put_X(float newVal)
 {
    SetX(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Y(float *pVal)
 {
    *pVal = GetY();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Y(float newVal)
 {
    SetY(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_IsTransparent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_transparent);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_IsTransparent(VARIANT_BOOL newVal)
 {
    m_d.m_transparent = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -757,7 +728,6 @@ STDMETHODIMP DispReel::get_Spacing(float *pVal)
 STDMETHODIMP DispReel::put_Spacing(float newVal)
 {
    SetSpacing(newVal);
-
    return S_OK;
 }
 
@@ -782,35 +752,30 @@ STDMETHODIMP DispReel::put_Sound(BSTR newVal)
 STDMETHODIMP DispReel::get_Steps(float *pVal)
 {
    *pVal = (float)GetMotorSteps();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Steps(float newVal)
 {
    SetMotorSteps((int)newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Range(float *pVal)
 {
    *pVal = (float)GetRange();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Range(float newVal)
 {
    SetRange((int)newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
 {
    *pVal = GetUpdateInterval();
-
    return S_OK;
 }
 
@@ -826,42 +791,36 @@ STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
 STDMETHODIMP DispReel::get_UseImageGrid(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_useImageGrid);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_UseImageGrid(VARIANT_BOOL newVal)
 {
    m_d.m_useImageGrid = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
 {
    *pVal = GetImagesPerGridRow();
-
    return S_OK;
 }
 
 STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
 {
    SetImagesPerGridRow((int)newVal);
-
    return S_OK;
 }
 
@@ -971,14 +930,12 @@ float DispReel::getBoxWidth() const
 {
    const float width = (float)m_d.m_reelcount * m_d.m_width
       + (float)m_d.m_reelcount * m_d.m_reelspacing
-      + m_d.m_reelspacing;	// spacing also includes edges
+      + m_d.m_reelspacing; // spacing also includes edges
    return width;
 }
 
 float DispReel::getBoxHeight() const
 {
-   const float height = m_d.m_height
-      + m_d.m_reelspacing + m_d.m_reelspacing; // spacing also includes edges
-
+   const float height = m_d.m_height + m_d.m_reelspacing + m_d.m_reelspacing; // spacing also includes edges
    return height;
 }

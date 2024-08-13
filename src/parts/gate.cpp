@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "utils/objloader.h"
 #include "meshes/gateBracketMesh.h"
@@ -301,10 +303,7 @@ void Gate::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Gate/GateHitGenerator.cs
-//
 
 void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -368,10 +367,6 @@ void Gate::PhysicRelease(PhysicsEngine* physics, const bool isUI)
       m_plineseg = nullptr;
    }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 #pragma endregion
 
@@ -665,42 +660,36 @@ STDMETHODIMP Gate::put_Height(float newVal)
 STDMETHODIMP Gate::get_Rotation(float *pVal)
 {
    *pVal = m_d.m_rotation;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Rotation(float newVal)
 {
    m_d.m_rotation = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_X(float newVal)
 {
    m_d.m_vCenter.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Y(float newVal)
 {
    m_d.m_vCenter.y = newVal;
-
    return S_OK;
 }
 
@@ -743,7 +732,6 @@ STDMETHODIMP Gate::put_Material(BSTR newVal)
 STDMETHODIMP Gate::get_Open(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_phitgate ? m_phitgate->m_gateMover.m_open : false);
-
    return S_OK;
 }
 
@@ -785,35 +773,30 @@ STDMETHODIMP Gate::put_Open(VARIANT_BOOL newVal)
 STDMETHODIMP Gate::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::get_ShowBracket(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_showBracket);
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_ShowBracket(VARIANT_BOOL newVal)
 {
    m_d.m_showBracket = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::get_CloseAngle(float *pVal)
 {
    *pVal = GetCloseAngle();
-
    return S_OK;
 }
 
@@ -821,7 +804,7 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
 {
    if (m_d.m_collidable)
    {
-      newVal = 0;
+      newVal = 0.f;
       ShowError("Gate is collidable! closing angles other than 0 aren't possible!");
    }
 
@@ -833,7 +816,6 @@ STDMETHODIMP Gate::put_CloseAngle(float newVal)
 STDMETHODIMP Gate::get_OpenAngle(float *pVal)
 {
    *pVal = GetOpenAngle();
-
    return S_OK;
 }
 
@@ -845,6 +827,7 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
        ShowError("Gate is collidable! open angles other than 90 aren't possible!");
    }
    SetOpenAngle(newVal);
+
    return S_OK;
 }
 
@@ -852,7 +835,6 @@ STDMETHODIMP Gate::put_OpenAngle(float newVal)
 STDMETHODIMP Gate::get_Collidable(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB((g_pplayer) ? m_phitgate->m_enabled : m_d.m_collidable);
-
    return S_OK;
 }
 
@@ -934,7 +916,6 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
 STDMETHODIMP Gate::get_Friction(float *pVal)
 {
    *pVal = (g_pplayer) ? m_phitgate->m_gateMover.m_friction : m_d.m_friction;
-
    return S_OK;
 }
 
@@ -953,7 +934,6 @@ STDMETHODIMP Gate::put_Friction(float newVal)
 STDMETHODIMP Gate::get_Damping(float *pVal)
 {
    *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitgate->m_gateMover.m_damping, (float)(1.0/PHYS_FACTOR));
-
    return S_OK;
 }
 
@@ -971,7 +951,6 @@ STDMETHODIMP Gate::put_Damping(float newVal)
 STDMETHODIMP Gate::get_GravityFactor(float *pVal)
 {
    *pVal = !g_pplayer ? m_d.m_gravityfactor : m_phitgate->m_gateMover.m_gravityfactor;
-
    return S_OK;
 }
 
@@ -990,7 +969,6 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB((g_pplayer) ? m_phitgate->m_gateMover.m_visible : m_d.m_visible);
-
    return S_OK;
 }
 
@@ -1007,7 +985,6 @@ STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Gate::get_TwoWay(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_twoWay);
-
    return S_OK;
 }
 
@@ -1024,14 +1001,12 @@ STDMETHODIMP Gate::put_TwoWay(VARIANT_BOOL newVal)
 STDMETHODIMP Gate::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1049,13 +1024,11 @@ STDMETHODIMP Gate::get_CurrentAngle(float *pVal)
 STDMETHODIMP Gate::get_DrawStyle(GateType *pVal)
 {
    *pVal = m_d.m_type;
-
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_DrawStyle(GateType newVal)
 {
    m_d.m_type = newVal;
-
    return S_OK;
 }

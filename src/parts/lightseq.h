@@ -1,14 +1,10 @@
-// LightSeq.h: Definition of the LightSeq class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the LightSeq class
+
 #pragma once
-#if !defined(AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_)
-#define AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
-
-/////////////////////////////////////////////////////////////////////////////
-// LightSeq
+#include "ui/resource.h"
 
 class LightSeqData final
 {
@@ -20,7 +16,8 @@ public:
    TimerDataRoot m_tdr;
 };
 
-struct LightSeqQueueData {
+struct LightSeqQueueData
+{
    SequencerState Animation;
    int            TailLength;
    int            Repeat;
@@ -28,13 +25,15 @@ struct LightSeqQueueData {
    int            UpdateRate;
 };
 
-struct LightSeqQueue {
+struct LightSeqQueue
+{
    int               Head;
    int               Tail;
    LightSeqQueueData Data[LIGHTSEQQUEUESIZE];
 };
 
-enum {
+enum
+{
    eSeqNull,
    eSeqBlink,
    eSeqRandom,
@@ -43,7 +42,8 @@ enum {
    eSeqRadar
 };
 
-struct _tracer {
+struct _tracer
+{
    int   type;         // type of tracer processing required
    int   delay;
    int   length;
@@ -78,14 +78,13 @@ class LightSeq :
    public IPerPropertyBrowsing     // Ability to fill in dropdown(s) in property browser
    //public EditableImpl<LightSeq>
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    LightSeq();
    ~LightSeq();
 
@@ -200,5 +199,3 @@ private:
    LightState GetElementState(const int index) const;
    bool     VerifyAndSetGridElement(const int x, const int y, const LightState State);
 };
-
-#endif // !defined(AFX_LIGHTSEQ_H__5EC2D0B7_3868_4CCC_81EC_A4653460DF7E__INCLUDED_)

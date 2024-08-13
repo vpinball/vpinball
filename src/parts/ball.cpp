@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #ifndef __STANDALONE__
 #include "vpinball.h"
@@ -208,8 +210,6 @@ void Ball::BeginPlay(vector<HitTimer *> &pvht)
 }
 
 void Ball::EndPlay() { IEditable::EndPlay(); }
-
-
 
 
 #pragma region Physics

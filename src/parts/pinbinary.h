@@ -1,9 +1,8 @@
-// PinBinary.h: interface for the PinBinary class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// interface for the PinBinary class.
+
 #pragma once
-#if !defined(AFX_PINBINARY_H__080F5CB3_4174_4B1D_A81E_DCC4CBFE5954__INCLUDED_)
-#define AFX_PINBINARY_H__080F5CB3_4174_4B1D_A81E_DCC4CBFE5954__INCLUDED_
 
 class PinBinary : public ILoadable
 {
@@ -35,5 +34,3 @@ public:
 private:
    string m_szTempFile; // temporary file name for registering font
 };
-
-#endif // !defined(AFX_PINBINARY_H__080F5CB3_4174_4B1D_A81E_DCC4CBFE5954__INCLUDED_)

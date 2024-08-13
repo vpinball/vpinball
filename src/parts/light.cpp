@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "meshes/bulbLightMesh.h"
 #include "meshes/bulbSocketMesh.h"
@@ -5,6 +7,8 @@
 #include "renderer/IndexBuffer.h"
 #include "renderer/VertexBuffer.h"
 #include "utils/bulb.h"
+
+#define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
 // Light state can be either a float between 0...1, or 2 for the blinking state.
 // Some old tables would set it to 255 or 'TRUE' (-1) for the full on state, so we perform this 'clamping'
@@ -581,7 +585,7 @@ void Light::Render(const unsigned int renderMask)
    }
 
    // Bulb model
-   // FIXME m_bulbLightMeshBuffer will be null if started without a bulb, then activated from the LiveUI. This prevent the crash but it would be nicer to ensure LiveUI do RenderRelease/RenderSetup on toggle
+   // FIXME m_bulbLightMeshBuffer will be null if started without a bulb, then activated from the LiveUI. This prevents the crash but it would be nicer to ensure LiveUI do RenderRelease/RenderSetup on toggle
    if (m_d.m_showBulbMesh && m_d.m_visible && m_bulbLightMeshBuffer != nullptr 
       && ((m_d.m_reflectionEnabled && !m_backglass) || !isReflectionPass)
       && !isLightBuffer)
@@ -1142,7 +1146,6 @@ STDMETHODIMP Light::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Light::get_Falloff(float *pVal)
 {
    *pVal = m_d.m_falloff;
-
    return S_OK;
 }
 
@@ -1152,21 +1155,18 @@ STDMETHODIMP Light::put_Falloff(float newVal)
       return E_FAIL;
 
    m_d.m_falloff = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_FalloffPower(float *pVal)
 {
    *pVal = m_d.m_falloff_power;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_FalloffPower(float newVal)
 {
    m_d.m_falloff_power = newVal;
-
    return S_OK;
 }
 
@@ -1177,6 +1177,7 @@ STDMETHODIMP Light::get_State(float *pVal)
    else
       *pVal = m_d.m_state; //the LS needs the old m_d.m_state and not the current one, m_fLockedByLS is true if under the light is under control of the LS
    *pVal = clampLightState(*pVal);
+
    return S_OK;
 }
 
@@ -1219,28 +1220,24 @@ void Light::Translate(const Vertex2D &pvOffset)
 STDMETHODIMP Light::get_Color(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_color;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Color(OLE_COLOR newVal)
 {
    m_d.m_color = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_ColorFull(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_color2;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_ColorFull(OLE_COLOR newVal)
 {
    m_d.m_color2 = newVal;
-
    return S_OK;
 }
 
@@ -1255,21 +1252,18 @@ STDMETHODIMP Light::get_X(float *pVal)
 STDMETHODIMP Light::put_X(float newVal)
 {
    m_d.m_vCenter.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Y(float newVal)
 {
    m_d.m_vCenter.y = newVal;
-
    return S_OK;
 }
 
@@ -1325,7 +1319,6 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
 STDMETHODIMP Light::get_BlinkInterval(long *pVal)
 {
    *pVal = m_d.m_blinkinterval;
-
    return S_OK;
 }
 
@@ -1361,7 +1354,6 @@ STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
 STDMETHODIMP Light::get_Intensity(float *pVal)
 {
    *pVal = m_d.m_intensity;
-
    return S_OK;
 }
 
@@ -1376,21 +1368,18 @@ STDMETHODIMP Light::put_Intensity(float newVal)
 STDMETHODIMP Light::get_TransmissionScale(float *pVal)
 {
    *pVal = m_d.m_transmissionScale;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_TransmissionScale(float newVal)
 {
    m_d.m_transmissionScale = max(0.f, newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_IntensityScale(float *pVal)
 {
    *pVal = m_d.m_intensity_scale;
-
    return S_OK;
 }
 
@@ -1446,175 +1435,150 @@ STDMETHODIMP Light::put_Image(BSTR newVal)
 STDMETHODIMP Light::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_DepthBias(float newVal)
 {
    m_d.m_depthBias = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedUp(float *pVal)
 {
    *pVal = m_d.m_fadeSpeedUp;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_FadeSpeedUp(float newVal)
 {
    m_d.m_fadeSpeedUp = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_FadeSpeedDown(float *pVal)
 {
    *pVal = m_d.m_fadeSpeedDown;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_FadeSpeedDown(float newVal)
 {
    m_d.m_fadeSpeedDown = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_Bulb(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_BulbLight);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Bulb(VARIANT_BOOL newVal)
 {
    m_d.m_BulbLight = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_ImageMode(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_imageMode);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_ImageMode(VARIANT_BOOL newVal)
 {
    m_d.m_imageMode = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowBulbMesh(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_showBulbMesh);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_ShowBulbMesh(VARIANT_BOOL newVal)
 {
    m_d.m_showBulbMesh = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_StaticBulbMesh(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_staticBulbMesh);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_StaticBulbMesh(VARIANT_BOOL newVal)
 {
    m_d.m_staticBulbMesh = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_ShowReflectionOnBall(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_showReflectionOnBall);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
 {
    m_d.m_showReflectionOnBall = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_Shadows(long *pVal)
 {
-   *pVal = (long) m_d.m_shadows;
-
+   *pVal = (long)m_d.m_shadows;
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Shadows(long newVal)
 {
-   m_d.m_shadows = (ShadowMode) newVal;
-
+   m_d.m_shadows = (ShadowMode)newVal;
    return S_OK;
 }
 
 STDMETHODIMP Light::get_Fader(long *pVal)
 {
    *pVal = (long)m_d.m_fader;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Fader(long newVal)
 {
    m_d.m_fader = (Fader)newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_ScaleBulbMesh(float *pVal)
 {
    *pVal = m_d.m_meshRadius;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_ScaleBulbMesh(float newVal)
 {
    m_d.m_meshRadius = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbModulateVsAdd(float *pVal)
 {
    *pVal = m_d.m_modulate_vs_add;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_BulbModulateVsAdd(float newVal)
 {
    m_d.m_modulate_vs_add = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Light::get_BulbHaloHeight(float *pVal)
 {
    *pVal = m_d.m_bulbHaloHeight;
-
    return S_OK;
 }
 
@@ -1650,22 +1614,21 @@ void Light::setInPlayState(const float newVal)
 
 STDMETHODIMP Light::GetInPlayState(float* pVal)
 {
-    *pVal = m_inPlayState;
-    return S_OK;
+   *pVal = m_inPlayState;
+   return S_OK;
 }
 
 STDMETHODIMP Light::GetInPlayStateBool(VARIANT_BOOL* pVal)
 {
-    const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
+   const bool isOn = (m_inPlayState == (float)LightStateBlinking) ? (m_d.m_rgblinkpattern[m_iblinkframe] == '1') : (m_inPlayState != 0.f);
+   *pVal = FTOVB(isOn);
 
-    *pVal = FTOVB(isOn);
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
 {
    *pVal = m_currentIntensity;
-
    return S_OK;
 }
 
@@ -1680,13 +1643,11 @@ STDMETHODIMP Light::get_FilamentTemperature(float *pVal)
 STDMETHODIMP Light::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Light::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }

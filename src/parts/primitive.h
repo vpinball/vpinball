@@ -1,9 +1,8 @@
-// primitive.h: interface for the Primitive class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// interface for the Primitive class.
+
 #pragma once
-#if !defined(AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_)
-#define AFX_PRIMITIVE_H__31CD2D6B_9BDD_4B1B_BC62_B9DE588A0CAA__INCLUDED_
 
 #include "ui/resource.h"
 #include "robin_hood.h"
@@ -118,14 +117,14 @@ class Primitive :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
+
    static constexpr int Max_Primitive_Sides = 100; //!! 100 works for sleepy, 99 doesn't
 
    STDMETHOD(get_Sides)(/*[out, retval]*/ int *pVal);
@@ -308,9 +307,6 @@ public:
 
    void GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds) final;
 
-private:
-   RenderDevice *m_rd = nullptr;
-
 public:
    float GetDepth(const Vertex3Ds &viewDir) const final;
    ItemTypeEnum HitableGetItemType() const final { return eItemPrimitive; }
@@ -336,6 +332,8 @@ public:
    bool m_inPlayState;
 
 private:
+   RenderDevice *m_rd = nullptr;
+
    PinTable *m_ptable;
    Light * m_lightmap = nullptr;
 
@@ -416,5 +414,3 @@ private:
    MeshBuffer *m_meshBuffer;
    bool m_vertexBufferRegenerate;
 };
-
-#endif // !defined(AFX_PRIMITIVE_H__31CD2D6B-9BDD-4B1B-BC62-B9DE588A0CAA__INCLUDED_)

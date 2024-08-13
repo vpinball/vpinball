@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 #include "renderer/RenderCommand.h"
@@ -270,7 +272,6 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
 HRESULT Textbox::InitPostLoad()
 {
    m_texture = nullptr;
-
    return S_OK;
 }
 
@@ -640,28 +641,24 @@ void Textbox::Render(const unsigned int renderMask)
 STDMETHODIMP Textbox::get_BackColor(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_backcolor;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_BackColor(OLE_COLOR newVal)
 {
    m_d.m_backcolor = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_FontColor(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_fontcolor;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_FontColor(OLE_COLOR newVal)
 {
    m_d.m_fontcolor = newVal;
-
    return S_OK;
 }
 
@@ -687,7 +684,6 @@ STDMETHODIMP Textbox::put_Text(BSTR newVal)
 STDMETHODIMP Textbox::get_Font(IFontDisp **pVal)
 {
    m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
-
    return S_OK;
 }
 
@@ -712,28 +708,24 @@ STDMETHODIMP Textbox::putref_Font(IFontDisp* pFont)
 STDMETHODIMP Textbox::get_Width(float *pVal)
 {
    *pVal = m_d.m_v2.x - m_d.m_v1.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_Width(float newVal)
 {
    m_d.m_v2.x = m_d.m_v1.x + newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Height(float *pVal)
 {
    *pVal = m_d.m_v2.y - m_d.m_v1.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_Height(float newVal)
 {
    m_d.m_v2.y = m_d.m_v1.y + newVal;
-
    return S_OK;
 }
 
@@ -757,7 +749,6 @@ STDMETHODIMP Textbox::put_X(float newVal)
 STDMETHODIMP Textbox::get_Y(float *pVal)
 {
    *pVal = m_d.m_v1.y;
-
    return S_OK;
 }
 
@@ -773,70 +764,60 @@ STDMETHODIMP Textbox::put_Y(float newVal)
 STDMETHODIMP Textbox::get_IntensityScale(float *pVal)
 {
    *pVal = m_d.m_intensity_scale;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_IntensityScale(float newVal)
 {
    m_d.m_intensity_scale = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Alignment(TextAlignment *pVal)
 {
    *pVal = m_d.m_talign;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_Alignment(TextAlignment newVal)
 {
    m_d.m_talign = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_IsTransparent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_transparent);
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_IsTransparent(VARIANT_BOOL newVal)
 {
    m_d.m_transparent = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_DMD(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isDMD);
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_DMD(VARIANT_BOOL newVal)
 {
    m_d.m_isDMD = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }
 

@@ -1,11 +1,10 @@
-// Ramp.h: Definition of the Ramp class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)
-#define AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Ramp class
+
+#pragma once
+
+#include "ui/resource.h"
 
 class RampData final : public BaseProperty
 {
@@ -31,9 +30,6 @@ public:
    bool m_imageWalls;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Ramp
-
 class Ramp :
    public IDispatchImpl<IRamp, &IID_IRamp, &LIBID_VPinballLib>,
    public ISupportErrorInfo,
@@ -50,14 +46,13 @@ class Ramp :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Ramp();
    virtual ~Ramp();
 
@@ -242,5 +237,3 @@ public:
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 };
-
-#endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

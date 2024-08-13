@@ -1,11 +1,10 @@
-// Flasher.h: Definition of the Flasher class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)
-#define AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Flasher class
+
+#pragma once
+
+#include "ui/resource.h"
 
 class FlasherData final
 {
@@ -31,9 +30,6 @@ public:
    string m_szLightmap;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Flasher
-
 class Flasher :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<Flasher, &CLSID_Flasher>,
@@ -49,14 +45,13 @@ class Flasher :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Flasher();
    virtual ~Flasher();
 
@@ -226,5 +221,3 @@ public:
    STDMETHOD(get_Amount)(/*[out, retval]*/ long *pVal);
    STDMETHOD(put_Amount)(/*[in]*/ long newVal);
 };
-
-#endif // !defined(AFX_FLASHER_H__87DAB93E_7D6F_4fe4_A5F9_632FD82BDB4A__INCLUDED_)

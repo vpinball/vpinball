@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 PinBinary::PinBinary()
@@ -8,10 +10,7 @@ PinBinary::PinBinary()
 
 PinBinary::~PinBinary()
 {
-   if (m_pdata)
-   {
-      delete[] m_pdata;
-   }
+   delete[] m_pdata;
 }
 
 bool PinBinary::ReadFromFile(const string& szFileName)
@@ -28,10 +27,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
       return false;
    }
 
-   if (m_pdata)
-   {
-      delete[] m_pdata;
-   }
+   delete[] m_pdata;
 
    m_cdata = GetFileSize(hFile, nullptr);
 
@@ -70,6 +66,7 @@ bool PinBinary::WriteToFile(const string& szfilename)
 
    CloseHandle(hFile);
 #endif
+
    return true;
 }
 

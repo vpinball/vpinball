@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "utils/objloader.h"
 
@@ -151,10 +153,7 @@ void Kicker::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Kicker/KickerHit.cs
-//
 
 void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -203,11 +202,6 @@ void Kicker::PhysicRelease(PhysicsEngine* physics, const bool isUI)
    }
 }
 
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 #pragma endregion
 
 
@@ -224,10 +218,7 @@ void Kicker::RenderSetup(RenderDevice *device)
 
    m_baseHeight = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
 
-//
-// license:GPLv3+
-// Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
-//
+   // Ported at: VisualPinball.Engine/VPT/Kicker/KickerMeshGenerator.cs
 
    if (m_d.m_kickertype == KickerCup || m_d.m_kickertype == KickerHole || m_d.m_kickertype == KickerHoleSimple || m_d.m_kickertype == KickerWilliams || m_d.m_kickertype == KickerGottlieb || m_d.m_kickertype == KickerCup2)
    {
@@ -259,10 +250,6 @@ void Kicker::RenderSetup(RenderDevice *device)
 
       delete[] buf;
    }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
    const WORD * indices;
    switch (m_d.m_kickertype)
@@ -615,7 +602,7 @@ bool Kicker::LoadToken(const int id, BiffReader * const pbr)
    case FID(TYPE):
    {
       pbr->GetInt(&m_d.m_kickertype);
-      //legacy handling:
+      // legacy handling:
       if (m_d.m_kickertype > KickerCup2)
           m_d.m_kickertype = KickerInvisible;
       break;
@@ -724,14 +711,10 @@ STDMETHODIMP Kicker::DestroyBall(int *pVal)
    }
 
    if (pVal) *pVal = cnt;
-
    return S_OK;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallManager.cs
-//
 
 STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float x, float y, float z)
 {
@@ -791,10 +774,6 @@ STDMETHODIMP Kicker::KickXYZ(float angle, float speed, float inclination, float 
    return S_OK;
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 STDMETHODIMP Kicker::KickZ(float angle, float speed, float inclination, float heightz)
 {
    KickXYZ(angle, speed, inclination, 0, 0, heightz);
@@ -825,7 +804,6 @@ STDMETHODIMP Kicker::put_X(float newVal)
 STDMETHODIMP Kicker::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
@@ -861,7 +839,6 @@ STDMETHODIMP Kicker::put_Surface(BSTR newVal)
 STDMETHODIMP Kicker::get_Enabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_enabled);
-
    return S_OK;
 }
 
@@ -879,7 +856,6 @@ STDMETHODIMP Kicker::put_Enabled(VARIANT_BOOL newVal)
 STDMETHODIMP Kicker::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
@@ -895,7 +871,6 @@ STDMETHODIMP Kicker::put_Scatter(float newVal)
 STDMETHODIMP Kicker::get_HitAccuracy(float *pVal)
 {
    *pVal = m_d.m_hitAccuracy;
-
    return S_OK;
 }
 
@@ -911,7 +886,6 @@ STDMETHODIMP Kicker::put_HitAccuracy(float newVal)
 STDMETHODIMP Kicker::get_HitHeight(float *pVal)
 {
    *pVal = m_d.m_hit_height;
-
    return S_OK;
 }
 
@@ -927,7 +901,6 @@ STDMETHODIMP Kicker::put_HitHeight(float newVal)
 STDMETHODIMP Kicker::get_Orientation(float *pVal)
 {
    *pVal = m_d.m_orientation;
-
    return S_OK;
 }
 
@@ -958,7 +931,6 @@ STDMETHODIMP Kicker::put_Radius(float newVal)
 STDMETHODIMP Kicker::get_FallThrough(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_fallThrough);
-
    return S_OK;
 }
 
@@ -974,7 +946,6 @@ STDMETHODIMP Kicker::put_FallThrough(VARIANT_BOOL newVal)
 STDMETHODIMP Kicker::get_Legacy(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_legacyMode);
-
    return S_OK;
 }
 
@@ -991,7 +962,6 @@ STDMETHODIMP Kicker::put_Legacy(VARIANT_BOOL newVal)
 STDMETHODIMP Kicker::get_DrawStyle(KickerType *pVal)
 {
    *pVal = m_d.m_kickertype;
-
    return S_OK;
 }
 
@@ -999,7 +969,7 @@ STDMETHODIMP Kicker::put_DrawStyle(KickerType newVal)
 {
    STARTUNDO
    m_d.m_kickertype = newVal;
-   //legacy handling:
+   // legacy handling:
    if (m_d.m_kickertype > KickerCup2)
 	   m_d.m_kickertype = KickerInvisible;
    STOPUNDO
@@ -1093,10 +1063,7 @@ float KickerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEv
    return HitTestBasicRadius(ball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Kicker/KickerCollider.cs
-//
 
 void KickerHitCircle::DoChangeBallVelocity(HitBall *const pball, const Vertex3Ds &hitnormal) const
 {

@@ -1,11 +1,10 @@
-// Spinner.h: Definition of the Spinner class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)
-#define AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Spinner class
+
+#pragma once
+
+#include "ui/resource.h"
 
 class SpinnerData final : public BaseProperty
 {
@@ -24,9 +23,6 @@ public:
 
 class HitSpinner;
 
-/////////////////////////////////////////////////////////////////////////////
-// Spinner
-
 class Spinner :
    public IDispatchImpl<ISpinner, &IID_ISpinner, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -42,16 +38,16 @@ class Spinner :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Spinner();
    virtual ~Spinner();
+
    BEGIN_COM_MAP(Spinner)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(ISpinner)
@@ -148,5 +144,3 @@ public:
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
-
-#endif // !defined(AFX_SPINNER_H__8D8CB0E1_8C8F_49BF_A639_4DFA12DD4C3C__INCLUDED_)

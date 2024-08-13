@@ -1,11 +1,10 @@
-// Rubber.h: Definition of the Rubber class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_RUBBER_H__B0715DC0_002F_11E4_9191_0800200C9A66__INCLUDED_)
-#define AFX_RUBBER_H__B0715DC0_002F_11E4_9191_0800200C9A66__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Rubber class
+
+#pragma once
+
+#include "ui/resource.h"
 #include "robin_hood.h"
 
 class RubberData final : public BaseProperty
@@ -23,9 +22,6 @@ public:
    bool m_showInEditor;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Rubber
-
 class Rubber :
    public IDispatchImpl<IRubber, &IID_IRubber, &LIBID_VPinballLib>,
    public ISupportErrorInfo,
@@ -42,14 +38,13 @@ class Rubber :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Rubber();
    virtual ~Rubber();
 
@@ -128,7 +123,7 @@ private:
    Vertex3Ds m_bboxMin;
    Vertex3Ds m_bboxMax;
 
-   int m_numVertices;      // this goes along with dynamicVertexBuffer
+   int m_numVertices; // this goes along with dynamicVertexBuffer
    int m_numIndices;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
@@ -191,5 +186,3 @@ public:
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_OverwritePhysics)(/*[in]*/ VARIANT_BOOL newVal);
 };
-
-#endif // !defined(AFX_RAMP_H__5EFEDEFB_5504_430A_B000_9B6D1903E3FC__INCLUDED_)

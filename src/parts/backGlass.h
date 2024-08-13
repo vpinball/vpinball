@@ -1,4 +1,7 @@
+// license:GPLv3+
+
 #pragma once
+
 #include "renderer/typedefs3D.h"
 
 class RenderDevice;

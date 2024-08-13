@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "utils/objloader.h"
 #include "meshes/triggerSimpleMesh.h"
@@ -116,6 +118,7 @@ void Trigger::InitShape(float x, float y)
    constexpr float lengthX = 30.0f;
    constexpr float lengthY = 30.0f;
    UpdateStatusBarInfo();
+
    for (size_t i = 0; i < m_vdpoint.size(); i++)
       m_vdpoint[i]->Release();
    m_vdpoint.clear();
@@ -321,10 +324,7 @@ void Trigger::EndPlay()
 
 #pragma region Physics
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitGenerator.cs
-//
 
 void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -394,10 +394,6 @@ void Trigger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
       m_ptriggerhitpoly = nullptr;
    }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Trigger::TriggerAnimationHit()
 {
@@ -491,10 +487,7 @@ void Trigger::RenderRelease()
    m_triggerVertices = nullptr;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerAnimationSystem.cs
-//
 
 void Trigger::UpdateAnimation(const float diff_time_msec)
 {
@@ -556,10 +549,6 @@ void Trigger::UpdateAnimation(const float diff_time_msec)
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Trigger::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
@@ -601,7 +590,6 @@ void Trigger::Render(const unsigned int renderMask)
 }
 
 #pragma endregion
-
 
 
 void Trigger::ExportMesh(ObjLoader& loader)
@@ -662,10 +650,7 @@ void Trigger::ExportMesh(ObjLoader& loader)
    m_triggerVertices = nullptr;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerMeshGenerator.cs
-//
 
 void Trigger::GenerateMesh()
 {
@@ -773,10 +758,6 @@ void Trigger::GenerateMesh()
       }
    }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Trigger::SetObjectPos()
 {
@@ -1062,14 +1043,12 @@ STDMETHODIMP Trigger::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Trigger::get_Radius(float *pVal)
 {
    *pVal = m_d.m_radius;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_Radius(float newVal)
 {
    m_d.m_radius = newVal;
-
    return S_OK;
 }
 
@@ -1084,21 +1063,18 @@ STDMETHODIMP Trigger::get_X(float *pVal)
 STDMETHODIMP Trigger::put_X(float newVal)
 {
    m_d.m_vCenter.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_Y(float newVal)
 {
    m_d.m_vCenter.y = newVal;
-
    return S_OK;
 }
 
@@ -1123,7 +1099,6 @@ STDMETHODIMP Trigger::put_Surface(BSTR newVal)
 STDMETHODIMP Trigger::get_Enabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_enabled);
-
    return S_OK;
 }
 
@@ -1141,14 +1116,12 @@ STDMETHODIMP Trigger::put_Enabled(VARIANT_BOOL newVal)
 STDMETHODIMP Trigger::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1203,21 +1176,18 @@ STDMETHODIMP Trigger::DestroyBall(int *pVal)
 STDMETHODIMP Trigger::get_HitHeight(float *pVal)
 {
    *pVal = m_d.m_hit_height;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_HitHeight(float newVal)
 {
    m_d.m_hit_height = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::get_Rotation(float *pVal)
 {
    *pVal = m_d.m_rotation;
-
    return S_OK;
 }
 
@@ -1232,35 +1202,30 @@ STDMETHODIMP Trigger::put_Rotation(float newVal)
 STDMETHODIMP Trigger::get_WireThickness(float *pVal)
 {
    *pVal = m_d.m_wireThickness;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_WireThickness(float newVal)
 {
    m_d.m_wireThickness = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::get_AnimSpeed(float *pVal)
 {
    *pVal = m_d.m_animSpeed;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_AnimSpeed(float newVal)
 {
    m_d.m_animSpeed = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::get_CurrentAnimOffset(float *pVal)
 {
    *pVal = m_animHeightOffset;
-
    return S_OK;
 }
 
@@ -1285,7 +1250,6 @@ STDMETHODIMP Trigger::put_Material(BSTR newVal)
 STDMETHODIMP Trigger::get_TriggerShape(TriggerShape *pVal)
 {
    *pVal = m_d.m_shape;
-
    return S_OK;
 }
 
@@ -1300,13 +1264,11 @@ STDMETHODIMP Trigger::put_TriggerShape(TriggerShape newVal)
 STDMETHODIMP Trigger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Trigger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }

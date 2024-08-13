@@ -1,16 +1,12 @@
-// Timer.h: Definition of the Timer class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Timer class
+
 #pragma once
-#if !defined(AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_)
-#define AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
+#include "ui/resource.h"
 
-/////////////////////////////////////////////////////////////////////////////
-// Timer
-
-class TimerDataRoot
+class TimerDataRoot final
 {
 public:
    int m_TimerInterval;
@@ -42,14 +38,13 @@ class Timer :
    public Hitable
    //public EditableImpl<Timer>
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Timer();
    virtual ~Timer();
 
@@ -100,5 +95,3 @@ public:
 private:
    PinTable *m_ptable;
 };
-
-#endif // !defined(AFX_TIMER_H__932D477C_A594_4941_906D_8BF11A68C838__INCLUDED_)

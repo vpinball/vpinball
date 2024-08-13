@@ -1,14 +1,10 @@
-// Textbox.h: Definition of the Textbox class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Textbox class
+
 #pragma once
-#if !defined(AFX_TEXTBOX_H__ED083DAA_135F_4420_8701_F99205C725DA__INCLUDED_)
-#define AFX_TEXTBOX_H__ED083DAA_135F_4420_8701_F99205C725DA__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
-
-/////////////////////////////////////////////////////////////////////////////
-// Textbox
+#include "ui/resource.h"
 
 class TextboxData final
 {
@@ -40,16 +36,16 @@ class Textbox :
    public IFireEvents,
    public Hitable
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Textbox();
    virtual ~Textbox();
+
    BEGIN_COM_MAP(Textbox)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(ITextbox)
@@ -126,5 +122,3 @@ public:
    STDMETHOD(get_BackColor)(/*[out, retval]*/ OLE_COLOR *pVal);
    STDMETHOD(put_BackColor)(/*[in]*/ OLE_COLOR newVal);
 };
-
-#endif // !defined(AFX_TEXTBOX_H__ED083DAA_135F_4420_8701_F99205C725DA__INCLUDED_)

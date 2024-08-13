@@ -1,13 +1,10 @@
-// Flipper.h: Definition of the Flipper class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Flipper class
+
 #pragma once
-#if !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)
-#define AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_
 
 #include "ui/resource.h"  
-/////////////////////////////////////////////////////////////////////////////
-// Flipper     // main symbols
 
 class FlipperData final : public BaseProperty
 {
@@ -71,104 +68,103 @@ class Flipper :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Flipper();
    virtual ~Flipper();
 
    STANDARD_EDITABLE_DECLARES(Flipper, eItemFlipper, FLIPPER, 1)
 
-      BEGIN_COM_MAP(Flipper)
-         COM_INTERFACE_ENTRY(IFlipper)
-         COM_INTERFACE_ENTRY(IDispatch)
-         COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-         COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
-         COM_INTERFACE_ENTRY(IProvideClassInfo)
-         COM_INTERFACE_ENTRY(IProvideClassInfo2)
-      END_COM_MAP()
+   BEGIN_COM_MAP(Flipper)
+      COM_INTERFACE_ENTRY(IFlipper)
+      COM_INTERFACE_ENTRY(IDispatch)
+      COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
+      COM_INTERFACE_ENTRY(IPerPropertyBrowsing)
+      COM_INTERFACE_ENTRY(IProvideClassInfo)
+      COM_INTERFACE_ENTRY(IProvideClassInfo2)
+   END_COM_MAP()
 
-      BEGIN_CONNECTION_POINT_MAP(Flipper)
-         CONNECTION_POINT_ENTRY(DIID_IFlipperEvents)
-      END_CONNECTION_POINT_MAP()
+   BEGIN_CONNECTION_POINT_MAP(Flipper)
+      CONNECTION_POINT_ENTRY(DIID_IFlipperEvents)
+   END_CONNECTION_POINT_MAP()
 
-      void MoveOffset(const float dx, const float dy) final;
-      void SetObjectPos() final;
-      // Multi-object manipulation
-      Vertex2D GetCenter() const final;
-      void PutCenter(const Vertex2D &pv) final;
-      void SetDefaultPhysics(const bool fromMouseClick) final;
-      void ExportMesh(ObjLoader &loader) final;
+   void MoveOffset(const float dx, const float dy) final;
+   void SetObjectPos() final;
+   // Multi-object manipulation
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D &pv) final;
+   void SetDefaultPhysics(const bool fromMouseClick) final;
+   void ExportMesh(ObjLoader &loader) final;
 
-      ItemTypeEnum HitableGetItemType() const final { return eItemFlipper; }
-      void WriteRegDefaults() final;
+   ItemTypeEnum HitableGetItemType() const final { return eItemFlipper; }
+   void WriteRegDefaults() final;
 
-      //DECLARE_NOT_AGGREGATABLE(Flipper)
-      // Remove the comment from the line above if you don't want your object to
-      // support aggregation.
+   //DECLARE_NOT_AGGREGATABLE(Flipper)
+   // Remove the comment from the line above if you don't want your object to
+   // support aggregation.
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_FLIPPER)
-      // ISupportsErrorInfo
-      STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
+   DECLARE_REGISTRY_RESOURCEID(IDR_FLIPPER)
+   // ISupportsErrorInfo
+   STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
-      float GetElasticityFalloff() const
-      {
-          return m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
-      }
-      void SetElasticityFalloff(const float newVal)
-      {
-          if (m_phitflipper)
-          {
-              if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-                  m_phitflipper->m_elasticityFalloff = newVal;
-          }
-          else
-          {
-              m_d.m_elasticityFalloff = newVal;
-          }
-      }
+   float GetElasticityFalloff() const
+   {
+       return m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
+   }
+   void SetElasticityFalloff(const float newVal)
+   {
+       if (m_phitflipper)
+       {
+           if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+               m_phitflipper->m_elasticityFalloff = newVal;
+       }
+       else
+       {
+           m_d.m_elasticityFalloff = newVal;
+       }
+   }
 
-      float GetRampUp() const
-      {
-          return (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
-      }
-      void SetRampUp(const float value)
-      {
-          if (m_phitflipper)
-          {
-              if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-                  m_d.m_rampUp = value;
-          }
-          else
-          {
-              m_d.m_rampUp = value;
-          }
-      }
+   float GetRampUp() const
+   {
+       return (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideCoilRampUp : m_d.m_rampUp;
+   }
+   void SetRampUp(const float value)
+   {
+       if (m_phitflipper)
+       {
+           if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+               m_d.m_rampUp = value;
+       }
+       else
+       {
+           m_d.m_rampUp = value;
+       }
+   }
 
-      float GetReturn() const { return m_d.m_return; }
-      void SetReturn(const float value)
-      {
-          if (m_phitflipper)
-          {
-              if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-                  m_d.m_return = clamp(value, 0.0f, 1.0f);
-          }
-          else
-              m_d.m_return = clamp(value, 0.0f, 1.0f);
-      }
+   float GetReturn() const { return m_d.m_return; }
+   void SetReturn(const float value)
+   {
+       if (m_phitflipper)
+       {
+           if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+               m_d.m_return = clamp(value, 0.0f, 1.0f);
+       }
+       else
+           m_d.m_return = clamp(value, 0.0f, 1.0f);
+   }
 
-      float GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
-      void SetFlipperRadiusMin(const float value)
-      {
-          m_d.m_FlipperRadiusMin = max(value,0.0f);
-      }
+   float GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
+   void SetFlipperRadiusMin(const float value)
+   {
+       m_d.m_FlipperRadiusMin = max(value,0.0f);
+   }
 
-      FlipperData m_d;
+   FlipperData m_d;
 
    PinTable *m_ptable;
 
@@ -255,5 +251,3 @@ public:
    STDMETHOD(get_EOSTorqueAngle)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_EOSTorqueAngle)(/*[in]*/ float newVal);
 };
-
-#endif // !defined(AFX_FLIPPER_H__D65AA2A2_9F89_4AA4_88F3_D325B1001825__INCLUDED_)

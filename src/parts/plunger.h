@@ -1,11 +1,10 @@
-// Plunger.h: Definition of the Plunger class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_)
-#define AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Plunger class
+
+#pragma once
+
+#include "ui/resource.h"
 
 constexpr int MAXTIPSHAPE = 256;
 
@@ -94,10 +93,6 @@ struct PlungerDesc
    PlungerCoord *c;
 };
 
-
-/////////////////////////////////////////////////////////////////////////////
-// Plunger
-
 class Plunger :
    public IDispatchImpl<IPlunger, &IID_IPlunger, &LIBID_VPinballLib>,
    public ISupportErrorInfo,
@@ -115,14 +110,13 @@ class Plunger :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    BEGIN_COM_MAP(Plunger)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IPlunger)
@@ -255,5 +249,3 @@ public:
    STDMETHOD(get_ReflectionEnabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
 };
-
-#endif // !defined(AFX_PLUNGER_H__A729D2E2_D68F_4DD6_BE4B_D8AD1B8C7B66__INCLUDED_)

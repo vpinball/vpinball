@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #include "parts/backGlass.h"
@@ -28,9 +30,7 @@ inline char nextChar(size_t &inPos, const size_t inSize, const char* const inCha
    return c;
 }
 
-/*
-returns actual data size if successful or -1 if something went wrong.
-*/
+// returns actual data size if successful or -1 if something went wrong.
 static size_t decode_base64(const char* const inData, char* const outData, const size_t inSize, const size_t outSize) {
    static constexpr char inChars[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
    static char* outChars = nullptr;
@@ -83,9 +83,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    m_loaded_image = nullptr;
 #ifdef ENABLE_VR
    //Check for a directb2s and try to use its backglass data
-   string b2sFileName = g_pplayer->m_ptable->m_szFileName;
-   b2sFileName = b2sFileName.substr(0, b2sFileName.find_last_of('.'));
-   b2sFileName.append(".directb2s");
+   const string b2sFileName = g_pplayer->m_ptable->m_szFileName.substr(0, g_pplayer->m_ptable->m_szFileName.find_last_of('.')) + ".directb2s";
    m_backglass_dmd = int2(0,0);
    m_backglass_dmd_width = 0;
    m_backglass_dmd_height = 0;

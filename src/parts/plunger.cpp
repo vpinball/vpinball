@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 
@@ -179,7 +181,7 @@ void Plunger::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 void Plunger::SetObjectPos()
 {
-    m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
+   m_vpinball->SetObjectPosCur(m_d.m_v.x, m_d.m_v.y);
 }
 
 void Plunger::MoveOffset(const float dx, const float dy)
@@ -214,10 +216,7 @@ void Plunger::SetDefaultPhysics(const bool fromMouseClick)
 
 #pragma region Rendering
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerCoord.cs
-//
 
 // Modern Plunger - added by rascal
 constexpr static PlungerCoord modernCoords[] =
@@ -233,10 +232,6 @@ constexpr static PlungerCoord modernCoords[] =
 const static PlungerDesc modernDesc = {
    sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
 };
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 // Flat Plunger.  This is a special case with no "lathe" entries;
 // instead we define a simple rectangle covering the stroke length
@@ -271,11 +266,8 @@ static const char *nextTipToken(const char* &p)
 
 #define PLUNGER_FRAME_COUNT 25   //frame per 80 units distance
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerDesc.cs
 //            VisualPinball.Engine/VPT/Plunger/PlungerMeshGenerator.cs
-//
 
 void Plunger::RenderSetup(RenderDevice *device)
 {
@@ -824,10 +816,6 @@ void Plunger::RenderSetup(RenderDevice *device)
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Plunger::RenderRelease()
 {
    assert(m_rd != nullptr);
@@ -1015,14 +1003,8 @@ STDMETHODIMP Plunger::PullBackandRetract()
 STDMETHODIMP Plunger::MotionDevice(int *pVal)
 {
    *pVal = g_pplayer->m_pininput.uShockType;
-
    return S_OK;
 }
-
-//
-// license:GPLv3+
-// Not yet ported to VPE, but probably will have to
-//
 
 STDMETHODIMP Plunger::Position(float *pVal) // 0..25
 {
@@ -1117,49 +1099,39 @@ STDMETHODIMP Plunger::Fire()
    return S_OK;
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 STDMETHODIMP Plunger::get_PullSpeed(float *pVal)
 {
    *pVal = m_d.m_speedPull;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_PullSpeed(float newVal)
 {
    m_d.m_speedPull = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_FireSpeed(float *pVal)
 {
    *pVal = m_d.m_speedFire;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_FireSpeed(float newVal)
 {
    m_d.m_speedFire = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Type(PlungerType *pVal)
 {
    *pVal = m_d.m_type;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_Type(PlungerType newVal)
 {
    m_d.m_type = newVal;
-
    return S_OK;
 }
 
@@ -1208,14 +1180,12 @@ STDMETHODIMP Plunger::put_Image(BSTR newVal)
 STDMETHODIMP Plunger::get_AnimFrames(int *pVal)
 {
    *pVal = m_d.m_animFrames;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 {
    m_d.m_animFrames = newVal;
-
    return S_OK;
 }
 
@@ -1231,119 +1201,102 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, nullptr, nullptr);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RodDiam(float *pVal)
 {
    *pVal = m_d.m_rodDiam;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_RodDiam(float newVal)
 {
    m_d.m_rodDiam = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingGap(float *pVal)
 {
    *pVal = m_d.m_ringGap;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_RingGap(float newVal)
 {
    m_d.m_ringGap = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingDiam(float *pVal)
 {
    *pVal = m_d.m_ringDiam;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_RingDiam(float newVal)
 {
    m_d.m_ringDiam = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_RingWidth(float *pVal)
 {
    *pVal = m_d.m_ringWidth;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_RingWidth(float newVal)
 {
    m_d.m_ringWidth = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringDiam(float *pVal)
 {
    *pVal = m_d.m_springDiam;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_SpringDiam(float newVal)
 {
    m_d.m_springDiam = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringGauge(float *pVal)
 {
    *pVal = m_d.m_springGauge;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_SpringGauge(float newVal)
 {
    m_d.m_springGauge = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringLoops(float *pVal)
 {
    *pVal = m_d.m_springLoops;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_SpringLoops(float newVal)
 {
    m_d.m_springLoops = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_SpringEndLoops(float *pVal)
 {
    *pVal = m_d.m_springEndLoops;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_SpringEndLoops(float newVal)
 {
    m_d.m_springEndLoops = newVal;
-
    return S_OK;
 }
 
@@ -1376,49 +1329,42 @@ STDMETHODIMP Plunger::get_X(float *pVal)
 STDMETHODIMP Plunger::put_X(float newVal)
 {
    m_d.m_v.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Y(float *pVal)
 {
    *pVal = m_d.m_v.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_Y(float newVal)
 {
    m_d.m_v.y = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Width(float *pVal)
 {
    *pVal = m_d.m_width;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_Width(float newVal)
 {
    m_d.m_width = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ZAdjust(float *pVal)
 {
    *pVal = m_d.m_zAdjust;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_ZAdjust(float newVal)
 {
    m_d.m_zAdjust = newVal;
-
    return S_OK;
 }
 
@@ -1443,77 +1389,66 @@ STDMETHODIMP Plunger::put_Surface(BSTR newVal)
 STDMETHODIMP Plunger::get_MechStrength(float *pVal)
 {
    *pVal = m_d.m_mechStrength;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_MechStrength(float newVal)
 {
    m_d.m_mechStrength = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_MechPlunger(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_mechPlunger);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_MechPlunger(VARIANT_BOOL newVal)
 {
    m_d.m_mechPlunger = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_AutoPlunger(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_autoPlunger);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_AutoPlunger(VARIANT_BOOL newVal)
 {
    m_d.m_autoPlunger = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ParkPosition(float *pVal)
 {
    *pVal = m_d.m_parkPosition;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_ParkPosition(float newVal)
 {
    m_d.m_parkPosition = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_Stroke(float *pVal)
 {
    *pVal = m_d.m_stroke;
-
    return S_OK;
 }
 
@@ -1528,41 +1463,35 @@ STDMETHODIMP Plunger::put_Stroke(float newVal)
 STDMETHODIMP Plunger::get_ScatterVelocity(float *pVal)
 {
    *pVal = m_d.m_scatterVelocity;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_ScatterVelocity(float newVal)
 {
    m_d.m_scatterVelocity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_MomentumXfer(float *pVal)
 {
    *pVal = m_d.m_momentumXfer;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_MomentumXfer(float newVal)
 {
    m_d.m_momentumXfer = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Plunger::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }

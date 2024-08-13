@@ -1,9 +1,8 @@
-// hittarget.h: interface for the HitTarget class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// interface for the HitTarget class.
+
 #pragma once
-#if !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)
-#define AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_
 
 #include "ui/resource.h"
 #include "robin_hood.h"
@@ -19,7 +18,7 @@
 //  ObjRotY = 7
 //  ObjRotZ = 8
 
-class HitTargetData : public BaseProperty
+class HitTargetData final : public BaseProperty
 {
 public:
    Vertex3Ds m_vPosition;
@@ -33,8 +32,8 @@ public:
    float m_dropSpeed;
    int   m_raiseDelay;
 
-   float m_depthBias;      // for determining depth sorting
-   float m_disableLightingTop; // was bool, now 0..1
+   float m_depthBias;            // for determining depth sorting
+   float m_disableLightingTop;   // was bool, now 0..1
    float m_disableLightingBelow; // 0..1
 
    bool m_legacy;
@@ -57,15 +56,15 @@ class HitTarget :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
-   static const float DROP_TARGET_LIMIT;
+
+   static constexpr float DROP_TARGET_LIMIT = 52.0f;
 
    HitTarget();
    virtual ~HitTarget();
@@ -181,10 +180,9 @@ public:
 
    HitTargetData m_d;
 
-   bool             m_hitEvent;
+   bool m_hitEvent;
 
 private:
-
    void UpdateTarget();
    void SetupHitObject(class PhysicsEngine* physics, HitObject * obj, const bool setHitObject, const bool isUI);
    void AddHitEdge(class PhysicsEngine *physics, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi,
@@ -192,12 +190,12 @@ private:
 
    PinTable        *m_ptable = nullptr;
 
-   RenderDevice *m_rd = nullptr;
+   RenderDevice    *m_rd = nullptr;
    const Vertex3D_NoTex2 *m_vertices = nullptr; // pointer just to the existing hittargets hardcoded in arrays
    const WORD      *m_indices = nullptr; // dto.
    unsigned int     m_numVertices = 0;
    unsigned int     m_numIndices = 0;
-   MeshBuffer *m_meshBuffer = nullptr;
+   MeshBuffer      *m_meshBuffer = nullptr;
 
    PropertyPane *m_propVisual = nullptr;
    PropertyPane *m_propPosition = nullptr;
@@ -212,5 +210,3 @@ private:
    bool  m_moveAnimation;
    bool  m_moveDown;
 };
-
-#endif // !defined(AFX_HITTARGET_H__A67DE998_7D97_4E03_BE91_55BFD3A48DB6__INCLUDED_)

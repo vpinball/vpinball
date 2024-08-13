@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "ui/resource.h"
@@ -24,9 +26,6 @@ public:
    bool m_skirtVisible;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Bumper
-
 class Bumper :
    //public CComObjectRootEx<CComSingleThreadModel>,
    public IDispatchImpl<IBumper, &IID_IBumper, &LIBID_VPinballLib>,
@@ -44,14 +43,13 @@ class Bumper :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
    //public EditableImpl<Bumper>
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Bumper();
    ~Bumper();
 
@@ -73,7 +71,7 @@ public:
    BEGIN_CONNECTION_POINT_MAP(Bumper)
       CONNECTION_POINT_ENTRY(DIID_IBumperEvents)
    END_CONNECTION_POINT_MAP()
-   
+
    DECLARE_REGISTRY_RESOURCEID(IDR_BUMPER)
 
    // ISupportsErrorInfo

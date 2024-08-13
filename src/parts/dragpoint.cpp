@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 Vertex3Ds DragPoint::m_copyPoint;
@@ -176,8 +178,8 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
 
    if (useElementCenter)
    {
-      /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
-      Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+      // Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
+      // Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter()
       const float centerx = newcenter.x;
       const float centery = newcenter.y;
 
@@ -260,10 +262,7 @@ void IHaveDragPoints::ReverseOrder()
    m_vdpoint[m_vdpoint.size() - 1]->m_slingshot = slingshotTemp;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
-//
 
 void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **ppcoords)
 {
@@ -361,10 +360,6 @@ void IHaveDragPoints::GetTextureCoords(const vector<RenderVertex> & vv, float **
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void IHaveDragPoints::ClearPointsForOverwrite()
 {
    for (size_t i = 0; i < m_vdpoint.size(); i++)
@@ -442,6 +437,7 @@ IEditable *DragPoint::GetIEditable()
 {
    return M_PIHDP->GetIEditable();
 }
+
 const IEditable *DragPoint::GetIEditable() const
 {
    return M_PIHDP->GetIEditable();
@@ -625,7 +621,6 @@ STDMETHODIMP DragPoint::put_X(float newVal)
 STDMETHODIMP DragPoint::get_Y(float *pVal)
 {
    *pVal = m_v.y;
-
    return S_OK;
 }
 
@@ -641,7 +636,6 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
 STDMETHODIMP DragPoint::get_Z(float *pVal)
 {
    *pVal = m_v.z;
-
    return S_OK;
 }
 
@@ -657,14 +651,12 @@ STDMETHODIMP DragPoint::put_Z(float newVal)
 STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
 {
    *pVal = m_calcHeight;
-
    return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_smooth);
-
    return S_OK;
 }
 
@@ -680,7 +672,6 @@ STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_autoTexture);
-
    return S_OK;
 }
 
@@ -696,7 +687,6 @@ STDMETHODIMP DragPoint::put_IsAutoTextureCoordinate(VARIANT_BOOL newVal)
 STDMETHODIMP DragPoint::get_TextureCoordinateU(float *pVal)
 {
    *pVal = m_texturecoord;
-
    return S_OK;
 }
 

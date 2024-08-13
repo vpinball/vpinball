@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "renderer/Shader.h"
 #include "renderer/IndexBuffer.h"
@@ -535,7 +537,6 @@ STDMETHODIMP Flasher::put_X(float newVal)
 STDMETHODIMP Flasher::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
@@ -553,7 +554,6 @@ STDMETHODIMP Flasher::put_Y(float newVal)
 STDMETHODIMP Flasher::get_RotX(float *pVal)
 {
    *pVal = m_d.m_rotX;
-
    return S_OK;
 }
 
@@ -571,7 +571,6 @@ STDMETHODIMP Flasher::put_RotX(float newVal)
 STDMETHODIMP Flasher::get_RotY(float *pVal)
 {
    *pVal = m_d.m_rotY;
-
    return S_OK;
 }
 
@@ -589,7 +588,6 @@ STDMETHODIMP Flasher::put_RotY(float newVal)
 STDMETHODIMP Flasher::get_RotZ(float *pVal)
 {
    *pVal = m_d.m_rotZ;
-
    return S_OK;
 }
 
@@ -607,7 +605,6 @@ STDMETHODIMP Flasher::put_RotZ(float newVal)
 STDMETHODIMP Flasher::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-
    return S_OK;
 }
 
@@ -625,14 +622,12 @@ STDMETHODIMP Flasher::put_Height(float newVal)
 STDMETHODIMP Flasher::get_Color(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_color;
-
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_Color(OLE_COLOR newVal)
 {
    m_d.m_color = newVal;
-
    return S_OK;
 }
 
@@ -781,7 +776,6 @@ STDMETHODIMP Flasher::put_Amount(long newVal)
 STDMETHODIMP Flasher::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isVisible);
-
    return S_OK;
 }
 
@@ -794,7 +788,6 @@ STDMETHODIMP Flasher::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Flasher::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_displayTexture);
-
    return S_OK;
 }
 
@@ -807,7 +800,6 @@ STDMETHODIMP Flasher::put_DisplayTexture(VARIANT_BOOL newVal)
 STDMETHODIMP Flasher::get_AddBlend(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_addBlend);
-
    return S_OK;
 }
 
@@ -820,7 +812,6 @@ STDMETHODIMP Flasher::put_AddBlend(VARIANT_BOOL newVal)
 STDMETHODIMP Flasher::get_DMD(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isDMD);
-
    return S_OK;
 }
 
@@ -999,9 +990,7 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
         }
     }
 
-    // Retrieve the handle to a display device context for the client
-    // area of the window.
-
+    // Retrieve the handle to a display device context for the client area of the window.
     const HDC hdcWindow = GetDC(m_videoCapHwnd);
 
     // Create a compatible DC, which is used in a BitBlt from the window DC.
@@ -1067,28 +1056,24 @@ STDMETHODIMP Flasher::put_VideoCapUpdate(BSTR cWinTitle)
 STDMETHODIMP Flasher::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
-
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_DepthBias(float newVal)
 {
    m_d.m_depthBias = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Flasher::get_ImageAlignment(RampImageAlignment *pVal)
 {
    *pVal = m_d.m_imagealignment;
-
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_ImageAlignment(RampImageAlignment newVal)
 {
    m_d.m_imagealignment = newVal;
-
    return S_OK;
 }
 

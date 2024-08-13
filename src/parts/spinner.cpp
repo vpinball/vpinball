@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "utils/objloader.h"
 #include "meshes/spinnerBracketMesh.h"
@@ -32,8 +34,8 @@ void Spinner::UpdateStatusBarInfo()
 
 float Spinner::GetAngleMax() const
 {
-    return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : // player active value
-                         m_d.m_angleMax;
+   return (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMax) : // player active value
+                        m_d.m_angleMax;
 }
 
 void Spinner::SetAngleMax(const float angle)
@@ -193,10 +195,7 @@ void Spinner::EndPlay()
 
 #pragma region Physics
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Spinner/SpinnerHitGenerator.cs
-//
 
 void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -245,10 +244,6 @@ void Spinner::PhysicRelease(PhysicsEngine* physics, const bool isUI)
       m_phitspinner = nullptr;
    }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 #pragma endregion
 
@@ -577,7 +572,6 @@ STDMETHODIMP Spinner::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Spinner::get_Length(float *pVal)
 {
    *pVal = m_d.m_length;
-
    return S_OK;
 }
 
@@ -590,21 +584,18 @@ STDMETHODIMP Spinner::put_Length(float newVal)
 STDMETHODIMP Spinner::get_Rotation(float *pVal)
 {
    *pVal = m_d.m_rotation;
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Rotation(float newVal)
 {
    m_d.m_rotation = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-
    return S_OK;
 }
 
@@ -617,7 +608,6 @@ STDMETHODIMP Spinner::put_Height(float newVal)
 STDMETHODIMP Spinner::get_Damping(float *pVal)
 {
    *pVal = !g_pplayer ? m_d.m_damping : powf(m_phitspinner->m_spinnerMover.m_damping,(float)(1.0/PHYS_FACTOR));
-
    return S_OK;
 }
 
@@ -677,28 +667,24 @@ STDMETHODIMP Spinner::put_Image(BSTR newVal)
 STDMETHODIMP Spinner::get_X(float *pVal)
 {
    *pVal = m_d.m_vCenter.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_X(float newVal)
 {
    m_d.m_vCenter.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_Y(float newVal)
 {
    m_d.m_vCenter.y = newVal;
-
    return S_OK;
 }
 
@@ -723,14 +709,12 @@ STDMETHODIMP Spinner::put_Surface(BSTR newVal)
 STDMETHODIMP Spinner::get_ShowBracket(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_showBracket);
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_ShowBracket(VARIANT_BOOL newVal)
 {
    m_d.m_showBracket = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -746,7 +730,6 @@ STDMETHODIMP Spinner::put_AngleMax(float newVal)
       return S_FAIL;
 
    SetAngleMax(newVal);
-
    return S_OK;
 }
 
@@ -754,7 +737,6 @@ STDMETHODIMP Spinner::get_AngleMin(float *pVal)
 {
    *pVal = (g_pplayer) ? RADTOANG(m_phitspinner->m_spinnerMover.m_angleMin) :	//player active value
                          m_d.m_angleMin;
-
    return S_OK;
 }
 
@@ -764,7 +746,6 @@ STDMETHODIMP Spinner::put_AngleMin(float newVal)
       return S_FAIL;
 
    SetAngleMin(newVal);
-
    return S_OK;
 }
 
@@ -772,7 +753,6 @@ STDMETHODIMP Spinner::get_Elasticity(float *pVal)
 {
    *pVal = (g_pplayer) ? m_phitspinner->m_spinnerMover.m_elasticity :	//player active value
                          m_d.m_elasticity;
-
    return S_OK;
 }
 
@@ -789,7 +769,6 @@ STDMETHODIMP Spinner::put_Elasticity(float newVal)
 STDMETHODIMP Spinner::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB((g_pplayer) ? m_phitspinner->m_spinnerMover.m_visible : m_d.m_visible);
-
    return S_OK;
 }
 
@@ -806,14 +785,12 @@ STDMETHODIMP Spinner::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Spinner::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Spinner::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 

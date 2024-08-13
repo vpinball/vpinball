@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "ui/resource.h"
@@ -9,7 +11,7 @@
 class HitBall;
 
 // Helper class used for projecting sphere points, which is then used to compensate for projection stretch if anti-ball-stretch is enabled
-class AntiStretchHelper
+class AntiStretchHelper final
 {
 public:
    // The number of points matters: 12 points are not enough, 35 and more seems to give good results
@@ -71,14 +73,13 @@ class Ball :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS *const pdispparams) override;
 #endif
-public:
    Ball();
    ~Ball();
 
@@ -101,7 +102,7 @@ public:
    BEGIN_CONNECTION_POINT_MAP(Ball)
       CONNECTION_POINT_ENTRY(DIID_IBallEvents)
    END_CONNECTION_POINT_MAP()
-   
+
    DECLARE_REGISTRY_RESOURCEID(IDR_BALL)
 
    // ISelect implementation

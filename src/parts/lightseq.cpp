@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 LightSeq::LightSeq()
@@ -86,11 +88,7 @@ void LightSeq::PutCenter(const Vertex2D& pv)
    m_d.m_v = pv;
 }
 
-// this function draws the shape of the object with a solid fill
-// only used in the editor and not the game
-//
-// this is called before the grid lines are drawn on the map
-//
+// draws the shape of the object with a solid fill, only used in the editor/UI and not in-game
 void LightSeq::UIRenderPass1(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -109,12 +107,7 @@ void LightSeq::UIRenderPass1(Sur * const psur)
    psur->Ellipse(m_d.m_v.x, m_d.m_v.y - 3.0f, 4.0f);
 }
 
-// this function draws the shape of the object with a black outline (no solid fill)
-// only used in the editor and not the game
-//
-// this is called after the grid lines have been drawn on the map.  draws a solid
-// outline over the grid lines
-//
+// draws the shape of the object with a black outline (no solid fill), only used in the editor/UI and not in-game
 void LightSeq::UIRenderPass2(Sur * const psur)
 {
    psur->SetFillColor(-1);
@@ -137,8 +130,7 @@ void LightSeq::UIRenderPass2(Sur * const psur)
    RenderOutline(psur);
 }
 
-// this function draw the little center marker which is a cross with the usual LS circles on it
-
+// draws the little center marker which is a cross with the usual LS circles on it
 void LightSeq::RenderOutline(Sur * const psur)
 {
    psur->SetBorderColor(RGB(0, 0, 0), false, 0);
@@ -160,19 +152,13 @@ void LightSeq::RenderOutline(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y - 2.5f, 2.0f);
 }
 
-// Renders the image onto the Blueprint
-//
-// We don't want this on the blue print as it is non-essensial
-//
+// Renders the image onto the Blueprint, but we don't want light seqs on the blue print as it is non-essensial
 void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-// Registers the timer with the game call which then makes a call back when the interval
-// has expired.
-//
-// for this sort of object it is basically not really required but hey, somebody might use it..
-//
+// Register the timer with the game call which then makes a call back when the interval has expired.
+// for this sort of object (light seq) it is basically not really required, but its standard functionality
 void LightSeq::BeginPlay(vector<HitTimer*> &pvht)
 {
    m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
@@ -324,8 +310,7 @@ void LightSeq::RenderRelease()
    m_pgridData = nullptr;
 }
 
-// This function is called each frame. It basically checks to see if the update
-// interval has expired and if so handles the light effect
+// Called each frame. Checks to see if the update interval has expired, and if so handles the light effect
 void LightSeq::UpdateAnimation(const float diff_time_msec)
 {
    if (m_playInProgress)
@@ -483,21 +468,18 @@ HRESULT LightSeq::InitPostLoad()
 STDMETHODIMP LightSeq::get_Collection(BSTR *pVal)
 {
    *pVal = SysAllocString(m_d.m_wzCollection.c_str());
-
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::put_Collection(BSTR newVal)
 {
    m_d.m_wzCollection = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_CenterX(float *pVal)
 {
    *pVal = GetX();
-
    return S_OK;
 }
 
@@ -507,14 +489,12 @@ STDMETHODIMP LightSeq::put_CenterX(float newVal)
       return E_FAIL;
    
    SetX(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_CenterY(float *pVal)
 {
    *pVal = GetY();
-
    return S_OK;
 }
 
@@ -524,21 +504,18 @@ STDMETHODIMP LightSeq::put_CenterY(float newVal)
       return E_FAIL;
    
    SetY(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::get_UpdateInterval(long *pVal)
 {
    *pVal = GetUpdateInterval();
-
    return S_OK;
 }
 
 STDMETHODIMP LightSeq::put_UpdateInterval(long newVal)
 {
    SetUpdateInterval(newVal);
-
    return S_OK;
 }
 
@@ -595,6 +572,7 @@ STDMETHODIMP LightSeq::Play(SequencerState Animation, long TailLength, long Repe
          }
       }
    }
+
    return rc;
 }
 
@@ -1522,13 +1500,9 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
             LightState state = GetElementState(randomLight);
             // invert the state
             if (state == LightStateOn)
-            {
                state = LightStateOff;
-            }
             else
-            {
                state = LightStateOn;
-            }
             SetElementToState(randomLight, state);
          }
 

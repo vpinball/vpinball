@@ -1,16 +1,12 @@
-// DispReel.h: Definition of the DispReel class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the DispReel class
+
 #pragma once
-#if !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)
-#define AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
+#include "ui/resource.h"
 
-/////////////////////////////////////////////////////////////////////////////
-// DispReel
-
-// add data in this class is persisted with the table
+// data in this class is persisted with the table
 class DispReelData final : public BaseProperty
 {
 public:
@@ -48,16 +44,16 @@ class DispReel :
    public Hitable,
    public IPerPropertyBrowsing     // Ability to fill in dropdown(s) in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    DispReel();
    virtual ~DispReel();
+
    BEGIN_COM_MAP(DispReel)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(IDispReel)
@@ -225,5 +221,3 @@ public:
    STDMETHOD(SetValue)(/*[in]*/ long Value);
    STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
 };
-
-#endif // !defined(AFX_DISPREEL_H__1052EB33_4F53_460B_AAB8_09D3C517F225__INCLUDED_)

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "core/vpversion.h"
 #include "ui/resource.h"
@@ -36,10 +38,6 @@ constexpr unsigned char TABLE_KEY[] = "Visual Pinball";
 //constexpr unsigned char PARAPHRASE_KEY[] = { 0xB4, 0x0B, 0xBE, 0x37, 0xC3, 0x0C, 0x8E, 0xA1, 0x5A, 0x05, 0xDF, 0x1B, 0x2D, 0x02, 0xEF, 0x8D };
 
 #pragma region ScriptGlobalTable
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
 
 void ScriptGlobalTable::Init(VPinball *vpinball, PinTable *pt)
 {
@@ -132,8 +130,8 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 	else
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
-   if (g_pplayer)
-	   g_pplayer->ReadAccelerometerCalibration();
+	if (g_pplayer)
+		g_pplayer->ReadAccelerometerCalibration();
 
 	return S_OK;
 }
@@ -160,7 +158,8 @@ STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb
 
 STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
-   if (g_pplayer && g_pplayer->m_PlaySound) m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
+   if (g_pplayer && g_pplayer->m_PlaySound)
+      m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
 
    return S_OK;
 }
@@ -168,14 +167,12 @@ STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volum
 STDMETHODIMP ScriptGlobalTable::FireKnocker(int Count)
 {
    if (g_pplayer) m_pt->FireKnocker(Count);
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::QuitPlayer(int CloseType)
 {
    if (g_pplayer) m_pt->QuitPlayer(CloseType);
-
    return S_OK;
 }
 
@@ -207,8 +204,8 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
 
 STDMETHODIMP ScriptGlobalTable::EndMusic()
 {
-	if (g_pplayer && g_pplayer->m_audio)
-	{
+   if (g_pplayer && g_pplayer->m_audio)
+   {
       delete g_pplayer->m_audio;
       g_pplayer->m_audio = nullptr;
    }
@@ -217,130 +214,113 @@ STDMETHODIMP ScriptGlobalTable::EndMusic()
 
 STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
-	if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
-	{
-		const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
-		g_pplayer->m_audio->MusicVolume(MusicVolume);
-	}
-	return S_OK;
+   if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
+   {
+      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+      g_pplayer->m_audio->MusicVolume(MusicVolume);
+   }
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
 {
    *pVal = SysAllocString(L"Global");
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftFlipperKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightFlipperKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftTiltKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightTiltKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eCenterTiltKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_PlungerKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[ePlungerKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_StartGameKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStartGameKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eAddCreditKey];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eAddCreditKey2];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eMechanicalTilt];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftMagnaSave];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightMagnaSave];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_ExitGame(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eExitGame];
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLockbarKey];
-
    return S_OK;
 }
 
@@ -425,11 +405,11 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
 
 STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
 {
-    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
-        return E_FAIL;
+   if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
+      return E_FAIL;
 
-    *param = SysAllocString(m_vpinball->m_customParameters[index-1]);
-    return S_OK;
+   *param = SysAllocString(m_vpinball->m_customParameters[index-1]);
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR *param)
@@ -840,7 +820,6 @@ STDMETHODIMP ScriptGlobalTable::get_FrameIndex(long *pVal)
       return E_POINTER;
 
    *pVal = g_pplayer->m_overall_frames;
-
    return S_OK;
 }
 
@@ -850,7 +829,6 @@ STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
       return E_POINTER;
 
    *pVal = g_pplayer->m_time_msec;
-
    return S_OK;
 }
 
@@ -860,7 +838,6 @@ STDMETHODIMP ScriptGlobalTable::get_PreciseGameTime(double *pVal)
       return E_POINTER;
 
    *pVal = g_pplayer->m_time_sec;
-
    return S_OK;
 }
 
@@ -870,7 +847,6 @@ STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
       return E_POINTER;
 
    *pVal = msec();
-
    return S_OK;
 }
 
@@ -885,6 +861,7 @@ STDMETHODIMP ScriptGlobalTable::get_NightDay(int *pVal)
 {
    if (g_pplayer)
       *pVal = quantizeUnsignedPercent(g_pplayer->m_renderer->m_globalEmissionScale);
+
    return S_OK;
 }
 
@@ -1038,12 +1015,14 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 {
    if (!g_pplayer)
       return E_FAIL;
+
    char szImageName[MAX_PATH], szFileName[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, imageName, -1, szImageName, MAX_PATH, nullptr, nullptr);
    WideCharToMultiByteNull(CP_ACP, 0, fileName, -1, szFileName, MAX_PATH, nullptr, nullptr);
    // Do not allow to load an image with the same name as one of the edited table as they would conflict
    if (g_pplayer->m_pEditorTable->GetImage(szImageName))
       return E_FAIL;
+
    Texture *image = m_pt->ImportImage(szFileName, szImageName);
    return image->m_pdsBuffer == nullptr ? E_FAIL : S_OK;
 }
@@ -1178,6 +1157,7 @@ STDMETHODIMP ScriptGlobalTable::get_DisableStaticPrerendering(VARIANT_BOOL *pVal
 {
    if (g_pplayer == nullptr)
       return E_FAIL;
+
    *pVal = FTOVB(!g_pplayer->m_renderer->IsUsingStaticPrepass());
    return S_OK;
 }
@@ -1186,6 +1166,7 @@ STDMETHODIMP ScriptGlobalTable::put_DisableStaticPrerendering(VARIANT_BOOL newVa
 {
    if (g_pplayer == nullptr)
       return E_FAIL;
+
    g_pplayer->m_renderer->DisableStaticPrePass(VBTOb(newVal));
    return S_OK;
 }
@@ -1209,7 +1190,6 @@ STDMETHODIMP ScriptGlobalTable::GetBalls(LPSAFEARRAY *pVal)
    }
 
    *pVal = balls.Detach();
-
    return S_OK;
 }
 
@@ -1229,7 +1209,6 @@ STDMETHODIMP ScriptGlobalTable::GetElements(LPSAFEARRAY *pVal)
    }
 
    *pVal = objs.Detach();
-
    return S_OK;
 }
 
@@ -1262,38 +1241,37 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveTable(ITable **pVal)
       return E_POINTER;
 
    m_pt->QueryInterface(IID_ITable, (void**)pVal);
-
    return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
-	return S_OK;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(double *pVal)
 {
-	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
-	return S_OK;
+   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_VersionMajor(int *pVal)
 {
-	*pVal = VP_VERSION_MAJOR;
-	return S_OK;
+   *pVal = VP_VERSION_MAJOR;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_VersionMinor(int *pVal)
 {
-	*pVal = VP_VERSION_MINOR;
-	return S_OK;
+   *pVal = VP_VERSION_MINOR;
+   return S_OK;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_VersionRevision(int *pVal)
 {
-	*pVal = VP_VERSION_REV;
-	return S_OK;
+   *pVal = VP_VERSION_REV;
+   return S_OK;
 }
 
 // Serial/RS232 stuff
@@ -1674,23 +1652,23 @@ void PinTable::SetCaption(const string& szCaption)
 void PinTable::SetMouseCapture()
 {
 #ifndef __STANDALONE__
-    SetCapture();
+   SetCapture();
 #endif
 }
 
 int PinTable::ShowMessageBox(const char *text) const
 {
-    return m_mdiTable->MessageBox(text, "Visual Pinball", MB_YESNO);
+   return m_mdiTable->MessageBox(text, "Visual Pinball", MB_YESNO);
 }
 
 POINT PinTable::GetScreenPoint() const
 {
 #ifndef __STANDALONE__
-    CPoint pt = GetCursorPos();
-    ScreenToClient(pt);
-    return pt;
+   CPoint pt = GetCursorPos();
+   ScreenToClient(pt);
+   return pt;
 #else
-     return POINT();
+   return POINT();
 #endif
 }
 
@@ -2164,8 +2142,8 @@ void PinTable::Paint(HDC hdc)
    BitBlt(hdc, rc.left, rc.top, rc.right, rc.bottom, dc.GetHDC(), 0, 0, SRCCOPY);
 
    dc.SelectObject(hbmOld);
-
 #endif
+
    m_dirtyDraw = false;
 }
 
@@ -2363,7 +2341,7 @@ void PinTable::Play(const int playMode)
       IEditable *edit_dst = nullptr;
       switch (src->m_vedit[i]->GetItemType())
       {
-      case eItemBall:      edit_dst = ((Ball *)   src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemBall:      edit_dst = ((Ball *)     src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemBumper:    edit_dst = ((Bumper *)   src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemDecal:     edit_dst = ((Decal *)    src->m_vedit[i])->CopyForPlay(live_table); break;
       case eItemDispReel:  edit_dst = ((DispReel *) src->m_vedit[i])->CopyForPlay(live_table); break;
@@ -7062,7 +7040,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 void PinTable::RefreshProperties()
 {
 #ifndef __STANDALONE__
-    m_vpinball->SetPropSel(m_vmultisel);
+   m_vpinball->SetPropSel(m_vmultisel);
 #endif
 }
 
@@ -7348,8 +7326,7 @@ STDMETHODIMP PinTable::put_Name(BSTR newVal)
 
 STDMETHODIMP PinTable::get_MaxSeparation(float *pVal)
 {
-
-    *pVal = GetMaxSeparation();
+   *pVal = GetMaxSeparation();
 
    return S_OK;
 }
@@ -7366,7 +7343,7 @@ STDMETHODIMP PinTable::put_MaxSeparation(float newVal)
 
 STDMETHODIMP PinTable::get_ZPD(float *pVal)
 {
-    *pVal = GetZPD();
+   *pVal = GetZPD();
    return S_OK;
 }
 
@@ -7381,8 +7358,8 @@ STDMETHODIMP PinTable::put_ZPD(float newVal)
 
 void PinTable::Set3DOffset(const float value)
 {
-    if (m_overwriteGlobalStereo3D)
-        m_3DOffset = value;
+   if (m_overwriteGlobalStereo3D)
+      m_3DOffset = value;
 }
 
 STDMETHODIMP PinTable::get_Offset(float *pVal)
@@ -7660,8 +7637,6 @@ bool PinTable::ExportImage(const Texture * const ppi, const char * const szfilen
 #endif
    return false;
 }
-
-//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++>>
 
 Texture *PinTable::ImportImage(const string &filename, const string &imagename)
 {
@@ -8662,7 +8637,6 @@ Texture* PinTable::GetSurfaceImage(const string& name) const
 STDMETHODIMP PinTable::get_DisplayGrid(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_grid);
-
    return S_OK;
 }
 
@@ -8678,7 +8652,6 @@ STDMETHODIMP PinTable::put_DisplayGrid(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_DisplayBackdrop(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_backdrop);
-
    return S_OK;
 }
 
@@ -8694,7 +8667,6 @@ STDMETHODIMP PinTable::put_DisplayBackdrop(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_GlassHeight(float *pVal)
 {
    *pVal = m_glassTopHeight;
-
    return S_OK;
 }
 
@@ -8711,7 +8683,6 @@ STDMETHODIMP PinTable::put_GlassHeight(float newVal)
 STDMETHODIMP PinTable::get_TableHeight(float *pVal)
 {
    *pVal = 0.f;
-
    return S_OK;
 }
 
@@ -8727,12 +8698,12 @@ STDMETHODIMP PinTable::put_TableHeight(float newVal)
 
 float PinTable::GetTableWidth() const
 {
-    return m_right - m_left;
+   return m_right - m_left;
 }
 
 void PinTable::SetTableWidth(const float value)
 {
-    m_right = value;
+   m_right = value;
 }
 
 STDMETHODIMP PinTable::get_Width(float *pVal)
@@ -8755,12 +8726,12 @@ STDMETHODIMP PinTable::put_Width(float newVal)
 
 float PinTable::GetHeight() const
 {
-    return m_bottom - m_top;
+   return m_bottom - m_top;
 }
 
 void PinTable::SetHeight(const float value)
 {
-    m_bottom = value;
+   m_bottom = value;
 }
 
 float PinTable::ApplyDifficulty(float minValue, float maxValue) const
@@ -8819,7 +8790,6 @@ STDMETHODIMP PinTable::put_PlayfieldMaterial(BSTR newVal)
 STDMETHODIMP PinTable::get_LightAmbient(OLE_COLOR *pVal)
 {
    *pVal = m_lightAmbient;
-
    return S_OK;
 }
 
@@ -8835,7 +8805,6 @@ STDMETHODIMP PinTable::put_LightAmbient(OLE_COLOR newVal)
 STDMETHODIMP PinTable::get_Light0Emission(OLE_COLOR *pVal)
 {
    *pVal = m_Light[0].emission;
-
    return S_OK;
 }
 
@@ -8851,7 +8820,6 @@ STDMETHODIMP PinTable::put_Light0Emission(OLE_COLOR newVal)
 STDMETHODIMP PinTable::get_LightHeight(float *pVal)
 {
    *pVal = m_lightHeight;
-
    return S_OK;
 }
 
@@ -8867,7 +8835,6 @@ STDMETHODIMP PinTable::put_LightHeight(float newVal)
 STDMETHODIMP PinTable::get_LightRange(float *pVal)
 {
    *pVal = m_lightRange;
-
    return S_OK;
 }
 
@@ -8883,7 +8850,6 @@ STDMETHODIMP PinTable::put_LightRange(float newVal)
 STDMETHODIMP PinTable::get_LightEmissionScale(float *pVal)
 {
    *pVal = m_lightEmissionScale;
-
    return S_OK;
 }
 
@@ -8898,18 +8864,17 @@ STDMETHODIMP PinTable::put_LightEmissionScale(float newVal)
 
 int PinTable::GetGlobalEmissionScale() const
 {
-    return quantizeUnsignedPercent(m_globalEmissionScale);
+   return quantizeUnsignedPercent(m_globalEmissionScale);
 }
 
 void PinTable::SetGlobalEmissionScale(const int value)
 {
-    m_globalEmissionScale = dequantizeUnsignedPercent(value);
+   m_globalEmissionScale = dequantizeUnsignedPercent(value);
 }
 
 STDMETHODIMP PinTable::get_NightDay(int *pVal)
 {
    *pVal = GetGlobalEmissionScale();
-
    return S_OK;
 }
 
@@ -8925,7 +8890,6 @@ STDMETHODIMP PinTable::put_NightDay(int newVal)
 STDMETHODIMP PinTable::get_AOScale(float *pVal)
 {
    *pVal = m_AOScale;
-
    return S_OK;
 }
 
@@ -8941,7 +8905,6 @@ STDMETHODIMP PinTable::put_AOScale(float newVal)
 STDMETHODIMP PinTable::get_SSRScale(float *pVal)
 {
    *pVal = m_SSRScale;
-
    return S_OK;
 }
 
@@ -8957,7 +8920,6 @@ STDMETHODIMP PinTable::put_SSRScale(float newVal)
 STDMETHODIMP PinTable::get_EnvironmentEmissionScale(float *pVal)
 {
    *pVal = m_envEmissionScale;
-
    return S_OK;
 }
 
@@ -8974,7 +8936,6 @@ STDMETHODIMP PinTable::get_BallReflection(UserDefaultOnOff *pVal)
 {
    // FIXME Deprecated
    *pVal = UserDefaultOnOff::On; //(UserDefaultOnOff) m_useReflectionForBalls;
-
    return S_OK;
 }
 
@@ -8990,12 +8951,12 @@ STDMETHODIMP PinTable::put_BallReflection(UserDefaultOnOff newVal)
 
 int PinTable::GetPlayfieldReflectionStrength() const
 {
-    return quantizeUnsignedPercent(m_playfieldReflectionStrength);
+   return quantizeUnsignedPercent(m_playfieldReflectionStrength);
 }
 
 void PinTable::SetPlayfieldReflectionStrength(const int value)
 {
-    m_playfieldReflectionStrength = dequantizeUnsignedPercent(value);
+   m_playfieldReflectionStrength = dequantizeUnsignedPercent(value);
 }
 
 STDMETHODIMP PinTable::get_PlayfieldReflectionStrength(int *pVal)
@@ -9047,7 +9008,6 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 STDMETHODIMP PinTable::get_BallPlayfieldReflectionScale(float *pVal)
 {
    *pVal = m_ballPlayfieldReflectionStrength;
-
    return S_OK;
 }
 
@@ -9063,7 +9023,6 @@ STDMETHODIMP PinTable::put_BallPlayfieldReflectionScale(float newVal)
 STDMETHODIMP PinTable::get_DefaultBulbIntensityScale(float *pVal)
 {
    *pVal = m_defaultBulbIntensityScaleOnBall;
-
    return S_OK;
 }
 
@@ -9079,7 +9038,6 @@ STDMETHODIMP PinTable::put_DefaultBulbIntensityScale(float newVal)
 STDMETHODIMP PinTable::get_BloomStrength(float *pVal)
 {
    *pVal = m_bloom_strength;
-
    return S_OK;
 }
 
@@ -9094,12 +9052,12 @@ STDMETHODIMP PinTable::put_BloomStrength(float newVal)
 
 int PinTable::GetTableSoundVolume() const
 {
-    return quantizeUnsignedPercent(m_TableSoundVolume);
+   return quantizeUnsignedPercent(m_TableSoundVolume);
 }
 
 void PinTable::SetTableSoundVolume(const int value)
 {
-    m_TableSoundVolume = dequantizeUnsignedPercent(value);
+   m_TableSoundVolume = dequantizeUnsignedPercent(value);
 }
 
 STDMETHODIMP PinTable::get_TableSoundVolume(int *pVal)
@@ -9154,7 +9112,6 @@ STDMETHODIMP PinTable::get_GlobalDayNight(VARIANT_BOOL *pVal)
    // FIXME deprecated
    //*pVal = FTOVB(m_overwriteGlobalDayNight);
    *pVal = FTOVB(m_settings.HasValue(Settings::Player, "OverrideTableEmissionScale"s));
-
    return S_OK;
 }
 
@@ -9171,7 +9128,6 @@ STDMETHODIMP PinTable::put_GlobalDayNight(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_GlobalStereo3D(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_overwriteGlobalStereo3D);
-
    return S_OK;
 }
 
@@ -9193,7 +9149,6 @@ STDMETHODIMP PinTable::put_GlobalStereo3D(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_BallDecalMode(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_BallDecalMode);
-
    return S_OK;
 }
 
@@ -9208,18 +9163,17 @@ STDMETHODIMP PinTable::put_BallDecalMode(VARIANT_BOOL newVal)
 
 int PinTable::GetTableMusicVolume() const
 {
-    return quantizeUnsignedPercent(m_TableMusicVolume);
+   return quantizeUnsignedPercent(m_TableMusicVolume);
 }
 
 void PinTable::SetTableMusicVolume(const int value)
 {
-    m_TableMusicVolume = dequantizeUnsignedPercent(value);
+   m_TableMusicVolume = dequantizeUnsignedPercent(value);
 }
 
 STDMETHODIMP PinTable::get_TableMusicVolume(int *pVal)
 {
    *pVal = GetTableMusicVolume();
-
    return S_OK;
 }
 
@@ -9252,7 +9206,6 @@ STDMETHODIMP PinTable::put_TableAdaptiveVSync(int newVal)
 STDMETHODIMP PinTable::get_BackdropColor(OLE_COLOR *pVal)
 {
    *pVal = m_colorbackdrop;
-
    return S_OK;
 }
 
@@ -9268,7 +9221,6 @@ STDMETHODIMP PinTable::put_BackdropColor(OLE_COLOR newVal)
 STDMETHODIMP PinTable::get_BackdropImageApplyNightDay(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_ImageBackdropNightDay);
-
    return S_OK;
 }
 
@@ -9311,7 +9263,6 @@ void PinTable::UpdateCurrentBGSet()
 STDMETHODIMP PinTable::get_ShowFSS(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(IsFSSEnabled());
-
    return S_OK;
 }
 
@@ -9409,7 +9360,7 @@ float PinTable::GetGravity() const
 
 void PinTable::SetGravity(const float value)
 {
-    m_Gravity = value * GRAVITYCONST;
+   m_Gravity = value * GRAVITYCONST;
 }
 
 STDMETHODIMP PinTable::get_Gravity(float *pVal)
@@ -9444,13 +9395,12 @@ STDMETHODIMP PinTable::put_Gravity(float newVal)
 STDMETHODIMP PinTable::get_Friction(float *pVal)
 {
    *pVal = m_friction;
-
    return S_OK;
 }
 
 void PinTable::SetFriction(const float value)
 {
-    m_friction = clamp(value, 0.0f, 1.0f);
+   m_friction = clamp(value, 0.0f, 1.0f);
 }
 
 STDMETHODIMP PinTable::put_Friction(float newVal)
@@ -9465,7 +9415,6 @@ STDMETHODIMP PinTable::put_Friction(float newVal)
 STDMETHODIMP PinTable::get_Elasticity(float *pVal)
 {
    *pVal = m_elasticity;
-
    return S_OK;
 }
 
@@ -9481,7 +9430,6 @@ STDMETHODIMP PinTable::put_Elasticity(float newVal)
 STDMETHODIMP PinTable::get_ElasticityFalloff(float *pVal)
 {
    *pVal = m_elasticityFalloff;
-
    return S_OK;
 }
 
@@ -9497,7 +9445,6 @@ STDMETHODIMP PinTable::put_ElasticityFalloff(float newVal)
 STDMETHODIMP PinTable::get_Scatter(float *pVal)
 {
    *pVal = m_scatter;
-
    return S_OK;
 }
 
@@ -9513,7 +9460,6 @@ STDMETHODIMP PinTable::put_Scatter(float newVal)
 STDMETHODIMP PinTable::get_DefaultScatter(float *pVal)
 {
    *pVal = m_defaultScatter;
-
    return S_OK;
 }
 
@@ -9529,7 +9475,6 @@ STDMETHODIMP PinTable::put_DefaultScatter(float newVal)
 STDMETHODIMP PinTable::get_NudgeTime(float *pVal)
 {
    *pVal = m_nudgeTime;
-
    return S_OK;
 }
 
@@ -9545,7 +9490,6 @@ STDMETHODIMP PinTable::put_NudgeTime(float newVal)
 STDMETHODIMP PinTable::get_PlungerNormalize(int *pVal)
 {
    *pVal = m_plungerNormalize;
-
    return S_OK;
 }
 
@@ -9566,7 +9510,6 @@ STDMETHODIMP PinTable::put_PlungerNormalize(int newVal)
 STDMETHODIMP PinTable::get_PlungerFilter(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_plungerFilter);
-
    return S_OK;
 }
 
@@ -9582,7 +9525,6 @@ STDMETHODIMP PinTable::put_PlungerFilter(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_PhysicsLoopTime(int *pVal)
 {
    *pVal = m_PhysicsMaxLoops;
-
    return S_OK;
 }
 
@@ -9598,21 +9540,18 @@ STDMETHODIMP PinTable::put_PhysicsLoopTime(int newVal)
 STDMETHODIMP PinTable::get_BackglassMode(BackglassIndex *pVal)
 {
    *pVal = (BackglassIndex)(m_currentBackglassMode+DESKTOP);
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_BackglassMode(BackglassIndex pVal)
 {
    m_currentBackglassMode = (ViewSetupID)(pVal - DESKTOP);
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_FieldOfView(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mFOV;
-
    return S_OK;
 }
 
@@ -9628,7 +9567,6 @@ STDMETHODIMP PinTable::put_FieldOfView(float newVal)
 STDMETHODIMP PinTable::get_Inclination(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mLookAt;
-
    return S_OK;
 }
 
@@ -9644,7 +9582,6 @@ STDMETHODIMP PinTable::put_Inclination(float newVal)
 STDMETHODIMP PinTable::get_Layback(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mLayback;
-
    return S_OK;
 }
 
@@ -9660,7 +9597,6 @@ STDMETHODIMP PinTable::put_Layback(float newVal)
 STDMETHODIMP PinTable::get_Rotation(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mViewportRotation;
-
    return S_OK;
 }
 
@@ -9676,7 +9612,6 @@ STDMETHODIMP PinTable::put_Rotation(float newVal)
 STDMETHODIMP PinTable::get_Scalex(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleX;
-
    return S_OK;
 }
 
@@ -9692,7 +9627,6 @@ STDMETHODIMP PinTable::put_Scalex(float newVal)
 STDMETHODIMP PinTable::get_Scaley(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleY;
-
    return S_OK;
 }
 
@@ -9708,7 +9642,6 @@ STDMETHODIMP PinTable::put_Scaley(float newVal)
 STDMETHODIMP PinTable::get_Scalez(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mSceneScaleZ;
-
    return S_OK;
 }
 
@@ -9724,7 +9657,6 @@ STDMETHODIMP PinTable::put_Scalez(float newVal)
 STDMETHODIMP PinTable::get_Xlatex(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mViewX;
-
    return S_OK;
 }
 
@@ -9740,7 +9672,6 @@ STDMETHODIMP PinTable::put_Xlatex(float newVal)
 STDMETHODIMP PinTable::get_Xlatey(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mViewY;
-
    return S_OK;
 }
 
@@ -9756,7 +9687,6 @@ STDMETHODIMP PinTable::put_Xlatey(float newVal)
 STDMETHODIMP PinTable::get_Xlatez(float *pVal)
 {
    *pVal = mViewSetups[m_currentBackglassMode].mViewZ;
-
    return S_OK;
 }
 
@@ -9773,7 +9703,6 @@ STDMETHODIMP PinTable::put_Xlatez(float newVal)
 STDMETHODIMP PinTable::get_SlopeMax(float *pVal)
 {
    *pVal = m_angletiltMax;
-
    return S_OK;
 }
 
@@ -9797,7 +9726,6 @@ STDMETHODIMP PinTable::put_SlopeMax(float newVal)
 STDMETHODIMP PinTable::get_SlopeMin(float *pVal)
 {
    *pVal = m_angletiltMin;
-
    return S_OK;
 }
 
@@ -9971,7 +9899,6 @@ STDMETHODIMP PinTable::put_EnableFXAA(FXAASettings newVal)
 STDMETHODIMP PinTable::get_OverridePhysics(PhysicsSet *pVal)
 {
    *pVal = (PhysicsSet)m_overridePhysics;
-
    return S_OK;
 }
 
@@ -9987,7 +9914,6 @@ STDMETHODIMP PinTable::put_OverridePhysics(PhysicsSet newVal)
 STDMETHODIMP PinTable::get_OverridePhysicsFlippers(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_overridePhysicsFlipper);
-
    return S_OK;
 }
 
@@ -10430,7 +10356,6 @@ STDMETHODIMP PinTable::ExportPhysics()
 STDMETHODIMP PinTable::get_EnableDecals(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_renderDecals);
-
    return S_OK;
 }
 
@@ -10446,7 +10371,6 @@ STDMETHODIMP PinTable::put_EnableDecals(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_ShowDT(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_BG_current_set == BG_DESKTOP || m_BG_current_set == BG_FSS); // DT & FSS
-
    return S_OK;
 }
 
@@ -10454,7 +10378,6 @@ STDMETHODIMP PinTable::get_ReflectElementsOnPlayfield(VARIANT_BOOL *pVal)
 {
    // FIXME Deprecated
    *pVal = FTOVB(true);
-
    return S_OK;
 }
 
@@ -10471,7 +10394,6 @@ STDMETHODIMP PinTable::put_ReflectElementsOnPlayfield(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_EnableEMReels(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_renderEMReels);
-
    return S_OK;
 }
 
@@ -10486,7 +10408,7 @@ STDMETHODIMP PinTable::put_EnableEMReels(VARIANT_BOOL newVal)
 
 float PinTable::GetGlobalDifficulty() const
 {
-    return m_globalDifficulty * 100.f;
+   return m_globalDifficulty * 100.f;
 }
 
 void PinTable::SetGlobalDifficulty(const float value)
@@ -10497,8 +10419,7 @@ void PinTable::SetGlobalDifficulty(const float value)
 
 STDMETHODIMP PinTable::get_GlobalDifficulty(float *pVal)
 {
-    *pVal = GetGlobalDifficulty();
-
+   *pVal = GetGlobalDifficulty();
    return S_OK;
 }
 
@@ -10518,7 +10439,6 @@ STDMETHODIMP PinTable::put_GlobalDifficulty(float newVal)
 STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true));
-
    return S_OK;
 }
 
@@ -10526,7 +10446,6 @@ STDMETHODIMP PinTable::get_Accelerometer(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 {
    m_settings.SaveValue(Settings::Player, "PBWEnabled"s, VBTOb(newVal));
-
    return S_OK;
 }
 
@@ -10534,7 +10453,6 @@ STDMETHODIMP PinTable::put_Accelerometer(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true));
-
    return S_OK;
 }
 
@@ -10542,7 +10460,6 @@ STDMETHODIMP PinTable::get_AccelNormalMount(VARIANT_BOOL *pVal)
 STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 {
    m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, VBTOb(newVal));
-
    return S_OK;
 }
 
@@ -10550,7 +10467,6 @@ STDMETHODIMP PinTable::put_AccelNormalMount(VARIANT_BOOL newVal)
 STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 {
    *pVal = (float) m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
-
    return S_OK;
 }
 
@@ -10558,21 +10474,18 @@ STDMETHODIMP PinTable::get_AccelerometerAngle(float *pVal)
 STDMETHODIMP PinTable::put_AccelerometerAngle(float newVal)
 {
    m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::get_DeadZone(int *pVal)
 {
    *pVal = m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
-
    return S_OK;
 }
 
 STDMETHODIMP PinTable::put_DeadZone(int newVal)
 {
    g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, clamp(newVal, 0,100));
-
    return S_OK;
 }
 
@@ -10580,7 +10493,6 @@ STDMETHODIMP PinTable::put_DeadZone(int newVal)
 STDMETHODIMP PinTable::get_JoltAmount(int *pVal)
 {
    *pVal = m_jolt_amount;
-
    return S_OK;
 }
 
@@ -10596,7 +10508,6 @@ STDMETHODIMP PinTable::put_JoltAmount(int newVal)
 STDMETHODIMP PinTable::get_TiltAmount(int *pVal)
 {
    *pVal = m_tilt_amount; //VB Script or VP Editor
-
    return S_OK;
 }
 
@@ -10612,7 +10523,6 @@ STDMETHODIMP PinTable::put_TiltAmount(int newVal)
 STDMETHODIMP PinTable::get_JoltTriggerTime(int *pVal)
 {
    *pVal = m_jolt_trigger_time;
-
    return S_OK;
 }
 
@@ -10628,7 +10538,6 @@ STDMETHODIMP PinTable::put_JoltTriggerTime(int newVal)
 STDMETHODIMP PinTable::get_TiltTriggerTime(int *pVal)
 {
    *pVal = m_tilt_trigger_time;
-
    return S_OK;
 }
 

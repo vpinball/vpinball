@@ -1,9 +1,8 @@
-// Trigger.h: Definition of the Trigger class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Trigger class
+
 #pragma once
-#if !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)
-#define AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_
 
 #include "ui/resource.h"
 
@@ -24,9 +23,6 @@ public:
    bool m_enabled;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Trigger
-
 class Trigger :
    public IDispatchImpl<ITrigger, &IID_ITrigger, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -43,14 +39,13 @@ class Trigger :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Trigger();
    virtual ~Trigger();
 
@@ -73,7 +68,7 @@ public:
 
    STANDARD_EDITABLE_DECLARES(Trigger, eItemTrigger, TRIGGER, 1)
 
-      DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
+   DECLARE_REGISTRY_RESOURCEID(IDR_TRIGGER)
    // ISupportsErrorInfo
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
@@ -171,5 +166,3 @@ public:
    STDMETHOD(put_ReflectionEnabled)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_CurrentAnimOffset)(/*[out, retval]*/ float *pVal);
 };
-
-#endif // !defined(AFX_TRIGGER_H__2CA7256C_4072_43C3_9D65_AE091B601377__INCLUDED_)

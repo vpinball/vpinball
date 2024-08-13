@@ -1,7 +1,10 @@
-#pragma once
-// Surface.h : Declaration of the Surface
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Declaration of the Surface
+
+#pragma once
+
+#include "ui/resource.h"
 
 class SurfaceData final : public BaseProperty
 {
@@ -29,8 +32,6 @@ public:
    bool m_inner; //!! Deprecated, do not use! Always true after loading! (was: Inside or outside wall)
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Surface
 class Surface :
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<Surface, &CLSID_Wall>,
@@ -47,14 +48,13 @@ class Surface :
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
    //public EditableImpl<Surface>
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
 
    Surface();
    virtual ~Surface();

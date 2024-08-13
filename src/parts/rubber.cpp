@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 //#include "forsyth.h"
 #include "utils/objloader.h"
@@ -285,19 +287,19 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *c
       m_bboxMax = Vertex3Ds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
       for (int i = 0; i < cvertex; i++)
       {
-	     {
-	     const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	     //if(m_d.m_visible) bounds.push_back(pv);
+        {
+        const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+        //if(m_d.m_visible) bounds.push_back(pv);
         m_bboxMin.x = min(m_bboxMin.x, pv.x);
         m_bboxMin.y = min(m_bboxMin.y, pv.y);
         m_bboxMin.z = min(m_bboxMin.z, pv.z);
         m_bboxMax.x = max(m_bboxMax.x, pv.x);
         m_bboxMax.y = max(m_bboxMax.y, pv.y);
         m_bboxMax.z = max(m_bboxMax.z, pv.z);
-	     }
+        }
 
-	     const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-	     //if(m_d.m_visible) bounds.push_back(pv);
+        const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+        //if(m_d.m_visible) bounds.push_back(pv);
         m_bboxMin.x = min(m_bboxMin.x, pv.x);
         m_bboxMin.y = min(m_bboxMin.y, pv.y);
         m_bboxMin.z = min(m_bboxMin.z, pv.z);
@@ -324,10 +326,7 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *c
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
-//
 
 /*
  * Compute the vertices and additional information for the ramp shape.
@@ -371,8 +370,8 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
          // Get normal at this point
          // Notice that these values equal the ones in the line
          // equation and could probably be substituted by them.
-         Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x);   // vector vmiddle-vprev rotated RIGHT
-         Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x);   // vector vnext-vmiddle rotated RIGHT
+         Vertex2D v1normal(vprev.y - vmiddle.y, vmiddle.x - vprev.x); // vector vmiddle-vprev rotated RIGHT
+         Vertex2D v2normal(vmiddle.y - vnext.y, vnext.x - vmiddle.x); // vector vnext-vmiddle rotated RIGHT
 
          // not needed special start/end handling as rubbers always loop, except for the case where there are only 2 control points
          if (cvertex == 2 && i == (cvertex - 1))
@@ -454,9 +453,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    return rgvLocal;
 }
 
-/*
- * Get an approximation of the curve described by the control points of this ramp.
- */
+// Get an approximation of the curve described by the control points of this ramp.
 void Rubber::GetCentralCurve(vector<RenderVertex> &vv, const float _accuracy) const
 {
    float accuracy;
@@ -510,22 +507,18 @@ float Rubber::GetSurfaceHeight(float x, float y) const
       totallength += len;
    }
 
-    {
-       const float dx = vOut.x - vvertex[iSeg].x;
-       const float dy = vOut.y - vvertex[iSeg].y;
-       const float len = sqrtf(dx*dx + dy*dy);
-       startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
+   {
+      const float dx = vOut.x - vvertex[iSeg].x;
+      const float dy = vOut.y - vvertex[iSeg].y;
+      const float len = sqrtf(dx*dx + dy*dy);
+      startlength += len; // Add the distance the object is between the two closest polyline segments.  Matters mostly for straight edges.
 
-       zheight = (startlength / totallength) * m_d.m_height;
-    }
+      zheight = (startlength / totallength) * m_d.m_height;
+   }
 
-    return zheight;
+   return zheight;
 }
 #endif
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Rubber::BeginPlay(vector<HitTimer*> &pvht)
 {
@@ -542,10 +535,7 @@ void Rubber::EndPlay()
 
 #pragma region Physics
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Rubber/RubberHitGenerator.cs
-//
 
 void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -587,10 +577,6 @@ void Rubber::PhysicRelease(PhysicsEngine* physics, const bool isUI)
    if (!isUI)
       m_vhoCollidable.clear();
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void Rubber::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI)
 {
@@ -638,11 +624,7 @@ void Rubber::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool i
 
 #pragma endregion
 
-
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Mesh.cs
-//
 
 void Rubber::AddPoint(int x, int y, const bool smooth)
 {
@@ -680,10 +662,6 @@ void Rubber::AddPoint(int x, int y, const bool smooth)
 
     STOPUNDO
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 
 #pragma region Rendering
@@ -864,9 +842,8 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
 HRESULT Rubber::InitPostLoad()
 {
    if (m_d.m_hitHeight == -1.0f)
-   {
       m_d.m_hitHeight = m_d.m_height;
-   }
+
    return S_OK;
 }
 
@@ -965,14 +942,12 @@ STDMETHODIMP Rubber::put_Height(float newVal)
 STDMETHODIMP Rubber::get_HitHeight(float *pVal)
 {
    *pVal = m_d.m_hitHeight;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_HitHeight(float newVal)
 {
    m_d.m_hitHeight = newVal;
-
    return S_OK;
 }
 
@@ -1044,49 +1019,42 @@ STDMETHODIMP Rubber::put_Image(BSTR newVal)
 STDMETHODIMP Rubber::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_hitEvent);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    m_d.m_hitEvent = VBTOF(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_ElasticityFalloff(float *pVal)
 {
    *pVal = m_d.m_elasticityFalloff;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_ElasticityFalloff(float newVal)
 {
    m_d.m_elasticityFalloff = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_Friction(float *pVal)
 {
    *pVal = m_d.m_friction;
-
    return S_OK;
 }
 
@@ -1101,21 +1069,18 @@ STDMETHODIMP Rubber::put_Friction(float newVal)
 STDMETHODIMP Rubber::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_Scatter(float newVal)
 {
    m_d.m_scatter = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_Collidable(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB((!g_pplayer) ? m_d.m_collidable : m_vhoCollidable[0]->m_enabled);
-
    return S_OK;
 }
 
@@ -1137,7 +1102,6 @@ STDMETHODIMP Rubber::put_Collidable(VARIANT_BOOL newVal)
 STDMETHODIMP Rubber::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
@@ -1153,49 +1117,42 @@ STDMETHODIMP Rubber::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Rubber::get_EnableStaticRendering(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_staticRendering);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_EnableStaticRendering(VARIANT_BOOL newVal)
 {
    m_d.m_staticRendering = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_EnableShowInEditor(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_showInEditor);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_EnableShowInEditor(VARIANT_BOOL newVal)
 {
    m_d.m_showInEditor = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Rubber::get_RotX(float *pVal)
 {
    *pVal = m_d.m_rotX;
-
    return S_OK;
 }
 
@@ -1214,7 +1171,6 @@ STDMETHODIMP Rubber::put_RotX(float newVal)
 STDMETHODIMP Rubber::get_RotY(float *pVal)
 {
    *pVal = m_d.m_rotY;
-
    return S_OK;
 }
 
@@ -1233,7 +1189,6 @@ STDMETHODIMP Rubber::put_RotY(float newVal)
 STDMETHODIMP Rubber::get_RotZ(float *pVal)
 {
    *pVal = m_d.m_rotZ;
-
    return S_OK;
 }
 
@@ -1251,34 +1206,32 @@ STDMETHODIMP Rubber::put_RotZ(float newVal)
 
 STDMETHODIMP Rubber::get_PhysicsMaterial(BSTR *pVal)
 {
-    WCHAR wz[MAXNAMEBUFFER];
-    MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
-    *pVal = SysAllocString(wz);
+   WCHAR wz[MAXNAMEBUFFER];
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szPhysicsMaterial.c_str(), -1, wz, MAXNAMEBUFFER);
+   *pVal = SysAllocString(wz);
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Rubber::put_PhysicsMaterial(BSTR newVal)
 {
-    char buf[MAXNAMEBUFFER];
-    WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
-    m_d.m_szPhysicsMaterial = buf;
+   char buf[MAXNAMEBUFFER];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, buf, MAXNAMEBUFFER, nullptr, nullptr);
+   m_d.m_szPhysicsMaterial = buf;
 
-    return S_OK;
+   return S_OK;
 }
 
 STDMETHODIMP Rubber::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
-    *pVal = FTOVB(m_d.m_overwritePhysics);
-
-    return S_OK;
+   *pVal = FTOVB(m_d.m_overwritePhysics);
+   return S_OK;
 }
 
 STDMETHODIMP Rubber::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
-    m_d.m_overwritePhysics = VBTOb(newVal);
-
-    return S_OK;
+   m_d.m_overwritePhysics = VBTOb(newVal);
+   return S_OK;
 }
 
 void Rubber::ExportMesh(ObjLoader& loader)
@@ -1300,10 +1253,7 @@ void Rubber::ExportMesh(ObjLoader& loader)
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Rubber/RubberMeshGenerator.cs
-//
 
 void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! hack, createHitShape==true needs adaption below if changing detail level for hitshape
 {

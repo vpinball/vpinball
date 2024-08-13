@@ -1,14 +1,11 @@
-// Light.h: Definition of the Light class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Light class
+
 #pragma once
-#if !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)
-#define AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
+#include "ui/resource.h"
 #include "renderer/RenderDevice.h"
-
-#define NUM_RGB_BLINK_PATTERN 33 //!! remove
 
 enum ShadowMode : int // has to be int for loading
 {
@@ -26,7 +23,7 @@ enum Fader : int
 class LightData final : public BaseProperty
 {
 public:
-   Vertex2D m_vCenter; // xy table pos
+   Vertex2D m_vCenter;    // xy table pos
    float m_height = 0.0f; // z pos above surface
    string m_szSurface;
 
@@ -64,9 +61,6 @@ public:
    Fader m_fader = Fader::FADER_LINEAR;
 };
 
-/////////////////////////////////////////////////////////////////////////////
-// Light
-
 class Light :
    public IDispatchImpl<ILight, &IID_ILight, &LIBID_VPinballLib>,
    //public ISupportErrorInfo,
@@ -83,16 +77,16 @@ class Light :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Light();
    virtual ~Light();
+
    BEGIN_COM_MAP(Light)
       COM_INTERFACE_ENTRY(IDispatch)
       COM_INTERFACE_ENTRY(ILight)
@@ -318,5 +312,3 @@ private:
       m_timerDurationEndTime = cur_time_msec + m_duration;
    }
 };
-
-#endif // !defined(AFX_LIGHT_H__7445FDB1_1FBE_4975_9AB6_367E6D16098F__INCLUDED_)

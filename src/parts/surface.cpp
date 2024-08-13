@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 //#include "forsyth.h"
 #include "utils/objloader.h"
@@ -346,10 +348,7 @@ void Surface::EndPlay()
    IEditable::EndPlay();
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
-//
 
 void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
@@ -404,10 +403,6 @@ void Surface::PhysicRelease(PhysicsEngine* physics, const bool isUI)
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
@@ -444,10 +439,7 @@ void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, cons
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
-//
 
 void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const RenderVertex &pv2, const bool isUI)
 {
@@ -498,28 +490,24 @@ void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const Ren
       SetupHitObject(physics, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Surface::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)
 {
    if (legacy_bounds == nullptr && !m_d.m_visible)
       return;
 
    // hardwired to table dimensions, but with bottom/top of surface, returns all 8 corners as this will be used for further transformations later-on
-	for (int i = 0; i < 8; i++)
-	{
-		const Vertex3Ds pv(
-			(i & 1) ? m_ptable->m_right : m_ptable->m_left,
-			(i & 2) ? m_ptable->m_bottom : m_ptable->m_top,
-			(i & 4) ? m_d.m_heighttop : m_d.m_heightbottom);
+   for (int i = 0; i < 8; i++)
+   {
+      const Vertex3Ds pv(
+         (i & 1) ? m_ptable->m_right : m_ptable->m_left,
+         (i & 2) ? m_ptable->m_bottom : m_ptable->m_top,
+         (i & 4) ? m_d.m_heighttop : m_d.m_heightbottom);
 
-		if (m_d.m_visible)
-			bounds.push_back(pv);
-		if (legacy_bounds)
-			legacy_bounds->push_back(pv);
-	}
+      if (m_d.m_visible)
+         bounds.push_back(pv);
+      if (legacy_bounds)
+         legacy_bounds->push_back(pv);
+   }
 }
 
 void Surface::UpdateBounds()
@@ -539,10 +527,7 @@ void Surface::MoveOffset(const float dx, const float dy)
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceMeshGenerator.cs
-//
 
 void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTex2> &sideBuf, vector<WORD> &topBottomIndices, vector<WORD> &sideIndices)
 {
@@ -738,10 +723,6 @@ void Surface::GenerateMesh(vector<Vertex3D_NoTex2> &topBuf, vector<Vertex3D_NoTe
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void Surface::ExportMesh(ObjLoader& loader)
 {
    const float oldBottomHeight = m_d.m_heightbottom;
@@ -882,9 +863,7 @@ void Surface::RenderSetup(RenderDevice *device)
          }
 
          for (unsigned int l = 0; l < 24; l++)
-         {
             rgIdx[l + offsetIdx] = offset + rgiSlingshot[l];
-         }
 
          ComputeNormals(rgv3D + offset, 9, rgiSlingshot, 24);
       }
@@ -1361,28 +1340,24 @@ void Surface::UpdateStatusBarInfo()
 STDMETHODIMP Surface::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_hitEvent);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    m_d.m_hitEvent = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Threshold(float *pVal)
 {
    *pVal = m_d.m_threshold;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Threshold(float newVal)
 {
    m_d.m_threshold = newVal;
-
    return S_OK;
 }
 
@@ -1450,7 +1425,6 @@ STDMETHODIMP Surface::get_ImageAlignment(ImageAlignment *pVal)
 {
    // not used (anymore?)
    *pVal = ImageAlignCenter;
-
    return S_OK;
 }
 
@@ -1463,28 +1437,24 @@ STDMETHODIMP Surface::put_ImageAlignment(ImageAlignment newVal)
 STDMETHODIMP Surface::get_HeightBottom(float *pVal)
 {
    *pVal = m_d.m_heightbottom;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_HeightBottom(float newVal)
 {
    m_d.m_heightbottom = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_HeightTop(float *pVal)
 {
    *pVal = m_d.m_heighttop;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_HeightTop(float newVal)
 {
    m_d.m_heighttop = newVal;
-
    return S_OK;
 }
 
@@ -1527,56 +1497,48 @@ STDMETHODIMP Surface::put_PhysicsMaterial(BSTR newVal)
 STDMETHODIMP Surface::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_overwritePhysics);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
    m_d.m_overwritePhysics = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_CanDrop(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_droppable);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_CanDrop(VARIANT_BOOL newVal)
 {
    m_d.m_droppable = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_FlipbookAnimation(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_flipbook);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_FlipbookAnimation(VARIANT_BOOL newVal)
 {
    m_d.m_flipbook = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_IsBottomSolid(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_isBottomSolid);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_IsBottomSolid(VARIANT_BOOL newVal)
 {
    m_d.m_isBottomSolid = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1586,7 +1548,6 @@ STDMETHODIMP Surface::get_IsDropped(VARIANT_BOOL *pVal)
       return E_FAIL;
 
    *pVal = FTOVB(m_isDropped);
-
    return S_OK;
 }
 
@@ -1613,14 +1574,12 @@ STDMETHODIMP Surface::put_IsDropped(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_DisplayTexture(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_displayTexture);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 {
    m_d.m_displayTexture = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1628,84 +1587,72 @@ STDMETHODIMP Surface::put_DisplayTexture(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_SlingshotStrength(float *pVal)
 {
    *pVal = m_d.m_slingshotforce*(float)(1.0 / 10.0);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_SlingshotStrength(float newVal)
 {
    m_d.m_slingshotforce = newVal*10.0f;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_ElasticityFalloff(float* pVal)
 {
    *pVal = m_d.m_elasticityFalloff;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_ElasticityFalloff(float newVal)
 {
    m_d.m_elasticityFalloff = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Friction(float *pVal)
 {
    *pVal = m_d.m_friction;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Friction(float newVal)
 {
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Scatter(float newVal)
 {
    m_d.m_scatter = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_topBottomVisible);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_topBottomVisible = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1736,35 +1683,30 @@ STDMETHODIMP Surface::put_SideImage(BSTR newVal)
 STDMETHODIMP Surface::get_Disabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_disabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_Disabled(VARIANT_BOOL newVal)
 {
    m_disabled = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_SideVisible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_sideVisible);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_SideVisible(VARIANT_BOOL newVal)
 {
    m_d.m_sideVisible = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_Collidable(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_collidable);
-
    return S_OK;
 }
 
@@ -1786,96 +1728,84 @@ STDMETHODIMP Surface::put_Collidable(VARIANT_BOOL newVal)
 STDMETHODIMP Surface::get_SlingshotThreshold(float *pVal)
 {
    *pVal = m_d.m_slingshot_threshold;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_SlingshotThreshold(float newVal)
 {
    m_d.m_slingshot_threshold = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_SlingshotAnimation(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_slingshotAnimation);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_SlingshotAnimation(VARIANT_BOOL newVal)
 {
    m_d.m_slingshotAnimation = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_DisableLighting(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_disableLightingTop != 0.f);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_DisableLighting(VARIANT_BOOL newVal)
 {
    m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_BlendDisableLighting(float *pVal)
 {
    *pVal = m_d.m_disableLightingTop;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_BlendDisableLighting(float newVal)
 {
    m_d.m_disableLightingTop = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_BlendDisableLightingFromBelow(float *pVal)
 {
    *pVal = m_d.m_disableLightingBelow;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_BlendDisableLightingFromBelow(float newVal)
 {
    m_d.m_disableLightingBelow = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Surface::PlaySlingshotHit()
 {
-    for (size_t i = 0; i < m_vlinesling.size(); i++)
-    {
-        LineSegSlingshot * const plinesling = m_vlinesling[i];
-        if (plinesling)
-            plinesling->m_doHitEvent = true;
-    }
-    return S_OK;
+   for (size_t i = 0; i < m_vlinesling.size(); i++)
+   {
+      LineSegSlingshot * const plinesling = m_vlinesling[i];
+      if (plinesling)
+         plinesling->m_doHitEvent = true;
+   }
+   return S_OK;
 }
 
 void Surface::SetDefaultPhysics(const bool fromMouseClick)

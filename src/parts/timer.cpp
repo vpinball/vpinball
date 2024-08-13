@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 Timer::Timer()
@@ -158,21 +160,18 @@ STDMETHODIMP Timer::InterfaceSupportsErrorInfo(REFIID riid)
 STDMETHODIMP Timer::get_Enabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_tdr.m_TimerEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 {
    STARTUNDO
-
    const bool val = VBTOb(newVal);
 
    if (g_pplayer && val != m_d.m_tdr.m_TimerEnabled && m_phittimer)
       g_pplayer->DeferTimerStateChange(m_phittimer, val);
 
    m_d.m_tdr.m_TimerEnabled = val;
-
    STOPUNDO
 
    return S_OK;
@@ -181,14 +180,12 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
 STDMETHODIMP Timer::get_Interval(long *pVal)
 {
    *pVal = m_d.m_tdr.m_TimerInterval;
-
    return S_OK;
 }
 
 STDMETHODIMP Timer::put_Interval(long newVal)
 {
    STARTUNDO
-
    m_d.m_tdr.m_TimerInterval = newVal;
 
    if (g_pplayer && m_phittimer)
@@ -196,7 +193,6 @@ STDMETHODIMP Timer::put_Interval(long newVal)
       m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : max(-2l, newVal);
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
-
    STOPUNDO
 
    return S_OK;

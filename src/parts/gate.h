@@ -1,14 +1,10 @@
-// Gate.h: Definition of the Gate class
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// Definition of the Gate class
+
 #pragma once
-#if !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)
-#define AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_
 
-#include "ui/resource.h"       // main symbols
-
-/////////////////////////////////////////////////////////////////////////////
-// Gate
+#include "ui/resource.h"
 
 class GateData final : public BaseProperty
 {
@@ -43,17 +39,17 @@ class Gate :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Gate();
-   void SetGateType(GateType type);
    ~Gate();
+
+   void SetGateType(GateType type);
 
    BEGIN_COM_MAP(Gate)
       COM_INTERFACE_ENTRY(IDispatch)
@@ -176,5 +172,3 @@ public:
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ GateType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ GateType newVal);
 };
-
-#endif // !defined(AFX_GATE_H__EDC63CB2_226F_4606_99A9_0C2DB8FE1E3B__INCLUDED_)

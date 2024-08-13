@@ -1,11 +1,10 @@
-// Kicker.h: Definition of the Kicker class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)
-#define AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the Kicker class
+
+#pragma once
+
+#include "ui/resource.h"
 
 class KickerData final : public BaseProperty
 {
@@ -15,7 +14,7 @@ public:
    TimerDataRoot m_tdr;
    string m_szSurface;
    KickerType m_kickertype;
-   float m_hitAccuracy; //kicker hit grabbing object height ... default ballsize*0.7
+   float m_hitAccuracy; // kicker hit grabbing object height ... default ballsize*0.7
    float m_orientation;
    float m_hit_height;
    bool m_enabled;
@@ -24,9 +23,6 @@ public:
 };
 
 class KickerHitCircle;
-
-/////////////////////////////////////////////////////////////////////////////
-// Kicker
 
 class Kicker :
    public IDispatchImpl<IKicker, &IID_IKicker, &LIBID_VPinballLib>,
@@ -43,14 +39,13 @@ class Kicker :
    public IFireEvents,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
    virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
-public:
    Kicker();
    virtual ~Kicker();
 
@@ -171,5 +166,3 @@ public:
    HitBall *m_pHitBall = nullptr; // The ball inside this kicker
    HitBall *m_lastCapturedBall = nullptr; // same as m_pHitBall but this one won't be nulled only overwritten from another captured ball
 };
-
-#endif // !defined(AFX_KICKER_H__3A9F3FC4_605A_43AD_A430_830279CFE059__INCLUDED_)

@@ -1,6 +1,6 @@
-// hittarget.cpp: implementation of the HitTarget class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// implementation of the HitTarget class.
 
 #include "core/stdafx.h" 
 #include "utils/objloader.h"
@@ -16,11 +16,6 @@
 #include "renderer/Shader.h"
 #include "renderer/VertexBuffer.h"
 #include "renderer/IndexBuffer.h"
-
-
-//////////////////////////////////////////////////////////////////////
-constexpr float HitTarget::DROP_TARGET_LIMIT = 52.0f;
-
 
 HitTarget::HitTarget()
 {
@@ -219,10 +214,7 @@ void HitTarget::WriteRegDefaults()
 #undef strKeyName
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/HitTarget/HitTargetHitGenerator.cs
-//
 
 constexpr unsigned int num_dropTargetHitPlaneVertices = 16;
 static const Vertex3Ds dropTargetHitPlaneVertices[num_dropTargetHitPlaneVertices] =
@@ -417,10 +409,6 @@ void HitTarget::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const boo
       m_vhoCollidable.push_back(obj);	//remember hit components of primitive
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 //////////////////////////////
 // Calculation
 //////////////////////////////
@@ -608,10 +596,7 @@ void HitTarget::RenderRelease()
    m_rd = nullptr;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/HitTarget/HitTargetAnimationSystem.cs
-//
 
 void HitTarget::UpdateAnimation(const float diff_time_msec)
 {
@@ -701,10 +686,6 @@ void HitTarget::UpdateAnimation(const float diff_time_msec)
         }
     }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void HitTarget::Render(const unsigned int renderMask)
 {
@@ -923,7 +904,6 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
 HRESULT HitTarget::InitPostLoad()
 {
    UpdateStatusBarInfo();
-
    return S_OK;
 }
 
@@ -983,14 +963,12 @@ STDMETHODIMP HitTarget::put_Material(BSTR newVal)
 STDMETHODIMP HitTarget::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Visible(VARIANT_BOOL newVal)
 {
    m_d.m_visible = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1005,77 +983,66 @@ STDMETHODIMP HitTarget::get_X(float *pVal)
 STDMETHODIMP HitTarget::put_X(float newVal)
 {
    m_d.m_vPosition.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Y(float *pVal)
 {
    *pVal = m_d.m_vPosition.y;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Y(float newVal)
 {
    m_d.m_vPosition.y = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Z(float *pVal)
 {
    *pVal = m_d.m_vPosition.z;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Z(float newVal)
 {
    m_d.m_vPosition.z = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ScaleX(float *pVal)
 {
    *pVal = m_d.m_vSize.x;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_ScaleX(float newVal)
 {
    m_d.m_vSize.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ScaleY(float *pVal)
 {
    *pVal = m_d.m_vSize.y;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_ScaleY(float newVal)
 {
    m_d.m_vSize.y = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ScaleZ(float *pVal)
 {
    *pVal = m_d.m_vSize.z;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_ScaleZ(float newVal)
 {
    m_d.m_vSize.z = newVal;
-
    return S_OK;
 }
 
@@ -1089,98 +1056,84 @@ STDMETHODIMP HitTarget::get_Orientation(float *pVal)
 STDMETHODIMP HitTarget::put_Orientation(float newVal)
 {
    m_d.m_rotZ = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_HasHitEvent(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_hitEvent);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_HasHitEvent(VARIANT_BOOL newVal)
 {
    m_d.m_hitEvent = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Threshold(float *pVal)
 {
    *pVal = m_d.m_threshold;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Threshold(float newVal)
 {
    m_d.m_threshold = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Elasticity(float *pVal)
 {
    *pVal = m_d.m_elasticity;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Elasticity(float newVal)
 {
    m_d.m_elasticity = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ElasticityFalloff(float *pVal)
 {
    *pVal = m_d.m_elasticityFalloff;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_ElasticityFalloff(float newVal)
 {
    m_d.m_elasticityFalloff = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Friction(float *pVal)
 {
    *pVal = m_d.m_friction;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Friction(float newVal)
 {
    m_d.m_friction = clamp(newVal, 0.f, 1.f);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Scatter(float *pVal)
 {
    *pVal = m_d.m_scatter;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_Scatter(float newVal)
 {
    m_d.m_scatter = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_Collidable(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_collidable);
-
    return S_OK;
 }
 
@@ -1200,56 +1153,48 @@ STDMETHODIMP HitTarget::put_Collidable(VARIANT_BOOL newVal)
 STDMETHODIMP HitTarget::get_DisableLighting(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_disableLightingTop != 0.f);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_DisableLighting(VARIANT_BOOL newVal)
 {
-   m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0;
-
+   m_d.m_disableLightingTop = VBTOb(newVal) ? 1.f : 0.f;
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_BlendDisableLighting(float *pVal)
 {
    *pVal = m_d.m_disableLightingTop;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_BlendDisableLighting(float newVal)
 {
    m_d.m_disableLightingTop = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_BlendDisableLightingFromBelow(float *pVal)
 {
    *pVal = m_d.m_disableLightingBelow;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_BlendDisableLightingFromBelow(float newVal)
 {
    m_d.m_disableLightingBelow = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1268,42 +1213,36 @@ void HitTarget::SetDefaultPhysics(const bool fromMouseClick)
 STDMETHODIMP HitTarget::get_DepthBias(float *pVal)
 {
    *pVal = m_d.m_depthBias;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_DepthBias(float newVal)
 {
    m_d.m_depthBias = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_DropSpeed(float *pVal)
 {
    *pVal = m_d.m_dropSpeed;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_DropSpeed(float newVal)
 {
    m_d.m_dropSpeed = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_CurrentAnimOffset(float *pVal)
 {
    *pVal = m_moveAnimationOffset;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_IsDropped(VARIANT_BOOL *pVal)
 {
    *pVal = (VARIANT_BOOL)(m_d.m_isDropped); //don't use FTOVB here because it converts a TRUE to -1 instead to 1
-
    return S_OK;
 }
 
@@ -1337,14 +1276,12 @@ STDMETHODIMP HitTarget::put_IsDropped(VARIANT_BOOL newVal)
 STDMETHODIMP HitTarget::get_LegacyMode(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_legacy);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_LegacyMode(VARIANT_BOOL newVal)
 {
    m_d.m_legacy = VBTOb(newVal);
-
    return S_OK;
 }
 
@@ -1352,14 +1289,12 @@ STDMETHODIMP HitTarget::put_LegacyMode(VARIANT_BOOL newVal)
 STDMETHODIMP HitTarget::get_DrawStyle(TargetType *pVal)
 {
    *pVal = m_d.m_targetType;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_DrawStyle(TargetType newVal)
 {
    m_d.m_targetType = newVal;
-
    return S_OK;
 }
 
@@ -1384,34 +1319,29 @@ STDMETHODIMP HitTarget::put_PhysicsMaterial(BSTR newVal)
 STDMETHODIMP HitTarget::get_OverwritePhysics(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_overwritePhysics);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_OverwritePhysics(VARIANT_BOOL newVal)
 {
    m_d.m_overwritePhysics = VBTOb(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_HitThreshold(float *pVal)
 {
    *pVal = m_currentHitThreshold;
-
    return S_OK;
 }
 
 STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
 {
     *pVal = m_d.m_raiseDelay;
-
     return S_OK;
 }
 
 STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
 {
     m_d.m_raiseDelay = newVal;
-
     return S_OK;
 }

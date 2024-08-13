@@ -1,9 +1,8 @@
-// Decal.h: interface for the Decal class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// interface for the Decal class.
+
 #pragma once
-#if !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)
-#define AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_
 
 class DecalData final : public BaseProperty
 {
@@ -28,13 +27,12 @@ class Decal :
    public IScriptable,
    public IPerPropertyBrowsing // Ability to fill in dropdown in property browser
 {
-#ifdef __STANDALONE__
 public:
+#ifdef __STANDALONE__
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
 #endif
-public:
    Decal();
    virtual ~Decal();
 
@@ -112,5 +110,3 @@ public:
    STDMETHOD(get_Rotation)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Rotation)(/*[in]*/ float newVal);
 };
-
-#endif // !defined(AFX_DECAL_H__447B3CE2_C9EA_4ED1_AA3D_A8328F6DFD48__INCLUDED_)

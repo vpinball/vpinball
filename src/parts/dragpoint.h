@@ -1,16 +1,12 @@
-// DragPoint.h: Definition of the DragPoint class
-//
-//////////////////////////////////////////////////////////////////////
-#pragma once
-#if !defined(AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_)
-#define AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_
+// license:GPLv3+
 
-#include "ui/resource.h"       // main symbols
+// Definition of the DragPoint class
+
+#pragma once
+
+#include "ui/resource.h"
 
 class IHaveDragPoints;
-
-/////////////////////////////////////////////////////////////////////////////
-// DragPoint
 
 class DragPoint :
    public IDispatchImpl<IControlPoint, &IID_IControlPoint, &LIBID_VPinballLib>,
@@ -21,7 +17,6 @@ class DragPoint :
 {
 public:
 #ifdef __STANDALONE__
-public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
@@ -150,10 +145,7 @@ public:
    PropertyPane *m_propVisuals;
    PropertyPane *m_propPosition;
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/DragPoint.cs
-//
 
 protected:
    template <typename T>
@@ -216,10 +208,3 @@ protected:
 
    vector< CComObject<DragPoint>* > m_vdpoint;
 };
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-
-#endif // !defined(AFX_DRAGPOINT_H__E0C074C9_5BF2_4F8C_8012_76082BAC2203__INCLUDED_)

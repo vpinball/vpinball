@@ -1,6 +1,6 @@
-// Decal.cpp: implementation of the Decal class.
-//
-//////////////////////////////////////////////////////////////////////
+// license:GPLv3+
+
+// implementation of the Decal class.
 
 #include "core/stdafx.h" 
 #include "renderer/Shader.h"
@@ -98,7 +98,7 @@ void Decal::SetDefaults(const bool fromMouseClick)
 #undef regKey
 }
 
-char * Decal::GetFontName()
+char* Decal::GetFontName()
 {
     if(m_pIFont)
     {
@@ -854,14 +854,12 @@ void Decal::Render(const unsigned int renderMask)
 STDMETHODIMP Decal::get_Rotation(float *pVal)
 {
    *pVal = m_d.m_rotation;
-
    return S_OK;
 }
 
 STDMETHODIMP Decal::put_Rotation(float newVal)
 {
    m_d.m_rotation = newVal;
-
    return S_OK;
 }
 
@@ -892,7 +890,6 @@ STDMETHODIMP Decal::put_Image(BSTR newVal)
 STDMETHODIMP Decal::get_Width(float *pVal)
 {
    *pVal = m_d.m_width;
-
    return S_OK;
 }
 
@@ -907,7 +904,6 @@ STDMETHODIMP Decal::put_Width(float newVal)
 STDMETHODIMP Decal::get_Height(float *pVal)
 {
    *pVal = m_d.m_height;
-
    return S_OK;
 }
 
@@ -930,21 +926,18 @@ STDMETHODIMP Decal::get_X(float *pVal)
 STDMETHODIMP Decal::put_X(float newVal)
 {
    m_d.m_vCenter.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Decal::get_Y(float *pVal)
 {
    *pVal = m_d.m_vCenter.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Decal::put_Y(float newVal)
 {
    m_d.m_vCenter.y = newVal;
-
    return S_OK;
 }
 
@@ -969,7 +962,6 @@ STDMETHODIMP Decal::put_Surface(BSTR newVal)
 STDMETHODIMP Decal::get_Type(DecalType *pVal)
 {
    *pVal = m_d.m_decaltype;
-
    return S_OK;
 }
 
@@ -1003,7 +995,6 @@ STDMETHODIMP Decal::put_Text(BSTR newVal)
 STDMETHODIMP Decal::get_SizingType(SizingType *pVal)
 {
    *pVal = m_d.m_sizingtype;
-
    return S_OK;
 }
 
@@ -1018,14 +1009,12 @@ STDMETHODIMP Decal::put_SizingType(SizingType newVal)
 STDMETHODIMP Decal::get_FontColor(OLE_COLOR *pVal)
 {
    *pVal = m_d.m_color;
-
    return S_OK;
 }
 
 STDMETHODIMP Decal::put_FontColor(OLE_COLOR newVal)
 {
    m_d.m_color = newVal;
-
    return S_OK;
 }
 
@@ -1050,7 +1039,6 @@ STDMETHODIMP Decal::put_Material(BSTR newVal)
 STDMETHODIMP Decal::get_Font(IFontDisp **pVal)
 {
    m_pIFont->QueryInterface(IID_IFontDisp, (void **)pVal);
-
    return S_OK;
 }
 
@@ -1066,7 +1054,6 @@ STDMETHODIMP Decal::putref_Font(IFontDisp *pFont)
 STDMETHODIMP Decal::get_HasVerticalText(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_verticalText);
-
    return S_OK;
 }
 

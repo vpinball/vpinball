@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "meshes/flipperBase.h"
 #include "utils/objloader.h"
@@ -179,7 +181,6 @@ void Flipper::WriteRegDefaults()
 
 #undef regKey
 }
-
 
 void Flipper::BeginPlay(vector<HitTimer*> &pvht)
 {
@@ -639,10 +640,7 @@ void Flipper::ExportMesh(ObjLoader& loader)
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Bumper/BumperMeshGenerator.cs
-//
 
 static void ApplyFix(Vertex3D_NoTex2& vert, const Vertex2D& center, const float midAngle, const float radius, const Vertex2D& newCenter, const float fixAngleScale)
 {
@@ -757,11 +755,6 @@ void Flipper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
       }
    }
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 
 #pragma region Rendering
 
@@ -997,28 +990,24 @@ HRESULT Flipper::InitPostLoad()
 STDMETHODIMP Flipper::get_BaseRadius(float *pVal)
 {
    *pVal = m_d.m_BaseRadius;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_BaseRadius(float newVal)
 {
    m_d.m_BaseRadius = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EndRadius(float *pVal)
 {
    *pVal = m_d.m_EndRadius;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EndRadius(float newVal)
 {
    m_d.m_EndRadius = newVal;
-
    return S_OK;
 }
 
@@ -1037,7 +1026,6 @@ STDMETHODIMP Flipper::put_Length(float newVal)
 STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 {
    *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideTorqueDamping : m_d.m_torqueDamping;
-
    return S_OK;
 }
 
@@ -1057,7 +1045,6 @@ STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
 {
    *pVal = (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)) ? m_d.m_OverrideTorqueDampingAngle : m_d.m_torqueDampingAngle;
-
    return S_OK;
 }
 
@@ -1128,28 +1115,24 @@ STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
 STDMETHODIMP Flipper::get_X(float *pVal)
 {
    *pVal = m_d.m_Center.x;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_X(float newVal)
 {
    m_d.m_Center.x = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Y(float *pVal)
 {
    *pVal = m_d.m_Center.y;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Y(float newVal)
 {
    m_d.m_Center.y = newVal;
-
    return S_OK;
 }
 
@@ -1191,10 +1174,10 @@ STDMETHODIMP Flipper::put_Material(BSTR newVal)
 
 STDMETHODIMP Flipper::get_Mass(float *pVal)
 {
-    if (m_phitflipper)
-        *pVal = m_phitflipper->m_flipperMover.GetMass();
-    else
-        *pVal = m_d.m_mass;
+   if (m_phitflipper)
+      *pVal = m_phitflipper->m_flipperMover.GetMass();
+   else
+      *pVal = m_d.m_mass;
 
    return S_OK;
 }
@@ -1215,7 +1198,6 @@ STDMETHODIMP Flipper::put_Mass(float newVal)
 STDMETHODIMP Flipper::get_OverridePhysics(PhysicsSet *pVal)
 {
    *pVal = (PhysicsSet)m_d.m_OverridePhysics;
-
    return S_OK;
 }
 
@@ -1253,7 +1235,6 @@ STDMETHODIMP Flipper::put_RubberMaterial(BSTR newVal)
 STDMETHODIMP Flipper::get_RubberThickness(float *pVal)
 {
    *pVal = m_d.m_rubberthickness;
-
    return S_OK;
 }
 
@@ -1272,7 +1253,6 @@ STDMETHODIMP Flipper::get_RubberWidth(float *pVal)
 STDMETHODIMP Flipper::put_RubberThickness(float newVal)
 {
    m_d.m_rubberthickness = newVal;
-
    return S_OK;
 }
 
@@ -1317,16 +1297,13 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_visible : m_d.m_visible);
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
-   {
       m_phitflipper->m_flipperMover.m_visible = VBTOb(newVal); //m_d.m_visible
-   }
    else
       m_d.m_visible = VBTOb(newVal);
 
@@ -1336,16 +1313,13 @@ STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 STDMETHODIMP Flipper::get_Enabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_enabled : m_d.m_enabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 {
    if (m_phitflipper)
-   {
       m_phitflipper->m_flipperMover.m_enabled = VBTOb(newVal); //m_d.m_visible
-   }
    else
       m_d.m_enabled = VBTOb(newVal);
 
@@ -1355,7 +1329,6 @@ STDMETHODIMP Flipper::put_Enabled(VARIANT_BOOL newVal)
 STDMETHODIMP Flipper::get_Elasticity(float *pVal)
 {
    *pVal = m_phitflipper ? m_phitflipper->m_elasticity : m_d.m_elasticity;
-
    return S_OK;
 }
 
@@ -1375,7 +1348,6 @@ STDMETHODIMP Flipper::put_Elasticity(float newVal)
 STDMETHODIMP Flipper::get_Scatter(float *pVal)
 {
    *pVal = m_phitflipper ? RADTOANG(m_phitflipper->m_scatter) : m_d.m_scatter;
-
    return S_OK;
 }
 
@@ -1395,21 +1367,18 @@ STDMETHODIMP Flipper::put_Scatter(float newVal)
 STDMETHODIMP Flipper::get_ElasticityFalloff(float *pVal)
 {
    *pVal = m_phitflipper ? m_phitflipper->m_elasticityFalloff : m_d.m_elasticityFalloff;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_ElasticityFalloff(float newVal)
 {
    SetElasticityFalloff(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_Friction(float *pVal)
 {
    *pVal = m_phitflipper ? m_phitflipper->m_friction : m_d.m_friction;
-
    return S_OK;
 }
 
@@ -1426,14 +1395,12 @@ STDMETHODIMP Flipper::put_Friction(float newVal)
 STDMETHODIMP Flipper::get_RampUp(float *pVal)
 {
    *pVal = GetRampUp();
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_RampUp(float newVal)
 {
    SetRampUp(newVal);
-
    return S_OK;
 }
 
@@ -1462,21 +1429,18 @@ STDMETHODIMP Flipper::get_Return(float *pVal)
 STDMETHODIMP Flipper::put_Return(float newVal)
 {
    SetReturn(newVal);
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_FlipperRadiusMin(float *pVal)
 {
    *pVal = GetFlipperRadiusMin();
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_FlipperRadiusMin(float newVal)
 {
    SetFlipperRadiusMin(newVal);
-
    return S_OK;
 }
 
@@ -1507,14 +1471,12 @@ STDMETHODIMP Flipper::put_Image(BSTR newVal)
 STDMETHODIMP Flipper::get_ReflectionEnabled(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_d.m_reflectionEnabled);
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_ReflectionEnabled(VARIANT_BOOL newVal)
 {
    m_d.m_reflectionEnabled = VBTOb(newVal);
-
    return S_OK;
 }
 
