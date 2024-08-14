@@ -1,4 +1,7 @@
+// license:GPLv3+
+
 #pragma once
+
 #include "Shader.h"
 
 class Anaglyph final
@@ -49,7 +52,7 @@ private:
    float m_deghostLevel = 0.f;
    float m_dynDesatLevel = 0.f;
    Filter m_filter = Filter::NONE;
-   
+
    // Data computed from calibration data
    vec3 m_rgb2Yl, m_rgb2Yr, m_anaglyphRatio;
    float m_displayGamma = 2.4f;

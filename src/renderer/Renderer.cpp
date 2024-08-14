@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "ThreadPool.h"
 #ifndef __STANDALONE__
@@ -157,7 +159,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
    int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
-   
+
    if ((m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
@@ -176,7 +178,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
                      || (m_stereo3D != STEREO_VR && m_stereo3DfakeStereo)
                      || !m_renderDevice->SupportLayeredRendering() 
                       ? SurfaceType::RT_DEFAULT : SurfaceType::RT_STEREO;
-   
+
    // MSAA render target which is resolved to the non MSAA render target
    if (nMSAASamples > 1) 
       m_pOffscreenMSAABackBufferTexture = new RenderTarget(m_renderDevice, rtType, "MSAABackBuffer"s, renderWidthAA, renderHeightAA, renderFormat, true, nMSAASamples, "Fatal Error: unable to create MSAA render buffer!");
@@ -457,7 +459,6 @@ RenderTarget* Renderer::GetAORenderTarget(int idx)
          GetBackBufferTexture()->GetWidth(), GetBackBufferTexture()->GetHeight(), colorFormat::GREY8, false, 1, 
          "Unable to create AO buffers!\r\nPlease disable Ambient Occlusion.\r\nOr try to (un)set \"Alternative Depth Buffer processing\" in the video options!");
       m_pAORenderTarget2 = m_pAORenderTarget1->Duplicate("AO2"s);
-
    }
    return idx == 0 ? m_pAORenderTarget1 : m_pAORenderTarget2;
 }
@@ -1423,7 +1424,7 @@ void Renderer::RenderStaticPrepass()
    delete m_staticPrepassRT;
    m_staticPrepassRT = GetBackBufferTexture()->Duplicate("StaticPreRender"s);
    assert(!m_staticPrepassRT->IsMSAA());
-   
+
    RenderTarget *accumulationSurface = IsUsingStaticPrepass() ? m_staticPrepassRT->Duplicate("Accumulation"s) : nullptr;
 
    RenderTarget* renderRT = GetAOMode() == 1 ? GetBackBufferTexture() : m_staticPrepassRT;
@@ -1898,10 +1899,10 @@ void Renderer::PrepareVideoBuffers()
          m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_AO);
       else if (infoMode == IF_RENDER_PROBES)
          m_renderDevice->m_FBShader->SetTechnique(m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                                                     : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
-                                                     : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
-                                                     : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
-                                                     : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap);
+                                                : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
+                                                : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
+                                                : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
+                                                : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap);
       else if (m_BWrendering != 0)
          m_renderDevice->m_FBShader->SetTechnique(m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR);
       else if (m_toneMapper == TM_REINHARD)
@@ -2078,7 +2079,7 @@ void Renderer::PrepareVideoBuffers()
       {
          assert(renderedRT != m_renderDevice->GetOutputBackBuffer());
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
-         
+
          RenderTarget *leftTexture = GetOffscreenVR(0);
          m_renderDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
          m_renderDevice->AddRenderTargetDependency(renderedRT);

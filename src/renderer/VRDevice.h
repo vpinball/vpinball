@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifdef ENABLE_VR
@@ -10,7 +12,7 @@ public:
    VRDevice();
    ~VRDevice();
    void SaveVRSettings(Settings& settings) const;
-   
+
    void UpdateVRPosition(ModelViewProj& mvp);
    void TableUp();
    void TableDown();
@@ -19,10 +21,10 @@ public:
    bool IsVRReady() const;
    int GetEyeWidth() const { return m_eyeWidth; }
    int GetEyeHeight() const { return m_eyeHeight; }
-   
+
    static bool IsVRinstalled();
    static bool IsVRturnedOn();
-   
+
    void SubmitFrame(Sampler* leftEye, Sampler* rightEye);
 
 private:

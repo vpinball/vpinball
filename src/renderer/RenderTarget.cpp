@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderTarget.h"
 #include "RenderDevice.h"
@@ -31,10 +33,10 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
 {
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
-   
+
    #if defined(ENABLE_BGFX)
    m_framebuffer = BGFX_INVALID_HANDLE; // Invalid handle is the reserved Id for BGFX's back buffer
-   
+
    #elif defined(ENABLE_OPENGL)
    #ifdef __APPLE__
    glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&m_framebuffer); // Hack to run on Apple device where the #0 id does not seem to bind to the windowing backbuffer
@@ -49,7 +51,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &gSize);
    SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &bSize);
    PLOGI << "Backbuffer channel size: " << rSize << ", " << gSize << ", " << bSize;
-   
+
    #elif defined(ENABLE_DX9)
    HRESULT hr = m_rd->GetCoreDevice()->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &m_color_surface);
    if (FAILED(hr))
@@ -134,7 +136,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
    m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
    m_color_sampler->SetName(name + ".Color"s);
-   
+
    if (m_shared_depth)
    {
       m_depth_tex = sharedDepth->m_depth_tex;
@@ -168,7 +170,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       exit(-1);
    }
    bgfx::setName(m_framebuffer, name.c_str());
-   
+
 #elif defined(ENABLE_OPENGL)
    const GLuint col_type = ((format == RGBA32F) || (format == RGB32F)) ? GL_FLOAT : ((format == RGB16F) || (format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((format == GREY8) || (format == RED16F))                                                                                                      ? GL_RED
@@ -477,7 +479,7 @@ RenderTarget::~RenderTarget()
       bgfx::destroy(m_color_tex);
    if (bgfx::isValid(m_depth_tex))
       bgfx::destroy(m_depth_tex);
-   
+
 #elif defined(ENABLE_OPENGL)
    glDeleteTextures(1, &m_color_tex);
    if (m_depth_tex && !m_shared_depth)
@@ -485,7 +487,7 @@ RenderTarget::~RenderTarget()
    glDeleteFramebuffers(1, &m_framebuffer);
    if (m_nLayers > 1)
       glDeleteFramebuffers(m_nLayers, m_framebuffer_layers);
-   
+
 #elif defined(ENABLE_DX9)
    // Texture share its refcount with surface, it must be decremented, but it won't be 0 until surface is also released
    SAFE_RELEASE_NO_RCC(m_color_tex);
@@ -513,7 +515,7 @@ RenderTarget::~RenderTarget()
    }
 #endif
 }
-   
+
 void RenderTarget::UpdateDepthSampler(bool insideBeginEnd)
 {
 #if !defined(DISABLE_FORCE_NVIDIA_OPTIMUS) && defined(ENABLE_DX9)
@@ -613,7 +615,7 @@ void RenderTarget::Activate(const int layer)
       return;
    current_render_target = this;
    current_render_layer = layer;
-   
+
    #if defined(ENABLE_BGFX)
    assert(layer == -1 || m_nLayers == 1);
    m_rd->NextView();
@@ -632,7 +634,7 @@ void RenderTarget::Activate(const int layer)
    // Either bind all layers for instanced rendering or the only requested one for normal rendering (one pass per layer)
    glBindFramebuffer(GL_FRAMEBUFFER, (layer == -1 || m_nLayers == 1)  ? m_framebuffer : m_framebuffer_layers[layer]);
    glViewport(0, 0, m_width, m_height);
-   
+
    #elif defined(ENABLE_DX9)
    assert(layer == -1 || m_nLayers == 1);
    static IDirect3DSurface9* currentColorSurface = nullptr;

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderProbe.h"
 #include "RenderCommand.h"
@@ -7,7 +9,7 @@
 const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME = "Playfield Reflections"s;
 
 RenderProbe::RenderProbe()
-{ 
+{
 }
 
 RenderProbe::~RenderProbe()

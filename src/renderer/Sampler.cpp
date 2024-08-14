@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "Sampler.h"
 #include "RenderDevice.h"
@@ -191,7 +193,7 @@ namespace bgfx { extern void release(const bgfx::Memory* _mem); }
 Sampler::~Sampler()
 {
    m_rd->UnbindSampler(this);
-   
+
    #if defined(ENABLE_BGFX)
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
@@ -204,7 +206,7 @@ Sampler::~Sampler()
    Unbind();
    if (m_ownTexture)
       glDeleteTextures(1, &m_texture);
-   
+
    #elif defined(ENABLE_DX9)
    if (m_ownTexture)
       SAFE_RELEASE(m_texture);
@@ -343,13 +345,13 @@ void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb
    glTexSubImage2D(m_texTarget, 0, 0, 0, surf->width(), surf->height(), col_format, col_type, surf->data());
    glGenerateMipmap(m_texTarget); // Generate mip-maps
    glBindTexture(m_texTarget, 0);
-   
+
 #elif defined(ENABLE_DX9)
    colorFormat texformat;
    IDirect3DTexture9* sysTex = CreateSystemTexture(surf, force_linear_rgb, texformat);
    CHECKD3D(m_rd->GetCoreDevice()->UpdateTexture(sysTex, m_texture));
    SAFE_RELEASE(sysTex);
-   
+
 #endif
    m_rd->m_curTextureUpdates++;
 }

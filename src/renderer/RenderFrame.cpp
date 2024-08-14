@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderFrame.h"
 #include "RenderPass.h"
@@ -314,10 +316,10 @@ bool RenderFrame::Execute(const bool log)
       #if defined(ENABLE_DX9)
       CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
       #endif
-   
+
       for (RenderPass* pass : sortedPasses)
          rendered |= pass->Execute(log);
-   
+
       #if defined(ENABLE_BGFX)
       #elif defined(ENABLE_OPENGL)
       if (rendered)

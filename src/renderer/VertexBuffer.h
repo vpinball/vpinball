@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "core/stdafx.h"
@@ -37,7 +39,7 @@ public:
    #elif defined(ENABLE_OPENGL)
    GLuint GetBuffer() const;
    void Bind() const;
-   
+
    #elif defined(ENABLE_DX9)
    IDirect3DVertexBuffer9* GetBuffer() const;
    void Bind() const;

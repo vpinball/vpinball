@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "VRDevice.h"
 
@@ -203,7 +205,7 @@ bool VRDevice::IsVRReady() const
    #ifdef ENABLE_VR
    return m_pHMD != nullptr;
    #else
-   return false;  
+   return false;
    #endif
 }
 
@@ -305,7 +307,7 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
                    * Matrix3D::MatrixRotateZ(ANGTORAD(180.f + m_orientation)) // Rotate table around VR height axis
                    * Matrix3D::MatrixTranslate(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
    }
-   
+
    mvp.SetView(m_tableWorld * matView);
 }
 

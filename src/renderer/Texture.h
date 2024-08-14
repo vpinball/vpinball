@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #define MIN_TEXTURE_SIZE 8u

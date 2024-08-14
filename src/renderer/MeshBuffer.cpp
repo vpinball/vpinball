@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "MeshBuffer.h"
 #include "RenderDevice.h"
@@ -50,7 +52,7 @@ unsigned int MeshBuffer::GetSortKey() const
    #if defined(ENABLE_BGFX)
    if (m_ib)
       return ((m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx)
-         ^ (m_ib->m_isStatic ? m_ib->GetStaticBuffer().idx : m_ib->GetDynamicBuffer().idx));
+            ^ (m_ib->m_isStatic ? m_ib->GetStaticBuffer().idx : m_ib->GetDynamicBuffer().idx));
    else
       return m_vb->m_isStatic ? m_vb->GetStaticBuffer().idx : m_vb->GetDynamicBuffer().idx;
    #elif defined(ENABLE_OPENGL)

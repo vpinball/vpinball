@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderPass.h"
 #include "RenderCommand.h"
@@ -100,7 +102,7 @@ void RenderPass::SortCommands()
             return isKicker2 ? r1->GetDepth() > r2->GetDepth() : true;
          else if (isKicker2)
             return false;
-            
+
          // At least one transparent item (identify by legacy transparency flag): render them after opaque ones
          const bool transparent1 = r1->IsTransparent();
          const bool transparent2 = r2->IsTransparent();
@@ -207,7 +209,7 @@ bool RenderPass::Execute(const bool log)
       glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, -1, passName.str().c_str());
    }
    #endif
-   
+
    if (log)
    {
       std::stringstream ss;

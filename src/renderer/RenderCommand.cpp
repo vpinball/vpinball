@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderCommand.h"
 #include "VRDevice.h"
@@ -43,7 +45,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       const uint32_t rgba = (r << 24) | (g << 16) | (b << 8) | a;
       bgfx::setViewClear(m_rd->m_activeViewId, (uint16_t) m_clearFlags, rgba);
       bgfx::touch(m_rd->m_activeViewId);
-      
+
       #elif defined(ENABLE_OPENGL)
       // Default OpenGL Values
       static GLfloat clear_z = 1.f;
@@ -69,10 +71,10 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          glClearColor(r, g, b, a);
       }
       glClear(m_clearFlags);
-      
+
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_rd->GetCoreDevice()->Clear(0, nullptr, m_clearFlags, m_clearARGB, z, stencil));
-      
+
       #endif
       break;
    }
@@ -88,11 +90,11 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       #if defined(ENABLE_DX9)
       //CHECKD3D(m_rd->GetCoreDevice()->EndScene());
       #endif
-      
+
       m_copyFrom->CopyTo(m_copyTo, m_copyColor, m_copyDepth,
          (int) m_copySrcRect.x, (int) m_copySrcRect.y, (int) m_copySrcRect.z, (int) m_copySrcRect.w, 
          (int) m_copyDstRect.x, (int) m_copyDstRect.y, (int) m_copyDstRect.z, (int) m_copyDstRect.w, m_copySrcLayer);
-      
+
       #if defined(ENABLE_DX9)
       //CHECKD3D(m_rd->GetCoreDevice()->BeginScene());
       #endif
@@ -167,7 +169,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
          bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());         
-         
+
          #elif defined(ENABLE_OPENGL)
          void* bufvb;
          m_rd->m_quadPTDynMeshBuffer->m_vb->Lock(bufvb);
@@ -178,7 +180,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             glDrawArraysInstanced(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4, nInstances);
          else
             glDrawArrays(RenderDevice::PrimitiveTypes::TRIANGLESTRIP, m_rd->m_quadPTDynMeshBuffer->m_vb->GetVertexOffset(), 4);
-         
+
          #elif defined(ENABLE_DX9)
          // having a VB and lock/copying stuff each time is slower on DX9 :/ (is it still true ? looks overly complicated for a very marginal benefit)
          if (m_rd->m_currentVertexDeclaration != m_rd->m_pVertexTexelDeclaration)
@@ -205,7 +207,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          bgfx::setInstanceCount(nInstances);
          bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
          bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
-         
+
          #elif defined(ENABLE_OPENGL)
          void* bufvb;
          m_rd->m_quadPNTDynMeshBuffer->m_vb->Lock(bufvb);
@@ -265,7 +267,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             else
                assert(false); // Unsupported primitive type
             bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
-         
+
             #elif defined(ENABLE_OPENGL)
             //assert(0 <= m_mb->m_vb->GetVertexOffset() && m_mb->m_vb->GetVertexOffset() + m_indicesCount <= m_mb->m_vb->GetSharedBuffer()->GetCount());
             if (nInstances > 1)
@@ -280,7 +282,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          else
          {
             const int vertexOffset = m_mb->m_isVBOffsetApplied ? 0 : m_mb->m_vb->GetOffset();
-            
+
             #if defined(ENABLE_BGFX)
             assert(vertexOffset == 0); // BGFX does not support offseted vertices. The buffers must be built accordingly
             if (m_mb->m_vb->m_isStatic)
@@ -299,7 +301,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
             else
                assert(false); // Unsupported primitive type
             bgfx::submit(m_rd->m_activeViewId, m_shader->GetCore());
-            
+
             #elif defined(ENABLE_OPENGL)
             const int indexOffset = m_mb->m_ib->GetOffset() + m_startIndex * m_mb->m_ib->m_sizePerIndex;
             const GLenum indexType = m_mb->m_ib->m_indexFormat == IndexBuffer::FMT_INDEX16 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT;
@@ -339,7 +341,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
                      m_indicesCount, indexType, (void*)(intptr_t)indexOffset, vertexOffset);
                #endif
             }
-            
+
             #elif defined(ENABLE_DX9)
             CHECKD3D(m_rd->GetCoreDevice()->DrawIndexedPrimitive((D3DPRIMITIVETYPE)m_primitiveType, 
                vertexOffset, 0, m_mb->m_vb->m_count, m_mb->m_ib->GetIndexOffset() + m_startIndex, np));

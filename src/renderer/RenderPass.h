@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 class RenderTarget;
@@ -8,6 +10,7 @@ class RenderPass final
 public:
    RenderPass(const string& name, RenderTarget* const rt);
    ~RenderPass();
+
    void Reset(const string& name, RenderTarget* const rt);
 
    void AddPrecursor(RenderPass* dependency);

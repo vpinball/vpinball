@@ -1,11 +1,13 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "RenderState.h"
 
-#define RENDER_STATE(name, bitpos, bitsize)                                                                                                                                                  \
-   constexpr uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                                                                                                                        \
-   constexpr uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos);                                                                                                   \
+#define RENDER_STATE(name, bitpos, bitsize)                                                    \
+   constexpr uint32_t RENDER_STATE_SHIFT_##name = bitpos;                                      \
+   constexpr uint32_t RENDER_STATE_MASK_##name = ((0x00000001u << (bitsize)) - 1) << (bitpos); \
    constexpr uint32_t RENDER_STATE_CLEAR_MASK_##name = ~(((0x00000001u << (bitsize)) - 1) << (bitpos));
-// These definition must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
+// These definitions must be copy/pasted to RenderState.h/cpp when modified to keep the implementation in sync
 RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(ZENABLE, 1, 1) // RS_FALSE or RS_TRUE
 RENDER_STATE(BLENDOP, 2, 2) // Operation from BLENDOP_MAX, BLENDOP_ADD, BLENDOP_SUB, BLENDOP_REVSUBTRACT
@@ -369,7 +371,7 @@ void RenderState::Apply(RenderDevice* device)
       device->m_curStateChanges++;
       #if defined(ENABLE_BGFX)
       // FIXME implement depth bias for BGFX
-      
+
       #elif defined(ENABLE_OPENGL)
       if (m_depthBias == 0.0f)
          glDisable(GL_POLYGON_OFFSET_FILL);
@@ -378,7 +380,7 @@ void RenderState::Apply(RenderDevice* device)
          glEnable(GL_POLYGON_OFFSET_FILL);
          glPolygonOffset(0.0f, m_depthBias);
       }
-      
+
       #elif defined(ENABLE_DX9)
       CHECKD3D(d3dDevice->SetRenderState(D3DRS_DEPTHBIAS, float_as_uint(m_depthBias * BASEDEPTHBIAS)));
       #endif

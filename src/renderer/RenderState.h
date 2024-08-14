@@ -1,10 +1,12 @@
+// license:GPLv3+
+
 #pragma once
 
 class RenderState final
 {
 public:
    #define RENDER_STATE(name, bitpos, bitsize) name,
-   // These definition must be copy/pasted between RenderState.h/cpp when modified to keep the implementation in sync
+   // These definitions must be copy/pasted between RenderState.h/cpp when modified to keep the implementation in sync
    enum RenderStates
    {
       RENDER_STATE(ALPHABLENDENABLE, 0, 1) // RS_FALSE or RS_TRUE

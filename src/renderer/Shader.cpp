@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "Shader.h"
 #include "typedefs3D.h"
@@ -564,7 +566,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       SetVector(SHADER_cBase_Alpha, 0.5f, 0.5f, 0.5f, 1.0f);
    if (m_stateOffsets[SHADER_Roughness_WrapL_Edge_Thickness] != -1)
       SetVector(SHADER_Roughness_WrapL_Edge_Thickness, 4.0f, 0.5f, 1.0f, 0.05f);
-   
+
    #elif defined(ENABLE_DX9)
    m_boundState = new ShaderState(this);
    memset(m_boundState->m_state, 0, m_stateSize);
@@ -614,7 +616,7 @@ Shader::~Shader()
    #elif defined(ENABLE_DX9)
       delete m_boundState;
       SAFE_RELEASE(m_shader);
-   
+
    #endif
 }
 
@@ -638,7 +640,7 @@ void Shader::Begin()
    assert(current_shader == nullptr);
    assert(m_technique != SHADER_TECHNIQUE_INVALID);
    current_shader = this;
-   
+
    #if defined(ENABLE_BGFX)
 
    #else
@@ -660,10 +662,10 @@ void Shader::Begin()
       #endif
    }
    #endif
-   
+
    for (const auto& uniformName : m_uniforms[m_technique])
       ApplyUniform(uniformName);
-   
+
    #if defined(ENABLE_DX9)
    unsigned int cPasses;
    CHECKD3D(m_shader->Begin(&cPasses, 0));
@@ -747,7 +749,7 @@ void Shader::SetMaterial(const Material* const mat, const bool has_alpha)
    // - alpha channel of texture would be discarded,
    // - alpha test was always performed.
    // Therefore lots of table author used a workaround by defining an opacity just below 1 to enable these features.
-   // 
+   //
    // As of VPX 10.8:
    // - the behavior did not change regarding lighting from below,
    // - the alpha channel of the texture is always considered,
@@ -794,7 +796,7 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
 {
    ShaderTechniques tech = technique;
    const bool isMetal = mat.m_type == Material::MaterialType::METAL;
-   
+
    #if defined(ENABLE_BGFX)
    // For BGFX doReflections is computed from the reflection factor
    SetVector(SHADER_u_basic_shade_mode, isMetal, doNormalMapping, doRefractions, 0.0f);
@@ -808,7 +810,7 @@ void Shader::SetTechniqueMaterial(ShaderTechniques technique, const Material& ma
    SetBool(SHADER_doRefractions, doRefractions);
    if (tech == SHADER_TECHNIQUE_basic_with_texture && doAlphaTest)
       tech = SHADER_TECHNIQUE_basic_with_texture_at;
-   
+
    #elif defined(ENABLE_DX9)
    switch (technique)
    {
@@ -923,7 +925,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    #if defined(ENABLE_BGFX)
    ShaderState* boundState = m_boundState[m_technique];
    bgfx::UniformHandle desc = m_uniformHandles[uniformName];
-   
+
    #elif defined(ENABLE_OPENGL)
    ShaderState* const __restrict boundState = m_boundState[m_technique];
    // For OpenGL uniform binding state is per technique (i.e. program)
@@ -936,7 +938,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
    ShaderState* const __restrict boundState = m_boundState;
    const UniformDesc& desc = m_uniform_desc[uniformName];
    #endif
-   
+
    void* const src = m_state->m_state + m_stateOffsets[uniformName];
    void* const dst = boundState->m_state + m_stateOffsets[uniformName];
    if (memcmp(dst, src, m_stateSizes[uniformName]) == 0)
@@ -1155,7 +1157,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          default: break;
          }
          bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, texHandle, flags);
-      
+
          #elif defined(ENABLE_OPENGL)
          // DX9 implementation uses preaffected texture units, not samplers, so these can not be used for OpenGL. This would cause some collisions.
          m_renderDevice->m_curParameterChanges--;
@@ -1228,7 +1230,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          }
          tex_unit->use_rank = 0;
          m_renderDevice->m_samplerBindings[0] = tex_unit;
-         
+
          #elif defined(ENABLE_DX9)
          // A sampler bind performs 3 things:
          // - bind the texture to a texture stage (done by DirectX effect framework)
@@ -1898,9 +1900,9 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 #ifndef __OPENGLES__
    if (GLAD_GL_VERSION_4_3)
    {
-      string vs_name = shaderCodeName + ".VS"s;
-      string gs_name = shaderCodeName + ".GS"s;
-      string fs_name = shaderCodeName + ".FS"s;
+      string vs_name = shaderCodeName + ".VS";
+      string gs_name = shaderCodeName + ".GS";
+      string fs_name = shaderCodeName + ".FS";
       if (shaderprogram > 0)
          glObjectLabel(GL_PROGRAM, shaderprogram, (GLsizei) shaderCodeName.length(), shaderCodeName.c_str());
       if (vertexShader > 0)

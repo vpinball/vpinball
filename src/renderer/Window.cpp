@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "Window.h"
 
@@ -31,7 +33,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
    if (video10bit && !m_fullscreen)
       ShowError("10Bit-Monitor support requires 'Fullscreen Mode' to be also enabled!");
-   
+
    int wnd_x, wnd_y;
    vector<DisplayConfig> displays;
    GetDisplays(displays);
@@ -60,10 +62,10 @@ Window::Window(const string &title, const Settings::Section section, const strin
       }
    }
    assert(m_display != -1); // This should not be possible since we use either the requested display or at least the primary one
-   
+
    m_width = w <= 0 ? m_screenwidth : w;
    m_height = h <= 0 ? m_screenheight : h;
-   
+
    // FIXME implement bit depth validation and selection (only used for DX9 10bit monitors to limit banding and dithering needs)
    m_bitdepth = fsBitDeth;
 
@@ -256,7 +258,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    #else // Win32 Windowing
       // TODO this window class is only suitable for main playfield window, use the right one depending on the use scheme
       m_nwnd = ::CreateWindowEx(0, _T("VPPlayer"), title.c_str(), WS_POPUP, wnd_x, wnd_y, m_width, m_height, NULL, NULL, g_pvp->theInstance, NULL);
-      
+
       if (m_fullscreen)
       {
          // These values have been validated, so we consider that they will be the right ones when we will switch to fullscreen upon DX9 device creation
@@ -277,9 +279,9 @@ Window::Window(const string &title, const Settings::Section section, const strin
          m_refreshrate = mode.RefreshRate;
          SAFE_RELEASE(d3d);
       }
-      
+
    #endif
-   
+
    assert(m_width > 0);
    assert(m_height > 0);
    if (m_refreshrate <= 0)
@@ -458,7 +460,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
       }
    }
    SAFE_RELEASE(pD3D);
-   
+
    // Apply the same numbering as windows
    int i = 0;
    for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)

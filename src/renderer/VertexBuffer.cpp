@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "VertexBuffer.h"
 #include "RenderDevice.h"
@@ -16,7 +18,7 @@ public:
    bgfx::DynamicVertexBufferHandle m_dvb = BGFX_INVALID_HANDLE;
    bool IsCreated() const override { return m_isStatic ? bgfx::isValid(m_vb) : bgfx::isValid(m_dvb); }
    const bgfx::VertexLayout* const m_vertexDeclaration;
-   
+
    #elif defined(ENABLE_OPENGL)
    GLuint m_vb = 0;
    void Bind() const { glBindBuffer(GL_ARRAY_BUFFER, m_vb); }
@@ -68,10 +70,10 @@ void SharedVertexBuffer::Upload()
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
       UINT8* data = mem->data;
-      
+
       #elif defined(ENABLE_OPENGL)
       UINT8* data = (UINT8*)malloc(size);
-      
+
       #elif defined(ENABLE_DX9)
       // NB: We always specify WRITEONLY since MSDN states,
       // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
@@ -79,7 +81,7 @@ void SharedVertexBuffer::Upload()
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), 0 /* sharedBuffer->format */, D3DPOOL_DEFAULT, &m_vb, nullptr));
       UINT8* data;
       CHECKD3D(m_vb->Lock(0, size, (void**)&data, 0));
-      
+
       #endif
 
       // Fill data block
@@ -120,10 +122,10 @@ void SharedVertexBuffer::Upload()
          glBufferData(GL_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
       free(data);
-      
+
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_vb->Unlock());
-      
+
       #endif
    }
    else
@@ -133,7 +135,7 @@ void SharedVertexBuffer::Upload()
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)
          bgfx::update(m_dvb, upload.offset / m_bytePerElement, upload.mem);
-         
+
          #elif defined(ENABLE_OPENGL)
          #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
@@ -145,7 +147,7 @@ void SharedVertexBuffer::Upload()
             glBufferSubData(GL_ARRAY_BUFFER, upload.offset, upload.size, upload.data);
          }
          delete[] upload.data;
-         
+
          #elif defined(ENABLE_DX9)
          // It would be better to perform a single lock but in fact, I don't think there are situations where more than one update is pending
          UINT8* data;
@@ -153,7 +155,7 @@ void SharedVertexBuffer::Upload()
          memcpy(data, upload.data, upload.size);
          CHECKD3D(m_vb->Unlock());
          delete[] upload.data;
-         
+
          #endif
       }
       m_pendingUploads.clear();

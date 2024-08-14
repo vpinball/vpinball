@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 class RenderDevice;

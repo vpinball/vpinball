@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 extern const string PLAYFIELD_REFLECTION_RENDERPROBE_NAME;

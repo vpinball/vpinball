@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "Shader.h"
@@ -21,7 +23,7 @@ public:
 
 private:
    void SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedPasses);
-   
+
    RenderDevice* const m_rd;
    RenderDeviceState* m_rdState = nullptr;
    vector<RenderPass*> m_passes;

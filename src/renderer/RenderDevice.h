@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "robin_hood.h"

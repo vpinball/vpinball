@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 //#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
@@ -361,7 +363,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    , m_compressTextures(compressTextures)
 {
    m_outputWnd[0] = wnd;
-   
+
    #if defined(ENABLE_DX9)
       m_useNvidiaApi = useNvidiaApi;
       m_INTZ_support = false;
@@ -463,7 +465,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #ifdef DEBUG
    init.debug = true;
    #endif
-   
+
    m_renderDeviceAlive = true;
    m_renderThread = std::thread(&RenderThread, this, init);
    m_frameReadySem.wait();
@@ -1151,10 +1153,10 @@ bool RenderDevice::DepthBufferReadBackAvailable()
 #if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
    return true;
 #elif defined(ENABLE_DX9)
-    if (m_INTZ_support && !m_useNvidiaApi)
-        return true;
-    // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
-    return NVAPIinit;
+   if (m_INTZ_support && !m_useNvidiaApi)
+      return true;
+   // fall back to NVIDIAs NVAPI, only handle DepthBuffer ReadBack if API was initialized
+   return NVAPIinit;
 #endif
 }
 

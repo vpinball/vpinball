@@ -1,7 +1,8 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
-
 
 class SharedIndexBuffer : public SharedBuffer<IndexBuffer::Format, IndexBuffer>
 {
@@ -62,15 +63,15 @@ void SharedIndexBuffer::Upload()
       #if defined(ENABLE_BGFX)
       const bgfx::Memory* mem = bgfx::alloc(size);
       UINT8* data = mem->data;
-      
+
       #elif defined(ENABLE_OPENGL)
       UINT8* data = (UINT8*)malloc(size);
-      
+
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateIndexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), m_format == IndexBuffer::FMT_INDEX16 ? D3DFMT_INDEX16 : D3DFMT_INDEX32, D3DPOOL_DEFAULT, &m_ib, nullptr));
       UINT8* data;
       CHECKD3D(m_ib->Lock(0, size, (void**)&data, 0));
-      
+
       #endif
 
       // Fill data block
@@ -89,7 +90,7 @@ void SharedIndexBuffer::Upload()
          m_ib = bgfx::createIndexBuffer(mem, m_format == IndexBuffer::Format::FMT_INDEX16 ? BGFX_BUFFER_NONE : BGFX_BUFFER_INDEX32);
       else
          m_dib = bgfx::createDynamicIndexBuffer(mem, m_format == IndexBuffer::Format::FMT_INDEX16 ? BGFX_BUFFER_NONE : BGFX_BUFFER_INDEX32);
-      
+
       #elif defined(ENABLE_OPENGL)
          #ifndef __OPENGLES__
          if (GLAD_GL_VERSION_4_5)
@@ -111,7 +112,7 @@ void SharedIndexBuffer::Upload()
          glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, data, m_isStatic ? GL_STATIC_DRAW : GL_DYNAMIC_DRAW);
       }
       free(data);
-      
+
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_ib->Unlock());
       #endif
@@ -123,7 +124,7 @@ void SharedIndexBuffer::Upload()
          assert(!m_isStatic);
          #if defined(ENABLE_BGFX)
          bgfx::update(m_dib, upload.offset / m_bytePerElement, upload.mem);
-         
+
          #elif defined(ENABLE_OPENGL)
             #ifndef __OPENGLES__
             if (GLAD_GL_VERSION_4_5)

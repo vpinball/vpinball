@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifdef ENABLE_SDL_VIDEO // SDL Windowing
@@ -38,7 +40,7 @@ public:
    #else // Win32 Windowing
       HWND GetCore() const { return m_nwnd; }
    #endif
-   
+
    struct VideoMode
    {
       int width;
@@ -62,7 +64,7 @@ public:
 
    static int GetDisplays(vector<DisplayConfig>& displays);
    static void GetDisplayModes(const int display, vector<VideoMode>& modes);
-   
+
 private:
    float m_hidpiScale = 1.f;
    int m_width, m_height;

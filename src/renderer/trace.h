@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifdef ENABLE_TRACE
@@ -5,9 +7,9 @@
 #include "minid3d9.h"
 
 #define _STR(x)    # x
-#define STR(x)     _STR(x)
+#define  STR(x)    _STR(x)
 #define _WIDEN(x)  L ## x
-#define WIDEN(x)   _WIDEN(x)
+#define  WIDEN(x)  _WIDEN(x)
 
 #define TRACE_FUNCTION()  ScopedTracer(WIDEN(__FUNCTION__))
 
