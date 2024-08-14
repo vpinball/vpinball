@@ -4,6 +4,14 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 08/14/24
+    * Update FFMPEG to 7.0.2
+    * Replace TTF_RenderUTF8_Blended_Wrapped errors with warnings for PuP labels
+
+* 08/04/24
+    * Disable B2S polling if table script checks solenoids, lamps, etc.
+    * Add support for proxying PinMAME TimeFence through via B2S
+
 * 06/20/24
     * Bump ci to macos-latest (arm64)
     * Send case insensitive pupvideos folder to libdmdutil
