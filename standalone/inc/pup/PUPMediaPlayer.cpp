@@ -159,8 +159,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
       AVCodecParameters* pCodecParameters = pStream->codecpar;
       m_pAudioContext = OpenStream(m_pFormatContext, m_audioStream);
       if (m_pAudioContext) {
-         int channels = av_get_channel_layout_nb_channels(pCodecParameters->channel_layout);
-         PLOGD.printf("Audio stream: %s %d channels, %d Hz", avcodec_get_name(m_pAudioContext->codec_id), channels, pCodecParameters->sample_rate);
+         PLOGD.printf("Audio stream: %s %d channels, %d Hz\n", avcodec_get_name(m_pAudioContext->codec_id), pCodecParameters->ch_layout.nb_channels, pCodecParameters->sample_rate);
       }
       else {
          PLOGE.printf("Unable to open audio stream: filename=%s", szFilename.c_str());
@@ -492,16 +491,15 @@ AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext,
 
 void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
 {
-   static int destNbChannels = av_get_channel_layout_nb_channels(AV_CH_LAYOUT_STEREO);
+   static AVChannelLayout destChLayout = AV_CHANNEL_LAYOUT_STEREO;
    static enum AVSampleFormat destFmt = AV_SAMPLE_FMT_S16;
    static int destFreq = 44100;
 
    AVSampleFormat format = (AVSampleFormat)pFrame->format;
    if (!m_pAudioConversionContext || m_audioFormat != format) {
       swr_free(&m_pAudioConversionContext);
-      m_pAudioConversionContext = swr_alloc_set_opts(NULL, AV_CH_LAYOUT_STEREO,
-         destFmt, destFreq, av_get_default_channel_layout(pFrame->channels),
-         (AVSampleFormat)pFrame->format, pFrame->sample_rate, 0, NULL);
+      swr_alloc_set_opts2(&m_pAudioConversionContext, &destChLayout, destFmt, destFreq, &pFrame->ch_layout,
+         (enum AVSampleFormat)pFrame->format, pFrame->sample_rate, 0, NULL);
 
       if (!m_pAudioConversionContext || swr_init(m_pAudioConversionContext) < 0) {
          PLOGE.printf("Failed to initialize the resampling context");
@@ -519,7 +517,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
    uint8_t** ppOut = &pBuffer;
    const uint8_t** ppIn = (const uint8_t**)pFrame->extended_data;
    int outCount = (int64_t)wantedNbSamples * destFreq / pFrame->sample_rate + 256;
-   int outSize = av_samples_get_buffer_size(NULL, destNbChannels, outCount, destFmt, 0);
+   int outSize = av_samples_get_buffer_size(NULL, destChLayout.nb_channels, outCount, destFmt, 0);
 
    if (outSize < 0) {
       PLOGE.printf("av_samples_get_buffer_size() failed");
@@ -550,7 +548,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
          return;
       }
    }
-   int resampledDataSize = len2 * destNbChannels * av_get_bytes_per_sample(destFmt);
+   int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
    m_pAudioPlayer->StreamUpdate(pBuffer, resampledDataSize);
 
    av_free(pBuffer);

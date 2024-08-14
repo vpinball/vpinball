@@ -385,6 +385,8 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 
 void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
 {
+   static robin_hood::unordered_map<string, robin_hood::unordered_set<string>> warnedLabels;
+
    if (m_pTexture) {
       SDL_DestroyTexture(m_pTexture);
       m_pTexture = NULL;
@@ -397,7 +399,11 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
    SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), textColor, 0);
    if (!pTextSurface) {
-      PLOGE.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), TTF_GetError());
+      string szError = TTF_GetError();
+      if (warnedLabels[szError].find(m_szName) == warnedLabels[szError].end()) {
+         PLOGW.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), szError.c_str());
+         warnedLabels[szError].insert(m_szName);
+      }
       return;
    }
 
@@ -407,7 +413,11 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
       SDL_Color shadowColor = { GetRValue(m_shadowColor), GetGValue(m_shadowColor), GetBValue(m_shadowColor) };
       SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), shadowColor, 0);
       if (!pShadowSurface) {
-         PLOGE.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), TTF_GetError());
+         string szError = TTF_GetError();
+         if (warnedLabels[szError].find(m_szName) == warnedLabels[szError].end()) {
+            PLOGW.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), szError.c_str());
+            warnedLabels[szError].insert(m_szName);
+         }
          delete pTextSurface;
          return;
       }
