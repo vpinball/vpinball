@@ -1,9 +1,8 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Bumper/BumperCollider.cs
-//
 
 void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
@@ -23,15 +22,7 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
-////////////////////////////////////////////////////////////////////////////////
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
-//
 
 float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -45,7 +36,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
 
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel); // normal velocity to slingshot
 
-   const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold);  // normal greater than threshold?
+   const bool threshold = (dot <= -m_psurface->m_d.m_slingshot_threshold); // normal greater than threshold?
 
    if (!m_psurface->m_disabled && threshold) // enabled and if velocity greater than threshold level		
    {
@@ -58,7 +49,7 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
       // Calculate this distance from the center of the slingshot to get force
 
       const float btd = (vhitpoint.x - v1.x)*hitnormal.y - (vhitpoint.y - v1.y)*hitnormal.x; // distance to vhit from V1
-      float force = (fabsf(len) > 1.0e-6f) ? ((btd + btd) / len - 1.0f) : -1.0f;	// -1..+1
+      float force = (fabsf(len) > 1.0e-6f) ? ((btd + btd) / len - 1.0f) : -1.0f; // -1..+1
       force = 0.5f *(1.0f - force*force); //!! maximum value 0.5 ...I think this should have been 1.0...oh well
       // will match the previous physics
       force *= m_force;//-80;
@@ -71,16 +62,16 @@ void LineSegSlingshot::Collide(const CollisionEvent& coll)
    if (m_obj && m_fe && !m_psurface->m_disabled && threshold)
    {
       // is this the same place as last event? if same then ignore it
-       const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
-       pball->m_lastEventPos = pball->m_d.m_pos; //remember last collide position
+      const float dist_ls = (pball->m_lastEventPos - pball->m_d.m_pos).LengthSquared();
+      pball->m_lastEventPos = pball->m_d.m_pos; // remember last collide position
 
-       if (dist_ls > 0.25f) //!! magic distance, must be a new place if only by a little
-       {
-           ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
-           m_TimeReset = g_pplayer->m_time_msec + 100;
+      if (dist_ls > 0.25f) //!! magic distance, must be a new place if only by a little
+      {
+         ((IFireEvents *)m_obj)->FireGroupEvent(DISPID_SurfaceEvents_Slingshot);
+         m_TimeReset = g_pplayer->m_time_msec + 100;
 
-           g_pplayer->m_pininput.PlayRumble(0.15f, 0.1f, 100);
-       }
+         g_pplayer->m_pininput.PlayRumble(0.15f, 0.1f, 100);
+      }
    }
 }
 
@@ -105,49 +96,49 @@ void LineSegSlingshot::Animate()
 
 HitGate::HitGate(Gate * const pgate, const float height)
 {
-    m_pgate = pgate;
-    const float halflength = pgate->m_d.m_length * 0.5f;
+   m_pgate = pgate;
+   const float halflength = pgate->m_d.m_length * 0.5f;
 
-    const float radangle = ANGTORAD(pgate->m_d.m_rotation);
-    const float sn = sinf(radangle);
-    const float cs = cosf(radangle);
+   const float radangle = ANGTORAD(pgate->m_d.m_rotation);
+   const float sn = sinf(radangle);
+   const float cs = cosf(radangle);
 
-    m_lineseg[0].m_hitBBox.zlow = height;
-    m_lineseg[0].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
-    m_lineseg[1].m_hitBBox.zlow = height;
-    m_lineseg[1].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
+   m_lineseg[0].m_hitBBox.zlow = height;
+   m_lineseg[0].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
+   m_lineseg[1].m_hitBBox.zlow = height;
+   m_lineseg[1].m_hitBBox.zhigh = height + (float)(2.0*PHYS_SKIN);
 
-    m_lineseg[0].m_ObjType = eGate;
-    m_lineseg[1].m_ObjType = eGate;
+   m_lineseg[0].m_ObjType = eGate;
+   m_lineseg[1].m_ObjType = eGate;
 
-    m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
-    m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
-    m_lineseg[0].v1.x = pgate->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
-    m_lineseg[0].v1.y = pgate->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
+   m_lineseg[0].v2.x = pgate->m_d.m_vCenter.x + cs*(halflength + (float)PHYS_SKIN); //oversize by the ball radius
+   m_lineseg[0].v2.y = pgate->m_d.m_vCenter.y + sn*(halflength + (float)PHYS_SKIN); //this will prevent clipping
+   m_lineseg[0].v1.x = pgate->m_d.m_vCenter.x - cs*(halflength + (float)PHYS_SKIN); //through the edge of the
+   m_lineseg[0].v1.y = pgate->m_d.m_vCenter.y - sn*(halflength + (float)PHYS_SKIN); //spinner
 
-    m_lineseg[1].v1.x = m_lineseg[0].v2.x;
-    m_lineseg[1].v1.y = m_lineseg[0].v2.y;
-    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
-    m_lineseg[1].v2.y = m_lineseg[0].v1.y;
+   m_lineseg[1].v1.x = m_lineseg[0].v2.x;
+   m_lineseg[1].v1.y = m_lineseg[0].v2.y;
+   m_lineseg[1].v2.x = m_lineseg[0].v1.x;
+   m_lineseg[1].v2.y = m_lineseg[0].v1.y;
 
-    m_lineseg[0].CalcNormal();
-    m_lineseg[1].CalcNormal();
+   m_lineseg[0].CalcNormal();
+   m_lineseg[1].CalcNormal();
 
-    m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
-    m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
+   m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
+   m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
 
-    m_gateMover.m_friction = pgate->m_d.m_friction;
-    m_gateMover.m_visible = pgate->m_d.m_visible;
+   m_gateMover.m_friction = pgate->m_d.m_friction;
+   m_gateMover.m_visible = pgate->m_d.m_visible;
 
-    m_gateMover.m_angle = m_gateMover.m_angleMin;
-    m_gateMover.m_anglespeed = 0.0f;
-    m_gateMover.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); //0.996f;
-    m_gateMover.m_gravityfactor = pgate->m_d.m_gravityfactor;
+   m_gateMover.m_angle = m_gateMover.m_angleMin;
+   m_gateMover.m_anglespeed = 0.0f;
+   m_gateMover.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); // 0.996f;
+   m_gateMover.m_gravityfactor = pgate->m_d.m_gravityfactor;
 
-    m_gateMover.m_pgate = pgate;
-    m_gateMover.m_open = false;
-    m_gateMover.m_forcedMove = false;
-    m_twoWay = false;
+   m_gateMover.m_pgate = pgate;
+   m_gateMover.m_open = false;
+   m_gateMover.m_forcedMove = false;
+   m_twoWay = false;
 }
 
 float HitGate::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
@@ -174,8 +165,8 @@ void HitGate::Collide(const CollisionEvent& coll)
    const float dot = coll.m_hitnormal.Dot(coll.m_ball->m_d.m_vel);
    const float h = m_pgate->m_d.m_height*0.5f;
 
-   //linear speed = ball speed
-   //angular speed = linear/radius (height of hit)
+   // linear speed = ball speed
+   // angular speed = linear/radius (height of hit)
    float speed = fabsf(dot);
    // h is the height of the gate axis.
    if (fabsf(h) > 1.0f) // avoid divide by zero
@@ -222,14 +213,14 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_angle = -m_angleMax;
          else
             m_angle = m_angleMax;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
-               m_anglespeed = 0.0f;
+            m_anglespeed = 0.0f;
       }
       if (fabsf(m_angle) < m_angleMin)
       {
@@ -243,7 +234,7 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
             m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed < 0.0f)
-               m_anglespeed = 0.0f;
+            m_anglespeed = 0.0f;
       }
    }
    else
@@ -252,26 +243,26 @@ void GateMoverObject::UpdateDisplacements(const float dtime)
       if (direction * m_angle > m_angleMax)
       {
          m_angle = direction * m_angleMax;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed)));	// send EOS event
+         m_pgate->FireVoidEventParm(DISPID_LimitEvents_EOS, fabsf(RADTOANG(m_anglespeed))); // send EOS event
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed > 0.0f)
-               m_anglespeed = 0.0f;
+            m_anglespeed = 0.0f;
       }
       if (direction * m_angle < m_angleMin)
       {
          m_angle = direction * m_angleMin;
-         m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed)));	// send Park event
+         m_pgate->FireVoidEventParm(DISPID_LimitEvents_BOS, fabsf(RADTOANG(m_anglespeed))); // send Park event
          if (!m_forcedMove)
          {
             m_anglespeed = -m_anglespeed;
             m_anglespeed *= m_damping * 0.8f; // just some extra damping to reduce the anglespeed a bit faster
          }
          else if (m_anglespeed < 0.0f)
-               m_anglespeed = 0.0f;
+            m_anglespeed = 0.0f;
       }
    }
    if(m_anglespeed == 0.0f)
@@ -372,8 +363,8 @@ void HitSpinner::Collide(const CollisionEvent& coll)
    if (dot < 0.f) return; //hit from back doesn't count
 
    const float h = m_spinnerMover.m_pspinner->m_d.m_height*0.5f;
-   //linear speed = ball speed
-   //angular speed = linear/radius (height of hit)
+   // linear speed = ball speed
+   // angular speed = linear/radius (height of hit)
 
    // h is the height of the spinner axis;
    // Since the spinner has no mass in our equation, the spot
@@ -382,7 +373,7 @@ void HitSpinner::Collide(const CollisionEvent& coll)
 
    m_spinnerMover.m_anglespeed = fabsf(dot); // use this until a better value comes along
 
-   if (fabsf(h) > 1.0f)			// avoid divide by zero
+   if (fabsf(h) > 1.0f) // avoid divide by zero
        m_spinnerMover.m_anglespeed /= h;
    m_spinnerMover.m_anglespeed *= m_spinnerMover.m_damping;
 
@@ -393,7 +384,7 @@ void HitSpinner::Collide(const CollisionEvent& coll)
 
 void SpinnerMoverObject::UpdateDisplacements(const float dtime)
 {
-   if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax)	//blocked spinner, limited motion spinner
+   if (m_pspinner->m_d.m_angleMin != m_pspinner->m_d.m_angleMax) // blocked spinner, limited motion spinner
    {
       m_angle += m_anglespeed * dtime;
 
@@ -483,7 +474,7 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    }
 
    const float sqr_len = m_normal.x * m_normal.x + m_normal.y * m_normal.y + m_normal.z * m_normal.z;
-   const float inv_len = (sqr_len > 0.0f) ? -1.0f / sqrtf(sqr_len) : 0.0f;   // NOTE: normal is flipped! Thus we need vertices in CCW order
+   const float inv_len = (sqr_len > 0.0f) ? -1.0f / sqrtf(sqr_len) : 0.0f; // NOTE: normal is flipped! Thus we need vertices in CCW order
    m_normal.x *= inv_len;
    m_normal.y *= inv_len;
    m_normal.z *= inv_len;
@@ -492,10 +483,6 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    SetFriction(0.3f);
    m_scatter = 0.f;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count)
 {
@@ -529,7 +516,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 {
    if (!m_enabled) return -1.0f;
 
-   const float bnv = m_normal.Dot(ball.m_vel); //speed in Normal-vector direction
+   const float bnv = m_normal.Dot(ball.m_vel); // speed in Normal-vector direction
 
    if ((m_ObjType != eTrigger) && (bnv > C_LOWNORMVEL)) // return if clearly ball is receding from object
       return -1.0f;
@@ -597,7 +584,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime) return -1.0f; // time is outside this frame ... no collision
 
-   hitPos += hittime * ball.m_vel;     // advance hit point to contact
+   hitPos += hittime * ball.m_vel; // advance hit point to contact
 
    // Do a point in poly test, using the xy plane, to see if the hit point is inside the polygon
    //this need to be changed to a point in polygon on 3D plane
@@ -606,7 +593,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
    float y2 = m_rgv[0].y;
    bool hx2 = (hitPos.x >= x2);
    bool hy2 = (hitPos.y <= y2);
-   int crosscount = 0;	// count of lines which the hit point is to the left of
+   int crosscount = 0; // count of lines which the hit point is to the left of
    for (int i = 0; i < m_cvertex; i++)
    {
       const float x1 = x2;
@@ -649,7 +636,7 @@ float Hit3DPoly::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
       coll.m_hitnormal = m_normal;
 
       if (!rigid)                 // non rigid body collision? return direction
-         coll.m_hitflag = bUnHit; // UnHit signal	is receding from outside target
+         coll.m_hitflag = bUnHit; // UnHit signal -> is receding from outside target
 
       coll.m_hitdistance = bnd;   // 3dhit actual contact distance ... 
       //coll.m_hitRigid = rigid;  // collision type
@@ -700,7 +687,7 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
       if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
       {
-         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;      //move ball slightly forward
+         pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
          if (i < 0)
          {
@@ -736,11 +723,8 @@ void Hit3DPoly::CalcHitBBox()
    }
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
-//
 
 HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
 {
@@ -748,10 +732,9 @@ HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
    m_rgv[1] = rgv[1];
    m_rgv[2] = rgv[2];
 
-   /* NB: due to the swapping of the order of e0 and e1,
-    * the vertices must be passed in counterclockwise order
-    * (but rendering uses clockwise order!)
-    */
+   // due to the swapping of the order of e0 and e1,
+   // the vertices must be passed in counterclockwise order
+   // (but rendering uses clockwise order!)
    const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
    const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
    m_normal = CrossProduct(e0, e1);
@@ -774,10 +757,10 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
    // Point on the ball that will hit the polygon, if it hits at all
    Vertex3Ds hitPos = ball.m_pos - ball.m_radius * m_normal; // nearest point on ball ... projected radius along norm
 
-   const float bnd = m_normal.Dot(hitPos - m_rgv[0]);  // distance from plane to ball
+   const float bnd = m_normal.Dot(hitPos - m_rgv[0]); // distance from plane to ball
 
    if (bnd < -ball.m_radius/**2.0f*/) //!! *2 necessary?
-      return -1.0f;	// (ball normal distance) excessive penetration of object skin ... no collision HACK
+      return -1.0f; // (ball normal distance) excessive penetration of object skin ... no collision HACK
 
    bool isContact = false;
    float hittime;
@@ -828,8 +811,8 @@ float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent&
    {
       coll.m_hitnormal = m_normal;
 
-      coll.m_hitdistance = bnd;				// 3dhit actual contact distance ... 
-      //coll.m_hitRigid = true;				// collision type
+      coll.m_hitdistance = bnd; // 3dhit actual contact distance ...
+      //coll.m_hitRigid = true; // collision type
 
       coll.m_isContact = isContact;
       if(isContact)
@@ -890,7 +873,6 @@ void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList*
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Engine/Physics/HitPlane.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PlaneCollider.cs
 
@@ -908,7 +890,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
    const float bnd = m_normal.Dot(ball.m_pos) - ball.m_radius - m_d; // distance from plane to ball surface
 
    if (bnd < ball.m_radius*-2.0f) //!! solely responsible for ball through playfield?? check other places, too (radius*2??)
-      return -1.0f;   // excessive penetration of plane ... no collision HACK
+      return -1.0f; // excessive penetration of plane ... no collision HACK
 
    float hittime;
 #ifdef NEW_PHYSICS
@@ -952,11 +934,11 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 #endif
 
    if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
-      return -1.0f;       // time is outside this frame ... no collision
+      return -1.0f;        // time is outside this frame ... no collision
 
    coll.m_hitnormal = m_normal;
-   coll.m_hitdistance = bnd;               // actual contact distance
-   //coll.m_hitRigid = true;               // collision type
+   coll.m_hitdistance = bnd; // actual contact distance
+   //coll.m_hitRigid = true; // collision type
 
 #ifdef NEW_PHYSICS
    coll.m_isContact = isContact;
@@ -982,7 +964,6 @@ void HitPlane::Collide(const CollisionEvent& coll)
 #endif
 }
 
-////////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Engine/Physics/HitLine3D.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/Line3DCollider.cs
 //
@@ -1003,8 +984,8 @@ HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
    transaxis.z = 0.0f;
 
    const float l = transaxis.LengthSquared();
-   if (l <= 1e-6f)     // line already points in z axis?
-      transaxis.Set(1.f, 0.f, 0.f);            // choose arbitrary rotation vector
+   if (l <= 1e-6f) // line already points in z axis?
+      transaxis.Set(1.f, 0.f, 0.f); // choose arbitrary rotation vector
    else
       transaxis /= sqrtf(l);
 
@@ -1044,7 +1025,7 @@ float HitLine3D::HitTest(const BallS& ball, const float dtime, CollisionEvent& c
 
    const float hittime = HitLineZ::HitTest(ball_tmp, dtime, coll);
 
-   if (hittime >= 0.f)       // transform hit normal back to world coordinate system
+   if (hittime >= 0.f) // transform hit normal back to world coordinate system
       coll.m_hitnormal = m_matrix.MulVectorT(coll.m_hitnormal);
 
    return hittime;
@@ -1079,10 +1060,10 @@ void HitLine3D::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
 {
    if (m_enabled)
    {
-       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines);
-       const Vertex2D p0 = project(m_v1), p1 = project(m_v2);
-       if (p0.x != FLT_MAX && p1.x != FLT_MAX)
-           drawList->AddLine(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), lCol);
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines);
+      const Vertex2D p0 = project(m_v1), p1 = project(m_v2);
+      if (p0.x != FLT_MAX && p1.x != FLT_MAX)
+         drawList->AddLine(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), lCol);
    }
 }
 
@@ -1108,9 +1089,9 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
 
    const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
+   if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
    {
-      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;     // move ball slightly forward
+      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
       if (i < 0)
       {
@@ -1130,7 +1111,7 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
 
 float TriggerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
-   return HitTestBasicRadius(ball, dtime, coll, false, false, false); //any face, not-lateral, non-rigid
+   return HitTestBasicRadius(ball, dtime, coll, false, false, false); // any face, not-lateral, non-rigid
 }
 
 void TriggerHitCircle::Collide(const CollisionEvent& coll)
@@ -1142,9 +1123,9 @@ void TriggerHitCircle::Collide(const CollisionEvent& coll)
 
    const int i = FindIndexOf(*(pball->m_d.m_vpVolObjs), m_obj); // if -1 then not in objects volume set (i.e not already hit)
 
-   if ((!coll.m_hitflag) == (i < 0))                 // Hit == NotAlreadyHit
+   if ((!coll.m_hitflag) == (i < 0)) // Hit == NotAlreadyHit
    {
-      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel;     // move ball slightly forward
+      pball->m_d.m_pos += STATICTIME * pball->m_d.m_vel; // move ball slightly forward
 
       if (i < 0)
       {

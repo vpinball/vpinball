@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "collide.h"
@@ -79,7 +81,7 @@ public:
 #ifndef USE_EMBREE
       char indent[256];
       for (int i = 0; i <= indentLevel; ++i)
-         indent[i] = (i == indentLevel) ? 0 : ' ';
+         indent[i] = (i == indentLevel) ? '\0' : ' ';
       char msg[256];
       sprintf_s(msg, sizeof(msg), "[%f %f], items=%u", m_vcenter.x, m_vcenter.y, m_vho.size());
       strncat_s(indent, msg, sizeof(indent)-strnlen_s(indent, sizeof(indent))-1);

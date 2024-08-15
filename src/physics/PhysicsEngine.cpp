@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "PhysicsEngine.h"
 
@@ -141,10 +143,7 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Table/TableHitGenerator.cs
-//
 
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 {
@@ -190,10 +189,6 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    m_hitTopGlass = HitPlane(Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 void PhysicsEngine::AddBall(HitBall *const ball)
 {
@@ -250,7 +245,7 @@ void PhysicsEngine::Nudge(float angle, float force)
 void PhysicsEngine::UpdateNudge(float dtime)
 {
    // Nudge acceleration is computed either from hardware accelerometer(s) or from nudge commands called from script.
-  
+
    if (!m_legacyNudge)
    {
       // Perform keyboard nudge by simulating table movement is modeled as a mass-spring-damper system
@@ -607,7 +602,7 @@ void PhysicsEngine::UpdatePhysics()
       }
       #endif
       // end DJRobX's crazy code
-      
+
       const U64 cur_time_usec = usec()-delta_frame; //!! one could also do this directly in the while loop condition instead (so that the while loop will really match with the current time), but that leads to some stuttering on some heavy frames
 
       // hung in the physics loop over 200 milliseconds or the number of physics iterations to catch up on is high (i.e. very low/unplayable FPS)
@@ -694,7 +689,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 #ifdef DEBUGPHYSICS
       c_timesearch++;
 #endif
-      float hittime = dtime;       // begin time search from now ...  until delta ends
+      float hittime = dtime; // begin time search from now ...  until delta ends
 
       // find earliest time where a flipper collides with its stop
       for (size_t i = 0; i < m_vFlippers.size(); ++i)
@@ -820,7 +815,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             c_collisioncnt++;
 #endif
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
-            pball->m_coll.m_obj = nullptr;                  // remove trial hit object pointer
+            pball->m_coll.m_obj = nullptr;               // remove trial hit object pointer
 
             // Collide may have changed the velocity of the ball, 
             // and therefore the bounding box for the next hit cycle
@@ -833,13 +828,13 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             else
             {
 #ifdef C_DYNAMIC
-               // is this ball static? .. set static and quench        
+               // is this ball static? .. set static and quench
                if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
                {
                   const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
                   if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST)
                   {
-                     if (--pball->m_dynamic <= 0)             //... ball static, cancels next gravity increment
+                     if (--pball->m_dynamic <= 0)            //... ball static, cancels next gravity increment
                      {                                       // m_dynamic is cleared in ball gravity section
                         pball->m_dynamic = 0;
 #ifdef DEBUGPHYSICS
@@ -857,16 +852,15 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 #ifdef DEBUGPHYSICS
       c_contactcnt = (U32)m_contacts.size();
 #endif
-      /*
-       * Now handle contacts.
-       *
-       * At this point UpdateDisplacements() was already called, so the state is different
-       * from that at HitTest(). However, contacts have zero relative velocity, so
-       * hopefully nothing catastrophic has happened in the meanwhile.
-       *
-       * Maybe a two-phase setup where we first process only contacts, then only collisions
-       * could also work.
-       */
+
+      // Now handle contacts.
+
+      // At this point UpdateDisplacements() was already called, so the state is different
+      // from that at HitTest(). However, contacts have zero relative velocity, so
+      // hopefully nothing catastrophic has happened in the meanwhile.
+
+      // Maybe a two-phase setup where we first process only contacts, then only collisions
+      // could also work.
       if (rand_mt_01() < 0.5f) // swap order of contact handling randomly
          for (size_t i = 0; i < m_contacts.size(); ++i)
             //if (m_contacts[i].m_hittime <= hittime) // does not happen often, and values then look sane, so do this check //!! why does this break some collisions (MM NZ&TT Reloaded Skitso, also CCC (Saloon))? maybe due to ball colliding with multiple things and then some sideeffect?
@@ -913,7 +907,7 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
       }
 #endif
 
-      dtime -= hittime;       //new delta .. i.e. time remaining
+      dtime -= hittime; //new delta .. i.e. time remaining
 
       m_swap_ball_collision_handling = !m_swap_ball_collision_handling; // swap order of ball-ball collisions
 

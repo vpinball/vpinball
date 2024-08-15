@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 HitBall::HitBall()
@@ -19,22 +21,19 @@ HitBall::~HitBall()
 }
 
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Ball/BallCollider.cs
-//
 
 void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const float elastFalloff, const float friction, float scatter_angle)
 {
    //speed normal to wall
    float dot = m_d.m_vel.Dot(hitNormal);
 
-   if (dot >= -C_LOWNORMVEL)							// nearly receding ... make sure of conditions
-   {													// otherwise if clearly approaching .. process the collision
-      if (dot > C_LOWNORMVEL) return;					// is this velocity clearly receding (i.e must > a minimum)
+   if (dot >= -C_LOWNORMVEL)                          // nearly receding ... make sure of conditions
+   {                                                  // otherwise if clearly approaching .. process the collision
+      if (dot > C_LOWNORMVEL) return;                 // is this velocity clearly receding (i.e must > a minimum)
 #ifdef C_EMBEDDED
       if (m_coll.m_hitdistance < -C_EMBEDDED)
-         dot = -C_EMBEDSHOT;							// has ball become embedded???, give it a kick
+         dot = -C_EMBEDSHOT;                          // has ball become embedded???, give it a kick
       else return;
 #endif
    }
@@ -57,21 +56,21 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
 
    elasticity = ElasticityWithFalloff(elasticity, elastFalloff, dot);
    dot *= -(1.0f + elasticity);
-   m_d.m_vel += dot * hitNormal;     // apply collision impulse (along normal, so no torque)
+   m_d.m_vel += dot * hitNormal; // apply collision impulse (along normal, so no torque)
 
    // compute friction impulse
 
-   const Vertex3Ds surfP = -m_d.m_radius * hitNormal;    // surface contact point relative to center of mass
+   const Vertex3Ds surfP = -m_d.m_radius * hitNormal; // surface contact point relative to center of mass
 
-   const Vertex3Ds surfVel = SurfaceVelocity(surfP);     // velocity at impact point
+   const Vertex3Ds surfVel = SurfaceVelocity(surfP);  // velocity at impact point
 
    Vertex3Ds tangent = surfVel - surfVel.Dot(hitNormal) * hitNormal; // calc the tangential velocity
 
    const float tangentSpSq = tangent.LengthSquared();
    if (tangentSpSq > 1e-6f)
    {
-      tangent /= sqrtf(tangentSpSq);           // normalize to get tangent direction
-      const float vt = surfVel.Dot(tangent);   // get speed in tangential direction
+      tangent /= sqrtf(tangentSpSq);         // normalize to get tangent direction
+      const float vt = surfVel.Dot(tangent); // get speed in tangential direction
 
       // compute friction impulse
       const Vertex3Ds cross = CrossProduct(surfP, tangent);
@@ -96,7 +95,7 @@ void HitBall::Collide3DWall(const Vertex3Ds& hitNormal, float elasticity, const 
       const float radcos = cosf(scatter); // rotational transform from current position to position at time t
       const float vxt = m_d.m_vel.x;
       const float vyt = m_d.m_vel.y;
-      m_d.m_vel.x = vxt *radcos - vyt *radsin;// rotate to random scatter angle
+      m_d.m_vel.x = vxt *radcos - vyt *radsin; // rotate to random scatter angle
       m_d.m_vel.y = vyt *radcos + vxt *radsin;
    }
 }
@@ -188,8 +187,8 @@ float HitBall::HitTest(const BallS& ball, const float dtime, CollisionEvent& col
    coll.m_hitnormal = hitnormal;
    coll.m_hitnormal.Normalize();
 
-   coll.m_hitdistance = bnd;			// actual contact distance
-   //coll.m_hitRigid = true;			// rigid collision type
+   coll.m_hitdistance = bnd; // actual contact distance
+   //coll.m_hitRigid = true; // rigid collision type
 
 #ifdef BALL_CONTACTS
    coll.m_isContact = isContact;
@@ -217,18 +216,18 @@ void HitBall::Collide(const CollisionEvent& coll)
    float dot = vrel.Dot(vnormal);
 
    // correct displacements, mostly from low velocity, alternative to true acceleration processing
-   if (dot >= -C_LOWNORMVEL)								// nearly receding ... make sure of conditions
-   {														// otherwise if clearly approaching .. process the collision
-      if (dot > C_LOWNORMVEL) return;						// is this velocity clearly receding (i.e must > a minimum)		
+   if (dot >= -C_LOWNORMVEL)          // nearly receding ... make sure of conditions
+   {                                  // otherwise if clearly approaching .. process the collision
+      if (dot > C_LOWNORMVEL) return; // is this velocity clearly receding (i.e must > a minimum)		
 #ifdef C_EMBEDDED
       if (coll.m_hitdistance < -C_EMBEDDED)
-         dot = -C_EMBEDSHOT;		// has ball become embedded???, give it a kick
+         dot = -C_EMBEDSHOT;          // has ball become embedded???, give it a kick
       else return;
 #endif
    }
 
    // send ball/ball collision event to script function
-   if (dot < -0.25f)    // only collisions with at least some small true impact velocity (no contacts)
+   if (dot < -0.25f) // only collisions with at least some small true impact velocity (no contacts)
       g_pplayer->m_ptable->InvokeBallBallCollisionCallback(this, pball, -dot);
 
 #ifdef C_DISP_GAIN
@@ -236,13 +235,13 @@ void HitBall::Collide(const CollisionEvent& coll)
    if (edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)
-         edist = C_DISP_LIMIT;		// crossing ramps, delta noise
-      if (!m_d.m_lockedInKicker) edist *= 0.5f;	// if the hitten ball is not frozen
+         edist = C_DISP_LIMIT; // crossing ramps, delta noise
+      if (!m_d.m_lockedInKicker) edist *= 0.5f; // if the hitten ball is not frozen
       pball->m_d.m_pos += edist * vnormal;// push along norm, back to free area
       // use the norm, but is not correct, but cheaply handled
    }
 
-   edist = -C_DISP_GAIN * m_coll.m_hitdistance;	// noisy value .... needs investigation
+   edist = -C_DISP_GAIN * m_coll.m_hitdistance; // noisy value .... needs investigation
    if (!m_d.m_lockedInKicker && edist > 1.0e-4f)
    {
       if (edist > C_DISP_LIMIT)
@@ -271,7 +270,7 @@ void HitBall::Collide(const CollisionEvent& coll)
 
 void HitBall::HandleStaticContact(const CollisionEvent& coll, const float friction, const float dtime)
 {
-   const float normVel = m_d.m_vel.Dot(coll.m_hitnormal);   // this should be zero, but only up to +/- C_CONTACTVEL
+   const float normVel = m_d.m_vel.Dot(coll.m_hitnormal); // this should be zero, but only up to +/- C_CONTACTVEL
 
    // If some collision has changed the ball's velocity, we may not have to do anything.
    if (normVel <= C_CONTACTVEL)
@@ -304,10 +303,10 @@ void HitBall::HandleStaticContact(const CollisionEvent& coll, const float fricti
 
 void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const float fricCoeff)
 {
-   const Vertex3Ds surfP = -m_d.m_radius * hitnormal;    // surface contact point relative to center of mass
+   const Vertex3Ds surfP = -m_d.m_radius * hitnormal; // surface contact point relative to center of mass
 
    const Vertex3Ds surfVel = SurfaceVelocity(surfP);
-   const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal;       // calc the tangential slip velocity
+   const Vertex3Ds slip = surfVel - surfVel.Dot(hitnormal) * hitnormal; // calc the tangential slip velocity
 
    const float maxFric = fricCoeff * m_d.m_mass * -g_pplayer->m_physics->GetGravity().Dot(hitnormal);
 
@@ -323,10 +322,8 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 #else
    if (
 #endif
-       (slipspeed < C_PRECISION))
+       (slipspeed < C_PRECISION)) // slip speed zero - static friction case
    {
-      // slip speed zero - static friction case
-
       const Vertex3Ds surfAcc = SurfaceAcceleration(surfP);
       const Vertex3Ds slipAcc = surfAcc - surfAcc.Dot(hitnormal) * hitnormal; // calc the tangential slip acceleration
 
@@ -339,9 +336,8 @@ void HitBall::ApplyFriction(const Vertex3Ds& hitnormal, const float dtime, const
 
       numer = -slipDir.Dot(surfAcc);
    }
-   else
+   else // nonzero slip speed - dynamic friction case
    {
-      // nonzero slip speed - dynamic friction case
       slipDir = slip / slipspeed;
 
       numer = -slipDir.Dot(surfVel);
@@ -434,11 +430,11 @@ void BallMoverObject::UpdateVelocities()
 
 void HitBall::UpdateVelocities()
 {
-   if (!m_d.m_lockedInKicker)  // Gravity
+   if (!m_d.m_lockedInKicker) // Gravity
    {
       if (g_pplayer->m_ballControl && this == g_pplayer->m_pactiveballBC && g_pplayer->m_pBCTarget != nullptr)
       {
-         m_d.m_vel.x *= 0.5f;  // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
+         m_d.m_vel.x *= 0.5f; // Null out most of the X/Y velocity, want a little bit so the ball can sort of find its way out of obstacles.
          m_d.m_vel.y *= 0.5f;
          m_d.m_vel += Vertex3Ds(max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->x - m_d.m_pos.x) * (float)(1./10.))),
                                 max(-10.0f, min(10.0f, (g_pplayer->m_pBCTarget->y - m_d.m_pos.y) * (float)(1./10.))),

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 class Surface;
@@ -88,7 +90,7 @@ private:
 class HitTriangle : public HitObject
 {
 public:
-   HitTriangle(const Vertex3Ds rgv[3]);    // vertices in counterclockwise order
+   HitTriangle(const Vertex3Ds rgv[3]); // vertices in counterclockwise order
    ~HitTriangle() override {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;

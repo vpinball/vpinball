@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "physics/collide.h"
@@ -55,7 +57,7 @@ public:
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
 
    // Per frame info
-   Ball *m_pBall = nullptr;   // Object model version of the ball
+   Ball *m_pBall = nullptr;  // Object model version of the ball
 
    CollisionEvent m_coll;    // collision information, may not be a actual hit if something else happens first
 

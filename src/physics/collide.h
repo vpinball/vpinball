@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 enum eObjType : unsigned char
@@ -20,10 +22,10 @@ enum eObjType : unsigned char
    eTextbox,
    eDispReel,
    eLightSeq,
-   ePrimitive,	// also (ab)used for Rubbers and Ramps (as both are made out of triangles, too)
+   ePrimitive,  // also (ab)used for Rubbers and Ramps (as both are made out of triangles, too)
    eHitTarget,
-   eTrigger,	// this value and greater are volume set tested, add rigid or non-volume set above
-   eKicker		// this is done to limit to one test
+   eTrigger,    // this value and greater are volume set tested, add rigid or non-volume set above
+   eKicker      // this is done to limit to one test
 };
 
 extern float c_hardScatter;
@@ -42,16 +44,11 @@ public:
    virtual void UpdateVelocities() = 0;
 };
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Math/Functions.cs
-//
 
-/*
- * Rubber has a coefficient of restitution which decreases with the impact velocity.
- * We use a heuristic model which decreases the COR according to a falloff parameter:
- * 0 = no falloff, 1 = half the COR at 1 m/s (18.53 speed units)
- */
+// Rubber has a coefficient of restitution which decreases with the impact velocity.
+// We use a heuristic model which decreases the COR according to a falloff parameter:
+// 0 = no falloff, 1 = half the COR at 1 m/s (18.53 speed units)
 inline float ElasticityWithFalloff(const float elasticity, const float falloff, const float vel)
 {
    if (falloff > 0.f)
@@ -66,7 +63,7 @@ struct CollisionEvent
 {
    CollisionEvent() : m_ball(0), m_obj(0), m_hittime(0.0f), m_hitdistance(0.0f), /*m_hitmoment(0.0f)*/ m_hitmoment_bit(true), m_hitflag(false), /*m_hitRigid(false),*/ m_isContact(false) {}
 
-   HitBall* m_ball; // the ball that collided with smth
+   HitBall* m_ball;      // the ball that collided with smth
    HitObject* m_obj;     // what the ball collided with
 
    float m_hittime;      // when the collision happens (relative to current physics state)
@@ -89,9 +86,6 @@ struct CollisionEvent
    bool m_isContact; // set to true if impact velocity is ~0
 };
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 class HitObject
 {

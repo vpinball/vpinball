@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "quadtree.h"
 
@@ -27,28 +29,28 @@ HitQuadtree::~HitQuadtree()
 static std::mutex mtx;
 
 #define CHECK_EMBREE(dev) \
-    { const RTCError rc = rtcGetDeviceError(dev); \
-    switch (rc) { \
-        case RTC_ERROR_NONE: break; \
-        default: { char error[256]; sprintf_s(error, sizeof(error), "%u %s %d",rc,__FILE__,__LINE__); ShowError(error); break; }; \
-    }}
+   { const RTCError rc = rtcGetDeviceError(dev); \
+   switch (rc) { \
+      case RTC_ERROR_NONE: break; \
+      default: { char error[256]; sprintf_s(error, sizeof(error), "%u %s %d",rc,__FILE__,__LINE__); ShowError(error); break; }; \
+   }}
 
 void EmbreeBoundsFunc(const struct RTCBoundsFunctionArguments* const args)
 {
-    const HitObject * const ho = (*((const vector<HitObject*> *)args->geometryUserPtr))[args->primID];
+   const HitObject * const ho = (*((const vector<HitObject*> *)args->geometryUserPtr))[args->primID];
 
-    args->bounds_o->lower_x = ho->m_hitBBox.left;
-    args->bounds_o->lower_y = ho->m_hitBBox.top;
-    args->bounds_o->lower_z = ho->m_hitBBox.zlow;
-    args->bounds_o->upper_x = ho->m_hitBBox.right;
-    args->bounds_o->upper_y = ho->m_hitBBox.bottom;
-    args->bounds_o->upper_z = ho->m_hitBBox.zhigh;
+   args->bounds_o->lower_x = ho->m_hitBBox.left;
+   args->bounds_o->lower_y = ho->m_hitBBox.top;
+   args->bounds_o->lower_z = ho->m_hitBBox.zlow;
+   args->bounds_o->upper_x = ho->m_hitBBox.right;
+   args->bounds_o->upper_y = ho->m_hitBBox.bottom;
+   args->bounds_o->upper_z = ho->m_hitBBox.zhigh;
 }
 #endif
 
 void HitQuadtree::Initialize()
 {
-    m_nLevels = 0;
+   m_nLevels = 0;
 #ifdef USE_EMBREE
    if (m_scene)
        rtcReleaseScene(m_scene);
@@ -88,10 +90,7 @@ void HitQuadtree::Initialize()
 #endif
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
-//
 
 void HitQuadtree::Initialize(const FRect& bounds)
 {
@@ -209,10 +208,6 @@ void HitQuadtree::CreateNextLevel(const FRect& bounds, const unsigned int level,
       m_children[i].InitSseArrays();
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void HitQuadtree::InitSseArrays()
 {
    // build SSE boundary arrays of the local hit-object list
@@ -313,26 +308,22 @@ void HitQuadtree::InitSseArrays()
 }
 #endif
 
+// OUTDATED INFO?!
+// Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
+// are possible and should be handled, with embedding (penetrations) some contacts persist for long periods
+// and may cause others not to be seen (masked because of their position in the object list).
 
-/*  RLC
+// A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
+// and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
+// for the next search. This could become a Ball property ... i.e. my last hit object index, start at the next
+// and cycle around until the last hit object is the last to be tested ... this could be made complex due to
+// scripts removing objects ... i.e. balls ...
 
-    Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
-    are possible and should be handled, with embedding (pentrations) some contacts persist for long periods
-    and may cause others not to be seen (masked because of their position in the object list).
+// The most effective would be to sort the search results, always moving the last hit to the end of it's grouping
 
-    A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
-    and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
-    for the next search. This could become a Ball property ... i.e my last hit object index, start at the next
-    and cycle around until the last hit object is the last to be tested ... this could be made complex due to
-    scripts removing objects .... i.e. balls ... better study well before I start
-
-    The most effective would be to sort the search results, always moving the last hit to the end of it's grouping
-
-    At this instance, I'm reporting static contacts as random hitimes during the specific physics frame; the zero time
-    slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
-    collisions
-
-*/
+// At this instance, its reporting static contacts as random hittimes during the specific physics frame; the zero time
+// slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
+// collisions
 
 #ifndef USE_EMBREE
 void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
@@ -341,12 +332,9 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
 
    HitTestBallSse(pball, coll);
 
-#else                                   /// without SSE optimization ////////////////////////
+#else // without SSE optimization
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Physics/HitQuadTree.cs
-//
 
    const float rcHitRadiusSqr = pball->HitRadiusSqr();
 
@@ -383,9 +371,6 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
       }
    }
 #endif
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 }
 
 #ifdef QUADTREE_SSE_LEAFTEST
@@ -588,20 +573,20 @@ void HitQuadtree::HitTestXRay(const HitBall* const pball, vector<HitTestResult>&
 #ifdef USE_EMBREE
 void EmbreeBoundsFuncBalls(const struct RTCBoundsFunctionArguments* const args)
 {
-    const HitBall* const ball = (*((const vector<HitBall*>*)args->geometryUserPtr))[args->primID];
+   const HitBall* const ball = (*((const vector<HitBall*>*)args->geometryUserPtr))[args->primID];
 
-    args->bounds_o->lower_x = ball->m_hitBBox.left;
-    args->bounds_o->lower_y = ball->m_hitBBox.top;
-    args->bounds_o->lower_z = ball->m_hitBBox.zlow;
-    args->bounds_o->upper_x = ball->m_hitBBox.right;
-    args->bounds_o->upper_y = ball->m_hitBBox.bottom;
-    args->bounds_o->upper_z = ball->m_hitBBox.zhigh;
+   args->bounds_o->lower_x = ball->m_hitBBox.left;
+   args->bounds_o->lower_y = ball->m_hitBBox.top;
+   args->bounds_o->lower_z = ball->m_hitBBox.zlow;
+   args->bounds_o->upper_x = ball->m_hitBBox.right;
+   args->bounds_o->upper_y = ball->m_hitBBox.bottom;
+   args->bounds_o->upper_z = ball->m_hitBBox.zhigh;
 }
 
 struct VPCollisions
 {
-    const vector<HitObject*> *vho;
-    const vector<HitBall*> *ball;
+   const vector<HitObject*> *vho;
+   const vector<HitBall*> *ball;
 };
 
 
@@ -613,7 +598,7 @@ void EmbreeCollideBalls(void* const userPtr, RTCCollision* const collisions, con
    {
       HitBall* const ball = (*vpc->ball)[collisions[i].primID1];
       const HitObject* const ho = (*vpc->vho)[collisions[i].primID0];
-   
+
       if (!ball->m_d.m_lockedInKicker
 #ifdef C_DYNAMIC
           && ball->m_dynamic > 0

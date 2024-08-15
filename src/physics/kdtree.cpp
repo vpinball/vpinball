@@ -1,10 +1,9 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "kdtree.h"
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/Physics/HitKd.cs
-//
 
 HitKD::HitKD()
 {
@@ -46,11 +45,9 @@ void HitKD::Init(vector<HitObject*> &vho)
       tmp.resize(m_num_items);
 
       m_nodes.clear();
-      /* NB:
-      * Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
-      * an educated guess on the maximum and truncate the subdivision if we run out of nodes.
-      */
-      m_nodes.resize((m_num_items * 2 + 1) & ~1u);      // always allocate an even number of nodes, rounded up
+      // Unfortunately, there is no a priori bound on the number of nodes in the tree. We just make
+      // an educated guess on the maximum and truncate the subdivision if we run out of nodes.
+      m_nodes.resize((m_num_items * 2 + 1) & ~1u); // always allocate an even number of nodes, rounded up
    }
 
    if (tmp.empty()) // did somebody call finalize inbetween?
@@ -69,7 +66,7 @@ void HitKD::Finalize()
 
 HitKDNode* HitKD::AllocTwoNodes()
 {
-   if ((m_num_nodes + 1) >= (unsigned)m_nodes.size())        // space for two more nodes?
+   if ((m_num_nodes + 1) >= (unsigned)m_nodes.size()) // space for two more nodes?
       return nullptr;
    else
    {
@@ -363,35 +360,30 @@ void HitKDNode::CreateNextLevel(const unsigned int level, unsigned int level_emp
 }
 
 
-/*  RLC
+// OUTDATED INFO?!
+// Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
+// are possible and should be handled, with embedding (penetrations) some contacts persist for long periods
+// and may cause others not to be seen (masked because of their position in the object list).
 
-Hit logic needs to be expanded, during static and pseudo-static conditions, multiple hits (multi-face contacts)
-are possible and should be handled, with embedding (pentrations) some contacts persist for long periods
-and may cause others not to be seen (masked because of their position in the object list).
+// A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
+// and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
+// for the next search. This could become a Ball property ... i.e. my last hit object index, start at the next
+// and cycle around until the last hit object is the last to be tested ... this could be made complex due to
+// scripts removing objects ... i.e. balls ...
 
-A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
-and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
-for the next search. This could become a Ball property ... i.e my last hit object index, start at the next
-and cycle around until the last hit object is the last to be tested ... this could be made complex due to
-scripts removing objects .... i.e. balls ... better study well before I start
+// The most effective would be to sort the search results, always moving the last hit to the end of it's grouping
 
-The most effective would be to sort the search results, always moving the last hit to the end of it's grouping
-
-At this instance, I'm reporting static contacts as random hitimes during the specific physics frame; the zero time
-slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
-collisions
-
-*/
+// At this instance, its reporting static contacts as random hittimes during the specific physics frame; the zero time
+// slot is not in the random time generator algorithm, it is offset by STATICTIME so not to compete with the fast moving
+// collisions
 
 void HitKDNode::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
 #ifdef KDTREE_SSE_LEAFTEST
-   /// with SSE optimizations ///////////////////////
 
    HitTestBallSse(pball, coll);
 
-#else
-   /// without SSE optimization /////////////////////
+#else // without SSE optimization
 
    const unsigned int org_items = (m_items&0x3FFFFFFF);
    const unsigned int axis = (m_items>>30);
@@ -446,10 +438,6 @@ void HitKDNode::HitTestBall(const HitBall* const pball, CollisionEvent& coll) co
    }
 #endif
 }
-
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
 
 #ifdef KDTREE_SSE_LEAFTEST
 void HitKDNode::HitTestBallSse(const HitBall* const pball, CollisionEvent& coll) const
@@ -526,20 +514,20 @@ void HitKDNode::HitTestBallSse(const HitBall* const pball, CollisionEvent& coll)
          mask &= _mm_movemask_ps(cmp);
          if (mask == 0) continue;*/ //!! do bbox test before to save alu-instructions? or not to save registers? -> currently not, as just sphere vs sphere
 
-		 // test actual sphere against box(es)
-		 const __m128 zero = _mm_setzero_ps();
-		 __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i],  posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
-		 __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i],  posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
-		 __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
-		 ex = _mm_mul_ps(ex, ex);
-		 ey = _mm_mul_ps(ey, ey);
-		 ez = _mm_mul_ps(ez, ez);
-		 const __m128 d = _mm_add_ps(_mm_add_ps(ex, ey), ez);
-		 const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
-		 const int mask2 = _mm_movemask_ps(cmp2);
-		 if (mask2 == 0) continue;
-		 
-		 // now there is at least one bbox collision
+         // test actual sphere against box(es)
+         const __m128 zero = _mm_setzero_ps();
+         __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i],  posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
+         __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i],  posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
+         __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
+         ex = _mm_mul_ps(ex, ex);
+         ey = _mm_mul_ps(ey, ey);
+         ez = _mm_mul_ps(ez, ez);
+         const __m128 d = _mm_add_ps(_mm_add_ps(ex, ey), ez);
+         const __m128 cmp2 = _mm_cmple_ps(d, rsqr);
+         const int mask2 = _mm_movemask_ps(cmp2);
+         if (mask2 == 0) continue;
+
+         // now there is at least one bbox collision
          if ((mask2 & 1) != 0)
          {
             HitObject * const pho = m_hitoct->GetItemAt(i * 4);

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifdef DEBUG_NUDGE
@@ -18,7 +20,7 @@ private:
    // debug output
    IF_DEBUG_NUDGE(void dbg(const char *fmt, ...);)
    IF_DEBUG_NUDGE(virtual const char *axis() const = 0;)
-   
+
    IF_DEBUG_NUDGE(const char *m_axis;)
 
    // running total of samples

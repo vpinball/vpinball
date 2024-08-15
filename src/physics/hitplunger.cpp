@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #define PLUNGERHEIGHT 50.0f
@@ -69,10 +71,7 @@ void HitPlunger::CalcHitBBox()
    // zlow & zhigh gets set in constructor
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerHit.cs
-//
 
 void PlungerMoverObject::SetObjects(const float len)
 {
@@ -778,14 +777,14 @@ void HitPlunger::Collide(const CollisionEvent& coll)
 
 #ifdef C_DISP_GAIN 
    // correct displacements, mostly from low velocity blidness, an alternative to true acceleration processing     
-   float hdist = -C_DISP_GAIN * coll.m_hitdistance;         // distance found in hit detection
+   float hdist = -C_DISP_GAIN * coll.m_hitdistance; // distance found in hit detection
    if (hdist > 1.0e-4f)
-   {                                                                                               // magnitude of jump
+   {                                                // magnitude of jump
       if (hdist > C_DISP_LIMIT)
       {
          hdist = C_DISP_LIMIT;
-      }                                         // crossing ramps, delta noise
-      pball->m_d.m_pos += hdist * coll.m_hitnormal;    // push along norm, back to free area (use the norm, but is not correct)
+      }                                             // crossing ramps, delta noise
+      pball->m_d.m_pos += hdist * coll.m_hitnormal; // push along norm, back to free area (use the norm, but is not correct)
    }
 #endif
 
@@ -827,14 +826,14 @@ void HitPlunger::Collide(const CollisionEvent& coll)
    // update the ball speed for the impulse
    pball->m_d.m_vel += impulse * coll.m_hitnormal;
 
-   pball->m_d.m_vel *= 0.999f;           //friction all axiz     //!! TODO: fix this
+   pball->m_d.m_vel *= 0.999f; //friction all axiz     //!! TODO: fix this
 
-   const float scatter_vel = m_plungerMover.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty;// apply dificulty weighting
+   const float scatter_vel = m_plungerMover.m_scatterVelocity * g_pplayer->m_ptable->m_globalDifficulty; // apply dificulty weighting
 
-   if (scatter_vel > 0.f && fabsf(pball->m_d.m_vel.y) > scatter_vel) //skip if low velocity 
+   if (scatter_vel > 0.f && fabsf(pball->m_d.m_vel.y) > scatter_vel) // skip if low velocity 
    {
-      float scatter = rand_mt_m11();                                                          // -1.0f..1.0f
-      scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel;     // shape quadratic distribution and scale
+      float scatter = rand_mt_m11(); // -1.0f..1.0f
+      scatter *= (1.0f - scatter*scatter)*2.59808f * scatter_vel; // shape quadratic distribution and scale
       pball->m_d.m_vel.y += scatter;
    }
 

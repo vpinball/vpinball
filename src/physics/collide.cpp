@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #ifdef USE_EMBREE
@@ -43,25 +45,22 @@ void LineSeg::CalcHitBBox()
    // zlow and zhigh were already set in ctor
 }
 
-//
-// license:GPLv3+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
-//
 
 float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const
 {
    if (!m_enabled || ball.m_lockedInKicker) return -1.0f;
 
-   const float ballvx = ball.m_vel.x;						// ball velocity
+   const float ballvx = ball.m_vel.x;                       // ball velocity
    const float ballvy = ball.m_vel.y;
 
-   const float bnv = ballvx*normal.x + ballvy*normal.y;		// ball velocity normal to segment, positive if receding, zero=parallel
+   const float bnv = ballvx*normal.x + ballvy*normal.y;     // ball velocity normal to segment, positive if receding, zero=parallel
    bool bUnHit = (bnv > C_LOWNORMVEL);
 
-   if (direction && bUnHit)					// direction true and clearly receding from normal face
+   if (direction && bUnHit) // direction true and clearly receding from normal face
       return -1.0f;
 
-   const float ballx = ball.m_pos.x;						// ball position
+   const float ballx = ball.m_pos.x;                        // ball position
    const float bally = ball.m_pos.y;
 
    // ball normal distance: contact distance normal to segment. lateral contact subtract the ball radius 
@@ -74,7 +73,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
    if (m_ObjType == eSpinner || m_ObjType == eGate)
        bnd = bcpd + rollingRadius;
 
-   const bool inside = (bnd <= 0.f);						// in ball inside object volume
+   const bool inside = (bnd <= 0.f);                        // in ball inside object volume
 
    float hittime;
    if (rigid)
@@ -84,15 +83,15 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
 
       if (lateral && (bnd <= (float)PHYS_TOUCH))
       {
-         if (inside || (fabsf(bnv) > C_CONTACTVEL)			// fast velocity, return zero time
+         if (inside || (fabsf(bnv) > C_CONTACTVEL)          // fast velocity, return zero time
             // zero time for rigid fast bodies
             || (bnd <= (float)(-PHYS_TOUCH)))
-            hittime = 0;									// slow moving but embedded
+            hittime = 0;                                    // slow moving but embedded
          else {
 #ifdef NEW_PHYSICS
             hittime = bnd / -bnv;
 #else
-            hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f;	        // don't compete for fast zero time events
+            hittime = bnd * (float)(1.0/(2.0*PHYS_TOUCH)) + 0.5f; // don't compete for fast zero time events
 #endif
          }
       }
@@ -114,7 +113,7 @@ float LineSeg::HitTestBasic(const BallS& ball, const float dtime, CollisionEvent
               return -1.0f;
          }
          hittime = 0;
-         bUnHit = !inside;	// ball on outside is UnHit, otherwise it's a Hit
+         bUnHit = !inside; // ball on outside is UnHit, otherwise it's a Hit
       }
       else
          hittime = bnd / -bnv;
@@ -200,7 +199,6 @@ void LineSeg::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
 }
 
 
-////////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/CircleCollider.cs
 
 float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll,
@@ -233,18 +231,18 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
       dist.z = dv.z = 0.0f;
    }
 
-   const float bcddsq = dist.LengthSquared();	// ball center to circle center distance ... squared
-   const float bcdd = sqrtf(bcddsq);			// distance center to center
+   const float bcddsq = dist.LengthSquared(); // ball center to circle center distance ... squared
+   const float bcdd = sqrtf(bcddsq);          // distance center to center
    if (bcdd <= 1.0e-6f)
       return -1.0f;                           // no hit on exact center
 
    const float b = dist.Dot(dv);
-   const float bnv = b / bcdd;					// ball normal velocity
+   const float bnv = b / bcdd;                // ball normal velocity
 
    if (direction && bnv > C_LOWNORMVEL)
       return -1.0f;                           // clearly receding from radius
 
-   const float bnd = bcdd - targetRadius;		// ball normal distance to 
+   const float bnd = bcdd - targetRadius;     // ball normal distance to 
 
    const float a = dv.LengthSquared();
 
@@ -257,7 +255,7 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
       RemoveFromVectorSingle(*(ball.m_vpVolObjs), m_obj); // cause capture
    }
 
-   if (rigid && bnd < (float)PHYS_TOUCH)        // positive: contact possible in future ... Negative: objects in contact now
+   if (rigid && bnd < (float)PHYS_TOUCH)      // positive: contact possible in future ... Negative: objects in contact now
    {
       if (bnd < -ball.m_radius/**2.0f*/) //!! *2 necessary?
          return -1.0f;
@@ -279,16 +277,16 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
       if (fabsf(bnd - radius) < 0.05f) // if ball appears in center of trigger, then assumed it was gen'ed there
       {
          ball.m_vpVolObjs->push_back(m_obj); // special case for trigger overlaying a kicker
-      }                                        // this will add the ball to the trigger space without a Hit
+      }                                      // this will add the ball to the trigger space without a Hit
       else
       {
-         bUnhit = (bnd > 0.f);	// ball on outside is UnHit, otherwise it's a Hit
+         bUnhit = (bnd > 0.f); // ball on outside is UnHit, otherwise it's a Hit
       }
    }
    else
    {
       if ((!rigid && bnd * bnv > 0.f) || // (outside and receding) or (inside and approaching)
-         (a < 1.0e-8f)) return -1.0f; // no hit ... ball not moving relative to object
+         (a < 1.0e-8f)) return -1.0f;    // no hit ... ball not moving relative to object
 
       float time1, time2;
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - targetRadius*targetRadius, time1, time2))
@@ -333,7 +331,7 @@ float HitCircle::HitTestBasicRadius(const BallS& ball, const float dtime, Collis
    if (isContact)
       coll.m_hit_org_normalvelocity = bnv;
 
-   coll.m_hitdistance = bnd;   //actual contact distance ... 
+   coll.m_hitdistance = bnd;   //actual contact distance ...
    //coll.m_hitRigid = rigid;  // collision type
 
    return hittime;
@@ -371,9 +369,9 @@ void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
       for (int i = 0; i <= 32; i++)
       {
          p1 = p2;
-         p2 = project(Vertex3Ds(center.x + radius * cosf(i * 2.f * M_PIf / 32.f), center.y + radius * sinf(i * 2.f * M_PIf / 32.f), m_hitBBox.zlow));
+         p2 = project(Vertex3Ds(center.x + radius * cosf((float)i * (float)(2. * M_PI / 32.)), center.y + radius * sinf((float)i * (float)(2. * M_PI / 32.)), m_hitBBox.zlow));
          q1 = q2;
-         q2 = project(Vertex3Ds(center.x + radius * cosf(i * 2.f * M_PIf / 32.f), center.y + radius * sinf(i * 2.f * M_PIf / 32.f), m_hitBBox.zhigh));
+         q2 = project(Vertex3Ds(center.x + radius * cosf((float)i * (float)(2. * M_PI / 32.)), center.y + radius * sinf((float)i * (float)(2. * M_PI / 32.)), m_hitBBox.zhigh));
          if (i > 0 && p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
          {
             drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
@@ -391,7 +389,6 @@ void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineZCollider.cs
 
 float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
@@ -400,7 +397,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
       return -1.0f;
 
    const Vertex2D bp2d(ball.m_pos.x, ball.m_pos.y);
-   const Vertex2D dist = bp2d - m_xy;    // relative ball position
+   const Vertex2D dist = bp2d - m_xy;         // relative ball position
    const Vertex2D dv(ball.m_vel.x, ball.m_vel.y);
 
    const float bcddsq = dist.LengthSquared(); // ball center to line distance squared
@@ -421,7 +418,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
    float hittime = 0.f;
    bool isContact = false;
 
-   if (bnd < (float)PHYS_TOUCH)       // already in collision distance?
+   if (bnd < (float)PHYS_TOUCH) // already in collision distance?
    {
       if (fabsf(bnv) <= C_CONTACTVEL)
       {
@@ -429,12 +426,12 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
          hittime = 0.f;
       }
       else
-         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/;   // estimate based on distance and speed along distance
+         hittime = /*std::max(0.0f,*/ -bnd / bnv /*)*/; // estimate based on distance and speed along distance
    }
    else
    {
       if (a < 1.0e-8f)
-         return -1.0f;    // no hit - ball not moving relative to object
+         return -1.0f; // no hit - ball not moving relative to object
 
       float time1, time2;
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - ball.m_radius*ball.m_radius, time1, time2))
@@ -446,13 +443,13 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
    if (infNaN(hittime) || hittime < 0 || hittime > dtime)
       return -1.0f; // contact out of physics frame
 
-   const float hitz = ball.m_pos.z + hittime * ball.m_vel.z;   // ball z position at hit time
+   const float hitz = ball.m_pos.z + hittime * ball.m_vel.z; // ball z position at hit time
 
-   if (hitz < m_zlow || hitz > m_zhigh)    // check z coordinate
+   if (hitz < m_zlow || hitz > m_zhigh) // check z coordinate
       return -1.0f;
 
-   const float hitx = ball.m_pos.x + hittime * ball.m_vel.x;   // ball x position at hit time
-   const float hity = ball.m_pos.y + hittime * ball.m_vel.y;   // ball y position at hit time
+   const float hitx = ball.m_pos.x + hittime * ball.m_vel.x; // ball x position at hit time
+   const float hity = ball.m_pos.y + hittime * ball.m_vel.y; // ball y position at hit time
 
    Vertex2D norm(hitx - m_xy.x, hity - m_xy.y);
    norm.Normalize();
@@ -500,7 +497,6 @@ void HitLineZ::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dr
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/PointCollider.cs
 
 float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& coll) const
@@ -528,14 +524,14 @@ float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
    float hittime = 0.f;
    bool isContact = false;
 
-   if (bnd < (float)PHYS_TOUCH)       // already in collision distance?
+   if (bnd < (float)PHYS_TOUCH) // already in collision distance?
    {
       if (fabsf(bnv) <= C_CONTACTVEL)
       {
          isContact = true;
          hittime = 0.f;
       }
-      else   // estimate based on distance and speed along distance
+      else // estimate based on distance and speed along distance
 #ifdef NEW_PHYSICS
          hittime = -bnd / bnv;
 #else
@@ -545,7 +541,7 @@ float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
    else
    {
       if (a < 1.0e-8f)
-         return -1.0f;    // no hit - ball not moving relative to object
+         return -1.0f; // no hit - ball not moving relative to object
 
       float time1, time2;
       if (!SolveQuadraticEq(a, 2.0f*b, bcddsq - ball.m_radius*ball.m_radius, time1, time2))
@@ -565,7 +561,7 @@ float HitPoint::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
    if (isContact)
       coll.m_hit_org_normalvelocity = bnv;
 
-   coll.m_hitdistance = bnd;                    // actual contact distance
+   coll.m_hitdistance = bnd; // actual contact distance
    //coll.m_hitRigid = true;
 
    return hittime;
@@ -596,10 +592,6 @@ void HitPoint::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dr
    }
 }
 
-//
-// end of license:GPLv3+, back to 'old MAME'-like
-//
-
 void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionEvent& coll)
 {
    if (pho == nullptr || pball == nullptr
@@ -616,7 +608,7 @@ void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionE
    if (validhit)
    {
       newColl.m_ball = const_cast<HitBall*>(pball); //!! meh, but will not be changed in here
-      newColl.m_obj = const_cast<HitObject*>(pho); //!! meh, but will not be changed in here
+      newColl.m_obj = const_cast<HitObject*>(pho);  //!! meh, but will not be changed in here
       newColl.m_hittime = newtime;
       if (!newColl.m_isContact || !g_pplayer->m_physics->RecordContact(newColl))
          coll = newColl; // record first collision event
