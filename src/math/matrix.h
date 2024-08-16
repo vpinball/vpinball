@@ -32,9 +32,7 @@ public:
       _31 = __31; _32 = __32; _33 = __33;
    }
 
-//
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
-//
 
    void SkewSymmetric(const Vertex3Ds &pv3D)
    {
@@ -133,9 +131,7 @@ public:
       m_d[2][0] = m_d[2][1] = 0.0f;
    }
 
-//
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
-//
 
    void Transpose()
    {
@@ -213,8 +209,8 @@ public:
    }
 
    // Create matrix for rotating around an arbitrary vector
-   // NB: axis must be normalized
-   // NB: this actually rotates by -angle in right-handed coordinates
+   // axis must be normalized
+   // this actually rotates by -angle in right-handed coordinates
    void RotationAroundAxis(const Vertex3Ds& axis, const float angle)
    {
       const float rsin = sinf(angle);
@@ -286,12 +282,10 @@ public:
       return ss.str();
    }
 
-//
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
-//
 
 #pragma region SetMatrix
-   ////////////////////////////////////////////////////////////////////////////////
+
    // Math for defining common affine transforms and projection matrices
 
    void SetIdentity()
@@ -696,9 +690,7 @@ public:
       v.z = zp*inv_wp;
    }
 
-//
 // Ported at: VisualPinball.Engine/Math/Matrix3D.cs
-//
 
    template <class VecType>
    Vertex3Ds operator* (const VecType& v) const

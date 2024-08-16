@@ -156,7 +156,7 @@ enum VertexFormat
    VF_POS_NORMAL_TEX
 };
 
-//These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
+// These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
 class Vertex3D_TexelOnly final // for rendering, uses VF_POS_TEX
 {
 public:
@@ -171,7 +171,7 @@ public:
 };
 
 
-// NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
+// this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
 class Vertex3D_NoTex2 final // for rendering, uses VF_POS_NORMAL_TEX
 {
 public:

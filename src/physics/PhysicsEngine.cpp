@@ -420,7 +420,7 @@ Vertex3Ds PhysicsEngine::GetNudge() const
 
 Vertex2D PhysicsEngine::GetScreenNudge() const
 {
-   // NB: in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
+   // in table coordinates, +Y points down, but in screen coordinates, it points up, so we have to flip the y component
    if (m_legacyNudge)
       return {m_legacyNudgeBack.x * sqrf((float)m_legacyNudgeTime * 0.01f), -m_legacyNudgeBack.y * sqrf((float)m_legacyNudgeTime * 0.01f)};
    else

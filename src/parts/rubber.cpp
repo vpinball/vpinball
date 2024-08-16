@@ -549,7 +549,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    for (size_t i = 0; i < m_ringIndices.size(); i += 3)
    {
       Vertex3Ds rgv3D[3];
-      // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
+      // HitTriangle wants CCW vertices, but for rendering we have them in CW order
       const Vertex3D_NoTex2 *v = &m_vertices[m_ringIndices[i]];
       rgv3D[0] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 2]];

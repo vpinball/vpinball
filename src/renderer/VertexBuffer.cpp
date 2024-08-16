@@ -75,7 +75,7 @@ void SharedVertexBuffer::Upload()
       UINT8* data = (UINT8*)malloc(size);
 
       #elif defined(ENABLE_DX9)
-      // NB: We always specify WRITEONLY since MSDN states,
+      // We always specify WRITEONLY since MSDN states,
       // "Buffers created with D3DPOOL_DEFAULT that do not specify D3DUSAGE_WRITEONLY may suffer a severe performance penalty."
       // This means we cannot read from vertex buffers, but I don't think we need to.
       CHECKD3D(m_buffers[0]->m_rd->GetCoreDevice()->CreateVertexBuffer(size, D3DUSAGE_WRITEONLY | (m_isStatic ? 0 : D3DUSAGE_DYNAMIC), 0 /* sharedBuffer->format */, D3DPOOL_DEFAULT, &m_vb, nullptr));
