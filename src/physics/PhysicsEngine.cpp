@@ -522,7 +522,7 @@ void PhysicsEngine::UpdatePhysics()
    }
 
    // When paused or after debugging, shift whole game forward in time
-   // TODO not sure why we would need noTimeCorrect, as pause should should alreayd have shifted the timings
+   // TODO not sure why we would need noTimeCorrect, as pause should already have shifted the timings
    if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
    {
       const U64 curPhysicsFrameTime = m_StartTime_usec + (U64) (g_pplayer->m_time_sec * 1000000.0);

@@ -287,25 +287,25 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *c
       m_bboxMax = Vertex3Ds(-FLT_MAX, -FLT_MAX, -FLT_MAX);
       for (int i = 0; i < cvertex; i++)
       {
-        {
-        const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-        //if(m_d.m_visible) bounds.push_back(pv);
-        m_bboxMin.x = min(m_bboxMin.x, pv.x);
-        m_bboxMin.y = min(m_bboxMin.y, pv.y);
-        m_bboxMin.z = min(m_bboxMin.z, pv.z);
-        m_bboxMax.x = max(m_bboxMax.x, pv.x);
-        m_bboxMax.y = max(m_bboxMax.y, pv.y);
-        m_bboxMax.z = max(m_bboxMax.z, pv.z);
-        }
+         {
+         const Vertex3Ds pv(rgvLocal[i].x,rgvLocal[i].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+         //if(m_d.m_visible) bounds.push_back(pv);
+         m_bboxMin.x = min(m_bboxMin.x, pv.x);
+         m_bboxMin.y = min(m_bboxMin.y, pv.y);
+         m_bboxMin.z = min(m_bboxMin.z, pv.z);
+         m_bboxMax.x = max(m_bboxMax.x, pv.x);
+         m_bboxMax.y = max(m_bboxMax.y, pv.y);
+         m_bboxMax.z = max(m_bboxMax.z, pv.z);
+         }
 
-        const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
-        //if(m_d.m_visible) bounds.push_back(pv);
-        m_bboxMin.x = min(m_bboxMin.x, pv.x);
-        m_bboxMin.y = min(m_bboxMin.y, pv.y);
-        m_bboxMin.z = min(m_bboxMin.z, pv.z);
-        m_bboxMax.x = max(m_bboxMax.x, pv.x);
-        m_bboxMax.y = max(m_bboxMax.y, pv.y);
-        m_bboxMax.z = max(m_bboxMax.z, pv.z);
+         const Vertex3Ds pv(rgvLocal[cvertex * 2 - i - 1].x,rgvLocal[cvertex * 2 - i - 1].y,m_d.m_height + (float)(2.0*PHYS_SKIN)); // leave room for ball //!! use ballsize
+         //if(m_d.m_visible) bounds.push_back(pv);
+         m_bboxMin.x = min(m_bboxMin.x, pv.x);
+         m_bboxMin.y = min(m_bboxMin.y, pv.y);
+         m_bboxMin.z = min(m_bboxMin.z, pv.z);
+         m_bboxMax.x = max(m_bboxMax.x, pv.x);
+         m_bboxMax.y = max(m_bboxMax.y, pv.y);
+         m_bboxMax.z = max(m_bboxMax.z, pv.z);
       }
 
       delete[] rgvLocal;
@@ -314,15 +314,15 @@ void Rubber::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *c
    // returns all 8 corners as this will be used for further transformations later-on
    for (int i = 0; i < 8; i++)
    {
-	   const Vertex3Ds pv(
-		   (i & 1) ? m_bboxMin.x : m_bboxMax.x,
-		   (i & 2) ? m_bboxMin.y : m_bboxMax.y,
-		   (i & 4) ? m_bboxMin.z : m_bboxMax.z);
+      const Vertex3Ds pv(
+         (i & 1) ? m_bboxMin.x : m_bboxMax.x,
+         (i & 2) ? m_bboxMin.y : m_bboxMax.y,
+         (i & 4) ? m_bboxMin.z : m_bboxMax.z);
 
-	   if (m_d.m_visible)
-		   bounds.push_back(pv);
-	   if (legacy_bounds)
-		   legacy_bounds->push_back(pv);
+      if (m_d.m_visible)
+         bounds.push_back(pv);
+      if (legacy_bounds)
+         legacy_bounds->push_back(pv);
    }
 }
 
@@ -1272,7 +1272,7 @@ void Rubber::GenerateMesh(const int _accuracy, const bool createHitShape) //!! h
    if (_accuracy != -1) // hit shapes and UI display have the same, static, precision
       accuracy = _accuracy;
 
-   Vertex2D * middlePoints = 0;
+   Vertex2D * middlePoints = nullptr;
    int splinePoints;
    const Vertex2D * const rgvLocal = GetSplineVertex(splinePoints, nullptr, &middlePoints, (_accuracy != -1) ? 4.0f*powf(10.0f, (10.0f - HIT_SHAPE_DETAIL_LEVEL)*(float)(1.0 / 1.5)) : -1.f);
    const int numRings = splinePoints - 1;
