@@ -15,7 +15,6 @@ Since the I/O controller *can* read the speed accurately, it can pass
 the information on to VP alongside the position reading, improving the
 quality of VP's simulation by giving it accurate speed data.
 
-
 ## When to use
 
 Use the plunger velocity input **only** with devices that provide

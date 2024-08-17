@@ -317,6 +317,7 @@ void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const in
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 }
