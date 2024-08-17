@@ -847,10 +847,6 @@ void HitPlunger::Collide(CollisionEvent *coll)
         Ball *pball = coll->ball;
         Vertex3Ds *phitnormal = coll->normal;
 
-        // debug
-        if (phitnormal[1].y != 0) { char buf[128]; sprintf_s(buf, "impulse=%g, speed=%g\n", 
-            phitnormal[1].y, phitnormal[1].y / (m_pplunger->m_d.m_momentumXfer / pball->collisionMass)); OutputDebugStringA(buf); }
-
         float dot = (pball->vel.x - phitnormal[1].x)* phitnormal->x + (pball->vel.y - phitnormal[1].y) * phitnormal->y;
 
         if (dot >= -C_LOWNORMVEL )                              // nearly receding ... make sure of conditions
