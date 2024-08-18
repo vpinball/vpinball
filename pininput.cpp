@@ -2465,7 +2465,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          { 0x00000020, -1, DIK_6 }, // Coin 4 (fourth coin chute/dollar bill acceptor)
          { 0x00000040, -1, DIK_2 }, // Extra Ball/Buy-In
          { 0x00000080, ePlungerKey }, // Launch Ball
-         // { 0x00000100, -1, 0 },             // Fire button (lock bar top button) - no standard VPM mapping
+         { 0x00000100, eLockbarKey }, // Fire button (lock bar top button)
          { 0x00000200, eMechanicalTilt }, // Tilt bob
          { 0x00000400, -1, DIK_HOME }, // Slam tilt
          { 0x00000800, -1, DIK_END }, // Coin door switch
