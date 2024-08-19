@@ -2116,8 +2116,33 @@ void Player::NudgeY(const int y, const int joyidx)
    m_curAccel[joyidx].y = v;
 }
 
-#define GetNudgeX() (((F32)m_curAccel[0].x) * (F32)(2.0 / JOYRANGE)) // Get the -2 .. 2 values from joystick input tilt sensor / ushock //!! why 2?
-#define GetNudgeY() (((F32)m_curAccel[0].y) * (F32)(2.0 / JOYRANGE))
+// Get the accelerometer input, normalized to a -1..+1 range. 
+// 
+// (Note that there was a mistaken comment here in earlier versions
+// that this normalizes the range to -2..+2.  I suspect someone saw
+// the 2.0 factor and misconstrued it as the desired normalization
+// range.  It's not; the 2.0 is there because JOYRANGE is defined
+// as the width of the whole axis in joystick units, from negative
+// to positive extreme, which makes JOYRANGE equal to 2x the
+// absolute value of each extreme.  That is, JOYRANGE == 2*max_value
+// and JOYRANGE == 2*abs(min_value), so JOYRANGE/2 == max_value, and
+// finally 2/JOYRANGE*max_value == 1.  To be really precise, the 
+// definition of JOYRANGE assumes that the range is for a 2's 
+// complement field of some bit width, so min_value == -max_value-1,
+// per the usual 2's complement rules.  So max_value is actually 
+// JOYRANGE/2 - 1, hence the final normalized range is actually
+// [-1, +1) - i.e., the normalized result can never actually reach 
+// +1 exactly, but must always be fractionally less, because of the 
+// limited range on the positive side of a 2's-complement field. 
+// It's also worth noting that the 2's-complement assumption is NOT
+// a device dependency; it's an assumption about how VP sets things 
+// up with the OS HID API, so it's under VP's control and not 
+// subject to breakage if the device uses some other axis 
+// representation.  It would only break if VP's own HID API setup
+// code chooses some other representation when initializing the 
+// axis usages.)
+#define GetNudgeX() (((F32)m_curAccel[0].x) * (F32)(2.0 / JOYRANGE))
+#define GetNudgeY() (((F32)m_curAccel[0].y) * (F32)(2.0 / JOYRANGE)) 
 
 #ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
