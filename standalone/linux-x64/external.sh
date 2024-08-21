@@ -110,7 +110,8 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
    cp include/*.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
    # we need the generated SDL_config.h for this platform. Backup generic one and replace with generated one
    mv ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/SDL_config.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/_SDL_config.h
-   cp build/include-config-release/SDL2/SDL_config.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
+   BUILD_TYPE_LC=$(echo ${BUILD_TYPE} | tr '[:upper:]' '[:lower:]')
+   cp build/include-config-${BUILD_TYPE_LC}/SDL2/SDL_config.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
    cp -a build/*.{so,so.*} ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
    cd ..
