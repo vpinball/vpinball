@@ -20,6 +20,7 @@ process_shader() {
     local targets=(
         '--platform osx     -p metal -O 3'
         '--platform android -p 320_es    '
+        '--platform linux   -p 310_es    '
         '--platform windows -p 440       '
 #        '--platform windows -p s_5_0 -O 3'
         '--platform windows -p spirv     '
@@ -98,16 +99,21 @@ done
 echo -e "\n>>>>>>>>>>>>>>>> DMD & sprite shaders"
 echo "// DMD Shaders" > "../bgfx_dmd.h"
 process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_" "vertex"
+
 for variant3 in "CLIP" "NOCLIP"; do
   variant3_lower=$(echo "$variant3" | tr '[:upper:]' '[:lower:]')
   process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_" "vertex" "WORLD" "$variant3"
   process_shader "vs_dmd.sc" "dmd.h" "vs_dmd_world_${variant3_lower}_st_" "vertex" "WORLD" "STEREO" "$variant3"
+  process_shader "fs_dmd.sc" "dmd.h" "fs_dmd_${variant3_lower}_" "fragment" "DMD" "$variant3"
+
+  for variant2 in "RGB" "SRGB"; do
+    variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
+    process_shader "fs_dmd2.sc" "dmd.h" "fs_dmd2_${variant2_lower}_${variant3_lower}_" "fragment" "$variant2" "$variant3"
+  done
+
   for variant2 in "TEX" "NOTEX"; do
     variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
-    for variant in "DMD" "SPRITE"; do
-      variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
-      process_shader "fs_dmd.sc" "dmd.h" "fs_${variant_lower}_${variant2_lower}_${variant3_lower}_" "fragment" "$variant" "$variant2" "$variant3"
-    done
+    process_shader "fs_dmd.sc" "dmd.h" "fs_sprite_${variant2_lower}_${variant3_lower}_" "fragment" "SPRITE" "$variant2" "$variant3"
   done
 done
 
