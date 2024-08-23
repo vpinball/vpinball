@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "utils/hash.h"
 #include "objloader.h"
@@ -76,7 +78,11 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader, 256);
+      const int res = fscanf_s(f, "\n%s", lineHeader
+#ifndef __STANDALONE__
+      ,sizeof(lineHeader)
+#endif
+      );
       if (res == EOF)
       {
          fclose(f);
@@ -431,7 +437,6 @@ void ObjLoader::WriteFaceInfoList(const WORD* faces, const unsigned int numIndic
          , faces[i + 1] + 1 + m_faceIndexOffset, faces[i + 1] + 1 + m_faceIndexOffset, faces[i + 1] + 1 + m_faceIndexOffset
          , faces[i] + 1 + m_faceIndexOffset, faces[i] + 1 + m_faceIndexOffset, faces[i] + 1 + m_faceIndexOffset);
    }
-
 }
 
 bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
@@ -444,7 +449,11 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
    while (true)
    {
       char lineHeader[256];
-      const int res = fscanf_s(f, "\n%s", lineHeader, 256);
+      const int res = fscanf_s(f, "\n%s", lineHeader
+#ifndef __STANDALONE__
+      ,sizeof(lineHeader)
+#endif
+      );
       if (res == EOF)
       {
          fclose(f);
