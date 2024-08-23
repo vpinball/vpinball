@@ -14,7 +14,6 @@
 #define DISPID_Textbox_Font             4
 #define DISPID_POSITION_Z               4
 #define DISPID_SIZE_X                   5
-#define VP_VERSION_REV                  5
 #define DISPID_Surface_SideColor        6
 #define DISPID_SIZE_Y                   6
 #define DISPID_Surface_SideColor2       7
