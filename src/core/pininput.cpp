@@ -112,7 +112,6 @@ PinInput::PinInput()
  , m_rumbleMode(0)
 #ifdef ENABLE_XINPUT
  , m_inputDeviceXI(0),
- , m_inputDeviceXIstate(0)
  , m_rumbleOffTime(0)
  , m_rumbleRunning(false)
 #endif
@@ -151,6 +150,10 @@ PinInput::PinInput()
    m_joyrighttilt = SDL_CONTROLLER_BUTTON_DPAD_RIGHT + 1;
    m_joylockbar = SDL_CONTROLLER_BUTTON_GUIDE + 1;
 #endif
+#endif
+
+#ifdef ENABLE_XINPUT
+   ZeroMemory(&m_inputDeviceXIstate,sizeof(XINPUT_STATE));
 #endif
 
    m_first_stamp = msec();
