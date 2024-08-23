@@ -1,11 +1,12 @@
-TO BE DETERMINED
-----------------
+VP 9.9.5c Changelog
+------------------------
 - add support for new I/O controller capabilities, for compatible controller devices
   see: http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
- 1) velocity-based nudge input
- 2) plunger speed input
- 3) Open Pinball Device HID interface
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID interface
 
+- fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
 
 VP 9.9.5b Changelog
 ------------------------

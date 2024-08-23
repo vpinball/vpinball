@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #define MAX_KEYQUEUE_SIZE 32
 
 #if MAX_KEYQUEUE_SIZE & (MAX_KEYQUEUE_SIZE-1)
