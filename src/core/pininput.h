@@ -159,7 +159,9 @@ private:
       #endif
    #endif
 
-    LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT];
+   LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT];
+
+   std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 #endif
 
    BYTE m_oldMouseButtonState[3];
@@ -179,7 +181,6 @@ private:
    DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
 
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
-
    int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
    int m_plunger_axis, m_lr_axis, m_ud_axis;
@@ -189,10 +190,6 @@ private:
    int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
    int m_deadz;
-
-#ifdef _WIN32
-   std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
-#endif
 
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;

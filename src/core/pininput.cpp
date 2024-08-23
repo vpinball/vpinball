@@ -34,14 +34,93 @@
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
 PinInput::PinInput()
+ : m_leftkey_down_usec(0)
+ , m_leftkey_down_frame(0)
+ , m_leftkey_down_usec_rotate_to_end(0)
+ , m_leftkey_down_frame_rotate_to_end(0)
+ , m_leftkey_down_usec_EOS(0)
+ , m_leftkey_down_frame_EOS(0)
+ , m_lastclick_ballcontrol_usec(0)
+ , m_num_joy(0)
+ , uShockType(0)
+ , m_mixerKeyDown(false)
+ , m_mixerKeyUp(false)
+ , m_linearPlunger(false)
+ , m_plunger_retract(false)
+ , m_joycustom1key(0)
+ , m_joycustom2key(0)
+ , m_joycustom3key(0)
+ , m_joycustom4key(0)
+ , m_firedautostart(0)
+ , m_exit_stamp(0)
+ , m_pressed_start(false)
+ , m_as_down(false)
+ , m_as_didonce(false)
+ , m_tilt_updown(false)
+ , m_head(0)
+ , m_tail(0)
+ , m_joylflipkey(0)
+ , m_joyrflipkey(0)
+ , m_joystagedlflipkey(0)
+ , m_joystagedrflipkey(0)
+ , m_joylmagnasave(0)
+ , m_joyrmagnasave(0)
+ , m_joyplungerkey(0)
+ , m_joystartgamekey(0)
+ , m_joyexitgamekey(0)
+ , m_joyaddcreditkey(0) 
+ , m_joyaddcreditkey2(0)
+ , m_joyframecount(0)
+ , m_joyvolumeup(0)
+ , m_joyvolumedown(0)
+ , m_joylefttilt(0)
+ , m_joycentertilt(0)
+ , m_joyrighttilt(0)
+ , m_joypmbuyin(0) 
+ , m_joypmcoin3(0)
+ , m_joypmcoin4(0)
+ , m_joypmcoindoor(0)
+ , m_joypmcancel(0)
+ , m_joypmdown(0)
+ , m_joypmup(0)
+ , m_joypmenter(0)
+ , m_joydebugballs(0)
+ , m_joydebugger(0)
+ , m_joylockbar(0)
+ , m_joymechtilt(0) 
+ , m_joycustom1(0)
+ , m_joycustom2(0)
+ , m_joycustom3(0)
+ , m_joycustom4(0) 
+ , m_joytablerecenter(0)
+ , m_joytableup(0)
+ , m_joytabledown(0)
+ , m_joypause(0)
+ , m_joytweak(0) 
+ , m_deadz(0)
+ , m_override_default_buttons(false)
+ , m_plunger_reverse(false)
+ , m_disable_esc(false)
+ , m_lr_axis_reverse(false)
+ , m_ud_axis_reverse(false)
+ , m_enableMouseInPlayer(true)
+ , m_cameraModeAltKey(false)
+ , m_enableCameraModeFlyAround(false)
+ , m_cameraMode(0)
+ , m_nextKeyPressedTime(0)
+ , m_inputApi(0)
+ , m_rumbleMode(0)
+#ifdef ENABLE_XINPUT
+ , m_inputDeviceXI(0),
+ , m_inputDeviceXIstate(0)
+ , m_rumbleOffTime(0)
+ , m_rumbleRunning(false)
+#endif
 {
-   ZeroMemory(this, sizeof(PinInput));
-
-   m_head = m_tail = 0;
-
+   ZeroMemory(m_oldMouseButtonState, sizeof(m_oldMouseButtonState));
    ZeroMemory(m_diq, sizeof(m_diq));
+   ZeroMemory(m_keyPressedState, sizeof(m_keyPressedState));
 
-   m_num_joy = 0;
 #ifdef _WIN32
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
    {
@@ -52,55 +131,9 @@ PinInput::PinInput()
    m_pInputDeviceSettingsInfo = std::unique_ptr<std::map<string, bool>>(new std::map<string, bool>);
 #endif
 
-   uShockType = 0;
-
    m_plunger_axis = 3;
    m_lr_axis = 1;
    m_ud_axis = 2;
-   m_plunger_reverse = false;
-   m_plunger_retract = false;
-   m_lr_axis_reverse = false;
-   m_ud_axis_reverse = false;
-   m_override_default_buttons = false;
-   m_disable_esc = false;
-   m_joylflipkey = 0;
-   m_joyrflipkey = 0;
-   m_joystagedlflipkey = 0;
-   m_joystagedrflipkey = 0;
-   m_joylmagnasave = 0;
-   m_joyrmagnasave = 0;
-   m_joyplungerkey = 0;
-   m_joystartgamekey = 0;
-   m_joyexitgamekey = 0;
-   m_joyaddcreditkey = 0;
-   m_joyaddcreditkey2 = 0;
-   m_joyframecount = 0;
-   m_joyvolumeup = 0;
-   m_joyvolumedown = 0;
-   m_joylefttilt = 0;
-   m_joycentertilt = 0;
-   m_joyrighttilt = 0;
-   m_joypmbuyin = 0;
-   m_joypmcoin3 = 0;
-   m_joypmcoin4 = 0;
-   m_joypmcoindoor = 0;
-   m_joypmcancel = 0;
-   m_joypmdown = 0;
-   m_joypmup = 0;
-   m_joypmenter = 0;
-   m_joycustom1 = 0;
-   m_joycustom2 = 0;
-   m_joycustom3 = 0;
-   m_joycustom4 = 0;
-   m_joydebugballs = 0;
-   m_joydebugger = 0;
-   m_joylockbar = 0;
-   m_joypause = 0;
-   m_joytweak = 0;
-   m_joymechtilt = 0;
-   m_joytablerecenter = 0;
-   m_joytableup = 0;
-   m_joytabledown = 0;
 
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
@@ -120,28 +153,7 @@ PinInput::PinInput()
 #endif
 #endif
 
-   m_firedautostart = 0;
-
-   m_pressed_start = false;
-
-   m_enableMouseInPlayer = true;
-   m_enableCameraModeFlyAround = false;
-
-   m_cameraModeAltKey = false;
-   m_cameraMode = 0;
-
-   m_exit_stamp = 0;
    m_first_stamp = msec();
-
-   m_as_down = false;
-   m_as_didonce = false;
-
-   m_tilt_updown = false;
-
-   m_linearPlunger = false;
-
-   m_mixerKeyDown = false;
-   m_mixerKeyUp = false;
 }
 
 PinInput::~PinInput()
