@@ -111,7 +111,7 @@ PinInput::PinInput()
  , m_inputApi(PI_DIRECTINPUT)
  , m_rumbleMode(0)
 #ifdef ENABLE_XINPUT
- , m_inputDeviceXI(0),
+ , m_inputDeviceXI(0)
  , m_rumbleOffTime(0)
  , m_rumbleRunning(false)
 #endif
@@ -320,7 +320,7 @@ void PinInput::RefreshSDLJoystick()
    }
    else {
       PLOGI.printf("No joysticks connected!");
-   }   
+   }
 }
 #endif
 #endif
@@ -1576,7 +1576,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                             g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 1)
-                    {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
+                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
                         g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
@@ -1603,7 +1603,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                             g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
                     }
                     else if (m_plunger_axis == 2)
-                    {	// if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
+                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
                         g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
                     }
                 }
@@ -2085,12 +2085,12 @@ LPDIRECTINPUTDEVICE8 PinInput::GetJoystick(int index)
 #else
 LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
 #endif
-{ 
-    if (index < PININ_JOYMXCNT)
-    {
-       return m_pJoystick[index];
-    }
+{
+   if (index < PININ_JOYMXCNT)
+   {
+      return m_pJoystick[index];
+   }
 
-    return nullptr;
+   return nullptr;
 }
 #endif
