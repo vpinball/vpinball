@@ -863,6 +863,7 @@
 #define IDC_GLOBALJOLT                  528
 #define IDC_CBGLOBALROTATION            529
 #define IDC_CBGLOBALJOLT                530
+#define IDC_CBGLOBALACCVEL              530
 #define IDC_JOYPMBUYIN                  531
 #define IDC_JOYPMCOIN3                  532
 #define IDC_JOYPMCOIN4                  533
@@ -876,6 +877,7 @@
 #define IDC_GLOBALTILT                  541
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
+#define IDC_PLUNGERSPEEDSCALE           543
 #define IDC_3D_STEREO_OFS               543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
@@ -1222,6 +1224,7 @@
 #define IDC_BG_SOURCE                   885
 #define IDC_BACKGLASS_GROUP             886
 #define IDC_BACKGLASS_GROUP2            887
+#define IDC_PLUNGERSPEEDAXIS            887
 #define IDC_REFLECTION_PROBE            888
 #define IDC_REFRACTION_PROBE            889
 #define IDC_RENDER_PROBE_NAME_LABEL     890

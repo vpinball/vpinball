@@ -630,7 +630,7 @@ BEGIN
     COMBOBOX        IDC_JOYPMUP,379,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Enter (0)",IDC_STATIC,438,54,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_JOYPMENTER,438,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Axis Assignments",IDC_STATIC,258,113,233,77
+    GROUPBOX        "Axis Assignments",IDC_STATIC,258,113,233,94
     LTEXT           "X Axis (L/R)",IDC_STATIC,265,125,39,8
     COMBOBOX        IDC_LRAXISCOMBO,307,124,40,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Reverse",IDC_LRAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,348,125,40,10
@@ -653,8 +653,12 @@ BEGIN
     RTEXT           "Dead Zone",IDC_STATIC,421,161,36,8
     EDITTEXT        IDC_DEADZONEAMT,462,160,18,13,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,482,161,8,8
+    LTEXT           "Pl. Speed",IDC_STATIC,265,175,34,8
+    COMBOBOX        IDC_PLUNGERSPEEDAXIS,307,174,40,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Scale",IDC_STATIC,347,176,19,8
+    EDITTEXT        IDC_PLUNGERSPEEDSCALE,369,174,20,13,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Enable 1s Plunger Retract",IDC_PLUNGERRETRACT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,394,176,94,10
-    GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,103,241,146
+    GROUPBOX        "Nudge, Plumb, Plunger (Changes will not affect open tables)",IDC_STATIC,254,103,241,155
     CONTROL         "Legacy/VP9-style non-realistic Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,193,173,10
     EDITTEXT        IDC_LEGACY_NUDGE_STRENGTH,432,192,18,13,ES_RIGHT | ES_AUTOHSCROLL
@@ -664,19 +668,21 @@ BEGIN
     CONTROL         "Enable Analog Nudge",IDC_GLOBALACCEL,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,257,217,102,10
     CONTROL         "Normal Board Mounting Orientation",IDC_GLOBALNMOUNT,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,364,217,128,10
-    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,234,55,10
-    EDITTEXT        IDC_GLOBALTILT,314,233,20,13,ES_RIGHT | ES_AUTOHSCROLL
-    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,364,234,90,10
-    EDITTEXT        IDC_GLOBALROTATION,460,233,20,13,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Analog Nudge Input is Velocity",IDC_CBGLOBALACCVEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,229,113,10
+    CONTROL         "Tilt Sensitivity",IDC_CBGLOBALTILT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,257,241,55,10
+    EDITTEXT        IDC_GLOBALTILT,314,240,20,13,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,364,241,90,10
+    EDITTEXT        IDC_GLOBALROTATION,460,240,20,13,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "",IDC_STATIC,262,118,128,21
     GROUPBOX        "",IDC_STATIC,262,136,128,21
-    GROUPBOX        "",IDC_STATIC,262,154,128,21
+    GROUPBOX        "",IDC_STATIC,262,154,128,36
     LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,307,168,25
-    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,279,357,25
+    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,289,266,25
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,252,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,262,150,10
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Camera/Light/Material Edit Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,264,300,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,274,300,10
     GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP

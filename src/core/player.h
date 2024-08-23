@@ -408,7 +408,9 @@ private:
 public:
    void NudgeX(const int x, const int joyidx);
    void NudgeY(const int y, const int joyidx);
-   void MechPlungerIn(const int z);
+   void MechPlungerIn(const int z, const int joyidx);
+   void MechPlungerSpeedIn(const int z, const int joyidx);
+   int GetMechPlungerSpeed() const;
    void SetGravity(float slopeDeg, float strength);
 
    Vertex3Ds m_gravity;
@@ -425,6 +427,16 @@ public:
    Vertex3Ds m_tableVelDelta;
    float m_nudgeSpring;
    float m_nudgeDamping;
+
+   // External accelerometer velocity input.  This is for newer 
+   // pinball I/O controllers that integrate the acceleration samples
+   // in the device to compute the instantaneous cabinet velocity.
+   // This works just like the "new nudging" scheme above, except
+   // that the velocity reading comes from the external, physical 
+   // pin cab, as measured on an accelerometer.
+   Vertex3Ds m_accelVel;
+   Vertex3Ds m_accelVelOld;
+   bool m_accelInputIsVelocity;
 
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge;
@@ -456,7 +468,10 @@ public:
 
    U32 m_movedPlunger; // has plunger moved, must have moved at least three times
    U32 m_LastPlungerHit; // The last time the plunger was in contact (at least the vicinity) of the ball.
-   float m_curMechPlungerPos;
+   float m_curMechPlungerPos;  // position from joystick axis input, if a position axis is assigned
+   int m_curMechPlungerSpeed;  // plunger speed from joystick axis input, if a speed axis is assigned
+   float m_plungerSpeedScale;  // scaling factor for plunger speed input, to convert from joystick to internal units
+   bool m_fExtPlungerSpeed;    // flag: plunger speed was received via joystick input
 
    // Physics stats
    U32 m_phys_iterations;
@@ -506,7 +521,8 @@ private:
 
    int2 m_curAccel[PININ_JOYMXCNT];
 
-   int m_curPlunger;
+   int m_curPlunger[PININ_JOYMXCNT];
+   int m_curPlungerSpeed[PININ_JOYMXCNT];
 #pragma endregion
 
 
