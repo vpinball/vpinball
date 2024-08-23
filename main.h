@@ -49,6 +49,7 @@ using namespace MSAPC;
 #include <intrin.h>
 #include <xmmintrin.h>
 
+#include <list>
 #include <vector>
 #include <string>
 #include <algorithm>

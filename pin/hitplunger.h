@@ -18,6 +18,7 @@ public:
         void SetObjects(const float len);
 
         float mechPlunger() const; // Returns mechanical plunger position 0 at rest, +1 pulled (fully extended)
+        float mechPlungerSpeed() const;  // Speed in plunger lengths per time step
 
         void PullBack(float speed);
         void Fire(float startPos);

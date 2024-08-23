@@ -206,7 +206,9 @@ public:
 #endif
 
 	void PlungerUpdate();
-	void mechPlungerIn( const int z );		
+	int GetMechPlungerSpeed() const;
+	void mechPlungerIn( const int z, const int joystickIndex );		
+	void mechPlungerSpeedIn( const int z, const int joystickIndex );
 
     void SetGravity(float slopeDeg, float strength);
 
@@ -237,6 +239,7 @@ public:
     bool m_fThrowBalls;
 	BOOL m_fAccelerometer;		//true if electronic Accelerometer enabled
 	BOOL m_AccelNormalMount;	//true if normal mounting (left hand coordinates)
+	BOOL m_fAccelVelocityInput; //true if accelerometer uses velocity input (instead of acceleration input)
 	float m_AccelAngle;			// 0 Radians rotated counterclockwise (GUI is lefthand coordinates)
 	float m_AccelAmp;			// Accelerometer gain 
 	float m_AccelAmpX;			// Accelerometer gain X axis 
@@ -254,8 +257,14 @@ public:
 	BOOL m_fNoTimeCorrect;		// Used so the frame after debugging does not do normal time correction
 	PinInput m_pininput;
 
-	float m_NudgeX;
+	float m_NudgeX;				// Current nudge acceleration
 	float m_NudgeY;
+
+	float m_NudgeVX;			// Current nudge velocity X
+	float m_NudgeVY;
+	float m_NudgeDVX;			// Current nudge differential velocity
+	float m_NudgeDVY;
+
 	float m_NudgeBackX;
 	float m_NudgeBackY;
 	int m_NudgeManual;			//index of joystick that has manual control
@@ -325,7 +334,10 @@ public:
 	int m_movedPlunger;			// has plunger moved, must have moved at least three times
 	U32 m_LastPlungerHit;		// The last time the plunger was in contact (at least the vicinity) of the ball.
 	int m_Coins;				// The number of coins queued to be inserted.  These were sent from the shell after the load.
-	float m_curMechPlungerPos;
+	float m_curMechPlungerPos;  // position from joystick axis input, if a position axis is assigned
+	int m_curMechPlungerSpeed;  // plunger speed from joystick axis input, if an axis is assigned
+	float m_plungerSpeedScale;  // scaling factor for plunger speed input
+	BOOL m_fExtPlungerSpeed;    // plunger speed set externally from joystick input
 
     int m_screenwidth, m_screenheight, m_screendepth, m_refreshrate;
     BOOL m_fFullScreen;
@@ -375,6 +387,9 @@ private:
 	int m_curAccel_x[PININ_JOYMXCNT];
 	int m_curAccel_y[PININ_JOYMXCNT];
 
+	int m_curPlunger[PININ_JOYMXCNT];
+	int m_curPlungerSpeed[PININ_JOYMXCNT];
+
 #ifdef PLAYBACK
 	BOOL m_fPlayback;
 	FILE *m_fplaylog;
@@ -398,8 +413,6 @@ private:
 
 	float m_NudgeAccX;
 	float m_NudgeAccY;
-
-	int m_curPlunger;
 
 	//HANDLE m_hSongCompletionEvent;
 

@@ -659,8 +659,11 @@
 #define IDC_GLOBALNMOUNT                526
 #define IDC_GLOBALROTATION              527
 #define IDC_GLOBALJOLT                  528
+#define IDC_PLUNGERSPEEDAXIS            528
 #define IDC_CBGLOBALROTATION            529
 #define IDC_CBGLOBALJOLT                530
+#define IDC_CBGLOBALROTATION2           530
+#define IDC_CBGLOBALACCVEL              530
 #define IDC_JOYPMBUYIN                  531
 #define IDC_JOYPMCOIN3                  532
 #define IDC_JOYPMCOIN4                  533
@@ -675,6 +678,8 @@
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
 #define IDC_3D_STEREO_AA                543
+#define IDC_LRAXISGAIN2                 543
+#define IDC_PLUNGERSPEEDSCALE           543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_STATIC_SOUNDDEVICE          546
