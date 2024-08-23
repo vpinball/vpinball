@@ -108,7 +108,7 @@ PinInput::PinInput()
  , m_enableCameraModeFlyAround(false)
  , m_cameraMode(0)
  , m_nextKeyPressedTime(0)
- , m_inputApi(0)
+ , m_inputApi(PI_DIRECTINPUT)
  , m_rumbleMode(0)
 #ifdef ENABLE_XINPUT
  , m_inputDeviceXI(0),
