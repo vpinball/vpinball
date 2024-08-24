@@ -2219,7 +2219,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="vpinball.idl">
-      <Filter>ui\res</Filter>
+      <Filter>core</Filter>
     </Midl>
   </ItemGroup>
   <ItemGroup>

@@ -54,6 +54,9 @@ Dim HasPreciseGameTime : HasPreciseGameTime = Not IsEmpty(Eval("PreciseGameTime"
 ' Does the controller support synchronization through time fence
 Dim HasTimeFence : HasTimeFence = False
 
+' Does the controller support state exchange through a global state block
+Dim HasStateBlock : HasStateBlock = 2
+
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
@@ -2537,17 +2540,31 @@ Sub PinMAMETimer_Timer
 		If UpdateVisual Then LastPinMameVisualSync = GameTime
 	End If
 
-	'Me.Enabled = False 'this was supposed to be some kind of weird mutex, disable it
+	If HasStateBlock = 2 Then
+		On Error Resume Next
+			Err.Clear
+			PinMameStateBlock = Controller.StateBlock
+			If Err Then HasStateBlock = 0 Else HasStateBlock = 1
+			Err.Clear
+		On Error Goto 0
+	End If
+	If HasStateBlock = 1 Then
+		If UpdateVisual Then
+			Controller.UpdateStateBlock 31 ' Update all
+		Else
+			Controller.UpdateStateBlock 2 ' Update general purpose outputs only (Solenoids & GI)
+		End If
+	End If
 
 	On Error Resume Next
-		If UpdateVisual And UseDMD Then
+		If UpdateVisual And UseDMD And Not HasStateBlock Then
 			DMDp = Controller.RawDmdPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
 				DMDHeight = Controller.RawDmdHeight
 				DMDPixels = DMDp
 			End If
-		ElseIf UpdateVisual And UseColoredDMD Then
+		ElseIf UpdateVisual And UseColoredDMD And Not HasStateBlock Then
 			DMDp = Controller.RawDmdColoredPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
