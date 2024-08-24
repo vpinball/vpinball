@@ -42,13 +42,13 @@ float udRoundBox(vec2 p, float b, float r)
 }
 
 // Apply brightness (for colored DMDs) or convert BW data to RGB one (for monochrome DMDs)
-vec3 convertDmdToColor(vec4 sample)
+vec3 convertDmdToColor(vec4 samp)
 {
 	// FIXME PinMame does not push raw data but apply user range (default to 20..100)
-	if (sample.a == 0.0) // brightness data
-		return sample.r * (255. / 100.) * dotColor; // (max(0., sample.r * 255. - 20.) / 100.) * dotColor;
+	if (samp.a == 0.0) // brightness data
+		return samp.r * (255. / 100.) * dotColor; // (max(0., samp.r * 255. - 20.) / 100.) * dotColor;
 	else // RGB data
-		return sample.rgb * brightness; // max(0., sample.rgb - 20./255.) * (255. / 235.) * brightness;
+		return samp.rgb * brightness; // max(0., samp.rgb - 20./255.) * (255. / 235.) * brightness;
 }
 
 // Compute the dot color contribution from dot placed at 'ofs' to the fragment at dmdUv
