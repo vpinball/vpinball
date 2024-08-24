@@ -283,6 +283,9 @@ public:
 
    void FireSyncController();
 
+   // Temporary API used to communicate between VPinMame and VPinballX
+   PinMame::core_tGlobalOutputState *m_pStateMappedMem = nullptr; // mapped shared memory used to share output states
+
 private:
    bool m_playing = true;
    bool m_focused = false;
@@ -483,6 +486,7 @@ public:
 
    bool m_capExtDMD = false;
    int2 m_dmd;
+   int m_dmdFrameId = -1;
    BaseTexture* m_texdmd = nullptr;
 
    bool m_capPUP = false;

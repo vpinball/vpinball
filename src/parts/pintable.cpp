@@ -39,6 +39,19 @@ constexpr unsigned char TABLE_KEY[] = "Visual Pinball";
 
 #pragma region ScriptGlobalTable
 
+ScriptGlobalTable::~ScriptGlobalTable()
+{
+#ifndef __STANDALONE__
+   // Not yet implemented (needs to update LibPinMame)
+   if (m_hStateSharedMem != INVALID_HANDLE_VALUE)
+   {
+      byte * pStateMappedMem = ((byte *)g_pplayer->m_pStateMappedMem - sizeof(unsigned int));
+      UnmapViewOfFile(pStateMappedMem);
+      CloseHandle(m_hStateSharedMem);
+   }
+#endif
+}
+
 void ScriptGlobalTable::Init(VPinball *vpinball, PinTable *pt)
 {
    m_pt = pt;
@@ -1025,6 +1038,47 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 
    Texture *image = m_pt->ImportImage(szFileName, szImageName);
    return image->m_pdsBuffer == nullptr ? E_FAIL : S_OK;
+}
+
+// This method has been added while migrating from COM component controller to plugin
+// It is not meant to be used outside of this scope and should bremoved as soon as possible
+// and at least before next VPX release (plugin sharing memory directly in a portable way,
+// avoiding the need for Windows shraed memory).
+STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
+{
+#ifdef __STANDALONE__
+   // Not yet implemented (needs to update LibPinMame)
+   return E_FAIL;
+#else
+   if (!g_pplayer)
+      return E_FAIL;
+	if (m_hStateSharedMem == INVALID_HANDLE_VALUE)
+   {
+      char szName[MAX_PATH];
+      WideCharToMultiByteNull(CP_ACP, 0, sharedMemName, -1, szName, MAX_PATH, nullptr, nullptr);
+      m_hStateSharedMem = OpenFileMapping(FILE_MAP_READ, FALSE, szName);
+      if (m_hStateSharedMem == NULL)
+         return E_FAIL;
+      unsigned int *pStateMappedMem = (unsigned int *)MapViewOfFile(m_hStateSharedMem, FILE_MAP_READ, 0, 0, 4);
+      if (pStateMappedMem == NULL)
+      {
+         CloseHandle(m_hStateSharedMem);
+         m_hStateSharedMem = INVALID_HANDLE_VALUE;
+         return E_FAIL;
+      }
+      unsigned int size = *pStateMappedMem;
+      UnmapViewOfFile(pStateMappedMem);
+      pStateMappedMem = (unsigned int *)MapViewOfFile(m_hStateSharedMem, FILE_MAP_READ, 0, 0, size);
+      if (g_pplayer->m_pStateMappedMem == NULL)
+      {
+         CloseHandle(m_hStateSharedMem);
+         m_hStateSharedMem = INVALID_HANDLE_VALUE;
+         return E_FAIL;
+      }
+      g_pplayer->m_pStateMappedMem = (PinMame::core_tGlobalOutputState *)((byte*)pStateMappedMem + sizeof(unsigned int));
+   }
+   return S_OK;
+#endif
 }
 
 STDMETHODIMP ScriptGlobalTable::get_WindowWidth(int *pVal)

@@ -1865,6 +1865,51 @@ void Player::PrepareFrame(std::function<void()> sync)
          g_frameProfiler.ExitScriptSection(pht->m_name);
       }
 
+   // Update DMD from shared state block if available
+   if (m_pStateMappedMem)
+   {
+      if (m_pStateMappedMem->displayState)
+      {
+         // TODO support multiple DMD
+         // TODO lazily update texture (when a part uses it)
+         PinMame::core_tFrameState *frame = (PinMame::core_tFrameState *)((UINT8 *)m_pStateMappedMem->displayState + sizeof(PinMame::core_tDisplayState));
+         for (unsigned int i = 0; i < m_pStateMappedMem->displayState->nDisplays; i++)
+         {
+            if (frame->width >= 128 && (frame->dataFormat == CORE_DMD_FRAME_LUM4 || frame->dataFormat == CORE_DMD_FRAME_LUM16)) // Main DMD
+            {
+               if (!m_texdmd || m_texdmd->width() != frame->width || m_texdmd->height() != frame->height)
+               {
+                  m_dmd.x = frame->width;
+                  m_dmd.y = frame->height;
+                  if (m_texdmd)
+                  {
+                     m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+                     m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_texdmd);
+                     delete m_texdmd;
+                  }
+                  m_texdmd = new BaseTexture(frame->width, frame->height, BaseTexture::RGBA);
+                  m_dmdFrameId = -1;
+               }
+               if (frame->frameId != m_dmdFrameId)
+               {
+                  m_dmdFrameId = frame->frameId;
+                  const int size = frame->width * frame->height;
+                  DWORD *const data = (DWORD *)m_texdmd->data();
+                  if (frame->dataFormat == CORE_DMD_FRAME_LUM4)
+                     for (int ofs = 0; ofs < size; ++ofs)
+                        data[ofs] = frame->frameData[ofs] << 6; // 2 bit planes
+                  else
+                     for (int ofs = 0; ofs < size; ++ofs)
+                        data[ofs] = frame->frameData[ofs] << 4; // 4 bit planes
+                  m_renderer->m_renderDevice->m_texMan.SetDirty(m_texdmd);
+               }
+               break;
+            }
+            frame = (PinMame::core_tFrameState *)((UINT8 *)frame + frame->structSize);
+         }
+      }
+   }
+
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 

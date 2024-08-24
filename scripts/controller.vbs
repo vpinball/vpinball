@@ -277,10 +277,10 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 	End If
 	' Check if controller supports syncing by an external clock (latest B2S and PinMame do)
 	On Error Resume Next
-	Err.Clear
-	Controller.TimeFence = 0
-	If Err Then HasTimeFence = False Else HasTimeFence = True
-	Err.Clear
+		Err.Clear
+		Controller.TimeFence = 0
+		If Err Then HasTimeFence = False Else HasTimeFence = True
+		Err.Clear
 	On Error Goto 0
 End sub
 
