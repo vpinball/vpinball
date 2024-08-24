@@ -1,0 +1,59 @@
+name: vpinball-bgfx-shaders
+on:
+  workflow_dispatch:
+
+env:
+  VERSION_START_SHA: ea558e7417f6f06fe567d34f0e33792a141b8e64
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    name: Version
+    runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.version.outputs.revision }}
+      version_short: ${{ steps.version.outputs.version_short }}
+      version_full: ${{ steps.version.outputs.version_full }}
+      sha7: ${{ steps.version.outputs.sha7 }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: version
+        run: |
+          REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
+          VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
+          VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
+          VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
+          VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
+          VERSION_FULL="${VERSION_SHORT}.${REVISION}"
+          SHA7="${GITHUB_SHA::7}"
+          TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
+          echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+  shaders:
+    name: Shaders
+    runs-on: windows-latest
+    needs: [ version ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: generate shaders
+        run: |
+          cd src/shaders/bgfx
+          ./shaders.sh
+      - name: copy headers
+        run: |
+          mkdir tmp
+          cp src/shaders/bgfx*.h tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX-${{ needs.version.outputs.tag }}-bgfx-shaders
+          path: tmp

@@ -14,18 +14,19 @@ process_shader() {
         'mtl ' 
         'essl' 
         'glsl' 
-#        'dx11' 
+        'dx11' 
         'spv '
     )
+
     local targets=(
         '--platform osx     -p metal -O 3'
-        '--platform android -p 320_es    '
-        '--platform linux   -p 310_es    '
+        '--platform windows -p 310_es    '
         '--platform windows -p 440       '
-#        '--platform windows -p s_5_0 -O 3'
+        '--platform windows -p s_5_0 -O 3'
         '--platform windows -p spirv     '
     )
-    local shaderc="shaderc"
+
+    local shaderc="./shaderc"
 
     local output_path="../bgfx_${output_file}"
     local short_name="${header:0:${#header}-1}"
