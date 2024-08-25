@@ -323,10 +323,10 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       const int dmdProfile = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "RenderProfile"s, 0);
       const string prefix = "User."s + std::to_string(dmdProfile + 1) + "."s;
       // DMD View
-      m_dmdViewExposure = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 1.f);
+      m_dmdViewExposure = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 2.f);
       m_dmdViewDot = convertColor(
-         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint"s, 0x0088BBFF),
-         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness"s, 1.0f));
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint"s, 0x002D52FF), // Default tint is Neon plasma (255, 82, 45)
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness"s, 5.0f));
       // DMD Renderer
       m_dmdUseNewRenderer = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "Legacy"s, false);
       #if !defined(ENABLE_BGFX)
@@ -335,10 +335,19 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_dmdDotProperties.x = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSize"s, 0.85f);
       m_dmdDotProperties.y = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSharpness"s, 0.8f);
       m_dmdDotProperties.z = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotRounding"s, 0.85f);
-      m_dmdDotProperties.w = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow"s, 0.3f);
+      m_dmdDotProperties.w = m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow"s, 0.015f);
       m_dmdUnlitDotColor = convertColor(
-         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor"s, 0x00020202),
-         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow"s, 0.4f));
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor"s, 0x00202020),
+         m_table->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow"s, 0.005f));
+      // Convert color as settings are sRGB color while shader needs linear RGB color
+      #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
+      m_dmdViewDot.x = InvsRGB(m_dmdViewDot.x);
+      m_dmdViewDot.y = InvsRGB(m_dmdViewDot.y);
+      m_dmdViewDot.z = InvsRGB(m_dmdViewDot.z);
+      m_dmdUnlitDotColor.x = InvsRGB(m_dmdUnlitDotColor.x);
+      m_dmdUnlitDotColor.y = InvsRGB(m_dmdUnlitDotColor.y);
+      m_dmdUnlitDotColor.z = InvsRGB(m_dmdUnlitDotColor.z);
+      #undef InvsRGB
    }
 
 
@@ -1163,7 +1172,7 @@ void Renderer::RenderFrame()
    PrepareVideoBuffers();
 }
 
-void Renderer::RenderDMD(BaseTexture* dmd, RenderTarget* rt)
+void Renderer::RenderDMD(BaseTexture* dmd, const bool isColored, RenderTarget* rt)
 {
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1171,7 +1180,7 @@ void Renderer::RenderDMD(BaseTexture* dmd, RenderTarget* rt)
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderTarget("DMDView", rt, false);
-   SetupDMDRender(m_dmdViewDot, dmd, 1.f, true);
+   SetupDMDRender(m_dmdViewDot, dmd, 1.f, true, isColored);
    m_renderDevice->m_DMDShader->SetFloat(SHADER_exposure, m_dmdViewExposure);
    Vertex3D_NoTex2 vertices[4] = {
       {  1.f, -1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
@@ -1182,7 +1191,7 @@ void Renderer::RenderDMD(BaseTexture* dmd, RenderTarget* rt)
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
 }
 
-void Renderer::SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB)
+void Renderer::SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, const bool isColored)
 {
    // Legacy DMD renderer
    if (m_dmdUseNewRenderer)
@@ -1210,7 +1219,7 @@ void Renderer::SetupDMDRender(const vec4& color, BaseTexture* dmd, const float a
          for (int i = 0; i < 4; i++)
          {
             delete m_dmdBlurs[i];
-            m_dmdBlurs[i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RG16F, false, 1, "");
+            m_dmdBlurs[i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RGBA8, false, 1, "");
          }
       }
       if (g_pplayer->m_overall_frames != lastFrame || lastDmd != dmd)
@@ -1241,7 +1250,7 @@ void Renderer::SetupDMDRender(const vec4& color, BaseTexture* dmd, const float a
          m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
          initial_rt->m_name += '-';
       }
-      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, m_dmdDotProperties.x /* size */, m_dmdDotProperties.y /* sharpness */, m_dmdDotProperties.z /* rounding */, 0.f /* unused */);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, m_dmdDotProperties.x /* size */, m_dmdDotProperties.y /* sharpness */, m_dmdDotProperties.z /* rounding */, isColored ? 1.f : 0.f /* luminance or RGB */);
       m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, dotColor.x * brightness, dotColor.y * brightness, dotColor.z * brightness, brightness); // dot color (only used if we received brightness data, premultiplied by overall brightness) and overall brightness (used for colored date)
       m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, m_dmdUnlitDotColor.x, m_dmdUnlitDotColor.y, m_dmdUnlitDotColor.z, 0.f /* unused */);
       m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), m_dmdDotProperties.w /* dot glow */ * brightness, m_dmdUnlitDotColor.w /* back glow */ * brightness);
