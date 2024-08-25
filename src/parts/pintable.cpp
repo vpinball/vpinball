@@ -1069,7 +1069,7 @@ STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
       unsigned int size = *pStateMappedMem;
       UnmapViewOfFile(pStateMappedMem);
       pStateMappedMem = (unsigned int *)MapViewOfFile(m_hStateSharedMem, FILE_MAP_READ, 0, 0, size);
-      if (g_pplayer->m_pStateMappedMem == NULL)
+      if (pStateMappedMem == NULL)
       {
          CloseHandle(m_hStateSharedMem);
          m_hStateSharedMem = INVALID_HANDLE_VALUE;

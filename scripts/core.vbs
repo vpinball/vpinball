@@ -2541,14 +2541,13 @@ Sub PinMAMETimer_Timer
 	End If
 
 	If HasStateBlock = 2 Then
-		On Error Resume Next
+		On Error Resume Next ' Late initialization since StateBlock is only available when Controller is running
 			Err.Clear
 			PinMameStateBlock = Controller.StateBlock
 			If Err Then HasStateBlock = 0 Else HasStateBlock = 1
 			Err.Clear
 		On Error Goto 0
-	End If
-	If HasStateBlock = 1 Then
+	ElseIf HasStateBlock = 1 Then
 		If UpdateVisual Then
 			Controller.UpdateStateBlock 31 ' Update all
 		Else
@@ -2557,14 +2556,14 @@ Sub PinMAMETimer_Timer
 	End If
 
 	On Error Resume Next
-		If UpdateVisual And UseDMD And Not HasStateBlock Then
+		If UpdateVisual And UseDMD Then
 			DMDp = Controller.RawDmdPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
 				DMDHeight = Controller.RawDmdHeight
 				DMDPixels = DMDp
 			End If
-		ElseIf UpdateVisual And UseColoredDMD And Not HasStateBlock Then
+		ElseIf UpdateVisual And UseColoredDMD Then
 			DMDp = Controller.RawDmdColoredPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
