@@ -513,15 +513,29 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      const vec4 c = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
-      m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-      #ifdef DMD_UPSCALE
-      const vec4 r((float)(g_pplayer->m_dmd.x * 3), (float)(g_pplayer->m_dmd.y * 3), 1.f, (float)(g_pplayer->m_overall_frames % 2048));
-      #else
-      const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
-      #endif
-      m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-      m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP, !isExternalDMD); //!! or use linear RGB space? //!! mirror as edge?!
+      const vec4 color = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
+      if (false)
+      {
+         Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
+         if (dmd.frame)
+         {
+            // convert color from sRGB to RGB ?
+            g_pplayer->m_renderer->SetupDMDRender(color, dmd.frame, 1.f, false, false);
+            m_rd->m_DMDShader->SetFloat(SHADER_exposure, 1.f);
+         }
+      }
+      else
+      {
+         m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
+         #ifdef DMD_UPSCALE
+         const vec4 r((float)(g_pplayer->m_dmd.x * 3), (float)(g_pplayer->m_dmd.y * 3), 1.f, (float)(g_pplayer->m_overall_frames % 2048));
+         #else
+         const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
+         #endif
+         m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+         m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP, !isExternalDMD); //!! or use linear RGB space? //!! mirror as edge?!
+      }
+
       m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
       m_rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
       m_rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);

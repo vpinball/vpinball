@@ -267,6 +267,35 @@ vec3 agxDefaultContrastApprox(vec3 x)
 // https://github.com/google/filament/pull/7236
 // Inputs and outputs are encoded as Linear-sRGB.
 
+#define AGX_LOOK 2
+vec3 agxLook(vec3 val) {
+  const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+  float luma = dot(val, lw);
+  
+  vec3 offset = vec3_splat(0.0);
+
+#if AGX_LOOK == 0
+  // Default
+  vec3 slope = vec3_splat(1.0);
+  vec3 power = vec3_splat(1.0);
+  float sat = 1.0;
+#elif AGX_LOOK == 1
+  // Golden
+  vec3 slope = vec3(1.0, 0.9, 0.5);
+  vec3 power = vec3_splat(0.8);
+  float sat = 0.8;
+#elif AGX_LOOK == 2
+  // Punchy
+  vec3 slope = vec3_splat(1.0);
+  vec3 power = vec3(1.35, 1.35, 1.35);
+  float sat = 1.4;
+#endif
+  
+  // ASC CDL
+  val = pow(val * slope + offset, power);
+  return luma + sat * (val - luma);
+}
+
 vec3 AgXToneMapping(vec3 color)
 {
     #if 0
@@ -345,7 +374,7 @@ vec3 AgXToneMapping(vec3 color)
     color = agxDefaultContrastApprox(color);
 
     // TODO Apply AgX look
-    // v = agxLook(v, look);
+    // color = agxLook(color);
 
     color = mul(color, AgXOutsetMatrix);
 

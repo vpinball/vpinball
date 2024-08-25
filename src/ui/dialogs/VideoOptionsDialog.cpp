@@ -1588,7 +1588,7 @@ BOOL DMDViewOptPage::OnInitDialog()
 
    AttachItem(IDC_TONEMAPPER, m_tonemapper);
    AttachItem(IDC_EXPOSURE, m_exposure);
-   m_tonemapper.AddString(_T("AgX"));
+   m_tonemapper.AddString(_T("AgX Punchy"));
    m_tonemapper.SetCurSel(0);
    m_tonemapper.EnableWindow(false); // Not yet implemented
 
@@ -1637,7 +1637,7 @@ void DMDViewOptPage::LoadSettings(Settings& settings)
    m_viewMode.SetCurSel(settings.LoadValueWithDefault(Settings::DMD, "ViewMode"s, 0));
 
    // AttachItem(IDC_TONEMAPPER, m_tonemapper);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 1.f));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 2.f));
    m_exposure.SetWindowText(tmp);
 
    string imageName;
@@ -1689,20 +1689,20 @@ void DMDViewOptPage::LoadProfile(const int n)
    m_legacyRenderer.SetCheck(settings.LoadValueWithDefault(Settings::DMD, prefix + "Legacy"s, false) ? BST_CHECKED : BST_UNCHECKED);
    m_dmdScaleFX.SetCheck(settings.LoadValueWithDefault(Settings::DMD, prefix + "ScaleFX"s, false) ? BST_CHECKED : BST_UNCHECKED);
    
-   m_dotTint.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint"s, 0x0088BBFF));
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSize"s, 0.85f));
+   m_dotTint.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint"s, 0x002D52FF)); // Default tint is Neon plasma (255, 82, 45)
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSize"s, 0.85f));
    m_dotSize.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness"s, 1.f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness"s, 5.f));
    m_dotBrightness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSharpness"s, 0.8f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSharpness"s, 0.8f));
    m_dotSharpness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotRounding"s, 0.85f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotRounding"s, 0.85f));
    m_dotRounding.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow"s, 0.3f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow"s, 0.015f));
    m_dotGlow.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow"s, 0.4f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow"s, 0.005f));
    m_backGlow.SetWindowText(tmp);
-   m_unlitDotColor.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor"s, 0x00020202));
+   m_unlitDotColor.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor"s, 0x00202020));
 
    string imageName;
    if (!settings.LoadValue(Settings::DMD, prefix + "GlassImage"s, imageName))
@@ -1800,6 +1800,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_TONEMAPPER:
       if (HIWORD(wParam) == CBN_SELCHANGE)
          PropChanged();
+      break;
    case IDC_SCALE_FX_DMD:
       if (HIWORD(wParam) == BN_CLICKED)
          PropChanged();
@@ -1829,7 +1830,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       if (HIWORD(wParam) == BN_CLICKED)
          PropChanged();
       {
-         #ifdef ENBLE_BGFX
+         #ifdef ENABLE_BGFX
             const bool isNewRenderer = m_legacyRenderer.GetCheck() == BST_UNCHECKED;
          #else
             const bool isNewRenderer = false;

@@ -23,6 +23,7 @@ uniform vec4 exposure;
 #define dotSize       w_h_height.x
 #define dotSharpness  w_h_height.y
 #define dotRounding   w_h_height.z
+#define coloredDMD    (w_h_height.w != 0.0)
 #define unlitDot      staticColor_Alpha.rgb
 #define dmdSize       vRes_Alpha_time.xy
 #define dotGlow       vRes_Alpha_time.z
@@ -42,13 +43,12 @@ float udRoundBox(vec2 p, float b, float r)
 }
 
 // Apply brightness (for colored DMDs) or convert BW data to RGB one (for monochrome DMDs)
-vec3 convertDmdToColor(vec4 samp)
+vec3 convertDmdToColor(vec3 samp)
 {
-	// FIXME PinMame does not push raw data but apply user range (default to 20..100)
-	if (samp.a == 0.0) // brightness data
-		return samp.r * (255. / 100.) * dotColor; // (max(0., samp.r * 255. - 20.) / 100.) * dotColor;
-	else // RGB data
-		return samp.rgb * brightness; // max(0., samp.rgb - 20./255.) * (255. / 235.) * brightness;
+	if (coloredDMD) // linear RGB data
+		return samp.rgb * brightness;
+	else // linear brightness data
+		return samp.r * dotColor;
 }
 
 // Compute the dot color contribution from dot placed at 'ofs' to the fragment at dmdUv
@@ -61,7 +61,7 @@ vec3 computeDotColor(vec2 dmdUv, vec2 ofs)
 	// Dots from the lamp
 	float dotThreshold = 0.01 + dotSize * (1.0 - dotSharpness);
 	float dot = smoothstep(dotThreshold, -dotThreshold, udRoundBox(pos, dotSize, dotRounding * dotSize));
-	vec3 dmd = convertDmdToColor(texNoLod(tex_dmd, nearest));
+	vec3 dmd = convertDmdToColor(texNoLod(tex_dmd, nearest).rgb);
 	#ifdef UNLIT
 		dmd += unlitDot;
 	#endif
@@ -116,6 +116,35 @@ vec3 agxDefaultContrastApprox(vec3 x)
 // which in turn is based on Blender's implementation using rec 2020 primaries
 // https://github.com/google/filament/pull/7236
 // Inputs and outputs are encoded as Linear-sRGB.
+
+#define AGX_LOOK 2
+vec3 agxLook(vec3 val) {
+  const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+  float luma = dot(val, lw);
+  
+  vec3 offset = vec3_splat(0.0);
+
+#if AGX_LOOK == 0
+  // Default
+  vec3 slope = vec3_splat(1.0);
+  vec3 power = vec3_splat(1.0);
+  float sat = 1.0;
+#elif AGX_LOOK == 1
+  // Golden
+  vec3 slope = vec3(1.0, 0.9, 0.5);
+  vec3 power = vec3_splat(0.8);
+  float sat = 0.8;
+#elif AGX_LOOK == 2
+  // Punchy
+  vec3 slope = vec3_splat(1.0);
+  vec3 power = vec3(1.35, 1.35, 1.35);
+  float sat = 1.4;
+#endif
+  
+  // ASC CDL
+  val = pow(val * slope + offset, power);
+  return luma + sat * (val - luma);
+}
 
 vec3 AgXToneMapping(vec3 color)
 {
@@ -194,8 +223,8 @@ vec3 AgXToneMapping(vec3 color)
     // Apply sigmoid
     color = agxDefaultContrastApprox(color);
 
-    // TODO Apply AgX look
-    // v = agxLook(v, look);
+    // Apply AgX look
+    color = agxLook(color);
 
     color = mul(color, AgXOutsetMatrix);
 
@@ -249,12 +278,12 @@ void main()
 
 	#ifdef DOTGLOW
 		// glow from nearby lamps (taken from light DMD blur)
-		color += convertDmdToColor(texNoLod(dmdDotGlow, dmdUv)) * dotGlow;
+		color += convertDmdToColor(texNoLod(dmdDotGlow, dmdUv).rgb) * dotGlow;
 	#endif
 
 	#ifdef BACKGLOW
 		// add background diffuse light (very blurry from large DMD blur)
-		color += convertDmdToColor(texNoLod(dmdBackGlow, dmdUv)) * backGlow;
+		color += convertDmdToColor(texNoLod(dmdBackGlow, dmdUv).rgb) * backGlow;
 	#endif
 
 	#ifdef GLASS
@@ -268,7 +297,7 @@ void main()
 	// Tonemapping and sRGB conversion.
 	gl_FragColor = vec4(AgXToneMapping(color), 1.0);
 	//gl_FragColor = vec4(FBGamma(ReinhardToneMap(color)), 1.0);
-	//gl_FragColor = vec4(FBGamma(color), 1.0);
+	//gl_FragColor = vec4(FBGamma(exposure.r * color), 1.0); // This is what is done for desktop DMD: no tonemapping and a simple RGB to sRGB conversion
 
 	#else
 	// Rendering to a surface part of larger rendering process including tonemapping and sRGB conversion

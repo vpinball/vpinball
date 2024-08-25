@@ -1923,7 +1923,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       {
          lastFrameId = dmd.frameId;
          dmdRendered = true;
-         m_renderer->RenderDMD(dmd.frame, m_dmdWnd->GetBackBuffer());
+         m_renderer->RenderDMD(dmd.frame, false, m_dmdWnd->GetBackBuffer());
       }
    }
 

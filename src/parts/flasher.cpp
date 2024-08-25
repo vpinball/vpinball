@@ -1295,27 +1295,39 @@ void Flasher::Render(const unsigned int renderMask)
       if (alphatest)
          g_pplayer->m_renderer->EnableAlphaTestReference(0x80);*/
 
-      m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
+      if (true)
+      {
+         m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
 
-      m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
+         m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
 
-      const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
+         const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
 
-      #ifdef DMD_UPSCALE
-      const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-      #else
-      const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-      #endif
-      m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
+         #ifdef DMD_UPSCALE
+         const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+         #else
+         const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
+         #endif
+         m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
 
-#ifndef __STANDALONE__
-      // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
-      if (HasDMDCapture())
-         m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
-#endif
+   #ifndef __STANDALONE__
+         // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
+         if (HasDMDCapture())
+            m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
+   #endif
 
-      if (texdmd != nullptr)
          m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
+      }
+      else
+      {
+         Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
+         if (dmd.frame)
+         {
+            // convert color from sRGB to RGB ?
+            g_pplayer->m_renderer->SetupDMDRender(color, dmd.frame, m_d.m_modulate_vs_add, false, false);
+            m_rd->m_DMDShader->SetFloat(SHADER_exposure, 1.f);
+         }
+      }
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
       // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
