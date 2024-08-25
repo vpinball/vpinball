@@ -1163,7 +1163,7 @@ void Renderer::RenderFrame()
    PrepareVideoBuffers();
 }
 
-void Renderer::RenderDMD(const int w, const int h, BaseTexture* dmd, RenderTarget* rt)
+void Renderer::RenderDMD(BaseTexture* dmd, RenderTarget* rt)
 {
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);

@@ -484,10 +484,20 @@ public:
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
-   bool m_capExtDMD = false;
-   int2 m_dmd;
-   int m_dmdFrameId = -1;
+   // External DMD and displays
+   bool m_capExtDMD = false; // frame capturing (hack for VR)
+   int2 m_dmd; // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    BaseTexture* m_texdmd = nullptr;
+   struct ControllerDisplay // DMDs and video displays gathered through PinMame StateBlock
+   {
+      int frameId = -1;
+      BaseTexture *frame = nullptr;
+   };
+   ControllerDisplay GetControllerDisplay(int id);
+private:
+   vector<ControllerDisplay> m_controllerDisplays;
+
+public:
 
    bool m_capPUP = false;
    BaseTexture *m_texPUP = nullptr;

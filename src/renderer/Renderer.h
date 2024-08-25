@@ -40,7 +40,7 @@ public:
    void RenderStaticPrepass();
 
    void RenderFrame();
-   void RenderDMD(const int w, const int h, BaseTexture* dmd, RenderTarget* rt);
+   void RenderDMD(BaseTexture* dmd, RenderTarget* rt);
 
    void SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB);
    void DrawStatics();

@@ -956,12 +956,21 @@ Player::~Player()
       m_implicitPlayfieldMesh = nullptr;
    }
 
+   m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
    if (m_texdmd)
    {
-      m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
       m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_texdmd);
       delete m_texdmd;
       m_texdmd = nullptr;
+   }
+   for (ControllerDisplay &display : m_controllerDisplays)
+   {
+      if (display.frame)
+      {
+         m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
+         delete display.frame;
+         display.frame = nullptr;
+      }
    }
 
 #ifdef PLAYBACK
@@ -1865,51 +1874,6 @@ void Player::PrepareFrame(std::function<void()> sync)
          g_frameProfiler.ExitScriptSection(pht->m_name);
       }
 
-   // Update DMD from shared state block if available
-   if (m_pStateMappedMem)
-   {
-      if (m_pStateMappedMem->displayState)
-      {
-         // TODO support multiple DMD
-         // TODO lazily update texture (when a part uses it)
-         PinMame::core_tFrameState *frame = (PinMame::core_tFrameState *)((UINT8 *)m_pStateMappedMem->displayState + sizeof(PinMame::core_tDisplayState));
-         for (unsigned int i = 0; i < m_pStateMappedMem->displayState->nDisplays; i++)
-         {
-            if (frame->width >= 128 && (frame->dataFormat == CORE_DMD_FRAME_LUM4 || frame->dataFormat == CORE_DMD_FRAME_LUM16)) // Main DMD
-            {
-               if (!m_texdmd || m_texdmd->width() != frame->width || m_texdmd->height() != frame->height)
-               {
-                  m_dmd.x = frame->width;
-                  m_dmd.y = frame->height;
-                  if (m_texdmd)
-                  {
-                     m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-                     m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_texdmd);
-                     delete m_texdmd;
-                  }
-                  m_texdmd = new BaseTexture(frame->width, frame->height, BaseTexture::RGBA);
-                  m_dmdFrameId = -1;
-               }
-               if (frame->frameId != m_dmdFrameId)
-               {
-                  m_dmdFrameId = frame->frameId;
-                  const int size = frame->width * frame->height;
-                  DWORD *const data = (DWORD *)m_texdmd->data();
-                  if (frame->dataFormat == CORE_DMD_FRAME_LUM4)
-                     for (int ofs = 0; ofs < size; ++ofs)
-                        data[ofs] = frame->frameData[ofs] << 6; // 2 bit planes
-                  else
-                     for (int ofs = 0; ofs < size; ++ofs)
-                        data[ofs] = frame->frameData[ofs] << 4; // 4 bit planes
-                  m_renderer->m_renderDevice->m_texMan.SetDirty(m_texdmd);
-               }
-               break;
-            }
-            frame = (PinMame::core_tFrameState *)((UINT8 *)frame + frame->structSize);
-         }
-      }
-   }
-
    // Check if we should turn animate the plunger light.
    hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
@@ -1950,12 +1914,22 @@ void Player::PrepareFrame(std::function<void()> sync)
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
 
-   if (m_dmdWnd && m_texdmd)
-      m_renderer->RenderDMD(m_dmd.x, m_dmd.y, m_texdmd, m_dmdWnd->GetBackBuffer());
+   bool dmdRendered = false;
+   if (m_dmdWnd)
+   {
+      static int lastFrameId = -2;
+      ControllerDisplay dmd = GetControllerDisplay(-1);
+      if (dmd.frame && lastFrameId != dmd.frameId)
+      {
+         lastFrameId = dmd.frameId;
+         dmdRendered = true;
+         m_renderer->RenderDMD(dmd.frame, m_dmdWnd->GetBackBuffer());
+      }
+   }
 
    m_renderer->RenderFrame();
 
-   if (m_dmdWnd && m_texdmd)
+   if (dmdRendered)
    {
       m_dmdWnd->Show();
       m_renderer->m_renderDevice->AddRenderTargetDependency(m_dmdWnd->GetBackBuffer());
@@ -2098,6 +2072,61 @@ void Player::FinishFrame()
       }
    }
 #endif
+}
+
+Player::ControllerDisplay Player::GetControllerDisplay(int id)
+{
+   // Update Display from shared state block if available
+   if (m_pStateMappedMem == nullptr || m_pStateMappedMem->versionID != 1 || m_pStateMappedMem->displayState == nullptr)
+      return { -1, nullptr };
+
+   PinMame::core_tFrameState *frame = (PinMame::core_tFrameState *)((UINT8 *)m_pStateMappedMem->displayState + sizeof(PinMame::core_tDisplayState));
+   unsigned int index = 0;
+   bool found = false;
+   for (; index < m_pStateMappedMem->displayState->nDisplays; index++, id--)
+   {
+      if ((id == 0)
+         || (id == -1 && frame->width >= 128 && (frame->dataFormat == CORE_DMD_FRAME_LUM4 || frame->dataFormat == CORE_DMD_FRAME_LUM16))) // Main DMD
+      {
+         found = true;
+         break;
+      }
+      frame = (PinMame::core_tFrameState *)((UINT8 *)frame + frame->structSize);
+   }
+   if (!found)
+      return { -1, nullptr };
+
+   while (m_controllerDisplays.size() <= index)
+      m_controllerDisplays.push_back({-1, nullptr});
+   ControllerDisplay& display = m_controllerDisplays[index];
+
+   if (!display.frame || display.frame->width() != frame->width || display.frame->height() != frame->height)
+   {
+      if (display.frame)
+      {
+         m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+         m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
+         delete display.frame;
+      }
+      display.frame = new BaseTexture(frame->width, frame->height, BaseTexture::RGBA);
+      display.frameId = -1;
+   }
+
+   if (frame->frameId != display.frameId)
+   {
+      display.frameId = frame->frameId;
+      const int size = frame->width * frame->height;
+      DWORD *const data = (DWORD *)display.frame->data();
+      if (frame->dataFormat == CORE_DMD_FRAME_LUM4)
+         for (int ofs = 0; ofs < size; ++ofs)
+            data[ofs] = frame->frameData[ofs] << 6; // 2 bit planes
+      else
+         for (int ofs = 0; ofs < size; ++ofs)
+            data[ofs] = frame->frameData[ofs] << 4; // 4 bit planes
+      m_renderer->m_renderDevice->m_texMan.SetDirty(display.frame);
+   }
+
+   return display;
 }
 
 void Player::PauseMusic()
