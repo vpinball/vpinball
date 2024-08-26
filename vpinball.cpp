@@ -5293,7 +5293,7 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALROTATION);
          hr = GetRegInt("Player", "PBWRotationCB", &key);
          if (hr != S_OK)
-            key = 0;
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hr = GetRegInt("Player", "PBWRotationValue", &key);
@@ -5304,13 +5304,13 @@ INT_PTR CALLBACK KeysProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALACCVEL);
          hr = GetRegInt("Player", "AccelVelocityInput", &key);
          if (hr != S_OK)
-             key = 0;
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hwndCheck = GetDlgItem(hwndDlg, IDC_CBGLOBALTILT);
          hr = GetRegInt("Player", "TiltSensCB", &key);
          if (hr != S_OK)
-            key = 0;
+            key = fFalse;
          SendMessage(hwndCheck, BM_SETCHECK, key ? BST_CHECKED : BST_UNCHECKED, 0);
 
          hr = GetRegInt("Player", "TiltSensValue", &key);
