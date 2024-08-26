@@ -23,15 +23,15 @@
 #error Note that MAX_KEYQUEUE_SIZE must be power of 2
 #endif
 
-#define USHOCKTYPE_PBWIZARD		1
-#define USHOCKTYPE_ULTRACADE	2
-#define USHOCKTYPE_SIDEWINDER	3
-#define USHOCKTYPE_VIRTUAPIN	4
-#define USHOCKTYPE_GENERIC		5
+#define USHOCKTYPE_PBWIZARD   1
+#define USHOCKTYPE_ULTRACADE  2
+#define USHOCKTYPE_SIDEWINDER 3
+#define USHOCKTYPE_VIRTUAPIN  4
+#define USHOCKTYPE_GENERIC    5
 
-#define APP_KEYBOARD 0
+#define APP_KEYBOARD   0
 #define APP_JOYSTICKMN 1
-#define APP_MOUSE 2
+#define APP_MOUSE      2
 
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
 #define PININ_JOYMXCNT 4
@@ -119,6 +119,9 @@ private:
    int started();
    void Joy(const unsigned int n, const int updown, const bool start);
 
+   void InitOpenPinballDevices();
+   void ReadOpenPinballDevices(const U32 cur_time_msec);
+
    void handleInputDI(DIDEVICEOBJECTDATA *didod);
    void handleInputXI(DIDEVICEOBJECTDATA *didod);
    void handleInputSDL(DIDEVICEOBJECTDATA *didod);
@@ -137,6 +140,67 @@ private:
 #endif
    LPDIRECTINPUTDEVICE m_pMouse;
 #endif
+
+   // Open Pinball Device input report v1.0 - input report structure.
+   // Fields are packed with no padding bytes; integer fields are little-endian.
+   struct __pragma(pack(push, 1)) OpenPinballDeviceReport
+   {
+      uint64_t timestamp; // report time, in microseconds since an arbitrary zero point
+      uint32_t genericButtons; // button states for 32 general-purpose on/off buttons
+      uint32_t pinballButtons; // button states for pre-defined pinball simulator function buttons
+      uint8_t llFlipper; // lower left flipper button duty cycle
+      uint8_t lrFlipper; // lower right flipper button duty cycle
+      uint8_t ulFlipper; // upper left flipper button duty cycle
+      uint8_t urFlipper; // upper right flipper button duty cycle
+      int16_t axNudge; // instantaneous nudge acceleration, X axis (left/right)
+      int16_t ayNudge; // instantaneous nudge acceleration, Y axis (front/back)
+      int16_t vxNudge; // instantaneous nudge velocity, X axis
+      int16_t vyNudge; // instantaneous nudge velocity, Y axis
+      int16_t plungerPos; // current plunger position
+      int16_t plungerSpeed; // instantaneous plunger speed
+   }
+   __pragma(pack(pop));
+
+   // active Open Pinball Device interfaces
+   struct OpenPinDev
+   {
+      OpenPinDev(HANDLE h, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString);
+      ~OpenPinDev();
+      HANDLE Release()
+      {
+         HANDLE ret = hDevice;
+         hDevice = INVALID_HANDLE_VALUE;
+         return ret;
+      }
+      HANDLE hDevice;
+      BYTE reportID;
+      DWORD deviceStructVersion;
+
+      // overlapped read
+      OVERLAPPED ov { 0 };
+      HANDLE hIOEvent { CreateEvent(NULL, TRUE, FALSE, NULL) };
+      DWORD readStatus = 0;
+      DWORD bytesRead = 0;
+
+      // overlapped read buffer - space for the HID report ID prefix and the report struct
+      size_t reportSize;
+      std::vector<BYTE> buf;
+
+      // start an overlapped read
+      void StartRead();
+
+      // read a report into 'r'; returns true if a new report was available
+      bool ReadReport();
+
+      // last report read
+      OpenPinballDeviceReport r;
+   };
+   std::list<OpenPinDev> m_openPinDevs;
+
+   // Open Pinball Device button status, for detecting button up/down events
+   uint32_t m_openPinDev_generic_buttons;
+   uint32_t m_openPinDev_pinball_buttons;
+   bool m_openPinDev_flipper_l, m_openPinDev_flipper_r;
 
    U32 m_firedautostart;
 
@@ -158,7 +222,21 @@ private:
 
    int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
-   int m_plunger_axis, m_lr_axis, m_ud_axis;
+   // Axis assignments - these map to the drop-list index in the axis
+   // selection combos in the Keys dialog:
+   //
+   //   0 = Disabled
+   //   1 = X
+   //   2 = Y
+   //   3 = Z
+   //   4 = rX
+   //   5 = rY
+   //   6 = rZ
+   //   7 = Slider 1
+   //   8 = Slider 2
+   //   9 = Open Pinball Device (selects input mapping to the same function as assigned axis)
+   //
+   int m_plunger_axis, m_plunger_speed_axis, m_lr_axis, m_ud_axis;
    int m_joylflipkey, m_joyrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
    int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
    int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;

@@ -307,6 +307,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     int key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWRotationValue"s, 0);
     SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
 
+    on = LoadValueBoolWithDefault(regKey[RegName::Player], "AccelVelocityInput"s, false);
+    ::SendMessage(GetDlgItem(IDC_CBGLOBALACCVEL).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+
     on = LoadValueBoolWithDefault(regKey[RegName::Player], "TiltSensCB"s, false);
     ::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
@@ -346,8 +349,8 @@ BOOL KeysConfigDialog::OnInitDialog()
     key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxY"s, 100);
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
 
-    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, true);
-    ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+    key = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerSpeedScale"s, 100);
+    SetDlgItemInt(IDC_PLUNGERSPEEDSCALE, key, FALSE);
 
     on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableCameraModeFlyAround"s, false);
     ::SendMessage(GetDlgItem(IDC_ENABLE_CAMERA_FLY_AROUND).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -512,6 +515,7 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     selected = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerAxis"s, 3); // assume Z Axis as standard
     hwnd = GetDlgItem(IDC_PLUNGERAXIS).GetHwnd();
+    ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -521,10 +525,13 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
     selected = LoadValueIntWithDefault(regKey[RegName::Player], "LRAxis"s, 1); // assume X Axis as standard
     hwnd = GetDlgItem(IDC_LRAXISCOMBO).GetHwnd();
+    ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -534,10 +541,13 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
     selected = LoadValueIntWithDefault(regKey[RegName::Player], "UDAxis"s, 2); // assume Y Axis as standard
     hwnd = GetDlgItem(IDC_UDAXISCOMBO).GetHwnd();
+    ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
@@ -547,7 +557,25 @@ BOOL KeysConfigDialog::OnInitDialog()
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
     ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
     ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+
+    selected = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerSpeedAxis"s, 0); // not assigned by default
+    hwnd = GetDlgItem(IDC_PLUNGERSPEEDAXIS).GetHwnd();
+    ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"(disabled)");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"X Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Y Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Z Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rX Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rY Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
+    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
+    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
@@ -944,6 +972,7 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_JOYDEBUGGERCOMBO, regKey[RegName::Player], "JoyDebuggerKey"s);
     SetValue(IDC_JOYLOCKBARCOMBO, regKey[RegName::Player], "JoyLockbarKey"s);
     SetValue(IDC_PLUNGERAXIS, regKey[RegName::Player], "PlungerAxis"s);
+    SetValue(IDC_PLUNGERSPEEDAXIS, regKey[RegName::Player], "PlungerSpeedAxis"s);
     SetValue(IDC_LRAXISCOMBO, regKey[RegName::Player], "LRAxis"s);
     SetValue(IDC_UDAXISCOMBO, regKey[RegName::Player], "UDAxis"s);
 
@@ -956,6 +985,9 @@ void KeysConfigDialog::OnOK()
 
     newvalue = max((int)GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE), 0);
     SaveValueInt(regKey[RegName::Player], "PBWAccelGainY"s, newvalue);
+
+    newvalue = max((int)GetDlgItemInt(IDC_PLUNGERSPEEDSCALE, nothing, TRUE), 0);
+    SaveValueInt(regKey[RegName::Player], "PlungerSpeedScale"s, newvalue);
 
     newvalue = clamp((int)GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE), 0, 100);
     SaveValueInt(regKey[RegName::Player], "DeadZone"s, newvalue);
@@ -995,6 +1027,9 @@ void KeysConfigDialog::OnOK()
 
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
     SaveValueInt(regKey[RegName::Player], "PBWRotationValue"s, newvalue);
+
+    selected = ::SendMessage(GetDlgItem(IDC_CBGLOBALACCVEL).GetHwnd(), BM_GETCHECK, 0, 0);
+    SaveValueBool(regKey[RegName::Player], "AccelVelocityInput"s, selected != 0);
 
     const bool tscb = (::SendMessage(GetDlgItem(IDC_CBGLOBALTILT).GetHwnd(), BM_GETCHECK, 0, 0) != 0);
     SaveValueBool(regKey[RegName::Player], "TiltSensCB"s, tscb);

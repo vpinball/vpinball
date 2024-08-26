@@ -821,6 +821,7 @@
 #define IDC_GLOBALJOLT                  528
 #define IDC_CBGLOBALROTATION            529
 #define IDC_CBGLOBALJOLT                530
+#define IDC_CBGLOBALACCVEL              530
 #define IDC_JOYPMBUYIN                  531
 #define IDC_JOYPMCOIN3                  532
 #define IDC_JOYPMCOIN4                  533
@@ -834,6 +835,7 @@
 #define IDC_GLOBALTILT                  541
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
+#define IDC_PLUNGERSPEEDSCALE           543
 #define IDC_3D_STEREO_OFS               543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_ADAPTIVE_VSYNC              545
@@ -1149,6 +1151,7 @@
 #define IDC_3D_STEREO_CONTRAST          879
 #define IDC_3D_STEREO_DESATURATION      880
 #define IDC_GLOBAL_DISABLE_LIGHTING_BALLS 881
+#define IDC_PLUNGERSPEEDAXIS            882
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1340,7 +1343,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        669
 #define _APS_NEXT_COMMAND_VALUE         4027
-#define _APS_NEXT_CONTROL_VALUE         882
+#define _APS_NEXT_CONTROL_VALUE         883
 #define _APS_NEXT_SYMED_VALUE           188
 #endif
 #endif
