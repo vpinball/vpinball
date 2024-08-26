@@ -2142,8 +2142,8 @@ void PinInput::InitOpenPinballDevices()
             // check for a generic Pinball Device usage (usage page 0x05 "Game
             // Controls", usage 0x02 "Pinball Device")
             HIDP_CAPS caps;
-            const USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
-            const USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
+            constexpr USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
+            constexpr USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
             if (HidP_GetCaps(ppd, &caps) == HIDP_STATUS_SUCCESS && caps.UsagePage == USAGE_PAGE_GAMECONTROLS && caps.Usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
             {
                // It's at least a generic Pinball Device.  Check if it's
@@ -2263,7 +2263,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
-   int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+   constexpr int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
 
    // Process the analog axis inputs.  Each VP functional axis has a
    // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8
@@ -2374,8 +2374,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       // is irrelevant to VP 9, which has a physics frame time of 10ms,
       // roughly equal to the HID polling time.  But VP 10 has 1ms frames,
       // so it should be possible to profitably use the timing info there.
-      bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
-      bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
+      const bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
+      const bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
       if (newFlipperLeft != m_openPinDev_flipper_l)
          FireKeyEvent(m_openPinDev_flipper_l = newFlipperLeft, g_pplayer->m_rgKeys[eLeftFlipperKey]);
       if (newFlipperRight != m_openPinDev_flipper_r)
@@ -2386,9 +2386,9 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
       {
          // check for a state change
-         uint32_t mask = m->mask;
-         DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const uint32_t mask = m->mask;
+         const DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          if (isDown != wasDown)
             FireKeyEvent(isDown, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
       }
