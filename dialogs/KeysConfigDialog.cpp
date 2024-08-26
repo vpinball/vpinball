@@ -780,10 +780,10 @@ void KeysConfigDialog::OnOK()
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newvalue);
 
-    newvalue = IsDlgButtonChecked(IDC_CBGLOBALACCVEL);
-    g_pvp->m_settings.SaveValue(Settings::Player, "AccelVelocityInput"s, newvalue);
+    selected = IsDlgButtonChecked(IDC_CBGLOBALACCVEL);
+    g_pvp->m_settings.SaveValue(Settings::Player, "AccelVelocityInput"s, selected != 0);
 
-    const bool tscb = (IsDlgButtonChecked(IDC_CBGLOBALTILT)!= 0);
+    const bool tscb = (IsDlgButtonChecked(IDC_CBGLOBALTILT) != 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, tscb);
 
     newvalue = clamp((int)GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE), 0, 1000);
