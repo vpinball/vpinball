@@ -349,6 +349,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     key = LoadValueIntWithDefault(regKey[RegName::Player], "PBWAccelMaxY"s, 100);
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
 
+    on = LoadValueBoolWithDefault(regKey[RegName::Player], "EnableMouseInPlayer"s, true);
+    ::SendMessage(GetDlgItem(IDC_ENABLE_MOUSE_PLAYER).GetHwnd(), BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+
     key = LoadValueIntWithDefault(regKey[RegName::Player], "PlungerSpeedScale"s, 100);
     SetDlgItemInt(IDC_PLUNGERSPEEDSCALE, key, FALSE);
 
