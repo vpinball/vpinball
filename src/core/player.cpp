@@ -66,14 +66,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pininput.LoadSettings(m_ptable->m_settings);
    m_disableStaticPrepass = playMode != 0;
 
-#if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__)         \
-   || defined(__x86_64__))
-#pragma message("Warning: No CPU float ignore denorm implemented")
+#if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
+ #pragma message("Warning: No CPU float ignore denorm implemented")
 #else
    {
       init_cpu_detection
-         // check for SSE and exit if not available, as some code relies on it by now
-         if (detect_no_sse)
+      // check for SSE and exit if not available, as some code relies on it by now
+      if (detect_no_sse)
       { // No SSE?
          ShowError("SSE is not supported on this processor");
          exit(0);
@@ -1452,9 +1451,9 @@ HRESULT Player::Init()
    m_accelVelOld.SetZero();
 
    // Accelerometer inputs are accelerations (not velocities) by default
-   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput", false);
+   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
 
-   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale", 100.0f) / 100.0f;
+   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100.0f) / 100.0f;
    if (m_plungerSpeedScale <= 0.0f)
       m_plungerSpeedScale = 1.0f;
 

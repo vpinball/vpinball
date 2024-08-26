@@ -1170,7 +1170,7 @@ STDMETHODIMP ScriptGlobalTable::get_Version(int *pVal)
 
 STDMETHODIMP ScriptGlobalTable::get_VPBuildVersion(double *pVal)
 {
-   *pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
+	*pVal = VP_VERSION_MAJOR * 1000 + VP_VERSION_MINOR * 100 + VP_VERSION_REV + GIT_REVISION / 10000.0;
 	return S_OK;
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #ifdef _WIN32
 #define ENABLE_XINPUT
 #endif
