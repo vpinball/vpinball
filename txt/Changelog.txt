@@ -5,6 +5,12 @@ FEATURES:
 
 - add native ball shadows for bulb lights
 
+- add support for new I/O controller capabilities, for compatible controller devices
+  see: http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID interface
+
 FIXES:
 
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
@@ -1224,6 +1230,16 @@ VP 9.9.X PM5 Plunger/Accel MOD Changelog
    and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
  - native support for the Pinscape Controller
  - CPU affinity setting
+
+VP 9.9.5c Changelog
+------------------------
+- add support for new I/O controller capabilities, for compatible controller devices
+  see: http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID interface
+
+- fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
 
 VP 9.9.5b Changelog
 ------------------------
