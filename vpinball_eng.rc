@@ -610,7 +610,7 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,262,118,128,21
     GROUPBOX        "",IDC_STATIC,262,136,128,21
     GROUPBOX        "",IDC_STATIC,262,154,128,36
-    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,307,168,25
+    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,273,168,25
     LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the\n'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,255,289,266,25
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,262,150,10

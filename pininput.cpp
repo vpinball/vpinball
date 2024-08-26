@@ -2309,7 +2309,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
 
    // Weird special logic for the Start button, to handle auto-start timers,
    // per the regular joystick button input processor
-   const bool start = ((cur_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
+   const bool start = ((cur_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || started();
 
    // Check for button state changes.  If there are any, generate
    // key up/down events for the button changes.

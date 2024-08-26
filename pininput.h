@@ -1,5 +1,7 @@
 #pragma once
 
+#include <list>
+
 #define ENABLE_XINPUT
 
 #ifdef ENABLE_XINPUT
