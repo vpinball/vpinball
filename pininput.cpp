@@ -332,7 +332,7 @@ BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    if (FAILED(hr))
    {
       ppinput->m_pJoystick[ppinput->m_num_joy] = nullptr; // make sure no garbage
-      return DIENUM_CONTINUE;                             // try for another joystick
+      return DIENUM_CONTINUE;                            // try for another joystick
    }
 
    hr = ppinput->m_pJoystick[ppinput->m_num_joy]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
@@ -812,10 +812,10 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA *didod)
             didod[j].dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
             PushQueue(&didod[j], APP_JOYSTICK(0));
             j++;
-         }
+      }
          break;
 #endif
-      }
+   }
    }
 #endif
 }
@@ -903,20 +903,20 @@ void PinInput::Init(const HWND hwnd)
    hr = m_pKeyboard->SetProperty(DIPROP_BUFFERSIZE, &dipdw.diph);
 #endif
 
-   // Create mouse device
+      // Create mouse device
    m_pMouse = nullptr;
    if (m_enableMouseInPlayer && !FAILED(m_pDI->CreateDevice(GUID_SysMouse, &m_pMouse, nullptr)))
-   {
-      hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
-      hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
-      DIPROPDWORD dipdwm;
-      dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
-      dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
-      dipdwm.diph.dwObj = 0;
-      dipdwm.diph.dwHow = DIPH_DEVICE;
-      dipdwm.dwData = INPUT_BUFFER_SIZE;
-      hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
-   }
+      {
+         hr = m_pMouse->SetDataFormat(&c_dfDIMouse2);
+         hr = m_pMouse->SetCooperativeLevel(hwnd, DISCL_NONEXCLUSIVE | DISCL_FOREGROUND);
+         DIPROPDWORD dipdwm;
+         dipdwm.diph.dwSize = sizeof(DIPROPDWORD);
+         dipdwm.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+         dipdwm.diph.dwObj = 0;
+         dipdwm.diph.dwHow = DIPH_DEVICE;
+         dipdwm.dwData = INPUT_BUFFER_SIZE;
+         hr = m_pMouse->SetProperty(DIPROP_BUFFERSIZE, &dipdwm.diph);
+      }
 
    /* Disable Sticky Keys */
 
@@ -1094,9 +1094,9 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          g_pplayer->m_liveUI->OnTweakModeEvent(1, keycode);
       if (dispid == DISPID_GameEvents_KeyUp)
          g_pplayer->m_liveUI->OnTweakModeEvent(2, keycode);
-   }
-   else
-   {
+      }
+         else
+         {
       // Debug only, for testing parts of the left flipper input lag, also release ball control
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
@@ -1136,8 +1136,8 @@ int PinInput::Started()
 
 void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec)
 {
-   //if (!g_pvp->m_open_minimized)
-   //   return;
+   //	if (!g_pvp->m_open_minimized)
+   //		return;
 
    // Make sure we have a player.
    if (!g_pplayer ||
@@ -1339,21 +1339,21 @@ void PinInput::ProcessBallControl(const DIDEVICEOBJECTDATA * __restrict input)
 
 void PinInput::ProcessThrowBalls(const DIDEVICEOBJECTDATA * __restrict input)
 {
-   if (input->dwData == 1 || input->dwData == 3)
-   {
+    if (input->dwData == 1 || input->dwData == 3)
+    {
       POINT point = { m_mouseX, m_mouseY };
-      ScreenToClient(m_hwnd, &point);
-      const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
+        ScreenToClient(m_hwnd, &point);
+        const Vertex3Ds vertex = g_pplayer->m_pin3d.Get3DPointFrom2D(point);
 
       float vx = (float)m_mouseDX*0.1f;
       float vy = (float)m_mouseDY*0.1f;
       const float radangle = ANGTORAD(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation);
-      const float sn = sinf(radangle);
-      const float cs = cosf(radangle);
-      const float vx2 = cs*vx - sn*vy;
-      const float vy2 = sn*vx + cs*vy;
-      vx = -vx2;
-      vy = -vy2;
+            const float sn = sinf(radangle);
+            const float cs = cosf(radangle);
+            const float vx2 = cs*vx - sn*vy;
+            const float vy2 = sn*vx + cs*vy;
+            vx = -vx2;
+            vy = -vy2;
 
 		POINT newPoint;
 		GetCursorPos(&newPoint);
@@ -1494,7 +1494,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         else if (input->dwOfs == DIJOFS_BUTTON7)
         {
             if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons && !m_disable_esc) // exit
-            {   // Check if we have started a game yet.
+            {	// Check if we have started a game yet.
                 if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
                 {
                     if (DISPID_GameEvents_KeyDown == updown)
@@ -1598,7 +1598,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
         else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
         {
             Joy(16 + input->dwOfs-DIJOFS_BUTTON15, updown, start);
-        }
+            }
         else
             FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
     }
@@ -1908,48 +1908,48 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
    if (g_pplayer->m_liveUI->IsTweakMode())
    {
-      if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
-      {
+       if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
+       {
          if ((curr_time_msec - m_nextKeyPressedTime) > 10) // reduce update rate
          {
-            m_nextKeyPressedTime = curr_time_msec;
+           m_nextKeyPressedTime = curr_time_msec;
 
-            // Flying
-            if (m_cameraMode == 1)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.y += 10.0f;
-			      else
-			         g_pplayer->m_pin3d.m_cam.z += 10.0f;
-            }
-            else if (m_cameraMode == 2)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.y -= 10.0f;
-			      else
-			         g_pplayer->m_pin3d.m_cam.z -= 10.0f;
-            }
-            else if (m_cameraMode == 3)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.x -= 10.0f;
-			      else
-			         g_pplayer->m_pin3d.m_inc -= 0.01f;
-            }
-            else if (m_cameraMode == 4)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_pin3d.m_cam.x += 10.0f;
-			      else
-			         g_pplayer->m_pin3d.m_inc += 0.01f;
-            }
+           // Flying
+           if (m_cameraMode == 1)
+           {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_cam.y += 10.0f;
+			   else
+				   g_pplayer->m_pin3d.m_cam.z += 10.0f;
+           }
+           else if (m_cameraMode == 2)
+		   {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_cam.y -= 10.0f;
+			   else
+				   g_pplayer->m_pin3d.m_cam.z -= 10.0f;
+           }
+           else if (m_cameraMode == 3)
+           {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_cam.x -= 10.0f;
+			   else
+				   g_pplayer->m_pin3d.m_inc -= 0.01f;
+           }
+           else if (m_cameraMode == 4)
+           {
+			   if (!m_cameraModeAltKey)
+				   g_pplayer->m_pin3d.m_cam.x += 10.0f;
+			   else
+				   g_pplayer->m_pin3d.m_inc += 0.01f;
+           }
 
             // Table tweaks, continuous actions
             if (g_pplayer->m_liveUI->IsTweakMode())
                for (int i = 0; i < eCKeys; i++)
                   if (m_keyPressedState[i])
                      g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[i]);
-         }
+           }
          return;
       }
    }
@@ -1968,18 +1968,18 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
             if (input->dwOfs == 1)
             {
                if (m_joylflipkey == m_LeftMouseButtonID)
-                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
                else if (m_joyrflipkey == m_LeftMouseButtonID)
-                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
                else if (m_joyplungerkey == m_LeftMouseButtonID)
-                  FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+               FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
                else if (m_joylefttilt == m_LeftMouseButtonID)
                   FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
                else if (m_joyrighttilt == m_LeftMouseButtonID)
                   FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
                else if (m_joycentertilt == m_LeftMouseButtonID)
                   FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
-            }
+         }
             if (input->dwOfs == 2)
             {
                if (m_joylflipkey == m_RightMouseButtonID)
@@ -1994,7 +1994,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
                else if (m_joycentertilt == m_RightMouseButtonID)
                   FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
-            }
+      }
             if (input->dwOfs == 3)
             {
                if (m_joylflipkey == m_MiddleMouseButtonID)
@@ -2097,8 +2097,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                else if (Is3DTVStereoMode(g_pplayer->m_stereo3D))
                {
                   // Toggle stereo on/off
-                  g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
-               }
+               g_pplayer->m_stereo3Denabled = !g_pplayer->m_stereo3Denabled;
+            }
                else if (g_pplayer->m_stereo3D == STEREO_VR)
                {
                   g_pplayer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
@@ -2106,7 +2106,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                                                       : g_pplayer->m_vrPreview == VRPREVIEW_LEFT     ? "Preview switched to left eye"s
                                                       : g_pplayer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
                                                                                                      : "Preview switched to both eyes"s, 2000);
-               }
+         }
                g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_stereo3Denabled);
                g_pplayer->m_pin3d.InitLayout();
                g_pplayer->UpdateStereoShaderState();
@@ -2116,7 +2116,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
          {
             if ((input->dwData & 0x80) != 0)
                g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
-         }
+            }
          else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
          {
              if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
@@ -2144,7 +2144,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   m_exit_stamp = curr_time_msec;
                }
                else
-               {  //on key up only
+               { //on key up only
                   // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
                   g_pplayer->SetCloseState(Player::CS_USER_INPUT);
                   m_exit_stamp = 0;
@@ -2261,8 +2261,8 @@ void PinInput::InitOpenPinballDevices()
             // check for a generic Pinball Device usage (usage page 0x05 "Game
             // Controls", usage 0x02 "Pinball Device")
             HIDP_CAPS caps;
-            const USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
-            const USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
+            constexpr USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
+            constexpr USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
             if (HidP_GetCaps(ppd, &caps) == HIDP_STATUS_SUCCESS && caps.UsagePage == USAGE_PAGE_GAMECONTROLS && caps.Usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
             {
                // It's at least a generic Pinball Device.  Check if it's
@@ -2382,7 +2382,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
-   int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+   constexpr int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
 
    // Process the analog axis inputs.  Each VP functional axis has a
    // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8
@@ -2493,8 +2493,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       // is irrelevant to VP 9, which has a physics frame time of 10ms,
       // roughly equal to the HID polling time.  But VP 10 has 1ms frames,
       // so it should be possible to profitably use the timing info there.
-      bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
-      bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
+      const bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
+      const bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
       if (newFlipperLeft != m_openPinDev_flipper_l)
          FireKeyEvent(m_openPinDev_flipper_l = newFlipperLeft, g_pplayer->m_rgKeys[eLeftFlipperKey]);
       if (newFlipperRight != m_openPinDev_flipper_r)
@@ -2505,9 +2505,9 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
       {
          // check for a state change
-         uint32_t mask = m->mask;
-         DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const uint32_t mask = m->mask;
+         const DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          if (isDown != wasDown)
             FireKeyEvent(isDown, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
       }
