@@ -31,7 +31,7 @@
 #endif
 #endif
 
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(__ANDROID__)
 #include "standalone/inc/webserver/WebServer.h"
 #endif
 
@@ -262,7 +262,7 @@ public:
 
    HBITMAP m_hbmInPlayMode;
 
-#ifdef __STANDALONE__
+#if defined(__STANDALONE__) && !defined(__ANDROID__)
    WebServer m_webServer;
 #endif
 
