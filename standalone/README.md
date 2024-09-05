@@ -211,8 +211,8 @@ brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 export JAVA_HOME=$(/usr/libexec/java_home -v 17.0.11)
 export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
-export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/26.3.11579264
-export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/26.3.11579264
+export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
+export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
 git clone -b standalone https://github.com/vpinball/vpinball
 cd vpinball/standalone/android
 ./external.sh
