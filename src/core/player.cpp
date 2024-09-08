@@ -2085,8 +2085,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    bool found = false;
    for (; index < m_pStateMappedMem->displayState->nDisplays; index++, id--)
    {
-      if ((id == 0)
-         || (id == -1 && frame->width >= 128 && (frame->dataFormat == CORE_DMD_FRAME_LUM4 || frame->dataFormat == CORE_DMD_FRAME_LUM16))) // Main DMD
+      if ((id == 0) || (id == -1 && frame->width >= 128 && (frame->dataFormat == CORE_FRAME_LUM))) // Main DMD
       {
          found = true;
          break;
@@ -2117,12 +2116,9 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
       display.frameId = frame->frameId;
       const int size = frame->width * frame->height;
       DWORD *const data = (DWORD *)display.frame->data();
-      if (frame->dataFormat == CORE_DMD_FRAME_LUM4)
+      if (frame->dataFormat == CORE_FRAME_LUM)
          for (int ofs = 0; ofs < size; ++ofs)
-            data[ofs] = frame->frameData[ofs] << 6; // 2 bit planes
-      else
-         for (int ofs = 0; ofs < size; ++ofs)
-            data[ofs] = frame->frameData[ofs] << 4; // 4 bit planes
+            data[ofs] = frame->frameData[ofs];
       m_renderer->m_renderDevice->m_texMan.SetDirty(display.frame);
    }
 
