@@ -272,6 +272,8 @@ FIXES:
 
 - fix saving of custom keys for joypad input
 
+- fix using multiple joypads/sticks in combination with a touchscreen and/or the mouse
+
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 - reinitialize sounds each time their output device changes
 
@@ -347,6 +349,8 @@ FIXES:
 - fix analogue nudge not working for joysticks/gamepads in XInput mode
 
 - fix wrong keyboard characters in dialogs for non QWERTY keyboards
+
+- fix using multiple joypads/sticks in combination with a touchscreen and/or the mouse
 
 - fix some problems with playing sounds via BASS: pitch/frequency change and loop/restart should now be matching the 'old' player
 
@@ -1561,6 +1565,18 @@ VP 9.9.X PM5 Plunger/Accel MOD Changelog
    and remove implicit dead zone handling (if you have the dead zone setting at 0% and now experience problems, set it to at least 1%)
  - native support for the Pinscape Controller
  - CPU affinity setting
+
+VP 9.9.5c Changelog
+------------------------
+- add support for new I/O controller capabilities, for compatible controller devices
+  see: http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID interface
+
+- fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
+
+- fix using multiple joypads/sticks in combination with a touchscreen and/or the mouse
 
 VP 9.9.5b Changelog
 ------------------------
