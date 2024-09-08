@@ -34,21 +34,28 @@
 #define USHOCKTYPE_VIRTUAPIN  4
 #define USHOCKTYPE_GENERIC    5
 
+// Input type ID - keyboard
 #define APP_KEYBOARD   0
-#define APP_JOYSTICKMN 1
-#define APP_MOUSE      2
-#define APP_TOUCH      3
 
+// Input type ID - mouse
+#define APP_MOUSE      1
+
+// Input type ID - touchscreen
+#define APP_TOUCH      2
+
+// Input type ID - joystick 1 through 8
 // handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
+#define APP_JOYSTICKMN 3
 #define PININ_JOYMXCNT 4
+#define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
+#define APP_JOYSTICKMX  (APP_JOYSTICK(PININ_JOYMXCNT - 1))
 
+
+// Joystick axis normalized input range
 #define JOYRANGEMN (-65536)
 #define JOYRANGEMX (+65536)
-
 #define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
 
-#define APP_JOYSTICKMX (APP_JOYSTICKMN + PININ_JOYMXCNT -1)
-#define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
 
 #ifdef _WIN32
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
