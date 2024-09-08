@@ -8,6 +8,8 @@ VP 9.9.5c Changelog
 
 - fix issue where saving a table can cost up to 4x (8x on 64bit) the temporary memory
 
+- fix using multiple joypads/sticks in combination with a touchscreen and/or the mouse
+
 VP 9.9.5b Changelog
 ------------------------
 - fix "all sounds to rear channels" bug
