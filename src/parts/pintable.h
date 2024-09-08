@@ -1066,9 +1066,8 @@ namespace PinMame
       unsigned int dataStride;
       core_tDeviceSingleState states[]; // array of nDevices * dataStride with the current device state
    } core_tDeviceState;
-   #define CORE_DMD_FRAME_LUM4              1 // Raw internal DMD luminance value using 4 shades (0..3)
-   #define CORE_DMD_FRAME_LUM16             2 // Raw internal DMD luminance value using 16 shades (0..15)
-   #define CORE_VIDEO_FRAME_RGB             3 // Raw RGB (TODO sRGB ? to be validated) video frame
+   #define CORE_FRAME_LUM             1 // Linear luminance (for monochrome DMD)
+   #define CORE_FRAME_RGB             2 // RGB (TODO sRGB ? to be validated) (for video frame)
    #pragma warning(disable : 4200) // 0 length array is a non standard extension used intentionally, so disable corresponding warning
    typedef struct
    {
