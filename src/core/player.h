@@ -277,7 +277,7 @@ public:
    U32 m_last_frame_time_msec; // used for non-physics controlled animations to update once per-frame only, aligned with m_time_msec
 
    HitBall *m_pactiveball = nullptr; // ball the script user can get with ActiveBall
-   HitBall *m_pactiveballDebug = nullptr; // ball the debugger will use as Activeball when firing events
+   HitBall *m_pactiveballDebug = nullptr; // ball the debugger will use as ActiveBall when firing events
    HitBall *m_pactiveballBC = nullptr; // ball that the ball control UI will use
    Vertex3Ds *m_pBCTarget = nullptr; // if non-null, the target location for the ball to roll towards
 
@@ -316,16 +316,22 @@ private:
 
 #pragma region MechPlunger
 public:
-   void MechPlungerIn(const int z);
+   void MechPlungerIn(const int z, const int joyidx);
+   void MechPlungerSpeedIn(const int z, const int joyidx);
+   int GetMechPlungerSpeed() const;
 
-   U32 m_movedPlunger = 0; // has plunger moved, must have moved at least three times
-   U32 m_LastPlungerHit = 0; // The last time the plunger was in contact (at least the vicinity) of the ball.
-   float m_curMechPlungerPos;
+   U32 m_movedPlunger = 0;    // has plunger moved, must have moved at least three times
+   U32 m_LastPlungerHit = 0;  // the last time the plunger was in contact (at least the vicinity) of the ball
+   float m_curMechPlungerPos; // position from joystick axis input, if a position axis is assigned
+   int m_curMechPlungerSpeed; // plunger speed from joystick axis input, if a speed axis is assigned
+   float m_plungerSpeedScale; // scaling factor for plunger speed input, to convert from joystick to internal units
+   bool m_fExtPlungerSpeed;   // flag: plunger speed was received via joystick input
 
    void MechPlungerUpdate();
 
 private:
-   int m_curPlunger;
+   int m_curPlunger[PININ_JOYMXCNT];      // mechanical plunger position input, one reading per joystick device
+   int m_curPlungerSpeed[PININ_JOYMXCNT]; // mechanical plunger speed input, per joystick device
 #pragma endregion
 
 
@@ -335,6 +341,7 @@ public:
    void SetNudgeX(const int x, const int joyidx);
    void SetNudgeY(const int y, const int joyidx);
    const Vertex2D& GetRawAccelerometer() const;
+   bool IsAccelInputAsVelocity() const { return m_accelInputIsVelocity; }
    
    #ifdef UNUSED_TILT
    int NudgeGetTilt(); // returns non-zero when appropriate to set the tilt switch
@@ -343,7 +350,7 @@ public:
    float m_NudgeShake; // whether to shake the screen during nudges and how much
 
 private:
-   int2 m_accelerometerMax; // Accelerometer max value X/Y axis (in -JOYRANGEMX..JOYRANGEMX renge)
+   int2 m_accelerometerMax; // Accelerometer max value X/Y axis (in -JOYRANGEMX..JOYRANGEMX range)
    int2 m_curAccel[PININ_JOYMXCNT]; // Live value acquired from joystick, clamped to max values (in -m_accelerometerMax..m_accelerometerMax)
    mutable bool m_accelerometerDirty = true;
    mutable Vertex2D m_accelerometer; // lazily evaluated sum of joystick mapped accelerometers, applying clamping then gain, normalized to -1..1 range
@@ -352,6 +359,8 @@ private:
    float m_accelerometerAngle; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
    float m_accelerometerSensitivity;
    Vertex2D m_accelerometerGain; // Accelerometer gain X/Y axis
+   bool m_accelInputIsVelocity;
+
 #pragma endregion
 
 

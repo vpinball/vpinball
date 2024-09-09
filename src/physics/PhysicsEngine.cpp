@@ -20,6 +20,10 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
    m_tableVelOld.SetZero();
    m_tableVelDelta.SetZero();
 
+   // Initialize velocity-based accelerometer sensor input.
+   m_accelVel.SetZero();
+   m_accelVelOld.SetZero();
+
    // Table movement (displacement u) is modeled as a mass-spring-damper system
    //   u'' = -k u - c u'
    // with a spring constant k and a damping coefficient c.
@@ -260,6 +264,20 @@ void PhysicsEngine::UpdateNudge(float dtime)
 
       // Perform hardware nudge by getting the accelerometer and applying it directly to the ball
       m_nudge = g_pplayer->GetRawAccelerometer();
+
+      // interpret the joystick input as a velocity if it's configured as such
+      if (g_pplayer->IsAccelInputAsVelocity())
+      {
+         // move the sensor input over to the velocity
+         m_accelVel.x = m_nudge.x;
+         m_accelVel.y = m_nudge.y;
+         m_nudge.SetZero();
+
+         // apply the external accelerometer-based nudge velocity input (which is
+         // a separate input from the traditional acceleration input)
+         m_tableVelDelta += m_accelVel - m_accelVelOld;
+         m_accelVelOld = m_accelVel;
+      }
    }
 
    // legacy/VP9 style keyboard nudging

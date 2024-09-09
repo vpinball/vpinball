@@ -131,6 +131,7 @@ PinInput::PinInput()
 #endif
 
    m_plunger_axis = 3;
+   m_plunger_speed_axis = 0;
    m_lr_axis = 1;
    m_ud_axis = 2;
 
@@ -181,6 +182,7 @@ void PinInput::LoadSettings(const Settings& settings)
    m_lr_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, m_lr_axis_reverse);
    m_ud_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, m_ud_axis_reverse);
    m_plunger_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, m_plunger_axis);
+   m_plunger_speed_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, m_plunger_speed_axis);
    m_plunger_reverse = settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, m_plunger_reverse);
    m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
    m_override_default_buttons = settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, m_override_default_buttons);
@@ -425,7 +427,7 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
          ppinput->uShockType = USHOCKTYPE_SIDEWINDER; // set type 3 = Microsoft SideWinder Freestyle Pro
       else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
          ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; // set type 4 = VirtuaPin Controller
-      else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
+      else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
       {
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // set type = Generic
          ppinput->m_linearPlunger = true;           // use linear plunger calibration
@@ -703,42 +705,42 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
    }
    if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) {
       didod[j].dwOfs = DIJOFS_Z;
-      const int value = (int)state.Gamepad.bLeftTrigger * 512;
+      const int value = (int)state.Gamepad.bLeftTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) {
       didod[j].dwOfs = DIJOFS_RZ;
-      const int value = (int)state.Gamepad.bRightTrigger * 512;
+      const int value = (int)state.Gamepad.bRightTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX) {
       didod[j].dwOfs = DIJOFS_X;
-      const int value = (int)state.Gamepad.sThumbLX * -2;
+      const int value = (int)state.Gamepad.sThumbLX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY) {
       didod[j].dwOfs = DIJOFS_Y;
-      const int value = (int)state.Gamepad.sThumbLY * -2;
+      const int value = (int)state.Gamepad.sThumbLY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX) {
       didod[j].dwOfs = DIJOFS_RX;
-      const int value = (int)state.Gamepad.sThumbRX * -2;
+      const int value = (int)state.Gamepad.sThumbRX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY) {
       didod[j].dwOfs = DIJOFS_RY;
-      const int value = (int)state.Gamepad.sThumbRY * -2;
+      const int value = (int)state.Gamepad.sThumbRY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
@@ -752,7 +754,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
 {
    assert(m_inputApi == PI_SDL);
    static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z, DIJOFS_RZ };
-   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };
+   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
    switch (e.type) 
    {
       case SDL_KEYDOWN:
@@ -1056,6 +1058,9 @@ void PinInput::Init()
       }
 
    #endif
+
+   // initialize Open Pinball Device HIDs
+   InitOpenPinballDevices();
 
    m_mixerKeyDown = false;
    m_mixerKeyUp = false;
@@ -1577,7 +1582,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 1)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 1)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1604,7 +1615,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 2)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 2)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1615,16 +1632,16 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_ULTRACADE)
-                        g_pplayer->MechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
                     if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || !m_override_default_buttons)
                     {                                          // with the ability to use rZ for plunger, checks to see if
                         if (uShockType == USHOCKTYPE_PBWIZARD) // the override is used and if so, if Plunger is set to Rz or
                         {                                      // disabled. If override isn't used, uses default assignment
-                            g_pplayer->MechPlungerIn(-(int)input->dwData); // of the Z axis.
+                            g_pplayer->MechPlungerIn(-(int)input->dwData, joyk); // of the Z axis.
                         }
                     }
                     if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-                        g_pplayer->MechPlungerIn(-(int)input->dwData);
+                        g_pplayer->MechPlungerIn(-(int)input->dwData, joyk);
                     if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1636,7 +1653,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 3)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 3)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1657,7 +1680,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 4)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 4)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1678,7 +1707,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 5)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 5)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1689,7 +1724,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if ((uShockType == USHOCKTYPE_PBWIZARD) && m_override_default_buttons && (m_plunger_axis == 6))
-                        g_pplayer->MechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
                     if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1701,7 +1736,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 6)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 6)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1712,7 +1753,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_SIDEWINDER)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
                     if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1724,7 +1765,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 7)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 7)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1745,7 +1792,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 8)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 8)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1781,6 +1834,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       m_firedautostart = curr_time_msec;
 
    GetInputDeviceData(/*curr_time_msec*/);
+
+   ReadOpenPinballDevices(curr_time_msec);
 
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
    if (g_pplayer->m_liveUI->IsTweakMode())
@@ -2094,3 +2149,421 @@ LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
    return nullptr;
 }
 #endif
+
+
+
+
+// ---------------------------------------------------------------------------
+//
+// Open Pinball Device support
+//
+
+// we require direct access to the Windows HID APIs
+extern "C"
+{
+#include "SetupAPI.h"
+#include "hidsdi.h"
+#include "hidpi.h"
+}
+
+// Initialize the Open Pinball Device interface.  Searches for active
+// devices and adds them to our internal list.
+void PinInput::InitOpenPinballDevices()
+{
+   // initialize a Device Set with all currently connected HID devices
+   GUID hidGuid;
+   HidD_GetHidGuid(&hidGuid);
+   HDEVINFO hdi = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+   if (hdi == INVALID_HANDLE_VALUE)
+      return;
+
+   // iterate over the Device Set members
+   SP_DEVICE_INTERFACE_DATA did { sizeof(SP_DEVICE_INTERFACE_DATA) };
+   for (DWORD memberIndex = 0; SetupDiEnumDeviceInterfaces(hdi, NULL, &hidGuid, memberIndex, &did); ++memberIndex)
+   {
+      // retrieve the buffer size needed for device detail
+      DWORD diDetailSize = 0;
+      DWORD err = 0;
+      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, NULL, 0, &diDetailSize, NULL) && (err = GetLastError()) != ERROR_INSUFFICIENT_BUFFER)
+         break;
+
+      // retrieve the device detail and devinfo data
+      std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA> diDetail(reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA *>(new BYTE[diDetailSize]));
+      diDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
+      SP_DEVINFO_DATA devInfo { sizeof(SP_DEVINFO_DATA) };
+      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, diDetail.get(), diDetailSize, NULL, &devInfo))
+         break;
+
+      // open the device desc to access the HID
+      HANDLE dev = CreateFile(diDetail->DevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+      if (dev != INVALID_HANDLE_VALUE)
+      {
+         // get the preparsed HID data, for details about the report format
+         PHIDP_PREPARSED_DATA ppd;
+         if (HidD_GetPreparsedData(dev, &ppd))
+         {
+            // check for a generic Pinball Device usage (usage page 0x05 "Game
+            // Controls", usage 0x02 "Pinball Device")
+            HIDP_CAPS caps;
+            const USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
+            const USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
+            if (HidP_GetCaps(ppd, &caps) == HIDP_STATUS_SUCCESS && caps.UsagePage == USAGE_PAGE_GAMECONTROLS && caps.Usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
+            {
+               // It's at least a generic Pinball Device.  Check if it's
+               // specifically an Open Pinball Device, by checking for the
+               // custom string descriptor on the first byte array usage.
+               // Windows idiosyncratically represents opaque byte array
+               // usages as "buttons", and Open Pinball Device has exactly
+               // one such "button" array.
+               std::vector<HIDP_BUTTON_CAPS> btnCaps;
+               btnCaps.resize(caps.NumberInputButtonCaps);
+               USHORT nBtnCaps = caps.NumberInputButtonCaps;
+               if (HidP_GetButtonCaps(HIDP_REPORT_TYPE::HidP_Input, btnCaps.data(), &nBtnCaps, ppd) == HIDP_STATUS_SUCCESS && nBtnCaps == 1)
+               {
+                  // check for a string descriptor attached to the usage
+                  USHORT stringIndex = btnCaps[0].NotRange.StringIndex;
+                  WCHAR str[128] { 0 };
+                  if (stringIndex != 0 && HidD_GetIndexedString(dev, stringIndex, str, sizeof(str)) && wcsncmp(str, L"OpenPinballDeviceStruct/", 24) == 0)
+                  {
+                     // matched - add it to the active device list
+                     m_openPinDevs.emplace_back(dev, btnCaps[0].ReportID, caps.InputReportByteLength, &str[24]);
+
+                     // the device list entry owns the handle now - forget it locally
+                     dev = INVALID_HANDLE_VALUE;
+                  }
+               }
+
+               // done with the preparsed data
+               HidD_FreePreparsedData(ppd);
+            }
+         }
+
+         // close the device handle, if we didn't transfer ownership to the device list
+         if (dev != INVALID_HANDLE_VALUE)
+            CloseHandle(dev);
+      }
+   }
+
+   // done with the device list dev
+   SetupDiDestroyDeviceInfoList(hdi);
+}
+
+// Read input from the Open Pinball Device inputs
+void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
+{
+   // Combined report.  In keeping with Visual Pinball's treatment of
+   // multiple gamepads, we merge the input across devices if there are
+   // multiple Pinball Devices sending us data.
+   OpenPinballDeviceReport cr { 0 };
+
+   // read input from each device
+   for (auto &p : m_openPinDevs)
+   {
+      // check for a new report
+      if (!p.ReadReport())
+         continue;
+
+      // Merge the data into the combined struct.  For the accelerometer
+      // and plunger analog quantities, just arbitrarily pick the last
+      // input that's sending non-zero values.  Devices that don't have
+      // those sensors attached will send zeroes, so this strategy yields
+      // sensible results for the sensible case where the user only has
+      // one plunger and one accelerometer, but they're attached to
+      // separate Open Pinball Device microcontrollers.  If the user has
+      // multiple accelerometers in the system, our merge strategy will
+      // arbitrarily pick whichever one enumerated last, which isn't
+      // necessarily a sensible result, but that seems fair enough
+      // because the user's actual configuration isn't sensible either.
+      // I mean, what do they expect us to do with two accelerometer
+      // inputs?  Note that this is a different situation from the
+      // traditional multiple-joysticks case, because in the case of
+      // joysticks, there are plenty of good reasons to have more than
+      // one attached.  One might be set up as a pinball device, and two
+      // more *actual joysticks* might be present as well because the
+      // user also plays some non-pinball video games.  Joysticks are
+      // generic: we can't tell from the HID descriptor if it's an
+      // accelerometer pretending to be a joystick, vs an actual
+      // joystick.  The Pinball Device definition doesn't suffer from
+      // that ambiguity.  We can be sure that an accelerometer there
+      // is an accelerometer, so there aren't any valid use cases where
+      // you'd have two or more of them.
+      //
+      // Merge the buttons by ORing all of the button masks together.
+      // If the user has configured the same button number on more than
+      // one device, they probably actually want the buttons to perform
+      // the same logical function, so ORing them yields the right result.
+      //
+      // Treat the high-time-resolution flipper buttons like the other
+      // analog quantities, since these are more like the analog
+      // quantities than like the other buttons.  As with the plunger
+      // and accelerometer, it's hard to imagine a sensible use case with
+      // multiple devices claiming the same flipper button.
+      auto &r = p.r;
+      if (r.axNudge != 0)
+         cr.axNudge = r.axNudge;
+      if (r.ayNudge != 0)
+         cr.ayNudge = r.ayNudge;
+      if (r.vxNudge != 0)
+         cr.vxNudge = r.vxNudge;
+      if (r.vyNudge != 0)
+         cr.vyNudge = r.vyNudge;
+      if (r.plungerPos != 0)
+         cr.plungerPos = r.plungerPos;
+      if (r.plungerSpeed != 0)
+         cr.plungerSpeed = r.plungerSpeed;
+      if (r.llFlipper != 0)
+         cr.llFlipper = r.llFlipper;
+      if (r.lrFlipper != 0)
+         cr.lrFlipper = r.lrFlipper;
+      if (r.ulFlipper != 0)
+         cr.ulFlipper = r.ulFlipper;
+      if (r.urFlipper != 0)
+         cr.urFlipper = r.urFlipper;
+      cr.genericButtons |= r.genericButtons;
+      cr.pinballButtons |= r.pinballButtons;
+   }
+
+   // Axis scaling factor.  All Open Pinball Device analog axes are
+   // INT16's (-32768..+32767).  The VP functional axes are designed
+   // for joystick input, so we must rescale to VP's joystick scale.
+   int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+
+   // Process the analog axis inputs.  Each VP functional axis has a
+   // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8
+   // are the generic joystick axes (X, Y, Z, RX, RY, RZ, Slider1,
+   // Slider2, respectively).  Axis 9 is the OpenPinDev device, and
+   // maps to the OpenPinDev input that corresponds to the same VP
+   // functional axis.  For example, m_lr_axis is the VP functional
+   // axis for Nudge X, so if m_lr_axis == 9, it maps to the Open Pin
+   // Dev Nudge X axis.
+   //
+   // For passing the input to the player, we can simply pretend that
+   // we're joystick #0.  A function assigned to OpenPinDev can't also
+   // be assigned to a joystick axis, so there won't be any conflicting
+   // input from an actual joystick to the same function, hence we can
+   // take on the role of the joystick.  We should probably do a little
+   // variable renaming in a few places to clarify that the "joystick"
+   // number is more like a "device number", which can be a joystick if
+   // joysticks are assigned or a PinDev if PinDevs are assigned.
+   if (m_lr_axis == 9)
+   {
+      // Nudge X input - use velocity or acceleration input, according to the user preferences
+      int val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
+      g_pplayer->SetNudgeX(m_lr_axis_reverse == 0 ? -val : val, 0);
+   }
+   if (m_ud_axis == 9)
+   {
+      // Nudge Y input - use velocity or acceleration input, according to the user preferences
+      int val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
+      g_pplayer->SetNudgeY(m_ud_axis_reverse == 0 ? -val : val, 0);
+   }
+   if (m_plunger_axis == 9)
+   {
+      // Plunger position input
+      int val = cr.plungerPos * scaleFactor;
+      g_pplayer->MechPlungerIn(m_plunger_reverse == 0 ? -val : val, 0);
+   }
+   if (m_plunger_speed_axis == 9)
+   {
+      // Plunger speed input
+      int val = cr.plungerSpeed * scaleFactor;
+      g_pplayer->MechPlungerSpeedIn(m_plunger_reverse == 0 ? -val : val, 0);
+   }
+
+   // Weird special logic for the Start button, to handle auto-start timers,
+   // per the regular joystick button input processor
+   const bool start = ((cur_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
+
+   // Check for button state changes.  If there are any, generate
+   // key up/down events for the button changes.
+   if (cr.genericButtons != m_openPinDev_generic_buttons)
+   {
+      // Visit each button.  VP's internal joystick buttons are
+      // numbered #1 to #32.
+      for (int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
+      {
+         // check for a state change
+         DISPID isDown = (cr.genericButtons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         DISPID wasDown = (m_openPinDev_generic_buttons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         if (isDown != wasDown)
+            Joy(buttonNum, isDown, start);
+      }
+
+      // remember the new button state
+      cr.genericButtons = m_openPinDev_generic_buttons;
+   }
+   if (cr.pinballButtons != m_openPinDev_pinball_buttons)
+   {
+      // mapping from Open Pinball Device mask bits to VP/VPM keys
+      static const struct KeyMap
+      {
+         uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
+         int rgKeyIndex; // g_pplayer->m_rgKeys[] index, or -1 if a direct VPM key is used instead
+         BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an m_rgKeys assignment is used instead
+      } keyMap[] = {
+         { 0x00000001, eStartGameKey }, // Start (start game)
+         { 0x00000002, eExitGame }, // Exit (end game)
+         { 0x00000004, eAddCreditKey }, // Coin 1 (left coin chute)
+         { 0x00000008, eAddCreditKey2 }, // Coin 2 (middle coin chute)
+         { 0x00000010, -1, DIK_5 }, // Coin 3 (right coin chute)
+         { 0x00000020, -1, DIK_6 }, // Coin 4 (fourth coin chute/dollar bill acceptor)
+         { 0x00000040, -1, DIK_2 }, // Extra Ball/Buy-In
+         { 0x00000080, ePlungerKey }, // Launch Ball
+         { 0x00000100, eLockbarKey }, // Fire button (lock bar top button)
+         { 0x00000200, eMechanicalTilt }, // Tilt bob
+         { 0x00000400, -1, DIK_HOME }, // Slam tilt
+         { 0x00000800, -1, DIK_END }, // Coin door switch
+         { 0x00001000, -1, DIK_7 }, // Service panel Cancel
+         { 0x00002000, -1, DIK_8 }, // Service panel Down
+         { 0x00004000, -1, DIK_9 }, // Service panel Up
+         { 0x00008000, -1, DIK_0 }, // Service panel Enter
+         { 0x00010000, eLeftMagnaSave }, // MagnaSave left
+         { 0x00020000, eRightMagnaSave }, // MagnaSave right
+         { 0x00040000, eLeftTiltKey }, // Left Nudge
+         { 0x00080000, eCenterTiltKey }, // Forward Nudge
+         { 0x00100000, eRightTiltKey }, // Right Nudge
+         { 0x00200000, eVolumeUp }, // Audio volume up
+         { 0x00400000, eVolumeDown }, // Audio volume down
+      };
+
+      // Flipper buttons.  Fold upper and lower into a combined field,
+      // and fold the button duty cycle information into a simple on/off.
+      //
+      // If the simulator is upgraded in the future to accept more detailed
+      // timing information, we can convert the duty cycle into a suitable
+      // amount of simulation time, using the real time between consecutive
+      // HID inputs as the basis, and feed the event into the simulator as
+      // a button press for the corresponding number of physics frames.  This
+      // is irrelevant to VP 9, which has a physics frame time of 10ms,
+      // roughly equal to the HID polling time.  But VP 10 has 1ms frames,
+      // so it should be possible to profitably use the timing info there.
+      bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
+      bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
+      if (newFlipperLeft != m_openPinDev_flipper_l)
+         FireKeyEvent(m_openPinDev_flipper_l = newFlipperLeft, g_pplayer->m_rgKeys[eLeftFlipperKey]);
+      if (newFlipperRight != m_openPinDev_flipper_r)
+         FireKeyEvent(m_openPinDev_flipper_r = newFlipperRight, g_pplayer->m_rgKeys[eRightFlipperKey]);
+
+      // Visit each pre-assigned button
+      const KeyMap *m = keyMap;
+      for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
+      {
+         // check for a state change
+         uint32_t mask = m->mask;
+         DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         if (isDown != wasDown)
+            FireKeyEvent(isDown, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
+      }
+
+      // remember the new button state
+      cr.pinballButtons = m_openPinDev_pinball_buttons;
+   }
+}
+
+PinInput::OpenPinDev::OpenPinDev(HANDLE hDevice, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString)
+   : hDevice(hDevice)
+   , reportID(reportID)
+   , reportSize(reportSize)
+{
+   // Parse the device struct version string into a DWORD, with the major
+   // version in the high word and the minor version in the low word.
+   // This format can be compared against a reference version with a
+   // simple DWORD comparison: deviceStructVersion > 0x00020005 tests
+   // for something newer than 2.5.
+   const wchar_t *dot = wcschr(deviceStructVersionString, L'.');
+   deviceStructVersion = (_wtoi(deviceStructVersionString) << 16) | (dot != nullptr ? _wtoi(dot + 1) : 0);
+
+   // allocate space for the report
+   buf.resize(reportSize);
+
+   // Zero our internal report copy - this will clear out any newer
+   // fields that aren't in the version of the structure that the
+   // device sends us.
+   memset(&r, 0, sizeof(r));
+
+   // kick off the first overlapped read - we always keep one read
+   // outstanding, so that we don't have to wait when we're ready to
+   // process a report
+   StartRead();
+}
+
+PinInput::OpenPinDev::~OpenPinDev()
+{
+   // close handles
+   CloseHandle(hDevice);
+   CloseHandle(hIOEvent);
+}
+
+bool PinInput::OpenPinDev::ReadReport()
+{
+   // Read reports until the buffer is empty, to be sure we have the latest.
+   // The reason we loop as long as new reports are available is that the HID
+   // driver buffers a number of reports, and returns one on each request.  So
+   // if we just read the reports sequentially, we'd always have a lag time of
+   // (number of internally buffered reports) * (time per report).  The default
+   // buffer is 32 reports, and the HID polling time is usually about 10ms, so
+   // we'd always see input that's about 1/3 of a second old, which is quite
+   // noticeable on a human scale.  So we always hoover up all available reports
+   // until a read blocks, at which point we know that we have the latest one.
+   // While looping, we keep track of whether or not we've seen any new reports
+   // at all, since it's possible that we're still waiting for the final read
+   // that we started on the last polling cycle.
+   bool newReport = false;
+   for (;;)
+   {
+      // Check the status on the last read.  If the read completed synchronously,
+      // or it was queued with pending status and has since completed, we have
+      // a new report ready.  Otherwise the pipe is empty.
+      if (readStatus == ERROR_SUCCESS || (readStatus == ERROR_IO_PENDING && GetOverlappedResult(hDevice, &ov, &bytesRead, FALSE)))
+      {
+         // Read completed - extract the Open Pinball Device struct from
+         // the HID report byte block.  Copy the smaller of the actual
+         // report data sent from the device or our version of the struct.
+         // If the device reports a NEWER struct than the one we're compiled
+         // against, it will have extra fields at the end, which we will
+         // ignore by virtue of copying only the struct size we know about.
+         // If the device reports an OLDER struct than the one we use, we'll
+         // only populate the portion of our struct that the device provides,
+         // leaving the other fields zeroed.
+         memcpy(&r, &buf[1], std::min(reportSize, sizeof(r)));
+         newReport = true;
+
+         // start the next read - we always maintain one outstanding read
+         StartRead();
+      }
+      else if (readStatus == ERROR_IO_PENDING)
+      {
+         // still waiting for the last read to complete - stop here
+         return newReport;
+      }
+      else
+      {
+         // Error other than pending status - start a new read, and stop here.
+         // We could check for immediate completion, but that could get us into
+         // an infinite loop if the handle has a persistent error (e.g., the
+         // device has been disconnected), since we'd be right back here with
+         // another error for the new read.  Returning ensures that we don't get
+         // stuck.  The caller will still keep trying to poll the device in
+         // such a case, but each new read will just fail immediately, so it
+         // will do no harm other than the slight overhead of one failed read
+         // per polling cycle.  And if the fault is temporary, this will pick
+         // up where we left off as soon as the fault clears.
+         StartRead();
+         return newReport;
+      }
+   }
+}
+
+void PinInput::OpenPinDev::StartRead()
+{
+   // set up the OVERLAPPED struct
+   memset(&ov, 0, sizeof(ov));
+   ov.hEvent = hIOEvent;
+
+   // start the read
+   if (ReadFile(hDevice, buf.data(), static_cast<DWORD>(reportSize), &bytesRead, &ov))
+      readStatus = ERROR_SUCCESS;
+   else
+      readStatus = GetLastError();
+}

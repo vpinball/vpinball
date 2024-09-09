@@ -320,6 +320,7 @@ void KeysConfigDialog::AddStringAxis(const string &name, const int idc, const in
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"rZ Axis");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 1");
    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Slider 2");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"OpenPinDev");
    ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
    ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 }
@@ -355,6 +356,9 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     int key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
     SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
+
+    on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
+    SendDlgItemMessage(IDC_CBGLOBALACCVEL, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
     SendDlgItemMessage(IDC_CBGLOBALTILT, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -394,6 +398,9 @@ BOOL KeysConfigDialog::OnInitDialog()
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100);
     SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
+
+    key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100);
+    SetDlgItemInt(IDC_PLUNGERSPEEDSCALE, key, FALSE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true);
     SendDlgItemMessage(IDC_ENABLE_MOUSE_PLAYER, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -493,6 +500,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     AddStringAxis("PlungerAxis"s, IDC_PLUNGERAXIS, 3); // assume Z Axis as standard
     AddStringAxis("LRAxis"s, IDC_LRAXISCOMBO, 1); // assume X Axis as standard
     AddStringAxis("UDAxis"s, IDC_UDAXISCOMBO, 2); // assume Y Axis as standard
+    AddStringAxis("PlungerSpeedAxis"s, IDC_PLUNGERSPEEDAXIS, 0); // not assigned by default
 
     for (unsigned int i = 0; i < eCKeys; ++i)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
@@ -759,6 +767,7 @@ void KeysConfigDialog::OnOK()
     SetValue(IDC_JOYDEBUGGERCOMBO, Settings::Player, "JoyDebuggerKey"s);
     SetValue(IDC_JOYLOCKBARCOMBO, Settings::Player, "JoyLockbarKey"s);
     SetValue(IDC_PLUNGERAXIS, Settings::Player, "PlungerAxis"s);
+    SetValue(IDC_PLUNGERSPEEDAXIS, Settings::Player, "PlungerSpeedAxis"s);
     SetValue(IDC_LRAXISCOMBO, Settings::Player, "LRAxis"s);
     SetValue(IDC_UDAXISCOMBO, Settings::Player, "UDAxis"s);
     SetValue(IDC_JOYPAUSECOMBO, Settings::Player, "JoyPauseKey"s);
@@ -773,6 +782,9 @@ void KeysConfigDialog::OnOK()
 
     newvalue = max((int)GetDlgItemInt(IDC_UDAXISGAIN, nothing, TRUE), 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, newvalue);
+
+    newvalue = max((int)GetDlgItemInt(IDC_PLUNGERSPEEDSCALE, nothing, TRUE), 0);
+    g_pvp->m_settings.SaveValue(Settings::Player, "PlungerSpeedScale"s, newvalue);
 
     newvalue = clamp((int)GetDlgItemInt(IDC_DEADZONEAMT, nothing, TRUE), 0, 100);
     g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, newvalue);
@@ -813,7 +825,10 @@ void KeysConfigDialog::OnOK()
     newvalue = GetDlgItemInt(IDC_GLOBALROTATION, nothing, TRUE);
     g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, newvalue);
 
-    const bool tscb = (IsDlgButtonChecked(IDC_CBGLOBALTILT)!= 0);
+    newvalue = IsDlgButtonChecked(IDC_CBGLOBALACCVEL);
+    g_pvp->m_settings.SaveValue(Settings::Player, "AccelVelocityInput"s, newvalue);
+
+    const bool tscb = (IsDlgButtonChecked(IDC_CBGLOBALTILT) != 0);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, tscb);
 
     newvalue = clamp((int)GetDlgItemInt(IDC_GLOBALTILT, nothing, TRUE), 0, 1000);

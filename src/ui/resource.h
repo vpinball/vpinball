@@ -933,6 +933,9 @@
 #define IDC_AOSCALE                     568
 #define IDC_SSR_STRENGTH                569
 #define IDC_SCENELIGHTSCALE             570
+#define IDC_CBGLOBALACCVEL              571
+#define IDC_PLUNGERSPEEDSCALE           572
+#define IDC_PLUNGERSPEEDAXIS            573
 #define IDC_TABLESOUNDVOLUME            579
 #define IDC_TABLEMUSICVOLUME            580
 #define IDS_PLAYFIELD                   581

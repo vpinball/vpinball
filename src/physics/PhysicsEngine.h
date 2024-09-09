@@ -101,6 +101,36 @@ private:
    float m_nudgeSpring;
    float m_nudgeDamping;
 
+   // External accelerometer velocity input.  This is for newer
+   // pinball I/O controllers that integrate the acceleration samples
+   // in the device to compute the instantaneous cabinet velocity.
+   //
+   // Providing physical accelerometer input in the form of velocity
+   // is a more accurate way to pass this information from the I/O
+   // controller to the host, because the I/O controller has direct,
+   // high-speed access to the device, and precise timing information
+   // on the sample times and intervals.  The host only has HID
+   // reports, which don't have reliable delivery, operate at the
+   // relatively low HID polling speed, and don't have any timing
+   // information.  That makes it essentially impossible to integrate
+   // acceleration inputs over HID into velocities.  But the physics
+   // model can really only use velocities - if you give it
+   // accelerations from the I/O controller, it will in effect
+   // integrate them into velocities, because the physics model is
+   // fundamentally a first-order discrete-time integrator.  It's
+   // much better to explicitly do that integration on the I/O
+   // controller side, where we can take acceleration samples at
+   // high speed and measure the time intervals between samples
+   // precisely.
+   // 
+   // Velocities computed on the device side are applied to the
+   // physics model the same way as the velocities computed from
+   // the "spring model" for scripted nudge force inputs, but in
+   // this case the velocities are coming from the user's physical
+   // cabinet environment by way of sensor input.
+   Vertex3Ds m_accelVel;
+   Vertex3Ds m_accelVelOld;
+
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge = false;
    float m_legacyNudgeStrength = 0.f;
