@@ -2195,7 +2195,7 @@ extern "C"
 class OpenPinDev
 {
 public:
-   OpenPinDev(HANDLE h, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString) :
+   OpenPinDev(HANDLE hDevice, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString) :
        hDevice(hDevice), 
        reportID(reportID), 
        reportSize(reportSize)
@@ -2265,7 +2265,7 @@ public:
             // If the device reports an OLDER struct than the one we use, we'll
             // only populate the portion of our struct that the device provides,
             // leaving the other fields zeroed.
-            memcpy(&r, &buf[1], std::min(reportSize, sizeof(r)));
+            memcpy(&r, &buf[1], std::min(reportSize - 1, sizeof(r)));
             newReport = true;
 
             // start the next read - we always maintain one outstanding read
@@ -2357,10 +2357,11 @@ void PinInput::InitOpenPinballDevices()
          break;
 
       // retrieve the device detail and devinfo data
-      std::unique_ptr<SP_DEVICE_INTERFACE_DETAIL_DATA> diDetail(reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA *>(new BYTE[diDetailSize]));
+      std::unique_ptr<BYTE> diDetailBuf(new BYTE[diDetailSize]);
+      auto *diDetail = reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA *>(diDetailBuf.get());
       diDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
       SP_DEVINFO_DATA devInfo { sizeof(SP_DEVINFO_DATA) };
-      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, diDetail.get(), diDetailSize, NULL, &devInfo))
+      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, diDetail, diDetailSize, NULL, &devInfo))
          break;
 
       // open the device desc to access the HID
@@ -2495,7 +2496,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
-   int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+   int const scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
 
    // Process the analog axis inputs.  Each VP functional axis has a
    // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8

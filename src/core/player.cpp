@@ -1144,7 +1144,8 @@ void Player::OnFocusChanged(const bool isGameFocused)
 
    #ifdef _MSC_VER
    // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
-   if (!isGameFocused && m_time_msec < 5000 && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
+   // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
+   if (!isGameFocused && m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
    {
       #ifdef ENABLE_SDL_VIDEO
       SDL_RaiseWindow(m_playfieldWnd->GetCore());

@@ -85,22 +85,34 @@ joystick axes that your other device uses for its accelerometer reports.
 
 ## How to handle multiple Open Pinball Device units
 
-If you have multiple physical devices that all implement the OPD interface, Visual Pinball
-simply treats them "additively": it literally adds up the readings on each input across
-devices.  That means there's no need to select *which* device to use for an axis that you
-assign as **OpenPinDev**, since adding up all of the sources should automatically find the
-one that's actually sending data on each input.
+If you have multiple Open Pinball Device controllers in your system, Visual Pinball
+automatically combines their inputs by making the simple assumption that there's only one
+instance of each physical sensor present in the system: one accelerometer, one plunger
+sensor.  With this assumption in mind, VP simply takes input for a given sensor from
+whichever controller reports non-zero input for that sensor.  This is done for each
+sensor individually, so you can have the accelerometer on one controller, and the
+plunger on a separate controller, and VP will correctly combine the inputs across
+the two controllers.
 
-The reason we can use this simple strategy is that all of the pinball inputs are naturally
-singular.  A pin cab just naturally has one accelerometer, one plunger, and one of each
-button.  There's no use case where you'd expect to have multiple nudge accelerometers or
-multiples of the other inputs.  All of the units that *don't* have accelerometers
-attached will send zeroes on the accelerometer inputs, so adding those zeroes into the
-total across devices won't change the numbers coming in from the one unit where the
-accelerometer actually is attached.
+This assumption is based on the idea that you might need multiple controller boards in
+your system, but there's no reason you'd ever need two nudge accelerometers in the same
+pinball cabinet.  There's simply no good use case for multiple nudge inputs, since they'd
+all be picking up the exact same motion, making the second and additional units uselessly
+redundant.  If you're using two pinball control boards that both come with accelerometers
+as standard features, you should simply disable the accelerometer on the second
+controller, since it's not needed.  (This doesn't mean that you can't have additional
+accelerometers *for other purposes besides pinball nudge inputs*.  But those will
+presumably be attached to other kinds of controllers that don't act as Open Pinball
+Devices, so they won't create any confusion for VP.)
 
-Note that this doesn't mean that you can't have additional accelerometers in your system
-for *other purposes* besides pinball nudging, since those will presumably be connected to
-other kinds of controllers that aren't presenting themselves as pinball device inputs.
-We're just saying that there's no reason you should have two *pinball nudge sensor*
-accelerometers in a single cabinet.
+If this assumption turns out to be wrong, the effect it has is that VP arbitrarily chooses
+input from one of the sensors.  So it still works, but the results might be erratic.  If
+you really do have multiple accelerometers in your system, you should be sure that your
+controllers are configured so that only one of them is actually reporting accelerometer
+input on the Open Pinball Device interface.
+
+Button inputs from multiple controllers are combined simply by treating a given button as
+ON if any controller reports that it's on.   That is, all of the buttons are logically
+"ORed" together.  So if, for some reason, you have two separate physical buttons that
+you assign as "Start" buttons on two separate controllers, pushing either button will
+activate the "Start" function.
