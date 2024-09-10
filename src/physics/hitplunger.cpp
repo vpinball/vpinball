@@ -404,6 +404,7 @@ void PlungerMoverObject::UpdateVelocities()
               m_speed = 0.0f;
               m_pos = m_frameStart;
           }
+
           // if we're already at the minimum retracted position, stop
           if (m_pos < (m_frameEnd + (m_restPos * m_frameLen)))
           {
@@ -738,7 +739,14 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
    // which at least tries to make the internal object's simulated
    // motion more realistic during times when it looks like we're in
    // a pull-and-release motion.
-   const float impulseSpeed = g_pplayer->m_fExtPlungerSpeed && m_plungerMover.m_plunger->m_d.m_mechPlunger ? 
+   //
+   // Also use the internal velocity if the "fire timer" is running,
+   // meaning that we're in a firing event initiated by scripting.
+   // That overrides the external speed input because the script has
+   // temporarily taken control of the plunger, disconnecting it from
+   // the external physical controls.
+   const float impulseSpeed = 
+       (m_plungerMover.m_fireTimer == 0 && g_pplayer->m_fExtPlungerSpeed && m_plungerMover.m_plunger->m_d.m_mechPlunger) ? 
        m_plungerMover.MechPlungerSpeed() :
        m_plungerMover.m_speed;
 

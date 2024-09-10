@@ -2158,6 +2158,31 @@ LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
 // Open Pinball Device support
 //
 
+// Open Pinball Device input report v1.0 - input report structure.
+// Fields are packed with no padding bytes; integer fields are little-endian.
+struct __pragma(pack(push, 1)) OpenPinballDeviceReport
+{
+   uint64_t timestamp; // report time, in microseconds since an arbitrary zero point
+   uint32_t genericButtons; // button states for 32 general-purpose on/off buttons
+   uint32_t pinballButtons; // button states for pre-defined pinball simulator function buttons
+   uint8_t llFlipper; // lower left flipper button duty cycle
+   uint8_t lrFlipper; // lower right flipper button duty cycle
+   uint8_t ulFlipper; // upper left flipper button duty cycle
+   uint8_t urFlipper; // upper right flipper button duty cycle
+   int16_t axNudge; // instantaneous nudge acceleration, X axis (left/right)
+   int16_t ayNudge; // instantaneous nudge acceleration, Y axis (front/back)
+   int16_t vxNudge; // instantaneous nudge velocity, X axis
+   int16_t vyNudge; // instantaneous nudge velocity, Y axis
+   int16_t plungerPos; // current plunger position
+   int16_t plungerSpeed; // instantaneous plunger speed
+}
+__pragma(pack(pop));
+
+
+// The Windows implementation is written directly to the Win32 native HID API,
+// so it's inherently Win32-specific.
+#ifdef _WIN32
+
 // we require direct access to the Windows HID APIs
 extern "C"
 {
@@ -2165,6 +2190,150 @@ extern "C"
 #include "hidsdi.h"
 #include "hidpi.h"
 }
+
+// active Open Pinball Device interface
+class OpenPinDev
+{
+public:
+   OpenPinDev(HANDLE h, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString) :
+       hDevice(hDevice), 
+       reportID(reportID), 
+       reportSize(reportSize)
+   {
+      // Parse the device struct version string into a DWORD, with the major
+      // version in the high word and the minor version in the low word.
+      // This format can be compared against a reference version with a
+      // simple DWORD comparison: deviceStructVersion > 0x00020005 tests
+      // for something newer than 2.5.
+      const wchar_t *dot = wcschr(deviceStructVersionString, L'.');
+      deviceStructVersion = (_wtoi(deviceStructVersionString) << 16) | (dot != nullptr ? _wtoi(dot + 1) : 0);
+
+      // allocate space for the report
+      buf.resize(reportSize);
+
+      // Zero our internal report copy - this will clear out any newer
+      // fields that aren't in the version of the structure that the
+      // device sends us.
+      memset(&r, 0, sizeof(r));
+
+      // kick off the first overlapped read - we always keep one read
+      // outstanding, so that we don't have to wait when we're ready to
+      // process a report
+      StartRead();
+   }
+
+   ~OpenPinDev()
+   {
+      // close handles
+      CloseHandle(hDevice);
+      CloseHandle(hIOEvent);
+   }
+
+   // get a reference to the curent report
+   const OpenPinballDeviceReport &CurrentReport() const { return r; }
+
+   // read a report into the internal report struct; returns true if a new report 
+   // was available
+   bool ReadReport()
+   {
+      // Read reports until the buffer is empty, to be sure we have the latest.
+      // The reason we loop as long as new reports are available is that the HID
+      // driver buffers a number of reports, and returns one on each request.  So
+      // if we just read the reports sequentially, we'd always have a lag time of
+      // (number of internally buffered reports) * (time per report).  The default
+      // buffer is 32 reports, and the HID polling time is usually about 10ms, so
+      // we'd always see input that's about 1/3 of a second old, which is quite
+      // noticeable on a human scale.  So we always hoover up all available reports
+      // until a read blocks, at which point we know that we have the latest one.
+      // While looping, we keep track of whether or not we've seen any new reports
+      // at all, since it's possible that we're still waiting for the final read
+      // that we started on the last polling cycle.
+      bool newReport = false;
+      for (;;)
+      {
+         // Check the status on the last read.  If the read completed synchronously,
+         // or it was queued with pending status and has since completed, we have
+         // a new report ready.  Otherwise the pipe is empty.
+         if (readStatus == ERROR_SUCCESS || (readStatus == ERROR_IO_PENDING && GetOverlappedResult(hDevice, &ov, &bytesRead, FALSE)))
+         {
+            // Read completed - extract the Open Pinball Device struct from
+            // the HID report byte block.  Copy the smaller of the actual
+            // report data sent from the device or our version of the struct.
+            // If the device reports a NEWER struct than the one we're compiled
+            // against, it will have extra fields at the end, which we will
+            // ignore by virtue of copying only the struct size we know about.
+            // If the device reports an OLDER struct than the one we use, we'll
+            // only populate the portion of our struct that the device provides,
+            // leaving the other fields zeroed.
+            memcpy(&r, &buf[1], std::min(reportSize, sizeof(r)));
+            newReport = true;
+
+            // start the next read - we always maintain one outstanding read
+            StartRead();
+         }
+         else if (readStatus == ERROR_IO_PENDING)
+         {
+            // still waiting for the last read to complete - stop here
+            return newReport;
+         }
+         else
+         {
+            // Error other than pending status - start a new read, and stop here.
+            // We could check for immediate completion, but that could get us into
+            // an infinite loop if the handle has a persistent error (e.g., the
+            // device has been disconnected), since we'd be right back here with
+            // another error for the new read.  Returning ensures that we don't get
+            // stuck.  The caller will still keep trying to poll the device in
+            // such a case, but each new read will just fail immediately, so it
+            // will do no harm other than the slight overhead of one failed read
+            // per polling cycle.  And if the fault is temporary, this will pick
+            // up where we left off as soon as the fault clears.
+            StartRead();
+            return newReport;
+         }
+      }
+   }
+
+protected:
+   // start an overlapped read
+   void StartRead()
+   {
+      // set up the OVERLAPPED struct
+      memset(&ov, 0, sizeof(ov));
+      ov.hEvent = hIOEvent;
+
+      // start the read
+      if (ReadFile(hDevice, buf.data(), static_cast<DWORD>(reportSize), &bytesRead, &ov))
+         readStatus = ERROR_SUCCESS;
+      else
+         readStatus = GetLastError();
+   }
+
+   HANDLE Release()
+   {
+      HANDLE ret = hDevice;
+      hDevice = INVALID_HANDLE_VALUE;
+      return ret;
+   }
+
+   HANDLE hDevice;
+   BYTE reportID;
+   DWORD deviceStructVersion;
+
+   // overlapped read
+   OVERLAPPED ov { 0 };
+   HANDLE hIOEvent { CreateEvent(NULL, TRUE, FALSE, NULL) };
+   DWORD readStatus = 0;
+   DWORD bytesRead = 0;
+
+   // overlapped read buffer - space for the HID report ID prefix and the report struct
+   size_t reportSize;
+   std::vector<BYTE> buf;
+
+   // last report read
+   OpenPinballDeviceReport r;
+};
+
 
 // Initialize the Open Pinball Device interface.  Searches for active
 // devices and adds them to our internal list.
@@ -2226,7 +2395,7 @@ void PinInput::InitOpenPinballDevices()
                   if (stringIndex != 0 && HidD_GetIndexedString(dev, stringIndex, str, sizeof(str)) && wcsncmp(str, L"OpenPinballDeviceStruct/", 24) == 0)
                   {
                      // matched - add it to the active device list
-                     m_openPinDevs.emplace_back(dev, btnCaps[0].ReportID, caps.InputReportByteLength, &str[24]);
+                     m_openPinDevs.emplace_back(new OpenPinDev(dev, btnCaps[0].ReportID, caps.InputReportByteLength, &str[24]));
 
                      // the device list entry owns the handle now - forget it locally
                      dev = INVALID_HANDLE_VALUE;
@@ -2260,7 +2429,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    for (auto &p : m_openPinDevs)
    {
       // check for a new report
-      if (!p.ReadReport())
+      if (!p->ReadReport())
          continue;
 
       // Merge the data into the combined struct.  For the accelerometer
@@ -2298,7 +2467,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       // quantities than like the other buttons.  As with the plunger
       // and accelerometer, it's hard to imagine a sensible use case with
       // multiple devices claiming the same flipper button.
-      auto &r = p.r;
+      auto &r = p->CurrentReport();
       if (r.axNudge != 0)
          cr.axNudge = r.axNudge;
       if (r.ayNudge != 0)
@@ -2348,25 +2517,25 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    if (m_lr_axis == 9)
    {
       // Nudge X input - use velocity or acceleration input, according to the user preferences
-      int val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
+      int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
       g_pplayer->SetNudgeX(m_lr_axis_reverse == 0 ? -val : val, 0);
    }
    if (m_ud_axis == 9)
    {
       // Nudge Y input - use velocity or acceleration input, according to the user preferences
-      int val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
+      int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
       g_pplayer->SetNudgeY(m_ud_axis_reverse == 0 ? -val : val, 0);
    }
    if (m_plunger_axis == 9)
    {
       // Plunger position input
-      int val = cr.plungerPos * scaleFactor;
+      const int val = cr.plungerPos * scaleFactor;
       g_pplayer->MechPlungerIn(m_plunger_reverse == 0 ? -val : val, 0);
    }
    if (m_plunger_speed_axis == 9)
    {
       // Plunger speed input
-      int val = cr.plungerSpeed * scaleFactor;
+      int const val = cr.plungerSpeed * scaleFactor;
       g_pplayer->MechPlungerSpeedIn(m_plunger_reverse == 0 ? -val : val, 0);
    }
 
@@ -2383,8 +2552,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       for (int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
       {
          // check for a state change
-         DISPID isDown = (cr.genericButtons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID wasDown = (m_openPinDev_generic_buttons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         DISPID const isDown = (cr.genericButtons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         DISPID const wasDown = (m_openPinDev_generic_buttons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          if (isDown != wasDown)
             Joy(buttonNum, isDown, start);
       }
@@ -2437,8 +2606,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       // is irrelevant to VP 9, which has a physics frame time of 10ms,
       // roughly equal to the HID polling time.  But VP 10 has 1ms frames,
       // so it should be possible to profitably use the timing info there.
-      bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
-      bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
+      bool const newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
+      bool const newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
       if (newFlipperLeft != m_openPinDev_flipper_l)
          FireKeyEvent(m_openPinDev_flipper_l = newFlipperLeft, g_pplayer->m_rgKeys[eLeftFlipperKey]);
       if (newFlipperRight != m_openPinDev_flipper_r)
@@ -2449,9 +2618,9 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
       {
          // check for a state change
-         uint32_t mask = m->mask;
-         DISPID isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         uint32_t const mask = m->mask;
+         DISPID const isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         DISPID const wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          if (isDown != wasDown)
             FireKeyEvent(isDown, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
       }
@@ -2461,109 +2630,19 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    }
 }
 
-PinInput::OpenPinDev::OpenPinDev(HANDLE hDevice, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString)
-   : hDevice(hDevice)
-   , reportID(reportID)
-   , reportSize(reportSize)
-{
-   // Parse the device struct version string into a DWORD, with the major
-   // version in the high word and the minor version in the low word.
-   // This format can be compared against a reference version with a
-   // simple DWORD comparison: deviceStructVersion > 0x00020005 tests
-   // for something newer than 2.5.
-   const wchar_t *dot = wcschr(deviceStructVersionString, L'.');
-   deviceStructVersion = (_wtoi(deviceStructVersionString) << 16) | (dot != nullptr ? _wtoi(dot + 1) : 0);
+#else // _WIN32  - end of Win32-specific Open Pinball Device support
 
-   // allocate space for the report
-   buf.resize(reportSize);
+// Open Pinball Device stub implementation, for all platforms without
+// support implemented above.  This stub implementation provides the
+// required functions, which in this version do nothing, as though no
+// such devices are present.
+//
+// Note - any other platform-specific implementations can be added
+// above with an "#elif <platform>" branch before this final #else 
+// branch.
 
-   // Zero our internal report copy - this will clear out any newer
-   // fields that aren't in the version of the structure that the
-   // device sends us.
-   memset(&r, 0, sizeof(r));
+void PinInput::InitOpenPinballDevices() { }
+void PinInput::ReadOpenPinballDevices(const U32 /*cur_time_msec*/) { }
 
-   // kick off the first overlapped read - we always keep one read
-   // outstanding, so that we don't have to wait when we're ready to
-   // process a report
-   StartRead();
-}
+#endif 
 
-PinInput::OpenPinDev::~OpenPinDev()
-{
-   // close handles
-   CloseHandle(hDevice);
-   CloseHandle(hIOEvent);
-}
-
-bool PinInput::OpenPinDev::ReadReport()
-{
-   // Read reports until the buffer is empty, to be sure we have the latest.
-   // The reason we loop as long as new reports are available is that the HID
-   // driver buffers a number of reports, and returns one on each request.  So
-   // if we just read the reports sequentially, we'd always have a lag time of
-   // (number of internally buffered reports) * (time per report).  The default
-   // buffer is 32 reports, and the HID polling time is usually about 10ms, so
-   // we'd always see input that's about 1/3 of a second old, which is quite
-   // noticeable on a human scale.  So we always hoover up all available reports
-   // until a read blocks, at which point we know that we have the latest one.
-   // While looping, we keep track of whether or not we've seen any new reports
-   // at all, since it's possible that we're still waiting for the final read
-   // that we started on the last polling cycle.
-   bool newReport = false;
-   for (;;)
-   {
-      // Check the status on the last read.  If the read completed synchronously,
-      // or it was queued with pending status and has since completed, we have
-      // a new report ready.  Otherwise the pipe is empty.
-      if (readStatus == ERROR_SUCCESS || (readStatus == ERROR_IO_PENDING && GetOverlappedResult(hDevice, &ov, &bytesRead, FALSE)))
-      {
-         // Read completed - extract the Open Pinball Device struct from
-         // the HID report byte block.  Copy the smaller of the actual
-         // report data sent from the device or our version of the struct.
-         // If the device reports a NEWER struct than the one we're compiled
-         // against, it will have extra fields at the end, which we will
-         // ignore by virtue of copying only the struct size we know about.
-         // If the device reports an OLDER struct than the one we use, we'll
-         // only populate the portion of our struct that the device provides,
-         // leaving the other fields zeroed.
-         memcpy(&r, &buf[1], std::min(reportSize, sizeof(r)));
-         newReport = true;
-
-         // start the next read - we always maintain one outstanding read
-         StartRead();
-      }
-      else if (readStatus == ERROR_IO_PENDING)
-      {
-         // still waiting for the last read to complete - stop here
-         return newReport;
-      }
-      else
-      {
-         // Error other than pending status - start a new read, and stop here.
-         // We could check for immediate completion, but that could get us into
-         // an infinite loop if the handle has a persistent error (e.g., the
-         // device has been disconnected), since we'd be right back here with
-         // another error for the new read.  Returning ensures that we don't get
-         // stuck.  The caller will still keep trying to poll the device in
-         // such a case, but each new read will just fail immediately, so it
-         // will do no harm other than the slight overhead of one failed read
-         // per polling cycle.  And if the fault is temporary, this will pick
-         // up where we left off as soon as the fault clears.
-         StartRead();
-         return newReport;
-      }
-   }
-}
-
-void PinInput::OpenPinDev::StartRead()
-{
-   // set up the OVERLAPPED struct
-   memset(&ov, 0, sizeof(ov));
-   ov.hEvent = hIOEvent;
-
-   // start the read
-   if (ReadFile(hDevice, buf.data(), static_cast<DWORD>(reportSize), &bytesRead, &ov))
-      readStatus = ERROR_SUCCESS;
-   else
-      readStatus = GetLastError();
-}

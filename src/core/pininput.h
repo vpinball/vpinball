@@ -83,6 +83,9 @@
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 #endif
 
+// Open Pinball Device implementation class, defined externally
+class OpenPinDev;
+
 class PinInput
 {
 public:
@@ -196,61 +199,8 @@ private:
    std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 #endif
 
-   // Open Pinball Device input report v1.0 - input report structure.
-   // Fields are packed with no padding bytes; integer fields are little-endian.
-   struct __pragma(pack(push, 1)) OpenPinballDeviceReport
-   {
-      uint64_t timestamp; // report time, in microseconds since an arbitrary zero point
-      uint32_t genericButtons; // button states for 32 general-purpose on/off buttons
-      uint32_t pinballButtons; // button states for pre-defined pinball simulator function buttons
-      uint8_t llFlipper; // lower left flipper button duty cycle
-      uint8_t lrFlipper; // lower right flipper button duty cycle
-      uint8_t ulFlipper; // upper left flipper button duty cycle
-      uint8_t urFlipper; // upper right flipper button duty cycle
-      int16_t axNudge; // instantaneous nudge acceleration, X axis (left/right)
-      int16_t ayNudge; // instantaneous nudge acceleration, Y axis (front/back)
-      int16_t vxNudge; // instantaneous nudge velocity, X axis
-      int16_t vyNudge; // instantaneous nudge velocity, Y axis
-      int16_t plungerPos; // current plunger position
-      int16_t plungerSpeed; // instantaneous plunger speed
-   }
-   __pragma(pack(pop));
-
-   // active Open Pinball Device interfaces
-   struct OpenPinDev
-   {
-      OpenPinDev(HANDLE h, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString);
-      ~OpenPinDev();
-      HANDLE Release()
-      {
-         HANDLE ret = hDevice;
-         hDevice = INVALID_HANDLE_VALUE;
-         return ret;
-      }
-      HANDLE hDevice;
-      BYTE reportID;
-      DWORD deviceStructVersion;
-
-      // overlapped read
-      OVERLAPPED ov { 0 };
-      HANDLE hIOEvent { CreateEvent(NULL, TRUE, FALSE, NULL) };
-      DWORD readStatus = 0;
-      DWORD bytesRead = 0;
-
-      // overlapped read buffer - space for the HID report ID prefix and the report struct
-      size_t reportSize;
-      std::vector<BYTE> buf;
-
-      // start an overlapped read
-      void StartRead();
-
-      // read a report into 'r'; returns true if a new report was available
-      bool ReadReport();
-
-      // last report read
-      OpenPinballDeviceReport r;
-   };
-   std::list<OpenPinDev> m_openPinDevs;
+   // Open Pinball Device list
+   std::list<std::unique_ptr<OpenPinDev>> m_openPinDevs;
 
    // Open Pinball Device button status, for detecting button up/down events
    uint32_t m_openPinDev_generic_buttons = 0;
