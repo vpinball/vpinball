@@ -281,6 +281,9 @@ add_executable(vpinball
    src/utils/Logger.cpp
    src/utils/Logger.h
 
+   third-party/include/hidapi/hidapi.h
+   third-party/include/hid-report-parser/hid_report_parser.cpp
+   third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
@@ -690,6 +693,7 @@ target_link_libraries(vpinball PUBLIC
    SDL2_ttf
    FreeImage
    bass
+   hidapi
    pinmame.3.6
    altsound
    dmdutil

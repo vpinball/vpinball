@@ -523,6 +523,9 @@ add_executable(vpinball WIN32
    third-party/include/hidpi.h
    third-party/include/hidsdi.h
    third-party/include/hidusage.h
+   third-party/include/hidapi/hidapi.h
+   third-party/include/hid-report-parser/hid_report_parser.cpp
+   third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
@@ -658,6 +661,7 @@ target_link_libraries(vpinball
    dxguid.lib
    dsound.lib 
    bass.lib
+   hidapi.lib
    dinput.lib
    nvapi.lib
    winmm.lib

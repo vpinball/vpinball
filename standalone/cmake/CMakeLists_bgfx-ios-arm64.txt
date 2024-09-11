@@ -277,6 +277,9 @@ add_executable(vpinball
    src/utils/Logger.cpp
    src/utils/Logger.h
 
+   third-party/include/hidapi/hidapi.h
+   third-party/include/hid-report-parser/hid_report_parser.cpp
+   third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
@@ -704,6 +707,7 @@ target_link_libraries(vpinball PUBLIC
    "-lSDL2_ttf"
    "-lfreeimage"
    "-lbass"
+   "-lhidapi"
    "-lpinmame.3.6"
    "-laltsound"
    "-lzedmd"

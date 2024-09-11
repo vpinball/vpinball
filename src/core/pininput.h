@@ -59,7 +59,7 @@
 // HandleInputSDL, etc).  This range is used to represent raw joystick
 // inputs in the PinInput code in the internal event structures.
 //
-// This range isn't be exposed to users or scripting anywhere; it's only
+// This range isn't exposed to users or scripting anywhere; it's only
 // used for internal device event processing.  Joystick axis inputs are
 // ultimately interpreted as either Nudge X/Y values or Plunger Position
 // or Speed values, all of which are translated to internal units before
