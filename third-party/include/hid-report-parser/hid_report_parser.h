@@ -1538,9 +1538,9 @@ namespace hidrp {
 		uint8_t* _ref;
 	};
 
-	template <size_t BYTE_SIZE>
-	BitFieldRef<BYTE_SIZE*8> bitfield_ref(uint8_t(&arr)[BYTE_SIZE]) {
-		return BitFieldRef<BYTE_SIZE*8>(arr);
+	template <size_t nBytes>
+	BitFieldRef<nBytes*8> bitfield_ref(uint8_t(&arr)[nBytes]) {
+		return BitFieldRef<nBytes*8>(arr);
 	}
 
 
@@ -1548,14 +1548,14 @@ namespace hidrp {
 	// checking and a utility method to create a BitFieldRef.
 	// Using this template is optional. Instead you can define your own byte
 	// array and reference it with a BitFieldRef.
-	template <size_t BIT_SIZE_>
+	template <size_t nBits_>
 	struct BitField {
-		static constexpr size_t BIT_SIZE = BIT_SIZE_;
-		static constexpr size_t BYTE_SIZE = (BIT_SIZE + 7) / 8;
-		uint8_t bytes[BYTE_SIZE];
+		static constexpr size_t nBits = nBits_;
+		static constexpr size_t nBytes = (nBits + 7) / 8;
+		uint8_t bytes[nBytes];
 
 		bool operator[](size_t bit_index) const {
-			assert(bit_index < BIT_SIZE);
+			assert(bit_index < nBits);
 			return 0 != (uint8_t)(bytes[bit_index >> 3] & (1 << (bit_index & 7)));
 		}
 
@@ -1570,13 +1570,13 @@ namespace hidrp {
 		// lower indexes of the bitfield.
 		template <typename t_integer>
 		t_integer Flags(size_t index) const {
-			assert(sizeof(t_integer)*index < BYTE_SIZE);
+			assert(sizeof(t_integer)*index < nBytes);
 
 			if (sizeof(t_integer) == 1)
 				return bytes[index];
 
 			size_t e = index * sizeof(t_integer) - 1;
-			size_t i = _hrp_min(e + sizeof(t_integer), BYTE_SIZE-1);
+			size_t i = _hrp_min(e + sizeof(t_integer), nBytes-1);
 			t_integer v = bytes[i--];
 			while (i != e) {
 				v <<= 8;
@@ -1585,8 +1585,8 @@ namespace hidrp {
 			return v;
 		}
 
-		BitFieldRef<BIT_SIZE> Ref() {
-			return BitFieldRef<BIT_SIZE>(bytes);
+		BitFieldRef<nBits> Ref() {
+			return BitFieldRef<nBits>(bytes);
 		}
 	};
 

@@ -2257,7 +2257,7 @@ public:
       // simple DWORD comparison: deviceStructVersion > 0x00020005 tests
       // for something newer than 2.5.
       const wchar_t *dot = wcschr(deviceStructVersionString, L'.');
-      deviceStructVersion = (_wtoi(deviceStructVersionString) << 16) | (dot != nullptr ? _wtoi(dot + 1) : 0);
+      deviceStructVersion = (ParseUInt(deviceStructVersionString) << 16) | (dot != nullptr ? ParseUInt(dot + 1) : 0);
 
       // put the read handle in non-blocking mode
       hid_set_nonblocking(hDevice, 1);
@@ -2322,6 +2322,18 @@ public:
    }
 
 protected:
+   // parse a string representing a decimal integer value into a uint32_t
+   static uint32_t ParseUInt(const wchar_t *p)
+   {
+      uint32_t acc = 0;
+      for (; *p != 0 && iswdigit(*p); p++)
+      {
+         acc *= 10;
+         acc += (*p - '0');
+      }
+      return acc;
+   };
+
    // device handle (hidapi library type)
    hid_device *hDevice = nullptr;
 
@@ -2723,7 +2735,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
 
       // Visit each pre-assigned button
       const KeyMap *m = keyMap;
-      for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
+      for (size_t i = 0; i < std::size(keyMap); ++i, ++m)
       {
          // check for a state change
          uint32_t const mask = m->mask;
