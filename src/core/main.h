@@ -369,7 +369,7 @@ class SCNotification final { };
 #include "parts/flasher.h"
 #include "parts/rubber.h"
 #include "audio/mixer.h"
-#include "utils/hid.h"
+#include "utils/ushock_output.h"
 
 #include "physics/kdtree.h"
 

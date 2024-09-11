@@ -400,7 +400,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #else // Win32 Windowing
    mixer_init(m_playfieldWnd->GetCore());
    #endif
-   hid_init();
+   ushock_output_init();
 
    // General player initialization
 
@@ -942,7 +942,7 @@ Player::~Player()
    delete m_audio;
 
    mixer_shutdown();
-   hid_shutdown();
+   ushock_output_shutdown();
 
 #ifdef EXT_CAPTURE
    StopCaptures();
@@ -2006,7 +2006,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       }
 
    // Check if we should turn animate the plunger light.
-   hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+   ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
    if (m_renderer->m_stereo3D != STEREO_VR)

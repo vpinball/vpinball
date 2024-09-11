@@ -1,9 +1,41 @@
+// This is some very ancient (and, if we're being frank, very
+// awful) code dedicated to the Ultracade Ushock device, which 
+// (one gathers from reading the code) was an early, primitive
+// predecessor of HID output controller devices like the LedWiz.
+// The Ushock has a single output for a pinball knocker.  This
+// code implements bespoke Win32 HID API access to the Ushock
+// specifically.  ("PBW" is another name seen a lot here, which
+// I believe stands for PinballBallWizard, which as I recall is
+// another product from the same vendor.  Or maybe the same one.
+// Who knows.)
+// 
+// The entire concept of this module has long since been
+// superseded by DOF (DirectOutput Framework), which is why
+// you don't see a bunch of similar modules for LedWiz's,
+// PacLed's, and a dozen other devices, thank goodness.
+//
+// This code was formerly named with the extremely presumptuous
+// prefix "hid_" for all of its public functions.  It is most
+// certainly not "hid" code generically; it happens to *use*
+// HID to do its one extremely narrow job, but naming everything
+// here "hid_xxx" makes about as much sense as naming it "c_xxx" 
+// because it's written in C.  So, as of 9/2024, it has been
+// renamed to more properly indicate its function.  (This wasn't 
+// just because its old naming was so piquing, but rather because
+// the old naming was creating a collision with the hidapi library,
+// which also uses hid_xxx as its naming convention.  Of the two,
+// I think hidapi has the far better claim on the name.)
+
 #include "core/stdafx.h"
 
 // This code should be understandable using
 // the following URL:
 // http://www.edn.com/article/CA243218.html
-
+// 
+// [which is, naturally, a dead link; but the code is just basic
+// Win32 HID enumeration and access code, and there are gazillions
+// of rote examples on stackoverflow that do basically the same
+// things]
 #ifndef __STANDALONE__
 extern "C" {
 #include "setupapi.h"
@@ -11,7 +43,7 @@ extern "C" {
 }
 #endif
 
-HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
+static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 {
 #ifndef __STANDALONE__
    GUID hidGUID;
@@ -131,7 +163,7 @@ static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
 #endif
 
-void hid_init()
+void ushock_output_init()
 {
 #ifndef __STANDALONE__
    // 0x4b4 == Ultracade, 0x6470 == Ushock
@@ -146,7 +178,7 @@ void hid_init()
 
       if (!HidParsedData) // if uShock is unplugged the HidD_FreePreparsedData() crashes
       {
-         printf("hid_init: Could not connect or find the PBW controller\n");
+         printf("ushock_output_init: Could not connect or find the PBW controller\n");
          return;
       }
 
@@ -188,7 +220,7 @@ void hid_init()
    }
    else
    {
-      printf("hid_init: Could not connect or find the PBW controller\n");
+      printf("ushock_output_init: Could not connect or find the PBW controller\n");
    }
 #endif
 }
@@ -200,7 +232,7 @@ static U32 sMask = 0;
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
 // The output parameter uses any combination of HID_OUTPUT enum.
-void hid_set_output(const U08 output, const bool On)
+void ushock_output_set(const U08 output, const bool On)
 {
    // Check if the outputs are being turned on.
    if (On)
@@ -222,7 +254,7 @@ static int sKnockState;
 static U32 sKnockStamp;
 
 
-void hid_knock(const int count)
+void ushock_output_knock(const int count)
 {
    if (count)
    {
@@ -233,7 +265,7 @@ void hid_knock(const int count)
 }
 
 
-void hid_update(const U32 cur_time_msec)
+void ushock_output_update(const U32 cur_time_msec)
 {
 #ifndef __STANDALONE__
    U08 mask = (U08)(sMask & 0xff);
@@ -305,7 +337,7 @@ void hid_update(const U32 cur_time_msec)
 #endif
 }
 
-void hid_shutdown()
+void ushock_output_shutdown()
 {
    if (hnd != INVALID_HANDLE_VALUE)
    {

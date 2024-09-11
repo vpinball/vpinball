@@ -642,7 +642,7 @@ void PhysicsEngine::UpdatePhysics()
 
       // FIXME remove ? move HID to a plugin, remove mixer or at least outside of physics loop
       mixer_update();
-      hid_update(/*sim_msec*/cur_time_msec);
+      ushock_output_update(/*sim_msec*/cur_time_msec);
 
       #ifdef ACCURATETIMERS
       g_pplayer->ApplyDeferredTimerChanges();

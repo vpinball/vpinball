@@ -2159,8 +2159,14 @@ LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
 //
 
 // Open Pinball Device input report v1.0 - input report structure.
-// Fields are packed with no padding bytes; integer fields are little-endian.
-struct __pragma(pack(push, 1)) OpenPinballDeviceReport
+// 
+// This struct defines the in-memory layout, for access from C++ code.
+// The data transmitted across the USB connection must be interpreted
+// with the exact byte layout in the specification, so DON'T cast a
+// byte buffer from a USB read into this struct.  Instead, use the
+// Load() method to convert the USB byte layout into the local
+// struct representation.
+struct OpenPinballDeviceReport
 {
    uint64_t timestamp; // report time, in microseconds since an arbitrary zero point
    uint32_t genericButtons; // button states for 32 general-purpose on/off buttons
@@ -2175,27 +2181,126 @@ struct __pragma(pack(push, 1)) OpenPinballDeviceReport
    int16_t vyNudge; // instantaneous nudge velocity, Y axis
    int16_t plungerPos; // current plunger position
    int16_t plungerSpeed; // instantaneous plunger speed
-}
-__pragma(pack(pop));
 
+   // load the struct from the USB byte format
+   void LoadFromUSB(const uint8_t *p, size_t reportSize)
+   {
+      // clear all fields
+      memset(this, 0, sizeof(*this));
 
-// The Windows implementation is written directly to the Win32 native HID API,
-// so it's inherently Win32-specific.
-#ifdef _WIN32
+      // Load fields until we exhaust the data.  We can stop as soon as we
+      // run out of input bytes, since we've already cleared all of the 
+      // elements.
+      Load(timestamp, p, reportSize)
+      && Load(genericButtons, p, reportSize)
+      && Load(pinballButtons, p, reportSize)
+      && Load(llFlipper, p, reportSize)
+      && Load(lrFlipper, p, reportSize)
+      && Load(ulFlipper, p, reportSize)
+      && Load(urFlipper, p, reportSize)
+      && Load(axNudge, p, reportSize)
+      && Load(ayNudge, p, reportSize)
+      && Load(vxNudge, p, reportSize)
+      && Load(vyNudge, p, reportSize)
+      && Load(plungerPos, p, reportSize)
+      && Load(plungerSpeed, p, reportSize);
+   }
 
-// we require direct access to the Windows HID APIs
-extern "C"
+   // Load bytes from the USB byte format into a local native integer type.
+   // This correctly translates from the packed little-endian wire format
+   // into the local integer representation.  Note: ele must be pre-cleared
+   // to zero before the call.
+   template <typename T> static bool Load(T &ele, const uint8_t* &p, size_t &sizeRemaining)
+   {
+      // figure how many bytes we have to read for the complete type
+      size_t nBytesInT = sizeof(T) / sizeof(uint8_t);
+      if (sizeRemaining >= nBytesInT)
+      {
+         // we can complete the full read
+         for (size_t i = 0; i < nBytesInT ; ++i, ele |= static_cast<T>(*p++) << (i*8));
+
+         // deduct the size consumed and return success
+         sizeRemaining -= nBytesInT;
+         return true;
+      }
+      else
+      {
+         // we can't complete the read, so we've exhausted the input - clear
+         // all remaining bytes (so that we don't try to interpret the remaining
+         // bytes as a smaller type that occurs later in the struct) and return 
+         // end-of-file
+         sizeRemaining = 0;
+         return false;
+      }
+   }
+};
+
+// the USB implementation is in terms of the hidapi library
+#include "third-party/include/hidapi/hidapi.h"
+
+// NON-PORTABLE FUNCTION INTERFACE: Inspect a hidapi device's HID Input
+// Report Descriptor to determine if this is an Open Pinball Device.
+// hidapi doesn't provide access to the Report Descriptors, so we have
+// to implement this testing non-portably, using native OS APIs on each
+// platform.
+//
+// This function is called with a hidapi device descriptor struct,
+// which wraps a "path" string whose meaning varies by platform, but
+// should always be usable to open the device through native APIs.  The
+// function is ONLY called for a device that has the correct interface
+// usage code (Usage Page 0x05, Usage 0x02) for a "Pinball Device"
+// (yes, that actually exists in the published, official HID Usage
+// Tables, believe it or not).  This call must perform the following
+// tests:
+// 
+// - Check the data layout of the input report.  It must consist of
+//   one element, which is an ARRAY OF BYTES with Usage 0x00 
+//   (undefined/vendor-defined) and an associated Usage String Index.
+// 
+// - Retrieve the indexed string from the device at the index given
+//   by the Usage String Index.  The first 24 UCS-2 characters of the
+//   string must match L"OpenPinballDeviceStruct/".
+// 
+// Note that it's possible for a HID device to send multiple report
+// types on the same endpoint, so you might have to check more than
+// one descriptor.  You only have to find one matching descriptor
+// for the test to succeed, and you can ignore any additional ones.
+//
+// If the tests above fail, simply return false.
+// 
+// If the tests above pass, fill in the following information and
+// return true:
+//   
+// - The usage string text (that is, read the Indexed String from the
+//   device at the index given by the Usage String Index in the report
+//   descriptor)
+//
+// - The INPUT REPORT SIZE.  This is the size in bytes of the report
+//   that the device sends on this interface.  The report size INCLUDES
+//   the one-byte HID report ID prefix that's sent in every report
+//   packet.
+//
+// - The INPUT REPORT ID that the report descriptor specifies.  This is
+//   a uint8_t defined in the report descriptor that distinguishes the
+//   "datatype" of the report from other HID reports sent on the same
+//   endpoint.  The device sends the report ID as a one-byte prefix to
+//   every report sent in the format specified by this report
+//   descriptor.
+//
+struct TestOpenPinDevResults
 {
-#include "SetupAPI.h"
-#include "hidsdi.h"
-#include "hidpi.h"
-}
+   std::wstring usageString;       // the indexed usage string in the report descriptor
+   size_t inputReportSize = 0;     // input report size in bytes, including HID report ID prefix byte
+   uint8_t inputReportID = 0;      // input report ID for the Open Pinball Device report type
+};
+static bool TestOpenPinDev(hid_device_info *deviceInfo, TestOpenPinDevResults &result);
+
 
 // active Open Pinball Device interface
 class OpenPinDev
 {
 public:
-   OpenPinDev(HANDLE hDevice, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString) :
+   OpenPinDev(hid_device *hDevice, BYTE reportID, size_t reportSize, const wchar_t *deviceStructVersionString) :
        hDevice(hDevice), 
        reportID(reportID), 
        reportSize(reportSize)
@@ -2208,25 +2313,20 @@ public:
       const wchar_t *dot = wcschr(deviceStructVersionString, L'.');
       deviceStructVersion = (_wtoi(deviceStructVersionString) << 16) | (dot != nullptr ? _wtoi(dot + 1) : 0);
 
+      // put the read handle in non-blocking mode
+      hid_set_nonblocking(hDevice, 1);
+
       // allocate space for the report
       buf.resize(reportSize);
 
-      // Zero our internal report copy - this will clear out any newer
-      // fields that aren't in the version of the structure that the
-      // device sends us.
+      // Zero our internal report copy
       memset(&r, 0, sizeof(r));
-
-      // kick off the first overlapped read - we always keep one read
-      // outstanding, so that we don't have to wait when we're ready to
-      // process a report
-      StartRead();
    }
 
    ~OpenPinDev()
    {
-      // close handles
-      CloseHandle(hDevice);
-      CloseHandle(hIOEvent);
+      // close the device handle
+      hid_close(hDevice);
    }
 
    // get a reference to the curent report
@@ -2237,96 +2337,61 @@ public:
    bool ReadReport()
    {
       // Read reports until the buffer is empty, to be sure we have the latest.
-      // The reason we loop as long as new reports are available is that the HID
-      // driver buffers a number of reports, and returns one on each request.  So
-      // if we just read the reports sequentially, we'd always have a lag time of
-      // (number of internally buffered reports) * (time per report).  The default
-      // buffer is 32 reports, and the HID polling time is usually about 10ms, so
-      // we'd always see input that's about 1/3 of a second old, which is quite
-      // noticeable on a human scale.  So we always hoover up all available reports
-      // until a read blocks, at which point we know that we have the latest one.
-      // While looping, we keep track of whether or not we've seen any new reports
-      // at all, since it's possible that we're still waiting for the final read
-      // that we started on the last polling cycle.
-      bool newReport = false;
+      // The reason we loop as long as new reports are available is that HID
+      // drivers on some platforms (such as Windows) buffer a number of reports,
+      // and return the oldest buffered report on each call.  So the first report
+      // we read could be relatively old - the HID polling cycle is typically 
+      // 8-10ms, and the HID driver might buffer tens of reports, so the oldest
+      // report could be hundreds of milliseconds old.  On each call, therefore,
+      // we need to keep reading reports until we catch up with the last report
+      // available in the buffer, at which point we have the latest instantaneous
+      // state of the device.
+      // 
+      // While we're looping, we keep track of whether we've seen any new reports
+      // at all, since it's entirely possible for the caller to invoke this before
+      // a new report becomes available.
+      bool isNewReport = false;
       for (;;)
       {
-         // Check the status on the last read.  If the read completed synchronously,
-         // or it was queued with pending status and has since completed, we have
-         // a new report ready.  Otherwise the pipe is empty.
-         if (readStatus == ERROR_SUCCESS || (readStatus == ERROR_IO_PENDING && GetOverlappedResult(hDevice, &ov, &bytesRead, FALSE)))
-         {
-            // Read completed - extract the Open Pinball Device struct from
-            // the HID report byte block.  Copy the smaller of the actual
-            // report data sent from the device or our version of the struct.
-            // If the device reports a NEWER struct than the one we're compiled
-            // against, it will have extra fields at the end, which we will
-            // ignore by virtue of copying only the struct size we know about.
-            // If the device reports an OLDER struct than the one we use, we'll
-            // only populate the portion of our struct that the device provides,
-            // leaving the other fields zeroed.
-            memcpy(&r, &buf[1], std::min(reportSize - 1, sizeof(r)));
-            newReport = true;
+         // try reading - we're in non-blocking mode, so this will return
+         // immediately with a length of zero if no reports are available
+         int readResult = hid_read(hDevice, buf.data(), buf.size());
 
-            // start the next read - we always maintain one outstanding read
-            StartRead();
-         }
-         else if (readStatus == ERROR_IO_PENDING)
-         {
-            // still waiting for the last read to complete - stop here
-            return newReport;
-         }
-         else
-         {
-            // Error other than pending status - start a new read, and stop here.
-            // We could check for immediate completion, but that could get us into
-            // an infinite loop if the handle has a persistent error (e.g., the
-            // device has been disconnected), since we'd be right back here with
-            // another error for the new read.  Returning ensures that we don't get
-            // stuck.  The caller will still keep trying to poll the device in
-            // such a case, but each new read will just fail immediately, so it
-            // will do no harm other than the slight overhead of one failed read
-            // per polling cycle.  And if the fault is temporary, this will pick
-            // up where we left off as soon as the fault clears.
-            StartRead();
-            return newReport;
-         }
+         // If we're out of data, or an error occurred, stop looping.  We
+         // treat errors the same as no data available, since the error might
+         // be temporary, in which case we should start getting data again as
+         // soon as the fault is cleared.
+         if (readResult <= 0)
+            break;
+
+         // Read completed.  Extract the Open Pinball Device struct from the
+         // byte buffer, and flag that a new report is available.
+         r.LoadFromUSB(&buf[1], readResult - 1);
+         isNewReport = true;
       }
+
+      // return the new-report status
+      return isNewReport;
    }
 
 protected:
-   // start an overlapped read
-   void StartRead()
-   {
-      // set up the OVERLAPPED struct
-      memset(&ov, 0, sizeof(ov));
-      ov.hEvent = hIOEvent;
+   // device handle (hidapi library type)
+   hid_device *hDevice = nullptr;
 
-      // start the read
-      if (ReadFile(hDevice, buf.data(), static_cast<DWORD>(reportSize), &bytesRead, &ov))
-         readStatus = ERROR_SUCCESS;
-      else
-         readStatus = GetLastError();
-   }
+   // HID report ID for the device.  This is sent as a prefix byte in each
+   // report the device sends through the interface, to identify the report
+   // descriptor (i.e., the struct type) associated with the report.
+   uint8_t reportID;
+   
+   // The version of the Open Pinball Device report structure that the device
+   // is using, as identified in the usage string in the report descriptor.
+   // This is encoded with the major version number in the high 16 bits, and
+   // the minor version number in the low 16 bits: "1.2" is 0x00010002.  We
+   // use this format because you can compare two version numbers using a
+   // native integer compare operation.
+   uint32_t deviceStructVersion;
 
-   HANDLE Release()
-   {
-      HANDLE ret = hDevice;
-      hDevice = INVALID_HANDLE_VALUE;
-      return ret;
-   }
-
-   HANDLE hDevice;
-   BYTE reportID;
-   DWORD deviceStructVersion;
-
-   // overlapped read
-   OVERLAPPED ov { 0 };
-   HANDLE hIOEvent { CreateEvent(NULL, TRUE, FALSE, NULL) };
-   DWORD readStatus = 0;
-   DWORD bytesRead = 0;
-
-   // overlapped read buffer - space for the HID report ID prefix and the report struct
+   // read buffer - space for an incoming report
    size_t reportSize;
    std::vector<BYTE> buf;
 
@@ -2339,83 +2404,52 @@ protected:
 // devices and adds them to our internal list.
 void PinInput::InitOpenPinballDevices()
 {
-   // initialize a Device Set with all currently connected HID devices
-   GUID hidGuid;
-   HidD_GetHidGuid(&hidGuid);
-   HDEVINFO hdi = SetupDiGetClassDevs(&hidGuid, NULL, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
-   if (hdi == INVALID_HANDLE_VALUE)
-      return;
-
-   // iterate over the Device Set members
-   SP_DEVICE_INTERFACE_DATA did { sizeof(SP_DEVICE_INTERFACE_DATA) };
-   for (DWORD memberIndex = 0; SetupDiEnumDeviceInterfaces(hdi, NULL, &hidGuid, memberIndex, &did); ++memberIndex)
+   // Get a list of available HID devices.  VID/PID 0/0 enumerates all HIDs.
+   auto *hEnum = hid_enumerate(0, 0);
+   if (hEnum == nullptr)
    {
-      // retrieve the buffer size needed for device detail
-      DWORD diDetailSize = 0;
-      DWORD err = 0;
-      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, NULL, 0, &diDetailSize, NULL) && (err = GetLastError()) != ERROR_INSUFFICIENT_BUFFER)
-         break;
+      // enumeration failed - no Open Pinball Devices are available
+      return;
+   }
 
-      // retrieve the device detail and devinfo data
-      std::unique_ptr<BYTE> diDetailBuf(new BYTE[diDetailSize]);
-      auto *diDetail = reinterpret_cast<SP_DEVICE_INTERFACE_DETAIL_DATA *>(diDetailBuf.get());
-      diDetail->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
-      SP_DEVINFO_DATA devInfo { sizeof(SP_DEVINFO_DATA) };
-      if (!SetupDiGetDeviceInterfaceDetail(hdi, &did, diDetail, diDetailSize, NULL, &devInfo))
-         break;
-
-      // open the device desc to access the HID
-      HANDLE dev = CreateFile(diDetail->DevicePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
-      if (dev != INVALID_HANDLE_VALUE)
+   // scan the list
+   for (auto *cur = hEnum ; cur != nullptr ; cur = cur->next)
+   {
+      // check for a generic Pinball Device usage (usage page 0x05 "Game
+      // Controls", usage 0x02 "Pinball Device")
+      const unsigned short USAGE_PAGE_GAMECONTROLS = 0x05;
+      const unsigned short USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
+      if (cur->usage_page == USAGE_PAGE_GAMECONTROLS && cur->usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
       {
-         // get the preparsed HID data, for details about the report format
-         PHIDP_PREPARSED_DATA ppd;
-         if (HidD_GetPreparsedData(dev, &ppd))
+         // It's at least a generic Pinball Device.  Check if it's
+         // specifically an Open Pinball Device, by checking for the
+         // custom string descriptor on the first byte array usage.
+         // Windows idiosyncratically represents opaque byte array
+         // usages as "buttons", and Open Pinball Device has exactly
+         // one such "button" array.
+         //
+         // Unfortunately, hidapi doesn't provide any access to the
+         // HID report descriptors, so we have to call out here to
+         // native APIs.  
+         //
+         // If we're able to find a suitable 
+         TestOpenPinDevResults results;
+         if (TestOpenPinDev(cur, results))
          {
-            // check for a generic Pinball Device usage (usage page 0x05 "Game
-            // Controls", usage 0x02 "Pinball Device")
-            HIDP_CAPS caps;
-            const USAGE USAGE_PAGE_GAMECONTROLS = 0x05;
-            const USAGE USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
-            if (HidP_GetCaps(ppd, &caps) == HIDP_STATUS_SUCCESS && caps.UsagePage == USAGE_PAGE_GAMECONTROLS && caps.Usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
+            // success - open a handle to the device
+            auto *hDevice = hid_open_path(cur->path);
+            if (hDevice != nullptr)
             {
-               // It's at least a generic Pinball Device.  Check if it's
-               // specifically an Open Pinball Device, by checking for the
-               // custom string descriptor on the first byte array usage.
-               // Windows idiosyncratically represents opaque byte array
-               // usages as "buttons", and Open Pinball Device has exactly
-               // one such "button" array.
-               std::vector<HIDP_BUTTON_CAPS> btnCaps;
-               btnCaps.resize(caps.NumberInputButtonCaps);
-               USHORT nBtnCaps = caps.NumberInputButtonCaps;
-               if (HidP_GetButtonCaps(HIDP_REPORT_TYPE::HidP_Input, btnCaps.data(), &nBtnCaps, ppd) == HIDP_STATUS_SUCCESS && nBtnCaps == 1)
-               {
-                  // check for a string descriptor attached to the usage
-                  USHORT stringIndex = btnCaps[0].NotRange.StringIndex;
-                  WCHAR str[128] { 0 };
-                  if (stringIndex != 0 && HidD_GetIndexedString(dev, stringIndex, str, sizeof(str)) && wcsncmp(str, L"OpenPinballDeviceStruct/", 24) == 0)
-                  {
-                     // matched - add it to the active device list
-                     m_openPinDevs.emplace_back(new OpenPinDev(dev, btnCaps[0].ReportID, caps.InputReportByteLength, &str[24]));
-
-                     // the device list entry owns the handle now - forget it locally
-                     dev = INVALID_HANDLE_VALUE;
-                  }
-               }
-
-               // done with the preparsed data
-               HidD_FreePreparsedData(ppd);
+               // add it to the active device list
+               m_openPinDevs.emplace_back(new OpenPinDev(
+                   hDevice, results.inputReportID, results.inputReportSize, results.usageString.c_str() + 24));
             }
          }
-
-         // close the device handle, if we didn't transfer ownership to the device list
-         if (dev != INVALID_HANDLE_VALUE)
-            CloseHandle(dev);
       }
    }
 
    // done with the device list dev
-   SetupDiDestroyDeviceInfoList(hdi);
+   hid_free_enumeration(hEnum);
 }
 
 // Read input from the Open Pinball Device inputs
@@ -2631,6 +2665,73 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    }
 }
 
+//
+// Non-portable system-specific support code for Open Pinball Device
+//
+
+#if _WIN32
+#include <hidsdi.h>
+#include <hidpi.h>
+
+// Test a hidapi device for Open Pinball Device report descriptor information
+static bool TestOpenPinDev(hid_device_info *deviceInfo, TestOpenPinDevResults &result)
+{
+   // presume failure
+   bool matched = false;
+
+   // open the device
+   HANDLE hDevice = CreateFileA(deviceInfo->path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+   if (hDevice != INVALID_HANDLE_VALUE)
+   {
+      // get the preparsed HID data, for details about the report format
+      PHIDP_PREPARSED_DATA ppd;
+      if (HidD_GetPreparsedData(hDevice, &ppd))
+      {
+         // get the basic capabilities
+         HIDP_CAPS caps;
+         if (HidP_GetCaps(ppd, &caps) == HIDP_STATUS_SUCCESS)
+         {
+            std::vector<HIDP_BUTTON_CAPS> btnCaps;
+            btnCaps.resize(caps.NumberInputButtonCaps);
+            USHORT nBtnCaps = caps.NumberInputButtonCaps;
+            if (HidP_GetButtonCaps(HIDP_REPORT_TYPE::HidP_Input, btnCaps.data(), &nBtnCaps, ppd) == HIDP_STATUS_SUCCESS)
+            {
+               // check each button caps entry
+               for (USHORT i = 0; i < nBtnCaps; ++i)
+               {
+                  // check for a string descriptor attached to the usage
+                  USHORT stringIndex = btnCaps[i].NotRange.StringIndex;
+                  WCHAR str[128] { 0 };
+                  if (stringIndex != 0 && HidD_GetIndexedString(hDevice, stringIndex, str, sizeof(str)) && wcsncmp(str, L"OpenPinballDeviceStruct/", 24) == 0)
+                  {
+                     // matched
+                     matched = true;
+
+                     // fill in the return data
+                     result.inputReportID = btnCaps[i].ReportID;
+                     result.inputReportSize = caps.InputReportByteLength;
+                     result.usageString = str;
+
+                     // stop scanning button caps - we only need to return the first match
+                     break;
+                  }
+               }
+            }
+
+            // done with the preparsed data
+            HidD_FreePreparsedData(ppd);
+         }
+      }
+
+      // done with the device handle
+      CloseHandle(hDevice);
+   }
+
+   // return the match result
+   return matched;
+}
+
+
 #else // _WIN32  - end of Win32-specific Open Pinball Device support
 
 // Open Pinball Device stub implementation, for all platforms without
@@ -2642,8 +2743,11 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
 // above with an "#elif <platform>" branch before this final #else 
 // branch.
 
-void PinInput::InitOpenPinballDevices() { }
-void PinInput::ReadOpenPinballDevices(const U32 /*cur_time_msec*/) { }
+static bool TestOpenPinDev(hid_device_info *deviceInfo, TestOpenPinDevResults &result) 
+{
+   // not implemented for this platform - simply return "no match"
+   return false;
+}
 
 #endif 
 
