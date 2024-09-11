@@ -264,11 +264,11 @@ add_executable(vpinball
    src/utils/bulb.cpp
    src/utils/bulb.h
    src/utils/def.cpp
-   src/utils/hid.cpp
-   src/utils/hid.h
    src/utils/wintimer.cpp
    src/utils/wintimer.h
    src/utils/helpers.h
+   src/utils/ushock_output.cpp
+   src/utils/ushock_output.h
    src/utils/variant.cpp
    src/utils/variant.h
    src/utils/vector.h
