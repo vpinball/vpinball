@@ -608,7 +608,7 @@ target_link_libraries(vpinball
    dxguid.lib
    dsound.lib 
    bass.lib
-   hidapi.lib
+   hidapi64.lib
    dinput.lib
    nvapi.lib
    winmm.lib
