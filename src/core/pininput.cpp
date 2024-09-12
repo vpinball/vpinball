@@ -2393,142 +2393,70 @@ void PinInput::InitOpenPinballDevices()
          // that no other device will ever duplicate by accident.
 
          // open the device so that we can read its report descriptor
-         auto *hDevice = hid_open_path(cur->path);
+         std::unique_ptr<hid_device, decltype(&hid_close)> hDevice(hid_open_path(cur->path), &hid_close);
          if (hDevice != nullptr)
          {
             // read the report descriptor
             std::unique_ptr<unsigned char> reportDescBuf(new unsigned char[HID_API_MAX_REPORT_DESCRIPTOR_SIZE]);
             unsigned char *rp = reportDescBuf.get();
-            int rdSize = hid_get_report_descriptor(hDevice, rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
+            int rdSize = hid_get_report_descriptor(hDevice.get(), rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
             if (rdSize > 0)
             {
-               // Parser event handler
-               using DP = hidrp::DescriptorParser;
-               class ParserCallbacks : public DP::EventHandler
-               {
-               public:
-                  ParserCallbacks(hid_device *hDevice) : hDevice(hDevice) { }
-
-                  // Process a "field", which represents a data item or (group of data items)
-                  // in the report.  The Open Pinball Device report has one field consisting
-                  // of an array of bytes, with usage code 0x00 and a string usage index
-                  // pointing to the OPD signature string.
-                  virtual int Field(const DP::FieldParams &f) override
-                  {
-                     // only consider fields that occur within the Pinball Device CA
-                     if (inCA)
-                     {
-                         // add the bit size to the total report size
-                         totalBitSize += f.bit_size;
-
-                         // Check for the Open Pinball Report byte array field.  This is
-                         // a single field with usage 0x00 (unknown/vendor-defined) and
-                         // one usage string, with the indexed string containing the OPD
-                         // signature string.
-                         if (f.num_usage_ranges == 1 && f.usage_ranges[0].usage_min == 0x00 && f.usage_ranges[0].usage_max == 0x00
-                             && f.num_string_ranges == 1 && f.string_ranges[0].string_min == f.string_ranges[0].string_max)
-                         {
-                            // it's one field with the right usage code and a usage string;
-                            // retrieve the indexed string and check it against the OPD
-                            // signature
-                            const size_t nStrBuf = 128;
-                            wchar_t strBuf[nStrBuf];
-                            if (hid_get_indexed_string(hDevice, f.string_ranges[0].string_min, strBuf, nStrBuf) == 0
-                                && wcsncmp(strBuf, L"OpenPinballDeviceStruct/", 24) == 0)
-                            {
-                               // it's a match
-                               matched = true;
-
-                               // record the usage string (which contains the OPD struct version,
-                               // so we'll need it in the device handler)
-                               usageString = strBuf;
-
-                               // record the report ID
-                               reportID = f.globals->report_id;
-                            }
-                         }
-                     }
-
-                     // okay
-                     return 0; 
-                  }
-
-                  // Enter a Collection section
-                  virtual int BeginCollection(uint8_t collectionType, uint16_t usagePage, uint16_t usage, uint32_t depth) override
-                  {
-                     // check for the start of a Pinball Device CA
-                     if (!inCA 
-                         && collectionType == hidrp::COLLECTION_TYPE_APPLICATION 
-                         && usagePage == USAGE_PAGE_GAMECONTROLS && usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
-                     {
-                        // we're now in our target application collection
-                        inCA = true;
-                        depthCA = depth;
-                     }
-
-                     // okay
-                     return 0;
-                  }
-
-                  // Exit a Collection section
-                  virtual int EndCollection(uint32_t depth) override 
-                  {
-                     // close our CA if exiting the same depth
-                     if (inCA && depthCA == depth)
-                     {
-                        inCA = false;
-                        depthCA = -1;
-                     }
-
-                     // okay
-                     return 0; 
-                  }
-
-                  // device handle
-                  hid_device *hDevice;
-
-                  // in the Pinball Device application collection
-                  bool inCA = false;
-
-                  // nesting depth of the open CA
-                  int depthCA = -1;
-
-                  // total bit size recorded in the CA
-                  size_t totalBitSize = 0;
-
-                  // report ID found for our byte array usage
-                  uint8_t reportID = 0;
-
-                  // did we find the report we were looking for?
-                  bool matched = false;
-
-                  // usage string found for our byte array usage
-                  std::wstring usageString;
-               };
-
-               // parse the report
-               ParserCallbacks callbacks(hDevice);
+               // parse the usages
                hidrp::DescriptorParser parser;
-               parser.Parse(rp, rdSize, &callbacks);
+               hidrp::UsageExtractor usageExtractor;
+               hidrp::UsageExtractor::Report report;
+               usageExtractor.ScanDescriptor(rp, rdSize, report);
 
-               // if we validated the Open Pinball Device report, add the device to our active list
-               if (callbacks.matched)
+               // scan the collections
+               bool found = false;
+               for (auto &col : report.collections)
                {
-                  // Figure the total report size in bytes, including the extra
-                  // byte for the HID report ID prefix
-                  size_t reportSize = callbacks.totalBitSize/8 + 1;
+                   // check for the generic USB "Pinball Device CA" type (Application Collection, usage page 5, usage 2)
+                   if (col.type == hidrp::COLLECTION_TYPE_APPLICATION
+                       && col.usage_page == USAGE_PAGE_GAMECONTROLS && col.usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
+                   {
+                       // got it - scan the input fields in this collection
+                       auto InputIndex = static_cast<int>(hidrp::ReportType::input);
+                       for (auto &f : col.fields[InputIndex])
+                       {
+                          // Check for an opaque byte array, usage 0x00 (undefined/vendor-specific),
+                          // with an associated usage string that matches the OPD signature string.
+                          const size_t nStrBuf = 128;
+                          wchar_t strBuf[nStrBuf];
+                          if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
+                              && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
+                              && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0 
+                              && wcsncmp(strBuf, L"OpenPinballDeviceStruct/", 24) == 0)
+                          {
+                             // matched
+                             found = true;
 
-                  // add it to the active device list
-                  m_openPinDevs.emplace_back(new OpenPinDev(hDevice, callbacks.reportID, reportSize, callbacks.usageString.c_str() + 24));
+                             // Figure the report size for the associated input report ID.  The
+                             // report size scanner returns the combined size of all of the fields
+                             // in the report in BITS, so take ceil(bits/8) to get the report size 
+                             // in bytes.  Then add 1 for the HID Report ID byte prefix that every
+                             // HID report must include.  This gives us the size of the USB packets
+                             // the device sends.
+                             hidrp::ReportSizeScanner sizeScanner;
+                             parser.Parse(rp, rdSize, &sizeScanner);
+                             size_t reportSize = (sizeScanner.ReportSize(hidrp::ReportType::input, f.reportID) + 7)/8 + 1;
 
-                  // the device list now has ownership of the handle, so don't close it locally
-                  hDevice = nullptr;
+                             // add it to the active device list, releasing ownership of the device
+                             // handle to the list object
+                             m_openPinDevs.emplace_back(new OpenPinDev(hDevice.release(), f.reportID, reportSize, &strBuf[24]));
+
+                             // stop searching - there should be only one match
+                             break;
+                          }
+                       }
+                   }
+
+                   // stop as soon as we find a match
+                   if (found)
+                      break;
                }
             }
-
-            // close the device handle, unless we passed ownership to the device list
-            if (hDevice != nullptr)
-               hid_close(hDevice);
          }
       }
    }

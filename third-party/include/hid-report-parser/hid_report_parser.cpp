@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText:  2022 Istvan Pasztor
+// 
 // https://github.com/pasztorpisti/hid-report-parser/tree/master (with private VPX modifications)
+// 
+// Note: This is a customized version for VPX's use.  The base
+// project is no longer being maintained, so there should be no
+// need to merge future changes from the base version.
 
 #include "core/stdafx.h"
 #include "hid_report_parser.h"

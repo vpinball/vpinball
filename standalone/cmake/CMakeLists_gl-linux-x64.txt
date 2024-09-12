@@ -686,7 +686,7 @@ target_link_libraries(vpinball PUBLIC
    SDL2_ttf
    freeimage
    bass
-   hidapi
+   hidapi-hidraw
    -l:libpinmame.so.3.6
    altsound
    dmdutil

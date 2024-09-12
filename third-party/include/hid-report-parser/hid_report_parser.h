@@ -1,6 +1,11 @@
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText:  2022 Istvan Pasztor
+// 
 // https://github.com/pasztorpisti/hid-report-parser/tree/master (with private VPX modifications)
+//
+// Note: This is a customized version for VPX's use.  The base
+// project is no longer being maintained, so there should be no
+// need to merge future changes from the base version.
 
 #pragma once
 
@@ -1174,11 +1179,19 @@ namespace hidrp {
 		uint16_t usage_page;
 		uint16_t usage_min;
 		uint16_t usage_max;
+
+		bool IsRange() const { return usage_max != usage_min; }
+		bool Equals(uint16_t usage_page, uint16_t usage) const { 
+			return this->usage_page == usage_page && this->usage_min == usage && this->usage_max == usage;
+		}
 	};
 	
 	struct StringRange {
         uint8_t string_min;
         uint8_t string_max;
+
+		bool IsRange() const { return string_max != string_min; }
+        uint8_t GetSingle() const { return string_min == string_max ? string_min : 0; }
 	};
 
 	static constexpr uint8_t COLLECTION_TYPE_PHYSICAL       = 0x00;
@@ -2124,6 +2137,32 @@ namespace hidrp {
 	// with fields shed light on the types of controls (like buttons, sticks, ...).
 	class UsageExtractor : private DescriptorParser::EventHandler {
 	public:
+		struct FieldData {
+			FieldData(uint8_t reportID, 
+				UsageRange *usageRanges, uint16_t numUsageRanges,
+				StringRange *stringRanges, uint16_t numStringRanges,
+				uint32_t bitSize, uint32_t reportSize, uint32_t reportCount,
+				int32_t logicalMin, int32_t logicalMax) : 
+				reportID(reportID), bitSize(bitSize), reportSize(reportSize), reportCount(reportCount), 
+				logicalMin(logicalMin), logicalMax(logicalMax)
+			{
+				for (uint16_t i = 0; i < numUsageRanges; ++i)
+				   this->usageRanges.emplace_back(usageRanges[i]);
+				for (uint16_t i = 0; i < numStringRanges; ++i)
+					this->stringRanges.emplace_back(stringRanges[i]);
+			}
+
+			uint8_t reportID;
+            std::vector<UsageRange> usageRanges;
+            std::vector<StringRange> stringRanges;
+            uint32_t bitSize;     // aggregate bit size of report section, reportSize*reportCount
+            uint32_t reportSize;  // number of bits per report element (e.g., 8 for a one-byte element)
+            uint32_t reportCount; // number of elements (e.g., array size, number of buttons, number of axes)
+            int32_t logicalMin;
+            int32_t logicalMax;
+
+		};
+
 		struct Collection {
 			// Collection type.
 			// One of the COLLECTION_TYPE_* constants or a vendor defined value.
@@ -2143,8 +2182,8 @@ namespace hidrp {
 			uint16_t usage_page;
 			uint16_t usage;
 
-			// UsageRange::usage_max is never below UsgeRange::usage_min.
-			std::vector<UsageRange> field_usages[size_t(ReportType::count)];
+			// UsageRange::usage_max is never below UsageRange::usage_min.
+			std::vector<FieldData> fields[size_t(ReportType::count)];
 
 			// Nested collections.
 			// this is guaranteed to be empty when ScanDescriptor() is called
@@ -2187,7 +2226,7 @@ namespace hidrp {
 			// Windows 10) reject them.
 			//
 			// UsageRange::usage_min is always less than UsageRange::usage_max.
-			std::vector<UsageRange> field_usages[size_t(ReportType::count)];
+			std::vector<FieldData> fields[size_t(ReportType::count)];
 		};
 
 		// If collapse_collections==true then nested collections and their types/usages
@@ -2212,11 +2251,15 @@ namespace hidrp {
 			if (0 == (_report_types & uint8_t(1 << uint8_t(fp.report_type))))
 				return 0;
 
-			std::vector<UsageRange>& field_usages = _collection_stack.empty()
-				? _report->field_usages[size_t(fp.report_type)]
-				: _collection_stack.back()->field_usages[size_t(fp.report_type)];
+			std::vector<FieldData>& field_usages = _collection_stack.empty()
+				? _report->fields[size_t(fp.report_type)]
+				: _collection_stack.back()->fields[size_t(fp.report_type)];
 
-			field_usages.insert(field_usages.end(), fp.usage_ranges, fp.usage_ranges+fp.num_usage_ranges);
+			field_usages.emplace_back(fp.globals->report_id, 
+				fp.usage_ranges, fp.num_usage_ranges, fp.string_ranges, fp.num_string_ranges,
+				fp.bit_size, fp.globals->report_size, fp.globals->report_count,
+				fp.globals->logical_min, fp.globals->logical_max);
+
 			return 0;
 		}
 
@@ -2288,6 +2331,11 @@ namespace hidrp {
 	};
 
 
+	// The predefined configuration structs aren't needed for VPX's limited use 
+	// of the parser class, and they use the C-style ".field = value" struct
+	// initialization syntax that some of our compilers reject, so let's just
+	// ditch them all.
+#if 0
 	struct MouseConfig {
 		// Indexes into the IBoolTarget that receives the button states.
 		static constexpr uint8_t BTN_LEFT = 0;
@@ -2378,7 +2426,6 @@ namespace hidrp {
 			return &root;
 		}
 	};
-
 
 	// Commonly used multimedia keys.
 	struct MediaKeys {
@@ -2736,6 +2783,7 @@ namespace hidrp {
 			return &root;
 		}
 	};
+#endif // 0 - remove predefined configurations
 
 
 } // namespace hidrp
