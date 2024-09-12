@@ -51,9 +51,6 @@
 #define APP_JOYSTICKMX  (APP_JOYSTICK(PININ_JOYMXCNT - 1))
 
 
-<<<<<<< HEAD
-// Joystick axis normalized input range
-=======
 // Joystick axis normalized input range.  This is the range for joystick
 // axis values returned from the "Input API" functions (HandleInputDI,
 // HandleInputSDL, etc).  This range is used to represent raw joystick
@@ -73,7 +70,6 @@
 // the SDL and XInput code (at least) if JOYRANGE ever changed.  If
 // anyone ever changes the range, be sure to test all of the input APIs
 // to make sure all of those hidden assumptions are fixed up.
->>>>>>> 8a933ff55 (nudge velocity, plunger speed, OpenPinDev - initial work)
 #define JOYRANGEMN (-65536)
 #define JOYRANGEMX (+65536)
 #define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
