@@ -1126,6 +1126,9 @@ void PinInput::UnInit()
 #endif
 
    ZeroMemory(m_diq, sizeof(m_diq));
+
+   // close Open Pinball Device interfaces
+   TerminateOpenPinballDevices();
 }
 
 void PinInput::FireKeyEvent(const int dispid, int keycode)
@@ -2463,6 +2466,14 @@ void PinInput::InitOpenPinballDevices()
 
    // done with the device list dev
    hid_free_enumeration(hEnum);
+}
+
+// Terminate the Open Pinball Device subsystem.  Closes all open
+// devices and discards associated memory structures.
+void PinInput::TerminateOpenPinballDevices()
+{
+    // discard the device list, which will close their HID device handles
+    m_openPinDevs.clear();
 }
 
 // Read input from the Open Pinball Device inputs
