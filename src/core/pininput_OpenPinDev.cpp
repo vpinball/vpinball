@@ -270,7 +270,8 @@ void PinInput::InitOpenPinballDevices()
                for (auto &col : report.collections)
                {
                   // check for the generic USB "Pinball Device CA" type (Application Collection, usage page 5, usage 2)
-                  if (col.type == hidrp::COLLECTION_TYPE_APPLICATION && col.usage_page == USAGE_PAGE_GAMECONTROLS && col.usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
+                  if (col.type == hidrp::COLLECTION_TYPE_APPLICATION
+                      && col.usage_page == USAGE_PAGE_GAMECONTROLS && col.usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
                   {
                      // got it - scan the input fields in this collection
                      auto InputIndex = static_cast<int>(hidrp::ReportType::input);
@@ -280,8 +281,10 @@ void PinInput::InitOpenPinballDevices()
                         // with an associated usage string that matches the OPD signature string.
                         const size_t nStrBuf = 128;
                         wchar_t strBuf[nStrBuf];
-                        if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0) && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
-                           && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0 && wcsncmp(strBuf, L"OpenPinballDeviceStruct/", 24) == 0)
+                        if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
+                           && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
+                           && hid_get_indexed_string(hDevice.get(), f.stringRanges.front().GetSingle(), strBuf, nStrBuf) == 0
+                           && wcsncmp(strBuf, L"OpenPinballDeviceStruct/", 24) == 0)
                         {
                            // matched
                            found = true;
