@@ -83,8 +83,8 @@
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 #endif
 
-// Open Pinball Device implementation class, defined externally
-class OpenPinDev;
+// Open Pinball Device context (defined in the OPD implementation module)
+class OpenPinDevContext;
 
 class PinInput
 {
@@ -200,8 +200,10 @@ private:
    std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 #endif
 
-   // Open Pinball Device list
-   std::list<std::unique_ptr<OpenPinDev>> m_openPinDevs;
+   // Open Pinball Device context.  This is an opaque object managed
+   // by the OPD implementation module, so that the whole implementation
+   // can be detached at the build script level.
+   OpenPinDevContext *m_OpenPinDevContext = nullptr;
 
    // Open Pinball Device button status, for detecting button up/down events
    uint32_t m_openPinDev_generic_buttons = 0;

@@ -66,6 +66,7 @@ add_executable(vpinball WIN32
    src/parts/backGlass.cpp
    src/parts/pinbinary.cpp
    src/core/pininput.cpp
+   src/core/pininput_OpenPinDev.cpp
    src/core/vpversion.h
 
    src/audio/mixer.cpp

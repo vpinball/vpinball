@@ -73,6 +73,7 @@ add_executable(vpinball
    src/core/iselect.cpp
    src/core/iselect.h
    src/core/pininput.h
+   src/core/pininput_OpenPinDev.cpp
    src/core/pinundo.cpp
    src/core/pinundo.h
    src/core/main.cpp

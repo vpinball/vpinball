@@ -64,6 +64,7 @@ add_executable(vpinball
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/core/pininput.cpp
+   src/core/pininput_OpenPinDev_stub.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -711,7 +712,6 @@ target_link_libraries(vpinball PUBLIC
    "-lSDL2_ttf"
    "-lfreeimage"
    "-lbass"
-   "-lhidapi"
    "-lpinmame.3.6"
    "-laltsound"
    "-lzedmd"

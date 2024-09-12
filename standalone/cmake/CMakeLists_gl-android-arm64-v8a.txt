@@ -56,6 +56,7 @@ add_library(vpinball SHARED
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/core/pininput.cpp
+   src/core/pininput_OpenPinDev_stub.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -687,7 +688,6 @@ target_link_libraries(vpinball
    SDL2_ttf
    FreeImage
    bass
-   hidapi
    pinmame.3.6
    altsound
    dmdutil

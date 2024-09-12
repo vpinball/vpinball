@@ -64,6 +64,7 @@ add_executable(vpinball
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/core/pininput.cpp
+   src/core/pininput_OpenPinDev.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
