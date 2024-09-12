@@ -161,6 +161,7 @@ private:
 
    void InitOpenPinballDevices();
    void ReadOpenPinballDevices(const U32 cur_time_msec);
+   void TerminateOpenPinballDevices();
 
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
