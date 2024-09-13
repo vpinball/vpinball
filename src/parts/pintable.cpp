@@ -1041,9 +1041,9 @@ STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
 }
 
 // This method has been added while migrating from COM component controller to plugin
-// It is not meant to be used outside of this scope and should bremoved as soon as possible
+// It is not meant to be used outside of this scope and should be removed as soon as possible
 // and at least before next VPX release (plugin sharing memory directly in a portable way,
-// avoiding the need for Windows shraed memory).
+// avoiding the need for Windows shared memory).
 STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
 {
 #ifdef __STANDALONE__
@@ -1052,7 +1052,7 @@ STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
 #else
    if (!g_pplayer)
       return E_FAIL;
-	if (m_hStateSharedMem == INVALID_HANDLE_VALUE)
+   if (m_hStateSharedMem == INVALID_HANDLE_VALUE)
    {
       char szName[MAX_PATH];
       WideCharToMultiByteNull(CP_ACP, 0, sharedMemName, -1, szName, MAX_PATH, nullptr, nullptr);

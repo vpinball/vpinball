@@ -18,7 +18,7 @@
  #include <iostream>
 #endif
 
-//XML helpers
+// XML helpers
 
 inline char nextChar(size_t &inPos, const size_t inSize, const char* const inChars, const char* const outChars, const char* const inData) {
    char c = (inPos >= inSize) ? '=' : inData[inPos];
@@ -34,12 +34,12 @@ inline char nextChar(size_t &inPos, const size_t inSize, const char* const inCha
 static size_t decode_base64(const char* const inData, char* const outData, const size_t inSize, const size_t outSize) {
    static constexpr char inChars[65] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
    static char* outChars = nullptr;
-   //Create decode table from encode table
+   // Create decode table from encode table
    if (!outChars) {
       outChars = new char[256];
       for (size_t i = 0;i < 256;++i) outChars[i] = 0;
       for (char i = 0;i < 64;++i) outChars[inChars[i]] = i;
-      //Hack for fast skipping
+      // Hack for fast skipping
       outChars['&'] = -1;
       outChars[10] = -1;
       outChars[13] = -1;
@@ -74,7 +74,7 @@ static size_t decode_base64(const char* const inData, char* const outData, const
    return min(outPos - padding, outSize);
 }
 
-//Actual Backglass code
+// Actual Backglass code
 
 BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallback) :
    m_pd3dDevice(pd3dDevice), m_backgroundFallback(backgroundFallback)
@@ -82,7 +82,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
    m_backgroundTexture = nullptr;
    m_loaded_image = nullptr;
 #ifdef ENABLE_VR
-   //Check for a directb2s and try to use its backglass data
+   // Check for a directb2s and try to use its backglass data
    const string b2sFileName = g_pplayer->m_ptable->m_szFileName.substr(0, g_pplayer->m_ptable->m_szFileName.find_last_of('.')) + ".directb2s";
    m_backglass_dmd = int2(0,0);
    m_backglass_dmd_width = 0;
@@ -119,7 +119,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
       }
       size_t data_len = 0;
       auto currentNode = rootNode->FirstChildElement();
-      while (currentNode) {//Iterate all Nodes within DirectB2SData
+      while (currentNode) { // Iterate all Nodes within DirectB2SData
          auto nodeName = currentNode->Name();
          if (strcmp(nodeName, "VRDMDLocation") == 0) {
             auto attrib = currentNode->FindAttribute("LocX");
@@ -138,7 +138,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
          else if (strcmp(nodeName, "Illumination") == 0) {
             auto illuminationNode = currentNode->FirstChildElement();
             int bulb = 1;
-            while (illuminationNode) {//Iterate all Nodes within Illumination
+            while (illuminationNode) { // Iterate all Nodes within Illumination
                auto attrib = illuminationNode->FindAttribute("Image");
                if (attrib) {
                   auto val = attrib->Value();
@@ -151,7 +151,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   }
                   size_t size = decode_base64(val, data, val_size, data_len);
 #ifdef WRITE_BACKGLASS_IMAGES
-                  if (WRITE_BACKGLASS_IMAGES > 0 && size > 0) {//Write Image to disk. Also check if the base64 decoder is working...
+                  if (WRITE_BACKGLASS_IMAGES > 0 && size > 0) { // Write Image to disk. Also check if the base64 decoder is working...
                      string imageFileName = b2sFileName;
                      imageFileName.append(illuminationNode->name()).append(".bulb").append(std::to_string(bulb)).append(".png");//if it is not a png just rename it...
                      std::ofstream imageFile(imageFileName, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -162,7 +162,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   }
 #endif
                   if (size > 0) {
-                     //Handle Bulb light images
+                     // Handle Bulb light images
                   }
                }
                illuminationNode = illuminationNode->NextSiblingElement();
@@ -171,7 +171,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
          }
          else if (strcmp(nodeName, "Images") == 0) {
             auto imagesNode = currentNode->FirstChildElement();
-            while (imagesNode) {//Iterate all Nodes within Images
+            while (imagesNode) { // Iterate all Nodes within Images
                auto attrib = imagesNode->FindAttribute("Value");
                if (attrib) {
                   auto val = attrib->Value();
@@ -191,7 +191,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                      m_backglass_height = m_backgroundTexture->GetHeight();
                   }
 #ifdef WRITE_BACKGLASS_IMAGES
-                  if (WRITE_BACKGLASS_IMAGES > 0 && size > 0) {//Write Image to disk. Also useful to check if the base64 decoder is working...
+                  if (WRITE_BACKGLASS_IMAGES > 0 && size > 0) { // Write Image to disk. Also useful to check if the base64 decoder is working...
                      string imageFileName = b2sFileName;
                      imageFileName.append(imagesNode->name()).append(".png");//if it is not a png just rename it...
                      std::ofstream imageFile(imageFileName, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -208,7 +208,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
          currentNode = currentNode->NextSiblingElement();
       }
    }
-   catch (...) {//If file does not exist, or something else goes wrong just disable the Backglass. This is very experimental anyway.
+   catch (...) { // If file does not exist, or something else goes wrong just disable the Backglass. This is very experimental anyway.
       m_backgroundTexture = nullptr;
    }
    delete [] data;
@@ -293,9 +293,9 @@ void BackGlass::Render()
 void BackGlass::GetDMDPos(float& DMDposx, float& DMDposy, float& DMDwidth, float& DMDheight)
 {
    if (m_backgroundTexture)
-   { // For VR, place DMD in the backglass
+   {  // For VR, place DMD in the backglass
       if (m_dmd_width == 0.0f || m_dmd_height == 0.0f)
-      { // If file contains no valid VRDMD position
+      {  // If file contains no valid VRDMD position
          if (m_backglass_grill_height > 0)
          {
             // DMD is centered in the Grill of the backglass
