@@ -103,7 +103,6 @@ extern "C" {
 #endif
 
 #include <vector>
-#include <list>
 #include <string>
 #include <algorithm>
 #include <iomanip>

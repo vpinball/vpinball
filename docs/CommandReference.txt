@@ -18,7 +18,7 @@ Changelog:
 - add TablesDirectory, MusicDirectory, ScriptsDirectory, PlatformOS, PlatformCPU, PlatformBits and ShowCursor to the globals
 - add Animate event to Bumper, Light, Flipper, Gate, Spinner, Trigger, Targets and EMReel. This event is called when the object's visual properties are animated, in order to easily sync with custom visuals
 - add CurrentAnimOffset to the Trigger and Target elements
-- add CurrentRingOffset to the Bumper Element
+- add CurrentRingOffset, RotX, RotY to the Bumper Element
 - add support for 'modulated' lights by changing the previous light state (0=Off,1=On,2=Blinking) to float (see State, GetInPlayState and Duration), and allowing it to be also defined between 0 and 1 (2 remains the blinking state)
 - add FilamentTemperature property to lights to get the 'blackbody' temperature of the filament according to the light current intensity, full intensity corresponding to a temperature of 2700K
 - add support for multiple custom DMDs by adding DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels to flashers. The flasher will use the provided data if any, or defaults to the table data (captured or directly defined)
@@ -292,7 +292,7 @@ PhysicsLoopTime(int) - the meaning of this has changed starting with 9.2.1: it s
                        by setting it f.e. to 1, the rendered frame updates will -always- match the physics updates, everything above 1 allows for multiple physics updates per frame
                        (2, 3 or 4 can be good values for this, as it slows down the physics temporarily if the FPS drop below 50, 33 or 25 in these cases). default=-1 (which means infinite updates allowed)
 
-BallImage(string) 
+BallImage(string)
 BallFrontDecal(string) - image of the ball front decal
 *BallDecalMode(bool) - switch between using the ball decal as ball logo or ball 'scratches'
 
@@ -314,7 +314,7 @@ DefaultBulbIntensityScale(float) - scale/dampen the contribution of the bulbs li
 
 PlungerNormalize(int) - Mech-Plunger component adjustment or weak spring, aging. default=100
 PlungerFilter(bool) - default=false
-*Accelerometer(bool) 
+*Accelerometer(bool)
 *AccelNormalMount(bool)
 *AccelerometerAngle(float)
 *JoltAmount(int)
@@ -359,7 +359,7 @@ Variables
 *SkirtMaterial(string)
 *Radius(float) - default=45.0
 *HeightScale (float) - default=90.0
-*Orientation(float) 
+*Orientation(float)
 RingDropOffset(float) - An offset to influence the ring animation. The default move down limit is calculated by (HeightScale*0.5) * Table_Scalez.
                         The final move down limit is calculated by RingDropOffset + (HeightScale*0.5)* Table_Scalez.
                         For example: If the ring is moving too far down you have to try to set the RingDropOffset to -10.
@@ -367,6 +367,8 @@ RingSpeed(float)
 *CurrentRingOffset(float) - Live position of the ring (see RingDropOffset and RingSpeed, default is 0..-45 for RingDropOffset is 0 and HeightScale is 90)
 *X(float) - X position
 *Y(float) - Y position
+*RotX(float) - Skirt X rotation
+*RotY(float) - Skirt Y rotation
 *Surface(string)
 Force(float)
 Threshold(float)
@@ -641,7 +643,7 @@ FadeSpeedUp(float) - speed to fade into on state (value is intensity per ms)
 FadeSpeedDown(float) - speed to fade into off state (value is intensity per ms)
 Bulb(bool)
 ShowBulbMesh(bool)
-StaticBulbMesh(bool) 
+StaticBulbMesh(bool)
 ShowReflectionOnBall(bool) - in bulb mode, en/disable the reflection of the bulb on balls
 ScaleBulbMesh(float)
 BulbModulateVsAdd(float) - blends between modulating and additive when bulb is enabled (0..1)
@@ -748,7 +750,7 @@ HitThreshold(float) - holds the current hit threshold if a ball has hit the prim
 Collidable(bool) - enables/disables collision detection, this can be used from within the script.
 Elasticity(float)
 ElasticityFalloff(float)
-Friction(float) - 0..1 
+Friction(float) - 0..1
 *Scatter(float)
 *IsToy(bool) - disables collision handling and all physics preprocessing completely.
                It overwrites the Collidable-flag and can't be used from within the script.

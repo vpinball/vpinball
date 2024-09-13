@@ -140,6 +140,8 @@ public:
    STDMETHOD(put_Scatter)(/*[in]*/ float newVal);
    STDMETHOD(get_EnableSkirtAnimation)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_EnableSkirtAnimation)(/*[in]*/ VARIANT_BOOL newVal);
+   STDMETHOD(get_RotX)(/*[out, retval]*/ float *pVal);
+   STDMETHOD(get_RotY)(/*[out, retval]*/ float *pVal);
    STDMETHOD(PlayHit)();
 
    BumperData m_d;
@@ -175,4 +177,7 @@ private:
    bool    m_ringAnimate = false;
 
    BumperHitCircle *m_pbumperhitcircle = nullptr;
+
+   float   m_rotx; // only for reading through script
+   float   m_roty;
 };

@@ -9,6 +9,7 @@
 // no support for the sort of low-level HID access we need.
 
 #include "core/stdafx.h"
+#include <list>
 #include <hidapi/hidapi.h>
 #include <hid-report-parser/hid_report_parser.h>
 
@@ -544,5 +545,3 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       cr.pinballButtons = m_openPinDev_pinball_buttons;
    }
 }
-
-

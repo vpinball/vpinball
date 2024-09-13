@@ -223,12 +223,12 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_curMechPlungerSpeed = 0;
    m_fExtPlungerSpeed = false;
 
-   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale", 100.0f) / 100.0f;
+   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100.0f) / 100.0f;
    if (m_plungerSpeedScale <= 0.0f)
       m_plungerSpeedScale = 1.0f;
 
    // Accelerometer inputs are accelerations (not velocities) by default
-   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput", false);
+   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
 
 #ifdef ENABLE_VR
    const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);

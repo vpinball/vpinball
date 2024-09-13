@@ -857,14 +857,14 @@ BEGIN
     LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the 'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,259,227,228,16
     GROUPBOX        "Plunger",IDC_STATIC,254,250,241,61
     CONTROL         "Enable 1s Plunger Retract",IDC_PLUNGERRETRACT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,259,112,10
-    LTEXT           "Position Axis",IDC_STATIC,260,276,59,8
+    LTEXT           "Position Axis",IDC_STATIC,261,276,59,8
     COMBOBOX        IDC_PLUNGERAXIS,304,274,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Reverse",IDC_ReversePlunger,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,355,275,40,10
     RTEXT           "Dead Zone",IDC_STATIC,426,276,36,8
     EDITTEXT        IDC_DEADZONEAMT,465,274,18,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,483,276,8,8
     GROUPBOX        "",IDC_STATIC,258,268,233,21
-    LTEXT           "Speed Axis",IDC_STATIC,260,294,59,8
+    LTEXT           "Speed Axis",IDC_STATIC,261,294,59,8
     COMBOBOX        IDC_PLUNGERSPEEDAXIS,304,292,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Scaling Factor",IDC_STATIC,426,294,36,8
     EDITTEXT        IDC_PLUNGERSPEEDSCALE,465,293,18,12,ES_RIGHT | ES_AUTOHSCROLL

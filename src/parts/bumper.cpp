@@ -398,7 +398,7 @@ void Bumper::UpdateSkirt(const bool doCalculation)
    constexpr float SKIRT_TILT = 5.0f;
 
    const float scalexy = m_d.m_radius;
-   float rotx = 0.0f, roty = 0.0f;
+   m_rotx = 0.0f, m_roty = 0.0f;
 
    if (doCalculation)
    {
@@ -409,17 +409,17 @@ void Bumper::UpdateSkirt(const bool doCalculation)
          dy = 0.000001f;
       const float dx = fabsf(hitx - m_d.m_vCenter.x);
       const float skirtA = atanf(dx / dy);
-      rotx = cosf(skirtA)*SKIRT_TILT;
-      roty = sinf(skirtA)*SKIRT_TILT;
+      m_rotx = cosf(skirtA)*SKIRT_TILT;
+      m_roty = sinf(skirtA)*SKIRT_TILT;
       if (m_d.m_vCenter.y < hity)
-         rotx = -rotx;
+         m_rotx = -m_rotx;
       if (m_d.m_vCenter.x > hitx)
-         roty = -roty;
+         m_roty = -m_roty;
    }
 
    const Matrix3D rMatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_orientation))
-                           * Matrix3D::MatrixRotateY(ANGTORAD(roty)))
-                           * Matrix3D::MatrixRotateX(ANGTORAD(rotx));
+                           * Matrix3D::MatrixRotateY(ANGTORAD(m_roty)))
+                           * Matrix3D::MatrixRotateX(ANGTORAD(m_rotx));
 
    Vertex3D_NoTex2 *buf;
    m_socketMeshBuffer->m_vb->Lock(buf);
@@ -1150,6 +1150,18 @@ STDMETHODIMP Bumper::PlayHit()
    if ( m_pbumperhitcircle )
       m_pbumperhitcircle->m_bumperanim_hitEvent = true;
 
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::get_RotX(float *pVal)
+{
+   *pVal = m_rotx;
+   return S_OK;
+}
+
+STDMETHODIMP Bumper::get_RotY(float *pVal)
+{
+   *pVal = m_roty;
    return S_OK;
 }
 
