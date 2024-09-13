@@ -2005,7 +2005,7 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
          m_dockProperties = new CDockProperty();
          m_propertyDialog = m_dockProperties->GetContainProperties()->GetPropertyDialog();
       }
-      return m_dockProperties;
+      return DockPtr(m_dockProperties);
    }
    case IDD_TOOLBAR:
    {
@@ -2014,7 +2014,7 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
          m_dockToolbar = new CDockToolbar();
          m_toolbarDialog = m_dockToolbar->GetContainToolbar()->GetToolbarDialog();
       }
-      return m_dockToolbar;
+      return DockPtr(m_dockToolbar);
    }
    case IDD_LAYERS:
    {
@@ -2023,7 +2023,7 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
          m_dockLayers = new CDockLayers();
          m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
       }
-      return m_dockLayers;
+      return DockPtr(m_dockLayers);
    }
 //   case IDD_NOTES_DIALOG:
 //   {
@@ -2032,7 +2032,7 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
 //         m_dockNotes = new CDockNotes();
 //         m_notesDialog = m_dockNotes->GetContainNotes()->GetNotesDialog();
 //      }
-//      return m_dockToolbar;
+//      return DockPtr(m_dockNotes);
 //   }
    }
    return nullptr;

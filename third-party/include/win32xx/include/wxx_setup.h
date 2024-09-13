@@ -48,6 +48,7 @@
 
 // Set the windows version macros. These must be defined before including windows.h.
 // These values are suitable for Windows 10 and Windows 11.
+#ifndef WINVER
 #define WINVER            0x0A00
 #undef  _WIN32_WINNT
 #define _WIN32_WINNT      0x0A00
@@ -55,6 +56,7 @@
 #define _WIN32_IE         0x0A00
 #undef  NTDDI_VERSION
 #define NTDDI_VERSION     0x0A000000
+#endif
 
 #ifndef NOMINMAX
 #define NOMINMAX        // Allow std::min and std::max. Must be defined before including windows.h.

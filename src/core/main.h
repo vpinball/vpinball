@@ -128,6 +128,10 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
   #define USER_DEFAULT_SCREEN_DPI 96 //!! ??
 #endif
 
+#ifndef WM_THEMECHANGED
+  #define WM_THEMECHANGED            0x031A
+#endif
+
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 

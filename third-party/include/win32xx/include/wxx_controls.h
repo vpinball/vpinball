@@ -544,7 +544,9 @@ namespace Win32xx
         void RelayEvent(MSG& msg) const;
         BOOL SetTitle(UINT icon, LPCTSTR title) const;
         void SetToolRect(const RECT& rc, HWND control, UINT id = -1) const;
+#if (WINVER >= 0x0501) && defined(TTM_SETWINDOWTHEME)
         void SetTTWindowTheme(LPCWSTR theme) const;
+#endif
         void Update() const;
         void UpdateTipText(LPCTSTR text, HWND control, UINT id = -1) const;
         void UpdateTipText(UINT textID, HWND control, UINT id = -1) const;
@@ -2721,6 +2723,7 @@ namespace Win32xx
         SendMessage(TTM_NEWTOOLRECT, 0, lparam);
     }
 
+#if (WINVER >= 0x0501) && defined(TTM_SETWINDOWTHEME)
     // Sets the visual style of a ToolTip control.
     // Refer to TTM_SETWINDOWTHEME in the Windows API documentation for more information.
     inline void CToolTip::SetTTWindowTheme(LPCWSTR theme) const
@@ -2729,6 +2732,7 @@ namespace Win32xx
         LPARAM lparam = reinterpret_cast<LPARAM>(theme);
         SendMessage(TTM_SETWINDOWTHEME, 0, lparam);
     }
+#endif
 
     // Forces the current tool to be redrawn.
     // Refer to TTM_UPDATE in the Windows API documentation for more information.
