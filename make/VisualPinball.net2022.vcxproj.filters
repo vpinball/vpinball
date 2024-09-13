@@ -153,6 +153,9 @@
     <ClCompile Include="src/core/pininput.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src/core/pininput_OpenPinDev.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="src/core/pinundo.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -552,7 +555,7 @@
     <ClCompile Include="src/utils/def.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/hid.cpp">
+    <ClCompile Include="src/utils/ushock_output.cpp">
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="src/utils/wintimer.cpp">
@@ -598,6 +601,9 @@
       <Filter>utils</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/miniz/miniz.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/hid-report-parser/hid_report_parser.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
     <ClCompile Include="third-party/include/BAM/BAMView.cpp">
@@ -1262,7 +1268,7 @@
     <ClInclude Include="src/utils/helpers.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/hid.h">
+    <ClInclude Include="src/utils/ushock_output.h">
       <Filter>utils</Filter>
     </ClInclude>
     <ClInclude Include="src/utils/Logger.h">
@@ -1329,6 +1335,12 @@
       <Filter>third-party\hid</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/hidusage.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/hidapi/hidapi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/hid-report-parser/hid_report_parser.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/imgui/imgui_internal.h">
