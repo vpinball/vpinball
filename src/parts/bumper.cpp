@@ -425,9 +425,9 @@ void Bumper::UpdateSkirt(const bool doCalculation)
    tempMatrix.SetRotateZ(ANGTORAD(m_d.m_orientation));
    tempMatrix.Multiply(rMatrix, rMatrix);
 
-   tempMatrix.SetRotateY(ANGTORAD(roty));
+   tempMatrix.SetRotateY(ANGTORAD(m_roty));
    tempMatrix.Multiply(rMatrix, rMatrix);
-   tempMatrix.SetRotateX(ANGTORAD(rotx));
+   tempMatrix.SetRotateX(ANGTORAD(m_rotx));
    tempMatrix.Multiply(rMatrix, rMatrix);
 
    Vertex3D_NoTex2 *buf;
