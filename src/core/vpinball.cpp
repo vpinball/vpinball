@@ -1994,7 +1994,7 @@ LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 #ifndef __STANDALONE__
-Win32xx::CDocker *VPinball::NewDockerFromID(int id)
+Win32xx::DockPtr VPinball::NewDockerFromID(int id)
 {
    switch (id)
    {

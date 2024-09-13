@@ -279,7 +279,7 @@ protected:
    virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
    virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
 #ifndef __STANDALONE__
-   virtual CDocker *NewDockerFromID(int id);
+   virtual DockPtr NewDockerFromID(int id);
 #endif
 
 private:
