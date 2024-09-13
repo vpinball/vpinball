@@ -20,6 +20,11 @@ FEATURES:
 
 - add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
+- add support for new I/O controller capabilities, for compatible controller devices; see the new docs/ sections
+  1) velocity-based nudge input
+  2) plunger speed input
+  3) Open Pinball Device HID
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)

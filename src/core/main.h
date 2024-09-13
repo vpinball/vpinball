@@ -103,6 +103,7 @@ extern "C" {
 #endif
 
 #include <vector>
+#include <list>
 #include <string>
 #include <algorithm>
 #include <iomanip>
@@ -114,7 +115,7 @@ using std::wstring;
 using std::vector;
 
 // try to load the file from the current directory
-// if that fails, try the User, Scripts and Tables sub-directorys under where VP was loaded from
+// if that fails, try the User, Scripts and Tables sub-directories under where VP was loaded from
 // if that also fails, try the standard installation path
 static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
 static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
@@ -136,7 +137,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_exception.h>		// Add CException, CFileException, CNotSupportedException, CResourceException, CUserException, CWinException
 //#include <wxx_file.h>			// Add CFile
 //#include <wxx_frame.h>			// Add CFrame
-//#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalatte, CPen, CRgn
+//#include <wxx_gdi.h>			// Add CDC, CGDIObject, CBitmap, CBrush, CFont, CPalette, CPen, CRgn
 //#include <wxx_imagelist.h>		// Add CImageList
 #include <wxx_listview.h>		// Add CListView
 //#include <wxx_mdi.h>			// Add CMDIChild, CMDIFrame, CDockMDIFrame
@@ -368,7 +369,7 @@ class SCNotification final { };
 #include "parts/flasher.h"
 #include "parts/rubber.h"
 #include "audio/mixer.h"
-#include "utils/hid.h"
+#include "utils/ushock_output.h"
 
 #include "physics/kdtree.h"
 

@@ -796,7 +796,8 @@ BEGIN
     COMBOBOX        IDC_JOYTWEAKCOMBO,192,275,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Override Default Button Layout",IDC_DefaultLayout,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,292,112,10
-    CONTROL         "Disable ESC Key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,122,292,68,10
+    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,307,168,25
+    CONTROL         "Disable ESC Key",IDC_DisableESC_CB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,136,292,68,10
     GROUPBOX        "PinMAME Buttons",IDC_STATIC,254,7,241,91
     LTEXT           "Note that some keys can also be configured in the VPMKeys.vbs file",IDC_STATIC,264,87,230,8
     CTEXT           "EB BuyIn (2)",IDC_STATIC,261,17,50,14,0,WS_EX_DLGMODALFRAME
@@ -816,56 +817,63 @@ BEGIN
     COMBOBOX        IDC_JOYPMUP,379,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CTEXT           "Enter (0)",IDC_STATIC,438,54,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_JOYPMENTER,438,69,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Nudge && Plumb",IDC_STATIC,254,101,241,139
+    GROUPBOX        "Nudge && Plumb",IDC_STATIC,254,100,241,148
     CONTROL         "Enable Analog Nudge (hardware acceleration sensor)",IDC_GLOBALACCEL,
                     "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,258,111,217,10
-    GROUPBOX        "",IDC_STATIC,258,119,131,21
+    GROUPBOX        "",IDC_STATIC,258,118,235,21
     LTEXT           "X Axis (L/R)",IDC_STATIC,261,126,39,8
-    COMBOBOX        IDC_LRAXISCOMBO,303,125,40,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Reverse",IDC_LRAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,346,126,40,10
-    RTEXT           "Gain",IDC_STATIC,435,126,25,8
-    LTEXT           "Max",IDC_STATIC,395,126,25,8
-    EDITTEXT        IDC_XMAX_EDIT,417,125,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_LRAXISGAIN,465,125,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,485,127,8,8
-    GROUPBOX        "",IDC_STATIC,258,137,131,21
+    COMBOBOX        IDC_LRAXISCOMBO,303,124,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse",IDC_LRAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,354,126,40,10
+    LTEXT           "Max",IDC_STATIC,400,126,25,8
+    EDITTEXT        IDC_XMAX_EDIT,416,124,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    RTEXT           "Gain",IDC_STATIC,436,126,25,8
+    EDITTEXT        IDC_LRAXISGAIN,465,124,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,484,126,8,8
+    GROUPBOX        "",IDC_STATIC,258,136,235,21
     LTEXT           "Y Axis (U/D)",IDC_STATIC,261,144,41,8
-    COMBOBOX        IDC_UDAXISCOMBO,303,143,40,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Reverse",IDC_UDAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,346,144,40,10
-    RTEXT           "Gain",IDC_STATIC,435,144,25,8
-    LTEXT           "Max",IDC_STATIC,395,144,25,8
-    EDITTEXT        IDC_YMAX_EDIT,417,143,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    EDITTEXT        IDC_UDAXISGAIN,465,143,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,485,144,8,8
-    CONTROL         "Board Mounted Face Up",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,159,106,10
-    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,372,159,90,10
-    EDITTEXT        IDC_GLOBALROTATION,465,158,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    COMBOBOX        IDC_UDAXISCOMBO,303,142,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse",IDC_UDAXISFLIP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,354,144,40,10
+    LTEXT           "Max",IDC_STATIC,400,144,25,8
+    EDITTEXT        IDC_YMAX_EDIT,416,142,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    RTEXT           "Gain",IDC_STATIC,436,144,25,8
+    EDITTEXT        IDC_UDAXISGAIN,465,142,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,484,144,8,8
+    CONTROL         "Board Mounted Face Up",IDC_GLOBALNMOUNT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,158,106,10
+    CONTROL         "Accelerometer Rotation",IDC_CBGLOBALROTATION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,372,158,90,10
+    EDITTEXT        IDC_GLOBALROTATION,465,157,18,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Simulate Tilt Plumb From Accelerator Sensor",IDC_CBGLOBALTILT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,174,158,10
-    RTEXT           "Threshold :",IDC_STATIC,418,174,45,8
-    EDITTEXT        IDC_GLOBALTILT,465,173,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,485,190,8,8
-    CONTROL         "Enable Nudge Filter (mainly for Analog/additional Board setups)",IDC_ENABLE_NUDGE_FILTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,203,232,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,173,158,10
+    RTEXT           "Threshold :",IDC_STATIC,418,173,45,8
+    EDITTEXT        IDC_GLOBALTILT,465,172,18,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Legacy/VP9-style non-realistic Keyboard Nudge",IDC_ENABLE_LEGACY_NUDGE,
-                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,189,166,10
-    RTEXT           "Strength :",IDC_STATIC,428,190,35,8
-    EDITTEXT        IDC_LEGACY_NUDGE_STRENGTH,465,188,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,259,217,228,21
-    GROUPBOX        "Plunger",IDC_STATIC,254,244,241,47
-    CONTROL         "Enable 1s Plunger Retract",IDC_PLUNGERRETRACT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,255,94,10
-    GROUPBOX        "",IDC_STATIC,257,265,235,21
-    LTEXT           "Joystick Axis",IDC_STATIC,260,272,59,8
-    COMBOBOX        IDC_PLUNGERAXIS,324,271,40,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Reverse",IDC_ReversePlunger,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,367,272,40,10
-    RTEXT           "Dead Zone",IDC_STATIC,421,273,36,8
-    EDITTEXT        IDC_DEADZONEAMT,462,271,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,482,273,8,8
-    LTEXT           "* To assign Custom Keys to Gamepad Buttons, click on the button and select desired key, then choose desired gamepad button from dropdown box.",IDC_STATIC,13,307,168,25
+                    "Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,188,166,10
+    RTEXT           "Strength :",IDC_STATIC,428,189,35,8
+    EDITTEXT        IDC_LEGACY_NUDGE_STRENGTH,465,187,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,485,189,8,8
+    CONTROL         "Enable Nudge Filter (mainly for Analog/additional Board setups)",IDC_ENABLE_NUDGE_FILTER,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,202,232,10
+    CONTROL         "Analog Nudge Input is Velocity",IDC_CBGLOBALACCVEL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,216,160,10
+    LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,259,227,228,16
+    GROUPBOX        "Plunger",IDC_STATIC,254,250,241,60
+    CONTROL         "Enable 1s Plunger Retract",IDC_PLUNGERRETRACT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,259,112,10
+    GROUPBOX        "",IDC_STATIC,258,268,235,21
+    LTEXT           "Position Axis",IDC_STATIC,260,276,59,8
+    COMBOBOX        IDC_PLUNGERAXIS,304,274,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Reverse",IDC_ReversePlunger,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,355,275,40,10
+    RTEXT           "Dead Zone",IDC_STATIC,426,276,36,8
+    EDITTEXT        IDC_DEADZONEAMT,465,274,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,484,276,8,8
+    GROUPBOX        "",IDC_STATIC,258,286,235,21
+    LTEXT           "Speed Axis",IDC_STATIC,260,294,59,8
+    COMBOBOX        IDC_PLUNGERSPEEDAXIS,304,292,48,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Scaling Factor",IDC_STATIC,426,294,36,8
+    EDITTEXT        IDC_PLUNGERSPEEDSCALE,465,293,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,484,294,8,8
     CONTROL         "Enable Mouse handling during Play",IDC_ENABLE_MOUSE_PLAYER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,258,296,150,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,258,312,150,10
     CONTROL         "Enable flying around (Arrow Keys + Left Alt Key) during Tweak Mode",IDC_ENABLE_CAMERA_FLY_AROUND,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,258,308,235,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,258,324,235,10
     GROUPBOX        "DOF Controller Options",IDC_STATIC,500,7,120,191
     CTEXT           "Contactors",IDC_STATIC,505,17,50,14,0,WS_EX_DLGMODALFRAME
     COMBOBOX        IDC_DOF_CONTACTORS,505,32,50,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP

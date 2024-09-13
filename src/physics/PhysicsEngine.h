@@ -101,6 +101,17 @@ private:
    float m_nudgeSpring;
    float m_nudgeDamping;
 
+   // External accelerometer velocity input.  This is for newer
+   // pin cab I/O controllers that can integrate acceleration 
+   // samples on the device side to compute the instantaneous
+   // cabinet velocity, and pass the velocity data to the host.
+   //
+   // Velocities computed on the device side are applied to the
+   // physics model the same way as the velocities computed from
+   // the "spring model" for scripted nudge force inputs.
+   Vertex3Ds m_accelVel;
+   Vertex3Ds m_accelVelOld;
+
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge = false;
    float m_legacyNudgeStrength = 0.f;

@@ -80,7 +80,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       char lineHeader[256];
       const int res = fscanf_s(f, "\n%s", lineHeader
 #ifndef __STANDALONE__
-      ,sizeof(lineHeader)
+      ,static_cast<unsigned int>(sizeof(lineHeader))
 #endif
       );
       if (res == EOF)
@@ -451,7 +451,7 @@ bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)
       char lineHeader[256];
       const int res = fscanf_s(f, "\n%s", lineHeader
 #ifndef __STANDALONE__
-      ,sizeof(lineHeader)
+      ,static_cast<unsigned int>(sizeof(lineHeader))
 #endif
       );
       if (res == EOF)

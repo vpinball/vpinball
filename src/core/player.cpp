@@ -212,9 +212,23 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 #endif
 
    for (int i = 0; i < PININ_JOYMXCNT; ++i)
-      m_curAccel[i] = int2(0,0);
+   {
+      m_curAccel[i] = int2(0, 0);
+      m_curPlunger[i] = 0;
+      m_curPlungerSpeed[i] = 0;
+   }
 
-   m_curPlunger = JOYRANGEMN - 1;
+   m_plungerSpeedScale = 1.0f;
+   m_curMechPlungerPos = 0;
+   m_curMechPlungerSpeed = 0;
+   m_fExtPlungerSpeed = false;
+
+   m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale", 100.0f) / 100.0f;
+   if (m_plungerSpeedScale <= 0.0f)
+      m_plungerSpeedScale = 1.0f;
+
+   // Accelerometer inputs are accelerations (not velocities) by default
+   m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput", false);
 
 #ifdef ENABLE_VR
    const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
@@ -358,7 +372,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
        }
    #endif
 
-    // Disable visual feedback for touch, this saves one frame of latency on touchdisplays
+    // Disable visual feedback for touch, this saves one frame of latency on touch displays
     if (!SetWindowFeedbackSetting)
         SetWindowFeedbackSetting = (pSWFS)GetProcAddress(GetModuleHandle(TEXT("user32.dll")), "SetWindowFeedbackSetting");
     if (SetWindowFeedbackSetting)
@@ -386,7 +400,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #else // Win32 Windowing
    mixer_init(m_playfieldWnd->GetCore());
    #endif
-   hid_init();
+   ushock_output_init();
 
    // General player initialization
 
@@ -928,7 +942,7 @@ Player::~Player()
    delete m_audio;
 
    mixer_shutdown();
-   hid_shutdown();
+   ushock_output_shutdown();
 
 #ifdef EXT_CAPTURE
    StopCaptures();
@@ -1130,7 +1144,8 @@ void Player::OnFocusChanged(const bool isGameFocused)
 
    #ifdef _MSC_VER
    // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
-   if (!isGameFocused && m_time_msec < 5000 && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
+   // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
+   if (!isGameFocused && m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
    {
       #ifdef ENABLE_SDL_VIDEO
       SDL_RaiseWindow(m_playfieldWnd->GetCore());
@@ -1343,15 +1358,20 @@ const Vertex2D& Player::GetRawAccelerometer() const
          // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
          // and are required to be acceleration values (not velocity or displacement)
 
-         // rotate to match hardware mounting orentation, including left or right coordinates
+         // rotate to match hardware mounting orientation, including left or right coordinates
          const float a = ANGTORAD(m_accelerometerAngle);
          const float cna = cosf(a);
          const float sna = sinf(a);
 
          for (int j = 0; j < m_pininput.m_num_joy; ++j)
          {
-                  float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGE); // norm range -1 .. 1
-            const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGE);
+            // Scale to normalized float range, -1.0f..+1.0f
+            // NOTE! The normalization factor assumes that the input axis is
+            // symmetrical across its positive and negative extent, which is
+            // to say, JOYRANGMX == -JOYRANGEMN (thus the assertion).
+            static_assert(JOYRANGEMN == -JOYRANGEMX);
+            float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGEMX);
+            const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGEMX);
             if (m_ptable->m_tblMirrorEnabled)
                dx = -dx;
             m_accelerometer.x += m_accelerometerGain.x * (dx * cna + dy * sna) * (1.0f - m_accelerometerSensitivity); // calc Green's transform component for X
@@ -1418,7 +1438,16 @@ static constexpr float IIR_b[IIR_Order + 1] = {
 
 void Player::MechPlungerUpdate()   // called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
 {
-   static int init = IIR_Order;    // first time call
+   // if we're receiving speed inputs, take a current snapshot
+   if (m_fExtPlungerSpeed)
+   {
+      // compute the sum over joysticks
+      m_curMechPlungerSpeed = 0;
+      for (int i = 0; i < PININ_JOYMXCNT; ++i)
+         m_curMechPlungerSpeed += m_curPlungerSpeed[i];
+   }
+
+   static int init = IIR_Order; // first time call
    static float x[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
    static float y[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
 
@@ -1433,13 +1462,18 @@ void Player::MechPlungerUpdate()   // called on every integral physics frame, on
       return; // not until a real value is entered
    }
 
+   // get the sum of current plunger inputs across joysticks
+   float curPos = 0;
+   for (int i = 0; i < PININ_JOYMXCNT; ++i)
+      curPos += (float)m_curPlunger[i];
+
    if (!m_ptable->m_plungerFilter)
    {
-      m_curMechPlungerPos = (float)m_curPlunger;
+      m_curMechPlungerPos = curPos;
       return;
    }
 
-   x[0] = (float)m_curPlunger; //initialize filter
+   x[0] = curPos; //initialize filter
    do
    {
       y[0] = IIR_a[0] * x[0];   // initial
@@ -1457,19 +1491,47 @@ void Player::MechPlungerUpdate()   // called on every integral physics frame, on
    m_curMechPlungerPos = y[0];
 }
 
+int Player::GetMechPlungerSpeed() const 
+{ 
+    return m_curMechPlungerSpeed; 
+}
+
 // MechPlunger NOTE: Normalized position is from 0.0 to +1.0f
 // +1.0 is fully retracted, 0.0 is all the way forward.
 //
-// The traditional method requires calibration in control panel game controllers to work right.
-// The calibrated zero value should match the rest position of the mechanical plunger.
-// The method below uses a dual - piecewise linear function to map the mechanical pull and push 
-// onto the virtual plunger position from 0..1, the pulunger properties has a ParkPosition setting 
-// that matches the mechanical plunger zero position
-//
-// If the plunger device is a "linear plunger", we replace that calculation with a single linear
-// scaling factor that applies on both sides of the park position.  This eliminates the need for
-// separate calibration on each side of the park position, which seems to produce more consistent
-// and linear behavior.  The Pinscape Controller plunger uses this method.
+// The traditional normalization formula requires the user to calibrate the plunger in the
+// system joystick control panel (on Windows, JOY.CPL, "Set up USB Game Controllers").  The
+// user must adjust the calibration such that the calibrated zero point on the calibrated
+// axis matches the physical rest position of the mechanical plunger, the positive maximum
+// axis value matches the full retraction position, and the negative maximum matches the
+// fully-pushed-forward position (with the plunger pressed in as far as possible against 
+// the barrel spring).   This results in a system-level scaling from HID units to joystick
+// units where the HID-to-joystick-units scaling factor is about 5X the value on the negative
+// side of the axis vs the positive side, because the total PHYSICAL travel distance on the 
+// retraction side is about 5X wider than the forward travel distance.  Our goal here is to
+// translate things back to the actual PHYSICAL position of the input before all of these
+// unit conversions, where it's linear across the whole range.  That means that we have to
+// undo the asymmetrical Windows calibration by applying the inverse asymmetrical scaling
+// here.  So: we use a "dual-piecewise" mapping, where we use one scaling factor on the
+// positive side and a different scaling factor on the negative side.
+// 
+// There's a much better and simpler way to do this, which is to tell the user NOT to run 
+// that stupid Windows JOY.CPL calibration in the first place, which allows the Windows 
+// joystick input processing to pass through the native device reports without any extra 
+// scaling.  That eliminates the asymmetrical positive/negative scaling in the Windows
+// processing, which lets us see the linear units that the device reports natively.  We
+// don't have to undo the screwy asymmetrical scaling in the Windows input because Windows
+// never applies it in the first place.  We can thus normalize the input with a simple
+// linear scaling across the whole axis.  This produces much more stable tracking to
+// the physical plunger position because there's no point of instability around the park
+// position where the scaling factor abruptly changes by a factor of 5.  The only snag is
+// that we have to be working with a plunger input device that's programmed to report its
+// position across HID on a fully linear scale like this.  We call these devices "linear
+// plunger" devices to distinguish them from the older ones that natively report on the
+// asymmetrical scale and thus required the Windows JOY.CPL calibration to work at all.
+// PinInput.cpp has the logic to recognize which plungers have the linear scaling and
+// which ones use the asymmetrical split axis scaling, and set the m_linearPlunger flag
+// accordingly.
 float PlungerMoverObject::MechPlunger() const
 {
    if (g_pplayer->m_pininput.m_linearPlunger)
@@ -1492,11 +1554,80 @@ float PlungerMoverObject::MechPlunger() const
    }
 }
 
-void Player::MechPlungerIn(const int z)
+// Mechanical plunger speed, from I/O controller speed input, if configured.
+// This takes input from the Plunger Speed axis, separate from the Plunger
+// Position axis, allowing the controller to report instantaneous speeds
+// along with position.  I/O controllers can usually measure the physical
+// plunger's speed accurately thanks to their high-speed access to the raw
+// sensor data.  It's impossible for the host to accurately compute the
+// speed from position reports alone (via a first derivative of sequential
+// position reports), because USB HID reports don't provide sufficient time
+// resolution - physical plungers simply move too fast, so taking the first
+// derivative results in pretty much random garbage a lot of the time.  The
+// I/O controller can typically take readings at a high enough sampling
+// rate to accurate track the speed, so we use its speed reports if they're
+// available in preference to our internal speed calculations, which are
+// unreliable at best.
+float PlungerMoverObject::MechPlungerSpeed() const
 {
-   m_curPlunger = -z; //axis reversal
+   // Get the current speed reading
+   float v = (float)g_pplayer->GetMechPlungerSpeed();
+
+   // normalized the joystick input to -1..+1
+   v *= (1.0f / (JOYRANGEMX - JOYRANGEMN));
+
+   // The joystick report is device-defined speed units.  We
+   // need to convert these to local speed units.  Since the
+   // report units are device-specific, the conversion factor
+   // is also device-specific, so the most general way to
+   // handle it is as a user-adjustable setting.  This also
+   // has the benefit that it allows the user to fine-tune the
+   // feel to their liking.
+   //
+   // For reference, Pinscape Pico uses units where 1.0 (after
+   // normalization) is the plunger travel length per
+   // centisecond (10ms).  After scaling to the simulated
+   // plunger length, that happens to equal VP9's native speed
+   // units, so the scaling factor should be set to about 100%
+   // when a Pinscape Pico is in use.
+   v *= g_pplayer->m_plungerSpeedScale;
+
+   // Scale to the virtual plunger we're operating.  The device
+   // units are inherently relative to the length of the actual
+   // mechanical plunger, so after conversion to simulation
+   // units, they should maintain that proportionality to the
+   // simulated plunger length.
+   v *= m_frameLen;
+
+   // Now apply the "mechanical strength" scaling.  This lets
+   // the game set the relative strength of the plunger to be
+   // higher or lower than "standard" (which is an arbitrary
+   // reference point).  The strength is relative to the mass.
+   // (The mass is actually a fixed constant, so including it
+   // doesn't have any practical effect other than changing
+   // the scale of the user-adjustable unit conversion factor
+   // above, but we'll include it for consistency with other
+   // places in the code where the mech strength is used.)
+   v *= m_plunger->m_d.m_mechStrength / m_mass;
+
+   // Return the result
+   return v;
+}
+
+void Player::MechPlungerIn(const int z, const int joyidx)
+{
+   m_curPlunger[joyidx] = -z; //axis reversal
 
    if (++m_movedPlunger == 0xffffffff) m_movedPlunger = 3; //restart at 3
+}
+
+void Player::MechPlungerSpeedIn(const int z, const int joyidx)
+{
+   // record it
+   m_curPlungerSpeed[joyidx] = -z;
+
+   // flag that an external speed setting has been applied
+   m_fExtPlungerSpeed = fTrue;
 }
 
 //++++++++++++++++++++++++++++++++++++++++
@@ -1591,8 +1722,8 @@ void Player::LockForegroundWindow(const bool enable)
 {
 #ifdef _MSC_VER
 #if(_WIN32_WINNT >= 0x0500)
-   // TODO how do we handle this situation with multiple windows, some being fullscreen, other not ?
-   if (m_playfieldWnd->IsFullScreen()) // revert special tweaks of exclusive fullscreen app
+   // TODO how do we handle this situation with multiple windows, some being full-screen, other not ?
+   if (m_playfieldWnd->IsFullScreen()) // revert special tweaks of exclusive full-screen app
       ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
 #else
 #pragma message ( "Warning: Missing LockSetForegroundWindow()" )
@@ -1615,7 +1746,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       #endif
       ProcessOSMessages();
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
-      m_physics->UpdatePhysics(); // Update physics (also trigerring events, syncing with controller)
+      m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
       FireSyncController(); // Trigger script sync event (to sync solenoids back)
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
@@ -1664,7 +1795,7 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
 void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
 {
    // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing
-   // the latency and causing syncing problems with PinMAME (which runs in realtime and expects realtime inputs, especially for video modes
+   // the latency and causing syncing problems with PinMAME (which runs in real-time and expects real-time inputs, especially for video modes
    // with repeated button presses like Black Rose's "Walk the Plank Video Mode" or Lethal Weapon 3's "Battle Video Mode")
    // This also leads to filling up the GPU render queue leading to a few frame latency, depending on driver setup
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
@@ -1875,7 +2006,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       }
 
    // Check if we should turn animate the plunger light.
-   hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+   ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
    if (m_renderer->m_stereo3D != STEREO_VR)
@@ -1884,7 +2015,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       m_liveUI->Update(m_renderer->GetOffscreenVR(0));
    g_frameProfiler.ExitProfileSection();
 
-   // Shake screne when nudging
+   // Shake screen when nudging
    if (m_NudgeShake > 0.0f)
    {
       Vertex2D offset = m_physics->GetScreenNudge();
@@ -1970,7 +2101,7 @@ void Player::FinishFrame()
    FireTimers(m_time_msec);
 #else
    if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP rountrip
+      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 #endif
 
    // Detect & fire end of music events

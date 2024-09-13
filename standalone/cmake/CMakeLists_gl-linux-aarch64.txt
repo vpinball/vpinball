@@ -69,6 +69,7 @@ add_executable(vpinball
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/core/pininput.cpp
+   src/core/pininput_OpenPinDev.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -269,11 +270,11 @@ add_executable(vpinball
    src/utils/bulb.cpp
    src/utils/bulb.h
    src/utils/def.cpp
-   src/utils/hid.cpp
-   src/utils/hid.h
    src/utils/wintimer.cpp
    src/utils/wintimer.h
    src/utils/helpers.h
+   src/utils/ushock_output.cpp
+   src/utils/ushock_output.h
    src/utils/variant.cpp
    src/utils/variant.h
    src/utils/vector.h
@@ -291,6 +292,9 @@ add_executable(vpinball
    src/utils/Logger.cpp
    src/utils/Logger.h
 
+   third-party/include/hidapi/hidapi.h
+   third-party/include/hid-report-parser/hid_report_parser.cpp
+   third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
@@ -695,6 +699,7 @@ target_link_libraries(vpinball PUBLIC
    SDL2_ttf
    freeimage
    bass
+   hidapi-hidraw
    -l:libpinmame.so.3.6
    altsound
    dmdutil

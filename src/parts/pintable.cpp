@@ -7467,7 +7467,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    const string name(szName);
 
    if (StrCompareNoCase("knock"s, name) || StrCompareNoCase("knocker"s, name))
-      hid_knock();
+      ushock_output_knock();
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
@@ -10635,7 +10635,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 STDMETHODIMP PinTable::FireKnocker(int Count)
 {
    if (g_pplayer)
-      hid_knock(Count);
+      ushock_output_knock(Count);
 
    return S_OK;
 }

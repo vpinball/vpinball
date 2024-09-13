@@ -131,6 +131,7 @@ PinInput::PinInput()
 #endif
 
    m_plunger_axis = 3;
+   m_plunger_speed_axis = 0;
    m_lr_axis = 1;
    m_ud_axis = 2;
 
@@ -172,6 +173,8 @@ PinInput::~PinInput()
       SDL_JoystickClose(m_pSDLJoystick);
 #endif
 #endif
+
+   TerminateOpenPinballDevices();
 }
 
 void PinInput::LoadSettings(const Settings& settings)
@@ -181,6 +184,7 @@ void PinInput::LoadSettings(const Settings& settings)
    m_lr_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, m_lr_axis_reverse);
    m_ud_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, m_ud_axis_reverse);
    m_plunger_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, m_plunger_axis);
+   m_plunger_speed_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, m_plunger_speed_axis);
    m_plunger_reverse = settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, m_plunger_reverse);
    m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
    m_override_default_buttons = settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, m_override_default_buttons);
@@ -425,7 +429,7 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
          ppinput->uShockType = USHOCKTYPE_SIDEWINDER; // set type 3 = Microsoft SideWinder Freestyle Pro
       else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
          ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; // set type 4 = VirtuaPin Controller
-      else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller"))
+      else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
       {
          ppinput->uShockType = USHOCKTYPE_GENERIC;  // set type = Generic
          ppinput->m_linearPlunger = true;           // use linear plunger calibration
@@ -703,42 +707,42 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
    }
    if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) {
       didod[j].dwOfs = DIJOFS_Z;
-      const int value = (int)state.Gamepad.bLeftTrigger * 512;
+      const int value = (int)state.Gamepad.bLeftTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) {
       didod[j].dwOfs = DIJOFS_RZ;
-      const int value = (int)state.Gamepad.bRightTrigger * 512;
+      const int value = (int)state.Gamepad.bRightTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX) {
       didod[j].dwOfs = DIJOFS_X;
-      const int value = (int)state.Gamepad.sThumbLX * -2;
+      const int value = (int)state.Gamepad.sThumbLX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY) {
       didod[j].dwOfs = DIJOFS_Y;
-      const int value = (int)state.Gamepad.sThumbLY * -2;
+      const int value = (int)state.Gamepad.sThumbLY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX) {
       didod[j].dwOfs = DIJOFS_RX;
-      const int value = (int)state.Gamepad.sThumbRX * -2;
+      const int value = (int)state.Gamepad.sThumbRX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
    }
    if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY) {
       didod[j].dwOfs = DIJOFS_RY;
-      const int value = (int)state.Gamepad.sThumbRY * -2;
+      const int value = (int)state.Gamepad.sThumbRY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
       didod[j].dwData = (DWORD)(value);
       PushQueue(&didod[j], APP_JOYSTICK(0));
       j++;
@@ -752,7 +756,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
 {
    assert(m_inputApi == PI_SDL);
    static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z, DIJOFS_RZ };
-   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };
+   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
    switch (e.type) 
    {
       case SDL_KEYDOWN:
@@ -1057,6 +1061,9 @@ void PinInput::Init()
 
    #endif
 
+   // initialize Open Pinball Device HIDs
+   InitOpenPinballDevices();
+
    m_mixerKeyDown = false;
    m_mixerKeyUp = false;
 }
@@ -1121,6 +1128,9 @@ void PinInput::UnInit()
 #endif
 
    ZeroMemory(m_diq, sizeof(m_diq));
+
+   // close Open Pinball Device interfaces
+   TerminateOpenPinballDevices();
 }
 
 void PinInput::FireKeyEvent(const int dispid, int keycode)
@@ -1577,7 +1587,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 1)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 1)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1604,7 +1620,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     }
                     else if (m_plunger_axis == 2)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 2)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1615,16 +1637,16 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_ULTRACADE)
-                        g_pplayer->MechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
                     if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || !m_override_default_buttons)
                     {                                          // with the ability to use rZ for plunger, checks to see if
                         if (uShockType == USHOCKTYPE_PBWIZARD) // the override is used and if so, if Plunger is set to Rz or
                         {                                      // disabled. If override isn't used, uses default assignment
-                            g_pplayer->MechPlungerIn(-(int)input->dwData); // of the Z axis.
+                            g_pplayer->MechPlungerIn(-(int)input->dwData, joyk); // of the Z axis.
                         }
                     }
                     if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-                        g_pplayer->MechPlungerIn(-(int)input->dwData);
+                        g_pplayer->MechPlungerIn(-(int)input->dwData, joyk);
                     if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1636,7 +1658,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 3)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 3)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1657,7 +1685,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 4)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 4)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1678,7 +1712,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 5)
                     {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 5)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1689,7 +1729,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if ((uShockType == USHOCKTYPE_PBWIZARD) && m_override_default_buttons && (m_plunger_axis == 6))
-                        g_pplayer->MechPlungerIn((int)input->dwData);
+                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
                     if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1701,7 +1741,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 6)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 6)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1712,7 +1758,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                 if (g_pplayer)
                 {
                     if (uShockType == USHOCKTYPE_SIDEWINDER)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
                     if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
                     {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
                         // Axis Deadzone
@@ -1724,7 +1770,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 7)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 7)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1745,7 +1797,13 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
                     else if (m_plunger_axis == 8)
                     {
                         if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData);
+                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
+                    }
+                    else if (m_plunger_speed_axis == 8)
+                    {
+                       // not nudge X/Y or plunger
+                       if (uShockType == USHOCKTYPE_GENERIC)
+                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
                     }
                 }
                 break;
@@ -1781,6 +1839,8 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       m_firedautostart = curr_time_msec;
 
    GetInputDeviceData(/*curr_time_msec*/);
+
+   ReadOpenPinballDevices(curr_time_msec);
 
    // Camera/Light tweaking mode (F6) incl. fly-around parameters
    if (g_pplayer->m_liveUI->IsTweakMode())
@@ -2094,3 +2154,5 @@ LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
    return nullptr;
 }
 #endif
+
+

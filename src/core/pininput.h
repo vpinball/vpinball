@@ -51,7 +51,25 @@
 #define APP_JOYSTICKMX  (APP_JOYSTICK(PININ_JOYMXCNT - 1))
 
 
-// Joystick axis normalized input range
+// Joystick axis normalized input range.  This is the range for joystick
+// axis values returned from the "Input API" functions (HandleInputDI,
+// HandleInputSDL, etc).  This range is used to represent raw joystick
+// inputs in the PinInput code in the internal event structures.
+//
+// This range isn't exposed to users or scripting anywhere; it's only
+// used for internal device event processing.  Joystick axis inputs are
+// ultimately interpreted as either Nudge X/Y values or Plunger Position
+// or Speed values, all of which are translated to internal units before
+// they affect anything that a user or script sees.
+//
+// WARNING!! These constants CANNOT BE CHANGED without breaking SDL and
+// XInput (at least; there might be others).  The SDL and XInput code
+// contain hard-coded formulas with naked integer constants that HAPPEN
+// TO scale their input to this range, but without reference to the
+// JOYRANGE symbols, so you'd have to make corresponding changes in
+// the SDL and XInput code (at least) if JOYRANGE ever changed.  If
+// anyone ever changes the range, be sure to test all of the input APIs
+// to make sure all of those hidden assumptions are fixed up.
 #define JOYRANGEMN (-65536)
 #define JOYRANGEMX (+65536)
 #define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
@@ -60,6 +78,9 @@
 #ifdef _WIN32
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 #endif
+
+// Open Pinball Device context (defined in the OPD implementation module)
+class OpenPinDevContext;
 
 class PinInput
 {
@@ -134,6 +155,10 @@ private:
 
    void Joy(const unsigned int n, const int updown, const bool start);
 
+   void InitOpenPinballDevices();
+   void ReadOpenPinballDevices(const U32 cur_time_msec);
+   void TerminateOpenPinballDevices();
+
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
    void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
@@ -171,6 +196,16 @@ private:
    std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
 #endif
 
+   // Open Pinball Device context.  This is an opaque object managed
+   // by the OPD implementation module, so that the whole implementation
+   // can be detached at the build script level.
+   OpenPinDevContext *m_OpenPinDevContext = nullptr;
+
+   // Open Pinball Device button status, for detecting button up/down events
+   uint32_t m_openPinDev_generic_buttons = 0;
+   uint32_t m_openPinDev_pinball_buttons = 0;
+   bool m_openPinDev_flipper_l = false, m_openPinDev_flipper_r = false;
+
    BYTE m_oldMouseButtonState[3];
 
    U32 m_firedautostart;
@@ -190,7 +225,21 @@ private:
    int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
    int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
-   int m_plunger_axis, m_lr_axis, m_ud_axis;
+   // Axis assignments - these map to the drop-list index in the axis
+   // selection combos in the Keys dialog:
+   //
+   //   0 = Disabled
+   //   1 = X
+   //   2 = Y
+   //   3 = Z
+   //   4 = rX
+   //   5 = rY
+   //   6 = rZ
+   //   7 = Slider 1
+   //   8 = Slider 2
+   //   9 = Open Pinball Device (selects input mapping to the same function as assigned axis)
+   //
+   int m_plunger_axis, m_plunger_speed_axis, m_lr_axis, m_ud_axis;
    int m_joylflipkey, m_joyrflipkey, m_joystagedlflipkey, m_joystagedrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
    int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
    int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;
