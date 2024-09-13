@@ -1265,8 +1265,7 @@ void VPinball::CloseTable(const PinTable * const ppt)
    ppt->GetMDITable()->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
    m_unloadingTable = false;
 
-   const vector<MDIChildPtr> allChildren = GetAllMDIChildren();
-   if (allChildren.empty())
+   if (GetAllMDIChildren().empty())
    {
       ToggleToolbar();
       if (m_propertyDialog && m_propertyDialog->IsWindow())
