@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -52,20 +52,6 @@
 namespace Win32xx
 {
 
-#ifdef __GNUC__
-   //   UndoName info (required by some GNU compilers).
-    typedef enum _undonameid
-    {
-        UID_UNKNOWN     = 0,
-        UID_TYPING      = 1,
-        UID_DELETE      = 2,
-        UID_DRAGDROP    = 3,
-        UID_CUT         = 4,
-        UID_PASTE       = 5,
-        UID_AUTOCORRECT = 6
-    } UNDONAMEID;
-#endif
-
     ////////////////////////////////////////////////////////////
     // CRichEdit manages a rich edit control. Rich Edit controls
     // support plain text and rich text. Rich text can utilize
@@ -74,7 +60,7 @@ namespace Win32xx
     {
     public:
         CRichEdit();
-        virtual ~CRichEdit();
+        virtual ~CRichEdit() override;
 
         void    AppendText(LPCTSTR text) const;
         BOOL    CanPaste(UINT format = 0) const;
@@ -126,7 +112,7 @@ namespace Win32xx
         int     LineLength(int charIndex = -1) const;
         void    LineScroll(int lines) const;
         void    Paste() const;
-        void    PasteSpecial(UINT clipFormat, DWORD aspect = 0, HMETAFILE mf = NULL) const;
+        void    PasteSpecial(UINT clipFormat, DWORD aspect = 0, HMETAFILE mf = nullptr) const;
         CPoint  PosFromChar(UINT fromChar) const;
         BOOL    Redo() const;
         void    ReplaceSel(LPCTSTR newText, BOOL canUndo = FALSE) const;
@@ -159,12 +145,12 @@ namespace Win32xx
         BOOL    Undo() const;
 
     protected:
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
     private:
-        CRichEdit(const CRichEdit&);              // Disable copy construction
-        CRichEdit& operator=(const CRichEdit&);   // Disable assignment operator
+        CRichEdit(const CRichEdit&) = delete;
+        CRichEdit& operator=(const CRichEdit&) = delete;
 
         HMODULE m_rich1;
         HMODULE m_rich2;
@@ -186,6 +172,8 @@ namespace Win32xx
 
     inline CRichEdit::CRichEdit()
     {
+        // History of the Rich Edit control
+        // --------------------------------
         // Windows 95   Includes only Rich Edit 1.0.
         // Windows 98   Includes Rich Edit 1.0 and 2.0.
         // Windows 2000 Includes Rich Edit 3.0 with a Rich Edit 1.0 emulator.
@@ -195,17 +183,23 @@ namespace Win32xx
         ::GetSystemDirectory(system.GetBuffer(MAX_PATH), MAX_PATH);
         system.ReleaseBuffer();
 
-        // Load RichEdit version 1.0
+        // Load RichEdit version 1.0. This registers the "RICHEDIT" class.
+        // The "RICHEDIT" class is often used in dialogs.
         m_rich1 = ::LoadLibrary(system + _T("\\riched32.dll"));
-
-        if (m_rich1 == NULL)
+        if (m_rich1 == nullptr)
             throw CNotSupportedException(GetApp()->MsgRichEditDll());
 
-        // Load RichEdit version 2.0 or 3.0 (for Win98 and above)
+        // Load RichEdit version 3.0. This registers the "RICHEDIT20A"
+        // and "RICHEDIT20W" classes. It is used when UNICODE isn't defined.
         m_rich2 = ::LoadLibrary(system + _T("\\riched20.dll"));
+        if (m_rich2 == nullptr)
+            throw CNotSupportedException(GetApp()->MsgRichEditDll());
 
-        // Load RichEdit version 4.1 (for WinXP and above)
+        // Load RichEdit version 4.1. This registers the "RICHEDIT50W" class.
+        // RichEdit version 4.1 requires Unicode.
         m_rich4_1 = ::LoadLibrary(system + _T("\\Msftedit.dll"));
+        if (m_rich4_1 == nullptr)
+            throw CNotSupportedException(GetApp()->MsgRichEditDll());
     }
 
     inline CRichEdit::~CRichEdit()
@@ -236,10 +230,9 @@ namespace Win32xx
         // For RichEdit version 1.0, 2.0 and 3.0.
         wc.lpszClassName = RICHEDIT_CLASS;
 
-        // For RichEdit version 4.1 (available on XP and above).
-        // Requires Unicode.
-#if defined MSFTEDIT_CLASS && defined UNICODE
-        if (m_rich4_1 != NULL)
+        // For RichEdit version 4.1. Requires Unicode.
+#if defined UNICODE
+        if (m_rich4_1 != nullptr)
             wc.lpszClassName = MSFTEDIT_CLASS;
 #else
         TRACE("\n*** WARNING: Using an old version of the RichEdit control ***\n\n");
@@ -437,7 +430,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        IRichEditOle* pRichEditOle = NULL;
+        IRichEditOle* pRichEditOle = nullptr;
         LPARAM lparam = reinterpret_cast<LPARAM>(pRichEditOle);
         SendMessage(EM_GETOLEINTERFACE, 0, lparam);
         return pRichEditOle;
@@ -545,16 +538,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-#if defined (_MSC_VER) && (_MSC_VER >= 1920)   // >= VS2019
-#pragma warning ( push )
-#pragma warning ( disable : 26812 )            // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1920)
-
         return static_cast<UNDONAMEID>(SendMessage(EM_GETREDONAME, 0, 0));
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1920)
-#pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1920)
     }
 
     // Retrieves the starting and ending character positions of the selection.
@@ -571,9 +555,7 @@ namespace Win32xx
     inline void CRichEdit::GetSel(long& startChar, long& endChar) const
     {
         assert(IsWindow());
-        CHARRANGE range;
-        ZeroMemory(&range, sizeof(range));
-
+        CHARRANGE range{};
         LPARAM lparam = reinterpret_cast<LPARAM>(&range);
         SendMessage(EM_EXGETSEL, 0, lparam);
         startChar = range.cpMin;
@@ -621,8 +603,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CHARRANGE cr;
-        ZeroMemory(&cr, sizeof(cr));
+        CHARRANGE cr{};
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);
         SendMessage(EM_EXGETSEL, 0, lparam);
         return GetTextRange(cr.cpMin, cr.cpMax);
@@ -641,8 +622,7 @@ namespace Win32xx
     inline long CRichEdit::GetTextLengthEx(DWORD flags, UINT codePage /* = -1 */) const
     {
         assert(IsWindow());
-        GETTEXTLENGTHEX gtle;
-        ZeroMemory(&gtle, sizeof(gtle));
+        GETTEXTLENGTHEX gtle{};
         gtle.flags = flags;
         gtle.codepage = codePage;
 
@@ -663,15 +643,13 @@ namespace Win32xx
     inline CString CRichEdit::GetTextRange(int first, int last) const
     {
         assert(IsWindow());
-        CHARRANGE range;
-        ZeroMemory(&range, sizeof(range));
+        CHARRANGE range{};
         range.cpMin = first;
         range.cpMax = last;
         int lastChar = (last == -1)? GetTextLength() : last;
 
         CString rangeString;
-        TEXTRANGE tr;
-        ZeroMemory(&tr, sizeof(tr));
+        TEXTRANGE tr{};
         tr.chrg = range;
         tr.lpstrText = rangeString.GetBuffer(lastChar - first + 1);
         LPARAM lparam = reinterpret_cast<LPARAM>(&tr);
@@ -763,12 +741,11 @@ namespace Win32xx
 
     // Inserts the contents of the Clipboard in the specified data format.
     // Refer to EM_PASTESPECIAL in the Windows API documentation for more information.
-    inline void CRichEdit::PasteSpecial(UINT clipFormat, DWORD aspect /* = NULL */, HMETAFILE mf /* = NULL */) const
+    inline void CRichEdit::PasteSpecial(UINT clipFormat, DWORD aspect /* = nullptr */, HMETAFILE mf /* = nullptr */) const
     {
         assert(IsWindow());
 
-        REPASTESPECIAL rps;
-        ZeroMemory(&rps, sizeof(rps));
+        REPASTESPECIAL rps{};
         rps.dwAspect = aspect;
         rps.dwParam = reinterpret_cast<DWORD_PTR>(mf);
         WPARAM wparam = static_cast<WPARAM>(clipFormat);
@@ -943,8 +920,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CHARRANGE cr;
-        ZeroMemory(&cr, sizeof(cr));
+        CHARRANGE cr{};
         cr.cpMin = startChar;
         cr.cpMax = endChar;
         LPARAM lparam = reinterpret_cast<LPARAM>(&cr);

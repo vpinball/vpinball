@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -75,25 +75,25 @@ namespace Win32xx
     {
     public:
         CDockFrame() : m_isDpiChanging(false) {}
-        virtual ~CDockFrame() {}
+        virtual ~CDockFrame() override {}
 
     protected:
-        virtual LRESULT OnActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual int     OnCreate(CREATESTRUCT& cs);
-        virtual void    OnDestroy();
-        virtual LRESULT OnDockActivated(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnDockDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnDpiChanged(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnGetDpiScaledSize(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnSysColorChange(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void    RecalcViewLayout();
-        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnActivate(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual int     OnCreate(CREATESTRUCT& cs) override;
+        virtual void    OnDestroy() override;
+        virtual LRESULT OnDockActivated(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnDockDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnDpiChanged(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnGetDpiScaledSize(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
+        virtual LRESULT OnSysColorChange(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual void    RecalcViewLayout() override;
+        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CDockFrame(const CDockFrame&);              // Disable copy construction
-        CDockFrame& operator=(const CDockFrame&);   // Disable assignment operator
+        CDockFrame(const CDockFrame&) = delete;
+        CDockFrame& operator=(const CDockFrame&) = delete;
         bool m_isDpiChanging;
     };
 
@@ -106,14 +106,14 @@ namespace Win32xx
     {
     public:
         CMDIDockFrame();
-        virtual ~CMDIDockFrame() {}
+        virtual ~CMDIDockFrame() override {}
 
     protected:
-        virtual int OnCreate(CREATESTRUCT& cs);
+        virtual int OnCreate(CREATESTRUCT& cs) override;
 
     private:
-        CMDIDockFrame(const CMDIDockFrame&);                // Disable copy construction
-        CMDIDockFrame& operator=(const CMDIDockFrame&);     // Disable assignment operator
+        CMDIDockFrame(const CMDIDockFrame&) = delete;
+        CMDIDockFrame& operator=(const CMDIDockFrame&) = delete;
 
         CMDIClient<CDocker::CDockClient> m_dockMDIClient;   // Both a DockClient and MDIClient
     };

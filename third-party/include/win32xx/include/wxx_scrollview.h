@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -72,7 +72,7 @@ namespace Win32xx
     {
     public:
         CScrollView();
-        virtual ~CScrollView();
+        virtual ~CScrollView() override;
 
         CBrush GetScrollBkgnd() const    { return m_bkgndBrush; }
         CPoint GetScrollPosition() const { return m_currentPos; }
@@ -87,20 +87,20 @@ namespace Win32xx
 
     protected:
         virtual void    FillOutsideRect(CDC& dc, HBRUSH brush);
-        virtual BOOL    OnEraseBkgnd(CDC& dc);
+        virtual BOOL    OnEraseBkgnd(CDC& dc) override;
         virtual LRESULT OnHScroll(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnKeyScroll(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseWheel(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnVScroll(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void    PreCreate(CREATESTRUCT& cs);
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual void    PreCreate(CREATESTRUCT& cs) override;
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CScrollView(const CScrollView&);               // Disable copy construction.
-        CScrollView& operator=(const CScrollView&);    // Disable assignment operator.
+        CScrollView(const CScrollView&) = delete;
+        CScrollView& operator=(const CScrollView&) = delete;
         void UpdateBars();
 
         CPoint m_currentPos;
@@ -162,8 +162,7 @@ namespace Win32xx
     inline LRESULT CScrollView::OnHScroll(UINT, WPARAM wparam, LPARAM)
     {
         CPoint newPos = m_currentPos;
-        SCROLLINFO si;
-        ZeroMemory(&si, sizeof(si));
+        SCROLLINFO si{};
         si.cbSize = sizeof(si);
         si.fMask = SIF_TRACKPOS;
 
@@ -201,7 +200,7 @@ namespace Win32xx
 
         // Scroll the window
         int deltaX = newPosX - m_currentPos.x;
-        ScrollWindowEx(-deltaX, 0, NULL, NULL, 0, NULL, SW_INVALIDATE);
+        ScrollWindowEx(-deltaX, 0, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -269,7 +268,7 @@ namespace Win32xx
             // Scroll the window.
             int deltaX = newPos.x - m_currentPos.x;
             int deltaY = newPos.y - m_currentPos.y;
-            ScrollWindowEx(-deltaX, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
+            ScrollWindowEx(-deltaX, -deltaY, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
             SetScrollPosition(newPos);
         }
 
@@ -326,7 +325,7 @@ namespace Win32xx
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
-        ScrollWindowEx(0, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
+        ScrollWindowEx(0, -deltaY, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -336,8 +335,7 @@ namespace Win32xx
     inline LRESULT CScrollView::OnVScroll(UINT, WPARAM wparam, LPARAM)
     {
         CPoint newPos = m_currentPos;
-        SCROLLINFO si;
-        ZeroMemory(&si, sizeof(si));
+        SCROLLINFO si{};
         si.cbSize = sizeof(si);
         si.fMask = SIF_TRACKPOS;
 
@@ -375,7 +373,7 @@ namespace Win32xx
 
         // Scroll the window.
         int deltaY = newPos.y - m_currentPos.y;
-        ScrollWindowEx(0, -deltaY, NULL, NULL, 0, NULL, SW_INVALIDATE);
+        ScrollWindowEx(0, -deltaY, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
         SetScrollPosition(newPos);
 
         return 0;
@@ -493,8 +491,7 @@ namespace Win32xx
                 // CRect of view, unaffected by scroll bars.
                 CRect viewRect = GetWindowRect();
 
-                SCROLLINFO si;
-                ZeroMemory(&si, sizeof(si));
+                SCROLLINFO si{};
                 si.cbSize = sizeof(si);
                 si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
                 si.nMin = 0;
@@ -549,7 +546,7 @@ namespace Win32xx
                 int yNewPos = std::min(currentPosY, totalRect.Height() - viewRect.Height() + cyScroll);
                 yNewPos = std::max(yNewPos, 0);
                 int yDelta = yNewPos - m_currentPos.y;
-                ScrollWindowEx(-xDelta, -yDelta, NULL, NULL, 0, NULL, SW_INVALIDATE);
+                ScrollWindowEx(-xDelta, -yDelta, nullptr, nullptr, 0, nullptr, SW_INVALIDATE);
 
                 m_currentPos.x = xNewPos;
                 m_currentPos.y = yNewPos;

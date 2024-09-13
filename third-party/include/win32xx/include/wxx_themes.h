@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -109,23 +109,17 @@ namespace Win32xx
     inline BOOL IsAeroThemed()
     {
         BOOL isAeroThemed = FALSE;
-
-        // Test if Windows version is XP or greater.
-        if (GetWinVersion() >= 2501)
+        HMODULE module = ::GetModuleHandle(_T("uxtheme.dll"));
+        if (module != nullptr)
         {
-            HMODULE module = ::GetModuleHandle(_T("uxtheme.dll"));
+            // Declare pointers to IsCompositionActive function.
+            FARPROC pIsCompositionActive = ::GetProcAddress(module, "IsCompositionActive");
 
-            if (module != NULL)
+            if (pIsCompositionActive)
             {
-                // Declare pointers to IsCompositionActive function.
-                FARPROC pIsCompositionActive = ::GetProcAddress(module, "IsCompositionActive");
-
-                if (pIsCompositionActive)
+                if (pIsCompositionActive())
                 {
-                    if (pIsCompositionActive())
-                    {
-                        isAeroThemed = TRUE;
-                    }
+                    isAeroThemed = TRUE;
                 }
             }
         }
@@ -138,23 +132,18 @@ namespace Win32xx
     {
         BOOL isXPThemed = FALSE;
 
-        // Test if Windows version is XP or greater.
-        if (GetWinVersion() >= 2501)
+        HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
+        if (theme != nullptr)
         {
-            HMODULE theme = ::GetModuleHandle(_T("uxtheme.dll"));
-            if (theme != NULL)
-            {
-                // Declare pointers to functions
-                FARPROC pIsAppThemed   = ::GetProcAddress(theme, "IsAppThemed");
-                FARPROC pIsThemeActive = ::GetProcAddress(theme, "IsThemeActive");
+            // Declare pointers to functions.
+            FARPROC pIsAppThemed   = ::GetProcAddress(theme, "IsAppThemed");
+            FARPROC pIsThemeActive = ::GetProcAddress(theme, "IsThemeActive");
 
-                if (pIsAppThemed && pIsThemeActive)
+            if (pIsAppThemed && pIsThemeActive)
+            {
+                if (pIsAppThemed() && pIsThemeActive())
                 {
-                    if (pIsAppThemed() && pIsThemeActive())
-                    {
-                        // Test if ComCtl32 dll used is version 6 or later.
-                        isXPThemed = (GetComCtlVersion() >= 600);
-                    }
+                    isXPThemed = TRUE;
                 }
             }
         }

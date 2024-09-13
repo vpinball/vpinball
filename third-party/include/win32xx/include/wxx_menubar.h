@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,7 +54,7 @@ namespace Win32xx
 
     public:
         CMenuBar();
-        virtual ~CMenuBar();
+        virtual ~CMenuBar() override;
 
         void    DrawAllMDIButtons(CDC& drawDC);
         HMENU   GetBarMenu() const {return m_topMenu;}
@@ -65,7 +65,7 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual void OnAttach();
+        virtual void OnAttach() override;
         virtual LRESULT OnDrawItem(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnExitMenuLoop(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnInitMenuPopup(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -78,24 +78,24 @@ namespace Win32xx
         virtual BOOL    OnMenuInput(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseLeave(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseMove(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
+        virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnSysCommand(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSysKeyDown(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnSysKeyUp(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnTBNDropDown(LPNMTOOLBAR pNMTB);
         virtual LRESULT OnTBNHotItemChange(LPNMTBHOTITEM pNMHI);
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void    PreCreate(CREATESTRUCT& cs);
-        virtual void    PreRegisterClass(WNDCLASS& wc);
-        virtual BOOL    PreTranslateMessage(MSG& msg);
+        virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual void    PreCreate(CREATESTRUCT& cs) override;
+        virtual void    PreRegisterClass(WNDCLASS& wc) override;
+        virtual BOOL    PreTranslateMessage(MSG& msg) override;
 
         // Not intended to be overridden.
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CMenuBar(const CMenuBar&);              // Disable copy construction
-        CMenuBar& operator=(const CMenuBar&);   // Disable assignment operator
+        CMenuBar(const CMenuBar&) = delete;
+        CMenuBar& operator=(const CMenuBar&) = delete;
 
         void Cancel() const;
         void DoAltKey(WORD keyCode);
@@ -147,8 +147,8 @@ namespace Win32xx
     // Definitions for the CMenuBar class
     //
 
-    inline CMenuBar::CMenuBar() : m_msgHook(NULL), m_popupMenu(NULL), m_selectedMenu(NULL),
-        m_topMenu(NULL), m_prevFocus(NULL), m_hotItem(-1), m_isAltMode(FALSE), m_isExitAfter(FALSE),
+    inline CMenuBar::CMenuBar() : m_msgHook(nullptr), m_popupMenu(nullptr), m_selectedMenu(nullptr),
+        m_topMenu(nullptr), m_prevFocus(nullptr), m_hotItem(-1), m_isAltMode(FALSE), m_isExitAfter(FALSE),
         m_isKeyMode(FALSE), m_isMenuActive(FALSE), m_isSelectedPopup(FALSE)
     {
     }
@@ -313,7 +313,7 @@ namespace Win32xx
     // Retrieves a pointer to the active MDI child if any.
     inline CWnd* CMenuBar::GetActiveMDIChild() const
     {
-        CWnd* pMDIChild = NULL;
+        CWnd* pMDIChild = nullptr;
         if (GetMDIClient())
         {
             HWND mdiChild = reinterpret_cast<HWND>(GetMDIClient()->SendMessage(WM_MDIGETACTIVE, 0, 0));
@@ -323,11 +323,11 @@ namespace Win32xx
         return pMDIChild;
     }
 
-    // Retrieves a pointer to the MDIClient. Returns NULL if there
+    // Retrieves a pointer to the MDIClient. Returns nullptr if there
     // is no MDIClient.
     inline CWnd* CMenuBar::GetMDIClient() const
     {
-        CWnd* pMDIClient = NULL;
+        CWnd* pMDIClient = nullptr;
 
         // Is the ancestor a CMDIFrame?
         if (GetAncestor().SendMessage(UWM_GETCMDIFRAMET) != 0)
@@ -667,7 +667,7 @@ namespace Win32xx
 
         case WM_LBUTTONDBLCLK:
             // Perform default action for DblClick on MDI Maxed icon.
-            if (IsMDIChildMaxed() && (0 == HitTest()))
+            if (IsMDIChildMaxed() && (HitTest() == 0))
             {
                 CWnd* pMDIChild = GetActiveMDIChild();
                 assert(pMDIChild);
@@ -768,7 +768,7 @@ namespace Win32xx
         m_isExitAfter = FALSE;
         m_oldMousePos = GetCursorPos();
 
-        CWnd* pMaxMDIChild = NULL;
+        CWnd* pMaxMDIChild = nullptr;
         if (IsMDIChildMaxed())
             pMaxMDIChild = GetActiveMDIChild();
 
@@ -785,8 +785,7 @@ namespace Win32xx
         VERIFY(ClientToScreen(rc));
 
         // Position popup above toolbar if it won't fit below.
-        TPMPARAMS tpm;
-        ZeroMemory(&tpm, sizeof(tpm));
+        TPMPARAMS tpm{};
         tpm.cbSize = sizeof(tpm);
         tpm.rcExclude = rc;
 
@@ -795,7 +794,7 @@ namespace Win32xx
         Press(m_hotItem, TRUE);
 
         m_isSelectedPopup = FALSE;
-        m_selectedMenu = NULL;
+        m_selectedMenu = nullptr;
         m_isMenuActive = TRUE;
 
         // We hook mouse input to process mouse and keyboard input during
@@ -804,15 +803,11 @@ namespace Win32xx
         // Set the message hook.
         TLSData* pTLSData = GetApp()->GetTlsData();
         pTLSData->pMenuBar = this;
-        m_msgHook = ::SetWindowsHookEx(WH_MSGFILTER, StaticMsgHook, NULL, ::GetCurrentThreadId());
+        m_msgHook = ::SetWindowsHookEx(WH_MSGFILTER, StaticMsgHook, nullptr, ::GetCurrentThreadId());
 
         // Display the shortcut menu.
         bool isRightToLeft = false;
-
-#if (WINVER >= 0x0500)
         isRightToLeft = (((GetAncestor().GetExStyle()) & WS_EX_LAYOUTRTL)) != 0;
-#endif
-
         int xPos = isRightToLeft? rc.right : rc.left;
         UINT id = static_cast<UINT>(::TrackPopupMenuEx(m_popupMenu, TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_VERTICAL,
                                        xPos, rc.bottom, *this, &tpm));
@@ -822,7 +817,7 @@ namespace Win32xx
 
         // Remove the message hook.
         ::UnhookWindowsHookEx(m_msgHook);
-        pTLSData->pMenuBar = NULL;
+        pTLSData->pMenuBar = nullptr;
 
         // Process MDI Child system menu.
         if (IsMDIChildMaxed())
@@ -1066,8 +1061,7 @@ namespace Win32xx
         {
             // Create an extra button for the MDI child system menu.
             // Later we will custom draw the window icon over this button.
-            TBBUTTON tbb;
-            ZeroMemory(&tbb, sizeof(tbb));
+            TBBUTTON tbb{};
             tbb.fsState = TBSTATE_ENABLED;
             tbb.fsStyle = TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE ;
             tbb.iString = reinterpret_cast<INT_PTR>(_T(" "));
@@ -1078,8 +1072,7 @@ namespace Win32xx
         for (int i = 0 ; i < ::GetMenuItemCount(menu); ++i)
         {
             // Assign the ToolBar Button struct.
-            TBBUTTON tbb;
-            ZeroMemory(&tbb, sizeof(tbb));
+            TBBUTTON tbb{};
             tbb.idCommand = i  + maxedOffset;  // Each button needs a unique ID.
             tbb.fsState = TBSTATE_ENABLED;
             tbb.fsStyle = TBSTYLE_BUTTON | TBSTYLE_AUTOSIZE | TBSTYLE_DROPDOWN;
@@ -1108,12 +1101,12 @@ namespace Win32xx
         CMenuBar* pMenuBar = pTLSData->pMenuBar;
         assert(dynamic_cast<CMenuBar*>(pMenuBar));
 
-        if (MSGF_MENU == code && pMenuBar)
+        if (MSGF_MENU == code)
             pMenuBar->OnMenuInput(pMsg->message, pMsg->wParam, pMsg->lParam);
 
         // The HHOOK parameter in CallNextHookEx should be supplied for Win95, Win98 and WinME.
         // The HHOOK parameter is ignored for Windows NT and above.
-        return pMenuBar ? ::CallNextHookEx(pMenuBar->m_msgHook, code, wparam, lparam) : 0;
+        return ::CallNextHookEx(pMenuBar->m_msgHook, code, wparam, lparam);
     }
 
     inline LRESULT CMenuBar::SysCommand(UINT msg, WPARAM wparam, LPARAM lparam)

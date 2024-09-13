@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -56,8 +56,7 @@ namespace Win32xx
     // them to a window procedure.
     inline int CMessagePump::MessageLoop()
     {
-        MSG msg;
-        ZeroMemory(&msg, sizeof(msg));
+        MSG msg{};
         int status = 1;
         LONG count = 0;
 
@@ -72,7 +71,7 @@ namespace Win32xx
             count = 0;
 
             // Now wait until we get a message.
-            if ((status = ::GetMessage(&msg, NULL, 0, 0)) == -1)
+            if ((status = ::GetMessage(&msg, nullptr, 0, 0)) == -1)
                 return -1;
 
             if (!PreTranslateMessage(msg))
@@ -112,7 +111,7 @@ namespace Win32xx
             else
             {
                 // Search the chain of parents for pretranslated messages.
-                for (HWND wnd = msg.hwnd; wnd != NULL; wnd = ::GetParent(wnd))
+                for (HWND wnd = msg.hwnd; wnd != nullptr; wnd = ::GetParent(wnd))
                 {
                     CWnd* pWnd = GetApp()->GetCWndFromMap(wnd);
                     if (pWnd)

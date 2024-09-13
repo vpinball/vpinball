@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -88,7 +88,7 @@ namespace Win32xx
          CFileFind();
          virtual ~CFileFind();
 
-         BOOL        FindFirstFile(LPCTSTR fileSearch = NULL);
+         BOOL        FindFirstFile(LPCTSTR fileSearch = nullptr);
          BOOL        FindNextFile();
          FILETIME    GetCreationTime() const;
          DWORD       GetFileAttributes() const;
@@ -136,7 +136,7 @@ namespace Win32xx
     inline CFileFind::CFileFind()
     {
         m_fileFind = INVALID_HANDLE_VALUE;
-        ZeroMemory(&m_findData, sizeof(m_findData));
+        m_findData = {};
     }
 
     inline CFileFind::~CFileFind()
@@ -147,7 +147,7 @@ namespace Win32xx
     //  Closes the FileFind handle and returns the CFileFind object to default.
     inline void CFileFind::Close()
     {
-        ZeroMemory(&m_findData, sizeof(m_findData));
+        m_findData = {};
 
         if (m_fileFind != INVALID_HANDLE_VALUE)
             ::FindClose(m_fileFind);
@@ -162,13 +162,13 @@ namespace Win32xx
     //  A name of "*.*" is used if no name is specified.
     //  Returns TRUE if a matching file was found, FALSE otherwise.
     //  Refer to FindFirstFile in the Windows API documentation for more information.
-    inline BOOL CFileFind::FindFirstFile(LPCTSTR fileSearch /* = NULL */)
+    inline BOOL CFileFind::FindFirstFile(LPCTSTR fileSearch /* = nullptr */)
     {
         // Reset the this to default.
         Close();
 
         // Default the name to all files in the current directory.
-        if (fileSearch == NULL)
+        if (fileSearch == nullptr)
             fileSearch = _T("*.*");
 
         // Search for the first file matching the name.
@@ -245,7 +245,7 @@ namespace Win32xx
         int buffSize = static_cast<int>(::GetFullPathName(searchName, 0, 0, 0));
         if (buffSize > 0)
         {
-            ::GetFullPathName(searchName, static_cast<DWORD>(buffSize), filePath.GetBuffer(buffSize), NULL);
+            ::GetFullPathName(searchName, static_cast<DWORD>(buffSize), filePath.GetBuffer(buffSize), nullptr);
             filePath.ReleaseBuffer();
         }
 

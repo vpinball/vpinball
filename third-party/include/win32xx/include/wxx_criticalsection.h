@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -60,8 +60,8 @@ namespace Win32xx
         void Release();
 
     private:
-        CCriticalSection ( const CCriticalSection& );
-        CCriticalSection& operator=( const CCriticalSection& );
+        CCriticalSection (const CCriticalSection&) = delete;
+        CCriticalSection& operator=(const CCriticalSection&) = delete;
 
         CRITICAL_SECTION m_cs;
         long m_count;
@@ -80,8 +80,8 @@ namespace Win32xx
         ~CThreadLock() { m_cs.Release(); }
 
     private:
-        CThreadLock(const CThreadLock&);                // Disable copy construction
-        CThreadLock& operator= (const CThreadLock&);    // Disable assignment operator
+        CThreadLock(const CThreadLock&) = delete;
+        CThreadLock& operator= (const CThreadLock&) = delete;
         CCriticalSection& m_cs;
     };
 
@@ -97,16 +97,7 @@ namespace Win32xx
     //
     inline CCriticalSection::CCriticalSection() : m_count(0)
     {
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)  // >= VS2005
-#pragma warning ( push )
-#pragma warning ( disable : 28125 )           // call within __try __catch block.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)
-
         ::InitializeCriticalSection(&m_cs);
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1400)  // Note: Only Windows Server 2003 and Windows XP
-#pragma warning ( pop )                       //       require this warning to be suppressed.
-#endif // (_MSC_VER) && (_MSC_VER >= 1400)    //       This exception was removed in Vista and above.
     }
 
     inline CCriticalSection::~CCriticalSection()

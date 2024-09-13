@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -130,19 +130,19 @@ namespace Win32xx
     {
     public:
         CPreviewPane();
-        virtual ~CPreviewPane() {}
+        virtual ~CPreviewPane() override {}
 
         void Render(CDC& dc);
         void SetBitmap(CBitmap bitmap) { m_bitmap = bitmap; }
 
     protected:
-        virtual void OnDraw(CDC& dc);
-        virtual BOOL OnEraseBkgnd(CDC&);
-        virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual void OnDraw(CDC& dc) override;
+        virtual BOOL OnEraseBkgnd(CDC&) override;
+        virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CPreviewPane(const CPreviewPane&);               // Disable copy construction
-        CPreviewPane& operator=(const CPreviewPane&);    // Disable assignment operator
+        CPreviewPane(const CPreviewPane&) = delete;
+        CPreviewPane& operator=(const CPreviewPane&) = delete;
         CBitmap m_bitmap;
     };
 
@@ -157,7 +157,7 @@ namespace Win32xx
     public:
         CPrintPreview();
         CPrintPreview(T& source);
-        virtual ~CPrintPreview();
+        virtual ~CPrintPreview() override;
 
         CPreviewPane& GetPreviewPane() const { return *m_pPreviewPane; }
         void SetPreviewPane(CPreviewPane& previewPane) { m_pPreviewPane = &previewPane; }
@@ -173,15 +173,15 @@ namespace Win32xx
         virtual void UpdateButtons();
 
     protected:
-        virtual void OnCancel() { OnCloseButton(); }
-        virtual BOOL OnInitDialog();
-        virtual void OnOK() { OnCloseButton(); }
-        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
+        virtual void OnCancel() override { OnCloseButton(); }
+        virtual BOOL OnInitDialog() override;
+        virtual void OnOK() override { OnCloseButton(); }
+        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CPrintPreview(const CPrintPreview&);               // Disable copy construction
-        CPrintPreview& operator=(const CPrintPreview&);    // Disable assignment operator
+        CPrintPreview(const CPrintPreview&) = delete;
+        CPrintPreview& operator=(const CPrintPreview&) = delete;
         CPreviewPane m_previewPane;               // Default CPreviewPane object
         CPreviewPane* m_pPreviewPane;             // Pointer to the CPreviewPane object we actually use
         CResizer m_resizer;
@@ -217,8 +217,7 @@ namespace Win32xx
         CString className = _T("PreviewPane");
 
         // Register the window class for use as a custom control in the dialog.
-        WNDCLASS wc;
-        ZeroMemory(&wc, sizeof(WNDCLASS));
+        WNDCLASS wc{};
 
         if (!::GetClassInfo(GetApp()->GetInstanceHandle(), className, &wc))
         {
@@ -226,7 +225,7 @@ namespace Win32xx
             wc.lpfnWndProc = ::DefWindowProc;
             wc.hInstance = GetApp()->GetInstanceHandle();
             wc.hbrBackground = (HBRUSH)GetStockObject(GRAY_BRUSH);
-            wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+            wc.hCursor = ::LoadCursor(nullptr, IDC_ARROW);
             VERIFY(::RegisterClass(&wc));
         }
 
@@ -250,7 +249,7 @@ namespace Win32xx
     // Normally OnDraw is suppressed for controls, but we need OnDraw for this window.
     inline LRESULT CPreviewPane::OnPaint(UINT, WPARAM, LPARAM)
     {
-        if (::GetUpdateRect(*this, NULL, FALSE))
+        if (::GetUpdateRect(*this, nullptr, FALSE))
         {
             CPaintDC dc(*this);
             OnDraw(dc);
@@ -306,9 +305,9 @@ namespace Win32xx
             // Extract the device independent image data.
             CMemDC memDC(dc);
             UINT scanLines = static_cast<UINT>(bm.bmHeight);
-            memDC.GetDIBits(m_bitmap, 0, scanLines, NULL, pbmi, DIB_RGB_COLORS);
+            memDC.GetDIBits(m_bitmap, 0, scanLines, nullptr, pbmi, DIB_RGB_COLORS);
             std::vector<byte> byteArray(pBIH->biSizeImage, 0);
-            byte* pByteArray = &byteArray.front();
+            byte* pByteArray = byteArray.data();
             memDC.GetDIBits(m_bitmap, 0, scanLines, pByteArray, pbmi, DIB_RGB_COLORS);
 
             // Use half tone stretch mode for smoother rendering.
@@ -510,8 +509,8 @@ namespace Win32xx
         memDC.CreateCompatibleBitmap(printerDC, width / shrink, height / shrink);
 
         memDC.SetMapMode(MM_ANISOTROPIC);
-        memDC.SetWindowExtEx(width, height, NULL);
-        memDC.SetViewportExtEx(width / shrink, height / shrink, NULL);
+        memDC.SetWindowExtEx(width, height, nullptr);
+        memDC.SetViewportExtEx(width / shrink, height / shrink, nullptr);
 
         // Fill the bitmap with a white background.
         CRect rc(0, 0, width, height);

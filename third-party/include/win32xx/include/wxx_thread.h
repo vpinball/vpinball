@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -41,9 +41,7 @@
 
 namespace Win32xx
 {
-    // typedef for _beginthreadex's callback function.
-    typedef UINT WINAPI THREADPROC(LPVOID);
-
+    using THREADPROC = UINT (WINAPI*)(LPVOID);
 
     ////////////////////////////////////////////////////
     // CThreadT is the class template used by CWinThread
@@ -53,11 +51,11 @@ namespace Win32xx
     {
     public:
         CThreadT();
-        CThreadT(THREADPROC* pfnThreadProc, LPVOID pParam);
-        virtual ~CThreadT();
+        CThreadT(THREADPROC pfnThreadProc, LPVOID pParam);
+        virtual ~CThreadT() override;
 
         // Operations
-        HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0, LPSECURITY_ATTRIBUTES pSecurityAttributes = NULL);
+        HANDLE  CreateThread(unsigned initflag = 0, unsigned stack_size = 0, LPSECURITY_ATTRIBUTES pSecurityAttributes = nullptr);
         HANDLE  GetThread() const;
         UINT    GetThreadID() const;
         int     GetThreadPriority() const;
@@ -69,17 +67,17 @@ namespace Win32xx
         operator HANDLE () const { return GetThread(); }
 
     private:
-        CThreadT(const CThreadT&);              // Disable copy construction.
-        CThreadT& operator=(const CThreadT&);   // Disable assignment operator.
+        CThreadT(const CThreadT&) = delete;
+        CThreadT& operator=(const CThreadT&) = delete;
 
-        THREADPROC* m_pfnThreadProc;    // Thread callback function.
+        THREADPROC m_pfnThreadProc;     // Thread callback function.
         LPVOID m_pThreadParams;         // Thread parameter.
         HANDLE m_thread;                // Handle of this thread.
         UINT m_threadID;                // ID of this thread.
     };
 
-    typedef CThreadT<CObject> WorkThread;
-    typedef CThreadT<CMessagePump> WinThread;
+    using WorkThread = CThreadT<CObject>;
+    using WinThread = CThreadT<CMessagePump>;
 
 
     //////////////////////////////////////////////////////////////
@@ -89,20 +87,15 @@ namespace Win32xx
     class CWorkThread : public WorkThread
     {
     public:
-        CWorkThread(THREADPROC* pfnThreadProc, LPVOID pParam)
+        CWorkThread(THREADPROC pfnThreadProc, LPVOID pParam)
               : WorkThread(pfnThreadProc, pParam) {}
-        virtual ~CWorkThread() {}
+        virtual ~CWorkThread() override {}
 
     private:
-        CWorkThread(const CWorkThread&);            // Disable copy construction.
-        CWorkThread& operator=(const CWorkThread&); // Disable assignment operator.
+        CWorkThread(const CWorkThread&) = delete;
+        CWorkThread& operator=(const CWorkThread&) = delete;
     };
 
-
-#if defined (_MSC_VER)
-#pragma warning ( push )
-#pragma warning ( disable : 4355 )            // 'this' used in base member initializer list.
-#endif // (_MSC_VER)
 
     /////////////////////////////////////////////////////////////
     // CWinThread manages a thread that is capable of supporting
@@ -111,18 +104,14 @@ namespace Win32xx
     {
     public:
         CWinThread() : WinThread(StaticThreadProc, this) {}
-        virtual ~CWinThread();
+        virtual ~CWinThread() override;
 
     private:
-        CWinThread(const CWinThread&);            // Disable copy construction
-        CWinThread& operator=(const CWinThread&); // Disable assignment operator
+        CWinThread(const CWinThread&) = delete;
+        CWinThread& operator=(const CWinThread&) = delete;
 
         static  UINT WINAPI StaticThreadProc(LPVOID pCThread);
     };
-
-#if defined (_MSC_VER)
-#pragma warning (pop)
-#endif // (_MSC_VER)
 
 }
 
@@ -144,7 +133,7 @@ namespace Win32xx
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT(THREADPROC* pfnThreadProc, LPVOID pParam) :m_pfnThreadProc(0),
+    inline CThreadT<T>::CThreadT(THREADPROC pfnThreadProc, LPVOID pParam) :m_pfnThreadProc(0),
         m_pThreadParams(0), m_thread(0), m_threadID(0)
     {
         m_pfnThreadProc = pfnThreadProc;
@@ -177,7 +166,7 @@ namespace Win32xx
     // Refer to CreateThread in the Windows API documentation for more information.
     template <class T>
     inline HANDLE CThreadT<T>::CreateThread(unsigned initflag /* = 0*/, unsigned stack_size /* = 0*/,
-        LPSECURITY_ATTRIBUTES pSecurityAttributes /* = NULL*/)
+        LPSECURITY_ATTRIBUTES pSecurityAttributes /* = nullptr*/)
     {
         // Reusing the CWinThread.
         if (m_thread)
@@ -189,7 +178,7 @@ namespace Win32xx
         m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size,
             m_pfnThreadProc, m_pThreadParams, initflag, &m_threadID));
 
-        if (m_thread == NULL)
+        if (m_thread == nullptr)
             throw CWinException(GetApp()->MsgAppThread());
 
         return m_thread;
@@ -267,7 +256,7 @@ namespace Win32xx
 
     inline CWinThread::~CWinThread()
     {
-        if (GetThread() != NULL)
+        if (GetThread() != nullptr)
         {
             // Post a WM_QUIT to safely end the thread.
             PostThreadMessage(WM_QUIT, 0, 0);
@@ -282,9 +271,9 @@ namespace Win32xx
     {
         // Get the pointer for this CWinThread object.
         CWinThread* pThread = static_cast<CWinThread*>(pCThread);
-        assert(pThread != NULL);
+        assert(pThread != nullptr);
 
-        if (pThread != NULL)
+        if (pThread != nullptr)
         {
             // Set the thread's TLS Data.
             GetApp()->SetTlsData();

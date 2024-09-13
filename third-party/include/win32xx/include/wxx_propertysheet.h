@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -62,9 +62,6 @@
 #define ID_WIZFINISH   0x3025
 #define ID_HELP        0xE146
 
-#ifndef PROPSHEETHEADER_V1_SIZE
- #define PROPSHEETHEADER_V1_SIZE 40
-#endif
 
 namespace Win32xx
 {
@@ -75,26 +72,26 @@ namespace Win32xx
     class CPropertyPage : public CDialog
     {
     public:
-        CPropertyPage (UINT templateID, LPCTSTR title = NULL);
-        virtual ~CPropertyPage() {}
-        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
+        CPropertyPage (UINT templateID, LPCTSTR title = nullptr);
+        virtual ~CPropertyPage() override {}
+        virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual BOOL OnApply();
-        virtual void OnCancel();
+        virtual void OnCancel() override;
         virtual void OnHelp();
-        virtual BOOL OnInitDialog();
+        virtual BOOL OnInitDialog() override;
         virtual BOOL OnKillActive();
-        virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam);
-        virtual void OnOK();
+        virtual LRESULT OnNotify(WPARAM wparam, LPARAM lparam) override;
+        virtual void OnOK() override;
         virtual BOOL OnQueryCancel();
         virtual BOOL OnQuerySiblings(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual BOOL OnSetActive();
         virtual BOOL OnWizardBack();
         virtual BOOL OnWizardFinish();
         virtual BOOL OnWizardNext();
-        virtual BOOL PreTranslateMessage(MSG& msg);
+        virtual BOOL PreTranslateMessage(MSG& msg) override;
 
         void CancelToClose() const;
-        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
         PROPSHEETPAGE GetPSP() const {return m_psp;}
         BOOL IsButtonEnabled(UINT buttonID) const;
         LRESULT QuerySiblings(WPARAM wparam, LPARAM lparam) const;
@@ -103,8 +100,8 @@ namespace Win32xx
         void SetWizardButtons(DWORD flags) const;
 
     private:
-        CPropertyPage(const CPropertyPage&);               // Disable copy construction.
-        CPropertyPage& operator=(const CPropertyPage&);    // Disable assignment operator.
+        CPropertyPage(const CPropertyPage&) = delete;
+        CPropertyPage& operator=(const CPropertyPage&) = delete;
 
         static UINT CALLBACK StaticPropSheetPageProc(HWND wnd, UINT msg, LPPROPSHEETPAGE ppsp);
         static INT_PTR CALLBACK StaticDialogProc(HWND hDlg, UINT msg, WPARAM wparam, LPARAM lparam);
@@ -122,16 +119,17 @@ namespace Win32xx
     class CPropertySheet : public CWnd
     {
     public:
-        CPropertySheet(UINT captionID, HWND parent = NULL);
-        CPropertySheet(LPCTSTR caption = NULL, HWND parent = NULL);
-        virtual ~CPropertySheet() {}
+        CPropertySheet(UINT captionID, HWND parent = nullptr);
+        CPropertySheet(LPCTSTR caption = nullptr, HWND parent = nullptr);
+        virtual ~CPropertySheet() override {}
 
         // Operations
         virtual CPropertyPage* AddPage(CPropertyPage* pPage);
-        virtual HWND Create(HWND parent = NULL);
+        virtual CPropertyPage* AddPage(PropertyPagePtr page);
+        virtual HWND Create(HWND parent = nullptr) override;
         virtual INT_PTR CreatePropertySheet(LPCPROPSHEETHEADER pPSH);
         virtual void DestroyButton(int button);
-        virtual void Destroy();
+        virtual void Destroy() override;
         virtual int DoModal();
         virtual void RemovePage(CPropertyPage* page);
 
@@ -152,12 +150,12 @@ namespace Win32xx
 
     protected:
         virtual LRESULT OnSetDefID(WPARAM wparam);
-        virtual BOOL PreTranslateMessage(MSG& msg);
-        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual BOOL PreTranslateMessage(MSG& msg) override;
+        virtual LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CPropertySheet(const CPropertySheet&);              // Disable copy construction
-        CPropertySheet& operator=(const CPropertySheet&); // Disable assignment operator
+        CPropertySheet(const CPropertySheet&) = delete;
+        CPropertySheet& operator=(const CPropertySheet&) = delete;
         void BuildPageArray();
         static void CALLBACK Callback(HWND hwnd, UINT msg, LPARAM lparam);
 
@@ -178,9 +176,9 @@ namespace Win32xx
     // Definitions for the CPropertyPage class
     //
 
-    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = NULL*/)
+    inline CPropertyPage::CPropertyPage(UINT templateID, LPCTSTR title /* = nullptr*/)
     {
-        ZeroMemory(&m_psp, sizeof(m_psp));
+        m_psp = {};
         SetTitle(title);
 
         m_psp.dwSize        = sizeof(m_psp);
@@ -464,8 +462,8 @@ namespace Win32xx
         case PSPCB_CREATE:
         {
             TLSData* pTLSData = GetApp()->GetTlsData();
-            assert(pTLSData != NULL);
-            if (pTLSData == NULL)
+            assert(pTLSData != nullptr);
+            if (pTLSData == nullptr)
             {
                 // Thread Local Storage data isn't assigned.
                 return 0;
@@ -498,8 +496,8 @@ namespace Win32xx
             }
         }
 
-        assert(pPage != NULL);
-        if (pPage == NULL)
+        assert(pPage != nullptr);
+        if (pPage == nullptr)
         {
             // Got a message for a window that's not in the map.
             return 0;
@@ -513,16 +511,12 @@ namespace Win32xx
     // Definitions for the CPropertySheet class
     //
 
-    inline CPropertySheet::CPropertySheet(UINT captionID, HWND parent /* = NULL*/)
+    inline CPropertySheet::CPropertySheet(UINT captionID, HWND parent /* = nullptr*/)
     {
-        ZeroMemory(&m_psh, sizeof(m_psh));
+        m_psh = {};
         SetTitle(LoadString(captionID));
 
-        if (GetComCtlVersion() >= 471)
-            m_psh.dwSize = sizeof(PROPSHEETHEADER);
-        else
-            m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
-
+        m_psh.dwSize = sizeof(m_psh);
         m_psh.dwFlags     = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent  = parent;
         m_psh.hInstance   = GetApp()->GetInstanceHandle();
@@ -530,16 +524,11 @@ namespace Win32xx
             reinterpret_cast<void*>(CPropertySheet::Callback));
     }
 
-    inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= NULL*/, HWND parent /* = NULL*/)
+    inline CPropertySheet::CPropertySheet(LPCTSTR caption /*= nullptr*/, HWND parent /* = nullptr*/)
     {
-        ZeroMemory(&m_psh, sizeof (m_psh));
+        m_psh = {};
         SetTitle(caption);
-
-        if (GetComCtlVersion() >= 471)
-            m_psh.dwSize = sizeof(PROPSHEETHEADER);
-        else
-            m_psh.dwSize = PROPSHEETHEADER_V1_SIZE;
-
+        m_psh.dwSize = sizeof(m_psh);
         m_psh.dwFlags     = PSH_PROPSHEETPAGE | PSH_USECALLBACK;
         m_psh.hwndParent  = parent;
         m_psh.hInstance   = GetApp()->GetInstanceHandle();
@@ -552,10 +541,21 @@ namespace Win32xx
     // and deletes the CPropertyPage object when the PropertySheet is destroyed.
     inline CPropertyPage* CPropertySheet::AddPage(CPropertyPage* pPage)
     {
-        assert(pPage != NULL);
-        if (!pPage) return NULL;
+        assert(pPage != nullptr);
+        return AddPage(PropertyPagePtr(pPage));
+    }
 
-        m_allPages.push_back(PropertyPagePtr(pPage));
+    // Adds a Property Page to the Property Sheet.
+    // The framework assumes ownership of the CPropertyPage pointer provided,
+    // and deletes the CPropertyPage object when the PropertySheet is destroyed.
+    inline CPropertyPage* CPropertySheet::AddPage(PropertyPagePtr page)
+    {
+        CPropertyPage* pPage = page.get();
+        assert(pPage != nullptr);
+        if (!pPage)
+            return nullptr;
+
+        m_allPages.push_back(std::move(page));
 
         if (*this)
         {
@@ -574,11 +574,10 @@ namespace Win32xx
     inline void CPropertySheet::BuildPageArray()
     {
         m_allSheetPages.clear();
-        std::vector<PropertyPagePtr>::const_iterator iter;
-        for (iter = m_allPages.begin(); iter != m_allPages.end(); ++iter)
-            m_allSheetPages.push_back((*iter)->GetPSP());
+        for (const PropertyPagePtr& ptr : m_allPages)
+            m_allSheetPages.push_back(ptr->GetPSP());
 
-        PROPSHEETPAGE* pPSPArray = &m_allSheetPages.front(); // Array of PROPSHEETPAGE
+        PROPSHEETPAGE* pPSPArray = m_allSheetPages.data(); // Array of PROPSHEETPAGE
         m_psh.ppsp = pPSPArray;
     }
 
@@ -588,7 +587,7 @@ namespace Win32xx
         switch(msg)
         {
         // Called before the property sheet is created.
-        // wnd = NULL, and lparam points to dialog resource.
+        // wnd = nullptr, and lparam points to dialog resource.
         case PSCB_PRECREATE:
             {
                 LPDLGTEMPLATE  lpTemplate = (LPDLGTEMPLATE)lparam;
@@ -610,8 +609,8 @@ namespace Win32xx
 
                 CPropertySheet* w = static_cast<CPropertySheet*>(pTLSData->pWnd);
 
-                assert(w != NULL);
-                if (w != NULL)
+                assert(w != nullptr);
+                if (w != nullptr)
                 {
                     // Subclass the property sheet, so that messages are forwarded
                     // to CWnd::StaticWindowProc for handling in WndProc.
@@ -624,7 +623,7 @@ namespace Win32xx
 
     // Creates a modeless Property Sheet.
     // Refer to PropertySheet in the Windows API documentation for more information.
-    inline HWND CPropertySheet::Create(HWND parent /*= NULL*/)
+    inline HWND CPropertySheet::Create(HWND parent /*= nullptr*/)
     {
         assert(!IsWindow());        // Only one window per CWnd instance allowed.
         Cleanup();
@@ -635,14 +634,14 @@ namespace Win32xx
         }
 
         BuildPageArray();
-        PROPSHEETPAGE* pPSPArray = &m_allSheetPages.front();
+        PROPSHEETPAGE* pPSPArray = m_allSheetPages.data();
         m_psh.ppsp = pPSPArray;
 
         // Create a modeless Property Sheet.
         m_psh.dwFlags &= ~PSH_WIZARD;
         m_psh.dwFlags |= PSH_MODELESS;
         HWND wnd = reinterpret_cast<HWND>(CreatePropertySheet(&m_psh));
-        if (wnd == NULL)
+        if (wnd == nullptr)
             throw CWinException(GetApp()->MsgWndPropertSheet());
 
         return wnd;
@@ -656,7 +655,7 @@ namespace Win32xx
         assert(!IsWindow());
 
         INT_PTR result = 0;
-        m_wnd = NULL;
+        m_wnd = nullptr;
 
         // Retrieve this thread's TLS data.
         TLSData* pTLSData = GetApp()->GetTlsData();
@@ -668,7 +667,7 @@ namespace Win32xx
         result = PropertySheet(pPSH);
 
         // Tidy up.
-        pTLSData->pWnd = NULL;
+        pTLSData->pWnd = nullptr;
 
         if (result == -1)
             throw CWinException(GetApp()->MsgWndPropertSheet());
@@ -682,7 +681,7 @@ namespace Win32xx
         assert(IsWindow());
 
         HWND button = ::GetDlgItem(*this, buttonID);
-        if (button != NULL)
+        if (button != nullptr)
         {
             // Hide and disable the button.
             ::ShowWindow(button, SW_HIDE);
@@ -706,7 +705,7 @@ namespace Win32xx
         Cleanup();
 
         BuildPageArray();
-        PROPSHEETPAGE* pPSPArray = &m_allSheetPages.front();
+        PROPSHEETPAGE* pPSPArray = m_allSheetPages.data();
         m_psh.ppsp = pPSPArray;
 
         // Create the Property Sheet.
@@ -725,8 +724,8 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        CPropertyPage* pPage = NULL;
-        if (GetHwnd() != NULL)
+        CPropertyPage* pPage = nullptr;
+        if (GetHwnd() != nullptr)
         {
             HWND hPage = reinterpret_cast<HWND>(SendMessage(PSM_GETCURRENTPAGEHWND, 0, 0));
             pPage = static_cast<CPropertyPage*>(GetCWndPtr(hPage));
@@ -811,7 +810,7 @@ namespace Win32xx
 
         int page = GetPageIndex(pPage);
         WPARAM wparam = static_cast<WPARAM>(page);
-        if (GetHwnd() != NULL)
+        if (GetHwnd() != nullptr)
             SendMessage(*this, PSM_REMOVEPAGE, wparam, 0);
 
         m_allPages.erase(m_allPages.begin() + page, m_allPages.begin() + page+1);

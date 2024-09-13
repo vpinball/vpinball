@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -49,9 +49,9 @@ namespace Win32xx
     class CHGlobal
     {
     public:
-        CHGlobal() : m_global(NULL) {}
+        CHGlobal() : m_global(nullptr) {}
         CHGlobal(HGLOBAL handle) : m_global(handle) {}
-        CHGlobal(size_t size) : m_global(NULL) { Alloc(size); }
+        CHGlobal(size_t size) : m_global(nullptr) { Alloc(size); }
         ~CHGlobal()                     { Free(); }
 
         void Alloc(size_t size);
@@ -62,8 +62,8 @@ namespace Win32xx
         operator HGLOBAL() const        { return m_global; }
 
     private:
-        CHGlobal(const CHGlobal&);              // Disable copy
-        CHGlobal& operator=(const CHGlobal&);   // Disable assignment
+        CHGlobal(const CHGlobal&) = delete;
+        CHGlobal& operator=(const CHGlobal&) = delete;
 
         HGLOBAL m_global;
     };
@@ -84,17 +84,17 @@ namespace Win32xx
     {
         Free();
         m_global = ::GlobalAlloc(GHND, size);
-        if (m_global == NULL)
+        if (m_global == nullptr)
             throw std::bad_alloc();
     }
 
     // Manually frees the global memory assigned to this object.
     inline void CHGlobal::Free()
     {
-        if (m_global != NULL)
-            VERIFY(::GlobalFree(m_global) == NULL);  // Fails if the memory was already freed.
+        if (m_global != nullptr)
+            VERIFY(::GlobalFree(m_global) == nullptr);  // Fails if the memory was already freed.
 
-        m_global = NULL;
+        m_global = nullptr;
     }
 
     // Reassign is used when global memory has been reassigned, as

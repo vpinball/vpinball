@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -51,12 +51,12 @@ namespace Win32xx
     {
     public:
         CStatusBar();
-        virtual ~CStatusBar() {}
+        virtual ~CStatusBar() override {}
 
         // Overridables
-        virtual BOOL OnEraseBkgnd(CDC& dc);
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual BOOL OnEraseBkgnd(CDC& dc) override;
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
         // Accessors and mutators
         int GetParts() const;
@@ -73,8 +73,8 @@ namespace Win32xx
         void SetSimple(BOOL isSimple = TRUE) const;
 
     private:
-        CStatusBar(const CStatusBar&);              // Disable copy construction
-        CStatusBar& operator=(const CStatusBar&);   // Disable assignment operator
+        CStatusBar(const CStatusBar&) = delete;
+        CStatusBar& operator=(const CStatusBar&) = delete;
     };
 
 }
@@ -277,4 +277,4 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // #ifndef _WIN32XX_STATUSBAR_H_
+#endif // _WIN32XX_STATUSBAR_H_

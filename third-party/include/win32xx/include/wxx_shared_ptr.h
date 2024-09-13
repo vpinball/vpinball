@@ -120,9 +120,14 @@ namespace Win32xx
     class Shared_Ptr
     {
     public:
-        Shared_Ptr() : m_ptr(0), m_count(0) { }
+        Shared_Ptr() : m_ptr(0), m_count(0)
+        {
+            TRACE("*** Warning: Shared_Ptr is deprecated. ***\n");
+        }
         Shared_Ptr(T* p) : m_ptr(p), m_count(0)
         {
+            TRACE("*** Warning: Shared_Ptr is deprecated. ***\n");
+
             try
             {
                 if (m_ptr) m_count = new long(0);

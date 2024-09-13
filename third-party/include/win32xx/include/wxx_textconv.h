@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -85,49 +85,49 @@ namespace Win32xx
     class CAtoBSTR;
     class CWtoBSTR;
 
-    // typedefs for the well known text conversions
-    typedef CAtoW AtoW;
-    typedef CWtoA WtoA;
-    typedef CWtoBSTR WtoBSTR;
-    typedef CAtoBSTR AtoBSTR;
-    typedef CWtoA BSTRtoA;
-    typedef CWtoW BSTRtoW;
+    // using declarations for the well known text conversions
+    using AtoW = CAtoW;
+    using WtoA = CWtoA;
+    using WtoBSTR  = CWtoBSTR;
+    using AtoBSTR = CAtoBSTR;
+    using BSTRtoA = CWtoA;
+    using BSTRtoW = CWtoW;
 
 #ifdef UNICODE
-    typedef CAtoW AtoT;
-    typedef CWtoA TtoA;
-    typedef CWtoW TtoW;
-    typedef CWtoW WtoT;
-    typedef CWtoBSTR TtoBSTR;
-    typedef BSTRtoW BSTRtoT;
+    using AtoT = CAtoW;
+    using TtoA = CWtoA;
+    using TtoW = CWtoW;
+    using WtoT = CWtoW;
+    using TtoBSTR = CWtoBSTR;
+    using BSTRtoT = BSTRtoW;
 #else
-    typedef CAtoA AtoT;
-    typedef CAtoA TtoA;
-    typedef CAtoW TtoW;
-    typedef CWtoA WtoT;
-    typedef CAtoBSTR TtoBSTR;
-    typedef BSTRtoA BSTRtoT;
+    using AtoT = CAtoA;
+    using TtoA = CAtoA;
+    using TtoW = CAtoW;
+    using WtoT = CWtoA;
+    using TtoBSTR = CAtoBSTR;
+    using BSTRtoT = BSTRtoA;
 #endif
 
-    typedef AtoW  AtoOLE;
-    typedef TtoW  TtoOLE;
-    typedef CWtoW WtoOLE;
-    typedef WtoA  OLEtoA;
-    typedef WtoT  OLEtoT;
-    typedef CWtoW OLEtoW;
+    using AtoOLE = AtoW;
+    using TtoOLE = TtoW;
+    using WtoOLE = CWtoW;
+    using OLEtoA = WtoA;
+    using OLEtoT = WtoT;
+    using OLEtoW = CWtoW;
 
     class CAtoW
     {
     public:
         CAtoW(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
         ~CAtoW();
-        operator LPCWSTR() { return m_str? &m_wideArray[0] : NULL; }
-        operator LPOLESTR() { return m_str? (LPOLESTR)&m_wideArray[0] : (LPOLESTR)NULL; }
-        LPCWSTR c_str() { return m_str ? &m_wideArray[0] : NULL; }
+        operator LPCWSTR() { return m_str? &m_wideArray[0] : nullptr; }
+        operator LPOLESTR() { return m_str? (LPOLESTR)&m_wideArray[0] : (LPOLESTR)nullptr; }
+        LPCWSTR c_str() { return m_str ? &m_wideArray[0] : nullptr; }
 
     private:
-        CAtoW(const CAtoW&);
-        CAtoW& operator= (const CAtoW&);
+        CAtoW(const CAtoW&) = delete;
+        CAtoW& operator= (const CAtoW&) = delete;
         std::vector<wchar_t> m_wideArray;
         LPCSTR m_str;
     };
@@ -137,12 +137,12 @@ namespace Win32xx
     public:
         CWtoA(LPCWSTR str, UINT codePage = CP_ACP, int charCount = -1);
         ~CWtoA();
-        operator LPCSTR() { return m_str? &m_ansiArray[0] : NULL; }
-        LPCSTR c_str() { return m_str ? &m_ansiArray[0] : NULL; }
+        operator LPCSTR() { return m_str? &m_ansiArray[0] : nullptr; }
+        LPCSTR c_str() { return m_str ? &m_ansiArray[0] : nullptr; }
 
     private:
-        CWtoA(const CWtoA&);
-        CWtoA& operator= (const CWtoA&);
+        CWtoA(const CWtoA&) = delete;
+        CWtoA& operator= (const CWtoA&) = delete;
         std::vector<char> m_ansiArray;
         LPCWSTR m_str;
     };
@@ -156,8 +156,8 @@ namespace Win32xx
         LPCWSTR c_str() const { return m_str; }
 
     private:
-        CWtoW(const CWtoW&);
-        CWtoW& operator= (const CWtoW&);
+        CWtoW(const CWtoW&) = delete;
+        CWtoW& operator= (const CWtoW&) = delete;
 
         LPCWSTR m_str;
     };
@@ -170,8 +170,8 @@ namespace Win32xx
         LPCSTR c_str() const { return m_str; }
 
     private:
-        CAtoA(const CAtoA&);
-        CAtoA& operator= (const CAtoA&);
+        CAtoA(const CAtoA&) = delete;
+        CAtoA& operator= (const CAtoA&) = delete;
 
         LPCSTR m_str;
     };
@@ -184,8 +184,8 @@ namespace Win32xx
         operator BSTR() { return m_bstrString;}
 
     private:
-        CWtoBSTR(const CWtoBSTR&);
-        CWtoBSTR& operator= (const CWtoBSTR&);
+        CWtoBSTR(const CWtoBSTR&) = delete;
+        CWtoBSTR& operator= (const CWtoBSTR&) = delete;
         BSTR m_bstrString;
     };
 
@@ -197,8 +197,8 @@ namespace Win32xx
         operator BSTR() { return m_bstrString;}
 
     private:
-        CAtoBSTR(const CAtoBSTR&);
-        CAtoBSTR& operator= (const CAtoBSTR&);
+        CAtoBSTR(const CAtoBSTR&) = delete;
+        CAtoBSTR& operator= (const CAtoBSTR&) = delete;
         BSTR m_bstrString;
     };
 
@@ -216,7 +216,7 @@ namespace Win32xx
             // Resize the vector and assign null WCHAR to each element.
             int charSize = static_cast<int>(sizeof(CHAR));
             int charBytes = (charCount == -1) ? -1 : charSize * charCount;
-            int length = MultiByteToWideChar(codePage, 0, str, charBytes, NULL, 0) + 1;
+            int length = MultiByteToWideChar(codePage, 0, str, charBytes, nullptr, 0) + 1;
             m_wideArray.assign(static_cast<size_t>(length), L'\0');
 
             // Fill our vector with the converted WCHAR array.
@@ -241,11 +241,11 @@ namespace Win32xx
         // Resize the vector and assign null char to each element
         int charSize = static_cast<int>(sizeof(WCHAR));
         int charBytes = (charCount == -1) ? -1 : charSize * charCount;
-        int length = WideCharToMultiByte(codePage, 0, str, charBytes, NULL, 0, NULL, NULL) + 1;
+        int length = WideCharToMultiByte(codePage, 0, str, charBytes, nullptr, 0, nullptr, nullptr) + 1;
         m_ansiArray.assign(static_cast<size_t>(length), '\0');
 
         // Fill our vector with the converted char array
-        WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, NULL, NULL);
+        WideCharToMultiByte(codePage, 0, str, charCount, &m_ansiArray[0], length, nullptr, nullptr);
     }
 
     inline CWtoA::~CWtoA()

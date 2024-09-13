@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -43,8 +43,8 @@
 
 ///////////////////////////////////////////////////////////////////////////
 // wxx_appcore0.h
-// This file contains the declarations of the CWinApp class.
-// This class is used start Win32++ and run the message loop. You should
+// This file contains the declarations of CGlobalLock and CWinApp.
+// CWinApp is used start Win32++ and run the message loop. You should
 // should inherit from this class to start Win32++ in your own application.
 
 
@@ -93,100 +93,48 @@ namespace Win32xx
     struct TLSData;
 
     // Define the maximum size for TCHAR strings
-    const int WXX_MAX_STRING_SIZE = 255;
+    constexpr int WXX_MAX_STRING_SIZE = 255;
 
-    // Some useful smart pointers
-    // Note: Modern C++ compilers can use these typedefs instead.
-    // typedef std::shared_ptr<CDocker> DockPtr;
-    // typedef std::shared_ptr<EnhMetaFileData> EnhMetaDataPtr;
-    // typedef std::shared_ptr<CMDIChild> MDIChildPtr;
-    // typedef std::shared_ptr<MenuItemData> MenuItemDataPtr;
-    // typedef std::shared_ptr<MetaFileData> MetaDataPtr;
-    // typedef std::shared_ptr<CPropertyPage> PropertyPagePtr;
-    // typedef std::shared_ptr<TLSData> TLSDataPtr;
-    // typedef std::shared_ptr<CWinThread> WinThreadPtr;
-    // typedef std::shared_ptr<CWorkThread> WorkThreadPtr;
-    // typedef std::shared_ptr<CWnd> WndPtr;
-
-    typedef Shared_Ptr<CDocker> DockPtr;
-    typedef Shared_Ptr<EnhMetaFileData> EnhMetaDataPtr;
-    typedef Shared_Ptr<CMDIChild> MDIChildPtr;
-    typedef Shared_Ptr<MenuItemData> MenuItemDataPtr;
-    typedef Shared_Ptr<MetaFileData> MetaDataPtr;
-    typedef Shared_Ptr<CPropertyPage> PropertyPagePtr;
-    typedef Shared_Ptr<TLSData> TLSDataPtr;
-    typedef Shared_Ptr<CWinThread> WinThreadPtr;
-    typedef Shared_Ptr<CWorkThread> WorkThreadPtr;
-    typedef Shared_Ptr<CWnd> WndPtr;
-
+    // Some useful smart pointer aliases
+    using DockPtr = std::unique_ptr<CDocker>;
+    using EnhMetaDataPtr = std::shared_ptr<EnhMetaFileData>;
+    using MDIChildPtr = std::unique_ptr<CMDIChild>;
+    using MenuItemDataPtr = std::unique_ptr<MenuItemData>;
+    using MetaDataPtr = std::shared_ptr<MetaFileData>;
+    using PropertyPagePtr = std::unique_ptr<CPropertyPage>;
+    using TLSDataPtr = std::unique_ptr<TLSData>;
+    using WinThreadPtr = std::unique_ptr<CWinThread>;
+    using WorkThreadPtr = std::unique_ptr<CWorkThread>;
+    using WndPtr = std::unique_ptr<CWnd>;
 
     // A structure that contains the data members for CGDIObject.
     struct CGDI_Data
     {
         // Constructor
-        CGDI_Data() : hGDIObject(NULL), count(1L), isManagedObject(false) {}
+        CGDI_Data() : hGDIObject(nullptr), isManagedObject(false) {}
 
         HGDIOBJ hGDIObject;
-        long    count;
         bool    isManagedObject;
     };
-
 
     // A structure that contains the data members for CImageList.
     struct CIml_Data
     {
         // Constructor
-        CIml_Data() : images(NULL), isManagedHiml(false), count(1L) {}
+        CIml_Data() : images(nullptr), isManagedHiml(false) {}
 
         HIMAGELIST  images;
         bool        isManagedHiml;
-        long        count;
     };
 
     // A structure that contains the data members for CMenu.
     struct CMenu_Data
     {
         // Constructor
-        CMenu_Data() : menu(NULL), isManagedMenu(false), count(1L) {}
+        CMenu_Data() : menu(nullptr), isManagedMenu(false) {}
 
         HMENU menu;
         bool isManagedMenu;
-        long count;
-    };
-
-    // The comparison function object used by CWinApp::m_mapHDC
-    struct CompareHDC
-    {
-        bool operator()(const HDC a, const HDC b) const
-            {return (reinterpret_cast<DWORD_PTR>(a) < reinterpret_cast<DWORD_PTR>(b));}
-    };
-
-    // The comparison function object used by CWinApp::m_mapGDI
-    struct CompareGDI
-    {
-        bool operator()(const HGDIOBJ a, const HGDIOBJ b) const
-            {return (reinterpret_cast<DWORD_PTR>(a) < reinterpret_cast<DWORD_PTR>(b));}
-    };
-
-    // The comparison function object used by CWinApp::m_mapHIMAGELIST
-    struct CompareHIMAGELIST
-    {
-        bool operator()(const HIMAGELIST a, const HIMAGELIST b) const
-            {return (reinterpret_cast<DWORD_PTR>(a) < reinterpret_cast<DWORD_PTR>(b));}
-    };
-
-    // The comparison function object used by CWinApp::m_mapHMENU
-    struct CompareHMENU
-    {
-        bool operator()(const HMENU a, const HMENU b) const
-            {return (reinterpret_cast<DWORD_PTR>(a) < reinterpret_cast<DWORD_PTR>(b));}
-    };
-
-    // The comparison function object used by CWinApp::m_mapHWND
-    struct CompareHWND
-    {
-        bool operator()(const HWND a, const HWND b) const
-            {return (reinterpret_cast<DWORD_PTR>(a) < reinterpret_cast<DWORD_PTR>(b));}
     };
 
     // Used for Thread Local Storage (TLS)
@@ -196,8 +144,9 @@ namespace Win32xx
         HWND  mainWnd;      // Handle to the main window for the thread (usually CFrame)
         CMenuBar* pMenuBar; // Pointer to the CMenuBar object with the WH_MSGFILTER hook
 
-        TLSData() : pWnd(NULL), mainWnd(NULL), pMenuBar(NULL) {} // Constructor
+        TLSData() : pWnd(nullptr), mainWnd(nullptr), pMenuBar(nullptr) {} // Constructor
     };
+
 
     ///////////////////////////////////////////////////////////////////
     // Acknowledgement:
@@ -207,7 +156,7 @@ namespace Win32xx
     ///////////////////////////////////////////////////////////////////
 
 
-    //////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////
     // CGlobaLock is a class template used to provide a self unlocking
     // object to global memory. It is used to provide convenient access
     // to the memory provided by hDevMode and hDevNames handles.
@@ -221,7 +170,7 @@ namespace Win32xx
     {
     public:
         // Constructors and Destructors
-        CGlobalLock() : m_h(NULL), m_p(NULL) {}
+        CGlobalLock() : m_h(nullptr), m_p(nullptr) {}
         CGlobalLock(HANDLE h) : m_h(h) { Lock(); }
         CGlobalLock(const CGlobalLock& rhs);
         ~CGlobalLock() { Unlock(); }
@@ -272,7 +221,7 @@ namespace Win32xx
 
     public:
         CWinApp();
-        virtual ~CWinApp();
+        virtual ~CWinApp() override;
 
         // Operations
         CWnd* GetCWndFromMap(HWND wnd);
@@ -298,27 +247,27 @@ namespace Win32xx
         void      UpdatePrinterMemory(HGLOBAL hDevMode, HGLOBAL hDevNames);
 
     private:
-        CWinApp(const CWinApp&);               // Disable copy construction
-        CWinApp& operator=(const CWinApp&);    // Disable assignment operator
+        CWinApp(const CWinApp&) = delete;
+        CWinApp& operator=(const CWinApp&) = delete;
 
-        void AddCDCData(HDC dc, CDC_Data* pData);
-        void AddCGDIData(HGDIOBJ gdi, CGDI_Data* pData);
-        void AddCImlData(HIMAGELIST images, CIml_Data* pData);
-        void AddCMenuData(HMENU menu, CMenu_Data* pData);
-        CDC_Data*   GetCDCData(HDC dc);
-        CGDI_Data*  GetCGDIData(HGDIOBJ object);
-        CIml_Data*  GetCImlData(HIMAGELIST images);
-        CMenu_Data* GetCMenuData(HMENU menu);
+        void AddCDCData(HDC dc, std::weak_ptr<CDC_Data> pData);
+        void AddCGDIData(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData);
+        void AddCImlData(HIMAGELIST images, std::weak_ptr<CIml_Data> pData);
+        void AddCMenuData(HMENU menu, std::weak_ptr<CMenu_Data> pData);
+        std::weak_ptr<CDC_Data>  GetCDCData(HDC dc);
+        std::weak_ptr<CGDI_Data> GetCGDIData(HGDIOBJ object);
+        std::weak_ptr<CIml_Data> GetCImlData(HIMAGELIST images);
+        std::weak_ptr<CMenu_Data> GetCMenuData(HMENU menu);
         void SetCallback();
         void SetTlsData();
 
-        static CWinApp* SetnGetThis(CWinApp* pThis = NULL, bool reset = false);
+        static CWinApp* SetnGetThis(CWinApp* pThis = nullptr, bool reset = false);
 
-        std::map<HDC, CDC_Data*, CompareHDC> m_mapCDCData;
-        std::map<HGDIOBJ, CGDI_Data*, CompareGDI> m_mapCGDIData;
-        std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST> m_mapCImlData;
-        std::map<HMENU, CMenu_Data*, CompareHMENU> m_mapCMenuData;
-        std::map<HWND, CWnd*, CompareHWND> m_mapHWND;       // maps window handles to CWnd objects
+        std::map<HDC, std::weak_ptr<CDC_Data>> m_mapCDCData;
+        std::map<HGDIOBJ, std::weak_ptr<CGDI_Data>> m_mapCGDIData;
+        std::map<HIMAGELIST, std::weak_ptr<CIml_Data>> m_mapCImlData;
+        std::map<HMENU, std::weak_ptr<CMenu_Data>> m_mapCMenuData;
+        std::map<HWND, CWnd*> m_mapHWND;       // maps window handles to CWnd objects
         std::vector<TLSDataPtr> m_allTLSData;     // vector of TLSData smart pointers, one for each thread
         CCriticalSection m_appLock;   // thread synchronization for CWinApp and TLS.
         CCriticalSection m_gdiLock;   // thread synchronization for m_mapCDCData and m_mapCGDIData.
@@ -332,7 +281,7 @@ namespace Win32xx
         CHGlobal m_devNames;          // Used by CPrintDialog and CPageSetupDialog
 
     public:
-        // Messages used for exceptions.
+        // Message strings used for exceptions.
         virtual CString MsgAppThread() const;
         virtual CString MsgArReadFail() const;
         virtual CString MsgArNotCStringA() const;
@@ -342,6 +291,7 @@ namespace Win32xx
         virtual CString MsgMtxMutex() const;
         virtual CString MsgMtxSemaphore() const;
 
+        // Message strings used for windows.
         virtual CString MsgWndCreate() const;
         virtual CString MsgWndDialog() const;
         virtual CString MsgWndGlobalLock() const;
@@ -352,6 +302,7 @@ namespace Win32xx
         virtual CString MsgRichEditDll() const;
         virtual CString MsgTaskDialog() const;
 
+        // Message strings used for files.
         virtual CString MsgFileClose() const;
         virtual CString MsgFileFlush() const;
         virtual CString MsgFileLock() const;
@@ -363,6 +314,7 @@ namespace Win32xx
         virtual CString MsgFileUnlock() const;
         virtual CString MsgFileWrite() const;
 
+        // Message strings used for GDI.
         virtual CString MsgGdiDC() const;
         virtual CString MsgGdiIC() const;
         virtual CString MsgGdiBitmap() const;
@@ -382,7 +334,7 @@ namespace Win32xx
         virtual CString MsgMenu() const;
         virtual CString MsgPrintFound() const;
 
-        // DDX anomaly prompting messages
+        // DDX anomaly prompting message strings
         virtual CString MsgDDX_Byte() const;
         virtual CString MsgDDX_Int() const;
         virtual CString MsgDDX_Long() const;

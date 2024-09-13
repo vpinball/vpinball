@@ -1,5 +1,5 @@
-Win32++   Version 9.6.1
-Release Date: 29th July 2024
+Win32++   Version 10.0.0
+Release Date: 9th September 2024
 
      David Nash
      email: dnash@bigpond.net.au

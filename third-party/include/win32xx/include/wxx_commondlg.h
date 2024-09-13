@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -84,21 +84,21 @@ namespace Win32xx
     {
     public:
         CCommonDialog() {}
-        virtual ~CCommonDialog(){}
+        virtual ~CCommonDialog() override {}
 
     protected:
-        virtual void    OnCancel()  {}  // A required override.
-        virtual void    OnClose()   {}  // A required override.
+        virtual void    OnCancel()  override {}  // A required override.
+        virtual void    OnClose()   override {}  // A required override.
         virtual void    OnHelpButton();
-        virtual BOOL    OnInitDialog();
-        virtual void    OnOK()  {}      // A required override.
+        virtual BOOL    OnInitDialog() override;
+        virtual void    OnOK() override {}      // A required override.
 
         // static callback
         static INT_PTR CALLBACK CDHookProc(HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
     private:
-        CCommonDialog(const CCommonDialog&);              // Disable copy construction
-        CCommonDialog& operator=(const CCommonDialog&);   // Disable assignment operator
+        CCommonDialog(const CCommonDialog&) = delete;
+        CCommonDialog& operator=(const CCommonDialog&) = delete;
     };
 
 
@@ -109,25 +109,25 @@ namespace Win32xx
     {
     public:
         CColorDialog(COLORREF initColor = 0, DWORD flags = 0);
-        virtual ~CColorDialog(){}
+        virtual ~CColorDialog() override {}
 
-        virtual INT_PTR DoModal(HWND owner = NULL);
+        virtual INT_PTR DoModal(HWND owner = nullptr) override;
         COLORREF  GetColor() const               { return m_cc.rgbResult; }
         COLORREF* GetCustomColors()              { return m_customColors; }
         const CHOOSECOLOR& GetParameters() const { return m_cc; }
         void    SetColor(COLORREF clr)           { m_cc.rgbResult = clr; }
-        void    SetCustomColors(const COLORREF* pColors = NULL);
+        void    SetCustomColors(const COLORREF* pColors = nullptr);
         void    SetParameters(const CHOOSECOLOR& cc);
 
     protected:
-        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM);
+        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM) override;
 
         // Not intended to be overridden.
-        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CColorDialog(const CColorDialog&);              // Disable copy construction
-        CColorDialog& operator=(const CColorDialog&);   // Disable assignment operator
+        CColorDialog(const CColorDialog&) = delete;
+        CColorDialog& operator=(const CColorDialog&) = delete;
 
         CHOOSECOLOR     m_cc;                    // ChooseColor parameters
         COLORREF        m_customColors[16];      // Custom colors array
@@ -143,16 +143,16 @@ namespace Win32xx
 
         // Constructor/destructor
         CFileDialog (BOOL isOpenFileDialog = TRUE,
-                LPCTSTR defExt = NULL,
-                LPCTSTR initFileDir = NULL,
-                LPCTSTR fileName = NULL,
+                LPCTSTR defExt = nullptr,
+                LPCTSTR initFileDir = nullptr,
+                LPCTSTR fileName = nullptr,
                 DWORD   flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
-                LPCTSTR filter   = NULL );
+                LPCTSTR filter   = nullptr );
 
-        virtual ~CFileDialog()  {}
+        virtual ~CFileDialog() override {}
 
         // Operations
-        virtual INT_PTR DoModal(HWND owner = NULL);
+        virtual INT_PTR DoModal(HWND owner = nullptr) override;
 
         // methods valid after successful DoModal()
         CString GetFileName() const;
@@ -174,22 +174,22 @@ namespace Win32xx
         CString GetNextPathName(int& pos) const;
 
     protected:
-        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM);
+        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM) override;
         virtual void    OnFileNameChange();
         virtual LRESULT OnFileNameOK();
         virtual void    OnFolderChange();
         virtual void    OnInitDone();
         virtual void    OnLBSelChangedNotify(int boxID, int curSel, UINT code);
-        virtual LRESULT OnNotify(WPARAM, LPARAM);
+        virtual LRESULT OnNotify(WPARAM, LPARAM) override;
         virtual LRESULT OnShareViolation(LPCTSTR pathName);
         virtual void    OnTypeChange();
 
         // Not intended to be overridden.
-        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CFileDialog(const CFileDialog&);              // Disable copy construction
-        CFileDialog& operator=(const CFileDialog&);   // Disable assignment operator
+        CFileDialog(const CFileDialog&) = delete;
+        CFileDialog& operator=(const CFileDialog&) = delete;
 
         BOOL            m_isOpenFileDialog;  // TRUE = open, FALSE = save
         CString         m_filter;          // File filter string
@@ -207,14 +207,14 @@ namespace Win32xx
     public:
         // constructor and destructor
         CFindReplaceDialog(BOOL isFindDialogOnly = TRUE);
-        virtual ~CFindReplaceDialog() {}
+        virtual ~CFindReplaceDialog() override {}
 
-        virtual HWND Create(HWND parent = NULL);
+        virtual HWND Create(HWND parent = nullptr) override;
         virtual BOOL Create(BOOL isFindDialogOnly,
                         LPCTSTR findWhat,
-                        LPCTSTR replaceWith = NULL,
+                        LPCTSTR replaceWith = nullptr,
                         DWORD   flags = FR_DOWN,
-                        HWND    parent = NULL);
+                        HWND    parent = nullptr);
 
         // Operations:
         BOOL    FindNext() const;           // TRUE = find next
@@ -233,15 +233,15 @@ namespace Win32xx
         static CFindReplaceDialog* GetNotifier(LPARAM lparam);
 
     protected:
-        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM);
-        virtual void    OnDestroy()    { Destroy(); }
+        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM) override;
+        virtual void    OnDestroy() override { Destroy(); }
 
         // Not intended to be overridden
-        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CFindReplaceDialog(const CFindReplaceDialog&);              // Disable copy construction
-        CFindReplaceDialog& operator=(const CFindReplaceDialog&);   // Disable assignment operator
+        CFindReplaceDialog(const CFindReplaceDialog&) = delete;
+        CFindReplaceDialog& operator=(const CFindReplaceDialog&) = delete;
 
         FINDREPLACE     m_fr;               // FindReplace parameters
         BOOL            m_isFindDialogOnly; // TRUE for a find only dialog
@@ -256,13 +256,13 @@ namespace Win32xx
     class CFontDialog : public CCommonDialog
     {
     public:
-        CFontDialog(const LOGFONT& initial, DWORD flags = 0, HDC printer = NULL);
-        CFontDialog(const CHARFORMAT& charformat, DWORD flags = 0, HDC printer = NULL);
-        CFontDialog(DWORD flags = 0, HDC printer = NULL);
+        CFontDialog(const LOGFONT& initial, DWORD flags = 0, HDC printer = nullptr);
+        CFontDialog(const CHARFORMAT& charformat, DWORD flags = 0, HDC printer = nullptr);
+        CFontDialog(DWORD flags = 0, HDC printer = nullptr);
 
-        virtual ~CFontDialog()  {}
+        virtual ~CFontDialog() override {}
 
-        virtual INT_PTR DoModal(HWND owner = NULL);
+        virtual INT_PTR DoModal(HWND owner = nullptr) override;
         CHARFORMAT  GetCharFormat() const;
         COLORREF    GetColor() const            { return m_cf.rgbColors;}
         CString GetFaceName() const             { return m_logFont.lfFaceName;}
@@ -279,15 +279,15 @@ namespace Win32xx
         void    SetParameters(const CHOOSEFONT& cf);
 
     protected:
-        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM);
-        virtual void    OnOK();
+        virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM) override;
+        virtual void    OnOK() override;
 
         // Not intended to be overridden.
-        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        INT_PTR DialogProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CFontDialog(const CFontDialog&);              // Disable copy construction
-        CFontDialog& operator=(const CFontDialog&);   // Disable assignment operator
+        CFontDialog(const CFontDialog&) = delete;
+        CFontDialog& operator=(const CFontDialog&) = delete;
         DWORD FillInLogFont(const CHARFORMAT& cf);
 
         // private data
@@ -330,7 +330,7 @@ namespace Win32xx
     {
         // Find the CWnd pointer mapped to this HWND
         CCommonDialog* pCommonDlg = static_cast<CCommonDialog*>(GetCWndPtr(wnd));
-        if (pCommonDlg == NULL)
+        if (pCommonDlg == nullptr)
         {
             // The HWND wasn't in the map, so add it now.
             TLSData* pTLSData = GetApp()->GetTlsData();
@@ -339,9 +339,9 @@ namespace Win32xx
 
             // Retrieve pointer to CWnd object from Thread Local Storage TLS.
             pCommonDlg = static_cast<CCommonDialog*>(pTLSData->pWnd);
-            if (pCommonDlg != NULL)
+            if (pCommonDlg != nullptr)
             {
-                pTLSData->pWnd = NULL;
+                pTLSData->pWnd = nullptr;
 
                 // Store the window pointer in the HWND map.
                 pCommonDlg->m_wnd = wnd;
@@ -349,8 +349,8 @@ namespace Win32xx
             }
         }
 
-        assert(pCommonDlg != NULL);
-        if (pCommonDlg == NULL)
+        assert(pCommonDlg != nullptr);
+        if (pCommonDlg == nullptr)
         {
             // Got a message for a window that's not in the map.
             return 0;
@@ -370,7 +370,7 @@ namespace Win32xx
     inline CColorDialog::CColorDialog(COLORREF initColor /* = 0 */, DWORD flags /* = 0 */)
     {
         // Set the parameters in the CHOOSECOLOR struct.
-        ZeroMemory(&m_cc,  sizeof(m_cc));
+        m_cc = {};
         m_cc.rgbResult = initColor;
         m_cc.Flags = flags;
 
@@ -428,7 +428,7 @@ namespace Win32xx
 
     // Display the ChooseColor common dialog box and select the current color.
     // An exception is thrown if the dialog box isn't created.
-    inline INT_PTR CColorDialog::DoModal(HWND owner /* = NULL */)
+    inline INT_PTR CColorDialog::DoModal(HWND owner /* = nullptr */)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
@@ -443,7 +443,7 @@ namespace Win32xx
         // Invoke the control and save the result on success.
         BOOL isValid = ::ChooseColor(&m_cc);
 
-        m_wnd = NULL;
+        m_wnd = nullptr;
 
         if (!isValid)
         {
@@ -465,9 +465,9 @@ namespace Win32xx
     }
 
     // The pColors parameter is a pointer to an array of 16 COLORREF.
-    // If the pColors is NULL, all custom colors are set to white,
+    // If the pColors is nullptr, all custom colors are set to white,
     // otherwise they are set to the colors specified in the pColors array.
-    inline void CColorDialog::SetCustomColors(const COLORREF* pColors /* = NULL */)
+    inline void CColorDialog::SetCustomColors(const COLORREF* pColors /* = nullptr */)
     {
         for (UINT i = 0; i < 16; i++)
         {
@@ -481,7 +481,7 @@ namespace Win32xx
     inline void CColorDialog::SetParameters(const CHOOSECOLOR& cc)
     {
         m_cc.lStructSize    = sizeof(m_cc);
-        m_cc.hwndOwner      = NULL;            // Set this in DoModal
+        m_cc.hwndOwner      = nullptr;            // Set this in DoModal
         m_cc.hInstance      = cc.hInstance;
         m_cc.rgbResult      = cc.rgbResult;
         m_cc.lpCustColors   = m_customColors;
@@ -503,17 +503,17 @@ namespace Win32xx
     // separated by '\0' or '|' chars. Refer to the description of the OPENFILENAME
     // struct in the Windows API documentation.
     inline CFileDialog::CFileDialog(BOOL isOpenFileDialog  /* = TRUE */,
-        LPCTSTR defExt /* = NULL */,
-        LPCTSTR initFileDir /* = NULL */,
-        LPCTSTR fileName /* = NULL */,
+        LPCTSTR defExt /* = nullptr */,
+        LPCTSTR initFileDir /* = nullptr */,
+        LPCTSTR fileName /* = nullptr */,
         DWORD   flags /* = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT */,
-        LPCTSTR filter /* = NULL */)
+        LPCTSTR filter /* = nullptr */)
     {
         // Set the open/saveas toggle.
         m_isOpenFileDialog = isOpenFileDialog;
 
         // Assign the OPENFILENAME struct.
-        ZeroMemory(&m_ofn, sizeof(m_ofn));
+        m_ofn = {};
         m_ofn.lpstrFile     = const_cast<LPTSTR>(fileName);
         m_ofn.lpstrFilter   = filter;
         m_ofn.lpstrInitialDir = const_cast<LPTSTR>(initFileDir);
@@ -628,7 +628,7 @@ namespace Win32xx
     // to hold the file names can be quite large. An exception is thrown if the
     // buffer size specified by m_OFN.nMaxFile turns out to be too small.
     // Use SetParamaters to set a larger size if required.
-    inline INT_PTR CFileDialog::DoModal(HWND owner /* = NULL */)
+    inline INT_PTR CFileDialog::DoModal(HWND owner /* = nullptr */)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
@@ -644,7 +644,7 @@ namespace Win32xx
         int ok = (m_isOpenFileDialog ? ::GetOpenFileName(&m_ofn) : ::GetSaveFileName(&m_ofn));
         m_fileName.ReleaseBuffer(maxFileSize);
         m_ofn.lpstrFile = const_cast<LPTSTR>(m_fileName.c_str());
-        m_wnd = NULL;
+        m_wnd = nullptr;
 
         // The result of the file choice box is processed here.
         if (!ok)
@@ -741,7 +741,7 @@ namespace Win32xx
 
         // Multiple files selected. m_OFN.lpstrFile contains a set of substrings separated
         // by delimiters. The first substring is the path, the following ones are file names.
-        CString pathName = m_ofn.lpstrFile; // strPath is terminated by first NULL
+        CString pathName = m_ofn.lpstrFile; // strPath is terminated by first null
         if (!isExplorer)
         {
             int pathIndex = pathName.Find(delimiter);
@@ -936,7 +936,7 @@ namespace Win32xx
         else
         {
             m_defExt.Empty();
-            m_ofn.lpstrDefExt = NULL;
+            m_ofn.lpstrDefExt = nullptr;
         }
     }
 
@@ -952,12 +952,12 @@ namespace Win32xx
         else
         {
             m_fileName.Empty();
-            m_ofn.lpstrFile = NULL;
+            m_ofn.lpstrFile = nullptr;
         }
     }
 
     // Set the file choice dialog file name filter string to pFilter.
-    // The string is a pair of strings delimited by NULL or '|'
+    // The string is a pair of strings delimited by null or '|'
     // The string must be either double terminated, or use '|' instead of '\0'
     // For Example:  CString filter("Program Files (*.cpp; *.h)|*.cpp; *.h|All Files (*.*)|*.*|");
     //          or:  CString filter("Program Files (*.cpp; *.h)\0*.cpp; *.h\0All Files (*.*)\0*.*\0", 58);
@@ -965,9 +965,9 @@ namespace Win32xx
     inline void CFileDialog::SetFilter(LPCTSTR filter)
     {
         // Clear any existing filter.
-        m_ofn.lpstrFilter = NULL;
+        m_ofn.lpstrFilter = nullptr;
 
-        // Convert any '|' characters in filter to NULL characters.
+        // Convert any '|' characters in filter to null characters.
         if (filter)
         {
             CString str = filter;
@@ -1001,24 +1001,15 @@ namespace Win32xx
     // The parameters are set to sensible values.
     inline void CFileDialog::SetParameters(const OPENFILENAME& ofn)
     {
-        // Set the correct struct size for all Windows versions and compilers.
-        DWORD StructSize = sizeof(m_ofn);
-
-  #if defined OPENFILENAME_SIZE_VERSION_400
-        if (GetWinVersion() < 2500)
-            StructSize = OPENFILENAME_SIZE_VERSION_400;
-        if (GetWinVersion() >= 2500)
-            m_ofn.FlagsEx =     ofn.FlagsEx;
-  #endif
-
         SetFileName(ofn.lpstrFile);
         SetFilter(ofn.lpstrFilter);
         SetTitle(ofn.lpstrFileTitle);
 
         DWORD maxPath = MAX_PATH;
 
-        m_ofn.lStructSize       = StructSize;
-        m_ofn.hwndOwner         = NULL;            // Set this in DoModal.
+        m_ofn.lStructSize       = sizeof(m_ofn);
+        m_ofn.FlagsEx           = ofn.FlagsEx;
+        m_ofn.hwndOwner         = nullptr;            // Set this in DoModal.
         m_ofn.hInstance         = GetApp()->GetInstanceHandle();
         m_ofn.lpstrCustomFilter = ofn.lpstrCustomFilter;
         m_ofn.nMaxCustFilter    = std::max(maxPath, ofn.nMaxCustFilter);
@@ -1052,7 +1043,7 @@ namespace Win32xx
         else
         {
             m_title.Empty();
-            m_ofn.lpstrTitle = NULL;
+            m_ofn.lpstrTitle = nullptr;
         }
     }
 
@@ -1065,13 +1056,13 @@ namespace Win32xx
     // for information of the FINDREPLACE structure.
     inline CFindReplaceDialog::CFindReplaceDialog(BOOL isFindDialogOnly /* = TRUE */)
     {
-        ZeroMemory(&m_fr, sizeof(m_fr));
+        m_fr = {};
         m_isFindDialogOnly = isFindDialogOnly;
         SetParameters(m_fr);
     }
 
     // Create and display either a Find or FindReplace dialog box.
-    inline HWND CFindReplaceDialog::Create(HWND parent /* = NULL*/)
+    inline HWND CFindReplaceDialog::Create(HWND parent /* = nullptr*/)
     {
         Create(m_isFindDialogOnly, m_fr.lpstrFindWhat, m_fr.lpstrReplaceWith, m_fr.Flags, parent);
         return *this;
@@ -1083,7 +1074,7 @@ namespace Win32xx
     // Set parent to the handle of the dialog box's parent or owner window.
     // An exception is thrown if the window isn't created.
     inline BOOL CFindReplaceDialog::Create(BOOL isFindDialogOnly, LPCTSTR findWhat,
-            LPCTSTR replaceWith, DWORD flags, HWND parent /* = NULL*/)
+            LPCTSTR replaceWith, DWORD flags, HWND parent /* = nullptr*/)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
@@ -1113,7 +1104,7 @@ namespace Win32xx
         else
             wnd = ::ReplaceText(&m_fr);
 
-        if (wnd == NULL)
+        if (wnd == nullptr)
         {
             // Throw an exception when window creation fails.
             throw CWinException(GetApp()->MsgWndDialog());
@@ -1193,7 +1184,7 @@ namespace Win32xx
     {
         assert(lparam != 0);
         LPFINDREPLACE pFR = reinterpret_cast<LPFINDREPLACE>(lparam);
-        if (!pFR) return NULL;
+        if (!pFR) return nullptr;
 
         CFindReplaceDialog* pDlg = reinterpret_cast<CFindReplaceDialog*>(pFR->lCustData);
         return pDlg;
@@ -1202,7 +1193,7 @@ namespace Win32xx
     // Call this function to return the current replace string.
     inline CString CFindReplaceDialog::GetReplaceString() const
     {
-        return m_fr.lpstrReplaceWith == NULL ? _T("") : m_fr.lpstrReplaceWith;
+        return m_fr.lpstrReplaceWith == nullptr ? _T("") : m_fr.lpstrReplaceWith;
     }
 
     // Returns TRUE if the user has decided to terminate the dialog box;
@@ -1272,7 +1263,7 @@ namespace Win32xx
         WORD maxCharsWord = static_cast<WORD>(maxChars);
 
         m_fr.lStructSize        = sizeof(m_fr);
-        m_fr.hwndOwner          = NULL;        // Set this in Create
+        m_fr.hwndOwner          = nullptr;        // Set this in Create
         m_fr.hInstance          = GetApp()->GetInstanceHandle();
         m_fr.Flags              = fr.Flags;
         m_fr.lpstrFindWhat      = const_cast<LPTSTR>(m_findWhat.c_str());
@@ -1298,12 +1289,12 @@ namespace Win32xx
     // Refer to the description of the CHOOSEFONT structure in the Windows API
     // documentation for more information on these parameters.
     inline CFontDialog::CFontDialog(const LOGFONT& initial, DWORD flags /* = 0 */,
-        HDC printer /* = NULL */)
+        HDC printer /* = nullptr */)
     {
-        ZeroMemory(&m_logFont, sizeof(m_logFont));
+        m_logFont = {};
 
         // Set the dialog parameters.
-        ZeroMemory(&m_cf, sizeof(m_cf));
+        m_cf = {};
         m_cf.rgbColors   = 0; // black
         m_cf.lStructSize = sizeof(m_cf);
         m_cf.Flags  = flags;
@@ -1330,12 +1321,12 @@ namespace Win32xx
     // Refer to the description of the CHOOSEFONT structure in the Windows API
     // documentation for more information on these parameters.
     inline CFontDialog::CFontDialog(const CHARFORMAT& charformat, DWORD flags /* = 0 */,
-        HDC printer /* = NULL */)
+        HDC printer /* = nullptr */)
     {
-        ZeroMemory(&m_logFont, sizeof(m_logFont));
+        m_logFont = {};
 
         // Set dialog parameters.
-        ZeroMemory(&m_cf, sizeof(m_cf));
+        m_cf = {};
         m_cf.lStructSize = sizeof(m_cf);
         FillInLogFont(charformat);
         m_cf.lpLogFont = &m_logFont;
@@ -1358,12 +1349,12 @@ namespace Win32xx
     }
 
     // Construct a default CFontDialog object.
-    inline CFontDialog::CFontDialog(DWORD flags /* = 0 */, HDC printer /* =  NULL */)
+    inline CFontDialog::CFontDialog(DWORD flags /* = 0 */, HDC printer /* =  nullptr */)
     {
-        ZeroMemory(&m_logFont, sizeof(m_logFont));
+        m_logFont = {};
 
         // Set the dialog parameters.
-        ZeroMemory(&m_cf, sizeof(m_cf));
+        m_cf = {};
         m_cf.rgbColors = 0; // black
         m_cf.lStructSize = sizeof(m_cf);
         m_cf.Flags  = flags;
@@ -1425,7 +1416,7 @@ namespace Win32xx
     }
 
     // Display the FontDialog. hOwner specifies dialog's owner window.
-    inline INT_PTR CFontDialog::DoModal(HWND owner /* = NULL */)
+    inline INT_PTR CFontDialog::DoModal(HWND owner /* = nullptr */)
     {
         assert(!IsWindow());    // Only one window per CWnd instance allowed
 
@@ -1443,7 +1434,7 @@ namespace Win32xx
 
         m_styleName.ReleaseBuffer();
         m_cf.lpszStyle = const_cast<LPTSTR>(m_styleName.c_str());
-        m_wnd = NULL;
+        m_wnd = nullptr;
 
         // Process the result of the font choice box.
         if (!ok)
@@ -1467,8 +1458,7 @@ namespace Win32xx
     // information in the m_FR CHOOSEFONT struct.
     inline CHARFORMAT CFontDialog::GetCharFormat() const
     {
-        CHARFORMAT chfmt;
-        ZeroMemory(&chfmt, sizeof(chfmt));
+        CHARFORMAT chfmt{};
         chfmt.cbSize = sizeof(chfmt);
 
         if ((m_cf.Flags & CF_NOSTYLESEL) == 0)
@@ -1536,7 +1526,7 @@ namespace Win32xx
         if (cf.dwMask & CFM_SIZE)
         {
             CDC dc;
-            dc.CreateDC(_T("DISPLAY"), NULL, NULL, NULL);
+            dc.CreateDC(_T("DISPLAY"), nullptr, nullptr, nullptr);
             LONG yPerInch = dc.GetDeviceCaps(LOGPIXELSY);
             m_logFont.lfHeight = - (cf.yHeight * yPerInch) / 1440;
         }
@@ -1602,7 +1592,7 @@ namespace Win32xx
         if (cf.lpLogFont)
             m_logFont = *cf.lpLogFont;
         else
-            ZeroMemory(&m_logFont, sizeof(m_logFont));
+            m_logFont = {};
 
         if (cf.lpszStyle)
             m_styleName = cf.lpszStyle;
@@ -1610,7 +1600,7 @@ namespace Win32xx
             m_styleName.Empty();
 
         m_cf.lStructSize    = sizeof(m_cf);
-        m_cf.hwndOwner      = NULL;        // Set this in DoModal
+        m_cf.hwndOwner      = nullptr;        // Set this in DoModal
         m_cf.hDC            = cf.hDC;
         m_cf.lpLogFont      = &m_logFont;
         m_cf.iPointSize     = cf.iPointSize;

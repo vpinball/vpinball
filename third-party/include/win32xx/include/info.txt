@@ -27,24 +27,12 @@ nsi       | A NSIS (Nullsoft Scriptable Install System) script.
 Supported Compilers and Integrated Development Environments (IDEs)
 ==================================================================
 Win32++ supports the following:
-* Borland Compiler Version 5.5
 * CodeBlocks
-* Dev-C++
+
+* Embarcadero Dev-C++
+* Embarcadero Rad Studio 11 Community Edition
 * MinGW GCC Compiler
 * MinGW GCC x64 Compiler
-* Visual Studio.net 2003
-* Visual C++ Toolkit 2003
-* Visual Studio 2005
-* Visual Studio 2005 Express
-* Visual Studio 2008
-* Visual Studio 2008 Express
-* Visual Studio 2010
-* Visual Studio 2010 Express
-* Visual Studio 2012
-* Visual Studio 2012 Express
-* Visual Studio 2013
-* Visual Studio 2013 Express
-* Visual Studio 2013 Community
 * Visual Studio 2015
 * Visual Studio 2015 Community
 * Visual Studio 2017
@@ -54,22 +42,9 @@ Win32++ supports the following:
 * Visual Studio 2022
 * Visual Studio 2022 Community
 
-CodeBlocks is an IDE. The project files are configured for the following
-compilers:
-* Borland Compiler Version 5.5
-* MinGW GNU compiler
-* Visual C++ Toolkit 2003
-
-Dev-C++ is an IDE that supports the MinGW GNU compiler
-
 Supported Operating Systems
 ===========================
 The programs compiled with Win32++ can run on the following operating systems:
-* Win95 (all versions, with or without Internet Explorer 4 installed)
-* Win98 (both versions)
-* WinME
-* Windows NT 4
-* Windows 2000
 * Windows XP x32
 * Windows XP x64
 * Windows Vista x32
@@ -93,13 +68,10 @@ The programs compiled with Win32++ can run on the following operating systems:
 * Windows Server 2022
 
 Win32++ is Unicode compliant and can therefore be used to develop Unicode
-applications. Users are advised that older operating systems (namely Win95,
-Win98 and WinME) will require code to be compiled as ANSI, as they
-don't support Unicode applications. 
+applications.  
 
-Code compiled with the more modern versions of visual studio may not run
-older operating systems. 64bit code only runs on 64bit operating systems.
-32bit code runs on both 32bit and 64bit operating systems.
+64bit code only runs on 64bit operating systems. 32bit code runs on both
+32bit and 64bit operating systems.
 
 Directory Structure
 ===================

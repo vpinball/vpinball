@@ -6,40 +6,24 @@ directly with the Win32 API. Each window created is a C++ class object capable
 of having its own window procedure for routing messages.
 
 Win32++ supports the following compilers and development environments:
-* Borland C++ Compiler 5.5
-* Dev-C++
-* Microsoft Visual C++ Toolkit 2003
-* Microsoft Visual C++ 2005 Express Edition
-* Microsoft Visual C++ 2008 Express Edition
-* Microsoft Visual C++ 2010 Express Edition
-* Microsoft Visual C++ 2012 Express Edition
-* Microsoft Visual C++ 2013 Express Edition
-* Microsoft Visual Studio Community 2013
+
+* Code::Blocks
+* Embarcadero Dev-C++
+* Embarcadero Rad Studio 11 Community Edition  
 * Microsoft Visual Studio Community 2015
 * Microsoft Visual Studio Community 2019
-* Microsoft Visual Studio.net 2003
-* Microsoft Visual Studio 2005
-* Microsoft Visual Studio 2008
-* Microsoft Visual Studio 2010
-* Microsoft Visual Studio 2012
-* Microsoft Visual Studio 2013
-* Microsoft Visual Studio 2015
-* Microsoft Visual Studio 2019
-* Microsoft Visual Studio 2022
+* Microsoft Visual Studio Community 2022
+
 * MinGW compiler
 * MinGW x64 compiler
 * Clang compiler provided with Visual Studio Community 2019 and above.
 
 Win32++ supports the following operating systems
-* Windows 95
-* Windows 98
-* Windows ME
-* Windows NT 4
-* Windows 2000
+
 * Windows XP
-* Windows 2003
+* Windows 2003 Server
 * Windows Vista
-* Windows 2008
+* Windows 2008 Server
 * Windows 7
 * Windows 8
 * Windows 8.1
@@ -55,7 +39,7 @@ Features
 --------
 Win32++ code has the following features
 * Open Source.
-* Supports Microsoft, Clang, Borland and GNU C++ compilers.
+* Supports Microsoft, Clang, Embarcadero and GNU C++ compilers.
 * Supports applications based on simple windows, dialogs, forms, property sheets, SDI frames and MDI frames.
 * Supports docking, with tabbed containers and TabbedMDIs.
 * Provides a CString for convenient character string handling.
@@ -132,9 +116,7 @@ The sample applications include:
  * MetaFile  - Demonstrates how to create and display an enhanced metafile.
  * MovieShow - This program manages a video library.
  * NetClient - Demonstrates a network chat client.
- * NetClientAsync - Demonstrates a network chat client using async sockets.
  * NetServer - Demonstrates a network chat server.
- * NetServerAsync - Demonstrates a network chat server using async sockets.
  * NetSimple - Simple client and server network programs.
  * Notepad - A simple text editor with printing.
  * Performance - Measures Win32++'s message handling speed.

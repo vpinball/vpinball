@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -45,7 +45,7 @@
 
 // This class is intended to provide a simple alternative to the MFC/ATL
 // CString class that ships with Microsoft compilers. The CString class
-// specified here is compatible with other compilers such as Borland 5.5
+// specified here is compatible with other compilers such as Embarcadero
 // and MinGW.
 
 // Differences between this class and the MFC/ATL CString class
@@ -102,10 +102,10 @@ namespace Win32xx
     class CStringT;
 
     // CStringA is a CHAR only version of CString.
-    typedef CStringT<CHAR> CStringA;
+    using CStringA = CStringT<CHAR>;
 
     // CStringW is a WCHAR only version of CString.
-    typedef CStringT<WCHAR> CStringW;
+    using CStringW = CStringT<WCHAR>;
 
     /////////////////////////////////////////////////
     // CStringT is a class template used to implement
@@ -338,7 +338,7 @@ namespace Win32xx
     template <class T>
     inline CStringT<T>::CStringT(const T* text)
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         m_str.assign(text);
     }
 
@@ -385,7 +385,7 @@ namespace Win32xx
     template <class T>
     inline bool CStringT<T>::operator==(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return (Compare(text) == 0);
     }
 
@@ -401,7 +401,7 @@ namespace Win32xx
     template <class T>
     inline bool CStringT<T>::operator!=(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return Compare(text) != 0;
     }
 
@@ -476,8 +476,8 @@ namespace Win32xx
 
     // Allocates a BSTR from the CStringT content.
     // Note: Free the returned string later with SysFreeString to avoid a memory leak.
-    template <>
-    inline BSTR CStringW::AllocSysString() const
+    template <class T>
+    inline BSTR CStringT<T>::AllocSysString() const
     {
         BSTR bstr = ::SysAllocStringLen(m_str.c_str(), static_cast<UINT>(m_str.size()));
         if (bstr == 0)
@@ -519,7 +519,7 @@ namespace Win32xx
     template <>
     inline int CStringA::Collate(const CHAR* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         int res = ::CompareStringA(LOCALE_USER_DEFAULT, 0, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -530,10 +530,10 @@ namespace Win32xx
     }
 
     // Performs a case sensitive comparison of the two strings using locale-specific information.
-    template <>
-    inline int CStringW::Collate(const WCHAR* text) const
+    template <class T>
+    inline int CStringT<T>::Collate(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         int res = ::CompareStringW(LOCALE_USER_DEFAULT, 0, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -547,7 +547,7 @@ namespace Win32xx
     template <>
     inline int CStringA::CollateNoCase(const CHAR* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         int res = ::CompareStringA(LOCALE_USER_DEFAULT, NORM_IGNORECASE, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -558,10 +558,10 @@ namespace Win32xx
     }
 
     // Performs a case insensitive comparison of the two strings using locale-specific information.
-    template <>
-    inline int CStringW::CollateNoCase(const WCHAR* text) const
+    template <class T>
+    inline int CStringT<T>::CollateNoCase(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         int res = ::CompareStringW(LOCALE_USER_DEFAULT, NORM_IGNORECASE, m_str.c_str(), -1, text, -1);
 
         assert(res);
@@ -575,15 +575,15 @@ namespace Win32xx
     template <>
     inline int CStringA::Compare(const CHAR* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return ::lstrcmpA(m_str.c_str(), text);
     }
 
     // Performs a case sensitive comparison of the two strings.
-    template <>
-    inline int CStringW::Compare(const WCHAR* text) const
+    template <class T>
+    inline int CStringT<T>::Compare(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return ::lstrcmpW(m_str.c_str(), text);
     }
 
@@ -591,15 +591,15 @@ namespace Win32xx
     template <>
     inline int CStringA::CompareNoCase(const CHAR* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return ::lstrcmpiA(m_str.c_str(), text);
     }
 
     // Performs a case insensitive comparison of the two strings.
-    template <>
-    inline int CStringW::CompareNoCase(const WCHAR* text) const
+    template <class T>
+    inline int CStringT<T>::CompareNoCase(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         return ::lstrcmpiW(m_str.c_str(), text);
     }
 
@@ -637,7 +637,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::Find(const T* text, int index /* = 0 */) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         assert(index >= 0);
 
         size_t s = m_str.find(text, static_cast<size_t>(index));
@@ -648,7 +648,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::FindOneOf(const T* text) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
 
         size_t s = m_str.find_first_of(text);
         return static_cast<int>(s);
@@ -681,22 +681,21 @@ namespace Win32xx
             {
                 buffer.assign( size_t(length)+1, 0 );
 
-#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 )
-                result = _vsnprintf(&buffer.front(), length, format, args);
+#if defined(__BORLANDC__)  // For Embacadero support
+                result = _vsnprintf(buffer.data(), length, format, args);
 #else
-                result = _vsnprintf_s(&buffer.front(), length, length -1, format, args);
+                result = _vsnprintf_s(buffer.data(), length, length -1, format, args);
 #endif
                 length *= 2;
             }
-            m_str.assign(&buffer.front());
+            m_str.assign(buffer.data());
         }
     }
 
     // Formats the string using a variable list of arguments.
-    template <>
-    inline void CStringW::FormatV(const WCHAR*  format, va_list args)
+    template <class T>
+    inline void CStringT<T>::FormatV(const T*  format, va_list args)
     {
-
         if (format)
         {
             int result = -1;
@@ -708,14 +707,15 @@ namespace Win32xx
             while (result == -1)
             {
                 buffer.assign( size_t(length)+1, 0 );
-#if !defined (_MSC_VER) ||  ( _MSC_VER < 1400 )
-                result = _vsnwprintf(&buffer.front(), length, format, args);
+
+#if defined(__BORLANDC__)  // For Embacadero support
+                result = _vsnwprintf(buffer.data(), length, format, args);
 #else
-                result = _vsnwprintf_s(&buffer.front(), length, length -1, format, args);
+                result = _vsnwprintf_s(buffer.data(), length, length -1, format, args);
 #endif
                 length *= 2;
             }
-            m_str.assign(&buffer.front());
+            m_str.assign(buffer.data());
         }
     }
 
@@ -748,8 +748,8 @@ namespace Win32xx
     }
 
     // Formats a message string using a variable argument list.
-    template <>
-    inline void CStringW::FormatMessageV(const WCHAR* format, va_list args)
+    template <class T>
+    inline void CStringT<T>::FormatMessageV(const T* format, va_list args)
     {
         LPWSTR temp = 0;
         if (format)
@@ -779,12 +779,10 @@ namespace Win32xx
         return ch;
     }
 
-    // Creates a buffer of minBufLength characters (+1 extra for NULL termination) and returns
+    // Creates a buffer of minBufLength characters (+1 extra for null termination) and returns
     // a pointer to this buffer. This buffer can be used by any function that accepts a LPTSTR.
     // Care must be taken not to exceed the length of the buffer. Use ReleaseBuffer to safely
     // copy this buffer back to the CStringT object.
-    // Note: The buffer uses a vector. Vectors are required to be contiguous in memory under
-    //       the current standard, whereas std::strings do not have this requirement.
     template <class T>
     inline T* CStringT<T>::GetBuffer(int minBufLength)
     {
@@ -792,19 +790,18 @@ namespace Win32xx
 
         T ch = 0;
         m_buf.assign(size_t(minBufLength) + 1, ch);
-        typename std::basic_string<T>::iterator it_end;
-
+        typename std::basic_string<T>::iterator it;
         if (m_str.length() >= static_cast<size_t>(minBufLength))
         {
-            it_end = m_str.begin();
-            std::advance(it_end, minBufLength);
+            it = m_str.begin();
+            std::advance(it, minBufLength);
         }
         else
-            it_end = m_str.end();
+            it = m_str.end();
 
-        std::copy(m_str.begin(), it_end, m_buf.begin());
+        std::copy(m_str.begin(), it, m_buf.begin());
 
-        return &m_buf.front();
+        return m_buf.data();
     }
 
     // Sets the string to the value of the specified environment variable.
@@ -814,30 +811,30 @@ namespace Win32xx
         assert(var);
         Empty();
 
-        DWORD length = ::GetEnvironmentVariableA(var, NULL, 0);
+        DWORD length = ::GetEnvironmentVariableA(var, nullptr, 0);
         if (length > 0)
         {
             std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetEnvironmentVariableA(var, &buffer.front(), length);
-            m_str = &buffer.front();
+            ::GetEnvironmentVariableA(var, buffer.data(), length);
+            m_str = buffer.data();
         }
 
         return (length != 0);
     }
 
     // Sets the string to the value of the specified environment variable.
-    template <>
-    inline bool CStringW::GetEnvironmentVariable(const WCHAR* var)
+    template <class T>
+    inline bool CStringT<T>::GetEnvironmentVariable(const T* var)
     {
         assert(var);
         Empty();
 
-        DWORD length = ::GetEnvironmentVariableW(var, NULL, 0);
+        DWORD length = ::GetEnvironmentVariableW(var, nullptr, 0);
         if (length > 0)
         {
             std::vector<WCHAR> buffer(static_cast<size_t>(length) +1, 0);
-            ::GetEnvironmentVariableW(var, &buffer.front(), length);
-            m_str = &buffer.front();
+            ::GetEnvironmentVariableW(var, buffer.data(), length);
+            m_str = buffer.data();
         }
 
         return (length != 0);
@@ -852,22 +849,22 @@ namespace Win32xx
         if (length > 0)
         {
             std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextA(wnd, &buffer.front(), length +1);
-            m_str = &buffer.front();
+            ::GetWindowTextA(wnd, buffer.data(), length +1);
+            m_str = buffer.data();
         }
     }
 
     // Retrieves a window's text.
-    template <>
-    inline void CStringW::GetWindowText(HWND wnd)
+    template <class T>
+    inline void CStringT<T>::GetWindowText(HWND wnd)
     {
         Empty();
         int length = ::GetWindowTextLengthW(wnd);
         if (length > 0)
         {
             std::vector<WCHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextW(wnd, &buffer.front(), length +1);
-            m_str = &buffer.front();
+            ::GetWindowTextW(wnd, buffer.data(), length +1);
+            m_str = buffer.data();
         }
     }
 
@@ -876,10 +873,10 @@ namespace Win32xx
     inline void CStringA::GetErrorString(DWORD error)
     {
         Empty();
-        CHAR* buffer = NULL;
+        CHAR* buffer = nullptr;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageA(flags, NULL, error, 0, reinterpret_cast<LPSTR>(&buffer), 1, NULL);
-        if (buffer != NULL)
+        ::FormatMessageA(flags, nullptr, error, 0, reinterpret_cast<LPSTR>(&buffer), 1, nullptr);
+        if (buffer != nullptr)
         {
             m_str.assign(buffer);
             ::LocalFree(buffer);
@@ -887,14 +884,14 @@ namespace Win32xx
     }
 
     // Returns the error string for the specified System Error Code (e.g from GetLastError).
-    template <>
-    inline void CStringW::GetErrorString(DWORD error)
+    template <class T>
+    inline void CStringT<T>::GetErrorString(DWORD error)
     {
         Empty();
-        WCHAR* buffer = NULL;
+        WCHAR* buffer = nullptr;
         DWORD flags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
-        ::FormatMessageW(flags, NULL, error, 0, reinterpret_cast<LPWSTR>(&buffer), 1, NULL);
-        if (buffer != NULL)
+        ::FormatMessageW(flags, nullptr, error, 0, reinterpret_cast<LPWSTR>(&buffer), 1, nullptr);
+        if (buffer != nullptr)
         {
             m_str.assign(buffer);
             ::LocalFree(buffer);
@@ -953,8 +950,8 @@ namespace Win32xx
     }
 
     // Converts all the characters in this string to lowercase characters.
-    template <>
-    inline void CStringW::MakeLower()
+    template <class T>
+    inline void CStringT<T>::MakeLower()
     {
         std::transform(m_str.begin(), m_str.end(), m_str.begin(), ::towlower);
     }
@@ -974,8 +971,8 @@ namespace Win32xx
     }
 
     // Converts all the characters in this string to uppercase characters.
-    template <>
-    inline void CStringW::MakeUpper()
+    template <class T>
+    inline void CStringT<T>::MakeUpper()
     {
         std::transform(m_str.begin(), m_str.end(), m_str.begin(), ::towupper);
     }
@@ -1012,7 +1009,7 @@ namespace Win32xx
     {
         if (newLength == -1)
         {
-            newLength = lstrlenT(&m_buf.front());
+            newLength = lstrlenT(m_buf.data());
         }
 
         assert(m_buf.size() > 0);
@@ -1022,10 +1019,10 @@ namespace Win32xx
         T ch = 0;
         m_str.assign(static_cast<size_t>(newLength), ch);
 
-        typename std::vector<T>::iterator it_end = m_buf.begin();
+        auto it_end = m_buf.begin();
         std::advance(it_end, newLength);
 
-        std::copy(m_buf.begin(), it_end, m_str.begin());
+        std::move(m_buf.begin(), it_end, m_str.begin());
         m_buf.clear();
     }
 
@@ -1033,7 +1030,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::Remove(const T* text)
     {
-        assert(text != NULL);
+        assert(text != nullptr);
 
         int count = 0;
         size_t pos = 0;
@@ -1071,8 +1068,7 @@ namespace Win32xx
     inline int CStringT<T>::Replace(T oldChar, T newChar)
     {
         int count = 0;
-        typename std::basic_string<T>::iterator it;
-        it = m_str.begin();
+        auto it = m_str.begin();
         while (it != m_str.end())
         {
             if (*it == oldChar)
@@ -1120,7 +1116,7 @@ namespace Win32xx
     template <class T>
     inline int CStringT<T>::ReverseFind(const T* text, int end /* = -1 */) const
     {
-        assert(text != NULL);
+        assert(text != nullptr);
         if (!text) return -1;
 
         if (lstrlenT(text) == 1)
@@ -1167,8 +1163,8 @@ namespace Win32xx
     }
 
     // Sets an existing BSTR object to the string.
-    template <>
-    inline BSTR CStringW::SetSysString(BSTR* pBstr) const
+    template <class T>
+    inline BSTR CStringT<T>::SetSysString(BSTR* pBstr) const
     {
         assert(pBstr);
 
@@ -1248,30 +1244,28 @@ namespace Win32xx
     template <>
     inline void CStringA::TrimLeft()
     {
-        // This method is supported by the Borland 5.5 compiler.
-        std::basic_string<CHAR>::iterator iter;
-        for (iter = m_str.begin(); iter != m_str.end(); ++iter)
+        std::basic_string<CHAR>::iterator it;
+        for (it = m_str.begin(); it != m_str.end(); ++it)
         {
-            if (!::isspace(static_cast<unsigned char>(*iter)))
+            if (!::isspace(static_cast<unsigned char>(*it)))
                 break;
         }
 
-        m_str.erase(m_str.begin(), iter);
+        m_str.erase(m_str.begin(), it);
     }
 
     // Trims leading whitespace characters from the string.
-    template <>
-    inline void CStringW::TrimLeft()
+    template <class T>
+    inline void CStringT<T>::TrimLeft()
     {
-        // This method is supported by the Borland 5.5 compiler.
-        std::basic_string<WCHAR>::iterator iter;
-        for (iter = m_str.begin(); iter != m_str.end(); ++iter)
+        std::basic_string<WCHAR>::iterator it;
+        for (it = m_str.begin(); it != m_str.end(); ++it)
         {
-            if (!iswspace(*iter))
+            if (!iswspace(*it))
                 break;
         }
 
-        m_str.erase(m_str.begin(), iter);
+        m_str.erase(m_str.begin(), it);
     }
 
     // Trims the specified character from the beginning of the string.
@@ -1293,22 +1287,20 @@ namespace Win32xx
     template <>
     inline void CStringA::TrimRight()
     {
-        // This method is supported by the Borland 5.5 compiler.
-        std::basic_string<CHAR>::reverse_iterator riter;
-        for (riter = m_str.rbegin(); riter != m_str.rend(); ++riter)
+        std::basic_string<CHAR>::reverse_iterator it;
+        for (it = m_str.rbegin(); it != m_str.rend(); ++it)
         {
-            if (!::isspace(static_cast<unsigned char>(*riter)))
+            if (!::isspace(static_cast<unsigned char>(*it)))
                 break;
         }
 
-        m_str.erase(riter.base(), m_str.end());
+        m_str.erase(it.base(), m_str.end());
     }
 
     // Trims trailing whitespace characters from the string.
-    template <>
-    inline void CStringW::TrimRight()
+    template <class T>
+    inline void CStringT<T>::TrimRight()
     {
-        // This method is supported by the Borland 5.5 compiler.
         std::basic_string<WCHAR>::reverse_iterator riter;
         for (riter = m_str.rbegin(); riter != m_str.rend(); ++riter)
         {

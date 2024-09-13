@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -58,6 +58,31 @@
 
 namespace Win32xx
 {
+
+    //////////////////////////////////////////////////////////////////////
+    // A set of typedefs to simplify the use of CGlobalLock.
+    // These provide self unlocking objects that can be used for pointers
+    // to global memory. Using these typedefs eliminate the need to manually
+    // lock or unlock the global memory handles.
+    // Note: In the examples below, hDevMode and hDevNames can be either a raw
+    //       global memory handle, or a CHGlobal object.
+    //
+    // Example usage:
+    //   CDevMode  pDevMode(hDevMode);      // and use pDevMode as if it were a LPDEVMODE
+    //   CDevNames pDevNames(hDevNames);    // and use pDevNames as if it were a LPDEVNAMES
+    //   assert(pDevNames.Get());           // Get can be used to access the underlying pointer
+    //   CDevNames(hDevNames).GetDeviceName // Returns a CString containing the device name.
+    //
+    /////////////////////////////////////////////////////////////////////
+
+    using CDevMode = CGlobalLock<DEVMODE>;
+    using CDevNames = CGlobalLock<DEVNAMES>;
+
+    ////////////////////////////////////////
+    // Definitions for the CGlobalLock class
+    //
+
+    // Constructor.
     template <class T>
     CGlobalLock<T>::CGlobalLock(const CGlobalLock& rhs)
     {
@@ -87,93 +112,82 @@ namespace Win32xx
         return *this;
     }
 
-    // Lock the handle.
+    // Lock the handle to allow the global memory to be used.
     template <class T>
     inline void CGlobalLock<T>::Lock()
     {
-        if (m_h != NULL)
+        if (m_h != nullptr)
         {
             m_p = reinterpret_cast<T*>(::GlobalLock(m_h));
             // Did the lock succeed?
-            if (m_p == NULL)
+            if (m_p == nullptr)
             {
                 // The handle is probably invalid
                 throw CWinException(GetApp()->MsgWndGlobalLock());
             }
         }
         else
-            m_p = NULL;
+            m_p = nullptr;
     }
 
     // Unlock the handle.
     template <class T>
     inline void CGlobalLock<T>::Unlock()
     {
-        if (m_h != NULL)
+        if (m_h != nullptr)
         {
             ::GlobalUnlock(m_h);
-            m_h = NULL;
+            m_h = nullptr;
         }
     }
 
+    // Returns a const TCHAR* for the DEVNAMES in the global memory.
     template <>
-    inline LPCTSTR CGlobalLock<DEVNAMES>::c_str() const
+    inline LPCTSTR CDevNames::c_str() const
     {
-        assert(m_p != NULL);
+        assert(m_p != nullptr);
         return reinterpret_cast<LPCTSTR>(m_p);
     }
 
+    // Returns a TCHAR* for the DEVNAMES in global the memory.
     template <>
-    inline LPTSTR CGlobalLock<DEVNAMES>::GetString() const
+    inline LPTSTR CDevNames::GetString() const
     {
-        assert(m_p != NULL);
+        assert(m_p != nullptr);
         return reinterpret_cast<LPTSTR>(m_p);
     }
 
+    // Returns a CString containing the DeviceName from the DEVNAMES
+    // in global the memory.
     template<>
-    inline CString CGlobalLock<DEVNAMES>::GetDeviceName() const
+    inline CString CDevNames::GetDeviceName() const
     {
-        return (m_p != NULL) ? c_str() + (*this)->wDeviceOffset : _T("");
+        return (m_p != nullptr) ? c_str() + (*this)->wDeviceOffset : _T("");
     }
 
+    // Returns a CString containing the GetDriverName from the DEVNAMES
+    // in global the memory.
     template<>
-    inline CString CGlobalLock<DEVNAMES>::GetDriverName() const
+    inline CString CDevNames::GetDriverName() const
     {
-        return (m_p != NULL) ? c_str() + (*this)->wDriverOffset : _T("");
+        return (m_p != nullptr) ? c_str() + (*this)->wDriverOffset : _T("");
     }
 
+    // Returns a CString containing the GetPortName from the DEVNAMES
+    // in global the memory.
     template<>
-    inline CString CGlobalLock<DEVNAMES>::GetPortName() const
+    inline CString CDevNames::GetPortName() const
     {
-        return (m_p != NULL) ? c_str() + (*this)->wOutputOffset : _T("");
+        return (m_p != nullptr) ? c_str() + (*this)->wOutputOffset : _T("");
     }
 
+    // Returns true if the DEVNAMES in the global memory is for the
+    // default printer.
     template<>
-    inline bool CGlobalLock<DEVNAMES>::IsDefaultPrinter() const
+    inline bool CDevNames::IsDefaultPrinter() const
     {
-        return (m_p != NULL) ? ((*this)->wDefault & DN_DEFAULTPRN) : false;
+        return (m_p != nullptr) ? ((*this)->wDefault & DN_DEFAULTPRN) : false;
     }
-
-
-
-    //////////////////////////////////////////////////////////////////////
-    // A set of typedefs to simplify the use of CGlobalLock.
-    // These provide self unlocking objects that can be used for pointers
-    // to global memory. Using these typedefs eliminate the need to manually
-    // lock or unlock the global memory handles.
-    // Note: In the examples below, hDevMode and hDevNames can be either a raw
-    //       global memory handle, or a CHGlobal object.
-    //
-    // Example usage:
-    //   CDevMode  pDevMode(hDevMode);      // and use pDevMode as if it were a LPDEVMODE
-    //   CDevNames pDevNames(hDevNames);    // and use pDevNames as if it were a LPDEVNAMES
-    //   assert(pDevNames.Get());           // Get can be used to access the underlying pointer
-    //   CDevNames(hDevNames).GetDeviceName // Returns a CString containing the device name.
-    //
-    /////////////////////////////////////////////////////////////////////
-
-    typedef CGlobalLock<DEVMODE>    CDevMode;
-    typedef CGlobalLock<DEVNAMES>   CDevNames;
 
 
     ////////////////////////////////////
@@ -181,16 +195,16 @@ namespace Win32xx
     //
 
     // Constructor.
-    inline CWinApp::CWinApp() : m_callback(NULL)
+    inline CWinApp::CWinApp() : m_callback(nullptr)
     {
         static CCriticalSection cs;
         CThreadLock appLock(cs);
 
         // This assert fails if Win32++ has already been started.
         // There should only be one instance of CWinApp running at a time.
-        assert(SetnGetThis() == NULL);
+        assert(SetnGetThis() == nullptr);
 
-        if (SetnGetThis() == NULL)
+        if (SetnGetThis() == nullptr)
         {
             m_tlsData = ::TlsAlloc();
 
@@ -204,8 +218,7 @@ namespace Win32xx
                 SetnGetThis(this);
 
                 // Set the instance handle.
-                MEMORY_BASIC_INFORMATION mbi;
-                ZeroMemory(&mbi, sizeof(mbi));
+                MEMORY_BASIC_INFORMATION mbi{};
                 static int address = 0;
                 ::VirtualQuery(&address, &mbi, sizeof(mbi));
                 assert(mbi.AllocationBase);
@@ -221,7 +234,7 @@ namespace Win32xx
                 //       concurrency model. OleInitialize calls CoInitializeEx
                 //       with COINIT_APARTMENTTHREADED, and provides support
                 //       for other OLE functionality.
-                VERIFY(SUCCEEDED(OleInitialize(NULL)));
+                VERIFY(SUCCEEDED(OleInitialize(nullptr)));
             }
         }
     }
@@ -231,10 +244,9 @@ namespace Win32xx
     {
         // Forcibly destroy any remaining windows now. Windows created from
         //  static CWnds or dangling pointers are destroyed here.
-        std::map<HWND, CWnd*, CompareHWND>::const_iterator m;
-        for (m = m_mapHWND.begin(); m != m_mapHWND.end(); ++m)
+        for (const auto& m : m_mapHWND)
         {
-            HWND wnd = (*m).first;
+            HWND wnd = m.first;
             if (::IsWindow(wnd))
             {
                 ::DestroyWindow(wnd);
@@ -245,11 +257,11 @@ namespace Win32xx
         m_allTLSData.clear();
         if (m_tlsData != TLS_OUT_OF_INDEXES)
         {
-            ::TlsSetValue(m_tlsData, NULL);
+            ::TlsSetValue(m_tlsData, nullptr);
             ::TlsFree(m_tlsData);
         }
 
-        SetnGetThis(NULL, true);
+        SetnGetThis(nullptr, true);
         if (m_resource != m_instance)
             ::FreeLibrary(m_resource);
 
@@ -257,42 +269,41 @@ namespace Win32xx
     }
 
     // Adds a HDC and CDC_Data* pair to the map.
-    inline void CWinApp::AddCDCData(HDC dc, CDC_Data* pData)
+    inline void CWinApp::AddCDCData(HDC dc, std::weak_ptr<CDC_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
         m_mapCDCData.insert(std::make_pair(dc, pData));
     }
 
     // Adds a HGDIOBJ and CGDI_Data* pair to the map.
-    inline void CWinApp::AddCGDIData(HGDIOBJ gdi, CGDI_Data* pData)
+    inline void CWinApp::AddCGDIData(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
         m_mapCGDIData.insert(std::make_pair(gdi, pData));
     }
 
     // Adds a HIMAGELIST and CIml_Data* pair to the map.
-    inline void CWinApp::AddCImlData(HIMAGELIST images, CIml_Data* pData)
+    inline void CWinApp::AddCImlData(HIMAGELIST images, std::weak_ptr<CIml_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
         m_mapCImlData.insert(std::make_pair(images, pData));
     }
 
     // Adds a HMENU and CMenu_Data* to the map.
-    inline void CWinApp::AddCMenuData(HMENU menu, CMenu_Data* pData)
+    inline void CWinApp::AddCMenuData(HMENU menu, std::weak_ptr<CMenu_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
         m_mapCMenuData.insert(std::make_pair(menu, pData));
     }
 
     // Retrieves a pointer to CDC_Data from the map.
-    inline CDC_Data* CWinApp::GetCDCData(HDC dc)
+    inline std::weak_ptr<CDC_Data> CWinApp::GetCDCData(HDC dc)
     {
         CThreadLock mapLock(m_gdiLock);
 
         // Find the CDC data mapped to this HDC.
-        std::map<HDC, CDC_Data*, CompareHDC>::const_iterator m;
-        CDC_Data* pCDCData = NULL;
-        m = m_mapCDCData.find(dc);
+        std::weak_ptr<CDC_Data> pCDCData;
+        auto m = m_mapCDCData.find(dc);
         if (m != m_mapCDCData.end())
             pCDCData = m->second;
 
@@ -300,14 +311,13 @@ namespace Win32xx
     }
 
     // Retrieves a pointer to CGDI_Data from the map.
-    inline CGDI_Data* CWinApp::GetCGDIData(HGDIOBJ object)
+    inline std::weak_ptr<CGDI_Data> CWinApp::GetCGDIData(HGDIOBJ object)
     {
         CThreadLock mapLock(m_gdiLock);
 
         // Find the CGDIObject data mapped to this HGDIOBJ.
-        std::map<HGDIOBJ, CGDI_Data*, CompareGDI>::const_iterator m;
-        CGDI_Data* pCGDIData = NULL;
-        m = m_mapCGDIData.find(object);
+        std::weak_ptr<CGDI_Data> pCGDIData;
+        auto m = m_mapCGDIData.find(object);
         if (m != m_mapCGDIData.end())
             pCGDIData = m->second;
 
@@ -315,14 +325,13 @@ namespace Win32xx
     }
 
     // Retrieves a pointer to CIml_Data from the map.
-    inline CIml_Data* CWinApp::GetCImlData(HIMAGELIST images)
+    inline std::weak_ptr<CIml_Data> CWinApp::GetCImlData(HIMAGELIST images)
     {
         CThreadLock mapLock(m_wndLock);
 
         // Find the CImageList data mapped to this HIMAGELIST.
-        std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::const_iterator m;
-        CIml_Data* pCImlData = NULL;
-        m = m_mapCImlData.find(images);
+        std::weak_ptr<CIml_Data> pCImlData;
+        auto m = m_mapCImlData.find(images);
         if (m != m_mapCImlData.end())
             pCImlData = m->second;
 
@@ -330,14 +339,13 @@ namespace Win32xx
     }
 
     // Retrieves a pointer to CMenu_Data from the map.
-    inline CMenu_Data* CWinApp::GetCMenuData(HMENU menu)
+    inline std::weak_ptr<CMenu_Data> CWinApp::GetCMenuData(HMENU menu)
     {
         CThreadLock mapLock(m_wndLock);
 
         // Find the CMenu data mapped to this HMENU.
-        std::map<HMENU, CMenu_Data*, CompareHMENU>::const_iterator m;
-        CMenu_Data* pCMenuData = NULL;
-        m = m_mapCMenuData.find(menu);
+        std::weak_ptr<CMenu_Data> pCMenuData;
+        auto m = m_mapCMenuData.find(menu);
         if (m != m_mapCMenuData.end())
             pCMenuData = m->second;
 
@@ -350,9 +358,8 @@ namespace Win32xx
         CThreadLock mapLock(m_wndLock);
 
         // Find the CWnd pointer mapped to this HWND.
-        std::map<HWND, CWnd*, CompareHWND>::const_iterator m;
-        CWnd* pWnd = NULL;
-        m = m_mapHWND.find(wnd);
+        CWnd* pWnd = nullptr;
+        auto m = m_mapHWND.find(wnd);
         if (m != m_mapHWND.end())
             pWnd = m->second;
 
@@ -398,7 +405,7 @@ namespace Win32xx
     // Refer to LoadCursor in the Windows API documentation for more information.
     inline HCURSOR CWinApp::LoadStandardCursor(LPCTSTR cursorName) const
     {
-        return ::LoadCursor(NULL, cursorName);
+        return ::LoadCursor(nullptr, cursorName);
     }
 
     // Loads the icon resource whose size conforms to the SM_CXICON and SM_CYICON system metric values.
@@ -422,7 +429,7 @@ namespace Win32xx
     // Refer to LoadIcon in the Windows API documentation for more information.
     inline HICON CWinApp::LoadStandardIcon(LPCTSTR iconName) const
     {
-        return ::LoadIcon(NULL, iconName);
+        return ::LoadIcon(nullptr, iconName);
     }
 
     // Loads an icon, cursor, animated cursor, or bitmap image.
@@ -460,18 +467,15 @@ namespace Win32xx
     // address of CWnd::StaticWindowProc.
     inline void CWinApp::SetCallback()
     {
-        WNDCLASS defaultWC;
-        ZeroMemory(&defaultWC, sizeof(defaultWC));
-
+        WNDCLASS defaultWC{};
         LPCTSTR className    = _T("Win32++ Temporary Window Class");
         defaultWC.hInstance     = GetInstanceHandle();
         defaultWC.lpfnWndProc   = CWnd::StaticWindowProc;
         defaultWC.lpszClassName = className;
-
         VERIFY(::RegisterClass(&defaultWC));
 
         // Retrieve the class information.
-        ZeroMemory(&defaultWC, sizeof(defaultWC));
+        defaultWC = {};
         VERIFY(::GetClassInfo(GetInstanceHandle(), className, &defaultWC));
 
         // Save the callback address of CWnd::StaticWindowProc.
@@ -493,21 +497,21 @@ namespace Win32xx
     // This function stores the 'this' pointer in a static variable.
     // Once stored, it can be used later to return the 'this' pointer.
     // CWinApp's constructor calls this function and sets the static variable.
-    // CWinApp's destructor resets pWinApp to NULL.
-    inline CWinApp* CWinApp::SetnGetThis(CWinApp* pThis /*= NULL*/, bool reset /*= false*/)
+    // CWinApp's destructor resets pWinApp to nullptr.
+    inline CWinApp* CWinApp::SetnGetThis(CWinApp* pThis /*= nullptr*/, bool reset /*= false*/)
     {
-        static CWinApp* pWinApp = NULL;
+        static CWinApp* pWinApp = nullptr;
 
         if (reset)
         {
-            pWinApp = NULL;
+            pWinApp = nullptr;
         }
         else
         {
-            if (pWinApp == NULL)
+            if (pWinApp == nullptr)
                 pWinApp = pThis;
             else
-                assert(pThis == NULL);
+                assert(pThis == nullptr);
         }
 
         return pWinApp;
@@ -534,7 +538,7 @@ namespace Win32xx
             ::FreeLibrary(m_resource);
 
         // Set the resources back to default.
-        if (resource == NULL)
+        if (resource == nullptr)
             resource = m_instance;
 
         m_resource = resource;
@@ -547,11 +551,11 @@ namespace Win32xx
         CThreadLock TLSLock(m_appLock);
 
         TLSData* pTLSData = GetTlsData();
-        if (pTLSData == NULL)
+        if (pTLSData == nullptr)
         {
-            TLSDataPtr dataPtr(new TLSData);
-            m_allTLSData.push_back(dataPtr);
+            TLSDataPtr dataPtr = std::make_unique<TLSData>();
             VERIFY(::TlsSetValue(m_tlsData, dataPtr.get()));
+            m_allTLSData.push_back(std::move(dataPtr));
         }
     }
 
@@ -561,11 +565,10 @@ namespace Win32xx
     {
         CThreadLock lock(GetApp()->m_printLock);
 
-        if (m_devNames.Get() == NULL)
+        if (m_devNames.Get() == nullptr)
         {
             // Allocate global printer memory by specifying the default printer.
-            PRINTDLG pd;
-            ZeroMemory(&pd, sizeof(pd));
+            PRINTDLG pd{};
             pd.Flags = PD_RETURNDEFAULT;
             pd.lStructSize = sizeof(pd);
             ::PrintDlg(&pd);
@@ -578,13 +581,12 @@ namespace Win32xx
             if (CDevNames(m_devNames).IsDefaultPrinter())
             {
                 // Get current default printer
-                PRINTDLG pd;
-                ZeroMemory(&pd, sizeof(pd));
+                PRINTDLG pd{};
                 pd.lStructSize = sizeof(pd);
                 pd.Flags = PD_RETURNDEFAULT;
                 ::PrintDlg(&pd);
 
-                if (pd.hDevNames == NULL)
+                if (pd.hDevNames == nullptr)
                 {
                     // Printer was default, but now there are no printers.
                     m_devMode.Free();
@@ -669,7 +671,7 @@ namespace Win32xx
     { return _T("IP Address Control not supported!."); }
 
     inline CString CWinApp::MsgRichEditDll() const
-    { return _T("Failed to load RICHED32.DLL."); }
+    { return _T("Failed to load the RichEdit dll."); }
 
     inline CString CWinApp::MsgTaskDialog() const
     { return _T("Failed to create Task Dialog."); }
@@ -837,19 +839,20 @@ namespace Win32xx
         assert(GetApp());
 
         int startSize = 64;
-        CHAR* pTCharArray = NULL;
+        CHAR* pTCharArray = nullptr;
         std::vector<CHAR> vString;
         int chars = startSize;
 
         Empty();
 
         // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and _UNICODE versions of LoadString behave differently. This technique works for both.
+        // The ANSI and UNICODE versions of LoadString behave differently. 
+        // This less efficient technique works for both.
         while (startSize - 1 <= chars)
         {
             startSize = startSize * 4;
             vString.assign(size_t(startSize) + 1, 0);
-            pTCharArray = &vString.front();
+            pTCharArray = vString.data();
             chars = ::LoadStringA(GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
         }
 
@@ -861,33 +864,23 @@ namespace Win32xx
 
     // Loads the string from a Windows resource.
     // Refer to LoadString in the Windows API documentation for more information.
-    template <>
-    inline bool CStringW::LoadString(UINT id)
+    template <class T>
+    inline bool CStringT<T>::LoadString(UINT id)
     {
         assert(GetApp());
 
-        int startSize = 64;
-        WCHAR* pTCharArray = NULL;
-        std::vector<WCHAR> vString;
-        int chars = startSize;
-
         Empty();
 
-        // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and _UNICODE versions of LoadString behave differently.
-        // This technique works for both.
-        while (startSize - 1 <= chars)
-        {
-            startSize = startSize * 4;
-            vString.assign(size_t(startSize) + 1, 0);
-            pTCharArray = &vString.front();
-            chars = ::LoadStringW(GetApp()->GetResourceHandle(), id, pTCharArray, startSize);
-        }
+        // The ANSI and UNICODE versions of LoadString behave differently.
+        // This technique only works for LoadStringW.
+        LPCWSTR pString;
+        int charCount = ::LoadStringW(GetApp()->GetResourceHandle(), id, 
+            reinterpret_cast<LPWSTR>(&pString), 0);
 
-        if (chars > 0)
-            m_str.assign(pTCharArray);
+        if (charCount > 0)
+            m_str.assign(pString, charCount);
 
-        return (chars != 0);
+        return (charCount != 0);
     }
 
     // Returns a CString containing the specified string resource.

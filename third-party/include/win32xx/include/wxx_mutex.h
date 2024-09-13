@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -78,7 +78,7 @@ namespace Win32xx
     {
     public:
         CEvent(BOOL isInitiallySignaled = FALSE, BOOL isManualReset = FALSE,
-            LPCTSTR name = NULL, LPSECURITY_ATTRIBUTES attributes = NULL);
+            LPCTSTR name = nullptr, LPSECURITY_ATTRIBUTES attributes = nullptr);
 
         HANDLE GetHandle() const { return m_event; }
         operator HANDLE() const  { return m_event; }
@@ -87,8 +87,8 @@ namespace Win32xx
         void SetEvent();
 
     private:
-        CEvent(const CEvent&);              // Disable copy construction
-        CEvent& operator=(const CEvent&);   // Disable assignment operator
+        CEvent(const CEvent&) = delete;
+        CEvent& operator=(const CEvent&) = delete;
 
         HANDLE m_event;
     };
@@ -102,15 +102,15 @@ namespace Win32xx
     class CMutex
     {
     public:
-        CMutex(BOOL isInitiallySignaled = FALSE, LPCTSTR name = NULL,
-            LPSECURITY_ATTRIBUTES pAttributes = NULL);
+        CMutex(BOOL isInitiallySignaled = FALSE, LPCTSTR name = nullptr,
+            LPSECURITY_ATTRIBUTES pAttributes = nullptr);
 
         HANDLE GetHandle() const { return m_mutex; }
         operator HANDLE() const  { return m_mutex; }
 
     private:
-        CMutex(const CMutex&);              // Disable copy construction
-        CMutex& operator=(const CMutex&);   // Disable assignment operator
+        CMutex(const CMutex&) = delete;
+        CMutex& operator=(const CMutex&) = delete;
 
         HANDLE m_mutex;
     };
@@ -129,11 +129,11 @@ namespace Win32xx
 
         HANDLE GetHandle() const { return m_semaphore; }
         operator HANDLE() const  { return m_semaphore; }
-        BOOL ReleaseSemaphore(LONG releaseCount, LONG* pPreviousCount = NULL);
+        BOOL ReleaseSemaphore(LONG releaseCount, LONG* pPreviousCount = nullptr);
 
     private:
-        CSemaphore(const CSemaphore&);              // Disable copy construction
-        CSemaphore& operator=(const CSemaphore&);   // Disable assignment operator
+        CSemaphore(const CSemaphore&) = delete;
+        CSemaphore& operator=(const CSemaphore&) = delete;
 
         HANDLE m_semaphore;
     };
@@ -147,17 +147,17 @@ namespace Win32xx
     //  isInitiallySignaled - TRUE the initial state of the created event is signalled, FALSE otherwise
     //  isManualReset  - TRUE requires the use of the ResetEvent function to set the event state to non-signalled.
     //                 - FALSE the event is automatically reset to non-signalled after a single waiting thread has been released.
-    //  name           - pointer to a null terminated string specifying the event's name. Can be NULL.
+    //  name           - pointer to a null terminated string specifying the event's name. Can be nullptr.
     //                 - If name matches an existing event, the existing handle is retrieved.
     //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If attributes is NULL, the
+    //                   handle can be inherited by child processes. If attributes is nullptr, the
     //                   handle cannot be inherited.
     inline CEvent::CEvent(BOOL isInitiallySignaled, BOOL isManualReset, LPCTSTR name,
                     LPSECURITY_ATTRIBUTES attributes)
-    : m_event(NULL)
+    : m_event(nullptr)
     {
         m_event = ::CreateEvent(attributes, isManualReset, isInitiallySignaled, name);
-        if (m_event == NULL)
+        if (m_event == nullptr)
             throw CResourceException(GetApp()->MsgMtxEvent());
     }
 
@@ -180,17 +180,17 @@ namespace Win32xx
     // Creates a named or unnamed mutex.
     // Parameters:
     //  isInitiallySignaled - TRUE the initial state of the created mutex is signalled, FALSE otherwise
-    //  name           - pointer to a null terminated string specifying the mutex's name. Can be NULL.
+    //  name           - pointer to a null terminated string specifying the mutex's name. Can be nullptr.
     //                 - If name matches an existing mutex, the existing handle is retrieved.
     //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If attributes is NULL, the
+    //                   handle can be inherited by child processes. If attributes is nullptr, the
     //                   handle cannot be inherited.
     inline CMutex::CMutex(BOOL isInitiallySignaled, LPCTSTR name,
                             LPSECURITY_ATTRIBUTES attributes)
-    : m_mutex(NULL)
+    : m_mutex(nullptr)
     {
         m_mutex = ::CreateMutex(attributes, isInitiallySignaled, name);
-        if (m_mutex == NULL)
+        if (m_mutex == nullptr)
             throw CResourceException(GetApp()->MsgMtxMutex());
     }
 
@@ -204,17 +204,17 @@ namespace Win32xx
     //                   to zero and less than or equal to lMaximumCount.
     //  maxCount       - Maximum count for the semaphore object. This value must be greater than zero.
     //  attributes     - Pointer to a SECURITY_ATTRIBUTES structure that determines whether the returned
-    //                   handle can be inherited by child processes. If attributes is NULL, the
+    //                   handle can be inherited by child processes. If attributes is nullptr, the
     //                   handle cannot be inherited.
     inline CSemaphore::CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR name,
                             LPSECURITY_ATTRIBUTES attributes)
-    : m_semaphore(NULL)
+    : m_semaphore(nullptr)
     {
         assert(maxCount > 0);
         assert(initialCount <= maxCount);
 
         m_semaphore = ::CreateSemaphore(attributes, initialCount, maxCount, name);
-        if (m_semaphore == NULL)
+        if (m_semaphore == nullptr)
             throw CResourceException(GetApp()->MsgMtxSemaphore());
     }
 

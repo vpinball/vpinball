@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -43,15 +43,6 @@
 
 #ifndef _WIN32XX_RECT_H_
 #define _WIN32XX_RECT_H_
-
-
-// define useful macros from WindowsX.h
-#ifndef GET_X_LPARAM
-  #define GET_X_LPARAM(lp)  ((int)(short)LOWORD(lp))
-#endif
-#ifndef GET_Y_LPARAM
-  #define GET_Y_LPARAM(lp)  ((int)(short)HIWORD(lp))
-#endif
 
 
 namespace Win32xx

@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -227,65 +227,39 @@ namespace Win32xx
 
     // Calls either ::gmtime or ::gmtime_s, depending on the compiler.
     // The value of atm is updated and its pointer is returned if successful.
-    // Returns NULL on failure.
+    // Returns nullptr on failure.
     inline tm* GMTime(tm& atm, const time_t& t)
     {
         tm* ptm = &atm;
 
-// If Visual Studio >= 2005 or GNU > 11 or clang compiler.
-#if ((defined (_MSC_VER) &&  ( _MSC_VER >= 1400 )) || \
-    (defined(__GNUC__) && (__GNUC__ >= 11)) || \
-    defined(__clang_major__))
-
-#if defined(__BORLANDC__)
+#if defined(__BORLANDC__)  // For Embacadero support
         if (::gmtime_s(&t, &atm) == 0)
-            ptm = NULL;
+            ptm = nullptr;
 #else
         if (::gmtime_s(&atm, &t) != 0)
-            ptm = NULL;
+            ptm = nullptr;
 #endif
 
-#else
-        tm* ptmTemp = ::gmtime(&t);
-        if (ptmTemp != NULL)
-            *ptm = *ptmTemp;  // Update the value of atm.
-        else
-            ptm = NULL;
-#endif
-
-        // Note: ptm points to atm (not a local variable) or NULL.
+        // Note: ptm points to atm (not a local variable) or nullptr.
         return ptm;
     }
 
     // Calls either ::localtime or ::localtime_s depending on the compiler.
     // The value of atm is updated and its pointer is returned if successful.
-    // Returns NULL on failure.
+    // Returns nullptr on failure.
     inline tm* LocalTime(tm& atm, const time_t& t)
     {
         tm* ptm = &atm;
 
-// If Visual Studio >= 2005 or GNU > 11 or clang compiler.
-#if ((defined (_MSC_VER) &&  ( _MSC_VER >= 1400 )) || \
-    (defined(__GNUC__) && (__GNUC__ >= 11)) || \
-    defined(__clang_major__))
-
-#if defined(__BORLANDC__)
+#if defined(__BORLANDC__)  // For Embacadero support
         if (::localtime_s(&t, &atm) == 0)
-            ptm = NULL;
+            ptm = nullptr;
 #else
         if (::localtime_s(&atm, &t) != 0)
-            ptm = NULL;
+            ptm = nullptr;
 #endif
 
-#else
-        tm* ptmTemp = ::localtime(&t);
-        if (ptmTemp != NULL)
-            *ptm = *ptmTemp;  // Update the value of atm.
-        else
-            ptm = NULL;
-#endif
-
-        // Note: ptm points to atm (not a local variable) or NULL.
+        // Note: ptm points to atm (not a local variable) or nullptr.
         return ptm;
     }
 
@@ -293,7 +267,7 @@ namespace Win32xx
     inline time_t UTCtime(tm* atm)
     {
         // Compute the local time from atm.
-        assert(atm != NULL);
+        assert(atm != nullptr);
         time_t t0 = ::mktime(atm);
         assert(t0 != -1);
         tm tm0;
@@ -444,8 +418,8 @@ namespace Win32xx
         tm* ptm = GetLocalTm(&atm);
         CString formatString;
 
-        assert(ptm != NULL);
-        if (ptm != NULL)
+        assert(ptm != nullptr);
+        if (ptm != nullptr)
         {
             const size_t  bufferSize = 128;
             VERIFY((::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize, format, &atm)) != 0);
@@ -481,8 +455,8 @@ namespace Win32xx
         tm* ptm = GetGmtTm(&atm);
         CString formatString;
 
-        assert(ptm != NULL);
-        if (ptm != NULL)
+        assert(ptm != nullptr);
+        if (ptm != nullptr)
         {
             const size_t  bufferSize = 128;
             VERIFY(::_tcsftime(formatString.GetBuffer(bufferSize), bufferSize, fmt0.c_str(), ptm) != 0);
@@ -509,7 +483,7 @@ namespace Win32xx
         bool rval = false;
         tm atm;
         tm* ptm = GetGmtTm(&atm);
-        assert(ptm != NULL);
+        assert(ptm != nullptr);
 
         if (ptm)
         {
@@ -530,7 +504,7 @@ namespace Win32xx
         bool rval = false;
         tm atm;
         tm* ptm = GetLocalTm(&atm);
-        assert(ptm != NULL);
+        assert(ptm != nullptr);
 
         if (ptm)
         {
@@ -549,11 +523,11 @@ namespace Win32xx
     }
 
     // Returns a pointer to a tm struct that contains a decomposition of the
-    // CTime object expressed in UTC. Returns NULL on failure. The supplied
-    // ptm cannot be NULL.
+    // CTime object expressed in UTC. Returns nullptr on failure. The supplied
+    // ptm cannot be nullptr.
     inline tm* CTime::GetGmtTm(tm* ptm) const
     {
-        assert (ptm != NULL);    // NULL argument not supported.
+        assert (ptm != nullptr);    // nullptr argument not supported.
         if (ptm)
             ptm = GMTime(*ptm, m_time);
 
@@ -561,11 +535,11 @@ namespace Win32xx
     }
 
     // Returns a pointer to a tm struct that contains a decomposition of the
-    // CTime object expressed in the local time base. Returns NULL on failure.
-    // The supplied ptm cannot be NULL.
+    // CTime object expressed in the local time base. Returns nullptr on failure.
+    // The supplied ptm cannot be nullptr.
     inline tm* CTime::GetLocalTm(tm* ptm) const
     {
-        assert(ptm != NULL);    // NULL argument not supported.
+        assert(ptm != nullptr);    // nullptr argument not supported.
         if (ptm)
             ptm = LocalTime(*ptm, m_time);
 
@@ -750,7 +724,7 @@ namespace Win32xx
     // Static function. Returns a CTime object that represents the current time.
     inline CTime CTime::GetCurrentTime()
     {
-        return CTime(::time(NULL));
+        return CTime(::time(nullptr));
     }
 
 

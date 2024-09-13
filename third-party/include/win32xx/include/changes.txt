@@ -1,11 +1,147 @@
+Version 10.0
+============
+This version updates the library to utilize features available in C++11 and
+C++14. Win32++ now uses the unique_ptr and shared_ptr smart pointers. These
+smart pointers are used in place of Shared_Ptr when adding new instances of
+CTab, CMDIChild, CPropertySheet and CDocker.
+
+There is now no requirement to use any raw pointers when allocating memory in
+code that uses the Win32++ library. Users of Win32++ are now free to avoid 
+the use of both new and delete, and instead wrap all memory allocations in
+smart pointers. This helps to avoid memory leaks and improve exception safety
+in code that uses Win32++.
+
+The C++ compilers that Win32++ supports have changed. Older compilers that
+don't support C++14 are no longer supported.
+
+Win32++ version 10.0 only supports the Windows XP and later operating systems. 
+Win32++ version 9.6.1 is the latest version to support the operating systems
+older than Windows XP. Win32++ version 9.6.1 supports Win95 through to
+Windows 11.
+
+
+Incompatibilities with previous versions
+----------------------------------------
+The following functions now return a unique_ptr instead of a raw pointer:
+* CDocker::NewDockFromID
+* CTabbedMDI::NewMDIChildFromID
+
+Code that overrides of these function need to return a unique_ptr as well.
+For example:
+
+  DockPtr CMainFrame::NewDockerFromID(int /*id*/)
+  {
+      DockPtr docker;
+      switch(id)
+      {
+      case ID_CLASSES:
+          docker = std::make_unique<CDockClasses>();
+          break;
+      case ID_FILES:
+          docker = std::make_unique<CDockFiles>();
+          break;
+      default:
+          TRACE("Unknown Dock ID\n");
+          break;
+      }
+      return docker;
+  }
+
+
+New Features and Enhancements
+-----------------------------
+Users can now add new instances of the following classes as smart pointers instead
+of raw pointers for CDocker, CMDIChild, CPropertySheet and CTab.
+
+Other changes include:
+ * Updated CDocker. Each new CDocker object is stored as a unique_ptr.
+ * Updated CMDIFrame. Each new CMDIChild is stored as a unique_ptr.
+ * Updated CMDITab. Each new CMDITab object stored as a unique_ptr.
+ * Updated CPropertySheet. Each new CPropertyPage object is stored as a unique_ptr.
+ * Updated CTab. Each new CTab object is stored as a unique_ptr.
+ * Updated CDC. CDC now uses a shared_ptr for its reference counting.
+ * Updated CGDIObject. CGDIObject now uses a shared_ptr for its reference counting.
+ * Updated CMenu. CMenu now uses a shared_ptr for its reference counting.
+ * Updated CImageList. CImageList now uses a shared_ptr for its reference counting.
+
+* The values for WINVER and related macros are now set to values suitable for 
+  Windows 10 and Windows 11 by Win32++. Specifying different values for these macros
+  before including wincore.h is no longer supported. Win32++ version 10 supports
+  all operating systems Windows XP and later irrespective of the values of these
+  version macros. 
+
+
+Changes in detail
+-----------------
+Added CFrameT::SetMenuFont
+Added CFrameT::SetStatusBarFont
+
+Added CDocker::AddDockedChild    - additional override for std::unique_ptr
+Added CDocker::AddUndockedChild  - additional override for std::unique_ptr
+Added CMDIFrameT::AddMDIChild    - additional override for std::unique_ptr
+Added CPropertySheet::AddPage    - additional override for std::unique_ptr
+Added CTab::AddTabPage           - additional override for std::unique_ptr
+Added CTabbedMDI::AddMDIChild    - additional override for std::unique_ptr
+
+Modified CDocker::NewDockFromID  - returns a std::unique_ptr
+Modified CTabbedMDI::NewMDIChildFromID - returns a std::unique_ptr
+
+The type definitions for the smart pointers is in Win32++ have been updated 
+as follows:
+  using DockPtr = std::unique_ptr<CDocker>;
+  using EnhMetaDataPtr = std::shared_ptr<EnhMetaFileData>;
+  using MDIChildPtr = std::unique_ptr<CMDIChild>;
+  using MenuItemDataPtr = std::unique_ptr<MenuItemData>;
+  using MetaDataPtr = std::shared_ptr<MetaFileData>;
+  using PropertyPagePtr = std::unique_ptr<CPropertyPage>;
+  using TLSDataPtr = std::unique_ptr<TLSData>;
+  using WinThreadPtr = std::unique_ptr<CWinThread>;
+  using WorkThreadPtr = std::unique_ptr<CWorkThread>;
+  using WndPtr = std::unique_ptr<CWnd>;
+
+
+Deprecated features
+-------------------
+The following parts of Win32++ are deprecated and might be removed in future
+versions of Win32++. Code that uses deprecated features should be updated.
+
+ * Shared_Ptr                  class    - use unique_ptr or shared_ptr instead.
+ * CFrameT::IsRebarSupported   function - not required, always TRUE.
+ * CSocket::StartAsync         function - use CSocket::StartEvents instead.
+ * CToolBar::AddBitmap         function - use CToolBar::SetImageList instead.
+ * CToolBar::AddReplaceBitmap  function - use CToolBar::SetImageList instead.
+ * ::GetSizeofMenuItemInfo     function - use sizeof(MENUITEMINFO) instead.
+ * ::GetComCtlVersion          function - not required for Windows XP and later.
+ * MIN and MAX macros          function - use std::min and std::max instead. 
+
+Supported Compilers
+-------------------
+The following compilers are supported by this version of Win32++:
+
+The modern GNU C++ compilers from the following projects:
+ * MinGW
+ * TDM-GCC    (ships with Code::Blocks and Embarcadero Dev-C++)
+ * MinGW-w64  (the latest GNU C++ compilers available)
+
+Visual Studio Community 2015
+Visual Studio Community 2017
+Visual Studio Community 2019
+Visual Studio Community 2022
+
+Embarcadero C++ Community Edition (Rad Studio 11)
+
+Code for Windows XP can be compiled with Visual Studio Community 2015 and the GNU compilers.
+
+
 Version 9.6.1
 =============
 This version contains minor updates to CDocker and the docking samples.
 
+
 Version 9.6
 ===========
 This version adds support for std::min and std::max. The MIN and MAX macros
-are now depricated. Users should use std::min and std::max in place of the
+are now deprecated. Users should use std::min and std::max in place of the
 MIN and MAX macros.
 
 Support has been added for the C++ compiler from Embarcadero.
@@ -26,7 +162,7 @@ New Features and Enhancements
  
  * Added support for std::min and std::max.
 
- * The MIN and MAX macros are are now depricated and will be removed in future
+ * The MIN and MAX macros are are now deprecated and will be removed in future
     versions. Users should use std::min and std::max in place of the MIN and
     MAX macros.
 
@@ -852,7 +988,7 @@ New Features and Enhancements
  - CString and the text conversion classes can now be used independently of
    the rest of the framework.
  - Added CString::Assign. This function is used to assign a specified number
-   of characters to a CString. The assigned string can contain NULL characters.
+   of characters to a CString. The assigned string can contain null characters.
 
 * Updated CFrame and CMDIFrame
  - SetView can now be used to switch between multiple views for frames

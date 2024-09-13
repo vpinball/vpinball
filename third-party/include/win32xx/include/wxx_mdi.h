@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,7 +54,7 @@
 //    AddMDIChild function to add MDI child windows to the MDI frame. Inherit
 //    from CMDIFrame to create your own MDI frame.
 //
-// 2) CMDIChild: All MDI child windows (ie. CWnd classes) should inherit from
+// 2) CMDIChild: All MDI child windows (i.e. CWnd classes) should inherit from
 //    this class. Each MDI child type can have a different frame menu.
 //
 // 3) CMDIClient: This class is used by CMDIFrameT to host the MDIChild windows.
@@ -90,10 +90,10 @@ namespace Win32xx
     {
     public:
         CMDIChild();
-        virtual ~CMDIChild();
+        virtual ~CMDIChild() override;
 
         // These are the functions you might wish to override.
-        virtual HWND Create(HWND parent = NULL);
+        virtual HWND Create(HWND parent = nullptr) override;
         virtual void RecalcLayout();
 
         // These functions aren't virtual, and shouldn't be overridden.
@@ -109,18 +109,18 @@ namespace Win32xx
 
     protected:
         // These are the functions you might wish to override.
-        virtual void OnClose();
-        virtual int  OnCreate(CREATESTRUCT& cs);
+        virtual void OnClose() override;
+        virtual int  OnCreate(CREATESTRUCT& cs) override;
         virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
 
         // Not intended to be overridden.
-        LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam);
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CMDIChild(const CMDIChild&);              // Disable copy construction
-        CMDIChild& operator=(const CMDIChild&);   // Disable assignment operator
+        CMDIChild(const CMDIChild&) = delete;
+        CMDIChild& operator=(const CMDIChild&) = delete;
 
         CWnd* m_pView;              // pointer to the View CWnd object
         CMenu m_childMenu;
@@ -135,19 +135,19 @@ namespace Win32xx
     {
     public:
         CMDIClient() {}
-        virtual ~CMDIClient() {}
+        virtual ~CMDIClient() override {}
 
     protected:
         // Overridable virtual functions
-        virtual HWND Create(HWND parent);
+        virtual HWND Create(HWND parent) override;
         virtual LRESULT OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMDIDestroy(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMDIGetActive(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CMDIClient(const CMDIClient&);              // Disable copy construction
-        CMDIClient& operator=(const CMDIClient&);   // Disable assignment operator
+        CMDIClient(const CMDIClient&) = delete;
+        CMDIClient& operator=(const CMDIClient&) = delete;
     };
 
     /////////////////////////////////////
@@ -158,11 +158,12 @@ namespace Win32xx
     {
     public:
         CMDIFrameT();
-        virtual ~CMDIFrameT() {}
+        virtual ~CMDIFrameT() override {}
 
         // Override these functions as required.
         virtual CMDIChild* AddMDIChild(CMDIChild* pMDIChild);
-        virtual HWND Create(HWND parent = NULL);
+        virtual CMDIChild* AddMDIChild(MDIChildPtr MDIChild);
+        virtual HWND Create(HWND parent = nullptr) override;
         virtual void RemoveMDIChild(CMDIChild* pChild);
         virtual BOOL RemoveAllMDIChildren();
 
@@ -184,27 +185,27 @@ namespace Win32xx
 
     protected:
         // Overridable virtual functions
-        virtual LRESULT CustomDrawMenuBar(NMHDR* pNMHDR);
-        virtual void    OnClose();
-        virtual LRESULT OnInitMenuPopup(UINT msg, WPARAM wparam, LPARAM lparam);
+        virtual LRESULT CustomDrawMenuBar(NMHDR* pNMHDR) override;
+        virtual void    OnClose() override;
+        virtual LRESULT OnInitMenuPopup(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM);
         virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM);
         virtual void    OnMDIMaximized(BOOL isMaxed);
-        virtual void    OnMenuUpdate(UINT id);
-        virtual BOOL    OnViewStatusBar();
-        virtual BOOL    OnViewToolBar();
+        virtual void    OnMenuUpdate(UINT id) override;
+        virtual BOOL    OnViewStatusBar() override;
+        virtual BOOL    OnViewToolBar() override;
         virtual LRESULT OnWindowPosChanged(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual BOOL    PreTranslateMessage(MSG& msg);
-        virtual void    RecalcLayout();
+        virtual BOOL    PreTranslateMessage(MSG& msg) override;
+        virtual void    RecalcLayout() override;
         virtual void    UpdateFrameMenu(CMenu menu);
 
         // Not intended to be overridden
-        LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam);
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        LRESULT FinalWindowProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CMDIFrameT(const CMDIFrameT&);              // Disable copy construction
-        CMDIFrameT& operator=(const CMDIFrameT&);   // Disable assignment operator
+        CMDIFrameT(const CMDIFrameT&) = delete;
+        CMDIFrameT& operator=(const CMDIFrameT&) = delete;
         void UpdateMDIMenu(CMenu menuWindow);
 
         std::vector<MDIChildPtr> m_mdiChildren;
@@ -221,11 +222,11 @@ namespace Win32xx
     {
     public:
         CMDIFrame() {}
-        virtual ~CMDIFrame() {}
+        virtual ~CMDIFrame() override {}
 
     private:
-        CMDIFrame(const CMDIFrame&);              // Disable copy construction
-        CMDIFrame& operator=(const CMDIFrame&);   // Disable assignment operator
+        CMDIFrame(const CMDIFrame&) = delete;
+        CMDIFrame& operator=(const CMDIFrame&) = delete;
     };
 
 }
@@ -250,7 +251,7 @@ namespace Win32xx
 
     // Create the MDI frame.
     template <class T>
-    inline HWND CMDIFrameT<T>::Create(HWND parent /* = NULL */)
+    inline HWND CMDIFrameT<T>::Create(HWND parent /* = nullptr */)
     {
         // The view for a CMDIFrame is the MDIClient.
         T::SetView(GetMDIClient());
@@ -263,10 +264,22 @@ namespace Win32xx
     template <class T>
     inline CMDIChild* CMDIFrameT<T>::AddMDIChild(CMDIChild* pMDIChild)
     {
-        assert(pMDIChild != NULL); // Cannot add Null MDI Child
+        assert(pMDIChild != nullptr); // Cannot add Null MDI Child
+        return AddMDIChild(MDIChildPtr(pMDIChild));
+    }
 
-        m_mdiChildren.push_back(MDIChildPtr(pMDIChild));
+    // Adds a MDI child to the MDI frame. The pointer to the MDI child will be
+    // automatically deleted when the MDI Frame destroys the MDI child.
+    template <class T>
+    inline CMDIChild* CMDIFrameT<T>::AddMDIChild(MDIChildPtr MDIChild)
+    {
+        CMDIChild* pMDIChild = MDIChild.get();
+        assert(pMDIChild != nullptr); // Cannot add Null MDI Child
+        if (pMDIChild == nullptr)
+            return nullptr;
+
         pMDIChild->Create(GetMDIClient());
+        m_mdiChildren.push_back(std::move(MDIChild));
 
         return pMDIChild;
     }
@@ -296,21 +309,18 @@ namespace Win32xx
 
         UINT window = 0;
 
-        // Allocate an iterator for our MDIChild vector
-        std::vector<MDIChildPtr>::const_iterator v;
-
-        for (v = GetAllMDIChildren().begin(); v != GetAllMDIChildren().end(); ++v)
+        for (const MDIChildPtr& ChildPtr : GetAllMDIChildren())
         {
-            if ((*v)->IsWindow())
+            if (ChildPtr->IsWindow())
             {
                 // Add Separator
                 if (window == 0)
-                    windowMenu.AppendMenu(MF_SEPARATOR, 0, reinterpret_cast<LPCTSTR>(NULL));
+                    windowMenu.AppendMenu(MF_SEPARATOR, 0, reinterpret_cast<LPCTSTR>(0));
 
                 // Add a menu entry for each MDI child (up to 9)
                 if (window < 9)
                 {
-                    CString strMenuItem ( (*v)->GetWindowText() );
+                    CString strMenuItem (ChildPtr->GetWindowText());
 
                     if (strMenuItem.GetLength() > WXX_MAX_STRING_SIZE -10)
                     {
@@ -324,7 +334,7 @@ namespace Win32xx
 
                     windowMenu.AppendMenu(MF_STRING, IDW_FIRSTCHILD + static_cast<UINT_PTR>(window), menuString);
 
-                    if (GetActiveMDIChild() == (*v).get())
+                    if (GetActiveMDIChild() == ChildPtr.get())
                         windowMenu.CheckMenuItem(IDW_FIRSTCHILD + window, MF_CHECKED);
 
                     ++window;
@@ -352,10 +362,10 @@ namespace Win32xx
         CMenuBar* pMenubar = reinterpret_cast<CMenuBar*>
             (::SendMessage(pNMHDR->hwndFrom, UWM_GETCMENUBAR, 0, 0));
 
-        assert(pMenubar != NULL);
+        assert(pMenubar != nullptr);
 
         // Do the additional menubar custom drawing for the MDI frame.
-        if (pMenubar != NULL)
+        if (pMenubar != nullptr)
         {
             switch (lpNMCustomDraw->nmcd.dwDrawStage)
             {
@@ -427,7 +437,7 @@ namespace Win32xx
         return ::DefFrameProc(*this, GetMDIClient(), msg, wparam, lparam);
     }
 
-    // Returns a pointer to the active MDI child, or NULL if there is no active MDI child.
+    // Returns a pointer to the active MDI child, or nullptr if there is no active MDI child.
     template <class T>
     inline CMDIChild* CMDIFrameT<T>::GetActiveMDIChild() const
     {
@@ -682,35 +692,32 @@ namespace Win32xx
     template <class T>
     inline BOOL CMDIFrameT<T>::RemoveAllMDIChildren()
     {
-        BOOL succeeded = TRUE;
-
-        // Remove the children in reverse order.
-        std::vector<MDIChildPtr>::const_reverse_iterator mdiChild;
-        const std::vector<MDIChildPtr> mdiChildren = m_mdiChildren;
-        for (mdiChild = mdiChildren.rbegin(); mdiChild != mdiChildren.rend(); ++mdiChild)
+        // Collect the CMDIChild pointers in reverse order.
+        std::vector<CMDIChild*> mdiChildren;
+        for (auto it = m_mdiChildren.rbegin(); it != m_mdiChildren.rend(); ++it)
         {
-            // Ask the window to close. If it is destroyed, RemoveMDIChild gets called.
-            (*mdiChild)->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
-
-            if ((*mdiChild)->IsWindow())
-                succeeded = FALSE;
+            mdiChildren.push_back((*it).get());
         }
 
-        return succeeded;
+        // Ask each MDIChild to close.
+        // An element is removed from m_mdiChildren when the MDIChild is closed.
+        for (auto pMDIChild : mdiChildren)
+        {
+            pMDIChild->SendMessage(WM_SYSCOMMAND, SC_CLOSE, 0);
+        }
+
+        return m_mdiChildren.size() == 0 ? TRUE : FALSE;
     }
 
     // Removes an individual MDI child.
     template <class T>
     inline void CMDIFrameT<T>::RemoveMDIChild(CMDIChild* pChild)
     {
-        // Allocate an iterator for our HWND map.
-        std::vector<MDIChildPtr>::iterator v;
-
-        for (v = m_mdiChildren.begin(); v!= m_mdiChildren.end(); ++v)
+        for (auto it = m_mdiChildren.begin(); it!= m_mdiChildren.end(); ++it)
         {
-            if ((*v).get() == pChild)
+            if ((*it).get() == pChild)
             {
-                m_mdiChildren.erase(v);
+                m_mdiChildren.erase(it);
                 break;
             }
         }
@@ -820,16 +827,15 @@ namespace Win32xx
     template<class T>
     inline HWND CMDIClient<T>::Create(HWND parent)
     {
-        assert(parent != NULL);
+        assert(parent != nullptr);
 
-        CLIENTCREATESTRUCT clientcreate;
-        ZeroMemory(&clientcreate, sizeof(clientcreate));
-        clientcreate.hWindowMenu  = NULL;
+        CLIENTCREATESTRUCT clientcreate{};
+        clientcreate.hWindowMenu  = nullptr;
         clientcreate.idFirstChild = IDW_FIRSTCHILD;
         DWORD style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | MDIS_ALLCHILDSTYLES;
 
         // Create the view window
-        return T::CreateEx(WS_EX_CLIENTEDGE, _T("MDIClient"), _T(""), style, 0, 0, 0, 0, parent, NULL, (PSTR) &clientcreate);
+        return T::CreateEx(WS_EX_CLIENTEDGE, _T("MDIClient"), _T(""), style, 0, 0, 0, 0, parent, nullptr, (PSTR) &clientcreate);
     }
 
     // Called when the MDI child window is activated.
@@ -895,7 +901,7 @@ namespace Win32xx
     //   HACCEL hChildAccel = LoadAccelerators(GetApp()->GetResourceHandle(), _T("MDIAccelView"));
     //   SetHandles(hChildMenu, hChildAccel);
     //   SetView(m_view);
-    inline CMDIChild::CMDIChild() : m_pView(NULL), m_childAccel(0)
+    inline CMDIChild::CMDIChild() : m_pView(nullptr), m_childAccel(0)
     {
     }
 
@@ -908,13 +914,9 @@ namespace Win32xx
 
     // Create the MDI child window and then maximize if required.
     // This technique avoids unnecessary flicker when creating maximized MDI children.
-    inline HWND CMDIChild::Create(HWND parent /*= NULL*/)
+    inline HWND CMDIChild::Create(HWND parent /*= nullptr*/)
     {
-        CREATESTRUCT cs;
-        WNDCLASS wc;
-
-        ZeroMemory(&cs, sizeof(cs));
-        ZeroMemory(&wc, sizeof(wc));
+        CREATESTRUCT cs{};
 
         // Call PreCreate in case its overloaded.
         PreCreate(cs);
@@ -1102,7 +1104,7 @@ namespace Win32xx
             // Assign the view window.
             m_pView = &view;
 
-            if (GetHwnd() != NULL)
+            if (GetHwnd() != nullptr)
             {
                 if (!GetView().IsWindow())
                     GetView().Create(*this);

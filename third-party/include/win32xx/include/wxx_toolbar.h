@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -52,13 +52,13 @@ namespace Win32xx
     {
     public:
         CToolBar();
-        virtual ~CToolBar();
+        virtual ~CToolBar() override;
 
         // Operations
         virtual int  AddBitmap(UINT bitmapID);
         virtual BOOL AddButton(UINT buttonID, BOOL isEnabled = TRUE, int image = -1);
         virtual BOOL AddReplaceBitmap(UINT bitmapID);
-        virtual void Destroy();
+        virtual void Destroy() override;
         virtual BOOL ReplaceBitmap(UINT newBitmapID);
         virtual BOOL SetButtonText(UINT buttonID, LPCTSTR text);
 
@@ -94,6 +94,7 @@ namespace Win32xx
         HWND  GetToolTips() const;
         BOOL  HasText() const;
         BOOL  HideButton(UINT buttonID, BOOL show) const;
+        int   HitTest(const POINT& pt) const;
         int   HitTest() const;
         BOOL  Indeterminate(UINT buttonID, BOOL isIndeterminate) const;
         BOOL  InsertButton(int index, const TBBUTTON& buttonInfo) const;
@@ -127,20 +128,20 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual void OnAttach();
+        virtual void OnAttach() override;
         virtual LRESULT OnWindowPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
         // Not intended to be overridden
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
         using CWnd::GetMenu;                    // Make GetMenu private
         using CWnd::SetMenu;                    // Make SetMenu private
 
-        CToolBar(const CToolBar&);              // Disable copy construction
-        CToolBar& operator=(const CToolBar&);   // Disable assignment operator
+        CToolBar(const CToolBar&) = delete;
+        CToolBar& operator=(const CToolBar&) = delete;
 
         std::map<CString, int> m_stringMap;     // A map of strings used in SetButtonText.
 
@@ -179,6 +180,8 @@ namespace Win32xx
     // Refer to TB_ADDBITMAP in the Windows API documentation for more information.
     inline int CToolBar::AddBitmap(UINT bitmapID)
     {
+        TRACE("*** Warning: CToolBar::AddBitmap is deprecated. ***\n");
+
         assert(IsWindow());
 
         CBitmap bitmap(bitmapID);
@@ -187,8 +190,7 @@ namespace Win32xx
         int imageWidth  = std::max(static_cast<int>(data.bmHeight), 16);
         int images = data.bmWidth / imageWidth;
 
-        TBADDBITMAP tbab;
-        ZeroMemory(&tbab, sizeof(tbab));
+        TBADDBITMAP tbab{};
         tbab.hInst = GetApp()->GetResourceHandle();
         tbab.nID   = static_cast<UINT_PTR>(bitmapID);
         WPARAM wparam = static_cast<WPARAM>(images);
@@ -227,8 +229,7 @@ namespace Win32xx
         }
 
         // TBBUTTON structure for each button in the toolbar.
-        TBBUTTON tbb;
-        ZeroMemory(&tbb, sizeof(tbb));
+        TBBUTTON tbb{};
 
         if (id == 0)
         {
@@ -263,6 +264,7 @@ namespace Win32xx
     // Refer to AddBitmap and ReplaceBitmap for more information.
     inline BOOL CToolBar::AddReplaceBitmap(UINT id)
     {
+        TRACE("*** Warning: CToolBar::AddReplaceBitmap is deprecated. ***\n");
         assert(IsWindow());
 
         CBitmap bitmap(id);
@@ -440,8 +442,7 @@ namespace Win32xx
         assert(IsWindow());
 
         int index = CommandToIndex(buttonID);
-        TBBUTTON tbb;
-        ZeroMemory(&tbb, sizeof(tbb));
+        TBBUTTON tbb{};
         GetButton(index, tbb);
 
         return tbb.fsStyle;
@@ -472,8 +473,7 @@ namespace Win32xx
     inline UINT CToolBar::GetCommandID(int index) const
     {
         assert(IsWindow());
-        TBBUTTON tbb;
-        ZeroMemory(&tbb, sizeof(tbb));
+        TBBUTTON tbb{};
         GetButton(index, tbb);
 
         // returns zero if failed
@@ -532,7 +532,7 @@ namespace Win32xx
         CRect rc;
         WPARAM wparam = static_cast<WPARAM>(index);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
-        VERIFY(SendMessage(TB_GETITEMRECT, wparam, lparam));
+        SendMessage(TB_GETITEMRECT, wparam, lparam);
 
         return rc;
     }
@@ -637,29 +637,24 @@ namespace Win32xx
         return static_cast<BOOL>(SendMessage(TB_HIDEBUTTON, wparam, MAKELONG (show, 0)));
     }
 
-    // Determines where a point lies in a ToolBar control.
+    // Returns the button that's positioned under the cursor.
     // Refer to TB_HITTEST in the Windows API documentation for more information.
     inline int CToolBar::HitTest() const
     {
-        // We do our own hit test since TB_HITTEST on some older operating
-        // systems is a bit buggy, and it is not provided on the earliest
-        // versions of Win95.
-
         assert(IsWindow());
         CPoint pos = GetCursorPos();
         VERIFY(ScreenToClient(pos));
 
-        int buttons = GetButtonCount();
-        int button = -1;
+        return HitTest(pos);
+    }
 
-        for (int i = 0 ; i < buttons; ++i)
-        {
-            CRect rc = GetItemRect(i);
-            if (rc.PtInRect(pos))
-                button = i;
-        }
-
-        return button;
+    // Returns the button that's positioned at the specified point.
+    // Refer to TB_HITTEST in the Windows API documentation for more information.
+    inline int CToolBar::HitTest(const POINT& pt) const
+    {
+        assert(IsWindow());
+        LPARAM lparam = reinterpret_cast<LPARAM>(&pt);
+        return static_cast<int>(SendMessage(TB_HITTEST, 0, lparam));
     }
 
     // Sets or clears the indeterminate state of the specified button in a toolbar.
@@ -814,8 +809,7 @@ namespace Win32xx
         int imageWidth  = std::max(static_cast<int>(data.bmHeight), 16);
         int images = data.bmWidth / imageWidth;
 
-        TBREPLACEBITMAP tbrb;
-        ZeroMemory(&tbrb, sizeof(tbrb));
+        TBREPLACEBITMAP tbrb{};
         tbrb.hInstNew = GetApp()->GetResourceHandle();
         tbrb.hInstOld = tbrb.hInstNew;
         tbrb.nIDNew = static_cast<UINT_PTR>(newBitmapID);
@@ -867,16 +861,14 @@ namespace Win32xx
     inline void CToolBar::SetButtonInfo(UINT buttonID, UINT buttonNewID, int image, BYTE style /* = 0 */, BYTE state /* = 0 */) const
     {
         // Retrieve existing state and style
-        TBBUTTON tb;
-        ZeroMemory(&tb, sizeof(tb));
+        TBBUTTON tb{};
         int index = CommandToIndex(buttonID);
         BOOL result = GetButton(index, tb);
         assert(result);
 
         if (result)
         {
-            TBBUTTONINFO tbbi;
-            ZeroMemory(&tbbi, sizeof(tbbi));
+            TBBUTTONINFO tbbi{};
             tbbi.cbSize = sizeof(tbbi);
             tbbi.dwMask = TBIF_COMMAND | TBIF_IMAGE | TBIF_STYLE | TBIF_STATE;
             tbbi.idCommand = static_cast<int>(buttonNewID);
@@ -927,8 +919,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        TBBUTTONINFO tbbi;
-        ZeroMemory(&tbbi, sizeof(tbbi));
+        TBBUTTONINFO tbbi{};
         tbbi.cbSize = sizeof(tbbi);
         tbbi.dwMask = TBIF_STYLE;
         tbbi.fsStyle = style;
@@ -949,11 +940,10 @@ namespace Win32xx
 
         BOOL succeeded = FALSE;
         CString string = text;
-        std::map<CString, int>::iterator m;
         int stringIndex;
 
         // Check to see if the string is already added.
-        m = m_stringMap.find(string);
+        auto m = m_stringMap.find(string);
         if (m_stringMap.end() == m)
         {
             CString str;
@@ -989,8 +979,7 @@ namespace Win32xx
 
         if (succeeded)
         {
-            TBBUTTON tbb;
-            ZeroMemory(&tbb, sizeof(tbb));
+            TBBUTTON tbb{};
             succeeded = GetButton(index, tbb);
             tbb.iString = stringIndex;
 
@@ -1026,8 +1015,7 @@ namespace Win32xx
         // Note:  TB_SETBUTTONINFO requires comctl32.dll version 4.71 or later
         //        i.e. Win95 with IE4 / NT with IE4   or later
 
-        TBBUTTONINFO tbbi;
-        ZeroMemory(&tbbi, sizeof(tbbi));
+        TBBUTTONINFO tbbi{};
         tbbi.cbSize = sizeof(tbbi);
         tbbi.dwMask = TBIF_SIZE;
         tbbi.cx = static_cast<WORD>(width);
@@ -1165,4 +1153,4 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // #ifndef _WIN32XX_TOOLBAR_H_
+#endif // _WIN32XX_TOOLBAR_H_

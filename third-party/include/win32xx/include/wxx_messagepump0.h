@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -44,6 +44,36 @@
 namespace Win32xx
 {
 
+    class CArchive;
+
+    ////////////////////////////////////////////////////////////////////
+    // The CObject class provides support for Serialization by CArchive.
+    // Any class that uses CArchive to serialize data can inherit from
+    // CObject.
+
+    class CObject
+    {
+    public:
+        CObject() {}
+        virtual ~CObject() {}
+
+        virtual void Serialize(CArchive& /*ar*/)
+        {
+            //  Override Serialize in the class inherited from CObject like this.
+
+            //  if (ar.IsStoring())
+            //  {
+            //      // Store a member variable in the archive
+            //      ar << m_someValue;
+            //  }
+            //  else
+            //  {
+            //      // Load a member variable from the archive
+            //      ar >> m_someValue;
+            //  }
+        }
+    };
+
     class CMessagePump : public CObject
     {
     public:
@@ -65,8 +95,8 @@ namespace Win32xx
         virtual BOOL PreTranslateMessage(MSG& msg);
 
     private:
-        CMessagePump(const CMessagePump&);               // Disable copy construction
-        CMessagePump& operator=(const CMessagePump&);    // Disable assignment operator
+        CMessagePump(const CMessagePump&) = delete;
+        CMessagePump& operator=(const CMessagePump&) = delete;
 
         HACCEL m_accel;               // handle to the accelerator table
         HWND m_accelWnd;              // handle to the window for accelerator keys

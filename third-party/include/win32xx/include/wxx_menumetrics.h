@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -46,34 +46,9 @@
 #define _WIN32XX_MENUMETRICS_H_
 
 #include "wxx_wincore.h"
-
-
-#ifndef TMT_BORDERSIZE
-  #define TMT_BORDERSIZE    2403
-#endif
-#ifndef TMT_CONTENTMARGINS
-  #define TMT_CONTENTMARGINS    3602
-#endif
-#ifndef VSCLASS_MENU
-  #define VSCLASS_MENU  L"MENU"
-#endif
-#ifndef ODS_NOACCEL
-  #define ODS_NOACCEL 0x0100
-#endif
-#ifndef ODS_HOTLIGHT
-  #define ODS_HOTLIGHT 0x0040
-#endif
-#ifndef ODS_INACTIVE
-  #define ODS_INACTIVE 0x0080
-#endif
-#ifndef DT_HIDEPREFIX
-  #define DT_HIDEPREFIX 0x00100000
-#endif
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1920)   // >= VS2019
-  #pragma warning ( push )
-  #pragma warning ( disable : 26812 )            // enum type is unscoped.
-#endif // (_MSC_VER) && (_MSC_VER >= 1920)
+#include <Uxtheme.h>
+#include <vsstyle.h>
+#include <vssym32.h>
 
 
 namespace Win32xx
@@ -113,9 +88,9 @@ namespace Win32xx
     // MenuItemData defines the data for each dropdown menu item.
     struct MenuItemData
     {
-        MenuItemData() : menu(NULL), pos(0)
+        MenuItemData() : menu(nullptr), pos(0)
         {
-            ZeroMemory(&mii, GetSizeofMenuItemInfo());
+            mii = {};
         }
 
         HMENU menu;
@@ -132,68 +107,6 @@ namespace Win32xx
     // calculations.
     class CMenuMetrics
     {
-        // A local copy of enums from uxtheme.h. They're declared within the
-        // CMenuMetrics class to avoid name clashes when uxtheme.h is included.
-        enum POPUPCHECKBACKGROUNDSTATES
-        {
-            MCB_DISABLED = 1,
-            MCB_NORMAL = 2,
-            MCB_BITMAP = 3
-        };
-
-        enum POPUPCHECKSTATES
-        {
-            MC_CHECKMARKNORMAL = 1,
-            MC_CHECKMARKDISABLED = 2,
-            MC_BULLETNORMAL = 3,
-            MC_BULLETDISABLED = 4
-        };
-
-        enum POPUPITEMSTATES
-        {
-            MPI_NORMAL = 1,
-            MPI_HOT = 2,
-            MPI_DISABLED = 3,
-            MPI_DISABLEDHOT = 4
-        };
-
-        enum POPUPSUBMENUSTATES
-        {
-            MSM_NORMAL = 1,
-            MSM_DISABLED = 2
-        };
-
-        enum THEMESIZE
-        {
-            TS_MIN,             // minimum size
-            TS_TRUE,            // size without stretching
-            TS_DRAW             // size that theme mgr will use to draw part
-        };
-
-        enum MENUPARTS
-        {
-            MENU_MENUITEM_TMSCHEMA = 1,
-            MENU_MENUDROPDOWN_TMSCHEMA = 2,
-            MENU_MENUBARITEM_TMSCHEMA = 3,
-            MENU_MENUBARDROPDOWN_TMSCHEMA = 4,
-            MENU_CHEVRON_TMSCHEMA = 5,
-            MENU_SEPARATOR_TMSCHEMA = 6,
-            MENU_BARBACKGROUND = 7,
-            MENU_BARITEM = 8,
-            MENU_POPUPBACKGROUND = 9,
-            MENU_POPUPBORDERS = 10,
-            MENU_POPUPCHECK = 11,
-            MENU_POPUPCHECKBACKGROUND = 12,
-            MENU_POPUPGUTTER = 13,
-            MENU_POPUPITEM = 14,
-            MENU_POPUPSEPARATOR = 15,
-            MENU_POPUPSUBMENU = 16,
-            MENU_SYSTEMCLOSE = 17,
-            MENU_SYSTEMMAXIMIZE = 18,
-            MENU_SYSTEMMINIMIZE = 19,
-            MENU_SYSTEMRESTORE = 20
-        };
-
     public:
         CMenuMetrics();
         ~CMenuMetrics();
@@ -238,26 +151,26 @@ namespace Win32xx
         CSize   m_sizeCheck;            // The size of the image used for menu check boxes and radio boxes.
         CSize   m_sizeSeparator;        // The size of the separator menu item.
 
-        typedef HRESULT WINAPI CLOSETHEMEDATA(HANDLE);
-        typedef HRESULT WINAPI DRAWTHEMEBACKGROUND(HANDLE, HDC, int, int, const RECT*, const RECT*);
-        typedef HRESULT WINAPI DRAWTHEMETEXT(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, LPCRECT);
-        typedef HRESULT WINAPI GETTHEMEPARTSIZE(HANDLE, HDC, int, int, LPCRECT, THEMESIZE, SIZE*);
-        typedef HRESULT WINAPI GETTHEMEINT(HANDLE, int, int, int, int*);
-        typedef HRESULT WINAPI GETTHEMEMARGINS(HANDLE, HDC, int, int, int, LPRECT, Margins*);
-        typedef HRESULT WINAPI GETTHEMETEXTEXTENT(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, LPCRECT, LPCRECT);
-        typedef BOOL    WINAPI ISTHEMEBGPARTTRANSPARENT(HANDLE, int, int);
-        typedef HANDLE  WINAPI OPENTHEMEDATA(HWND, LPCWSTR);
+        using CLOSETHEMEDATA = HRESULT(WINAPI*)(HANDLE);
+        using DRAWTHEMEBACKGROUND = HRESULT (WINAPI*)(HANDLE, HDC, int, int, const RECT*, const RECT*);
+        using DRAWTHEMETEXT = HRESULT (WINAPI*)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, DWORD, LPCRECT);
+        using GETTHEMEPARTSIZE = HRESULT (WINAPI*)(HANDLE, HDC, int, int, LPCRECT, THEMESIZE, SIZE*);
+        using GETTHEMEINT = HRESULT (WINAPI*)(HANDLE, int, int, int, int*);
+        using GETTHEMEMARGINS = HRESULT (WINAPI*)(HANDLE, HDC, int, int, int, LPRECT, Margins*);
+        using GETTHEMETEXTEXTENT = HRESULT (WINAPI*)(HANDLE, HDC, int, int, LPCWSTR, int, DWORD, LPCRECT, LPCRECT);
+        using ISTHEMEBGPARTTRANSPARENT = BOOL (WINAPI*)(HANDLE, int, int);
+        using OPENTHEMEDATA = HANDLE (WINAPI*)(HWND, LPCWSTR);
 
         // Pointers to functions defined in uxTheme.dll
-        CLOSETHEMEDATA*           m_pfnCloseThemeData;
-        DRAWTHEMEBACKGROUND*      m_pfnDrawThemeBackground;
-        DRAWTHEMETEXT*            m_pfnDrawThemeText;
-        GETTHEMEPARTSIZE*         m_pfnGetThemePartSize;
-        GETTHEMEINT*              m_pfnGetThemeInt;
-        GETTHEMEMARGINS*          m_pfnGetThemeMargins;
-        GETTHEMETEXTEXTENT*       m_pfnGetThemeTextExtent;
-        ISTHEMEBGPARTTRANSPARENT* m_pfnIsThemeBGPartTransparent;
-        OPENTHEMEDATA*            m_pfnOpenThemeData;
+        CLOSETHEMEDATA           m_pfnCloseThemeData;
+        DRAWTHEMEBACKGROUND      m_pfnDrawThemeBackground;
+        DRAWTHEMETEXT            m_pfnDrawThemeText;
+        GETTHEMEPARTSIZE         m_pfnGetThemePartSize;
+        GETTHEMEINT              m_pfnGetThemeInt;
+        GETTHEMEMARGINS          m_pfnGetThemeMargins;
+        GETTHEMETEXTEXTENT       m_pfnGetThemeTextExtent;
+        ISTHEMEBGPARTTRANSPARENT m_pfnIsThemeBGPartTransparent;
+        OPENTHEMEDATA            m_pfnOpenThemeData;
     };
 
 }
@@ -272,17 +185,17 @@ namespace Win32xx
     //////////////////////////////////////////
     // Definitions for the CMenuMetrics class.
     //
-    inline CMenuMetrics::CMenuMetrics() : m_theme(NULL), m_pfnCloseThemeData(NULL), m_pfnDrawThemeBackground(NULL),
-                                            m_pfnDrawThemeText(NULL), m_pfnGetThemePartSize(NULL), m_pfnGetThemeInt(NULL),
-                                            m_pfnGetThemeMargins(NULL), m_pfnGetThemeTextExtent(NULL),
-                                            m_pfnIsThemeBGPartTransparent(NULL), m_pfnOpenThemeData(NULL)
+    inline CMenuMetrics::CMenuMetrics() : m_theme(nullptr), m_pfnCloseThemeData(nullptr), m_pfnDrawThemeBackground(nullptr),
+                                            m_pfnDrawThemeText(nullptr), m_pfnGetThemePartSize(nullptr), m_pfnGetThemeInt(nullptr),
+                                            m_pfnGetThemeMargins(nullptr), m_pfnGetThemeTextExtent(nullptr),
+                                            m_pfnIsThemeBGPartTransparent(nullptr), m_pfnOpenThemeData(nullptr)
     {
         Initialize();
     }
 
     inline CMenuMetrics::~CMenuMetrics()
     {
-        if (m_theme != NULL)
+        if (m_theme != nullptr)
             CloseThemeData();
     }
 
@@ -372,7 +285,8 @@ namespace Win32xx
             // Account for text width and checkmark height.
             CSize sizeText = GetTextSize(pmd, dc);
             size.cx += sizeText.cx;
-            size.cy = m_sizeCheck.cy + m_marCheckBackground.Height() + m_marCheck.Height();
+            size.cy = std::max(sizeText.cy, m_sizeCheck.cy) + m_marCheckBackground.Height() +
+                m_marCheck.Height();
         }
 
         return (size);
@@ -411,7 +325,7 @@ namespace Win32xx
         {
             CRect rcText;
             GetThemeTextExtent(dc, MENU_POPUPITEM, 0, TtoW(itemText), itemText.GetLength(),
-                DT_EXPANDTABS, NULL, &rcText);
+                DT_EXPANDTABS, nullptr, &rcText);
 
             sizeText.SetSize(rcText.right, rcText.bottom);
         }
@@ -485,50 +399,50 @@ namespace Win32xx
     {
         HMODULE uxTheme = ::GetModuleHandle(_T("uxtheme.dll"));
 
-        if (uxTheme != NULL)
+        if (uxTheme != nullptr)
         {
-            m_pfnCloseThemeData = reinterpret_cast<CLOSETHEMEDATA*>(
+            m_pfnCloseThemeData = reinterpret_cast<CLOSETHEMEDATA>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "CloseThemeData")));
-            m_pfnDrawThemeBackground = reinterpret_cast<DRAWTHEMEBACKGROUND*>(
+            m_pfnDrawThemeBackground = reinterpret_cast<DRAWTHEMEBACKGROUND>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "DrawThemeBackground")));
-            m_pfnDrawThemeText = reinterpret_cast<DRAWTHEMETEXT*>(
+            m_pfnDrawThemeText = reinterpret_cast<DRAWTHEMETEXT>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "DrawThemeText")));
-            m_pfnGetThemePartSize = reinterpret_cast<GETTHEMEPARTSIZE*>(
+            m_pfnGetThemePartSize = reinterpret_cast<GETTHEMEPARTSIZE>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "GetThemePartSize")));
-            m_pfnGetThemeInt = reinterpret_cast<GETTHEMEINT*>(
+            m_pfnGetThemeInt = reinterpret_cast<GETTHEMEINT>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "GetThemeInt")));
-            m_pfnGetThemeMargins = reinterpret_cast<GETTHEMEMARGINS*>(
+            m_pfnGetThemeMargins = reinterpret_cast<GETTHEMEMARGINS>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "GetThemeMargins")));
-            m_pfnGetThemeTextExtent = reinterpret_cast<GETTHEMETEXTEXTENT*>(
+            m_pfnGetThemeTextExtent = reinterpret_cast<GETTHEMETEXTEXTENT>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "GetThemeTextExtent")));
-            m_pfnIsThemeBGPartTransparent = reinterpret_cast<ISTHEMEBGPARTTRANSPARENT*>(
+            m_pfnIsThemeBGPartTransparent = reinterpret_cast<ISTHEMEBGPARTTRANSPARENT>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "IsThemeBackgroundPartiallyTransparent")));
-            m_pfnOpenThemeData = reinterpret_cast<OPENTHEMEDATA*>(
+            m_pfnOpenThemeData = reinterpret_cast<OPENTHEMEDATA>(
                 reinterpret_cast<void*>(::GetProcAddress(uxTheme, "OpenThemeData")));
         }
     }
 
     inline void CMenuMetrics::SetMetrics(HWND frame)
     {
-        if (m_theme != NULL)
+        if (m_theme != nullptr)
         {
             CloseThemeData();
-            m_theme = NULL;
+            m_theme = nullptr;
         }
 
         m_theme = OpenThemeData(frame, VSCLASS_MENU);
 
-        if (m_theme != NULL)
+        if (m_theme != nullptr)
         {
             int borderSize = 0;    // Border space between item text and accelerator.
             int bgBorderSize = 0;  // Border space between item text and gutter.
-            GetThemePartSize(NULL, MENU_POPUPCHECK, 0, NULL, TS_TRUE, &m_sizeCheck);
-            GetThemePartSize(NULL, MENU_POPUPSEPARATOR, 0, NULL, TS_TRUE, &m_sizeSeparator);
+            GetThemePartSize(nullptr, MENU_POPUPCHECK, 0, nullptr, TS_TRUE, &m_sizeCheck);
+            GetThemePartSize(nullptr, MENU_POPUPSEPARATOR, 0, nullptr, TS_TRUE, &m_sizeSeparator);
             GetThemeInt(MENU_POPUPITEM, 0, TMT_BORDERSIZE, &borderSize);
             GetThemeInt(MENU_POPUPBACKGROUND, 0, TMT_BORDERSIZE, &bgBorderSize);
-            GetThemeMargins(NULL, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, NULL, &m_marCheck);
-            GetThemeMargins(NULL, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, NULL, &m_marCheckBackground);
-            GetThemeMargins(NULL, MENU_POPUPITEM, 0, TMT_CONTENTMARGINS, NULL, &m_marItem);
+            GetThemeMargins(nullptr, MENU_POPUPCHECK, 0, TMT_CONTENTMARGINS, nullptr, &m_marCheck);
+            GetThemeMargins(nullptr, MENU_POPUPCHECKBACKGROUND, 0, TMT_CONTENTMARGINS, nullptr, &m_marCheckBackground);
+            GetThemeMargins(nullptr, MENU_POPUPITEM, 0, TMT_CONTENTMARGINS, nullptr, &m_marItem);
 
             // Popup text margins
             m_marText = m_marItem;
@@ -567,7 +481,7 @@ namespace Win32xx
 
     inline BOOL CMenuMetrics::IsVistaMenu() const
     {
-        return (m_theme != NULL);
+        return (m_theme != nullptr);
     }
 
     // Convert from item state to MENU_POPUPITEM state.
@@ -625,9 +539,5 @@ namespace Win32xx
     }
 
 }
-
-#if defined (_MSC_VER) && (_MSC_VER >= 1920)
- #pragma warning ( pop )
-#endif // (_MSC_VER) && (_MSC_VER >= 1920)
 
 #endif // _WIN32XX_MENUMETRICS_H_

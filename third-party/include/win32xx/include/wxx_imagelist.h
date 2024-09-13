@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -136,7 +136,7 @@ namespace Win32xx
         void Release();
         BOOL RemoveFromMap() const;
 
-        CIml_Data* m_pData;
+        std::shared_ptr<CIml_Data> m_pData;
     };
 
 
@@ -146,12 +146,12 @@ namespace Win32xx
 
     inline CImageList::CImageList()
     {
-        m_pData = new CIml_Data;
+        m_pData = std::make_shared<CIml_Data>();
     }
 
     inline CImageList::CImageList(HIMAGELIST images)
     {
-        m_pData = new CIml_Data;
+        m_pData = std::make_shared<CIml_Data>();
         Attach(images);
     }
 
@@ -159,9 +159,7 @@ namespace Win32xx
     //       Both objects manipulate the one HIMAGELIST.
     inline CImageList::CImageList(const CImageList& rhs)
     {
-        CThreadLock mapLock(GetApp()->m_gdiLock);
         m_pData = rhs.m_pData;
-        InterlockedIncrement(&m_pData->count);
     }
 
     // Note: A copy of a CImageList is a clone of the original.
@@ -169,8 +167,6 @@ namespace Win32xx
     {
         if (this != &rhs)
         {
-            CThreadLock mapLock(GetApp()->m_gdiLock);
-            InterlockedIncrement(&rhs.m_pData->count);
             Release();
             m_pData = rhs.m_pData;
         }
@@ -254,18 +250,16 @@ namespace Win32xx
             if (m_pData->images)
             {
                 Release();
-                m_pData = new CIml_Data;
+                m_pData = std::make_shared<CIml_Data>();
             }
 
-            if (images != NULL)
+            if (images != nullptr)
             {
                 // Add the image list to this CImageList.
-                CIml_Data* pCImlData = GetApp()->GetCImlData(images);
+                std::shared_ptr<CIml_Data> pCImlData = GetApp()->GetCImlData(images).lock();
                 if (pCImlData)
                 {
-                    delete m_pData;
                     m_pData = pCImlData;
-                    InterlockedIncrement(&m_pData->count);
                 }
                 else
                 {
@@ -279,7 +273,7 @@ namespace Win32xx
     // Attach and own the specfied imagelist.
     inline void CImageList::Assign(HIMAGELIST images)
     {
-        CThreadLock mapLock(GetApp()->m_gdiLock);
+        CThreadLock mapLock(GetApp()->m_wndLock);
         Attach(images);
         m_pData->isManagedHiml = true;
     }
@@ -321,12 +315,12 @@ namespace Win32xx
 
         HIMAGELIST images = ImageList_Create(cx, cy, flags, initial, grow);
 
-        if (images == NULL)
+        if (images == nullptr)
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(images);
 
-        return (images != NULL) ? TRUE : FALSE;
+        return (images != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a new image list.
@@ -355,12 +349,12 @@ namespace Win32xx
         assert(m_pData);
 
         HIMAGELIST images = ImageList_LoadBitmap(GetApp()->GetResourceHandle(), resourceName, cx, grow, mask);
-        if (images == NULL)
+        if (images == nullptr)
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(images);
 
-        return (images != NULL) ? TRUE : FALSE;
+        return (images != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a duplicate ImageList
@@ -370,12 +364,12 @@ namespace Win32xx
         assert(m_pData);
 
         HIMAGELIST copyImages = ImageList_Duplicate(images);
-        if (copyImages == NULL)
+        if (copyImages == nullptr)
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(copyImages);
 
-        return (copyImages != NULL) ? TRUE : FALSE;
+        return (copyImages != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a transparent version of an item image within the header control.
@@ -385,7 +379,7 @@ namespace Win32xx
         assert(::IsWindow(header));
         HIMAGELIST images = Header_CreateDragImage(header, index);
 
-        if (images == NULL)
+        if (images == nullptr)
             throw CResourceException(GetApp()->MsgGdiImageList());
 
         Assign(images);
@@ -398,7 +392,7 @@ namespace Win32xx
         assert(::IsWindow(listView));
         HIMAGELIST images = ListView_CreateDragImage(listView, item, &pt);
 
-        if (images == NULL)
+        if (images == nullptr)
             throw CResourceException(GetApp()->MsgGdiImageList());
 
         Assign(images);
@@ -412,7 +406,7 @@ namespace Win32xx
         assert(::IsWindow(treeView));
         HIMAGELIST images = TreeView_CreateDragImage(treeView, item);
 
-        if (images == NULL)
+        if (images == nullptr)
             throw CResourceException(GetApp()->MsgGdiImageList());
 
         Assign(images);
@@ -424,12 +418,12 @@ namespace Win32xx
         CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
-        if (m_pData && m_pData->images != NULL)
+        if (m_pData && m_pData->images != nullptr)
         {
             RemoveFromMap();
 
             ImageList_Destroy(m_pData->images);
-            m_pData->images = NULL;
+            m_pData->images = nullptr;
             m_pData->isManagedHiml = false;
         }
     }
@@ -444,18 +438,12 @@ namespace Win32xx
 
         HIMAGELIST images = m_pData->images;
         RemoveFromMap();
-        m_pData->images = NULL;
-        m_pData->isManagedHiml = false;
 
-        if (m_pData->count > 0)
-        {
-            if (InterlockedDecrement(&m_pData->count) == 0)
-            {
-                delete m_pData;
-            }
-        }
+        // Nullify all copies of m_pData.
+        *m_pData.get() = {};
 
-        m_pData = new CIml_Data;
+        // Make a new shared_ptr for this object.
+        m_pData = std::make_shared<CIml_Data>();
 
         return images;
     }
@@ -555,7 +543,7 @@ namespace Win32xx
 
     // Retrieves the temporary image list that is used for the drag image.
     // pHotspot - Pointer to a POINT structure that receives the offset of the
-    // drag image relative to the drag position. Can be NULL.
+    // drag image relative to the drag position. Can be nullptr.
     // Refer to ImageList_GetDragImage in the Windows API documentation for more information.
     inline HIMAGELIST CImageList::GetDragImage(POINT* pPoint, POINT* pHotspot) const
     {
@@ -629,17 +617,16 @@ namespace Win32xx
     {
         BOOL success = FALSE;
 
-        if (CWinApp::SetnGetThis() != NULL)          // Is the CWinApp object still valid?
+        if (CWinApp::SetnGetThis() != nullptr)          // Is the CWinApp object still valid?
         {
             CThreadLock mapLock(GetApp()->m_wndLock);
 
             // Find the CImageList data entry in the map.
-            std::map<HIMAGELIST, CIml_Data*, CompareHIMAGELIST>::iterator m;
-            m = GetApp()->m_mapCImlData.find(m_pData->images);
-            if (m != GetApp()->m_mapCImlData.end())
+            auto it = GetApp()->m_mapCImlData.find(m_pData->images);
+            if (it != GetApp()->m_mapCImlData.end())
             {
                 // Erase the CImageList data entry from the map
-                GetApp()->m_mapCImlData.erase(m);
+                GetApp()->m_mapCImlData.erase(it);
                 success = TRUE;
             }
         }
@@ -693,7 +680,6 @@ namespace Win32xx
     // Retrieves the image list's handle.
     inline CImageList::operator HIMAGELIST () const
     {
-        CThreadLock mapLock(GetApp()->m_gdiLock);
         return m_pData->images;
     }
 
@@ -705,7 +691,7 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_gdiLock);
         assert(m_pData);
 
-        if (InterlockedDecrement(&m_pData->count) == 0)
+        if (m_pData.use_count() == 1)
         {
             if (m_pData->images != 0)
             {
@@ -717,8 +703,7 @@ namespace Win32xx
                 RemoveFromMap();
             }
 
-            delete m_pData;
-            m_pData = NULL;
+            m_pData = nullptr;
         }
     }
 
@@ -766,7 +751,7 @@ namespace Win32xx
             }
         }
 
-        return (m_pData->images != NULL) ? TRUE : FALSE;
+        return (m_pData->images != nullptr) ? TRUE : FALSE;
     }
 
 }   // namespace Win32xx

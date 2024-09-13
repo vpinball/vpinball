@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -85,8 +85,8 @@ namespace Win32xx
         virtual void PreRegisterClass(WNDCLASS& wc);
 
     private:
-        CButton(const CButton&);               // Disable copy construction
-        CButton& operator=(const CButton&);    // Disable assignment operator
+        CButton(const CButton&) = delete;
+        CButton& operator=(const CButton&) = delete;
     };
 
 
@@ -99,7 +99,7 @@ namespace Win32xx
     public:
         // Construction
         CEdit() {}
-        virtual ~CEdit() {}
+        virtual ~CEdit() override {}
 
         // Attributes
         void   AppendText(LPCTSTR text) const;
@@ -152,12 +152,12 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
     private:
-        CEdit(const CEdit&);               // Disable copy construction
-        CEdit& operator=(const CEdit&);    // Disable assignment operator
+        CEdit(const CEdit&) = delete;
+        CEdit& operator=(const CEdit&) = delete;
     };
 
 
@@ -168,7 +168,7 @@ namespace Win32xx
     {
     public:
         CListBox() {}
-        virtual ~CListBox() {}
+        virtual ~CListBox() override {}
 
         // Virtual functions
         virtual int CompareItem(LPCOMPAREITEMSTRUCT pCompareItemStruct);
@@ -223,12 +223,12 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual LRESULT OnMessageReflect(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual LRESULT OnMessageReflect(UINT msg, WPARAM wparam, LPARAM lparam) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
     private:
-        CListBox(const CListBox&);              // Disable copy construction
-        CListBox& operator=(const CListBox&);   // Disable assignment operator
+        CListBox(const CListBox&) = delete;
+        CListBox& operator=(const CListBox&) = delete;
     };
 
 
@@ -240,7 +240,7 @@ namespace Win32xx
     {
     public:
         CStatic() {}
-        virtual ~CStatic() {}
+        virtual ~CStatic() override {}
 
         // Operations
         HBITMAP  GetBitmap() const;
@@ -254,11 +254,11 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
     private:
-        CStatic(const CStatic&);               // Disable copy construction
-        CStatic& operator=(const CStatic&);    // Disable assignment operator
+        CStatic(const CStatic&) = delete;
+        CStatic& operator=(const CStatic&) = delete;
     };
 
 }

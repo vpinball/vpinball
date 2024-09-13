@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -52,8 +52,8 @@
 //      CFolderDialog fd;
 //
 //      // Set the root folder to list the computer's drives (or C:).
-//      ITEMIDLIST* pidlRoot = NULL;
-//      SHGetSpecialFolderLocation(NULL, CSIDL_DRIVES, &pidlRoot);
+//      ITEMIDLIST* pidlRoot = nullptr;
+//      SHGetSpecialFolderLocation(nullptr, CSIDL_DRIVES, &pidlRoot);
 //      fd.SetRoot(pidlRoot);
 //
 //      // Set the title for the dialog.
@@ -100,47 +100,8 @@
 #ifndef _WIN32XX_FOLDERDIALOG_H_
 #define _WIN32XX_FOLDERDIALOG_H_
 
-
 #include "wxx_dialog.h"
 
-#ifdef _MSC_VER
-#pragma warning ( push )
-#pragma warning (disable : 4091)  // temporarily disable warning: 'typedef': ignored
-#endif // _MSC_VER
-
-#include <shlobj.h>
-
-#ifdef _MSC_VER
-#pragma warning ( pop )
-#endif // _MSC_VER
-
-
-// Support older compilers.
-#ifndef BIF_NONEWFOLDERBUTTON
-
-  #define BIF_NONEWFOLDERBUTTON 0x0200
-
-  #ifndef BIF_NEWDIALOGSTYLE
-    #define BIF_NEWDIALOGSTYLE    0x0040
-  #endif
-
-  // messages from browser
-  #define BFFM_INITIALIZED        1
-  #define BFFM_SELCHANGED         2
-  #define BFFM_VALIDATEFAILEDA    3   // lParam:szPath ret:1(cont),0(EndDialog)
-  #define BFFM_VALIDATEFAILEDW    4   // lParam:wzPath ret:1(cont),0(EndDialog)
-  #define BFFM_IUNKNOWN           5   // provides IUnknown to client. lParam: IUnknown*
-
-  // messages to browser
-  #define BFFM_SETSTATUSTEXTA     (WM_USER + 100)
-  #define BFFM_ENABLEOK           (WM_USER + 101)
-  #define BFFM_SETSELECTIONA      (WM_USER + 102)
-  #define BFFM_SETSELECTIONW      (WM_USER + 103)
-  #define BFFM_SETSTATUSTEXTW     (WM_USER + 104)
-  #define BFFM_SETOKTEXT          (WM_USER + 105) // Unicode only
-  #define BFFM_SETEXPANDED        (WM_USER + 106) // Unicode only
-
-#endif
 
 namespace Win32xx
 {
@@ -151,9 +112,9 @@ namespace Win32xx
     {
     public:
         CFolderDialog();
-        virtual ~CFolderDialog();
+        virtual ~CFolderDialog() override;
 
-        virtual INT_PTR DoModal(HWND parent = NULL);
+        virtual INT_PTR DoModal(HWND parent = nullptr) override;
 
         CString GetDisplayName() const       { return m_displayName; }
         CString GetFolderPath() const;
@@ -172,16 +133,16 @@ namespace Win32xx
         void SetTitle(LPCTSTR title);
 
     protected:
-        virtual void OnCancel();
+        virtual void OnCancel() override;
         virtual void OnInitialized();
         virtual void OnIUnknown(LPARAM lparam);
-        virtual void OnOK();
+        virtual void OnOK() override;
         virtual void OnSelChanged();
         virtual int  OnValidateFailed(LPARAM lparam);
 
     private:
-        CFolderDialog(const CFolderDialog&);              // Disable copy construction.
-        CFolderDialog& operator=(const CFolderDialog&);   // Disable assignment operator.
+        CFolderDialog(const CFolderDialog&) = delete;
+        CFolderDialog& operator=(const CFolderDialog&) = delete;
 
         static int CALLBACK BrowseCallbackProc(HWND wnd, UINT msg, LPARAM param1, LPARAM lparam2);
 
@@ -203,9 +164,9 @@ namespace Win32xx
 namespace Win32xx
 {
 
-    inline CFolderDialog::CFolderDialog() : m_pidlRoot(NULL), m_fullPidl(NULL), m_imageIndex(0)
+    inline CFolderDialog::CFolderDialog() : m_pidlRoot(nullptr), m_fullPidl(nullptr), m_imageIndex(0)
     {
-        ZeroMemory(&m_bi, sizeof(m_bi));
+        m_bi = {};
         m_bi.lpfn = BrowseCallbackProc;
         m_bi.lParam = reinterpret_cast<LPARAM>(this);
 
@@ -229,7 +190,7 @@ namespace Win32xx
         CFolderDialog* pThis = reinterpret_cast<CFolderDialog*>(param2);
         int result = 0;
 
-        if (pThis->GetHwnd() == NULL)
+        if (pThis->GetHwnd() == nullptr)
         {
             pThis->m_wnd = wnd;
             pThis->AddToMap();
@@ -257,9 +218,9 @@ namespace Win32xx
     // Displays the folder browser dialog.
     inline INT_PTR CFolderDialog::DoModal(HWND parent)
     {
-        if (m_fullPidl != NULL)
+        if (m_fullPidl != nullptr)
             CoTaskMemFree(m_fullPidl);
-        m_fullPidl = NULL;
+        m_fullPidl = nullptr;
         m_bi.lpszTitle = m_title.c_str();
         m_bi.pszDisplayName = m_displayName.GetBuffer(MAX_PATH);
         m_bi.ulFlags = m_flags;

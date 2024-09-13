@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -53,7 +53,7 @@ namespace Win32xx
     {
     public:
         CReBar();
-        virtual ~CReBar();
+        virtual ~CReBar() override;
 
         // Operations
         BOOL DeleteBand(int band) const;
@@ -93,21 +93,21 @@ namespace Win32xx
 
     protected:
         // Overridables
-        virtual BOOL OnEraseBkgnd(CDC& dc);
+        virtual BOOL OnEraseBkgnd(CDC& dc) override;
         virtual LRESULT OnLButtonDown(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnLButtonUp(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnMouseMove(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnTBWinPosChanging(UINT msg, WPARAM wparam, LPARAM lparam);
         virtual LRESULT OnToolBarResize(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
         // Not intended to be overridden
-        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam);
+        LRESULT WndProcDefault(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
     private:
-        CReBar(const CReBar&);              // Disable copy construction
-        CReBar& operator=(const CReBar&);   // Disable assignment operator
+        CReBar(const CReBar&) = delete;
+        CReBar& operator=(const CReBar&) = delete;
 
         BOOL m_isDragging;
         HWND m_menuBar;
@@ -125,7 +125,7 @@ namespace Win32xx
     ///////////////////////////////////
     // Definitions for the CReBar class
     //
-    inline CReBar::CReBar() : m_isDragging(FALSE), m_menuBar(NULL), m_oldParam(0)
+    inline CReBar::CReBar() : m_isDragging(FALSE), m_menuBar(nullptr), m_oldParam(0)
     {
     }
 
@@ -148,12 +148,11 @@ namespace Win32xx
         assert(IsWindow());
 
         int result = -1;
-        if (wnd == NULL) return result;
+        if (wnd == nullptr) return result;
 
         for (int band = 0; band < GetBandCount(); ++band)
         {
-            REBARBANDINFO rbbi;
-            ZeroMemory(&rbbi, GetSizeofRBBI());
+            REBARBANDINFO rbbi{};
             rbbi.cbSize = GetSizeofRBBI();
             rbbi.fMask = RBBIM_CHILD;
             GetBandInfo(band, rbbi);
@@ -257,16 +256,11 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        UINT uSizeof = sizeof(REBARBANDINFO);
+        UINT size = sizeof(REBARBANDINFO);
+        if ((GetWinVersion() < 2600))
+            size = REBARBANDINFO_V6_SIZE;
 
-    #if defined REBARBANDINFO_V6_SIZE   // Only defined for VS2008 or higher.
-      #if !defined (_WIN32_WINNT) || _WIN32_WINNT >= 0x0600
-        if ((GetWinVersion() < 2600) || (GetComCtlVersion() < 610)) // Vista and Vista themes?
-            uSizeof = REBARBANDINFO_V6_SIZE;
-      #endif
-    #endif
-
-        return uSizeof;
+        return size;
     }
 
     // Retrieves the handle to any ToolTip control associated with the rebar control.
@@ -296,16 +290,14 @@ namespace Win32xx
         VERIFY(ScreenToClient(pt));
 
         // Get the rebar band with the point.
-        RBHITTESTINFO rbhti;
-        ZeroMemory(&rbhti, sizeof(rbhti));
+        RBHITTESTINFO rbhti{};
         rbhti.pt = pt;
         int iBand = HitTest(rbhti);
 
         if (iBand >= 0)
         {
             // Get the rebar band's wnd.
-            REBARBANDINFO rbbi;
-            ZeroMemory(&rbbi, GetSizeofRBBI());
+            REBARBANDINFO rbbi{};
             rbbi.cbSize = GetSizeofRBBI();
             rbbi.fMask = RBBIM_CHILD;
             GetBandInfo(iBand, rbbi);
@@ -342,8 +334,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi;
-        ZeroMemory(&rbbi, GetSizeofRBBI());
+        REBARBANDINFO rbbi{};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
@@ -501,8 +492,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi;
-        ZeroMemory(&rbbi, GetSizeofRBBI());
+        REBARBANDINFO rbbi{};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_CHILDSIZE | RBBIM_SIZE;
 
@@ -522,8 +512,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi;
-        ZeroMemory(&rbbi, GetSizeofRBBI());
+        REBARBANDINFO rbbi{};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask  = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
@@ -542,8 +531,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi;
-        ZeroMemory(&rbbi, GetSizeofRBBI());
+        REBARBANDINFO rbbi{};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_COLORS;
         rbbi.clrFore = foreground;
@@ -594,8 +582,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        REBARBANDINFO rbbi;
-        ZeroMemory(&rbbi, GetSizeofRBBI());
+        REBARBANDINFO rbbi{};
         rbbi.cbSize = GetSizeofRBBI();
         rbbi.fMask = RBBIM_STYLE;
         GetBandInfo(band, rbbi);
@@ -653,4 +640,4 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // #ifndef _WIN32XX_REBAR_H_
+#endif // _WIN32XX_REBAR_H_

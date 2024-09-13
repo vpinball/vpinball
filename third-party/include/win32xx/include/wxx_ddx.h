@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -70,8 +70,7 @@
 
 #include <float.h>
 #include <iomanip>
-#include "wxx_wincore0.h"
-#include "wxx_exception.h"
+#include "wxx_wincore.h"
 
 
 namespace Win32xx
@@ -180,9 +179,7 @@ namespace Win32xx
 
 namespace Win32xx
 {
-
-// required for Borland 5.5 support
-#if !defined(__BORLANDC__) || (__BORLANDC__ >= 0x600)
+    // Provide operator overload for BYTE.
     inline tStringStream& operator>>(tStringStream& ts, BYTE& value)
     {
         UINT u = 0;
@@ -197,8 +194,6 @@ namespace Win32xx
         }
         return ts;
     }
-#endif
-
 
     ////////////////////////////////////////////////////////////////
     //
@@ -211,11 +206,11 @@ namespace Win32xx
     inline CDataExchange::CDataExchange()
     {
         m_id = 0;
-        m_lastControl = NULL;
-        m_lastEditControl = NULL;
+        m_lastControl = nullptr;
+        m_lastEditControl = nullptr;
         m_isEditLastControl = FALSE;
         m_retrieveAndValidate = FALSE;
-        m_parent = NULL;
+        m_parent = nullptr;
     }
 
 
@@ -244,7 +239,7 @@ namespace Win32xx
 
             throw CUserException(message);
         }
-        else if (m_lastControl != NULL && m_isEditLastControl)
+        else if (m_lastControl != nullptr && m_isEditLastControl)
         {
             // limit the control max-chars automatically
             WPARAM wparam = static_cast<WPARAM>(count);
@@ -292,8 +287,7 @@ namespace Win32xx
         }
 
         // Set the given DateTime range.
-        SYSTEMTIME sta[2];
-        ZeroMemory(&sta, sizeof(sta));
+        SYSTEMTIME sta[2]{};
         sta[0] = min;
         sta[1] = max;
 
@@ -395,12 +389,10 @@ namespace Win32xx
             }
         }
 
-        SYSTEMTIME minMax[2];
-        ZeroMemory(&minMax, sizeof(minMax));
+        SYSTEMTIME minMax[2]{};
         DWORD limit = GDTR_MIN | GDTR_MAX;
-        memcpy(&minMax[0], &min, sizeof(SYSTEMTIME));
-        memcpy(&minMax[1], &max, sizeof(SYSTEMTIME));
-
+        minMax[0] = min;
+        minMax[1] = max;
         WPARAM wparam = static_cast<WPARAM>(limit);
         LPARAM lparam = reinterpret_cast<LPARAM>(&minMax);
 
@@ -428,15 +420,8 @@ namespace Win32xx
         {
             if (min > value || max < value)
             {
-    #ifdef _DEBUG
-                // Just leave a trace if writing to the control.
-                int id = static_cast<int>(::GetWindowLongPtr(m_lastControl, GWLP_ID));
-                CString str;
-                str << _T("*** WARNING: slider position is outside given ")
-                        << _T("limits in the control with ID ") << id << _T(". ***\n");
-                TRACE(str);
-    #endif
-                return;     // don't stop now
+                TRACE("*** WARNING: slider position is outside given limits. ***\n");
+                return;
             }
         }
 
@@ -822,7 +807,7 @@ namespace Win32xx
         // Traverse all buttons in the group.
         // There's a group, so set up for the radio buttons in the group.
         firstInGroup = FALSE;
-        for (int button = 0; control != NULL && !firstInGroup; )
+        for (int button = 0; control != nullptr && !firstInGroup; )
         {
             if (isRadioButton)
             {
@@ -1154,7 +1139,7 @@ namespace Win32xx
             TRACE(_T("*** WARNING: CDataExchange::Fail() called while "));
             TRACE(_T("writing to a control. ***\n"));
         }
-        else if (m_lastControl != NULL)
+        else if (m_lastControl != nullptr)
         {
             if (m_isEditLastControl) // if the offender is an edit control
             {
@@ -1179,7 +1164,7 @@ namespace Win32xx
         // record the default action and parent window
         m_retrieveAndValidate = retrieveAndValidate;
         m_parent       = dlgWnd;
-        m_lastControl  = NULL;
+        m_lastControl  = nullptr;
     }
 
     // Find the handle to the control whose numeric identifier is id and

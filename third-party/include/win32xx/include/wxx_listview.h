@@ -1,5 +1,5 @@
-// Win32++   Version 9.6.1
-// Release Date: 29th July 2024
+// Win32++   Version 10.0.0
+// Release Date: 9th September 2024
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -54,9 +54,10 @@ namespace Win32xx
     {
     public:
         CListView() {}
-        virtual ~CListView() {}
-        virtual void PreCreate(CREATESTRUCT& cs);
-        virtual void PreRegisterClass(WNDCLASS& wc);
+        virtual ~CListView() override {}
+        virtual void OnAttach() override;
+        virtual void PreCreate(CREATESTRUCT& cs) override;
+        virtual void PreRegisterClass(WNDCLASS& wc) override;
 
         // Accessors and mutators
         CSize   ApproximateViewRect(CSize sz = CSize(-1, -1), int count = -1) const;
@@ -136,7 +137,7 @@ namespace Win32xx
         BOOL    EnsureVisible( int item, BOOL isPartialOK ) const;
         int     FindItem( LVFINDINFO& findInfo, int start = -1 ) const;
         int     HitTest( LVHITTESTINFO& hitTestInfo ) const;
-        int     HitTest( CPoint pt, UINT* flags = NULL ) const;
+        int     HitTest( CPoint pt, UINT* flags = nullptr ) const;
         int     InsertColumn( int col, const LVCOLUMN& colInfo ) const;
         int     InsertColumn( int col, LPCTSTR columnHeading, int format = LVCFMT_LEFT,
                             int width = -1, int subItem = -1 ) const;
@@ -151,8 +152,8 @@ namespace Win32xx
         BOOL    Update( int item ) const;
 
     private:
-        CListView(const CListView&);              // Disable copy construction
-        CListView& operator=(const CListView&);   // Disable assignment operator
+        CListView(const CListView&) = delete;
+        CListView& operator=(const CListView&) = delete;
 
         CImageList m_normalImages;
         CImageList m_smallImages;
@@ -388,8 +389,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.iItem = item;
         lvi.mask = LVIF_PARAM;
         SendMessage(LVM_GETITEM, 0, reinterpret_cast<LPARAM>(&lvi));
@@ -439,8 +439,7 @@ namespace Win32xx
         CString str;
         if (textMax > 0)
         {
-            LVITEM lvi;
-            ZeroMemory(&lvi, sizeof(lvi));
+            LVITEM lvi{};
             lvi.iItem = item;
             lvi.iSubItem = subItem;
             lvi.mask = LVIF_TEXT;
@@ -572,12 +571,11 @@ namespace Win32xx
 
     // Determines which list-view item, if any, is at a specified position.
     // Refer to ListView_HitTest in the Windows API documentation for more information.
-    inline int CListView::HitTest(CPoint pt, UINT* pFlags /*= NULL*/) const
+    inline int CListView::HitTest(CPoint pt, UINT* pFlags /*= nullptr*/) const
     {
         assert(IsWindow());
 
-        LVHITTESTINFO hti;
-        ZeroMemory(&hti, sizeof(hti));
+        LVHITTESTINFO hti{};
         hti.flags = *pFlags;
         hti.pt = pt;
         return ListView_HitTest(*this, &hti);
@@ -605,8 +603,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVCOLUMN lvc;
-        ZeroMemory(&lvc, sizeof(lvc));
+        LVCOLUMN lvc{};
         lvc.mask = LVCF_TEXT | LVCF_ORDER | LVCF_FMT;
         if (-1 != width)
         {
@@ -640,8 +637,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.iItem = item;
         lvi.pszText = const_cast<LPTSTR>(text);
         lvi.mask = LVIF_TEXT;
@@ -654,8 +650,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.iItem = item;
         lvi.pszText = const_cast<LPTSTR>(text);
         lvi.iImage = image;
@@ -668,8 +663,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.mask = mask;
         lvi.iItem = item;
         lvi.pszText = const_cast<LPTSTR>(text);
@@ -678,6 +672,16 @@ namespace Win32xx
         lvi.stateMask = stateMask;
         lvi.lParam = lparam;
         return ListView_InsertItem(*this, &lvi);
+    }
+
+    // This function is called when a list-view window is attached to the CListView.
+    inline void CListView::OnAttach()
+    {
+        // LVS_SHAREIMAGELISTS:
+        // The image list will not be deleted when the control is destroyed.
+        // Allows Win32++ to control the destruction of the image list.
+        DWORD style = GetStyle();
+        SetStyle(style | LVS_SHAREIMAGELISTS);
     }
 
     // Sets the window creation parameters.
@@ -862,8 +866,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.iItem = item;
         lvi.iSubItem = subItem;
         lvi.mask = mask;
@@ -899,8 +902,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
-        LVITEM lvi;
-        ZeroMemory(&lvi, sizeof(lvi));
+        LVITEM lvi{};
         lvi.iItem = item;
         lvi.lParam = static_cast<LPARAM>(data);
         lvi.mask = LVIF_PARAM;
@@ -1025,5 +1027,5 @@ namespace Win32xx
 
 } // namespace Win32xx
 
-#endif // #ifndef _WIN32XX_LISTVIEW_H_
+#endif // _WIN32XX_LISTVIEW_H_
 
