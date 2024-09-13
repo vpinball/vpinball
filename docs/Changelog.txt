@@ -20,11 +20,6 @@ FEATURES:
 
 - add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
-- add support for new I/O controller capabilities, for compatible controller devices; see the new docs/ sections
-  1) velocity-based nudge input
-  2) plunger speed input
-  3) Open Pinball Device HID
-
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)
@@ -255,6 +250,12 @@ FEATURES:
 - add 'Sync' button to the Layers dialog to allow for faster finding
   when toggled on, the 'Sync' keeps the selected element in the main screen highlighted in the layer screen to allow for quicker usage within the dialog
 
+- add support for new I/O controller capabilities, for compatible controller devices; see the new docs/ sections
+  and http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID
+
 Additional docs explaining all these new features with images are provided in the docs folder of the project: https://github.com/vpinball/vpinball/tree/master/docs
 
 FIXES:
@@ -348,6 +349,12 @@ VP 10.7.4 Changelog
 FEATURES:
 
 - add native ball shadows for bulb lights
+
+- add support for new I/O controller capabilities, for compatible controller devices
+  see: http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm, http://mjrnet.org/pinscape/OpenPinballDevice/OpenPinballDeviceHID.htm
+   1) velocity-based nudge input
+   2) plunger speed input
+   3) Open Pinball Device HID interface
 
 FIXES:
 
