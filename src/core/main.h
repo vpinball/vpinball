@@ -123,6 +123,11 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 #include <cderr.h>
 
 #ifndef __STANDALONE__
+
+#ifndef USER_DEFAULT_SCREEN_DPI
+  #define USER_DEFAULT_SCREEN_DPI 96 //!! ??
+#endif
+
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 //#include <wxx_archive.h>		// Add CArchive
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
@@ -146,7 +151,6 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_regkey.h>			// Add CRegKey
 //#include <wxx_ribbon.h>		// Add CRibbon, CRibbonFrame
 #include <wxx_richedit.h>		// Add CRichEdit
-//#include <wxx_shared_ptr.h>		// Add Shared_Ptr
 //#include <wxx_socket.h>			// Add CSocket
 //#include <wxx_statusbar.h>		// Add CStatusBar
 #include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
