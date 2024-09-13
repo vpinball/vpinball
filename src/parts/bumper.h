@@ -178,6 +178,6 @@ private:
 
    BumperHitCircle *m_pbumperhitcircle = nullptr;
 
-   float   m_rotx; // only for reading through script
-   float   m_roty;
+   float   m_rotx = 0.0f; // only for reading through script
+   float   m_roty = 0.0f;
 };
