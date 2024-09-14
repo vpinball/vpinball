@@ -3548,6 +3548,9 @@ ITableGlobal : public IDispatch
         BSTR imageName,
         BSTR fileName) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE put_PinMameStateBlock(
+        BSTR sharedMemName) = 0;
+
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(ITableGlobal, 0x2981e0e0, 0x8e64, 0x44fc, 0x9a,0x01, 0x64,0xcf,0xfa,0x1f,0x7d,0xba)
@@ -4012,6 +4015,10 @@ typedef struct ITableGlobalVtbl {
         BSTR imageName,
         BSTR fileName);
 
+    HRESULT (STDMETHODCALLTYPE *put_PinMameStateBlock)(
+        ITableGlobal *This,
+        BSTR sharedMemName);
+
     END_INTERFACE
 } ITableGlobalVtbl;
 
@@ -4115,6 +4122,7 @@ interface ITableGlobal {
 #define ITableGlobal_get_DisableStaticPrerendering(This,pVal) (This)->lpVtbl->get_DisableStaticPrerendering(This,pVal)
 #define ITableGlobal_put_DisableStaticPrerendering(This,newVal) (This)->lpVtbl->put_DisableStaticPrerendering(This,newVal)
 #define ITableGlobal_LoadTexture(This,imageName,fileName) (This)->lpVtbl->LoadTexture(This,imageName,fileName)
+#define ITableGlobal_put_PinMameStateBlock(This,sharedMemName) (This)->lpVtbl->put_PinMameStateBlock(This,sharedMemName)
 #else
 /*** IUnknown methods ***/
 static __WIDL_INLINE HRESULT ITableGlobal_QueryInterface(ITableGlobal* This,REFIID riid,void **ppvObject) {
@@ -4391,6 +4399,9 @@ static __WIDL_INLINE HRESULT ITableGlobal_put_DisableStaticPrerendering(ITableGl
 }
 static __WIDL_INLINE HRESULT ITableGlobal_LoadTexture(ITableGlobal* This,BSTR imageName,BSTR fileName) {
     return This->lpVtbl->LoadTexture(This,imageName,fileName);
+}
+static __WIDL_INLINE HRESULT ITableGlobal_put_PinMameStateBlock(ITableGlobal* This,BSTR sharedMemName) {
+    return This->lpVtbl->put_PinMameStateBlock(This,sharedMemName);
 }
 #endif
 #endif
@@ -9020,6 +9031,12 @@ IBumper : public IDispatch
     virtual HRESULT STDMETHODCALLTYPE put_EnableSkirtAnimation(
         VARIANT_BOOL newVal) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE get_RotX(
+        float *pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_RotY(
+        float *pVal) = 0;
+
     virtual HRESULT STDMETHODCALLTYPE PlayHit(
         ) = 0;
 
@@ -9294,6 +9311,14 @@ typedef struct IBumperVtbl {
         IBumper *This,
         VARIANT_BOOL newVal);
 
+    HRESULT (STDMETHODCALLTYPE *get_RotX)(
+        IBumper *This,
+        float *pVal);
+
+    HRESULT (STDMETHODCALLTYPE *get_RotY)(
+        IBumper *This,
+        float *pVal);
+
     HRESULT (STDMETHODCALLTYPE *PlayHit)(
         IBumper *This);
 
@@ -9371,6 +9396,8 @@ interface IBumper {
 #define IBumper_put_Scatter(This,newVal) (This)->lpVtbl->put_Scatter(This,newVal)
 #define IBumper_get_EnableSkirtAnimation(This,pVal) (This)->lpVtbl->get_EnableSkirtAnimation(This,pVal)
 #define IBumper_put_EnableSkirtAnimation(This,newVal) (This)->lpVtbl->put_EnableSkirtAnimation(This,newVal)
+#define IBumper_get_RotX(This,pVal) (This)->lpVtbl->get_RotX(This,pVal)
+#define IBumper_get_RotY(This,pVal) (This)->lpVtbl->get_RotY(This,pVal)
 #define IBumper_PlayHit(This) (This)->lpVtbl->PlayHit(This)
 #else
 /*** IUnknown methods ***/
@@ -9561,6 +9588,12 @@ static __WIDL_INLINE HRESULT IBumper_get_EnableSkirtAnimation(IBumper* This,VARI
 }
 static __WIDL_INLINE HRESULT IBumper_put_EnableSkirtAnimation(IBumper* This,VARIANT_BOOL newVal) {
     return This->lpVtbl->put_EnableSkirtAnimation(This,newVal);
+}
+static __WIDL_INLINE HRESULT IBumper_get_RotX(IBumper* This,float *pVal) {
+    return This->lpVtbl->get_RotX(This,pVal);
+}
+static __WIDL_INLINE HRESULT IBumper_get_RotY(IBumper* This,float *pVal) {
+    return This->lpVtbl->get_RotY(This,pVal);
 }
 static __WIDL_INLINE HRESULT IBumper_PlayHit(IBumper* This) {
     return This->lpVtbl->PlayHit(This);
