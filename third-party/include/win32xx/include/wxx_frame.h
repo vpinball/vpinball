@@ -572,7 +572,7 @@ namespace Win32xx
         GetReBar().InsertBand(-1, rbbi);
         GetReBar().SetMenuBar(GetMenuBar());
 
-        if (GetReBarTheme().LockMenuBand)
+        if (GetReBarTheme().LockMenuBand && GetReBar().GetBand(GetMenuBar()) >= 0)
             GetReBar().ShowGripper(GetReBar().GetBand(GetMenuBar()), FALSE);
 
         UpdateMenuBarBandSize();
@@ -693,7 +693,7 @@ namespace Win32xx
             if (GetReBarTheme().UseThemes && GetReBarTheme().LockMenuBand)
             {
                 // Hide gripper for single toolbar.
-                if (GetReBar().GetBandCount() <= 2)
+                if (GetReBar().GetBandCount() <= 2 && GetReBar().GetBand(GetToolBar()) >= 0)
                     GetReBar().ShowGripper(GetReBar().GetBand(GetToolBar()), FALSE);
             }
         }
