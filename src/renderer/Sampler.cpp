@@ -256,9 +256,9 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
       bgfx::setViewFrameBuffer(m_rd->m_activeViewId, mipsFramebuffer);
       // Get back to the rendering view
       RenderTarget* activeRT = RenderTarget::GetCurrentRenderTarget();
-      assert(activeRT);
       RenderTarget::OnFrameFlushed();
-      activeRT->Activate();
+      if (activeRT)
+        activeRT->Activate();
       // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
       bgfx::destroy(mipsFramebuffer);
       bgfx::destroy(m_nomipsTexture);
