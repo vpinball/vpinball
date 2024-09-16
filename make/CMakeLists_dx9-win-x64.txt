@@ -106,9 +106,9 @@ add_executable(vpinball WIN32
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
+   src/parts/pinbinary.cpp
    src/core/pininput.cpp
    src/core/pininput_OpenPinDev.cpp
-   src/parts/pinbinary.cpp
    src/core/vpversion.h
 
    src/audio/mixer.cpp
@@ -694,4 +694,5 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/Bass64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/FreeImage64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SciLexerVP64.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/hidapi64.dll" "$<TARGET_FILE_DIR:vpinball>"
 )

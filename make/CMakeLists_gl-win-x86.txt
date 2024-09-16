@@ -73,9 +73,9 @@ add_executable(vpinball WIN32
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
+   src/parts/pinbinary.cpp
    src/core/pininput.cpp
    src/core/pininput_OpenPinDev.cpp
-   src/parts/pinbinary.cpp
    src/core/vpversion.h
 
    src/audio/mixer.cpp
@@ -526,7 +526,6 @@ add_executable(vpinball WIN32
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/miniz/miniz.c
    third-party/include/miniz/miniz.h
-
    third-party/include/win32xx/include/wxx_appcore.h
    third-party/include/win32xx/include/wxx_appcore0.h
    third-party/include/win32xx/include/wxx_archive.h
@@ -680,4 +679,5 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/openvr_api.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/FreeImage.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/hidapi.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
