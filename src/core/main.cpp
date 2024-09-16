@@ -90,9 +90,9 @@ typedef BOOL(WINAPI *pSDARP)(ORIENTATION_PREFERENCE orientation);
 static pSDARP SetDisplayAutoRotationPreferences = nullptr;
 #endif
 
-#if !defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
-//!! somewhat custom new/delete still needed, otherwise VPX crashes when exiting the player
-// is this due to win32xx's whacky Shared_Ptr implementation?
+#if 0 //!defined(DEBUG_XXX) && !defined(_CRTDBG_MAP_ALLOC) //&& (!defined(__STDCPP_DEFAULT_NEW_ALIGNMENT__) || (__STDCPP_DEFAULT_NEW_ALIGNMENT__ < 16))
+// previous: somewhat custom new/delete was still needed, otherwise VPX crashed when exiting the player
+//  was this due to old win32xx's whacky Shared_Ptr implementation?
 void *operator new(const size_t size_req)
 {
    void* const ptr = _aligned_malloc(size_req, 16);

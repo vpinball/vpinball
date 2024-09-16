@@ -2433,7 +2433,7 @@ Public Sub vpmInit(aTable)
 	End If
 
 	If HasTimeFence Then
-	    ' Force emulation to be in sync with VPX (in turn it pauses it on startup until VPX is ready, this way both starts together in sync)
+		' Force emulation to be in sync with VPX (in turn it pauses it on startup until VPX is ready, this way both start together in sync)
 		If PreciseGameTime > 0 Then Controller.TimeFence = PreciseGameTime Else Controller.TimeFence = 0.01
 	End If
 

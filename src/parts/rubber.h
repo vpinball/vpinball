@@ -104,7 +104,7 @@ public:
    void UpdateStatusBarInfo() final;
 
 #if 0
-   float GetSurfaceHeight(float x, float y) const;
+   float GetSurfaceHeight(float x, float y) const final;
 #endif
 
    RubberData m_d;
@@ -118,10 +118,10 @@ private:
    RenderDevice *m_rd = nullptr;
    MeshBuffer *m_meshBuffer = nullptr;
    bool m_dynamicVertexBufferRegenerate;
-   Vertex3Ds m_boundingSphereCenter;
    bool m_bboxDirty = true;
    Vertex3Ds m_bboxMin;
    Vertex3Ds m_bboxMax;
+   Vertex3Ds m_boundingSphereCenter;
 
    int m_numVertices; // this goes along with dynamicVertexBuffer
    int m_numIndices;

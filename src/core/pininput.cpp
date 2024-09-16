@@ -238,24 +238,22 @@ void PinInput::LoadSettings(const Settings& settings)
 
 #ifdef _WIN32
    // Load input device settings
-   const string kDefaultName = "None";
-   const int maxStrLen = 16;
-   char tmp[maxStrLen];
+   static const string kDefaultName("None"s);
 
    m_pInputDeviceSettingsInfo->clear();
 
    for (int i = 0; i < PININ_JOYMXCNT; i++)
    {
-      sprintf_s(tmp, maxStrLen, "Device%d_Name", i);
-      string deviceName = string(tmp);
-      string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
-
-      sprintf_s(tmp, maxStrLen, "Device%d_State", i);
-      string deviceState = string(tmp);
-      bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+      const string deviceName = "Device" + std::to_string(i) + "_Name";
+      const string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
 
       if (m_pInputDeviceSettingsInfo->count(name) == 0)
+      {
+         const string deviceState = "Device" + std::to_string(i) + "_State";
+         const bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+
          m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
+      }
    }
 #endif
 }
@@ -2146,12 +2144,7 @@ LPDIRECTINPUTDEVICE8 PinInput::GetJoystick(int index)
 LPDIRECTINPUTDEVICE PinInput::GetJoystick(int index)
 #endif
 {
-   if (index < PININ_JOYMXCNT)
-   {
-      return m_pJoystick[index];
-   }
-
-   return nullptr;
+   return (index < PININ_JOYMXCNT) ? m_pJoystick[index] : nullptr;
 }
 #endif
 
