@@ -66,6 +66,9 @@ void Standalone::PreStartup()
    pConfig->SetZeDMDRGBOrder(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDRGBOrder"s, -1));
    pConfig->SetZeDMDBrightness(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDBrightness"s, -1));
    pConfig->SetZeDMDSaveSettings(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDSaveSettings"s, false));
+   pConfig->SetZeDMDWiFiEnabled(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFi"s, false));
+   pConfig->SetZeDMDWiFiAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFiAddr"s, string()).c_str());
+   pConfig->SetZeDMDWiFiPort(pSettings->LoadValueWithDefault(Settings::Standalone, "ZeDMDWiFiPort"s, 3333));
    pConfig->SetPixelcade(pSettings->LoadValueWithDefault(Settings::Standalone, "Pixelcade"s, true));
    pConfig->SetPixelcadeDevice(pSettings->LoadValueWithDefault(Settings::Standalone, "PixelcadeDevice"s, string()).c_str());
    pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
