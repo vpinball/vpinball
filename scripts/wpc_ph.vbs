@@ -28,16 +28,77 @@ Const swUp          = 27
 Const swEnter       = 14
 Const swMenu        =  7
 
+' Keyboard Assignment
+Dim CollectKey, swCollect, CollectKeyCaption
+Dim LeftHoldKey, swLeftHold, LeftHoldKeyCaption
+Dim MiddleHoldKey, swMiddleHold, MiddleHoldKeyCaption
+Dim RightHoldKey, swRightHold, RightHoldKeyCaption
+Dim LanguageKey, swLanguage, LanguageKeyCaption
+Dim MultiplierKey, swMultiplier, MultiplierKeyCaption 
+Dim RedKey, swRed, RedKeyCaption
+Dim BlueKey, swBlue, BlueKeyCaption
+Dim SuperStartKey, swSuperStart, SuperStartKeyCaption
+Dim TransferKey, swTransfer, TransferKeyCaption
+Dim PayoutKey, swPayout, PayoutKeyCaption
+
+CollectKey           = 17
+CollectKeyCaption    = "W"
+swCollect            = 15
+MultiplierKey        = 18
+MultiplierKeyCaption = "E"
+swMultiplier         = 25
+SuperStartKey        = 19
+SuperStartKeyCaption = "R"
+swSuperStart         = 14
+
+LeftHoldKey          = 21
+LeftHoldKeyCaption   = "Z"	'Maybe "Y" on an English keyboard
+swLeftHold           = 16
+MiddleHoldKey        = 22
+MiddleHoldKeyCaption = "U"
+swMiddleHold         = 17
+RightHoldKey         = 23
+RightHoldKeyCaption  = "I"
+swRightHold          = 18
+
+RedKey               = 30
+RedKeyCaption        = "A"
+swRed                = 26
+BlueKey              = 31
+BlueKeyCaption       = "S"
+swBlue               = 27
+
+LanguageKey          = 34
+LanguageKeyCaption   = "G"
+swLanguage           =  8
+TransferKey          = 35
+TransferKeyCaption   = "H"
+swTransfer           = 22
+
+PayoutKey            = 45
+PayoutKeyCaption     = "X"
+swPayout             = 21
+
 ' Help Window
 vpmSystemHelp = "WMS Phantom Haus keys:" & vbNewLine &_
-  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin #1" & vbNewLine &_
-  vpmKeyName(keyInsertCoin2) & vbTab & "Insert Coin #2" & vbNewLine &_
-  vpmKeyName(keyInsertCoin3) & vbTab & "Insert Coin #4" & vbNewLine &_
+  vpmKeyName(keyInsertCoin1) & vbTab & "Insert Coin 3" & vbNewLine &_
   vpmKeyName(keyCoinDoor) & vbTab & "Activate Menu - Hold key" & vbNewLine &_
-  vpmKeyName(keyEnter) & vbTab & "Enter (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyDown) & vbTab & "Down (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyUp) & vbTab & "Up (Coin Door)" & vbNewLine &_
-  vpmKeyName(keyCancel) & vbTab & "Escape (Coin Door)"
+  vpmKeyName(keyEnter) & vbTab & "Enter (Menu)" & vbNewLine &_
+  vpmKeyName(keyDown) & vbTab & "Down (Menu)" & vbNewLine &_
+  vpmKeyName(keyUp) & vbTab & "Up (Menu)" & vbNewLine &_
+  vpmKeyName(keyCancel) & vbTab & "Escape (Menu)" & vbNewLine & vbNewLine &_
+  "Gameplay:" & vbNewLine &_
+  "Collect Button" & vbTab & vbTab & CollectKeyCaption & vbNewLine &_
+  "Multiplier Button" & vbTab & vbTab & MultiplierKeyCaption  & vbNewLine &_
+  "SuperStart Button" & vbTab & vbTab & SuperStartKeyCaption & vbNewLine &_
+  "Left Hold Button" & vbTab & vbTab & LeftHoldKeyCaption & vbNewLine &_
+  "Middle Hold Button" & vbTab & MiddleHoldKeyCaption & vbNewLine &_
+  "Right Hold Button" & vbTab & vbTab & RightHoldKeyCaption & vbNewLine &_
+  "Red Button" & vbTab & vbTab & RedKeyCaption & vbNewLine &_
+  "Blue Button" & vbTab & vbTab & BlueKeyCaption & vbNewLine &_
+  "Language Button" & vbTab & vbTab & LanguageKeyCaption & vbNewLine &_
+  "Transfer Button" & vbTab & vbTab & TransferKeyCaption & vbNewLine &_
+  "Payout Button" & vbTab & vbTab & PayoutKeyCaption
 
 ' Keyboard handlers
 Function vpmKeyDown(ByVal keycode)
@@ -51,9 +112,20 @@ Function vpmKeyDown(ByVal keycode)
 			Case keyDown		 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swDown'"
 			Case keyUp			 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swUp'"
 			Case keyCancel		 vpmTimer.AddTimer 750,"vpmTimer.PulseSw swCancel'"
-			Case keyCoinDoor	 .Switch(swMenu) = True	
+			Case keyCoinDoor	 .Switch(swMenu) = True
 			Case StartGameKey	 .Switch(swStartButton) = True
 			Case keyVPMVolume	 vpmVol
+			Case CollectKey		 .Switch(swCollect) = True
+			Case LeftHoldKey	 .Switch(swLeftHold) = True
+			Case MiddleHoldKey	 .Switch(swMiddleHold) = True
+			Case RightHoldKey	 .Switch(swRightHold) = True
+			Case LanguageKey	 .Switch(swLanguage) = True
+			Case MultiplierKey	 .Switch(swMultiplier) = True
+			Case RedKey			 .Switch(swRed) = True
+			Case BlueKey		 .Switch(swBlue) = True
+			Case SuperStartKey	 .Switch(swSuperStart) = True
+			Case TransferKey	 .Switch(swTransfer) = True
+			Case PayoutKey		 .Switch(swPayout) = True
 			Case Else			 vpmKeyDown = False
 		End Select
 	End With
@@ -70,6 +142,17 @@ Function vpmKeyUp(ByVal keycode)
 			Case keyReset		 .Stop : BeginModal : .Run : vpmTimer.Reset : EndModal
 			Case keyFrame		 .LockDisplay = Not .LockDisplay
 			Case keyDoubleSize	 .DoubleSize  = Not .DoubleSize
+			Case CollectKey		 .Switch(swCollect) = False
+			Case LeftHoldKey	 .Switch(swLeftHold) = False
+			Case MiddleHoldKey	 .Switch(swMiddleHold) = False
+			Case RightHoldKey	 .Switch(swRightHold) = False
+			Case LanguageKey	 .Switch(swLanguage) = False
+			Case MultiplierKey	 .Switch(swMultiplier) = False
+			Case RedKey			 .Switch(swRed) = False
+			Case BlueKey		 .Switch(swBlue) = False
+			Case SuperStartKey	 .Switch(swSuperStart) = False
+			Case TransferKey	 .Switch(swTransfer) = False
+			Case PayoutKey		 .Switch(swPayout) = False
 			Case Else			 vpmKeyUp = False
 		End Select
 	End With
