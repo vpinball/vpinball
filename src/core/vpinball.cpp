@@ -622,8 +622,9 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
 CMenu VPinball::GetMainMenu(int id)
 {
 #ifndef __STANDALONE__
-   const int count = m_mainMenu.GetMenuItemCount();
-   return m_mainMenu.GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
+   const CMenu& cm = GetMenu();
+   const int count = /*m_mainMenu*/cm.GetMenuItemCount();
+   return /*m_mainMenu*/cm.GetSubMenu(id + ((count > NUM_MENUS) ? 1 : 0)); // MDI has added its stuff (table icon for first menu item)
 #else
    return CMenu();
 #endif
@@ -1701,7 +1702,7 @@ void VPinball::PreRegisterClass(WNDCLASS& wc)
 #endif
    wc.style = CS_DBLCLKS; //CS_NOCLOSE | CS_OWNDC;
    wc.lpszClassName = _T("VPinball");
-   //wc.lpszMenuName = MAKEINTRESOURCE(IDR_APPMENU);
+   wc.lpszMenuName = _T("IDR_APPMENU");
 }
 
 void VPinball::OnClose()
@@ -1776,16 +1777,16 @@ int VPinball::OnCreate(CREATESTRUCT& cs)
    //     UseReBar(FALSE);              // Don't use a ReBar
    //     UseStatusBar(FALSE);          // Don't use a StatusBar
    //     UseThemes(FALSE);             // Don't use themes
-   //     UseToolBar(FALSE);            // Don't use a ToolBar
+   UseToolBar(FALSE);            // Don't use a ToolBar
 
-   m_mainMenu.LoadMenu(_T("IDR_APPMENU"));
+   //m_mainMenu.LoadMenu(_T("IDR_APPMENU"));
 
-   SetFrameMenu(m_mainMenu.GetHandle());
+   //SetFrameMenu(m_mainMenu);
 
    const int result = CMDIDockFrame::OnCreate(cs);
 
    char szName[256];
-   LoadString(theInstance, IDS_PROJNAME, szName, 256);
+   LoadString(theInstance, IDS_PROJNAME, szName, sizeof(szName));
    SetWindowText(szName);
 
    return result;

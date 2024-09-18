@@ -105,10 +105,8 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
    if (g_pplayer == nullptr || g_pplayer->m_playfieldWnd == nullptr || g_pplayer->m_playfieldWnd->GetCore() != hwnd)
       return DefWindowProc(hwnd, uMsg, wParam, lParam);
 
-   #ifndef ENABLE_SDL_VIDEO
    if (ImGui_ImplWin32_WndProcHandler(hwnd, uMsg, wParam, lParam))
       return true;
-   #endif
 
    switch (uMsg)
    {
@@ -124,7 +122,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       g_pplayer->ShowMouseCursor(false);
       break;
 
-   case WM_MOUSEMOVE: // Show cursor if paused ot if user move the mouse
+   case WM_MOUSEMOVE: // Show cursor if paused or if user move the mouse
       {
          static int m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff; // used to detect user moving the mouse, therefore requesting the cursor to be shown
          if (m_lastcursorx != LOWORD(lParam) || m_lastcursory != HIWORD(lParam))

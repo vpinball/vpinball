@@ -290,7 +290,7 @@ private:
    CDockNotes* GetDefaultNotesDocker();
 
    volatile bool m_unloadingTable;
-   CMenu m_mainMenu;
+   //CMenu m_mainMenu;
    vector<string> m_recentTableList;
 
    HANDLE  m_workerthread;
