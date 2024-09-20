@@ -2042,12 +2042,32 @@ LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
 
    case 3:
       // GAME_TO_FOREGROUND
-      // If a player is running, bring it to the foreground.
+      // If a player is running, bring its main window to the foreground
       if (g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr)
-          ::SetForegroundWindow(g_pplayer->m_playfieldWnd->GetCore());
+      {
+         // bring the window to the foreground
+         HWND hwndPlayer = g_pplayer->m_playfieldWnd->GetCore();
+         ::BringWindowToTop(hwndPlayer);
+         ::SetForegroundWindow(hwndPlayer);
+
+         // Windows automatically minimizes full-screen-exclusive windows when they're
+         // moved to the background, but it doesn't automatically restore them when
+         // they're brought back in front, so we have to do this explicitly.
+         if (::IsIconic(hwndPlayer))
+         {
+            DWORD_PTR result;
+            ::SendMessageTimeout(hwndPlayer, WM_SYSCOMMAND, SC_RESTORE, 0, SMTO_ABORTIFHUNG, 100, &result);
+         }
+      }
 
       // handled
       return 1;
+
+   case 4:
+      // QUERY_GAME_HWND
+      // If a player is running, return its main window handle
+      return (g_pplayer != nullptr && g_pplayer->m_playfieldWnd != nullptr) ?
+         reinterpret_cast<DWORD_PTR>(g_pplayer->m_playfieldWnd->GetCore()) : 0;
    }
 #endif // __STANDALONE__
 
