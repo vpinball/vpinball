@@ -71,6 +71,12 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
 
          if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "FindDisplays"s, true))
             pDisplay->pDMD->FindDisplays();
+
+         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "DumpDMDTxt"s, false))
+            pDisplay->pDMD->DumpDMDTxt();
+
+         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "DumpDMDRaw"s, false))
+            pDisplay->pDMD->DumpDMDRaw();
       }
    }
 
