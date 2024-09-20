@@ -819,6 +819,9 @@ Player::~Player()
       PLOGE << "Player::OnClose discarded since player is already closing (destructor called from 2 different places...)";
       return;
    }
+
+   // note if application exit was requested, and set the new closing state to CLOSED
+   bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
 
@@ -1016,7 +1019,7 @@ Player::~Player()
       m_progressDialog.Destroy();
 
    // Reactivate edited table or close application if requested
-   if (m_closing == CS_CLOSE_APP)
+   if (appExitRequested)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
    }

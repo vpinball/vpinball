@@ -1517,8 +1517,12 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
       pt->m_pcv->SetLastErrorVisibility(true);
    }
 
-	// Also pop up a dialog
-	if (!m_suppressErrorDialogs)
+	// Also pop up a dialog.  Suppress the dialog if the user has so
+    // directed, or if the player Close State is CLOSE APP, since in
+    // that case the decision to exit the whole program has already
+    // been made, precluding further UI input.
+	if (!m_suppressErrorDialogs
+		&& !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
 	{
 #ifndef __STANDALONE__
 		g_pvp->EnableWindow(FALSE);
