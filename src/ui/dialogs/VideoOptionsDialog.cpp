@@ -129,6 +129,12 @@ private:
    CButton m_autoNightDay;
    CEdit m_geoposLat;
    CEdit m_geoposLon;
+
+   CComboBox m_gfxBackend;
+
+   #if defined(ENABLE_BGFX)
+      static const string m_bgfxRendererNames[bgfx::RendererType::Count + 1];
+   #endif
 };
 
 
@@ -748,6 +754,10 @@ static int getBestMatchingAAfactorIndex(float f)
    return bestMatch;
 }
 
+#if defined(ENABLE_BGFX)
+   const string RenderOptPage::m_bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+#endif
+
 BOOL RenderOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
@@ -879,6 +889,19 @@ BOOL RenderOptPage::OnInitDialog()
    m_nightDay.SetLineSize(1);
    m_nightDay.SetPageSize(1);
    SendMessage(m_nightDay.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
+
+   AttachItem(IDC_GFX_BACKEND, m_gfxBackend);
+   #if defined(ENABLE_BGFX)
+      bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+      int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+      m_gfxBackend.SetRedraw(false);
+      for (size_t i = 0; i < nRendererSupported; ++i)
+         m_gfxBackend.AddString(m_bgfxRendererNames[supportedRenderers[i]].c_str());
+      m_gfxBackend.SetRedraw(true);
+   #else
+      GetDlgItem(IDC_GFX_BACKEND_LABEL).ShowWindow(false);
+      m_gfxBackend.ShowWindow(false);
+   #endif
 
    LoadSettings(GetEditedSettings());
 
@@ -1064,6 +1087,17 @@ void RenderOptPage::LoadSettings(Settings& settings)
       OnCommand(IDC_FAKE_STEREO, 0L); // Force UI update
    }
 
+   #if defined(ENABLE_BGFX)
+   {
+      string gfxBackend = settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, m_bgfxRendererNames[bgfx::RendererType::Vulkan]);
+      bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+      int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+      for (size_t i = 0; i < nRendererSupported; ++i)
+         if (gfxBackend == m_bgfxRendererNames[supportedRenderers[i]])
+            m_gfxBackend.SetCurSel(i);
+   }
+   #endif
+
    EndLoad();
 }
 
@@ -1173,6 +1207,11 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "DynamicDayNight"s, m_autoNightDay.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "Longitude"s, GetDlgItemText(IDC_DN_LONGITUDE).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "Latitude"s, GetDlgItemText(IDC_DN_LATITUDE).GetString(), !saveAll);
+
+   #if defined(ENABLE_BGFX)
+      const string gfxBackend = m_gfxBackend.GetWindowText().c_str();
+      settings.SaveValue(Settings::Player, "GfxBackend"s, gfxBackend, !saveAll);
+   #endif
 }
 
 BOOL RenderOptPage::OnApply()

@@ -795,6 +795,7 @@
 #define IDC_VIDEO_SYNC_MODE             464
 #define DISPID_Width                    465
 #define IDC_SCREEN_HEIGHT               465
+#define IDC_GFX_BACKEND                 465
 #define DISPID_ZAdjust                  466
 #define IDC_SCREEN_INCLINATION          466
 #define DISPID_RodDiam                  467
@@ -1315,6 +1316,7 @@
 #define IDC_BROWSE_GLASS_PATH           943
 #define IDC_LEGACY_RENDERER             944
 #define IDC_DMD_PROFILE                 945
+#define IDC_GFX_BACKEND_LABEL           946
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1511,7 +1513,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         946
+#define _APS_NEXT_CONTROL_VALUE         947
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif
