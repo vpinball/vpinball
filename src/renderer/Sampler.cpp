@@ -58,8 +58,10 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
       data = nullptr;
    else if (upload == surf)
       data = bgfx::copy(upload->data(), m_height * upload->pitch());
-   else
-      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), [](void* _ptr, void* _userData) { delete [] (BYTE*)_userData; }, upload);
+   else {
+      auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
+      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), releaseFn, upload);
+   }
    m_textureUpdate = data;
 
 #elif defined(ENABLE_OPENGL)

@@ -834,6 +834,7 @@ Player::~Player()
    m_ptable->m_pcv->CleanUpScriptEngine();
 
    g_frameProfiler.LogWorstFrame();
+   g_frameProfiler.Reset();
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
