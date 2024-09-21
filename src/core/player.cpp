@@ -1924,17 +1924,16 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
          const U64 now = usec();
-         const int refreshLength = (int)(1000000ul / m_playfieldWnd->GetRefreshRate());
+         const int refreshLength = static_cast<int>(1000000ul / m_playfieldWnd->GetRefreshRate());
          const int minimumFrameLength = 1000000ull / m_maxFramerate;
          const int maximumFrameLength = 5 * refreshLength;
          const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
-         while (now < m_lastPresentFrameTick + targetFrameLength)
+         while (now - m_renderer->m_renderDevice->m_lastPresentFrameTick < targetFrameLength)
          {
             m_curFrameSyncOnFPS = true;
             YieldProcessor();
             sync();
          }
-         m_lastPresentFrameTick = now;
       }
 
       // Schedule frame presentation, ask for an asynchronous VBlank, start preparing next frame

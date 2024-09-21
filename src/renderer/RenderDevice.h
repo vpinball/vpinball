@@ -217,7 +217,9 @@ public:
    unsigned int m_curLockCalls = 0, m_frameLockCalls = 0;
    unsigned int m_curDrawnTriangles = 0, m_frameDrawnTriangles = 0;
 
-private :
+   U64 m_lastPresentFrameTick = 0;
+
+private:
    unsigned int m_nOutputWnd = 1; // Swap chain always has at least one output window (OpenGL & DX9 only supports one, DX10+/Metal/Vulkan support multiple)
    VPX::Window* m_outputWnd[8];
 

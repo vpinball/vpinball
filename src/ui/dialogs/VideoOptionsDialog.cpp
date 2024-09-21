@@ -956,7 +956,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_SETCURSEL, syncMode, 0);
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
-   #if defined(ENABLE_SDL_VIDEO)
+   #if defined(ENABLE_OPENGL)
    m_maxFrameLatency.EnableWindow(false); // OpenGL does not support this option
    #endif
 
