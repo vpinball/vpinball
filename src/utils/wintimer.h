@@ -202,6 +202,7 @@ public:
                      m_leastWorstFrameLength = 0;
                      m_profileWorstGameTime[i] = gametime;
                      memcpy(m_profileWorstData[i], m_profileData[m_profileIndex], sizeof(m_profileWorstData[0]));
+                     m_worstScriptEventData[i].clear();
                      m_worstScriptEventData[i] = m_scriptEventData;
                      memcpy(m_profileWorstProfileTimers[i], m_profileTimers, m_profileTimersPos);
                      m_profileWorstProfileTimersLen[i] = m_profileTimersPos;

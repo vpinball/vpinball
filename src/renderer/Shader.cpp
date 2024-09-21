@@ -589,6 +589,7 @@ Shader::~Shader()
    #if defined(ENABLE_BGFX)
       for (int j = 0; j < SHADER_TECHNIQUE_COUNT; ++j)
       {
+         delete m_boundState[j];
          if (bgfx::isValid(m_techniques[j]))
             bgfx::destroy(m_techniques[j]);
          m_techniques[j] = BGFX_INVALID_HANDLE;

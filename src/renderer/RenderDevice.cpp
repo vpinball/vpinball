@@ -1041,8 +1041,11 @@ RenderDevice::~RenderDevice()
 
    m_texMan.UnloadAll();
 
-   delete m_outputWnd[0]->GetBackBuffer();
-   m_outputWnd[0]->SetBackBuffer(nullptr);
+   for (int i = 0; i < m_nOutputWnd; i++)
+   {
+      delete m_outputWnd[i]->GetBackBuffer();
+      m_outputWnd[i]->SetBackBuffer(nullptr);
+   }
 
    delete m_SMAAareaTexture;
    delete m_SMAAsearchTexture;
@@ -1052,6 +1055,8 @@ RenderDevice::~RenderDevice()
    m_frameReadySem.post();
    if (m_renderThread.joinable())
       m_renderThread.join();
+   delete m_pVertexTexelDeclaration;
+   delete m_pVertexNormalTexelDeclaration;
 
 #elif defined(ENABLE_OPENGL)
    for (auto binding : m_samplerBindings)
