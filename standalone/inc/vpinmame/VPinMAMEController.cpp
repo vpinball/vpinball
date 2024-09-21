@@ -229,6 +229,8 @@ VPinMAMEController::VPinMAMEController()
       PLOGI.printf("PinMAME window disabled");
    }
 
+   m_pAudioPlayer = nullptr;
+
    m_hidden = true;
 
    m_pRGB24DMD = nullptr;
@@ -272,6 +274,7 @@ VPinMAMEController::~VPinMAMEController()
    delete m_pNVRAMBuffer;
    delete m_pPinmameGame;
    delete m_pPinmameMechConfig;
+   delete m_pAudioPlayer;
 
    m_pGames->Release();
 }
@@ -379,6 +382,9 @@ STDMETHODIMP VPinMAMEController::Stop()
    m_pActiveDisplay = nullptr;
    m_pLevelDMD = nullptr;
    m_pRGB24DMD = nullptr;
+
+   delete m_pAudioPlayer;
+   m_pAudioPlayer = nullptr;
 
    m_displays.clear();
 

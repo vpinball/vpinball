@@ -20,6 +20,8 @@ WMPCore::~WMPCore()
 {
    m_pControls->Release();
    m_pSettings->Release();
+
+   delete m_pAudioPlayer;
 }
 
 STDMETHODIMP WMPCore::close()

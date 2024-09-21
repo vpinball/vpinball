@@ -63,6 +63,8 @@ PUPMediaPlayer::~PUPMediaPlayer()
    if (m_pAudioConversionContext)
       swr_free(&m_pAudioConversionContext);
 #endif
+
+   delete m_pAudioPlayer;
 }
 
 void PUPMediaPlayer::SetRenderer(SDL_Renderer* pRenderer)
