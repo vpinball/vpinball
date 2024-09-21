@@ -319,6 +319,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
       rd->m_frameReadySem.wait();
       if (!rd->m_framePending)
          continue;
+      const bool noSync = rd->m_frameNoSync;
 
       // lock prepared frame and submit it
       {
@@ -327,7 +328,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
          #ifdef MSVC_CONCURRENCY_VIEWER
          span *tagSpan = new span(series, 1, _T("Submit"));
          #endif
-         const bool needsVSync = useVSync && !rd->m_frameNoSync;
+         const bool needsVSync = useVSync && !noSync;
          if (vsync != needsVSync)
          {
             vsync = needsVSync;
@@ -338,6 +339,22 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
          #ifdef MSVC_CONCURRENCY_VIEWER
          delete tagSpan;
          #endif
+      }
+
+      // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
+      if (!noSync && (g_pplayer->m_maxFramerate != rd->m_outputWnd[0]->GetRefreshRate()))
+      {
+         U64 now = usec();
+         const int refreshLength = static_cast<int>(1000000ul / rd->m_outputWnd[0]->GetRefreshRate());
+         const int minimumFrameLength = 1000000ull / g_pplayer->m_maxFramerate;
+         const int maximumFrameLength = 5 * refreshLength;
+         const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
+         while (now - rd->m_lastPresentFrameTick < targetFrameLength)
+         {
+            g_pplayer->m_curFrameSyncOnFPS = true;
+            YieldProcessor();
+            now = usec();
+         }
       }
 
       // Block until a flip happens then submit to GPU
@@ -424,6 +441,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.type = bgfx::RendererType::Direct3D11;
    //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
    init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
+   init.type = bgfx::RendererType::Vulkan;
 
    init.callback = &bgfxCallback;
 
@@ -432,6 +450,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
+   init.resolution.numBackBuffers = maxPrerenderedFrames;
    init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
                          | BGFX_RESET_FLIP_AFTER_RENDER                                 /*  */
                          | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC); /* Wait for VSync */
@@ -1603,6 +1622,7 @@ void RenderDevice::SubmitRenderFrame()
    bool rendered = m_renderFrame.Execute(m_logNextFrame);
    if (rendered)
       m_logNextFrame = false;
+   m_lastPresentFrameTick = usec();
 }
 
 void RenderDevice::SetRenderTarget(const string& name, RenderTarget* rt, const bool useRTContent, const bool forceNewPass)
