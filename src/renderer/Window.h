@@ -37,8 +37,13 @@ public:
 
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_Window * GetCore() const { return m_nwnd; }
+
+      #ifdef _WIN32
+         HWND GetNativeHWND() const;
+      #endif
    #else // Win32 Windowing
       HWND GetCore() const { return m_nwnd; }
+      HWND GetNativeHWND() const { return m_nwnd; }
    #endif
 
    struct VideoMode
