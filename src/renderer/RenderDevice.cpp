@@ -423,25 +423,30 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
-   static const string bgfxRendererNames[bgfx::RendererType::Count + 1] = {"Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
-   bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
-   int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-   string supportedRendererLog = "BGFX available backends: "s;
-   for (int i = 0; i < nRendererSupported; i++)
-      supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
-   PLOGI << supportedRendererLog;
+   bgfx::Init init;
+   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
 
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
 
-   bgfx::Init init;
-   init.type = bgfx::RendererType::Metal;
-   init.type = bgfx::RendererType::OpenGL;
-   init.type = bgfx::RendererType::OpenGLES;
-   init.type = bgfx::RendererType::Vulkan;
-   init.type = bgfx::RendererType::Direct3D11;
+   static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
+      = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
+   bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
+   int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
+   string supportedRendererLog = ""s;
+   for (size_t i = 0; i < nRendererSupported; ++i)
+   {
+      supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
+      if (gfxBackend == bgfxRendererNames[supportedRenderers[i]])
+         init.type = supportedRenderers[i];
+   }
+   PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ")";
+   //init.type = bgfx::RendererType::Metal;
+   //init.type = bgfx::RendererType::OpenGL;
+   //init.type = bgfx::RendererType::OpenGLES;
+   //init.type = bgfx::RendererType::Vulkan;
+   //init.type = bgfx::RendererType::Direct3D11; // Present with VSYNC & outputs on multiple displays will sequentially sync on each display causing massive framerate drop
    //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
-   init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
-   init.type = bgfx::RendererType::Vulkan;
 
    init.callback = &bgfxCallback;
 
