@@ -257,8 +257,10 @@ static HRESULT invoke_vbdisp(vbdisp_t *This, DISPID id, DWORD flags, BOOL extern
 
             func = This->desc->funcs[id].entries[V_VT(dp.rgvarg) == VT_DISPATCH ? VBDISP_SET : VBDISP_LET];
 #ifdef __STANDALONE__
-            if (!func)
+            if (!func) {
                 func = This->desc->funcs[id].entries[VBDISP_LET];
+                needs_release = FALSE;
+            }
 #endif
             if(!func) {
                 FIXME("no letter/setter\n");
@@ -310,10 +312,6 @@ static BOOL run_terminator(vbdisp_t *This)
 
 static void clean_props(vbdisp_t *This)
 {
-#ifdef __STANDALONE__
-    return;
-#endif
-
     unsigned i;
 
     if(!This->desc)

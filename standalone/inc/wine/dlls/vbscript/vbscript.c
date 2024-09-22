@@ -272,7 +272,6 @@ void release_named_item(named_item_t *item)
 
 static void release_script(script_ctx_t *ctx)
 {
-#ifndef __STANDALONE__
     named_item_t *item, *item_next;
     vbscode_t *code, *code_next;
 
@@ -308,7 +307,6 @@ static void release_script(script_ctx_t *ctx)
             release_named_item(item);
         }
     }
-#endif
 
     if(ctx->secmgr) {
         IInternetHostSecurityManager_Release(ctx->secmgr);
