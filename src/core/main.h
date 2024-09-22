@@ -327,7 +327,7 @@ class SCNotification final { };
 #include "audio/pinsound.h"
 #include "parts/pinbinary.h"
 
-#include "plugins/PluginManager.h"
+#include "plugins/MsgPluginManager.h"
 
 #include "extern.h"
 

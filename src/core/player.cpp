@@ -42,6 +42,8 @@
 #endif
 #include "tinyxml2/tinyxml2.h"
 
+#include "plugins/VPXPlugin.h"
+
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
@@ -452,6 +454,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
+   #if defined(ENABLE_BGFX)
    if (m_ptable->m_settings.LoadValueWithDefault(Settings::DMD, "ViewMode"s, 0) > 0)
    {
       m_dmdWnd = new VPX::Window(_T("Visual Pinball - DMD"), Settings::DMD, "DMD");
@@ -463,6 +466,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_backglassWnd = new VPX::Window(_T("Visual Pinball - Backglass"), Settings::Backglass, "Backglass");
       m_renderer->m_renderDevice->AddWindow(m_backglassWnd);
    }
+   #endif
 
    // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
    if (m_headTracking || (stereo3D == STEREO_VR))
@@ -741,8 +745,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_onPrepareFrameEventId = PluginManager::GetEventID(VPX_EVT_ON_PREPARE_FRAME);
-   PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_GAME_START), nullptr);
+   m_onPrepareFrameEventId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), nullptr);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -843,7 +847,7 @@ Player::~Player()
    PLOGI << "Closing player...";
 
    // Signal plugins early since most fields will become invalid
-   PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_GAME_END), nullptr);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -2001,7 +2005,7 @@ void Player::PrepareFrame(std::function<void()> sync)
    m_startFrameTick = usec();
    g_frameProfiler.OnPrepare();
 
-   PluginManager::BroadcastEvent(m_onPrepareFrameEventId, nullptr);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onPrepareFrameEventId, nullptr);
 
    m_physics->OnPrepareFrame();
 

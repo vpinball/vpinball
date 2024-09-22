@@ -14,6 +14,8 @@
 
 #include "utils/wintimer.h"
 
+#include "plugins/VPXPlugin.h"
+
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 
@@ -1694,7 +1696,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   if (opt.section == Settings::TableOption)
                      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
                   else
-                     PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_SETTINGS_CHANGED), nullptr);
+                     MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                }
                else
                   modified = false;
@@ -1952,7 +1954,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                }
             }
             if (m_tweakPages[m_activeTweakPageIndex] > TP_TableOption)
-               PluginManager::BroadcastEvent(PluginManager::GetEventID(VPX_EVT_ON_SETTINGS_CHANGED), nullptr);
+               MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
             else
                m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
          }
@@ -2084,7 +2086,7 @@ void LiveUI::UpdateTweakModeUI()
             if (page >= TP_Plugin00)
             {
                const string& sectionName = Settings::GetSectionName((Settings::Section)(Settings::Plugin00 + page - TP_Plugin00));
-               const VPXPlugin* plugin = sectionName.length() > 7 ? PluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
+               const std::shared_ptr<MsgPlugin> plugin = sectionName.length() > 7 ? MsgPluginManager::GetInstance().GetPlugin(sectionName.substr(7)) : nullptr;
                if (plugin)
                   title = plugin->m_name + " Plugin";
                else

@@ -6,6 +6,9 @@
 
 #include "vpversion.h"
 
+#include "plugins/VPXPlugin.h"
+#include "plugins/VPXPluginAPIImpl.h"
+
 #ifdef CRASH_HANDLER
 #include "utils/StackTrace.h"
 #include "utils/CrashHandler.h"
@@ -1295,8 +1298,20 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       // Start Win32++
       VPApp theApp(hInstance);
       theApp.InitInstance();
-
-      PluginManager::GetInstance().ScanPluginFolder(g_pvp->m_szMyPath + "plugins");
+      VPXPluginAPIImpl::RegisterVPXPluginAPI();
+      MsgPluginManager::GetInstance().ScanPluginFolder(g_pvp->m_szMyPath + "plugins", [](MsgPlugin& plugin) {
+         const char *enableDisable[] = { "Disabled", "Enabled" };
+         int enabled = (int)VPXPluginAPIImpl::g_vpxAPI.GetOption(plugin.m_id.c_str(), 
+            "enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
+         if (enabled)
+         {
+            plugin.Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+         }
+         else
+         {
+            PLOGI << "Plugin " << plugin.m_id << " was found but is disabled (" << plugin.m_library << ")";
+         }
+      });
 
       // Run the application
       retval = theApp.Run();

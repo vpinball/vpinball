@@ -1,6 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="assets">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="assets\meshes">
+      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="audio">
+      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="core">
+      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-378fa9352bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="math">
+      <UniqueIdentifier>{f3961dac-131c-4ac3-3988-412398766646}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="parts">
+      <UniqueIdentifier>{fc16eece-2039-4e44-bad4-378f354cdfef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="plugin">
+      <UniqueIdentifier>{fc16eece-98ac-c96e-b32c-5f69e32ab479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="physics">
+      <UniqueIdentifier>{fc16eece-1a36-4e44-bad4-3646af352bef}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="renderer">
+      <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders">
+      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\hlsl_glsl">
+      <UniqueIdentifier>{67a3c1e2-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="shaders\bgfx">
+      <UniqueIdentifier>{67a3c1e3-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui">
+      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\dialogs">
+      <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\properties">
+      <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ui\res">
+      <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="utils">
+      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93abd98026da}</UniqueIdentifier>
+    </Filter>
     <Filter Include="third-party">
       <UniqueIdentifier>{ba1f1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
     </Filter>
@@ -21,54 +72,6 @@
     </Filter>
     <Filter Include="third-party\Win32xx">
       <UniqueIdentifier>{79f0d9fe-5f96-4893-a95c-5c2f5ef53016}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="assets">
-      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="audio">
-      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-380f77d82bef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="core">
-      <UniqueIdentifier>{fc16eece-2096-4e44-bad4-378fa9352bef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ui">
-      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ui\dialogs">
-      <UniqueIdentifier>{2890089b-1408-4cfb-a6ce-93c682c026da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ui\properties">
-      <UniqueIdentifier>{448abbef-cfdb-46d4-8f5d-12a4e59cb1dc}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="utils">
-      <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93abd98026da}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="math">
-      <UniqueIdentifier>{f3961dac-131c-4ac3-3988-412398766646}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="assets\meshes">
-      <UniqueIdentifier>{23b51dec-131c-4ac3-8f28-4e8fd6a3b646}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="parts">
-      <UniqueIdentifier>{fc16eece-2039-4e44-bad4-378f354cdfef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="physics">
-      <UniqueIdentifier>{fc16eece-1a36-4e44-bad4-3646af352bef}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ui\res">
-      <UniqueIdentifier>{2553b092-dac2-4b2a-9c0c-35d589c67b37}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders">
-      <UniqueIdentifier>{67a3c1e1-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\hlsl_glsl">
-      <UniqueIdentifier>{67a3c1e2-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="shaders\bgfx">
-      <UniqueIdentifier>{67a3c1e3-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="renderer">
-      <UniqueIdentifier>{3d81e6c0-9785-4460-bd19-c8c25e24ae1b}</UniqueIdentifier>
     </Filter>
     <Filter Include="third-party\glad">
       <UniqueIdentifier>{eb774f26-7da3-495d-80cc-8eb48d6f1593}</UniqueIdentifier>
@@ -273,9 +276,15 @@
     <ClCompile Include="src/physics/quadtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/plugins/PluginManager.cpp">
-      <Filter>core</Filter>
+    <ClCompile Include="src/plugins/MsgPluginManager.cpp">
+      <Filter>plugin</Filter>
     </ClCompile>
+    <ClCompile Include="src/plugins/VPXPluginAPIImpl.cpp">
+      <Filter>plugin</Filter>
+    </ClCompile>
+    <ClInclude Include="src/plugins/MsgPluginManager.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClCompile Include="src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
@@ -944,11 +953,14 @@
     <ClInclude Include="src/physics/quadtree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/plugins/PluginManager.h">
-      <Filter>core</Filter>
-    </ClInclude>
     <ClInclude Include="src/plugins/VPXPlugin.h">
-      <Filter>core</Filter>
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="src/plugins/MsgPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="src/plugins/VPXPluginAPIImpl.h">
+      <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
@@ -1934,6 +1946,9 @@
     <Image Include="src/ui/res/assign.ico">
       <Filter>ui\res</Filter>
     </Image>
+    <Image Include="src\ui\res\ball.ico">
+      <Filter>ui\res</Filter>
+    </Image>
     <Image Include="src/ui/res/expandcolapse.ico">
       <Filter>ui\res</Filter>
     </Image>
@@ -1964,6 +1979,9 @@
       <Filter>ui\res</Filter>
     </None>
     <None Include="src/ui/res/hittarget.rgs">
+      <Filter>ui\res</Filter>
+    </None>
+    <None Include="src\ui\res\ball.cur">
       <Filter>ui\res</Filter>
     </None>
     <None Include="src/ui/res/ball.rgs">
