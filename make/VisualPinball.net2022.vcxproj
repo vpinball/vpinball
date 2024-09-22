@@ -1164,7 +1164,10 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="src/physics/NudgeFilter.cpp" />
     <ClCompile Include="src/physics/PhysicsEngine.cpp" />
     <ClCompile Include="src/physics/quadtree.cpp" />
-    <ClCompile Include="src/plugins/PluginManager.cpp" />
+    <ClCompile Include="src/plugins/MsgPluginManager.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="src/plugins/VPXPluginAPIImpl.cpp" />
     <ClCompile Include="src/renderer/Anaglyph.cpp" />
     <ClCompile Include="src/renderer/captureExt.cpp" />
     <ClCompile Include="src/renderer/IndexBuffer.cpp" />
@@ -1476,6 +1479,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="src/ui/res/trigger.rgs" />
     <None Include="src/ui/res/vpinball.rgs" />
     <None Include="src/ui/res/light.cur" />
+    <None Include="src\ui\res\ball.cur" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="src/assets/AOdither.webp" />
@@ -1538,6 +1542,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Image Include="src/ui/res/table.ico" />
     <Image Include="src/ui/res/toolbar.bmp" />
     <Image Include="src/ui/res/wall.ico" />
+    <Image Include="src\ui\res\ball.ico" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h" />
@@ -1633,7 +1638,9 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/physics/NudgeFilter.h" />
     <ClInclude Include="src/physics/PhysicsEngine.h" />
     <ClInclude Include="src/physics/quadtree.h" />
-    <ClInclude Include="src/plugins/PluginManager.h" />
+    <ClInclude Include="src/plugins/MsgPlugin.h" />
+    <ClInclude Include="src/plugins/VPXPluginAPIImpl.h" />
+    <ClInclude Include="src/plugins/MsgPluginManager.h" />
     <ClInclude Include="src/plugins/VPXPlugin.h" />
     <ClInclude Include="src/renderer/captureExt.h" />
     <ClInclude Include="src/renderer/AreaTex.h" />
@@ -2058,7 +2065,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="make\vpinball.natvis" />
-    <Natvis Include="make\bgfx.natvis" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')"/>
+    <Natvis Include="make\bgfx.natvis" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
