@@ -18,6 +18,10 @@
 #include <map>
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 #include <ctime>
 #include <fstream>
 #include <sstream>
@@ -257,6 +261,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_touchregion_pressed[i] = false;
 
    m_dmd = int2(0,0);
+
+#ifdef __LIBVPINBALL__
+   m_liveUIOverride = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LiveUIOverride"s, true);
+#endif
 
    PLOGI << "Creating main window"; // For profiling
    {
@@ -761,11 +769,17 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
 
 #ifdef __STANDALONE__
+#ifndef __LIBVPINBALL__
    if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
       g_pvp->m_webServer.Start();
 #endif
+#endif
 
    PLOGI << "Startup done"; // For profiling
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::StartupDone, nullptr);
+#endif
 
 #ifdef __STANDALONE__
    g_pStandalone->PostStartup();
@@ -802,13 +816,19 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Popup notification on startup
    if (m_renderer->m_stereo3D != STEREO_OFF && m_renderer->m_stereo3D != STEREO_VR && !m_renderer->m_stereo3Denabled)
       m_liveUI->PushNotification("3D Stereo is enabled but currently toggled off, press F10 to toggle 3D Stereo on"s, 4000);
-   const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
-   if (m_supportsTouch && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
-   {
-      g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
-      m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
-                                 "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
+#ifdef __LIBVPINBALL__
+   if (!m_liveUIOverride) {
+#endif
+      const int numberOfTimesToShowTouchMessage = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "NumberOfTimesToShowTouchMessage"s, 10);
+      if (m_supportsTouch && numberOfTimesToShowTouchMessage != 0) //!! visualize with real buttons or at least the areas?? Add extra buttons?
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "NumberOfTimesToShowTouchMessage"s, max(numberOfTimesToShowTouchMessage - 1, 0));
+         m_liveUI->PushNotification("You can use Touch controls on this display: bottom left area to Start Game, bottom right area to use the Plunger\n"
+                                    "lower left/right for Flippers, upper left/right for Magna buttons, top left for Credits and (hold) top right to Exit"s, 12000);
+      }
+#ifdef __LIBVPINBALL__
    }
+#endif
 }
 
 Player::~Player()
@@ -1753,8 +1773,17 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
    };
 
    #ifdef ENABLE_BGFX
+   // Flush any pending frame
+   m_renderer->m_renderDevice->m_frameReadySem.post();
+
+#ifndef __LIBVPINBALL__
    MultithreadedGameLoop(sync);
-   
+#else
+   auto gameLoop = [this, sync]() {
+      MultithreadedGameLoop(sync);
+   };
+   VPinballLib::VPinball::GetInstance().SetGameLoop(gameLoop);
+#endif
    #else
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
       FramePacingGameLoop(sync);
@@ -1766,8 +1795,6 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
 void Player::MultithreadedGameLoop(std::function<void()> sync)
 {
 #ifdef ENABLE_BGFX
-   // Flush any pending frame
-   m_renderer->m_renderDevice->m_frameReadySem.post();
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
       sync();
@@ -1787,6 +1814,9 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       // std::this_thread::sleep_for(std::chrono::microseconds(10));
       // usleep(100);
       YieldProcessor();
+#ifdef __LIBVPINBALL__
+      break;
+#endif
    }
 #endif
 }
@@ -2011,6 +2041,12 @@ void Player::PrepareFrame(std::function<void()> sync)
       m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
    else if (m_liveUI->IsTweakMode())
       m_liveUI->Update(m_renderer->GetOffscreenVR(0));
+
+#ifdef __LIBVPINBALL__
+   if (m_liveUIOverride)
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
+#endif
+
    g_frameProfiler.ExitProfileSection();
 
    // Shake screen when nudging
@@ -2134,7 +2170,7 @@ void Player::FinishFrame()
       m_closing = CS_STOP_PLAY;
 #else
       m_closing = CS_CLOSE_APP;
-   #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+   #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
       PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
       g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
    #endif
@@ -2147,8 +2183,16 @@ void Player::FinishFrame()
       m_closing = CS_PLAYING;
       if (g_pvp->m_disable_pause_menu || m_renderer->m_stereo3D == STEREO_VR)
          m_closing = CS_STOP_PLAY;
-      else
+      else {
+#ifdef __LIBVPINBALL__
+         if (m_liveUIOverride)
+            VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIToggle, nullptr);
+         else
+            m_liveUI->OpenMainSplash();
+#else
          m_liveUI->OpenMainSplash();
+#endif
+      }
    }
 
 #ifdef __STANDALONE__

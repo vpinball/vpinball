@@ -433,6 +433,12 @@ void Settings::RegisterSetting(const Section section, const string& id, const un
    opt.step = step;
    opt.defaultValue = defaultValue;
    opt.literals = literals;
+   opt.tokenizedLiterals = "";
+   for (size_t i = 0; i < literals.size(); ++i) {
+      if (i > 0)
+          opt.tokenizedLiterals += "||";
+      opt.tokenizedLiterals += literals[i];
+   }
    opt.unit = unit;
    vector<OptionDef> &options = section == TableOption ? m_tableOptions : m_pluginOptions;
    for (auto option = begin(options); option != end(options); ++option)

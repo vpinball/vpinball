@@ -7,6 +7,10 @@
 #include <DbgProp.h>
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 //#include <Windowsx.h>
 // The GUID used to identify the coclass of the VB Script engine
 //  {B54F3741-5B07-11cf-A4B0-00AA004A55E8}
@@ -1204,7 +1208,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"");
+	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"Description unavailable");
 
 	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
@@ -1215,8 +1219,6 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		SysFreeString(bstr);
 		return S_OK;
 	}
-	else
-		delete[] szT;
 
 	m_scriptError = true;
 
@@ -1237,6 +1239,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	SCRIPTSTATE state;
 	m_pScript->GetScriptState(&state);
 	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
+
+#ifdef __LIBVPINBALL__
+	VPinballLib::ScriptErrorStruct scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT };
+	VPinballLib::VPinball::SendEvent(VPinballLib::Event::ScriptError, &scriptErrorStruct);
+#endif
+
+	delete[] szT;
 
 	// Error log content
 	std::wstringstream errorStream;

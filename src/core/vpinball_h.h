@@ -263,7 +263,9 @@ public:
    HBITMAP m_hbmInPlayMode;
 
 #ifdef __STANDALONE__
+#ifndef __LIBVPINBALL__
    WebServer m_webServer;
+#endif
 #endif
 
 protected:

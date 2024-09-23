@@ -110,6 +110,9 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -4181,6 +4184,9 @@ HRESULT PinTable::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -4977,6 +4983,9 @@ HRESULT Surface::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -5858,6 +5867,9 @@ HRESULT Flipper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -6024,6 +6036,9 @@ HRESULT Timer::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -6736,6 +6751,9 @@ HRESULT Plunger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -7123,6 +7141,9 @@ HRESULT Textbox::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -7717,6 +7738,9 @@ HRESULT Bumper::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -8134,6 +8158,9 @@ HRESULT Trigger::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -8833,6 +8860,9 @@ HRESULT Light::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -9365,6 +9395,9 @@ HRESULT Kicker::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -10854,6 +10887,9 @@ HRESULT Primitive::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -11535,6 +11571,9 @@ HRESULT HitTarget::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparam
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -12076,6 +12115,9 @@ HRESULT Gate::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -12510,6 +12552,9 @@ HRESULT Spinner::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -14675,6 +14720,9 @@ HRESULT Ball::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -14709,6 +14757,9 @@ HRESULT Ramp::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -14744,6 +14795,9 @@ HRESULT Flasher::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams)
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -14780,6 +14834,9 @@ HRESULT Rubber::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) 
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -15267,6 +15324,9 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -15537,6 +15597,9 @@ HRESULT LightSeq::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
+#ifdef __LIBVPINBALL__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {

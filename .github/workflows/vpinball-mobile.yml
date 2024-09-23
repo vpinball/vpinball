@@ -95,6 +95,66 @@ jobs:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
           path: tmp
 
+  build-lib:
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: macos-latest
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ BGFX_lib ]
+        platform: [ ios, ios-simulator ]
+        arch: [ arm64 ]
+        config: [ Release ]
+    steps:
+      - run: |
+          brew install bison autoconf automake libtool
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/${{ matrix.platform }}-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/${{ matrix.platform }}-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/${{ matrix.platform }}-${{ matrix.arch }}/external/cache
+          key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build
+        run: |
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
+          NUM_PROCS=$(sysctl -n hw.ncpu)
+          TYPE_LC=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp standalone/cmake/CMakeLists_${TYPE_LC}.txt CMakeLists.txt
+          cmake \
+             -DPLATFORM=${{ matrix.platform }} \
+             -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+             -B build/${{ matrix.config }}
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+      - run: |
+          mkdir tmp
+          cp -a build/${{ matrix.config }}/*.h tmp
+          cp -a build/${{ matrix.config }}/*.dylib tmp
+          cp -r build/${{ matrix.config }}/assets tmp
+          cp -r build/${{ matrix.config }}/scripts tmp
+          cp -r build/${{ matrix.config }}/tables tmp
+          cp -r build/${{ matrix.config }}/docs tmp
+          cp -r build/${{ matrix.config }}/flexdmd tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: tmp
+
   build-android:
     name: Build VPinballX_${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}
     runs-on: ubuntu-22.04

@@ -47,6 +47,10 @@
 #include "parts/Material.h"
 #endif
 
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
+#endif
+
 #if defined(ENABLE_BGFX)
 struct tBGFXCallback : public bgfx::CallbackI
 {
@@ -474,7 +478,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
    #elif BX_PLATFORM_IOS
+   #ifdef __LIBVPINBALL__
+   init.platformData.nwh = VPinballLib::VPinball::SendEvent(VPinballLib::Event::MetalLayerIOS, nullptr);
+   #else
    init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   #endif
    #elif BX_PLATFORM_ANDROID
    init.platformData.nwh = wmInfo.info.android.window;
    #elif BX_PLATFORM_WINDOWS
