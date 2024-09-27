@@ -74,7 +74,7 @@ jobs:
           key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build
         run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
           NUM_PROCS=$(sysctl -n hw.ncpu)
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
@@ -131,7 +131,7 @@ jobs:
           key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build
         run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
           NUM_PROCS=$(sysctl -n hw.ncpu)
           TYPE_LC=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
@@ -197,7 +197,7 @@ jobs:
           key: ${{ matrix.type }}-android-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
       - name: Build VPinball
         run: |
-          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
           NUM_PROCS=$(nproc)
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
