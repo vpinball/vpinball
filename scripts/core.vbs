@@ -2549,7 +2549,7 @@ Sub PinMAMETimer_Timer
 		On Error Goto 0
 	ElseIf HasStateBlock = 1 Then
 		If UpdateVisual Then
-			Controller.UpdateStateBlock 31 ' Update all
+			Controller.UpdateStateBlock 63 ' Update all
 		Else
 			Controller.UpdateStateBlock 2 ' Update general purpose outputs only (Solenoids & GI)
 		End If

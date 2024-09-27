@@ -42,7 +42,10 @@
 #endif
 #include "tinyxml2/tinyxml2.h"
 
+#include "plugins/MsgPlugin.h"
+#include "plugins/CorePlugin.h"
 #include "plugins/VPXPlugin.h"
+#include "plugins/VPXPluginAPIImpl.h"
 
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
@@ -745,8 +748,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_onPrepareFrameEventId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START), nullptr);
+   m_controllerDisplays.push_back({-1, nullptr}); // Default DMD
+   m_onPrepareFrameMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_getDmdMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD);
+   m_onGameStartMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onGameStartMsgId, nullptr);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -810,6 +816,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
+   VPXPluginAPIImpl::PinMameOnStart();
+
    // Show the window (for VR, even without preview, we need to create a window).
    m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
    if (m_dmdWnd && false) // FIXME We only show DMD if there is actually a DMD (so when we receive the first DMD frame), allowing to share the same display for DMD & the still to write Alpha view
@@ -847,7 +855,8 @@ Player::~Player()
    PLOGI << "Closing player...";
 
    // Signal plugins early since most fields will become invalid
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), nullptr);
+   const unsigned int onGameEndMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(onGameEndMsgId, nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -856,6 +865,12 @@ Player::~Player()
 
    // Stop script engine before destroying objects
    m_ptable->m_pcv->CleanUpScriptEngine();
+
+   // Release plugin message Ids
+   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_onGameStartMsgId);
+   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
+   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_onPrepareFrameMsgId);
+   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_getDmdMsgId);
 
    g_frameProfiler.LogWorstFrame();
    g_frameProfiler.Reset();
@@ -2005,7 +2020,7 @@ void Player::PrepareFrame(std::function<void()> sync)
    m_startFrameTick = usec();
    g_frameProfiler.OnPrepare();
 
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onPrepareFrameEventId, nullptr);
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onPrepareFrameMsgId, nullptr);
 
    m_physics->OnPrepareFrame();
 
@@ -2092,7 +2107,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       {
          lastFrameId = dmd.frameId;
          dmdRendered = true;
-         m_renderer->RenderDMD(dmd.frame, false, m_dmdWnd->GetBackBuffer());
+         m_renderer->RenderDMD(dmd.frame, dmd.frame->m_format != BaseTexture::BW, m_dmdWnd->GetBackBuffer());
       }
    }
 
@@ -2253,30 +2268,23 @@ void Player::FinishFrame()
 
 Player::ControllerDisplay Player::GetControllerDisplay(int id)
 {
-   // Update Display from shared state block if available
-   if (m_pStateMappedMem == nullptr || m_pStateMappedMem->versionID != 1 || m_pStateMappedMem->displayState == nullptr)
+   // For the time being, we only support the default DMD (no DMD id scheme defined & implemented)
+   if (id != -1)
       return { -1, nullptr };
+   ControllerDisplay& display = m_controllerDisplays[0];
 
-   PinMame::core_tFrameState *frame = (PinMame::core_tFrameState *)((UINT8 *)m_pStateMappedMem->displayState + sizeof(PinMame::core_tDisplayState));
-   unsigned int index = 0;
-   bool found = false;
-   for (; index < m_pStateMappedMem->displayState->nDisplays; index++, id--)
-   {
-      if ((id == 0) || (id == -1 && frame->width >= 128 && (frame->dataFormat == CORE_FRAME_LUM))) // Main DMD
-      {
-         found = true;
-         break;
-      }
-      frame = (PinMame::core_tFrameState *)((UINT8 *)frame + frame->structSize);
-   }
-   if (!found)
-      return { -1, nullptr };
-
-   while (m_controllerDisplays.size() <= index)
-      m_controllerDisplays.push_back({-1, nullptr});
-   ControllerDisplay& display = m_controllerDisplays[index];
-
-   if (!display.frame || display.frame->width() != frame->width || display.frame->height() != frame->height)
+   // Obtain DMD frame from controller plugin
+   GetDmdMsg msg;
+   memset(&msg, 0, sizeof(GetDmdMsg));
+   msg.dmdId = -1;
+   msg.requestFlags = CTLPI_GETDMD_RENDER_FRAME;
+   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_getDmdMsgId, &msg);
+   if (msg.frame == nullptr)
+      return {-1, nullptr};
+   
+   // (re) Create DMD texture
+   BaseTexture::Format format = msg.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
+   if (display.frame == nullptr || display.frame->width() != msg.width || display.frame->height() != msg.height || display.frame->m_format != format)
    {
       if (display.frame)
       {
@@ -2284,18 +2292,32 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
          delete display.frame;
       }
-      display.frame = new BaseTexture(frame->width, frame->height, BaseTexture::RGBA);
+      display.frame = new BaseTexture(msg.width, msg.height, format);
+      display.frame->SetIsOpaque(true);
       display.frameId = -1;
    }
 
-   if (frame->frameId != display.frameId)
+   // Update DMD texture
+   if (display.frameId != msg.frameId)
    {
-      display.frameId = frame->frameId;
-      const int size = frame->width * frame->height;
-      DWORD *const data = (DWORD *)display.frame->data();
-      if (frame->dataFormat == CORE_FRAME_LUM)
-         for (int ofs = 0; ofs < size; ++ofs)
-            data[ofs] = frame->frameData[ofs];
+      display.frameId = msg.frameId;
+      const int size = msg.width * msg.height;
+      if (msg.format == CTLPI_GETDMD_FORMAT_LUM8)
+         memcpy(display.frame->data(), msg.frame, size);
+      else if (msg.format == CTLPI_GETDMD_FORMAT_SRGB565)
+      {
+         DWORD *const data = (DWORD *)display.frame->data();
+         for (int ofs = 0; ofs < size; ofs++) {
+            const uint16_t rgb565 = reinterpret_cast<uint16_t *>(msg.frame)[ofs];
+            data[ofs] = 0xFF000000 | (((rgb565 >> 8) & 0xF8) << 16) | (((rgb565 >> 2) & 0xFC) << 8) | ((rgb565 << 3) & 0xF8);
+         }
+      }
+      else if (msg.format == CTLPI_GETDMD_FORMAT_SRGB888)
+      {
+         DWORD *const data = (DWORD *)display.frame->data();
+         for (int ofs = 0; ofs < size; ofs++)
+            data[ofs] = 0xFF000000 | (msg.frame[ofs * 3 + 2] << 16) | (msg.frame[ofs * 3 + 1] << 8) | msg.frame[ofs * 3];
+      }
       m_renderer->m_renderDevice->m_texMan.SetDirty(display.frame);
    }
 

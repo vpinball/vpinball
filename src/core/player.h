@@ -309,7 +309,8 @@ public:
 private:
    bool m_curFrameSyncOnVBlank = false;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
-   unsigned int m_onPrepareFrameEventId;
+   unsigned int m_onGameStartMsgId;
+   unsigned int m_onPrepareFrameMsgId;
 
    void MultithreadedGameLoop(std::function<void()> sync);
    void FramePacingGameLoop(std::function<void()> sync);
@@ -508,6 +509,7 @@ public:
    };
    ControllerDisplay GetControllerDisplay(int id);
 private:
+   unsigned int m_getDmdMsgId;
    vector<ControllerDisplay> m_controllerDisplays;
 
 public:

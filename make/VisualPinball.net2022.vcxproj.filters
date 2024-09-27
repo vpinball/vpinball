@@ -959,6 +959,12 @@
     <ClInclude Include="src/plugins/MsgPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
+    <ClInclude Include="src/plugins/CorePlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="src/plugins/PinMamePlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClInclude Include="src/plugins/VPXPluginAPIImpl.h">
       <Filter>plugin</Filter>
     </ClInclude>
@@ -2120,10 +2126,12 @@
     <None Include="src/shaders/bgfx/fs_classic_light.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_decal.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_dmd.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/fs_dmd2.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_flasher.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_light.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_ao.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_ao_display.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/fs_pp_bilateral_cas.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_bloom.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_blur.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_cas.sc"><Filter>shaders\bgfx</Filter></None>

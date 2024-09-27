@@ -45,8 +45,8 @@ float udRoundBox(vec2 p, float b, float r)
 // Apply brightness (for colored DMDs) or convert BW data to RGB one (for monochrome DMDs)
 vec3 convertDmdToColor(vec3 samp)
 {
-	if (coloredDMD) // linear RGB data
-		return samp.rgb * brightness;
+	if (coloredDMD) // sRGB data
+		return pow(samp.rgb, vec3_splat(2.2)) * brightness;
 	else // linear brightness data
 		return samp.r * dotColor;
 }
