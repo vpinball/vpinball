@@ -138,6 +138,8 @@ jobs:
           cp standalone/cmake/CMakeLists_${TYPE_LC}.txt CMakeLists.txt
           cmake \
              -DPLATFORM=${{ matrix.platform }} \
+             -DARCH=${{ matrix.arch }} \
+             -DBUILD_FRAMEWORKS=ON \
              -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
              -B build/${{ matrix.config }}
           cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
@@ -145,6 +147,8 @@ jobs:
           mkdir tmp
           cp -a build/${{ matrix.config }}/*.h tmp
           cp -a build/${{ matrix.config }}/*.dylib tmp
+          cp -r build/${{ matrix.config }}/*.framework tmp
+          cp -r build/${{ matrix.config }}/*.dSYM tmp
           cp -r build/${{ matrix.config }}/assets tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
