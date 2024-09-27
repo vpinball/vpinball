@@ -1372,10 +1372,12 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="src/shaders/bgfx/fs_classic_light.sc" />
     <None Include="src/shaders/bgfx/fs_decal.sc" />
     <None Include="src/shaders/bgfx/fs_dmd.sc" />
+    <None Include="src/shaders/bgfx/fs_dmd2.sc" />
     <None Include="src/shaders/bgfx/fs_flasher.sc" />
     <None Include="src/shaders/bgfx/fs_light.sc" />
     <None Include="src/shaders/bgfx/fs_pp_ao.sc" />
     <None Include="src/shaders/bgfx/fs_pp_ao_display.sc" />
+    <None Include="src/shaders/bgfx/fs_pp_bilateral_cas.sc" />
     <None Include="src/shaders/bgfx/fs_pp_bloom.sc" />
     <None Include="src/shaders/bgfx/fs_pp_blur.sc" />
     <None Include="src/shaders/bgfx/fs_pp_cas.sc" />
@@ -1639,6 +1641,8 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="src/physics/PhysicsEngine.h" />
     <ClInclude Include="src/physics/quadtree.h" />
     <ClInclude Include="src/plugins/MsgPlugin.h" />
+    <ClInclude Include="src/plugins/CorePlugin.h" />
+    <ClInclude Include="src/plugins/PinMamePlugin.h" />
     <ClInclude Include="src/plugins/VPXPluginAPIImpl.h" />
     <ClInclude Include="src/plugins/MsgPluginManager.h" />
     <ClInclude Include="src/plugins/VPXPlugin.h" />

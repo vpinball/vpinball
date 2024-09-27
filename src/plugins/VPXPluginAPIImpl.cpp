@@ -114,7 +114,95 @@ void SetActiveViewSetup(VPXViewSetupDef* view)
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Global API
+// Binding between plugin API and VBScript managed COM objects (needed for
+// backward compatibility while COM objects are slowly migrated to plugin)
+
+#include "CorePlugin.h"
+#include "PinMamePlugin.h"
+
+void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData)
+{
+   auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END);
+   msgApi.BroadcastMsg(msg, nullptr);
+   msgApi.ReleaseMsgID(msg);
+}
+
+void PinMameOnStart()
+{
+   assert(g_pplayer);
+   IDispatch* pScriptDispatch = NULL;
+   if (g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(NULL, &pScriptDispatch) == S_OK)
+   {
+      DISPID dispid;
+      LPOLESTR name = (LPOLESTR)L"cGameName";
+      if (pScriptDispatch->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &dispid) == S_OK)
+      {
+         DISPPARAMS dispparamsNoArgs = { NULL, NULL, 0, 0 };
+         VARIANT varResult;
+         VariantInit(&varResult);
+         if (pScriptDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &dispparamsNoArgs, &varResult, NULL, NULL) == S_OK)
+         {
+            if (varResult.vt == VT_BSTR)
+            {
+               char buf[MAXTOKEN];
+               WideCharToMultiByteNull(CP_ACP, 0, varResult.bstrVal, -1, buf, MAXTOKEN, nullptr, nullptr);
+               auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+               unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START);
+               msgApi.BroadcastMsg(msg, static_cast<void*>(buf));
+               msgApi.ReleaseMsgID(msg);
+               msg = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+               msgApi.SubscribeMsg(msg, &PinMameOnEnd, nullptr);
+               msgApi.ReleaseMsgID(msg);
+            }
+         }
+      }
+      pScriptDispatch->Release();
+   }
+}
+
+void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
+{
+   GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
+
+   if (g_pplayer == nullptr)
+      return;
+   if (g_pplayer->m_pStateMappedMem == nullptr || g_pplayer->m_pStateMappedMem->versionID != 1)
+      return;
+   if (msg->frame != nullptr)
+      return;
+
+   PinMame::core_tDisplayState* state = (msg->requestFlags & 1 /* GETDMD_RENDER_FRAME*/) ? g_pplayer->m_pStateMappedMem->displayState : g_pplayer->m_pStateMappedMem->rawDMDState;
+   if (state == nullptr)
+      return;
+
+   if (msg->dmdId != -1) // TODO implement other DMDs and LED matrices
+      return;
+
+   bool found = false;
+   PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
+   for (unsigned int index = 0; index < state->nDisplays; index++)
+   {
+      if (frame->width >= 128) // Main DMD
+      {
+         found = true;
+         break;
+      }
+      frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
+   }
+   if (!found)
+      return;
+
+   msg->frameId = frame->frameId;
+   msg->format = frame->dataFormat;
+   msg->width = frame->width;
+   msg->height = frame->height;
+   msg->frame = frame->frameData;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// 
 
 VPXPluginAPI g_vpxAPI {
    GetTableInfo,
@@ -156,6 +244,8 @@ void RegisterVPXPluginAPI()
    auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    // VPX API
    msgApi.SubscribeMsg(msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetPluginAPI, nullptr);
+   // Generic controller
+   msgApi.SubscribeMsg(msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD), &ControllerOnGetDMD, nullptr);
 }
 
 }

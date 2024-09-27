@@ -258,6 +258,8 @@ add_executable(vpinball WIN32
    src/plugins/VPXPluginAPIImpl.h
    src/plugins/VPXPluginAPIImpl.cpp
    src/plugins/VPXPlugin.h
+   src/plugins/CorePlugin.h
+   src/plugins/PinMamePlugin.h
 
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp
