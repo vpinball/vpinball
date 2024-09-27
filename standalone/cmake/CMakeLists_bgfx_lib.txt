@@ -3,8 +3,12 @@ cmake_minimum_required(VERSION 3.25)
 set(PLATFORM "ios" CACHE STRING "Platform")
 set(ARCH "arm64" CACHE STRING "Arch")
 
+option(BUILD_FRAMEWORKS "Option to build frameworks" OFF)
+
 message(STATUS "PLATFORM: ${PLATFORM}")
 message(STATUS "ARCH: ${ARCH}")
+
+message(STATUS "BUILD_FRAMEWORKS: ${BUILD_FRAMEWORKS}")
 
 if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    set(CMAKE_SYSTEM_NAME iOS)
@@ -26,6 +30,14 @@ project(vpinball VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
+
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
+
+if((PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator") AND BUILD_FRAMEWORKS)
+   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -g")
+   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -g")
+endif()
 
 find_package(BISON 3.8.2 REQUIRED)
 bison_target(vbsparser ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.y ${CMAKE_SOURCE_DIR}/standalone/inc/wine/dlls/vbscript/parser.tab.c 
@@ -736,3 +748,28 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/inc/flexdmd/resources" "$<TARGET_FILE_DIR:vpinball>/flexdmd"
    COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/external/lib/*.dylib" "$<TARGET_FILE_DIR:vpinball>"
 )
+
+if((PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator") AND BUILD_FRAMEWORKS)
+   add_custom_command(TARGET vpinball POST_BUILD
+      COMMAND echo "Generating VPinballFramework..."
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/frameworks/VPinballFramework.framework" "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework"
+      COMMAND lipo -create "$<TARGET_FILE_DIR:vpinball>/libvpinball.dylib" -o "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework/VPinballFramework" 
+      COMMAND install_name_tool -id @rpath/VPinballFramework.framework/VPinballFramework "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework/VPinballFramework"
+      COMMAND install_name_tool -change "@rpath/libbass.dylib" "@rpath/BassFramework.framework/BassFramework" "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework/VPinballFramework"
+      COMMAND echo "Generating dSYM file for VPinballFramework..."
+      COMMAND dsymutil "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework/VPinballFramework" -o "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.dSYM"
+      COMMAND echo "Generating BassFramework..."
+      COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/standalone/${PLATFORM}-${ARCH}/frameworks/BassFramework.framework" "$<TARGET_FILE_DIR:vpinball>/BassFramework.framework"
+      COMMAND lipo -create "$<TARGET_FILE_DIR:vpinball>/libbass.dylib" -o "$<TARGET_FILE_DIR:vpinball>/BassFramework.framework/BassFramework"
+      COMMAND install_name_tool -id @rpath/BassFramework.framework/BassFramework "$<TARGET_FILE_DIR:vpinball>/BassFramework.framework/BassFramework"
+   )
+
+   if(CMAKE_BUILD_TYPE STREQUAL "Release")
+      add_custom_command(TARGET vpinball POST_BUILD
+         COMMAND echo "Stripping symbols in VPinballFramework..."
+         COMMAND strip -ur "$<TARGET_FILE_DIR:vpinball>/VPinballFramework.framework/VPinballFramework"
+         COMMAND echo "Stripping symbols in libvpinball.dylib..."
+         COMMAND strip -ur "$<TARGET_FILE_DIR:vpinball>/libvpinball.dylib"
+      )
+   endif()
+endif()

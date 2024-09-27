@@ -1,0 +1,6 @@
+framework module BassFramework {
+  umbrella header "BassFramework.h"
+  export *
+
+  module * { export * }
+}

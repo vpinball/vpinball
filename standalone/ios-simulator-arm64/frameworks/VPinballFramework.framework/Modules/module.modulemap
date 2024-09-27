@@ -1,0 +1,6 @@
+framework module VPinballFramework {
+  umbrella header "VPinballFramework.h"
+  export *
+
+  module * { export * }
+}
