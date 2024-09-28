@@ -26,9 +26,11 @@
 #define CTLPI_GETDMD_RENDER_FRAME    1 // Frame suitable for rendering
 #define CTLPI_GETDMD_IDENTIFY_FRAME  2 // Frame suitable for frame identification (stable value)
 
-#define CTLPI_GETDMD_FORMAT_LUM8     1
-#define CTLPI_GETDMD_FORMAT_SRGB565  2
-#define CTLPI_GETDMD_FORMAT_SRGB888  3
+#define CTLPI_GETDMD_FORMAT_LUM8       1
+#define CTLPI_GETDMD_FORMAT_SRGB888    2
+#define CTLPI_GETDMD_FORMAT_BITPLANE2  3
+#define CTLPI_GETDMD_FORMAT_BITPLANE4  4
+#define CTLPI_GETDMD_FORMAT_SRGB565    5
 
 typedef struct
 {

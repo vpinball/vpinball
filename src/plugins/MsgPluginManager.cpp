@@ -196,15 +196,21 @@ void MsgPluginManager::ProcessAsyncCallbacks()
    assert(std::this_thread::get_id() == m_apiThread);
    if (m_timers.empty())
       return;
-   const std::lock_guard<std::mutex> lock(m_timerListMutex);
-   std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
-   for (auto it = m_timers.begin(); it < m_timers.end();)
+   std::vector<TimerEntry> timers;
    {
-      if (it->time > now)
-         return;
-      it->callback(it->userData);
-      m_timers.erase(it);
+      const std::lock_guard<std::mutex> lock(m_timerListMutex);
+      std::chrono::high_resolution_clock::time_point now = std::chrono::high_resolution_clock::now();
+      for (std::vector<TimerEntry>::iterator it = m_timers.begin(); it < m_timers.end();)
+      {
+         if (it->time > now)
+            break;
+         timers.push_back(*it);
+         it = m_timers.erase(it);
+      }
    }
+   // Release lock before calling callbacks to avoid deadlock
+   for (auto it = timers.begin(); it < timers.end(); it++)
+      it->callback(it->userData);
 }
 
 
