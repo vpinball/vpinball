@@ -1186,11 +1186,11 @@ void Renderer::RenderDMD(BaseTexture* dmd, const bool isColored, RenderTarget* r
    m_renderDevice->SetRenderTarget("DMDView", rt, false);
    SetupDMDRender(m_dmdViewDot, dmd, 1.f, true, isColored);
    m_renderDevice->m_DMDShader->SetFloat(SHADER_exposure, m_dmdViewExposure);
-   float rtAR = (float)rt->GetWidth() / (float)rt->GetHeight();
-   float dmdAR = (float)dmd->width() / (float)dmd->height();
-   float w = rtAR > dmdAR ? dmdAR / rtAR : 1.f;
-   float h = rtAR < dmdAR ? rtAR / dmdAR : 1.f;
-   Vertex3D_NoTex2 vertices[4] = {
+   const float rtAR = static_cast<float>(rt->GetWidth()) / static_cast<float>(rt->GetHeight());
+   const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
+   const float w = rtAR > dmdAR ? dmdAR / rtAR : 1.f;
+   const float h = rtAR < dmdAR ? rtAR / dmdAR : 1.f;
+   const Vertex3D_NoTex2 vertices[4] = {
       {  w, -h, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
       { -w, -h, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
       {  w,  h, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },

@@ -94,4 +94,28 @@ if "%vsv%" == "2019" (
 	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../plugin-serum.vcxproj" /out:"../plugin-serum.vcxproj"
 )
 
+
+copy /V /Y "plugin-pinup-events.net2022.vcxproj" "../plugin-pinup-events.vcxproj"
+copy /V /Y "plugin-pinup-events.net2022.vcxproj.filters" "../plugin-pinup-events.vcxproj.filters"
+
+if "%vsv%" == "2015" (
+	cscript "simplereplace.wsf" //nologo /search:"<VCProjectVersion>17.0</VCProjectVersion>" /replace:"<VCProjectVersion>14.0</VCProjectVersion>" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v140_xp" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>" /replace:"" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+    cscript "simplereplace.wsf" //nologo /search:"<LanguageStandard>stdcpp20</LanguageStandard>" /replace:"" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	rem perhaps we should remove as well <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+)
+
+if "%vsv%" == "2017" (
+	cscript "simplereplace.wsf" //nologo /search:"<VCProjectVersion>17.0</VCProjectVersion>" /replace:"<VCProjectVersion>15.0</VCProjectVersion>" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v141_xp" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	cscript "simplereplace.wsf" //nologo /search:"<WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>" /replace:"" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+    cscript "simplereplace.wsf" //nologo /search:"<LanguageStandard>stdcpp20</LanguageStandard>" /replace:"" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+	rem perhaps we should remove as well <AdditionalOptions>/Zc:__cplusplus %(AdditionalOptions)</AdditionalOptions>
+)
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../plugin-pinup-events.vcxproj" /out:"../plugin-pinup-events.vcxproj"
+)
+
 endlocal

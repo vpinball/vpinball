@@ -105,19 +105,20 @@ unsigned int MsgPluginManager::GetMsgID(const char* name_space, const char* name
    return freeMsg->id;
 }
 
-void MsgPluginManager::SubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
+void MsgPluginManager::SubscribeMsg(const unsigned int endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData)
 {
    MsgPluginManager& pm = GetInstance();
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
+   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    #ifdef DEBUG
       // Callback are only allowed to be registered once per message
       for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
          assert(entry.callback != callback);
    #endif
-   pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { callback, userData });
+   pm.m_msgs[msgId].callbacks.push_back(CallbackEntry { endpointId, callback, userData });
 }
 
 void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_callback callback)
@@ -139,14 +140,16 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(false);
 }
 
-void MsgPluginManager::BroadcastMsg(const unsigned int msgId, void* data)
+void MsgPluginManager::BroadcastMsg(const unsigned int endpointId, const unsigned int msgId, void* data)
 {
    MsgPluginManager& pm = GetInstance();
    assert(std::this_thread::get_id() == pm.m_apiThread);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
+   assert(1 <= endpointId && endpointId < pm.m_nextEndpointId);
    for (const CallbackEntry entry : pm.m_msgs[msgId].callbacks)
-      entry.callback(msgId, entry.userData, data);
+      if (entry.endpointId != endpointId) // Don't broadcast to sender's endpoint
+         entry.callback(msgId, entry.userData, data);
 }
 
 void MsgPluginManager::ReleaseMsgID(const unsigned int msgId)
@@ -299,7 +302,8 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, std::funct
                unquote(ini["configuration"s].get("author"s)),
                unquote(ini["configuration"s].get("version"s)),
                unquote(ini["configuration"s].get("link"s)),
-               libraryPath);
+               libraryPath,
+               NewEndpointId());
             m_plugins.push_back(plugin);
             callback(*plugin);
          }
@@ -389,7 +393,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
       assert(false);
    #endif
    }
-   m_is_loaded = m_loadPlugin(msgAPI);
+   m_is_loaded = m_loadPlugin(m_endpointId, msgAPI);
    PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ')';
 }
 
@@ -401,11 +405,15 @@ void MsgPlugin::Unload()
       return;
    }
    m_unloadPlugin();
+   // Use module unload instead of explicit unloading (avoid crashes due to forced unloading modules with thread still running)
+   // The only drawback is that the application keep the module (dll file) locked
+   /*
    #if defined(ENABLE_SDL)
       SDL_UnloadObject(m_module);
    #elif defined(_WIN32) || defined(_WIN64)
       FreeLibrary(static_cast<HMODULE>(m_module));
    #endif
+   */
    m_module = nullptr;
    m_loadPlugin = nullptr;
    m_unloadPlugin = nullptr;
