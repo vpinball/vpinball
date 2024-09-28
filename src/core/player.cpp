@@ -1786,6 +1786,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
       m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
       FireSyncController(); // Trigger script sync event (to sync solenoids back)
+      MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;
       #endif
