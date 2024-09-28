@@ -15,6 +15,7 @@
 #include "utils/wintimer.h"
 
 #include "plugins/VPXPlugin.h"
+#include "plugins/VPXPluginAPIImpl.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
@@ -1696,7 +1697,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                   if (opt.section == Settings::TableOption)
                      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
                   else
-                     MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
+                     VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                }
                else
                   modified = false;
@@ -1954,7 +1955,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                }
             }
             if (m_tweakPages[m_activeTweakPageIndex] > TP_TableOption)
-               MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
+               VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
             else
                m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
          }

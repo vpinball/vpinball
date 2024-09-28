@@ -2071,6 +2071,17 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <Natvis Include="make\vpinball.natvis" />
     <Natvis Include="make\bgfx.natvis" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="plugin-helloworld.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-pinup-events.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-serum.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af778}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

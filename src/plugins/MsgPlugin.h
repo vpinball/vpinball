@@ -40,7 +40,7 @@
 // A basic setting mechanism is also provided to allow easier integration.
 //
 // Plugins must implement and export the load/unload functions to be valid.
-// MSGPI_EXPORT void PluginLoad(MsgPluginAPI* api);
+// MSGPI_EXPORT void PluginLoad(const unsigned int endpointId, MsgPluginAPI* api);
 // MSGPI_EXPORT void PluginUnload();
 //
 // Plugins can be statically linked to host application on platforms requiring it or loaded
@@ -76,9 +76,9 @@ typedef struct MsgPluginAPI
 {
    // Messageing
    unsigned int (*GetMsgID)(const char* name_space, const char* name);
-   void (*SubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
+   void (*SubscribeMsg)(const unsigned int endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (*UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
-   void (*BroadcastMsg)(const unsigned int msgId, void* data);
+   void (*BroadcastMsg)(const unsigned int endpointId, const unsigned int msgId, void* data);
    void (*ReleaseMsgID)(const unsigned int msgId);
    // Setting
    void (*GetSetting)(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);

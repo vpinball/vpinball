@@ -749,10 +749,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    m_controllerDisplays.push_back({-1, nullptr}); // Default DMD
-   m_onPrepareFrameMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_getDmdMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD);
-   m_onGameStartMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onGameStartMsgId, nullptr);
+   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD);
+   m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -816,7 +816,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
-   VPXPluginAPIImpl::PinMameOnStart();
+   VPXPluginAPIImpl::GetInstance().PinMameOnStart();
 
    // Show the window (for VR, even without preview, we need to create a window).
    m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
@@ -855,8 +855,8 @@ Player::~Player()
    PLOGI << "Closing player...";
 
    // Signal plugins early since most fields will become invalid
-   const unsigned int onGameEndMsgId = MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(onGameEndMsgId, nullptr);
+   const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
    m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
@@ -867,10 +867,10 @@ Player::~Player()
    m_ptable->m_pcv->CleanUpScriptEngine();
 
    // Release plugin message Ids
-   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_onGameStartMsgId);
-   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(onGameEndMsgId);
-   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_onPrepareFrameMsgId);
-   MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(m_getDmdMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onGameStartMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(onGameEndMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onPrepareFrameMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdMsgId);
 
    g_frameProfiler.LogWorstFrame();
    g_frameProfiler.Reset();
@@ -2021,7 +2021,7 @@ void Player::PrepareFrame(std::function<void()> sync)
    m_startFrameTick = usec();
    g_frameProfiler.OnPrepare();
 
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_onPrepareFrameMsgId, nullptr);
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
 
    m_physics->OnPrepareFrame();
 
@@ -2279,7 +2279,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    memset(&msg, 0, sizeof(GetDmdMsg));
    msg.dmdId = -1;
    msg.requestFlags = CTLPI_GETDMD_RENDER_FRAME;
-   MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_getDmdMsgId, &msg);
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &msg);
    if (msg.frame == nullptr)
       return {-1, nullptr};
    

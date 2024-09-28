@@ -4,9 +4,6 @@
 #include "VPXPlugin.h"
 #include "VPXPluginAPIImpl.h"
 
-namespace VPXPluginAPIImpl
-{
-
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
@@ -120,15 +117,16 @@ void SetActiveViewSetup(VPXViewSetupDef* view)
 #include "CorePlugin.h"
 #include "PinMamePlugin.h"
 
-void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData)
+void VPXPluginAPIImpl::PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData)
 {
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END);
-   msgApi.BroadcastMsg(msg, nullptr);
+   msgApi.BroadcastMsg(pi.m_pinMameEndpointId, msg, nullptr);
    msgApi.ReleaseMsgID(msg);
 }
 
-void PinMameOnStart()
+void VPXPluginAPIImpl::PinMameOnStart()
 {
    assert(g_pplayer);
    IDispatch* pScriptDispatch = NULL;
@@ -149,10 +147,10 @@ void PinMameOnStart()
                WideCharToMultiByteNull(CP_ACP, 0, varResult.bstrVal, -1, buf, MAXTOKEN, nullptr, nullptr);
                auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
                unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START);
-               msgApi.BroadcastMsg(msg, static_cast<void*>(buf));
+               msgApi.BroadcastMsg(m_pinMameEndpointId, msg, static_cast<void*>(buf));
                msgApi.ReleaseMsgID(msg);
                msg = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
-               msgApi.SubscribeMsg(msg, &PinMameOnEnd, nullptr);
+               msgApi.SubscribeMsg(m_pinMameEndpointId, msg, &PinMameOnEnd, nullptr);
                msgApi.ReleaseMsgID(msg);
             }
          }
@@ -204,25 +202,13 @@ void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
 ///////////////////////////////////////////////////////////////////////////////
 // 
 
-VPXPluginAPI g_vpxAPI {
-   GetTableInfo,
-
-   GetOption,
-   PushNotification,
-   UpdateNotification,
-
-   DisableStaticPrerendering,
-   GetActiveViewSetup,
-   SetActiveViewSetup,
-};
-
-void OnGetPluginAPI(const unsigned int msgId, void* userData, void* msgData)
+VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
 {
-   VPXPluginAPI** pResult = static_cast<VPXPluginAPI**>(msgData);
-   *pResult = &VPXPluginAPIImpl::g_vpxAPI;
+   static VPXPluginAPIImpl instance;
+   return instance;
 }
 
-void RegisterVPXPluginAPI()
+VPXPluginAPIImpl::VPXPluginAPIImpl()
 {
    MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
@@ -241,12 +227,29 @@ void RegisterVPXPluginAPI()
             #endif
          }
       });
+
    auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   m_vpxEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
+   m_pinMameEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
    // VPX API
-   msgApi.SubscribeMsg(msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetPluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetPluginAPI, nullptr);
    // Generic controller
-   msgApi.SubscribeMsg(msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD), &ControllerOnGetDMD, nullptr);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD), &ControllerOnGetDMD, nullptr);
+
+   m_api.GetTableInfo = GetTableInfo;
+
+   m_api.GetOption = GetOption;
+   m_api.PushNotification = PushNotification;
+   m_api.UpdateNotification = UpdateNotification;
+
+   m_api.DisableStaticPrerendering = DisableStaticPrerendering;
+   m_api.GetActiveViewSetup = GetActiveViewSetup;
+   m_api.SetActiveViewSetup = SetActiveViewSetup;
 }
 
+void VPXPluginAPIImpl::OnGetPluginAPI(const unsigned int msgId, void* userData, void* msgData)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   VPXPluginAPI** pResult = static_cast<VPXPluginAPI**>(msgData);
+   *pResult = &pi.m_api;
 }
-
