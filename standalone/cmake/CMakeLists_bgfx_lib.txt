@@ -725,6 +725,15 @@ target_link_libraries(vpinball PUBLIC
    pupdmd
    sockpp
    dof
+   avcodec
+   avdevice
+   avfilter
+   avformat
+   avutil
+   swresample
+   swscale
+   bz2
+   iconv
    "-framework OpenGLES"
    "-framework AVFAudio"
    "-framework Metal"
@@ -732,6 +741,9 @@ target_link_libraries(vpinball PUBLIC
    "-framework QuartzCore"
    "-framework CoreMotion"
    "-framework CoreGraphics"
+   "-framework CoreMedia"
+   "-framework CoreVideo"
+   "-framework VideoToolbox"
    "-framework GameController"
    "-framework AudioToolbox"
    "-framework CoreAudio"
@@ -739,6 +751,7 @@ target_link_libraries(vpinball PUBLIC
    "-framework CoreServices"
    "-framework ImageIO"
    "-framework UIKit"
+   "-framework Security"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD

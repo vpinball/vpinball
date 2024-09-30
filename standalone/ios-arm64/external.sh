@@ -289,7 +289,38 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 # build FFMPEG libraries and copy to external
 #
 
-# TODO: build FFMPEG libraries for iOS
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
+   unzip ffmpeg.zip
+   cd ffmpeg-$FFMPEG_SHA
+   FFMPEG_IPHONEOS_SDK=$(xcrun --sdk iphoneos --show-sdk-path)
+   FFMPEG_IPHONEOS_FLAGS="-isysroot ${FFMPEG_IPHONEOS_SDK} -miphoneos-version-min=16.0"
+   ./configure \
+      --enable-cross-compile \
+      --enable-static \
+      --disable-shared \
+      --disable-programs \
+      --disable-doc \
+      --disable-audiotoolbox \
+      --arch=arm64 \
+      --cc='clang -arch arm64' \
+      --extra-cflags="${FFMPEG_IPHONEOS_FLAGS}" \
+      --extra-ldflags="-Wl,-ld_classic ${FFMPEG_IPHONEOS_FLAGS}"
+   make -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   for lib in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
+      mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp ${lib}/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp ${lib}/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   done
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
 # build patched bgfx and copy to external
