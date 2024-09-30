@@ -706,19 +706,28 @@ target_link_libraries(vpinball PUBLIC
    bimg
    bimg_decode
    bx
-   "-lSDL2"
-   "-lSDL2_image"
-   "-lSDL2_ttf"
-   "-lfreeimage"
-   "-lbass"
-   "-lpinmame.3.6"
-   "-laltsound"
-   "-lzedmd"
-   "-lserum"
-   "-ldmdutil"
-   "-lpupdmd"
-   "-lsockpp"
-   "-ldof"
+   SDL2
+   SDL2_image
+   SDL2_ttf
+   freeimage
+   bass
+   pinmame.3.6
+   altsound
+   zedmd
+   serum
+   dmdutil
+   pupdmd
+   sockpp
+   dof
+   avcodec
+   avdevice
+   avfilter
+   avformat
+   avutil
+   swresample
+   swscale
+   bz2
+   iconv
    "-framework OpenGLES"
    "-framework AVFAudio"
    "-framework Metal"
@@ -726,6 +735,9 @@ target_link_libraries(vpinball PUBLIC
    "-framework QuartzCore"
    "-framework CoreMotion"
    "-framework CoreGraphics"
+   "-framework CoreMedia"
+   "-framework CoreVideo"
+   "-framework VideoToolbox"
    "-framework GameController"
    "-framework AudioToolbox"
    "-framework CoreAudio"
@@ -733,6 +745,7 @@ target_link_libraries(vpinball PUBLIC
    "-framework CoreServices"
    "-framework ImageIO"
    "-framework UIKit"
+   "-framework Security"
 )
 
 set(TARGET_PROPERTIES
