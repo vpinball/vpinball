@@ -4,6 +4,15 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 10/01/24
+    * Bump Wine source to 9.18 [42af68b8](https://gitlab.winehq.org/wine/wine/-/tree/42af68b8b7cf066a1738c483e8ea1b5bf3b15887)
+
+* 09/23/24
+    * Added support for libvpinball for iOS (and in the future Android)
+
+* 09/22/24
+    * Re-enabled vbscript engine `release_script` 
+
 * 08/14/24
     * Update FFMPEG to 7.0.2
     * Replace TTF_RenderUTF8_Blended_Wrapped errors with warnings for PuP labels
