@@ -807,13 +807,11 @@ mv B2S.idl_tmp B2S.idl
 To build header file for VPinMAME.idl: (Thanks to @bshanks and @gcenx83)
 
 ```
-brew install llvm 
-git clone git://source.winehq.org/git/wine.git
+brew install llvm lld
+git clone https://gitlab.winehq.org/wine/wine.git
 git clone git@github.com:vpinball/pinmame.git
 cd wine
-export PATH=/opt/homebrew/opt/llvm/bin:/opt/homebrew/opt/bison/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin
-#export PATH="$(brew --prefix llvm)/bin:$PATH"
-#export PATH="$(brew --prefix bison)/bin:$PATH"
+export PATH="/opt/homebrew/opt/llvm/bin:/opt/homebrew/opt/bison/bin:$PATH"
 ./configure --without-freetype
 make -j10
 tools/widl/widl -o ../vpinmame_i.h --nostdinc -Ldlls/\* -Iinclude -D__WINESRC__ -D_UCRT ../pinmame/src/win32com/VPinMAME.idl
