@@ -256,6 +256,7 @@ add_executable(vpinball WIN32
    pinbinary.cpp
    pinbinary.h
    pininput.cpp
+   pininput_OpenPinDev.cpp
    pininput.h
    pinundo.cpp
    pinundo.h
