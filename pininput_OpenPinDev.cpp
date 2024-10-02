@@ -347,36 +347,25 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
    {
       // check for a new report
-      if (!p->ReadReport())
-         continue;
+      if (p->ReadReport())
+         hasNewReport = true;
 
-      // note the new report
-      hasNewReport = true;
-
-      // Merge the data into the combined struct.  For the accelerometer
-      // and plunger analog quantities, just arbitrarily pick the last
-      // input that's sending non-zero values.  Devices that don't have
-      // those sensors attached will send zeroes, so this strategy yields
-      // sensible results for the sensible case where the user only has
-      // one plunger and one accelerometer, but they're attached to
-      // separate Open Pinball Device microcontrollers.  If the user has
-      // multiple accelerometers in the system, our merge strategy will
-      // arbitrarily pick whichever one enumerated last, which isn't
-      // necessarily a sensible result, but that seems fair enough
-      // because the user's actual configuration isn't sensible either.
-      // I mean, what do they expect us to do with two accelerometer
-      // inputs?  Note that this is a different situation from the
-      // traditional multiple-joysticks case, because in the case of
-      // joysticks, there are plenty of good reasons to have more than
-      // one attached.  One might be set up as a pinball device, and two
-      // more *actual joysticks* might be present as well because the
-      // user also plays some non-pinball video games.  Joysticks are
-      // generic: we can't tell from the HID descriptor if it's an
-      // accelerometer pretending to be a joystick, vs an actual
-      // joystick.  The Pinball Device definition doesn't suffer from
-      // that ambiguity.  We can be sure that an accelerometer there
-      // is an accelerometer, so there aren't any valid use cases where
-      // you'd have two or more of them.
+      // Merge the data into the combined struct.  Merge each device's
+      // data even in the absence of a new report from the current
+      // device, since we'll get the device's most recent report, which
+      // is still accurate in the absence of a new report, because each
+      // report reflects the latest instantaneous state.
+      // 
+      // For the accelerometer and plunger analog quantities, apply
+      // input from the last device (in our arbitrary HID list ordering)
+      // that's sending non-zero values.  Devices that don't have those
+      // sensors attached will send zeroes on the respective inputs, so
+      // as long as there's only one plunger and one accelerometer in
+      // the system, we'll only get non-zero input from one HID.  If
+      // there are multiple of either sensor, this approach will pick
+      // one sensor's input arbitrarily, but at least the favored device
+      // will be consistent throughout the session, since the HID list
+      // order doesn't change.
       //
       // Merge the buttons by ORing all of the button masks together.
       // If the user has configured the same button number on more than
