@@ -264,8 +264,6 @@ add_executable(vpinball WIN32
    extern.cpp
    extern.h
    helpers.h
-   hid.cpp
-   hid.h
    hitrectsur.cpp
    hitrectsur.h
    hitsur.cpp
@@ -305,6 +303,8 @@ add_executable(vpinball WIN32
    stdafx.cpp
    stdafx.h
    trace.h
+   ushock.cpp
+   ushock.h
    variant.cpp
    variant.h
    vector.h
@@ -522,6 +522,9 @@ add_executable(vpinball WIN32
    third-party/include/bass.h
    third-party/include/forsyth.h
    third-party/include/freeimage.h
+   third-party/include/hidapi/hidapi.h
+   third-party/include/hid-report-parser/hid_report_parser.cpp
+   third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/hidpi.h
    third-party/include/hidsdi.h
    third-party/include/hidusage.h
@@ -644,6 +647,7 @@ target_link_libraries(vpinball
    nvapi.lib
    winmm.lib
    hid.lib
+   hidapi.lib
    setupapi.lib
 )
 

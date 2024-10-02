@@ -61,6 +61,9 @@
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 #endif
 
+// Open Pinball Device context (defined in the OPD implementation module)
+class OpenPinDevContext;
+
 class PinInput
 {
 public:
@@ -136,6 +139,7 @@ private:
 
    void InitOpenPinballDevices();
    void ReadOpenPinballDevices(const U32 cur_time_msec);
+   void TerminateOpenPinballDevices();
 
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
@@ -176,41 +180,10 @@ private:
    }
    __pragma(pack(pop));
 
-   // active Open Pinball Device interfaces
-   struct OpenPinDev
-   {
-      OpenPinDev(HANDLE h, BYTE reportID, DWORD reportSize, const wchar_t *deviceStructVersionString);
-      ~OpenPinDev();
-      HANDLE Release()
-      {
-         HANDLE ret = hDevice;
-         hDevice = INVALID_HANDLE_VALUE;
-         return ret;
-      }
-      HANDLE hDevice;
-      BYTE reportID;
-      DWORD deviceStructVersion;
-
-      // overlapped read
-      OVERLAPPED ov { 0 };
-      HANDLE hIOEvent { CreateEvent(NULL, TRUE, FALSE, NULL) };
-      DWORD readStatus = 0;
-      DWORD bytesRead = 0;
-
-      // overlapped read buffer - space for the HID report ID prefix and the report struct
-      size_t reportSize;
-      std::vector<BYTE> buf;
-
-      // start an overlapped read
-      void StartRead();
-
-      // read a report into 'r'; returns true if a new report was available
-      bool ReadReport();
-
-      // last report read
-      OpenPinballDeviceReport r;
-   };
-   std::list<OpenPinDev> m_openPinDevs;
+   // Open Pinball Device context.  This is an opaque object managed
+   // by the OPD implementation module, so that the whole implementation
+   // can be detached at the build script level.
+   OpenPinDevContext *m_OpenPinDevContext;
 
    // Open Pinball Device button status, for detecting button up/down events
    uint32_t m_openPinDev_generic_buttons;
