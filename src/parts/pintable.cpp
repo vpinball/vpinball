@@ -6962,7 +6962,7 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, szName, MAXSTRING, nullptr, nullptr);
 
    if (!lstrcmpi("knock", szName) || !lstrcmpi("knocker", szName))
-      hid_knock();
+      ushock_knock();
 
    size_t i;
    for (i = 0; i < m_vsound.size(); i++)
@@ -10375,7 +10375,7 @@ STDMETHODIMP PinTable::put_BallFrontDecal(BSTR newVal)
 STDMETHODIMP PinTable::FireKnocker(int Count)
 {
    if (g_pplayer)
-      hid_knock(Count);
+      ushock_knock(Count);
 
    return S_OK;
 }

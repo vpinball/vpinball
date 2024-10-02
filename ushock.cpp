@@ -1,8 +1,25 @@
 #include "stdafx.h"
 
+// Ultracade Ushock device support
+//
+// This implements support for the Ultracade Ushock device, an early
+// pin cab I/O controller that was equipped with a replay knocker,
+// which was triggered through a private HID interface.  The ability
+// to control feedback devices like replay knockers has since been
+// generalized through DOF (DirectOutput Framework), an add-on that
+// interfaces with VP through the Visual Basic controller interface.
+// This Ushock code is still here as an old legacy for the sake of
+// very old setups that might still use it.
+
+
 // This code should be understandable using
 // the following URL:
 // http://www.edn.com/article/CA243218.html
+//
+// (Note: the URL above is long dead.  It presumably led to an article
+// about basic usage of the Win32 APIs for enumerating HID devices and
+// opening them for read/write access, which is the bulk of this module's
+// function.  Numerous similar tutorials can be found on the Web.)
 
 extern "C" {
 #include "setupapi.h"
@@ -82,7 +99,7 @@ HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
    return deviceHandle;
 }
 
-static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
+static HANDLE ushock_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
 {
    DWORD index = 0;
    HIDD_ATTRIBUTES deviceAttributes;
@@ -116,12 +133,12 @@ static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = null
    return INVALID_HANDLE_VALUE;
 }
 
-static HANDLE hnd = hid_connect(0x04b4, 0x6470);
+static HANDLE hnd = ushock_connect(0x04b4, 0x6470);
 static OVERLAPPED ol;
 static PHIDP_PREPARSED_DATA HidParsedData;
 static HIDP_CAPS Capabilities;
 
-void hid_init()
+void ushock_init()
 {
    // 0x4b4 == Ultracade, 0x6470 == Ushock
 
@@ -135,7 +152,7 @@ void hid_init()
 
       if (!HidParsedData) // if uShock is unplugged the HidD_FreePreparsedData() crashes
       {
-         printf("hid_init: Could not connect or find the PBW controller\n");
+         printf("ushock_init: Could not connect or find the PBW controller\n");
          return;
       }
 
@@ -177,7 +194,7 @@ void hid_init()
    }
    else
    {
-      printf("hid_init: Could not connect or find the PBW controller\n");
+      printf("ushock_init: Could not connect or find the PBW controller\n");
    }
 }
 
@@ -187,8 +204,8 @@ static U32 sMask = 0;
 
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
-// The output parameter uses any combination of HID_OUTPUT enum.
-void hid_set_output(const U08 output, const bool On)
+// The output parameter uses any combination of USHOCK_OUTPUT enum.
+void ushock_set_output(const U08 output, const bool On)
 {
    // Check if the outputs are being turned on.
    if (On)
@@ -210,7 +227,7 @@ static int sKnockState;
 static U32 sKnockStamp;
 
 
-void hid_knock(const int count)
+void ushock_knock(const int count)
 {
    if (count)
    {
@@ -221,7 +238,7 @@ void hid_knock(const int count)
 }
 
 
-void hid_update(const U32 cur_time_msec)
+void ushock_update(const U32 cur_time_msec)
 {
    U08 mask = (U08)(sMask & 0xff);
 
@@ -229,7 +246,7 @@ void hid_update(const U32 cur_time_msec)
    {
       if (cur_time_msec - sKnockStamp < (U32)(sKnockState ? KNOCK_PERIOD_ON : KNOCK_PERIOD_OFF))
       {
-         mask |= sKnockState ? (U08)HID_OUTPUT_KNOCKER : (U08)0x00;
+         mask |= sKnockState ? (U08)USHOCK_OUTPUT_KNOCKER : (U08)0x00;
       }
       else
       {
@@ -291,7 +308,7 @@ void hid_update(const U32 cur_time_msec)
    }
 }
 
-void hid_shutdown()
+void ushock_shutdown()
 {
    if (hnd != INVALID_HANDLE_VALUE)
    {
