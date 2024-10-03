@@ -2194,36 +2194,28 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    OpenPinballDeviceReport cr { 0 };
 
    // read input from each device
+   bool isNewReport = false;
    for (auto &p : m_openPinDevs)
    {
       // check for a new report
-      if (!p.ReadReport())
-         continue;
+      if (p.ReadReport())
+         isNewReport = true;
 
-      // Merge the data into the combined struct.  For the accelerometer
-      // and plunger analog quantities, just arbitrarily pick the last
-      // input that's sending non-zero values.  Devices that don't have
-      // those sensors attached will send zeroes, so this strategy yields
-      // sensible results for the sensible case where the user only has
-      // one plunger and one accelerometer, but they're attached to
-      // separate Open Pinball Device microcontrollers.  If the user has
-      // multiple accelerometers in the system, our merge strategy will
-      // arbitrarily pick whichever one enumerated last, which isn't
-      // necessarily a sensible result, but that seems fair enough
-      // because the user's actual configuration isn't sensible either.
-      // I mean, what do they expect us to do with two accelerometer
-      // inputs?  Note that this is a different situation from the
-      // traditional multiple-joysticks case, because in the case of
-      // joysticks, there are plenty of good reasons to have more than
-      // one attached.  One might be set up as a pinball device, and two
-      // more *actual joysticks* might be present as well because the
-      // user also plays some non-pinball video games.  Joysticks are
-      // generic: we can't tell from the HID descriptor if it's an
-      // accelerometer pretending to be a joystick, vs an actual
-      // joystick.  The Pinball Device definition doesn't suffer from
-      // that ambiguity.  We can be sure that an accelerometer there
-      // is an accelerometer, so there aren't any valid use cases where
-      // you'd have two or more of them.
+      // Merge the data into the combined struct.  Note that we merge
+      // the report even if it's old, because the old report continues
+      // to represent the latest instantaneous state of the device as
+      // long as there's no new report.
+      // 
+      // For the accelerometer and plunger, apply any input that's
+      // non-zero.  There should only be one of each sensor in the
+      // whole system, so only one device should report a non-zero
+      // value on each of the sensor axes.  If there do happen to be
+      // multiple copies of any sensor, our "use any non-zero report"
+      // approach will have the effect of picking one arbitrarily,
+      // specifically the last one in our HID device list order.  The
+      // device list is fixed during a session, so this will at least
+      // make the same arbitrary choice consistently for the duration
+      // of the session.
       //
       // Merge the buttons by ORing all of the button masks together.
       // If the user has configured the same button number on more than
@@ -2259,6 +2251,10 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       cr.genericButtons |= r.genericButtons;
       cr.pinballButtons |= r.pinballButtons;
    }
+
+   // if we don't have a new report, there's no need to update the player
+   if (!isNewReport)
+      return;
 
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
@@ -2499,7 +2495,7 @@ void PinInput::OpenPinDev::StartRead()
    ov.hEvent = hIOEvent;
 
    // start the read
-   if (ReadFile(hDevice, buf.data(), reportSize, &bytesRead, &ov))
+   if (ReadFile(hDevice, buf.data(), static_cast<DWORD>(reportSize), &bytesRead, &ov))
       readStatus = ERROR_SUCCESS;
    else
       readStatus = GetLastError();
