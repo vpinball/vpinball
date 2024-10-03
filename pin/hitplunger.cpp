@@ -754,7 +754,8 @@ float HitPlunger::HitTest(const Ball * pball, float dtime, CollisionEvent& coll)
         // which at least tries to make the internal object's simulated
         // motion more realistic during times when it looks like we're in
         // a pull-and-release motion.
-        const float impulseSpeed = g_pplayer->m_fExtPlungerSpeed && m_plungeranim.m_plunger->m_d.m_mechPlunger ?
+        const float impulseSpeed = 
+            (m_plungeranim.m_fireTimer == 0 && g_pplayer->m_fExtPlungerSpeed && m_plungeranim.m_plunger->m_d.m_mechPlunger) ?
             m_plungeranim.mechPlungerSpeed() :
             m_plungeranim.m_speed;
 

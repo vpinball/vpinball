@@ -547,10 +547,14 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
       EnableWindow(g_pplayer->m_hwnd, FALSE);
    EnableWindow(g_pvp->m_hwnd, FALSE);
 
-   /*const int result =*/ MessageBoxW(m_hwndMain,
-      wszOutput,
-      L"Script Error",
-      MB_SETFOREGROUND);
+   // show the error in a message box, unless we've received an app-close request
+   if (!(g_pplayer != nullptr && g_pplayer->m_fCloseType != 0))
+   {
+      /*const int result =*/ MessageBoxW(m_hwndMain,
+         wszOutput,
+         L"Script Error",
+         MB_SETFOREGROUND);
+   }
 
    EnableWindow(g_pvp->m_hwnd, TRUE);
 
