@@ -700,8 +700,11 @@ void Player::OnClose()
       return;
    }
    assert(g_pplayer == this);
+   
+   // note if  application exit was requested, and set the new closing state to CLOSED
+   bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
-   PLOGI << "Closing player... [Player's VBS intepreter is #" << m_ptable->m_pcv->m_pScript << "]";
+   PLOGI << "Closing player... [Player's VBS interpreter is #" << m_ptable->m_pcv->m_pScript << "]";
 
     g_frameProfiler.LogWorstFrame();
 
@@ -891,7 +894,7 @@ void Player::OnClose()
 
    // Reactivate edited table or close application if requested
 #ifndef __STANDALONE__
-   if (m_closing == CS_CLOSE_APP)
+   if (appExitRequested)
    {
       g_pvp->PostMessage(WM_CLOSE, 0, 0);
    }
