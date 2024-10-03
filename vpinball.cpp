@@ -137,6 +137,9 @@ VPinball::VPinball()
            ShowError("Unable to load SciLexerVP.DLL or SciLexer.DLL");
        #endif
    }
+
+   // register the PinSim::FrontEndControls name window message
+   m_pinSimFrontEndControlsMsg = RegisterWindowMessageA("PinSim::FrontEndControls");
 }
 
 ///<summary>
@@ -1685,8 +1688,109 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    }
    case UWM_UPDATECOMMAND:
       return FinalWindowProc(uMsg, wParam, lParam);
+
+   default:
+      // check for the PinSim::FrontEndControls registered message
+      if (uMsg == m_pinSimFrontEndControlsMsg)
+         return OnFrontEndControlsMsg(wParam, lParam);
+
+      // not handled
+      break;
    }
    return WndProcDefault(uMsg, wParam, lParam);
+}
+
+// See http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm
+LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
+{
+   // the WPARAM contains a sub-command code telling us the specific action
+   // the caller is requesting
+   switch (wParam)
+   {
+   case 1:
+      // IS_HANDLER_WINDOW
+      // Return the current supported interface version (1)
+      return 1;
+
+   case 2:
+      // CLOSE_APP
+      // Close the player and exit the program (QuitPlayer() code 1 means
+      // "exit unconditionally but gracefully", by executing File/Quit after
+      // terminating the player)
+      QuitPlayer(1);
+
+      // If we're showing a modal dialog, close it.  Closing one dialog
+      // can trigger opening another, so iterate this until no modal
+      // dialogs are found (but limit the iterations, in case we're in
+      // some kind of pathological situation where the dialogs are
+      // displayed in an infinite loop).
+      for (int tries = 0; tries < 20; ++tries)
+      {
+         // enumerate the windows on this thread
+         struct WindowLister
+         {
+            WindowLister()
+            {
+               EnumThreadWindows(
+                  GetCurrentThreadId(),
+                  [](HWND hwnd, LPARAM param) -> BOOL
+                  {
+                     // check for an enabled, visible model dialog window (window class "#32770")
+                     char cls[128];
+                     if (::IsWindowVisible(hwnd) && ::IsWindowEnabled(hwnd) && ::RealGetWindowClassA(hwnd, cls, std::size(cls)) != 0 && strcmp(cls, "#32770") == 0)
+                     {
+                        // close it by sending IDCANCEL
+                        DWORD_PTR result;
+                        ::SendMessageTimeout(hwnd, WM_COMMAND, IDCANCEL, 0, SMTO_ABORTIFHUNG, 100, &result);
+
+                        // note that we found at least one window to close
+                        reinterpret_cast<WindowLister *>(param)->closed = true;
+                     }
+
+                     // continue the iteration
+                     return TRUE;
+                  },
+                  reinterpret_cast<LPARAM>(this));
+            }
+            bool closed = false;
+         };
+         WindowLister wl;
+
+         // if we didn't find anything to close, nothing changed during this
+         // iteration, so we don't need to keep looping
+         if (!wl.closed)
+            break;
+      }
+
+      // handled
+      return 1;
+
+   case 3:
+      // GAME_TO_FOREGROUND
+      // If a player is running, bring its main window to the foreground
+      if (g_pplayer != nullptr)
+      {
+         // bring the application to the foreground
+         g_pplayer->SetForegroundWindow();
+
+         // Windows minimizes full-screen windows on switching to the background,
+         // but it doesn't automatically restore them, so restore it manually if
+         // it's still minimized
+         if (g_pplayer->IsIconic())
+            g_pplayer->SendMessageA(WM_SYSCOMMAND, SC_RESTORE, 0);
+      }
+
+      // handled
+      return 1;
+
+   case 4:
+      // QUERY_GAME_HWND
+      // If a player is running, return its main window handle
+      return (g_pplayer != nullptr) ? reinterpret_cast<DWORD_PTR>(g_pplayer->GetHwnd()) : 0;
+   }
+
+   // not handled
+   return 0;
 }
 
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
