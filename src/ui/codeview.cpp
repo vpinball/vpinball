@@ -1285,7 +1285,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    }
 
 	// Also pop up a dialog if this is a runtime error
-	if (isRuntimeError && !m_suppressErrorDialogs)
+	if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
 	{
 #ifndef __STANDALONE__
 		g_pvp->EnableWindow(FALSE);
