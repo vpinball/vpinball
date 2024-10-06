@@ -15,7 +15,7 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    if (PLATFORM STREQUAL "ios-simulator")
       set(CMAKE_OSX_SYSROOT iphonesimulator)
    endif()
-   set(CMAKE_OSX_DEPLOYMENT_TARGET 17.0)
+   set(CMAKE_OSX_DEPLOYMENT_TARGET 18.0)
 endif()
 
 file(READ src/core/vpversion.h version)
@@ -751,7 +751,6 @@ target_link_libraries(vpinball PUBLIC
    "-framework CoreServices"
    "-framework ImageIO"
    "-framework UIKit"
-   "-framework Security"
 )
 
 add_custom_command(TARGET vpinball POST_BUILD

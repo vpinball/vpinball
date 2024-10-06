@@ -3,10 +3,10 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.7
+SDL2_VERSION=2.30.8
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
-PINMAME_SHA=1a2f0a14cd6edd76d579552e009b5d49811d495f
+PINMAME_SHA=145a5278d26e975fd328876e2ee07213bfa2c5c3
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=8e110d87edab1b843d97ba831743c79519e07ad8
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
@@ -304,8 +304,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       --disable-programs \
       --disable-doc \
       --disable-audiotoolbox \
+      --disable-securetransport \
       --arch=arm64 \
-      --cc='clang -arch arm64' \
       --extra-cflags="${FFMPEG_IPHONEOS_FLAGS}" \
       --extra-ldflags="-Wl,-ld_classic ${FFMPEG_IPHONEOS_FLAGS}"
    make -j${NUM_PROCS}
