@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 10/06/24
+    * Add documentation for iOS version
+
 * 10/01/24
     * Bump Wine source to 9.18 [42af68b8](https://gitlab.winehq.org/wine/wine/-/tree/42af68b8b7cf066a1738c483e8ea1b5bf3b15887)
     * Bump FFMPEG to 7.1.0

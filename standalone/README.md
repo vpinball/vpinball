@@ -819,7 +819,7 @@ tools/widl/widl -o ../vpinmame_i.h --nostdinc -Ldlls/\* -Iinclude -D__WINESRC__ 
 
 ## VBScript Issues
 
-See [vbscript-issues](vbscript.md) for more information.
+See [vbscript-issues](docs/vbscript.md) for more information.
 
 ## Table Patches
 
