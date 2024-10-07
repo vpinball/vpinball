@@ -19,28 +19,53 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Generic main controller
 
-#define CTLPI_NAMESPACE       "Controller"
+#define CTLPI_NAMESPACE                       "Controller"
 
-#define CTLPI_MSG_GET_DMD     "GetDMD"
+// Request subscribers to fill up an array with the list of DMD frame sources (responding to GetDMD messages)
+#define CTLPI_GETDMD_RENDER_SRC_MSG           "GetDMDSource"
 
-#define CTLPI_GETDMD_RENDER_FRAME    1 // Frame suitable for rendering
-#define CTLPI_GETDMD_IDENTIFY_FRAME  2 // Frame suitable for frame identification (stable value)
+// Request subscribers for a DMD frame suited for rendering (best visual)
+#define CTLPI_GETDMD_RENDER_MSG               "GetDMD"
 
-#define CTLPI_GETDMD_FORMAT_LUM8       1
-#define CTLPI_GETDMD_FORMAT_SRGB888    2
-#define CTLPI_GETDMD_FORMAT_BITPLANE2  3
-#define CTLPI_GETDMD_FORMAT_BITPLANE4  4
-#define CTLPI_GETDMD_FORMAT_SRGB565    5
+// Request subscribers for a DMD frame suited for frame identification (stable encoding)
+#define CTLPI_GETDMD_IDENTIFY_MSG             "GetDMDIdentify"
 
-typedef struct
+
+#define CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ     1  // Frame size of Render DMD is fixed by requester
+#define CTLPI_GETDMD_FLAG_RENDER_FMT_REQ      2  // Format of Render DMD is fixed by requester
+
+#define CTLPI_GETDMD_FORMAT_LUM8              1
+#define CTLPI_GETDMD_FORMAT_SRGB888           2
+#define CTLPI_GETDMD_FORMAT_BITPLANE2         3
+#define CTLPI_GETDMD_FORMAT_BITPLANE4         4
+#define CTLPI_GETDMD_FORMAT_SRGB565           5
+
+typedef struct GetDmdSrcEntry
+{
+   unsigned int width;
+   unsigned int height;
+   unsigned int format;
+} GetDmdSrcEntry;
+
+typedef struct GetDmdSrcMsg
+{
+   // Request
+   int dmdId;                  // -1 is global default DMD, positive value uniquely identify a DMD based on its controller id scheme
+   unsigned int maxEntryCount; // see below
+   // Response
+   GetDmdSrcEntry (*entries)[];   // Pointer to an array of maxEntryCount entries, to be filled starting from empty (width/height=0) slots from beginning of array
+} GetDmdSrcMsg;
+
+typedef struct GetDmdMsg
 {
    // Request
    int dmdId;                 // -1 is global default DMD, positive value uniquely identify a DMD based on its controller id scheme
-   unsigned int requestFlags; // Request option, for the time being either render of raw frame
+   unsigned int requestFlags; // Request options, see CTLPI_GETDMD_FLAG_xxx constants
+   // Request & Response
+   unsigned int width;        // Frame width, always defined on response, valid on request if CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ is set
+   unsigned int height;       // Frame height, always defined on response, valid on request if CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ is set
+   unsigned int format;       // Frame data format, see CTLPI_GETDMD_FORMAT_xxx constants, always defined on response, valid on request if CTLPI_GETDMD_FLAG_RENDER_FMT_REQ is set
    // Response
-   unsigned int frameId;      // Id that can be used to detect identical frames
-   unsigned int format;       // Frame data format, see CTLPI_GETDMD_FORMAT_xxx constants
-   unsigned int width;        // Frame width
-   unsigned int height;       // Frame height
-   uint8_t* frame;            // Pointer to frame data, owned by the provider
+   unsigned int frameId;      // Id that can be used to discard identical frames
+   uint8_t* frame;            // Pointer to frame data, null until a provider answers the request, owned by the provider
 } GetDmdMsg;

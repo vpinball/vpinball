@@ -105,8 +105,8 @@ void processDMD(const GetDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::
                {
                   const int px = x * 2 + dx;
                   const int py = y * 2 + dy;
-                  float weight = radius * radius - fabs(dx - 0.5f) * fabs(dy - 0.5f);
-                  if (px >= 0 && px < getDmdMsg.width && py >= 0 && py < getDmdMsg.height)
+                  float weight = radius * radius - static_cast<float>(fabs(dx - 0.5f) * fabs(dy - 0.5f));
+                  if (px >= 0 && px < static_cast<int>(getDmdMsg.width) && py >= 0 && py < static_cast<int>(getDmdMsg.height))
                      lum += getDmdMsg.frame[py * getDmdMsg.width + px] * weight;
                   sum += weight;
                }
@@ -135,7 +135,6 @@ void onUpdateDMD(void* userData)
    {
       GetDmdMsg getDmdMsg;
       memset(&getDmdMsg, 0, sizeof(getDmdMsg));
-      getDmdMsg.requestFlags = CTLPI_GETDMD_IDENTIFY_FRAME;
       getDmdMsg.dmdId = -1;
       msgApi->BroadcastMsg(endpointId, getDmdId, &getDmdMsg);
       processDMD(getDmdMsg, now);
@@ -147,7 +146,7 @@ void onUpdateDMD(void* userData)
 void onGetDMD(const unsigned int eventId, void* userData, void* eventData)
 {
    GetDmdMsg* getDmdMsg = static_cast<GetDmdMsg*>(eventData);
-   if ((getDmdMsg->requestFlags & CTLPI_GETDMD_IDENTIFY_FRAME) && (getDmdMsg->dmdId == -1))
+   if (getDmdMsg->dmdId == -1)
       processDMD(*getDmdMsg, std::chrono::high_resolution_clock::now());
 }
 
@@ -213,7 +212,7 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId; 
-   getDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD);
+   getDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
    msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
    msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(sessionId, onSerumTriggerId = msgApi->GetMsgID("Serum", "OnDmdTrigger"), onSerumTrigger, nullptr);
