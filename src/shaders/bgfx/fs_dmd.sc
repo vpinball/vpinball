@@ -97,7 +97,7 @@ void main()
 	   const vec2 ddxs = dFdx(v_texcoord0)*blur; // use ddx and ddy to help the oversampling below/make filtering radius dependent on projected 'dots'/texel
 	   const vec2 ddys = dFdy(v_texcoord0)*blur;
 
-	   const float dist_factor = clamp((1.-length(ddxs+ddys)*6.66)*sqrt(128./vRes_Alpha_time.x), 0.4,1.0); // fades the smooth dots to unicolored rectangles for less aliasing
+	   const float dist_factor = clamp((1.-length(ddxs+ddys)*6.66) /* *sqrt(128./vRes_Alpha_time.x)*/, 0.4,1.0); // fades the smooth dots to unicolored rectangles for less aliasing
 
 	   const vec2 offs = hash22(v_texcoord0 + vRes_Alpha_time.w); //vec2(nrand(tex0 + vRes_Alpha_time.w), nrand(tex0 + (2048.0 + vRes_Alpha_time.w))); // random offset for the oversampling
 
