@@ -750,7 +750,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    m_controllerDisplays.push_back({-1, nullptr}); // Default DMD
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD);
+   m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
 
@@ -2278,7 +2278,6 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    GetDmdMsg msg;
    memset(&msg, 0, sizeof(GetDmdMsg));
    msg.dmdId = -1;
-   msg.requestFlags = CTLPI_GETDMD_RENDER_FRAME;
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &msg);
    if (msg.frame == nullptr)
       return {-1, nullptr};
@@ -2291,7 +2290,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
       {
          m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
          m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
-         delete display.frame;
+         //delete display.frame; // FIXME this may be still in use when deleted
       }
       display.frame = new BaseTexture(msg.width, msg.height, format);
       display.frame->SetIsOpaque(true);

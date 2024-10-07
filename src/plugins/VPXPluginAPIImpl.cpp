@@ -159,22 +159,62 @@ void VPXPluginAPIImpl::PinMameOnStart()
    }
 }
 
-void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
+void VPXPluginAPIImpl::ControllerOnGetDMDRenderSrc(const unsigned int msgId, void* userData, void* msgData)
 {
-   GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
-
-   if (g_pplayer == nullptr)
+   if (g_pplayer == nullptr 
+    || g_pplayer->m_pStateMappedMem == nullptr
+    || g_pplayer->m_pStateMappedMem->versionID != 1
+    || g_pplayer->m_pStateMappedMem->displayState == nullptr)
       return;
-   if (g_pplayer->m_pStateMappedMem == nullptr || g_pplayer->m_pStateMappedMem->versionID != 1)
-      return;
-   if (msg->frame != nullptr)
-      return;
-
-   PinMame::core_tDisplayState* state = (msg->requestFlags & 1 /* GETDMD_RENDER_FRAME*/) ? g_pplayer->m_pStateMappedMem->displayState : g_pplayer->m_pStateMappedMem->rawDMDState;
-   if (state == nullptr)
-      return;
-
+      
+   GetDmdSrcMsg* msg = static_cast<GetDmdSrcMsg*>(msgData);
    if (msg->dmdId != -1) // TODO implement other DMDs and LED matrices
+      return;
+   
+   bool found = false;
+   PinMame::core_tDisplayState* state = g_pplayer->m_pStateMappedMem->displayState;
+   PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
+   for (unsigned int index = 0; index < state->nDisplays; index++)
+   {
+      if (frame->width >= 128) // Main DMD
+      {
+         found = true;
+         break;
+      }
+      frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
+   }
+   if (!found)
+      return;
+
+   for (unsigned int i = 0; i < msg->maxEntryCount; i++)
+   {
+      GetDmdSrcEntry& entry = (*msg->entries)[i];
+      if ((entry.width == 0) && (entry.height == 0))
+      {
+         entry.format = frame->dataFormat;
+         entry.width = frame->width;
+         entry.height = frame->height;
+         return;
+      }
+   }
+}
+
+void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
+{
+   if (g_pplayer == nullptr
+    || g_pplayer->m_pStateMappedMem == nullptr
+    || g_pplayer->m_pStateMappedMem->versionID != 1)
+      return;
+      
+   GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
+   if (msg->frame != nullptr) // Already answered
+      return;
+   if (msg->dmdId != -1) // TODO implement other DMDs and LED matrices
+      return;
+
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   PinMame::core_tDisplayState* state = (msgId == pi.m_getIdentifyDmdMsgId) ? g_pplayer->m_pStateMappedMem->rawDMDState : g_pplayer->m_pStateMappedMem->displayState;
+   if (state == nullptr)
       return;
 
    bool found = false;
@@ -191,6 +231,11 @@ void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
    if (!found)
       return;
 
+   // If asked for a fixed size render frame with a different size from what we have, don't answer
+   if ((msgId == pi.m_getRenderDmdMsgId) && (msg->requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ)
+      && ((msg->width != frame->width) || (msg->height != frame->height)))
+      return;
+   
    msg->frameId = frame->frameId;
    msg->format = frame->dataFormat;
    msg->width = frame->width;
@@ -234,7 +279,11 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    // VPX API
    msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetPluginAPI, nullptr);
    // Generic controller
-   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_MSG_GET_DMD), &ControllerOnGetDMD, nullptr);
+   m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
+   m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetDMD, nullptr);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetDMD, nullptr);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_SRC_MSG), &ControllerOnGetDMDRenderSrc, nullptr);
 
    m_api.GetTableInfo = GetTableInfo;
 
