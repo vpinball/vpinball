@@ -342,11 +342,12 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    OpenPinballDeviceReport cr { 0 };
 
    // read input from each device
+   bool isNewReport = false;
    for (auto &p : m_OpenPinDevContext->m_openPinDevs)
    {
       // check for a new report
-      if (!p->ReadReport())
-         continue;
+      if (p->ReadReport())
+         isNewReport = true;
 
       // Merge the data into the combined struct.  For the accelerometer
       // and plunger analog quantities, just arbitrarily pick the last
@@ -407,6 +408,10 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       cr.genericButtons |= r.genericButtons;
       cr.pinballButtons |= r.pinballButtons;
    }
+
+   // if there were no reports, there's no need to update the player
+   if (!isNewReport)
+      return;
 
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
