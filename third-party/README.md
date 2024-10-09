@@ -126,6 +126,12 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 - Version: ?
 - License: MIT
 
+## PrismJS
+
+- Upstream: https://github.com/PrismJS/prism
+- Version: 1.29.0
+- License: MIT
+
 ## Progmesh
 
 - Upstream: https://github.com/andandandand/progressive-mesh-reduction-with-edge-collapse

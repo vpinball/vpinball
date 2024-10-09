@@ -1,0 +1,26 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build an unsigned .ipa for iOS"
+  lane :build_unsigned_ipa do
+    archive_path = gym(
+      scheme: "VPinballX",
+      clean: true,
+      skip_codesigning: true,
+      skip_package_ipa: true
+    )
+
+    xcarchive_app_path = File.join(archive_path, "Products", "Applications")
+
+    payload_path = "./Payload"
+    ipa_output_path = "./VPinballX.ipa"
+
+    sh("rm -rf '#{payload_path}'")
+    sh("rm -f '#{ipa_output_path}'")
+    sh("cp -r '#{xcarchive_app_path}' '#{payload_path}'")
+    sh("zip -r '#{ipa_output_path}' '#{payload_path}'")
+  end
+end
+
+
+

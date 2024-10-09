@@ -176,15 +176,16 @@ cmake --build build -- -j$(sysctl -n hw.ncpu)
 
 In a terminal execute the following:
 ```
-brew install cmake bison curl ios-deploy fastlane
+brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
-git clone -b standalone https://github.com/vpinball/vpinball
+git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/ios-arm64
 ./external.sh
 cd ../..
-cp standalone/cmake/CMakeLists_gl-ios-arm64.txt CMakeLists.txt
-cmake -G Xcode -B XCode
-open XCode/vpinball.xcodeproj
+cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_FRAMEWORKS=ON -DCMAKE_BUILD_TYPE=Release -B build/ios
+cmake --build build/ios -- -j$(sysctl -n hw.ncpu)
+open standalone/ios/VPinball.xcodeproj
 ```
 
 ### tvOS

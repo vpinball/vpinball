@@ -17,6 +17,7 @@ jobs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
       version_full: ${{ steps.version.outputs.version_full }}
+      version_ios: ${{ steps.version.outputs.version_ios }}
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
@@ -29,71 +30,18 @@ jobs:
           VERSION_MAJOR=$(grep -Eo "VP_VERSION_MAJOR\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
           VERSION_MINOR=$(grep -Eo "VP_VERSION_MINOR\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" src/core/vpversion.h | grep -Eo "[0-9]+")
+          VERSION_NUMERIC=$((VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_REV))
           VERSION_SHORT="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
           VERSION_FULL="${VERSION_SHORT}.${REVISION}"
+          VERSION_IOS="${VERSION_NUMERIC}.0.${REVISION}"
           SHA7="${GITHUB_SHA::7}"
           TAG="${VERSION_SHORT}-${REVISION}-${SHA7}"
           echo "revision=${REVISION}" >> $GITHUB_OUTPUT
           echo "version_short=${VERSION_SHORT}" >> $GITHUB_OUTPUT
           echo "version_full=${VERSION_FULL}" >> $GITHUB_OUTPUT
+          echo "version_ios=${VERSION_IOS}" >> $GITHUB_OUTPUT
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
-
-  build-ios:
-    name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: macos-15
-    needs: [ version ]
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [ GL, BGFX ]
-        config: [ Release ]  
-        arch: [ arm64 ]
-    steps:
-      - run: |
-          brew install bison autoconf automake libtool
-          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v4
-      - name: Calculate timestamp
-        run: |
-          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
-        with:
-          path: standalone/ios-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-          restore-keys: |
-             ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-
-      - name: Build Deps
-        run: |
-          cd standalone/ios-${{ matrix.arch }}
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: standalone/ios-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build
-        run: |
-          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(sysctl -n hw.ncpu)
-          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-          cp standalone/cmake/CMakeLists_${TYPE}-ios-${{ matrix.arch }}.txt CMakeLists.txt
-          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString ${{ needs.version.outputs.version_short }}" "standalone/ios-${{ matrix.arch }}/ios-project/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion ${{ needs.version.outputs.version_full }}" "standalone/ios-${{ matrix.arch }}/ios-project/Info.plist"
-          cmake -G Xcode -B build
-          cmake --build build --config ${{ matrix.config }}
-          cd build/${{ matrix.config }}-iphoneos
-          mkdir Payload
-          mv VPinballX_${{ matrix.type }}.app Payload
-          zip -r VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa Payload
-      - run: |
-          mkdir tmp
-          cp build/${{ matrix.config }}-iphoneos/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
-          path: tmp
 
   build-lib:
     name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
@@ -157,6 +105,38 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.arch }}
+          path: tmp
+
+  build-ios:
+    name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: macos-15
+    needs: [ version, build-lib ]
+    strategy:
+      fail-fast: false
+      matrix:
+        type: [ BGFX ]
+        config: [ Release ]  
+        arch: [ arm64 ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}_lib-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
+          path: build/ios
+      - name: Build
+        run: |
+          MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
+          CURRENT_PROJECT_VERSION="${{ needs.version.outputs.version_full }}"
+          cd standalone/ios
+          perl -i -pe "s/MARKETING_VERSION = [0-9.]+/MARKETING_VERSION = $MARKETING_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
+          perl -i -pe "s/CURRENT_PROJECT_VERSION = [0-9.]+/CURRENT_PROJECT_VERSION = $CURRENT_PROJECT_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
+          fastlane build_unsigned_ipa
+      - run: |
+          mkdir tmp
+          cp standalone/ios/fastlane/VPinballX.ipa tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
           path: tmp
 
   build-android:
