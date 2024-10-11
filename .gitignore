@@ -5,6 +5,9 @@
 .idea
 .DS_Store
 .vscode
+build
+xcuserdata/
+fastlane/
 
 .github/workflows
 
@@ -18,9 +21,9 @@ local.properties
 standalone/idl/parser/bin
 standalone/macos-arm64/external
 standalone/macos-x64/external
+standalone/ios/VPinball/Frameworks
 standalone/ios-arm64/external
 standalone/ios-arm64/frameworks
-standalone/ios-arm64/ios-project/assets
 standalone/ios-simulator-arm64/external
 standalone/ios-simulator-arm64/frameworks
 standalone/tvos-arm64/external

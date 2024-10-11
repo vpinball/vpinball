@@ -1,0 +1,659 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		C11419052C277D9800582B6F /* VPinballApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11419042C277D9800582B6F /* VPinballApp.swift */; };
+		C11419092C277D9900582B6F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C11419082C277D9900582B6F /* Assets.xcassets */; };
+		C114190C2C277D9900582B6F /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C114190B2C277D9900582B6F /* Preview Assets.xcassets */; };
+		C11419182C28C5C500582B6F /* Shimmer.metal in Sources */ = {isa = PBXBuildFile; fileRef = C11419162C28C5C500582B6F /* Shimmer.metal */; };
+		C117EF642C7F36D40073E395 /* FormattedActiveSlider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C117EF632C7F36D40073E395 /* FormattedActiveSlider.swift */; };
+		C119AF6E2C31CEE600A4E74D /* VPinballBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */; };
+		C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119B03A2C32D48A00A4E74D /* VPinballManager.swift */; };
+		C119B03D2C32F6F100A4E74D /* LiveUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C119B03C2C32F6F100A4E74D /* LiveUIView.swift */; };
+		C120EA732CA703810048EB24 /* VPinballFramework.dSYM in Copy VPinballFramework.dSYM */ = {isa = PBXBuildFile; fileRef = C120EA722CA703810048EB24 /* VPinballFramework.dSYM */; };
+		C1320CC02C85E5E3003EE322 /* LiveUIPointOfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */; };
+		C1320F5E2C8DED0100035C0F /* ArtworkSnapshotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */; };
+		C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */; };
+		C145FE1D2C5B4ADB0049D313 /* SettingsWebServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */; };
+		C145FE1E2C5B4ADB0049D313 /* SettingsExternalDMDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */; };
+		C145FE1F2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1B2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift */; };
+		C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */; };
+		C1587DC42C969CF90015DF8F /* CustomTableOptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1587DC32C969CF90015DF8F /* CustomTableOptionView.swift */; };
+		C15DE5762C7257F1001F1D13 /* VPinballViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */; };
+		C15DE57C2C75A324001F1D13 /* CodeWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C15DE57B2C75A324001F1D13 /* CodeWebView.swift */; };
+		C1610F1C2C4BE8930049ED87 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */; };
+		C1610F1E2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1610F1D2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift */; };
+		C1610F202C4D31350049ED87 /* Enums.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1610F1F2C4D31350049ED87 /* Enums.swift */; };
+		C16266422C29955E0002FD15 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16266382C29955E0002FD15 /* MainView.swift */; };
+		C16266442C29955E0002FD15 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663A2C29955E0002FD15 /* SettingsView.swift */; };
+		C16266452C29955E0002FD15 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663B2C29955E0002FD15 /* SplashView.swift */; };
+		C16266462C29955E0002FD15 /* DocumentPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663C2C29955E0002FD15 /* DocumentPickerView.swift */; };
+		C16266472C29955E0002FD15 /* PinTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C162663E2C29955E0002FD15 /* PinTable.swift */; };
+		C16266482C29955E0002FD15 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C16266402C29955E0002FD15 /* Extensions.swift */; };
+		C1920AF62C67BCE000483104 /* TableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF52C67BCE000483104 /* TableImageView.swift */; };
+		C1920AF82C67CBC700483104 /* TableListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF72C67CBC700483104 /* TableListView.swift */; };
+		C1920AFA2C68E22E00483104 /* TableListButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AF92C68E22E00483104 /* TableListButton.swift */; };
+		C1920AFC2C6A281A00483104 /* TablePlaceholderImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1920AFB2C6A281A00483104 /* TablePlaceholderImage.swift */; };
+		C194FC822C372668009027E4 /* ActivityViewControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C194FC812C372668009027E4 /* ActivityViewControllerView.swift */; };
+		C19651892C46EE31002BAED9 /* VPinballFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C19651872C46EE31002BAED9 /* VPinballFramework.framework */; };
+		C196518A2C46EE31002BAED9 /* VPinballFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C19651872C46EE31002BAED9 /* VPinballFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C196518B2C46EE31002BAED9 /* BassFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C19651882C46EE31002BAED9 /* BassFramework.framework */; };
+		C196518C2C46EE31002BAED9 /* BassFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = C19651882C46EE31002BAED9 /* BassFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		C1A1153A2C8A7D100068BF3E /* TouchOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A115392C8A7D100068BF3E /* TouchOverlayView.swift */; };
+		C1A1153C2C8BE8200068BF3E /* TouchInstructionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1153B2C8BE8200068BF3E /* TouchInstructionsView.swift */; };
+		C1A1153E2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */; };
+		C1A115402C8C6FF70068BF3E /* SettingsBallRenderingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A1153F2C8C6FF70068BF3E /* SettingsBallRenderingView.swift */; };
+		C1A292E32C4720090056A3C0 /* MailComposeViewControllerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A292E22C4720090056A3C0 /* MailComposeViewControllerView.swift */; };
+		C1A292E92C4751C20056A3C0 /* CodeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A292E82C4751C20056A3C0 /* CodeView.swift */; };
+		C1A656722C85EA2500B6BE3C /* OverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A656712C85EA2500B6BE3C /* OverlayView.swift */; };
+		C1A656742C85ED8500B6BE3C /* LiveUITableOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A656732C85ED8500B6BE3C /* LiveUITableOptions.swift */; };
+		C1D90AE52C9A6007006CB735 /* SettingsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D90AE42C9A6007006CB735 /* SettingsModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C120EA662CA638140048EB24 /* Copy VPinballFramework.dSYM */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 8;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				C120EA732CA703810048EB24 /* VPinballFramework.dSYM in Copy VPinballFramework.dSYM */,
+			);
+			name = "Copy VPinballFramework.dSYM";
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		C15FDBB02C468757008D1748 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				C196518C2C46EE31002BAED9 /* BassFramework.framework in Embed Frameworks */,
+				C196518A2C46EE31002BAED9 /* VPinballFramework.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		C11419012C277D9800582B6F /* Visual Pinball.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Visual Pinball.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C11419042C277D9800582B6F /* VPinballApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPinballApp.swift; sourceTree = "<group>"; };
+		C11419082C277D9900582B6F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C114190B2C277D9900582B6F /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		C11419162C28C5C500582B6F /* Shimmer.metal */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.metal; path = Shimmer.metal; sourceTree = "<group>"; };
+		C114191F2C28C9B800582B6F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		C117EF632C7F36D40073E395 /* FormattedActiveSlider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FormattedActiveSlider.swift; sourceTree = "<group>"; };
+		C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballBridge.swift; sourceTree = "<group>"; };
+		C119B0392C32060400A4E74D /* VPinball.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = VPinball.entitlements; sourceTree = "<group>"; };
+		C119B03A2C32D48A00A4E74D /* VPinballManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballManager.swift; sourceTree = "<group>"; };
+		C119B03C2C32F6F100A4E74D /* LiveUIView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUIView.swift; sourceTree = "<group>"; };
+		C120EA722CA703810048EB24 /* VPinballFramework.dSYM */ = {isa = PBXFileReference; lastKnownFileType = wrapper.dsym; name = VPinballFramework.dSYM; path = VPinball/Frameworks/dSYM/VPinballFramework.dSYM; sourceTree = "<group>"; };
+		C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUIPointOfView.swift; sourceTree = "<group>"; };
+		C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ArtworkSnapshotView.swift; sourceTree = "<group>"; };
+		C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HUDOverlayView.swift; sourceTree = "<group>"; };
+		C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsWebServerView.swift; sourceTree = "<group>"; };
+		C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsExternalDMDView.swift; sourceTree = "<group>"; };
+		C145FE1B2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsAntiAliasingView.swift; sourceTree = "<group>"; };
+		C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsPerformanceView.swift; sourceTree = "<group>"; wrapsLines = 0; };
+		C1587DC32C969CF90015DF8F /* CustomTableOptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTableOptionView.swift; sourceTree = "<group>"; };
+		C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = VPinballViewModel.swift; sourceTree = "<group>"; };
+		C15DE57B2C75A324001F1D13 /* CodeWebView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeWebView.swift; sourceTree = "<group>"; };
+		C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
+		C1610F1D2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchDownInterceptingContainer.swift; sourceTree = "<group>"; };
+		C1610F1F2C4D31350049ED87 /* Enums.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Enums.swift; sourceTree = "<group>"; };
+		C16266382C29955E0002FD15 /* MainView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		C162663A2C29955E0002FD15 /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C162663B2C29955E0002FD15 /* SplashView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		C162663C2C29955E0002FD15 /* DocumentPickerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DocumentPickerView.swift; sourceTree = "<group>"; };
+		C162663E2C29955E0002FD15 /* PinTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PinTable.swift; sourceTree = "<group>"; };
+		C16266402C29955E0002FD15 /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		C1920AF52C67BCE000483104 /* TableImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableImageView.swift; sourceTree = "<group>"; };
+		C1920AF72C67CBC700483104 /* TableListView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableListView.swift; sourceTree = "<group>"; };
+		C1920AF92C68E22E00483104 /* TableListButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TableListButton.swift; sourceTree = "<group>"; };
+		C1920AFB2C6A281A00483104 /* TablePlaceholderImage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TablePlaceholderImage.swift; sourceTree = "<group>"; };
+		C194FC812C372668009027E4 /* ActivityViewControllerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivityViewControllerView.swift; sourceTree = "<group>"; };
+		C19651872C46EE31002BAED9 /* VPinballFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = VPinballFramework.framework; path = VPinball/Frameworks/VPinballFramework.framework; sourceTree = "<group>"; };
+		C19651882C46EE31002BAED9 /* BassFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BassFramework.framework; path = VPinball/Frameworks/BassFramework.framework; sourceTree = "<group>"; };
+		C1A115392C8A7D100068BF3E /* TouchOverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchOverlayView.swift; sourceTree = "<group>"; };
+		C1A1153B2C8BE8200068BF3E /* TouchInstructionsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TouchInstructionsView.swift; sourceTree = "<group>"; };
+		C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsEnvironmentLightingView.swift; sourceTree = "<group>"; };
+		C1A1153F2C8C6FF70068BF3E /* SettingsBallRenderingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsBallRenderingView.swift; sourceTree = "<group>"; };
+		C1A292E22C4720090056A3C0 /* MailComposeViewControllerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MailComposeViewControllerView.swift; sourceTree = "<group>"; };
+		C1A292E82C4751C20056A3C0 /* CodeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CodeView.swift; sourceTree = "<group>"; };
+		C1A656712C85EA2500B6BE3C /* OverlayView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OverlayView.swift; sourceTree = "<group>"; };
+		C1A656732C85ED8500B6BE3C /* LiveUITableOptions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LiveUITableOptions.swift; sourceTree = "<group>"; };
+		C1D90AE42C9A6007006CB735 /* SettingsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsModel.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C11418FE2C277D9800582B6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C196518B2C46EE31002BAED9 /* BassFramework.framework in Frameworks */,
+				C19651892C46EE31002BAED9 /* VPinballFramework.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C11418F82C277D9800582B6F = {
+			isa = PBXGroup;
+			children = (
+				C19651862C46EE31002BAED9 /* Frameworks */,
+				C11419022C277D9800582B6F /* Products */,
+				C11419032C277D9800582B6F /* VPinball */,
+			);
+			sourceTree = "<group>";
+		};
+		C11419022C277D9800582B6F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C11419012C277D9800582B6F /* Visual Pinball.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C11419032C277D9800582B6F /* VPinball */ = {
+			isa = PBXGroup;
+			children = (
+				C11419082C277D9900582B6F /* Assets.xcassets */,
+				C114191F2C28C9B800582B6F /* Info.plist */,
+				C162663F2C29955E0002FD15 /* models */,
+				C114190A2C277D9900582B6F /* Preview Content */,
+				C11419172C28C5C500582B6F /* shaders */,
+				C16266412C29955E0002FD15 /* utils */,
+				C162663D2C29955E0002FD15 /* views */,
+				C119B0392C32060400A4E74D /* VPinball.entitlements */,
+				C11419042C277D9800582B6F /* VPinballApp.swift */,
+			);
+			path = VPinball;
+			sourceTree = "<group>";
+		};
+		C114190A2C277D9900582B6F /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				C114190B2C277D9900582B6F /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		C11419172C28C5C500582B6F /* shaders */ = {
+			isa = PBXGroup;
+			children = (
+				C11419162C28C5C500582B6F /* Shimmer.metal */,
+			);
+			path = shaders;
+			sourceTree = "<group>";
+		};
+		C162663D2C29955E0002FD15 /* views */ = {
+			isa = PBXGroup;
+			children = (
+				C194FC812C372668009027E4 /* ActivityViewControllerView.swift */,
+				C1320F5D2C8DED0100035C0F /* ArtworkSnapshotView.swift */,
+				C1A292E82C4751C20056A3C0 /* CodeView.swift */,
+				C15DE57B2C75A324001F1D13 /* CodeWebView.swift */,
+				C1587DC32C969CF90015DF8F /* CustomTableOptionView.swift */,
+				C162663C2C29955E0002FD15 /* DocumentPickerView.swift */,
+				C117EF632C7F36D40073E395 /* FormattedActiveSlider.swift */,
+				C1320F5F2C8E56BD00035C0F /* HUDOverlayView.swift */,
+				C1320CBF2C85E5E3003EE322 /* LiveUIPointOfView.swift */,
+				C1A656732C85ED8500B6BE3C /* LiveUITableOptions.swift */,
+				C119B03C2C32F6F100A4E74D /* LiveUIView.swift */,
+				C1A292E22C4720090056A3C0 /* MailComposeViewControllerView.swift */,
+				C16266382C29955E0002FD15 /* MainView.swift */,
+				C1A656712C85EA2500B6BE3C /* OverlayView.swift */,
+				C145FE1B2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift */,
+				C1A1153F2C8C6FF70068BF3E /* SettingsBallRenderingView.swift */,
+				C1A1153D2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift */,
+				C145FE1A2C5B4ADB0049D313 /* SettingsExternalDMDView.swift */,
+				C145FE1C2C5B4ADB0049D313 /* SettingsPerformanceView.swift */,
+				C145FE192C5B4ADB0049D313 /* SettingsWebServerView.swift */,
+				C162663A2C29955E0002FD15 /* SettingsView.swift */,
+				C162663B2C29955E0002FD15 /* SplashView.swift */,
+				C1920AF52C67BCE000483104 /* TableImageView.swift */,
+				C1920AF92C68E22E00483104 /* TableListButton.swift */,
+				C1920AF72C67CBC700483104 /* TableListView.swift */,
+				C1920AFB2C6A281A00483104 /* TablePlaceholderImage.swift */,
+				C1610F1D2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift */,
+				C1A1153B2C8BE8200068BF3E /* TouchInstructionsView.swift */,
+				C1A115392C8A7D100068BF3E /* TouchOverlayView.swift */,
+			);
+			path = views;
+			sourceTree = "<group>";
+		};
+		C162663F2C29955E0002FD15 /* models */ = {
+			isa = PBXGroup;
+			children = (
+				C162663E2C29955E0002FD15 /* PinTable.swift */,
+				C1D90AE42C9A6007006CB735 /* SettingsModel.swift */,
+			);
+			path = models;
+			sourceTree = "<group>";
+		};
+		C16266412C29955E0002FD15 /* utils */ = {
+			isa = PBXGroup;
+			children = (
+				C1610F1F2C4D31350049ED87 /* Enums.swift */,
+				C16266402C29955E0002FD15 /* Extensions.swift */,
+				C1610F1B2C4BE8930049ED87 /* ViewModifiers.swift */,
+				C119AF6D2C31CEE600A4E74D /* VPinballBridge.swift */,
+				C119B03A2C32D48A00A4E74D /* VPinballManager.swift */,
+				C15DE5752C7257F1001F1D13 /* VPinballViewModel.swift */,
+			);
+			path = utils;
+			sourceTree = "<group>";
+		};
+		C19651862C46EE31002BAED9 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C19651882C46EE31002BAED9 /* BassFramework.framework */,
+				C19651872C46EE31002BAED9 /* VPinballFramework.framework */,
+				C120EA722CA703810048EB24 /* VPinballFramework.dSYM */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C11419002C277D9800582B6F /* VPinball */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C114190F2C277D9900582B6F /* Build configuration list for PBXNativeTarget "VPinball" */;
+			buildPhases = (
+				C1FF3F472CB8DD67004D238B /* Copy Frameworks */,
+				C11418FD2C277D9800582B6F /* Sources */,
+				C11418FE2C277D9800582B6F /* Frameworks */,
+				C11418FF2C277D9800582B6F /* Resources */,
+				C137C0CD2CB622F8002D254D /* Copy VPinball Resources */,
+				C15FDBB02C468757008D1748 /* Embed Frameworks */,
+				C120EA662CA638140048EB24 /* Copy VPinballFramework.dSYM */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VPinball;
+			packageProductDependencies = (
+			);
+			productName = VPinball;
+			productReference = C11419012C277D9800582B6F /* Visual Pinball.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C11418F92C277D9800582B6F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					C11419002C277D9800582B6F = {
+						CreatedOnToolsVersion = 15.4;
+					};
+				};
+			};
+			buildConfigurationList = C11418FC2C277D9800582B6F /* Build configuration list for PBXProject "VPinball" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = C11418F82C277D9800582B6F;
+			packageReferences = (
+			);
+			productRefGroup = C11419022C277D9800582B6F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C11419002C277D9800582B6F /* VPinball */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		C11418FF2C277D9800582B6F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C114190C2C277D9900582B6F /* Preview Assets.xcassets in Resources */,
+				C11419092C277D9900582B6F /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		C137C0CD2CB622F8002D254D /* Copy VPinball Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy VPinball Resources";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "BUNDLE_RESOURCES=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/scripts\"\ncp -r \"$PROJECT_DIR/../../scripts\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/assets\"\ncp -r \"$PROJECT_DIR/../../src/assets\" \"${BUNDLE_RESOURCES}\"\n\nrm -rf \"${BUNDLE_RESOURCES}/flexdmd\"\ncp -r \"$PROJECT_DIR/../../standalone/inc/flexdmd/resources\" \"${BUNDLE_RESOURCES}/flexdmd\"\n";
+		};
+		C1FF3F472CB8DD67004D238B /* Copy Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Frameworks";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [[ \"$PLATFORM_NAME\" == *\"simulator\"* ]]; then\n    RUNTIME_FRAMEWORKS_PLATFORM_PATH=\"${PROJECT_DIR}/../../build/ios-simulator\"\nelse\n    RUNTIME_FRAMEWORKS_PLATFORM_PATH=\"${PROJECT_DIR}/../../build/ios\"\nfi\n\nRUNTIME_FRAMEWORKS_PATH=\"${PROJECT_DIR}/VPinball/Frameworks\"\n\nrm -rf \"${RUNTIME_FRAMEWORKS_PATH}\"\nmkdir \"${RUNTIME_FRAMEWORKS_PATH}\"\nmkdir \"${RUNTIME_FRAMEWORKS_PATH}/dSYM\"\n\ncp -r \"${RUNTIME_FRAMEWORKS_PLATFORM_PATH}/VPinballFramework.framework\" \"${RUNTIME_FRAMEWORKS_PATH}\"\n\n\nif [[ \"$CODE_SIGNING_ALLOWED\" == \"YES\" ]]; then\n   codesign --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" --force --deep \"${RUNTIME_FRAMEWORKS_PATH}/VPinballFramework.framework/VPinballFramework\"\nfi\n\ncp -r \"${RUNTIME_FRAMEWORKS_PLATFORM_PATH}/BassFramework.framework\" \"${RUNTIME_FRAMEWORKS_PATH}\"\n\nif [[ \"$CODE_SIGNING_ALLOWED\" == \"YES\" ]]; then\n   codesign --sign \"${EXPANDED_CODE_SIGN_IDENTITY_NAME}\" --force --deep \"${RUNTIME_FRAMEWORKS_PATH}/BassFramework.framework/BassFramework\"\nfi\n\ncp -r \"${RUNTIME_FRAMEWORKS_PLATFORM_PATH}/VPinballFramework.dSYM\" \"${RUNTIME_FRAMEWORKS_PATH}/dSYM\"\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C11418FD2C277D9800582B6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C16266462C29955E0002FD15 /* DocumentPickerView.swift in Sources */,
+				C1610F1E2C4BEAB20049ED87 /* TouchDownInterceptingContainer.swift in Sources */,
+				C1587DC42C969CF90015DF8F /* CustomTableOptionView.swift in Sources */,
+				C119B03B2C32D48A00A4E74D /* VPinballManager.swift in Sources */,
+				C119AF6E2C31CEE600A4E74D /* VPinballBridge.swift in Sources */,
+				C1A656722C85EA2500B6BE3C /* OverlayView.swift in Sources */,
+				C15DE57C2C75A324001F1D13 /* CodeWebView.swift in Sources */,
+				C1320F602C8E56BD00035C0F /* HUDOverlayView.swift in Sources */,
+				C16266422C29955E0002FD15 /* MainView.swift in Sources */,
+				C16266472C29955E0002FD15 /* PinTable.swift in Sources */,
+				C1610F1C2C4BE8930049ED87 /* ViewModifiers.swift in Sources */,
+				C145FE1F2C5B4ADB0049D313 /* SettingsAntiAliasingView.swift in Sources */,
+				C1D90AE52C9A6007006CB735 /* SettingsModel.swift in Sources */,
+				C11419052C277D9800582B6F /* VPinballApp.swift in Sources */,
+				C15DE5762C7257F1001F1D13 /* VPinballViewModel.swift in Sources */,
+				C1A115402C8C6FF70068BF3E /* SettingsBallRenderingView.swift in Sources */,
+				C145FE1D2C5B4ADB0049D313 /* SettingsWebServerView.swift in Sources */,
+				C145FE202C5B4ADB0049D313 /* SettingsPerformanceView.swift in Sources */,
+				C1A1153E2C8C69210068BF3E /* SettingsEnvironmentLightingView.swift in Sources */,
+				C16266452C29955E0002FD15 /* SplashView.swift in Sources */,
+				C1920AFC2C6A281A00483104 /* TablePlaceholderImage.swift in Sources */,
+				C145FE1E2C5B4ADB0049D313 /* SettingsExternalDMDView.swift in Sources */,
+				C119B03D2C32F6F100A4E74D /* LiveUIView.swift in Sources */,
+				C1920AFA2C68E22E00483104 /* TableListButton.swift in Sources */,
+				C16266482C29955E0002FD15 /* Extensions.swift in Sources */,
+				C11419182C28C5C500582B6F /* Shimmer.metal in Sources */,
+				C1A656742C85ED8500B6BE3C /* LiveUITableOptions.swift in Sources */,
+				C16266442C29955E0002FD15 /* SettingsView.swift in Sources */,
+				C1320F5E2C8DED0100035C0F /* ArtworkSnapshotView.swift in Sources */,
+				C1A1153C2C8BE8200068BF3E /* TouchInstructionsView.swift in Sources */,
+				C1920AF62C67BCE000483104 /* TableImageView.swift in Sources */,
+				C1A292E32C4720090056A3C0 /* MailComposeViewControllerView.swift in Sources */,
+				C1A292E92C4751C20056A3C0 /* CodeView.swift in Sources */,
+				C1A1153A2C8A7D100068BF3E /* TouchOverlayView.swift in Sources */,
+				C1320CC02C85E5E3003EE322 /* LiveUIPointOfView.swift in Sources */,
+				C1920AF82C67CBC700483104 /* TableListView.swift in Sources */,
+				C1610F202C4D31350049ED87 /* Enums.swift in Sources */,
+				C194FC822C372668009027E4 /* ActivityViewControllerView.swift in Sources */,
+				C117EF642C7F36D40073E395 /* FormattedActiveSlider.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C114190D2C277D9900582B6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		C114190E2C277D9900582B6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		C11419102C277D9900582B6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = VPinball/VPinball.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10.8.1.0;
+				DEVELOPMENT_ASSET_PATHS = "\"VPinball/Preview Content\"";
+				DEVELOPMENT_TEAM = UKWC4J7BE5;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/VPinball/Frameworks",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VPinball/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 100801.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.vpinball.vpinball-bgfx";
+				PRODUCT_NAME = "Visual Pinball";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C11419112C277D9900582B6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = VPinball/VPinball.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10.8.1.0;
+				DEVELOPMENT_ASSET_PATHS = "\"VPinball/Preview Content\"";
+				DEVELOPMENT_TEAM = UKWC4J7BE5;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/VPinball/Frameworks",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = VPinball/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.games";
+				INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 100801.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.vpinball.vpinball-bgfx";
+				PRODUCT_NAME = "Visual Pinball";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C11418FC2C277D9800582B6F /* Build configuration list for PBXProject "VPinball" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C114190D2C277D9900582B6F /* Debug */,
+				C114190E2C277D9900582B6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C114190F2C277D9900582B6F /* Build configuration list for PBXNativeTarget "VPinball" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C11419102C277D9900582B6F /* Debug */,
+				C11419112C277D9900582B6F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C11418F92C277D9800582B6F /* Project object */;
+}

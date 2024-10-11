@@ -2,18 +2,36 @@
 
 Experience the open source pinball simulator now on your iPhone!
 
-<a href="https://apps.apple.com/us/app/visual-pinball/id6547859926?itscg=30200&itsct=apps_box_badge&mttnsubad=6547859926"> <img src="https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1700524800" /> </a>
+[![Download on the App Store](https://toolbox.marketingtools.apple.com/api/v2/badges/download-on-the-app-store/black/en-us?releaseDate=1700524800)](https://apps.apple.com/us/app/visual-pinball/id6547859926?itscg=30200&itsct=apps_box_badge&mttnsubad=6547859926)
+
+## Table of contents
+
+1. [Features](#features)
+2. [Before you begin](#before-you-begin)
+3. [Quick start](#quick-start)
+4. [Controls](#controls)
+5. [Live UI](#live-ui)
+6. [Settings](#settings)
+7. [Importing Tables](#importing-tables)
+8. [Miscellaneous Features](#miscellaneous-features)
+9. [External DMDs](#external-dmds)
+10. [Troubleshooting](#troubleshooting)
+11. [Support](#support)
+12. [Third Party Libraries](#third-party-libraries)
+13. [License](#license)
+14. [Privacy Policy](#privacy-policy)
+15. [Credits](#credits)
 
 ## Features
 
 - Play hundreds of community and hobbyist-developed tables.
 - Feel the action with haptic feedback for bumpers, targets, and flippers.
-- Customize your experience with a simple, intuitive interface for settings, table options, and POV adjustments.
-- Game controller support.
+- Customize your experience with a simple, intuitive interface for settings, table options, and pov adjustments.
+- Keyboard and game controller support.
 - External DMD support for [ZeDMD](https://github.com/PPUC/zedmd), [ZeDMD-WiFi](https://github.com/PPUC/zedmd), and [Pixelcade](https://pixelcade.org/) devices.
 - [Serum](https://github.com/zesinger/libserum) AltColor support.
 - [AltSound](https://github.com/vpinball/libaltsound) support.
-- Touch Overlay shows touch areas.
+- Touch overlay shows touch areas.
 - Step-by-step touch instructions when playing a table.
 - Advanced options for power users, including script and log file exports.
 - Support for iOS 18 Game Mode.
@@ -55,7 +73,7 @@ Follow the *Touch Instructions* and play some Visual Pinball!
 
 ## Controls
 
-Playing Visual Pinball on iOS requires touching specific areas of the screen to perform different actions:
+Playing *Visual Pinball for iOS* requires touching specific areas of the screen to perform different actions:
 
 <p align="center">
 <img src="img/controls-1.png" width="150" hspace="20">
@@ -72,7 +90,21 @@ The touch areas are:
 - Start
 - Plunger (*Long press to pull back*)
 
-Visual Pinball also supports game controllers. The layout is:
+*Visual Pinball for iOS* supports bluetooth and USB keyboards. The keys are:
+
+- *5* - Coin
+- *Escape* - Menu
+- *Left Command* - Left Magna Save
+- *Right Command* - Right Magna Save
+- *Z* - Left Nudge
+- */* - Right Nudge
+- *Space* - Center Nudge
+- *Left Shift* - Left Flipper
+- *Right Shift* - Right Flipper
+- *1* - Start
+- *Return* - Plunger (*Hold down to pull back*)
+
+*Visual Pinball for iOS* supports game controllers. The game controller layout is:
 
 - *Left Shoulder* - Left Flipper
 - *Right Shoulder* - Right Flipper
@@ -88,12 +120,12 @@ Visual Pinball also supports game controllers. The layout is:
 - *Y* - Cancel
 - *Guide* - Fire
 
-## LiveUI
+## Live UI
 
-While playing a game, tap the upper right corner of the screen to bring up the *LiveUI*:
+While playing a game, tap the upper right corner of the screen to bring up the *Live UI*:
 
 <p align="center">
-<img src="img/liveui-1.gif" width="150">
+<img src="img/live-ui-1.gif" width="150">
 </p>
 
 The following actions are available:
@@ -107,8 +139,8 @@ The following actions are available:
 In addition to the above actions, *Table Options* and *Point of View* can be adjusted:
 
 <p align="center">
-<img src="img/liveui-2.png" width="150" hspace="20">
-<img src="img/liveui-3.png" width="150" hspace="20">
+<img src="img/live-ui-2.png" width="150" hspace="20">
+<img src="img/live-ui-3.png" width="150" hspace="20">
 </p>
 
 Save or reset *Table Options* and *Point of View* by using the *Save* and *Reset* buttons.
@@ -118,7 +150,7 @@ Save or reset *Table Options* and *Point of View* by using the *Save* and *Reset
 Settings are accessible by tapping on the *Settings* button in the upper left corner of the *Table Selection* screen:
 
 <p align="center">
-<img src="img/settings-1.gif" width="150" hspace="20">
+<img src="img/settings-1.gif" width="150">
 </p>
 
 Settings are grouped into the following sections:
@@ -158,7 +190,7 @@ table/
 Zip the above folder, and then change the file extension to `.vpxz`:
 
 <p align="center">
-<img src="img/importing-1.gif" hspace="20">
+<img src="img/importing-1.gif">
 </p>
 
 To get the file `.vpxz` file on to your device, there are several options:
@@ -176,7 +208,7 @@ Using the *Files* app, simply select the `.vpxz` and confirm the import:
 </p>
 
 <p align="center">
-<img src="img/importing-4.png" width="150" hspace="20">
+<img src="img/importing-4.png" width="150">
 </p>
 
 ## Miscellaneous Features
@@ -198,8 +230,13 @@ Long pressing on a table will display a context menu with the following actions:
 - Delete
 
 <p align="center">
-  <img src="img/misc-3.gif" width="150" hspace="20"> 
-  <img src="img/misc-4.png" width="150" hspace="20"> 
+<img src="img/misc-3.gif" width="150">
+</p>
+
+Share tables to other devices using AirDrop:
+
+<p align="center">
+<img src="img/misc-4.png" width="150">
 </p>
 
 ## External DMDs
@@ -217,13 +254,13 @@ The easiest way to run `DMDServer` is to use [ZeDMDOS](https://github.com/ppuc/z
 In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* and *Port* values.
 
 <p align="center">
-  <img src="img/external-dmd-1.png" width="150"> 
+<img src="img/external-dmd-1.png" width="150">
 </p>
 
 `ZeDMD-WiFi` devices can be directly connected to and do not need `DMDServer`:
 
 <p align="center">
-  <img src="img/external-dmd-2.gif"> 
+<img src="img/external-dmd-2.gif">
 </p>
 
 ## Troubleshooting
@@ -237,15 +274,19 @@ In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* a
 **A:** Visual Pinball tables are large and require **a lot** of memory. If a *Low Memory Warning* is displayed (the loading progress bar turns red), reducing the *Max Texture Dimensions* value in *Settings* may help. *Visual Pinball for iOS* can detect this and provides a direct link to the *Max Texture Dimensions* settings:
 
 <p align="center">
-  <img src="img/troubleshooting-1.png" width="150" hspace="20"> 
-  <img src="img/troubleshooting-2.png" width="150" hspace="20"> 
+<img src="img/troubleshooting-1.png" width="150" hspace="20">
+<img src="img/troubleshooting-2.png" width="150" hspace="20">
 </p>
 
-**Q: Visual Pinball for iOS appears like an iPhone app on an iPad.**
+**Q: My ROM based game loads, but does not seem to do anything.**
+
+**A:** Make sure the table is packaged correctly (see [Importing Tables](#importing-tables)). You can also view the `vpinball.log` in *Settings* to get detailed error information. 
+
+**Q: *Visual Pinball for iOS* appears like an iPhone app on an iPad.**
 
 **A:** Currently, *Visual Pinball for iOS* is only targeted for iPhones. An iPad version is planned for the future.
 
-**Q: Does Visual Pinball for iOS support B2S and PuP?**
+**Q: Does *Visual Pinball* for iOS support B2S and PuP?**
 
 **A:** *Visual Pinball for iOS* is capable of rendering the B2S and PuP windows. However, due to SDL's current limitations on iOS, only one window can be rendered at a time. A solution for this is being explored.
 
@@ -253,9 +294,23 @@ In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* a
 
 **A:** *Visual Pinball for iOS* can render the DMD window (PinMAME or FlexDMD). However, due to SDL's current limitations on iOS, only one window can be rendered at a time. A solution for this is being explored.
 
-**Q: Can Visual Pinball be customized to do this or that?**
+**Q: Can *Visual Pinball for iOS* be customized to do this or that?**
 
 **A:** *Visual Pinball for iOS* is completely free and has been in development for over two years. The [source code](https://github.com/vpinball/vpinball/tree/10.8.1) is open and available for anyone interested in contributing. Contributions are welcome, whether for fixing bugs, adding features, or helping with documentation!
+
+## Support
+
+In *Settings*, go to the *Support* section:
+
+<p align="center">
+<img src="img/support-1.png" width="150">
+</p>
+
+Tap *Contact Us* to send an email, or click [here](mailto:jsm174@gmail.com).
+
+Tap *Discord (Virtual Pinball Chat)* to go to the `#standalone` channel in the *Virtual Pinball Chat* Discord server, or click [here](https://discord.com/channels/652274650524418078/1076655472846831667).
+
+**Please do not use the GitHub issue queue to request support for *Visual Pinball for iOS*!**
 
 ## Third Party Libraries
 
