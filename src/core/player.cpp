@@ -1039,6 +1039,7 @@ Player::~Player()
    delete m_pBCTarget;
    delete m_ptable;
    delete m_renderer;
+   LockForegroundWindow(false);
    delete m_playfieldWnd;
    delete m_dmdWnd;
    delete m_backglassWnd;
@@ -1047,7 +1048,6 @@ Player::~Player()
 
    restore_win_timer_resolution();
 
-   LockForegroundWindow(false);
    while (ShowCursor(FALSE) >= 0);
    while (ShowCursor(TRUE) < 0);
 
