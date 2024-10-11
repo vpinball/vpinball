@@ -2269,15 +2269,37 @@ void Player::FinishFrame()
 
 Player::ControllerDisplay Player::GetControllerDisplay(int id)
 {
-   // For the time being, we only support the default DMD (no DMD id scheme defined & implemented)
-   if (id != -1)
-      return { -1, nullptr };
+   // For the time being, we only support the default DMD (no DMD id scheme defined & implemented inside VPX)
    ControllerDisplay& display = m_controllerDisplays[0];
 
-   // Obtain DMD frame from controller plugin
+   // Search for the main DMD
    GetDmdMsg msg;
    memset(&msg, 0, sizeof(GetDmdMsg));
-   msg.dmdId = -1;
+   unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
+   bool mainDMDFound = false;
+   GetDmdSrcMsg getSrcMsg;
+   memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
+   getSrcMsg.maxEntryCount = 1024;
+   getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
+   for (unsigned int i = 0; i < getSrcMsg.count; i++)
+   {
+      if (getSrcMsg.entries[i].width >= 128 // Select a large DMD
+       && (msg.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
+      {
+         msg.dmdId = getSrcMsg.entries[i].dmdId;
+         msg.width = getSrcMsg.entries[i].width;
+         msg.height = getSrcMsg.entries[i].height;
+         msg.format = getSrcMsg.entries[i].format;
+         mainDMDFound = true;
+      }
+   }
+   delete[] getSrcMsg.entries;
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(getDmdSrcId);
+   if (!mainDMDFound)
+      return { -1, nullptr };
+
+   // Obtain DMD frame from controller plugin
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &msg);
    if (msg.frame == nullptr)
       return {-1, nullptr};
@@ -2288,9 +2310,10 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    {
       if (display.frame)
       {
-         m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-         m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
-         //delete display.frame; // FIXME this may be still in use when deleted
+         // FIXME this may be still in use when deleted
+         //m_renderer->m_renderDevice->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
+         //m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
+         //delete display.frame;
       }
       display.frame = new BaseTexture(msg.width, msg.height, format);
       display.frame->SetIsOpaque(true);
