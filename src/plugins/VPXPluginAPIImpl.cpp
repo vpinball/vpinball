@@ -159,43 +159,30 @@ void VPXPluginAPIImpl::PinMameOnStart()
    }
 }
 
-void VPXPluginAPIImpl::ControllerOnGetDMDRenderSrc(const unsigned int msgId, void* userData, void* msgData)
+void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
 {
    if (g_pplayer == nullptr 
     || g_pplayer->m_pStateMappedMem == nullptr
     || g_pplayer->m_pStateMappedMem->versionID != 1
     || g_pplayer->m_pStateMappedMem->displayState == nullptr)
       return;
-      
-   GetDmdSrcMsg* msg = static_cast<GetDmdSrcMsg*>(msgData);
-   if (msg->dmdId != -1) // TODO implement other DMDs and LED matrices
-      return;
    
-   bool found = false;
+   // Report all DMD displays
+   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    PinMame::core_tDisplayState* state = g_pplayer->m_pStateMappedMem->displayState;
    PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
    for (unsigned int index = 0; index < state->nDisplays; index++)
    {
-      if (frame->width >= 128) // Main DMD
+      if (msg.count < msg.maxEntryCount)
       {
-         found = true;
-         break;
+         msg.entries[msg.count].dmdId = (pi.m_pinMameEndpointId << 16) | frame->displayId;
+         msg.entries[msg.count].format = frame->dataFormat;
+         msg.entries[msg.count].width = frame->width;
+         msg.entries[msg.count].height = frame->height;
+         msg.count++;
       }
       frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
-   }
-   if (!found)
-      return;
-
-   for (unsigned int i = 0; i < msg->maxEntryCount; i++)
-   {
-      GetDmdSrcEntry& entry = (*msg->entries)[i];
-      if ((entry.width == 0) && (entry.height == 0))
-      {
-         entry.format = frame->dataFormat;
-         entry.width = frame->width;
-         entry.height = frame->height;
-         return;
-      }
    }
 }
 
@@ -209,38 +196,32 @@ void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userDa
    GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
    if (msg->frame != nullptr) // Already answered
       return;
-   if (msg->dmdId != -1) // TODO implement other DMDs and LED matrices
+      
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   if ((msg->dmdId >> 16) != pi.m_pinMameEndpointId)
       return;
 
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    PinMame::core_tDisplayState* state = (msgId == pi.m_getIdentifyDmdMsgId) ? g_pplayer->m_pStateMappedMem->rawDMDState : g_pplayer->m_pStateMappedMem->displayState;
    if (state == nullptr)
       return;
-
-   bool found = false;
    PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
    for (unsigned int index = 0; index < state->nDisplays; index++)
    {
-      if (frame->width >= 128) // Main DMD
+      if (msg->dmdId == ((pi.m_pinMameEndpointId << 16) | frame->displayId))
       {
-         found = true;
-         break;
+         // If asked for a fixed size render frame with a different size from what we have, don't answer
+         if ((msgId == pi.m_getRenderDmdMsgId) && (msg->requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ) && ((msg->width != frame->width) || (msg->height != frame->height)))
+            return;
+
+         msg->frameId = frame->frameId;
+         msg->format = frame->dataFormat;
+         msg->width = frame->width;
+         msg->height = frame->height;
+         msg->frame = frame->frameData;
+         return;
       }
       frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
    }
-   if (!found)
-      return;
-
-   // If asked for a fixed size render frame with a different size from what we have, don't answer
-   if ((msgId == pi.m_getRenderDmdMsgId) && (msg->requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ)
-      && ((msg->width != frame->width) || (msg->height != frame->height)))
-      return;
-   
-   msg->frameId = frame->frameId;
-   msg->format = frame->dataFormat;
-   msg->width = frame->width;
-   msg->height = frame->height;
-   msg->frame = frame->frameData;
 }
 
 
@@ -283,7 +264,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
    msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetDMD, nullptr);
    msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetDMD, nullptr);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_SRC_MSG), &ControllerOnGetDMDRenderSrc, nullptr);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, nullptr);
 
    m_api.GetTableInfo = GetTableInfo;
 

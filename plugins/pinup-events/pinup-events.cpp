@@ -28,10 +28,10 @@
 // with non linear shading for 2 bitplane frames.
 
 MsgPluginAPI* msgApi = nullptr;
-unsigned int endpointId, getDmdId, onGameStartId, onGameEndId, onSerumTriggerId;
+unsigned int endpointId, getDmdSrcId, getDmdId, onGameStartId, onGameEndId, onSerumTriggerId;
 
 HMODULE dmdDevicePupDll = nullptr;
-unsigned int lastFrameId = 0;
+unsigned int dmdId = 0, lastFrameId = 0;
 std::chrono::high_resolution_clock::time_point lastFrameTick;
 
 typedef int (*pup_open)();
@@ -135,7 +135,7 @@ void onUpdateDMD(void* userData)
    {
       GetDmdMsg getDmdMsg;
       memset(&getDmdMsg, 0, sizeof(getDmdMsg));
-      getDmdMsg.dmdId = -1;
+      getDmdMsg.dmdId = dmdId;
       msgApi->BroadcastMsg(endpointId, getDmdId, &getDmdMsg);
       processDMD(getDmdMsg, now);
    }
@@ -146,7 +146,7 @@ void onUpdateDMD(void* userData)
 void onGetDMD(const unsigned int eventId, void* userData, void* eventData)
 {
    GetDmdMsg* getDmdMsg = static_cast<GetDmdMsg*>(eventData);
-   if (getDmdMsg->dmdId == -1)
+   if (getDmdMsg->dmdId == dmdId)
       processDMD(*getDmdMsg, std::chrono::high_resolution_clock::now());
 }
 
@@ -160,6 +160,26 @@ void onSerumTrigger(const unsigned int eventId, void* userData, void* eventData)
 
 void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
+   // Select main DMD from the list of DMD sources
+   bool mainDMDFound = false;
+   GetDmdSrcMsg getSrcMsg;
+   memset(&getSrcMsg, 0, sizeof(getSrcMsg));
+   getSrcMsg.maxEntryCount = 1024;
+   getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
+   msgApi->BroadcastMsg(endpointId, getDmdSrcId, &getSrcMsg);
+   for (unsigned int i = 0; !mainDMDFound && (i < getSrcMsg.count); i++)
+   {
+      if (getSrcMsg.entries[i].width >= 128) // First DMD with a width of 128 or more is considered as the main one
+      {
+         dmdId = getSrcMsg.entries[i].dmdId;
+         mainDMDFound = true;
+      }
+   }
+   delete[] getSrcMsg.entries;
+   if (!mainDMDFound)
+      return;
+
+   // Find PUP interface dll and set it up
    const char* gameId = static_cast<const char*>(eventData);
    assert(gameId != nullptr);
    TCHAR path[MAX_PATH];
@@ -212,6 +232,7 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId; 
+   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
    getDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
    msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
    msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
@@ -239,6 +260,7 @@ MSGPI_EXPORT void PluginUnload()
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onSerumTriggerId);
+   msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->ReleaseMsgID(getDmdId);
    msgApi = nullptr;
 }

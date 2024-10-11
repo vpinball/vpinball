@@ -23,8 +23,8 @@ private:
 
    static void OnGetPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    static void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData);
+   static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData);
-   static void ControllerOnGetDMDRenderSrc(const unsigned int msgId, void* userData, void* msgData);
 
    unsigned int m_getRenderDmdMsgId;
    unsigned int m_getIdentifyDmdMsgId;
