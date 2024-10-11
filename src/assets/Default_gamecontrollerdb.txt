@@ -6,8 +6,10 @@
 # Mac OS
 03000000fafa0000f00000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
 03000000fafa0000f70000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
 
 # Linux
 03000000790000000600000010010000,DragonRise Inc.   Generic   USB  Joystick,a:b4,b:b1,y:b2,leftshoulder:b0,rightshoulder:b6,dpdown:b5,platform:Linux,
 03004c80fafa0000f000000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
 03004c80fafa0000f700000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
