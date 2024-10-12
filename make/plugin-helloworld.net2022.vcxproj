@@ -71,7 +71,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\</OutDir>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-helloworld.x86_32</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-helloworld.x86_64</TargetName>
+    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
   </PropertyGroup>
@@ -87,7 +89,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +107,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -121,7 +121,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -140,8 +139,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
+        
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
+        
+        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="plugins/helloworld/helloworld.cpp" />

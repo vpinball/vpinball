@@ -71,7 +71,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\</OutDir>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-pinup-events.x86_32</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-pinup-events.x86_64</TargetName>
+    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
   </PropertyGroup>
@@ -87,7 +89,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -106,7 +107,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -121,7 +121,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -140,8 +139,24 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
+        
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
+
+        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="plugins/pinup-events/pinup-events.cpp" />

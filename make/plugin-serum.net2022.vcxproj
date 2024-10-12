@@ -71,7 +71,9 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <OutDir>$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\</OutDir>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-serum.x86_32</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-serum.x86_64</TargetName>
+    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins;./plugins/serum/third-party/include</IncludePath>
   </PropertyGroup>
@@ -90,7 +92,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -112,7 +113,6 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_32$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -130,7 +130,6 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,8 +151,30 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <OutputFile>$(OutDir)$(TargetName).x86_64$(TargetExt)</OutputFile>
     </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <PostBuildEvent>
+      <Command>
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)_BGFX-x64\plugins\serum\"
+        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)_BGFX-Win32\plugins\serum\"
+        
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)_GL-x64\plugins\serum\"
+        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)_GL-Win32\plugins\serum\"
+          
+		if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)-x64\plugins\serum\"
+        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)-Win32\plugins\serum\"
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="plugins/serum/serum.cpp" />
