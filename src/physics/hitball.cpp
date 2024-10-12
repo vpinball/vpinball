@@ -442,8 +442,10 @@ void HitBall::UpdateVelocities()
       }
       else
       {
-         m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity();
-         m_d.m_vel += g_pplayer->m_physics->GetNudge();
+         // Apply forces (expressed in VPU/VPT) integrated on one physic step (PHYS_FACTOR is one physic step time expressed in VPX time unit)
+         // This is standard Newton physics: A = dV/dt = (1/m).(Sum of F) therefore dV = (1/m).(Sum of F).dt
+         m_d.m_vel += (float)PHYS_FACTOR * g_pplayer->m_physics->GetGravity() /* * m_d.m_mass / m_d.m_mass */; // Gravity F = m.G
+         m_d.m_vel -= (float)PHYS_FACTOR * g_pplayer->m_physics->GetNudgeAcceleration(); // Table velocity due to nudge (fictitious force due to change of reference frame, therefore mass is not applied)
       }
    }
 

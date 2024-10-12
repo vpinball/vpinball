@@ -3668,6 +3668,12 @@ void LiveUI::UpdatePlumbWindow()
          g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, plumbTiltThreshold);
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
       }
+      int plumbTiltMass = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltMassFactor"s, 100);
+      if (ImGui::InputInt("Tilt mass factor", &plumbTiltMass))
+      {
+         g_pvp->m_settings.SaveValue(Settings::Player, "TiltMassFactor"s, plumbTiltMass);
+         m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
+      }
       ImGui::EndDisabled();
 
       ImGui::Separator();
@@ -3680,16 +3686,16 @@ void LiveUI::UpdatePlumbWindow()
          ImGui::TableSetupColumn("Col2", ImGuiTableColumnFlags_WidthFixed, panelSize * m_dpi);
       
          ImGui::TableNextColumn();
-         ImGui::Text("Acceleration");
+         ImGui::Text("Cab. Sensor");
          ImGui::TableNextColumn();
-         ImGui::Text("Plumb X");
+         ImGui::Text("Plumb Position");
          ImGui::TableNextRow();
 
          const ImVec2 fullSize = ImVec2(panelSize * m_dpi, panelSize * m_dpi);
          const ImVec2 halfSize = fullSize * 0.5f;
          ImGui::TableNextColumn();
          {
-            ImGui::BeginChild("Acc", fullSize);
+            ImGui::BeginChild("Sensor", fullSize);
             const ImVec2 &pos = ImGui::GetWindowPos();
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
@@ -3701,28 +3707,37 @@ void LiveUI::UpdatePlumbWindow()
          ImGui::TableNextColumn();
          {
             ImGui::BeginDisabled(!enablePlumbTilt);
-            ImGui::BeginChild("PlumbX", fullSize);
+            ImGui::BeginChild("PlumbPos", fullSize);
             const ImVec2 &pos = ImGui::GetWindowPos();
-            const Vertex2D &plumb = m_player->m_physics->GetPlumbPos();
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.x + plumb.x * 100.f, fullSize.y), IM_COL32_WHITE);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
+            // Tilt circle
+            const ImVec2 scale = halfSize * 1.5f;
+            const ImVec2 radius = scale * sin(m_player->m_physics->GetPlumbTiltThreshold() * M_PIf * 0.25f);
+            ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, IM_COL32(255, 0, 0, 255));
+            // Plumb position
+            const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();
+            const ImVec2 plumbPos = pos + halfSize + scale * ImVec2(plumb.x, plumb.y) / m_player->m_physics->GetPlumbPoleLength() + ImVec2(0.5f, 0.5f);
+            ImGui::GetWindowDrawList()->AddLine(pos + halfSize, plumbPos, IM_COL32(255, 128, 0, 255));
+            ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();
             ImGui::EndDisabled();
          }
          ImGui::TableNextRow();
 
          ImGui::TableNextColumn();
-         ImGui::Text("Nudge");
+         ImGui::Text("Table Acceleration");
          ImGui::TableNextColumn();
-         ImGui::Text("Plumb Y");
+         ImGui::Text("Plumb Angle");
          ImGui::TableNextRow();
 
          ImGui::TableNextColumn();
          {
-            ImGui::BeginChild("Nudge", fullSize);
+            ImGui::BeginChild("Table Acceleration", fullSize);
             const ImVec2 &pos = ImGui::GetWindowPos();
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            const Vertex3Ds &nudge = m_player->m_physics->GetNudge(); // Range: -1..1
+            const Vertex3Ds &nudge = (float)PHYS_FACTOR * m_player->m_physics->GetNudgeAcceleration(); // Range: -1..1
             ImVec2 nudgePos = pos + halfSize + ImVec2(nudge.x, nudge.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
             ImGui::GetWindowDrawList()->AddCircleFilled(nudgePos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();
@@ -3730,10 +3745,19 @@ void LiveUI::UpdatePlumbWindow()
          ImGui::TableNextColumn();
          {
             ImGui::BeginDisabled(!enablePlumbTilt);
-            ImGui::BeginChild("PlumbY", ImVec2(panelSize * m_dpi, panelSize * m_dpi));
+            ImGui::BeginChild("PlumbAngle", ImVec2(panelSize * m_dpi, panelSize * m_dpi));
             const ImVec2 &pos = ImGui::GetWindowPos();
-            const Vertex2D& plumb = m_player->m_physics->GetPlumbPos();
-            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.x + plumb.y * 100.f, fullSize.y), IM_COL32_WHITE);
+            const Vertex3Ds& plumb = m_player->m_physics->GetPlumbPos();
+            float radius = min(fullSize.x, fullSize.y) * 0.9f;
+            // Tilt limit
+            float angle = m_player->m_physics->GetPlumbTiltThreshold() * M_PIf * 0.25f;
+            ImVec2 plumbPos = pos + ImVec2(fullSize.x * 0.1f + sin(angle) * radius, cos(angle) * radius);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(fullSize.x * 0.1f, 0.f), plumbPos, IM_COL32(255, 0, 0, 255));
+            // Plumb position
+            angle = atan2(sqrt(plumb.x * plumb.x + plumb.y * plumb.y), -plumb.z);
+            plumbPos = pos + ImVec2(fullSize.x * 0.1f + sin(angle) * radius, cos(angle) * radius);
+            ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(fullSize.x * 0.1f, 0.f), plumbPos, IM_COL32(255, 128, 0, 255));
+            ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();
             ImGui::EndDisabled();
          }
