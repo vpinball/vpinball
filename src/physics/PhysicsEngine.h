@@ -13,7 +13,7 @@ public:
    ~PhysicsEngine();
 
    void SetGravity(float slopeDeg, float strength);
-   const Vertex3Ds& GetGravity() const { return m_gravity; }
+   const Vertex3Ds& GetGravity() const { return m_gravity; } // Gravity expressed in VP units. Earth gravity 9.81 m.s^-2 is approximately 1.81751 VPU.VPT^-2 (see physconst.h)
 
    // For the time being, beside the colliders loaded from the table in the constructor, only ball can added/removed
    void AddBall(HitBall *const ball);
@@ -30,10 +30,12 @@ public:
    bool RecordContact(const CollisionEvent& newColl);
 
    void Nudge(float angle, float force);
-   Vertex3Ds GetNudge() const; // More or less nudge velocity (table velocity and "nudge force")
+   Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; }; // Table acceleration (due to nudge) expressed in VP units
    Vertex2D GetScreenNudge() const; // Table displacement
-   const Vertex2D& GetPlumbPos() const { return m_plumb; } // Plumb position on the tilt circle plane
-   void ReadNudgeSettings(Settings& settings);
+   const Vertex3Ds& GetPlumbPos() const { return m_plumbPos; }
+   const float GetPlumbPoleLength() const { return m_plumbPoleLength; }
+   const float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
+   void ReadNudgeSettings(Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
@@ -81,23 +83,19 @@ private:
    vector<HitObject *> m_vUIHitObjects;
    HitQuadtree m_UIOctree;
 
+#pragma region Nudge & Tilt Plumb
    void UpdateNudge(float dtime);
 
-   Vertex2D m_nudge; // filtered nudge acceleration acquired from hardware or resulting of keyboard nudge
+   Vertex3Ds m_nudgeAcceleration; // filtered nudge acceleration acquired from hardware or resulting of keyboard nudge
    bool m_enableNudgeFilter = false; // Located in physic engine instead of input since it is applied at physics cycle rate, on hardware input but also on keyboard nudge
    NudgeFilter m_nudgeFilterX;
    NudgeFilter m_nudgeFilterY;
-   bool m_enablePlumbTilt = false;
-   bool m_plumbTiltHigh = false;
-   Vertex2D m_plumb;
-   Vertex2D m_plumbVel;
-   float m_plumbTiltThreshold;
-
+   
    // Table modeled as a spring
    Vertex3Ds m_tableVel;
    Vertex3Ds m_tableDisplacement;
    Vertex3Ds m_tableVelOld;
-   Vertex3Ds m_tableVelDelta;
+   Vertex3Ds m_tableAcceleration;
    float m_nudgeSpring;
    float m_nudgeDamping;
 
@@ -109,14 +107,24 @@ private:
    // Velocities computed on the device side are applied to the
    // physics model the same way as the velocities computed from
    // the "spring model" for scripted nudge force inputs.
-   Vertex3Ds m_accelVel;
-   Vertex3Ds m_accelVelOld;
+   Vertex3Ds m_prevSensorTableVelocity;
 
    // legacy/VP9 style keyboard nudging
    bool m_legacyNudge = false;
    float m_legacyNudgeStrength = 0.f;
    Vertex2D m_legacyNudgeBack;
    int m_legacyNudgeTime = 0;
+
+   // Tilt plumb
+   bool m_enablePlumbTilt = false;
+   bool m_plumbTiltHigh = false;
+   float m_plumbTiltThreshold;
+   float m_plumbPoleLength;
+   float m_plumbMassFactor;
+   Vertex3Ds m_plumbPos;
+   Vertex3Ds m_plumbVel;
+
+#pragma endregion
 
    // Physics stats
    U32 m_phys_iterations;

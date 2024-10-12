@@ -366,6 +366,9 @@ BOOL KeysConfigDialog::OnInitDialog()
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensValue"s, 400);
     SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
 
+    key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltMassFactor"s, 100);
+    SetDlgItemInt(IDC_TILT_MASS_FACTOR, key, FALSE);
+
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
     SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
 
@@ -666,8 +669,10 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       GetDlgItem(IDC_GLOBALNMOUNT).EnableWindow(checked ? TRUE : FALSE);
       GetDlgItem(IDC_CBGLOBALROTATION).EnableWindow(checked ? TRUE : FALSE);
       GetDlgItem(IDC_GLOBALROTATION).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_CBGLOBALACCVEL).EnableWindow(checked ? TRUE : FALSE);
       GetDlgItem(IDC_CBGLOBALTILT).EnableWindow(checked ? TRUE : FALSE);
       GetDlgItem(IDC_GLOBALTILT).EnableWindow(checked ? TRUE : FALSE);
+      GetDlgItem(IDC_TILT_MASS_FACTOR).EnableWindow(checked ? TRUE : FALSE);
       break;
    }
    case IDC_ENABLE_LEGACY_NUDGE:
@@ -837,6 +842,9 @@ void KeysConfigDialog::OnOK()
         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, newvalue);
     else
         g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
+
+    newvalue = clamp((int)GetDlgItemInt(IDC_TILT_MASS_FACTOR, nothing, TRUE), 0, 1000);
+    g_pvp->m_settings.SaveValue(Settings::Player, "TiltMassFactor"s, newvalue);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {
