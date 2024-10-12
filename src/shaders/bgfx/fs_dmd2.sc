@@ -46,7 +46,7 @@ float udRoundBox(vec2 p, float b, float r)
 vec3 convertDmdToColor(vec3 samp)
 {
 	if (coloredDMD) // sRGB data
-		return pow(samp.rgb, vec3_splat(2.2)) * brightness;
+		return InvGamma(samp.rgb) * brightness;
 	else // linear brightness data
 		return samp.r * dotColor;
 }
