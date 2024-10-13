@@ -856,8 +856,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,259,206,158,10
     RTEXT           "Threshold :",IDC_STATIC,418,205,45,8
     EDITTEXT        IDC_GLOBALTILT,465,204,18,12,ES_RIGHT | ES_AUTOHSCROLL
-    RTEXT           "Mass Factor :",IDC_STATIC,418,218,45,8
-    EDITTEXT        IDC_TILT_MASS_FACTOR,465,217,18,12,ES_RIGHT | ES_AUTOHSCROLL
+    RTEXT           "Inertia :",IDC_STATIC,418,218,45,8
+    EDITTEXT        IDC_TILT_INERTIA,465,217,18,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "To interactively set, calibrate and test the Nudge parameters, please load the 'Nudge Test and Calibration.vpx' table and run it",IDC_STATIC,259,230,228,16
     GROUPBOX        "Plunger",IDC_STATIC,254,250,241,61
     CONTROL         "Enable 1s Plunger Retract",IDC_PLUNGERRETRACT,"Button",BS_AUTOCHECKBOX | WS_GROUP | WS_TABSTOP,259,259,112,10

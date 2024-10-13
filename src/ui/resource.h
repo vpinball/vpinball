@@ -885,7 +885,7 @@
 #define IDC_3D_STEREO                   542
 #define IDC_DisableESC_CB               542
 #define IDC_3D_STEREO_OFS               543
-#define IDC_TILT_MASS_FACTOR            543
+#define IDC_TILT_INERTIA            543
 #define IDC_3D_STEREO_Y                 544
 #define IDC_DOT_GLOW                    544
 #define IDC_ADAPTIVE_VSYNC              545
