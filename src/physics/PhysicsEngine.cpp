@@ -463,7 +463,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
 void PhysicsEngine::ReadNudgeSettings(Settings& settings)
 {
    m_enablePlumbTilt = settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
-   m_plumbMassFactor = settings.LoadValueWithDefault(Settings::Player, "TiltMassFactor"s, 100.f) * 0.05f;
+   m_plumbMassFactor = settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f) * 0.05f;
    m_plumbTiltThreshold = (float)settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(1.0 / 1000.0);
 
    m_enableNudgeFilter = settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
