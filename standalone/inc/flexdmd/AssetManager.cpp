@@ -242,12 +242,12 @@ void* AssetManager::Open(AssetSrc* pSrc)
       {
          for (Texture* texturePtr : g_pvp->m_ptableActive->m_vimage) {
             if (string_compare_case_insensitive(texturePtr->m_szName, pSrc->GetPath())) {
-               SDL_RWops* rwops = SDL_RWFromConstMem(texturePtr->m_ppb->m_pdata, texturePtr->m_ppb->m_cdata);
+               SDL_IOStream* rwops = SDL_IOFromConstMem(texturePtr->m_ppb->m_pdata, texturePtr->m_ppb->m_cdata);
                if (pSrc->GetAssetType() != AssetType_GIF)
-                  pAsset = IMG_Load_RW(rwops, 0);
+                  pAsset = IMG_Load_IO(rwops, 0);
                else
-                  pAsset = IMG_LoadAnimation_RW(rwops, 0);
-               SDL_RWclose(rwops);
+                  pAsset = IMG_LoadAnimation_IO(rwops, 0);
+               SDL_CloseIO(rwops);
             }
          }
       }

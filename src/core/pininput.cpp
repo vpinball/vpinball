@@ -4,8 +4,7 @@
 #include "renderer/VRDevice.h"
 
 #ifdef ENABLE_SDL_VIDEO
-#include <SDL2/SDL_syswm.h>
-#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_sdl3.h"
 #endif
 
 #ifdef __LIBVPINBALL__
@@ -141,19 +140,19 @@ PinInput::PinInput()
 
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
-   m_joylflipkey = SDL_CONTROLLER_BUTTON_LEFTSHOULDER + 1;
-   m_joyrflipkey = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER + 1;
-   m_joylmagnasave = SDL_CONTROLLER_BUTTON_LEFTSTICK + 1;
-   m_joyrmagnasave = SDL_CONTROLLER_BUTTON_RIGHTSTICK + 1;
-   m_joyplungerkey = SDL_CONTROLLER_BUTTON_DPAD_DOWN + 1;
-   m_joyaddcreditkey = SDL_CONTROLLER_BUTTON_A + 1;
-   m_joystartgamekey = SDL_CONTROLLER_BUTTON_B + 1;
-   m_joypmcancel = SDL_CONTROLLER_BUTTON_Y + 1;
-   m_joyframecount = SDL_CONTROLLER_BUTTON_X + 1;
-   m_joycentertilt = SDL_CONTROLLER_BUTTON_DPAD_UP + 1;
-   m_joylefttilt = SDL_CONTROLLER_BUTTON_DPAD_LEFT + 1;
-   m_joyrighttilt = SDL_CONTROLLER_BUTTON_DPAD_RIGHT + 1;
-   m_joylockbar = SDL_CONTROLLER_BUTTON_GUIDE + 1;
+   m_joylflipkey = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1;
+   m_joyrflipkey = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1;
+   m_joylmagnasave = SDL_GAMEPAD_BUTTON_LEFT_STICK + 1;
+   m_joyrmagnasave = SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1;
+   m_joyplungerkey = SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1;
+   m_joyaddcreditkey = SDL_GAMEPAD_BUTTON_SOUTH + 1;
+   m_joystartgamekey = SDL_GAMEPAD_BUTTON_EAST + 1;
+   m_joypmcancel = SDL_GAMEPAD_BUTTON_NORTH + 1;
+   m_joyframecount = SDL_GAMEPAD_BUTTON_WEST + 1;
+   m_joycentertilt = SDL_GAMEPAD_BUTTON_DPAD_UP + 1;
+   m_joylefttilt = SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1;
+   m_joyrighttilt = SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1;
+   m_joylockbar = SDL_GAMEPAD_BUTTON_GUIDE + 1;
 #endif
 #endif
 
@@ -168,13 +167,13 @@ PinInput::~PinInput()
 {
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
-   if (m_pSDLGameController)
-      SDL_GameControllerClose(m_pSDLGameController);
+   if (m_pSDLGamePad)
+      SDL_CloseGamepad(m_pSDLGamePad);
 #else
    if (m_pSDLRumbleDevice)
-      SDL_HapticClose(m_pSDLRumbleDevice);
+      SDL_CloseHaptic(m_pSDLRumbleDevice);
    if (m_pSDLJoystick)
-      SDL_JoystickClose(m_pSDLJoystick);
+      SDL_CloseJoystick(m_pSDLJoystick);
 #endif
 #endif
 
@@ -266,23 +265,27 @@ void PinInput::LoadSettings(const Settings& settings)
 #ifdef ENABLE_SDL_GAMECONTROLLER
 void PinInput::RefreshSDLGameController()
 {
-   if (m_pSDLGameController) {
-      SDL_GameControllerClose(m_pSDLGameController);
-      m_pSDLGameController = nullptr;
+   if (m_pSDLGamePad) {
+      SDL_CloseGamepad(m_pSDLGamePad);
+      m_pSDLGamePad = nullptr;
    }
    m_num_joy = 0;
-   if(SDL_NumJoysticks() > 0) {
-      for (int idx = 0; idx < SDL_NumJoysticks(); ++idx) {
-         if (SDL_IsGameController(idx)) {
+   
+   int joystick_count = 0;
+   SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
+   if(joystick_count > 0) {
+      for (int idx = 0; idx < joystick_count; ++idx) {
+         if (SDL_IsGamepad(idx)) {
 #if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
-            if (!lstrcmpi(SDL_GameControllerNameForIndex(idx), "Remote")) continue;
+            if (!lstrcmpi(SDL_GetGamepadNameForID(idx), "Remote")) continue;
 #endif
-            m_pSDLGameController = SDL_GameControllerOpen(idx);
-            if (m_pSDLGameController) {
+            m_pSDLGamePad = SDL_OpenGamepad(idx);
+            if (m_pSDLGamePad) {
                m_num_joy = 1;
+               SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
                PLOGI.printf("Game controller found: name=%s, rumble=%s",
-                  SDL_GameControllerName(m_pSDLGameController),
-                  SDL_GameControllerHasRumble(m_pSDLGameController) ? "true" : "false");
+                  SDL_GetGamepadName(m_pSDLGamePad),
+                  SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false) ? "true" : "false");
                break;
             }
          }
@@ -296,29 +299,31 @@ void PinInput::RefreshSDLGameController()
 void PinInput::RefreshSDLJoystick()
 {
    if (m_pSDLRumbleDevice) {
-      SDL_HapticClose(m_pSDLRumbleDevice);
+      SDL_CloseHaptic(m_pSDLRumbleDevice);
       m_pSDLRumbleDevice = nullptr;
    }
    if (m_pSDLJoystick) {
-      SDL_JoystickClose(m_pSDLJoystick);
+      SDL_CloseJoystick(m_pSDLJoystick);
       m_pSDLJoystick = nullptr;
    }
    m_num_joy = 0;
-   if(SDL_NumJoysticks() > 0) {
-      for (int idx = 0; idx < SDL_NumJoysticks(); ++idx) {
-         m_pSDLJoystick = SDL_JoystickOpen(idx);
+   int joystick_count = 0;
+   SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
+   if(joystick_count > 0) {
+      for (int idx = 0; idx < joystick_count; ++idx) {
+         m_pSDLJoystick = SDL_OpenJoystick(idx);
          if (m_pSDLJoystick) {
             m_num_joy = 1;
-            if (SDL_JoystickIsHaptic(m_pSDLJoystick)) {
-               m_pSDLRumbleDevice = SDL_HapticOpenFromJoystick(m_pSDLJoystick);
-               if (SDL_HapticRumbleInit(m_pSDLRumbleDevice) < 0) {
+            if (SDL_IsJoystickHaptic(m_pSDLJoystick)) {
+               m_pSDLRumbleDevice = SDL_OpenHapticFromJoystick(m_pSDLJoystick);
+               if (!SDL_InitHapticRumble(m_pSDLRumbleDevice)) {
                   ShowError(SDL_GetError());
-                  SDL_HapticClose(m_pSDLRumbleDevice);
+                  SDL_CloseHaptic(m_pSDLRumbleDevice);
                   m_pSDLRumbleDevice = nullptr;
                }
             }
             PLOGI.printf("Joystick found: name=%s, rumble=%s",
-               SDL_JoystickName(m_pSDLJoystick),
+               SDL_GetJoystickName(m_pSDLJoystick),
                m_pSDLRumbleDevice ? "true" : "false");
             break;
          }
@@ -761,14 +766,14 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
    static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
    switch (e.type) 
    {
-      case SDL_KEYDOWN:
-      case SDL_KEYUP:
+      case SDL_EVENT_KEY_DOWN:
+      case SDL_EVENT_KEY_UP:
          if (e.key.repeat == 0) {
-            const unsigned int dik = get_dik_from_sdlk(e.key.keysym.sym);
+            const unsigned int dik = get_dik_from_sdlk(e.key.key);
             if (dik != ~0u) {
                DIDEVICEOBJECTDATA didod;
                didod.dwOfs = dik;
-               didod.dwData = e.type == SDL_KEYDOWN ? 0x80 : 0;
+               didod.dwData = e.type == SDL_EVENT_KEY_DOWN ? 0x80 : 0;
                //didod.dwTimeStamp = curr_time_msec;
                PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
             }
@@ -776,19 +781,19 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
          break;
 
       #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__)
-      case SDL_FINGERDOWN:
-      case SDL_FINGERUP:
+      case SDL_EVENT_FINGER_DOWN:
+      case SDL_EVENT_FINGER_UP:
          {
             POINT point;
             point.x = (int)((float)g_pplayer->m_playfieldWnd->GetWidth() * e.tfinger.x);
             point.y = (int)((float)g_pplayer->m_playfieldWnd->GetHeight() * e.tfinger.y);
             for (unsigned int i = 0; i < MAX_TOUCHREGION; ++i)
             {
-               if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_FINGERDOWN))
+               if ((g_pplayer->m_touchregion_pressed[i] != (e.type == SDL_EVENT_FINGER_DOWN))
                   && Intersect(touchregion[i], g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight(), point,
                      fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
                {
-                  g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_FINGERDOWN);
+                  g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_EVENT_FINGER_DOWN);
                   DIDEVICEOBJECTDATA didod;
                   didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
                   didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
@@ -800,34 +805,34 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
       #endif
 
       #ifdef ENABLE_SDL_GAMECONTROLLER
-      case SDL_CONTROLLERDEVICEADDED:
-      case SDL_CONTROLLERDEVICEREMOVED:
+      case SDL_EVENT_GAMEPAD_ADDED:
+      case SDL_EVENT_GAMEPAD_REMOVED:
          RefreshSDLGameController();
          break;
-      case SDL_CONTROLLERAXISMOTION:
-         if (e.caxis.axis < 6) {
+      case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+         if (e.gaxis.axis < 6) {
             DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = axes[e.caxis.axis];
-            const int value = e.caxis.value * axisMultiplier[e.caxis.axis];
+            didod.dwOfs = axes[e.gaxis.axis];
+            const int value = e.gaxis.value * axisMultiplier[e.gaxis.axis];
             didod.dwData = (DWORD)(value);
             PushQueue(&didod, APP_JOYSTICK(0));
          }
          break;
-      case SDL_CONTROLLERBUTTONDOWN:
-      case SDL_CONTROLLERBUTTONUP:
-         if (e.cbutton.button < 32) {
+      case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+      case SDL_EVENT_GAMEPAD_BUTTON_UP:
+         if (e.gbutton.button < 32) {
             DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.cbutton.button;
-            didod.dwData = e.type == SDL_CONTROLLERBUTTONDOWN ? 0x80 : 0x00;
+            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.gbutton.button;
+            didod.dwData = e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? 0x80 : 0x00;
             PushQueue(&didod, APP_JOYSTICK(0));
          }
          break;
       #else
-      case SDL_JOYDEVICEADDED:
-      case SDL_JOYDEVICEREMOVED:
+      case SDL_EVENT_JOYSTICK_ADDED:
+      case SDL_EVENT_JOYSTICK_REMOVED:
          RefreshSDLJoystick();
          break;
-      case SDL_JOYAXISMOTION:
+      case SDL_EVENT_JOYSTICK_AXIS_MOTION:
          if (e.jaxis.axis < 6) {
             DIDEVICEOBJECTDATA didod;
             didod.dwOfs = axes[e.jaxis.axis];
@@ -836,12 +841,12 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             PushQueue(&didod, APP_JOYSTICK(0));
          }
          break;
-      case SDL_JOYBUTTONDOWN:
-      case SDL_JOYBUTTONUP:
+      case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+      case SDL_EVENT_JOYSTICK_BUTTON_UP:
          if (e.jbutton.button < 32) {
             DIDEVICEOBJECTDATA didod;
             didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-            didod.dwData = e.type == SDL_JOYBUTTONDOWN ? 0x80 : 0x00;
+            didod.dwData = e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN ? 0x80 : 0x00;
             PushQueue(&didod, APP_JOYSTICK(0));
          }
          break;
@@ -893,11 +898,12 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    {
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER
-      if (m_pSDLGameController && SDL_GameControllerHasRumble(m_pSDLGameController))
-         SDL_GameControllerRumble(m_pSDLGameController, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
+      SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
+      if (m_pSDLGamePad && SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false))
+         SDL_RumbleGamepad(m_pSDLGamePad, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
 #else
       if (m_pSDLRumbleDevice)
-         SDL_HapticRumblePlay(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
+         SDL_PlayHapticRumble(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
 #endif
 #endif
 #ifdef __LIBVPINBALL__
@@ -930,11 +936,11 @@ void PinInput::Init()
 
    #if defined(ENABLE_SDL_INPUT)
       #ifdef ENABLE_SDL_GAMECONTROLLER
-         SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER | SDL_INIT_HAPTIC);
+         SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
          string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
          if (!std::filesystem::exists(path))
             std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
-         int count = SDL_GameControllerAddMappingsFromFile(path.c_str());
+         int count = SDL_AddGamepadMappingsFromFile(path.c_str());
          if (count > 0) {
             PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
          }

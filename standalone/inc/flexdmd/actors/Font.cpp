@@ -19,16 +19,14 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          if (!m_textures[i])
             continue;
 
-         SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-         SDL_Surface* src = SDL_ConvertSurface(m_textures[i], format, 0);
-         SDL_FreeFormat(format);
+         SDL_Surface* src = SDL_ConvertSurface(m_textures[i], SDL_PIXELFORMAT_RGBA32);
 
          int w = src->w;
          int h = src->h;
 
-         SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, w, h, 32, SDL_PIXELFORMAT_RGBA32);
+         SDL_Surface* dst = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
 
-         UINT32 outline = SDL_MapRGBA(dst->format, 
+         UINT32 outline = SDL_MapSurfaceRGBA(dst, 
             GetRValue(pAssetSrc->GetFontBorderTint()), 
             GetGValue(pAssetSrc->GetFontBorderTint()), 
             GetBValue(pAssetSrc->GetFontBorderTint()), 
@@ -47,7 +45,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 
          for (int y = 0; y < h; ++y) {
             for (int x = 0; x < w; ++x) {
-               SDL_GetRGBA(pixels_src[y * w + x], src->format, &r, &g, &b, &a);
+               SDL_GetRGBA(pixels_src[y * w + x], SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &r, &g, &b, &a);
 
                if (a == 0)
                   continue;
@@ -78,7 +76,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          UINT8 tint_b = GetBValue(pAssetSrc->GetFontTint());
 
          for (int idx = 0; idx < dst->w * dst->h; ++idx) {
-            SDL_GetRGBA(pixels_src[idx], src->format, &r, &g, &b, &a);
+            SDL_GetRGBA(pixels_src[idx], SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &r, &g, &b, &a);
 
             if (a == 0)
                continue;
@@ -87,13 +85,13 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
             g = (UINT8)SDL_min((g * tint_g) / 255, 255);
             b = (UINT8)SDL_min((b * tint_b) / 255, 255);
 
-            pixels_dst[idx] = SDL_MapRGBA(dst->format, r, g, b, a);
+            pixels_dst[idx] = SDL_MapSurfaceRGBA(dst, r, g, b, a);
          }
 
          SDL_UnlockSurface(src);
          SDL_UnlockSurface(dst);
-         SDL_FreeSurface(src);
-         SDL_FreeSurface(m_textures[i]);
+         SDL_DestroySurface(src);
+         SDL_DestroySurface(m_textures[i]);
 
          m_textures[i] = dst;
       }
@@ -108,9 +106,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          if (!m_textures[i])
             continue;
 
-         SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-         SDL_Surface* dst = SDL_ConvertSurface(m_textures[i], format, 0);
-         SDL_FreeFormat(format);
+         SDL_Surface* dst = SDL_ConvertSurface(m_textures[i], SDL_PIXELFORMAT_RGBA32);
 
          int w = dst->w;
          int h = dst->h;
@@ -129,17 +125,17 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          UINT8 tint_b = GetBValue(pAssetSrc->GetFontTint());
 
          for (int idx = 0; idx < dst->w * dst->h; ++idx) {
-            SDL_GetRGBA(pixels_dst[idx], dst->format, &r, &g, &b, &a);
+            SDL_GetRGBA(pixels_dst[idx], SDL_GetPixelFormatDetails(dst->format), SDL_GetSurfacePalette(dst), &r, &g, &b, &a);
 
             r = (UINT8)SDL_min((r * tint_r) / 255, 255);
             g = (UINT8)SDL_min((g * tint_g) / 255, 255);
             b = (UINT8)SDL_min((b * tint_b) / 255, 255);
 
-            pixels_dst[idx] = SDL_MapRGBA(dst->format, r, g, b, a);
+            pixels_dst[idx] = SDL_MapSurfaceRGBA(dst, r, g, b, a);
          }
 
          SDL_UnlockSurface(dst);
-         SDL_FreeSurface(m_textures[i]);
+         SDL_DestroySurface(m_textures[i]);
 
          m_textures[i] = dst;
       }
@@ -151,7 +147,7 @@ Font::~Font()
    if (m_pBitmapFont) {
       for (int i = 0; i < m_pBitmapFont->GetPageCount(); ++i) {
          if (m_textures[i])
-            SDL_FreeSurface(m_textures[i]);
+            SDL_DestroySurface(m_textures[i]);
       }
 
       delete m_pBitmapFont;

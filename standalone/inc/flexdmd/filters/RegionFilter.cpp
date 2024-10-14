@@ -20,10 +20,10 @@ void RegionFilter::Filter(Bitmap* pBitmap)
    if (!src)
       return;
 
-   SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 32, SDL_PIXELFORMAT_RGBA32);
-   SDL_FillRect(dst, NULL, SDL_MapRGBA(dst->format, 0, 0, 0, 0));
+   SDL_Surface* dst = SDL_CreateSurface(m_width, m_height, SDL_PIXELFORMAT_RGBA32);
+   SDL_FillSurfaceRect(dst, NULL, SDL_MapSurfaceRGBA(dst, 0, 0, 0, 0));
    SDL_Rect srcRect = { m_x, m_y, m_width, m_height };
-   SDL_BlitScaled(src, &srcRect, dst, NULL);
+   SDL_BlitSurfaceScaled(src, &srcRect, dst, NULL, SDL_SCALEMODE_NEAREST);
 
    pBitmap->SetData(dst);
 }

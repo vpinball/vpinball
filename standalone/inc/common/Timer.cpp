@@ -4,7 +4,7 @@
 
 namespace VP {
 
-Uint32 Timer::TimerCallback(Uint32 interval, void* param)
+Uint32 Timer::TimerCallback(void* param, SDL_TimerID timerID, Uint32 interval)
 {
    Timer* pTimer = static_cast<Timer*>(param);
    if (pTimer->m_elapsedListener)

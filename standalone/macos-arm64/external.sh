@@ -3,9 +3,9 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL2_VERSION=2.30.8
-SDL2_IMAGE_VERSION=2.8.2
-SDL2_TTF_VERSION=2.22.0
+SDL_VERSION=3.1.3
+SDL_IMAGE_SHA=a010117fee88255a32492ae9a43e93a213d608ec
+SDL_TTF_SHA=45faf5a38bd8f9319ac0fe66cfcc4ceb192f9fa4
 PINMAME_SHA=19938c59cd4adfc8f4a6afadbe5b706d35e80577
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=8e110d87edab1b843d97ba831743c79519e07ad8
@@ -18,9 +18,9 @@ NUM_PROCS=$(sysctl -n hw.ncpu)
 
 echo "Building external libraries..."
 echo "  FREEIMAGE_VERSION: ${FREEIMAGE_VERSION}"
-echo "  SDL2_VERSION: ${SDL2_VERSION}"
-echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
-echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
+echo "  SDL_VERSION: ${SDL_VERSION}"
+echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
+echo "  SDL_TTF_SHA: ${SDL_TTF_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
 echo "  LIBALTSOUND_SHA: ${LIBALTSOUND_SHA}"
 echo "  LIBDMDUTIL_SHA: ${LIBDMDUTIL_SHA}"
@@ -87,105 +87,84 @@ fi
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 
 #
-# build SDL2 and copy to external
+# build SDL3, SDL_image, SDL_ttf and copy to external
 #
 
-SDL2_CACHE_NAME="SDL2-${SDL2_VERSION}"
+CACHE_NAME="SDL-${SDL_VERSION}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}_002"
 
-if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/libsdl-org/SDL/releases/download/release-${SDL2_VERSION}/SDL2-${SDL2_VERSION}.zip -o SDL2-${SDL2_VERSION}.zip
-   unzip SDL2-${SDL2_VERSION}.zip
-   cd SDL2-${SDL2_VERSION}
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/libsdl-org/SDL/releases/download/preview-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.xz -o SDL3-${SDL_VERSION}.tar.xz
+   tar -xf SDL3-3.1.3.tar.xz
+   cd SDL3-3.1.3
    cmake \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
-      -DSDL_TEST=OFF \
-      -DSDL_CMAKE_DEBUG_POSTFIX="" \
+      -DSDL_TEST_LIBRARY=OFF \
+      -DSDL_OPENGLES=OFF \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
-   # cmake does not make a symbolic link for libSDL2.dylib
-   ln -s libSDL2-2.0.0.dylib build/libSDL2.dylib
-   mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
-   cp include/*.h ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/include
-   mkdir -p ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
-   cp -a build/*.dylib ../../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib
-   cd ..
-   touch "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache"
-fi
-
-mkdir -p ../external/include/SDL2
-cp -r ../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib/*.dylib ../external/lib
-
-#
-# build SDL2_image and copy to external
-#
-
-CACHE_NAME="SDL2_image-${SDL2_IMAGE_VERSION}-${SDL2_CACHE_NAME}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/libsdl-org/SDL_image/releases/download/release-${SDL2_IMAGE_VERSION}/SDL2_image-${SDL2_IMAGE_VERSION}.zip -o SDL2_image-${SDL2_IMAGE_VERSION}.zip
-   unzip SDL2_image-${SDL2_IMAGE_VERSION}.zip
-   cd SDL2_image-${SDL2_IMAGE_VERSION}
-   touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
-   cmake \
-      -DBUILD_SHARED_LIBS=ON \
-      -DSDL2IMAGE_SAMPLES=OFF \
-      -DSDL2IMAGE_DEBUG_POSTFIX="" \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
-      -DCMAKE_OSX_ARCHITECTURES=arm64 \
-      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
-      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
-      -B build
-   cmake --build build -- -j${NUM_PROCS}
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp include/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
+   cp -r include/SDL3/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
-   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
-fi
 
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
-
-#
-# build SDL2_ttf and copy to external
-#
-
-CACHE_NAME="SDL2_ttf-${SDL2_TTF_VERSION}-${SDL2_CACHE_NAME}"
-
-if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/libsdl-org/SDL_ttf/releases/download/release-${SDL2_TTF_VERSION}/SDL2_ttf-${SDL2_TTF_VERSION}.zip -o SDL2_ttf-${SDL2_TTF_VERSION}.zip
-   unzip SDL2_ttf-${SDL2_TTF_VERSION}.zip
-   cd SDL2_ttf-${SDL2_TTF_VERSION}
-   touch cmake/FindSDL2.cmake # force cmake to use the SDL2 we just built
+   curl -sL https://github.com/libsdl-org/SDL_image/archive/${SDL_IMAGE_SHA}.zip -o SDL_image-${SDL_IMAGE_SHA}.zip
+   unzip SDL_image-${SDL_IMAGE_SHA}.zip
+   cd SDL_image-${SDL_IMAGE_SHA}
+   external/download.sh
    cmake \
       -DBUILD_SHARED_LIBS=ON \
-      -DSDL2TTF_SAMPLES=OFF \
-      -DSDL2TTF_VENDORED=ON \
-      -DSDL2TTF_HARFBUZZ=ON \
-      -DSDL2TTF_DEBUG_POSTFIX="" \
-      -DSDL2_INCLUDE_DIR=../../external/include/SDL2 \
-      -DSDL2_LIBRARY=../../external/lib/libSDL2.dylib \
+      -DSDLIMAGE_SAMPLES=OFF \
+      -DSDLIMAGE_DEPS_SHARED=ON \
+      -DSDLIMAGE_VENDORED=ON \
+      -DSDLIMAGE_AVIF=OFF \
+      -DSDLIMAGE_WEBP=OFF \
+      -DSDL3_DIR=../SDL3-${SDL_VERSION}/build \
       -DCMAKE_OSX_ARCHITECTURES=arm64 \
       -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
-   cp -r *.h ../../${CACHE_DIR}/${CACHE_NAME}/include
-   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image
+   cp -r include/SDL3_image/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/lib
    cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
+
+   curl -sL https://github.com/libsdl-org/SDL_ttf/archive/${SDL_TTF_SHA}.zip -o SDL_ttf-${SDL_TTF_SHA}.zip
+   unzip SDL_ttf-${SDL_TTF_SHA}.zip
+   cd SDL_ttf-${SDL_TTF_SHA}
+   external/download.sh
+   cmake \
+      -DBUILD_SHARED_LIBS=ON \
+      -DSDLTTF_SAMPLES=OFF \
+      -DSDLTTF_VENDORED=ON \
+      -DSDLTTF_HARFBUZZ=ON \
+      -DSDL3_DIR=../SDL3-${SDL_VERSION}/build \
+      -DCMAKE_OSX_ARCHITECTURES=arm64 \
+      -DCMAKE_OSX_DEPLOYMENT_TARGET=14.0 \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf
+   cp -r include/SDL3_ttf/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/lib
+   cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cd ..
+
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
+mkdir -p ../external/include/SDL3
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3/* ../external/include/SDL3
+mkdir -p ../external/include/SDL3_image
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image/* ../external/include/SDL3_image
+mkdir -p ../external/include/SDL3_ttf
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf/* ../external/include/SDL3_ttf
 cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 
 #

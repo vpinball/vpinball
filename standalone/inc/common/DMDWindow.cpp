@@ -31,11 +31,11 @@ bool DMDWindow::Init()
    int rotation = GetRotation();
 
    if (rotation == 0 || rotation == 2) {
-      SDL_RenderSetLogicalSize(m_pRenderer, GetWidth(), GetHeight());
+      SDL_SetRenderLogicalPresentation(m_pRenderer, GetWidth(), GetHeight(), SDL_LOGICAL_PRESENTATION_STRETCH);
       m_angle = (rotation == 0) ? 0 : 180;
    }
    else if (rotation == 1 || rotation == 3) {
-      SDL_RenderSetLogicalSize(m_pRenderer, GetHeight(), GetWidth());
+      SDL_SetRenderLogicalPresentation(m_pRenderer, GetHeight(), GetWidth(), SDL_LOGICAL_PRESENTATION_STRETCH);
       m_angle = (rotation == 1) ? 90 : 270;
       float xRotated = GetHeight() - m_destRect.y - (m_destRect.w + m_destRect.h) / 2.0f;
       float yRotated = m_destRect.x + (m_destRect.w - m_destRect.h) / 2.0f;
@@ -107,11 +107,11 @@ void DMDWindow::Render()
          if (!m_pTexture)
             return;
       }
-      if (SDL_UpdateTexture(m_pTexture, NULL, pRGB24Data, m_pitch))
+      if (!SDL_UpdateTexture(m_pTexture, NULL, pRGB24Data, m_pitch))
          return;
       SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
       SDL_RenderClear(m_pRenderer);
-      SDL_RenderCopyExF(m_pRenderer, m_pTexture, NULL, &m_destRect, m_angle, NULL, SDL_FLIP_NONE);
+      SDL_RenderTextureRotated(m_pRenderer, m_pTexture, NULL, &m_destRect, m_angle, NULL, SDL_FLIP_NONE);
       SDL_RenderPresent(m_pRenderer);
    }
 }

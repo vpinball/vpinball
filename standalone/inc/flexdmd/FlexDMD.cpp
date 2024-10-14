@@ -521,7 +521,7 @@ void FlexDMD::RenderLoop()
    PLOGI.printf("Starting render thread");
 
    m_pThread = new std::thread([this]() {
-      SDL_Surface* pSurface = SDL_CreateRGBSurfaceWithFormat(0, m_width, m_height, 24, SDL_PIXELFORMAT_RGB24);
+      SDL_Surface* pSurface = SDL_CreateSurface(m_width, m_height, SDL_PIXELFORMAT_RGB24);
       m_pGraphics = new VP::SurfaceGraphics(pSurface);
 
       m_pStage->SetSize(m_width, m_height);
@@ -530,7 +530,7 @@ void FlexDMD::RenderLoop()
       double elapsedMs = 0.0;
 
       while (m_run) {
-         Uint64 startTime = SDL_GetTicks64();
+         Uint64 startTime = SDL_GetTicks();
 
          if (!m_renderLockCount) {
             if (m_clear) {
@@ -571,14 +571,14 @@ void FlexDMD::RenderLoop()
             }
          }
 
-         double renderingDuration = SDL_GetTicks64() - startTime;
+         double renderingDuration = SDL_GetTicks() - startTime;
 
          int sleepMs = (1000 / m_frameRate) - (int)renderingDuration;
 
          if (sleepMs > 1)
             SDL_Delay(sleepMs);
 
-         elapsedMs = SDL_GetTicks64() - startTime;
+         elapsedMs = SDL_GetTicks() - startTime;
 
          if (elapsedMs > 4000 / m_frameRate) {
             PLOGI.printf("Abnormally long elapsed time between frames of %fs (rendering lasted %fms, sleeping was %dms), limiting to %dms", 
@@ -590,7 +590,7 @@ void FlexDMD::RenderLoop()
 
       m_pStage->SetOnStage(false);
 
-      SDL_FreeSurface(pSurface);
+      SDL_DestroySurface(pSurface);
 
       delete m_pGraphics;
       m_pGraphics = nullptr;

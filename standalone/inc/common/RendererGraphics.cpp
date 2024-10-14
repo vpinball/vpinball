@@ -9,7 +9,7 @@
 
 #include "RendererGraphics.h"
 
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 #define MAX_GRAPHICS_POLYSIZE 16384
 
@@ -27,7 +27,7 @@ RendererGraphics::RendererGraphics(SDL_Renderer* pRenderer)
 {
    m_pRenderer = pRenderer;
 
-   SDL_RenderGetLogicalSize(pRenderer, &m_width, &m_height);
+   SDL_GetRenderLogicalPresentation(pRenderer, &m_width, &m_height, NULL);
    m_color = RGB(0, 0, 0);
    m_alpha = 255;
 
@@ -92,7 +92,7 @@ void RendererGraphics::DrawPath(GraphicsPath* pPath)
          m_pModelMatrix->TransformPoint(p2.x, p2.y);
       }
 
-      SDL_RenderDrawLine(m_pRenderer, (int)p1.x + m_translateX, (int)p1.y + m_translateY, (int)p2.x + m_translateX, (int)p2.y + m_translateY);
+      SDL_RenderLine(m_pRenderer, (int)p1.x + m_translateX, (int)p1.y + m_translateY, (int)p2.x + m_translateX, (int)p2.y + m_translateY);
    }
 
    // Automatically close the path
@@ -104,7 +104,7 @@ void RendererGraphics::DrawPath(GraphicsPath* pPath)
       m_pModelMatrix->TransformPoint(p2.x, p2.y);
    }
 
-   SDL_RenderDrawLine(m_pRenderer, (int)p1.x + m_translateX, (int)p1.y + m_translateY, (int)p2.x + m_translateX, (int)p2.y + m_translateY);
+   SDL_RenderLine(m_pRenderer, (int)p1.x + m_translateX, (int)p1.y + m_translateY, (int)p2.x + m_translateX, (int)p2.y + m_translateY);
 }
 
 void RendererGraphics::FillPath(GraphicsPath* pPath)
@@ -280,11 +280,11 @@ void RendererGraphics::FillPath(GraphicsPath* pPath)
                   while (strip[++xi] >= 0.996f) ;
                   xi--;
                   SDL_SetRenderDrawColor(m_pRenderer, r, g, b, a);
-                  SDL_RenderDrawLine(m_pRenderer, (int)minx + x0, yi, (int)minx + xi, yi);
+                  SDL_RenderLine(m_pRenderer, (int)minx + x0, yi, (int)minx + xi, yi);
                }
                else {
                   SDL_SetRenderDrawColor(m_pRenderer, r, g, b, (UINT8)((float)a * strip[xi]));
-                  SDL_RenderDrawPoint(m_pRenderer, (int)minx + xi, yi);
+                  SDL_RenderPoint(m_pRenderer, (int)minx + xi, yi);
                }
             }
          }
@@ -299,7 +299,28 @@ void RendererGraphics::FillPath(GraphicsPath* pPath)
 void RendererGraphics::DrawImage(SDL_Surface* pImage, SDL_Rect* pSrcRect, SDL_Rect* pDstRect)
 {
    SDL_Texture* pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pImage);
-   SDL_RenderCopy(m_pRenderer, pTexture, pSrcRect, pDstRect);
+
+   SDL_FRect srcFRect;
+   SDL_FRect* pSrcFRect = nullptr;
+   if (pSrcRect) {
+      srcFRect.x = static_cast<float>(pSrcRect->x);
+      srcFRect.y = static_cast<float>(pSrcRect->y);
+      srcFRect.w = static_cast<float>(pSrcRect->w);
+      srcFRect.h = static_cast<float>(pSrcRect->h);
+      pSrcFRect = &srcFRect;
+   }
+
+   SDL_FRect dstFRect;
+   SDL_FRect* pDstFRect = nullptr;
+   if (pDstRect) {
+      dstFRect.x = static_cast<float>(pDstRect->x);
+      dstFRect.y = static_cast<float>(pDstRect->y);
+      dstFRect.w = static_cast<float>(pDstRect->w);
+      dstFRect.h = static_cast<float>(pDstRect->h);
+      pDstFRect = &dstFRect;
+   }
+
+   SDL_RenderTexture(m_pRenderer, pTexture, pSrcFRect, pDstFRect);
    SDL_DestroyTexture(pTexture);
 }
 
@@ -308,13 +329,40 @@ void RendererGraphics::DrawTexture(SDL_Texture* pTexture, SDL_Rect* pSrcRect, SD
    if (!pTexture)
       return;
 
-   SDL_RenderCopy(m_pRenderer, pTexture, pSrcRect, pDstRect);
+   SDL_FRect srcFRect;
+   SDL_FRect* pSrcFRect = nullptr;
+   if (pSrcRect) {
+      srcFRect.x = static_cast<float>(pSrcRect->x);
+      srcFRect.y = static_cast<float>(pSrcRect->y);
+      srcFRect.w = static_cast<float>(pSrcRect->w);
+      srcFRect.h = static_cast<float>(pSrcRect->h);
+      pSrcFRect = &srcFRect;
+   }
+
+   SDL_FRect dstFRect;
+   SDL_FRect* pDstFRect = nullptr;
+   if (pDstRect) {
+      dstFRect.x = static_cast<float>(pDstRect->x);
+      dstFRect.y = static_cast<float>(pDstRect->y);
+      dstFRect.w = static_cast<float>(pDstRect->w);
+      dstFRect.h = static_cast<float>(pDstRect->h);
+      pDstFRect = &dstFRect;
+   }
+
+   SDL_RenderTexture(m_pRenderer, pTexture, pSrcFRect, pDstFRect);
 }
 
 void RendererGraphics::FillRectangle(const SDL_Rect& rect)
 {
    SDL_SetRenderDrawColor(m_pRenderer, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha);
-   SDL_RenderFillRect(m_pRenderer, &rect);
+
+   SDL_FRect fRect;
+   fRect.x = static_cast<float>(rect.x);
+   fRect.y = static_cast<float>(rect.y);
+   fRect.w = static_cast<float>(rect.w);
+   fRect.h = static_cast<float>(rect.h);
+
+   SDL_RenderFillRect(m_pRenderer, &fRect);
 }
 
 void RendererGraphics::TranslateTransform(int x, int y)

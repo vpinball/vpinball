@@ -3,7 +3,7 @@
 #pragma once
 
 #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-#include "SDL2/SDL.h"
+#include <SDL3/SDL.h>
 #else // Win32 Windowing
 #include <windows.h>
 #endif
@@ -52,7 +52,11 @@ public:
    struct DisplayConfig
    {
       int display; // Window Display identifier (the number that appears in the native Windows settings)
-      int adapter; // DirectX9 or SDL display/adapter identifier
+   #ifdef ENABLE_SDL_VIDEO 
+      Uint32 adapter; // SDL display/adapter identifier
+   #else
+      int adapter; // DirectX9 display/adapter identifier
+   #endif
       int top;
       int left;
       int width;

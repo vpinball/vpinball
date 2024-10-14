@@ -3,8 +3,8 @@
 #include "core/stdafx.h"
 
 #ifdef ENABLE_SDL_VIDEO
-  #include <SDL2/SDL_syswm.h>
-  #include "imgui/imgui_impl_sdl2.h"
+  #include <SDL3/SDL_main.h>
+  #include "imgui/imgui_impl_sdl3.h"
 #else
   #include "imgui/imgui_impl_win32.h"
 #endif
@@ -295,7 +295,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
-      int pfRefreshRate = m_playfieldWnd->GetRefreshRate();
+      int pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
       if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
          m_maxFramerate = 24;
@@ -482,10 +482,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_pininput.LoadSettings(m_ptable->m_settings);
    #ifdef _WIN32
       #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      SDL_SysWMinfo wmInfo;
-      SDL_VERSION(&wmInfo.version);
-      SDL_GetWindowWMInfo(m_playfieldWnd->GetCore(), &wmInfo);
-      HWND hwnd = wmInfo.info.win.window;
+      HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
       #else // Win32 Windowing
       HWND hwnd = m_playfieldWnd->GetCore();
       #endif
@@ -2233,10 +2230,7 @@ void Player::FinishFrame()
       if (!m_debuggerDialog.IsWindow())
       {
          #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-         SDL_SysWMinfo wmInfo;
-         SDL_VERSION(&wmInfo.version);
-         SDL_GetWindowWMInfo(m_playfieldWnd->GetCore(), &wmInfo);
-         HWND hwnd = wmInfo.info.win.window;
+         HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
          #else // Win32 Windowing
          HWND hwnd = m_playfieldWnd->GetCore();
          #endif

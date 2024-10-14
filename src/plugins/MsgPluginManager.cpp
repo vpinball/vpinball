@@ -20,7 +20,7 @@
 using namespace std::string_literals;
 
 #if defined(ENABLE_SDL)
-   #include "SDL2/SDL_loadso.h"
+   #include <SDL3/SDL_loadso.h>
 #else
    #if defined(_WIN32) || defined(_WIN64)
       #ifndef WIN32_LEAN_AND_MEAN

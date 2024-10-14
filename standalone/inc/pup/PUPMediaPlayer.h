@@ -40,7 +40,7 @@ private:
    void Run();
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    AVCodecContext* OpenStream(AVFormatContext* pInputFormatContext, int stream);
-   SDL_PixelFormatEnum GetVideoFormat(enum AVPixelFormat format);
+   SDL_PixelFormat GetVideoFormat(enum AVPixelFormat format);
    void SetYUVConversionMode(AVFrame* pFrame);
    void HandleAudioFrame(AVFrame* pFrame);
 #endif
@@ -56,7 +56,7 @@ private:
    int m_videoStream;
    AVCodecContext* m_pVideoContext;
    struct SwsContext* m_pVideoConversionContext;
-   SDL_PixelFormatEnum m_videoFormat;
+   SDL_PixelFormat m_videoFormat;
    int m_videoWidth;
    int m_videoHeight;
    int m_audioStream;

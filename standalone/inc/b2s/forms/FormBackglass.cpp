@@ -16,7 +16,7 @@
 #include "../dream7/Dream7Display.h"
 #include "../../common/WindowManager.h"
 
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #include "tinyxml2/tinyxml2.h"
 
 FormBackglass::FormBackglass()
@@ -150,7 +150,7 @@ void FormBackglass::DrawImage(VP::RendererGraphics* pGraphics, B2SPictureBox* pP
 
       bool drawme = (!m_pB2SSettings->IsAllOut() && pPicbox->IsVisible());
       if (drawme && !SDL_RectEmpty(&m_pB2SScreen->GetBackglassCutOff()))
-         drawme = !SDL_HasIntersection(&m_pB2SScreen->GetBackglassCutOff(), &rect);
+         drawme = !SDL_HasRectIntersection(&m_pB2SScreen->GetBackglassCutOff(), &rect);
       if (drawme && pPicbox->GetRomID() != 0 && !pPicbox->IsSetThruAnimation())
          drawme = (pPicbox->GetRomID() != GetTopRomID() || pPicbox->GetRomIDType() != GetTopRomIDType() || pPicbox->IsRomInverted() != IsTopRomInverted()) && (pPicbox->GetRomID() != GetSecondRomID() || pPicbox->GetRomIDType() != GetSecondRomIDType() || pPicbox->IsRomInverted() != IsSecondRomInverted());
       if (drawme && m_pB2SData->IsDualBackglass())
@@ -672,7 +672,7 @@ void FormBackglass::LoadB2SData()
                pLed->SetThickness(d7thickness * 1.2);
                pLed->SetShear(d7shear);
                pLed->SetGlow(glow < 3 ? glow : 3);
-               if (!SDL_FRectEmpty(&glowbulb))
+               if (!SDL_RectEmptyFloat(&glowbulb))
                   pLed->SetBulbSize(glowbulb);
                // 'TAXI' patch to shear the third LED display
                if (id == 3 && m_pB2SData->GetTableName() == "Taxi") {
@@ -1251,7 +1251,7 @@ void FormBackglass::ResizeSomeImages()
       int width = m_pDarkImage4Authentic->w;
       int height = m_pDarkImage4Authentic->h;
       SDL_Surface* pImage = ResizeSurface(m_pDarkImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pDarkImage4Authentic);
+      SDL_DestroySurface(m_pDarkImage4Authentic);
       m_pDarkImage4Authentic = pImage;
       xResizeFactor = (float)width / (float)m_pDarkImage4Authentic->w;
       yResizeFactor = (float)height / (float)m_pDarkImage4Authentic->h;
@@ -1260,32 +1260,32 @@ void FormBackglass::ResizeSomeImages()
       m_pDarkImage4Fantasy = m_pDarkImage4Authentic;
    if (m_pTopLightImage4Authentic) {
       SDL_Surface* pImage = ResizeSurface(m_pTopLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pTopLightImage4Authentic);
+      SDL_DestroySurface(m_pTopLightImage4Authentic);
       m_pTopLightImage4Authentic = pImage;
    }
    if (m_pTopLightImage4Fantasy) {
       SDL_Surface* pImage = ResizeSurface(m_pTopLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pTopLightImage4Fantasy);
+      SDL_DestroySurface(m_pTopLightImage4Fantasy);
       m_pTopLightImage4Fantasy = pImage;
    }
    if (m_pSecondLightImage4Authentic) {
       SDL_Surface* pImage = ResizeSurface(m_pSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pSecondLightImage4Authentic);
+      SDL_DestroySurface(m_pSecondLightImage4Authentic);
       m_pSecondLightImage4Authentic = pImage;
    }
    if (m_pSecondLightImage4Fantasy) {
       SDL_Surface* pImage = ResizeSurface(m_pSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pSecondLightImage4Fantasy);
+      SDL_DestroySurface(m_pSecondLightImage4Fantasy);
       m_pSecondLightImage4Fantasy = pImage;
    }
    if (m_pTopAndSecondLightImage4Authentic) {
       SDL_Surface* pImage = ResizeSurface(m_pTopAndSecondLightImage4Authentic, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pTopAndSecondLightImage4Authentic);
+      SDL_DestroySurface(m_pTopAndSecondLightImage4Authentic);
       m_pTopAndSecondLightImage4Authentic = pImage;
    }
    if (m_pTopAndSecondLightImage4Fantasy) {
       SDL_Surface* pImage = ResizeSurface(m_pTopAndSecondLightImage4Fantasy, m_pB2SScreen->GetBackglassSize().w, m_pB2SScreen->GetBackglassSize().h);
-      SDL_FreeSurface(m_pTopAndSecondLightImage4Fantasy);
+      SDL_DestroySurface(m_pTopAndSecondLightImage4Fantasy);
       m_pTopAndSecondLightImage4Fantasy = pImage;
    }
    SetBackgroundImage(GetDarkImage());
@@ -1298,11 +1298,11 @@ void FormBackglass::ResizeSomeImages()
                SDL_FRect frect = { 0.0f, 0.0f, pPicbox->GetBackgroundImage()->w / xResizeFactor, pPicbox->GetBackgroundImage()->h / yResizeFactor };
                SDL_Rect rect = { 0, 0, (int)frect.w, (int)frect.h };
                SDL_Surface* pImage = ResizeSurface(pPicbox->GetBackgroundImage(), rect.w, rect.h);
-               SDL_FreeSurface(pPicbox->GetBackgroundImage());
+               SDL_DestroySurface(pPicbox->GetBackgroundImage());
                pPicbox->SetBackgroundImage(pImage);
                if (pPicbox->GetOffImage()) {
                   SDL_Surface* pOffImage = ResizeSurface(pPicbox->GetOffImage(), rect.w, rect.h);
-                  SDL_FreeSurface(pPicbox->GetOffImage());
+                  SDL_DestroySurface(pPicbox->GetOffImage());
                   pPicbox->SetOffImage(pImage);
                }
             }
@@ -1425,7 +1425,7 @@ SDL_Surface* FormBackglass::CreateLightImage(SDL_Surface* image, eDualMode dualm
       if (auto pPicbox = dynamic_cast<B2SPictureBox*>(pControl)) {
          if (pPicbox->GetRomID() == romid && pPicbox->GetRomIDType() == romidtype && pPicbox->IsRomInverted() == rominverted && (pPicbox->GetDualMode() == eDualMode_Both || pPicbox->GetDualMode() == dualmode)) {
             SDL_Rect rect = { pPicbox->GetLocation().x, pPicbox->GetLocation().y, pPicbox->GetSize().w, pPicbox->GetSize().h };
-            SDL_BlitScaled(pPicbox->GetBackgroundImage(), NULL, pImage, &rect);
+            SDL_BlitSurfaceScaled(pPicbox->GetBackgroundImage(), NULL, pImage, &rect, SDL_SCALEMODE_NEAREST);
          }
       }
    }
@@ -1435,7 +1435,7 @@ SDL_Surface* FormBackglass::CreateLightImage(SDL_Surface* image, eDualMode dualm
          if (auto pPicbox = dynamic_cast<B2SPictureBox*>(pControl)) {
             if (pPicbox->GetRomID() == secondromid && pPicbox->GetRomIDType() == secondromidtype && pPicbox->IsRomInverted() == secondrominverted && (pPicbox->GetDualMode() == eDualMode_Both || pPicbox->GetDualMode() == dualmode)) {
                SDL_Rect rect = { pPicbox->GetLocation().x, pPicbox->GetLocation().y, pPicbox->GetSize().w, pPicbox->GetSize().h };
-               SDL_BlitScaled(pPicbox->GetBackgroundImage(), NULL, pImage, &rect);
+               SDL_BlitSurfaceScaled(pPicbox->GetBackgroundImage(), NULL, pImage, &rect, SDL_SCALEMODE_NEAREST);
             }
          }
       }
@@ -1467,7 +1467,7 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, int angle)
 {
    SDL_LockSurface(source);
 
-   SDL_Surface* const destination = SDL_CreateRGBSurface(0, source->w, source->h, source->format->BitsPerPixel, source->format->Rmask, source->format->Gmask, source->format->Bmask, source->format->Amask);
+   SDL_Surface* const destination = SDL_CreateSurface(source->w, source->h, source->format);
 
    const float radians = -(float)angle * (float)(M_PI / 180.0);
    const float cosine = cosf(radians);
@@ -1501,13 +1501,11 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, int angle)
 
 SDL_Surface* FormBackglass::ResizeSurface(SDL_Surface* original, int newWidth, int newHeight)
 {
-    SDL_Surface* newSurface = SDL_CreateRGBSurface(0, newWidth, newHeight, original->format->BitsPerPixel,
-       original->format->Rmask, original->format->Gmask, original->format->Bmask, original->format->Amask);
-
+    SDL_Surface* newSurface = SDL_CreateSurface(newWidth, newHeight, original->format);
     if (!newSurface)
        return NULL;
 
-    SDL_BlitScaled(original, NULL, newSurface, NULL);
+    SDL_BlitSurfaceScaled(original, NULL, newSurface, NULL, SDL_SCALEMODE_NEAREST);
 
     return newSurface;
 }
@@ -1515,13 +1513,13 @@ SDL_Surface* FormBackglass::ResizeSurface(SDL_Surface* original, int newWidth, i
 SDL_Surface* FormBackglass::Base64ToImage(const string& image)
 {
    vector<unsigned char> imageData = base64_decode(image);
-   SDL_RWops* rwops = SDL_RWFromConstMem(imageData.data(), imageData.size());
+   SDL_IOStream* rwops = SDL_IOFromConstMem(imageData.data(), imageData.size());
 
    if (!rwops)
       return NULL;
 
-   SDL_Surface* pImage = IMG_Load_RW(rwops, 0);
-   SDL_RWclose(rwops);
+   SDL_Surface* pImage = IMG_Load_IO(rwops, 0);
+   SDL_CloseIO(rwops);
 
    return pImage;
 }

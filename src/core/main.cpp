@@ -446,7 +446,7 @@ public:
       GetSystemInfo(&sysinfo);
       m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 #else
-      m_vpinball.m_logicalNumberOfProcessors = SDL_GetCPUCount();
+      m_vpinball.m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
 #endif
 
       IsOnWine(); // init static variable in there
@@ -954,21 +954,15 @@ public:
 
          PLOGI << "Available window fullscreen desktop resolutions:";
          for (int display = 0; display < displays.size(); display++) {
-            SDL_DisplayMode displayMode;
-            if (!SDL_GetDesktopDisplayMode(displays.at(display).adapter, &displayMode)) {
-               PLOGI << "display " << displays.at(display).adapter << ": " << displayMode.w << "x" << displayMode.h
-                     << " (refreshRate=" << displayMode.refresh_rate << ")";
-            }
+            const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
+            PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << "x" << displayMode->h
+                  << " (refreshRate=" << displayMode->refresh_rate << ")";
          }
 
          PLOGI << "Available external window renderers:";
          int numRenderers = SDL_GetNumRenderDrivers();
-         for (int renderer = 0; renderer < SDL_GetNumRenderDrivers(); renderer++) {
-            SDL_RendererInfo rendererInfo;
-            if (!SDL_GetRenderDriverInfo(renderer, &rendererInfo)) {
-               PLOGI << "Renderer " << renderer << ": " << rendererInfo.name;
-            }
-         }
+         for (int renderer = 0; renderer < SDL_GetNumRenderDrivers(); renderer++)
+            PLOGI << "Renderer " << renderer << ": " <<  SDL_GetRenderDriver(renderer);
       }
 
       if (m_listSnd) {
@@ -1291,9 +1285,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       #ifdef ENABLE_SDL_INPUT
          SDL_InitSubSystem(SDL_INIT_JOYSTICK);
       #endif
-      #ifdef __STANDALONE__
-         SDL_InitSubSystem(SDL_INIT_TIMER);
-      #endif
 
       // Start Win32++
       VPApp theApp(hInstance);
@@ -1330,9 +1321,6 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    #endif
    #ifdef ENABLE_SDL_INPUT
       SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-   #endif
-   #ifdef __STANDALONE__
-      SDL_QuitSubSystem(SDL_INIT_TIMER);
    #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 

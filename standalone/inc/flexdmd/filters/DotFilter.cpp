@@ -18,7 +18,7 @@ void DotFilter::Filter(Bitmap* pBitmap)
    if (!src)
       return;
 
-   SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, src->w / m_dotSize, src->h / m_dotSize, 32, SDL_PIXELFORMAT_RGBA32);
+   SDL_Surface* dst = SDL_CreateSurface(src->w / m_dotSize, src->h / m_dotSize, SDL_PIXELFORMAT_RGBA32);
 
    UINT8 cr;
    UINT8 cg;
@@ -37,7 +37,7 @@ void DotFilter::Filter(Bitmap* pBitmap)
          for (int i = 0; i < m_dotSize; i++) {
             for (int j = 0; j < m_dotSize; j++) {
                pixel = GetPixel(src, x * m_dotSize + i, y * m_dotSize + j);
-               SDL_GetRGBA(pixel, src->format, &cr, &cg, &cb, &ca);
+               SDL_GetRGBA(pixel, SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &cr, &cg, &cb, &ca);
                r += cr;
                g += cg;
                b += cb;
@@ -45,7 +45,7 @@ void DotFilter::Filter(Bitmap* pBitmap)
             }
          }
          float bright = 1.0f + m_dotSize * m_dotSize / 1.8f;
-         pixels[(y * dst->w) + x] = SDL_MapRGBA(dst->format, 
+         pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(dst, 
             (UINT8)SDL_min((r / bright), 255),
             (UINT8)SDL_min((g / bright), 255),
             (UINT8)SDL_min((b / bright), 255),

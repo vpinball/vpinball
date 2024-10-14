@@ -496,8 +496,8 @@ add_executable(vpinball WIN32
    third-party/include/imgui/imgui_draw.cpp
    third-party/include/imgui/imgui_impl_opengl3.cpp
    third-party/include/imgui/imgui_impl_opengl3.h
-   third-party/include/imgui/imgui_impl_sdl2.cpp
-   third-party/include/imgui/imgui_impl_sdl2.h
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+   third-party/include/imgui/imgui_impl_sdl3.h
    third-party/include/imgui/imgui_stdlib.cpp
    third-party/include/imgui/imgui_stdlib.h
    third-party/include/imgui/imgui_tables.cpp
@@ -628,8 +628,7 @@ target_link_libraries(vpinball
    setupapi.lib
 
    openvr_api.lib
-   SDL2.lib
-   SDL2main.lib
+   SDL3.lib
    dinput8.lib
 
    glad
@@ -678,7 +677,7 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/src/shaders/hlsl_glsl/StereoShader.glfx" "$<TARGET_FILE_DIR:vpinball>/shaders-${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}"
    
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/Bass64.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL264.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SDL364.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/openvr_api64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/FreeImage64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SciLexerVP64.dll" "$<TARGET_FILE_DIR:vpinball>"

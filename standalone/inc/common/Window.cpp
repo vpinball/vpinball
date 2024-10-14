@@ -25,28 +25,30 @@ Window::Window(const string& szTitle, int x, int y, int w, int h, int z, int rot
 
 bool Window::Init()
 {
-   UINT32 flags = SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
+   UINT32 flags = SDL_WINDOW_UTILITY | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_UTILITY | SDL_WINDOW_ALWAYS_ON_TOP;
 
    if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
-      flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+      flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
-   m_pWindow = SDL_CreateWindow(m_szTitle.c_str(), m_x, m_y, m_w, m_h, flags);
+   SDL_PropertiesID props = SDL_CreateProperties();
+   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, m_szTitle.c_str());
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, m_x);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, m_y);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, m_w);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, m_h);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, flags);
+   m_pWindow = SDL_CreateWindowWithProperties(props);
+   SDL_DestroyProperties(props);
    if (m_pWindow) {
       SDL_SetWindowPosition(m_pWindow, m_x, m_y);
 
-      int windowRenderer = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "WindowRenderer"s, -1);
-
-      m_pRenderer = SDL_CreateRenderer(m_pWindow, windowRenderer, SDL_RENDERER_ACCELERATED);
+      m_pRenderer = SDL_CreateRenderer(m_pWindow, NULL);
       if (m_pRenderer) {
-         SDL_RenderSetLogicalSize(m_pRenderer, m_w, m_h);
+         SDL_SetRenderLogicalPresentation(m_pRenderer, m_w, m_h, SDL_LOGICAL_PRESENTATION_STRETCH);
 
          m_id = SDL_GetWindowID(m_pWindow);
 
-         char* pRendererName = NULL;
-
-         SDL_RendererInfo rendererInfo;
-         if (!SDL_GetRendererInfo(m_pRenderer, &rendererInfo))
-            pRendererName = (char*)rendererInfo.name;
+         const char* pRendererName = SDL_GetRendererName(m_pRenderer);
 
          if (m_rotation < 0 || m_rotation > 3)
             m_rotation = 0;

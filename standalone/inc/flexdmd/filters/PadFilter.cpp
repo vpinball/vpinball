@@ -20,10 +20,10 @@ void PadFilter::Filter(Bitmap* pBitmap)
    if (!src)
       return;
 
-   SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, src->w + m_left + m_right, src->h + m_top + m_bottom, 32, SDL_PIXELFORMAT_RGBA32);
-   SDL_FillRect(dst, NULL, SDL_MapRGBA(dst->format, 0, 0, 0, 0));
+   SDL_Surface* dst = SDL_CreateSurface(src->w + m_left + m_right, src->h + m_top + m_bottom, SDL_PIXELFORMAT_RGBA32);
+   SDL_FillSurfaceRect(dst, NULL, SDL_MapSurfaceRGBA(dst, 0, 0, 0, 0));
    SDL_Rect dstRect = { m_left, m_top, src->w, src->h };
-   SDL_BlitScaled(src, NULL, dst, &dstRect);
+   SDL_BlitSurfaceScaled(src, NULL, dst, &dstRect, SDL_SCALEMODE_NEAREST);
 
    pBitmap->SetData(dst);
 }

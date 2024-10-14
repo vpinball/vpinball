@@ -129,9 +129,8 @@ void WindowManager::ProcessEvent(const SDL_Event* event)
    if (!m_startup || m_updateLock)
       return;
 
-   if (event->type == SDL_WINDOWEVENT &&
-      (event->window.event == SDL_WINDOWEVENT_FOCUS_GAINED || event->window.event == SDL_WINDOWEVENT_MOVED))
-      m_lastEventTime = SDL_GetTicks64();
+   if (event->type == SDL_EVENT_WINDOW_FOCUS_GAINED || event->type == SDL_EVENT_WINDOW_MOVED)
+      m_lastEventTime = SDL_GetTicks();
 }
 
 void WindowManager::ProcessUpdates()
@@ -139,7 +138,7 @@ void WindowManager::ProcessUpdates()
    if (!m_startup || m_lastEventTime == 0)
       return;
 
-   Uint64 now = SDL_GetTicks64();
+   Uint64 now = SDL_GetTicks();
    if (now - m_lastEventTime > 250) {
       if (now - m_lastEventTime > 500) {
          m_updateLock = false;
@@ -168,7 +167,7 @@ void WindowManager::ThreadedRender()
 
    m_pThread = new std::thread([this]() {
       while (m_running) {
-         Uint64 startTime = SDL_GetTicks64();
+         Uint64 startTime = SDL_GetTicks();
 
          {
             std::lock_guard<std::mutex> guard(m_mutex);
@@ -176,7 +175,7 @@ void WindowManager::ThreadedRender()
                pWindow->OnRender();
          }
 
-         double renderingDuration = SDL_GetTicks64() - startTime;
+         double renderingDuration = SDL_GetTicks() - startTime;
 
          int sleepMs = (1000 / 60) - (int)renderingDuration;
 
@@ -193,7 +192,7 @@ void WindowManager::Render()
    if (!m_startup || !g_pplayer)
       return;
 
-   Uint64 startTime = SDL_GetTicks64();
+   Uint64 startTime = SDL_GetTicks();
 
    if (startTime - m_lastRenderTime < (1000 / 60))
       return;

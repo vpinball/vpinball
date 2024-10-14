@@ -12,8 +12,8 @@
 #endif
 
 #ifdef ENABLE_SDL_INPUT //!! test
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_gamecontroller.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_gamepad.h>
 //#define ENABLE_SDL_GAMECONTROLLER //!! test
 #endif
 
@@ -273,7 +273,7 @@ private:
 
 #ifdef ENABLE_SDL_INPUT
    #ifdef ENABLE_SDL_GAMECONTROLLER
-      SDL_GameController* m_pSDLGameController = nullptr;
+      SDL_Gamepad* m_pSDLGamePad = nullptr;
       void RefreshSDLGameController();
    #else
       SDL_Joystick* m_pSDLJoystick = nullptr;
@@ -455,32 +455,32 @@ static constexpr Sint32 SDLK_TO_DIK[VK_TO_DIK_SIZE][2] =
    { SDLK_7, DIK_7 },
    { SDLK_8, DIK_8 },
    { SDLK_9, DIK_9 },
-   { SDLK_a, DIK_A },
-   { SDLK_b, DIK_B },
-   { SDLK_c, DIK_C },
-   { SDLK_d, DIK_D },
-   { SDLK_e, DIK_E },
-   { SDLK_f, DIK_F },
-   { SDLK_g, DIK_G },
-   { SDLK_h, DIK_H },
-   { SDLK_i, DIK_I },
-   { SDLK_j, DIK_J },
-   { SDLK_k, DIK_K },
-   { SDLK_l, DIK_L },
-   { SDLK_m, DIK_M },
-   { SDLK_n, DIK_N },
-   { SDLK_o, DIK_O },
-   { SDLK_p, DIK_P },
-   { SDLK_q, DIK_Q },
-   { SDLK_r, DIK_R },
-   { SDLK_s, DIK_S },
-   { SDLK_t, DIK_T },
-   { SDLK_u, DIK_U },
-   { SDLK_v, DIK_V },
-   { SDLK_w, DIK_W },
-   { SDLK_x, DIK_X },
-   { SDLK_y, DIK_Y },
-   { SDLK_z, DIK_Z },
+   { SDLK_A, DIK_A },
+   { SDLK_B, DIK_B },
+   { SDLK_C, DIK_C },
+   { SDLK_D, DIK_D },
+   { SDLK_E, DIK_E },
+   { SDLK_F, DIK_F },
+   { SDLK_G, DIK_G },
+   { SDLK_H, DIK_H },
+   { SDLK_I, DIK_I },
+   { SDLK_J, DIK_J },
+   { SDLK_K, DIK_K },
+   { SDLK_L, DIK_L },
+   { SDLK_M, DIK_M },
+   { SDLK_N, DIK_N },
+   { SDLK_O, DIK_O },
+   { SDLK_P, DIK_P },
+   { SDLK_Q, DIK_Q },
+   { SDLK_R, DIK_R },
+   { SDLK_S, DIK_S },
+   { SDLK_T, DIK_T },
+   { SDLK_U, DIK_U },
+   { SDLK_V, DIK_V },
+   { SDLK_W, DIK_W },
+   { SDLK_X, DIK_X },
+   { SDLK_Y, DIK_Y },
+   { SDLK_Z, DIK_Z },
    { SDLK_LGUI, DIK_LWIN },
    { SDLK_RGUI, DIK_RWIN },
    { SDLK_APPLICATION, DIK_APPS },
@@ -522,11 +522,11 @@ static constexpr Sint32 SDLK_TO_DIK[VK_TO_DIK_SIZE][2] =
    { SDLK_MINUS, DIK_MINUS },
    { SDLK_PERIOD, DIK_PERIOD },
    { SDLK_SLASH, DIK_SLASH },
-   { SDLK_BACKQUOTE, DIK_GRAVE },
+   { SDLK_GRAVE, DIK_GRAVE },
    { SDLK_LEFTBRACKET, DIK_LBRACKET },
    { SDLK_BACKSLASH, DIK_BACKSLASH },
    { SDLK_RIGHTBRACKET, DIK_RBRACKET },
-   { SDLK_QUOTE, DIK_APOSTROPHE }
+   { SDLK_APOSTROPHE, DIK_APOSTROPHE }
 };
 
 inline unsigned int get_dik_from_sdlk(const Sint32 sdlk)

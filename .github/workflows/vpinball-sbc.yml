@@ -72,7 +72,7 @@ jobs:
           shell: /bin/bash
           commands: |
             apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev libx11-dev libxrandr-dev
+            apt-get install --no-install-recommends -y git pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libudev-dev libx11-dev libxrandr-dev
             perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
             perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
             NUM_PROCS=$(nproc)

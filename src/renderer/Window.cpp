@@ -4,12 +4,11 @@
 #include "Window.h"
 
 #ifdef __STANDALONE__
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 #endif
 
 #ifdef __LIBVPINBALL__
 #include "standalone/VPinballLib.h"
-#include <SDL2/SDL_syswm.h>
 #endif
 
 namespace VPX
@@ -139,10 +138,12 @@ Window::Window(const string &title, const Settings::Section section, const strin
          const int yn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY"s, wnd_y);
          // Only apply saved position if they fit inside a display
          #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-            for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
+            int displayCount = 0;
+            SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
+            for (int i = 0; i < displayCount; ++i)
             {
                SDL_Rect displayBounds;
-               if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
+               if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds))
                {
                   if (displayBounds.x <= wnd_x && wnd_x + m_width <= displayBounds.x + displayBounds.w
                    && displayBounds.y <= wnd_y && wnd_y + m_height <= displayBounds.y + displayBounds.h)
@@ -153,6 +154,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
                   }
                }
             }
+            SDL_free(displayIDs);
          #else // Win32 Windowing
             RECT r;
             r.left = xn;
@@ -178,55 +180,67 @@ Window::Window(const string &title, const Settings::Section section, const strin
          // DX9 does not need any special flag either
       #endif
       #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-         wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALLOW_HIGHDPI;
+         wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
          SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
       #elif defined(__STANDALONE__)
          if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
-            wnd_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+            wnd_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
       #endif
       if (m_fullscreen)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
-      else if (m_width == m_screenwidth && m_height == m_screenheight)
-         wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+      // JSM174
+      //else if (m_width == m_screenwidth && m_height == m_screenheight)
+      //   wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
          
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
-      #if defined(ENABLE_BGFX) && defined(__ANDROID__)
-         SDL_SetHint(SDL_HINT_VIDEO_EXTERNAL_CONTEXT, "1");
-      #endif
-
-      m_nwnd = SDL_CreateWindow(title.c_str(), wnd_x, wnd_y, m_width, m_height, wnd_flags);
+      SDL_PropertiesID props = SDL_CreateProperties();
+      SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, wnd_x);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, wnd_y);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, m_width);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, m_height);
+      SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
+#if defined(ENABLE_BGFX) && defined(__ANDROID__)
+      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
+#endif
+      m_nwnd = SDL_CreateWindowWithProperties(props);
+      SDL_DestroyProperties(props);
 
 #ifdef __LIBVPINBALL__
-      SDL_SysWMinfo wmInfo;
-      SDL_VERSION(&wmInfo.version);
-      SDL_GetWindowWMInfo(m_nwnd, &wmInfo);
-      VPinballLib::WindowCreatedStruct windowCreatedStruct = { (void*)wmInfo.info.uikit.window, title.c_str() };
+      props = SDL_GetWindowProperties(m_nwnd);
+      VPinballLib::WindowCreatedStruct windowCreatedStruct = { (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL), title.c_str() };
       VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedStruct);
 #endif
 
-      SDL_DisplayMode mode;
+      const SDL_DisplayMode* mode;
+
       if (m_fullscreen)
       {
-         SDL_GetWindowDisplayMode(m_nwnd, &mode);
-         m_refreshrate = mode.refresh_rate;
+         mode = SDL_GetWindowFullscreenMode(m_nwnd);
+         m_refreshrate = mode ? mode->refresh_rate : 0;
          m_screenwidth = m_width;
          m_screenheight = m_height;
-         if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
+         // JSM174 if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
          {
-            Uint32 format = mode.format;
+            Uint32 format = mode ? mode->format : 0;
             bool found = false;
-            for (int index = 0; index < SDL_GetNumDisplayModes(m_adapter); index++)
-            {
-               SDL_GetDisplayMode(m_adapter, index, &mode);
-               if ((mode.w == m_width) && (mode.h == m_height) && (mode.refresh_rate == validatedFSRefreshRate) && (mode.format == format))
-               {
-                  SDL_SetWindowDisplayMode(m_nwnd, &mode);
-                  m_refreshrate = validatedFSRefreshRate;
-                  found = true;
-                  break;
+
+            int num_modes = 0;
+            SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(m_adapter, &num_modes);
+            if (modes) {
+               for (int index = 0; index < num_modes; ++index) {
+                 mode = modes[index];
+                 // JSM174 if ((mode->w == m_width) && (mode->h == m_height) && (mode->refresh_rate == validatedFSRefreshRate) && (mode->format == format))
+                 {
+                    SDL_SetWindowFullscreenMode(m_nwnd, mode);
+                    m_refreshrate = validatedFSRefreshRate;
+                    found = true;
+                    break;
+                 }
                }
+               SDL_free(modes);
             }
             if (!found) {
                // Should not happen since the fullscreen values have been validated
@@ -236,20 +250,24 @@ Window::Window(const string &title, const Settings::Section section, const strin
       }
       else
       {
-         SDL_GetDesktopDisplayMode(m_display, &mode);
-         m_refreshrate = mode.refresh_rate;
-         SDL_GetWindowDisplayMode(m_nwnd, &mode);
+         mode = SDL_GetDesktopDisplayMode(m_display);
+         // JSM174
+         m_refreshrate = mode ? mode->refresh_rate : 0;
+         mode = SDL_GetWindowFullscreenMode(m_nwnd);
       }
-      PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode.w << 'x' << mode.h << ' ' << mode.refresh_rate << "Hz " << SDL_GetPixelFormatName(mode.format);
+      // JSM174
+      if (mode) {
+         PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << "Hz " << SDL_GetPixelFormatName(mode->format);
+      }
 
       #if defined(__APPLE__)
          // FIXME remove when porting to SDL3: horrible hack to handle the (strange) way Apple apply DPI: user DPI is applied as other OS but HiDPI of Retina display is applied internally
          // FIXME this only solves the window size, not its position which is in HiDPI units while it should be in pixel units
-         SDL_GLContext sdl_context = SDL_GL_CreateContext(m_nwnd);
-         SDL_GL_MakeCurrent(m_nwnd, sdl_context);
+         // JSM174 SDL_GLContext sdl_context = SDL_GL_CreateContext(m_nwnd);
+         // JSM174 SDL_GL_MakeCurrent(m_nwnd, sdl_context);
          int drawableWidth, drawableHeight;
-         SDL_GL_GetDrawableSize(m_nwnd, &drawableWidth, &drawableHeight); // Size in pixels
-         SDL_GL_DeleteContext(sdl_context);
+         SDL_GetWindowSizeInPixels(m_nwnd, &drawableWidth, &drawableHeight); // Size in pixels
+         // JSM174 SDL_GL_DestroyContext(sdl_context);
          m_hidpiScale = (float)drawableWidth / (float)m_width;
          PLOGI << "SDL HiDPI defined to " << m_hidpiScale;
          m_width = drawableWidth;
@@ -261,7 +279,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
          SDL_Surface* pIcon = IMG_Load(iconPath.c_str());
          if (pIcon) {
             SDL_SetWindowIcon(m_nwnd, pIcon);
-            SDL_FreeSurface(pIcon);
+            SDL_DestroySurface(pIcon);
          }
          else {
             PLOGE << "Failed to load window icon: " << SDL_GetError();
@@ -327,11 +345,11 @@ void Window::Show(const bool show)
 
 void Window::RaiseAndFocus(const bool raise)
 {
+   // JSM174 - Will be fixed soon: https://github.com/libsdl-org/SDL/issues/11208
+   return;
+
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
-      if (raise)
-         SDL_RaiseWindow(m_nwnd);
-      else
-         SDL_SetWindowInputFocus(m_nwnd);
+      SDL_RaiseWindow(m_nwnd);
    #else // Win32 Windowing
       if (raise)
          SetForegroundWindow(m_nwnd);
@@ -401,10 +419,12 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
    // Get the resolution of all enabled displays as they appear in the Windows settings UI.
    std::map<string, DisplayConfig> displayMap;
    EnumDisplayMonitors(nullptr, nullptr, MonitorEnumList, reinterpret_cast<LPARAM>(&displayMap));
-   for (int i = 0; i < SDL_GetNumVideoDisplays(); ++i)
+   int displayCount = 0;
+   SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
+   for (int i = 0; i < displayCount; ++i)
    {
       SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(i, &displayBounds) == 0)
+      if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds))
       {
          for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
          {
@@ -416,6 +436,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          }
       }
    }
+   SDL_free(displayIDs);
 
    // Apply the same numbering as windows
    int i = 0;
@@ -430,13 +451,15 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
    }
 #elif defined(ENABLE_SDL_VIDEO)
    int i = 0;
-   for (; i < SDL_GetNumVideoDisplays(); ++i)
+   int displayCount = 0;
+   SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
+   for (; i < displayCount; ++i)
    {
       SDL_Rect displayBounds;
-      if (SDL_GetDisplayBounds(i, &displayBounds) == 0) {
+      if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds)) {
          DisplayConfig displayConf;
          displayConf.display = i; // Window Display identifier (the number that appears in the native Windows settings)
-         displayConf.adapter = i; // SDL Display identifier. Will be used for creating the display
+         displayConf.adapter = displayIDs[i]; // SDL Display identifier. Will be used for creating the display
          displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
          displayConf.top = displayBounds.y;
          displayConf.left = displayBounds.x;
@@ -444,10 +467,12 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          displayConf.height = displayBounds.h;
          const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
          strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
-         strncpy_s(displayConf.GPU_Name, SDL_GetDisplayName(displayConf.display), MAX_DEVICE_IDENTIFIER_STRING - 1);
+         const char* name = SDL_GetDisplayName(displayConf.display);
+         strncpy_s(displayConf.GPU_Name, name ? name : "UNKNOWN", MAX_DEVICE_IDENTIFIER_STRING - 1);
          displays.push_back(displayConf);
       }
    }
+   SDL_free(displayIDs);
 #else
    // Get the resolution of all enabled displays as they appear in the Windows settings UI.
    std::map<string, DisplayConfig> displayMap;
@@ -500,19 +525,19 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
    const int adapter = displays[display].adapter;
 
    #if defined(ENABLE_SDL_VIDEO)
-      const int amount = SDL_GetNumDisplayModes(adapter);
-      for (int mode = 0; mode < amount; ++mode) {
-         SDL_DisplayMode sdlMode;
-         SDL_GetDisplayMode(adapter, mode, &sdlMode);
+      int count;
+      SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(adapter, &count);
+      for (int mode = 0; mode < count; ++mode) {
+         SDL_DisplayMode* sdlMode = displayModes[mode];
          VideoMode vmode = {};
-         vmode.width = sdlMode.w;
-         vmode.height = sdlMode.h;
-         switch (sdlMode.format) {
+         vmode.width = sdlMode->w;
+         vmode.height = sdlMode->h;
+         switch (sdlMode->format) {
          case SDL_PIXELFORMAT_RGB24:
          case SDL_PIXELFORMAT_BGR24:
-         case SDL_PIXELFORMAT_RGB888:
+         case SDL_PIXELFORMAT_XRGB8888:
          case SDL_PIXELFORMAT_RGBX8888:
-         case SDL_PIXELFORMAT_BGR888:
+         case SDL_PIXELFORMAT_XBGR8888:
          case SDL_PIXELFORMAT_BGRX8888:
          case SDL_PIXELFORMAT_ARGB8888:
          case SDL_PIXELFORMAT_RGBA8888:
@@ -534,9 +559,10 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
          default:
             vmode.depth = 0;
          }
-         vmode.refreshrate = sdlMode.refresh_rate;
+         vmode.refreshrate = sdlMode->refresh_rate;
          modes.push_back(vmode);
       }
+      SDL_free(displayModes);
    #else
       IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
       if (d3d == nullptr)
