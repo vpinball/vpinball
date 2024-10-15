@@ -100,7 +100,6 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDL_TEST_LIBRARY=OFF \
       -DSDL_X11=ON \
       -DSDL_KMSDRM=ON \
-      -DSDL_ARMNEON=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -141,6 +140,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDLTTF_VENDORED=ON \
       -DSDLTTF_HARFBUZZ=ON \
       -DSDL3_DIR=../SDL3-${SDL_VERSION}/build \
+      -DCMAKE_C_FLAGS="-U__ARM_NEON" \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
