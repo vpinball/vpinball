@@ -2569,7 +2569,7 @@ void PinTable::Play(const int playMode)
          unsigned long long startTick = usec();
          SDL_Event e;
          bool isPFWnd = true;
-         static int2 dragStart;
+         static Vertex2D dragStart;
          static int dragging = 0;
          while (SDL_PollEvent(&e) != 0)
          {
@@ -2617,9 +2617,9 @@ void PinTable::Play(const int playMode)
                if (isPFWnd) {
                   // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
                   // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-                  e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-                  e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-                  static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
+                  e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
                   if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
                   {
                      m_lastcursorx = e.motion.x;
@@ -2638,9 +2638,9 @@ void PinTable::Play(const int playMode)
                      {
                         int x, y;
                         windows[i]->GetPos(x, y);
-                        int2 click(x + e.motion.x, y + e.motion.y);
+                        Vertex2D click(x + e.motion.x, y + e.motion.y);
                         if (dragging > 1)
-                           windows[i]->SetPos(x + click.x - dragStart.x, y + click.y - dragStart.y);
+                           windows[i]->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
                         dragStart = click;
                         dragging = 2;
                         break;

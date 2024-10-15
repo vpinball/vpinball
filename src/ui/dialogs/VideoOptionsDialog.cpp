@@ -445,7 +445,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    VPX::Window::GetDisplayModes((int)display, m_allVideoModes);
 
    const int depthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "ColorDepth"s, 32);
-   const int refreshrate = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "RefreshRate"s, 0);
+   const float refreshrate = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "RefreshRate"s, 0.f);
    const int widthcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width"s, -1);
    const int heightcur = GetEditedSettings().LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height"s, -1);
    VPX::Window::VideoMode curSelMode;
@@ -471,7 +471,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
          }
       }
       char szT[128];
-      sprintf_s(szT, sizeof(szT), "%d x %d (%dHz %d:%d)", m_allVideoModes[i].width, m_allVideoModes[i].height, m_allVideoModes[i].refreshrate, max(bestAR.y, bestAR.x), min(bestAR.x, bestAR.y));
+      sprintf_s(szT, sizeof(szT), "%d x %d (%.1fHz %d:%d)", m_allVideoModes[i].width, m_allVideoModes[i].height, m_allVideoModes[i].refreshrate, max(bestAR.y, bestAR.x), min(bestAR.x, bestAR.y));
       m_wndVideoModes.AddString(szT);
 
       int matchingPoints = 0;
@@ -1094,7 +1094,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
       for (size_t i = 0; i < nRendererSupported; ++i)
          if (gfxBackend == m_bgfxRendererNames[supportedRenderers[i]])
-            m_gfxBackend.SetCurSel(i);
+            m_gfxBackend.SetCurSel(static_cast<int>(i));
    }
    #endif
 

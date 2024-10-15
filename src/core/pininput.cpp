@@ -894,7 +894,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       }
 #endif
       break;
-   case PI_SDL: //SDL2
+   case PI_SDL: //SDL
    {
 #ifdef ENABLE_SDL_INPUT
 #ifdef ENABLE_SDL_GAMECONTROLLER

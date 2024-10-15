@@ -32,7 +32,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height"s, w * 9 / 16);
    const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display"s, -1);
    const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit"s, false);
-   const int fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate"s, 0);
+   const float fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate"s, 0.f);
    // FIXME FIXME FIXME
    const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
    if (video10bit && !m_fullscreen)
@@ -74,7 +74,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    m_bitdepth = fsBitDeth;
 
    // Validate fullscreen mode, eventually falling back to windowed mode (at desktop screen resolution)
-   int validatedFSRefreshRate = -1;
+   float validatedFSRefreshRate = -1.f;
    if (m_fullscreen)
    {
       bool fsModeExists = false;
@@ -188,9 +188,6 @@ Window::Window(const string &title, const Settings::Section section, const strin
       #endif
       if (m_fullscreen)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;
-      // JSM174
-      //else if (m_width == m_screenwidth && m_height == m_screenheight)
-      //   wnd_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
          
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
@@ -222,17 +219,16 @@ Window::Window(const string &title, const Settings::Section section, const strin
          m_refreshrate = mode ? mode->refresh_rate : 0;
          m_screenwidth = m_width;
          m_screenheight = m_height;
-         // JSM174 if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
+         if (fsRefreshRate > 0 && validatedFSRefreshRate != m_refreshrate) // Adjust refresh rate if needed
          {
             Uint32 format = mode ? mode->format : 0;
             bool found = false;
-
             int num_modes = 0;
             SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(m_adapter, &num_modes);
             if (modes) {
                for (int index = 0; index < num_modes; ++index) {
                  mode = modes[index];
-                 // JSM174 if ((mode->w == m_width) && (mode->h == m_height) && (mode->refresh_rate == validatedFSRefreshRate) && (mode->format == format))
+                 if ((mode->w == m_width) && (mode->h == m_height) && (mode->refresh_rate == validatedFSRefreshRate) && (mode->format == format || format == 0))
                  {
                     SDL_SetWindowFullscreenMode(m_nwnd, mode);
                     m_refreshrate = validatedFSRefreshRate;
@@ -250,12 +246,9 @@ Window::Window(const string &title, const Settings::Section section, const strin
       }
       else
       {
-         mode = SDL_GetDesktopDisplayMode(m_display);
-         // JSM174
+         mode = SDL_GetDesktopDisplayMode(m_adapter);
          m_refreshrate = mode ? mode->refresh_rate : 0;
-         mode = SDL_GetWindowFullscreenMode(m_nwnd);
       }
-      // JSM174
       if (mode) {
          PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << "Hz " << SDL_GetPixelFormatName(mode->format);
       }
@@ -412,7 +405,8 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
 {
    displays.clear();
 
-#if defined(ENABLE_SDL_VIDEO) && defined(_WIN32)
+#if 0 && defined(ENABLE_SDL_VIDEO) && defined(_WIN32)
+   // FIXME SDL3 remove as this is not supported under SDL3 and this has always had issues
    // Windows and SDL order of display enumeration do not match, therefore the display identifier will not match between DX and OpenGL version
    // SDL2 display identifier do not match the id of the native Windows settings
    // SDL2 does not offer a way to get the adapter (i.e. Graphics Card) associated with a display (i.e. Monitor) so we use the monitor name for both
@@ -431,7 +425,9 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
             if (display->second.left == displayBounds.x && display->second.top == displayBounds.y && display->second.width == displayBounds.w && display->second.height == displayBounds.h)
             {
                display->second.adapter = i;
-               strncpy_s(display->second.GPU_Name, SDL_GetDisplayName(display->second.adapter), MAX_DEVICE_IDENTIFIER_STRING - 1);
+               const char* displayName = SDL_GetDisplayName(display->second.adapter);
+               if (displayName)
+                  strncpy_s(display->second.GPU_Name, displayName, MAX_DEVICE_IDENTIFIER_STRING - 1);
             }
          }
       }
@@ -458,8 +454,8 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
       SDL_Rect displayBounds;
       if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds)) {
          DisplayConfig displayConf;
-         displayConf.display = i; // Window Display identifier (the number that appears in the native Windows settings)
-         displayConf.adapter = displayIDs[i]; // SDL Display identifier. Will be used for creating the display
+         displayConf.display = i; // SDL Display identifier. Will be used for creating the display
+         displayConf.adapter = displayIDs[i];
          displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
          displayConf.top = displayBounds.y;
          displayConf.left = displayBounds.x;
@@ -467,7 +463,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          displayConf.height = displayBounds.h;
          const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
          strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
-         const char* name = SDL_GetDisplayName(displayConf.display);
+         const char* name = SDL_GetDisplayName(displayIDs[i]);
          strncpy_s(displayConf.GPU_Name, name ? name : "UNKNOWN", MAX_DEVICE_IDENTIFIER_STRING - 1);
          displays.push_back(displayConf);
       }
@@ -522,11 +518,10 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
    GetDisplays(displays);
    if (display >= (int)displays.size())
       return;
-   const int adapter = displays[display].adapter;
 
    #if defined(ENABLE_SDL_VIDEO)
       int count;
-      SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(adapter, &count);
+      SDL_DisplayMode** displayModes = SDL_GetFullscreenDisplayModes(displays[display].adapter, &count);
       for (int mode = 0; mode < count; ++mode) {
          SDL_DisplayMode* sdlMode = displayModes[mode];
          VideoMode vmode = {};
@@ -564,6 +559,7 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
       }
       SDL_free(displayModes);
    #else
+      const int adapter = displays[display].adapter;
       IDirect3D9 *d3d = Direct3DCreate9(D3D_SDK_VERSION);
       if (d3d == nullptr)
       {

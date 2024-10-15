@@ -732,11 +732,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
    ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
    int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
-   //float ddpi, hdpi, vdpi;
-   // JSM174
-   SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
-   //if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi))
-   //   m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
+   m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
 #else // Win32 Windowing
    ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());

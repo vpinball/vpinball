@@ -420,15 +420,16 @@
     </Xdcmake>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x86\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -489,15 +490,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Xdcmake>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x86\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -550,15 +552,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Xdcmake>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -611,15 +614,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Xdcmake>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -673,15 +677,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Xdcmake>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -810,15 +815,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x86\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -883,15 +889,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x86\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -954,15 +961,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -1025,15 +1033,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -1096,15 +1105,16 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     </Link>
     <PostBuildEvent>
       <Command>%40echo off
-if ".%25VPIN_DIR%25" == "." (
-echo Define VPIN_DIR env. variable if you want to deploy on build
-) else (
-echo Copies EXE and DLLs to production directory.
-echo VPIN_DIR="%25VPIN_DIR%25"
-if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
-copy "$(TargetPath)" "%25VPIN_DIR%25"
-)
-</Command>
+        if ".%25VPIN_DIR%25" == "." (
+          echo Define VPIN_DIR env. variable if you want to deploy on build
+        ) else (
+          echo Copies EXE and DLLs to production directory.
+          echo VPIN_DIR="%25VPIN_DIR%25"
+          if not exist "%25VPIN_DIR%25" mkdir "%25VPIN_DIR%25"
+          copy "$(TargetPath)" "%25VPIN_DIR%25"
+        )
+        copy /y  "$(SolutionDir)third-party\runtime-libs\windows-x64\*.*" "$(TargetDir)"
+      </Command>
     </PostBuildEvent>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
