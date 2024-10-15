@@ -425,16 +425,17 @@ void PhysicsEngine::UpdateNudge(float dtime)
       bool tilted = false;
       if (TiltPerc > 100.0f)
       {
-         // Bounce the plumb
-         const float bounceAngle = tiltAngle - (psi - tiltAngle);
-         m_plumbPos.z = -m_plumbPoleLength * cos(bounceAngle);
-         const float xy = m_plumbPoleLength * sin(bounceAngle);
-         const float theta = atan2(m_plumbPos.x, m_plumbPos.y);
-         m_plumbPos.x = xy * sin(theta);
-         m_plumbPos.y = xy * cos(theta);
-         // Loose energy in the bounce
-         m_plumbVel *= -0.8f;
          tilted = true;
+         // Keep plumb inside tile limits
+         const float limitAngle = tiltAngle - 1e-3f;
+         m_plumbPos.z = -m_plumbPoleLength * cos(limitAngle);
+         const float xy = m_plumbPoleLength * sin(limitAngle);
+         const float theta = atan2(m_plumbPos.x, m_plumbPos.y);
+         Vertex3Ds axis(sin(theta), cos(theta), 0.f);
+         m_plumbPos.x = xy * axis.x;
+         m_plumbPos.y = xy * axis.y;
+         // Bounce the plumb (reflect velocity against circle normal, dampen it)
+         m_plumbVel = 0.8f * (m_plumbVel - 2.f * m_plumbVel.Dot(axis) * axis);
       }
 
       // Fire event (same as keyboard tilt)

@@ -20,6 +20,8 @@ FEATURES:
 
 - add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
+- new and better rewriten physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor or using the LiveUI which as a dedicated UI for it.
+
 FIXES:
 
 - update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)
