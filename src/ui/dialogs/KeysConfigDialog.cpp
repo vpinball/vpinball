@@ -366,8 +366,8 @@ BOOL KeysConfigDialog::OnInitDialog()
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensValue"s, 400);
     SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
 
-    key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100);
-    SetDlgItemInt(IDC_TILT_INERTIA, key, FALSE);
+    const float fv = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f);
+    SetDlgItemText(IDC_TILT_INERTIA, f2sz(fv).c_str());
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
     SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
@@ -843,8 +843,8 @@ void KeysConfigDialog::OnOK()
     else
         g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
-    newvalue = clamp((int)GetDlgItemInt(IDC_TILT_INERTIA, nothing, TRUE), 0, 1000);
-    g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, newvalue);
+    float tiltInertia = clamp(sz2f(GetDlgItemText(IDC_TILT_INERTIA).c_str()), 0.f, 1000.f);
+    g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, tiltInertia);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
     {

@@ -3660,14 +3660,14 @@ void LiveUI::UpdatePlumbWindow()
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
       }
       ImGui::BeginDisabled(!enablePlumbTilt);
-      int plumbTiltThreshold = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400);
-      if (ImGui::InputInt("Tilt threshold", &plumbTiltThreshold))
+      float plumbTiltThreshold = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * 45.f / 1000.f;
+      if (ImGui::InputFloat("Tilt threshold angle", &plumbTiltThreshold, 0.1f, 1.0f, "%.1f"))
       {
-         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, plumbTiltThreshold);
+         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, static_cast<int>(round(plumbTiltThreshold * 1000.f / 45.f)));
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
       }
-      int plumbTiltMass = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100);
-      if (ImGui::InputInt("Tilt mass factor", &plumbTiltMass))
+      float plumbTiltMass = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f);
+      if (ImGui::InputFloat("Tilt inertia factor", &plumbTiltMass, 1.f, 10.f, "%.1f"))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, plumbTiltMass);
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
