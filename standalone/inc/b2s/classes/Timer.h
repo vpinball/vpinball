@@ -5,7 +5,7 @@ namespace B2S {
 class Timer
 {
 public:
-    static Uint32 TimerCallback(Uint32 interval, void* param);
+    static Uint32 TimerCallback(void* param, SDL_TimerID timerID, Uint32 interval);
 
     using ElapsedListener = std::function<void(Timer* pTimer)>;
 

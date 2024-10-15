@@ -380,7 +380,7 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
    }
 
    SDL_FPoint center = { height / 2.0f, 0 };
-   SDL_RenderCopyExF(pRenderer, m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
+   SDL_RenderTextureRotated(pRenderer, m_pTexture, NULL, &dest, -m_angle / 10.0, &center, SDL_FLIP_NONE);
 }
 
 void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
@@ -397,9 +397,9 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
    TTF_SetFontOutline(m_pFont, 0);
 
    SDL_Color textColor = { GetRValue(m_color), GetGValue(m_color), GetBValue(m_color) };
-   SDL_Surface* pTextSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), textColor, 0);
+   SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(m_pFont, m_szCaption.c_str(), m_szCaption.length(), textColor, 0);
    if (!pTextSurface) {
-      string szError = TTF_GetError();
+      string szError = SDL_GetError();
       if (warnedLabels[szError].find(m_szName) == warnedLabels[szError].end()) {
          PLOGW.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), szError.c_str());
          warnedLabels[szError].insert(m_szName);
@@ -411,9 +411,9 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
 
    if (m_shadowState) {
       SDL_Color shadowColor = { GetRValue(m_shadowColor), GetGValue(m_shadowColor), GetBValue(m_shadowColor) };
-      SDL_Surface* pShadowSurface = TTF_RenderUTF8_Blended_Wrapped(m_pFont, m_szCaption.c_str(), shadowColor, 0);
+      SDL_Surface* pShadowSurface = TTF_RenderText_Blended_Wrapped(m_pFont, m_szCaption.c_str(), m_szCaption.length(), shadowColor, 0);
       if (!pShadowSurface) {
-         string szError = TTF_GetError();
+         string szError = SDL_GetError();
          if (warnedLabels[szError].find(m_szName) == warnedLabels[szError].end()) {
             PLOGW.printf("Unable to render text: label=%s, error=%s", m_szName.c_str(), szError.c_str());
             warnedLabels[szError].insert(m_szName);
@@ -425,9 +425,9 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
       int xoffset = (int) (((abs(m_xoffset) / 100.0) * height) / 2);
       int yoffset = (int) (((abs(m_yoffset) / 100.0) * height) / 2);
 
-      pMergedSurface = SDL_CreateRGBSurfaceWithFormat(0, pTextSurface->w + xoffset, pTextSurface->h + yoffset, 32, SDL_PIXELFORMAT_RGBA32);
+      pMergedSurface = SDL_CreateSurface(pTextSurface->w + xoffset, pTextSurface->h + yoffset, SDL_PIXELFORMAT_RGBA32);
       if (pMergedSurface) {
-         //SDL_FillRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
+         //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
          if (!m_outline) {
             SDL_Rect shadowRect = { (m_xoffset < 0) ? 0 : xoffset, (m_yoffset < 0) ? 0 : yoffset, pShadowSurface->w, pShadowSurface->h };
             SDL_BlitSurface(pShadowSurface, NULL, pMergedSurface, &shadowRect);
@@ -457,12 +457,12 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
          }
       }
 
-      SDL_FreeSurface(pShadowSurface);
+      SDL_DestroySurface(pShadowSurface);
    }
    else {
-      pMergedSurface = SDL_CreateRGBSurfaceWithFormat(0, pTextSurface->w, pTextSurface->h, 32, SDL_PIXELFORMAT_RGBA32);
+      pMergedSurface = SDL_CreateSurface(pTextSurface->w, pTextSurface->h, SDL_PIXELFORMAT_RGBA32);
       if (pMergedSurface) {
-         //SDL_FillRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
+         //SDL_FillSurfaceRect(pMergedSurface, NULL, SDL_MapRGBA(pMergedSurface->format, 255, 255, 0, 255));
          SDL_BlitSurface(pTextSurface, NULL, pMergedSurface, NULL);
       }
    }
@@ -476,10 +476,10 @@ void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
          m_dirty = true;
       }
 
-      SDL_FreeSurface(pMergedSurface);
+      SDL_DestroySurface(pMergedSurface);
    }
 
-   SDL_FreeSurface(pTextSurface);
+   SDL_DestroySurface(pTextSurface);
 }
 
 string PUPLabel::ToString() const

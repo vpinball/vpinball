@@ -168,7 +168,7 @@ void Segment::CreateLightData()
 
 void Segment::SetBulbSize()
 {
-   if (SDL_FRectEmpty(&m_pStyle->GetBulbSize()))
+   if (SDL_RectEmptyFloat(&m_pStyle->GetBulbSize()))
       m_focusScales = { 0.0f, 0.0f };
    else {
       if (m_angle == -90.0f)

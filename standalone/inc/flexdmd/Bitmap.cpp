@@ -9,9 +9,7 @@ Bitmap::Bitmap(void* pData, AssetType assetType)
 
 Bitmap::Bitmap(Bitmap* pCachedBitmap)
 {
-   SDL_PixelFormat* format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-   m_pData = (void*)SDL_ConvertSurface(pCachedBitmap->GetSurface(), format, 0);
-   SDL_FreeFormat(format);
+   m_pData = (void*)SDL_ConvertSurface(pCachedBitmap->GetSurface(), SDL_PIXELFORMAT_RGBA32);
    m_assetType = pCachedBitmap->m_assetType;
 }
 
@@ -19,7 +17,7 @@ Bitmap::~Bitmap()
 {
    if (m_pData) {
       if (m_assetType == AssetType_Image)
-         SDL_FreeSurface((SDL_Surface*)m_pData);
+         SDL_DestroySurface((SDL_Surface*)m_pData);
       else if (m_assetType == AssetType_GIF)
          IMG_FreeAnimation((IMG_Animation*)m_pData);
    }
@@ -29,7 +27,7 @@ void Bitmap::SetData(void* pData)
 {
    if (m_pData) {
       if (m_assetType == AssetType_Image)
-         SDL_FreeSurface((SDL_Surface*)m_pData);
+         SDL_DestroySurface((SDL_Surface*)m_pData);
       else if (m_assetType == AssetType_GIF)
          IMG_FreeAnimation((IMG_Animation*)m_pData);
    }

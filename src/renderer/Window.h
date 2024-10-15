@@ -3,7 +3,7 @@
 #pragma once
 
 #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-#include "SDL2/SDL.h"
+#include <SDL3/SDL.h>
 #else // Win32 Windowing
 #include <windows.h>
 #endif
@@ -22,7 +22,7 @@ public:
    void GetPos(int&x, int &y) const;
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   int GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
+   float GetRefreshRate() const { return m_refreshrate; } // Refresh rate of the device displaying the window. Window spread over multiple devices are not supported.
    bool IsFullScreen() const { return m_fullscreen; }
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
@@ -46,13 +46,17 @@ public:
       int width;
       int height;
       int depth;
-      int refreshrate;
+      float refreshrate;
    };
 
    struct DisplayConfig
    {
       int display; // Window Display identifier (the number that appears in the native Windows settings)
-      int adapter; // DirectX9 or SDL display/adapter identifier
+   #ifdef ENABLE_SDL_VIDEO 
+      SDL_DisplayID adapter; // SDL display/adapter identifier
+   #else
+      int adapter; // DirectX9 display/adapter identifier
+   #endif
       int top;
       int left;
       int width;
@@ -71,7 +75,7 @@ private:
    int m_display, m_adapter;
    int m_screenwidth, m_screenheight;
    bool m_fullscreen;
-   int m_refreshrate;
+   float m_refreshrate;
    int m_bitdepth;
    const Settings::Section m_settingsSection;
    const string m_settingsPrefix;

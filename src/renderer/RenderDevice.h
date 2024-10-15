@@ -19,7 +19,7 @@
 #include "Window.h"
 
 #if defined(ENABLE_SDL_VIDEO)
-#include "SDL2/SDL.h"
+#include <SDL3/SDL.h>
 #endif
 
 #if defined(ENABLE_BGFX)

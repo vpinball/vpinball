@@ -11,9 +11,9 @@
  #include <glad/gles2.h>
 #endif
 #ifndef __STANDALONE__
- #include <SDL2/SDL_opengl.h>
+ #include <SDL3/SDL_opengl.h>
 #endif
- #include <SDL2/SDL.h>
+ #include <SDL3/SDL.h>
 
 #elif defined(ENABLE_DX9)
  #include "minid3d9.h"

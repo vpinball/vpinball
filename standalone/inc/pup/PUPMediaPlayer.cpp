@@ -29,7 +29,7 @@ PUPMediaPlayer::PUPMediaPlayer()
    m_videoStream = -1;
    m_pVideoContext = NULL;
    m_pVideoConversionContext = NULL;
-   m_videoFormat = (SDL_PixelFormatEnum)SDL_PIXELFORMAT_UNKNOWN;
+   m_videoFormat = SDL_PIXELFORMAT_UNKNOWN;
    m_videoWidth = 0;
    m_videoHeight = 0;
    m_audioStream = -1;
@@ -92,7 +92,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
    if (m_pVideoContext)
       avcodec_free_context(&m_pVideoContext);
 
-   m_videoFormat = (SDL_PixelFormatEnum)SDL_PIXELFORMAT_UNKNOWN;
+   m_videoFormat = SDL_PIXELFORMAT_UNKNOWN;
    m_videoWidth = 0;
    m_videoHeight = 0;
 
@@ -400,7 +400,7 @@ void PUPMediaPlayer::Render(const SDL_Rect& destRect)
    }
 
    if (pFrame) {
-      SDL_PixelFormatEnum format = GetVideoFormat((enum AVPixelFormat)pFrame->format);
+      SDL_PixelFormat format = GetVideoFormat((enum AVPixelFormat)pFrame->format);
       if (!m_pTexture || format != m_videoFormat || pFrame->width != m_videoWidth || pFrame->height != m_videoHeight) {
          if (m_pTexture)
              SDL_DestroyTexture(m_pTexture);
@@ -415,7 +415,7 @@ void PUPMediaPlayer::Render(const SDL_Rect& destRect)
          m_videoHeight = pFrame->height;
       }
 
-      SDL_RendererFlip flip = SDL_FLIP_NONE;
+      SDL_FlipMode flip = SDL_FLIP_NONE;
 
       switch (format) {
          case SDL_PIXELFORMAT_UNKNOWN:
@@ -425,7 +425,7 @@ void PUPMediaPlayer::Render(const SDL_Rect& destRect)
             if (m_pVideoConversionContext != NULL) {
                uint8_t* pPixels[4];
                int pitch[4];
-               if (SDL_LockTexture(m_pTexture, NULL, (void **)pPixels, pitch) == 0) {
+               if (SDL_LockTexture(m_pTexture, NULL, (void **)pPixels, pitch)) {
                   sws_scale(m_pVideoConversionContext, (const uint8_t * const *)pFrame->data, pFrame->linesize, 0, pFrame->height, pPixels, pitch);
                   SDL_UnlockTexture(m_pTexture);
                }
@@ -455,8 +455,14 @@ void PUPMediaPlayer::Render(const SDL_Rect& destRect)
       av_frame_free(&pFrame);
    }
 
-   if (m_pTexture)
-      SDL_RenderCopy(m_pRenderer, m_pTexture, NULL, &destRect);
+   if (m_pTexture) {
+      SDL_FRect fDestRect;
+      fDestRect.x = static_cast<float>(destRect.x);
+      fDestRect.y = static_cast<float>(destRect.y);
+      fDestRect.w = static_cast<float>(destRect.w);
+      fDestRect.h = static_cast<float>(destRect.h);
+      SDL_RenderTexture(m_pRenderer, m_pTexture, NULL, &fDestRect);
+   }
 #endif
 }
 
@@ -556,13 +562,13 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
    av_free(pBuffer);
 }
 
-SDL_PixelFormatEnum PUPMediaPlayer::GetVideoFormat(enum AVPixelFormat format)
+SDL_PixelFormat PUPMediaPlayer::GetVideoFormat(enum AVPixelFormat format)
 {
    switch (format) {
       case AV_PIX_FMT_RGB8: return SDL_PIXELFORMAT_RGB332;
-      case AV_PIX_FMT_RGB444: return SDL_PIXELFORMAT_RGB444;
-      case AV_PIX_FMT_RGB555: return SDL_PIXELFORMAT_RGB555;
-      case AV_PIX_FMT_BGR555: return SDL_PIXELFORMAT_BGR555;
+      case AV_PIX_FMT_RGB444: return SDL_PIXELFORMAT_XRGB4444;
+      case AV_PIX_FMT_RGB555: return SDL_PIXELFORMAT_XRGB1555;
+      case AV_PIX_FMT_BGR555: return SDL_PIXELFORMAT_XBGR1555;
       case AV_PIX_FMT_RGB565: return SDL_PIXELFORMAT_RGB565;
       case AV_PIX_FMT_BGR565: return SDL_PIXELFORMAT_BGR565;
       case AV_PIX_FMT_RGB24: return SDL_PIXELFORMAT_RGB24;
@@ -584,6 +590,8 @@ SDL_PixelFormatEnum PUPMediaPlayer::GetVideoFormat(enum AVPixelFormat format)
 
 void PUPMediaPlayer::SetYUVConversionMode(AVFrame *frame)
 {
+   // JSM174 - Switch to Colorspace - https://github.com/libsdl-org/SDL/blob/main/test/testffmpeg.c
+   /*
    SDL_YUV_CONVERSION_MODE mode = SDL_YUV_CONVERSION_AUTOMATIC;
    if (frame && (frame->format == AV_PIX_FMT_YUV420P || frame->format == AV_PIX_FMT_YUYV422 || frame->format == AV_PIX_FMT_UYVY422)) {
       if (frame->color_range == AVCOL_RANGE_JPEG)
@@ -594,6 +602,7 @@ void PUPMediaPlayer::SetYUVConversionMode(AVFrame *frame)
          mode = SDL_YUV_CONVERSION_BT601;
    }
    SDL_SetYUVConversionMode(mode);
+   */
 }
 #endif
 

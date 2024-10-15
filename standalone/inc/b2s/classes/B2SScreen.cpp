@@ -303,7 +303,7 @@ void B2SScreen::ScaleAllControls(float rescaleX, float rescaleY, float rescaleDM
 void B2SScreen::ScaleControl(B2SBaseBox* pControl, float rescaleX, float rescaleY, bool isOnDMD, bool flipY)
 {
    if (!isOnDMD && !SDL_RectEmpty(&m_backglassCutOff)) {
-      if (SDL_HasIntersection(&m_backglassCutOff, &pControl->GetRect()))
+      if (SDL_HasRectIntersection(&m_backglassCutOff, &pControl->GetRect()))
          pControl->SetRectangleF({ 0, 0, 0, 0 });
       else if (m_backglassCutOff.y < pControl->GetTop())
          pControl->SetRectangleF({ pControl->GetLeft() / rescaleX, (pControl->GetTop() - m_backglassSmallGrillHeight) / rescaleY, pControl->GetWidth() / rescaleX, pControl->GetHeight() / rescaleY });
@@ -368,9 +368,7 @@ void B2SScreen::ScaleControl(Dream7Display* pControl, float rescaleX, float resc
 
 SDL_Surface* B2SScreen::CutOutImage(SDL_Surface* pSourceImage, int grillheight, int smallgrillheight)
 {
-    SDL_Surface* pImageWithoutSmallGrill = SDL_CreateRGBSurface(0, pSourceImage->w, pSourceImage->h - smallgrillheight, pSourceImage->format->BitsPerPixel,
-        pSourceImage->format->Rmask, pSourceImage->format->Gmask, pSourceImage->format->Bmask, pSourceImage->format->Amask);
-
+    SDL_Surface* pImageWithoutSmallGrill = SDL_CreateSurface(pSourceImage->w, pSourceImage->h - smallgrillheight, pSourceImage->format);
     SDL_Surface* pImageBackglass = PartFromImage(pSourceImage, { 0, 0, pSourceImage->w, pSourceImage->h - grillheight - smallgrillheight });
     SDL_Surface* pImageGrill = PartFromImage(pSourceImage, { 0, pSourceImage->h - grillheight, pSourceImage->w, grillheight });
 
@@ -379,17 +377,15 @@ SDL_Surface* B2SScreen::CutOutImage(SDL_Surface* pSourceImage, int grillheight, 
     SDL_Rect dest = { 0, pImageBackglass->h, pImageGrill->w, pImageGrill->h };
     SDL_BlitSurface(pImageGrill, NULL, pImageWithoutSmallGrill, &dest);
 
-    SDL_FreeSurface(pImageBackglass);
-    SDL_FreeSurface(pImageGrill);
+    SDL_DestroySurface(pImageBackglass);
+    SDL_DestroySurface(pImageGrill);
 
     return pImageWithoutSmallGrill;
 }
 
 SDL_Surface* B2SScreen::PartFromImage(SDL_Surface* pSourceImage, SDL_Rect rect)
 {
-   SDL_Surface* pImagePart = SDL_CreateRGBSurface(0, rect.w, rect.h, pSourceImage->format->BitsPerPixel,
-      pSourceImage->format->Rmask, pSourceImage->format->Gmask, pSourceImage->format->Bmask, pSourceImage->format->Amask);
-
+   SDL_Surface* pImagePart = SDL_CreateSurface(rect.w, rect.h, pSourceImage->format);
    if (!pImagePart)
       return NULL;
 
@@ -400,9 +396,7 @@ SDL_Surface* B2SScreen::PartFromImage(SDL_Surface* pSourceImage, SDL_Rect rect)
 
 SDL_Surface* B2SScreen::ResizeImage(SDL_Surface* pSourceImage, int grillheight)
 {
-   SDL_Surface* pImageWithoutGrill = SDL_CreateRGBSurface(0, pSourceImage->w, pSourceImage->h - grillheight, pSourceImage->format->BitsPerPixel,
-      pSourceImage->format->Rmask, pSourceImage->format->Gmask, pSourceImage->format->Bmask, pSourceImage->format->Amask);
-
+   SDL_Surface* pImageWithoutGrill = SDL_CreateSurface(pSourceImage->w, pSourceImage->h - grillheight, pSourceImage->format);
    if (!pImageWithoutGrill)
       return NULL;
 
@@ -413,16 +407,14 @@ SDL_Surface* B2SScreen::ResizeImage(SDL_Surface* pSourceImage, int grillheight)
 
 SDL_Surface* B2SScreen::FlipImage(SDL_Surface* pSourceImage)
 {
-   SDL_Surface* pFlippedImage = SDL_CreateRGBSurface(0, pSourceImage->w, pSourceImage->h, pSourceImage->format->BitsPerPixel,
-      pSourceImage->format->Rmask, pSourceImage->format->Gmask, pSourceImage->format->Bmask, pSourceImage->format->Amask);
-
+   SDL_Surface* pFlippedImage = SDL_CreateSurface(pSourceImage->w, pSourceImage->h, pSourceImage->format);
    if (!pFlippedImage)
       return NULL;
 
    SDL_LockSurface(pSourceImage);
    SDL_LockSurface(pFlippedImage);
 
-   int bpp = pSourceImage->format->BytesPerPixel;
+   int bpp = SDL_GetPixelFormatDetails(pSourceImage->format)->bytes_per_pixel;
    for (int y = 0; y < pSourceImage->h; ++y) {
       UINT8* src_pixel = (UINT8*)pSourceImage->pixels + y * pSourceImage->pitch;
       UINT8* dst_pixel = (UINT8*)pFlippedImage->pixels + (pFlippedImage->h - y - 1) * pFlippedImage->pitch;

@@ -5,7 +5,10 @@
 #include "VPinballLib.h"
 #include "standalone/inc/webserver/WebServer.h"
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_main.h>
+#include <SDL3/SDL_system.h>
+
 #include "miniz/miniz.h"
 
 #include <filesystem>
@@ -39,14 +42,13 @@ VPinball::VPinball()
 void VPinball::Init(std::function<void*(Event, void*)> callback)
 {
    SDL_SetMainReady();
-   SDL_iPhoneSetEventPump(SDL_TRUE);
+   SDL_SetiOSEventPump(true);
 
    SDL_InitSubSystem(SDL_INIT_VIDEO);
    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
-   SDL_InitSubSystem(SDL_INIT_TIMER);
 
    g_pvp = new ::VPinball();
-   g_pvp->m_logicalNumberOfProcessors = SDL_GetCPUCount();
+   g_pvp->m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
    g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
 
    Logger::GetInstance()->Init();
@@ -297,7 +299,7 @@ VPinballStatus VPinball::Play()
       return VPinballStatus::Failure;
    }
 
-   SDL_iPhoneSetAnimationCallback(g_pplayer->m_playfieldWnd->GetCore(), 1, &VPinball::GameLoop, nullptr);
+   SDL_SetiOSAnimationCallback(g_pplayer->m_playfieldWnd->GetCore(), 1, &VPinball::GameLoop, nullptr);
    return VPinballStatus::Success;
 }
 
@@ -804,7 +806,7 @@ void VPinball::Cleanup()
    delete g_pvp;
    g_pvp = new ::VPinball();
    g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
-   g_pvp->m_logicalNumberOfProcessors = SDL_GetCPUCount();
+   g_pvp->m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
    
    {
       std::lock_guard<std::mutex> lock(m_liveUIMutex);

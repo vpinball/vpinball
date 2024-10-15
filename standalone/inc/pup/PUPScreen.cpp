@@ -8,7 +8,7 @@
 #include "PUPLabel.h"
 #include "PUPMediaManager.h"
 
-#include <SDL2/SDL_image.h>
+#include <SDL3_image/SDL_image.h>
 
 const char* PUP_SCREEN_MODE_STRINGS[] = {
    "PUP_SCREEN_MODE_OFF",
@@ -651,18 +651,18 @@ void PUPScreen::Render()
 
    Render(&m_overlay);
 
-   SDL_RenderSetClipRect(m_pRenderer, &m_rect);
+   SDL_SetRenderClipRect(m_pRenderer, &m_rect);
 
    for (PUPLabel* pLabel : m_labels)
       pLabel->Render(m_pRenderer, m_rect, m_pagenum);
 
-   SDL_RenderSetClipRect(m_pRenderer, NULL);
+   SDL_SetRenderClipRect(m_pRenderer, NULL);
 }
 
 void PUPScreen::LoadRenderable(PUPScreenRenderable* pRenderable, const string& szFile)
 {
    if (pRenderable->pSurface)
-      SDL_FreeSurface(pRenderable->pSurface);
+      SDL_DestroySurface(pRenderable->pSurface);
 
    pRenderable->pSurface = IMG_Load(szFile.c_str());
    pRenderable->dirty = true;
@@ -677,20 +677,26 @@ void PUPScreen::Render(PUPScreenRenderable* pRenderable)
       }
       if (pRenderable->pSurface) {
          pRenderable->pTexture = SDL_CreateTextureFromSurface(m_pRenderer, pRenderable->pSurface);
-         SDL_FreeSurface(pRenderable->pSurface);
+         SDL_DestroySurface(pRenderable->pSurface);
          pRenderable->pSurface = NULL;
       }
       pRenderable->dirty = false;
    }
 
-   if (pRenderable->pTexture)
-      SDL_RenderCopy(m_pRenderer, pRenderable->pTexture, NULL, &m_rect);
+   if (pRenderable->pTexture) {
+      SDL_FRect fRect;
+      fRect.x = static_cast<float>(m_rect.x);
+      fRect.y = static_cast<float>(m_rect.y);
+      fRect.w = static_cast<float>(m_rect.w);
+      fRect.h = static_cast<float>(m_rect.h);
+      SDL_RenderTexture(m_pRenderer,  pRenderable->pTexture, NULL, &fRect);
+   }
 }
 
 void PUPScreen::FreeRenderable(PUPScreenRenderable* pRenderable)
 {
    if (pRenderable->pSurface)
-      SDL_FreeSurface(pRenderable->pSurface);
+      SDL_DestroySurface(pRenderable->pSurface);
 
    if (pRenderable->pTexture)
       SDL_DestroyTexture(pRenderable->pTexture);

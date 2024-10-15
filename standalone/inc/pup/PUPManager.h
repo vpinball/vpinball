@@ -6,7 +6,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include <SDL2/SDL_ttf.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #define PUP_SCREEN_TOPPER             0
 #define PUP_SETTINGS_TOPPERX          320

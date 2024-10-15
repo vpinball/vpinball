@@ -284,8 +284,8 @@ add_executable(vpinball
    third-party/include/imgui/imgui.cpp
    third-party/include/imgui/imgui.h
    third-party/include/imgui/imgui_draw.cpp
-   third-party/include/imgui/imgui_impl_sdl2.cpp
-   third-party/include/imgui/imgui_impl_sdl2.h
+   third-party/include/imgui/imgui_impl_sdl3.cpp
+   third-party/include/imgui/imgui_impl_sdl3.h
    third-party/include/imgui/imgui_stdlib.cpp
    third-party/include/imgui/imgui_stdlib.h
    third-party/include/imgui/imgui_tables.cpp
@@ -682,9 +682,9 @@ target_link_directories(vpinball PUBLIC
 
 target_link_libraries(vpinball PUBLIC
    bgfx
-   SDL2
-   SDL2_image
-   SDL2_ttf
+   SDL3
+   SDL3_image
+   SDL3_ttf
    freeimage
    bass
    hidapi-hidraw

@@ -20,8 +20,7 @@
 #include "ThreadPool.h"
 #include "scalefx.h"
 #ifdef ENABLE_SDL_VIDEO
-#include <SDL2/SDL_syswm.h>
-#include "imgui/imgui_impl_sdl2.h"
+#include "imgui/imgui_impl_sdl3.h"
 #endif
 
 #include "serial.h"
@@ -612,10 +611,7 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
    }
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       #ifdef _WIN32
-         SDL_SysWMinfo wmInfo;
-         SDL_VERSION(&wmInfo.version);
-         SDL_GetWindowWMInfo(g_pplayer->m_playfieldWnd->GetCore(), &wmInfo);
-         *pVal = (size_t)wmInfo.info.win.window;
+         *pVal = (size_t)SDL_GetPointerProperty(SDL_GetWindowProperties(g_pplayer->m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
       #else
          *pVal = NULL;
       #endif
@@ -2573,54 +2569,57 @@ void PinTable::Play(const int playMode)
          unsigned long long startTick = usec();
          SDL_Event e;
          bool isPFWnd = true;
-         static int2 dragStart;
+         static Vertex2D dragStart;
          static int dragging = 0;
          while (SDL_PollEvent(&e) != 0)
          {
             switch (e.type)
             {
-            case SDL_QUIT:
+            case SDL_EVENT_QUIT:
                g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
                break;
-            case SDL_WINDOWEVENT:
+            case SDL_EVENT_WINDOW_FOCUS_GAINED:
                isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               switch (e.window.event)
-               {
-               case SDL_WINDOWEVENT_FOCUS_GAINED: g_pplayer->OnFocusChanged(true); break;
-               case SDL_WINDOWEVENT_FOCUS_LOST: g_pplayer->OnFocusChanged(false); break;
-               case SDL_WINDOWEVENT_CLOSE: g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY); break;
-               }
+               g_pplayer->OnFocusChanged(true);
                break;
-            case SDL_KEYUP:
-            case SDL_KEYDOWN:
+            case SDL_EVENT_WINDOW_FOCUS_LOST:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pplayer->OnFocusChanged(false);
+               break;
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
+               break;
+            case SDL_EVENT_KEY_UP:
+            case SDL_EVENT_KEY_DOWN:
                isPFWnd = SDL_GetWindowFromID(e.key.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                g_pplayer->ShowMouseCursor(false);
                break;
-            case SDL_TEXTINPUT:
+            case SDL_EVENT_TEXT_INPUT:
                isPFWnd = SDL_GetWindowFromID(e.text.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                break;
-            case SDL_MOUSEWHEEL:
+            case SDL_EVENT_MOUSE_WHEEL:
                isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                break;
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
                isPFWnd = SDL_GetWindowFromID(e.button.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                if (!isPFWnd)
                {
-                  if (e.type == SDL_MOUSEBUTTONUP)
+                  if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
                      dragging = 0;
-                  else if (e.type == SDL_MOUSEBUTTONDOWN && dragging == 0)
+                  else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && dragging == 0)
                      dragging = 1;
                }
                break;
-            case SDL_MOUSEMOTION:
+            case SDL_EVENT_MOUSE_MOTION:
                isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == g_pplayer->m_playfieldWnd->GetCore();
                if (isPFWnd) {
                   // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
                   // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-                  e.motion.x = (Sint32)((float)e.motion.x * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-                  e.motion.y = (Sint32)((float)e.motion.y * g_pplayer->m_playfieldWnd->GetHiDPIScale());
-                  static Sint32 m_lastcursorx = 0xfffffff, m_lastcursory = 0xfffffff;
+                  e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
                   if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
                   {
                      m_lastcursorx = e.motion.x;
@@ -2639,9 +2638,9 @@ void PinTable::Play(const int playMode)
                      {
                         int x, y;
                         windows[i]->GetPos(x, y);
-                        int2 click(x + e.motion.x, y + e.motion.y);
+                        Vertex2D click(x + e.motion.x, y + e.motion.y);
                         if (dragging > 1)
-                           windows[i]->SetPos(x + click.x - dragStart.x, y + click.y - dragStart.y);
+                           windows[i]->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
                         dragStart = click;
                         dragging = 2;
                         break;
@@ -2652,7 +2651,7 @@ void PinTable::Play(const int playMode)
             }
 
             if (isPFWnd)
-               ImGui_ImplSDL2_ProcessEvent(&e);
+               ImGui_ImplSDL3_ProcessEvent(&e);
 
             #ifdef __STANDALONE__
             g_pStandalone->ProcessEvent(&e);

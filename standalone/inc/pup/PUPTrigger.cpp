@@ -149,12 +149,12 @@ bool PUPTrigger::IsResting()
    if (m_lastTriggered == 0)
       return false;
 
-   return (SDL_GetTicks64() - m_lastTriggered) < (m_restSeconds * 1000);
+   return (SDL_GetTicks() - m_lastTriggered) < (m_restSeconds * 1000);
 }
 
 void PUPTrigger::SetTriggered()
 {
-   m_lastTriggered = SDL_GetTicks64();
+   m_lastTriggered = SDL_GetTicks();
 }
 
 string PUPTrigger::ToString() const {

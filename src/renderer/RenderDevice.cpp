@@ -16,10 +16,6 @@
 #include "renderer/AreaTex.h"
 #include "renderer/SearchTex.h"
 
-#ifdef ENABLE_SDL_VIDEO
-#include <SDL2/SDL_syswm.h>
-#endif
-
 #if defined(ENABLE_BGFX)
 #ifdef __STANDALONE__
 #pragma push_macro("_WIN64")
@@ -31,9 +27,6 @@
 #include "bgfx/bgfx.h"
 #ifdef __STANDALONE__
 #pragma pop_macro("_WIN64")
-#endif
-#ifdef __STANDALONE__
-#include <SDL2/SDL_syswm.h>
 #endif
 
 #elif defined(ENABLE_OPENGL)
@@ -434,7 +427,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
       = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
+#ifndef __APPLE__
    string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
+#else
+   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Metal]);
+#endif
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
    string supportedRendererLog = ""s;
@@ -454,10 +451,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    init.callback = &bgfxCallback;
 
-   SDL_SysWMinfo wmInfo;
-   SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
-
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
    init.resolution.numBackBuffers = maxPrerenderedFrames;
    init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
@@ -473,20 +466,22 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    }
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-   init.platformData.ndt = wmInfo.info.x11.display;
-   init.platformData.nwh = (void*)(uintptr_t)wmInfo.info.x11.window;
+   if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+      init.platformData.nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+   }
+   else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+      init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+      init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+   }
    #elif BX_PLATFORM_OSX
-   init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
    #elif BX_PLATFORM_IOS
-   #ifdef __LIBVPINBALL__
    init.platformData.nwh = VPinballLib::VPinball::SendEvent(VPinballLib::Event::MetalLayerIOS, nullptr);
-   #else
-   init.platformData.nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
-   #endif
    #elif BX_PLATFORM_ANDROID
-   init.platformData.nwh = wmInfo.info.android.window;
+   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = wmInfo.info.win.window;
+   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -506,16 +501,16 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
    // OpenGL device initialization
-   SDL_DisplayMode mode;
-   if (SDL_GetCurrentDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode) != 0)
+   const SDL_DisplayMode* mode = SDL_GetCurrentDisplayMode(m_outputWnd[0]->GetAdapterId());
+   if (mode == nullptr)
    {
       ShowError("Failed to setup OpenGL context");
       exit(-1);
    }
-   switch (mode.format)
+   switch (mode->format)
    {
    case SDL_PIXELFORMAT_RGB565: back_buffer_format = colorFormat::RGB5; break;
-   case SDL_PIXELFORMAT_RGB888: back_buffer_format = colorFormat::RGB8; break;
+   case SDL_PIXELFORMAT_XRGB8888: back_buffer_format = colorFormat::RGB8; break;
    case SDL_PIXELFORMAT_ARGB8888: back_buffer_format = colorFormat::RGBA8; break;
    case SDL_PIXELFORMAT_ARGB2101010: back_buffer_format = colorFormat::RGBA10; break;
    #ifdef __OPENGLES__
@@ -525,7 +520,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #endif
    default:
    {
-      ShowError("Invalid Output format: "s.append(std::to_string(mode.format).c_str()));
+      ShowError("Invalid Output format: "s.append(std::to_string(mode->format).c_str()));
       exit(-1);
    }
    }
@@ -575,7 +570,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    #if defined(ENABLE_SDL_VIDEO) && defined(ENABLE_OPENGL)
    int drawableWidth, drawableHeight, windowWidth, windowHeight;
-   SDL_GL_GetDrawableSize(m_outputWnd[0]->GetCore(), &drawableWidth, &drawableHeight); // Size in pixels
+   SDL_GetWindowSizeInPixels(m_outputWnd[0]->GetCore(), &drawableWidth, &drawableHeight); // Size in pixels
    SDL_GetWindowSize(m_outputWnd[0]->GetCore(), &windowWidth, &windowHeight); // Size in screen coordinates (taking in account HiDPI)
    PLOGI << "SDL drawable size: " << drawableWidth << 'x' << drawableHeight << " (window size: " << windowWidth << 'x' << windowHeight << ")";
    #endif
@@ -965,10 +960,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // DXGI VSync source (Windows 7+, only used for Win32 SDL with OpenGL)
       else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
       {
-         SDL_SysWMinfo wmInfo;
-         SDL_VERSION(&wmInfo.version);
-         SDL_GetWindowWMInfo(m_outputWnd[0]->GetCore(), &wmInfo);
-         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(wmInfo.info.win.window);
+         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow((HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL));
          if (out != nullptr)
             m_DXGIOutput = out->m_Output;
          if (m_DXGIOutput != nullptr)
@@ -1083,7 +1075,7 @@ RenderDevice::~RenderDevice()
    delete m_quadPTDynMeshBuffer;
    delete m_quadPNTDynMeshBuffer;
 
-   SDL_GL_DeleteContext(m_sdl_context);
+   SDL_GL_DestroyContext(m_sdl_context);
 
    assert(m_sharedVAOs.empty());
 
@@ -1159,20 +1151,25 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    default: fmt = colorFormat::RGB5; break;
    }
    SDL_Window* sdlWnd = wnd->GetCore();
-   SDL_SysWMinfo wmInfo;
-   SDL_VERSION(&wmInfo.version);
-   SDL_GetWindowWMInfo(wnd->GetCore(), &wmInfo);
+   void* ndt;
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
-   nwh = (void*)(uintptr_t)wmInfo.info.x11.window;
+   if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
+      ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
+      nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);
+   }
+   else if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "wayland") == 0) {
+      ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_DISPLAY_POINTER, NULL);
+      nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WAYLAND_SURFACE_POINTER, NULL);
+   }
 #elif BX_PLATFORM_OSX
-   nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(wnd->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(sdlWnd, "Metal"));
 #elif BX_PLATFORM_IOS
-   nwh = SDL_RenderGetMetalLayer(SDL_CreateRenderer(wnd->GetCore(), -1, SDL_RENDERER_PRESENTVSYNC));
+   nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(sdlWnd, "Metal"));
 #elif BX_PLATFORM_ANDROID
-   nwh = wmInfo.info.android.window;
+   nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
 #elif BX_PLATFORM_WINDOWS
-   nwh = wmInfo.info.win.window;
+   nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 #elif BX_PLATFORM_STEAMLINK
    nwh = wmInfo.info.vivante.window;
 #else

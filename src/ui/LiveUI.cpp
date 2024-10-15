@@ -21,7 +21,7 @@
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)
 
 #if defined(ENABLE_SDL_VIDEO)
-  #include "imgui/imgui_impl_sdl2.h"
+  #include "imgui/imgui_impl_sdl3.h"
 #else
   #include "imgui/imgui_impl_win32.h"
 #endif
@@ -729,12 +729,10 @@ LiveUI::LiveUI(RenderDevice *const rd)
 
 #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
    // using the specialized initializer is not needed
-   // ImGui_ImplSDL2_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
-   ImGui_ImplSDL2_InitForOther(m_player->m_playfieldWnd->GetCore());
-   int displayIndex = SDL_GetWindowDisplayIndex(m_player->m_playfieldWnd->GetCore());
-   float ddpi, hdpi, vdpi;
-   if (SDL_GetDisplayDPI(displayIndex, &ddpi, &hdpi, &vdpi) == 0)
-      m_dpi = (hdpi + vdpi) / 2.0f / 96.0f;
+   // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
+   ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
+   int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
+   m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
 #else // Win32 Windowing
    ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());
@@ -798,7 +796,7 @@ LiveUI::~LiveUI()
       #endif
 
       #if defined(ENABLE_SDL_VIDEO)
-      ImGui_ImplSDL2_Shutdown();
+      ImGui_ImplSDL3_Shutdown();
       #else
       ImGui_ImplWin32_Shutdown();
       #endif
@@ -1063,7 +1061,7 @@ void LiveUI::Update(const RenderTarget *rt)
    #endif
 
    #if defined(ENABLE_SDL_VIDEO)
-   ImGui_ImplSDL2_NewFrame();
+   ImGui_ImplSDL3_NewFrame();
    #else
    ImGui_ImplWin32_NewFrame();
    #endif

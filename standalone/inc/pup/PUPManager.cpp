@@ -148,7 +148,7 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
    if (!pFont)
       return false;
 
-   string szFamilyName = string(TTF_FontFaceFamilyName(pFont));
+   string szFamilyName = string(TTF_GetFontFamilyName(pFont));
    string szNormalizedFamilyName = string_to_lower(string_replace_all(szFamilyName, "  ", " "));
 
    m_fontMap[szNormalizedFamilyName] = pFont;

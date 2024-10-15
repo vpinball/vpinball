@@ -172,7 +172,7 @@ void VPinball::GetMyPath()
    m_szMyPath = szPath;
 #else
 #ifdef __ANDROID__
-   m_szMyPath = string(SDL_AndroidGetInternalStoragePath()) + PATH_SEPARATOR_CHAR;
+   m_szMyPath = string(SDL_GetAndroidInternalStoragePath()) + PATH_SEPARATOR_CHAR;
 #elif defined(__APPLE__) && defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)
    char *szPath = SDL_GetPrefPath("../..", "Documents");
    m_szMyPath = szPath;
@@ -182,9 +182,8 @@ void VPinball::GetMyPath()
    m_szMyPath = szPath;
    SDL_free(szPath);
 #else
-   char* szPath = SDL_GetBasePath();
+   const char* szPath = SDL_GetBasePath();
    m_szMyPath = szPath;
-   SDL_free(szPath);
 #endif
 #endif
 
@@ -2857,9 +2856,8 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
 #ifdef _MSC_VER
    GetModuleFileName(nullptr, path, MAXSTRING);
 #elif defined(__APPLE__) //!! ??
-   char* szPath = SDL_GetBasePath();
+   const char* szPath = SDL_GetBasePath();
    strcpy_s(path, sizeof(path), szPath);
-   SDL_free(szPath);
 #else
    const ssize_t len = ::readlink("/proc/self/exe", path, sizeof(path)-1);
    if (len != -1)
