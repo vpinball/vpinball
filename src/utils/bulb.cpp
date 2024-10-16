@@ -1,4 +1,5 @@
 // license:GPLv3+
+
 #include "core/stdafx.h"
 
 #include <cmath>

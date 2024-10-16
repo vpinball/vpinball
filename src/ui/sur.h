@@ -1,13 +1,6 @@
-#pragma once
+// license:GPLv3+
 
-// Much faster float-to-int conversion than standard C cast. (back in the days though)
-// Source: http://stereopsis.com/sree/fpu2006.html
-/*__forceinline int RoundToInt(double val)
-{
-constexpr double _xs_doublemagic = 6755399441055744.0;   //2^52 * 1.5, uses limited precision to floor
-val = val + _xs_doublemagic;
-return ((int*)&val)[0];
-}*/
+#pragma once
 
 #define RoundToInt lround
 
