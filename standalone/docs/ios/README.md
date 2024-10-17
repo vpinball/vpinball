@@ -103,6 +103,7 @@ The touch areas are:
 - *Right Shift* - Right Flipper
 - *1* - Start
 - *Return* - Plunger (*Hold down to pull back*)
+- *End* - Coin Door (*Press once to open, press again to close*)
 
 *Visual Pinball for iOS* supports game controllers. The game controller layout is:
 
@@ -280,7 +281,15 @@ In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* a
 
 **Q: My ROM based game loads, but does not seem to do anything.**
 
-**A:** Make sure the table is packaged correctly (see [Importing Tables](#importing-tables)). You can also view the `vpinball.log` in *Settings* to get detailed error information. 
+**A:** Make sure the table is packaged correctly (see [Importing Tables](#importing-tables)). You can also view the `vpinball.log` in *Settings* to get detailed error information.
+
+**Q: My ROM based game is very quiet, can the volume be changed?**
+
+**A:** Some ROM based games allow the volume to be set via the machine's system menu. To access the system menu, you will need a [bluetooth or usb keyboard](#controls). Press the *END* key to open the "coin door". Use the *8* and *9* keys to change the volume. Press the *END* key again to close the "coin door". When exitting the table, the settings will be saved to an NVRAM file.
+
+**Q: My ROM based game is seems to have started but I can't do anything?**
+
+**A:** Some ROM based games need to be reset the first time they are powered up. Exitting and restarting the table usually will fix this. You can also use a [bluetooth or usb keyboard](#controls) and press the *7* key.
 
 **Q: *Visual Pinball for iOS* appears like an iPhone app on an iPad.**
 
@@ -311,6 +320,16 @@ Tap *Contact Us* to send an email, or click [here](mailto:jsm174@gmail.com).
 Tap *Discord (Virtual Pinball Chat)* to go to the `#standalone` channel in the *Virtual Pinball Chat* Discord server, or click [here](https://discord.com/channels/652274650524418078/1076655472846831667).
 
 **Please do not use the GitHub issue queue to request support for *Visual Pinball for iOS*!**
+
+## Other Cool Projects
+
+- [vpxtool](https://https://github.com/francisdb/vpxtool) - Terminal based frontend and utilities for Visual Pinball (@francisdb)
+
+- [PinPal](https://github.com/bartdesign/PinPal) - Portable VPX pinball handheld controller with DMD display (@bartdesign)
+
+<p align="center">
+<img src="img/other-cool-projects-1.png" width="150">
+</p>
 
 ## Third Party Libraries
 
