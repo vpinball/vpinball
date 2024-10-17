@@ -232,20 +232,20 @@ namespace {
 
 			switch (b & ITEM_TYPE_MASK) {
 			case ITEM_TYPE_MAIN:
-				if (res = AssertMinMaxItemsAreMatched())
+				if ((res = AssertMinMaxItemsAreMatched()) != ERR_SUCCESS)
 					return res;
-				if (res = ParseMainItems(item, p, data_size, handler))
+				if ((res = ParseMainItems(item, p, data_size, handler)) != ERR_SUCCESS)
 					return res;
 				_locals.Reset();
 				break;
 
 			case ITEM_TYPE_GLOBAL:
-				if (res = ParseGlobalItems(item, p, data_size))
+				if ((res = ParseGlobalItems(item, p, data_size)) != ERR_SUCCESS)
 					return res;
 				break;
 
 			case ITEM_TYPE_LOCAL:
-				if (res = ParseLocalItems(item, p, data_size))
+				if ((res = ParseLocalItems(item, p, data_size)) != ERR_SUCCESS)
 					return res;
 				break;
 
@@ -258,14 +258,14 @@ namespace {
 
 		if (p > q)
 			return ERR_INCOMPLETE_ITEM;
-		if (res = AssertMinMaxItemsAreMatched())
+		if ((res = AssertMinMaxItemsAreMatched()) != ERR_SUCCESS)
 			return res;
 		if (_collection_depth != 0)
 			return ERR_UNCLOSED_COLLECTION;
 		if (_globals_stack_size != 0)
 			return ERR_PUSH_WITHOUT_POP;
 
-		return 0;
+		return ERR_SUCCESS;
 	}
 
 

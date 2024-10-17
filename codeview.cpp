@@ -1202,7 +1202,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
    }
 
 	// Also pop up a dialog if this is a runtime error
-	if (isRuntimeError && !m_suppressErrorDialogs)
+	if (isRuntimeError && !m_suppressErrorDialogs 
+		&& !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSED))
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
@@ -1427,7 +1428,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
    }
 
 	// Also pop up a dialog
-	if (!m_suppressErrorDialogs)
+    if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSED))
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
