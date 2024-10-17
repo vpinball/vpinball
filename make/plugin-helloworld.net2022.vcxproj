@@ -144,15 +144,15 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloworld\"
-        
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
+
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloworld\"
-        
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
+
+        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloworld\"
       </Command>

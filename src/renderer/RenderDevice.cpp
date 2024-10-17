@@ -1151,9 +1151,9 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
    default: fmt = colorFormat::RGB5; break;
    }
    SDL_Window* sdlWnd = wnd->GetCore();
-   void* ndt;
    void* nwh;
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+   void* ndt;
    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
       ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
       nwh = (void*)SDL_GetNumberProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_X11_WINDOW_NUMBER, 0);

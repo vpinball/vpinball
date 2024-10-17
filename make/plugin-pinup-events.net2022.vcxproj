@@ -144,15 +144,15 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinup-events\"
-        
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
+
+        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinup-events\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\" mkdir -p "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
+        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
         copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
         copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinup-events\"
       </Command>
