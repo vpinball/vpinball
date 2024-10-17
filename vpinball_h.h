@@ -190,7 +190,14 @@ public:
 
    HINSTANCE theInstance;
 
-   vector< CComObject<PinTable>* > m_vtable;
+   // registered window message ID for PinSim::FrontEndControls
+   // (http://mjrnet.org/pinscape/PinSimFrontEndControls/PinSimFrontEndControls.htm)
+   UINT m_pinSimFrontEndControlsMsg;
+
+   // handler for PinSim::FrontEndControls messages
+   LRESULT OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam);
+
+   vector<CComObject<PinTable>*> m_vtable;
    CComObject<PinTable> *m_ptableActive;
 
 //    HWND m_hwndToolbarMain;

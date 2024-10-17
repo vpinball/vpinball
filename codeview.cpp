@@ -1160,7 +1160,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	SetLastErrorVisibility(true);
 
 	// Also pop up a dialog if this is a runtime error
-	if (isRuntimeError && !m_suppressErrorDialogs)
+	if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->m_closeType != 0))
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
@@ -1373,7 +1373,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	SetLastErrorVisibility(true);
 
 	// Also pop up a dialog
-	if (!m_suppressErrorDialogs)
+    if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->m_closeType != 0))
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
