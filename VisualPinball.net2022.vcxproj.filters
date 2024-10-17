@@ -23,7 +23,7 @@
     <ClCompile Include="Media\fileio.cpp" />
     <ClCompile Include="src/parts/flipper.cpp" />
     <ClCompile Include="src/parts/gate.cpp" />
-    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="ushock.cpp" />
     <ClCompile Include="src/physics/hitflipper.cpp" />
     <ClCompile Include="src/physics/hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
@@ -364,6 +364,8 @@
       <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\core\TableDB.cpp" />
+    <ClCompile Include="pininput_OpenPinDev.cpp" />
+    <ClCompile Include="third-party\include\hid-report-parser\hid_report_parser.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="vpinball.rc">
@@ -928,7 +930,7 @@
     <ClInclude Include="helpers.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="hid.h">
+    <ClInclude Include="ushock.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="hitrectsur.h">

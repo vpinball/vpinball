@@ -242,7 +242,7 @@
       <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
@@ -304,7 +304,7 @@
       <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
@@ -368,7 +368,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -429,7 +429,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -502,7 +502,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -566,7 +566,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <AdditionalIncludeDirectories>third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -638,7 +638,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;d3d9.lib;d3dx9.lib;dxerr.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -709,7 +709,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hidapi.lib;SDL2.lib;SDL2main.lib;opengl32.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -810,6 +810,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="dialogs\ToolbarDialog.cpp" />
     <ClCompile Include="dialogs\VideoOptionsDialog.cpp" />
     <ClCompile Include="dialogs\VROptionsDialog.cpp" />
+    <ClCompile Include="pininput_OpenPinDev.cpp" />
     <ClCompile Include="src/parts/flasher.cpp" />
     <ClCompile Include="imgui\ImGuizmo.cpp" />
     <ClCompile Include="imgui\imgui_stdlib.cpp" />
@@ -844,6 +845,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="imgui\implot\implot.cpp" />
     <ClCompile Include="imgui\implot\implot_items.cpp" />
     <ClCompile Include="third-party\include\gpuprofiler.cpp" />
+    <ClCompile Include="third-party\include\hid-report-parser\hid_report_parser.cpp" />
     <ClCompile Include="third-party\include\miniz\miniz.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
@@ -884,7 +886,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClCompile Include="media\fileio.cpp" />
     <ClCompile Include="src/parts/flipper.cpp" />
     <ClCompile Include="src/parts/gate.cpp" />
-    <ClCompile Include="hid.cpp" />
+    <ClCompile Include="ushock.cpp" />
     <ClCompile Include="src/physics/hitflipper.cpp" />
     <ClCompile Include="src/physics/hitplunger.cpp" />
     <ClCompile Include="hitrectsur.cpp" />
@@ -1154,7 +1156,7 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <ClInclude Include="extern.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="helpers.h" />
-    <ClInclude Include="hid.h" />
+    <ClInclude Include="ushock.h" />
     <ClInclude Include="hitrectsur.h" />
     <ClInclude Include="hitsur.h" />
     <ClInclude Include="idebug.h" />
