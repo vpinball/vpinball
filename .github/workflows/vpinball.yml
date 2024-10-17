@@ -136,7 +136,7 @@ jobs:
           cp txt/Scripts.txt tmp 
           cp -r scripts tmp
           cp -r tables tmp
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v4
         with:
           name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
           path: tmp
