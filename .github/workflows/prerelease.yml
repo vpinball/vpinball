@@ -21,9 +21,9 @@ jobs:
         run: |
            SHA=$(if [[ "${{ github.event.inputs.sha }}" ]]; then echo "${{ github.event.inputs.sha }}"; else echo "${GITHUB_SHA}"; fi)
            SHA7="${SHA::7}"
-           echo "::set-output name=sha::${SHA}"
-           echo "::set-output name=sha7::${SHA7}"
-      - uses: actions/checkout@v2
+           echo "sha=${SHA}" >> $GITHUB_OUTPUT
+           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v3
         with:
           ref: ${{ steps.sha.outputs.sha }}
           fetch-depth: 0
@@ -34,7 +34,7 @@ jobs:
           VERSION_REV=$(grep -Eo "VP_VERSION_REV\s+[0-9]+" vpversion.h | grep -Eo "[0-9]+")
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..${{ steps.sha.outputs.sha }} --count)
           TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${{ steps.sha.outputs.sha7 }}"
-          echo "::set-output name=tag::${TAG}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   prerelease:
     runs-on: ubuntu-latest
@@ -54,18 +54,11 @@ jobs:
            done
            rm *.json
       - id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: "v${{ needs.version.outputs.tag }}" 
-          release_name: "v${{ needs.version.outputs.tag }}"
           prerelease: true
-          commitish: ${{ needs.version.outputs.sha }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - id: upload_release_assets
-        uses: dwenegar/upload-release-assets@v1
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
-          assets_path: .
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: "v${{ needs.version.outputs.tag }}"
+          tag: "v${{ needs.version.outputs.tag }}" 
+          commit: ${{ needs.version.outputs.sha }}
+          token:  ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "*"

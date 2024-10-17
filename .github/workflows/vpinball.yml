@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - id: cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
@@ -38,7 +38,7 @@ jobs:
       sha7: ${{ steps.version.outputs.sha7 }}
       tag: ${{ steps.version.outputs.tag }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - id: version
@@ -49,14 +49,14 @@ jobs:
           REVISION=$(git rev-list ${{ env.VERSION_START_SHA }}..HEAD --count)
           SHA7="${GITHUB_SHA::7}"
           TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_REV}-${REVISION}-${SHA7}"
-          echo "::set-output name=revision::${REVISION}"
-          echo "::set-output name=sha7::${SHA7}"
-          echo "::set-output name=tag::${TAG}"
+          echo "revision=${REVISION}" >> $GITHUB_OUTPUT
+          echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
   build:
     name: Build VPinballX-${{ matrix.config }}-${{ matrix.platform }}
     runs-on: windows-2019
-    needs: [ dxsdk, version ]
+    needs: [ version, dxsdk ]
     strategy:
       fail-fast: false
       matrix:
@@ -86,19 +86,19 @@ jobs:
             sci-lexer-vp: SciLexerVP.dll
             config: Debug
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
       - run: |
-          sed -i "s/0/${{ needs.version.outputs.revision }}/g" git_version.h
-          sed -i "s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
+          perl -i -pe"s/0/${{ needs.version.outputs.revision }}/g" git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" git_version.h
       - name: Build
         run: |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           # cmake can't find fxc.exe so copy one into the a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.16299.0/x86/fxc.exe" /mingw64/bin
+          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x86/fxc.exe" /mingw64/bin
           cp cmake/CMakeLists_${{ matrix.platform}}.txt CMakeLists.txt
           cmake -T v141_xp -G "Visual Studio 16 2019" -A ${{ matrix.platform-name }} -B build
           cmake --build build --config ${{ matrix.config }}
@@ -110,7 +110,7 @@ jobs:
 #          rm upx.zip
 #          ./upx/upx.exe --best --lzma build/${{ matrix.config }}/VPinballX.exe
       - run: |
-          mkdir tmp 
+          mkdir tmp
           if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
             cp build/${{ matrix.config }}/VPinballX64.exe tmp
           else
