@@ -17,10 +17,11 @@ Experience the open source pinball simulator now on your iPhone!
 9. [External DMDs](#external-dmds)
 10. [Troubleshooting](#troubleshooting)
 11. [Support](#support)
-12. [Third Party Libraries](#third-party-libraries)
-13. [License](#license)
-14. [Privacy Policy](#privacy-policy)
-15. [Credits](#credits)
+12. [Other Cool Projects](#other-cool-projects)
+13. [Third Party Libraries](#third-party-libraries)
+14. [License](#license)
+15. [Privacy Policy](#privacy-policy)
+16. [Credits](#credits)
 
 ## Features
 
@@ -323,7 +324,7 @@ Tap *Discord (Virtual Pinball Chat)* to go to the `#standalone` channel in the *
 
 ## Other Cool Projects
 
-- [vpxtool](https://https://github.com/francisdb/vpxtool) - Terminal based frontend and utilities for Visual Pinball (@francisdb)
+- [vpxtool](https://github.com/francisdb/vpxtool) - Terminal based frontend and utilities for Visual Pinball (@francisdb)
 
 - [PinPal](https://github.com/bartdesign/PinPal) - Portable VPX pinball handheld controller with DMD display (@bartdesign)
 
