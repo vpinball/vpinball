@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "Window.h"
 
+#include <SDL2/SDL_syswm.h>
+
 #ifdef __STANDALONE__
 #include <SDL3_image/SDL_image.h>
 #endif
@@ -345,7 +347,16 @@ void Window::RaiseAndFocus(const bool raise)
       SDL_RaiseWindow(m_nwnd);
    #else // Win32 Windowing
       if (raise)
+      {
          SetForegroundWindow(m_nwnd);
+
+         // Windows automatically minimizes full-screen-exclusive windows when they're
+         // moved to the background, but it doesn't automatically restore them when
+         // they're brought back in front, so we have to do this explicitly.
+         if (IsIconic(m_nwnd))
+            SendMessage(m_nwnd, WM_SYSCOMMAND, SC_RESTORE, 0);
+      }
+
       SetFocus(m_nwnd);
    #endif
 }
@@ -593,5 +604,15 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
       SAFE_RELEASE(d3d);
    #endif
 }
+
+#if defined(_WIN32) && defined(ENABLE_SDL_VIDEO)
+HWND Window::GetNativeHWND() const
+{
+   SDL_SysWMinfo systemInfo;
+   SDL_VERSION(&systemInfo.version);
+   SDL_GetWindowWMInfo(GetCore(), &systemInfo);
+   return systemInfo.info.win.window;
+}
+#endif
 
 } // namespace VPX
