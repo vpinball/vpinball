@@ -685,7 +685,7 @@ void Player::OnInitialUpdate()
 #endif
 
     mixer_init(GetHwnd());
-    hid_init();
+    ushock_init();
 
     const HRESULT result = Init();
     if (result != S_OK)
@@ -783,7 +783,7 @@ void Player::OnClose()
         m_audio->MusicPause();
 
     mixer_shutdown();
-    hid_shutdown();
+    ushock_shutdown();
 
     StopCaptures();
 #ifdef ENABLE_SDL
@@ -2394,7 +2394,8 @@ void Player::MechPlungerIn(const int z, const int joyidx)
 {
    m_curPlunger[joyidx] = -z; //axis reversal
 
-   if (++m_movedPlunger == 0xffffffff) m_movedPlunger = 3; //restart at 3
+   if (++m_movedPlunger == 0xffffffff)
+      m_movedPlunger = 3; //restart at 3
 }
 
 void Player::MechPlungerSpeedIn(const int z, const int joyidx)
@@ -2988,7 +2989,7 @@ void Player::UpdatePhysics()
       m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
 
       mixer_update();
-      hid_update(/*sim_msec*/cur_time_msec);
+      ushock_update(/*sim_msec*/cur_time_msec);
       plumb_update(/*sim_msec*/cur_time_msec, GetNudgeX(), GetNudgeY());
 
 #ifdef ACCURATETIMERS
@@ -4226,7 +4227,7 @@ void Player::PrepareFrame()
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 
    // Check if we should turn animate the plunger light.
-   hid_set_output(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
+   ushock_set_output(USHOCK_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
    if (m_stereo3D != STEREO_VR)
