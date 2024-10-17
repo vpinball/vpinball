@@ -3,7 +3,9 @@
 #include "core/stdafx.h"
 #include "Window.h"
 
-#include <SDL2/SDL_syswm.h>
+#if defined(_WIN32) && defined(ENABLE_SDL_VIDEO)
+#include <SDL3/SDL_video.h>
+#endif
 
 #ifdef __STANDALONE__
 #include <SDL3_image/SDL_image.h>
@@ -608,10 +610,7 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
 #if defined(_WIN32) && defined(ENABLE_SDL_VIDEO)
 HWND Window::GetNativeHWND() const
 {
-   SDL_SysWMinfo systemInfo;
-   SDL_VERSION(&systemInfo.version);
-   SDL_GetWindowWMInfo(GetCore(), &systemInfo);
-   return systemInfo.info.win.window;
+   return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
 }
 #endif
 

@@ -295,7 +295,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
-      int pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
+      float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
       m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
       if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
          m_maxFramerate = 24;
@@ -306,9 +306,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          switch (vsync)
          {
          case -1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-         case 0: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
-         case 1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
-         case 2: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+         case  0: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
+         case  1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
+         case  2: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          default: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
          }
       }
