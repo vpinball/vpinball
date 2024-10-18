@@ -488,7 +488,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #elif BX_PLATFORM_ANDROID
    init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
-   init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+   init.platformData.nwh = m_outputWnd[0]->GetNativeHWND();
    #elif BX_PLATFORM_STEAMLINK
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
@@ -967,7 +967,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // DXGI VSync source (Windows 7+, only used for Win32 SDL with OpenGL)
       else if (syncMode == VideoSyncMode::VSM_FRAME_PACING)
       {
-         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow((HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL));
+         DXGIRegistry::Output* out = g_DXGIRegistry.GetForWindow(m_outputWnd[0]->GetNativeHWND());
          if (out != nullptr)
             m_DXGIOutput = out->m_Output;
          if (m_DXGIOutput != nullptr)
@@ -1176,7 +1176,7 @@ void RenderDevice::AddWindow(VPX::Window* wnd)
 #elif BX_PLATFORM_ANDROID
    nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
 #elif BX_PLATFORM_WINDOWS
-   nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWnd), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
+   nwh = wnd->GetNativeHWND();
 #elif BX_PLATFORM_STEAMLINK
    nwh = wmInfo.info.vivante.window;
 #else

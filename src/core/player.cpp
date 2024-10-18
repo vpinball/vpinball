@@ -481,12 +481,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_pininput.LoadSettings(m_ptable->m_settings);
    #ifdef _WIN32
-      #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-      #else // Win32 Windowing
-      HWND hwnd = m_playfieldWnd->GetCore();
-      #endif
-      m_pininput.Init(hwnd);
+      m_pininput.Init(m_playfieldWnd->GetNativeHWND());
    #else
       m_pininput.Init();
    #endif
@@ -2232,12 +2227,7 @@ void Player::FinishFrame()
 #ifndef __STANDALONE__
       if (!m_debuggerDialog.IsWindow())
       {
-         #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-         HWND hwnd = (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-         #else // Win32 Windowing
-         HWND hwnd = m_playfieldWnd->GetCore();
-         #endif
-         m_debuggerDialog.Create(hwnd);
+         m_debuggerDialog.Create(m_playfieldWnd->GetNativeHWND());
          m_debuggerDialog.ShowWindow();
       }
       else

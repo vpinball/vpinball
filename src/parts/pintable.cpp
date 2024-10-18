@@ -609,14 +609,10 @@ STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
       *pVal = NULL;
       return E_FAIL;
    }
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-      #ifdef _WIN32
-         *pVal = (size_t)SDL_GetPointerProperty(SDL_GetWindowProperties(g_pplayer->m_playfieldWnd->GetCore()), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL);
-      #else
-         *pVal = NULL;
-      #endif
-   #else // Win32 Windowing
-      *pVal = (size_t)g_pplayer->m_playfieldWnd->GetCore();
+   #ifdef _WIN32
+      *pVal = (size_t)g_pplayer->m_playfieldWnd->GetNativeHWND();
+   #else
+      *pVal = NULL;
    #endif
    return S_OK; // returning E_FAIL would break all PinMame tables that starts PinMame through 'Controller.Run GetPlayerHWnd'
 }
