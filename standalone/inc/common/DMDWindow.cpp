@@ -107,6 +107,7 @@ void DMDWindow::Render()
          if (!m_pTexture)
             return;
       }
+      SDL_SetTextureScaleMode(m_pTexture, SDL_SCALEMODE_NEAREST);
       if (!SDL_UpdateTexture(m_pTexture, NULL, pRGB24Data, m_pitch))
          return;
       SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
