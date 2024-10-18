@@ -106,8 +106,8 @@ void DMDWindow::Render()
          m_pTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, m_pRGB24DMD->GetWidth(), m_pRGB24DMD->GetHeight());
          if (!m_pTexture)
             return;
+         SDL_SetTextureScaleMode(m_pTexture, SDL_SCALEMODE_NEAREST);
       }
-      SDL_SetTextureScaleMode(m_pTexture, SDL_SCALEMODE_NEAREST);
       if (!SDL_UpdateTexture(m_pTexture, NULL, pRGB24Data, m_pitch))
          return;
       SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
