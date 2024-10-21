@@ -112,8 +112,8 @@ if [ ! -f "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache" ]; then
    touch "../${CACHE_DIR}/${SDL2_CACHE_NAME}.cache"
 fi
  
-mkdir -p ../external/include/SDL2
-cp -r ../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/* ../external/include/SDL2
+mkdir -p ../external/include/SDL3
+cp -r ../${CACHE_DIR}/${SDL2_CACHE_NAME}/include/* ../external/include/SDL3
 cp ../${CACHE_DIR}/${SDL2_CACHE_NAME}/lib/*.a ../external/lib
 
 #
@@ -140,7 +140,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL3
 cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
@@ -167,7 +167,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
-cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL2
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include/SDL3
 cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #

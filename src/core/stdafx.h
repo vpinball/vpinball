@@ -5,7 +5,9 @@
 // Disable Warning C4635: XML document comment target: badly-formed XML
 #pragma warning(disable : 4635)
 
+#ifndef __ANDROID__
 #define SDL_MAIN_HANDLED // https://wiki.libsdl.org/SDL3/SDL_SetMainReady#remarks
+#endif
 
 //#define DISABLE_FORCE_NVIDIA_OPTIMUS // do not enable NVIDIA Optimus cards (on Laptops, etc) by default
 

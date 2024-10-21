@@ -650,7 +650,6 @@ add_executable(vpinball
 
 target_include_directories(vpinball PUBLIC
    ${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/macos-arm64/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole
