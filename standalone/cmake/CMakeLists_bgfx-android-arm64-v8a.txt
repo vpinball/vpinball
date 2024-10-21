@@ -641,7 +641,6 @@ add_library(vpinball SHARED
 
 target_include_directories(vpinball PUBLIC
    ${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/include
-   ${CMAKE_SOURCE_DIR}/standalone/android-arm64-v8a/external/include/SDL2
    ${CMAKE_SOURCE_DIR}
    third-party/include
    standalone/inc/pole

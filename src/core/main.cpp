@@ -33,6 +33,10 @@
 #include <locale>
 #include <codecvt>
 
+#ifdef __ANDROID__
+#include <SDL3/SDL_main.h>
+#endif
+
 #ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall()
 {

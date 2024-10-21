@@ -26,9 +26,9 @@ class VPinballActivity : SDLActivity() {
 
     override fun getLibraries(): Array<String> {
         return arrayOf(
-            "SDL2",
-            "SDL2_image",
-            "SDL2_ttf",
+            "SDL3",
+            "SDL3_image",
+            "SDL3_ttf",
             "FreeImage",
             "bass",
             "pinmame.3.6",

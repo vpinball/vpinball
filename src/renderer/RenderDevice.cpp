@@ -310,6 +310,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
    bool vsync = useVSync;
    rd->m_frameReadySem.post();
+
+#ifdef __STANDALONE__
+   std::this_thread::sleep_for(std::chrono::milliseconds(500));
+#endif
+
    while (rd->m_renderDeviceAlive)
    {
       // wait for a frame to be prepared by the logic thread
@@ -427,10 +432,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
       = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
-#ifndef __APPLE__
-   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
-#else
+#ifdef __ANDROID__
+   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::OpenGLES]);
+#elif defined(__APPLE__)
    string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Metal]);
+#else
+   string gfxBackend = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, bgfxRendererNames[bgfx::RendererType::Vulkan]);
 #endif
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
