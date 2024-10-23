@@ -128,10 +128,10 @@ bool ImGui_Implbgfx_CreateFontsTexture()
     // Upload texture to graphics system
     g_FontTexture = bgfx::createTexture2D(
         (uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8,
-        0, bgfx::copy(pixels, width * height * 4));
+        BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::copy(pixels, (size_t)width * height * 4));
 
     // Store our identifier
-    io.Fonts->TexID = (void*)(intptr_t)g_FontTexture.idx;
+    io.Fonts->TexID = (ImTextureID)g_FontTexture.idx;
 
     return true;
 }
