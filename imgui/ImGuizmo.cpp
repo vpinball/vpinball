@@ -992,7 +992,7 @@ namespace IMGUIZMO_NAMESPACE
    {
       return (gContext.mbUsing && (gContext.mActualID == -1 || gContext.mActualID == gContext.mEditingID)) || gContext.mbUsingBounds;
    }
-   
+
    bool IsUsingAny()
    {
       return gContext.mbUsing || gContext.mbUsingBounds;
@@ -1511,21 +1511,6 @@ namespace IMGUIZMO_NAMESPACE
          drawList->AddText(ImVec2(destinationPosOnScreen.x + 15, destinationPosOnScreen.y + 15), GetColorU32(TEXT_SHADOW), tmps);
          drawList->AddText(ImVec2(destinationPosOnScreen.x + 14, destinationPosOnScreen.y + 14), GetColorU32(TEXT), tmps);
       }
-   }
-
-   static void DrawOriginGizmo(OPERATION op, int type)
-   {
-      ImDrawList* drawList = gContext.mDrawList;
-      if (!drawList)
-      {
-         return;
-      }
-
-      // colors
-      ImU32 colors[7];
-      ComputeColors(colors, type, TRANSLATE);
-
-      drawList->AddCircleFilled(gContext.mScreenSquareCenter, gContext.mStyle.CenterCircleSize, colors[0], 32);
    }
 
    static void DrawTranslationGizmo(OPERATION op, int type)
@@ -2533,7 +2518,7 @@ namespace IMGUIZMO_NAMESPACE
       // behind camera
       vec_t camSpacePosition;
       camSpacePosition.TransformPoint(makeVect(0.f, 0.f, 0.f), gContext.mMVP);
-      if (!gContext.mIsOrthographic && camSpacePosition.z < 0.001f)
+      if (!gContext.mIsOrthographic && camSpacePosition.z < 0.001f && !gContext.mbUsing)
       {
          return false;
       }
@@ -2559,7 +2544,6 @@ namespace IMGUIZMO_NAMESPACE
       gContext.mOperation = operation;
       if (!gContext.mbUsingBounds)
       {
-         DrawOriginGizmo(operation, type);
          DrawRotationGizmo(operation, type);
          DrawTranslationGizmo(operation, type);
          DrawScaleGizmo(operation, type);
@@ -2797,8 +2781,7 @@ namespace IMGUIZMO_NAMESPACE
       static vec_t interpolationUp;
       static vec_t interpolationDir;
       static int interpolationFrames = 0;
-      // VPX change: do not use a fixed up vector
-      //const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
+      const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
 
       matrix_t svgView, svgProjection;
       svgView = gContext.mViewMat;
@@ -2819,8 +2802,6 @@ namespace IMGUIZMO_NAMESPACE
 
       vec_t dir = makeVect(viewInverse.m[2][0], viewInverse.m[2][1], viewInverse.m[2][2]);
       vec_t up = makeVect(viewInverse.m[1][0], viewInverse.m[1][1], viewInverse.m[1][2]);
-      // VPX change: use live up vector instead of a fixed reference one
-      const vec_t referenceUp = makeVect(up.x, up.y, up.z);
       vec_t eye = dir * distance;
       vec_t zero = makeVect(0.f, 0.f);
       LookAt(&eye.x, &zero.x, &up.x, cubeView.m16);
@@ -2976,7 +2957,7 @@ namespace IMGUIZMO_NAMESPACE
                interpolationUp = referenceUp;
             }
             interpolationFrames = 40;
-            
+
          }
          isClicking = false;
          isDraging = false;
