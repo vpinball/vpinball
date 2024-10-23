@@ -47,7 +47,7 @@
 #define ID_ANAGLYPH_CALIBRATION "Anaglyph Calibration"
 
 #define PROP_WIDTH (125.f * m_dpi)
-#define PROP_TIMER(is_live, startup_obj, live_obj)                                                                                                                                                                  \
+#define PROP_TIMER(is_live, startup_obj, live_obj) \
    if (ImGui::CollapsingHeader("Timer", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE) \
    { \
       PropCheckbox("Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerEnabled) : nullptr); \
@@ -792,11 +792,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Sampler *sampler = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
-   #ifdef ENABLE_SDL
-   ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
-   #else
-   ImTextureID image = (void *)sampler->GetCoreTexture();
-   #endif
+   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
    if (imageData.size.x > contentSize.x)
