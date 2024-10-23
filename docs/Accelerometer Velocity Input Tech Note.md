@@ -31,24 +31,25 @@ axes in the horizontal plane of the virtual playfield, via any pair
 of standard gamepad joystick axes.
 
 This approach was invented by a couple of early "virtual pinball
-controller" products, and was copied by all of the later commercial
-and open-source controllers, since it's easy to implement in a
-microcontroller, and is already supported in the simulators.
+controller" products, and all of the later commercial and open-source
+controllers copied it.  It has the benefit of being easy to implement
+in a microcontroller, and the simulators already know how to read it.
 
 
 ## The traditional simulator input model: Raw accelerations
 
-In the traditional USB HID joystick interface that VP and other
-simulators implement, the microcontroller simply passes along the
-acceleration samples read from the accelerometer, with little or no
-processing.  The device typically scales the readings to fit the USB
-HID joystick axis range, and provides some kind of automatic
-calibration to subtract out the physical tilt bias that's almost
-always present (since it's nearly impossible to install an
-accelerometer sensor such that it's perfectly level).  Otherwise,
-the readings sent to the simulator are just the readings taken
-from the accelerometer: a series of discrete-time digitized
-acceleration samples.
+In the traditional "joystick nudge" interface, the microcontroller
+simply reads the accelerometer and sends the readings directly to the
+PC, with very little processing.  The microcontroller typically scales
+the readings to fit the HID joystick format, and provides some kind of
+automatic calibration to subtract out the physical tilt bias that's
+almost always present.  (It's nearly impossible to install an
+accelerometer sensor so that it's perfectly level, so some kind of
+software compensation is required to subtract out the constant gravity
+component from the tilt.)  Otherwise, the readings sent to the
+simulator are just the readings taken from the accelerometer, which
+physically represent a series of discrete-time digitized acceleration
+samples.
 
 Internally, VP applies these instantaneous accelerations to the
 simulation by accelerating each moving object by the amount read from
@@ -61,13 +62,13 @@ To be correct in a physics sense, the instantaneous acceleration must
 be multiplied by the amount of time in a time step, to yield the
 incremental velocity for one time step.  The VP code has a comment
 that this is missing and should be added someday, but it's really not
-missing after all: it's just hidden in plain sight, by virtue of being
+truly missing: it's just hidden in plain sight, by virtue of being
 rolled into the user-adjustable "Gain" setting.  Each acceleration
 reading from the USB device is multiplied by the Gain to yield the
 amount added to the velocities, so the Gain implicitly contains the
 time step factor.  If you've ever wondered why you needed to reduce
 the gain by a factor of 10 between VP9 and VP10, it's because VP10's
-time step is 1/10 of VP9's, thus the component of the gain that
+time step is 1/10 of VP9's, thus the portion of the gain setting that
 represents the time step had to be reduced by 10x.
 
 
@@ -76,11 +77,11 @@ represents the time step had to be reduced by 10x.
 The new input model passes **velocities**, instead of accelerations,
 through the USB interface.
 
-Readers will recall from high-school physics classes that velocity is
-the integral over time of acceleration.  To perform a numerical
+Readers will recall from high-school physics that velocity is the
+integral over time of acceleration.  To perform a numerical
 integration over time with a series of discrete-time samples, such as
-our accelerometer readings, you just add up the samples, multiplying
-each by the time step per sample.
+our accelerometer readings, you just add up the product of
+acceleration times the time step:  <i>v</i> = &Sigma; <i>a</i> &Delta;<i>t</i>.
 
 To implement the new "integrated velocity" model, the microcontroller
 collects the individual acceleration samples from the accelerometer as
@@ -95,7 +96,7 @@ terms of the C++ code, although perhaps a little harder to
 conceptualize.  The key to thinking about this is to think of each
 moving object's current velocity as the sum of two components: its
 velocity relative to the inertial rest frame, and its velocity
-relative to the playfield.  The second type comes from the nudge
+relative to the playfield.  The second component comes from the nudge
 input, because the nudge input represents the motion of the playfield
 relative to the inertial rest frame.  Since VP's convention is that
 the playfield defines the coordinate system, adding velocity to the
@@ -119,13 +120,16 @@ with the simple accounting trick - so nothing else in the simulation
 is affected.  In particular, hit testing and collision processing
 are completely unchanged.
 
-Note that VPX already has a similar concept for its internal *simulated*
+Note that VPX already uses exactly this model for its internal *simulated*
 nudging system, which applies a nudge from scripting or by keyboard
 activation by modeling an imaginary cabinet as a damped oscillator.  VPX
 calculates the motion of this imaginary damped oscillator, and applies
 the differential velocity to the ball speeds on each physics time step.
 The new accelerometer input handling applies the externally supplied
-velocity input the same way.
+velocity input the same way.  It's doing exactly the same thing, the
+only difference being that the velocity source in one case is VP's
+simulation of the motion of an imaginary cabinet, and in the other
+case it's the real-time sensor measurements from a physical cabinet.
 
 
 ## Compatibility with games *not* using the new model
@@ -149,7 +153,7 @@ simulator reads the type it's interested in and ignores the rest.
 
 The motivation for this new feature is that the original
 acceleration-based model has some significant, inherent limitations
-that negatively affect its realism.
+that hurt its realism.
 
 The fundamental, unfixable problem with the traditional model is that
 a PC-based simulator doesn't have synchronous access to the
@@ -158,10 +162,11 @@ accelerometer.  The access is mediated through the USB HID mechanism
 Windows).  USB HID doesn't provide reliable message delivery or a
 consistent time base.  This means that the simulator and the
 accelerometer can't synchronize their discrete time steps.  Both work
-in terms of discrete time, but *different* discrete time cycles.  As a
-result, VP is effectively resampling a discrete-time signal
-asynchronously, which injects a great deal of noise and distortion
-into the signal.  
+in terms of discrete time, but with different discrete-time sampling
+rates and unsynchronized sampling cycles.  As a result, VP is
+effectively resampling a discrete-time signal asynchronously, with
+no knowledge of the underlying sampling rate its trying to convert.
+This injects a great deal of noise and distortion into the signal.
 
 It's easiest to understand this in practical terms with an example.
 Suppose that the accelerometer emits this series of acceleration
@@ -169,7 +174,7 @@ samples:
 
 ```7 100 200 1000 300 -50 -200 -600 -400 -60 10 -7 15 8 -8...```
 
-The problem occurs when VP *reads* these sample.  VP doesn't have
+The problem occurs when VP reads these sample.  VP doesn't have
 synchronous access to the sample stream, so when it reads a new
 sample, it just gets whichever sample came through the USB connection
 most recently.  To illustrate, let's suppose that VP's input reading
@@ -407,4 +412,4 @@ is the number of samples per second.
 
 [Improving the Virtual Pin Cab Input Model](http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm):
 A more complete presentation of the ideas here, along with related
-changes for plunger input, aimed at both simulator developers and device developers.
+changes for plunger input, written for simulator developers and device developers.

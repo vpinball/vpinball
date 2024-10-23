@@ -177,5 +177,5 @@ when the user accidentally fools it.
 
 [Improving the Virtual Pin Cab Input Model](http://mjrnet.org/pinscape/OpenPinballDevice/NewPinCabInput.htm):
 A more complete presentation of the ideas here, along with related
-changes for accelerometer (nudge) input, aimed at both simulator
+changes for accelerometer (nudge) input, written for simulator
 developers and device developers.

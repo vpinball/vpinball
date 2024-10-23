@@ -32,32 +32,45 @@ on RX/RY.
 axes as **nudge.vx** and **nudge.vy**.  Note that you can *also* configure
 a separate pair of axes as acceleration readings, **nudge.x** and **nudge.y**,
 if you're also using other pinball games that only accept the traditional
-acceleration input.
+acceleration input, but you won't need to use those in the VP setup.
+
+This **only** works with devices that actually calculate and send
+velocity data.  **Don't** enable velocity inputs in VP with devices that
+only send accelerations, because that will just make VP misinterpret
+the data and will yield unrealistic results.
 
 
 ## VP setup
 
 Use the "Keys" dialog to set up the accelerometer.  The setup for
 velocity input is almost the same as for any other accelerometer.  The
-only difference is that you check the box labeled **Analog Nudge Input is Velocity**.
+only differences are:
 
-* Select the X and Y axis assignments where you've assigned the
-velocity readings in your USB device configuration.  
+* Check **Analog Nudge Input is Velocity**
+
+* **Un**check **Enable Nudge Filter** (this filter is designed for acceleration
+inputs only, so it should always be **disabled** for velocity-based nudge inputs)
+
+* Select the X and Y axis assignments where you've assigned the **velocity** 
+readings in your USB device configuration.  
 
   * For Pinscape on KL25Z, these are **RX** and **RY**
   * For Pinscape Pico, these are the axes you've assigned to **nudge.vx** and **nudge.vy**
 
+Everything else is just the standard setup procedure for any type of nudge device:
+
 * Check the box **Enable Analog Nudge**
 
-* Check the box **Normal Mounting Orientation**
-
 * Set the **X and Y Gain** percentages.  You'll have to experiment
-with these to find the appropriate scale for your system.  The
-Nudge Test Table is an easy way to check the effect.
+with these to find the right scale for your system, since it depends
+on the device, and also on how strong an effect you like.  The Nudge
+Test Table is an easy way to check the effect and adjust the settings
+interactively.
 
-* Check **Analog Nudge Input is Velocity**
-
-* Remember that you must **close all tables in the editor** after changing
-any of these settings before they'll go into effect in the player.
-
-
+* **Board Mounted Face Up** and **Accelerometer Rotation** are used
+to translate the device's coordinate system into VP's model, so these
+depend on what kind of device you're using and how it's physically
+oriented in the cabinet.  You'll have to consult your device's
+documentation for advice (or just experiment with the Nudge Test
+Table until side-to-side and front-to-back nudges move things in
+the right directions).
