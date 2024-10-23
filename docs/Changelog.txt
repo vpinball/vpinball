@@ -24,8 +24,6 @@ FEATURES:
 
 FIXES:
 
-- update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, and a special FP16 path for .exr files)
-
 - DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)
@@ -340,6 +338,9 @@ FIXES:
 
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
+
+- update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, less dependencies, and a special FP16 path for .exr files)
+  see https://github.com/toxieainc/freeimage
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.60, 3.61)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
