@@ -307,7 +307,8 @@ FIXES:
 - update example tables with new raytraced ball shadows enabled and other new features
 - add better wood texture
 
-- update FreeImage library to latest 3.18.0 (custom optimized/less-dependencies build)
+- update FreeImage library to latest 3.19.0 beta (custom build with more optimizations enabled, less dependencies, and a special FP16 path for .exr files)
+  see https://github.com/toxieainc/freeimage
 
 - DirectX 8 port for input handling (currently disabled)
 
