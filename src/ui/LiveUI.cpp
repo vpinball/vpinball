@@ -65,7 +65,7 @@
 #define ID_ANAGLYPH_CALIBRATION "Anaglyph Calibration"
 
 #define PROP_WIDTH (125.f * m_dpi)
-#define PROP_TIMER(is_live, startup_obj, live_obj)                                                                                                                                                                  \
+#define PROP_TIMER(is_live, startup_obj, live_obj) \
    if (ImGui::CollapsingHeader("Timer", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE) \
    { \
       PropCheckbox("Enabled", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_tdr.m_TimerEnabled) : nullptr, live_obj ? &(live_obj->m_d.m_tdr.m_TimerEnabled) : nullptr); \
@@ -888,11 +888,11 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
    // FIXME implement
-   ImTextureID image = (void *)nullptr;
+   ImTextureID image = 0;
    #elif defined(ENABLE_OPENGL)
-   ImTextureID image = (void *)(intptr_t)sampler->GetCoreTexture();
+   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #elif defined(ENABLE_DX9)
-   ImTextureID image = (void *)sampler->GetCoreTexture();
+   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #endif
    ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
@@ -924,7 +924,7 @@ void LiveUI::Render()
    ImGuiIO &io = ImGui::GetIO();
    assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.y)
         || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.x));
-      
+
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
       // We hack into ImGui renderer for the simple tooltips that must be displayed facing the user
@@ -944,7 +944,7 @@ void LiveUI::Render()
             matTranslate = matRotate * matTranslate;
             #if defined(ENABLE_BGFX)
             // FIXME implement BGFX
-            
+
             #elif defined(ENABLE_OPENGL)
             const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
             const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
@@ -975,7 +975,7 @@ void LiveUI::Render()
       draw_data->DisplaySize.x = draw_data->DisplaySize.y;
       draw_data->DisplaySize.y = tmp;
    }
-   
+
    #if defined(ENABLE_BGFX)
    ImGui_Implbgfx_RenderDrawLists(draw_data);
 
@@ -4246,11 +4246,11 @@ void LiveUI::ImageProperties()
       m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
 #if defined(ENABLE_BGFX)
    // FIXME implement
-   ImTextureID image = (void *)nullptr;
+   ImTextureID image = 0;
 #elif defined(ENABLE_OPENGL)
-   ImTextureID image = sampler ? (void *)(intptr_t)sampler->GetCoreTexture() : nullptr;
+   ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
 #elif defined(ENABLE_DX9)
-   ImTextureID image = sampler ? (void *)sampler->GetCoreTexture() : nullptr;
+   ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
 #endif
    if (image)
    {
