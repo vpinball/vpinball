@@ -947,6 +947,7 @@
 #define IDC_TABLEAVSYNC                 585
 #define IDC_SOFTWARE_VP                 586
 #define IDC_TEXT_INTENSITY              587
+#define IDC_DISABLE_MOTION_BLUR         587
 #define IDC_GLOBAL_DAYNIGHT             588
 #define IDC_AUTOSAVE                    589
 #define IDC_ENABLE_SSR                  590

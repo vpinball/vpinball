@@ -103,6 +103,7 @@ private:
    CButton m_compressTexture;
    CButton m_forceAnisoMax;
    CButton m_forceBloomOff;
+   CButton m_forceMotionBlurOff;
    CButton m_useAltDepth;
    CButton m_softwareVertex;
    CButton m_disableDWM;
@@ -804,6 +805,8 @@ BOOL RenderOptPage::OnInitDialog()
    AddToolTip(m_forceAnisoMax, "Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.");
    AttachItem(IDC_BLOOM_OFF, m_forceBloomOff);
    AddToolTip(m_forceBloomOff, "Forces the bloom filter to be always off. Only for very low-end graphics cards.");
+   AttachItem(IDC_DISABLE_MOTION_BLUR, m_forceMotionBlurOff);
+   AddToolTip(m_forceMotionBlurOff, "Disable ball motion blur. Only for very low-end graphics cards.");
    AttachItem(IDC_USE_NVIDIA_API_CHECK, m_useAltDepth);
    AddToolTip(m_useAltDepth, "Activate this if you get the corresponding error message on table start, or if you experience rendering problems.");
    AttachItem(IDC_SOFTWARE_VP, m_softwareVertex);
@@ -903,6 +906,12 @@ BOOL RenderOptPage::OnInitDialog()
       m_gfxBackend.ShowWindow(false);
    #endif
 
+   #ifdef ENABLE_BGFX
+      m_forceMotionBlurOff.EnableWindow(true);
+   #else
+      m_forceMotionBlurOff.EnableWindow(false);
+   #endif
+
    LoadSettings(GetEditedSettings());
 
    return TRUE;
@@ -939,6 +948,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_useAltDepth.SetCheck(settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_forceBloomOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_forceAnisoMax.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true) ? BST_CHECKED : BST_UNCHECKED);
+      m_forceMotionBlurOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_compressTexture.SetCheck(settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_softwareVertex.SetCheck(settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_rampDetail.SetPos(settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10));
@@ -1155,6 +1165,7 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendDlgItemMessage(IDC_ARASlider, TBM_GETPOS, 0, 0), !saveAll);
    settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, m_useAltDepth.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "DisableDWM"s, m_disableDWM.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, m_rampDetail.GetPos(), !saveAll);
 
@@ -1255,7 +1266,7 @@ void RenderOptPage::ResetVideoPreferences(int profile)
    m_maxReflection.SetCurSel(profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC);
    m_maxTexSize.SetCurSel(7);
 
-   m_ballTrails.SetCheck(BST_CHECKED);
+   m_ballTrails.SetCheck(BST_UNCHECKED);
    m_ballDisableLighting.SetCheck(BST_UNCHECKED);
 
    m_supersampling.SetCurSel(getBestMatchingAAfactorIndex(1.0f));
@@ -1264,13 +1275,14 @@ void RenderOptPage::ResetVideoPreferences(int profile)
    m_sharpen.SetCurSel(profile != 2 ? 0 : 2);
 
    m_forceBloomOff.SetCheck(BST_UNCHECKED);
+   m_forceMotionBlurOff.SetCheck(BST_UNCHECKED);
    m_forceAnisoMax.SetCheck(profile != 1 ? BST_CHECKED : BST_UNCHECKED);
    m_compressTexture.SetCheck(BST_UNCHECKED);
    m_softwareVertex.SetCheck(BST_UNCHECKED);
 
    SendDlgItemMessage(IDC_ARASlider, TBM_SETPOS, TRUE, profile == 1 ? 5 : 10);
 
-   SendDlgItemMessage(IDC_GLOBAL_SSREFLECTION_CHECK, BM_SETCHECK, profile == 2 ? BST_CHECKED : BST_UNCHECKED, 0);
+   m_useAdditionalSSR.SetCheck(profile == 2 ? BST_CHECKED : BST_UNCHECKED);
 }
 
 BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
@@ -1281,6 +1293,7 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_TEX_COMPRESS:
    case IDC_FORCE_ANISO:
    case IDC_BLOOM_OFF:
+   case IDC_DISABLE_MOTION_BLUR:
    case IDC_USE_NVIDIA_API_CHECK:
    case IDC_SOFTWARE_VP:
    case IDC_GLOBAL_SSREFLECTION_CHECK:
@@ -1316,6 +1329,7 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_SUPER_SAMPLING_COMBO:
    case IDC_POST_PROCESS_COMBO:
    case IDC_SHARPEN_COMBO:
+   case IDC_GFX_BACKEND:
       if (HIWORD(wParam) == CBN_SELCHANGE)
          PropChanged();
       break;

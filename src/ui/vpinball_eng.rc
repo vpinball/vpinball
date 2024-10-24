@@ -421,7 +421,7 @@ BEGIN
     EDITTEXT        IDC_3D_STEREO_OFS,102,206,40,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Use Y-Axis (Cabinet/Rotated Screen)",IDC_3D_STEREO_Y,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,218,134,10
-    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,152,5,193,135
+    GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,152,5,193,145
     LTEXT           "Max. Ambient Occlusion",IDC_STATIC,160,15,97,10
     COMBOBOX        IDC_MAX_AO_COMBO,266,14,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Max. Reflection Mode",IDC_STATIC,160,28,97,10
@@ -434,30 +434,32 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,63,179,10
     CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,73,179,10
-    CONTROL         "Disable Desktop Composition (legacy)",IDC_DISABLE_DWM,
+    CONTROL         "Disable Ball Motion Blur (performance)",IDC_DISABLE_MOTION_BLUR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,83,179,10
-    CONTROL         "Use Alternative Depth Buffer processing (legacy)",IDC_USE_NVIDIA_API_CHECK,
+    CONTROL         "Disable Desktop Composition (legacy)",IDC_DISABLE_DWM,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,93,179,10
-    CONTROL         "Use Software Vertex processing (legacy)",IDC_SOFTWARE_VP,
+    CONTROL         "Use Alternative Depth Buffer processing (legacy)",IDC_USE_NVIDIA_API_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,103,179,10
-    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,160,116,179,8
-    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_ENABLESELRANGE | WS_TABSTOP,153,123,191,14
-    GROUPBOX        "Ball Rendering",IDC_STATIC,152,144,193,81
-    CONTROL         "Ball Trails",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,154,47,10
-    LTEXT           "Strength",IDC_STATIC,265,154,32,8
-    EDITTEXT        IDC_BALL_TRAIL_STRENGTH,303,152,37,12,ES_RIGHT | ES_AUTOHSCROLL
+    CONTROL         "Use Software Vertex processing (legacy)",IDC_SOFTWARE_VP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,113,179,10
+    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,160,126,179,8
+    CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_ENABLESELRANGE | WS_TABSTOP,153,133,191,14
+    GROUPBOX        "Ball Rendering",IDC_STATIC,152,153,193,78
+    CONTROL         "Ball Trails",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,163,47,10
+    LTEXT           "Strength",IDC_STATIC,265,163,32,8
+    EDITTEXT        IDC_BALL_TRAIL_STRENGTH,303,161,37,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Force round ball (compensate perspective stretch)",IDC_BALL_ANTISTRETCH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,164,180,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,173,180,10
     CONTROL         "Disable Lighting",IDC_GLOBAL_DISABLE_LIGHTING_BALLS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,174,86,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,183,86,10
     CONTROL         "Overwrite Ball Image",IDC_OVERWRITE_BALL_IMAGE_CHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,184,81,10
-    PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,324,195,17,12
-    EDITTEXT        IDC_BALL_IMAGE_EDIT,223,195,98,12,ES_AUTOHSCROLL
-    LTEXT           "Ball Image",IDC_STATIC,168,197,34,8
-    PUSHBUTTON      "...",IDC_BROWSE_BALL_DECAL,324,209,17,12
-    EDITTEXT        IDC_BALL_DECAL_EDIT,223,209,98,12,ES_AUTOHSCROLL
-    LTEXT           "Ball Decal",IDC_STATIC,168,211,33,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,193,81,10
+    PUSHBUTTON      "...",IDC_BROWSE_BALL_IMAGE,324,203,17,12
+    EDITTEXT        IDC_BALL_IMAGE_EDIT,223,203,98,12,ES_AUTOHSCROLL
+    LTEXT           "Ball Image",IDC_STATIC,168,205,34,8
+    PUSHBUTTON      "...",IDC_BROWSE_BALL_DECAL,324,216,17,12
+    EDITTEXT        IDC_BALL_DECAL_EDIT,223,216,98,12,ES_AUTOHSCROLL
+    LTEXT           "Ball Decal",IDC_STATIC,168,218,33,8
     GROUPBOX        "Anti-Aliasing",IDC_STATIC,350,5,142,66
     LTEXT           "MSAA Samples",IDC_MSAA_LABEL,356,15,60,10
     LTEXT           "Supersampling",IDC_SUPER_SAMPLING_LABEL,356,29,60,10
