@@ -246,6 +246,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(fb_AO, SHADER_w_h_height, SHADER_tex_ao), // Display debug AO
    SHADER_TECHNIQUE(fb_AO_static, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_ao), // Apply AO during static prerender pass (no tonemapping)
    SHADER_TECHNIQUE(fb_AO_no_filter_static, SHADER_w_h_height, SHADER_tex_fb_filtered, SHADER_tex_ao), // Apply AO during static prerender pass (no tonemapping)
+   SHADER_TECHNIQUE(fb_motionblur, SHADER_w_h_height, SHADER_tex_bloom, SHADER_tex_fb_filtered, SHADER_tex_depth, SHADER_matProj, SHADER_matProjInv, SHADER_balls),
    SHADER_TECHNIQUE(fb_bloom, SHADER_w_h_height, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(fb_mirror, SHADER_w_h_height, SHADER_tex_fb_unfiltered),
    SHADER_TECHNIQUE(fb_copy, SHADER_tex_fb_filtered),
@@ -306,6 +307,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Int, layer, 1),
    SHADER_UNIFORM(SUT_Float, alphaTestValue, 1),
    SHADER_UNIFORM(SUT_Float4x4, matProj, 1), // +1 Matrix for stereo
+   SHADER_UNIFORM(SUT_Float4x4, matProjInv, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_Float4x4, matWorldViewProj, 1), // +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, basicMatrixBlock, 5 * 16 * 4), // OpenGL only, +1 Matrix for stereo
    SHADER_UNIFORM(SUT_DataBlock, ballMatrixBlock, 4 * 16 * 4), // OpenGL only, +1 Matrix for stereo
@@ -464,6 +466,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    #if defined(ENABLE_BGFX)
    const int nEyes = m_isStereo ? 2 : 1;
    shaderUniformNames[SHADER_matProj].count = nEyes;
+   shaderUniformNames[SHADER_matProjInv].count = nEyes;
    shaderUniformNames[SHADER_matWorldViewProj].count = nEyes;
    for (int i = 0; i < SHADER_TECHNIQUE_COUNT; i++)
    {
@@ -497,6 +500,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    #elif defined(ENABLE_OPENGL)
    const int nEyes = m_isStereo ? 2 : 1;
    shaderUniformNames[SHADER_matProj].count = nEyes;
+   shaderUniformNames[SHADER_matProjInv].count = nEyes;
    shaderUniformNames[SHADER_matWorldViewProj].count = nEyes;
    shaderUniformNames[SHADER_basicMatrixBlock].count = (4 + nEyes) * 16 * 4;
    shaderUniformNames[SHADER_ballMatrixBlock].count = (3 + nEyes) * 16 * 4;
@@ -1367,6 +1371,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
 #include "shaders/bgfx_flasher.h"
 #include "shaders/bgfx_light.h"
 #include "shaders/bgfx_postprocess.h"
+#include "shaders/bgfx_motionblur.h"
 #include "shaders/bgfx_antialiasing.h"
 #include "shaders/bgfx_tonemap.h"
 #include "shaders/bgfx_blur.h"
@@ -1464,6 +1469,8 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_copy),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ssr),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_irradiance),
+      // Motion Blur as post-processes
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_motionblur),
       // Anti-Aliasing as post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_nfaa),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_dlaa_edge),
@@ -1624,6 +1631,9 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_SSReflection, STEREO(vs_postprocess), STEREO(fs_pp_ssr));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_irradiance, STEREO(vs_postprocess), STEREO(fs_pp_irradiance));
 
+      // Postprocessed motion blur
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_motionblur, STEREO(vs_postprocess), STEREO(fs_pp_motionblur));
+      
       // Postprocessed antialiasing
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_NFAA, STEREO(vs_postprocess), STEREO(fs_pp_nfaa));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_DLAA_edge, STEREO(vs_postprocess), STEREO(fs_pp_dlaa_edge));
