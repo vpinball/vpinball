@@ -3151,7 +3151,7 @@ void Player::Spritedraw(const float posx, const float posy, const float width, c
    pd3dDevice->DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
    if (tex)
-      pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
+      pd3dDevice->DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
    pd3dDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    pd3dDevice->DrawTexturedQuad(pd3dDevice->DMDShader, vertices);
