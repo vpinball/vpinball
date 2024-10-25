@@ -1376,7 +1376,7 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
    m_renderDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_NONE, SA_REPEAT, SA_REPEAT);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
