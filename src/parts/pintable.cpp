@@ -3958,6 +3958,17 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             CryptHashData(hch, (BYTE *)&loadfileversion, sizeof(int), 0);
 #endif
             pstmVersion->Release();
+            if (loadfileversion < 100) // Tech Beta 3 and below
+            {
+               pstmGame->Release();
+               pstgData->Release();
+               #ifndef __STANDALONE__
+                  DestroyWindow(hwndProgressBar);
+               #endif
+               m_vpinball->SetActionCur(string());
+               ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
+               return E_FAIL;
+            }
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
             {
                char errorMsg[MAX_PATH] = { 0 };
@@ -4084,18 +4095,21 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
                      IStream* pstmItem;
                      HRESULT hr;
-                     if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                     {
-                        hr = LoadImageFromStream(pstmItem, i, loadfileversion, false);
-                        if (FAILED(hr))
-                           return hr;
-                        #ifdef __LIBVPINBALL__
-                           VPinballLib::ProgressStruct progressStruct = { (++count * 100) / ctextures };
-                           VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadImages, &progressStruct);
-                        #endif
-                        pstmItem->Release();
-                        pstmItem = nullptr;
-                     }
+                     if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+                        return hr;
+
+                     Texture *const ppi = new Texture();
+                     ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
+                     if ((hr = ppi->LoadFromStream(pstmItem, loadfileversion, this, false)) == S_OK)
+                        m_vimage[i] = ppi;
+                     else
+                        delete ppi;
+                     #ifdef __LIBVPINBALL__
+                        VPinballLib::ProgressStruct progressStruct = { (++count * 100) / ctextures };
+                        VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadImages, &progressStruct);
+                     #endif
+                     pstmItem->Release();
+                     pstmItem = nullptr;
                      return hr;
                   });
                   cloadeditems++;
@@ -4105,35 +4119,48 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             // due to multithreaded loading and pre-allocation, check if some images could not be loaded, and perform a retry since more memory is available now
             string failed_load_img;
             for (size_t i = 0; i < m_vimage.size(); ++i)
-                if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
-                {
-                    const string szStmName = "Image" + std::to_string(i);
-                    MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+            {
+               if (m_vimage[i] && m_vimage[i]->m_pdsBuffer != nullptr)
+                  continue;
 
-                    IStream* pstmItem;
-                    if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
-                    {
-                        hr = LoadImageFromStream(pstmItem, i, loadfileversion, true);
-                        if (SUCCEEDED(hr))
-                        {
-                            pstmItem->Release();
-                            pstmItem = nullptr;
-                        }
-                    }
+               const string szStmName = "Image" + std::to_string(i);
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               IStream *pstmItem;
+               if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
+               {
+                  failed_load_img += "\n- " + szStmName;
+                  continue;
+               }
 
-                    if (!m_vimage[i] || m_vimage[i]->m_pdsBuffer == nullptr)
-                        failed_load_img += '\n' + (m_vimage[i] ? m_vimage[i]->m_szName : szStmName);
-                    else if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height)) { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
-                        PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to " << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
-		            }
-                }
+               Texture *const ppi = new Texture();
+               ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
+               ppi->LoadFromStream(pstmItem, loadfileversion, this, false);
+               if (!ppi)
+                  failed_load_img += "\n- " + szStmName;
+               else if (!ppi || ppi->m_pdsBuffer == nullptr)
+               {
+                  failed_load_img += "\n- " + ppi->m_szName + " (from: " + ppi->m_szPath + ')';
+                  delete ppi;
+               }
+               else
+               {
+                  m_vimage[i] = ppi;
+                  if ((m_vimage[i]->m_realWidth > m_vimage[i]->m_width) || (m_vimage[i]->m_realHeight > m_vimage[i]->m_height))
+                  { //!! do not warn on resize, as original image file/binary blob is always loaded into mem! (otherwise table load failure is triggered) {
+                     PLOGW << "Image '" << m_vimage[i]->m_szName << "' was downsized from " << m_vimage[i]->m_realWidth << 'x' << m_vimage[i]->m_realHeight << " to "
+                           << m_vimage[i]->m_width << 'x' << m_vimage[i]->m_height << " due to low memory ";
+                  }
+               }
+               pstmItem->Release();
+               pstmItem = nullptr;
+            }
 
             if (!failed_load_img.empty())
             {
 #ifdef _WIN64
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_load_img).c_str(), "Load Error", 0);
+               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded for an unknown reason.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files/Images:\n" + failed_load_img).c_str(), "Load Error", 0);
 #else
-               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files:\n" + failed_load_img).c_str(), "Load Error", 0);
+               m_vpinball->MessageBox(("WARNING ! WARNING ! WARNING ! WARNING !\n\nNot all images were loaded, likely due to low memory.\nPlease use the 64-bit version of the application.\n\nDO NOT SAVE THIS FILE OR YOU MAY LOOSE DATA!\n\nAffected Files/Images:\n" + failed_load_img).c_str(), "Load Error", 0);
 #endif
             }
 
@@ -4371,7 +4398,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 #ifndef __STANDALONE__
    DestroyWindow(hwndProgressBar);
 #endif
-   //DestroyWindow(hwndProgressDialog);
 
    pstgRoot->Release();
 
@@ -8221,26 +8247,6 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
 #else
    return 0L;
 #endif
-}
-
-HRESULT PinTable::LoadImageFromStream(IStream *pstm, size_t idx, int version, bool resize_on_low_mem)
-{
-   if (version < 100) // Tech Beta 3 and below
-   {
-      ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
-      return E_FAIL;
-   }
-   else
-   {
-      Texture * const ppi = new Texture();
-      ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
-      if (ppi->LoadFromStream(pstm, version, this, resize_on_low_mem) == S_OK)
-         m_vimage[idx] = ppi;
-      else
-         delete ppi;
-   }
-
-   return S_OK;
 }
 
 STDMETHODIMP PinTable::get_Image(BSTR *pVal)
