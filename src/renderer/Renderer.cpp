@@ -862,8 +862,7 @@ void Renderer::DrawBackground()
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-      // FIXME this should be called with a trilinear/anisotropy filtering override
-      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, pin, ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
+      g_pplayer->m_renderer->DrawSprite(0.f, 0.f, 1.f, 1.f, 0xFFFFFFFF, m_renderDevice->m_texMan.LoadTexture(pin->m_pdsBuffer, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), ptable->m_ImageBackdropNightDay ? sqrtf(m_globalEmissionScale) : 1.0f, true);
    }
    else
    {
@@ -1354,33 +1353,6 @@ void Renderer::DrawDynamics(bool onlyBalls)
          hitable->Render(m_render_mask);
    }
    m_render_mask = mask;
-}
-
-void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop)
-{
-   Vertex3D_NoTex2 vertices[4] =
-   {
-      { 1.f, 1.f, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
-      { 0.f, 1.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
-      { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-      { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
-   };
-
-   for (unsigned int i = 0; i < 4; ++i)
-   {
-      vertices[i].x =        (vertices[i].x * width  + posx)*2.0f - 1.0f;
-      vertices[i].y = 1.0f - (vertices[i].y * height + posy)*2.0f;
-   }
-
-   const vec4 c = convertColor(color, intensity);
-   m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
-   m_renderDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
-   if (tex)
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
-   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
-   m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);
-   m_renderDevice->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
 }
 
 void Renderer::DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop)

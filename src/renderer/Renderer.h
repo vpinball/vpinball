@@ -45,7 +45,6 @@ public:
    void SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, const bool isColored);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
-   void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Texture* const tex, const float intensity, const bool backdrop = false);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
 
    void ReinitRenderable(Renderable* part) { m_renderableToInit.push_back(part); }

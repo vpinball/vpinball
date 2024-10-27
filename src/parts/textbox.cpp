@@ -629,7 +629,7 @@ void Textbox::Render(const unsigned int renderMask)
 #else
          //!! temporary workaround
          if (m_d.m_transparent)
-            memset(m_texture->data(), 0, m_texture->height()*m_texture->width() * 4);
+            memset(m_texture->data(), 0, (size_t)m_texture->height()*m_texture->width() * 4);
          else
          {
             unsigned int *const __restrict dest = (unsigned int *)m_texture->data();
@@ -642,7 +642,7 @@ void Textbox::Render(const unsigned int renderMask)
 
       m_rd->ResetRenderState();
       m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
-      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_REPEAT, SA_REPEAT, false), m_d.m_intensity_scale);
+      g_pplayer->m_renderer->DrawSprite(x, y, w, h, 0xFFFFFFFF, m_rd->m_texMan.LoadTexture(m_texture, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false), m_d.m_intensity_scale);
       m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, 1.0f);
    }
 }

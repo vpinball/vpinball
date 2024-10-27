@@ -241,10 +241,10 @@ void mixer_draw()
 
       // Set the color.
       /*// Draw the tick mark.  (Reversed x and y to match coordinate system of front end.)
-            g_pplayer->DrawSprite( (cabMode ? fX : fY) - (float)(1.0/1000.0), (cabMode ? fY : fX) - (float)(1.0/1000.0),
+            g_pplayer->m_renderer->DrawSprite( (cabMode ? fX : fY) - (float)(1.0/1000.0), (cabMode ? fY : fX) - (float)(1.0/1000.0),
             (cabMode ? size[0] : size[1]) + (float)(2.0/1000.0), (cabMode ? size[1] : size[0]) + (float)(2.0/1000.0),
             drop_color,
-            (Texture*)nullptr,
+            g_pplayer->m_renderer->m_renderDevice->m_nullTexture,
             fade);
             */
       // Set the color.
@@ -253,6 +253,6 @@ void mixer_draw()
       g_pplayer->m_renderer->m_renderDevice->EnableAlphaBlend(true);
       g_pplayer->m_renderer->DrawSprite(cabMode ? fX : fY, cabMode ? fY : fX,
          cabMode ? size[0] : size[1], cabMode ? size[1] : size[0],
-         color, (Texture*)nullptr, fade);
+         color, g_pplayer->m_renderer->m_renderDevice->m_nullTexture, fade);
    }
 }
