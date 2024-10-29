@@ -8733,7 +8733,7 @@ STDMETHODIMP PinTable::put_BallTrail(UserDefaultOnOff newVal)
    else
       m_settings.SaveValue(Settings::Player, "BallTrail"s, newVal == 1, true);
    if (g_pplayer)
-      g_pplayer->m_renderer->m_trailForBalls = (newVal == UserDefaultOnOff::On)
+      g_pplayer->m_trailForBalls = (newVal == UserDefaultOnOff::On)
          || ((newVal == UserDefaultOnOff::Default) && m_settings.LoadValueWithDefault(Settings::Player, "BallTrail"s, true));
    return S_OK;
 }
@@ -8748,7 +8748,7 @@ STDMETHODIMP PinTable::put_TrailStrength(int newVal)
 {
    m_settings.SaveValue(Settings::Player, "BallTrailStrength"s, static_cast<float>(newVal) / 100.f);
    if (g_pplayer)
-      g_pplayer->m_renderer->m_ballTrailStrength = static_cast<float>(newVal) / 100.f;
+      g_pplayer->m_ballTrailStrength = static_cast<float>(newVal) / 100.f;
    return S_OK;
 }
 
