@@ -59,6 +59,12 @@ bool Mesh::LoadAnimation(const char *fname, const bool flipTV, const bool conver
       if (loader.Load(sname, flipTV, convertToLeftHanded))
       {
          const vector<Vertex3D_NoTex2>& verts = loader.GetVertices();
+         const vector<unsigned int>& indices = loader.GetIndices();
+         if ((m_indices.size() != indices.size()) || (m_vertices.size() != verts.size()) || (memcmp(m_indices.data(), indices.data(), indices.size()) != 0))
+         {
+            ShowError("Error: frames of animation do not share the same data layout.");
+            return false;
+         }
          for (size_t t = 0; t < verts.size(); t++)
          {
             VertData vd;
