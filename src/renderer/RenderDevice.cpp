@@ -1854,6 +1854,15 @@ void RenderDevice::RenderLiveUI()
    m_currentPass->Submit(cmd);
 }
 
+void RenderDevice::RenderLiveUI(int LR)
+{
+   RenderCommand* cmd = m_renderFrame.NewCommand();
+   cmd->SetRenderLiveUI(LR);
+   cmd->m_dependency = m_nextRenderCommandDependency;
+   m_nextRenderCommandDependency = nullptr;
+   m_currentPass->Submit(cmd);
+}
+
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices)
 {
    assert(shader == FBShader || shader == StereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format

@@ -140,6 +140,17 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       g_frameProfiler.ExitProfileSection();
       break;
    }
+   
+   case RC_DRAW_LIVEUI_L:
+   {
+      g_pplayer->m_liveUI->Render(0);
+      break;
+   }
+   case RC_DRAW_LIVEUI_R:
+   {
+      g_pplayer->m_liveUI->Render(1);
+      break;
+   }
 
    case RC_DRAW_QUAD_PT:
    case RC_DRAW_QUAD_PNT:
@@ -357,6 +368,14 @@ void RenderCommand::SetSubmitVR(RenderTarget* from)
 void RenderCommand::SetRenderLiveUI()
 {
    m_command = Command::RC_DRAW_LIVEUI;
+}
+
+void RenderCommand::SetRenderLiveUI(int LR)
+{
+   if (LR == 0)
+      m_command = Command::RC_DRAW_LIVEUI_L;
+   else
+      m_command = Command::RC_DRAW_LIVEUI_R;
 }
 
 void RenderCommand::SetDrawMesh(
