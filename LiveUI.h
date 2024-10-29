@@ -13,6 +13,7 @@ public:
    ~LiveUI();
    void Update(const RenderTarget* rt);
    void Render();
+   void Render(int LR);
    bool HasKeyboardCapture() const;
    bool HasMouseCapture() const;
 
@@ -44,14 +45,14 @@ private:
       TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
          type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
    };
-   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_Count };
+   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_VRTweakUI, TP_Count };
    enum BackdropSetting
    {
       BS_Page,
       // Point of View
       BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
       // Table tweaks & Custom table defined options (must be the last of this enum)
-      BS_MusicVolume, BS_SoundVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Custom
+      BS_MusicVolume, BS_SoundVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_TweakUI_X, BS_TweakUI_Y, BS_Custom
    };
    TweakPage m_activeTweakPage = TP_PointOfView;
    U32 m_lastTweakKeyDown = 0;

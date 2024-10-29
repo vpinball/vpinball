@@ -35,6 +35,7 @@ public:
       const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1, const int srcLayer = -1, const int dstLayer = -1);
    void SetSubmitVR(RenderTarget* from);
    void SetRenderLiveUI();
+   void SetRenderLiveUI(int LR);
    void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount, const bool isTransparent, const float depth);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
@@ -50,7 +51,9 @@ private:
       RC_DRAW_QUAD_PT,
       RC_DRAW_QUAD_PNT,
       RC_DRAW_LIVEUI,
-      RC_SUBMIT_VR
+      RC_SUBMIT_VR,
+      RC_DRAW_LIVEUI_L,
+      RC_DRAW_LIVEUI_R
    };
 
    RenderDevice* const m_rd;

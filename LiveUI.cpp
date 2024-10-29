@@ -792,7 +792,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Sampler *sampler = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
-   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
+   ImTextureID image = (ImTextureID)sampler->GetCoreTexture();  
    ImGui::MarkdownImageData imageData { true, false, image, ImVec2((float)sampler->GetWidth(), (float)sampler->GetHeight()) };
    ImVec2 const contentSize = ImGui::GetContentRegionAvail();
    if (imageData.size.x > contentSize.x)
@@ -873,6 +873,29 @@ void LiveUI::Render()
 #else
    ImGui_ImplDX9_RenderDrawData(draw_data);
 #endif
+}
+
+int m_VRTweakUI_X, m_VRTweakUI_Y;
+void LiveUI::Render(int LR)
+{  
+   ImGui::Render();
+   ImDrawData *const draw_data = ImGui::GetDrawData();   
+   int w = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
+   int h = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
+   float PosX_diff = m_VRTweakUI_X * w / 3000;
+   float PosY_diff = m_VRTweakUI_Y * h / 3000;
+   const float PosX = draw_data->DisplayPos.x;
+   const float PosY = draw_data->DisplayPos.y;
+   draw_data->DisplayPos.y = PosY + PosY_diff;
+   if (LR == 1)
+      draw_data->DisplayPos.x = PosX + PosX_diff;
+   else
+      draw_data->DisplayPos.x = PosX - PosX_diff;
+#ifdef ENABLE_SDL
+   ImGui_ImplOpenGL3_RenderDrawData(draw_data);
+#endif
+   draw_data->DisplayPos.x = PosX;
+   draw_data->DisplayPos.y = PosY;
 }
 
 void LiveUI::OpenMainSplash()
@@ -1115,6 +1138,8 @@ void LiveUI::OpenTweakMode()
    m_tweakMode = true;
    m_activeTweakPage = m_table->m_szRules.empty() ? (m_player->m_stereo3D == STEREO_VR ? TP_TableOption : TP_PointOfView) : TP_Rules;
    m_activeTweakIndex = 0;
+   m_VRTweakUI_X = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TweakUI_X"s, 450);
+   m_VRTweakUI_Y = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TweakUI_Y"s, 300);
    UpdateTweakPage();
 }
 
@@ -1141,6 +1166,12 @@ void LiveUI::UpdateTweakPage()
       m_tweakPageOptions.push_back(BS_Difficulty);
       m_tweakPageOptions.push_back(BS_MusicVolume);
       m_tweakPageOptions.push_back(BS_SoundVolume);
+      break;
+   }
+   case TP_VRTweakUI:
+   {
+      m_tweakPageOptions.push_back(BS_TweakUI_X);
+      m_tweakPageOptions.push_back(BS_TweakUI_Y);
       break;
    }
    case TP_Info:
@@ -1247,6 +1278,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
             if (m_activeTweakPage == TP_PointOfView && m_player->m_stereo3D == STEREO_VR)
                m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
+            if (m_activeTweakPage == TP_VRTweakUI && m_player->m_stereo3D != STEREO_VR)
+               m_activeTweakPage = (TweakPage)((m_activeTweakPage + stepi) % TP_Count);
          }
          m_activeTweakIndex = 0;
          m_tweakScroll = 0.f;
@@ -1338,7 +1371,18 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          }
          break;
       }
-
+      case BS_TweakUI_X:
+      {
+         m_VRTweakUI_X = clamp(m_VRTweakUI_X + (int)step, -3000, 3000);
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+         break;
+      }
+      case BS_TweakUI_Y:
+      {
+         m_VRTweakUI_Y = clamp(m_VRTweakUI_Y + (int)step, -3000, 3000);
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+         break;
+      }
       default:
          if (activeTweakSetting >= BS_Custom && activeTweakSetting - BS_Custom < (int) table->m_settings.GetSettings().size())
          {
@@ -1457,6 +1501,15 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_tweakState[BS_Custom + i] = 0;
             }
          }
+         else if (m_activeTweakPage == TP_VRTweakUI)
+         {
+            if (m_tweakState[BS_TweakUI_X] == 1)
+               g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TweakUI_X"s, m_VRTweakUI_X);
+            m_tweakState[BS_TweakUI_X] = 0;
+            if (m_tweakState[BS_TweakUI_Y] == 1)
+               g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TweakUI_Y"s, m_VRTweakUI_Y);
+            m_tweakState[BS_TweakUI_Y] = 0;
+         }
          if (m_table->m_szFileName.empty() || !FileExists(m_table->m_szFileName))
          {
             PushNotification("You need to save your table before exporting user settings"s, 5000);
@@ -1502,6 +1555,12 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_live_table->m_settings.SaveValue(Settings::TableOption, opt.name, opt.defaultValue);
             }
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
+         }
+         else if (m_activeTweakPage == TP_VRTweakUI)
+         {
+            PushNotification("Table options reset to default values"s, 5000);
+            m_VRTweakUI_X = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TweakUI_X"s, 450);
+            m_VRTweakUI_Y = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TweakUI_Y"s, 300);
          }
          else if (m_activeTweakPage == TP_PointOfView)
          {
@@ -1715,12 +1774,14 @@ void LiveUI::UpdateTweakModeUI()
                const int pageIndex = m_activeTweakPage 
                   - ((m_activeTweakPage > TP_Info && m_table->m_szDescription.empty()) ? 1 : 0)
                   - ((m_activeTweakPage > TP_Rules && m_table->m_szRules.empty()) ? 1 : 0)
+                  - ((m_activeTweakPage > TP_VRTweakUI && m_player->m_stereo3D != STEREO_VR) ? 1 : 0)
                   - ((m_activeTweakPage > TP_PointOfView && m_player->m_stereo3D == STEREO_VR) ? 1 : 0);
-               const int nTweakPages = 1 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1) + (m_player->m_stereo3D == STEREO_VR ? 0 : 1);
+            const int nTweakPages = 1 + (m_table->m_szRules.empty() ? 0 : 1) + (m_table->m_szDescription.empty() ? 0 : 1) + 1;
                CM_ROW(setting, "Page "s.append(std::to_string(1 + pageIndex)).append("/").append(std::to_string(nTweakPages)).c_str(), "%s",
                   m_activeTweakPage == TP_TableOption      ? "Table Options"
                      : m_activeTweakPage == TP_PointOfView ? "Point of View"
                      : m_activeTweakPage == TP_Rules       ? "Rules"
+                     : m_activeTweakPage == TP_VRTweakUI   ? "VR TweakUI"
                                                            : "Information",
                   "");
             CM_SKIP_LINE;
@@ -1751,6 +1812,8 @@ void LiveUI::UpdateTweakModeUI()
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
+         case BS_TweakUI_X: CM_ROW(setting, "TweakUI_X: ", "%d", m_VRTweakUI_X, ""); break;
+         case BS_TweakUI_Y: CM_ROW(setting, "TweakUI_Y: ", "%d", m_VRTweakUI_Y, ""); break;
          }
          if (highlight)
             ImGui::PopStyleColor();

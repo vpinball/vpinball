@@ -3795,14 +3795,14 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
          if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
-            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI(0);
 
          RenderTarget *rightTexture = m_pin3d.m_pd3dPrimaryDevice->GetOffscreenVR(1);
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
          m_pin3d.m_pd3dPrimaryDevice->AddRenderTargetDependency(renderedRT);
          m_pin3d.m_pd3dPrimaryDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
          if (m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
-            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI();
+            m_pin3d.m_pd3dPrimaryDevice->RenderLiveUI(1);
 
          RenderTarget *outRT = m_pin3d.m_pd3dPrimaryDevice->GetOutputBackBuffer();
          m_pin3d.m_pd3dPrimaryDevice->SetRenderTarget("VR Preview"s, outRT, false);

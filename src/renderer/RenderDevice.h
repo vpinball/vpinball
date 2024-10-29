@@ -145,6 +145,7 @@ public:
       const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
    void RenderLiveUI();
+   void RenderLiveUI(int LR);
    void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
