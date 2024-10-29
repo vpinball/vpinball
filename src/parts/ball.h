@@ -37,6 +37,28 @@ public:
          // npts = pos / 3;
       }
    }
+
+   bool computeProjBounds(const Matrix3D &mvp, const float x, const float y, const float z, const float radius, float& xMin, float& xMax, float& yMin, float& yMax) const
+   {
+      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
+      {
+         const float px = x + radius * m_stretchFitPoints[i];
+         const float py = y + radius * m_stretchFitPoints[i + 1];
+         const float pz = z + radius * m_stretchFitPoints[i + 2];
+         float xp = mvp._11 * px + mvp._21 * py + mvp._31 * pz + mvp._41;
+         float yp = mvp._12 * px + mvp._22 * py + mvp._32 * pz + mvp._42;
+         const float wp = mvp._14 * px + mvp._24 * py + mvp._34 * pz + mvp._44;
+         if (wp <= 1e-3f)
+            return true;
+         xp /= wp;
+         yp /= wp;
+         xMin = min(xMin, xp);
+         xMax = max(xMax, xp);
+         yMin = min(yMin, yp);
+         yMax = max(yMax, yp);
+      }
+      return false;
+   }
 };
 
 class BallData final : public BaseProperty
@@ -174,8 +196,9 @@ public:
    BallData m_d;
    HitBall m_hitBall;
 
-private:
    static const AntiStretchHelper m_ash;
+
+private:
    static unsigned int m_nextBallID; // increased for each ball created to have an unique ID for scripts for each ball
    static unsigned int GetNextBallID();
 

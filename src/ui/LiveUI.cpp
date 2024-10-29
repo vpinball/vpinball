@@ -3284,6 +3284,8 @@ void LiveUI::UpdateVideoOptionsModal()
       {
          if (ImGui::Checkbox("Force Bloom filter off", &m_renderer->m_bloomOff))
             g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_renderer->m_bloomOff);
+         if (ImGui::Checkbox("Force Motion blur off", &m_renderer->m_motionBlurOff))
+            g_pvp->m_settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_renderer->m_motionBlurOff);
       }
       
       if (ImGui::CollapsingHeader("Ball Rendering", ImGuiTreeNodeFlags_DefaultOpen))

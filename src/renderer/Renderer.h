@@ -82,7 +82,8 @@ public:
 
    // Post processing
    void SetScreenOffset(const float x, const float y); // set render offset in screen coordinates, e.g., for the nudge shake
-   bool m_bloomOff;
+   bool m_bloomOff = false;
+   bool m_motionBlurOff = false;
    int m_FXAA; // =FXAASettings
    int m_sharpen; // 0=off, 1=CAS, 2=bilateral CAS
    
@@ -155,6 +156,9 @@ private:
 
    RenderTarget* m_pReflectionBufferTexture = nullptr;
    RenderTarget* GetReflectionBufferTexture();
+
+   RenderTarget* m_pMotionBlurBufferTexture = nullptr;
+   RenderTarget* GetMotionBlurBufferTexture();
 
    RenderTarget* m_pBloomBufferTexture = nullptr;
    RenderTarget* m_pBloomTmpBufferTexture = nullptr;

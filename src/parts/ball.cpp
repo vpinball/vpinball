@@ -401,29 +401,7 @@ void Ball::Render(const unsigned int renderMask)
       const Matrix3D &mvp = g_pplayer->m_renderer->GetMVP().GetModelViewProj(0);
       bool invalid = false;
       float xMin = FLT_MAX, yMin = FLT_MAX, xMax = -FLT_MAX, yMax = -FLT_MAX;
-      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
-      {
-         const float px = m_hitBall.m_d.m_pos.x + m_ash.m_stretchFitPoints[i];
-         const float py = m_hitBall.m_d.m_pos.y + m_ash.m_stretchFitPoints[i + 1];
-         const float pz = zheight + m_ash.m_stretchFitPoints[i + 2];
-               float xp = mvp._11 * px + mvp._21 * py + mvp._31 * pz + mvp._41;
-               float yp = mvp._12 * px + mvp._22 * py + mvp._32 * pz + mvp._42;
-         const float wp = mvp._14 * px + mvp._24 * py + mvp._34 * pz + mvp._44;
-         if (wp > 1e-3f)
-         {
-            xp /= wp;
-            yp /= wp;
-            xMin = min(xMin, xp);
-            xMax = max(xMax, xp);
-            yMin = min(yMin, yp);
-            yMax = max(yMax, yp);
-         }
-         else
-         {
-            invalid = true;
-            break;
-         }
-      }
+      invalid = m_ash.computeProjBounds(mvp, m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight, m_hitBall.m_d.m_radius, xMin, xMax, yMin, yMax);
       if (!invalid)
       {
          // compute size of the rendered ball on viewport, then apply reversed viewport rotation, then compute stretch correction
