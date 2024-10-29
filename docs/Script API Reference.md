@@ -1082,5 +1082,5 @@ The following methods only applies to mesh primitives with an animation sequence
 - add HasHitEvent and Collidable to the bumper element
 - add Dropped/Raised for drop target element
 - add RaiseDelay to target element
-- change BallTrailStrength,GlobalDifficultyLevel and PlayfieldReflectionStrength to range 0..100
+- change TrailStrength,GlobalDifficultyLevel and PlayfieldReflectionStrength to range 0..100
 - add DMD to the textbox and flasher element

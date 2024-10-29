@@ -491,7 +491,7 @@ void Ball::Render(const unsigned int renderMask)
       unsigned int nVertices = 0;
       for (int i2 = 0; i2 < MAX_BALL_TRAIL_POS - 1; ++i2)
       {
-         int i3 = m_hitBall.m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) - 1 - i2;
+         int i3 = m_hitBall.m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) - i2;
          if (i3 < 0)
             i3 += MAX_BALL_TRAIL_POS;
          int io = i3 - 1;
