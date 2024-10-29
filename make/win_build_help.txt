@@ -1,6 +1,6 @@
 WIN_BUILD HELP
 --------------
-USAGE: build_win [/?] [PRJ:<PROJECT>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
+USAGE: win_build [/?] [PRJ:<PROJECT>] [PLA:<PLATFORM>] [GEN:<GENERATOR #>] [BLD:<Y|ES|/N|O>] [CFG:<R|ELEASE/D|EBUG>]
 
 NOTES
 -----
