@@ -74,6 +74,7 @@ for($k = 0; $k -lt 2; $k++)
   foreach ($variant3 in @("CLIP", "NOCLIP"))
   {
     Process-Shader "vs_ball.sc" "ball.h" ("vs_ball_" + $variant3.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant3)
+    Process-Shader "vs_ball_trail.sc" "ball.h" ("vs_ball_trail_" + $variant3.ToLower() + $stOutput[$k]) "vertex" @($stereo[$k], $variant3)
     Process-Shader "fs_ball_trail.sc" "ball.h" ("fs_ball_trail_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant3)
     Process-Shader "fs_ball_debug.sc" "ball.h" ("fs_ball_debug_" + $variant3.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant3)
     foreach ($variant in @("EQUIRECTANGULAR", "SPHERICAL"))
