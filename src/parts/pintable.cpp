@@ -453,7 +453,9 @@ STDMETHODIMP ScriptGlobalTable::GetTextFile(BSTR FileName, BSTR *pContents)
       if(GetTextFileFromDirectory(defaultFileNameSearch[i] + szFileName, defaultPathSearch[i], pContents))
          return S_OK;
 
-   return S_FALSE;
+   PLOGE.printf("Unable to load file: %s", szFileName);
+
+   return E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
@@ -466,7 +468,7 @@ STDMETHODIMP ScriptGlobalTable::get_UserDirectory(BSTR *pVal)
       {
          szPath = PATH_USER;
          if (!DirExists(szPath))
-            return S_FALSE;
+            return E_FAIL;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -486,7 +488,7 @@ STDMETHODIMP ScriptGlobalTable::get_TablesDirectory(BSTR *pVal)
       {
          szPath = PATH_TABLES;
          if (!DirExists(szPath))
-            return S_FALSE;
+            return E_FAIL;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -500,7 +502,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
 {
    // Optional sub directory parameter must be either missing or a string
    if (V_VT(&pSubDir) != VT_ERROR && V_VT(&pSubDir) != VT_EMPTY && V_VT(&pSubDir) != VT_BSTR)
-      return S_FALSE;
+      return E_FAIL;
 
    const string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
    string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
@@ -511,7 +513,7 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
       {
          szPath = PATH_MUSIC + endPath;
          if (!DirExists(szPath))
-            return S_FALSE;
+            return E_FAIL;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
@@ -531,7 +533,7 @@ STDMETHODIMP ScriptGlobalTable::get_ScriptsDirectory(BSTR *pVal)
       {
          szPath = PATH_SCRIPTS;
          if (!DirExists(szPath))
-            return S_FALSE;
+            return E_FAIL;
       }
    }
    const WCHAR *const wzPath = MakeWide(szPath);
