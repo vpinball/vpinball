@@ -82,7 +82,7 @@ call :print_globals
 if %GEN_VPINBALL% == YES (
    set OUTPATH=build/vpinball/%PLATFORM%/
 
-   copy /Y cmake\CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
+   copy /Y CMakeLists_%SCRIPT_PLA%.txt CMakeLists.txt
    cmake %TOOLS% -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD%==YES (
@@ -97,7 +97,7 @@ if %errorlevel% neq 0 (goto :failed)
 if %GEN_VPINBALL_GL% == YES (
    set OUTPATH=build/vpinball_gl/%PLATFORM%/
     
-   copy /Y cmake\CMakeLists_gl-%SCRIPT_PLA%.txt CMakeLists.txt
+   copy /Y CMakeLists_gl-%SCRIPT_PLA%.txt CMakeLists.txt
    cmake -G %GENERATOR% -A %PLATFORM% -B !OUTPATH!
 
     if %BUILD% == YES (
@@ -310,4 +310,3 @@ exit /b %errorlevel%
 :failed
     echo *** ERROR: ABNORMAL SCRIPT TERMINATION ***
     exit %errorlevel%
-
