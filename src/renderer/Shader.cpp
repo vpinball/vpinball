@@ -1404,6 +1404,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
       // Ball shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
+      BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball_trail),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_nodecal),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_equirectangular_decal),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_nodecal),
@@ -1547,14 +1548,14 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap,           STEREO(vs_ball_noclip), STEREO(fs_ball_spherical_nodecal_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball_noclip), STEREO(fs_ball_spherical_decal_noclip));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_noclip), STEREO(fs_ball_debug_noclip));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_noclip), STEREO(fs_ball_trail_noclip));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_trail_noclip), STEREO(fs_ball_trail_noclip));
       // Variants with a clipping plane
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_clip), STEREO(fs_ball_equirectangular_nodecal_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_DecalMode,              STEREO(vs_ball_clip), STEREO(fs_ball_equirectangular_decal_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap,           STEREO(vs_ball_clip), STEREO(fs_ball_spherical_nodecal_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_SphericalMap_DecalMode, STEREO(vs_ball_clip), STEREO(fs_ball_spherical_decal_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_clip), STEREO(fs_ball_debug_clip), true);
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_clip), STEREO(fs_ball_trail_clip), true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_trail_clip), STEREO(fs_ball_trail_clip), true);
       break;
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
