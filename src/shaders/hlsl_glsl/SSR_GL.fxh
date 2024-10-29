@@ -80,19 +80,14 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const float2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const float3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
-
-		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
-		{
-		refl += color;
-		}
-		else
-		{*/
-		const float w = sqrt(float(i-1)/float(samples)); //!! fake falloff for samples more far away
-		refl += color*(1.0-w); //!! dampen large color values in addition?
-		color0w += w;
-		//}
-	}
+        const float3 col = texStereoNoLod(tex_fb_filtered, offs).rgb;
+        if (!isnan(col.r) && !isnan(col.g) && !isnan(col.b))
+        {
+            const float w = sqrt(float(i - 1) / float(samples)); //!! fake falloff for samples more far away
+            refl += col * (1.0 - w); //!! dampen large color values in addition?
+            color0w += w;
+        }
+    }
 
 	refl += color0*color0w;
 	refl *= 1.0/float(samples-1); //!! -1 due to jitter
