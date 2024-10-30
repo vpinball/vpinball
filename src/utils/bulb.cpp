@@ -10,9 +10,9 @@
 // * add #906 bulb
 //
 // Testing guidelines:
-// * Gun's Roses (Data East)'s bottom right white mars flasher should be pulsing (fading, not blinking) at the beginning of each ball
+// * Guns n' Roses (Data East)'s bottom right white mars flasher should be pulsing (fading, not blinking) at the beginning of each ball
 // * Twilight Zone's red flasher above slot machine should be blinking when a ball is ejected (not fading)
-// * The Lord of The Ring should be fast blinking during attract, but slowly pulsing Sauron eye (fellowhip inserts as well when fellowship multiball ready)
+// * The Lord of the Rings should be fast blinking during attract, but slowly pulsing Sauron eye (fellowhip inserts as well when fellowship multiball ready)
 // * Godzilla's helicopter inserts should be fading and blinking at the same time when the helicopter shot is made (side lane then opposite green target)
 
 // Set to 1 to compute bulb characteristics (if enabled, this file can be copy/pasted and ran in any C interpreter)
@@ -44,7 +44,7 @@
 typedef struct {
    double rating_u; /* voltage rating for nominal operation */
    double rating_i; /* current rating for nominal operation */
-   double rating_T; /* temperature rating for nominal operation */
+   int rating_T;    /* temperature rating for nominal operation */
    double surface;  /* filament surface in m², computed from previous ratings */
    double mass;     /* filament mass in kg, computed from previous ratings */
    double r0;       /* resistance at 293K, computed from previous ratings */
@@ -60,7 +60,7 @@ typedef struct {
 #define BASE_WIRE_LOSS 0.07
 
 // Physic constants
-#define STEPHAN_BOLTZMAN 5.670374419e-8  // Stephan Blotzman constant (W.m−2.K−4) used in Planck's law
+#define STEPHAN_BOLTZMAN 5.670374419e-8  // Stephan Boltzman constant (W.m−2.K−4) used in Planck's law
 #define RESISTIVITY_293K 5.65e-8         // Resistivity (Ohm.m) of tungsten at 293K
 #define TUNGSTEN_DENSITY 19300.0         // tungsten density of 19300 g/m3
 
@@ -78,11 +78,11 @@ static struct {
 } locals;
 
 static bulb_tLampCharacteristics bulbs[BULB_MAX] = {
-   {  6.3, 0.250, 2710.0,  2.2191615654e-6, 0.3117866466e-6 }, //  #44 ( 54ms from 10% to 90%, 36ms cool down)
-   {  6.3, 0.150, 2690.0,  1.3878130447e-6, 0.1402801155e-6 }, //  #47 ( 40ms from 10% to 90%, 26ms cool down)
-   {  6.3, 0.200, 2550.0,  2.4286321482e-6, 0.3196915046e-6 }, //  #86 ( 64ms from 10% to 90%, 39ms cool down)
-   { 13.0, 0.577, 2810.0,  8.8347591602e-6, 2.0675689639e-6 }, //  #89 ( 81ms from 10% to 90%, 55ms cool down)
-   { 13.0, 0.690, 2755.0, 11.6609979870e-6, 3.1559940172e-6 }, // #906 (100ms from 10% to 90%, 67ms cool down)
+   {  6.3, 0.250, 2710,  2.2191615654e-6, 0.3117866466e-6 }, //  #44 ( 54ms from 10% to 90%, 36ms cool down)
+   {  6.3, 0.150, 2690,  1.3878130447e-6, 0.1402801155e-6 }, //  #47 ( 40ms from 10% to 90%, 26ms cool down)
+   {  6.3, 0.200, 2550,  2.4286321482e-6, 0.3196915046e-6 }, //  #86 ( 64ms from 10% to 90%, 39ms cool down)
+   { 13.0, 0.577, 2810,  8.8347591602e-6, 2.0675689639e-6 }, //  #89 ( 81ms from 10% to 90%, 55ms cool down)
+   { 13.0, 0.690, 2755, 11.6609979870e-6, 3.1559940172e-6 }, // #906 (100ms from 10% to 90%, 67ms cool down)
 };
 
 // Linear RGB tint of a blackbody for temperatures ranging from 1500 to 3000K. The values are normalized for a relative luminance of 1.
@@ -107,6 +107,12 @@ static constexpr float temperatureToTint[3 * 16] = {
    1.772554f, 0.843853f, 0.271900f 
 };
 
+static double pow4(double x)
+{
+   x *= x;
+   return x*x;
+}
+
 /*-------------------------------
 /  Initialize all pre-computed LUTs
 /-------------------------------*/
@@ -123,7 +129,6 @@ void bulb_init()
    // Compute resistance at room temperature from other ratings U, I and T
    for (int bulb = 0; bulb < BULB_MAX; bulb++)
    {
-     bulbs[bulb].r0 = 1.0;
      bulbs[bulb].r0 = (bulbs[bulb].rating_u / bulbs[bulb].rating_i) / BULB_R(bulb, bulbs[bulb].rating_T);
    }
 
@@ -131,7 +136,7 @@ void bulb_init()
    // to the formula from "Luminous radiation from a black body and the mechanical equivalentt of light" by W.W.Coblentz and W.B.Emerson
    for (int i=0; i <= BULB_T_MAX - 1500; i++)
    {
-      const double T = 1500.0 + i;
+      const double T = 1500 + i;
       locals.t_to_p[i] = 1.247/pow(1.0+129.05/T, 204.0) + 0.0678/pow(1.0+78.85/T, 404.0) + 0.0489/pow(1.0+23.52/T, 1004.0) + 0.0406/pow(1.0+13.67/T, 2004.0);
       locals.t_to_p[i] *= 68493.150685; // Convert from W.st-1.cm-2 to lumen.st-1.m-2
    }
@@ -139,11 +144,11 @@ void bulb_init()
    // Compute visible emission power to filament temperature LUT, normalized for a relative power of 255 for visible emission power at T=2700K
    // For the time being we simply search in the previously created LUT
    int t_pos = 0;
-   double P2700 = locals.t_to_p[2700 - 1500];
+   const double P2700 = locals.t_to_p[2700 - 1500];
    for (int i=0; i<512; i++)
    {
-      const double p = i / 255.0;
-      while (locals.t_to_p[t_pos] < p * P2700)
+      const double p = i * (P2700 / 255.0);
+      while (locals.t_to_p[t_pos] < p)
          t_pos++;
       locals.p_2700_to_t[i] = 1500 + t_pos;
    }
@@ -152,20 +157,20 @@ void bulb_init()
    for (int i=0; i <= BULB_T_MAX; i++)
    {
       const double T = i;
-      
+
       // Compute Tungsten specific heat in J.kg-1 (energy to temperature transfer, depending on temperature) according to formula from "Heating-times of tungsten filament incandescent lamps" by Dulli Chandra Agrawal
       //  Rg = 45.2268 J.kg-1.K-1 is gas constant for tungsten
       //  310 K is a constant called the Debye temperature for tungsten at room temperature
       const double specific_heat = 3.0 * 45.2268 * (1.0 - (310.0 * 310.0) / (20.0 * T*T)) + (2.0 * 4.5549e-3 * T) + (4.0 * 5.77874e-10 * T*T*T);
-      
+
       // Compute cooldown and heat up factor for the predefined bulbs
       for (int bulb=0; bulb<BULB_MAX; bulb++)
       {
          // Radiated power in Watts, using Plank's law, corrected by the coil factor (to correct energy radiated that hit back the filament)
          const double emissivity = EMISSIVITY_COIL_FACTOR * 0.0000689 * pow(T, 1.0748); // tungsten emissivity (no dimension) over all wavelengths. Other paper gives (no significant impact): 0.0000664 * pow(T, 1.0796);
-         bulbs[bulb].cool_factor[i] = - STEPHAN_BOLTZMAN * bulbs[bulb].surface * emissivity * (pow(T, 4.0) - pow(locals.Tr, 4.0));
+         bulbs[bulb].cool_factor[i] = - STEPHAN_BOLTZMAN * bulbs[bulb].surface * emissivity * (pow4(T) - pow4(locals.Tr));
          // Power lost by convection in the bulb base and wires, estimated as a percentage of the power at the bulb rating (note that this has minimal impact and could be neglected)
-         bulbs[bulb].cool_factor[i] += - BASE_WIRE_LOSS * ((i - locals.Tr)/bulbs[bulb].rating_T) / BULB_R(bulb, T);
+         bulbs[bulb].cool_factor[i] += - BASE_WIRE_LOSS * ((T - locals.Tr)/bulbs[bulb].rating_T) / BULB_R(bulb, T);
          // Electric power P=U²/R, but U² is not included in the precomputed LUT since it can be modulated
          bulbs[bulb].heat_factor[i] = 1.0 / BULB_R(bulb, T);
          // Pre-divide power by M.C
@@ -182,11 +187,11 @@ float bulb_filament_temperature_to_emission(const int bulb, const float T)
 {
    if (T < 1500.0f) return 0.f;
    if (T >= (float)BULB_T_MAX) return (float)locals.t_to_p[BULB_T_MAX - 1500];
-   return (float)(locals.t_to_p[(int)T - 1500] / locals.t_to_p[(int)(bulbs[bulb].rating_T) - 1500]);
+   return (float)(locals.t_to_p[(int)T - 1500] / locals.t_to_p[bulbs[bulb].rating_T - 1500]);
    // Linear interpolation is not worth its cost
    // int lower_T = (int) T, upper_T = lower_T+1;
    // float alpha = T - (float)lower_T;
-   // return (1.0f - alpha) * (float)((locals.t_to_p[lower_T - 1500] + alpha * locals.t_to_p[upper_T - 1500])  / locals.t_to_p[(int)(bulbs[bulb].rating_T) - 1500]));
+   // return (1.0f - alpha) * (float)((locals.t_to_p[lower_T - 1500] + alpha * locals.t_to_p[upper_T - 1500]) / locals.t_to_p[bulbs[bulb].rating_T - 1500]));
 }
 
 /*-------------------------------
@@ -330,8 +335,8 @@ double bulb_heat_up(const int bulb, double T, float duration, const float U, con
 //      . (roughly) gives a R0 matching measures made wirh a multimeter on a set of real bulbs
 //      . (roughly) matches the expected light intensity
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 int fit_bulb(const int bulb, const int log)
 {
@@ -343,7 +348,7 @@ int fit_bulb(const int bulb, const int log)
       const double r = (rMin + rMax) * 0.5; // filament radius (dichotomy search)
       const double a = M_PI * r * r; // area of the filament section
       const double l = bulbs[bulb].r0 * RESISTIVITY_COIL_FACTOR * a / RESISTIVITY_293K; // length of filament, using R = p.L/A applied at T0 = 293K, applying a coil coefficient
-      bulbs[bulb].surface = l * 2.0 * M_PI * r; // exterior surface of filament (radiating surface) computed as a linear cylinder (this could benefit from a coil factor)
+      bulbs[bulb].surface = l * (2.0 * M_PI) * r; // exterior surface of filament (radiating surface) computed as a linear cylinder (this could benefit from a coil factor)
       bulbs[bulb].mass = l * a * TUNGSTEN_DENSITY; // mass of filament
 
       // Force update of the precomputed LUTs
@@ -357,7 +362,7 @@ int fit_bulb(const int bulb, const int log)
       {
          if (log)
          {
-            printf("T  = %4.0f K (temperature of lit filament)\n", bulbs[bulb].rating_T);
+            printf("T  = %d K (temperature of lit filament)\n", bulbs[bulb].rating_T);
             printf("R0 = %5.2f Ohms (resistance of unlit bulb at 293K)\n", bulbs[bulb].r0);
             printf("r  = %13.10f µm (radius of filament)\n", r*1e6);
             printf("l  = %13.10f mm (length of filament)\n", l*1e3);
