@@ -233,3 +233,11 @@ process_shader "fs_pp_smaa_BlendingWeightCalculation.sc" "antialiasing.h" "fs_pp
 process_shader "fs_pp_smaa_EdgeDetection.sc" "antialiasing.h" "fs_pp_smaa_edgedetection_" "fragment"
 process_shader "fs_pp_smaa_NeighborhoodBlending.sc" "antialiasing.h" "fs_pp_smaa_neighborhoodblending_" "fragment"
 
+################################
+# Motion blur shaders
+echo -e "\n>>>>>>>>>>>>>>>> Motion blur shaders"
+echo "// Raytraced motion blur Shaders" > "../bgfx_motionblur.h"
+
+for k in 0 1; do
+  process_shader "fs_pp_motionblur.sc" "motionblur.h" "fs_pp_motionblur${st_output[$k]}" "fragment" "${stereo[$k]}"
+done

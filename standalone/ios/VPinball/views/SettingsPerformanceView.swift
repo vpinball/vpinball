@@ -62,6 +62,11 @@ struct SettingsPerformanceView: View {
             }
             .tint(Color.vpxRed)
 
+            Toggle(isOn: $settingsModel.forceMotionBlurOff) {
+                Text("Disable Ball Motion Blur")
+            }
+            .tint(Color.vpxRed)
+
             VStack(alignment: .leading) {
                 Text("Elements Detail Level")
 
@@ -94,6 +99,9 @@ struct SettingsPerformanceView: View {
         .onChange(of: settingsModel.forceBloomOff) {
             handleForceBloomOff()
         }
+        .onChange(of: settingsModel.forceMotionBlurOff) {
+            handleForceMotionBlurOff()
+        }
         .onChange(of: settingsModel.alphaRampAccuracy) {
             handleAlphaRampAccuracy()
         }
@@ -118,6 +126,10 @@ struct SettingsPerformanceView: View {
 
     func handleForceBloomOff() {
         vpinballManager.saveValue(.player, "ForceBloomOff", settingsModel.forceBloomOff)
+    }
+
+    func handleForceMotionBlurOff() {
+        vpinballManager.saveValue(.player, "ForceMotionBlurOff", settingsModel.forceMotionBlurOff)
     }
 
     func handleAlphaRampAccuracy() {

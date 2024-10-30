@@ -39,6 +39,7 @@ class SettingsModel: ObservableObject {
     @Published var maxTexDimensionIndex: Int = 0
     @Published var forceAniso: Bool = false
     @Published var forceBloomOff: Bool = false
+    @Published var forceMotionBlurOff: Bool = false
     @Published var alphaRampAccuracy: Int = 0
 
     // Anti Aliasing
@@ -84,7 +85,7 @@ class SettingsModel: ObservableObject {
 
         dmdServerAddr = vpinballManager.loadValue(.standalone, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = vpinballManager.loadValue(.standalone, "DMDServerPort", 6789)
-        zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "ZeDMD-WiFi.local")
+        zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "192.168.4.1")
         zedmdWiFiPort = vpinballManager.loadValue(.standalone, "ZeDMDWiFiPort", 3333)
 
         // Environment Lighting
@@ -117,7 +118,7 @@ class SettingsModel: ObservableObject {
 
         forceAniso = vpinballManager.loadValue(.player, "ForceAnisotropicFiltering", true)
         forceBloomOff = vpinballManager.loadValue(.player, "ForceBloomOff", false)
-
+        forceMotionBlurOff = vpinballManager.loadValue(.player, "ForceMotionBlurOff", false)
         alphaRampAccuracy = vpinballManager.loadValue(.player, "AlphaRampAccuracy", 10)
 
         // Anti Aliasing
