@@ -342,8 +342,10 @@ void Window::Show(const bool show)
 
 void Window::RaiseAndFocus(const bool raise)
 {
-   // JSM174 - Will be fixed soon: https://github.com/libsdl-org/SDL/issues/11208
+   // JSM174 - Only for iOS. Will be fixed soon: https://github.com/libsdl-org/SDL/issues/11208
+   #ifdef __LIBVPINBALL__
    return;
+   #endif
 
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
       SDL_RaiseWindow(m_nwnd);
