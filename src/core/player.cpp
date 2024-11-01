@@ -1145,26 +1145,39 @@ void Player::OnFocusChanged(const bool isGameFocused)
    else
    {
       #ifdef _MSC_VER
-      string newFocusedWnd = "undefined"s;
-      HWND foregroundWnd = GetForegroundWindow();
-      if (foregroundWnd)
-      {
-         DWORD foregroundProcessId;
-         DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
-         if (foregroundProcessId)
+         string focusedWnd = "undefined"s;
+         HWND foregroundWnd = GetForegroundWindow();
+         if (foregroundWnd)
          {
-            HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
-            if (foregroundProcess)
+            DWORD foregroundProcessId;
+            DWORD foregroundThreadId = GetWindowThreadProcessId(foregroundWnd, &foregroundProcessId);
+            if (foregroundProcessId)
             {
-               char szFileName[MAXSTRING];
-               if (GetProcessImageFileName(foregroundProcess, szFileName, MAXSTRING))
-                  newFocusedWnd = szFileName;
+               HANDLE foregroundProcess = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION /* PROCESS_QUERY_INFORMATION | PROCESS_VM_READ */, FALSE, foregroundProcessId);
+               if (foregroundProcess)
+               {
+                  char szFileName[MAXSTRING];
+                  if (GetProcessImageFileName(foregroundProcess, szFileName, MAXSTRING))
+                     focusedWnd = szFileName;
+               }
             }
+            HWND pf = m_playfieldWnd->GetNativeHWND();
+            HWND dmd = m_dmdWnd->GetNativeHWND();
+            char title[1000];
+            GetWindowText(foregroundWnd, title, 1000);
+            PLOGI << "Focus lost. Current focused window: " << focusedWnd << ", with title: '" << title << "'";
          }
+         else
+      #endif
+      {
+         PLOGI << "Focus lost.";
       }
-      PLOGI << "Focus lost (new focused window: " << newFocusedWnd << ')';
-      #else
-      PLOGI << "Focus lost";
+
+      #ifdef _MSC_VER
+         // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
+         // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
+         if (m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
+            m_playfieldWnd->RaiseAndFocus();
       #endif
    }
    const bool wasPlaying = IsPlaying();
@@ -1174,19 +1187,6 @@ void Player::OnFocusChanged(const bool isGameFocused)
       ApplyPlayingState(willPlay);
       m_focused = isGameFocused;
    }
-
-   #ifdef _MSC_VER
-   // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
-   // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
-   if (!isGameFocused && m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
-   {
-      #ifdef ENABLE_SDL_VIDEO
-      SDL_RaiseWindow(m_playfieldWnd->GetCore());
-      #elif defined(_MSC_VER)
-      SetForegroundWindow(m_playfieldWnd->GetCore());
-      #endif
-   }
-   #endif
 }
 
 void Player::ApplyPlayingState(const bool play)
