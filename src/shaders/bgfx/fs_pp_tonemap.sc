@@ -21,7 +21,11 @@ uniform vec4 color_grade; // converted to vec4 for BGFX
 uniform vec4 do_dither; // converted to vec4 for BGFX
 uniform vec4 do_bloom; // converted to vec4 for BGFX
 
-uniform vec4 exposure; // converted to vec4 for BGFX
+uniform vec4 exposure_wcg;
+#define exposure (exposure_wcg.x)
+#define hdrHeadroom (exposure_wcg.y)
+#define sdrWhitePoint (exposure_wcg.y)
+#define isHDR2020 (exposure_wcg.w == 1.)
 
 
 #ifdef GRAY
@@ -59,23 +63,17 @@ SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 #ifdef REINHARD
 float ReinhardToneMap(float l)
 {
-    l *= exposure.x;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     return min(l * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)), MAX_BURST); // overflow is handled by bloom
 }
 vec2 ReinhardToneMap(vec2 color)
 {
-    color *= exposure.x;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
 }
 vec3 ReinhardToneMap(vec3 color)
 {
-    color *= exposure.x;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
     return color * ((l * BURN_HIGHLIGHTS + 1.0) / (l + 1.0)); // overflow is handled by bloom
@@ -119,8 +117,6 @@ vec3 ACESFitted(vec3 color)
 // Warning: The retrned value is already gamam corrected
 vec3 FilmicToneMap(vec3 color)
 {
-    color *= exposure.x;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -169,8 +165,6 @@ vec3 TonyMcMapfaceToneMap(vec3 color)
 {
     const float LUT_DIMS = 48.0;
 
-    color *= exposure.x;
-
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
 
@@ -198,8 +192,6 @@ vec3 PBRNeutralToneMapping(vec3 color)
 {
     const float startCompression = 0.8 - 0.04;
     const float desaturation = 0.15;
-
-    color *= exposure.x;
 
     float x = min(color.x, min(color.y, color.z));
     float offset = x < 0.08 ? x - 6.25 * (x * x) : 0.04;
@@ -354,8 +346,6 @@ vec3 AgXToneMapping(vec3 color)
     // MIDDLE_GRAY   =  0.18
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
-
-    color *= exposure.x;
 
     #if 0
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
@@ -562,19 +552,27 @@ void main()
    BRANCH if (do_bloom.x > 0.)
       result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
+   result = result / hdrHeadroom; // scale with HDR headroom (this value will be mapped to 1.0 by tonemapper)
+
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
+   {
+      result *= exposure;
       #ifdef REINHARD
          result = ReinhardToneMap(result);
       #elif defined(TONY)
          result = TonyMcMapfaceToneMap(result);
       #elif defined(FILMIC)
-         result = FilmicToneMap(result); else result = FBGamma(result);
+         result = FilmicToneMap(result);
       #elif defined(NEUTRAL)
          result = PBRNeutralToneMapping(result);
       #elif defined(AGX)
-         result = AgXToneMapping(result); else result = FBGamma(result);
+         result = AgXToneMapping(result);
       #endif
+   }
+   #if defined(FILMIC) || defined(AGX)
+     else result = FBGamma(result);
+   #endif
 
    #ifdef GRAY
       #ifdef FILMIC
@@ -604,4 +602,34 @@ void main()
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
    
    #endif
+   
+   // Preliminary implementation for testing and validation before clean inclusion and optimization
+   // Based on my understanding https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
+   if (isHDR2020)
+   {
+      vec3 col = gl_FragColor.rgb;
+   
+      // sRGB to linear sRGB
+      col = InvGamma(col);
+
+      // Apply headroom back
+      col = col * hdrHeadroom; 
+
+      // Adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL (
+      col = col * sdrWhitePoint / 80.0;
+   
+      // Linear sRGB to REC2020
+      const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
+      (
+         vec3(0.6274, 0.0691, 0.0164),
+         vec3(0.3293, 0.9195, 0.0880),
+         vec3(0.0433, 0.0113, 0.8956)
+      );
+      col = mul(col, LINEAR_SRGB_TO_LINEAR_REC2020);
+   
+      // Apply REC20 PQ
+      col = pow((vec3_splat(0.8359375) + 18.8515625*pow(col, vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(col, vec3_splat(0.1593017578))), vec3_splat(78.84375));
+   
+      gl_FragColor = vec4(saturate(col), 1.0);
+   }
 }

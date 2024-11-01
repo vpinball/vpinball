@@ -521,7 +521,7 @@ void Textbox::Render(const unsigned int renderMask)
          {
             // convert color from sRGB to RGB ?
             g_pplayer->m_renderer->SetupDMDRender(color, dmd.frame, 1.f, false, false);
-            m_rd->m_DMDShader->SetFloat(SHADER_exposure, 1.f);
+            m_rd->m_DMDShader->SetVector(SHADER_exposure_wcg, 1.f, 1.f, 1.f, 0.f);
          }
       }
       else

@@ -27,6 +27,8 @@ public:
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
    float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
+   float GetSDRWhitePoint() const { return m_sdrWhitePoint; }
+   float GetHDRHeadRoom() const { return m_hdrHeadRoom; }
 
    void SetPos(const int x, const int y);
    void Show(const bool show = true);
@@ -84,6 +86,8 @@ private:
    int m_bitdepth;
    const Settings::Section m_settingsSection;
    const string m_settingsPrefix;
+   float m_sdrWhitePoint = 1.f;
+   float m_hdrHeadRoom = 1.f;
 
    class RenderTarget* m_backBuffer = nullptr;
 
