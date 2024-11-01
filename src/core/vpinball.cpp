@@ -616,7 +616,7 @@ void VPinball::SetPropSel(VectorProtected<ISelect> &pvsel)
    if (m_propertyDialog && m_propertyDialog->IsWindow())
       m_propertyDialog->UpdateTabs(pvsel);
    CComObject<PinTable>* const pt = GetActiveTable();
-   if (pt)
+   if (pt && !g_pplayer)
       pt->SetFocus();
 #endif
 }
