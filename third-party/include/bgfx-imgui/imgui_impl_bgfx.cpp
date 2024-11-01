@@ -73,6 +73,9 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
         uint32_t numVertices = (uint32_t)cmd_list->VtxBuffer.size();
         uint32_t numIndices = (uint32_t)cmd_list->IdxBuffer.size();
 
+        if (numVertices == 0)
+           continue;
+
         if ((numVertices != bgfx::getAvailTransientVertexBuffer(
                                 numVertices, g_VertexLayout)) ||
             (numIndices != bgfx::getAvailTransientIndexBuffer(numIndices))) {
