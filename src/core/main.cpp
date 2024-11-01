@@ -932,6 +932,7 @@ public:
 #endif
 
       PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
+      PLOGI << "Setting file is: " << m_szIniFileName;
 
 #ifdef __STANDALONE__
       PLOGI << "Settings file was loaded from " << m_szIniFileName;

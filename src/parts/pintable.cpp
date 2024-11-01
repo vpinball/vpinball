@@ -11059,11 +11059,14 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 #ifndef __STANDALONE__
    //wparam holds HWND of the MDI frame that is about to be deactivated
    //lparam holds HWND of the MDI frame that is about to be activated
-   if ((GetHwnd() == (HWND)wparam) && !m_table->m_szFileName.empty())
+   if (GetHwnd() == (HWND)wparam)
    {
-      const string szINIFilename = m_table->GetSettingsFileName();
-      if (!szINIFilename.empty())
-         m_table->m_settings.SaveToFile(szINIFilename);
+      if (!m_table->m_szFileName.empty())
+      {
+         const string szINIFilename = m_table->GetSettingsFileName();
+         if (!szINIFilename.empty())
+            m_table->m_settings.SaveToFile(szINIFilename);
+      }
       if (g_pvp->m_ptableActive == m_table)
          g_pvp->m_ptableActive = nullptr;
    }
