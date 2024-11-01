@@ -960,7 +960,16 @@ void Renderer::SetupShaders()
    m_renderDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
-   m_renderDevice->m_FBShader->SetFloat(SHADER_exposure, m_exposure);
+   m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, 
+      m_exposure, /* Scene exposure (user or table designer choice */
+      m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
+      m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint(),
+      #ifdef ENABLE_BGFX
+         m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGB10
+      #else
+         0.f
+      #endif
+   );
 
    //m_renderDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
@@ -1201,7 +1210,7 @@ void Renderer::RenderDMD(BaseTexture* dmd, const bool isColored, RenderTarget* r
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderTarget("DMDView", rt, false);
    SetupDMDRender(m_dmdViewDot, dmd, 1.f, true, isColored);
-   m_renderDevice->m_DMDShader->SetFloat(SHADER_exposure, m_dmdViewExposure);
+   m_renderDevice->m_DMDShader->SetVector(SHADER_exposure_wcg, m_dmdViewExposure, 1.f, 1.f, 0.f);
    const float rtAR = static_cast<float>(rt->GetWidth()) / static_cast<float>(rt->GetHeight());
    const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
    const float w = rtAR > dmdAR ? dmdAR / rtAR : 1.f;

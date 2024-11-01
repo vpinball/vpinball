@@ -209,6 +209,11 @@ Window::Window(const string &title, const Settings::Section section, const strin
       m_nwnd = SDL_CreateWindowWithProperties(props);
       SDL_DestroyProperties(props);
 
+      props = SDL_GetWindowProperties(m_nwnd);
+      //bool HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
+      m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+      m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+
 #ifdef __LIBVPINBALL__
       props = SDL_GetWindowProperties(m_nwnd);
       VPinballLib::WindowCreatedStruct windowCreatedStruct = { (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL), title.c_str() };

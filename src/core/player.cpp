@@ -1810,7 +1810,10 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
 #ifdef ENABLE_BGFX
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
+      // Continuously process input, synchronize with emulation and step physics to keep latency low
       sync();
+
+      // If rendering thread is ready, push a new frame as soon as possible
       if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
@@ -1823,10 +1826,13 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
          m_renderer->m_renderDevice->m_frameMutex.unlock();
       }
       else
-      // Very imprecise on Windows:
-      // std::this_thread::sleep_for(std::chrono::microseconds(10));
-      // usleep(100);
-      YieldProcessor();
+      {
+         // Very imprecise on Windows:
+         // std::this_thread::sleep_for(std::chrono::microseconds(10));
+         // usleep(100);
+         YieldProcessor();
+      }
+
 #ifdef __LIBVPINBALL__
       break;
 #endif

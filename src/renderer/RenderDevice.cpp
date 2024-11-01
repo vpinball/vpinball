@@ -291,7 +291,7 @@ extern marker_series series;
 #endif
 
 #if defined(ENABLE_BGFX)
-void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
+void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
    // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
    // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
@@ -299,7 +299,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
    // Since VPX already splits the logic/prepare frame thread (CPU only) from the submit/flip (CPU-GPU)
    // we do not really need BGFX to create its additional thread. Calling bgfx::renderFrame allows
    // to do so, ending up with this thread being the only BGFX thread.
-   bgfx::renderFrame(); 
+   bgfx::renderFrame();
+   bgfx::Init init = initReq;
    if (!bgfx::init(init))
    {
       PLOGE << "BGFX initialization failed";
@@ -307,8 +308,32 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
    }
    //bgfx::setDebug(BGFX_DEBUG_STATS);
    //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
+   
+   // BGFX supports HDR10 rendering for DXGI (DirectX 11 & 12), uses it if available
+   if (bgfx::getCaps()->supported & BGFX_CAPS_HDR10)
+   {
+      init.resolution.format = bgfx::TextureFormat::RGB10A2;
+      init.resolution.reset |= BGFX_RESET_HDR10;
+      bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
+   }
+
+   // Retrieve a reference to the back buffer.
+   colorFormat back_buffer_format;
+   switch (init.resolution.format)
+   {
+   case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; break;
+   case bgfx::TextureFormat::R5G6B5: back_buffer_format = colorFormat::RGB5; break;
+   case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
+   default: assert(false); back_buffer_format = colorFormat::RGBA8;
+   }
+   rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, init.resolution.width, init.resolution.height, back_buffer_format));
+   
+   // Dynamically toggle vsync
+   init.resolution.reset &= ~BGFX_RESET_VSYNC;
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
    bool vsync = useVSync;
+
+   // Unlock requesting thread and start render loop
    rd->m_frameReadySem.post();
 
 #ifdef __STANDALONE__
@@ -334,7 +359,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& init)
          if (vsync != needsVSync)
          {
             vsync = needsVSync;
-            bgfx::reset(init.resolution.width, init.resolution.height, (init.resolution.reset & ~BGFX_RESET_VSYNC) | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+            bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
          }
          rd->SubmitRenderFrame();
          rd->m_frameNoSync = false;
@@ -417,7 +442,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #endif
 
    assert(g_pplayer != nullptr); // Player must be created to give access to the output window
-   colorFormat back_buffer_format;
 
    // 0 means disable limiting of draw-ahead queue
    int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
@@ -467,9 +491,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.resolution.height = wnd->GetHeight();
    switch (m_outputWnd[0]->GetBitDepth())
    {
-   case 32: back_buffer_format = colorFormat::RGBA8; init.resolution.format = bgfx::TextureFormat::RGBA8; break;
-   case 30: back_buffer_format = colorFormat::RGBA10; init.resolution.format = bgfx::TextureFormat::RGB10A2; break;
-   default: back_buffer_format = colorFormat::RGB5; init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
+   case 32: init.resolution.format = bgfx::TextureFormat::RGBA8; break;
+   case 30: init.resolution.format = bgfx::TextureFormat::RGB10A2; break;
+   default: init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
    }
 
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -503,7 +527,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    m_renderDeviceAlive = true;
    m_renderThread = std::thread(&RenderThread, this, init);
    m_frameReadySem.wait();
-   PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend.";
+   PLOGI << "BGFX initialized using " << bgfxRendererNames[bgfx::getRendererType()] << " backend";
 
 #elif defined(ENABLE_OPENGL)
    ///////////////////////////////////
@@ -514,6 +538,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       ShowError("Failed to setup OpenGL context");
       exit(-1);
    }
+   colorFormat back_buffer_format;
    switch (mode->format)
    {
    case SDL_PIXELFORMAT_RGB565: back_buffer_format = colorFormat::RGB5; break;
@@ -670,6 +695,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
 
+   // Retrieve a reference to the back buffer.
+   wnd->SetBackBuffer(new RenderTarget(this, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
+
 #elif defined(ENABLE_DX9)
     ///////////////////////////////////
     // DirectX 9 device initialization
@@ -737,6 +765,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
                  m_outputWnd[0]->GetBitDepth() == 30 ? D3DFMT_A2R10G10B10 :
                                                        D3DFMT_R5G6B5;
     }
+    colorFormat back_buffer_format;
     switch (format)
     {
     case D3DFMT_R5G6B5: back_buffer_format = colorFormat::RGB5; break;
@@ -876,6 +905,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(maxPrerenderedFrames));
    }
 
+   // Retrieve a reference to the back buffer.
+   wnd->SetBackBuffer(new RenderTarget(this, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
+
    /*if (m_outputWnd[0]->IsFullScreen())
        hr = m_pD3DDevice->SetDialogBoxMode(TRUE);*/ // needs D3DPRESENTFLAG_LOCKABLE_BACKBUFFER, but makes rendering slower on some systems :/
 #endif
@@ -886,9 +918,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    m_nullTexture = new Sampler(this, surf, false);
    m_nullTexture->SetName("Null"s);
    delete surf;
-
-   // Retrieve a reference to the back buffer.
-   wnd->SetBackBuffer(new RenderTarget(this, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
 
    // alloc float buffer for rendering
    #if defined(ENABLE_OPENGL)
