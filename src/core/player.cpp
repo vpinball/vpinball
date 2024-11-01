@@ -1161,8 +1161,6 @@ void Player::OnFocusChanged(const bool isGameFocused)
                      focusedWnd = szFileName;
                }
             }
-            HWND pf = m_playfieldWnd->GetNativeHWND();
-            HWND dmd = m_dmdWnd->GetNativeHWND();
             char title[1000];
             GetWindowText(foregroundWnd, title, 1000);
             PLOGI << "Focus lost. Current focused window: " << focusedWnd << ", with title: '" << title << "'";
