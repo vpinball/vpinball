@@ -129,6 +129,7 @@ void bulb_init()
    // Compute resistance at room temperature from other ratings U, I and T
    for (int bulb = 0; bulb < BULB_MAX; bulb++)
    {
+     bulbs[bulb].r0 = 1.0; // Since BULB_R below uses bulbs[bulb].r0
      bulbs[bulb].r0 = (bulbs[bulb].rating_u / bulbs[bulb].rating_i) / BULB_R(bulb, bulbs[bulb].rating_T);
    }
 
