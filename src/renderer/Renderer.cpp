@@ -960,16 +960,16 @@ void Renderer::SetupShaders()
    m_renderDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
 
-   m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, 
-      m_exposure, /* Scene exposure (user or table designer choice */
-      m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
-      m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint(),
-      #ifdef ENABLE_BGFX
-         m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGB10
-      #else
-         0.f
-      #endif
-   );
+   #ifdef ENABLE_BGFX
+      if (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10)
+         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
+            m_exposure,
+            m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
+            m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint(),
+            1.f);
+      else
+   #endif
+   m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
 
    //m_renderDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
