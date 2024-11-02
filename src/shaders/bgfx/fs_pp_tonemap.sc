@@ -549,7 +549,7 @@ void main()
       result *= texStereoNoLod(tex_ao, v_texcoord0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    #endif
 
-   BRANCH if (do_bloom.x > 0.)
+   BRANCH if (!isHDR2020 && do_bloom.x > 0.)
       result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
    result = result / hdrHeadroom; // scale with HDR headroom (this value will be mapped to 1.0 by tonemapper)
@@ -574,13 +574,7 @@ void main()
    else result = FBGamma(result);
    #endif
 
-   if (isHDR2020)
-   {
-      #if !(defined(FILMIC) || defined(AGX))
-         result = FBGamma(result); //!! meh
-      #endif
-   }
-   else
+   if (!isHDR2020)
    {
    #ifdef GRAY
       #if defined(FILMIC) || defined(AGX)
@@ -614,17 +608,26 @@ void main()
 
    // Preliminary implementation for testing and validation before clean inclusion and optimization
    // Based on my understanding https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
-   if (isHDR2020)
+   else
    {
-      vec3 col = gl_FragColor.rgb;
+   #ifdef GRAY
+      vec3 col = vec3(result,result,result); //!!
+   #elif defined(RG)
+      vec3 col = vec3(result,result.x); //!!
+   #else
+      vec3 col = result;
+   #endif
 
+      #if defined(FILMIC) || defined(AGX)
       // sRGB to linear sRGB
       col = InvGamma(col);
+      #endif
 
       // Apply headroom back
       col = col * hdrHeadroom; 
 
-      // Adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL (
+      // Adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL
+      // HDR10 (497, 497, 497) encodes exactly D65 white at 80 nits luminance
       col = col * (sdrWhitePoint / 80.0);
 
       // Linear sRGB to REC2020
@@ -636,8 +639,18 @@ void main()
       );
       col = mul(col, LINEAR_SRGB_TO_LINEAR_REC2020);
 
+
+      // Linear -> ST2084
+      /*const float m1 = 2610.0 / 4096.0 / 4;
+      const float m2 = 2523.0 / 4096.0 * 128;
+      const float c1 = 3424.0 / 4096.0;
+      const float c2 = 2413.0 / 4096.0 * 32;
+      const float c3 = 2392.0 / 4096.0 * 32;
+      float3 cp = pow(abs(col), m1);
+      col = pow((c1 + c2 * cp) / (1 + c3 * cp), m2);*/
+
       // Apply REC20 PQ
-      col = pow((vec3_splat(0.8359375) + 18.8515625*pow(col, vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(col, vec3_splat(0.1593017578))), vec3_splat(78.84375));
+      col = pow((vec3_splat(0.8359375) + 18.8515625*pow(abs(col), vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(abs(col), vec3_splat(0.1593017578))), vec3_splat(78.84375));
 
       gl_FragColor = vec4(saturate(col), 1.0);
    }
