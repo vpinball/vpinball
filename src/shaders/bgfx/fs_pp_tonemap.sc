@@ -571,20 +571,28 @@ void main()
       #endif
    }
    #if defined(FILMIC) || defined(AGX)
-     else result = FBGamma(result);
+   else result = FBGamma(result);
    #endif
 
+   if (isHDR2020)
+   {
+      #if !(defined(FILMIC) || defined(AGX))
+         result = FBGamma(result); //!! meh
+      #endif
+   }
+   else
+   {
    #ifdef GRAY
-      #ifdef FILMIC
+      #if defined(FILMIC) || defined(AGX)
          result =         saturate(FBDither(result, v_texcoord0));
       #else
          result = FBGamma(saturate(FBDither(result, v_texcoord0)));
       #endif
       gl_FragColor = vec4(result, result, result, 1.0);
-   
+
    #elif defined(RG)
       //float grey = dot(result, vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
-      #ifdef FILMIC
+      #if defined(FILMIC) || defined(AGX)
          float grey =         saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)));
       #else
          float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
@@ -593,22 +601,23 @@ void main()
 
    #else
       #if defined(FILMIC) || defined(AGX)
-         result =         saturate(FBDither(result, v_texcoord0));
+         result =           saturate(FBDither(result, v_texcoord0));
       #elif defined(NEUTRAL)
          result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
       #else
-         result = FBGamma(saturate(FBDither(result, v_texcoord0)));
+         result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
       #endif
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
-   
+
    #endif
-   
+   }
+
    // Preliminary implementation for testing and validation before clean inclusion and optimization
    // Based on my understanding https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
    if (isHDR2020)
    {
       vec3 col = gl_FragColor.rgb;
-   
+
       // sRGB to linear sRGB
       col = InvGamma(col);
 
@@ -616,8 +625,8 @@ void main()
       col = col * hdrHeadroom; 
 
       // Adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL (
-      col = col * sdrWhitePoint / 80.0;
-   
+      col = col * (sdrWhitePoint / 80.0);
+
       // Linear sRGB to REC2020
       const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
       (
@@ -626,10 +635,10 @@ void main()
          vec3(0.0433, 0.0113, 0.8956)
       );
       col = mul(col, LINEAR_SRGB_TO_LINEAR_REC2020);
-   
+
       // Apply REC20 PQ
       col = pow((vec3_splat(0.8359375) + 18.8515625*pow(col, vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(col, vec3_splat(0.1593017578))), vec3_splat(78.84375));
-   
+
       gl_FragColor = vec4(saturate(col), 1.0);
    }
 }
