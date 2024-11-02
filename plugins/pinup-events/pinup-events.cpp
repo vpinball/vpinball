@@ -50,6 +50,16 @@ uint8_t rgbFrame[128 * 32 * 3];
 uint8_t palette4[4 * 3];
 uint8_t palette16[16 * 3];
 
+// Introduced in Windows 7 (not supported in Windows XP)
+#ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
+#define LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR 0x00000100
+#endif
+
+// Introduced in Windows 7 (not supported in Windows XP)
+#ifndef LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+#define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS 0x00001000
+#endif
+
 void processDMD(const GetDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::time_point now)
 {
    if (getDmdMsg.frame == nullptr)
@@ -188,7 +198,11 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       return;
    if (GetModuleFileName(hm, path, MAX_PATH) == 0)
       return;
-   std::wstring fullpath(path);
+   #ifdef _UNICODE
+      std::wstring fullpath(path);
+   #else
+      std::string fullpath(path);
+   #endif
    fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
    #if (INTPTR_MAX == INT32_MAX)
       fullpath += _T("dmddevicePUP.DLL");
