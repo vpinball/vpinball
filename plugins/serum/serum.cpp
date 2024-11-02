@@ -1,7 +1,5 @@
 // license:GPLv3+
 
-#define _ITERATOR_DEBUG_LEVEL 0 // to avoid conflicting with libSerum setup
-
 #include <cassert>
 #include <cstdlib>
 #include <chrono>

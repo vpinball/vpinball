@@ -81,13 +81,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;__STDC_LIB_EXT1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>.\plugins\serum\third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>serum.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries />
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -100,13 +98,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;__STDC_LIB_EXT1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>.\plugins\serum\third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>serum.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries />
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -119,13 +115,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;__STDC_LIB_EXT1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>.\plugins\serum\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>serum64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries />
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -138,13 +132,11 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;__STDC_LIB_EXT1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>.\plugins\serum\third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>serum64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries />
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -154,30 +146,33 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup>
+    <ClCompile>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
     <PostBuildEvent>
       <Command>
         if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
         copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
         copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
-        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)_BGFX-x64\plugins\serum\"
-        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)_BGFX-Win32\plugins\serum\"
 
         if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
         copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
         copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
-        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)_GL-x64\plugins\serum\"
-        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)_GL-Win32\plugins\serum\"
 
         if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
         copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
         copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
-        if "$(Platform)" == "x64" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x64\serum64.dll" "$(SolutionDir).build\bin\$(Configuration)-x64\plugins\serum\"
-        if "$(Platform)" == "Win32" copy /y "$(SolutionDir)\plugins\serum\third-party\runtime-libs\windows-x86\serum.dll" "$(SolutionDir).build\bin\$(Configuration)-Win32\plugins\serum\"
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="plugins/serum/serum.cpp" />
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum.h" />
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-version.h" />
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-decode.h" />
+    <ClCompile Include="plugins/serum/third-party/include/libserum/serum-decode.cpp" />
+    <ClInclude Include="plugins/serum/third-party/include/miniz/miniz.h" />
+    <ClCompile Include="plugins/serum/third-party/include/miniz/miniz.c" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="plugins/serum/plugin.cfg">

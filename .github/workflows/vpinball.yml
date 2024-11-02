@@ -188,6 +188,7 @@ jobs:
           fi
           cp build/${{ matrix.config }}/*.dll tmp
           cp -r build/${{ matrix.config }}/assets tmp
+          cp -r build/${{ matrix.config }}/plugins tmp
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp

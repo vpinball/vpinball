@@ -5,10 +5,31 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="third-party">
+      <UniqueIdentifier>{ba1c1ac4-658a-4269-9aa3-1a5f1b5a4784}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="plugins/serum/serum.cpp">
       <Filter>source</Filter>
+    </ClCompile>
+    <ClInclude Include="plugins/serum/third-party/include/miniz/miniz.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClCompile Include="plugins/serum/third-party/include/miniz/miniz.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-decode.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-version.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClCompile Include="plugins/serum/third-party/include/libserum/serum-decode.cpp">
+      <Filter>third-party</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
