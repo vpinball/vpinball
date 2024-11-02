@@ -11,18 +11,20 @@ FEATURES:
   and the 'AgX' tonemapper which is the default one used by Blender
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
+- balls can now be created and edited directly from the editor like all other parts, and not only from the script
+
+- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor or using the LiveUI which as a dedicated UI for it.
+
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off),
   . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost,
   . it supports rendering to multiple output (windows).
 
-- balls can now be created and edited directly from the editor like all other parts, and not only from the script
-
 - add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
-- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor or using the LiveUI which as a dedicated UI for it.
-
 - add 'raytraced' ball motion blur (BGFX only)
+
+- add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirextX output only)
 
 FIXES:
 
