@@ -11,7 +11,7 @@ struct SplashView: View {
                 Spacer()
                 TimelineView(.animation) { timeline in
                     let elapsedTime = startTime.distance(to: timeline.date)
-                    Image("logo")
+                    Image("vpinball-logo")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
                         .frame(maxWidth: 300)

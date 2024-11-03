@@ -551,7 +551,7 @@
 				CODE_SIGN_ENTITLEMENTS = VPinball/VPinball.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10.8.1.0;
+				CURRENT_PROJECT_VERSION = 10.8.1.1;
 				DEVELOPMENT_ASSET_PATHS = "\"VPinball/Preview Content\"";
 				DEVELOPMENT_TEAM = UKWC4J7BE5;
 				ENABLE_PREVIEWS = YES;
@@ -573,7 +573,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 100801.0.0;
+				MARKETING_VERSION = 100801.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.vpinball.vpinball-bgfx";
 				PRODUCT_NAME = "Visual Pinball";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -596,7 +596,7 @@
 				CODE_SIGN_ENTITLEMENTS = VPinball/VPinball.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10.8.1.0;
+				CURRENT_PROJECT_VERSION = 10.8.1.1;
 				DEVELOPMENT_ASSET_PATHS = "\"VPinball/Preview Content\"";
 				DEVELOPMENT_TEAM = UKWC4J7BE5;
 				ENABLE_PREVIEWS = YES;
@@ -618,7 +618,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 100801.0.0;
+				MARKETING_VERSION = 100801.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.vpinball.vpinball-bgfx";
 				PRODUCT_NAME = "Visual Pinball";
 				PROVISIONING_PROFILE_SPECIFIER = "";
