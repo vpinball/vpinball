@@ -3,9 +3,9 @@
 set -e
 
 FREEIMAGE_VERSION=3.18.0
-SDL_VERSION=3.1.3
-SDL_IMAGE_SHA=a010117fee88255a32492ae9a43e93a213d608ec
-SDL_TTF_SHA=b61b50ea756576382cc1ccf12491f7ebeab6eed1
+SDL_SHA=78cc5c173404488d80751af226d1eaf67033bcc4
+SDL_IMAGE_SHA=b1c8ec7d75e3d8398940c9e04a8b82886ae6163d
+SDL_TTF_SHA=f20defe45dfe6f0daa0f8e92e8b6221d1be3d9c0
 PINMAME_SHA=40e0eb5fdf49ba9e6be530ef50ae31c13b5c5b5a
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=3021795406935120275b2d4db48bca598bea67f9
@@ -18,7 +18,7 @@ NUM_PROCS=$(nproc)
 
 echo "Building external libraries..."
 echo "  FREEIMAGE_VERSION: ${FREEIMAGE_VERSION}"
-echo "  SDL_VERSION: ${SDL_VERSION}"
+echo "  SDL_SHA: ${SDL_SHA}"
 echo "  SDL_IMAGE_SHA: ${SDL_IMAGE_SHA}"
 echo "  SDL_TTF_SHA: ${SDL_TTF_SHA}"
 echo "  PINMAME_SHA: ${PINMAME_SHA}"
@@ -88,12 +88,12 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 # build SDL3, SDL_image, SDL_ttf and copy to external
 #
 
-CACHE_NAME="SDL-${SDL_VERSION}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}_002"
+CACHE_NAME="SDL-${SDL_SHA}-${SDL_IMAGE_SHA}-${SDL_TTF_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/libsdl-org/SDL/releases/download/preview-${SDL_VERSION}/SDL3-${SDL_VERSION}.tar.xz -o SDL3-${SDL_VERSION}.tar.xz
-   tar -xf SDL3-3.1.3.tar.xz
-   cd SDL3-3.1.3
+   curl -sL https://github.com/libsdl-org/SDL/archive/${SDL_SHA}.zip -o SDL-${SDL_SHA}.zip
+   unzip SDL-${SDL_SHA}.zip
+   cd SDL-${SDL_SHA}
    cmake \
       -DSDL_SHARED=ON \
       -DSDL_STATIC=OFF \
@@ -119,7 +119,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDLIMAGE_VENDORED=ON \
       -DSDLIMAGE_AVIF=OFF \
       -DSDLIMAGE_WEBP=OFF \
-      -DSDL3_DIR=../SDL3-${SDL_VERSION}/build \
+      -DSDL3_DIR=../SDL-${SDL_SHA}/build \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
@@ -138,7 +138,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
       -DSDLTTF_SAMPLES=OFF \
       -DSDLTTF_VENDORED=ON \
       -DSDLTTF_HARFBUZZ=ON \
-      -DSDL3_DIR=../SDL3-${SDL_VERSION}/build \
+      -DSDL3_DIR=../SDL-${SDL_SHA}/build \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}

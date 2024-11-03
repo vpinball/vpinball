@@ -61,7 +61,7 @@ struct ArtworkSnapshotView: View {
         ArtworkSnapshotView()
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    viewModel.artworkImage = UIImage(named: "TablePlaceholder")
+                    viewModel.artworkImage = UIImage(named: "table-placeholder")
                 }
             }
     }
