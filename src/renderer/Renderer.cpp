@@ -952,26 +952,12 @@ void Renderer::SetupShaders()
    const vec4 st(m_table->m_envEmissionScale * m_globalEmissionScale, m_envTexture ? (float)m_envTexture->m_height/*+m_envTexture->m_width)*0.5f*/ : (float)m_builtinEnvTexture.m_height/*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f);
    m_renderDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &st);
    m_renderDevice->m_ballShader->SetVector(SHADER_fenvEmissionScale_TexWidth, &envEmissionScale_TexWidth);
-   //m_renderDevice->m_ballShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    constexpr float Roughness = 0.8f;
    m_renderDevice->m_ballShader->SetVector(SHADER_Roughness_WrapL_Edge_Thickness, exp2f(10.0f * Roughness + 1.0f), 0.f, 1.f, 0.05f);
    vec4 amb_lr = convertColor(m_table->m_lightAmbient, m_table->m_lightRange);
    m_renderDevice->m_ballShader->SetVector(SHADER_cAmbient_LightRange, 
       amb_lr.x * m_globalEmissionScale, amb_lr.y * m_globalEmissionScale, amb_lr.z * m_globalEmissionScale, m_table->m_lightRange);
-
-   #ifdef ENABLE_BGFX
-      if (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10)
-         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
-            m_exposure,
-            m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
-            m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint(),
-            1.f);
-      else
-   #endif
-   m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
-
-   //m_renderDevice->m_basicShader->SetInt("iLightPointNum",MAX_LIGHT_SOURCES);
 
    m_table->m_Light[0].pos.x = m_table->m_right * 0.5f;
    m_table->m_Light[1].pos.x = m_table->m_right * 0.5f;
@@ -1902,13 +1888,29 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
+      #ifdef ENABLE_BGFX
+      const bool isHdr2020 = m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10;
+      #else
+      const bool isHdr2020 = false;
+      #endif
+      if (isHdr2020)
+         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
+            m_exposure,
+            1.f / m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
+            m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() / 80.f),
+            1.f);
+      else
+         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
+
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)
          // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
-      m_renderDevice->m_FBShader->SetBool(SHADER_color_grade, pin != nullptr);
-      m_renderDevice->m_FBShader->SetBool(SHADER_do_dither, m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10);
-      m_renderDevice->m_FBShader->SetBool(SHADER_do_bloom, (m_table->m_bloom_strength > 0.0f && !m_bloomOff && infoMode <= IF_DYNAMIC_ONLY));
+      m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
+         (!isHdr2020 && (m_table->m_bloom_strength > 0.0f) && !m_bloomOff && (infoMode <= IF_DYNAMIC_ONLY)) ? 1.f : 0.f, /* bloom */
+         (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, /* Dither */
+         (pin != nullptr) ? 1.f : 0.f, /* LUT colorgrade */
+         0.f);
 
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height,
          (float)(1.0 / (double)render_w), (float)(1.0 / (double)render_h),
@@ -1920,11 +1922,13 @@ void Renderer::PrepareVideoBuffers()
    if (infoMode == IF_AO_ONLY)
       tonemapTechnique = SHADER_TECHNIQUE_fb_AO;
    else if (infoMode == IF_RENDER_PROBES)
-      tonemapTechnique = m_toneMapper == TM_REINHARD ? SHADER_TECHNIQUE_fb_rhtonemap
-                       : m_toneMapper == TM_FILMIC   ? SHADER_TECHNIQUE_fb_fmtonemap
-                       : m_toneMapper == TM_NEUTRAL  ? SHADER_TECHNIQUE_fb_nttonemap
-                       : m_toneMapper == TM_AGX      ? SHADER_TECHNIQUE_fb_agxtonemap
-                       : /* TM_TONY_MC_MAPFACE */      SHADER_TECHNIQUE_fb_tmtonemap;
+      tonemapTechnique = m_toneMapper == TM_REINHARD   ? SHADER_TECHNIQUE_fb_rhtonemap
+                       : m_toneMapper == TM_FILMIC     ? SHADER_TECHNIQUE_fb_fmtonemap
+                       : m_toneMapper == TM_NEUTRAL    ? SHADER_TECHNIQUE_fb_nttonemap
+                       : m_toneMapper == TM_AGX        ? SHADER_TECHNIQUE_fb_agxtonemap
+                       : m_toneMapper == TM_AGX_PUNCHY ? SHADER_TECHNIQUE_fb_agxptonemap
+                       : m_toneMapper == TM_NONE       ? SHADER_TECHNIQUE_fb_nonetonemap
+                       : /* TM_TONY_MC_MAPFACE */        SHADER_TECHNIQUE_fb_tmtonemap;
    else if (m_BWrendering != 0)
       tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
    else if (m_toneMapper == TM_REINHARD)
@@ -1939,7 +1943,13 @@ void Renderer::PrepareVideoBuffers()
    else if (m_toneMapper == TM_AGX)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxtonemap_AO : SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxtonemap    : SHADER_TECHNIQUE_fb_agxtonemap_no_filter;
-   else // TM_TONY_MC_MAPFACE
+   else if (m_toneMapper == TM_AGX_PUNCHY)
+      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
+                               : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
+   else if (m_toneMapper == TM_NONE)
+      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nonetonemap_AO : SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter
+                               : useAA ? SHADER_TECHNIQUE_fb_nonetonemap    : SHADER_TECHNIQUE_fb_nonetonemap_no_filter;
+   else if (m_toneMapper == TM_TONY_MC_MAPFACE)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter;
 

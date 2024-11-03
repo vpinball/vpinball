@@ -14,9 +14,10 @@ const float4 ms_zpd_ya_td;
 
 const float2 AO_scale_timeblur;
 
-const bool color_grade;
-const bool do_dither;
-const bool do_bloom;
+const float4 bloom_dither_colorgrade;
+#define do_bloom (bloom_dither_colorgrade.x == 1.)
+#define do_dither (bloom_dither_colorgrade.y == 1.)
+#define color_grade (bloom_dither_colorgrade.z == 1.)
 
 texture Texture0; // FB
 texture Texture1; // Bloom

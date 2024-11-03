@@ -180,48 +180,56 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(bulb_light_with_ball_shadows, SHADER_matWorldViewProj, SHADER_balls, SHADER_blend_modulate_vs_add, SHADER_lightCenter_maxRange, SHADER_lightColor2_falloff_power,
       SHADER_lightColor_intensity, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(fb_rhtonemap, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
+   SHADER_TECHNIQUE(fb_rhtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_AO, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_rhtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_tmtonemap, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
+   SHADER_TECHNIQUE(fb_tmtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth, SHADER_tex_tonemap_lut),
-   SHADER_TECHNIQUE(fb_tmtonemap_AO, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_tmtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth, SHADER_tex_tonemap_lut),
-   SHADER_TECHNIQUE(fb_tmtonemap_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_tmtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_depth, SHADER_tex_tonemap_lut),
-   SHADER_TECHNIQUE(fb_tmtonemap_AO_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_tmtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth, SHADER_tex_tonemap_lut),
-   SHADER_TECHNIQUE(fb_fmtonemap, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
+   SHADER_TECHNIQUE(fb_fmtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_AO, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_fmtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_fmtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_fmtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
+   SHADER_TECHNIQUE(fb_nttonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_AO, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_nttonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_nttonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
+   SHADER_TECHNIQUE(fb_nttonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
-      SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, SHADER_w_h_height, SHADER_color_grade, SHADER_do_bloom, SHADER_do_dither, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
-      SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG, SHADER_do_bloom, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR, SHADER_do_bloom, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxptonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_agxgtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_nonetonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_nonetonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_nonetonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_nonetonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
 
    SHADER_TECHNIQUE(fb_blur_horiz7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(fb_blur_vert7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
@@ -387,12 +395,10 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_SAMPLER(tex_flasher_B, 1, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // texB
 
    // Post Process Shader
-   SHADER_UNIFORM(SUT_Bool, color_grade, 1),
-   SHADER_UNIFORM(SUT_Bool, do_bloom, 1),
-   SHADER_UNIFORM(SUT_Bool, do_dither, 1),
+   SHADER_UNIFORM(SUT_Float4, bloom_dither_colorgrade, 1),
+   SHADER_UNIFORM(SUT_Float4, exposure_wcg, 1),
    SHADER_UNIFORM(SUT_Float4, SSR_bumpHeight_fresnelRefl_scale_FS, 1),
    SHADER_UNIFORM(SUT_Float2, AO_scale_timeblur, 1),
-   SHADER_UNIFORM(SUT_Float4, exposure_wcg, 1),
    SHADER_SAMPLER(tex_fb_unfiltered, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // Framebuffer (unfiltered)
    SHADER_SAMPLER(tex_fb_filtered, 0, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Framebuffer (filtered)
    SHADER_SAMPLER(tex_bloom, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // Bloom
@@ -1458,6 +1464,14 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_noao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       // Screen Space post-processes
@@ -1618,6 +1632,14 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_noao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_ao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 

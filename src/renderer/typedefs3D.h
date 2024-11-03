@@ -58,7 +58,9 @@ enum ToneMapper
    TM_TONY_MC_MAPFACE  = 1, // Precomputed high quality phenomenological tonemapping https://github.com/h3r2tic/tony-mc-mapface
    TM_FILMIC = 2,           // Filmic tonemapper
    TM_NEUTRAL = 3,          // Neutral tonemapper, designed for e-commerce, keeps sRGB colors kinda original
-   TM_AGX = 4               // AgX tonemapper, used in Blender, implementation derived from threeJs which derives its implementation from Filament
+   TM_AGX = 4,              // AgX tonemapper, used in Blender, implementation derived from threeJs which derives its implementation from Filament
+   TM_AGX_PUNCHY = 5,       // AgX tonemapper, punchy look curve (more contrast/saturation)
+   TM_NONE = 6,             // No tonemapping (passthrough), useful for rendering on an HDR display with a high max luminance value
 };
 
 enum VideoSyncMode

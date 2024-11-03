@@ -1640,10 +1640,18 @@ BOOL DMDViewOptPage::OnInitDialog()
    m_viewMode.SetRedraw(true);
 
    AttachItem(IDC_TONEMAPPER, m_tonemapper);
-   AttachItem(IDC_EXPOSURE, m_exposure);
-   m_tonemapper.AddString(_T("AgX Punchy"));
+   //m_tonemapper.AddString(_T("Reinhard"));
+   //m_tonemapper.AddString(_T("Tony McMapFace"));
+   //m_tonemapper.AddString(_T("Filmic"));
+   //m_tonemapper.AddString(_T("Neutral"));
+   m_tonemapper.AddString(_T("AgX"));
+   #ifdef ENABLE_BGFX
+   //m_tonemapper.AddString(_T("AgX Punchy"));
+   //m_tonemapper.AddString(_T("None"));
+   #endif
    m_tonemapper.SetCurSel(0);
    m_tonemapper.EnableWindow(false); // Not yet implemented
+   AttachItem(IDC_EXPOSURE, m_exposure);
 
    AttachItem(IDC_DMD_PROFILE, m_rendererProfile);
    SetupCombo(m_rendererProfile, 10, "Custom #1", "Custom #2", "Custom #3", "Custom #4", "Custom #5", "Custom #6", "Custom #7", "Custom #8", "Custom #9", "Custom #10");
