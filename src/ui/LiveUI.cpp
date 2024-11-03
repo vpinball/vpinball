@@ -4167,7 +4167,7 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       
       PropSeparator();
-      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s, "AgX"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s, "AgX"s, "AgX Punchy"s, "None"s };
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;
       PinTable * const table = m_table;
