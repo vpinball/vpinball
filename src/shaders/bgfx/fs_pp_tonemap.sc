@@ -8,7 +8,6 @@ $input v_texcoord0
 
 #include "common.sh"
 
-
 // w_h_height.xy contains inverse size of source texture (1/w, 1/h), i.e. one texel shift to the upper (DX)/lower (OpenGL) left texel. Since OpenGL has upside down textures it leads to a different texel if not sampled on both sides
 // . for bloom, w_h_height.z keeps strength
 // . for mirror, w_h_height.z keeps inverse strength
@@ -17,16 +16,27 @@ $input v_texcoord0
 // . for parallax stereo, w_h_height.z keeps source texture height, w_h_height.w keeps the 3D offset
 uniform vec4 w_h_height;
 
-uniform vec4 color_grade; // converted to vec4 for BGFX
+uniform vec4 do_color_grade; // converted to vec4 for BGFX
 uniform vec4 do_dither; // converted to vec4 for BGFX
 uniform vec4 do_bloom; // converted to vec4 for BGFX
 
-uniform vec4 exposure_wcg;
-#define exposure (exposure_wcg.x)
-#define hdrHeadroom (exposure_wcg.y)
-#define sdrWhitePoint (exposure_wcg.y)
-#define isHDR2020 (exposure_wcg.w == 1.)
+uniform vec4 bloom_dither_colorgrade;
+#define do_bloom       (bloom_dither_colorgrade.x == 1.)
+#define do_dither      (bloom_dither_colorgrade.y == 1.)
+#define do_color_grade (bloom_dither_colorgrade.z == 1.)
 
+uniform vec4 exposure_wcg;
+#define exposure                    (exposure_wcg.x)
+#define invHdrHeadroom              (exposure_wcg.y)
+#define hdrHeadRoom_x_sdrWhitePoint (exposure_wcg.z)
+#define isHDR2020                   (exposure_wcg.w == 1.)
+
+// Define which tonemapper outputs are in linear sRGB and which are in gamma compressed sRGB
+#if defined(FILMIC) || defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
+#define TM_OUT_GAMMA
+#else
+#define TM_OUT_LINEAR
+#endif
 
 #ifdef GRAY
   #define rtype float
@@ -114,7 +124,7 @@ vec3 ACESFitted(vec3 color)
 
 // There are numerous filmic curve fitting implementation shared publicly
 // I gathered a few here to be able to test and find the best result (also performance wise)
-// Warning: The retrned value is already gamam corrected
+// Warning: The returned value is already gamma corrected
 vec3 FilmicToneMap(vec3 color)
 {
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
@@ -213,7 +223,7 @@ float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
 #endif
 
 
-#ifdef AGX
+#if defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
 // AgX derived from the following references:
 // - Blog post: https://iolite-engine.com/blog_posts/minimal_agx_implementation
 // - Godot: https://github.com/godotengine/godot/pull/87260
@@ -221,7 +231,6 @@ float PBRNeutralToneMapping(float color) { return color; } // Unimplemented
 // - Filament: https://github.com/google/filament/blob/main/filament/src/ToneMapper.cpp
 // All of these trying to match Blender's implementation and reference OCIO profile.
 // TODO Add black/white point definition support when adding HDR output support
-// TODO Add 'punchy' look transform (less desaturated)
 
 // https://iolite-engine.com/blog_posts/minimal_agx_implementation
 vec3 agxDefaultContrastApprox(vec3 x)
@@ -259,38 +268,38 @@ vec3 agxDefaultContrastApprox(vec3 x)
 // https://github.com/google/filament/pull/7236
 // Inputs and outputs are encoded as Linear-sRGB.
 
-#define AGX_LOOK 2
 vec3 agxLook(vec3 val) {
-  const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
-  float luma = dot(val, lw);
+  #if defined(AGX_GOLDEN)
+    // Golden
+    vec3 slope = vec3(1.0, 0.9, 0.5);
+    vec3 power = vec3_splat(0.8);
+    float sat = 0.8;
   
-  vec3 offset = vec3_splat(0.0);
-
-#if AGX_LOOK == 0
-  // Default
-  vec3 slope = vec3_splat(1.0);
-  vec3 power = vec3_splat(1.0);
-  float sat = 1.0;
-#elif AGX_LOOK == 1
-  // Golden
-  vec3 slope = vec3(1.0, 0.9, 0.5);
-  vec3 power = vec3_splat(0.8);
-  float sat = 0.8;
-#elif AGX_LOOK == 2
-  // Punchy
-  vec3 slope = vec3_splat(1.0);
-  vec3 power = vec3(1.35, 1.35, 1.35);
-  float sat = 1.4;
-#endif
+    const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+    float luma = dot(val, lw);
+    val = pow(val * slope, power);
+    return luma + sat * (val - luma);
+    
+  #elif defined(AGX_PUNCHY)
+    // Punchy
+    vec3 power = vec3(1.35, 1.35, 1.35);
+    float sat = 1.4;
   
-  // ASC CDL
-  val = pow(val * slope + offset, power);
-  return luma + sat * (val - luma);
+    const vec3 lw = vec3(0.2126, 0.7152, 0.0722);
+    float luma = dot(val, lw);
+    val = pow(val, power);
+    return luma + sat * (val - luma);
+    
+  #else
+    // Default
+    return val;
+    
+  #endif
 }
 
 vec3 AgXToneMapping(vec3 color)
 {
-    #if 0
+    #ifdef AGX_BLENDER
     // AgX transform constants taken from Blender https://github.com/EaryChow/AgX_LUT_Gen/blob/main/AgXBaseRec2020.py
     // These operates on rec2020 value, therefore they require additional colorspace conversions
     // (for AgXOutsetMatrix, the inverse is precomputed. Note that input and output matrices are not mutual inverses)
@@ -347,7 +356,7 @@ vec3 AgXToneMapping(vec3 color)
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-    #if 0
+    #ifdef AGX_BLENDER
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
     #endif
 
@@ -363,12 +372,14 @@ vec3 AgXToneMapping(vec3 color)
     // Apply sigmoid
     color = agxDefaultContrastApprox(color);
 
-    // TODO Apply AgX look
-    // color = agxLook(color);
+    // Apply AgX look
+    #if defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
+    color = agxLook(color);
+    #endif
 
     color = mul(color, AgXOutsetMatrix);
 
-    #if 0
+    #ifdef AGX_BLENDER
     color = pow(max(vec3(0.0, 0.0, 0.0), color), vec3(2.2, 2.2, 2.2)); // rec2020 to linear rec2020
     color = mul(color, LINEAR_REC2020_TO_LINEAR_SRGB);                 // linear rec2020 to linear rec709 (sRGB)
     color = FBGamma(color);                                            // linear sRGB to sRGB
@@ -377,6 +388,8 @@ vec3 AgXToneMapping(vec3 color)
     return color;
 }
 #endif
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Dithering
@@ -461,7 +474,7 @@ vec3 DitherVlachos(const vec2 tex0, const vec3 rgb)
 
 vec3 FBDither(const vec3 color, /*const int2 pos*/const vec2 tex0)
 {
-   BRANCH if (!(do_dither.x > 0.))
+   BRANCH if (!(do_dither))
        return color;
 
    //return color + bayer_dither_pattern[pos.x%8][pos.y%8];
@@ -517,12 +530,13 @@ float FBDither(const float color, /*const int2 pos*/const vec2 tex0)
 }
 
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Color grading
 
 vec3 FBColorGrade(vec3 color)
 {
-   BRANCH if (!(color_grade.x > 0.))
+   BRANCH if (!(do_color_grade))
       return color;
 
    color.xy = color.xy*(15.0/16.0) + 1.0/32.0; // assumes 16x16x16 resolution flattened to 256x16 texture
@@ -533,6 +547,7 @@ vec3 FBColorGrade(vec3 color)
    const vec3 lut2 = texNoLod(tex_color_lut, vec2(x+1.0/16.0, color.y)).xyz;
    return mix(lut1,lut2, fract(color.z));
 }
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -549,35 +564,42 @@ void main()
       result *= texStereoNoLod(tex_ao, v_texcoord0 - 0.5*w_h_height.xy).x; // shift half a texel to blurs over 2x2 window
    #endif
 
-   BRANCH if (!isHDR2020 && do_bloom.x > 0.)
+   BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
-   result = result / hdrHeadroom; // scale with HDR headroom (this value will be mapped to 1.0 by tonemapper)
+   BRANCH if (isHDR2020)
+      result = result * invHdrHeadroom; // scale down by HDR headroom
 
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
    {
       result *= exposure;
       #ifdef REINHARD
-         result = ReinhardToneMap(result);
+         result = ReinhardToneMap(result);       // linear sRGB -> linear sRGB
       #elif defined(TONY)
-         result = TonyMcMapfaceToneMap(result);
+         result = TonyMcMapfaceToneMap(result);  // linear sRGB -> linear sRGB
       #elif defined(FILMIC)
-         result = FilmicToneMap(result);
+         result = FilmicToneMap(result);         // linear sRGB -> sRGB
       #elif defined(NEUTRAL)
-         result = PBRNeutralToneMapping(result);
+         result = PBRNeutralToneMapping(result); // linear sRGB -> linear sRGB
       #elif defined(AGX)
-         result = AgXToneMapping(result);
+         result = AgXToneMapping(result);        // linear sRGB -> sRGB
+      #elif defined(AGX_PUNCHY)
+         result = AgXToneMapping(result);        // linear sRGB -> sRGB
+      #elif defined(AGX_GOLDEN)
+         result = AgXToneMapping(result);        // linear sRGB -> sRGB
+      #elif defined(NONE)
+         // Noop tonemapper                      // linear sRGB -> linear sRGB
       #endif
    }
-   #if defined(FILMIC) || defined(AGX)
+   #ifdef TM_OUT_GAMMA
    else result = FBGamma(result);
    #endif
 
    if (!isHDR2020)
    {
    #ifdef GRAY
-      #if defined(FILMIC) || defined(AGX)
+      #ifdef TM_OUT_GAMMA
          result =         saturate(FBDither(result, v_texcoord0));
       #else
          result = FBGamma(saturate(FBDither(result, v_texcoord0)));
@@ -586,7 +608,7 @@ void main()
 
    #elif defined(RG)
       //float grey = dot(result, vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
-      #if defined(FILMIC) || defined(AGX)
+      #ifdef TM_OUT_GAMMA
          float grey =         saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)));
       #else
          float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
@@ -594,7 +616,7 @@ void main()
       gl_FragColor = vec4(grey, grey, grey, 1.0);
 
    #else
-      #if defined(FILMIC) || defined(AGX)
+      #ifdef TM_OUT_GAMMA
          result =           saturate(FBDither(result, v_texcoord0));
       #elif defined(NEUTRAL)
          result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
@@ -606,8 +628,7 @@ void main()
    #endif
    }
 
-   // Preliminary implementation for testing and validation before clean inclusion and optimization
-   // Based on my understanding https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
+   // WCG HDR support for DXGI, based on https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
    else
    {
    #ifdef GRAY
@@ -616,19 +637,31 @@ void main()
       vec3 col = vec3(result,result.x); //!!
    #else
       vec3 col = result;
-   #endif
+      if (do_color_grade)
+      {
+         #ifdef TM_OUT_LINEAR
+         col = FBGamma(col);
+         #endif
+         
+         // Initial color grading attempte for HDR output. Likely a bit hacky
+         const vec3 satCol = saturate(col);
+         col = col * FBColorGrade(satCol) / satCol;
 
-      #if defined(FILMIC) || defined(AGX)
+         #ifdef TM_OUT_LINEAR
+         col = InvGamma(col);
+         #endif
+      }
+   #endif
+      col = max(vec3_splat(0.), col);
+   
+      #ifdef TM_OUT_GAMMA
       // sRGB to linear sRGB
       col = InvGamma(col);
       #endif
 
-      // Apply headroom back
-      col = col * hdrHeadroom; 
-
-      // Adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL
+      // Apply headroom back and adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL
       // HDR10 (497, 497, 497) encodes exactly D65 white at 80 nits luminance
-      col = col * (sdrWhitePoint / 80.0);
+      col = col * hdrHeadRoom_x_sdrWhitePoint;
 
       // Linear sRGB to REC2020
       const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3

@@ -42,9 +42,10 @@ out vec2 tex0;
 ////FRAGMENT
 uniform vec2 AO_scale_timeblur;
 
-uniform bool color_grade;
-uniform bool do_dither;
-uniform bool do_bloom;
+uniform vec4 bloom_dither_colorgrade;
+#define do_bloom (bloom_dither_colorgrade.x == 1.)
+#define do_dither (bloom_dither_colorgrade.y == 1.)
+#define color_grade (bloom_dither_colorgrade.z == 1.)
 
 uniform samplerStereo tex_fb_filtered;   // Framebuffer (filtered)
 uniform samplerStereo tex_fb_unfiltered; // Framebuffer (unfiltered)

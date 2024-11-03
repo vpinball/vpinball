@@ -1643,7 +1643,6 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_Exposure:
       {
          m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
-         m_renderer->SetupShaders();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
@@ -1652,10 +1651,17 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          if (keyEvent == 1)
          {
             int tm = m_renderer->m_toneMapper + (int)step;
+            #ifdef ENABLE_BGFX
+            if (tm < 0)
+               tm = ToneMapper::TM_NONE;
+            if (tm > ToneMapper::TM_NONE)
+               tm = ToneMapper::TM_REINHARD;
+            #else
             if (tm < 0)
                tm = ToneMapper::TM_AGX;
             if (tm > ToneMapper::TM_AGX)
                tm = ToneMapper::TM_REINHARD;
+            #endif
             m_renderer->m_toneMapper = (ToneMapper)tm;
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          }
@@ -2130,7 +2136,9 @@ void LiveUI::UpdateTweakModeUI()
                                                                  : m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
                                                                  : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
                                                                  : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
-                                                                 :                                                  "AgX","");
+                                                                 : m_renderer->m_toneMapper == TM_AGX             ? "AgX"
+                                                                 : m_renderer->m_toneMapper == TM_AGX_PUNCHY      ? "AgX Punchy"
+                                                                 : m_renderer->m_toneMapper == TM_NONE            ? "None" : "Invalid","");
             break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;

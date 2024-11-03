@@ -4469,8 +4469,6 @@ void PinTable::SetLoadDefaults()
 
    m_enableAO = true;
    m_enableSSR = true;
-   m_toneMapper = TM_REINHARD;
-   m_exposure = 1.f;
 
    m_bloom_strength = 1.0f;
 

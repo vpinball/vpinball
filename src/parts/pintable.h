@@ -865,7 +865,7 @@ private:
    robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
    bool m_moving;
 
-   ToneMapper m_toneMapper = ToneMapper::TM_TONY_MC_MAPFACE;
+   ToneMapper m_toneMapper = ToneMapper::TM_AGX;
    float m_exposure = 1.f;
 
    inline float ApplyDifficulty(float minValue, float MaxValue) const;
