@@ -191,7 +191,7 @@ for k in 0 1; do
     variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
     process_shader "fs_pp_fxaa.sc" "antialiasing.h" "fs_pp_${variant_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant"
   done
-  for variant in "FILMIC" "TONY" "NEUTRAL" "AGX"; do
+  for variant in "FILMIC" "TONY" "NEUTRAL" "AGX" "AGX_PUNCHY" "NONE"; do
     variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
     for variant2 in "AO" "NOAO"; do
       variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
