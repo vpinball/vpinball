@@ -243,12 +243,16 @@ enum VPinballToneMapper: CInt {
     case filmic
     case neutral
     case agx
+    case agxPunchy
+    case none
 
     static let all: [VPinballToneMapper] = [.reinhard,
                                             .tonyMcMapface,
                                             .filmic,
                                             .neutral,
-                                            .agx]
+                                            .agx,
+                                            .agxPunchy,
+                                            .none]
 
     var name: String {
         switch self {
@@ -262,6 +266,10 @@ enum VPinballToneMapper: CInt {
             return "Neutral"
         case .agx:
             return "AgX"
+        case .agxPunchy:
+            return "AgX Punchy"
+        case .none:
+            return "None"
         }
     }
 }
