@@ -2221,12 +2221,6 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       // If the user has configured the same button number on more than
       // one device, they probably actually want the buttons to perform
       // the same logical function, so ORing them yields the right result.
-      //
-      // Treat the high-time-resolution flipper buttons like the other
-      // analog quantities, since these are more like the analog
-      // quantities than like the other buttons.  As with the plunger
-      // and accelerometer, it's hard to imagine a sensible use case with
-      // multiple devices claiming the same flipper button.
       auto &r = p.r;
       if (r.axNudge != 0)
          cr.axNudge = r.axNudge;
@@ -2240,14 +2234,6 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          cr.plungerPos = r.plungerPos;
       if (r.plungerSpeed != 0)
          cr.plungerSpeed = r.plungerSpeed;
-      if (r.llFlipper != 0)
-         cr.llFlipper = r.llFlipper;
-      if (r.lrFlipper != 0)
-         cr.lrFlipper = r.lrFlipper;
-      if (r.ulFlipper != 0)
-         cr.ulFlipper = r.ulFlipper;
-      if (r.urFlipper != 0)
-         cr.urFlipper = r.urFlipper;
       cr.genericButtons |= r.genericButtons;
       cr.pinballButtons |= r.pinballButtons;
    }
@@ -2307,8 +2293,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // per the regular joystick button input processor
    const bool start = ((cur_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || started();
 
-   // Check for button state changes.  If there are any, generate
-   // key up/down events for the button changes.
+   // Fire key up/down events for changes to the generic buttons, which
+   // map to the like-numbered joystick buttons.
    if (cr.genericButtons != m_openPinDev_generic_buttons)
    {
       // Visit each button.  VP's internal joystick buttons are
@@ -2323,7 +2309,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       }
 
       // remember the new button state
-      cr.genericButtons = m_openPinDev_generic_buttons;
+      m_openPinDev_generic_buttons = cr.genericButtons;
    }
    if (cr.pinballButtons != m_openPinDev_pinball_buttons)
    {
@@ -2333,51 +2319,36 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
          int rgKeyIndex; // g_pplayer->m_rgKeys[] index, or -1 if a direct VPM key is used instead
          BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an m_rgKeys assignment is used instead
-      } keyMap[] = {
-         { 0x00000001, eStartGameKey }, // Start (start game)
-         { 0x00000002, eExitGame }, // Exit (end game)
-         { 0x00000004, eAddCreditKey }, // Coin 1 (left coin chute)
-         { 0x00000008, eAddCreditKey2 }, // Coin 2 (middle coin chute)
-         { 0x00000010, -1, DIK_5 }, // Coin 3 (right coin chute)
-         { 0x00000020, -1, DIK_6 }, // Coin 4 (fourth coin chute/dollar bill acceptor)
-         { 0x00000040, -1, DIK_2 }, // Extra Ball/Buy-In
-         { 0x00000080, ePlungerKey }, // Launch Ball
-         { 0x00000100, eLockbarKey }, // Fire button (lock bar top button)
-         { 0x00000200, eMechanicalTilt }, // Tilt bob
-         { 0x00000400, -1, DIK_HOME }, // Slam tilt
-         { 0x00000800, -1, DIK_END }, // Coin door switch
-         { 0x00001000, -1, DIK_7 }, // Service panel Cancel
-         { 0x00002000, -1, DIK_8 }, // Service panel Down
-         { 0x00004000, -1, DIK_9 }, // Service panel Up
-         { 0x00008000, -1, DIK_0 }, // Service panel Enter
-         { 0x00010000, eLeftMagnaSave }, // MagnaSave left
-         { 0x00020000, eRightMagnaSave }, // MagnaSave right
-         { 0x00040000, eLeftTiltKey }, // Left Nudge
-         { 0x00080000, eCenterTiltKey }, // Forward Nudge
-         { 0x00100000, eRightTiltKey }, // Right Nudge
-         { 0x00200000, eVolumeUp }, // Audio volume up
-         { 0x00400000, eVolumeDown }, // Audio volume down
+      } keyMap[] = { { 0x00000001, eStartGameKey }, // Start (start game)
+         { 0x00000002, eExitGame },                 // Exit (end game)
+         { 0x00000004, eAddCreditKey },             // Coin 1 (left coin chute)
+         { 0x00000008, eAddCreditKey2 },            // Coin 2 (middle coin chute)
+         { 0x00000010, -1, DIK_5 },                 // Coin 3 (right coin chute)
+         { 0x00000020, -1, DIK_6 },                 // Coin 4 (fourth coin chute/dollar bill acceptor)
+         { 0x00000040, -1, DIK_2 },                 // Extra Ball/Buy-In
+         { 0x00000080, ePlungerKey },               // Launch Ball
+         { 0x00000100, eLockbarKey },               // Fire button (lock bar top button)
+         { 0x00000200, eLeftFlipperKey },           // Left flipper button primary switch
+         { 0x00000400, eRightFlipperKey },          // Right flipper button primary switch
+       //{ 0x00000800, -1, 0 },                     // Left flipper button secondary switch (upper flipper actuator) (no standard VP mapping)
+       //{ 0x00001000, -1, 0 },                     // Right flipper button secondary switch (upper flipper actuator) (no standard VP mapping)
+         { 0x00002000, eLeftMagnaSave },            // Left MagnaSave button
+         { 0x00004000, eRightMagnaSave },           // Right MagnaSave button
+         { 0x00008000, eMechanicalTilt },           // Tilt bob
+         { 0x00010000, -1, DIK_HOME },              // Slam tilt switch
+         { 0x00020000, -1, DIK_END },               // Coin door position switch
+         { 0x00040000, -1, DIK_7 },                 // Service panel Cancel
+         { 0x00080000, -1, DIK_8 },                 // Service panel Down
+         { 0x00100000, -1, DIK_9 },                 // Service panel Up
+         { 0x00200000, -1, DIK_0 },                 // Service panel Enter
+         { 0x00400000, eLeftTiltKey },              // Left Nudge
+         { 0x00800000, eCenterTiltKey },            // Forward Nudge
+         { 0x01000000, eRightTiltKey },             // Right Nudge
+         { 0x02000000, eVolumeUp },                 // Audio volume up
+         { 0x04000000, eVolumeDown },               // Audio volume down      
       };
 
-      // Flipper buttons.  Fold upper and lower into a combined field,
-      // and fold the button duty cycle information into a simple on/off.
-      //
-      // If the simulator is upgraded in the future to accept more detailed
-      // timing information, we can convert the duty cycle into a suitable
-      // amount of simulation time, using the real time between consecutive
-      // HID inputs as the basis, and feed the event into the simulator as
-      // a button press for the corresponding number of physics frames.  This
-      // is irrelevant to VP 9, which has a physics frame time of 10ms,
-      // roughly equal to the HID polling time.  But VP 10 has 1ms frames,
-      // so it should be possible to profitably use the timing info there.
-      const bool newFlipperLeft = cr.llFlipper != 0 || cr.ulFlipper != 0;
-      const bool newFlipperRight = cr.lrFlipper != 0 || cr.urFlipper != 0;
-      if (newFlipperLeft != m_openPinDev_flipper_l)
-         FireKeyEvent(m_openPinDev_flipper_l = newFlipperLeft, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-      if (newFlipperRight != m_openPinDev_flipper_r)
-         FireKeyEvent(m_openPinDev_flipper_r = newFlipperRight, g_pplayer->m_rgKeys[eRightFlipperKey]);
-
-      // Visit each pre-assigned button
+      // Fire key events for changes to pre-assigned buttons
       const KeyMap *m = keyMap;
       for (size_t i = 0; i < _countof(keyMap); ++i, ++m)
       {
@@ -2390,7 +2361,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       }
 
       // remember the new button state
-      cr.pinballButtons = m_openPinDev_pinball_buttons;
+      m_openPinDev_pinball_buttons = cr.pinballButtons;
    }
 }
 
