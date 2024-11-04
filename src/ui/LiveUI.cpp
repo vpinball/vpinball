@@ -977,6 +977,7 @@ void LiveUI::Render()
    }
 
    #if defined(ENABLE_BGFX)
+   // FIXME scale down linear RGB colors by HDR headroom to get the right SDR white point on WCG displays
    ImGui_Implbgfx_RenderDrawLists(draw_data);
 
    #elif defined(ENABLE_OPENGL)

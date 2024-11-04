@@ -313,6 +313,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    if (bgfx::getCaps()->supported & BGFX_CAPS_HDR10)
    {
       init.resolution.format = bgfx::TextureFormat::RGB10A2;
+      //init.resolution.format = bgfx::TextureFormat::RGBA16F; // Also supported by BGFX, but less efficient and would need and adjusted tonemapper to output in DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709 colorspace (linear sRGB)
       init.resolution.reset |= BGFX_RESET_HDR10;
       bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
    }
@@ -321,6 +322,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    colorFormat back_buffer_format;
    switch (init.resolution.format)
    {
+   case bgfx::TextureFormat::RGBA16F: back_buffer_format = colorFormat::RGBA16F; break;
    case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; break;
    case bgfx::TextureFormat::R5G6B5: back_buffer_format = colorFormat::RGB5; break;
    case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;

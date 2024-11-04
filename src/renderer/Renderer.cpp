@@ -1896,11 +1896,14 @@ void Renderer::PrepareVideoBuffers()
       }
 
       if (isHdr2020)
+      {
+         const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
             m_exposure,
-            1.f / m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom(),
-            m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() / 80.f),
+            (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping
+            maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
             1.f);
+      }
       else
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
 
