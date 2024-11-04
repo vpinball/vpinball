@@ -27,8 +27,8 @@ public:
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
    float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
-   float GetSDRWhitePoint() const { return m_sdrWhitePoint; }
-   float GetHDRHeadRoom() const { return m_hdrHeadRoom; }
+   float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
+   float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
    void SetPos(const int x, const int y);
    void Show(const bool show = true);

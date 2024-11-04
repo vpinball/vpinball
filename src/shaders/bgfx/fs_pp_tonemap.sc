@@ -27,8 +27,8 @@ uniform vec4 bloom_dither_colorgrade;
 
 uniform vec4 exposure_wcg;
 #define exposure                    (exposure_wcg.x)
-#define invHdrHeadroom              (exposure_wcg.y)
-#define hdrHeadRoom_x_sdrWhitePoint (exposure_wcg.z)
+#define sceneLum_x_invDisplayMaxLum (exposure_wcg.y)
+#define displayMaxLum               (exposure_wcg.z)
 #define isHDR2020                   (exposure_wcg.w == 1.)
 
 // Define which tonemapper outputs are in linear sRGB and which are in gamma compressed sRGB
@@ -568,7 +568,7 @@ void main()
       result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
    BRANCH if (isHDR2020)
-      result = result * invHdrHeadroom; // scale down by HDR headroom
+      result = result * sceneLum_x_invDisplayMaxLum; // scale by scene luminance to get nits, then divide by display max luminance (in nits) to get a 0..1 range before tonemapping
 
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
@@ -589,7 +589,8 @@ void main()
       #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       #elif defined(NONE)
-         // Noop tonemapper                      // linear sRGB -> linear sRGB
+         // Basic tonemapper for WCG displays    // linear sRGB -> linear sRGB
+         result = result / (1.0 + result);
       #endif
    }
    #ifdef TM_OUT_GAMMA
@@ -643,8 +644,8 @@ void main()
          col = FBGamma(col);
          #endif
          
-         // Initial color grading attempt for HDR output. Likely a bit hacky
-         const vec3 satCol = saturate(col);
+         // Perform color grading by using the tonemapped value, considering a 'standard' SDR display with a max luminance of 270 nits
+         const vec3 satCol = saturate(col * displayMaxLum / 270.);
          col = col * FBColorGrade(satCol) / satCol;
 
          #ifdef TM_OUT_LINEAR
@@ -652,16 +653,17 @@ void main()
          #endif
       }
    #endif
-      col = max(vec3_splat(0.), col);
    
+      // After tonemapping, color must be in the range 0..1 where 1 stands for display's maximum luminance
+      col = saturate(col);
+
       #ifdef TM_OUT_GAMMA
       // sRGB to linear sRGB
       col = InvGamma(col);
       #endif
-
-      // Apply headroom back and adjust to SDR white point / D2D1_SCENE_REFERRED_SDR_WHITE_LEVEL
-      // HDR10 (497, 497, 497) encodes exactly D65 white at 80 nits luminance
-      col = col * hdrHeadRoom_x_sdrWhitePoint;
+      
+      // Apply display max luminance
+      col = col * displayMaxLum;
 
       // Linear sRGB to REC2020
       const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
@@ -672,19 +674,19 @@ void main()
       );
       col = mul(col, LINEAR_SRGB_TO_LINEAR_REC2020);
 
-
-      // Linear -> ST2084
-      /*const float m1 = 2610.0 / 4096.0 / 4;
-      const float m2 = 2523.0 / 4096.0 * 128;
-      const float c1 = 3424.0 / 4096.0;
-      const float c2 = 2413.0 / 4096.0 * 32;
-      const float c3 = 2392.0 / 4096.0 * 32;
-      float3 cp = pow(abs(col), m1);
-      col = pow((c1 + c2 * cp) / (1 + c3 * cp), m2);*/
-
       // Apply REC20 PQ
-      col = pow((vec3_splat(0.8359375) + 18.8515625*pow(abs(col), vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(abs(col), vec3_splat(0.1593017578))), vec3_splat(78.84375));
+      // HDR10 ( 497,  497,  497) encodes exactly D65 white at 80 nits luminance
+      // HDR10 (1023, 1023, 1023) encodes exactly D65 white at 10000 nits luminance
+      // Linear -> ST2084
+      const float m1 = (2610. / 4096.) / 4.;
+      const float m2 = (2523. / 4096.) * 128.;
+      const float c1 =  3424. / 4096.;
+      const float c2 = (2413. / 4096.) * 32.;
+      const float c3 = (2392. / 4096.) * 32.;
+      const vec3 cp = pow(col, m1);
+      col = pow((c1 + c2 * cp) / (1.0 + c3 * cp), m2);
+      //col = pow((vec3_splat(0.8359375) + 18.8515625*pow(col, vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(col, vec3_splat(0.1593017578))), vec3_splat(78.84375));
 
-      gl_FragColor = vec4(saturate(col), 1.0);
+      gl_FragColor = vec4(col, 1.0);
    }
 }
