@@ -124,10 +124,6 @@ private:
 		uint64_t timestamp;            // report time, in microseconds since an arbitrary zero point
 		uint32_t genericButtons;       // button states for 32 general-purpose on/off buttons
 		uint32_t pinballButtons;       // button states for pre-defined pinball simulator function buttons
-		uint8_t llFlipper;             // lower left flipper button duty cycle
-		uint8_t lrFlipper;             // lower right flipper button duty cycle
-		uint8_t ulFlipper;             // upper left flipper button duty cycle
-		uint8_t urFlipper;             // upper right flipper button duty cycle
 		int16_t axNudge;               // instantaneous nudge acceleration, X axis (left/right)
 		int16_t ayNudge;               // instantaneous nudge acceleration, Y axis (front/back)
 		int16_t vxNudge;               // instantaneous nudge velocity, X axis
@@ -149,6 +145,7 @@ private:
 		OVERLAPPED ov{ 0 };
 		HANDLE hIOEvent{ CreateEvent(NULL, TRUE, FALSE, NULL) };
 		DWORD readStatus = 0;
+
 		DWORD bytesRead = 0;
 
 		// overlapped read buffer - space for the HID report ID prefix and the report struct
