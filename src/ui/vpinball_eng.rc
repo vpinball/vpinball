@@ -444,8 +444,8 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,113,179,10
     CONTROL         "Use Software Vertex processing (legacy)",IDC_SOFTWARE_VP,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,123,179,10
-    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,160,136,179,8
     CONTROL         "",IDC_ARASlider,"msctls_trackbar32",TBS_AUTOTICKS | TBS_BOTH | TBS_ENABLESELRANGE | WS_TABSTOP,153,143,191,14
+    LTEXT           "Elements Detail Level (decrease = performance)",IDC_STATIC,160,136,179,8
     GROUPBOX        "Ball Rendering",IDC_STATIC,152,162,193,78
     CONTROL         "Ball Trails",IDC_GLOBAL_TRAIL_CHECK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,159,172,47,10
     LTEXT           "Strength",IDC_STATIC,265,172,32,8
