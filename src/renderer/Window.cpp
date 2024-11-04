@@ -215,7 +215,6 @@ Window::Window(const string &title, const Settings::Section section, const strin
       m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
 #ifdef __LIBVPINBALL__
-      props = SDL_GetWindowProperties(m_nwnd);
       VPinballLib::WindowCreatedStruct windowCreatedStruct = { (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL), title.c_str() };
       VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedStruct);
 #endif

@@ -643,7 +643,7 @@ void main()
          col = FBGamma(col);
          #endif
          
-         // Initial color grading attempte for HDR output. Likely a bit hacky
+         // Initial color grading attempt for HDR output. Likely a bit hacky
          const vec3 satCol = saturate(col);
          col = col * FBColorGrade(satCol) / satCol;
 

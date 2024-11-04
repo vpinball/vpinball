@@ -243,7 +243,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
          Settings::Section section = settings.GetSection(sectionName);
          std::vector<std::string> literals;
          std::string buffer;
-         valueBuf[0] = 0;
+         valueBuf[0] = '\0';
          if (settings.LoadValue(section, name, buffer))
          {
             #ifdef _MSC_VER

@@ -102,6 +102,7 @@ private:
    CComboBox m_maxTexSize;
    CButton m_compressTexture;
    CButton m_forceAnisoMax;
+   CButton m_forceTMOff;
    CButton m_forceBloomOff;
    CButton m_forceMotionBlurOff;
    CButton m_useAltDepth;
@@ -803,10 +804,14 @@ BOOL RenderOptPage::OnInitDialog()
    AttachItem(IDC_TEX_COMPRESS, m_compressTexture);
    AttachItem(IDC_FORCE_ANISO, m_forceAnisoMax);
    AddToolTip(m_forceAnisoMax, "Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.");
+#if defined(ENABLE_BGFX)
+   AttachItem(IDC_TM_OFF, m_forceTMOff);
+   AddToolTip(m_forceTMOff, "Forces tonemapping to be always off on a HDR capable display. This is usually the right thing to do as tonemappers will artifically limit the displayed color and brightness range.");
+#endif
    AttachItem(IDC_BLOOM_OFF, m_forceBloomOff);
    AddToolTip(m_forceBloomOff, "Forces the bloom filter to be always off. Only for very low-end graphics cards.");
    AttachItem(IDC_DISABLE_MOTION_BLUR, m_forceMotionBlurOff);
-   AddToolTip(m_forceMotionBlurOff, "Disable ball motion blur. Only for very low-end graphics cards.");
+   AddToolTip(m_forceMotionBlurOff, "Disable ball motion blur. Only for low-end graphics cards.");
    AttachItem(IDC_USE_NVIDIA_API_CHECK, m_useAltDepth);
    AddToolTip(m_useAltDepth, "Activate this if you get the corresponding error message on table start, or if you experience rendering problems.");
    AttachItem(IDC_SOFTWARE_VP, m_softwareVertex);
@@ -946,6 +951,11 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_maxReflection.SetCurSel(maxReflection);
 
       m_useAltDepth.SetCheck(settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false) ? BST_CHECKED : BST_UNCHECKED);
+#if defined(ENABLE_BGFX)
+      m_forceTMOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true) ? BST_CHECKED : BST_UNCHECKED);
+      //if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false))
+      //   m_forceTMOff.EnableWindow(false);
+#endif
       m_forceBloomOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_forceAnisoMax.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true) ? BST_CHECKED : BST_UNCHECKED);
       m_forceMotionBlurOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
@@ -1164,6 +1174,9 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "SoftwareVertexProcessing"s, m_softwareVertex.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendDlgItemMessage(IDC_ARASlider, TBM_GETPOS, 0, 0), !saveAll);
    settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, m_useAltDepth.GetCheck() == BST_CHECKED, !saveAll);
+#if defined(ENABLE_BGFX)
+   settings.SaveValue(Settings::Player, "HDRDisableToneMapper"s, m_forceTMOff.GetCheck() == BST_CHECKED, !saveAll);
+#endif
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "DisableDWM"s, m_disableDWM.GetCheck() == BST_CHECKED, !saveAll);
@@ -1274,6 +1287,9 @@ void RenderOptPage::ResetVideoPreferences(int profile)
    m_postprocAA.SetCurSel(profile == 1 ? Disabled : (profile == 2 ? Quality_FXAA : Standard_FXAA));
    m_sharpen.SetCurSel(profile != 2 ? 0 : 2);
 
+#if defined(ENABLE_BGFX)
+   m_forceTMOff.SetCheck(BST_CHECKED);
+#endif
    m_forceBloomOff.SetCheck(BST_UNCHECKED);
    m_forceMotionBlurOff.SetCheck(BST_UNCHECKED);
    m_forceAnisoMax.SetCheck(profile != 1 ? BST_CHECKED : BST_UNCHECKED);
@@ -1292,6 +1308,7 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_3D_STEREO_Y:
    case IDC_TEX_COMPRESS:
    case IDC_FORCE_ANISO:
+   case IDC_TM_OFF:
    case IDC_BLOOM_OFF:
    case IDC_DISABLE_MOTION_BLUR:
    case IDC_USE_NVIDIA_API_CHECK:

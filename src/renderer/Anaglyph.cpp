@@ -153,7 +153,7 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
    // So far, it is not used in the application, but only kept for future reference (or to be used to prepare better
    // filters since the ones in Dubois paper were made with old CRT display with a fairly different emission spectrum
    // from nowadays LCD or OLED displays). Another point to look at if using this method is that it is made to 
-   // work with a sRGB calibrated display but modern HDR display can have a fairly different gamma curve.
+   // work with a sRGB calibrated display but modern HDR displays can have a fairly different gamma curve.
 
    #if 0
    // Matrix that transform a linear RGB color to its XYZ projection by the display

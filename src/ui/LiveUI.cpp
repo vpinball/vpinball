@@ -3290,6 +3290,8 @@ void LiveUI::UpdateVideoOptionsModal()
       
       if (ImGui::CollapsingHeader("Performance & Troubleshooting", ImGuiTreeNodeFlags_DefaultOpen))
       {
+         if (ImGui::Checkbox("Force Tonemapping off on HDR display", &m_renderer->m_HDRforceDisableToneMapper))
+            g_pvp->m_settings.SaveValue(Settings::Player, "HDRDisableToneMapper"s, m_renderer->m_HDRforceDisableToneMapper);
          if (ImGui::Checkbox("Force Bloom filter off", &m_renderer->m_bloomOff))
             g_pvp->m_settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_renderer->m_bloomOff);
          if (ImGui::Checkbox("Force Motion blur off", &m_renderer->m_motionBlurOff))

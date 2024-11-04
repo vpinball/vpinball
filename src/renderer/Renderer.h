@@ -102,6 +102,7 @@ public:
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
 
    ToneMapper m_toneMapper = TM_TONY_MC_MAPFACE;
+   bool m_HDRforceDisableToneMapper = true;
    float m_exposure = 1.f;
 
    CGpuProfiler m_gpu_profiler;

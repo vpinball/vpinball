@@ -958,6 +958,7 @@
 #define IDC_SHARPEN_COMBO               594
 #define IDC_GET_INPLAYSTATE             595
 #define IDC_TURN_VR_ON                  597
+#define IDC_TM_OFF                      598
 #define IDC_VR_PREVIEW_LABEL            600
 #define IDC_VR_PREVIEW_LABEL2           601
 #define IDD_PROPRUBBER_PHYSICS          602

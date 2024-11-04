@@ -5,7 +5,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <chrono>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "MsgPlugin.h"
 #include "CorePlugin.h"

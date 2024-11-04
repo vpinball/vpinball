@@ -34,6 +34,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
+   m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true);
    m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
    m_disableAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableAO"s, false);
@@ -461,7 +462,7 @@ RenderTarget* Renderer::GetReflectionBufferTexture()
          GetBackBufferTexture()->GetWidth(),
          GetBackBufferTexture()->GetHeight(),
          GetBackBufferTexture()->GetColorFormat(),
-         false, 1, "Fatal Error: unable to create reflection buffer!");
+         false, 1, "Fatal Error: unable to create Reflection buffer!");
    }
    return m_pReflectionBufferTexture;
 }
@@ -471,11 +472,11 @@ RenderTarget* Renderer::GetMotionBlurBufferTexture()
    if (m_pMotionBlurBufferTexture == nullptr)
    {
       m_pMotionBlurBufferTexture = new RenderTarget(m_renderDevice, 
-         GetBackBufferTexture()->m_type, "ReflectionBuffer"s, 
+         GetBackBufferTexture()->m_type, "MotionBlurBuffer"s, 
          GetBackBufferTexture()->GetWidth(),
          GetBackBufferTexture()->GetHeight(),
          GetBackBufferTexture()->GetColorFormat(),
-         false, 1, "Fatal Error: unable to create reflection buffer!");
+         false, 1, "Fatal Error: unable to create MotionBlur buffer!");
    }
    return m_pMotionBlurBufferTexture;
 }
@@ -1839,6 +1840,12 @@ void Renderer::PrepareVideoBuffers()
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_AO);
 
+   #ifdef ENABLE_BGFX
+   const bool isHdr2020 = m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10;
+   #else
+   constexpr bool isHdr2020 = false;
+   #endif
+
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    {
       // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
@@ -1888,11 +1895,6 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      #ifdef ENABLE_BGFX
-      const bool isHdr2020 = m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10;
-      #else
-      const bool isHdr2020 = false;
-      #endif
       if (isHdr2020)
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
             m_exposure,
@@ -1931,6 +1933,9 @@ void Renderer::PrepareVideoBuffers()
                        : /* TM_TONY_MC_MAPFACE */        SHADER_TECHNIQUE_fb_tmtonemap;
    else if (m_BWrendering != 0)
       tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
+   else if ((isHdr2020 && m_HDRforceDisableToneMapper) || m_toneMapper == TM_NONE)
+      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nonetonemap_AO : SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter
+                               : useAA ? SHADER_TECHNIQUE_fb_nonetonemap    : SHADER_TECHNIQUE_fb_nonetonemap_no_filter;
    else if (m_toneMapper == TM_REINHARD)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
@@ -1946,9 +1951,6 @@ void Renderer::PrepareVideoBuffers()
    else if (m_toneMapper == TM_AGX_PUNCHY)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
-   else if (m_toneMapper == TM_NONE)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nonetonemap_AO : SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_nonetonemap    : SHADER_TECHNIQUE_fb_nonetonemap_no_filter;
    else if (m_toneMapper == TM_TONY_MC_MAPFACE)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter;
