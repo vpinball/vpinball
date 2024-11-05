@@ -60,7 +60,7 @@ struct OpenPinballDeviceReport
       if (sizeRemaining >= nBytesInT)
       {
          // we can complete the full read
-         for (size_t i = 0; i < nBytesInT; ++i, ele |= static_cast<T>(*p++) << (i * 8))
+         for (size_t i = 0; i < nBytesInT; ele |= static_cast<T>(*p++) << (i * 8), ++i)
             ;
 
          // deduct the size consumed and return success
