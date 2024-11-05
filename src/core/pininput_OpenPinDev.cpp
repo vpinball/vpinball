@@ -463,7 +463,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       }
 
       // remember the new button state
-      cr.genericButtons = m_openPinDev_generic_buttons;
+      m_openPinDev_generic_buttons = cr.genericButtons;
    }
    if (cr.pinballButtons != m_openPinDev_pinball_buttons)
    {
@@ -509,6 +509,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       {
          // check for a state change
          uint32_t const mask = m->mask;
+
          DISPID const isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          DISPID const wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
          if (isDown != wasDown)
@@ -516,6 +517,6 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       }
 
       // remember the new button state
-      cr.pinballButtons = m_openPinDev_pinball_buttons;
+      m_openPinDev_pinball_buttons = cr.pinballButtons;
    }
 }
