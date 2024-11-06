@@ -160,26 +160,6 @@ private:
 #endif
 #endif
 
-   // Open Pinball Device input report v1.0 - input report structure.
-   // Fields are packed with no padding bytes; integer fields are little-endian.
-   struct __pragma(pack(push, 1)) OpenPinballDeviceReport
-   {
-      uint64_t timestamp; // report time, in microseconds since an arbitrary zero point
-      uint32_t genericButtons; // button states for 32 general-purpose on/off buttons
-      uint32_t pinballButtons; // button states for pre-defined pinball simulator function buttons
-      uint8_t llFlipper; // lower left flipper button duty cycle
-      uint8_t lrFlipper; // lower right flipper button duty cycle
-      uint8_t ulFlipper; // upper left flipper button duty cycle
-      uint8_t urFlipper; // upper right flipper button duty cycle
-      int16_t axNudge; // instantaneous nudge acceleration, X axis (left/right)
-      int16_t ayNudge; // instantaneous nudge acceleration, Y axis (front/back)
-      int16_t vxNudge; // instantaneous nudge velocity, X axis
-      int16_t vyNudge; // instantaneous nudge velocity, Y axis
-      int16_t plungerPos; // current plunger position
-      int16_t plungerSpeed; // instantaneous plunger speed
-   }
-   __pragma(pack(pop));
-
    // Open Pinball Device context.  This is an opaque object managed
    // by the OPD implementation module, so that the whole implementation
    // can be detached at the build script level.
