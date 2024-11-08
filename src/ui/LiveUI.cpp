@@ -775,6 +775,13 @@ LiveUI::LiveUI(RenderDevice *const rd)
 #if defined(ENABLE_BGFX)
    ImGui_Implbgfx_Init(bgfx::getCaps()->limits.maxViews - 1);
    bgfx::setViewName(bgfx::getCaps()->limits.maxViews - 1, "ImGui");
+   if (m_player && m_player->m_playfieldWnd->IsWCGBackBuffer())
+   {
+      // A value of 1.0 should be sdrWhite * 80, while in the WCG colorspace 80 nits is 0.5
+      const float v = 2.0f / m_player->m_playfieldWnd->GetSDRWhitePoint();
+      float sdrColor[4] = { v, v, v, 1.f };
+      ImGui_Implbgfx_SetSDRColor(sdrColor);
+   }
 #elif defined(ENABLE_OPENGL)
    ImGui_ImplOpenGL3_Init();
 #elif defined(ENABLE_DX9)
@@ -1505,7 +1512,8 @@ void LiveUI::UpdateTweakPage()
          m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       m_tweakPageOptions.push_back(BS_DayNight);
       m_tweakPageOptions.push_back(BS_Exposure);
-      m_tweakPageOptions.push_back(BS_Tonemapper);
+      if (!m_player || !m_player->m_renderer->m_HDRforceDisableToneMapper || !m_player->m_playfieldWnd->IsWCGBackBuffer())
+         m_tweakPageOptions.push_back(BS_Tonemapper);
       m_tweakPageOptions.push_back(BS_Difficulty);
       m_tweakPageOptions.push_back(BS_MusicVolume);
       m_tweakPageOptions.push_back(BS_SoundVolume);
@@ -1654,8 +1662,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             int tm = m_renderer->m_toneMapper + (int)step;
             #ifdef ENABLE_BGFX
             if (tm < 0)
-               tm = ToneMapper::TM_NONE;
-            if (tm > ToneMapper::TM_NONE)
+               tm = ToneMapper::TM_AGX_PUNCHY;
+            if (tm > ToneMapper::TM_AGX_PUNCHY)
                tm = ToneMapper::TM_REINHARD;
             #else
             if (tm < 0)
@@ -2134,12 +2142,12 @@ void LiveUI::UpdateTweakModeUI()
             break;
          case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;
          case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
-                                                                 : m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
+                                                                 //: m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
                                                                  : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
                                                                  : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
                                                                  : m_renderer->m_toneMapper == TM_AGX             ? "AgX"
                                                                  : m_renderer->m_toneMapper == TM_AGX_PUNCHY      ? "AgX Punchy"
-                                                                 : m_renderer->m_toneMapper == TM_NONE            ? "None" : "Invalid","");
+                                                                 : m_renderer->m_toneMapper == TM_WCG_REINHARD    ? "WCG Display" : "Invalid",""); // Should not happen as this tonemapper is not exposed to user
             break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
@@ -4170,7 +4178,11 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       
       PropSeparator();
-      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s, "Neutral"s, "AgX"s, "AgX Punchy"s, "None"s };
+      #ifdef ENABLE_BGFX
+      static const string tonemapperLabels[] = { "Reinhard"s, /*"Tony McMapFace"s,*/ "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s };
+      #else
+      static const string tonemapperLabels[] = { "Reinhard"s, /*"Tony McMapFace"s,*/ "AgX"s, "Filmic"s, "Neutral"s };
+      #endif
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;
       PinTable * const table = m_table;

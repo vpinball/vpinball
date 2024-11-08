@@ -34,6 +34,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
+   m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
    m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true);
    m_exposure = m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "Exposure"s, m_table->GetExposure());
    m_dynamicAO = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DynamicAO"s, true);
@@ -318,13 +319,15 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    // TODO we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
-   //if (m_toneMapper == TM_TONY_MC_MAPFACE)
+   /*
+   if (m_toneMapper == TM_TONY_MC_MAPFACE)
    {
       m_tonemapLUT = new Texture();
       m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
       m_renderDevice->m_texMan.LoadTexture(m_tonemapLUT->m_pdsBuffer, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true)->SetName("TonyMcMapFaceLUT");
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
    }
+   */
 
    // Cache DMD renderer properties
    {
@@ -1840,12 +1843,6 @@ void Renderer::PrepareVideoBuffers()
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
       m_gpu_profiler.Timestamp(GTS_AO);
 
-   #ifdef ENABLE_BGFX
-   const bool isHdr2020 = m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10;
-   #else
-   constexpr bool isHdr2020 = false;
-   #endif
-
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    {
       // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
@@ -1895,7 +1892,8 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      if (isHdr2020)
+      const bool isHdr2020 = m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+      if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer())
       {
          const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
@@ -1927,18 +1925,18 @@ void Renderer::PrepareVideoBuffers()
    if (infoMode == IF_AO_ONLY)
       tonemapTechnique = SHADER_TECHNIQUE_fb_AO;
    else if (infoMode == IF_RENDER_PROBES)
-      tonemapTechnique = m_toneMapper == TM_REINHARD   ? SHADER_TECHNIQUE_fb_rhtonemap
-                       : m_toneMapper == TM_FILMIC     ? SHADER_TECHNIQUE_fb_fmtonemap
-                       : m_toneMapper == TM_NEUTRAL    ? SHADER_TECHNIQUE_fb_nttonemap
-                       : m_toneMapper == TM_AGX        ? SHADER_TECHNIQUE_fb_agxtonemap
-                       : m_toneMapper == TM_AGX_PUNCHY ? SHADER_TECHNIQUE_fb_agxptonemap
-                       : m_toneMapper == TM_NONE       ? SHADER_TECHNIQUE_fb_nonetonemap
-                       : /* TM_TONY_MC_MAPFACE */        SHADER_TECHNIQUE_fb_tmtonemap;
+      tonemapTechnique = m_toneMapper == TM_REINHARD     ? SHADER_TECHNIQUE_fb_rhtonemap
+                       : m_toneMapper == TM_FILMIC       ? SHADER_TECHNIQUE_fb_fmtonemap
+                       : m_toneMapper == TM_NEUTRAL      ? SHADER_TECHNIQUE_fb_nttonemap
+                       : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
+                       : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
+                       : /*m_toneMapper == TM_WCG_REINHARD ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
+                       //: /* TM_TONY_MC_MAPFACE */          SHADER_TECHNIQUE_fb_tmtonemap;
    else if (m_BWrendering != 0)
       tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
-   else if ((isHdr2020 && m_HDRforceDisableToneMapper) || m_toneMapper == TM_NONE)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_nonetonemap_AO : SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_nonetonemap    : SHADER_TECHNIQUE_fb_nonetonemap_no_filter;
+   else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
+      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_wcgtonemap_AO : SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter
+                               : useAA ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;
    else if (m_toneMapper == TM_REINHARD)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_rhtonemap_AO : SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_rhtonemap    : SHADER_TECHNIQUE_fb_rhtonemap_no_filter;
@@ -1954,9 +1952,9 @@ void Renderer::PrepareVideoBuffers()
    else if (m_toneMapper == TM_AGX_PUNCHY)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
-   else if (m_toneMapper == TM_TONY_MC_MAPFACE)
-      tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
-                               : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter;
+   //else if (m_toneMapper == TM_TONY_MC_MAPFACE)
+   //   tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
+   //                            : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter;
 
    Vertex3D_TexelOnly shiftedVerts[4] =
    {

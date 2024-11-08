@@ -27,6 +27,7 @@ public:
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
    float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
+   bool IsWCGDisplay() const { return m_wcgDisplay; } // Wether this window is on a WCG enabled display
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
@@ -34,8 +35,9 @@ public:
    void Show(const bool show = true);
    void RaiseAndFocus(const bool raise = true);
 
-   void SetBackBuffer(RenderTarget* rt) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
+   bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_Window * GetCore() const { return m_nwnd; }
@@ -88,6 +90,8 @@ private:
    const string m_settingsPrefix;
    float m_sdrWhitePoint = 1.f;
    float m_hdrHeadRoom = 1.f;
+   bool m_wcgDisplay = false;
+   bool m_wcgBackbuffer = false;
 
    class RenderTarget* m_backBuffer = nullptr;
 

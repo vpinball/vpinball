@@ -15,6 +15,8 @@ void ImGui_Implbgfx_Shutdown();
 void ImGui_Implbgfx_NewFrame();
 void ImGui_Implbgfx_RenderDrawLists(struct ImDrawData* draw_data);
 
+void ImGui_Implbgfx_SetSDRColor(float* col);
+
 // Use if you want to reset your rendering device without losing ImGui state.
 void ImGui_Implbgfx_InvalidateDeviceObjects();
 bool ImGui_Implbgfx_CreateDeviceObjects();

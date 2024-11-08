@@ -1,9 +1,9 @@
 // license:GPLv3+
 
-#ifdef STEREO
-$input v_texcoord0, v_eye
-#else
 $input v_texcoord0
+
+#ifdef STEREO
+$input v_eye
 #endif
 
 #include "common.sh"
@@ -588,7 +588,7 @@ void main()
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
-      #elif defined(NONE)
+      #elif defined(WCG)
          // Basic tonemapper for WCG displays    // linear sRGB -> linear sRGB
          result = result / (1.0 + result);
       #endif
@@ -644,8 +644,8 @@ void main()
          col = FBGamma(col);
          #endif
          
-         // Perform color grading by using the tonemapped value, considering a 'standard' SDR display with a max luminance of 270 nits
-         const vec3 satCol = saturate(col * displayMaxLum / 270.);
+         // Perform color grading by using the tonemapped value rescaled to initial luminance range
+         const vec3 satCol = saturate(col / sceneLum_x_invDisplayMaxLum);
          col = col * FBColorGrade(satCol) / satCol;
 
          #ifdef TM_OUT_LINEAR
@@ -683,9 +683,8 @@ void main()
       const float c1 =  3424. / 4096.;
       const float c2 = (2413. / 4096.) * 32.;
       const float c3 = (2392. / 4096.) * 32.;
-      const vec3 cp = pow(col, m1);
-      col = pow((c1 + c2 * cp) / (1.0 + c3 * cp), m2);
-      //col = pow((vec3_splat(0.8359375) + 18.8515625*pow(col, vec3_splat(0.1593017578))) / (vec3_splat(1.) + 18.6875*pow(col, vec3_splat(0.1593017578))), vec3_splat(78.84375));
+      const vec3 cp = pow(col, vec3_splat(m1));
+      col = pow((c1 + c2 * cp) / (1.0 + c3 * cp), vec3_splat(m2));
 
       gl_FragColor = vec4(col, 1.0);
    }

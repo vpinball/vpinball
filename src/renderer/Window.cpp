@@ -177,9 +177,11 @@ Window::Window(const string &title, const Settings::Section section, const strin
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       Uint32 wnd_flags = 0;
       #if defined(ENABLE_OPENGL)
-         wnd_flags |= SDL_WINDOW_OPENGL;
+         wnd_flags |= SDL_WINDOW_OPENGL; // Leads to read OpenGL context hint (swapchain backbuffer format, ...)
+         // SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true); // Leads SDL_CreateWindowFrom to add SDL_WINDOW_OPENGL flag
       #elif defined(ENABLE_BGFX)
          // BGFX does not need the SDL window to have the SDL_WINDOW_OPENGL / SDL_WINDOW_VULKAN / SDL_WINDOW_METAL flag (see BGFX SDL example)
+         // Using these flags would lead SDL to create the swapchain while we want BGFX to do it for us
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
@@ -195,22 +197,21 @@ Window::Window(const string &title, const Settings::Section section, const strin
          
       // Prevent full screen window from minimizing when re-arranging external windows
       SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
-
       SDL_PropertiesID props = SDL_CreateProperties();
       SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, wnd_x);
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, wnd_y);
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, m_width);
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, m_height);
+      #if defined(ENABLE_BGFX) && defined(__ANDROID__)
+         SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
+      #endif
       SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
-#if defined(ENABLE_BGFX) && defined(__ANDROID__)
-      SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_EXTERNAL_GRAPHICS_CONTEXT_BOOLEAN, true);
-#endif
       m_nwnd = SDL_CreateWindowWithProperties(props);
       SDL_DestroyProperties(props);
 
       props = SDL_GetWindowProperties(m_nwnd);
-      //bool HDR_enabled = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
+      m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
       m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
       m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 

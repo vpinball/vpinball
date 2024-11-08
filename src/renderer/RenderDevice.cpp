@@ -301,15 +301,48 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // to do so, ending up with this thread being the only BGFX thread.
    bgfx::renderFrame();
    bgfx::Init init = initReq;
+
+   // If using OpenGl on a WCG display, then create the OpenGL WCG context through SDL since BGFX does not support HDR10 under OpenGl
+   /* This won't work as is and needs more work as OpenGL is fairly wonky on this. The same approach could be used for Vulkan WCG but this is also not that well defined
+   if (rd->m_outputWnd[0]->IsWCGEnabled() && init.type == bgfx::RendererType::OpenGL)
+   {
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 10); // HDR10
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 10);
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 10);
+      SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, false);
+      SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 16); // RGB16F
+      SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 16);
+      SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 16);
+      SDL_GL_SetAttribute(SDL_GL_FLOATBUFFERS, true);
+      SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+      #ifndef __OPENGLES__
+         #if defined(__APPLE__) && defined(TARGET_OS_MAC)
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+         #else
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+            //This would enforce a 4.1 context, disabling all recent features (storage buffers, debug information,...)
+            //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+            //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+         #endif
+      #else
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+      #endif
+      init.platformData.context = SDL_GL_CreateContext(rd->m_outputWnd[0]->GetCore());
+      init.resolution.format = bgfx::TextureFormat::RGB10A2;
+   }*/
+
    if (!bgfx::init(init))
    {
       PLOGE << "BGFX initialization failed";
       exit(-1);
    }
-   //bgfx::setDebug(BGFX_DEBUG_STATS);
-   //bgfx::setDebug(BGFX_DEBUG_STATS | BGFX_DEBUG_WIREFRAME);
    
-   // BGFX supports HDR10 rendering for DXGI (DirectX 11 & 12), uses it if available
+   // Enable HDR10 rendering if supported (so far, only DirectX 11 & 12 through DXGI)
    if (bgfx::getCaps()->supported & BGFX_CAPS_HDR10)
    {
       init.resolution.format = bgfx::TextureFormat::RGB10A2;
@@ -320,15 +353,16 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
    // Retrieve a reference to the back buffer.
    colorFormat back_buffer_format;
+   bool isWcg = false;
    switch (init.resolution.format)
    {
-   case bgfx::TextureFormat::RGBA16F: back_buffer_format = colorFormat::RGBA16F; break;
-   case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; break;
+   case bgfx::TextureFormat::RGBA16F: back_buffer_format = colorFormat::RGBA16F; isWcg = true; break;
+   case bgfx::TextureFormat::RGB10A2: back_buffer_format = colorFormat::RGBA10; isWcg = true; break;
    case bgfx::TextureFormat::R5G6B5: back_buffer_format = colorFormat::RGB5; break;
    case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
-   rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, init.resolution.width, init.resolution.height, back_buffer_format));
+   rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, init.resolution.width, init.resolution.height, back_buffer_format), isWcg);
    
    // Dynamically toggle vsync
    init.resolution.reset &= ~BGFX_RESET_VSYNC;
@@ -341,6 +375,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 #ifdef __STANDALONE__
    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 #endif
+
+   //bgfx::setDebug(BGFX_DEBUG_STATS);
 
    while (rd->m_renderDeviceAlive)
    {
@@ -498,6 +534,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    default: init.resolution.format = bgfx::TextureFormat::R5G6B5; break;
    }
 
+   init.platformData.context = nullptr;
+   init.platformData.backBuffer = nullptr;
+   init.platformData.backBufferDS = nullptr;
    #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
    if (SDL_strcmp(SDL_GetCurrentVideoDriver(), "x11") == 0) {
       init.platformData.ndt = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_X11_DISPLAY_POINTER, NULL);
@@ -519,9 +558,6 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.platformData.ndt = wmInfo.info.vivante.display;
    init.platformData.nwh = wmInfo.info.vivante.window;
    #endif // BX_PLATFORM_
-   init.platformData.context = nullptr;
-   init.platformData.backBuffer = nullptr;
-   init.platformData.backBufferDS = nullptr;
    #ifdef DEBUG
    init.debug = true;
    #endif

@@ -10,6 +10,7 @@ $gen_motionblur = $true
 $gen_postprocess = $true
 $gen_stereo = $true
 $gen_tonemap = $true
+$gen_imgui = $true
 
 
 
@@ -250,7 +251,8 @@ if ($gen_tonemap)
 	New-Item -Path . -Name "../bgfx_tonemap.h" -ItemType "File" -Force -Value "// Tonemap Shaders`n"
 	for($k = 0; $k -lt 2; $k++)
 	{
-	  foreach ($variant in @("FILMIC", "TONY", "NEUTRAL", "AGX", "AGX_PUNCHY", "NONE"))
+	  #foreach ($variant in @("FILMIC", "TONY", "NEUTRAL", "AGX", "AGX_PUNCHY", "WCG_REINHARD"))
+	  foreach ($variant in @("FILMIC", "NEUTRAL", "AGX", "AGX_PUNCHY", "WCG"))
 	  {
 		 foreach ($variant2 in @("AO", "NOAO"))
 		 {
@@ -308,4 +310,14 @@ if ($gen_motionblur)
 	{
 		Process-Shader "fs_pp_motionblur.sc"      "motionblur.h" ("fs_pp_motionblur" + $stOutput[$k])   "fragment" @($stereo[$k])
 	}
+}
+
+
+################################
+# ImgUI shaders
+if ($gen_imgui)
+{
+	Write-Host "`n>>>>>>>>>>>>>>>> ImgUI shaders"
+	New-Item -Path . -Name "../bgfx_imgui.h" -ItemType "File" -Force -Value "// ImgUI Shaders`n"
+	Process-Shader "vs_imgui.sc" "imgui.h" "vs_imgui_" "vertex"
 }
