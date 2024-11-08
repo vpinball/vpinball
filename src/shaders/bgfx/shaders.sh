@@ -12,7 +12,8 @@ gen_motionblur=true
 gen_postprocess=true
 gen_stereo=true
 gen_tonemap=true
-gen_antialiasing=true
+gen_antialiasing=false
+gen_imgui=true
 
 process_shader() {
     local source="$1"
@@ -239,7 +240,8 @@ fi
 if [ "$gen_tonemap" = true ]; then
     echo "// Tonemap Shaders" > "../bgfx_tonemap.h"
     for k in 0 1; do
-        for variant in "FILMIC" "TONY" "NEUTRAL" "AGX" "AGX_PUNCHY" "NONE"; do
+        #for variant in "FILMIC" "TONY" "NEUTRAL" "AGX" "AGX_PUNCHY" "WCG_REINHARD"; do
+        for variant in "FILMIC" "NEUTRAL" "AGX" "AGX_PUNCHY" "WCG"; do
             variant_lower=$(echo "$variant" | tr '[:upper:]' '[:lower:]')
             for variant2 in "AO" "NOAO"; do
                 variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
@@ -290,4 +292,12 @@ if [ "$gen_motionblur" = true ]; then
     for k in 0 1; do
         process_shader "fs_pp_motionblur.sc" "motionblur.h" "fs_pp_motionblur${st_output[$k]}" "fragment" "${stereo[$k]}"
     done
+fi
+
+################################
+# ImgUI shaders
+if [ "$gen_imgui" = true ]; then
+    echo -e "\n>>>>>>>>>>>>>>>> ImgUI shaders"
+    echo "// ImgUI Shaders" > "../bgfx_imgui.h"
+    process_shader "vs_imgui.sc" "imgui.h" "vs_imgui_" "vertex"
 fi

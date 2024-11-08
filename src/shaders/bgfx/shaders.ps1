@@ -10,6 +10,7 @@ $gen_motionblur = $true
 $gen_postprocess = $true
 $gen_stereo = $true
 $gen_tonemap = $true
+$gen_antialiasing = $false
 $gen_imgui = $true
 
 
