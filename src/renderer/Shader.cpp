@@ -188,6 +188,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
       SHADER_tex_color_lut, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_rhtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   /*
    SHADER_TECHNIQUE(fb_tmtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth, SHADER_tex_tonemap_lut),
    SHADER_TECHNIQUE(fb_tmtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
@@ -196,6 +197,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
       SHADER_tex_color_lut, SHADER_tex_depth, SHADER_tex_tonemap_lut),
    SHADER_TECHNIQUE(fb_tmtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom,
       SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth, SHADER_tex_tonemap_lut),
+   */
    SHADER_TECHNIQUE(fb_fmtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut,
       SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_fmtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom,
@@ -224,10 +226,10 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(fb_agxgtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_agxgtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_agxgtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nonetonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nonetonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nonetonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_nonetonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
+   SHADER_TECHNIQUE(fb_wcgtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_rhtonemap_no_filterR, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
 
@@ -1448,10 +1450,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter),
+      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter),
+      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter),
+      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter),
+      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter),
@@ -1468,10 +1470,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_noao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_agx_punchy_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_noao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_ao_filter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_noao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_none_ao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_filter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_nofilter),
+      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       // Screen Space post-processes
@@ -1616,10 +1618,10 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_filter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_nofilter_rgb));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter));
+      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter));
+      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter));
+      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter));
+      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter));
@@ -1636,10 +1638,10 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_noao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_agx_punchy_ao_nofilter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_noao_filter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_ao_filter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_noao_nofilter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_nonetonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_none_ao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_noao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_ao_filter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_noao_nofilter));
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_ao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 

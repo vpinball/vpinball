@@ -1654,13 +1654,11 @@ BOOL DMDViewOptPage::OnInitDialog()
 
    AttachItem(IDC_TONEMAPPER, m_tonemapper);
    //m_tonemapper.AddString(_T("Reinhard"));
-   //m_tonemapper.AddString(_T("Tony McMapFace"));
+   m_tonemapper.AddString(_T("AgX"));
    //m_tonemapper.AddString(_T("Filmic"));
    //m_tonemapper.AddString(_T("Neutral"));
-   m_tonemapper.AddString(_T("AgX"));
    #ifdef ENABLE_BGFX
    //m_tonemapper.AddString(_T("AgX Punchy"));
-   //m_tonemapper.AddString(_T("None"));
    #endif
    m_tonemapper.SetCurSel(0);
    m_tonemapper.EnableWindow(false); // Not yet implemented

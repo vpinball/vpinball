@@ -62,13 +62,12 @@ void TableVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
        {
           m_toneMapperCombo.ResetContent();
           m_toneMapperCombo.AddString(_T("Reinhard"));
-          m_toneMapperCombo.AddString(_T("Tony McMapFace"));
+          m_toneMapperCombo.AddString(_T("AgX"));
+          // m_toneMapperCombo.AddString(_T("Tony McMapFace"));
           m_toneMapperCombo.AddString(_T("Filmic"));
           m_toneMapperCombo.AddString(_T("Neutral"));
-          m_toneMapperCombo.AddString(_T("AgX"));
           #ifdef ENABLE_BGFX
           m_toneMapperCombo.AddString(_T("AgX Punchy"));
-          m_toneMapperCombo.AddString(_T("None"));
           #endif
        }
        m_toneMapperCombo.SetCurSel((int) table->GetToneMapper());

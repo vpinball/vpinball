@@ -26,7 +26,11 @@ static uint8_t g_View = 255;
 static bgfx::TextureHandle g_FontTexture = BGFX_INVALID_HANDLE;
 static bgfx::ProgramHandle g_ShaderHandle = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationTex = BGFX_INVALID_HANDLE;
+static bgfx::UniformHandle g_AttribLocationCol = BGFX_INVALID_HANDLE;
 static bgfx::VertexLayout g_VertexLayout;
+static float g_SDRColor[4] = { 1.f, 1.f, 1.f, 1.f };
+
+void ImGui_Implbgfx_SetSDRColor(float* col) { memcpy(g_SDRColor, col, 4 * sizeof(float)); }
 
 // This is the main rendering function that you have to implement and call after
 // ImGui::Render(). Pass ImGui::GetDrawData() to this function.
@@ -112,6 +116,7 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
                 bgfx::TextureHandle texture = {
                     (uint16_t)((intptr_t)pcmd->TextureId & 0xffff)};
                 bgfx::setTexture(0, g_AttribLocationTex, texture);
+                bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
                 bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
                 bgfx::setIndexBuffer(&tib, pcmd->IdxOffset, pcmd->ElemCount);
                 bgfx::submit(g_View, g_ShaderHandle);
@@ -140,17 +145,20 @@ bool ImGui_Implbgfx_CreateFontsTexture()
 }
 
 #include "fs_ocornut_imgui.bin.h"
-#include "vs_ocornut_imgui.bin.h"
+//#include "vs_ocornut_imgui.bin.h"
+#include "shaders/bgfx_imgui.h"
 
 static const bgfx::EmbeddedShader s_embeddedShaders[] = {
-    BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),
+    //BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),
+    BGFX_EMBEDDED_SHADER(vs_imgui),
     BGFX_EMBEDDED_SHADER(fs_ocornut_imgui), BGFX_EMBEDDED_SHADER_END()};
 
 bool ImGui_Implbgfx_CreateDeviceObjects()
 {
     bgfx::RendererType::Enum type = bgfx::getRendererType();
     g_ShaderHandle = bgfx::createProgram(
-        bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
+        //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
+        bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui"),
         bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
         true);
 
@@ -161,7 +169,10 @@ bool ImGui_Implbgfx_CreateDeviceObjects()
         .end();
 
     g_AttribLocationTex =
-        bgfx::createUniform("g_AttribLocationTex", bgfx::UniformType::Sampler);
+        bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
+
+    g_AttribLocationCol =
+        bgfx::createUniform("staticColor_Alpha", bgfx::UniformType::Vec4);
 
     ImGui_Implbgfx_CreateFontsTexture();
 
@@ -172,6 +183,9 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
 {
     if (isValid(g_AttribLocationTex))
         bgfx::destroy(g_AttribLocationTex);
+
+    if (isValid(g_AttribLocationCol))
+       bgfx::destroy(g_AttribLocationCol);
 
     if (isValid(g_ShaderHandle))
         bgfx::destroy(g_ShaderHandle);
