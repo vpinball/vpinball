@@ -11,6 +11,7 @@
    7. [Velocity-based accelerometer input](<Accelerometer Velocity Input User Guide.md>) | [Technical notes](<Accelerometer Velocity Input Tech Note.md>)
    8. [Plunger speed axis input](<Plunger Velocity Input User Guide.md>) | [Technical notes](<Plunger Velocity Input Tech Note.md>)
    9. [Open Pinball Device setup](<Open Pinball Device User Guide.md>)
+   10. [Latency](Latency.md)
 2. Scripting
    1. [API Reference](<Script API Reference.md>)
 3. Upgrading to new version
