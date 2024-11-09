@@ -8,7 +8,7 @@ FEATURES:
 - add "Surface" to the "Select Element" list
 
 - add additional tonemapper (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
-  and the 'AgX' tonemapper which is the default one used by Blender
+  and replaced 'TonyMapMcFace' by the 'AgX' tonemapper which is the default one used by Blender
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script

@@ -144,34 +144,6 @@ float3 FilmicToneMap(float3 color)
     return color;
 }
 
-// Tony Mc MapFace Tonemapping (MIT licensed): see https://github.com/h3r2tic/tony-mc-mapface
-// This tonemapping is similar to Reinhard but handles better highly saturated over powered colors
-// (for these, it looks somewhat similar to AGX by desaturating them)
-// It is more or less a Reinhard tonemapping followed by a color grade color correction
-float3 TonyMcMapfaceToneMap(float3 color)
-{
-    const float LUT_DIMS = 48.0;
-
-    color *= exposure;
-
-    // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
-    color = min(color, float3(MAX_BURST, MAX_BURST, MAX_BURST));
-
-    // Apply a non-linear transform that the LUT is encoded with.
-    float3 encoded = color / (color + float3(1.0, 1.0, 1.0));
-
-    // Align the encoded range to texel centers.
-    encoded.xy = encoded.xy * ((LUT_DIMS - 1.0) / LUT_DIMS) + 1.0 / (2.0 * LUT_DIMS);
-    encoded.z *= (LUT_DIMS - 1.0);
-
-    // We use a 2D texture so we need to do the linear filtering ourself.
-    // This is fairly inefficient but needed until 3D textures are supported.
-    const float y = (1.0 - encoded.y + floor(encoded.z)) / LUT_DIMS;
-    const float3 a = texNoLod(tex_tonemap_lut, float2(encoded.x, y)).rgb;
-    const float3 b = texNoLod(tex_tonemap_lut, float2(encoded.x, y + 1.0 / LUT_DIMS)).rgb;
-    return lerp(a, b, frac(encoded.z));
-}
-
 float3 PBRNeutralToneMapping(float3 color)
 {
     const float startCompression = 0.8 - 0.04;

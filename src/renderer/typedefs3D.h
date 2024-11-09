@@ -55,7 +55,6 @@ enum StereoMode
 enum ToneMapper
 {
    TM_REINHARD           = 0, // Reinhard, used to be the default until 10.8
-   //TM_TONY_MC_MAPFACE  = 1, // Precomputed high quality phenomenological tonemapping https://github.com/h3r2tic/tony-mc-mapface, replaced by AgX, to be removed
    TM_AGX                = 1, // AgX tonemapper, used in Blender, implementation derived from threeJs which derives its implementation from Filament
    TM_FILMIC             = 2, // Filmic tonemapper
    TM_NEUTRAL            = 3, // Neutral tonemapper, designed for e-commerce, keeps sRGB colors kinda original

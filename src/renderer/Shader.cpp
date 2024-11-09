@@ -1450,10 +1450,6 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_filter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rgb),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_ao_nofilter_rgb),
-      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_filter),
-      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_filter),
-      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_noao_nofilter),
-      //BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_tony_ao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_filmic_noao_nofilter),
@@ -1618,10 +1614,6 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_filter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rgb));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_ao_nofilter_rgb));
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_filter));
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_filter));
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_noao_nofilter));
-      //loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_tony_ao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_ao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_fmtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_filmic_noao_nofilter));
