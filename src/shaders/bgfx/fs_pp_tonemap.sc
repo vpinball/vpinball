@@ -166,37 +166,6 @@ float FilmicToneMap(float color) { return color; } // Unimplemented
 #endif
 
 
-#ifdef TONY
-// Tony Mc MapFace Tonemapping (MIT licensed): see https://github.com/h3r2tic/tony-mc-mapface
-// This tonemapping is similar to Reinhard but handles better highly saturated over powered colors
-// (for these, it looks somewhat similar to AGX by desaturating them)
-// It is more or less a Reinhard tonemapping followed by a color grade color correction
-vec3 TonyMcMapfaceToneMap(vec3 color)
-{
-    const float LUT_DIMS = 48.0;
-
-    // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
-    color = min(color, vec3(MAX_BURST, MAX_BURST, MAX_BURST));
-
-    // Apply a non-linear transform that the LUT is encoded with.
-    vec3 encoded = color / (color + vec3(1.0, 1.0, 1.0));
-
-    // Align the encoded range to texel centers.
-    encoded.xy = encoded.xy * ((LUT_DIMS - 1.0) / LUT_DIMS) + 1.0 / (2.0 * LUT_DIMS);
-    encoded.z *= (LUT_DIMS - 1.0);
-
-    // We use a 2D texture so we need to do the linear filtering ourself.
-    // This is fairly inefficient but needed until 3D textures are supported.
-    const float y = (1.0 - encoded.y + floor(encoded.z)) / LUT_DIMS;
-    const vec3 a = texNoLod(tex_tonemap_lut, vec2(encoded.x, y)).rgb;
-    const vec3 b = texNoLod(tex_tonemap_lut, vec2(encoded.x, y + 1.0 / LUT_DIMS)).rgb;
-    return mix(a, b, fract(encoded.z));
-}
-vec2 TonyMcMapfaceToneMap(vec2 color) { return color; } // Unimplemented
-float TonyMcMapfaceToneMap(float color) { return color; } // Unimplemented
-#endif
-
-
 #ifdef NEUTRAL
 vec3 PBRNeutralToneMapping(vec3 color)
 {
@@ -576,8 +545,6 @@ void main()
       result *= exposure;
       #ifdef REINHARD
          result = ReinhardToneMap(result);       // linear sRGB -> linear sRGB
-      #elif defined(TONY)
-         result = TonyMcMapfaceToneMap(result);  // linear sRGB -> linear sRGB
       #elif defined(FILMIC)
          result = FilmicToneMap(result);         // linear sRGB -> sRGB
       #elif defined(NEUTRAL)

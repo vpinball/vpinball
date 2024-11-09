@@ -1442,7 +1442,6 @@
     <None Include="src/shaders/hlsl_glsl/SSR.fxh" />
     <None Include="src/assets/Default_VPinballX.ini" />
     <None Include="src/assets/TableSizes.csv" />
-    <None Include="src/assets/tony_mc_mapface_unrolled.exr" />
     <None Include="src/assets/exampleTable.vpx" />
     <None Include="src/assets/blankTable.vpx" />
     <None Include="src/assets/lightSeqTable.vpx" />

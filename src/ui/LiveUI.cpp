@@ -2142,7 +2142,6 @@ void LiveUI::UpdateTweakModeUI()
             break;
          case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;
          case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
-                                                                 //: m_renderer->m_toneMapper == TM_TONY_MC_MAPFACE ? "Tony McMapFace" 
                                                                  : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
                                                                  : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
                                                                  : m_renderer->m_toneMapper == TM_AGX             ? "AgX"
@@ -4179,9 +4178,9 @@ void LiveUI::TableProperties(bool is_live)
       
       PropSeparator();
       #ifdef ENABLE_BGFX
-      static const string tonemapperLabels[] = { "Reinhard"s, /*"Tony McMapFace"s,*/ "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s, "AgX Punchy"s };
       #else
-      static const string tonemapperLabels[] = { "Reinhard"s, /*"Tony McMapFace"s,*/ "AgX"s, "Filmic"s, "Neutral"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "AgX"s, "Filmic"s, "Neutral"s };
       #endif
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_renderer->m_toneMapper : 0;

@@ -318,17 +318,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    VertexBuffer* ballTrailVertexBuffer = new VertexBuffer(m_renderDevice, 64 * (MAX_BALL_TRAIL_POS - 2) * 2 + 4, nullptr, true);
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
-   // TODO we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
-   /*
-   if (m_toneMapper == TM_TONY_MC_MAPFACE)
-   {
-      m_tonemapLUT = new Texture();
-      m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
-      m_renderDevice->m_texMan.LoadTexture(m_tonemapLUT->m_pdsBuffer, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true)->SetName("TonyMcMapFaceLUT");
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
-   }
-   */
-
    // Cache DMD renderer properties
    {
       const int dmdProfile = m_table->m_settings.LoadValueWithDefault(Settings::DMD, "RenderProfile"s, 0);
@@ -1931,7 +1920,6 @@ void Renderer::PrepareVideoBuffers()
                        : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
                        : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
                        : /*m_toneMapper == TM_WCG_REINHARD ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
-                       //: /* TM_TONY_MC_MAPFACE */          SHADER_TECHNIQUE_fb_tmtonemap;
    else if (m_BWrendering != 0)
       tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
@@ -1952,9 +1940,6 @@ void Renderer::PrepareVideoBuffers()
    else if (m_toneMapper == TM_AGX_PUNCHY)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
-   //else if (m_toneMapper == TM_TONY_MC_MAPFACE)
-   //   tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
-   //                            : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter;
 
    Vertex3D_TexelOnly shiftedVerts[4] =
    {
