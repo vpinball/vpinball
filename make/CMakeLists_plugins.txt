@@ -17,8 +17,9 @@ target_link_options(HelloWorldPlugin PUBLIC
 )
 target_include_directories(HelloWorldPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
 add_custom_command(TARGET HelloWorldPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/helloworld/plugin-helloworld.x86_${PluginBits}.dll"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloworld/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/helloworld/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/helloworld/plugin-helloworld.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloWorldPlugin>"
 )
 
 
@@ -49,8 +50,9 @@ target_include_directories(SerumPlugin PUBLIC
    plugins/serum/third-party/include
 )
 add_custom_command(TARGET SerumPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/serum/plugin-serum.x86_${PluginBits}.dll"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/serum/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/serum/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/serum/plugin-serum.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:SerumPlugin>"
 )
 
 
@@ -71,6 +73,7 @@ target_link_options(PinupEventsPlugin PUBLIC
 )
 target_include_directories(PinupEventsPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
 add_custom_command(TARGET PinupEventsPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin-pinup-events.x86_${PluginBits}.dll"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinup-events/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin-pinup-events.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinupEventsPlugin>"
 )

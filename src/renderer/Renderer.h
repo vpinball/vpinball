@@ -91,12 +91,13 @@ public:
 
    enum RenderMask : unsigned int
    {
-      DEFAULT = 0, // Render everything
-      STATIC_ONLY = 1 << 0, // Disable non static part rendering (for static prerendering)
-      DYNAMIC_ONLY = 1 << 1, // Disable static part rendering
-      LIGHT_BUFFER = 1 << 2, // Transmitted light rendering
-      REFLECTION_PASS = 1 << 3,
-      DISABLE_LIGHTMAPS = 1 << 4
+      DEFAULT = 0,                // No flag, just render everything
+      STATIC_ONLY = 1 << 0,       // Disable non static part rendering (for static prerendering)
+      DYNAMIC_ONLY = 1 << 1,      // Disable static part rendering
+      LIGHT_BUFFER = 1 << 2,      // Transmitted light rendering
+      REFLECTION_PASS = 1 << 3,   // Reflection pass, only render reflected elements
+      DISABLE_LIGHTMAPS = 1 << 4, // Disable lightmaps, usefull for reflection probe parallel to lightmap ot avoid doubling them
+      DISABLE_BACKDROP = 1 << 5,  // Disable backdrop, used for VR and cabinet rendering (background is just black for these)
    };
    unsigned int m_render_mask = DEFAULT; // Active pass render bit mask
    inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }

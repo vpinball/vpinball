@@ -351,3 +351,16 @@ bool RenderFrame::Execute(const bool log)
 
    return rendered;
 }
+
+void RenderFrame::Discard()
+{
+   // Recycle commands & passes
+   for (RenderPass* pass : m_passes)
+   {
+      pass->RecycleCommands(m_commandPool);
+      pass->m_rt->m_lastRenderPass = nullptr;
+   }
+   m_passPool.insert(m_passPool.end(), m_passes.begin(), m_passes.end());
+   m_passes.clear();
+   m_endOfFrameCmds.clear();
+}

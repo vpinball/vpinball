@@ -9,7 +9,7 @@ class RenderPass;
 class RenderTarget final
 {
 public:
-   RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format); // Default output render target
+   RenderTarget(RenderDevice* const rd, const SurfaceType type, const int width, const int height, const colorFormat format); // Default output render target
    #if defined(ENABLE_BGFX)
    RenderTarget(RenderDevice* const rd, bgfx::FrameBufferHandle fbh, const string& name, const int width, const int height, const colorFormat format); // Secondary window output render target
    #endif

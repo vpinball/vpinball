@@ -756,9 +756,12 @@ void Decal::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
-   if (m_backglass && (!GetPTable()->GetDecalsEnabled() || g_pplayer->m_renderer->m_stereo3D == STEREO_VR))
+   if ((m_backglass && !GetPTable()->GetDecalsEnabled())
+    || (m_backglass && isReflectionPass)
+    || (m_backglass && isNoBackdrop))
       return;
 
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is

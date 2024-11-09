@@ -138,6 +138,7 @@ public:
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void SubmitRenderFrame();
+   void DiscardRenderFrame();
 
    // RenderState used in submitted render command
    void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }

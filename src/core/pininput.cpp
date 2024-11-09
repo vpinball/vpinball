@@ -1168,14 +1168,14 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == DIK_LEFT)   keycode = DIK_RIGHT;
       else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
    }
-#ifdef ENABLE_VR
-   if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_vrDevice->RecenterTable();
-   else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_vrDevice->TableUp();
-   else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
-      g_pplayer->m_vrDevice->TableDown();
-#endif
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+      if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
+         g_pplayer->m_vrDevice->RecenterTable();
+      else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
+         g_pplayer->m_vrDevice->TableUp();
+      else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
+         g_pplayer->m_vrDevice->TableDown();
+   #endif
 
    for (int i = 0; i < eCKeys; i++) {
       if (keycode == g_pplayer->m_rgKeys[i]) {

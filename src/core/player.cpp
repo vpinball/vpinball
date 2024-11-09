@@ -237,19 +237,46 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    // Accelerometer inputs are accelerations (not velocities) by default
    m_accelInputIsVelocity = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
 
-#ifdef ENABLE_VR
-   const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
-   bool useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
-   if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
-      useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
-   m_capExtDMD = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
-   m_capPUP = useVR && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
-#else
    bool useVR = false;
-#endif
-   m_vrDevice = useVR ? new VRDevice() : nullptr;
-   StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
-   m_headTracking = useVR ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+      const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
+      #if defined(ENABLE_XR)
+         if (vrDetectionMode != 2) // 2 is VR off
+         {
+            m_vrDevice = new VRDevice();
+            if (m_vrDevice->IsOpenXRReady())
+            {
+               m_vrDevice->SetupHMD();
+               if (m_vrDevice->IsOpenXRHMDReady())
+                  useVR = true;
+               else if (vrDetectionMode == 0)
+               {
+                  while (!m_vrDevice->IsOpenXRHMDReady() && (g_pvp->MessageBox("Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
+                     m_vrDevice->SetupHMD();
+                  useVR = m_vrDevice->IsOpenXRHMDReady();
+               }
+            }
+            else if (vrDetectionMode == 0) // 0 is VR on, tell the user that his choice will not be fullfilled
+               ShowError("VR mode activated but OpenXR initialization failed.");
+            if (!useVR)
+            {
+               delete m_vrDevice;
+               m_vrDevice = nullptr;
+            }
+         }
+      #elif defined(ENABLE_VR)
+         useVR = vrDetectionMode == 2 /* VR Disabled */  ? false : VRDevice::IsVRinstalled();
+         if (useVR && (vrDetectionMode == 1 /* VR Autodetect => ask to turn on and adapt accordingly */) && !VRDevice::IsVRturnedOn())
+            useVR = g_pvp->MessageBox("VR headset detected but SteamVR is not running.\n\nTurn VR on?", "VR Headset Detected", MB_YESNO) == IDYES;
+         m_vrDevice = useVR ? new VRDevice() : nullptr;
+      #endif
+   #endif
+   const StereoMode stereo3D = useVR ? STEREO_VR : (StereoMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3D"s, (int)STEREO_OFF);
+   assert(useVR == (stereo3D == STEREO_VR));
+
+   m_capExtDMD = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
+   m_capPUP = (stereo3D == STEREO_VR) && m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CapturePUP"s, false);
+   m_headTracking = (stereo3D == STEREO_VR) ? false : m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
 
    m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
@@ -320,7 +347,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_maxFramerate = 10000;
       if (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate > pfRefreshRate)
          m_maxFramerate = pfRefreshRate;
-      if (useVR)
+      if (stereo3D == STEREO_VR)
       {
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
@@ -644,7 +671,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       {
          PLOGE << "Texture preloading failed";
       }
-      m_renderer->m_render_mask = Renderer::DEFAULT;
+      m_renderer->m_render_mask = m_vrDevice ? Renderer::DISABLE_BACKDROP : Renderer::DEFAULT;
    }
 
    //----------------------------------------------------------------------------------
@@ -1038,6 +1065,8 @@ Player::~Player()
    delete m_playfieldWnd;
    delete m_dmdWnd;
    delete m_backglassWnd;
+
+   delete m_vrDevice;
 
    g_pplayer = nullptr;
 

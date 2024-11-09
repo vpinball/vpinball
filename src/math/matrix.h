@@ -366,6 +366,73 @@ public:
       _44 = 1.0f;
    }
 
+   void SetPerspectiveFovRH(const float angleLeft, const float angleRight, const float angleDown, const float angleUp, const float nearPlane, const float farPlane)
+   {
+      if (angleRight >= M_PI/2.f || angleLeft <= -M_PI/2.f)
+         throw std::runtime_error("Invalid projection specification");
+      if (angleUp >= M_PI / 2.f || angleDown <= -M_PI / 2.f)
+         throw std::runtime_error("Invalid projection specification");
+
+      const bool infNearPlane = std::isinf(nearPlane);
+      const bool infFarPlane = std::isinf(farPlane);
+
+      float l = tan(angleLeft);
+      float r = tan(angleRight);
+      float b = tan(angleDown);
+      float t = tan(angleUp);
+      if (!infNearPlane)
+      {
+         l *= nearPlane;
+         r *= nearPlane;
+         b *= nearPlane;
+         t *= nearPlane;
+      }
+
+      if (nearPlane < 0.f || farPlane < 0.f) {
+          throw std::runtime_error("Invalid projection specification");
+      }
+
+      if (infNearPlane || infFarPlane) {
+         if (infNearPlane && infFarPlane) {
+            throw std::runtime_error("Invalid projection specification");
+         }
+
+         const float reciprocalWidth = 1.0f / (r - l);
+         const float reciprocalHeight = 1.0f / (t - b);
+
+         float twoNearZ;
+         if (infNearPlane)
+         {
+            twoNearZ = 2;
+            _33 = 0.0f;     // far / (near - far) = far / inf = 0
+            _43 = farPlane; // near * far / (near - far) = far * (near / (near - far)) = far * (inf / inf) = far
+         } else {
+            twoNearZ = nearPlane + nearPlane;
+            _33 = -1.0f;      // far / (near - far) = inf / -inf = -1
+            _43 = -nearPlane; // near * far / (near - far) = near * inf / -inf = -near
+         }
+         _11 = twoNearZ * reciprocalWidth;
+         _12 = 0.0f;
+         _13 = 0.0f;
+         _14 = 0.0f;
+
+         _21 = 0.0f;
+         _22 = twoNearZ * reciprocalHeight;
+         _23 = 0.0f;
+         _24 = 0.0f;
+
+         _31 = (l + r) * reciprocalWidth;
+         _32 = (t + b) * reciprocalHeight;
+         _34 = -1.0f;
+
+         _41 = 0.0f;
+         _42 = 0.0f;
+         _44 = 0.0f;
+      } else {
+         SetPerspectiveOffCenterRH(l, r, b, t, nearPlane, farPlane);
+      }
+   }
+
    void SetPerspectiveOffCenterRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
       const float r_l = right - left;

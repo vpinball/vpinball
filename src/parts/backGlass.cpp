@@ -6,11 +6,11 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
-#include "renderer/captureExt.h"
-#ifdef ENABLE_VR
-#include <fstream>
-#include "tinyxml2/tinyxml2.h"
-#endif
+   #include "renderer/captureExt.h"
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+      #include <fstream>
+      #include "tinyxml2/tinyxml2.h"
+   #endif
 #endif
 
 //#define WRITE_BACKGLASS_IMAGES
@@ -81,7 +81,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
 {
    m_backgroundTexture = nullptr;
    m_loaded_image = nullptr;
-#ifdef ENABLE_VR
+#if defined(ENABLE_VR) || defined(ENABLE_XR)
    // Check for a directb2s and try to use its backglass data
    const string b2sFileName = g_pplayer->m_ptable->m_szFileName.substr(0, g_pplayer->m_ptable->m_szFileName.find_last_of('.')) + ".directb2s";
    m_backglass_dmd = int2(0,0);

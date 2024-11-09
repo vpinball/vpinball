@@ -453,12 +453,14 @@ void Textbox::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
    const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
    if (isStaticOnly
       || !m_d.m_visible
       || (m_backglass && isReflectionPass)
+      || (m_backglass && isNoBackdrop)
       || (!dmd && m_texture == nullptr)
       || (dmd && g_pplayer->m_texdmd == nullptr))
       return;

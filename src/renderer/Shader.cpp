@@ -1569,6 +1569,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall_Debug,                  STEREO(vs_ball_clip), STEREO(fs_ball_debug_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBallTrail,                   STEREO(vs_ball_trail_clip), STEREO(fs_ball_trail_clip), true);
       break;
+   case DMD_VR_SHADER:
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         "vs_dmd_noworld",            "fs_dmd_noclip");
@@ -1584,7 +1585,9 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_clip), "fs_dmd2_rgb_clip", true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_clip), "fs_sprite_tex_clip", true);
       break;
-   case DMD_VR_SHADER: assert(false); break;
+   //case DMD_VR_SHADER:
+      //assert(false);
+      break;
    case FLASHER_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noLight, STEREO(vs_flasher_noclip), "fs_flasher_noclip");
       // Variants with a clipping plane
