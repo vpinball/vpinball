@@ -3271,7 +3271,7 @@ BEGIN
     BEGIN
         MENUITEM "&Audio Options...",           ID_EDIT_AUDIOOPTIONS
         MENUITEM "&Video/Graphics Options...",  ID_EDIT_VIDEOOPTIONS
-#ifdef ENABLE_OPENGL
+#if defined(ENABLE_OPENGL) || defined(ENABLE_BGFX)
         MENUITEM "V&R Settings...",             ID_EDIT_VROPTIONS
 #endif
         MENUITEM "INI/&Editor/UI Options...",   ID_EDIT_EDITOROPTIONS

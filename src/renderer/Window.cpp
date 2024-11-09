@@ -23,7 +23,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    , m_settingsPrefix(settingsPrefix)
 {
    const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
-   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen"s, IsWindows10_1803orAbove());
+   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen"s, false);
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
    if (m_settingsSection == Settings::Player)
    {

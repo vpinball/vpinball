@@ -121,6 +121,9 @@
     <Filter Include="third-party\imgui\sdl3">
       <UniqueIdentifier>{777c0a63-2218-4595-a266-4036fb727996}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third-party\openxr">
+      <UniqueIdentifier>{49343BB8-F179-4DA3-8FDF-5119D31F3386}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/audio/mixer.cpp">
@@ -1753,6 +1756,27 @@
     </ClInclude>
     <ClInclude Include="third-party/include/imgui/imgui_impl_sdl3.h">
       <Filter>third-party\imgui\sdl3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_loader_negotiation.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_platform.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_platform_defines.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_reflection.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_reflection_parent_structs.h">
+      <Filter>third-party\openxr</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/openxr/openxr_reflection_structs.h">
+      <Filter>third-party\openxr</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

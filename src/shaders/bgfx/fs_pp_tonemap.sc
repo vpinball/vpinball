@@ -30,6 +30,7 @@ uniform vec4 exposure_wcg;
 #define sceneLum_x_invDisplayMaxLum (exposure_wcg.y)
 #define displayMaxLum               (exposure_wcg.z)
 #define isHDR2020                   (exposure_wcg.w == 1.)
+#define isLinearFrameBuffer         (exposure_wcg.w == 2.)
 
 // Define which tonemapper outputs are in linear sRGB and which are in gamma compressed sRGB
 #if defined(FILMIC) || defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
@@ -584,15 +585,25 @@ void main()
       gl_FragColor = vec4(grey, grey, grey, 1.0);
 
    #else
-      #ifdef TM_OUT_GAMMA
-         result =           saturate(FBDither(result, v_texcoord0));
-      #elif defined(NEUTRAL)
-         result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
-      #else
-         result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
-      #endif
+      if (isLinearFrameBuffer)
+	  {
+		  #ifdef TM_OUT_GAMMA
+			 result = InvGamma(saturate(FBDither(result, v_texcoord0)));
+		  #else
+			 result =          saturate(FBDither(result, v_texcoord0));
+		  #endif
+      }
+	  else
+	  {
+		  #ifdef TM_OUT_GAMMA
+			 result =           saturate(FBDither(result, v_texcoord0));
+		  #elif defined(NEUTRAL)
+			 result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
+		  #else
+			 result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
+		  #endif
+	  }
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
-
    #endif
    }
 

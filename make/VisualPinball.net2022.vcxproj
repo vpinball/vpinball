@@ -468,7 +468,7 @@
       <AdditionalIncludeDirectories>third-party\include\inc\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL3.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi.lib;bgfxDebug.lib;bimg_decodeDebug.lib;bimgDebug.lib;bxDebug.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi.lib;bgfxDebug.lib;bimg_decodeDebug.lib;bimgDebug.lib;bxDebug.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>
@@ -658,7 +658,7 @@
       <AdditionalIncludeDirectories>third-party\include\inc\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL3.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi64.lib;bgfxDebug.lib;bimg_decodeDebug.lib;bimgDebug.lib;bxDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi64.lib;bgfxDebug.lib;bimg_decodeDebug.lib;bimgDebug.lib;bxDebug.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -870,7 +870,7 @@
       <AdditionalIncludeDirectories>src;third-party\include\win32xx\include</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL3.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi.lib;bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi.lib;bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;psapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x86;third-party\build-libs\windows-x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -1087,7 +1087,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SDL3.lib;openvr_api.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi64.lib;bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SDL3.lib;openxr_loader.lib;comctl32.lib;dxguid.lib;freeimage.lib;dsound.lib;winmm.lib;dinput.lib;nvapi.lib;odbc32.lib;odbccp32.lib;bass.lib;imm32.lib;setupapi.lib;hid.lib;hidapi64.lib;bgfxRelease.lib;bimg_decodeRelease.lib;bimgRelease.lib;bxRelease.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>$(DXSDK_DIR)\Lib\x64;third-party\build-libs\windows-x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBC;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -1955,6 +1955,13 @@
     <ClInclude Include="third-party/include/win32xx/include/wxx_webbrowser.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h" />
+    <ClInclude Include="third-party/include/openxr/openxr.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_loader_negotiation.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_platform.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_platform_defines.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_reflection.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_reflection_parent_structs.h" />
+    <ClInclude Include="third-party/include/openxr/openxr_reflection_structs.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="src/shaders/hlsl_glsl/BallShader.hlsl">

@@ -17,6 +17,7 @@ add_compile_definitions(
    ENABLE_SDL_INPUT
    ENABLE_SDL_VIDEO
    ENABLE_BGFX
+   ENABLE_XR
    USE_DINPUT8
    $<$<CONFIG:DEBUG>:BX_CONFIG_DEBUG=1>
    $<$<CONFIG:RELEASE>:BX_CONFIG_DEBUG=0>
@@ -621,8 +622,7 @@ target_link_libraries(vpinball
    winmm.lib
    hid.lib
    setupapi.lib
-
-   openvr_api.lib
+   openxr_loader.lib
    SDL3.lib
    dinput8.lib
 
@@ -660,7 +660,7 @@ add_custom_command(TARGET vpinball POST_BUILD
 
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/Bass.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/openvr_api.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/openxr_loader.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/FreeImage.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/hidapi.dll" "$<TARGET_FILE_DIR:vpinball>"

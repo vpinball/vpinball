@@ -377,12 +377,14 @@ void DispReel::Render(const unsigned int renderMask)
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
    if (isStaticOnly
    || !m_d.m_visible
    || !GetPTable()->GetEMReelsEnabled()
-   || (m_backglass && isReflectionPass))
+   || (m_backglass && isReflectionPass)
+   || (m_backglass && isNoBackdrop))
       return;
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);

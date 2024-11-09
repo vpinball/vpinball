@@ -13,6 +13,11 @@
 #pragma comment(lib, "dxgi.lib")
 #endif
 
+#if defined(ENABLE_BGFX) && !defined(__STANDALONE__)
+#include <d3d11_1.h>
+#include <dxgi1_6.h>
+#endif
+
 #ifdef __STANDALONE__
 #define __null 0
 #define ONLY_USE_BASS

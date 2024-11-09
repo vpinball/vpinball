@@ -20,6 +20,7 @@ public:
    RenderPass* AddPass(const string& name, RenderTarget* const rt);
    void AddEndOfFrameCmd(std::function<void()> cmd) { m_endOfFrameCmds.push_back(cmd); }
    bool Execute(const bool log = false);
+   void Discard();
 
 private:
    void SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedPasses);

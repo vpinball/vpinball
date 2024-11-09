@@ -18,11 +18,11 @@ RenderTarget* RenderTarget::GetCurrentRenderTarget() { return current_render_tar
 int RenderTarget::current_render_layer = 0; // For layered render targets (stereo, cubemaps,...)
 int RenderTarget::GetCurrentRenderLayer() { return current_render_layer; }
 
-RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int height, const colorFormat format)
+RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const int width, const int height, const colorFormat format)
    : m_name("BackBuffer"s)
-   , m_type(SurfaceType::RT_DEFAULT)
+   , m_type(type)
    , m_is_back_buffer(true)
-   , m_nLayers(1)
+   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
@@ -31,6 +31,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const int width, const int he
    , m_has_depth(false)
    , m_shared_depth(false)
 {
+   assert((type == RT_DEFAULT) || (type == RT_STEREO));
    m_color_sampler = nullptr;
    m_depth_sampler = nullptr;
 

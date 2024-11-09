@@ -425,6 +425,9 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
       if (stereo) // Real stereo is not really supported for legacy camera mode (it used to be only fake parallax stereo)
          mvp.SetProj(1, tmp * mvp.GetProj(1));
    }
+
+   if (!stereo && mvp.m_nEyes > 1)
+      mvp.SetProj(1, mvp.GetProj(0));
 }
 
 

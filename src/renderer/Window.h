@@ -35,7 +35,7 @@ public:
    void Show(const bool show = true);
    void RaiseAndFocus(const bool raise = true);
 
-   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { /* assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); */ m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 

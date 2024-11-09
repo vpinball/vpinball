@@ -527,7 +527,11 @@ void Light::Render(const unsigned int renderMask)
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isLightBuffer = renderMask & Renderer::LIGHT_BUFFER;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
+   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
+
+   if (m_backglass && isNoBackdrop)
+      return;
 
    m_rd->ResetRenderState();
 

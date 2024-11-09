@@ -210,13 +210,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       BAMView::init();
    #endif
 
-   if (m_stereo3D == STEREO_VR)
-      m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->m_BG_current_set]) : nullptr);
-   else
-      m_backGlass = nullptr;
+   m_backGlass = nullptr;
 
-   #if defined(ENABLE_VR)
+   #ifdef ENABLE_VR
    if (m_stereo3D == STEREO_VR) {
+      m_backGlass = new BackGlass(m_renderDevice, m_table->GetDecalsEnabled() ? m_table->GetImage(m_table->m_BG_image[m_table->m_BG_current_set]) : nullptr);
       //AMD Debugging
       colorFormat renderBufferFormatVR;
       const int textureModeVR = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
@@ -1112,7 +1110,7 @@ void Renderer::RenderFrame()
    SwapBackBufferRenderTargets();
 
    // Update camera point of view
-   #ifdef ENABLE_VR
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
    if (m_stereo3D == STEREO_VR)
       g_pplayer->m_vrDevice->UpdateVRPosition(GetMVP());
    else 
@@ -1657,15 +1655,18 @@ void Renderer::RenderDynamics()
    UpdateBasicShaderMatrix();
    UpdateBallShaderMatrix();
 
+   #ifdef OPEN_VR
    // Render the default backglass without depth write before the table so that it will be visible for tables without a VR backglass but overwriten otherwise
    if (m_backGlass != nullptr)
       m_backGlass->Render();
+   #endif
 
-   m_render_mask = IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
+   const unsigned int mask = m_render_mask;
+   m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
    DrawBulbLightBuffer();
    for (Hitable* hitable : g_pplayer->m_vhitables)
       hitable->Render(m_render_mask);
-   m_render_mask = Renderer::DEFAULT;
+   m_render_mask = mask;
    
    m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again
 
@@ -1754,14 +1755,19 @@ void Renderer::Bloom()
 void Renderer::PrepareVideoBuffers()
 {
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
-   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable()));
+   #ifdef ENABLE_XR
+      // OpenXR directly renders to the XR render target view without any copy
+      const bool stereo = (m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable());
+   #else
+      const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable()));
+   #endif
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
    const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
-#ifndef __OPENGLES__
-   const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
-#else
-   const bool SMAA = false;
-#endif
+   #ifndef __OPENGLES__
+      const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
+   #else
+      const bool SMAA = false;
+   #endif
    const bool DLAA  = PostProcAA && m_FXAA == Standard_DLAA;
    const bool NFAA  = PostProcAA && m_FXAA == Fast_NFAA;
    const bool FXAA1 = PostProcAA && m_FXAA == Fast_FXAA;
@@ -1881,8 +1887,8 @@ void Renderer::PrepareVideoBuffers()
          render_h = renderedRT->GetHeight();
       }
 
-      const bool isHdr2020 = m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
-      if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer())
+      const bool isHdr2020 = g_pplayer->m_vrDevice == nullptr && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+      if (isHdr2020)
       {
          const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
@@ -1892,7 +1898,15 @@ void Renderer::PrepareVideoBuffers()
             1.f);
       }
       else
-         m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
+      {
+         #ifdef ENABLE_VR
+            // Legacy OpenVR has hacked colorspace conversion
+            m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
+         #else
+            // VR device expects linear RGB value (for linear layer composition)
+            m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, g_pplayer->m_vrDevice ? 2.f : 0.f);
+         #endif
+      }
 
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
       if (pin)

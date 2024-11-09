@@ -7,32 +7,32 @@
 #include "core/Settings.h"
 #include "renderer/RenderDevice.h"
 #ifndef __STANDALONE__
-#include <wxx_dockframe.h>
-#include "ui/dialogs/ImageDialog.h"
-#include "ui/dialogs/SoundDialog.h"
-#include "ui/dialogs/EditorOptionsDialog.h"
-#include "ui/dialogs/VideoOptionsDialog.h"
-#include "ui/dialogs/AudioOptionsDialog.h"
-#include "ui/dialogs/CollectionManagerDialog.h"
-#include "ui/dialogs/PhysicsOptionsDialog.h"
-#include "ui/dialogs/RenderProbeDialog.h"
-#include "ui/dialogs/TableInfoDialog.h"
-#include "ui/dialogs/DimensionDialog.h"
-#include "ui/dialogs/MaterialDialog.h"
-#include "ui/dialogs/SoundDialog.h"
-#include "ui/dialogs/AboutDialog.h"
-#include "ui/dialogs/DrawingOrderDialog.h"
-#include "ui/dialogs/ToolbarDialog.h"
-#include "ui/dialogs/LayersListDialog.h"
-#include "ui/dialogs/NotesDialog.h"
-#include "ui/properties/PropertyDialog.h"
-#ifdef ENABLE_VR
-#include "ui/dialogs/VROptionsDialog.h"
-#endif
+   #include <wxx_dockframe.h>
+   #include "ui/dialogs/ImageDialog.h"
+   #include "ui/dialogs/SoundDialog.h"
+   #include "ui/dialogs/EditorOptionsDialog.h"
+   #include "ui/dialogs/VideoOptionsDialog.h"
+   #include "ui/dialogs/AudioOptionsDialog.h"
+   #include "ui/dialogs/CollectionManagerDialog.h"
+   #include "ui/dialogs/PhysicsOptionsDialog.h"
+   #include "ui/dialogs/RenderProbeDialog.h"
+   #include "ui/dialogs/TableInfoDialog.h"
+   #include "ui/dialogs/DimensionDialog.h"
+   #include "ui/dialogs/MaterialDialog.h"
+   #include "ui/dialogs/SoundDialog.h"
+   #include "ui/dialogs/AboutDialog.h"
+   #include "ui/dialogs/DrawingOrderDialog.h"
+   #include "ui/dialogs/ToolbarDialog.h"
+   #include "ui/dialogs/LayersListDialog.h"
+   #include "ui/dialogs/NotesDialog.h"
+   #include "ui/properties/PropertyDialog.h"
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+      #include "ui/dialogs/VROptionsDialog.h"
+   #endif
 #endif
 
 #ifdef __STANDALONE__
-#include "standalone/inc/webserver/WebServer.h"
+   #include "standalone/inc/webserver/WebServer.h"
 #endif
 
 class PinTable;
@@ -318,9 +318,9 @@ private:
    RenderProbeDialog m_renderProbeDialog;
    MaterialDialog m_materialDialog;
    AboutDialog m_aboutDialog;
-#ifdef ENABLE_VR
-   VROptionsDialog m_vrOptDialog;
-#endif
+   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+      VROptionsDialog m_vrOptDialog;
+   #endif
 
    ToolbarDialog *m_toolbarDialog = nullptr;
    PropertyDialog *m_propertyDialog = nullptr;
