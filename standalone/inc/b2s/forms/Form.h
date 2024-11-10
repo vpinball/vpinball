@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../controls/Control.h"
-#include "../../../common/RendererGraphics.h"
+#include "../../common/RendererGraphics.h"
 #include "../../common/Window.h"
 
 class FormWindow;
