@@ -31,13 +31,13 @@
 
 #pragma once
 
-#include <time.h>
-#include "imgui/imgui_internal.h"
-
 #ifndef IMPLOT_VERSION
 #error Must include implot.h before implot_internal.h
 #endif
 
+#ifndef IMGUI_DISABLE
+#include <time.h>
+#include "imgui/imgui_internal.h"
 
 // Support for pre-1.84 versions. ImPool's GetSize() -> GetBufSize()
 #if (IMGUI_VERSION_NUM < 18303)
@@ -1417,7 +1417,7 @@ IMPLOT_API ImVec2 GetLocationPos(const ImRect& outer_rect, const ImVec2& inner_s
 // Calculates the bounding box size of a legend _before_ clipping.
 IMPLOT_API ImVec2 CalcLegendSize(ImPlotItemGroup& items, const ImVec2& pad, const ImVec2& spacing, bool vertical);
 // Clips calculated legend size
-IMPLOT_API bool ClampLegendRect(ImRect& legend_rect, const ImRect& outer_rect, const ImVec2& pad);      
+IMPLOT_API bool ClampLegendRect(ImRect& legend_rect, const ImRect& outer_rect, const ImVec2& pad);
 // Renders legend entries into a bounding box
 IMPLOT_API bool ShowLegendEntries(ImPlotItemGroup& items, const ImRect& legend_bb, bool interactable, const ImVec2& pad, const ImVec2& spacing, bool vertical, ImDrawList& DrawList);
 // Shows an alternate legend for the plot identified by #title_id, outside of the plot frame (can be called before or after of Begin/EndPlot but must occur in the same ImGui window! This is not thoroughly tested nor scrollable!).
@@ -1667,3 +1667,5 @@ void Locator_Log10(ImPlotTicker& ticker, const ImPlotRange& range, float pixels,
 void Locator_SymLog(ImPlotTicker& ticker, const ImPlotRange& range, float pixels, bool vertical, ImPlotFormatter formatter, void* formatter_data);
 
 } // namespace ImPlot
+
+#endif // #ifndef IMGUI_DISABLE

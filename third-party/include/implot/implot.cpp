@@ -31,7 +31,7 @@ Below is a change-log of API breaking changes only. If you are using one of the 
 When you are not sure about a old symbol or function name, try using the Search/Find function of your IDE to look for comments or references in all implot files.
 You can read releases logs https://github.com/epezent/implot/releases for more details.
 
-- 2023/08/20 (0.17) - ImPlotFlags_NoChild was removed as child windows are no longer needed to capture scroll. You can safely remove this flag if you were using it. 
+- 2023/08/20 (0.17) - ImPlotFlags_NoChild was removed as child windows are no longer needed to capture scroll. You can safely remove this flag if you were using it.
 - 2023/06/26 (0.15) - Various build fixes related to updates in Dear ImGui internals.
 - 2022/11/25 (0.15) - Make PlotText honor ImPlotItemFlags_NoFit.
 - 2022/06/19 (0.14) - The signature of ColormapScale has changed to accommodate a new ImPlotColormapScaleFlags parameter
@@ -125,11 +125,14 @@ You can read releases logs https://github.com/epezent/implot/releases for more d
 
 */
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 
 #include "core/stdafx.h"
 
 #include "implot.h"
+#ifndef IMGUI_DISABLE
 #include "implot_internal.h"
 
 #include <stdlib.h>
@@ -607,10 +610,10 @@ bool ClampLegendRect(ImRect& legend_rect, const ImRect& outer_rect, const ImVec2
     if (legend_rect.Max.y > outer_rect_pad.Max.y) {
         legend_rect.Max.y = outer_rect_pad.Max.y;
         clamped = true;
-    }    
+    }
     return clamped;
 }
-    
+
 int LegendSortingComp(const void* _a, const void* _b) {
     ImPlotItemGroup* items = GImPlot->SortItems;
     const int a = *(const int*)_a;
@@ -1985,9 +1988,9 @@ bool UpdateInput(ImPlotPlot& plot) {
     if (any_hov && ImHasFlag(IO.KeyMods, gp.InputMap.ZoomMod)) {
 
         float zoom_rate = gp.InputMap.ZoomRate;
-        if (IO.MouseWheel == 0.0f) 
-            zoom_rate = 0;        
-        else if (IO.MouseWheel > 0) 
+        if (IO.MouseWheel == 0.0f)
+            zoom_rate = 0;
+        else if (IO.MouseWheel > 0)
             zoom_rate = (-zoom_rate) / (1.0f + (2.0f * zoom_rate));
         ImVec2 rect_size = plot.PlotRect.GetSize();
         float tx = ImRemap(IO.MousePos.x, plot.PlotRect.Min.x, plot.PlotRect.Max.x, 0.0f, 1.0f);
@@ -2454,7 +2457,7 @@ bool BeginPlot(const char* title_id, const ImVec2& size, ImPlotFlags flags) {
         ResetCtxForNextPlot(GImPlot);
         return false;
     }
-    
+
     // setup items (or dont)
     if (gp.CurrentItems == nullptr)
         gp.CurrentItems = &plot.Items;
@@ -3050,7 +3053,7 @@ void EndPlot() {
         const bool legend_scrollable = ClampLegendRect(legend.RectClamped,
                                                         legend_out ? plot.FrameRect : plot.PlotRect,
                                                         legend_out ? gp.Style.PlotPadding : gp.Style.LegendPadding
-                                                        );       
+                                                        );
         const ImGuiButtonFlags legend_button_flags = ImGuiButtonFlags_AllowOverlap
                                                     | ImGuiButtonFlags_PressedOnClick
                                                     | ImGuiButtonFlags_PressedOnDoubleClick
@@ -3061,7 +3064,7 @@ void EndPlot() {
         ImGui::KeepAliveID(plot.Items.ID);
         ImGui::ButtonBehavior(legend.RectClamped, plot.Items.ID, &legend.Hovered, &legend.Held, legend_button_flags);
         legend.Hovered = legend.Hovered || (ImGui::IsWindowHovered() && legend.RectClamped.Contains(IO.MousePos));
-       
+
         if (legend_scrollable) {
             if (legend.Hovered) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, plot.Items.ID);
@@ -3072,10 +3075,10 @@ void EndPlot() {
                     legend.Scroll.x += scroll_step * IO.MouseWheel;
                     legend.Scroll.y += scroll_step * IO.MouseWheel;
                 }
-            }            
+            }
             const ImVec2 min_scroll_offset = legend.RectClamped.GetSize() - legend.Rect.GetSize();
             legend.Scroll.x = ImClamp(legend.Scroll.x, min_scroll_offset.x, 0.0f);
-            legend.Scroll.y = ImClamp(legend.Scroll.y, min_scroll_offset.y, 0.0f);            
+            legend.Scroll.y = ImClamp(legend.Scroll.y, min_scroll_offset.y, 0.0f);
             const ImVec2 scroll_offset = legend_horz ? ImVec2(legend.Scroll.x, 0) : ImVec2(0, legend.Scroll.y);
             ImVec2 legend_offset = legend.RectClamped.Min - legend.Rect.Min + scroll_offset;
             legend.Rect.Min += legend_offset;
@@ -3085,18 +3088,18 @@ void EndPlot() {
         }
 
         const ImU32 col_bg  = GetStyleColorU32(ImPlotCol_LegendBg);
-        const ImU32 col_bd  = GetStyleColorU32(ImPlotCol_LegendBorder);        
-        ImGui::PushClipRect(legend.RectClamped.Min, legend.RectClamped.Max, true);       
-        DrawList.AddRectFilled(legend.RectClamped.Min, legend.RectClamped.Max, col_bg);        
+        const ImU32 col_bd  = GetStyleColorU32(ImPlotCol_LegendBorder);
+        ImGui::PushClipRect(legend.RectClamped.Min, legend.RectClamped.Max, true);
+        DrawList.AddRectFilled(legend.RectClamped.Min, legend.RectClamped.Max, col_bg);
         bool legend_contextable = ShowLegendEntries(plot.Items, legend.Rect, legend.Hovered, gp.Style.LegendInnerPadding, gp.Style.LegendSpacing, !legend_horz, DrawList)
-                                && !ImHasFlag(legend.Flags, ImPlotLegendFlags_NoMenus);        
+                                && !ImHasFlag(legend.Flags, ImPlotLegendFlags_NoMenus);
         DrawList.AddRect(legend.RectClamped.Min, legend.RectClamped.Max, col_bd);
         ImGui::PopClipRect();
 
         // main ctx menu
         if (gp.OpenContextThisFrame && legend_contextable && !ImHasFlag(plot.Flags, ImPlotFlags_NoMenus))
-            ImGui::OpenPopup("##LegendContext");        
-        
+            ImGui::OpenPopup("##LegendContext");
+
         if (ImGui::BeginPopup("##LegendContext")) {
             ImGui::Text("Legend"); ImGui::Separator();
             if (ShowLegendContextMenu(legend, !ImHasFlag(plot.Flags, ImPlotFlags_NoLegend)))
@@ -3569,7 +3572,7 @@ void EndSubplots() {
         const ImVec2 legend_pos  = GetLocationPos(subplot.FrameRect, legend_size, legend.Location, gp.Style.PlotPadding);
         legend.Rect = ImRect(legend_pos, legend_pos + legend_size);
         legend.RectClamped = legend.Rect;
-        const bool legend_scrollable = ClampLegendRect(legend.RectClamped,subplot.FrameRect, gp.Style.PlotPadding);    
+        const bool legend_scrollable = ClampLegendRect(legend.RectClamped,subplot.FrameRect, gp.Style.PlotPadding);
         const ImGuiButtonFlags legend_button_flags = ImGuiButtonFlags_AllowOverlap
                                                     | ImGuiButtonFlags_PressedOnClick
                                                     | ImGuiButtonFlags_PressedOnDoubleClick
@@ -3580,7 +3583,7 @@ void EndSubplots() {
         ImGui::KeepAliveID(subplot.Items.ID);
         ImGui::ButtonBehavior(legend.RectClamped, subplot.Items.ID, &legend.Hovered, &legend.Held, legend_button_flags);
         legend.Hovered = legend.Hovered || (subplot.FrameHovered && legend.RectClamped.Contains(ImGui::GetIO().MousePos));
-        
+
         if (legend_scrollable) {
             if (legend.Hovered) {
                 ImGui::SetKeyOwner(ImGuiKey_MouseWheelY, subplot.Items.ID);
@@ -3591,10 +3594,10 @@ void EndSubplots() {
                     legend.Scroll.x += scroll_step * IO.MouseWheel;
                     legend.Scroll.y += scroll_step * IO.MouseWheel;
                 }
-            }                    
+            }
             const ImVec2 min_scroll_offset = legend.RectClamped.GetSize() - legend.Rect.GetSize();
             legend.Scroll.x = ImClamp(legend.Scroll.x, min_scroll_offset.x, 0.0f);
-            legend.Scroll.y = ImClamp(legend.Scroll.y, min_scroll_offset.y, 0.0f);            
+            legend.Scroll.y = ImClamp(legend.Scroll.y, min_scroll_offset.y, 0.0f);
             const ImVec2 scroll_offset = legend_horz ? ImVec2(legend.Scroll.x, 0) : ImVec2(0, legend.Scroll.y);
             ImVec2 legend_offset = legend.RectClamped.Min - legend.Rect.Min + scroll_offset;
             legend.Rect.Min += legend_offset;
@@ -3605,13 +3608,13 @@ void EndSubplots() {
 
         const ImU32 col_bg = GetStyleColorU32(ImPlotCol_LegendBg);
         const ImU32 col_bd = GetStyleColorU32(ImPlotCol_LegendBorder);
-        ImGui::PushClipRect(legend.RectClamped.Min, legend.RectClamped.Max, true);       
-        DrawList.AddRectFilled(legend.RectClamped.Min, legend.RectClamped.Max, col_bg);        
+        ImGui::PushClipRect(legend.RectClamped.Min, legend.RectClamped.Max, true);
+        DrawList.AddRectFilled(legend.RectClamped.Min, legend.RectClamped.Max, col_bg);
         bool legend_contextable = ShowLegendEntries(subplot.Items, legend.Rect, legend.Hovered, gp.Style.LegendInnerPadding, gp.Style.LegendSpacing, !legend_horz, DrawList)
                                 && !ImHasFlag(legend.Flags, ImPlotLegendFlags_NoMenus);
         DrawList.AddRect(legend.RectClamped.Min, legend.RectClamped.Max, col_bd);
         ImGui::PopClipRect();
-        
+
         if (legend_contextable && !ImHasFlag(subplot.Flags, ImPlotSubplotFlags_NoMenus) && ImGui::GetIO().MouseReleased[gp.InputMap.Menu])
             ImGui::OpenPopup("##LegendContext");
         if (ImGui::BeginPopup("##LegendContext")) {
@@ -5174,7 +5177,7 @@ void ShowUserGuide() {
     ImGui::Indent();
         ImGui::BulletText("Left-click drag on axis labels to pan an individual axis.");
     ImGui::Unindent();
-    ImGui::BulletText("Scroll in the plot area to zoom both X any Y axes.");
+    ImGui::BulletText("Scroll in the plot area to zoom both X and Y axes.");
     ImGui::Indent();
         ImGui::BulletText("Scroll on axis labels to zoom an individual axis.");
     ImGui::Unindent();
@@ -5886,3 +5889,5 @@ bool BeginPlot(const char* title, const char* x_label, const char* y1_label, con
 #endif
 
 }  // namespace ImPlot
+
+#endif // #ifndef IMGUI_DISABLE

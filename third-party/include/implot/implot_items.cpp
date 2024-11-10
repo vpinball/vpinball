@@ -22,10 +22,14 @@
 
 // ImPlot v0.17
 
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
+#endif
+
 #include "core/stdafx.h"
 
 #include "implot.h"
+#ifndef IMGUI_DISABLE
 #include "implot_internal.h"
 
 //-----------------------------------------------------------------------------
@@ -2245,11 +2249,11 @@ double PieChartSum(const T* values, int count, bool ignore_hidden) {
 template <typename T>
 void PlotPieChartEx(const char* const label_ids[], const T* values, int count, ImPlotPoint center, double radius, double angle0, ImPlotPieChartFlags flags) {
     ImDrawList& draw_list  = *GetPlotDrawList();
-    
+
     const bool ignore_hidden = ImHasFlag(flags, ImPlotPieChartFlags_IgnoreHidden);
     const double sum         = PieChartSum(values, count, ignore_hidden);
     const bool normalize     = ImHasFlag(flags, ImPlotPieChartFlags_Normalize) || sum > 1.0;
-    
+
     double a0 = angle0 * 2 * IM_PI / 360.0;
     double a1 = angle0 * 2 * IM_PI / 360.0;
     ImPlotPoint Pmin = ImPlotPoint(center.x - radius, center.y - radius);
@@ -2808,3 +2812,5 @@ void PlotDummy(const char* label_id, ImPlotDummyFlags flags) {
 }
 
 } // namespace ImPlot
+
+#endif // #ifndef IMGUI_DISABLE
