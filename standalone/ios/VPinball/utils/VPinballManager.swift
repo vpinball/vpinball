@@ -198,7 +198,7 @@ class VPinballManager {
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Float) -> Float {
-        return Float(VPinballLoadValueFloat(section.rawValue, key.cstring, defaultValue))
+        return VPinballLoadValueFloat(section.rawValue, key.cstring, defaultValue)
     }
 
     func loadValue(_ section: VPinballSettingsSection, _ key: String, _ defaultValue: Bool) -> Bool {

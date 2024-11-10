@@ -143,7 +143,7 @@ VPINBALLAPI void VPinballInit(VPinballEventCallback callback);
 VPINBALLAPI void VPinballLog(VPINBALL_LOG_LEVEL level, const char* pMessage);
 VPINBALLAPI void VPinballResetLog();
 VPINBALLAPI int VPinballLoadValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int defaultValue);
-VPINBALLAPI int VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue);
+VPINBALLAPI float VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue);
 VPINBALLAPI const char* VPinballLoadValueString(VPINBALL_SETTINGS_SECTION section, const char* pKey, const char* pDefaultValue);
 VPINBALLAPI void VPinballSaveValueInt(VPINBALL_SETTINGS_SECTION section, const char* pKey, int value);
 VPINBALLAPI void VPinballSaveValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float value);

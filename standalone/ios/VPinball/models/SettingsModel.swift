@@ -85,7 +85,7 @@ class SettingsModel: ObservableObject {
 
         dmdServerAddr = vpinballManager.loadValue(.standalone, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = vpinballManager.loadValue(.standalone, "DMDServerPort", 6789)
-        zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "192.168.4.1")
+        zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "zedmd-wifi.local")
         zedmdWiFiPort = vpinballManager.loadValue(.standalone, "ZeDMDWiFiPort", 3333)
 
         // Environment Lighting

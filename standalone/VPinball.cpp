@@ -36,7 +36,7 @@ VPINBALLAPI int VPinballLoadValueInt(VPINBALL_SETTINGS_SECTION section, const ch
    return s_vpinstance.LoadValueInt((VPinballLib::SettingsSection)section, pKey, defaultValue);
 }
 
-VPINBALLAPI int VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue)
+VPINBALLAPI float VPinballLoadValueFloat(VPINBALL_SETTINGS_SECTION section, const char* pKey, float defaultValue)
 {
    return s_vpinstance.LoadValueFloat((VPinballLib::SettingsSection)section, pKey, defaultValue);
 }
