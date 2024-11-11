@@ -15,7 +15,8 @@ uniform vec4 staticColor_Alpha;
 uniform vec4 vRes_Alpha_time;
 uniform vec4 vColor_Intensity;
 uniform vec4 w_h_height;
-uniform vec4 exposure;
+uniform vec4 exposure_wcg;
+#define exposure                    (exposure_wcg.x)
 
 
 #define dotColor      vColor_Intensity.rgb
@@ -205,7 +206,7 @@ vec3 AgXToneMapping(vec3 color)
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv = 4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-    color *= exposure.x;
+    color *= exposure;
 
     #if 0
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020);
@@ -241,7 +242,7 @@ vec3 AgXToneMapping(vec3 color)
 
 vec3 ReinhardToneMap(vec3 color)
 {
-    color *= exposure.x;
+    color *= exposure;
 
     // The clamping (to an arbitrary high value) prevents overflow leading to nan/inf in turn rendered as black blobs (at least on NVidia hardware)
     const float l = min(dot(color, vec3(0.176204, 0.812985, 0.0108109)), MAX_BURST); // CIE RGB to XYZ, Y row (relative luminance)
