@@ -371,16 +371,24 @@ namespace bx
 	}
 
 	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(uint8_t  _val) { return bx::min<uint8_t>(8,  countTrailingZeros<uint32_t>(_val) ); }
-	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int8_t   _val) { return             countTrailingZeros<uint8_t >(_val);   }
+	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int8_t   _val) { return                      countTrailingZeros<uint8_t >(_val);   }
 	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(uint16_t _val) { return bx::min<uint8_t>(16, countTrailingZeros<uint32_t>(_val) ); }
-	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int16_t  _val) { return             countTrailingZeros<uint16_t>(_val);   }
-	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int32_t  _val) { return             countTrailingZeros<uint32_t>(_val);   }
-	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int64_t  _val) { return             countTrailingZeros<uint64_t>(_val);   }
+	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int16_t  _val) { return                      countTrailingZeros<uint16_t>(_val);   }
+	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int32_t  _val) { return                      countTrailingZeros<uint32_t>(_val);   }
+	template<> inline BX_CONSTEXPR_FUNC uint8_t countTrailingZeros(int64_t  _val) { return                      countTrailingZeros<uint64_t>(_val);   }
 
 	template<typename Ty>
-	inline BX_CONSTEXPR_FUNC uint8_t findFirstSet(Ty _x)
+	inline BX_CONSTEXPR_FUNC uint8_t findFirstSet(Ty _val)
 	{
-		return Ty(0) == _x ? uint8_t(0) : countTrailingZeros<Ty>(_x) + 1;
+		BX_STATIC_ASSERT(isInteger<Ty>(), "Type Ty must be of integer type!");
+		return Ty(0) == _val ? uint8_t(0) : countTrailingZeros<Ty>(_val) + 1;
+	}
+
+	template<typename Ty>
+	inline BX_CONSTEXPR_FUNC uint8_t findLastSet(Ty _val)
+	{
+		BX_STATIC_ASSERT(isInteger<Ty>(), "Type Ty must be of integer type!");
+		return Ty(0) == _val ? uint8_t(0) : sizeof(Ty)*8 - countLeadingZeros<Ty>(_val);
 	}
 
 	template<typename Ty>
@@ -411,7 +419,7 @@ namespace bx
 
 	inline BX_CONST_FUNC float rsqrtRef(float _a)
 	{
-		if (_a < kNearZero)
+		if (_a < kFloatSmallest)
 		{
 			return kFloatInfinity;
 		}
@@ -421,7 +429,7 @@ namespace bx
 
 	inline BX_CONST_FUNC float rsqrtSimd(float _a)
 	{
-		if (_a < kNearZero)
+		if (_a < kFloatSmallest)
 		{
 			return kFloatInfinity;
 		}
@@ -441,7 +449,7 @@ namespace bx
 
 	inline BX_CONST_FUNC float sqrtRef(float _a)
 	{
-		if (_a < 0.0F)
+		if (_a < 0.0f)
 		{
 			return bitsToFloat(kFloatExponentMask | kFloatMantissaMask);
 		}
@@ -451,11 +459,11 @@ namespace bx
 
 	inline BX_CONST_FUNC float sqrtSimd(float _a)
 	{
-		if (_a < 0.0F)
+		if (_a < 0.0f)
 		{
 			return bitsToFloat(kFloatExponentMask | kFloatMantissaMask);
 		}
-		else if (_a < kNearZero)
+		else if (_a < kFloatSmallest)
 		{
 			return 0.0f;
 		}
@@ -471,20 +479,20 @@ namespace bx
 
 	inline BX_CONST_FUNC float rsqrt(float _a)
 	{
-#if BX_CONFIG_SUPPORTS_SIMD
+#if BX_SIMD_SUPPORTED
 		return rsqrtSimd(_a);
 #else
 		return rsqrtRef(_a);
-#endif // BX_CONFIG_SUPPORTS_SIMD
+#endif // BX_SIMD_SUPPORTED
 	}
 
 	inline BX_CONST_FUNC float sqrt(float _a)
 	{
-#if BX_CONFIG_SUPPORTS_SIMD
+#if BX_SIMD_SUPPORTED
 		return sqrtSimd(_a);
 #else
 		return sqrtRef(_a);
-#endif // BX_CONFIG_SUPPORTS_SIMD
+#endif // BX_SIMD_SUPPORTED
 	}
 
 	inline BX_CONSTEXPR_FUNC float trunc(float _a)
@@ -527,9 +535,14 @@ namespace bx
 		return 1.0f / _a;
 	}
 
+	inline BX_CONSTEXPR_FUNC float rcpSafe(float _a)
+	{
+		return rcp(copySign(max(kFloatSmallest, abs(_a) ), _a) );
+	}
+
 	inline BX_CONSTEXPR_FUNC float mod(float _a, float _b)
 	{
-		return _a - _b * floor(_a / _b);
+		return _a - _b * floor(mul(_a, rcp(_b) ) );
 	}
 
 	inline BX_CONSTEXPR_FUNC bool isEqual(float _a, float _b, float _epsilon)
@@ -803,9 +816,19 @@ namespace bx
 		return mul(_a, rcp(_b) );
 	}
 
+	inline BX_CONSTEXPR_FUNC Vec3 divSafe(const Vec3 _a, const Vec3 _b)
+	{
+		return mul(_a, rcpSafe(_b) );
+	}
+
 	inline BX_CONSTEXPR_FUNC Vec3 div(const Vec3 _a, float _b)
 	{
 		return mul(_a, rcp(_b) );
+	}
+
+	inline BX_CONSTEXPR_FUNC Vec3 divSafe(const Vec3 _a, float _b)
+	{
+		return mul(_a, rcpSafe(_b) );
 	}
 
 	inline BX_CONSTEXPR_FUNC Vec3 nms(const Vec3 _a, const float _b, const Vec3 _c)
@@ -881,7 +904,7 @@ namespace bx
 
 	inline BX_CONST_FUNC Vec3 normalize(const Vec3 _a)
 	{
-		const float invLen = 1.0f/length(_a);
+		const float invLen = rcpSafe(length(_a) );
 		const Vec3 result = mul(_a, invLen);
 		return result;
 	}
@@ -910,9 +933,19 @@ namespace bx
 	{
 		return
 		{
-			1.0f / _a.x,
-			1.0f / _a.y,
-			1.0f / _a.z,
+			rcp(_a.x),
+			rcp(_a.y),
+			rcp(_a.z),
+		};
+	}
+
+	inline BX_CONSTEXPR_FUNC Vec3 rcpSafe(const Vec3 _a)
+	{
+		return
+		{
+			rcpSafe(_a.x),
+			rcpSafe(_a.y),
+			rcpSafe(_a.z),
 		};
 	}
 
@@ -932,14 +965,14 @@ namespace bx
 
 		if (abs(nx) > abs(nz) )
 		{
-			float invLen = 1.0f / sqrt(nx*nx + nz*nz);
+			const float invLen = rcpSafe(sqrt(nx*nx + nz*nz) );
 			_outT.x = -nz * invLen;
 			_outT.y =  0.0f;
 			_outT.z =  nx * invLen;
 		}
 		else
 		{
-			float invLen = 1.0f / sqrt(ny*ny + nz*nz);
+			const float invLen = rcpSafe(sqrt(ny*ny + nz*nz) );
 			_outT.x =  0.0f;
 			_outT.y =  nz * invLen;
 			_outT.z = -ny * invLen;
@@ -1239,7 +1272,7 @@ namespace bx
 			return;
 		}
 
-		const float invSa = 1.0f/sa;
+		const float invSa = rcpSafe(sa);
 
 		_outAxis = { _a.x * invSa, _a.y * invSa, _a.z * invSa };
 	}
