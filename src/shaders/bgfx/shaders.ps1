@@ -225,10 +225,6 @@ if ($gen_antialiasing)
 	  Process-Shader "fs_pp_nfaa.sc" "antialiasing.h" ("fs_pp_nfaa" + $stOutput[$k]) "fragment" @($stereo[$k])
 	  Process-Shader "fs_pp_dlaa_edge.sc" "antialiasing.h" ("fs_pp_dlaa_edge" + $stOutput[$k]) "fragment" @($stereo[$k])
 	  Process-Shader "fs_pp_dlaa.sc" "antialiasing.h" ("fs_pp_dlaa" + $stOutput[$k]) "fragment" @($stereo[$k])
-	  foreach ($variant in @("FILTER", "NOFILTER"))
-	  {
-		 Process-Shader "fs_pp_ao.sc" "postprocess.h" ("fs_pp_ao_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
-	  }
 	  foreach ($variant in @("FXAA1", "FXAA2", "FXAA3"))
 	  {
 		 Process-Shader "fs_pp_fxaa.sc" "antialiasing.h" ("fs_pp_" + $variant.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant)
