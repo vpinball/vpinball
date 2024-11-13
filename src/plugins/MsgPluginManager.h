@@ -15,7 +15,7 @@
 #include <memory>
 #include <functional>
 
-typedef bool (*msgpi_load_plugin)(const unsigned int pluginId, const MsgPluginAPI* api);
+typedef void (*msgpi_load_plugin)(const unsigned int pluginId, const MsgPluginAPI* api);
 typedef void (*msgpi_unload_plugin)();
 
 class MsgPlugin

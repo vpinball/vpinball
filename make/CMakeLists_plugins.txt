@@ -1,7 +1,14 @@
 # plugin CMake file to be included in main project CMakelists
 
+if (APPLE)
+	set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources/plugins")
+else()
+	set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
+endif()
+
 # --- HelloWorld colorization plugin ---
 add_library(HelloWorldPlugin MODULE plugins/helloworld/helloworld.cpp)
+if (WIN32)
 set_target_properties(HelloWorldPlugin PROPERTIES
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
@@ -15,10 +22,11 @@ target_link_options(HelloWorldPlugin PUBLIC
    $<$<CONFIG:RELEASE>:/OPT:ICF>
    $<$<CONFIG:RELEASE>:/LTCG>
 )
+endif()
 target_include_directories(HelloWorldPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
 add_custom_command(TARGET HelloWorldPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloworld/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/helloworld/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/helloworld/plugin-helloworld.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloworld/plugin.cfg" "${PLUGINS_DIR}/helloworld/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "${PLUGINS_DIR}/helloworld/plugin-helloworld.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloWorldPlugin>"
 )
 
@@ -32,6 +40,7 @@ add_library(SerumPlugin MODULE
 set_source_files_properties(
    plugins/serum/third-party/include/miniz/miniz.c PROPERTIES LANGUAGE C
 )
+if (WIN32)
 set_target_properties(SerumPlugin PROPERTIES
    MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 )
@@ -45,16 +54,19 @@ target_link_options(SerumPlugin PUBLIC
    $<$<CONFIG:RELEASE>:/OPT:ICF>
    $<$<CONFIG:RELEASE>:/LTCG>
 )
+endif()
 target_include_directories(SerumPlugin PUBLIC
    ${CMAKE_CURRENT_SOURCE_DIR} src/plugins
    plugins/serum/third-party/include
 )
 add_custom_command(TARGET SerumPlugin POST_BUILD
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/serum/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/serum/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/serum/plugin-serum.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/serum/plugin.cfg" "${PLUGINS_DIR}/serum/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "${PLUGINS_DIR}/serum/plugin-serum.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:SerumPlugin>"
 )
 
+# Pinup DMD plugin is only available on Windows as is talks to the closed-source Pinup Player
+if (WIN32)
 
 # --- Pinup DMD trigger plugin ---
 add_library(PinupEventsPlugin MODULE plugins/pinup-events/pinup-events.cpp)
@@ -74,6 +86,7 @@ target_link_options(PinupEventsPlugin PUBLIC
 target_include_directories(PinupEventsPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
 add_custom_command(TARGET PinupEventsPlugin POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinup-events/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin-pinup-events.x86_${PluginBits}.dll"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin-pinup-events.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinupEventsPlugin>"
 )
+endif()

@@ -153,6 +153,9 @@ void VPXPluginAPIImpl::PinMameOnStart()
                msgApi.SubscribeMsg(m_pinMameEndpointId, msg, &PinMameOnEnd, nullptr);
                msgApi.ReleaseMsgID(msg);
             }
+         }else
+         {
+            PLOGE << "Failed to get cGameName property from script, can't broadcast onGameStart event";
          }
       }
       pScriptDispatch->Release();

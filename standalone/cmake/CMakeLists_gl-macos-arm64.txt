@@ -783,3 +783,6 @@ set(CPACK_PACKAGE_FILE_NAME VPinballX_GL-${CMAKE_PROJECT_VERSION}-macos-arm64)
 set(CPACK_DMG_VOLUME_NAME "VPinballX_GL ${CMAKE_PROJECT_VERSION}")
 set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-arm64/VPinballX.icns)
 include(CPack)
+
+set(PluginArch "arm64")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
