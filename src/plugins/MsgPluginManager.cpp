@@ -356,15 +356,15 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
          PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
          return;
       }
-      m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(m_module, "PluginLoad");
-      m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(m_module, "PluginUnload");
+      m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction((SDL_SharedObject*)m_module, "PluginLoad");
+      m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction((SDL_SharedObject*)m_module, "PluginUnload");
       if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
       {
-         SDL_UnloadObject(m_module);
+         SDL_UnloadObject((SDL_SharedObject*)m_module);
          m_loadPlugin = nullptr;
          m_unloadPlugin = nullptr;
          m_module = nullptr;
-         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
+         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required PluginLoad/PluginUnload functions are not correct.";
          return;
       }
    #elif defined(_WIN32) || defined(_WIN64)
