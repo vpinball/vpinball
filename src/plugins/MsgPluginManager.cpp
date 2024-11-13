@@ -243,7 +243,9 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, std::funct
          libraryKey = "windows.x86_64"s;
       #endif
    #elif (defined(__linux) || defined(__linux__))
-      #if (INTPTR_MAX == INT32_MAX)
+      #if defined(__aarch64__)
+         libraryKey = "linux.aarch64"s;
+      #elif (INTPTR_MAX == INT32_MAX)
          libraryKey = "linux.x86_32"s;
       #else
          libraryKey = "linux.x86_64"s;
@@ -253,6 +255,8 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, std::funct
          // Not yet implemented
       #elif defined(TARGET_OS_TV) && TARGET_OS_TV
          // Not yet implemented
+      #elif defined(__aarch64__)
+         libraryKey = "macos.arm64"s;
       #else
          #if (INTPTR_MAX == INT32_MAX)
             libraryKey = "macos.x86_32"s;
@@ -364,7 +368,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
          m_loadPlugin = nullptr;
          m_unloadPlugin = nullptr;
          m_module = nullptr;
-         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
+         PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required PluginLoad/PluginUnload functions are not correct.";
          return;
       }
    #elif defined(_WIN32) || defined(_WIN64)

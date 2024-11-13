@@ -741,3 +741,6 @@ if(POST_BUILD_COPY_EXT_LIBS)
       COMMAND cp -a "${CMAKE_SOURCE_DIR}/standalone/linux-x64/external/lib/*.so.*" "$<TARGET_FILE_DIR:vpinball>"
    )
 endif()
+
+set(PluginArch "x86_64")
+include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

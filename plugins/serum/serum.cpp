@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <chrono>
 #include <cstdlib>
+#include <cstring>
 
 #include "MsgPlugin.h"
 #include "CorePlugin.h"

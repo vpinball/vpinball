@@ -704,5 +704,5 @@ add_custom_command(TARGET vpinball POST_BUILD
 
 
 # Disabled since DX9 builds are based on a legacy MSVC without c++20 support
-#set(PluginBits "64")
+#set(PluginArch "x86_64")
 #include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

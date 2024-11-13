@@ -664,5 +664,5 @@ add_custom_command(TARGET vpinball POST_BUILD
 )
 
 
-set(PluginBits "64")
+set(PluginArch "x86_64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")
