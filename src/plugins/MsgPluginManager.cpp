@@ -19,7 +19,7 @@
 
 using namespace std::string_literals;
 
-#if defined(ENABLE_SDL)
+#if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT) 
    #include <SDL3/SDL_loadso.h>
 #else
    #if defined(_WIN32) || defined(_WIN64)
@@ -319,7 +319,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& plugin
    return nullptr;
 }
 
-#if !defined(ENABLE_SDL) && defined(_MSC_VER)
+#if !(defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)) && defined(_MSC_VER)
 std::string GetLastErrorAsString()
 {
    DWORD errorMessageID = ::GetLastError();
@@ -342,25 +342,25 @@ MsgPlugin::~MsgPlugin()
 
 void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
 {
-   if (m_is_loaded)
+   if (m_module != nullptr)
    {
       PLOGE << "Requested to load plugin '" << m_name << "' which is already loaded";
       return;
    }
    if (m_module == nullptr)
    {
-   #if defined(ENABLE_SDL)
+   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
       m_module = SDL_LoadObject(m_library.c_str());
       if (m_module == nullptr)
       {
          PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
          return;
       }
-      m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(m_module, "PluginLoad");
-      m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(m_module, "PluginUnload");
+      m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginLoad");
+      m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginUnload");
       if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
       {
-         SDL_UnloadObject(m_module);
+         SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
          m_loadPlugin = nullptr;
          m_unloadPlugin = nullptr;
          m_module = nullptr;
@@ -393,23 +393,23 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
       assert(false);
    #endif
    }
-   m_is_loaded = m_loadPlugin(m_endpointId, msgAPI);
-   PLOGI << "Plugin " << m_id << (m_is_loaded ? " loaded (library: " : " failed to loaded (library: ") << m_library << ')';
+   m_loadPlugin(m_endpointId, msgAPI);
+   PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
 }
 
 void MsgPlugin::Unload()
 {
-   if (!m_is_loaded)
+   if (m_module == nullptr)
    {
       PLOGE << "Requested to unload plugin '" << m_name << "' which is not loaded";
       return;
    }
    m_unloadPlugin();
-   // Use module unload instead of explicit unloading (avoid crashes due to forced unloading modules with thread still running)
+   // We use module unload instead of explicit unloading to avoid crashes due to forced unloading of modules with thread that are not yet joined
    // The only drawback is that the application keep the module (dll file) locked
    /*
-   #if defined(ENABLE_SDL)
-      SDL_UnloadObject(m_module);
+   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
+      SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
    #elif defined(_WIN32) || defined(_WIN64)
       FreeLibrary(static_cast<HMODULE>(m_module));
    #endif
@@ -417,5 +417,4 @@ void MsgPlugin::Unload()
    m_module = nullptr;
    m_loadPlugin = nullptr;
    m_unloadPlugin = nullptr;
-   m_is_loaded = false;
 }
