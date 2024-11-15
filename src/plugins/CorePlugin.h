@@ -71,5 +71,5 @@ typedef struct GetDmdMsg
    unsigned int format;       // Frame data format, see CTLPI_GETDMD_FORMAT_xxx constants, always defined on response, valid on request if CTLPI_GETDMD_FLAG_RENDER_FMT_REQ is set
    // Response
    unsigned int frameId;      // Id that can be used to discard identical frames
-   uint8_t* frame;            // Pointer to frame data, null until a provider answers the request, owned by the provider
+   char* frame;               // Pointer to frame data, null until a provider answers the request, owned by the provider
 } GetDmdMsg;
