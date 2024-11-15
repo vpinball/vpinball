@@ -1,13 +1,13 @@
 // license:GPLv3+
 
 #ifdef GLSL
-uniform float exposure; // overaal scene exposure
+uniform float4 exposure_wcg; // overaal scene exposure
 uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT
 
 #else // HLSL
 
 texture Texture6; // Precomputed Tonemapping LUT
-const float exposure; // overaal scene exposure
+const float4 exposure_wcg; // overaal scene exposure
 sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 {
     Texture = (Texture6);
@@ -20,6 +20,8 @@ sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
 };
 
 #endif
+
+#define exposure (exposure_wcg.x)
 
 // //////////////////////////////////////////////////////////////////////////////////////////////////
 // Tonemapping
