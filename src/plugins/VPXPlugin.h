@@ -94,7 +94,7 @@ typedef struct VPPluginAPI
    void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
 
    // View management
-   void (*DisableStaticPrerendering)(const BOOL disable);
+   void (*DisableStaticPrerendering)(const int /* bool */ disable);
    void (*GetActiveViewSetup)(VPXViewSetupDef* view);
    void (*SetActiveViewSetup)(VPXViewSetupDef* view);
 

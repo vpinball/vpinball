@@ -52,11 +52,6 @@
 // This header is a common header to be used both by host and plugins.
 
 
-// For compability and ease of binding reasons we stick to C 89 syntax: no bool type, no nested typedef, explicit enum,...
-#ifndef BOOL
-typedef int BOOL;
-#endif
-
 #if defined(_MSC_VER)
 // Microsoft
 #define MSGPI_EXPORT extern "C" __declspec(dllexport)
