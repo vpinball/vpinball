@@ -1130,6 +1130,7 @@
     </ClCompile>
     <ClCompile Include="src/core/extern.cpp" />
     <ClCompile Include="src/core/ieditable.cpp" />
+    <ClCompile Include="src/core/editablereg.cpp" />
     <ClCompile Include="src/core/iselect.cpp" />
     <ClCompile Include="src/core/pininput.cpp" />
     <ClCompile Include="src/core/pininput_OpenPinDev.cpp" />
