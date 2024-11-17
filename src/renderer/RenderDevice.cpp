@@ -291,35 +291,6 @@ using namespace Concurrency::diagnostic;
 extern marker_series series;
 #endif
 
-#ifdef ENABLE_XR
-   #include "VRDevice.h"
-
-   #define XR_USE_GRAPHICS_API_D3D11
-   #include <d3d11_1.h>
-   #include <dxgi1_6.h>
-
-   #include <openxr/openxr.h>
-   #include <openxr/openxr_platform.h>
-
-#define D3D11_CHECK(x, y)                                                                         \
-    {                                                                                             \
-        HRESULT result = (x);                                                                     \
-        if (FAILED(result)) {                                                                     \
-            PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;                  \
-            PLOGE << "ERROR: D3D11: " << y;                                                       \
-        }                                                                                         \
-    }
-
-#define D3D11_SAFE_RELEASE(p) \
-    {                         \
-        if (p) {              \
-            (p)->Release();   \
-            (p) = nullptr;    \
-        }                     \
-    }
-
-#endif
-
 #if defined(ENABLE_BGFX)
 void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
