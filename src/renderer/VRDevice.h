@@ -94,7 +94,7 @@ private:
    };
    SwapchainInfo m_colorSwapchainInfo = {};
    SwapchainInfo m_depthSwapchainInfo = {};
-   SwapchainInfo CreateSwapChain(XrSession session, class D3D11Backend* backend, SwapchainType type, int64_t format, uint32_t width, uint32_t height, uint32_t arraySize, uint32_t sampleCount, XrSwapchainCreateFlags createFlags, XrSwapchainUsageFlags usageFlags);
+   SwapchainInfo CreateSwapChain(XrSession session, class XRGraphicBackend* backend, SwapchainType type, int64_t format, uint32_t width, uint32_t height, uint32_t arraySize, uint32_t sampleCount, XrSwapchainCreateFlags createFlags, XrSwapchainUsageFlags usageFlags);
    std::vector<XrEnvironmentBlendMode> m_applicationEnvironmentBlendModes = { XR_ENVIRONMENT_BLEND_MODE_OPAQUE, XR_ENVIRONMENT_BLEND_MODE_ADDITIVE };
    std::vector<XrEnvironmentBlendMode> m_environmentBlendModes = {};
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
@@ -113,6 +113,6 @@ private:
    bool m_depthExtensionSupported = false;
    bool m_colorSpaceExtensionSupported = false;
 
-   class D3D11Backend* m_backend = nullptr;
+   class XRGraphicBackend* m_backend = nullptr;
 #endif
 };
