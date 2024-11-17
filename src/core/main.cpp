@@ -216,8 +216,6 @@ int g_argc;
 char **g_argv;
 #endif
 
-robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
-
 static const string options[] = { // keep in sync with option_names & option_descs!
    "h"s,
    "Help"s,
