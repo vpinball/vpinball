@@ -701,12 +701,16 @@ VRDevice::~VRDevice()
          m_backend->DestroyImageView(imageView);
 
       // Free the Swapchain Image Data.
-      m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
-      m_backend->FreeSwapchainImageData(m_depthSwapchainInfo.swapchain);
+      if (m_colorSwapchainInfo.swapchain)
+         m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
+      if (m_depthSwapchainInfo.swapchain)
+         m_backend->FreeSwapchainImageData(m_depthSwapchainInfo.swapchain);
 
       // Destroy the swapchains.
-      OPENXR_CHECK(xrDestroySwapchain(m_colorSwapchainInfo.swapchain), "Failed to destroy Color Swapchain");
-      OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
+      if (m_colorSwapchainInfo.swapchain)
+         OPENXR_CHECK(xrDestroySwapchain(m_colorSwapchainInfo.swapchain), "Failed to destroy Color Swapchain");
+      if (m_depthSwapchainInfo.swapchain)
+         OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
       delete m_backend;
 
       // Destroy the reference XrSpace.

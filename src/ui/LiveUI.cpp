@@ -1184,7 +1184,7 @@ void LiveUI::Update(const RenderTarget *rt)
       {
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
-         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(point);
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(rt, point);
          for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
          {
             HitBall *const pBall = g_pplayer->m_vball[i];
@@ -1203,9 +1203,9 @@ void LiveUI::Update(const RenderTarget *rt)
          const ImVec2 mouseDrag = ImGui::GetMouseDragDelta();
          const ImVec2 mouseInitalPos = mousePos - mouseDrag;
          const POINT point { (LONG)mouseInitalPos.x, (LONG)mouseInitalPos.y };
-         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(point);
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(rt, point);
          const POINT newPoint { (LONG)mousePos.x, (LONG)mousePos.y };
-         const Vertex3Ds vert = m_renderer->Get3DPointFrom2D(newPoint);
+         const Vertex3Ds vert = m_renderer->Get3DPointFrom2D(rt, newPoint);
 
          ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
          ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -1277,7 +1277,7 @@ void LiveUI::Update(const RenderTarget *rt)
          // Note that ball control release is handled by pininput
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
-         m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(point));
+         m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(rt, point));
          m_player->m_pBCTarget->x = clamp(m_player->m_pBCTarget->x, 0.f, m_live_table->m_right);
          m_player->m_pBCTarget->y = clamp(m_player->m_pBCTarget->y, 0.f, m_live_table->m_bottom);
          if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))

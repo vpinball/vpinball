@@ -491,18 +491,6 @@ void Renderer::SwapAORenderTargets()
    m_pAORenderTarget2 = tmpAO;
 }
 
-void Renderer::TransformVertices(const Vertex3D_NoTex2 * const __restrict rgv, const WORD * const __restrict rgi, const int count, Vertex2D * const __restrict rgvout) const
-{
-   RECT viewport { 0, 0, (LONG)m_renderDevice->GetOutputBackBuffer()->GetWidth(), (LONG)m_renderDevice->GetOutputBackBuffer()->GetHeight() };
-   m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
-}
-
-void Renderer::TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const
-{
-   RECT viewport { 0, 0, (LONG)m_renderDevice->GetOutputBackBuffer()->GetWidth(), (LONG)m_renderDevice->GetOutputBackBuffer()->GetHeight() };
-   m_mvp->GetModelViewProj(0).TransformVertices(rgv, rgi, count, rgvout, viewport);
-}
-
 BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres)
 {
    const void* __restrict envmap = envTex->m_pdsBuffer->data();
@@ -907,23 +895,23 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    SetupShaders();
 }
 
-Vertex3Ds Renderer::Unproject(const Vertex3Ds& point)
+Vertex3Ds Renderer::Unproject(const RenderTarget* surface, const Vertex3Ds& point)
 {
    Matrix3D invMVP = m_mvp->GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(
-             2.0f * point.x / (float)m_renderDevice->GetOutputBackBuffer()->GetWidth()  - 1.0f,
-      1.0f - 2.0f * point.y / (float)m_renderDevice->GetOutputBackBuffer()->GetHeight(),
+             2.0f * point.x / (float)surface->GetWidth()  - 1.0f,
+      1.0f - 2.0f * point.y / (float)surface->GetHeight(),
       (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
    return invMVP * p;
 }
 
-Vertex3Ds Renderer::Get3DPointFrom2D(const POINT& p)
+Vertex3Ds Renderer::Get3DPointFrom2D(const RenderTarget* surface, const POINT& p)
 {
    const Vertex3Ds pNear((float)p.x, (float)p.y, 0.f /* MinZ */);
    const Vertex3Ds pFar ((float)p.x, (float)p.y, 1.f /* MaxZ */);
-   const Vertex3Ds p1 = Unproject(pNear);
-   const Vertex3Ds p2 = Unproject(pFar);
+   const Vertex3Ds p1 = Unproject(surface, pNear);
+   const Vertex3Ds p2 = Unproject(surface, pFar);
    constexpr float wz = 0.f;
    const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
@@ -1109,6 +1097,27 @@ void Renderer::RenderFrame()
    // Keep previous render as a reflection probe for ball reflection and for hires motion blur
    SwapBackBufferRenderTargets();
 
+   // Reinitialize parts that have been modified
+   for (auto renderable : m_renderableToInit)
+   {
+      renderable->RenderRelease();
+      renderable->RenderSetup(m_renderDevice);
+   }
+   m_renderableToInit.clear();
+
+   // Setup ball rendering: collect all lights that can reflect on balls
+   m_ballTrailMeshBufferPos = 0;
+   m_ballReflectedLights.clear();
+   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
+   {
+      IEditable* const item = m_table->m_vedit[i];
+      if (item && item->GetItemType() == eItemLight && static_cast<Light*>(item)->m_d.m_showReflectionOnBall && !static_cast<Light*>(item)->m_backglass)
+         m_ballReflectedLights.push_back(static_cast<Light*>(item));
+   }
+   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
+   // m_renderDevice->AddRenderTargetDependency(m_renderDevice->GetPreviousBackBufferTexture());
+   m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
+
    // Update camera point of view
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
    if (m_stereo3D == STEREO_VR)
@@ -1128,54 +1137,24 @@ void Renderer::RenderFrame()
          m_mvp->SetProj(eye, m_matProj[eye]);
    }
 
-   // Reinitialize parts that have been modified
-   for (auto renderable : m_renderableToInit)
-   {
-      renderable->RenderRelease();
-      renderable->RenderSetup(m_renderDevice);
-   }
-   m_renderableToInit.clear();
-
-   // Update staticly prerendered parts if needed
-   RenderStaticPrepass();
-
    // Start from the prerendered parts/background or a clear background for VR
    m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
+   {
       m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+   }
    else
    {
+      RenderStaticPrepass(); // Update staticly prerendered parts if needed
       m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
       m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
    }
 
-   // Setup ball rendering: collect all lights that can reflect on balls
-   m_ballTrailMeshBufferPos = 0;
-   m_ballReflectedLights.clear();
-   for (size_t i = 0; i < m_table->m_vedit.size(); i++)
-   {
-      IEditable* const item = m_table->m_vedit[i];
-      if (item && item->GetItemType() == eItemLight && ((Light*)item)->m_d.m_showReflectionOnBall)
-         m_ballReflectedLights.push_back((Light*)item);
-   }
-   // We don't need to set the dependency on the previous frame render as this would be a cross frame dependency which does not have any meaning since dependencies are resolved per frame
-   // m_renderDevice->AddRenderTargetDependency(m_renderDevice->GetPreviousBackBufferTexture());
-   m_renderDevice->m_ballShader->SetTexture(SHADER_tex_ball_playfield, GetPreviousBackBufferTexture()->GetColorSampler());
-
    if (g_pplayer->GetInfoMode() != IF_STATIC_ONLY)
       RenderDynamics();
 
-   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
-   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
-   {
-      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
-      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
-      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
-      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
-      initial_rt->m_name += '-';
-   }
-
-   PrepareVideoBuffers();
+   // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
+   PrepareVideoBuffers(m_renderDevice->GetOutputBackBuffer());
 }
 
 void Renderer::RenderDMD(BaseTexture* dmd, const bool isColored, RenderTarget* rt)
@@ -1752,7 +1731,7 @@ void Renderer::Bloom()
       GetBloomBufferTexture(), 39.f); // FIXME kernel size should depend on buffer resolution
 }
 
-void Renderer::PrepareVideoBuffers()
+void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 {
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
    #ifdef ENABLE_XR
@@ -1781,7 +1760,17 @@ void Renderer::PrepareVideoBuffers()
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
 
-   RenderTarget *renderedRT = GetBackBufferTexture();
+   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
+   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
+   {
+      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
+      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
+      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      initial_rt->m_name += '-';
+   }
+
+   RenderTarget* renderedRT = GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
    m_renderDevice->ResetRenderState();
    m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -1844,7 +1833,7 @@ void Renderer::PrepareVideoBuffers()
       if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo || useUpscaler)
          outputRT = GetPostProcessRenderTarget1();
       else
-         outputRT = m_renderDevice->GetOutputBackBuffer();
+         outputRT = outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("Tonemap/Dither/ColorGrade"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT, useAO);
@@ -1914,7 +1903,7 @@ void Renderer::PrepareVideoBuffers()
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
          (!isHdr2020 && (m_table->m_bloom_strength > 0.0f) && !m_bloomOff && (infoMode <= IF_DYNAMIC_ONLY)) ? 1.f : 0.f, /* bloom */
-         (!isHdr2020 && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, /* Dither */
+         (!isHdr2020 && (outputBackBuffer->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, /* Dither */
          (pin != nullptr) ? 1.f : 0.f, /* LUT colorgrade */
          0.f);
 
@@ -2109,13 +2098,13 @@ void Renderer::PrepareVideoBuffers()
    // Stereo and AA are performed on LDR render buffer after tonemapping (RGB8 or RGB10, but nof RGBF).
    // We ping pong between BackBufferTmpTexture and BackBufferTmpTexture2 for the different postprocess
    // SMAA is a special case since it needs 3 passes, so it uses GetBackBufferTexture also (which is somewhat overkill since it is RGB16F)
-   assert(renderedRT == m_renderDevice->GetOutputBackBuffer() || renderedRT == GetPostProcessRenderTarget1());
+   assert(renderedRT == outputBackBuffer || renderedRT == GetPostProcessRenderTarget1());
 
    // Perform post processed anti aliasing
    if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == GetPostProcessRenderTarget1());
-      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : m_renderDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2144,7 +2133,7 @@ void Renderer::PrepareVideoBuffers()
       renderedRT = outputRT;
 
       // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
-      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : m_renderDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2183,7 +2172,7 @@ void Renderer::PrepareVideoBuffers()
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
 
-      outputRT = sharpen || stereo || useUpscaler ? GetPreviousBackBufferTexture() : m_renderDevice->GetOutputBackBuffer();
+      outputRT = sharpen || stereo || useUpscaler ? GetPreviousBackBufferTexture() : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
@@ -2198,8 +2187,8 @@ void Renderer::PrepareVideoBuffers()
    // Performs sharpening
    if (sharpen)
    {
-      assert(renderedRT != m_renderDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
-      outputRT = stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : m_renderDevice->GetOutputBackBuffer();
+      assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("Sharpen"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2220,7 +2209,7 @@ void Renderer::PrepareVideoBuffers()
       // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
-         assert(renderedRT != m_renderDevice->GetOutputBackBuffer());
+         assert(renderedRT != outputBackBuffer);
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
 
          RenderTarget *leftTexture = GetOffscreenVR(0);
@@ -2237,7 +2226,7 @@ void Renderer::PrepareVideoBuffers()
          if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
             m_renderDevice->RenderLiveUI();
 
-         RenderTarget *outRT = m_renderDevice->GetOutputBackBuffer();
+         RenderTarget* outRT = outputBackBuffer;
          m_renderDevice->SetRenderTarget("VR Preview"s, outRT, false);
          m_renderDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
          m_renderDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
@@ -2277,7 +2266,7 @@ void Renderer::PrepareVideoBuffers()
       if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
       {
          // Anaglyph and 3DTV
-         assert(renderedRT != m_renderDevice->GetOutputBackBuffer());
+         assert(renderedRT != outputBackBuffer);
          // For anaglyph, defocus the "lesser" eye (the one with a darker color, which should be the non dominant eye of the player)
          if (m_stereo3DDefocus != 0.f)
          {
@@ -2287,7 +2276,7 @@ void Renderer::PrepareVideoBuffers()
             renderedRT = outputRT;
          }
          // Stereo composition
-         m_renderDevice->SetRenderTarget("Stereo Anaglyph"s, m_renderDevice->GetOutputBackBuffer(), false);
+         m_renderDevice->SetRenderTarget("Stereo Anaglyph"s, outputBackBuffer, false);
          m_renderDevice->AddRenderTargetDependency(renderedRT);
          if (m_stereo3DfakeStereo)
          {
@@ -2300,14 +2289,14 @@ void Renderer::PrepareVideoBuffers()
       else
       {
          // STEREO_OFF: nothing to do
-         assert(renderedRT == m_renderDevice->GetOutputBackBuffer());
+         assert(renderedRT == outputBackBuffer);
       }
    }
    // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
    else if (useUpscaler)
    {
-      assert(renderedRT != m_renderDevice->GetOutputBackBuffer()); // At this point, renderedRT may be PP1, PP2 or backbuffer
-      outputRT = m_renderDevice->GetOutputBackBuffer();
+      assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
+      outputRT = outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("Upscale"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2321,7 +2310,7 @@ void Renderer::PrepareVideoBuffers()
    {
       // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      m_renderDevice->SetRenderTarget("ImGui"s, m_renderDevice->GetOutputBackBuffer());
+      m_renderDevice->SetRenderTarget("ImGui"s, outputBackBuffer);
       m_renderDevice->RenderLiveUI();
       g_frameProfiler.ExitProfileSection();
    }

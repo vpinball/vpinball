@@ -24,10 +24,8 @@ public:
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
    const ModelViewProj& GetMVP() const { return *m_mvp; }
-   void TransformVertices(const Vertex3D_NoTex2* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
-   void TransformVertices(const Vertex3Ds* const __restrict rgv, const WORD* const __restrict rgi, const int count, Vertex2D* const __restrict rgvout) const;
-   Vertex3Ds Unproject(const Vertex3Ds& point);
-   Vertex3Ds Get3DPointFrom2D(const POINT& p);
+   Vertex3Ds Unproject(const RenderTarget* surface, const Vertex3Ds& point);
+   Vertex3Ds Get3DPointFrom2D(const RenderTarget* surface, const POINT& p);
 
    void SetupShaders();
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
@@ -128,7 +126,7 @@ private:
    void RenderDynamics();
    void DrawBackground();
    void DrawBulbLightBuffer();
-   void PrepareVideoBuffers();
+   void PrepareVideoBuffers(RenderTarget* outputBackBuffer);
    void Bloom();
    void SSRefl();
    BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
