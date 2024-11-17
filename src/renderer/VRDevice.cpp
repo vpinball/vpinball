@@ -13,13 +13,107 @@
    #include "bx/math.h"
    #include "bx/os.h"
 
-   #define XR_USE_PLATFORM_WIN32
+   #ifdef BX_PLATFORM_WINDOWS
+      #define XR_USE_PLATFORM_WIN32
+      //#define XR_USE_GRAPHICS_API_VULKAN
+      #define XR_USE_GRAPHICS_API_OPENGL
+      #define XR_USE_GRAPHICS_API_OPENGL_ES
+      #define XR_USE_GRAPHICS_API_D3D11
+      //#define XR_USE_GRAPHICS_API_D3D12
+   #elif defined(BX_PLATFORM_ANDROID)
+      #define XR_USE_PLATFORM_ANDROID
+      //#define XR_USE_GRAPHICS_API_VULKAN
+      #define XR_USE_GRAPHICS_API_OPENGL_ES
+   #endif
 
-   //#define XR_USE_GRAPHICS_API_VULKAN
-   //#define XR_USE_GRAPHICS_API_OPENGL
-   //#define XR_USE_GRAPHICS_API_OPENGL_ES
-   #define XR_USE_GRAPHICS_API_D3D11
-   //#define XR_USE_GRAPHICS_API_D3D12
+   // OpenXR Dependencies
+
+   #ifdef XR_USE_PLATFORM_ANDROID
+   #include <android/native_window.h>
+   #include <android/window.h>
+   #include <android/native_window_jni.h>
+   #endif  // XR_USE_PLATFORM_ANDROID
+
+   #ifdef XR_USE_PLATFORM_WIN32
+
+   #include <winapifamily.h>
+   #if !(WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP | WINAPI_PARTITION_SYSTEM))
+   // Enable desktop partition APIs, such as RegOpenKeyEx, LoadLibraryEx, PathFileExists etc.
+   #undef WINAPI_PARTITION_DESKTOP
+   #define WINAPI_PARTITION_DESKTOP 1
+   #endif
+
+   #ifndef NOMINMAX
+   #define NOMINMAX
+   #endif  // !NOMINMAX
+
+   #ifndef WIN32_LEAN_AND_MEAN
+   #define WIN32_LEAN_AND_MEAN
+   #endif  // !WIN32_LEAN_AND_MEAN
+
+   #include <windows.h>
+   #include <unknwn.h>
+
+   #endif  // XR_USE_PLATFORM_WIN32
+
+   #ifdef XR_USE_GRAPHICS_API_D3D11
+   #include <d3d11.h>
+   #endif  // XR_USE_GRAPHICS_API_D3D11
+
+   #ifdef XR_USE_GRAPHICS_API_D3D12
+   #include <d3d12.h>
+   #endif  // XR_USE_GRAPHICS_API_D3D12
+
+   #ifdef XR_USE_PLATFORM_XLIB
+   #include <X11/Xlib.h>
+   #include <X11/Xutil.h>
+   #endif  // XR_USE_PLATFORM_XLIB
+
+   #ifdef XR_USE_PLATFORM_XCB
+   #include <xcb/xcb.h>
+   #endif  // XR_USE_PLATFORM_XCB
+
+   #ifdef XR_USE_GRAPHICS_API_OPENGL
+   #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+   #include <GL/glx.h>
+   #endif  // (XR_USE_PLATFORM_XLIB || XR_USE_PLATFORM_XCB)
+   #ifdef XR_USE_PLATFORM_XCB
+   #include <xcb/glx.h>
+   #endif  // XR_USE_PLATFORM_XCB
+   #ifdef XR_USE_PLATFORM_MACOS
+   #include <OpenCL/cl_gl_ext.h>
+   #endif  // XR_USE_PLATFORM_MACOS
+   #endif  // XR_USE_GRAPHICS_API_OPENGL
+
+   #ifdef XR_USE_GRAPHICS_API_OPENGL_ES
+   #include "sdl3/SDL_egl.h"
+   #endif  // XR_USE_GRAPHICS_API_OPENGL_ES
+
+   #ifdef XR_USE_GRAPHICS_API_VULKAN
+   #include <vulkan/vulkan.h>
+   #endif  // XR_USE_GRAPHICS_API_VULKAN
+
+   #ifdef XR_USE_PLATFORM_WAYLAND
+   #include "wayland-client.h"
+   #endif  // XR_USE_PLATFORM_WAYLAND
+
+   #ifdef XR_USE_PLATFORM_EGL
+   #include <EGL/egl.h>
+   #endif  // XR_USE_PLATFORM_EGL
+
+   #if defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
+   #ifdef Success
+   #undef Success
+   #endif  // Success
+
+   #ifdef Always
+   #undef Always
+   #endif  // Always
+
+   #ifdef None
+   #undef None
+   #endif  // None
+   #endif // defined(XR_USE_PLATFORM_XLIB) || defined(XR_USE_PLATFORM_XCB)
 
    #include <openxr/openxr.h>
    #include <openxr/openxr_platform.h>
@@ -41,7 +135,7 @@ inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
       }                                                                                                                                                                                      \
    }
 
-class GraphicBackend
+class XRGraphicBackend
 {
 public:
    struct ImageViewCreateInfo
@@ -77,6 +171,18 @@ public:
       uint32_t layerCount;
    };
 
+   virtual void* GetGraphicContext() const = 0;
+   virtual void* GetGraphicsBinding() = 0;
+
+   virtual XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) = 0;
+   virtual void FreeSwapchainImageData(XrSwapchain swapchain) = 0;
+   virtual void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) = 0;
+
+   virtual void* CreateImageView(const ImageViewCreateInfo& imageViewCI) = 0;
+   virtual void DestroyImageView(void*& imageView) = 0;
+
+   virtual void PresentFrame() = 0;
+
    virtual const std::vector<int64_t> GetSupportedColorSwapchainFormats() = 0;
    virtual const std::vector<int64_t> GetSupportedDepthSwapchainFormats() = 0;
 
@@ -110,8 +216,7 @@ public:
 };
 
 
-
-
+#ifdef XR_USE_GRAPHICS_API_D3D11
 #include <d3d11_1.h>
 #include <dxgi1_6.h>
 
@@ -134,10 +239,10 @@ public:
       }                                                                                                                                                                                      \
    }
 
-class D3D11Backend : public GraphicBackend
+class XRD3D11Backend : public XRGraphicBackend
 {
 public:
-   D3D11Backend(XrInstance& m_xrInstance, XrSystemId& m_systemID)
+   XRD3D11Backend(XrInstance& m_xrInstance, XrSystemId& m_systemID)
    {
       PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetD3D11GraphicsRequirementsKHR", (PFN_xrVoidFunction*)&xrGetD3D11GraphicsRequirementsKHR), "Failed to get InstanceProcAddr xrGetD3D11GraphicsRequirementsKHR.");
@@ -191,7 +296,7 @@ public:
       D3D11_SAFE_RELEASE(factory);
    }
 
-   ~D3D11Backend()
+   ~XRD3D11Backend()
    {
       D3D11_SAFE_RELEASE(m_immediateContext);
       D3D11_SAFE_RELEASE(m_device);
@@ -201,21 +306,31 @@ public:
          bx::dlclose(m_d3d11Dll);
    }
 
-   void* GetGraphicsBinding()
+   void* GetGraphicContext() const override
+   {
+      return m_device;
+   }
+
+   void* GetGraphicsBinding() override
    {
       graphicsBinding = { XR_TYPE_GRAPHICS_BINDING_D3D11_KHR };
       graphicsBinding.device = m_device;
       return &graphicsBinding;
    }
 
-   XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count)
+   void PresentFrame() override
+   {
+      m_swapChain->Present(0, 0);
+   }
+
+   XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) override
    {
       swapchainImagesMap[swapchain].first = type;
       swapchainImagesMap[swapchain].second.resize(count, { XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR });
       return reinterpret_cast<XrSwapchainImageBaseHeader*>(swapchainImagesMap[swapchain].second.data());
    }
 
-   void* CreateImageView(const ImageViewCreateInfo& imageViewCI)
+   void* CreateImageView(const ImageViewCreateInfo& imageViewCI) override
    {
       if (imageViewCI.type == ImageViewCreateInfo::Type::RTV)
       {
@@ -428,20 +543,20 @@ public:
       }
    }
 
-   void DestroyImageView(void*& imageView)
+   void DestroyImageView(void*& imageView) override
    {
       ID3D11View* d3d11ImageView = (ID3D11View*)imageView;
       D3D11_SAFE_RELEASE(d3d11ImageView);
       imageView = nullptr;
    }
 
-   void FreeSwapchainImageData(XrSwapchain swapchain)
+   void FreeSwapchainImageData(XrSwapchain swapchain) override
    {
       swapchainImagesMap[swapchain].second.clear();
       swapchainImagesMap.erase(swapchain);
    }
 
-   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) { return swapchainImagesMap[swapchain].second[index].texture; }
+   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) override { return swapchainImagesMap[swapchain].second[index].texture; }
    const std::vector<int64_t> GetSupportedColorSwapchainFormats() override { return { DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB }; }
    const std::vector<int64_t> GetSupportedDepthSwapchainFormats() override { return { DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_D16_UNORM }; }
 
@@ -454,6 +569,7 @@ public:
    XrGraphicsBindingD3D11KHR graphicsBinding {};
    std::unordered_map<XrSwapchain, std::pair<VRDevice::SwapchainType, std::vector<XrSwapchainImageD3D11KHR>>> swapchainImagesMap {};
 };
+#endif
 
 #endif
 
@@ -734,7 +850,7 @@ VRDevice::~VRDevice()
 #ifdef ENABLE_XR
 void* VRDevice::GetGraphicContext() const
 {
-   return m_backend->m_device;
+   return m_backend->GetGraphicContext();
 }
 
 void* VRDevice::GetSwapChainBackBuffer(const int index, const bool isDepth) const
@@ -746,7 +862,7 @@ void* VRDevice::GetSwapChainBackBuffer(const int index, const bool isDepth) cons
       return m_colorSwapchainInfo.imageViews[index];
 }
 
-VRDevice::SwapchainInfo VRDevice::CreateSwapChain(XrSession session, D3D11Backend* backend, SwapchainType type, int64_t format, 
+VRDevice::SwapchainInfo VRDevice::CreateSwapChain(XrSession session, XRGraphicBackend* backend, SwapchainType type, int64_t format, 
    uint32_t width, uint32_t height, uint32_t arraySize, uint32_t sampleCount, XrSwapchainCreateFlags createFlags, XrSwapchainUsageFlags usageFlags)
 {
    VRDevice::SwapchainInfo swapchain;
@@ -774,12 +890,12 @@ VRDevice::SwapchainInfo VRDevice::CreateSwapChain(XrSession session, D3D11Backen
 
    for (uint32_t j = 0; j < swapchainImageCount; j++)
    {
-      D3D11Backend::ImageViewCreateInfo imageViewCI;
+      XRGraphicBackend::ImageViewCreateInfo imageViewCI;
       imageViewCI.image = backend->GetSwapchainImage(swapchain.swapchain, j);
-      imageViewCI.type = type == SwapchainType::COLOR ? D3D11Backend::ImageViewCreateInfo::Type::RTV : D3D11Backend::ImageViewCreateInfo::Type::DSV;
-      imageViewCI.view = D3D11Backend::ImageViewCreateInfo::View::TYPE_2D_ARRAY;
+      imageViewCI.type = type == SwapchainType::COLOR ? XRGraphicBackend::ImageViewCreateInfo::Type::RTV : XRGraphicBackend::ImageViewCreateInfo::Type::DSV;
+      imageViewCI.view = XRGraphicBackend::ImageViewCreateInfo::View::TYPE_2D_ARRAY;
       imageViewCI.format = format;
-      imageViewCI.aspect = type == SwapchainType::COLOR ? D3D11Backend::ImageViewCreateInfo::Aspect::COLOR_BIT : D3D11Backend::ImageViewCreateInfo::Aspect::DEPTH_BIT;
+      imageViewCI.aspect = type == SwapchainType::COLOR ? XRGraphicBackend::ImageViewCreateInfo::Aspect::COLOR_BIT : XRGraphicBackend::ImageViewCreateInfo::Aspect::DEPTH_BIT;
       imageViewCI.baseMipLevel = 0;
       imageViewCI.levelCount = 1;
       imageViewCI.baseArrayLayer = 0;
@@ -883,7 +999,7 @@ void VRDevice::CreateSession()
    assert(m_xrInstance != XR_NULL_HANDLE);
    assert(m_systemID != XR_NULL_SYSTEM_ID);
    assert(m_session == XR_NULL_HANDLE);
-   m_backend = new D3D11Backend(m_xrInstance, m_systemID);
+   m_backend = new XRD3D11Backend(m_xrInstance, m_systemID);
 
    // Since we are using texture array rendering, we need target to be stereo views with the same setup
    assert(m_viewConfigurationViews.size() == 2);
@@ -900,8 +1016,8 @@ void VRDevice::CreateSession()
    }
    else
    {
-      m_eyeWidth = m_viewConfigurationViews[0].maxImageRectWidth * resFactor;
-      m_eyeHeight = m_viewConfigurationViews[0].maxImageRectHeight * resFactor;
+      m_eyeWidth = static_cast<int>(m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
+      m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
 
    // Create an XrSessionCreateInfo structure.
@@ -1054,7 +1170,7 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
    {
       // FIXME we should perform preview rendering here
       submitFrame(false);
-      m_backend->m_swapChain->Present(0, 0);
+      m_backend->PresentFrame();
       return;
    }
 
@@ -1178,7 +1294,7 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
 
          // Reset BGFX backbuffer to point to the view from the swap chain selected by OpenXR
          bgfx::PlatformData pdata;
-         pdata.context = m_backend->m_device;
+         pdata.context = m_backend->GetGraphicContext();
          pdata.backBuffer = m_colorSwapchainInfo.imageViews[colorImageIndex];
          pdata.backBufferDS = m_depthSwapchainInfo.imageViews[depthImageIndex];
          bgfx::setPlatformData(pdata);
@@ -1217,7 +1333,7 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
 
    // FIXME Also performs preview window rendering and present (to actually render the preview, but also enables RenderDoc)
    // FIXME this needs to be preoperly cleaned up, splitting the preview output from the VR output
-   m_backend->m_swapChain->Present(0, 0);
+   m_backend->PresentFrame();
 }
 #endif
 
