@@ -48,14 +48,14 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
 
    g_pvp = new ::VPinball();
-   g_pvp->m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
+   g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
    g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
 
    Logger::GetInstance()->Init();
    Logger::GetInstance()->SetupLogger(true);
 
    PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-   PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->m_logicalNumberOfProcessors;
+   PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
    PLOGI << "m_szMyPath=" << g_pvp->m_szMyPath;
    PLOGI << "m_szMyPrefPath=" << g_pvp->m_szMyPrefPath;
 
@@ -104,7 +104,7 @@ void VPinball::ResetLog()
    Logger::GetInstance()->Truncate();
 
    PLOGI << "VPX - " << VP_VERSION_STRING_FULL_LITERAL;
-   PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->m_logicalNumberOfProcessors;
+   PLOGI << "m_logicalNumberOfProcessors=" << g_pvp->GetLogicalNumberOfProcessors();
    PLOGI << "m_szMyPath=" << g_pvp->m_szMyPath;
    PLOGI << "m_szMyPrefPath=" << g_pvp->m_szMyPrefPath;
 }
@@ -806,7 +806,7 @@ void VPinball::Cleanup()
    delete g_pvp;
    g_pvp = new ::VPinball();
    g_pvp->m_settings.LoadFromFile(g_pvp->m_szMyPrefPath + "VPinballX.ini", true);
-   g_pvp->m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
+   g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
    
    {
       std::lock_guard<std::mutex> lock(m_liveUIMutex);

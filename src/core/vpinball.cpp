@@ -1776,6 +1776,21 @@ void VPinball::ShowSubDialog(CDialog &dlg, const bool show)
 #endif
 }
 
+void VPinball::SetLogicalNumberOfProcessors(int procNumber)
+{
+   m_logicalNumberOfProcessors = procNumber;
+}
+
+int VPinball::GetLogicalNumberOfProcessors() const
+{
+   if (m_logicalNumberOfProcessors < 1) {
+      PLOGE << "Invalid number of processor " << m_logicalNumberOfProcessors << ". Fallback to single processor.";
+      return 1;
+   }
+
+   return m_logicalNumberOfProcessors;
+}
+
 int VPinball::OnCreate(CREATESTRUCT& cs)
 {
 #ifndef __STANDALONE__
