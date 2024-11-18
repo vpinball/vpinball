@@ -4084,7 +4084,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             assert(m_vimage.empty());
             m_vimage.resize(ctextures); // due to multithreaded loading do pre-allocation
             {
-               ThreadPool pool(g_pvp->m_logicalNumberOfProcessors); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
+               ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors()); //!! Note that this dramatically increases the amount of temporary memory needed, especially if Max Texture Dimension is set (as then all the additional conversion/rescale mem is also needed 'in parallel')
 
                int count = 0;
                for (int i = 0; i < ctextures; i++)

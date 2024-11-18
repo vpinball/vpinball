@@ -448,9 +448,9 @@ public:
       //!! max(2u, std::thread::hardware_concurrency()) ??
       SYSTEM_INFO sysinfo;
       GetSystemInfo(&sysinfo);
-      m_vpinball.m_logicalNumberOfProcessors = sysinfo.dwNumberOfProcessors; //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
+      m_vpinball.SetLogicalNumberOfProcessors(sysinfo.dwNumberOfProcessors); //!! this ignores processor groups, so if at some point we need extreme multi threading, implement this in addition!
 #else
-      m_vpinball.m_logicalNumberOfProcessors = SDL_GetNumLogicalCPUCores();
+      m_vpinball.SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());
 #endif
 
       IsOnWine(); // init static variable in there
@@ -593,7 +593,10 @@ public:
          //
 
          if (compare_option(szArglist[i], OPTION_LESSCPUTHREADS))
-             m_vpinball.m_logicalNumberOfProcessors = max(min(m_vpinball.m_logicalNumberOfProcessors, 2), m_vpinball.m_logicalNumberOfProcessors/4); // only use 1/4th the threads, but at least 2 (if there are 2)
+         {
+            int procCount = m_vpinball.GetLogicalNumberOfProcessors();
+            m_vpinball.SetLogicalNumberOfProcessors(max(min(procCount, 2), procCount/4)); // only use 1/4th the threads, but at least 2 (if there are 2)
+         }
 
          //
 
@@ -936,7 +939,7 @@ public:
 
 #ifdef __STANDALONE__
       PLOGI << "Settings file was loaded from " << m_szIniFileName;
-      PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.m_logicalNumberOfProcessors;
+      PLOGI << "m_logicalNumberOfProcessors=" << m_vpinball.GetLogicalNumberOfProcessors();
       PLOGI << "m_szMyPath=" << m_vpinball.m_szMyPath;
       PLOGI << "m_szMyPrefPath=" << m_vpinball.m_szMyPrefPath;
 

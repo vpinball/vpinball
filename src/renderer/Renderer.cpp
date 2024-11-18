@@ -593,7 +593,7 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
    //!! (note though that even 4096 samples can be too low if very bright spots (i.e. sun) in the image! see Delta_2k.hdr -> thus pre-filter enabled above!)
    // but with this implementation one can also have custom maps/LUTs for glossy, etc. later-on
    {
-      ThreadPool pool(g_pvp->m_logicalNumberOfProcessors);
+      ThreadPool pool(g_pvp->GetLogicalNumberOfProcessors());
 
       for (unsigned int y = 0; y < rad_env_yres; ++y) {
          pool.enqueue([y, rad_envmap, rad_format, rad_env_xres, rad_env_yres, envmap, env_format, env_xres, env_yres] {
