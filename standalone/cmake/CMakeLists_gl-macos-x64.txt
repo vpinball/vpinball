@@ -71,6 +71,7 @@ add_executable(vpinball
    src/audio/pinsound.h
 
    src/core/dispid.h
+   src/core/editablereg.cpp
    src/core/editablereg.h
    src/core/extern.cpp
    src/core/extern.h
