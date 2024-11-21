@@ -1138,14 +1138,15 @@ void Renderer::RenderFrame()
    }
 
    // Start from the prerendered parts/background or a clear background for VR
-   m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
    if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
    {
+      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
       m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
    }
    else
    {
       RenderStaticPrepass(); // Update staticly prerendered parts if needed
+      m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
       m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
       m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
    }
