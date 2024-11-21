@@ -13,14 +13,14 @@
    #include "bx/math.h"
    #include "bx/os.h"
 
-   #ifdef BX_PLATFORM_WINDOWS
+   #if BX_PLATFORM_WINDOWS
       #define XR_USE_PLATFORM_WIN32
       //#define XR_USE_GRAPHICS_API_VULKAN
       #define XR_USE_GRAPHICS_API_OPENGL
       #define XR_USE_GRAPHICS_API_OPENGL_ES
       #define XR_USE_GRAPHICS_API_D3D11
       //#define XR_USE_GRAPHICS_API_D3D12
-   #elif defined(BX_PLATFORM_ANDROID)
+   #elif BX_PLATFORM_ANDROID
       #define XR_USE_PLATFORM_ANDROID
       //#define XR_USE_GRAPHICS_API_VULKAN
       #define XR_USE_GRAPHICS_API_OPENGL_ES
