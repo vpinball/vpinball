@@ -1,3 +1,5 @@
+#include "core/stdafx.h"
+
 #include "main.h"
 #include "editablereg.h"
 

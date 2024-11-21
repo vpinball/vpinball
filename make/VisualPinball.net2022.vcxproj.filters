@@ -138,13 +138,7 @@
     <ClCompile Include="src/audio/wavread.cpp">
       <Filter>audio</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/player.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/Settings.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/TableDB.cpp">
+    <ClCompile Include="src/core/editablereg.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/extern.cpp">
@@ -156,6 +150,9 @@
     <ClCompile Include="src/core/iselect.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src/core/main.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
     <ClCompile Include="src/core/pininput.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -165,13 +162,19 @@
     <ClCompile Include="src/core/pinundo.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/main.cpp">
+    <ClCompile Include="src/core/player.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/vpinball.cpp">
+    <ClCompile Include="src/core/Settings.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/stdafx.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/TableDB.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/vpinball.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/math/math.cpp">
