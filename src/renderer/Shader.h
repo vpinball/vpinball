@@ -564,7 +564,7 @@ public:
          assert(shaderUniformNames[uniformName].count == 1);
          #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
-         else
+         #else
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
          #endif
       }
