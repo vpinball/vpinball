@@ -34,7 +34,7 @@
 #define _HAS_ITERATOR_DEBUGGING 0
 #endif
 
-#ifdef __OPENGLES__
+#if defined(ENABLE_BGFX) || defined(__OPENGLES__)
 #define FLT_MIN_VALUE 0.00006103515625
 #else
 #define FLT_MIN_VALUE 0.0000001
@@ -562,10 +562,10 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
-         #ifndef __OPENGLES__
-         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
-         #else
+         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
+         else
+         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
          #endif
       }
       float GetFloat(const ShaderUniforms uniformName)
@@ -585,7 +585,7 @@ public:
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
-         #ifdef __OPENGLES__
+         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
          for (int i = 0; i < count; i++) {
              vec4* p = const_cast<vec4*>(&pData[i]);
              if (p->x > 0 && p->x < FLT_MIN_VALUE) p->x = FLT_MIN_VALUE;
@@ -621,7 +621,7 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
-         #ifdef __OPENGLES__
+         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
          for (int i = 0; i < count * 16; i++) {
              float* const p = const_cast<float*>(&pMatrix[i]);
              if (*p > 0 && *p < FLT_MIN_VALUE) *p = FLT_MIN_VALUE;
