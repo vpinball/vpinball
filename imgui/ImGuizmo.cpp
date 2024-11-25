@@ -2781,7 +2781,8 @@ namespace IMGUIZMO_NAMESPACE
       static vec_t interpolationUp;
       static vec_t interpolationDir;
       static int interpolationFrames = 0;
-      const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
+      // VPX change: do not use a fixed up vector
+      //const vec_t referenceUp = makeVect(0.f, 1.f, 0.f);
 
       matrix_t svgView, svgProjection;
       svgView = gContext.mViewMat;
@@ -2802,6 +2803,8 @@ namespace IMGUIZMO_NAMESPACE
 
       vec_t dir = makeVect(viewInverse.m[2][0], viewInverse.m[2][1], viewInverse.m[2][2]);
       vec_t up = makeVect(viewInverse.m[1][0], viewInverse.m[1][1], viewInverse.m[1][2]);
+      // VPX change: use live up vector instead of a fixed reference one
+      const vec_t referenceUp = makeVect(up.x, up.y, up.z);
       vec_t eye = dir * distance;
       vec_t zero = makeVect(0.f, 0.f);
       LookAt(&eye.x, &zero.x, &up.x, cubeView.m16);
