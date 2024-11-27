@@ -15,6 +15,7 @@
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
+#include "SaveTableWin32Visitor.h"
 #endif
 #include "freeimage.h"
 #include "ThreadPool.h"
@@ -2779,7 +2780,8 @@ void PinTable::AutoSave()
    FastIStorage * const pstgroot = new FastIStorage();
    pstgroot->AddRef();
 
-   const HRESULT hr = SaveToStorage(pstgroot);
+   SaveTableWin32Visitor visitor(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
+   const HRESULT hr = SaveToStorage(pstgroot, visitor);
 
    m_undo.SetCleanPoint((SaveDirtyState)min((int)m_sdsDirtyProp, (int)eSaveAutosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_sdsDirtyScript, (int)eSaveAutosaved));
@@ -2910,7 +2912,8 @@ HRESULT PinTable::Save(const bool saveAs)
 
    RemoveInvalidReferences();
 
-   const HRESULT hr = SaveToStorage(pstgRoot);
+   SaveTableWin32Visitor visitor(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
+   const HRESULT hr = SaveToStorage(pstgRoot, visitor);
 
    if (SUCCEEDED(hr))
    {
@@ -2938,20 +2941,11 @@ HRESULT PinTable::Save(const bool saveAs)
    return S_OK;
 }
 
-HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
+HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
 {
 #ifndef __STANDALONE__
    m_savingActive = true;
-   RECT rc;
-   ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
-
-   HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR)nullptr,
-      WS_CHILD | WS_VISIBLE, rc.left,
-      rc.top,
-      rc.right - rc.left, rc.bottom - rc.top,
-      m_vpinball->m_hwndStatusBar, (HMENU)0, m_vpinball->theInstance, nullptr);
-
-   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
+   visitor.SavingStarted();
 
    //////////////// Begin Encryption
    HCRYPTPROV hcp = NULL;
@@ -2991,7 +2985,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
 
-   ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
+   visitor.AboutToSaveItems(ctotalitems);
 
    //first save our own data
    IStorage* pstgData;
@@ -3047,7 +3041,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               visitor.ItemHasBeenSaved(csaveditems);
             }
 
             for (size_t i = 0; i < m_vsound.size(); i++)
@@ -3063,7 +3057,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               visitor.ItemHasBeenSaved(csaveditems);
             }
 
             for (size_t i = 0; i < m_vimage.size(); i++)
@@ -3079,7 +3073,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               visitor.ItemHasBeenSaved(csaveditems);
             }
 
             for (size_t i = 0; i < m_vfont.size(); i++)
@@ -3095,7 +3089,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               visitor.ItemHasBeenSaved(csaveditems);
             }
 
             for (int i = 0; i < m_vcollection.size(); i++)
@@ -3111,12 +3105,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               visitor.ItemHasBeenSaved(csaveditems);
             }
 
          }
          pstmGame->Release();
       }
+
+      visitor.Finalizing();
 
       BYTE hashval[256];
       DWORD hashlen = 256;
@@ -3156,14 +3152,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          pstgData->Revert();
          pstgRoot->Revert();
          const LocalString ls(IDS_SAVEERROR);
-         m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+         visitor.ErrorOccured(ls.m_szbuffer);
       }
       pstgData->Release();
    }
 
    //Error:
 
-   DestroyWindow(hwndProgressBar);
+   visitor.DoneSaving();
    m_savingActive = false;
 
    return hr;
