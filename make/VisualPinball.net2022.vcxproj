@@ -1166,6 +1166,7 @@
     <ClCompile Include="src/parts/textbox.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
+    <ClCompile Include="src/parts/SaveTableWin32Visitor.cpp" />
     <ClCompile Include="src/physics/collide.cpp" />
     <ClCompile Include="src/physics/collideex.cpp" />
     <ClCompile Include="src/physics/kdtree.cpp" />
@@ -1718,6 +1719,8 @@
     <ClInclude Include="src/parts/kicker.h" />
     <ClInclude Include="src/parts/light.h" />
     <ClInclude Include="src/parts/lightseq.h" />
+    <ClInclude Include="src/parts/SaveTableVisitor.h" />
+    <ClInclude Include="src/parts/SaveTableWin32Visitor.h" />
     <ClInclude Include="src/physics/physconst.h" />
     <ClInclude Include="src/physics/kdtree.h" />
     <ClInclude Include="src/physics/hitball.h" />

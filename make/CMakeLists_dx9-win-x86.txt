@@ -230,6 +230,7 @@ add_executable(vpinball WIN32
    src/parts/timer.h
    src/parts/trigger.cpp
    src/parts/trigger.h
+   src/parts/SaveTableWin32Visitor.cpp
 
    src/physics/physconst.h
    src/physics/collide.cpp
