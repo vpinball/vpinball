@@ -1208,6 +1208,8 @@
     <ClCompile Include="src/ui/hitrectsur.cpp" />
     <ClCompile Include="src/ui/hitsur.cpp" />
     <ClCompile Include="src/ui/paintsur.cpp" />
+    <ClCompile Include="src/ui/dialogs/VPXLoadFileProgressBar.cpp" />
+    <ClCompile Include="src/ui/dialogs/VPXSaveFileProgressBar.cpp" />
     <ClCompile Include="src/ui/dialogs/AboutDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp" />
@@ -1774,6 +1776,8 @@
     <ClInclude Include="src/ui/hitsur.h" />
     <ClInclude Include="src/ui/paintsur.h" />
     <ClInclude Include="src/ui/sur.h" />
+    <ClInclude Include="src/ui/dialogs/VPXLoadFileProgressBar.h" />
+    <ClInclude Include="src/ui/dialogs/VPXSaveFileProgressBar.h" />
     <ClInclude Include="src/ui/dialogs/AboutDialog.h" />
     <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h" />
     <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h" />

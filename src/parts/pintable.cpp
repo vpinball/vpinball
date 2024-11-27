@@ -13,8 +13,11 @@
 #include <fstream>
 #include <sstream>
 #include "renderer/Shader.h"
+#include "parts/VPXFileFeedback.h"
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
+#include "ui/dialogs/VPXLoadFileProgressBar.h"
+#include "ui/dialogs/VPXSaveFileProgressBar.h"
 #endif
 #include "freeimage.h"
 #include "ThreadPool.h"
@@ -2909,17 +2912,19 @@ HRESULT PinTable::Save(const bool saveAs)
 HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
 {
 #ifndef __STANDALONE__
+   VPXSaveFileProgressBar feedback(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
+#else
+   VPXFileFeedback feedback;
+#endif
+
+   return SaveToStorage(pstgRoot, feedback);
+}
+
+HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
+{
+#ifndef __STANDALONE__
    m_savingActive = true;
-   RECT rc;
-   ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
-
-   HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR)nullptr,
-      WS_CHILD | WS_VISIBLE, rc.left,
-      rc.top,
-      rc.right - rc.left, rc.bottom - rc.top,
-      m_vpinball->m_hwndStatusBar, (HMENU)0, m_vpinball->theInstance, nullptr);
-
-   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
+   feedback.OperationStarted();
 
    //////////////// Begin Encryption
    HCRYPTPROV hcp = NULL;
@@ -2959,7 +2964,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
 
-   ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
+   feedback.AboutToProcessTable(ctotalitems);
 
    //first save our own data
    IStorage* pstgData;
@@ -3015,7 +3020,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               feedback.ItemHasBeenProcessed(i + 1, m_vedit.size());
             }
 
             for (size_t i = 0; i < m_vsound.size(); i++)
@@ -3031,7 +3036,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               feedback.SoundHasBeenProcessed(i + 1, m_vsound.size());
             }
 
             for (size_t i = 0; i < m_vimage.size(); i++)
@@ -3047,7 +3052,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               feedback.ImageHasBeenProcessed(i + 1, m_vimage.size());
             }
 
             for (size_t i = 0; i < m_vfont.size(); i++)
@@ -3063,7 +3068,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               feedback.FontHasBeenProcessed(i + 1, m_vfont.size());
             }
 
             for (int i = 0; i < m_vcollection.size(); i++)
@@ -3079,12 +3084,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
                }
 
                csaveditems++;
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, csaveditems, 0);
+               feedback.ItemHasBeenProcessed(i + 1, m_vfont.size());
             }
 
          }
          pstmGame->Release();
       }
+
+      feedback.Finalizing();
 
       BYTE hashval[256];
       DWORD hashlen = 256;
@@ -3124,14 +3131,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot)
          pstgData->Revert();
          pstgRoot->Revert();
          const LocalString ls(IDS_SAVEERROR);
-         m_mdiTable->MessageBox(ls.m_szbuffer, "Visual Pinball", MB_ICONERROR);
+         feedback.ErrorOccured(ls.m_szbuffer);
       }
       pstgData->Release();
    }
 
    //Error:
 
-   DestroyWindow(hwndProgressBar);
+   feedback.Done();
    m_savingActive = false;
 
    return hr;
@@ -3831,6 +3838,17 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
 
 HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 {
+#ifndef __STANDALONE__
+   VPXLoadFileProgressBar feedback(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar);
+#else
+   VPXFileFeedback feedback;
+#endif
+
+   return LoadGameFromFilename(szFileName, feedback);
+}
+
+HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback& feedback)
+{
    if (szFileName.empty())
    {
       ShowError("Empty File Name String!");
@@ -3857,22 +3875,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
       return hr;
    }
 
-#ifndef __STANDALONE__
-   RECT rc;
-   ::SendMessage(m_vpinball->m_hwndStatusBar, SB_GETRECT, 2, (size_t)&rc);
-
-   HWND hwndProgressBar = CreateWindowEx(0, PROGRESS_CLASS, (LPSTR)nullptr,
-      WS_CHILD | WS_VISIBLE, rc.left,
-      rc.top,
-      rc.right - rc.left, rc.bottom - rc.top,
-      m_vpinball->m_hwndStatusBar, (HMENU)0, m_vpinball->theInstance, nullptr);
-
-   ::SendMessage(hwndProgressBar, PBM_SETPOS, 1, 0);
-
-   const LocalString ls(IDS_LOADING);
-   m_vpinball->SetActionCur(ls.m_szbuffer);
-   m_vpinball->SetCursorCur(nullptr, IDC_WAIT);
-#endif
+   feedback.OperationStarted();
 
    HCRYPTPROV hcp = NULL;
    HCRYPTHASH hch = NULL;
@@ -3930,11 +3933,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             {
                pstmGame->Release();
                pstgData->Release();
-               #ifndef __STANDALONE__
-                  DestroyWindow(hwndProgressBar);
-               #endif
-               m_vpinball->SetActionCur(string());
                ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
+               feedback.Done();
                return E_FAIL;
             }
             if (loadfileversion > CURRENT_FILE_FORMAT_VERSION)
@@ -3983,10 +3983,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             PLOGI << "LoadData loaded"; // For profiling
 
             const int ctotalitems = csubobj + csounds + ctextures + cfonts;
-            int cloadeditems = 0;
-#ifndef __STANDALONE__
-            ::SendMessage(hwndProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, ctotalitems));
-#endif
+            feedback.AboutToProcessTable(ctotalitems);
 
             for (int i = 0; i < csubobj; i++)
             {
@@ -4013,14 +4010,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
                   //hr = piedit->InitPostLoad();
                }
-               cloadeditems++;
-#ifndef __STANDALONE__
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
-#endif
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / csubobj };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingItems, &progressData);
-#endif
+               feedback.ItemHasBeenProcessed(i + 1, csubobj);
             }
 
             PLOGI << "GameItem loaded"; // For profiling
@@ -4037,14 +4027,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
-#ifndef __STANDALONE__
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
-#endif
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / csounds };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingSounds, &progressData);
-#endif
+               feedback.SoundHasBeenProcessed(i + 1, csounds);
             }
 
             PLOGI << "Sound loaded"; // For profiling
@@ -4057,7 +4040,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                int count = 0;
                for (int i = 0; i < ctextures; i++)
                {
-                  pool.enqueue([i, loadfileversion, pstgData, this, &count, ctextures] {
+                  pool.enqueue([i, &feedback, loadfileversion, pstgData, this, &count, ctextures] {
                      const string szStmName = "Image" + std::to_string(i);
                      MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
 
@@ -4072,15 +4055,11 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                         m_vimage[i] = ppi;
                      else
                         delete ppi;
-                     #ifdef __LIBVPINBALL__
-                        VPinballLib::ProgressData progressData = { (++count * 100) / ctextures };
-                        VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingImages, &progressData);
-                     #endif
+                     feedback.ImageHasBeenProcessed(++count, ctextures);
                      pstmItem->Release();
                      pstmItem = nullptr;
                      return hr;
                   });
-                  cloadeditems++;
                }
                pool.wait_until_nothing_in_flight();
             }
@@ -4152,10 +4131,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
 
             PLOGI << "Image loaded"; // Profiling
 
-#ifndef __STANDALONE__
-            ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
-#endif
-
             for (int i = 0; i < cfonts; i++)
             {
                const string szStmName = "Font" + std::to_string(i);
@@ -4171,14 +4146,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
-#ifndef __STANDALONE__
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
-#endif
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / cfonts };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingFonts, &progressData);
-#endif
+               feedback.FontHasBeenProcessed(i + 1, cfonts);
             }
 
             PLOGI << "Font loaded"; // For profiling
@@ -4200,14 +4168,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
-#ifndef __STANDALONE__
-               ::SendMessage(hwndProgressBar, PBM_SETPOS, cloadeditems, 0);
-#endif
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / ccollection };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingCollections, &progressData);
-#endif
+               feedback.CollectionHasBeenProcessed(i + 1, ccollection);
             }
 
             PLOGI << "Collection loaded"; // For profiling
@@ -4221,6 +4182,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             PLOGI << "IEditable PostLoad performed"; // For profiling
          }
          pstmGame->Release();
+         feedback.Finalizing();
 
          // Authentication block
 
@@ -4411,13 +4373,9 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
       m_pbTempScreenshot = nullptr;
    }
 
-#ifndef __STANDALONE__
-   DestroyWindow(hwndProgressBar);
-#endif
+   feedback.Done();
 
    pstgRoot->Release();
-
-   m_vpinball->SetActionCur(string());
 
 #ifndef __STANDALONE__
    m_vpinball->GetLayersListDialog()->ClearList();

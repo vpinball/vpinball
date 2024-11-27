@@ -3,6 +3,7 @@
 #include "core/TableDB.h"
 
 #include "VPinballLib.h"
+#include "VPXProgress.h"
 #include "standalone/inc/webserver/WebServer.h"
 
 #include <SDL3/SDL_main.h>
@@ -272,7 +273,8 @@ VPinballStatus VPinball::ResetIni()
 
 VPinballStatus VPinball::Load(const string& source)
 {
-   g_pvp->LoadFileName(source, true);
+   VPXProgress progress;
+   g_pvp->LoadFileName(source, true, &progress);
    if (g_pvp->GetActiveTable())
       return VPinballStatus::Success;
 
@@ -282,8 +284,9 @@ VPinballStatus VPinball::Load(const string& source)
 
 VPinballStatus VPinball::ExtractScript(const string& source)
 {
+   VPXProgress progress;
    bool success = false;
-   g_pvp->LoadFileName(source, false);
+   g_pvp->LoadFileName(source, false, &progress);
 
    CComObject<PinTable>* const pActiveTable = g_pvp->GetActiveTable();
    if (pActiveTable) {

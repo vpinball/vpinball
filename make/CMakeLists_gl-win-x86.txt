@@ -328,6 +328,10 @@ add_executable(vpinball WIN32
    src/ui/dialogs/ToolbarDialog.h
    src/ui/dialogs/VideoOptionsDialog.cpp
    src/ui/dialogs/VideoOptionsDialog.h
+   src/ui/dialogs/VPXLoadFileProgressBar.cpp
+   src/ui/dialogs/VPXLoadFileProgressBar.h
+   src/ui/dialogs/VPXSaveFileProgressBar.cpp
+   src/ui/dialogs/VPXSaveFileProgressBar.h
 
    src/ui/properties/BackglassCameraProperty.cpp
    src/ui/properties/BackglassCameraProperty.h
