@@ -73,7 +73,7 @@ SAMPLER2D      (tex_color_lut,    2); // Color grade
 SAMPLER2DSTEREO(tex_ao,           3); // Ambient Occlusion
 SAMPLER2DSTEREO(tex_depth,        4); // Depth Buffer
 SAMPLER2D      (tex_ao_dither,    5); // Ambient Occlusion Dither
-SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
+//SAMPLER2D      (tex_tonemap_lut,  6); // Precomputed Tonemapping LUT
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,11 +148,11 @@ vec3 FilmicToneMap(vec3 color)
     // Filmic ACES fitted curve by Krzysztof Narkowicz (luminance only causing slightly oversaturate brights). Linear RGB to Linear RGB, with exposure included (1.0 -> 0.8).
     // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     /*color = 0.6 * color; // remove the included exposure using the value given in the blog post
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
     color = (color*(a*color+b))/(color*(c*color+d)+e);
     color = FBGamma(color); */
 
@@ -637,7 +637,6 @@ void main()
 
             result *= y/y_old; //!! very minimalistic simplistic "brightness" scale
          }
-      }
       #endif
    }
    #ifdef TM_OUT_GAMMA
