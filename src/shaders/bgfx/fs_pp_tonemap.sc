@@ -563,6 +563,60 @@ void main()
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
+      /*#elif defined(BT2446)
+         // NOTE: the following BT2446 conversion (see method A in the spec) was not designed for target displays exceeding ~1000 nits (actually it defines source HDR at 1000 nits -> and the target at only 100 nits (=SDR)).
+         //       In practice, its still pretty stable though over the full output range from 100 to 10000 nits it seems.
+         //       E.g. videolan used a tweaked version of this (IMHO worse) for a downscaling range of 2..10x
+
+         // bring back into original range (so NOT scaled to display range)
+         if (isHDR2020)
+            result /= sceneLum_x_invDisplayMaxLum;
+
+         const float master_max = max(1000.,displayMaxLum * 10000.); //!! or: first number: rather 10000.? but 1000 fits better to the BT2446 spec
+
+         // precompute constants according to spec, note that spec does use nits
+         // note that we adapt the max of 1000 nits as source from the spec, if the target display supports more than that!
+         const float input_max = master_max / (sceneLum_x_invDisplayMaxLum * displayMaxLum * 10000.);
+         const float phdr = 1. + 32. * pow(master_max / 10000., 1./2.4);
+         const float psdr = 1. + 32. * pow(displayMaxLum, 1./2.4);
+
+         #ifdef APPROX_BT2446
+         const float y_old = dot(result,vec3(0.2627,0.6780,0.0593));
+         float y = pow(y_old/input_max, 1./2.4);
+         #else // BT2446 actually does the ^1./2.4 per component
+         const vec3 rgb_old = pow(result/input_max, 1./2.4);
+         const float y_old = dot(rgb_old,vec3(0.2627,0.6780,0.0593));
+         float y = y_old;
+         #endif
+
+         if(y_old >= FLT_MIN_VALUE)
+         {
+            y = log(1. + (phdr - 1.) * y) * (1. / log(phdr));
+
+            if (y <= 0.7399)
+               y *= 1.0770;
+            else if (y < 0.9909)
+               y = (-1.1510*y + 2.7811)*y - 0.6302;
+            else
+               y = 0.5*y + 0.5;
+
+            y = (pow(psdr, y) - 1.) * (1. / (psdr - 1.));
+
+            #ifdef APPROX_BT2446 // use BT1886 EOTF and scale instead of proper color correction as in the BT2446 spec
+            const float lw = pow(1./sceneLum_x_invDisplayMaxLum, 1./2.4);
+            y = pow(lw * y, 2.4);
+            result *= y/y_old;
+            #else
+            const float fy = y/(1.1*y_old);
+            const float cb = fy*(rgb_old.b-y_old);
+            const float cr = fy*(rgb_old.r-y_old);
+            const float ytmo = y - max(0.1/1.4746*cr, 0.);
+            result.r = ytmo + cr;
+            result.g = ytmo -0.16455312684366/1.8814*cb -0.57135312684366/1.4746*cr;
+            result.b = ytmo + cb;
+            result = pow(result, 2.4);
+            #endif
+         }*/
       #elif defined(WCG)
          // UHD-Guidelines spec:
          // "Note that some displays ignore some or all static metadata (i.e., ST 2086, MaxFALL, and
