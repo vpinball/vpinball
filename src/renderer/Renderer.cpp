@@ -556,6 +556,7 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
             ((float*)envmap2)[offs + 2] = sum_b * inv_sum;
          }
       }
+
       // y-pass:
 
       for (int y = 0; y < (int)env_yres; ++y)
@@ -869,13 +870,13 @@ void Renderer::DrawBackground()
 
 
 // Setup the tables camera / rotation / scale.
-// 
+//
 // 2 layout modes are supported:
 // - Relative layout mode which is the default that has been there since the beginning
 //   This mode computes the camera position by computing an approximate bounding box of the table, then offseting.
 //   Flashers and primitive are ignored in the calculation of boundaries to center the table in the view
 //   The view resulting from this mode is not orthonormal and (slightly) breaks stereo, lighting and reflections
-//   
+//
 // - Absolute layout mode which was added in 10.8
 //   This mode computes the camera position by using an absolute coordinate system with origin at the bottom center of the table.
 //
@@ -1086,9 +1087,9 @@ void Renderer::UpdateStereoShaderState()
    else
    {
       m_renderDevice->m_stereoShader->SetTechnique(m_stereo3D == STEREO_SBS ? SHADER_TECHNIQUE_stereo_SBS 
-                                                      : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
-                                                      : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
-                                                      :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
+                                                 : m_stereo3D == STEREO_TB  ? SHADER_TECHNIQUE_stereo_TB
+                                                 : m_stereo3D == STEREO_INT ? SHADER_TECHNIQUE_stereo_Int 
+                                                 :                            SHADER_TECHNIQUE_stereo_Flipped_Int);
    }
 }
 
@@ -1732,6 +1733,151 @@ void Renderer::Bloom()
       GetBloomBufferTexture(), 39.f); // FIXME kernel size should depend on buffer resolution
 }
 
+// org HDR -> display HDR spline-based remapping
+// inspired by the videolan spline tonemapper
+
+#define PL_HDR_PQ false
+#define PL_HDR_NITS true
+
+// converts from PQ to nits and vice versa
+static float pl_hdr_rescale(const bool from, const bool to, float x)
+{
+   if (from == to)
+      return x;
+
+   x = fmaxf(x, 0.0f);
+   if (x == 0.0f)
+      return 0.0f;
+
+   // Convert input to PL_SCALE_RELATIVE
+   if (from == PL_HDR_PQ)
+   {
+      x = powf(x, (float)(1.0 / ((2523. / 4096.) * 128.)));
+      x = fmaxf(x - (float)(3424. / 4096.), 0.f) / ((float)((2413. / 4096.) * 32.) - (float)((2392. / 4096.) * 32.) * x);
+      x = powf(x, (float)(1.0 / ((2610. / 4096.) / 4.)));
+      x *= (float)(10000. / 203.);
+   }
+   else // PL_HDR_NITS
+      x *= (float)(1. / 203.);
+
+   // Convert PL_SCALE_RELATIVE to output
+   if (to == PL_HDR_NITS)
+      return x * 203.f;
+   else // PL_HDR_PQ
+   {
+      x *= (float)(203. / 10000.);
+      x = powf(x, (float)((2610. / 4096.) / 4.));
+      x = ((float)(3424. / 4096.) + (float)((2413. / 4096.) * 32.) * x) / (1.0f + (float)((2392. / 4096.) * 32.) * x);
+      return powf(x, (float)((2523. / 4096.) * 128.));
+   }
+}
+
+// precompute spline parameters based on all the constants in here and the HDR display range (in nits)
+static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
+{
+   constexpr float src_hdr_max = 1000.f; // assumes 1000 nits as scene input max //!! use 10000. for max input?
+
+   constexpr float slope_tuning    = 1.5f; //[0..10]
+   constexpr float slope_offset    = 0.2f; //[0..1]
+   constexpr float spline_contrast = 0.5f; //[0..1.5]
+
+#if 1
+   constexpr float knee_minimum    = 0.1f; //(0..0.5)
+   constexpr float knee_maximum    = 0.8f; //(0.5..1.0)
+   constexpr float knee_default    = 0.4f; //inbetween min..max
+   constexpr float knee_adaptation = 0.4f; //[0..1]
+
+   // Pick a spline knee point
+   // Could be based on HDR10+ brightness metadata and/or scene brightness average
+   // We pick it based on a heuristic that assumes a scene input max of src_hdr_max
+   // Inspired by SMPTE ST2094-10, with some modifications, see videolan/st2094_pick_knee()
+
+   const float src_max = pl_hdr_rescale(PL_HDR_NITS, PL_HDR_PQ, src_hdr_max);
+   //const float src_avg = pl_hdr_rescale(PL_HDR_NITS, PL_HDR_PQ, 10.f); //!! 10 nits if real scene input average not available?! claimed to be "industry standard"
+   const float dst_max = pl_hdr_rescale(PL_HDR_NITS, PL_HDR_PQ, displayMaxLum);
+
+   const float src_knee_min = src_max*knee_minimum;
+   const float src_knee_max = src_max*knee_maximum;
+   const float dst_knee_min = dst_max*knee_minimum;
+   const float dst_knee_max = dst_max*knee_maximum;
+
+   float src_knee = /*src_avg!=0. ? src_avg :*/ src_max*knee_default; //!! see above. What is a better default? Most likely this here, given that pinball machines are rather bright?!
+   src_knee = clamp(src_knee, src_knee_min, src_knee_max);
+
+   // Choose target adaptation point based on linearly re-scaling the source knee
+   const float target = src_knee / src_max;
+   const float adapted = dst_max*target;
+
+   // Choose the destination knee by picking the perceptual adaptation point
+   // between the source knee and the desired target. This moves the knee
+   // point, on the vertical axis, closer to the 1:1 (neutral) line.
+   //
+   // Adjust the adaptation strength towards 1 based on how close the knee
+   // point is to its extreme values (min/max knee)
+   const float tuning = 1.0f - smoothstep(knee_maximum, knee_default, target) * smoothstep(knee_minimum, knee_default, target); // the first smoothstep assumes that it works for a > b! This results overall in a bathtub like shape
+   const float adaptation = lerp(knee_adaptation, 1.0f, tuning);
+   float dst_knee = lerp(src_knee, adapted, adaptation);
+   dst_knee = clamp(dst_knee, dst_knee_min, dst_knee_max);
+
+   const float src_pivot = pl_hdr_rescale(PL_HDR_PQ, PL_HDR_NITS, src_knee);
+   const float dst_pivot = pl_hdr_rescale(PL_HDR_PQ, PL_HDR_NITS, dst_knee);
+
+#else
+
+   //!! old videolan version, may not match the newer code and new constants, but is much simpler to understand!
+   const float sdr_avg = (float)(203.0 / sqrt(1000.0)); // typical contrast
+
+   // Infer the average from scene metadata if present, or default to 10 nits as
+   // this is an industry-standard value that produces good results on average
+   //
+   // Infer the destination from the desired output characteristics, clamping
+   // the lower bound to the characteristics of a typical SDR signal
+   const float src_avg = clamp(10.0f, 0.f, src_hdr_max);
+   const float dst_avg = clamp(sdr_avg, 0.f, displayMaxLum);
+
+   const float src_pivot = fminf(src_avg, 0.8f * src_hdr_max);
+   const float dst_pivot = fminf(sqrtf(src_avg * dst_avg), 0.8f * displayMaxLum);
+#endif
+
+   // Solve for linear knee (Pa = 0)
+   float slope = dst_pivot / src_pivot;
+
+   // Tune the slope at the knee point slightly: raise it to a user-provided
+   // gamma exponent, multiplied by an extra tuning coefficient designed to
+   // make the slope closer to 1.0 when the difference in peaks is low, and
+   // closer to linear when the difference between peaks is high.
+   float ratio = src_hdr_max / displayMaxLum - 1.0f;
+   ratio = clamp(slope_tuning * ratio, slope_offset, 1.0f + slope_offset);
+   slope = powf(slope, (1.0f - spline_contrast) * ratio);
+
+   // Normalize everything to make the math easier
+   const float in_max = src_hdr_max - src_pivot;
+   const float out_max = displayMaxLum - dst_pivot;
+
+   // Solve P of order 2 for:
+   //  P(-src_pivot) = -dst_pivot
+   //  P'(0.0) = slope
+   //  P(0.0) = 0.0
+   const float Pa = (slope * src_pivot - dst_pivot) / (src_pivot * src_pivot);
+
+   // Solve Q of order 3 for:
+   //  Q(in_max) = out_max
+   //  Q''(in_max) = 0.0
+   //  Q(0.0) = 0.0
+   //  Q'(0.0) = slope
+   const float t = 2.f * in_max * in_max;
+   const float Qa = (slope * in_max - out_max) / (in_max * t);
+   const float Qb = -3.f * (slope * in_max - out_max) / t;
+
+   // This here must match the order in the shader itself!
+   out[0] = src_pivot;
+   out[1] = dst_pivot;
+   out[2] = slope;
+   out[3] = Pa;
+   out[4] = Qa;
+   out[5] = Qb;
+}
+
 void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 {
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
@@ -1880,12 +2026,19 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       const bool isHdr2020 = g_pplayer->m_vrDevice == nullptr && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
       if (isHdr2020)
       {
-         const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits
+         const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
          m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg,
             m_exposure,
-            (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping
+            (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
             maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
             1.f);
+
+         float spline_params[6];
+         PrecompSplineTonemap(maxDisplayLuminance, spline_params);
+         m_renderDevice->m_FBShader->SetVector(SHADER_spline1,
+            spline_params[0],spline_params[1],spline_params[2],spline_params[3]);
+         m_renderDevice->m_FBShader->SetVector(SHADER_spline2,
+            spline_params[4],spline_params[5], 0.f,0.f);
       }
       else
       {
@@ -1894,8 +2047,12 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, 0.f);
          #else
             // VR device expects linear RGB value (for linear layer composition)
-            m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, 1.f, g_pplayer->m_vrDevice ? 2.f : 0.f);
+            m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*//*203.f*/350.f/10000.f, g_pplayer->m_vrDevice ? 2.f : 0.f); //!! 203 nits as SDR reference? //!! or 100 as in BT2446 spec? // but both result in too dark images for BT2446 conversion at least compared to the other mappers
          #endif
+
+         // dummy values only, unused
+         m_renderDevice->m_FBShader->SetVector(SHADER_spline1, 0.f,0.f,0.f,0.f);
+         m_renderDevice->m_FBShader->SetVector(SHADER_spline2, 0.f,0.f,0.f,0.f);
       }
 
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);
@@ -1903,7 +2060,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
-         (!isHdr2020 && (m_table->m_bloom_strength > 0.0f) && !m_bloomOff && (infoMode <= IF_DYNAMIC_ONLY)) ? 1.f : 0.f, /* bloom */
+         (!isHdr2020 && (m_table->m_bloom_strength > 0.0f) && !m_bloomOff && (infoMode <= IF_DYNAMIC_ONLY)) ? 1.f : 0.f, /* Bloom */
          (!isHdr2020 && (outputBackBuffer->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, /* Dither */
          (pin != nullptr) ? 1.f : 0.f, /* LUT colorgrade */
          0.f);
@@ -1923,7 +2080,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
                        : m_toneMapper == TM_NEUTRAL      ? SHADER_TECHNIQUE_fb_nttonemap
                        : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
                        : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
-                       : /*m_toneMapper == TM_WCG_REINHARD ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
+                       : /*m_toneMapper == TM_WCG_SPLINE ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
    else if (m_BWrendering != 0)
       tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)

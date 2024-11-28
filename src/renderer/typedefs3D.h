@@ -55,11 +55,11 @@ enum StereoMode
 enum ToneMapper
 {
    TM_REINHARD           = 0, // Reinhard, used to be the default until 10.8
-   TM_AGX                = 1, // AgX tonemapper, used in Blender, implementation derived from threeJs which derives its implementation from Filament
+   TM_AGX                = 1, // AgX tonemapper, used in Blender, implementation derived from threeJs which derives its implementation from Filament (in 10.8 this slot was taken for the TonyMcMapface one, which is now remapped to AgX)
    TM_FILMIC             = 2, // Filmic tonemapper
    TM_NEUTRAL            = 3, // Neutral tonemapper, designed for e-commerce, keeps sRGB colors kinda original
    TM_AGX_PUNCHY         = 4, // AgX tonemapper, punchy look curve (more contrast/saturation)
-   TM_WCG_REINHARD       = 5, // Simplified Reinhard tonemapping designed for HDR display with a high max luminance value, not directly exposed to user
+   TM_WCG_SPLINE         = 5, // Spline-fit curve designed for HDR->HDR display mapping with a high max luminance value, not directly exposed to user
 };
 
 enum VideoSyncMode

@@ -2141,12 +2141,12 @@ void LiveUI::UpdateTweakModeUI()
             CM_ROW(setting, label, "%.1f", 100.f * m_live_table->m_globalDifficulty, "%");
             break;
          case BS_Exposure: CM_ROW(setting, "Exposure: ", "%.1f", 100.f * m_renderer->m_exposure, "%"); break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD        ? "Reinhard"
-                                                                 : m_renderer->m_toneMapper == TM_FILMIC          ? "Filmic" 
-                                                                 : m_renderer->m_toneMapper == TM_NEUTRAL         ? "Neutral"
-                                                                 : m_renderer->m_toneMapper == TM_AGX             ? "AgX"
-                                                                 : m_renderer->m_toneMapper == TM_AGX_PUNCHY      ? "AgX Punchy"
-                                                                 : m_renderer->m_toneMapper == TM_WCG_REINHARD    ? "WCG Display" : "Invalid",""); // Should not happen as this tonemapper is not exposed to user
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_renderer->m_toneMapper == TM_REINHARD   ? "Reinhard"
+                                                                 : m_renderer->m_toneMapper == TM_FILMIC     ? "Filmic" 
+                                                                 : m_renderer->m_toneMapper == TM_NEUTRAL    ? "Neutral"
+                                                                 : m_renderer->m_toneMapper == TM_AGX        ? "AgX"
+                                                                 : m_renderer->m_toneMapper == TM_AGX_PUNCHY ? "AgX Punchy"
+                                                                 : m_renderer->m_toneMapper == TM_WCG_SPLINE ? "WCG Display" : "Invalid",""); // Should not happen as this tonemapper is not exposed to user
             break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
@@ -2837,7 +2837,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher * const p = (Flasher *)m_selection.editable;
+      Flasher *const p = (Flasher *)m_selection.editable;
       const Matrix3D trans = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
       const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_rotX));
       const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_rotY));
@@ -2856,7 +2856,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
-      Light * const l = (Light *)m_selection.editable;
+      Light *const l = (Light *)m_selection.editable;
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       transform = Matrix3D::MatrixTranslate(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
@@ -2864,7 +2864,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
-      Primitive *p = (Primitive *)m_selection.editable;
+      Primitive *const p = (Primitive *)m_selection.editable;
       const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
       const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
       const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
@@ -2940,7 +2940,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher * const p = (Flasher *)m_selection.editable;
+      Flasher *const p = (Flasher *)m_selection.editable;
       const float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
       p->TranslatePoints(Vertex2D(posX - px, posY - py));
       p->put_Height(posZ);
@@ -3826,7 +3826,7 @@ void LiveUI::UpdateRendererInspectionModal()
          m_player->m_infoProbeIndex = pass_selection - 100;
       }
       ImGui::NewLine();
-	  
+
       // Main frame timing table
       if (ImGui::BeginTable("Timings", 6, ImGuiTableFlags_Borders))
       {
@@ -3893,10 +3893,10 @@ void LiveUI::UpdateRendererInspectionModal()
          ImGui::NewLine();
       }
 
-	   ImGui::Text("Press F11 to reset min/max/average timings");
-	   if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
-		   m_player->InitFPS();
-	   
+      ImGui::Text("Press F11 to reset min/max/average timings");
+      if (ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eFrameCount]]))
+         m_player->InitFPS();
+
       // Other detailed information
       ImGui::Text("%s", m_player->GetPerfInfo().c_str());
    }
@@ -4779,8 +4779,8 @@ void LiveUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *live
 
 #define PROP_HELPER_BEGIN(type)                                                                                                                                                              \
    PROP_TABLE_SETUP                                                                                                                                                                          \
-   type * const v = is_live ? live_v : startup_v;                                                                                                                                                   \
-   type * const ov = is_live ? startup_v : live_v;                                                                                                                                                  \
+   type * const v = is_live ? live_v : startup_v;                                                                                                                                            \
+   type * const ov = is_live ? startup_v : live_v;                                                                                                                                           \
    ImGui::TableNextColumn();                                                                                                                                                                 \
    if (v == nullptr)                                                                                                                                                                         \
    {                                                                                                                                                                                         \

@@ -32,6 +32,16 @@ uniform vec4 exposure_wcg;
 #define isHDR2020                   (exposure_wcg.w == 1.)
 #define isLinearFrameBuffer         (exposure_wcg.w == 2.)
 
+// HDR->HDR spline based remapping
+uniform vec4 spline1;
+uniform vec2 spline2;
+#define spline_src_pivot            (spline1.x)
+#define spline_dst_pivot            (spline1.y)
+#define spline_slope                (spline1.z)
+#define spline_pa                   (spline1.w)
+#define spline_qa                   (spline2.x)
+#define spline_qb                   (spline2.y)
+
 // Define which tonemapper outputs are in linear sRGB and which are in gamma compressed sRGB
 #if defined(FILMIC) || defined(AGX) || defined(AGX_PUNCHY) || defined(AGX_GOLDEN)
 #define TM_OUT_GAMMA
@@ -95,32 +105,31 @@ vec3 ReinhardToneMap(vec3 color)
 #ifdef FILMIC
 vec3 RRTAndODTFit(vec3 v)
 {
-    vec3 a = v * (v + 0.0245786) - 0.000090537;
-    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    vec3 a = v * (v + vec3_splat(0.0245786)) - vec3_splat(0.000090537);
+    vec3 b = v * (vec3_splat(0.983729) * v + vec3_splat(0.4329510)) + vec3_splat(0.238081);
     return a / b;
 }
 
 // sRGB => XYZ => D65_2_D60 => AP1 => RRT_SAT
 const mat3 ACESInputMat = mtxFromRows3
 (
-    vec3(0.59719, 0.35458, 0.04823),
-    vec3(0.07600, 0.90834, 0.01566),
-    vec3(0.02840, 0.13383, 0.83777)
+    vec3(0.59719, 0.07600, 0.02840),
+    vec3(0.35458, 0.90834, 0.13383),
+    vec3(0.04823, 0.01566, 0.83777)
 );
 // ODT_SAT => XYZ => D60_2_D65 => sRGB
 const mat3 ACESOutputMat = mtxFromRows3
 (
-    vec3( 1.60475, -0.53108, -0.07367),
-    vec3(-0.10208,  1.10813, -0.00605),
-    vec3(-0.00327, -0.07276,  1.07602)
+    vec3( 1.60475, -0.10208, -0.00327),
+    vec3(-0.53108,  1.10813, -0.07276),
+    vec3(-0.07367, -0.00605,  1.07602)
 );
 vec3 ACESFitted(vec3 color)
 {
-    color = mul(ACESInputMat, color);
+    color = mul(color, ACESInputMat);
     // Apply RRT and ODT
     color = RRTAndODTFit(color);
-    color = mul(ACESOutputMat, color);
-    return color;
+    return mul(color, ACESOutputMat);
 }
 
 // There are numerous filmic curve fitting implementation shared publicly
@@ -518,8 +527,6 @@ vec3 FBColorGrade(vec3 color)
    return mix(lut1,lut2, fract(color.z));
 }
 
-
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // Main fragment shader
 
@@ -537,8 +544,8 @@ void main()
    BRANCH if (do_bloom)
       result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
 
-   BRANCH if (isHDR2020)
-      result = result * sceneLum_x_invDisplayMaxLum; // scale by scene luminance to get nits, then divide by display max luminance (in nits) to get a 0..1 range before tonemapping
+   if (isHDR2020) // scale by 1/hdr_headroom (so everything that is within the displays range is now mapped to 0..1)
+      result *= sceneLum_x_invDisplayMaxLum; // scale by scene luminance to get nits, then divide by display max luminance (in nits) to get a display-matching 0..1 range before tonemapping
 
    const float depth0 = texStereoNoLod(tex_depth, v_texcoord0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
@@ -557,8 +564,26 @@ void main()
       #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       #elif defined(WCG)
-         // Basic tonemapper for WCG displays    // linear sRGB -> linear sRGB
-         result = result / (1.0 + result);
+         // UHD-Guidelines spec:
+         // "Note that some displays ignore some or all static metadata (i.e., ST 2086, MaxFALL, and
+         //  MaxCLL); however, HDR10 distribution systems must deliver the static metadata, when present."
+         // -> thus, do own tonemapping (also as BGFX sets the static metadata (state: 11/2024) just to the displays capacities)
+
+         // bring back into original range (so NOT scaled to display range)
+         result /= sceneLum_x_invDisplayMaxLum;
+
+         const float y_old = dot(result,vec3(0.2627,0.6780,0.0593));
+         if(y_old >= FLT_MIN_VALUE)
+         {
+            float y = y_old;
+
+            y -= spline_src_pivot;
+            y = y > 0. ? ((spline_qa * y + spline_qb) * y + spline_slope) * y : (spline_pa * y + spline_slope) * y;
+            y += spline_dst_pivot;
+
+            result *= y/y_old; //!! very minimalistic simplistic "brightness" scale
+         }
+      }
       #endif
    }
    #ifdef TM_OUT_GAMMA
@@ -616,7 +641,7 @@ void main()
       vec3 col = vec3(result,result.x); //!!
    #else
       vec3 col = result;
-      if (do_color_grade)
+      BRANCH if (do_color_grade)
       {
          #ifdef TM_OUT_LINEAR
          col = FBGamma(col);
@@ -624,24 +649,24 @@ void main()
          
          // Perform color grading by using the tonemapped value rescaled to initial luminance range
          const vec3 satCol = saturate(col / sceneLum_x_invDisplayMaxLum);
-         col = col * FBColorGrade(satCol) / satCol;
+         col *= FBColorGrade(satCol) / satCol;
 
          #ifdef TM_OUT_LINEAR
          col = InvGamma(col);
          #endif
       }
    #endif
-   
-      // After tonemapping, color must be in the range 0..1 where 1 stands for display's maximum luminance
-      col = saturate(col);
 
       #ifdef TM_OUT_GAMMA
       // sRGB to linear sRGB
       col = InvGamma(col);
       #endif
-      
-      // Apply display max luminance
-      col = col * displayMaxLum;
+
+      // After tonemapping, color should still be in the range 0..1 where 1 stands for display's maximum luminance, otherwise force it to be
+      col = saturate(col);
+
+      // Apply display max luminance to scale the 0..1 tonemapped range to the maximum nits supported
+      col *= displayMaxLum;
 
       // Linear sRGB to REC2020
       const mat3 LINEAR_SRGB_TO_LINEAR_REC2020 = mtxFromRows3
