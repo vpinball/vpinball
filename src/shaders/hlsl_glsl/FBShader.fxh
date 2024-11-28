@@ -3,9 +3,17 @@
 #ifdef GLSL
 uniform float4 exposure_wcg; // overall scene exposure
 
+// HDR->HDR spline based remapping // only BGFX
+uniform float4 spline1;
+uniform float2 spline2;
+
 #else // HLSL
 
 const float4 exposure_wcg; // overall scene exposure
+
+// HDR->HDR spline based remapping // only BGFX
+const float4 spline1;
+const float2 spline2;
 
 #endif
 
