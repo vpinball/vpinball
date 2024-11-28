@@ -4469,6 +4469,7 @@ void PinTable::SetLoadDefaults()
 
    m_enableAO = true;
    m_enableSSR = true;
+   m_toneMapper = ToneMapper::TM_REINHARD; // pre-10.8, this was the default
 
    m_bloom_strength = 1.0f;
 
