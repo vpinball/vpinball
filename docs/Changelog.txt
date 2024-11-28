@@ -7,8 +7,8 @@ FEATURES:
 
 - add "Surface" to the "Select Element" list
 
-- add additional tonemapper (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
-  and replaced 'TonyMapMcFace' by the 'AgX' tonemapper which is the default one used by Blender
+- add additional tonemappers (the part of the rendering which handles how overly bright parts are displayed on non-HDR displays) 'Neutral' that keeps sRGB colors as authentic as possible,
+  and 'AgX Punchy' which is a variation of AgX with more contrast/saturation
 - also add a new 'exposure' property that adjusts the overall scene exposure (like the corresponding camera control in Blender)
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
@@ -25,6 +25,7 @@ FEATURES:
 - add 'raytraced' ball motion blur (BGFX only)
 
 - add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirextX output only)
+  this comes with an additional video preference option to ignore all tonemappers in order to fully exploit the high dynamic range
 
 FIXES:
 
@@ -237,7 +238,7 @@ FEATURES:
 
 - it is now possible to choose between 3 tonemappers (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays):
   - Reinhard, which is the one used by VPX until the 10.8 release,
-  - Tony McMapFace, which is an improved tonemapper especially regarding handling very bright saturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
+  - AgX, which is an improved tonemapper especially regarding handling very bright saturated colors (used also in Blender),
   - Filmic curve, which is common e.g. in modern games
 
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)

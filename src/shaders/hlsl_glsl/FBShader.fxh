@@ -1,29 +1,17 @@
 // license:GPLv3+
 
 #ifdef GLSL
-uniform float4 exposure_wcg; // overaal scene exposure
-uniform sampler2D tex_tonemap_lut; // Precomputed Tonemapping LUT
+uniform float4 exposure_wcg; // overall scene exposure
 
 #else // HLSL
 
-texture Texture6; // Precomputed Tonemapping LUT
-const float4 exposure_wcg; // overaal scene exposure
-sampler2D tex_tonemap_lut : TEXUNIT6 = sampler_state
-{
-    Texture = (Texture6);
-    MIPFILTER = NONE;
-    MAGFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    ADDRESSU = Clamp;
-    ADDRESSV = Clamp;
-    SRGBTexture = false;
-};
+const float4 exposure_wcg; // overall scene exposure
 
 #endif
 
 #define exposure (exposure_wcg.x)
 
-// //////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 // Tonemapping
 
 #define MAX_BURST 1000.0
@@ -122,11 +110,11 @@ float3 FilmicToneMap(float3 color)
     // Filmic ACES fitted curve by Krzysztof Narkowicz (luminance only causing slightly oversaturate brights). Linear RGB to Linear RGB, with exposure included (1.0 -> 0.8).
     // https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     /*color = 0.6 * color; // remove the included exposure using the value given in the blog post
-    float a = 2.51f;
-    float b = 0.03f;
-    float c = 2.43f;
-    float d = 0.59f;
-    float e = 0.14f;
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
     color = (color*(a*color+b))/(color*(c*color+d)+e);
     color = FBGamma(color); */
 
