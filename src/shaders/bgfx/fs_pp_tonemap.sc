@@ -563,7 +563,7 @@ void main()
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
       #elif defined(AGX_GOLDEN)
          result = AgXToneMapping(result);        // linear sRGB -> sRGB
-      /*#elif defined(BT2446)
+      /*#elif defined(BT2446)                    // linear sRGB -> linear sRGB
          // NOTE: the following BT2446 conversion (see method A in the spec) was not designed for target displays exceeding ~1000 nits (actually it defines source HDR at 1000 nits -> and the target at only 100 nits (=SDR)).
          //       In practice, its still pretty stable though over the full output range from 100 to 10000 nits it seems.
          //       E.g. videolan used a tweaked version of this (IMHO worse) for a downscaling range of 2..10x
@@ -617,7 +617,7 @@ void main()
             result = pow(result, 2.4);
             #endif
          }*/
-      #elif defined(WCG)
+      #elif defined(WCG) // linear sRGB -> linear sRGB
          // UHD-Guidelines spec:
          // "Note that some displays ignore some or all static metadata (i.e., ST 2086, MaxFALL, and
          //  MaxCLL); however, HDR10 distribution systems must deliver the static metadata, when present."
