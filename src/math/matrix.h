@@ -368,18 +368,18 @@ public:
 
    void SetPerspectiveFovRH(const float angleLeft, const float angleRight, const float angleDown, const float angleUp, const float nearPlane, const float farPlane)
    {
-      if (angleRight >= M_PI/2.f || angleLeft <= -M_PI/2.f)
-         throw std::runtime_error("Invalid projection specification");
-      if (angleUp >= M_PI / 2.f || angleDown <= -M_PI / 2.f)
-         throw std::runtime_error("Invalid projection specification");
+      if (angleRight >= (float)(M_PI/2.) || angleLeft <= (float)(-M_PI/2.))
+         assert(!"Invalid projection specification");
+      if (angleUp >= (float)(M_PI/2.) || angleDown <= (float)(-M_PI/2.))
+         assert(!"Invalid projection specification");
 
       const bool infNearPlane = std::isinf(nearPlane);
       const bool infFarPlane = std::isinf(farPlane);
 
-      float l = tan(angleLeft);
-      float r = tan(angleRight);
-      float b = tan(angleDown);
-      float t = tan(angleUp);
+      float l = tanf(angleLeft);
+      float r = tanf(angleRight);
+      float b = tanf(angleDown);
+      float t = tanf(angleUp);
       if (!infNearPlane)
       {
          l *= nearPlane;
@@ -389,12 +389,12 @@ public:
       }
 
       if (nearPlane < 0.f || farPlane < 0.f) {
-          throw std::runtime_error("Invalid projection specification");
+          assert(!"Invalid projection specification");
       }
 
       if (infNearPlane || infFarPlane) {
          if (infNearPlane && infFarPlane) {
-            throw std::runtime_error("Invalid projection specification");
+            assert(!"Invalid projection specification");
          }
 
          const float reciprocalWidth = 1.0f / (r - l);
@@ -403,7 +403,7 @@ public:
          float twoNearZ;
          if (infNearPlane)
          {
-            twoNearZ = 2;
+            twoNearZ = 2.f;
             _33 = 0.0f;     // far / (near - far) = far / inf = 0
             _43 = farPlane; // near * far / (near - far) = far * (near / (near - far)) = far * (inf / inf) = far
          } else {

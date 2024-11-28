@@ -249,7 +249,7 @@ public:
       XrGraphicsRequirementsD3D11KHR graphicsRequirements { XR_TYPE_GRAPHICS_REQUIREMENTS_D3D11_KHR };
       OPENXR_CHECK(xrGetD3D11GraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Graphics Requirements for D3D11.");
 
-		const char* dxgiDllName = "dxgi.dll";
+      static const char* dxgiDllName = "dxgi.dll";
       void* m_dxgiDll = bx::dlopen(dxgiDllName);
       typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID _riid, void** _factory);
       PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)bx::dlsym(m_dxgiDll, "CreateDXGIFactory1");
@@ -263,11 +263,11 @@ public:
          adapter->GetDesc(&adapterDesc);
          if (memcmp(&graphicsRequirements.adapterLuid, &adapterDesc.AdapterLuid, sizeof(LUID)) == 0)
             break; // We have the matching adapter that OpenXR wants.
-         adapter = nullptr; // If we don't get a match reset adapter to nullptr to force a throw.
+         adapter = nullptr; // If we don't get a match, reset adapter to nullptr to force a throw.
       }
       OPENXR_CHECK(adapter != nullptr ? XR_SUCCESS : XR_ERROR_VALIDATION_FAILURE, "Failed to find matching graphics adapter from xrGetD3D11GraphicsRequirementsKHR.");
       
-		const char* d3d11DllName = "d3d11.dll";
+      static const char* d3d11DllName = "d3d11.dll";
       m_d3d11Dll = bx::dlopen(d3d11DllName);
       PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
       D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
