@@ -582,15 +582,12 @@ public:
 
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
 
-private:
-   unsigned int m_locked = 0;
-
-public:
    void SetSettingsFileName(const string &path)
    {
       m_szIniFileName = FileExists(path) ? path : string();
       m_settings.LoadFromFile(GetSettingsFileName(), false);
    }
+
    string GetSettingsFileName() const
    {
       if (!m_szIniFileName.empty() && FileExists(m_szIniFileName))
@@ -600,6 +597,7 @@ public:
          return szINIFilename;
       return string();
    }
+
    string m_szIniFileName;
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
@@ -857,6 +855,8 @@ public:
    void SetExposure(const float exposure) { m_exposure = exposure; }
 
 private:
+   unsigned int m_locked = 0;
+
    PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;
    robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name

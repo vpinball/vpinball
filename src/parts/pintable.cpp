@@ -3874,7 +3874,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
    m_szFileName = szFileName;
 
    // Load user custom settings before actually loading the table for settings applying during load
-   string szINIFilename = GetSettingsFileName();
+   const string szINIFilename = GetSettingsFileName();
    if (!szINIFilename.empty())
       m_settings.LoadFromFile(szINIFilename, false);
 

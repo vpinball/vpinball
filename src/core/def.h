@@ -72,6 +72,16 @@ __forceinline T saturate(const T x)
 }
 
 template <typename T>
+__forceinline T smoothstep(const T edge0, const T edge1, T x)
+{
+   if (edge0 == edge1)
+      return (x >= edge0) ? T(1) : T(0);
+   x = (x - edge0) / (edge1 - edge0);
+   x = saturate(x);
+   return x * x * (T(3) - T(2) * x);
+}
+
+template <typename T>
 inline void RemoveFromVector(vector<T>& v, const T& val)
 {
    v.erase(std::remove(v.begin(), v.end(), val), v.end());
