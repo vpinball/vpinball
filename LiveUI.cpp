@@ -1808,7 +1808,7 @@ void LiveUI::UpdateTweakModeUI()
          // Table options
          case BS_DayNight: CM_ROW(setting, "Day Night: ", "%.1f", 100.f * m_player->m_globalEmissionScale, "%"); break;
          case BS_Difficulty: CM_ROW(setting, "Difficulty: ", "%.1f", 100.f * m_live_table->m_globalDifficulty, "%"); break;
-         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_player->m_toneMapper == 0 ? "Reinhard" : m_player->m_toneMapper == 1 ? "Tony McMapFace" : "Filmic", ""); break;
+         case BS_Tonemapper: CM_ROW(setting, "Tonemapper: ", "%s", m_player->m_toneMapper == 0 ? "Reinhard" : m_player->m_toneMapper == 1 ? "AgX" : "Filmic", ""); break;
          case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
          case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
@@ -3305,7 +3305,7 @@ void LiveUI::TableProperties(bool is_live)
       PropFloat("Screen Space Reflection Scale", m_table, is_live, &(m_table->m_SSRScale), m_live_table ? &(m_live_table->m_SSRScale) : nullptr, 0.1f, 1.0f);
       
       PropSeparator();
-      static const string tonemapperLabels[] = { "Reinhard"s, "Tony McMapFace"s, "Filmic"s };
+      static const string tonemapperLabels[] = { "Reinhard"s, "AgX"s, "Filmic"s };
       int startup_mode = m_table ? (int)m_table->GetToneMapper() : 0;
       int live_mode = m_live_table ? (int)m_player->m_toneMapper : 0;
       PinTable *table = m_table;

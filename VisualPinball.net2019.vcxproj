@@ -1074,7 +1074,6 @@ copy "$(TargetPath)" "%25VPIN_DIR%25"
     <None Include="shader\Material.fxh" />
     <None Include="shader\SSR.fxh" />
     <None Include="src\assets\TableSizes.csv" />
-    <None Include="src\assets\tony_mc_mapface_unrolled.exr" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\add.ico" />

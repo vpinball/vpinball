@@ -339,8 +339,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_fmtonemap
@@ -386,8 +388,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_fmtonemap_AO
@@ -430,8 +434,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_fmtonemap_no_filter
@@ -461,8 +467,10 @@ void main()
       result += texStereoNoLod(tex_bloom, tex0).rgb; //!! offset?
    const float depth0 = texStereoNoLod(tex_depth, tex0).x;
    BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = TonyMcMapfaceToneMap(result);
-   color = float4(FBColorGrade(FBGamma(saturate(FBDither(result, tex0)))), 1.0);
+      result = saturate(FBDither(AgXToneMapping(result), tex0));
+   else
+      result = FBGamma(saturate(FBDither(result, tex0)));
+   color = float4(FBColorGrade(result), 1.0);
 }
 
 ////ps_main_fb_fmtonemap_AO_no_filter
@@ -921,7 +929,7 @@ fb_rhtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_f
 fb_rhtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_AO_no_filter()
 fb_rhtonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRG()
 fb_rhtonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterR()
-// Tony McMapFace
+// AgX
 fb_tmtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap()
 fb_tmtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_tmtonemap_AO()
 fb_tmtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_tmtonemap_no_filter()

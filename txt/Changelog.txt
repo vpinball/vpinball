@@ -201,7 +201,7 @@ FEATURES:
 
 - it is now possible to choose between 3 tonemappers (the part of the rendering which handles the way overbright parts are displayed on non-HDR displays):
   - Reinhard, which is the one used by VPX until the 10.8 release,
-  - Tony McMapFace, which is an improved tonemapper especially regarding handling very bright saturated colors (like a very bright red, which in turns would be perceived as yellow or even white. See https://github.com/h3r2tic/tony-mc-mapface)
+  - AgX, which is an improved tonemapper especially regarding handling very bright saturated colors (used also in Blender),
   - Filmic curve, which is common e.g. in modern games
 
 - the full table can now be locked to prevent unintended user changes (can be changed anytime)

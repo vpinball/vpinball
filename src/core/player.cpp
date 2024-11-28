@@ -325,7 +325,6 @@ Player::~Player()
    delete m_decalImage;
    delete m_pBCTarget;
    delete m_ptable;
-   delete m_tonemapLUT;
 }
 
 void Player::PreRegisterClass(WNDCLASS& wc)
@@ -1615,14 +1614,6 @@ HRESULT Player::Init()
    PLOGI << "Initializing renderer"; // For profiling
 
    SetupShaders();
-
-   // FIXME we always loads the LUT since this can be changed in the LiveUI. Would be better to do this lazily
-   //if (m_toneMapper == TM_TONY_MC_MAPFACE)
-   {
-      m_tonemapLUT = new Texture();
-      m_tonemapLUT->LoadFromFile(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "tony_mc_mapface_unrolled.exr");
-      m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTexture(SHADER_tex_tonemap_lut, m_tonemapLUT, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
-   }
 
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
@@ -3639,7 +3630,7 @@ void Player::PrepareVideoBuffers()
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_fmtonemap_AO : SHADER_TECHNIQUE_fb_fmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_fmtonemap    : SHADER_TECHNIQUE_fb_fmtonemap_no_filter);
-      else // TM_TONY_MC_MAPFACE
+      else // TM_AGX
          m_pin3d.m_pd3dPrimaryDevice->FBShader->SetTechnique(useAO ?
               useAA ? SHADER_TECHNIQUE_fb_tmtonemap_AO : SHADER_TECHNIQUE_fb_tmtonemap_AO_no_filter
             : useAA ? SHADER_TECHNIQUE_fb_tmtonemap    : SHADER_TECHNIQUE_fb_tmtonemap_no_filter);
