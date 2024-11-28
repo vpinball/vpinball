@@ -214,8 +214,6 @@ float3 AgXToneMapping(float3 color)
     const float AgxMinEv = -12.47393; // log2( pow( 2, LOG2_MIN ) * MIDDLE_GRAY )
     const float AgxMaxEv =  4.026069; // log2( pow( 2, LOG2_MAX ) * MIDDLE_GRAY )
 
-    color *= exposure;
-
     #if 0
     color = mul(color, LINEAR_SRGB_TO_LINEAR_REC2020); // linear sRGB (rec709) to linear rec2020 expected by Blender/threeejs matrices
     #endif
