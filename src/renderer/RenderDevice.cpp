@@ -572,14 +572,14 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 #endif
    bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
    int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-   string supportedRendererLog = ""s;
-   for (size_t i = 0; i < nRendererSupported; ++i)
+   string supportedRendererLog;
+   for (int i = 0; i < nRendererSupported; ++i)
    {
       supportedRendererLog = supportedRendererLog + (i == 0 ? "" : ", ") + bgfxRendererNames[supportedRenderers[i]];
       if (gfxBackend == bgfxRendererNames[supportedRenderers[i]])
          init.type = supportedRenderers[i];
    }
-   PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ")";
+   PLOGI << "Using graphics backend: " << bgfxRendererNames[init.type] << " (available: " << supportedRendererLog << ')';
    //init.type = bgfx::RendererType::Metal;
    //init.type = bgfx::RendererType::OpenGL;
    //init.type = bgfx::RendererType::OpenGLES;
