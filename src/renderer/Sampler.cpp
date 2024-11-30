@@ -152,8 +152,8 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownT
    default: assert(false);
    }
 #ifndef __OPENGLES__
-   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_WIDTH, &m_width);
-   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_HEIGHT, &m_height);
+   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_WIDTH, (GLint*)&m_width);
+   glGetTexLevelParameteriv(m_texTarget, 0, GL_TEXTURE_HEIGHT, (GLint*)&m_height);
 #else
    m_width = 0;
    m_height = 0;
