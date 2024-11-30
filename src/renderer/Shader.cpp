@@ -705,7 +705,7 @@ void Shader::SetTextureNull(const ShaderUniforms uniformName)
    SetTexture(uniformName, m_renderDevice->m_nullTexture);
 }
 
-void Shader::SetTexture(const ShaderUniforms uniformName, BaseTexture* texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+void Shader::SetTexture(const ShaderUniforms uniformName, BaseTexture* const texel, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    SetTexture(uniformName, texel ? m_renderDevice->m_texMan.LoadTexture(texel, filter, clampU, clampV, force_linear_rgb) : m_renderDevice->m_nullTexture);
 }

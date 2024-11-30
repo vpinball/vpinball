@@ -29,6 +29,7 @@ public:
    unsigned int height() const { return m_height; }
    unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * (m_format == RGB_FP32 ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
    BYTE* data()                { return m_data; }
+   const BYTE* datac() const   { return m_data; }
    bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16; }
 
    BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)

@@ -7,7 +7,7 @@
 #include "Texture.h"
 #include "typedefs3D.h"
 
-Sampler* TextureManager::LoadTexture(BaseTexture* memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
+Sampler* TextureManager::LoadTexture(BaseTexture* const memtex, const SamplerFilter filter, const SamplerAddressMode clampU, const SamplerAddressMode clampV, const bool force_linear_rgb)
 {
    const Iter it = m_map.find(memtex);
    // During static part prerendering, trilinear/anisotropic filtering is disabled to get sharper results

@@ -47,9 +47,9 @@ struct SamplerBinding
 class Sampler
 {
 public:
-   Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
+   Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
 #if defined(ENABLE_BGFX)
-   Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
+   Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
    bgfx::TextureHandle GetCoreTexture();
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
@@ -86,8 +86,8 @@ private:
 #endif
    bool m_isLinear;
    RenderDevice* const m_rd;
-   int m_width;
-   int m_height;
+   unsigned int m_width;
+   unsigned int m_height;
    SamplerAddressMode m_clampu;
    SamplerAddressMode m_clampv;
    SamplerFilter m_filter;
@@ -103,9 +103,9 @@ private:
 #elif defined(ENABLE_OPENGL)
    GLenum m_texTarget = 0;
    GLuint m_texture = 0;
-   GLuint CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo);
+   GLuint CreateTexture(const BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo);
 #elif defined(ENABLE_DX9)
    IDirect3DTexture9* m_texture = nullptr;
-   IDirect3DTexture9* CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
+   IDirect3DTexture9* CreateSystemTexture(const BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat);
 #endif
 };

@@ -35,9 +35,9 @@
 #endif
 
 #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
-#define FLT_MIN_VALUE 0.00006103515625
+#define FLT_MIN_VALUE 0.00006103515625f
 #else
-#define FLT_MIN_VALUE 0.0000001
+#define FLT_MIN_VALUE 0.0000001f
 #endif
 
 #include <string>
@@ -473,7 +473,7 @@ public:
    void SetTechnique(const ShaderTechniques technique);
    void SetTechniqueMaterial(ShaderTechniques technique, const Material& mat, const bool doAlphaTest = false, const bool doNormalMapping = false, const bool doReflection = false, const bool doRefraction = false);
    void SetBasic(const Material * const mat, Texture * const pin);
-   ShaderTechniques GetCurrentTechnique() { return m_technique; }
+   ShaderTechniques GetCurrentTechnique() const { return m_technique; }
    static void SetDefaultSamplerFilter(const ShaderUniforms sampler, const SamplerFilter sf);
    void UnbindSampler(Sampler* sampler);
 
@@ -489,24 +489,24 @@ public:
 
    bool HasUniform(const ShaderUniforms uniformName) const { return m_stateOffsets[uniformName] != -1; }
    void SetFloat(const ShaderUniforms uniformName, const float f) { m_state->SetFloat(uniformName, f); }
-   void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix, const unsigned int count = 1) { m_state->SetMatrix(uniformName, pMatrix, count); }
+   void SetMatrix(const ShaderUniforms uniformName, const float* const pMatrix, const unsigned int count = 1) { m_state->SetMatrix(uniformName, pMatrix, count); }
    void SetInt(const ShaderUniforms uniformName, const int i) { m_state->SetInt(uniformName, i); }
    void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
-   void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
+   void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
    #if defined(ENABLE_DX9)
-   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* const pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    #endif
-   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
-   void SetVector(const ShaderUniforms uniformName, const vec4* pVector) { m_state->SetVector(uniformName, pVector); }
+   void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+   void SetVector(const ShaderUniforms uniformName, const vec4* const pVector) { m_state->SetVector(uniformName, pVector); }
    void SetVector(const ShaderUniforms uniformName, const float x, const float y, const float z, const float w) { const vec4 v(x, y, z, w); m_state->SetVector(uniformName, &v); }
-   void SetFloat4v(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
-   void SetTexture(const ShaderUniforms uniformName, Sampler* sampler) { m_state->SetTexture(uniformName, sampler); }
+   void SetFloat4v(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count) { m_state->SetVector(uniformName, pData, count); }
+   void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler) { m_state->SetTexture(uniformName, sampler); }
    void SetTextureNull(const ShaderUniforms uniformName);
-   void SetTexture(const ShaderUniforms uniformName, Texture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
+   void SetTexture(const ShaderUniforms uniformName, Texture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false)
    {
       SetTexture(uniformName, texel->m_pdsBuffer, filter, clampU, clampV, force_linear_rgb);
    }
-   void SetTexture(const ShaderUniforms uniformName, BaseTexture* texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
+   void SetTexture(const ShaderUniforms uniformName, BaseTexture* const texel, const SamplerFilter filter = SF_UNDEFINED, const SamplerAddressMode clampU = SA_UNDEFINED, const SamplerAddressMode clampV = SA_UNDEFINED, const bool force_linear_rgb = false);
 
    class ShaderState
    {
@@ -519,7 +519,7 @@ public:
       }
       ~ShaderState() { delete[] m_state; }
       void Reset(Shader* shader) { assert(shader->m_stateSize <= m_stateSize); m_shader = shader; }
-      void CopyTo(const bool copyTo, ShaderState* other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
+      void CopyTo(const bool copyTo, ShaderState* const other, const ShaderTechniques technique = SHADER_TECHNIQUE_INVALID)
       {
          assert(other->m_shader == m_shader);
          if (copyTo)
@@ -527,7 +527,7 @@ public:
          else
             memcpy(m_state, other->m_state, m_shader->m_stateSize);
       }
-      void CopyTo(const bool copyTo, ShaderState* other, const ShaderUniforms uniformName)
+      void CopyTo(const bool copyTo, ShaderState* const other, const ShaderUniforms uniformName)
       {
          assert(other->m_shader == m_shader);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
@@ -564,13 +564,13 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
-         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
+         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
          #else
          *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
          #endif
       }
-      float GetFloat(const ShaderUniforms uniformName)
+      float GetFloat(const ShaderUniforms uniformName) const
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
@@ -579,7 +579,7 @@ public:
          assert(shaderUniformNames[uniformName].count == 1);
          return *(float*)(m_state + m_shader->m_stateOffsets[uniformName]);
       }
-      void SetVector(const ShaderUniforms uniformName, const vec4* pData, const unsigned int count = 1)
+      void SetVector(const ShaderUniforms uniformName, const vec4* const pData, const unsigned int count = 1)
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
@@ -587,60 +587,85 @@ public:
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
-         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         for (int i = 0; i < count; i++) {
-             vec4* p = const_cast<vec4*>(&pData[i]);
-             if (p->x > 0 && p->x < FLT_MIN_VALUE) p->x = FLT_MIN_VALUE;
-             if (p->x < 0 && p->x > -FLT_MIN_VALUE) p->x = -FLT_MIN_VALUE;
-             if (p->y > 0 && p->y < FLT_MIN_VALUE) p->y = FLT_MIN_VALUE;
-             if (p->y < 0 && p->y > -FLT_MIN_VALUE) p->y = -FLT_MIN_VALUE;
-             if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) p->z = FLT_MIN_VALUE;
-             if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) p->z = -FLT_MIN_VALUE;
-             if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) p->w = FLT_MIN_VALUE;
-             if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) p->w = -FLT_MIN_VALUE;
+         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
+         for (unsigned int i = 0; i < count; i++) {
+             const vec4* const p = pData + i;
+             vec4* const s = (vec4*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+             if (p->x > 0 && p->x < FLT_MIN_VALUE) s->x = FLT_MIN_VALUE;
+             else s->x = p->x;
+             if (p->x < 0 && p->x > -FLT_MIN_VALUE) s->x = -FLT_MIN_VALUE;
+             else s->x = p->x;
+             if (p->y > 0 && p->y < FLT_MIN_VALUE) s->y = FLT_MIN_VALUE;
+             else s->y = p->y;
+             if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
+             else s->y = p->y;
+             if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
+             else s->z = p->z;
+             if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
+             else s->z = p->z;
+             if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
+             else s->w = p->w;
+             if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
+             else s->w = p->w;
          }
-         #endif
+         #else
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
+         #endif
       }
-      vec4 GetVector(const ShaderUniforms uniformName)
+      vec4 GetVector(const ShaderUniforms uniformName) const
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
-         vec4 result;
-         result.x = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[0];
-         result.y = ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[1];
-         result.z = n > 2 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[2] : 0.f;
-         result.w = n > 3 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[3] : 0.f;
+         const vec4 result { 
+            ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[0],
+            ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[1],
+            n > 2 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[2] : 0.f,
+            n > 3 ? ((float*)(m_state + m_shader->m_stateOffsets[uniformName]))[3] : 0.f };
          return result;
       }
-      void SetMatrix(const ShaderUniforms uniformName, const float* pMatrix, const unsigned int count = 1)
+      void SetMatrix(const ShaderUniforms uniformName, const float* const pMatrix, const unsigned int count = 1)
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
-         #if defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         for (int i = 0; i < count * 16; i++) {
-             float* const p = const_cast<float*>(&pMatrix[i]);
-             if (*p > 0 && *p < FLT_MIN_VALUE) *p = FLT_MIN_VALUE;
-             if (*p < 0 && *p > -FLT_MIN_VALUE) *p = -FLT_MIN_VALUE;
+         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
+         for (unsigned int i = 0; i < count * 16; i++) {
+             const float* const p = pMatrix + i;
+             float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+             if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
+             else *s = *p;
+             if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
+             else *s = *p;
          }
-         #endif
+         #else
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
+         #endif
       }
-      void SetUniformBlock(const ShaderUniforms uniformName, const float* pMatrix)
+      void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix)
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_DataBlock);
+         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
+         for (unsigned int i = 0; i < m_shader->m_stateSizes[uniformName]/sizeof(float); i++) {
+             const float* const p = pMatrix + i;
+             float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+             if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
+             else *s = *p;
+             if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
+             else *s = *p;
+         }
+         #else
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
+         #endif
       }
-      void SetTexture(const ShaderUniforms uniformName, Sampler* sampler)
+      void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler)
       {
          assert(GetCurrentShader() == nullptr);
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
@@ -648,11 +673,11 @@ public:
          assert(sampler != nullptr);
          #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
          assert(m_shader->m_stateOffsets[uniformName] != -1);
-         *(Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
+         *(const Sampler**)(m_state + m_shader->m_stateOffsets[uniformName]) = sampler;
          #elif defined(ENABLE_DX9)
          ShaderUniforms alias = m_shader->m_uniform_desc[uniformName].tex_alias;
          assert(m_shader->m_stateOffsets[alias] != -1);
-         *(Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
+         *(const Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
          #endif
       }
 

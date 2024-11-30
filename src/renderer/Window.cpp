@@ -309,7 +309,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
          }
          D3DDISPLAYMODE mode;
          CHECKD3D(d3d->GetAdapterDisplayMode(m_adapter, &mode));
-         m_refreshrate = mode.RefreshRate;
+         m_refreshrate = (float)mode.RefreshRate;
          SAFE_RELEASE(d3d);
       }
 
@@ -599,7 +599,7 @@ void Window::GetDisplayModes(const int display, vector<VideoMode>& modes)
                mode.width = d3dmode.Width;
                mode.height = d3dmode.Height;
                mode.depth = (fmt == (D3DFORMAT)colorFormat::RGB5) ? 16 : 32;
-               mode.refreshrate = d3dmode.RefreshRate;
+               mode.refreshrate = (float)d3dmode.RefreshRate;
                modes.push_back(mode);
             }
          }

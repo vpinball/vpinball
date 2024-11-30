@@ -13,7 +13,7 @@
 #include <bgfx/platform.h>
 #endif
 
-Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
+Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
    m_type(SurfaceType::RT_DEFAULT), 
    m_dirty(false),
    m_rd(rd),
@@ -28,7 +28,6 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 {
    m_rd->m_curTextureUpdates++;
 #if defined(ENABLE_BGFX)
-   BaseTexture* upload = surf;
    m_isLinear = true;
    bool add_alpha = false;
    switch (surf->m_format)
@@ -44,12 +43,14 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    default: assert(false); // Unsupported texture format
    }
 
+   const BaseTexture* upload = surf;
    // TODO this is overkill since this leads to allocating/copying everything twice
-   if (add_alpha && upload != nullptr)
+   if (add_alpha && surf != nullptr)
    {
-      upload = new BaseTexture(m_width, m_height, surf->m_format);
-      memcpy(upload->data(), surf->data(), (size_t)surf->pitch() * surf->height());
-      upload->AddAlpha();
+      BaseTexture* tmp = new BaseTexture(m_width, m_height, surf->m_format);
+      memcpy(tmp->data(), surf->datac(), (size_t)surf->pitch() * surf->height());
+      tmp->AddAlpha();
+      upload = tmp;
    }
 
    // Trigger texture creation, upload and mipmap generation (on BGFX API thread)
@@ -57,10 +58,10 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
    if (upload == nullptr)
       data = nullptr;
    else if (upload == surf)
-      data = bgfx::copy(upload->data(), m_height * upload->pitch());
+      data = bgfx::copy(upload->datac(), m_height * upload->pitch());
    else {
       auto releaseFn = [](void* _ptr, void* _userData) { delete static_cast<BaseTexture*>(_userData); };
-      data = bgfx::makeRef(upload->data(), m_height * upload->pitch(), releaseFn, upload);
+      data = bgfx::makeRef(upload->datac(), m_height * upload->pitch(), releaseFn, (void*)upload);
    }
    m_textureUpdate = data;
 
@@ -118,7 +119,7 @@ Sampler::Sampler(RenderDevice* rd, BaseTexture* const surf, const bool force_lin
 }
 
 #if defined(ENABLE_BGFX)
-Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, int width, int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
    : m_type(type)
    , m_rd(rd)
    , m_dirty(false)
@@ -386,11 +387,10 @@ void Sampler::SetName(const string& name)
 #if defined(ENABLE_BGFX)
 
 #elif defined(ENABLE_OPENGL)
-GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
+GLuint Sampler::CreateTexture(const BaseTexture* const surf, unsigned int Levels, colorFormat Format, int stereo)
 {
-   unsigned int Width = surf->width();
-   unsigned int Height = surf->height();
-   void* data = surf->data();
+   const unsigned int Width = surf->width();
+   const unsigned int Height = surf->height();
 
    const GLuint col_type = ((Format == RGBA32F) || (Format == RGB32F)) ? GL_FLOAT : ((Format == RGB16F) || (Format == RGBA16F)) ? GL_HALF_FLOAT : GL_UNSIGNED_BYTE;
    const GLuint col_format = ((Format == GREY8) || (Format == RED16F))                                                                                                      ? GL_RED
@@ -479,12 +479,12 @@ GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colo
           gl_to_string(col_type), col_type);
 #endif
 
-   if (data)
+   if (surf->datac())
    {
       glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
       // This line causes a false GLIntercept error log on OpenGL >= 403 since the image is initialized through TexStorage and not TexImage (expected by GLIntercept)
       // InterceptImage::SetImageDirtyPost - Flagging an image as dirty when it is not ready/init?
-      glTexSubImage2D(m_texTarget, 0, 0, 0, Width, Height, col_format, col_type, data);
+      glTexSubImage2D(m_texTarget, 0, 0, 0, Width, Height, col_format, col_type, surf->datac());
       glGenerateMipmap(m_texTarget); // Generate mip-maps, when using TexStorage will generate same amount as specified in TexStorage, otherwise good idea to limit by GL_TEXTURE_MAX_LEVEL
    }
    return texture;
@@ -492,7 +492,7 @@ GLuint Sampler::CreateTexture(BaseTexture* const surf, unsigned int Levels, colo
 
 #elif defined(ENABLE_DX9)
 
-IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat)
+IDirect3DTexture9* Sampler::CreateSystemTexture(const BaseTexture* const surf, const bool force_linear_rgb, colorFormat& texformat)
 {
    const unsigned int texwidth = surf->width();
    const unsigned int texheight = surf->height();
@@ -528,7 +528,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    if (basetexformat == BaseTexture::RGB_FP32 && texformat == colorFormat::RGBA32F)
    {
       float* const __restrict pdest = (float*)locked.pBits;
-      const float* const __restrict psrc = (float*)(surf->data());
+      const float* const __restrict psrc = (const float*)(surf->datac());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] = psrc[i * 3 + 0];
@@ -540,7 +540,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    else if (basetexformat == BaseTexture::RGB_FP16 && texformat == colorFormat::RGBA16F)
    {
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
+      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
       const unsigned short one16 = float2half_noLUT(1.f);
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
@@ -553,13 +553,13 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    else if (basetexformat == BaseTexture::RGBA_FP16 && texformat == colorFormat::RGBA16F)
    {
       unsigned short* const __restrict pdest = (unsigned short*)locked.pBits;
-      const unsigned short* const __restrict psrc = (unsigned short*)(surf->data());
+      const unsigned short* const __restrict psrc = (const unsigned short*)(surf->datac());
       memcpy(pdest, psrc, (size_t)texwidth * texheight*4*sizeof(unsigned short));
    }
    else if ((basetexformat == BaseTexture::BW) && texformat == colorFormat::RGBA8)
    {
       BYTE* const __restrict pdest = (BYTE*)locked.pBits;
-      const BYTE* const __restrict psrc = (BYTE*)(surf->data());
+      const BYTE* const __restrict psrc = (const BYTE*)(surf->datac());
       for (size_t i = 0; i < (size_t)texwidth * texheight; ++i)
       {
          pdest[i * 4 + 0] =
@@ -570,11 +570,11 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
    }
    else if ((basetexformat == BaseTexture::RGB || basetexformat == BaseTexture::SRGB) && texformat == colorFormat::RGBA8)
    {
-      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->data(), (size_t)texwidth * texheight);
+      copy_rgb_rgba<true>((unsigned int*)locked.pBits, surf->datac(), (size_t)texwidth * texheight);
    }
    else if ((basetexformat == BaseTexture::RGBA || basetexformat == BaseTexture::SRGBA) && texformat == colorFormat::RGBA8)
    {
-      copy_bgra_rgba<false>((unsigned int*)locked.pBits, (const unsigned int*)(surf->data()), (size_t)texwidth * texheight);
+      copy_bgra_rgba<false>((unsigned int*)locked.pBits, (const unsigned int*)(surf->datac()), (size_t)texwidth * texheight);
 
       /* IDirect3DSurface9* sysSurf;
       CHECKD3D(sysTex->GetSurfaceLevel(0, &sysSurf));
@@ -583,7 +583,7 @@ IDirect3DTexture9* Sampler::CreateSystemTexture(BaseTexture* const surf, const b
       sysRect.left = 0;
       sysRect.right = texwidth;
       sysRect.bottom = texheight;
-      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->data(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
+      CHECKD3D(D3DXLoadSurfaceFromMemory(sysSurf, nullptr, nullptr, surf->datac(), (D3DFORMAT)colorFormat::RGBA8, surf->pitch(), nullptr, &sysRect, D3DX_FILTER_NONE, 0));
       SAFE_RELEASE_NO_RCC(sysSurf);*/
    }
    else
