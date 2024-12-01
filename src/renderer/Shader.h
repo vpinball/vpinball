@@ -592,20 +592,16 @@ public:
              const vec4* const p = pData + i;
              vec4* const s = (vec4*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
              if (p->x > 0 && p->x < FLT_MIN_VALUE) s->x = FLT_MIN_VALUE;
-             else s->x = p->x;
-             if (p->x < 0 && p->x > -FLT_MIN_VALUE) s->x = -FLT_MIN_VALUE;
+             else if (p->x < 0 && p->x > -FLT_MIN_VALUE) s->x = -FLT_MIN_VALUE;
              else s->x = p->x;
              if (p->y > 0 && p->y < FLT_MIN_VALUE) s->y = FLT_MIN_VALUE;
-             else s->y = p->y;
-             if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
+             else if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
              else s->y = p->y;
              if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
-             else s->z = p->z;
-             if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
+             else if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
              else s->z = p->z;
              if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
-             else s->w = p->w;
-             if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
+             else if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
              else s->w = p->w;
          }
          #else
@@ -638,8 +634,7 @@ public:
              const float* const p = pMatrix + i;
              float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
              if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
-             else *s = *p;
-             if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
+             else if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
              else *s = *p;
          }
          #else
@@ -657,8 +652,7 @@ public:
              const float* const p = pMatrix + i;
              float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
              if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
-             else *s = *p;
-             if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
+             else if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
              else *s = *p;
          }
          #else
@@ -729,7 +723,7 @@ private:
    ShaderTechniques getTechniqueByName(const string& name);
 
    vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
-   
+
    // caches
 #if defined(ENABLE_BGFX)
    ShaderState* m_boundState[SHADER_TECHNIQUE_COUNT]; // The state currently applied to the backend (per program, so per technique)
