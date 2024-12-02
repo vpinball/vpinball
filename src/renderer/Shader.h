@@ -597,12 +597,16 @@ public:
              if (p->y > 0 && p->y < FLT_MIN_VALUE) s->y = FLT_MIN_VALUE;
              else if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
              else s->y = p->y;
-             if (n > 2 && p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
-             else if (n > 2 && p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
-             else s->z = p->z;
-             if (n > 3 && p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
-             else if (n > 3 && p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
-             else s->w = p->w;
+             if (n > 2) {
+                if (p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
+                else if (p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
+                else s->z = p->z;
+             }
+             if (n > 3) {
+                if (p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
+                else if (p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
+                else s->w = p->w;
+             }
          }
          #else
          memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
