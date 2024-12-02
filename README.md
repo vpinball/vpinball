@@ -17,4 +17,5 @@ This project was started by Randy Davis, open sourced in 2010 and continued by t
 - Support for Stereo3D output
 - Support for Head tracking via BAM
 - Support for VR HMD rendering (including [PUP](https://www.nailbuster.com/wikipinup), [B2S](https://github.com/vpinball/b2s-backglass) backglass and DMD output support)
+- Support for WCG/HDR rendering (for now only via the BGFX (D3D11/12) build)
 - Support for Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588), macOS, iOS/tvOS, Android
