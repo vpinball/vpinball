@@ -40,10 +40,17 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    }
    else if (createDefault)
    {
-      PLOGI << "Settings file was not found at '" << path << "' creating a default one";
+      PLOGI << "Settings file was not found at '" << path << "', creating a default one";
 
       // Load failed: initialize from the default setting file
-      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
+      try
+      {
+         std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
+      }
+      catch (const std::exception&)
+      {
+         ShowError("Copying of default settings file 'Default_VPinballX.ini' from the 'assets' folder failed");
+      }
       if (!file.read(m_ini))
       {
          PLOGE << "Loading of default settings file failed";
@@ -419,16 +426,13 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
    opt.defaultValue = defaultValue;
    opt.literals = literals;
    opt.unit = unit;
-   bool found = false;
    for (auto option = begin(m_options); option != end(m_options); ++option)
    {
       if (option->name == name)
       {
          *option = opt;
-         found = true;
-         break;
+         return;
       }
    }
-   if (!found)
-      m_options.push_back(opt);
+   options.push_back(opt);
 }
