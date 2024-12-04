@@ -239,9 +239,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    bool useVR = false;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 0);
+      const int vrDetectionMode = m_ptable->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
       #if defined(ENABLE_XR)
-         if (vrDetectionMode != 2) // 2 is VR off
+         if (vrDetectionMode != 2) // 2 is VR off (0 is VR on, 1 is autodetect)
          {
             m_vrDevice = new VRDevice();
             if (m_vrDevice->IsOpenXRReady())
@@ -249,7 +249,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                m_vrDevice->SetupHMD();
                if (m_vrDevice->IsOpenXRHMDReady())
                   useVR = true;
-               else if (vrDetectionMode == 0)
+               else if (vrDetectionMode == 0) // 0 is VR on
                {
                   while (!m_vrDevice->IsOpenXRHMDReady() && (g_pvp->MessageBox("Retry connection ?", "Connection to VR headset failed", MB_YESNO) == IDYES))
                      m_vrDevice->SetupHMD();
