@@ -434,5 +434,5 @@ void Settings::RegisterSetting(const Section section, const string &name, float 
          return;
       }
    }
-   options.push_back(opt);
+   m_options.push_back(opt);
 }
