@@ -281,7 +281,7 @@ VROptionsDialog::VROptionsDialog() : CDialog(IDD_VR_OPTIONS)
       if (rgszKeyName[scancode][1] == 0 && ToAsciiEx(vk, scancode, State, (LPWORD)result, 0, layout) == 1)
       {
          rgszKeyName[scancode][0] = (char)result[0];
-         rgszKeyName[scancode][1] = 0;
+         rgszKeyName[scancode][1] = '\0';
       }
    }
 }
