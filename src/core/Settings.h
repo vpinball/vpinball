@@ -97,8 +97,8 @@ public:
    bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const bool val, const bool overrideMode = false);
     
-   bool DeleteValue(const Section section, const string &key, const bool& deleteFromParent = false);
-   bool DeleteSubKey(const Section section, const bool &deleteFromParent = false);
+   bool DeleteValue(const Section section, const string &key, const bool deleteFromParent = false);
+   bool DeleteSubKey(const Section section, const bool deleteFromParent = false);
 
    enum OptionUnit
    {
