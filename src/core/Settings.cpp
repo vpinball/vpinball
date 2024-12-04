@@ -31,7 +31,7 @@ Settings::Section Settings::GetSection(const string& name)
 
 const string &Settings::GetSectionName(const Section section)
 {
-   assert(0 <= section && section < (int) m_settingKeys.size());
+   assert(0 <= section && section < (int)m_settingKeys.size());
    return m_settingKeys[section];
 }
 
@@ -52,10 +52,17 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    }
    else if (createDefault)
    {
-      PLOGI << "Settings file was not found at '" << path << "' creating a default one";
+      PLOGI << "Settings file was not found at '" << path << "', creating a default one";
 
       // Load failed: initialize from the default setting file
-      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
+      try
+      {
+         std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_VPinballX.ini", path);
+      }
+      catch (const std::exception&)
+      {
+         ShowError("Copying of default settings file 'Default_VPinballX.ini' from the 'assets' folder failed");
+      }
       if (!file.read(m_ini))
       {
          PLOGE << "Loading of default settings file failed";
