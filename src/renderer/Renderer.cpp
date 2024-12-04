@@ -2050,9 +2050,9 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*//*203.f*/350.f/10000.f, g_pplayer->m_vrDevice ? 2.f : 0.f); //!! 203 nits as SDR reference? //!! or 100 as in BT2446 spec? // but both result in too dark images for BT2446 conversion at least compared to the other mappers
          #endif
 
-         // dummy values only, unused
-         m_renderDevice->m_FBShader->SetVector(SHADER_spline1, 0.f,0.f,0.f,0.f);
-         m_renderDevice->m_FBShader->SetVector(SHADER_spline2, 0.f,0.f,0.f,0.f);
+         // dummy values only, unused at the moment
+         //m_renderDevice->m_FBShader->SetVector(SHADER_spline1, 0.f,0.f,0.f,0.f);
+         //m_renderDevice->m_FBShader->SetVector(SHADER_spline2, 0.f,0.f,0.f,0.f);
       }
 
       Texture *const pin = m_table->GetImage(m_table->m_imageColorGrade);

@@ -65,9 +65,9 @@ public:
 
 private:
    XrInstance m_xrInstance = XR_NULL_HANDLE;
-   std::vector<const char*> m_activeAPILayers = {};
-   std::vector<const char*> m_activeInstanceExtensions = {};
-   std::vector<std::string> m_apiLayers = {};
+   std::vector<const char*> m_activeAPILayers;
+   std::vector<const char*> m_activeInstanceExtensions;
+   std::vector<std::string> m_apiLayers;
 
    XrFormFactor m_formFactor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
    XrSystemId m_systemID = {};
@@ -88,9 +88,9 @@ private:
       XrSwapchain swapchain = XR_NULL_HANDLE;
       int64_t swapchainFormat = 0;
       std::vector<void*> imageViews;
-      uint32_t width { 0 };
-      uint32_t height { 0 };
-      uint32_t arraySize { 0 };
+      uint32_t width = 0;
+      uint32_t height = 0;
+      uint32_t arraySize = 0;
    };
    SwapchainInfo m_colorSwapchainInfo = {};
    SwapchainInfo m_depthSwapchainInfo = {};
