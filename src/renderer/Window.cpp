@@ -23,7 +23,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    , m_settingsPrefix(settingsPrefix)
 {
    const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
-   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen"s, false);
+   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
    // FIXME remove command line override => this is hacky and not needed anymore (use INI override instead)
    if (m_settingsSection == Settings::Player)
    {
@@ -32,11 +32,11 @@ Window::Window(const string &title, const Settings::Section section, const strin
       else if (g_pvp->m_disEnableTrueFullscreen == 1)
          m_fullscreen = true;
    }
-   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width"s, m_fullscreen ? -1 : DEFAULT_PLAYER_WIDTH);
-   int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height"s, w * 9 / 16);
-   const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display"s, -1);
-   const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit"s, false);
-   const float fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate"s, 0.f);
+   int w = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", m_fullscreen ? -1 : DEFAULT_PLAYER_WIDTH);
+   int h = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", w * 9 / 16);
+   const int display = g_pvp->m_primaryDisplay ? -1 : settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Display", -1);
+   const bool video10bit = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Render10Bit", false);
+   const float fsRefreshRate = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "RefreshRate", 0.f);
    // FIXME FIXME FIXME
    const int fsBitDeth = (video10bit && m_fullscreen /* && stereo3D != STEREO_VR */) ? 30 : 32;
    if (video10bit && !m_fullscreen)
@@ -104,7 +104,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
       }
       if (!fsModeExists)
       {
-         PLOGE << "Requested fullscreen mode " << m_width << "x" << m_height << " at " << fsRefreshRate << "Hz is not available. Switching to windowed mode";
+         PLOGE << "Requested fullscreen mode " << m_width << 'x' << m_height << " at " << fsRefreshRate << "Hz is not available. Switching to windowed mode";
          m_fullscreen = false;
          m_width = m_screenwidth;
          m_height = m_screenheight;
@@ -138,8 +138,8 @@ Window::Window(const string &title, const Settings::Section section, const strin
       // Restore saved position of non fullscreen windows
       if ((m_height != m_screenheight) || (m_width != m_screenwidth))
       {
-         const int xn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX"s, wnd_x);
-         const int yn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY"s, wnd_y);
+         const int xn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", wnd_x);
+         const int yn = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", wnd_y);
          // Only apply saved position if they fit inside a display
          #ifdef ENABLE_SDL_VIDEO // SDL Windowing
             int displayCount = 0;
