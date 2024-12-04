@@ -961,13 +961,13 @@ public:
          PLOGI << "Available window fullscreen desktop resolutions:";
          for (int display = 0; display < displays.size(); display++) {
             const SDL_DisplayMode* displayMode = SDL_GetDesktopDisplayMode(displays.at(display).adapter);
-            PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << "x" << displayMode->h
-                  << " (refreshRate=" << displayMode->refresh_rate << ")";
+            PLOGI << "display " << displays.at(display).adapter << ": " << displayMode->w << 'x' << displayMode->h
+                  << " (refreshRate=" << displayMode->refresh_rate << ')';
          }
 
          PLOGI << "Available external window renderers:";
          int numRenderers = SDL_GetNumRenderDrivers();
-         for (int renderer = 0; renderer < SDL_GetNumRenderDrivers(); renderer++)
+         for (int renderer = 0; renderer < numRenderers; renderer++)
             PLOGI << "Renderer " << renderer << ": " <<  SDL_GetRenderDriver(renderer);
       }
 

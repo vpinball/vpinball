@@ -289,7 +289,6 @@ void VPinball::InitTools()
 void VPinball::InitRegValues()
 {
    const int deadz = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
-   g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, deadz);
 
    m_alwaysDrawDragPoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
    m_alwaysDrawLightCenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
