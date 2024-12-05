@@ -960,7 +960,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_forceMotionBlurOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_compressTexture.SetCheck(settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_softwareVertex.SetCheck(settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false) ? BST_CHECKED : BST_UNCHECKED);
-      m_rampDetail.SetPos(settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10));
+      m_rampDetail.SetPos(settings.LoadValueWithDefault(Settings::Player, "AlphaRampAccuracy"s, 10),1);
 
       #if defined(ENABLE_SDL_VIDEO)
          m_disableDWM.EnableWindow(false); // Not supported so disabled
@@ -1045,7 +1045,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    }
 
    m_overrideNightDay.SetCheck(settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED);
-   m_nightDay.SetPos((int)(100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)));
+   m_nightDay.SetPos((int)(100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)),1);
    m_autoNightDay.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false) ? BST_CHECKED : BST_UNCHECKED);
    const float lat = settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
    sprintf_s(tmp, sizeof(tmp), "%.3f", lat);
