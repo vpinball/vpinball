@@ -4,6 +4,9 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 12/04/24
+    * Bump libdmdutil (libzedmd, libserum) (requires ZeDMD 4.1.0+ firmware)
+
 * 10/06/24
     * Add documentation for iOS version
 
