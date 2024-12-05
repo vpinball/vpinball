@@ -628,7 +628,7 @@ VRDevice::VRDevice()
       #endif
       m_activeInstanceExtensions.clear();
       // Add a specific extension to the list of extensions to be enabled, if it is supported.
-      auto EnableExtentionIfSupported = [&](const char* extensionName)
+      auto EnableExtensionIfSupported = [&](const char* extensionName)
       {
          for (uint32_t i = 0; i < extensionCount; i++)
          {
@@ -640,16 +640,27 @@ VRDevice::VRDevice()
          }
          return false;
       };
-      //const bool hasGraphicBackend = EnableExtentionIfSupported(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME);
-      //const bool hasGraphicBackend = EnableExtentionIfSupported(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME);
-      //const bool hasGraphicBackend = EnableExtentionIfSupported(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME);
-      const bool hasGraphicBackend = EnableExtentionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME);
-      //const bool hasGraphicBackend = EnableExtentionIfSupported(XR_KHR_D3D12_ENABLE_EXTENSION_NAME);
-      assert(hasGraphicBackend);
+      const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+      bool hasGraphicBackend = false;
+      switch (renderer)
+      {
+      case bgfx::RendererType::Enum::OpenGL: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_OPENGL_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+      case bgfx::RendererType::Enum::OpenGLES: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+#ifdef XR_USE_GRAPHICS_API_VULKAN
+      case bgfx::RendererType::Enum::Vulkan: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_VULKAN_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+#endif
+      case bgfx::RendererType::Enum::Direct3D11: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D11_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+#ifdef XR_USE_GRAPHICS_API_D3D12
+      case bgfx::RendererType::Enum::Direct3D12: hasGraphicBackend = EnableExtensionIfSupported(XR_KHR_D3D12_ENABLE_EXTENSION_NAME); assert(hasGraphicBackend); break;
+#endif
+      }
+      if (!hasGraphicBackend)
+         return;
+
       // FIXME OpenXR: Strangely enough, performance drops if XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME is enabled
-      //m_depthExtensionSupported = EnableExtentionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
-      m_colorSpaceExtensionSupported = EnableExtentionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
-      //EnableExtentionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      //m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
+      m_colorSpaceExtensionSupported = EnableExtensionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
+      //EnableExtensionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
       // Fill out an XrInstanceCreateInfo structure and create an XrInstance.
       XrInstanceCreateInfo instanceCI { XR_TYPE_INSTANCE_CREATE_INFO };
@@ -676,8 +687,8 @@ VRDevice::VRDevice()
       XrInstanceProperties instanceProperties{XR_TYPE_INSTANCE_PROPERTIES};
       OPENXR_CHECK(xrGetInstanceProperties(m_xrInstance, &instanceProperties), "Failed to get InstanceProperties.");
       PLOGI << "OpenXR Runtime: " << instanceProperties.runtimeName << " - "
-                                 << XR_VERSION_MAJOR(instanceProperties.runtimeVersion) << "."
-                                 << XR_VERSION_MINOR(instanceProperties.runtimeVersion) << "."
+                                 << XR_VERSION_MAJOR(instanceProperties.runtimeVersion) << '.'
+                                 << XR_VERSION_MINOR(instanceProperties.runtimeVersion) << '.'
                                  << XR_VERSION_PATCH(instanceProperties.runtimeVersion);
    #endif
 
