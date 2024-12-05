@@ -54,20 +54,22 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 
 	if (tsHr != D3D_OK || tsdHr != D3D_OK || tsfHr != D3D_OK)
 	{
-		DebugPrintf("GPU Profiler: Query not supported");
+#ifdef _DEBUG
+		ShowError("GPU Profiler: Query not supported");
+#endif
 		return false;
 	}
 
 	// Create all the queries we'll need
 	if (FAILED(pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &m_apQueryTsDisjoint[0])))
 	{
-		ErrorPrintf("GPU Profiler: Could not create timestamp disjoint query for frame 0!");
+		ShowError("GPU Profiler: Could not create timestamp disjoint query for frame 0!");
 		return false;
 	}
 
 	if (FAILED(pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &m_apQueryTsDisjoint[1])))
 	{
-		ErrorPrintf("GPU Profiler: Could not create timestamp disjoint query for frame 1!");
+		ShowError("GPU Profiler: Could not create timestamp disjoint query for frame 1!");
 		return false;
 	}
 
@@ -88,7 +90,7 @@ bool CGpuProfiler::Init (IDirect3DDevice9 * const pDevice)
 
 	if (FAILED(pDevice->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &m_frequencyQuery)))
 	{
-		ErrorPrintf("GPU Profiler: Could not create frequency query!");
+		ShowError("GPU Profiler: Could not create frequency query!");
 		return false;
 	}
 
@@ -209,13 +211,17 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	}
 	if (c >= GET_DATA_RETRIES)
 	{
-		DebugPrintf("GPU Profiler: Failed while waiting for data");
+#ifdef _DEBUG
+		ShowError("GPU Profiler: Failed while waiting for data");
+#endif
 		return;
 	}
 
 	if (disjoint)
 	{
-		DebugPrintf("GPU Profiler: Timing interval disjoint");
+#ifdef _DEBUG
+		ShowError("GPU Profiler: Timing interval disjoint");
+#endif
 		return;
 	}
 
@@ -231,7 +237,9 @@ void CGpuProfiler::WaitForDataAndUpdate ()
 	}
 	if (c >= GET_DATA_RETRIES)
 	{
-		DebugPrintf("GPU Profiler: Couldn't retrieve frequency data");
+#ifdef _DEBUG
+		ShowError("GPU Profiler: Couldn't retrieve frequency data");
+#endif
 		return;
 	}
 
