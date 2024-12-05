@@ -280,7 +280,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_detectScriptHang = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "DetectHang"s, false);
 
    m_NudgeShake = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeStrength"s, 2e-2f);
+
+   //!! TODO for now parse all dmd settings and assign scaleFX setting to internal dmd rendering
    m_scaleFX_DMD = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ScaleFXDMD"s, false);
+   for (unsigned int n = 0; n < 10; ++n)
+   {
+      const string prefix = "User." + std::to_string(n + 1) + '.';
+      m_scaleFX_DMD |= m_ptable->m_settings.LoadValueWithDefault(Settings::DMD, prefix + "ScaleFX", false);
+   }
 
    m_minphyslooptime = min(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MinPhysLoopTime"s, 0), 1000);
 
