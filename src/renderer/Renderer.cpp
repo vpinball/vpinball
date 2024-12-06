@@ -1775,7 +1775,7 @@ static float pl_hdr_rescale(const bool from, const bool to, float x)
 // precompute spline parameters based on all the constants in here and the HDR display range (in nits)
 static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
 {
-   constexpr float src_hdr_max = 1000.f; // assumes 1000 nits as scene input max //!! use 10000. for max input?
+   const float src_hdr_max = fmaxf(1000.f, displayMaxLum); // assumes 1000 nits as scene input max, but adapts to displays with higher nits, as then everything stays perfectly linear //!! use 10000. for max input?
 
    constexpr float slope_tuning    = 1.5f; //[0..10]
    constexpr float slope_offset    = 0.2f; //[0..1]
@@ -2023,7 +2023,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          render_h = renderedRT->GetHeight();
       }
 
-      const bool isHdr2020 = g_pplayer->m_vrDevice == nullptr && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+      const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
       if (isHdr2020)
       {
          const float maxDisplayLuminance = m_renderDevice->m_outputWnd[0]->GetHDRHeadRoom() * (m_renderDevice->m_outputWnd[0]->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range

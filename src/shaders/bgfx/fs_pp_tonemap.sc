@@ -631,12 +631,16 @@ void main()
          {
             float y = y_old;
 
+            // simple spline based curve from videolan, which ends up almost linear in practice with the parameters we use, up to being fully linear on ~1000+ nits displays
             y -= spline_src_pivot;
             y = y > 0. ? ((spline_qa * y + spline_qb) * y + spline_slope) * y : (spline_pa * y + spline_slope) * y;
             y += spline_dst_pivot;
 
             result *= y/y_old; //!! very minimalistic simplistic "brightness" scale
          }
+
+         // do not scale by headroom twice, so divide by it (see col *= displayMaxLum;)
+         result *= sceneLum_x_invDisplayMaxLum;
       #endif
    }
    #ifdef TM_OUT_GAMMA
@@ -664,23 +668,23 @@ void main()
 
    #else
       if (isLinearFrameBuffer)
-	  {
-		  #ifdef TM_OUT_GAMMA
-			 result = InvGamma(saturate(FBDither(result, v_texcoord0)));
-		  #else
-			 result =          saturate(FBDither(result, v_texcoord0));
-		  #endif
+      {
+          #ifdef TM_OUT_GAMMA
+             result = InvGamma(saturate(FBDither(result, v_texcoord0)));
+          #else
+             result =          saturate(FBDither(result, v_texcoord0));
+          #endif
       }
-	  else
-	  {
-		  #ifdef TM_OUT_GAMMA
-			 result =           saturate(FBDither(result, v_texcoord0));
-		  #elif defined(NEUTRAL)
-			 result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
-		  #else
-			 result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
-		  #endif
-	  }
+      else
+      {
+          #ifdef TM_OUT_GAMMA
+             result =           saturate(FBDither(result, v_texcoord0));
+          #elif defined(NEUTRAL)
+             result = FBGamma22(saturate(FBDither(result, v_texcoord0)));
+          #else
+             result = FBGamma(  saturate(FBDither(result, v_texcoord0)));
+          #endif
+      }
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
    #endif
    }
@@ -716,7 +720,9 @@ void main()
       #endif
 
       // After tonemapping, color should still be in the range 0..1 where 1 stands for display's maximum luminance, otherwise force it to be
+      #ifndef WCG
       col = saturate(col);
+      #endif
 
       // Apply display max luminance to scale the 0..1 tonemapped range to the maximum nits supported
       col *= displayMaxLum;
