@@ -141,6 +141,10 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       throw(E_FAIL);
    }
 
+   const bool isHdr2020 = (g_pplayer->m_vrDevice == nullptr) && m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer();
+   if (isHdr2020)
+      m_exposure *= g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "HDRGlobalExposure"s, 1.0f);
+
    if (m_stereo3D == STEREO_VR)
    {
       // For VR, renders at the HMD native eye resolution (preview will reuse and scale/stretch it)

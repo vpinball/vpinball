@@ -423,19 +423,20 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,227,134,10
     GROUPBOX        "Performance and Troubleshooting",IDC_STATIC,152,5,193,155
     LTEXT           "Max. Ambient Occlusion",IDC_STATIC,160,15,97,10
-    COMBOBOX        IDC_MAX_AO_COMBO,266,14,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MAX_AO_COMBO,268,14,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Max. Reflection Mode",IDC_STATIC,160,28,97,10
-    COMBOBOX        IDC_MAX_REFLECTION_COMBO,266,27,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MAX_REFLECTION_COMBO,268,27,73,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Max. Texture Dimension",IDC_STATIC,160,41,97,10
-    COMBOBOX        IDC_MAX_TEXTURE_COMBO,266,40,73,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_MAX_TEXTURE_COMBO,268,40,73,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Compress Textures (performance)",IDC_TEX_COMPRESS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,53,179,10
     CONTROL         "Force Anisotropic Texture Filtering (quality)",IDC_FORCE_ANISO,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,63,179,10
-    CONTROL         "Force Tonemapping off on HDR display",IDC_TM_OFF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,73,179,10
+    CONTROL         "Force Tonemap off (on HDR disp.). Exposure scale",IDC_TM_OFF,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,73,164,10
+    EDITTEXT        IDC_TM_HDR_SCALE,324,72,17,12,ES_RIGHT | ES_AUTOHSCROLL
     CONTROL         "Force Bloom Filter off (performance)",IDC_BLOOM_OFF,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,83,179,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,83,163,10
     CONTROL         "Disable Ball Motion Blur (performance)",IDC_DISABLE_MOTION_BLUR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,160,93,179,10
     CONTROL         "Disable Desktop Composition (legacy)",IDC_DISABLE_DWM,

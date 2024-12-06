@@ -89,12 +89,12 @@ private:
    CComboBox m_stereoMode;
    CButton m_stereoFake;
    CComboBox m_stereoFilter;
-   CEdit m_stereoBrightness;
-   CEdit m_stereoSaturation;
-   CEdit m_stereoEyeSeparation;
-   CEdit m_stereoMaxSeparation;
-   CEdit m_stereoZPD;
-   CEdit m_stereoOffset;
+   CEdit   m_stereoBrightness;
+   CEdit   m_stereoSaturation;
+   CEdit   m_stereoEyeSeparation;
+   CEdit   m_stereoMaxSeparation;
+   CEdit   m_stereoZPD;
+   CEdit   m_stereoOffset;
    CButton m_stereoYAxis;
 
    CComboBox m_maxAO;
@@ -103,6 +103,7 @@ private:
    CButton m_compressTexture;
    CButton m_forceAnisoMax;
    CButton m_forceTMOff;
+   CEdit   m_forceTMscale;
    CButton m_forceBloomOff;
    CButton m_forceMotionBlurOff;
    CButton m_useAltDepth;
@@ -111,26 +112,26 @@ private:
    CSlider m_rampDetail;
 
    CButton m_ballTrails;
-   CEdit m_ballTrailStrength;
+   CEdit   m_ballTrailStrength;
    CButton m_ballForceRound;
    CButton m_ballDisableLighting;
    CButton m_ballOverrideImages;
-   CEdit m_ballImage;
-   CEdit m_ballDecal;
+   CEdit   m_ballImage;
+   CEdit   m_ballDecal;
 
    CComboBox m_msaaSamples;
    CComboBox m_supersampling;
    CComboBox m_postprocAA;
    CComboBox m_sharpen;
 
-   CEdit m_visualNudge;
+   CEdit   m_visualNudge;
    CButton m_useAdditionalSSR;
 
    CButton m_overrideNightDay;
    CSlider m_nightDay;
    CButton m_autoNightDay;
-   CEdit m_geoposLat;
-   CEdit m_geoposLon;
+   CEdit   m_geoposLat;
+   CEdit   m_geoposLon;
 
    CComboBox m_gfxBackend;
 
@@ -775,7 +776,7 @@ BOOL RenderOptPage::OnInitDialog()
    AttachItem(IDC_MAX_PRE_FRAMES, m_maxFrameLatency);
    AddToolTip(m_maxFrameLatency, "Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.");
    #if defined(ENABLE_BGFX)
-   SetupCombo(m_syncMode, 2, "No Sync", "Vertical Sync");
+      SetupCombo(m_syncMode, 2, "No Sync", "Vertical Sync");
    #else
       SetupCombo(m_syncMode, 4, "No Sync", "Vertical Sync", "Adaptive Sync", "Frame Pacing");
    #endif
@@ -805,6 +806,8 @@ BOOL RenderOptPage::OnInitDialog()
    AddToolTip(m_forceAnisoMax, "Activate this to enhance the texture filtering.\r\nThis slows down performance only a bit (on most systems), but increases quality tremendously.");
    AttachItem(IDC_TM_OFF, m_forceTMOff);
    AddToolTip(m_forceTMOff, "Forces tonemapping to be always off on a HDR capable display. This is usually the right thing to do as tonemappers will artifically limit the displayed color and brightness range.");
+   AttachItem(IDC_TM_HDR_SCALE, m_forceTMscale);
+   AddToolTip(m_forceTMscale, "Global exposure scale multiplier for HDR capable displays.");
    AttachItem(IDC_BLOOM_OFF, m_forceBloomOff);
    AddToolTip(m_forceBloomOff, "Forces the bloom filter to be always off. Only for very low-end graphics cards.");
    AttachItem(IDC_DISABLE_MOTION_BLUR, m_forceMotionBlurOff);
@@ -950,11 +953,18 @@ void RenderOptPage::LoadSettings(Settings& settings)
       m_useAltDepth.SetCheck(settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_forceTMOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true) ? BST_CHECKED : BST_UNCHECKED);
 #if defined(ENABLE_BGFX)
-      //if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false))
+      //if (!SDL_GetBooleanProperty(props, SDL_PROP_DISPLAY_HDR_ENABLED_BOOLEAN, false)) {
       //   m_forceTMOff.EnableWindow(false);
+      //   m_forceTMscale.EnableWindow(false);
+      //}
 #else
       m_forceTMOff.EnableWindow(false);
+      m_forceTMscale.EnableWindow(false);
 #endif
+      const float forceTMscale = settings.LoadValueWithDefault(Settings::Player, "HDRGlobalExposure"s, 1.0f);
+      sprintf_s(tmp, sizeof(tmp), "%.2f", forceTMscale);
+      m_forceTMscale.SetWindowText(tmp);
+
       m_forceBloomOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceBloomOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
       m_forceAnisoMax.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true) ? BST_CHECKED : BST_UNCHECKED);
       m_forceMotionBlurOff.SetCheck(settings.LoadValueWithDefault(Settings::Player, "ForceMotionBlurOff"s, false) ? BST_CHECKED : BST_UNCHECKED);
@@ -1174,6 +1184,7 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "AlphaRampAccuracy"s, (int)SendDlgItemMessage(IDC_ARASlider, TBM_GETPOS, 0, 0), !saveAll);
    settings.SaveValue(Settings::Player, "UseNVidiaAPI"s, m_useAltDepth.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "HDRDisableToneMapper"s, m_forceTMOff.GetCheck() == BST_CHECKED, !saveAll);
+   settings.SaveValue(Settings::Player, "HDRGlobalExposure"s, GetDlgItemText(IDC_TM_HDR_SCALE).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ForceBloomOff"s, m_forceBloomOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "ForceMotionBlurOff"s, m_forceMotionBlurOff.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::Player, "DisableDWM"s, m_disableDWM.GetCheck() == BST_CHECKED, !saveAll);
@@ -1285,6 +1296,7 @@ void RenderOptPage::ResetVideoPreferences(int profile)
    m_sharpen.SetCurSel(profile != 2 ? 0 : 2);
 
    m_forceTMOff.SetCheck(BST_CHECKED);
+   m_forceTMscale.SetWindowText("1.0");
    m_forceBloomOff.SetCheck(BST_UNCHECKED);
    m_forceMotionBlurOff.SetCheck(BST_UNCHECKED);
    m_forceAnisoMax.SetCheck(profile != 1 ? BST_CHECKED : BST_UNCHECKED);
@@ -1323,6 +1335,7 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_3D_STEREO_OFS:
    case IDC_MAX_FPS:
    case IDC_MAX_PRE_FRAMES:
+   case IDC_TM_HDR_SCALE:
    case IDC_DN_LATITUDE:
    case IDC_DN_LONGITUDE:
    case IDC_NUDGE_STRENGTH:
