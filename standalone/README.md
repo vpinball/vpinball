@@ -76,6 +76,7 @@ To make a successful port, we would need tackle several tasks:
 >   - [Bug 56480](https://bugs.winehq.org/show_bug.cgi?id=56480) - vbscript: underscore line continue issues
 >   - ~~[Bug 56781](https://bugs.winehq.org/show_bug.cgi?id=56781) - srcrrun: Dictionary setting item to object fails~~
 >   - [Bug 56931](https://bugs.winehq.org/show_bug.cgi?id=56931) - vbscript: Const used before declaration fails (explicit)
+>   - [Bug 57511](https://bugs.winehq.org/show_bug.cgi?id=57511) - vbscript: For loop where loop var is not defined throws error without context
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
