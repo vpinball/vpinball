@@ -2571,17 +2571,54 @@ Sub PinMAMETimer_Timer
 				DMDColoredPixels = DMDp
 			End If
 		End If
-		If UseNVRAM Then
-			If isObject(NVRAMCallback) Then
-				ChgNVRAM = Controller.ChangedNVRAM 'Controller.NVRAM would deliver everything of the NVRAM all the time as 1D array
-				If(Not IsEmpty(ChgNVRAM)) Then NVRAMCallback ChgNVRAM
-			End If
-		End If
-		If UpdateVisual And UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
-		If UpdateVisual And UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
-		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
-		If UpdateVisual And ((Not GICallback is Nothing) Or (Not GICallback2 is Nothing)) Then ChgGI = Controller.ChangedGIStrings
-		MotorCallback
+		Err.Clear
+        If UseNVRAM Then
+            If isObject(NVRAMCallback) Then
+                ChgNVRAM = Controller.ChangedNVRAM 'Controller.NVRAM would deliver everything of the NVRAM all the time as 1D array
+                If(Not IsEmpty(ChgNVRAM)) Then NVRAMCallback ChgNVRAM
+            End If
+        End If
+        If Err.Number <> 0 Then
+            debug.print "NVRAMCallback Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+            Err.Clear
+        End If
+        If UpdateVisual And UseLamps Then
+            ChgLamp = Controller.ChangedLamps
+        Else
+            If isObject(LampCallback) Then LampCallback
+        End If
+        If Err.Number <> 0 Then
+            debug.print "LampCallback Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+            Err.Clear
+        End If
+        If UpdateVisual And UsePdbLeds Then
+            ' Below fails for most tables, but no idea how to check if ChangedPDLeds is available
+            ChgLed = Controller.ChangedPDLeds
+            Err.Clear
+        Else
+            If isObject(PDLedCallback) Then PDLedCallback
+            If Err.Number <> 0 Then
+                debug.print "PDLedCallback Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+                Err.Clear
+            End If
+        End If
+        If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
+        If Err.Number <> 0 Then
+            debug.print "ChangedSolenoids Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+            Err.Clear
+        End If
+        If UpdateVisual And ((Not GICallback is Nothing) Or (Not GICallback2 is Nothing)) Then ChgGI = Controller.ChangedGIStrings
+        If Err.Number <> 0 Then
+            debug.print "ChangedGIStrings Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+            Err.Clear
+        End If
+        If isObject(MotorCallback) Then
+            MotorCallback
+        End If
+        If Err.Number <> 0 Then
+            debug.print "MotorCallback Error: " & Err.Number & " - at " & Err.Source & ": " & Err.Description
+            Err.Clear
+        End If
 	On Error Goto 0
 
 	Dim pwmScale: If UseModSol >= 2 Then pwmScale = 1.0 / 255.0 Else pwmScale = 1 ' User has activated physical output and expects a 0..1 value for solenoids/lamps/GI/AlphaNumSegments
