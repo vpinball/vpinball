@@ -229,7 +229,6 @@ add_executable(vpinball WIN32
    src/parts/timer.h
    src/parts/trigger.cpp
    src/parts/trigger.h
-   src/parts/SaveTableWin32Visitor.cpp
 
    src/physics/physconst.h
    src/physics/collide.cpp
@@ -360,6 +359,8 @@ add_executable(vpinball WIN32
    src/ui/dialogs/ToolbarDialog.h
    src/ui/dialogs/VideoOptionsDialog.cpp
    src/ui/dialogs/VideoOptionsDialog.h
+   src/ui/dialogs/SaveTableWin32Visitor.cpp
+   src/ui/dialogs/SaveTableWin32Visitor.h
 
    src/ui/properties/BackglassCameraProperty.cpp
    src/ui/properties/BackglassCameraProperty.h
