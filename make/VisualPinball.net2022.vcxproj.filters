@@ -435,6 +435,9 @@
     <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src/ui/dialogs/SaveTableWin32Visitor.cpp.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="src/ui/properties/PropertyDialog.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
@@ -1146,6 +1149,9 @@
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/SaveTableWin32Visitor.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/properties/PropertyDialog.h">

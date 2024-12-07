@@ -1166,7 +1166,6 @@
     <ClCompile Include="src/parts/textbox.cpp" />
     <ClCompile Include="src/parts/timer.cpp" />
     <ClCompile Include="src/parts/trigger.cpp" />
-    <ClCompile Include="src/parts/SaveTableWin32Visitor.cpp" />
     <ClCompile Include="src/physics/collide.cpp" />
     <ClCompile Include="src/physics/collideex.cpp" />
     <ClCompile Include="src/physics/kdtree.cpp" />
@@ -1208,6 +1207,7 @@
     <ClCompile Include="src/ui/hitrectsur.cpp" />
     <ClCompile Include="src/ui/hitsur.cpp" />
     <ClCompile Include="src/ui/paintsur.cpp" />
+    <ClCompile Include="src/ui/dialogs/SaveTableWin32Visitor.cpp" />
     <ClCompile Include="src/ui/dialogs/AboutDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp" />
@@ -1719,8 +1719,6 @@
     <ClInclude Include="src/parts/kicker.h" />
     <ClInclude Include="src/parts/light.h" />
     <ClInclude Include="src/parts/lightseq.h" />
-    <ClInclude Include="src/parts/SaveTableVisitor.h" />
-    <ClInclude Include="src/parts/SaveTableWin32Visitor.h" />
     <ClInclude Include="src/physics/physconst.h" />
     <ClInclude Include="src/physics/kdtree.h" />
     <ClInclude Include="src/physics/hitball.h" />
@@ -1774,6 +1772,8 @@
     <ClInclude Include="src/ui/hitsur.h" />
     <ClInclude Include="src/ui/paintsur.h" />
     <ClInclude Include="src/ui/sur.h" />
+    <ClInclude Include="src/ui/SaveTableVisitor.h" />
+    <ClInclude Include="src/ui/dialogs/SaveTableWin32Visitor.h" />
     <ClInclude Include="src/ui/dialogs/AboutDialog.h" />
     <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h" />
     <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h" />

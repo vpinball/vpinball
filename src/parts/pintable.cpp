@@ -15,7 +15,7 @@
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
-#include "SaveTableWin32Visitor.h"
+#include "ui/dialogs/SaveTableWin32Visitor.h"
 #endif
 #include "freeimage.h"
 #include "ThreadPool.h"
