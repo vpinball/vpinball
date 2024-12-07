@@ -188,19 +188,20 @@ VPINBALLAPI void VPinballSetCustomTableOption(VPinballCustomTableOption* pCustom
    if (!pCustomTableOption)
       return;
 
-   VPinballLib::CustomTableOption customTableOption;
-   customTableOption.section = (VPinballLib::SettingsSection)pCustomTableOption->section;
-   customTableOption.id = pCustomTableOption->id;
-   customTableOption.name = pCustomTableOption->name;
-   customTableOption.showMask = pCustomTableOption->showMask;
-   customTableOption.minValue = pCustomTableOption->minValue;
-   customTableOption.maxValue = pCustomTableOption->maxValue;
-   customTableOption.step = pCustomTableOption->step;
-   customTableOption.defaultValue = pCustomTableOption->defaultValue;
-   customTableOption.unit = (VPinballLib::OptionUnit)pCustomTableOption->unit;
-   customTableOption.literals = pCustomTableOption->literals;
-   customTableOption.value = pCustomTableOption->value;
-   s_vpinstance.SetCustomTableOption(customTableOption);
+   int count = VPinballGetCustomTableOptionsCount();
+   for (int i = 0; i < count; ++i) {
+      VPinballCustomTableOption existingOption;
+      VPinballGetCustomTableOption(i, &existingOption);
+
+      if (strcmp(existingOption.id, pCustomTableOption->id) == 0) {
+         VPinballLib::CustomTableOption customTableOption;
+         customTableOption.section = (VPinballLib::SettingsSection)existingOption.section;
+         customTableOption.id = existingOption.id;
+         customTableOption.value = pCustomTableOption->value;
+         s_vpinstance.SetCustomTableOption(customTableOption);
+         break;
+      }
+   }
 }
 
 VPINBALLAPI void VPinballSetDefaultCustomTableOptions()

@@ -84,26 +84,6 @@ marker_series series;
 #endif
 #endif
 
-#ifdef __ANDROID__
-#include "jni.h"
-#include <android/log.h>
-
-#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,"VPX",__VA_ARGS__)
-
-static WebServer android_webServer;
-
-extern "C" JNIEXPORT void JNICALL Java_org_vpinball_app_VPXViewModel_webserver(JNIEnv* env, jobject obj, jboolean state) {
-   if (state) 
-      //android_webServer.Start();
-      LOGE("-> Start Web Server");
-   else
-      //android_webServer.Stop();
-      LOGE("-> Stop Web Server");
-}
-
-#endif
-
-
 // leave as-is as e.g. VPM relies on this
 #define WIN32_PLAYER_WND_CLASSNAME _T("VPPlayer")
 #define WIN32_WND_TITLE _T("Visual Pinball Player")
@@ -814,7 +794,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Startup done"; // For profiling
 
 #ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::StartupDone, nullptr);
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerStarted, nullptr);
 #endif
 
 #ifdef __STANDALONE__
@@ -882,6 +862,10 @@ Player::~Player()
    bool appExitRequested = (m_closing == CS_CLOSE_APP);
    m_closing = CS_CLOSED;
    PLOGI << "Closing player...";
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosing, nullptr);
+#endif
 
    // Signal plugins early since most fields will become invalid
    const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
@@ -1116,6 +1100,10 @@ Player::~Player()
 #endif
 
    PLOGI << "Player closed.";
+
+#ifdef __LIBVPINBALL__
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosed, nullptr);
+#endif
 }
 
 void Player::InitFPS()
@@ -1825,13 +1813,17 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
    // Flush any pending frame
    m_renderer->m_renderDevice->m_frameReadySem.post();
 
-#ifndef __LIBVPINBALL__
-   MultithreadedGameLoop(sync);
+#ifdef __ANDROID__
+  MultithreadedGameLoop(sync);
 #else
+#ifdef __LIBVPINBALL__
    auto gameLoop = [this, sync]() {
       MultithreadedGameLoop(sync);
    };
    VPinballLib::VPinball::GetInstance().SetGameLoop(gameLoop);
+#else
+   MultithreadedGameLoop(sync);
+#endif
 #endif
    #else
    if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
@@ -1868,8 +1860,8 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
          // usleep(100);
          YieldProcessor();
       }
-
-#ifdef __LIBVPINBALL__
+#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
+      // iOS has its own game loop so we need to break here
       break;
 #endif
    }
@@ -2225,10 +2217,10 @@ void Player::FinishFrame()
       m_closing = CS_STOP_PLAY;
 #else
       m_closing = CS_CLOSE_APP;
-   #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
+#if (defined(__APPLE__) && (defined(TARGET_OS_TV) && TARGET_OS_TV))
       PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
       g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
-   #endif
+#endif
 #endif
    }
 

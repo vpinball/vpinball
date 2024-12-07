@@ -157,7 +157,7 @@ struct LiveUIView: View {
         vpinballViewModel.showLiveUI = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let _ = VPinballSetPlayState(1)
+            vpinballManager.setPlayState(enable: true)
         }
     }
 
@@ -179,7 +179,11 @@ struct LiveUIView: View {
         vpinballViewModel.showLiveUI = false
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            vpinballManager.stop()
+            vpinballManager.setPlayState(enable: true)
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                vpinballManager.stop()
+            }
         }
     }
 }

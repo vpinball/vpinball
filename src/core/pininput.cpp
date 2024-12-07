@@ -907,12 +907,12 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 #endif
 #endif
 #ifdef __LIBVPINBALL__
-      VPinballLib::RumbleStruct rumbleStruct = {
+      VPinballLib::RumbleData rumbleData = {
          (Uint16)(saturate(lowFrequencySpeed) * 65535.f),
          (Uint16)(saturate(highFrequencySpeed) * 65535.f),
          (Uint32)ms_duration
       };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Rumble, &rumbleStruct);
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Rumble, &rumbleData);
 #endif
    }
       break;

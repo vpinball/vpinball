@@ -1241,7 +1241,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const bool isRuntimeError = (state == SCRIPTSTATE_CONNECTED);
 
 #ifdef __LIBVPINBALL__
-	VPinballLib::ScriptErrorStruct scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT };
+	VPinballLib::ScriptErrorData scriptErrorStruct = { isRuntimeError ? VPinballLib::ScriptErrorType::Runtime : VPinballLib::ScriptErrorType::Compile, (int)nLine, (int)nChar, szT };
 	VPinballLib::VPinball::SendEvent(VPinballLib::Event::ScriptError, &scriptErrorStruct);
 #endif
 

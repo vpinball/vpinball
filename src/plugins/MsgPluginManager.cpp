@@ -206,7 +206,9 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
 
 void MsgPluginManager::ProcessAsyncCallbacks()
 {
+#ifndef __LIBVPINBALL__
    assert(std::this_thread::get_id() == m_apiThread);
+#endif
    if (m_timers.empty())
       return;
    std::vector<TimerEntry> timers;

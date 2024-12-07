@@ -86,9 +86,6 @@ private:
 
 public:
    void GetMyPrefPath();
-#ifdef __ANDROID__
-   void UpdateMyPath(const string& path);
-#endif
    void AddMDITable(PinTableMDI* mdiTable);
    CMenu GetMainMenu(int id);
    void CloseAllDialogs();

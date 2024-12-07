@@ -1806,7 +1806,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             {
                auto opt = customOptions[i];
                if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
-                  || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
+                  || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
                      m_table->m_settings.DeleteValue(opt.section, opt.id);
@@ -1958,7 +1958,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             {
                auto opt = customOptions[i];
                if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
-                  || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_Plugin00 + opt.section - Settings::Plugin00))
+                  || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                {
                   if (m_tweakState[BS_Custom + i] == 2)
                      m_table->m_settings.DeleteValue(opt.section, opt.id);

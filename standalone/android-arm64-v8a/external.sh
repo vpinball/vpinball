@@ -6,13 +6,14 @@ FREEIMAGE_VERSION=3.18.0
 SDL_SHA=78cc5c173404488d80751af226d1eaf67033bcc4
 SDL_IMAGE_SHA=b1c8ec7d75e3d8398940c9e04a8b82886ae6163d
 SDL_TTF_SHA=f20defe45dfe6f0daa0f8e92e8b6221d1be3d9c0
-PINMAME_SHA=0f606bcfb81db51e9eb52d0c8c184ad46478aa59
+PINMAME_SHA=349eff5ea76e9208fc1622b5c57694d1a839dd54
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
-LIBDMDUTIL_SHA=1a3d8d4db120c6ffef4d29c62424ab585c683ef0
+LIBDMDUTIL_SHA=4ef33a3fe29fcddc796ec0d3117c4a1dc0dfd0dd
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
 FFMPEG_SHA=b08d7969c550a804a59511c7b83f2dd8cc0499b8
-BGFX_CMAKE_VERSION=1.128.8808-482
-BGFX_PATCH_SHA=a0d4c179527a4a4d205598ebf290c0b45144bda8
+BGFX_CMAKE_VERSION=1.128.8832-488
+BGFX_PATCH_SHA=0b58b383119cce1c78aaa67cc3340a02e883d447
+OPENXR_SHA=b15ef6ce120dad1c7d3ff57039e73ba1a9f17102
 
 if [[ $(uname) == "Linux" ]]; then
    NUM_PROCS=$(nproc)
@@ -34,6 +35,7 @@ echo "  LIBDOF_SHA: ${LIBDOF_SHA}"
 echo "  FFMPEG_SHA: ${FFMPEG_SHA}"
 echo "  BGFX_CMAKE_VERSION: ${BGFX_CMAKE_VERSION}"
 echo "  BGFX_PATCH_SHA: ${BGFX_PATCH_SHA}"
+echo "  OPENXR_SHA: ${OPENXR_SHA}"
 echo ""
 
 if [ -z "${BUILD_TYPE}" ]; then
@@ -347,3 +349,33 @@ fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
+
+#
+# build openxr and copy to external
+#
+
+CACHE_NAME="openxr-${OPENXR_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/KhronosGroup/OpenXR-SDK-Source/archive/${OPENXR_SHA}.zip -o openxr.zip
+   unzip openxr.zip
+   cd OpenXR-SDK-Source-$OPENXR_SHA
+   cmake  \
+      -DCMAKE_SYSTEM_NAME=Android \
+      -DCMAKE_SYSTEM_VERSION=30 \
+      -DCMAKE_ANDROID_ARCH_ABI=arm64-v8a \
+      -DBUILD_TESTS=OFF \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/openxr
+   cp -r build/include/openxr/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/openxr
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp -a build/src/loader/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+mkdir -p ../external/include/openxr
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/openxr/* ../external/include/openxr
+cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib

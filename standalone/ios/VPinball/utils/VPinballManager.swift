@@ -32,34 +32,34 @@ class VPinballManager {
             let event = VPinballEvent(rawValue: value)
 
             switch event {
-            case .archive,
-                 .loadItems,
-                 .loadSounds,
-                 .loadImages,
-                 .loadFonts,
-                 .loadCollections,
-                 .prerender:
-                let progressStruct = data!.bindMemory(to: VPinballProgressStruct.self,
-                                                      capacity: 1).pointee
+            case .archiveCompressing,
+                 .archiveUncompressing,
+                 .loadingItems,
+                 .loadingSounds,
+                 .loadingImages,
+                 .loadingFonts,
+                 .loadingCollections,
+                 .prerendering:
+                let progressData = data!.bindMemory(to: VPinballProgressData.self,
+                                                    capacity: 1).pointee
 
                 DispatchQueue.main.async {
                     if let name = event?.name {
-                        vpinballViewModel.updateProgressHUD(progress: Int(progressStruct.progress),
+                        vpinballViewModel.updateProgressHUD(progress: Int(progressData.progress),
                                                             status: name)
                     } else {
-                        vpinballViewModel.updateProgressHUD(progress: Int(progressStruct.progress))
+                        vpinballViewModel.updateProgressHUD(progress: Int(progressData.progress))
                     }
                 }
-
             case .windowCreated:
-                let windowCreatedStruct = data!.bindMemory(to: VPinballWindowCreatedStruct.self,
-                                                           capacity: 1).pointee
+                let windowCreatedData = data!.bindMemory(to: VPinballWindowCreatedData.self,
+                                                         capacity: 1).pointee
 
                 vpinballViewModel.liveUIOverride = false
                 vpinballViewModel.showTouchInstructions = false
                 vpinballViewModel.showTouchOverlay = false
 
-                if let window = windowCreatedStruct.window?.takeUnretainedValue() {
+                if let window = windowCreatedData.window?.takeUnretainedValue() {
                     if let viewController = window.rootViewController {
                         let metalLayer = CAMetalLayer()
                         metalLayer.frame = viewController.view.layer.frame
@@ -84,13 +84,11 @@ class VPinballManager {
                     window.isHidden = true
                     window.windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
                 }
-
             case .metalLayerIOS:
                 if let metalLayer = vpinballManager.metalLayer {
                     return UnsafeRawPointer(Unmanaged.passUnretained(metalLayer).toOpaque())
                 }
-
-            case .startupDone:
+            case .playerStarted:
                 vpinballManager.sdlUIWindow?.isHidden = false
 
                 vpinballViewModel.liveUIOverride = vpinballManager.loadValue(.standalone,
@@ -104,44 +102,45 @@ class VPinballManager {
                 vpinballViewModel.showTouchOverlay = vpinballManager.loadValue(.standalone,
                                                                                "TouchOverlay",
                                                                                false)
-
             case .rumble:
                 if vpinballManager.haptics {
-                    vpinballManager.rumble(data!.bindMemory(to: VPinballRumbleStruct.self,
+                    vpinballManager.rumble(data!.bindMemory(to: VPinballRumbleData.self,
                                                             capacity: 1).pointee)
                 }
-
             case .scriptError:
                 if vpinballViewModel.scriptError == nil {
-                    let scriptErrorStruct = data!.bindMemory(to: VPinballScriptErrorStruct.self,
-                                                             capacity: 1).pointee
+                    let scriptErrorData = data!.bindMemory(to: VPinballScriptErrorData.self,
+                                                           capacity: 1).pointee
 
-                    let type = VPinballScriptErrorType(rawValue: scriptErrorStruct.error)!
-                    let description = scriptErrorStruct.description.map { String(cString: $0) } ?? "Description unavailable"
+                    let type = VPinballScriptErrorType(rawValue: scriptErrorData.error)!
+                    let description = scriptErrorData.description.map { String(cString: $0) } ?? "Description unavailable"
 
-                    vpinballViewModel.scriptError = "\(type.name) on line \(scriptErrorStruct.line), position \(scriptErrorStruct.position):\n\n\(description)"
+                    vpinballViewModel.scriptError = "\(type.name) on line \(scriptErrorData.line), position \(scriptErrorData.position):\n\n\(description)"
                 }
+            case .liveUIToggle:
+                vpinballViewModel.showLiveUI.toggle()
 
-            case .stop:
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    vpinballManager.setPlayState(enable: !vpinballViewModel.showLiveUI)
+                }
+            case .liveUIUpdate:
+                break
+            case .playerClosing:
+                break
+            case .playerClosed:
+                break
+            case .stopped:
                 vpinballManager.activeTable = nil
                 vpinballManager.sdlUIWindow = nil
                 vpinballManager.sdlViewController = nil
 
                 vpinballViewModel.setAction(action: .stopped)
-
-            case .liveUIToggle:
-                vpinballViewModel.showLiveUI.toggle()
-
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-                    let _ = VPinballSetPlayState(vpinballViewModel.showLiveUI ? 0 : 1)
-                }
-
             case .webServer:
                 if let data = data {
-                    let webServerStruct = data.bindMemory(to: VPinballWebServerStruct.self,
-                                                          capacity: 1).pointee
+                    let webServerData = data.bindMemory(to: VPinballWebServerData.self,
+                                                        capacity: 1).pointee
 
-                    let url = webServerStruct.url.map { String(cString: $0) }
+                    let url = webServerData.url.map { String(cString: $0) }
 
                     DispatchQueue.main.async {
                         vpinballViewModel.webServerURL = url
@@ -151,7 +150,6 @@ class VPinballManager {
                         vpinballViewModel.webServerURL = nil
                     }
                 }
-
             default:
                 break
             }
@@ -428,7 +426,7 @@ class VPinballManager {
         return success
     }
 
-    func rumble(_ data: VPinballRumbleStruct) {
+    func rumble(_ data: VPinballRumbleData) {
         if data.low_frequency_rumble > 0 || data.high_frequency_rumble > 0 {
             let style: UIImpactFeedbackGenerator.FeedbackStyle
 
@@ -547,6 +545,10 @@ class VPinballManager {
 
     func toggleFPS() {
         VPinballToggleFPS()
+    }
+
+    func setPlayState(enable: Bool) {
+        _ = VPinballSetPlayState(enable ? 1 : 0)
     }
 
     func stop() {
