@@ -29,8 +29,8 @@ standalone/ios-simulator-arm64/frameworks
 standalone/tvos-arm64/external
 standalone/tvos-arm64/tvos-project/assets
 standalone/android-arm64-v8a/external
-standalone/android-arm64-v8a/android-project/app/src/main/assets
-standalone/android-arm64-v8a/android-project/app/src/main/jniLibs
+standalone/android/app/src/main/assets
+standalone/android/app/src/main/jniLibs
 standalone/linux-x64/external
 standalone/linux-aarch64/external
 
