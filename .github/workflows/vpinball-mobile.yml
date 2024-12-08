@@ -43,118 +43,51 @@ jobs:
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-  build-lib:
-    name: Build VPinballX_BGFX_lib-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: ${{ matrix.os }}
+  build-ios:
+    name: Build VPinballX_BGFX-ios-${{ matrix.config }}
+    runs-on: macos-15
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-15
-            platform: ios
-            arch: arm64
-            config: Release
-          - os: macos-15
-            platform: ios-simulator
-            arch: arm64
-            config: Release
-          - os: ubuntu-24.04
-            platform: android
-            arch: arm64-v8a
-            config: Release
+        config: [ Release ]
     steps:
-      - if: (matrix.os == 'macos-15')
-        name: Add autoconf and automake (mac runner)
-        run: |
+      - run: |
           brew install bison autoconf automake libtool
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
-      - if: (matrix.os == 'ubuntu-24.04')
-        name: Add autoconf and automake (linux runner)
-        run: |
-          sudo apt install bison
       - uses: actions/checkout@v4
       - name: Calculate timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
       - uses: actions/cache/restore@v4
         with:
-          path: standalone/${{ matrix.platform }}-${{ matrix.arch }}/external/cache
-          key: BGFX_lib-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          path: standalone/ios-arm64/external/cache
+          key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-             BGFX_lib-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
-      - name: Build Deps
+             BGFX-ios-arm64-${{ matrix.config }}-external-
+      - name: Build deps
         run: |
-          cd standalone/${{ matrix.platform }}-${{ matrix.arch }}
+          cd standalone/ios-arm64
           BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
         if: ${{ !cancelled() }}
         with:
-          path: standalone/${{ matrix.platform }}-${{ matrix.arch }}/external/cache
-          key: BGFX_lib-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build
+          path: standalone/ios-arm64/external/cache
+          key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build libvpinball
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          if [[ "$(uname)" == "Darwin" ]]; then
-             NUM_PROCS=$(sysctl -n hw.ncpu)
-          else
-             NUM_PROCS=$(nproc)
-          fi
+          NUM_PROCS=$(sysctl -n hw.ncpu)
           cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
-          if [[ "${{ matrix.platform }}" == "ios" || "${{ matrix.platform }}" == "ios-simulator" ]]; then
-             cmake \
-                -DPLATFORM=${{ matrix.platform }} \
-                -DARCH=${{ matrix.arch }} \
+          cmake \
+                -DPLATFORM=ios \
+                -DARCH=arm64 \
                 -DBUILD_FRAMEWORKS=ON \
                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
-                -B build/${{ matrix.config }}
-          elif [[ "${{ matrix.platform }}" == "android" ]]; then
-             cmake \
-                -DPLATFORM=${{ matrix.platform }} \
-                -DARCH=${{ matrix.arch }} \
-                -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
-                -B build/${{ matrix.config }}
-          fi
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-      - run: |
-          mkdir tmp
-          cp -a build/${{ matrix.config }}/*.h tmp
-          cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
-          cp -r build/${{ matrix.config }}/docs tmp
-          cp -r build/${{ matrix.config }}/flexdmd tmp
-          if [[ "${{ matrix.platform }}" == "ios" || "${{ matrix.platform }}" == "ios-simulator" ]]; then
-             cp -a build/${{ matrix.config }}/*.dylib tmp
-             cp -r build/${{ matrix.config }}/*.framework tmp
-             cp -r build/${{ matrix.config }}/*.dSYM tmp
-          elif [[ "${{ matrix.platform }}" == "android" ]]; then
-             cp -a build/${{ matrix.config }}/*.so tmp
-             cp -a build/${{ matrix.config }}/*.jar tmp
-          fi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_BGFX_lib-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}-${{ matrix.arch }}
-          path: tmp
-
-  build-ios:
-    name: Build VPinballX_${{ matrix.type }}-ios-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: macos-15
-    needs: [ version, build-lib ]
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [ BGFX ]
-        config: [ Release ]  
-        arch: [ arm64 ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
-        with:
-          name: VPinballX_${{ matrix.type }}_lib-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
-          path: build/ios
-      - name: Build
+                -B build/ios-arm64
+          cmake --build build/ios-arm64 -- -j${NUM_PROCS}
+      - name: Build app
         run: |
           MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
           CURRENT_PROJECT_VERSION="${{ needs.version.outputs.version_full }}"
@@ -162,10 +95,77 @@ jobs:
           perl -i -pe "s/MARKETING_VERSION = [0-9.]+/MARKETING_VERSION = $MARKETING_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           perl -i -pe "s/CURRENT_PROJECT_VERSION = [0-9.]+/CURRENT_PROJECT_VERSION = $CURRENT_PROJECT_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           fastlane build_unsigned_ipa
-      - run: |
+      - name: Copy ipa
+        run: |
           mkdir tmp
-          cp standalone/ios/fastlane/VPinballX.ipa tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}.ipa
+          cp standalone/ios/fastlane/VPinballX.ipa tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}.ipa
       - uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios-${{ matrix.arch }}
+          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios
+          path: tmp
+
+  build-android:
+    name: Build VPinballX_BGFX-android-${{ matrix.config }}
+    runs-on: ubuntu-24.04
+    needs: [ version ]
+    strategy:
+      fail-fast: false
+      matrix:
+        config: [ Release ]
+    steps:
+      - run: |
+          sudo apt install bison
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: actions/checkout@v4
+      - name: Calculate timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - uses: actions/cache/restore@v4
+        with:
+          path: standalone/android-arm64-v8a/external/cache
+          key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             BGFX-android-arm64-v8a-${{ matrix.config }}-external-
+      - name: Build deps
+        run: |
+          cd standalone/android-arm64-v8a
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
+      - uses: actions/cache/save@v4
+        if: ${{ !cancelled() }}
+        with:
+          path: standalone/android-arm64-v8a/external/cache
+          key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Build libvpinball
+        run: |
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
+          NUM_PROCS=$(nproc)
+          cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+          cmake \
+                -DPLATFORM=android \
+                -DARCH=arm64-v8a \
+                -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
+                -B build/android-arm64-v8a
+          cmake --build build/android-arm64-v8a -- -j${NUM_PROCS}
+      - name: Build app
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd standalone/android
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/vpinball.jks
+          ./gradlew assemble${{ matrix.config }} bundle${{ matrix.config }} -PversionName="${{ needs.version.outputs.version_full }}" -Psha7="${{ needs.version.outputs.sha7 }}"
+      - name: Copy apk and aab
+        run: |
+          CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
+          mkdir tmp
+          cp standalone/android/app/build/outputs/apk/${CONFIG_LC}/*.apk tmp
+          cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android
           path: tmp

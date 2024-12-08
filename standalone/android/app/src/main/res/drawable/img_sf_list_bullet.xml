@@ -1,0 +1,35 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+        android:width="31.859dp"
+        android:height="22.828dp"
+        android:viewportWidth="31.859"
+        android:viewportHeight="22.828">
+    <path
+            android:fillColor="#FF000000"
+            android:pathData="M0,0h31.859v22.828h-31.859z"
+            android:strokeAlpha="0"
+            android:fillAlpha="0"/>
+    <path
+            android:pathData="M8.875,22.125L30.203,22.125C30.906,22.125 31.484,21.578 31.484,20.859C31.484,20.156 30.906,19.609 30.203,19.609L8.875,19.609C8.156,19.609 7.609,20.156 7.609,20.859C7.609,21.578 8.156,22.125 8.875,22.125Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+    <path
+            android:pathData="M1.969,22.828C3.063,22.828 3.938,21.953 3.938,20.859C3.938,19.781 3.063,18.906 1.969,18.906C0.875,18.906 0,19.781 0,20.859C0,21.953 0.875,22.828 1.969,22.828Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+    <path
+            android:pathData="M8.875,12.672L30.203,12.672C30.906,12.672 31.484,12.125 31.484,11.422C31.484,10.719 30.906,10.156 30.203,10.156L8.875,10.156C8.156,10.156 7.609,10.719 7.609,11.422C7.609,12.125 8.156,12.672 8.875,12.672Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+    <path
+            android:pathData="M1.969,13.391C3.063,13.391 3.938,12.516 3.938,11.422C3.938,10.328 3.063,9.453 1.969,9.453C0.875,9.453 0,10.328 0,11.422C0,12.516 0.875,13.391 1.969,13.391Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+    <path
+            android:pathData="M8.875,3.234L30.203,3.234C30.906,3.234 31.484,2.688 31.484,1.969C31.484,1.266 30.906,0.719 30.203,0.719L8.875,0.719C8.156,0.719 7.609,1.266 7.609,1.969C7.609,2.688 8.156,3.234 8.875,3.234Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+    <path
+            android:pathData="M1.969,3.938C3.063,3.938 3.938,3.063 3.938,1.969C3.938,0.891 3.063,0 1.969,0C0.875,0 0,0.891 0,1.969C0,3.063 0.875,3.938 1.969,3.938Z"
+            android:fillColor="#000000"
+            android:fillAlpha="0.85"/>
+</vector>

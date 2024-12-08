@@ -184,8 +184,8 @@ cd vpinball/standalone/ios-arm64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
-cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_FRAMEWORKS=ON -DCMAKE_BUILD_TYPE=Release -B build/ios
-cmake --build build/ios -- -j$(sysctl -n hw.ncpu)
+cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_FRAMEWORKS=ON -DCMAKE_BUILD_TYPE=Release -B build/ios-arm64
+cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
 open standalone/ios/VPinball.xcodeproj
 ```
 
@@ -220,8 +220,10 @@ cd vpinball/standalone/android-arm64-v8a
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
-cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android
-cmake --build build/android -- -j$(sysctl -n hw.ncpu)
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
+cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
+cd standalone/android
+./gradlew assembleDebug
 ```
 
 ### Linux (Ubuntu 24.04)
