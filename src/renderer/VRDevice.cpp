@@ -640,7 +640,9 @@ VRDevice::VRDevice()
          }
          return false;
       };
-      const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+      // FIXME VRDevice is created before bgfx initialization (since it manages the swapchain), so bgfx::getRendererType() is not defined at this point. For the time being only D3D11 is supported (enforced in RenderDevice)
+      // const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
+      const bgfx::RendererType::Enum renderer = bgfx::RendererType::Enum::Direct3D11;
       bool hasGraphicBackend = false;
       switch (renderer)
       {
