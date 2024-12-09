@@ -26,5 +26,5 @@ class SaveTableWin32Visitor: public SaveTableVisitor
       HWND m_statusBar;
       CMDIChild* m_mdiTable;
 
-      HWND m_progressBar;
+      HWND m_progressBar = nullptr;
 };
