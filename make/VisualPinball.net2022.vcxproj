@@ -1207,7 +1207,7 @@
     <ClCompile Include="src/ui/hitrectsur.cpp" />
     <ClCompile Include="src/ui/hitsur.cpp" />
     <ClCompile Include="src/ui/paintsur.cpp" />
-    <ClCompile Include="src/ui/dialogs/SaveTableWin32Visitor.cpp" />
+    <ClCompile Include="src/ui/dialogs/VPXFileProgressBar.cpp" />
     <ClCompile Include="src/ui/dialogs/AboutDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp" />
@@ -1773,7 +1773,7 @@
     <ClInclude Include="src/ui/paintsur.h" />
     <ClInclude Include="src/ui/sur.h" />
     <ClInclude Include="src/ui/SaveTableVisitor.h" />
-    <ClInclude Include="src/ui/dialogs/SaveTableWin32Visitor.h" />
+    <ClInclude Include="src/ui/dialogs/VPXFileProgressBar.h" />
     <ClInclude Include="src/ui/dialogs/AboutDialog.h" />
     <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h" />
     <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h" />

@@ -15,7 +15,7 @@
 #include "renderer/Shader.h"
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
-#include "ui/dialogs/SaveTableWin32Visitor.h"
+#include "ui/dialogs/VPXFileProgressBar.h"
 #endif
 #include "freeimage.h"
 #include "ThreadPool.h"
@@ -2758,8 +2758,8 @@ void PinTable::AutoSave()
    FastIStorage * const pstgroot = new FastIStorage();
    pstgroot->AddRef();
 
-   SaveTableWin32Visitor visitor(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
-   const HRESULT hr = SaveToStorage(pstgroot, visitor);
+   VPXFileProgressBar progressBar(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
+   const HRESULT hr = SaveToStorage(pstgroot, progressBar);
 
    m_undo.SetCleanPoint((SaveDirtyState)min((int)m_sdsDirtyProp, (int)eSaveAutosaved));
    m_pcv->SetClean((SaveDirtyState)min((int)m_sdsDirtyScript, (int)eSaveAutosaved));
@@ -2890,8 +2890,8 @@ HRESULT PinTable::Save(const bool saveAs)
 
    RemoveInvalidReferences();
 
-   SaveTableWin32Visitor visitor(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
-   const HRESULT hr = SaveToStorage(pstgRoot, visitor);
+   VPXFileProgressBar progressBar(m_vpinball->theInstance, m_vpinball->m_hwndStatusBar, m_mdiTable);
+   const HRESULT hr = SaveToStorage(pstgRoot, progressBar);
 
    if (SUCCEEDED(hr))
    {
@@ -2919,11 +2919,11 @@ HRESULT PinTable::Save(const bool saveAs)
    return S_OK;
 }
 
-HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
+HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
 {
 #ifndef __STANDALONE__
    m_savingActive = true;
-   visitor.SavingStarted();
+   feedback.OperationStarted();
 
    //////////////// Begin Encryption
    HCRYPTPROV hcp = NULL;
@@ -2963,7 +2963,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
    const int ctotalitems = (int)(m_vedit.size() + m_vsound.size() + m_vimage.size() + m_vfont.size() + m_vcollection.size());
    int csaveditems = 0;
 
-   visitor.AboutToSaveItems(ctotalitems);
+   feedback.AboutToProcessItems(ctotalitems);
 
    //first save our own data
    IStorage* pstgData;
@@ -3019,7 +3019,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
                }
 
                csaveditems++;
-               visitor.ItemHasBeenSaved(csaveditems);
+               feedback.ItemHasBeenProcessed(csaveditems);
             }
 
             for (size_t i = 0; i < m_vsound.size(); i++)
@@ -3035,7 +3035,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
                }
 
                csaveditems++;
-               visitor.ItemHasBeenSaved(csaveditems);
+               feedback.ItemHasBeenProcessed(csaveditems);
             }
 
             for (size_t i = 0; i < m_vimage.size(); i++)
@@ -3051,7 +3051,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
                }
 
                csaveditems++;
-               visitor.ItemHasBeenSaved(csaveditems);
+               feedback.ItemHasBeenProcessed(csaveditems);
             }
 
             for (size_t i = 0; i < m_vfont.size(); i++)
@@ -3067,7 +3067,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
                }
 
                csaveditems++;
-               visitor.ItemHasBeenSaved(csaveditems);
+               feedback.ItemHasBeenProcessed(csaveditems);
             }
 
             for (int i = 0; i < m_vcollection.size(); i++)
@@ -3083,14 +3083,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
                }
 
                csaveditems++;
-               visitor.ItemHasBeenSaved(csaveditems);
+               feedback.ItemHasBeenProcessed(csaveditems);
             }
 
          }
          pstmGame->Release();
       }
 
-      visitor.Finalizing();
+      feedback.Finalizing();
 
       BYTE hashval[256];
       DWORD hashlen = 256;
@@ -3130,14 +3130,14 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, SaveTableVisitor& visitor)
          pstgData->Revert();
          pstgRoot->Revert();
          const LocalString ls(IDS_SAVEERROR);
-         visitor.ErrorOccured(ls.m_szbuffer);
+         feedback.ErrorOccured(ls.m_szbuffer);
       }
       pstgData->Release();
    }
 
    //Error:
 
-   visitor.DoneSaving();
+   feedback.Done();
    m_savingActive = false;
 
    return hr;
