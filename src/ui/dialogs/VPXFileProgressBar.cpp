@@ -1,7 +1,7 @@
-#include "SaveTableWin32Visitor.h"
+#include "VPXFileProgressBar.h"
 
 
-SaveTableWin32Visitor::SaveTableWin32Visitor(HINSTANCE app, HWND statusBar, CMDIChild* mdiTable)
+VPXFileProgressBar::VPXFileProgressBar(HINSTANCE app, HWND statusBar, CMDIChild* mdiTable)
    : m_app{app},
      m_statusBar{statusBar},
      m_mdiTable{mdiTable}
@@ -9,7 +9,7 @@ SaveTableWin32Visitor::SaveTableWin32Visitor(HINSTANCE app, HWND statusBar, CMDI
 }
 
 
-SaveTableWin32Visitor::~SaveTableWin32Visitor()
+VPXFileProgressBar::~VPXFileProgressBar()
 {
    if (m_progressBar != nullptr) {
       ::DestroyWindow(m_progressBar);
@@ -17,7 +17,7 @@ SaveTableWin32Visitor::~SaveTableWin32Visitor()
 }
 
 
-void SaveTableWin32Visitor::SavingStarted()
+void VPXFileProgressBar::OperationStarted()
 {
    if (m_progressBar != nullptr) {
       return;
@@ -44,24 +44,24 @@ void SaveTableWin32Visitor::SavingStarted()
 }
 
 
-void SaveTableWin32Visitor::AboutToSaveItems(int itemCount)
+void VPXFileProgressBar::AboutToProcessItems(int itemCount)
 {
    ::SendMessage(m_progressBar, PBM_SETRANGE, 0, MAKELPARAM(0, itemCount));
 }
 
 
-void SaveTableWin32Visitor::ItemHasBeenSaved(int totalItemSaved)
+void VPXFileProgressBar::ItemHasBeenProcessed(int totalItemsProcessed)
 {
-   ::SendMessage(m_progressBar, PBM_SETPOS, totalItemSaved, 0);
+   ::SendMessage(m_progressBar, PBM_SETPOS, totalItemsProcessed, 0);
 }
 
 
-void SaveTableWin32Visitor::ErrorOccured(const char* error)
+void VPXFileProgressBar::ErrorOccured(const char* error)
 {
    m_mdiTable->MessageBox(error, "Visual Pinball", MB_ICONERROR);
 }
 
-void SaveTableWin32Visitor::DoneSaving()
+void VPXFileProgressBar::Done()
 {
    ::DestroyWindow(m_progressBar);
    m_progressBar = nullptr;

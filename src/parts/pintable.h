@@ -70,7 +70,7 @@ private:
    VPinball *m_vpinball;
 };
 
-class SaveTableVisitor;
+class VPXFileFeedback;
 
 class PinTable : public CWnd,
                  public CComObjectRootEx<CComSingleThreadModel>,
@@ -460,7 +460,7 @@ public:
    HRESULT SaveAs();
    virtual HRESULT ApcProject_Save();
    HRESULT Save(const bool saveAs);
-   HRESULT SaveToStorage(IStorage *pstg, SaveTableVisitor& visitor);
+   HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
