@@ -310,9 +310,9 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
       float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
-      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
-      if(m_maxFramerate > 0 && m_maxFramerate < 24) // at least 24 fps
-         m_maxFramerate = 24;
+      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1.f);
+      if(m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
+         m_maxFramerate = 24.f;
       m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
       if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
       {
@@ -328,17 +328,17 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       }
       if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
          m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
-      if (m_maxFramerate < 0) // Negative is display refresh rate
+      if (m_maxFramerate < 0.f) // Negative is display refresh rate
          m_maxFramerate = pfRefreshRate;
-      if (m_maxFramerate == 0) // 0 is unbound refresh rate
-         m_maxFramerate = 10000;
+      if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
+         m_maxFramerate = 10000.f;
       if (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate > pfRefreshRate)
          m_maxFramerate = pfRefreshRate;
       if (stereo3D == STEREO_VR)
       {
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
-         m_maxFramerate = 10000;
+         m_maxFramerate = 10000.f;
       }
       PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
    }
@@ -1790,7 +1790,7 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::GameLoop(std::function<void()> ProcessOSMessages)
 {
-   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000.f)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
 
    auto sync = [this, ProcessOSMessages]()
    {
@@ -1911,8 +1911,8 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
       // Adjust framerate if requested by user (i.e. not using a synchronization mode that will lead to blocking calls aligned to the display refresh rate)
       if (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate < m_playfieldWnd->GetRefreshRate()) // The synchronization is not already performed by VSYNC
       {
-         const int timeForFrame = (int)(usec() - m_startFrameTick);
-         const int targetTime = 1000000 / m_maxFramerate;
+         const int timeForFrame = static_cast<int>(usec() - m_startFrameTick);
+         const int targetTime = static_cast<int>(1000000.f / m_maxFramerate);
          if (timeForFrame < targetTime)
          {
             g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
@@ -2002,8 +2002,8 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
          const U64 now = usec();
-         const int refreshLength = static_cast<int>(1000000ul / m_playfieldWnd->GetRefreshRate());
-         const int minimumFrameLength = 1000000ull / m_maxFramerate;
+         const int refreshLength = static_cast<int>(1000000.f / m_playfieldWnd->GetRefreshRate());
+         const int minimumFrameLength = static_cast<int>(1000000.f / m_maxFramerate);
          const int maximumFrameLength = 5 * refreshLength;
          const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
          while (now - m_renderer->m_renderDevice->m_lastPresentFrameTick < targetFrameLength)

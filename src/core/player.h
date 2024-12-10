@@ -303,7 +303,7 @@ public:
    bool m_lastFrameSyncOnVBlank = false;
    bool m_lastFrameSyncOnFPS = false;
 
-   int m_maxFramerate = 0; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+   float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    bool m_curFrameSyncOnFPS = false;
 
 private:
