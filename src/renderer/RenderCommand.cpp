@@ -442,7 +442,7 @@ void RenderCommand::SetDrawMesh(
    if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader);
+      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
    }
    else
       m_shaderState->Reset(m_shader);
@@ -461,7 +461,7 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader);
+      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
    }
    else
       m_shaderState->Reset(m_shader);
@@ -480,7 +480,7 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* v
    if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
    {
       delete m_shaderState;
-      m_shaderState = new Shader::ShaderState(m_shader);
+      m_shaderState = new Shader::ShaderState(m_shader, m_rd->UseLowPrecision());
    }
    else
       m_shaderState->Reset(m_shader);
