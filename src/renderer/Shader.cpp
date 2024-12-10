@@ -551,7 +551,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
             }
             m_stateSize += m_stateSizes[uniform];
          }
-   m_state = new ShaderState(this);
+   m_state = new ShaderState(this, m_renderDevice->UseLowPrecision());
    memset(m_state->m_state, 0, m_stateSize);
 
    #if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
@@ -562,7 +562,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       if (m_techniques[i])
       #endif
       {
-         m_boundState[i] = new ShaderState(this);
+         m_boundState[i] = new ShaderState(this, m_renderDevice->UseLowPrecision());
          memset(m_boundState[i]->m_state, 0, m_stateSize);
          for (ShaderUniforms uniform : m_uniforms[i])
          {
@@ -582,7 +582,7 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
       SetVector(SHADER_Roughness_WrapL_Edge_Thickness, 4.0f, 0.5f, 1.0f, 0.05f);
 
    #elif defined(ENABLE_DX9)
-   m_boundState = new ShaderState(this);
+   m_boundState = new ShaderState(this, m_renderDevice->UseLowPrecision());
    memset(m_boundState->m_state, 0, m_stateSize);
    for (ShaderUniforms uniform : m_uniforms[0])
    {

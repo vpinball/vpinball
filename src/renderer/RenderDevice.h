@@ -185,6 +185,8 @@ public:
    TextureManager m_texMan;
    const bool m_compressTextures;
 
+   bool UseLowPrecision() const { return m_useLowPrecision; };
+
    unsigned int m_vsyncCount = 0;
 
    vector<SharedIndexBuffer*> m_pendingSharedIndexBuffers;
@@ -225,6 +227,8 @@ public:
 
 private:
    const bool m_isVR;
+
+   bool m_useLowPrecision = false; // OpenGL ES use low precision float and needs some clamping to avoid artifacts, but the clamping causes artefacts if applied with VR scene scaling on other backends.
 
    RenderFrame m_renderFrame;
    RenderPass* m_currentPass = nullptr;

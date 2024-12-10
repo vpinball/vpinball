@@ -245,13 +245,13 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 
 RenderDeviceState::RenderDeviceState(RenderDevice* rd)
    : m_rd(rd)
-   , m_basicShaderState(new Shader::ShaderState(m_rd->m_basicShader))
-   , m_DMDShaderState(new Shader::ShaderState(m_rd->m_DMDShader))
-   , m_FBShaderState(new Shader::ShaderState(m_rd->m_FBShader))
-   , m_flasherShaderState(new Shader::ShaderState(m_rd->m_flasherShader))
-   , m_lightShaderState(new Shader::ShaderState(m_rd->m_lightShader))
-   , m_ballShaderState(new Shader::ShaderState(m_rd->m_ballShader))
-   , m_stereoShaderState(new Shader::ShaderState(m_rd->m_stereoShader))
+   , m_basicShaderState(new Shader::ShaderState(m_rd->m_basicShader, m_rd->UseLowPrecision()))
+   , m_DMDShaderState(new Shader::ShaderState(m_rd->m_DMDShader, m_rd->UseLowPrecision()))
+   , m_FBShaderState(new Shader::ShaderState(m_rd->m_FBShader, m_rd->UseLowPrecision()))
+   , m_flasherShaderState(new Shader::ShaderState(m_rd->m_flasherShader, m_rd->UseLowPrecision()))
+   , m_lightShaderState(new Shader::ShaderState(m_rd->m_lightShader, m_rd->UseLowPrecision()))
+   , m_ballShaderState(new Shader::ShaderState(m_rd->m_ballShader, m_rd->UseLowPrecision()))
+   , m_stereoShaderState(new Shader::ShaderState(m_rd->m_stereoShader, m_rd->UseLowPrecision()))
 {
 }
 
@@ -587,6 +587,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    //init.type = bgfx::RendererType::Direct3D11; // Present with VSYNC & outputs on multiple displays will sequentially sync on each display causing massive framerate drop
    //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
 
+   m_useLowPrecision = init.type == bgfx::RendererType::OpenGLES;
+
    init.callback = &bgfxCallback;
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
@@ -665,6 +667,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    }
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
+
+   #ifdef __OPENGLES__
+   m_useLowPrecision = true;
+   #else
+   m_useLowPrecision = false;
+   #endif
 
    // FIXME We only set bit depth for fullscreen desktop modes (otherwise, use the desktop bit depth)
    int channelDepth = m_outputWnd[0]->GetBitDepth() == 32 ?  8 :
@@ -811,6 +819,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
     m_pD3DEx = nullptr;
     m_pD3DDeviceEx = nullptr;
+
+    m_useLowPrecision = false;
 
     mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
     if (mDirect3DCreate9Ex)

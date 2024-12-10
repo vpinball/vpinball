@@ -511,10 +511,11 @@ public:
    class ShaderState
    {
    public:
-      ShaderState(Shader* shader)
+      ShaderState(Shader* shader, bool isLowPrecision)
          : m_shader(shader)
          , m_state(new BYTE[shader->m_stateSize])
          , m_stateSize(shader->m_stateSize)
+         , m_useLowPrecision(isLowPrecision)
       {
       }
       ~ShaderState() { delete[] m_state; }
@@ -564,11 +565,10 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float);
          assert(shaderUniformNames[uniformName].count == 1);
-         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
-         #else
-         *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
-         #endif
+         if (m_useLowPrecision)
+            *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = (f > 0 && f < FLT_MIN_VALUE) ? FLT_MIN_VALUE : (f < 0 && f > -FLT_MIN_VALUE) ? -FLT_MIN_VALUE : f;
+         else
+            *(float*)(m_state + m_shader->m_stateOffsets[uniformName]) = f;
       }
       float GetFloat(const ShaderUniforms uniformName) const
       {
@@ -587,30 +587,34 @@ public:
          assert(shaderUniformNames[uniformName].type == SUT_Float2 || shaderUniformNames[uniformName].type == SUT_Float3 || shaderUniformNames[uniformName].type == SUT_Float4 || shaderUniformNames[uniformName].type == SUT_Float4v);
          assert(shaderUniformNames[uniformName].count == count);
          const int n = shaderUniformNames[uniformName].type == SUT_Float2 ? 2 : shaderUniformNames[uniformName].type == SUT_Float3 ? 3 : 4;
-         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         for (unsigned int i = 0; i < count; i++) {
-             const vec4* const p = pData + i;
-             vec4* const s = (vec4*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
-             if (p->x > 0 && p->x < FLT_MIN_VALUE) s->x = FLT_MIN_VALUE;
-             else if (p->x < 0 && p->x > -FLT_MIN_VALUE) s->x = -FLT_MIN_VALUE;
-             else s->x = p->x;
-             if (p->y > 0 && p->y < FLT_MIN_VALUE) s->y = FLT_MIN_VALUE;
-             else if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
-             else s->y = p->y;
-             if (n > 2) {
-                if (p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
-                else if (p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
-                else s->z = p->z;
+         if (m_useLowPrecision)
+         {
+             for (unsigned int i = 0; i < count; i++)
+             {
+                 const vec4* const p = pData + i;
+                 vec4* const s = (vec4*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+                 if (p->x > 0 && p->x < FLT_MIN_VALUE) s->x = FLT_MIN_VALUE;
+                 else if (p->x < 0 && p->x > -FLT_MIN_VALUE) s->x = -FLT_MIN_VALUE;
+                 else s->x = p->x;
+                 if (p->y > 0 && p->y < FLT_MIN_VALUE) s->y = FLT_MIN_VALUE;
+                 else if (p->y < 0 && p->y > -FLT_MIN_VALUE) s->y = -FLT_MIN_VALUE;
+                 else s->y = p->y;
+                 if (n > 2) {
+                    if (p->z > 0 && p->z < FLT_MIN_VALUE) s->z = FLT_MIN_VALUE;
+                    else if (p->z < 0 && p->z > -FLT_MIN_VALUE) s->z = -FLT_MIN_VALUE;
+                    else s->z = p->z;
+                 }
+                 if (n > 3) {
+                    if (p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
+                    else if (p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
+                    else s->w = p->w;
+                 }
              }
-             if (n > 3) {
-                if (p->w > 0 && p->w < FLT_MIN_VALUE) s->w = FLT_MIN_VALUE;
-                else if (p->w < 0 && p->w > -FLT_MIN_VALUE) s->w = -FLT_MIN_VALUE;
-                else s->w = p->w;
              }
+         else
+         {
+            memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
          }
-         #else
-         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pData, count * n * sizeof(float));
-         #endif
       }
       vec4 GetVector(const ShaderUniforms uniformName) const
       {
@@ -633,17 +637,24 @@ public:
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_Float3x4 || shaderUniformNames[uniformName].type == SUT_Float4x3 || shaderUniformNames[uniformName].type == SUT_Float4x4);
          assert(count == shaderUniformNames[uniformName].count);
-         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         for (unsigned int i = 0; i < count * 16; i++) {
-             const float* const p = pMatrix + i;
-             float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
-             if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
-             else if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
-             else *s = *p;
+         if (m_useLowPrecision)
+         {
+            for (unsigned int i = 0; i < count * 16; i++)
+            {
+               const float* const p = pMatrix + i;
+               float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+               if (*p > 0 && *p < FLT_MIN_VALUE)
+                  *s = FLT_MIN_VALUE;
+               else if (*p < 0 && *p > -FLT_MIN_VALUE)
+                  *s = -FLT_MIN_VALUE;
+               else
+                  *s = *p;
+            }
          }
-         #else
-         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
-         #endif
+         else
+         {
+            memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, count * 16 * sizeof(float));
+         }
       }
       void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix)
       {
@@ -651,17 +662,24 @@ public:
          assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
          assert(m_shader->m_stateOffsets[uniformName] != -1);
          assert(shaderUniformNames[uniformName].type == SUT_DataBlock);
-         #if 1//defined(ENABLE_BGFX) || defined(__OPENGLES__)
-         for (unsigned int i = 0; i < m_shader->m_stateSizes[uniformName]/sizeof(float); i++) {
-             const float* const p = pMatrix + i;
-             float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
-             if (*p > 0 && *p < FLT_MIN_VALUE) *s = FLT_MIN_VALUE;
-             else if (*p < 0 && *p > -FLT_MIN_VALUE) *s = -FLT_MIN_VALUE;
-             else *s = *p;
+         if (m_useLowPrecision)
+         {
+            for (unsigned int i = 0; i < m_shader->m_stateSizes[uniformName] / sizeof(float); i++)
+            {
+               const float* const p = pMatrix + i;
+               float* const s = (float*)(m_state + m_shader->m_stateOffsets[uniformName]) + i;
+               if (*p > 0 && *p < FLT_MIN_VALUE)
+                  *s = FLT_MIN_VALUE;
+               else if (*p < 0 && *p > -FLT_MIN_VALUE)
+                  *s = -FLT_MIN_VALUE;
+               else
+                  *s = *p;
+            }
          }
-         #else
-         memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
-         #endif
+         else
+         {
+            memcpy(m_state + m_shader->m_stateOffsets[uniformName], pMatrix, m_shader->m_stateSizes[uniformName]);
+         }
       }
       void SetTexture(const ShaderUniforms uniformName, const Sampler* const sampler)
       {
@@ -682,6 +700,7 @@ public:
       Shader* m_shader;
       BYTE* const m_state;
       const unsigned int m_stateSize;
+      const bool m_useLowPrecision;
    };
 
    unsigned int GetStateSize() const { return m_stateSize; }
