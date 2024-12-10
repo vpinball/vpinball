@@ -13,6 +13,7 @@ $gen_tonemap = $true
 $gen_antialiasing = $true
 $gen_imgui = $true
 
+$debug = $false
 
 
 
@@ -40,6 +41,10 @@ function Process-Shader {
       If($Defines.count -ne 0)
       {
          $CmdLine = $CmdLine + " --define " + ($Defines -join ';')
+      }
+      if ($debug)
+      {
+        $CmdLine = $CmdLine + " --debug -O 0"
       }
       $CmdLine = $CmdLine + " -o tmp.h"
       $Parms = $CmdLine.Split(" ")
