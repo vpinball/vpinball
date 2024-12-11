@@ -8074,7 +8074,7 @@ string PinTable::AuditTable() const
                      {
                         //ss << "- " << word << ", line=" << (line + 1) << ", class=" << inClass << "\r\n";
                         if (FindIndexOf(functions, inClass + '.' + word) != -1)
-                           ss << ". Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
+                           ss << ". Error: Duplicate declaration of '" << word << "' in script at line " << line << "\r\n";
                         else
                            functions.push_back(inClass + '.' + word);
                      }
@@ -8120,6 +8120,7 @@ string PinTable::AuditTable() const
    {
       auto type = part->GetItemType();
       Primitive *prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
+      Light *light = type == eItemLight ? (Light *)part : nullptr;
       Surface *surf = type == eItemSurface ? (Surface *)part : nullptr;
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
@@ -8164,6 +8165,11 @@ string PinTable::AuditTable() const
          && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
          ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
 
+      if (type == eItemLight && light->m_d.m_intensity < 0.f)
+         ss << ". Error: Light '" << light->GetName() << "' has a negative intensity.\r\n";
+      if (type == eItemLight && light->m_d.m_intensity_scale < 0.f)
+         ss << ". Error: Light '" << light->GetName() << "' has a negative intensity scale.\r\n";
+
       // Disabled as this is now enforced in the rendering
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
@@ -8181,12 +8187,12 @@ string PinTable::AuditTable() const
    }
 
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
-      ss << " Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
+      ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
    for (auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
-         ss << " Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
+         ss << ". Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
    }
 
    if (ss.str().empty())
