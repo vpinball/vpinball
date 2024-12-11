@@ -601,7 +601,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.resolution.numBackBuffers = maxPrerenderedFrames;
    init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
                          | BGFX_RESET_FLIP_AFTER_RENDER                                 /*  */
-                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC); /* Wait for VSync */
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC)  /* Wait for VSync */
+                         | BGFX_RESET_MAXANISOTROPY;                                    /* Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?) */
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
    switch (m_outputWnd[0]->GetBitDepth())
