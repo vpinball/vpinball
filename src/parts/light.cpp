@@ -370,19 +370,21 @@ void Light::UpdateAnimation(const float diff_time_msec)
          break;
       case FADER_INCANDESCENT:
       {
-         assert(m_d.m_intensity * m_d.m_intensity_scale > FLT_MIN);
-         const float inv_fadeSpeed = (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown) / (m_d.m_intensity * m_d.m_intensity_scale); // 1.0 / (Fade speed in ms)
-         const float remaining_time = diff_time_msec * (float)(0.001 * 40.0) * inv_fadeSpeed; // Apply a speed factor (a bulb with this characteristics reaches full power between 30 and 40ms so we modulate around this)
-         if (lightState != 0.f)
+         if (m_d.m_intensity && m_d.m_intensity_scale)
          {
-            const float U = 6.3f * sqrtf(sqrtf(lightState)); //=powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
-            m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0f);
+            const float inv_fadeSpeed = (m_currentIntensity < targetIntensity ? m_d.m_fadeSpeedUp : m_d.m_fadeSpeedDown) / (m_d.m_intensity * m_d.m_intensity_scale); // 1.0 / (Fade speed in ms)
+            const float remaining_time = diff_time_msec * (float)(0.001 * 40.0) * inv_fadeSpeed; // Apply a speed factor (a bulb with this characteristics reaches full power between 30 and 40ms so we modulate around this)
+            if (lightState != 0.f)
+            {
+               const float U = 6.3f * sqrtf(sqrtf(lightState)); //=powf(lightState, 0.25f); // Modulating by Emission^0.25 is not fully correct (ignoring visible/non visible wavelengths) but an acceptable approximation
+               m_currentFilamentTemperature = bulb_heat_up(BULB_44, m_currentFilamentTemperature, remaining_time, U, 0.0f);
+            }
+            else
+            {
+               m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_currentFilamentTemperature, remaining_time);
+            }
+            m_currentIntensity = bulb_filament_temperature_to_emission(BULB_44, (float)m_currentFilamentTemperature) * (m_d.m_intensity * m_d.m_intensity_scale);
          }
-         else
-         {
-            m_currentFilamentTemperature = bulb_cool_down(BULB_44, m_currentFilamentTemperature, remaining_time);
-         }
-         m_currentIntensity = bulb_filament_temperature_to_emission(BULB_44, (float)m_currentFilamentTemperature) * (m_d.m_intensity * m_d.m_intensity_scale);
       }
       break;
       }
@@ -1638,7 +1640,7 @@ STDMETHODIMP Light::GetInPlayIntensity(float *pVal)
 
 STDMETHODIMP Light::get_FilamentTemperature(float *pVal)
 {
-   double T = bulb_emission_to_filament_temperature(m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)); 
+   double T = m_d.m_intensity && m_d.m_intensity_scale ? bulb_emission_to_filament_temperature(m_currentIntensity / (m_d.m_intensity * m_d.m_intensity_scale)) : 293.f; 
    *pVal = (float)T;
 
    return S_OK;
