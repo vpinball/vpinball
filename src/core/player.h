@@ -472,7 +472,7 @@ public:
    void SetCloseState(CloseState state) { if (m_closing != CS_CLOSED) m_closing = state; }
    CloseState GetCloseState() const { return m_closing; }
 private:
-   CloseState m_closing = CS_PLAYING;
+   volatile CloseState m_closing = CS_PLAYING;
 
 public:
    bool m_debugWindowActive = false;
@@ -508,12 +508,12 @@ public:
       BaseTexture *frame = nullptr;
    };
    ControllerDisplay GetControllerDisplay(int id);
+
 private:
    unsigned int m_getDmdMsgId;
    vector<ControllerDisplay> m_controllerDisplays;
 
 public:
-
    bool m_capPUP = false;
    BaseTexture *m_texPUP = nullptr;
 

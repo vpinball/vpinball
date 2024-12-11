@@ -991,6 +991,7 @@ Player::~Player()
    if (m_audio)
       m_audio->MusicPause();
    delete m_audio;
+   m_audio = nullptr;
 
    mixer_shutdown();
    ushock_output_shutdown();
@@ -1001,8 +1002,10 @@ Player::~Player()
 #endif
 
    delete m_liveUI;
+   m_liveUI = nullptr;
    m_pininput.UnInit();
    delete m_physics;
+   m_physics = nullptr;
 
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
@@ -1050,14 +1053,21 @@ Player::~Player()
    m_changed_vht.clear();
 
    delete m_pBCTarget;
+   m_pBCTarget = nullptr;
    delete m_ptable;
+   //m_ptable = nullptr;
    delete m_renderer;
+   m_renderer = nullptr;
    LockForegroundWindow(false);
    delete m_playfieldWnd;
+   m_playfieldWnd = nullptr;
    delete m_dmdWnd;
+   m_dmdWnd = nullptr;
    delete m_backglassWnd;
+   m_backglassWnd = nullptr;
 
    delete m_vrDevice;
+   m_vrDevice = nullptr;
 
    g_pplayer = nullptr;
 

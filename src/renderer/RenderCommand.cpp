@@ -120,6 +120,8 @@ void RenderCommand::Execute(const int nInstances, const bool log)
 
    case RC_DRAW_LIVEUI:
    {
+      if (g_pplayer->m_liveUI)
+      {
       #ifndef ENABLE_BGFX // Profiler is not thread safe
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
       #endif
@@ -142,6 +144,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       #ifndef ENABLE_BGFX // Profiler is not thread safe
       g_frameProfiler.ExitProfileSection();
       #endif
+      }
       break;
    }
 
