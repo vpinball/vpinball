@@ -1268,7 +1268,7 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Update lightmap before checking anything that uses alpha
    float alpha = m_d.m_alpha;
-   if (m_lightmap)
+   if (m_lightmap && m_lightmap->m_d.m_intensity_scale)
       alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
 
    // don't render additive primitive if there is nothing to add
