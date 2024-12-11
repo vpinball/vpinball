@@ -1444,7 +1444,7 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
              CMTOVPU(m_tabley) + (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + CMTOVPU(30.f),
             -CMTOVPU(m_tablez));
          Matrix3D coords = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-         Matrix3D rotx = Matrix3D::MatrixRotateX(-ANGTORAD(90.f + m_slope));
+         Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_slope - 90.f));
          Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(m_orientation));
          m_tableWorld = coords * trans * rotz * rotx;
       }
