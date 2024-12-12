@@ -151,6 +151,7 @@ jobs:
                 -B build/android-arm64-v8a
           cmake --build build/android-arm64-v8a -- -j${NUM_PROCS}
       - name: Build app
+        if: github.repository == 'vpinball/vpinball'
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -159,12 +160,28 @@ jobs:
           cd standalone/android
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/vpinball.jks
           ./gradlew assemble${{ matrix.config }} bundle${{ matrix.config }} -PversionName="${{ needs.version.outputs.version_full }}" -Psha7="${{ needs.version.outputs.sha7 }}"
-      - name: Copy apk and aab
+      - name: Build app (fork)
+        if: github.repository != 'vpinball/vpinball'
+        run: |
+          export ANDROID_KEYSTORE_PASSWORD=vpinball
+          export ANDROID_KEY_ALIAS=vpinball
+          export ANDROID_KEY_PASSWORD=vpinball
+          cd standalone/android
+          keytool -genkey -v -keystore app/vpinball.jks \
+                -keyalg RSA -keysize 2048 -validity 10000 \
+                -storepass "$ANDROID_KEYSTORE_PASSWORD" \
+                -keypass "$ANDROID_KEY_PASSWORD" \
+                -alias "$ANDROID_KEY_ALIAS" \
+                -dname "CN=VPinball Android, O=VPinball, C=XX"
+          ./gradlew assemble${{ matrix.config }} bundle${{ matrix.config }} -PversionName="${{ needs.version.outputs.version_full }}" -Psha7="${{ needs.version.outputs.sha7 }}"
+      - name: Copy apk/aab
         run: |
           CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
           mkdir tmp
           cp standalone/android/app/build/outputs/apk/${CONFIG_LC}/*.apk tmp
-          cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
+          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
+             cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android
