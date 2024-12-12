@@ -53,7 +53,7 @@ jobs:
         config: [ Release ]
     steps:
       - run: |
-          brew install bison autoconf automake libtool
+          brew install bison autoconf automake libtool ldid
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
       - name: Calculate timestamp

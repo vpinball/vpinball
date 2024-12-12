@@ -11,16 +11,15 @@ platform :ios do
     )
 
     xcarchive_app_path = File.join(archive_path, "Products", "Applications")
-
     payload_path = "./Payload"
     ipa_output_path = "./VPinballX.ipa"
+    entitlements_path = "../VPinball/VPinball.entitlements"
+    app_path = "Visual Pinball.app/Visual Pinball"
 
     sh("rm -rf '#{payload_path}'")
     sh("rm -f '#{ipa_output_path}'")
     sh("cp -r '#{xcarchive_app_path}' '#{payload_path}'")
+    sh("ldid -S'#{entitlements_path}' '#{payload_path}/#{app_path}'")
     sh("zip -r '#{ipa_output_path}' '#{payload_path}'")
   end
 end
-
-
-
