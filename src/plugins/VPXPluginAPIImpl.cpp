@@ -155,7 +155,7 @@ void VPXPluginAPIImpl::PinMameOnStart()
             }
          }else
          {
-            PLOGE << "Failed to get cGameName property from script, can't broadcast onGameStart event";
+            PLOGW << "Failed to get cGameName property from script, can't broadcast onGameStart event";
          }
       }
       pScriptDispatch->Release();
