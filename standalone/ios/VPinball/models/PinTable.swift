@@ -91,8 +91,9 @@ class PinTable {
         return FileManager.default.fileExists(atPath: iniPath)
     }
 
-    func update() {
+    func update(context: ModelContext) {
         lastUpdate = Date()
+        try? context.save()
     }
 }
 

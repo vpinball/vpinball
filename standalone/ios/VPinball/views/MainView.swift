@@ -84,7 +84,7 @@ struct MainView: View {
                                         .padding(.horizontal, 40)
 
                                         Button(action: {
-                                            handleLearnMore()
+                                            handleLearnMore(link: Link.docs)
                                         }) {
                                             Text("Learn More...")
                                                 .foregroundStyle(Color.vpxDarkYellow)
@@ -277,7 +277,13 @@ struct MainView: View {
             Button("Cancel", role: .cancel) {}
         }
         .alert("TILT!",
-               isPresented: $showError) {}
+               isPresented: $showError)
+        {
+            Button("Learn More") {
+                handleLearnMore(link: Link.troubleshooting)
+            }
+            Button("OK") {}
+        }
         message: {
             Text("\n\(errorMessage)")
         }
@@ -285,7 +291,9 @@ struct MainView: View {
             handleAppear()
         }
         .onOpenURL { url in
-            handleShowConfirmImportFile(url: url)
+            if url.scheme == "file" {
+                handleShowConfirmImportFile(url: url)
+            }
         }
         .onChange(of: tableListMode) {
             handleTableListMode()
@@ -320,6 +328,7 @@ struct MainView: View {
         for table in tables where !table.exists() {
             modelContext.delete(table)
         }
+        try? modelContext.save()
     }
 
     func handleShowConfirmImportFile(url: URL?) {
@@ -371,7 +380,11 @@ struct MainView: View {
 
                 if let table = await vpinballManager.import(url: url) {
                     modelContext.insert(table)
+                    try? modelContext.save()
+
                     tableListScrollToTableId = table.tableId
+                } else {
+                    handleShowError(message: "Unable to import table.")
                 }
 
                 if scopedResource {
@@ -381,8 +394,8 @@ struct MainView: View {
         }
     }
 
-    func handleLearnMore() {
-        Link.docs.open()
+    func handleLearnMore(link: Link) {
+        link.open()
     }
 
     func handleTables() {
@@ -434,7 +447,6 @@ struct MainView: View {
         if let selectedTable = selectedTable {
             renameTableName = selectedTable.name
             showRename = true
-
             tableListScrollToTableId = nil
         }
     }
@@ -442,8 +454,7 @@ struct MainView: View {
     func handleRename() {
         if let selectedTable = selectedTable {
             selectedTable.name = renameTableName
-            selectedTable.update()
-
+            selectedTable.update(context: modelContext)
             tableListScrollToTableId = selectedTable.tableId
         }
     }
@@ -470,8 +481,7 @@ struct MainView: View {
                             } else {
                                 selectedTable.imageData = nil
                             }
-
-                            selectedTable.update()
+                            selectedTable.update(context: modelContext)
                         }
                     default:
                         break
@@ -485,7 +495,7 @@ struct MainView: View {
         if let selectedTable = selectedTable {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                 selectedTable.imageData = nil
-                selectedTable.update()
+                selectedTable.update(context: modelContext)
             }
         }
     }
@@ -497,8 +507,7 @@ struct MainView: View {
             } else {
                 Task {
                     if await vpinballManager.extractScript(table: selectedTable) == true {
-                        selectedTable.update()
-
+                        selectedTable.update(context: modelContext)
                         showScript = true
                     } else {
                         handleShowError(message: "Unable to extract script")
@@ -522,7 +531,7 @@ struct MainView: View {
     func handleReset() {
         if let selectedTable = selectedTable {
             try? FileManager.default.removeItem(at: selectedTable.iniURL)
-            selectedTable.update()
+            selectedTable.update(context: modelContext)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
                 tableListScrollToTableId = selectedTable.tableId
             }

@@ -2,6 +2,7 @@ import SwiftUI
 
 enum Link {
     case docs
+    case troubleshooting
     case discord
     case licenses
     case zedmdos
@@ -18,6 +19,8 @@ enum Link {
         switch self {
         case .docs:
             return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md")!
+        case .troubleshooting:
+            return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md#troubleshooting")!
         case .discord:
             return URL(string: "https://discord.com/channels/652274650524418078/1076655472846831667")!
         case .licenses:
@@ -97,7 +100,7 @@ enum Credit {
     var authors: String? {
         switch self {
         case .vpinball:
-            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam"
+            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam, LeHaine"
         case .pinmame:
             return "volkenborn, toxieainc, Steve Ellenoff, bcd, Tom Haukap, wpcmame, Matthias Buecher, jsm174, mkalkbrenner, droscoe, vbousquet, djrobx, Thomas Behrens, bontango, mjrgh, Oliver Kaegi, syllebra, gstellenberg, Randall, Perlow, JockeJarre, tomlogic, Netsplits, gnulnulf, freezy, Sunnucks, Mark, uid68989, francisdb, diego-link-eggy, Sereda, Pavel, tomlogic"
         case .libaltsound:
