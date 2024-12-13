@@ -8,7 +8,7 @@
 
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
-#define MSVC_CONCURRENCY_VIEWER
+//#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
 using namespace Concurrency::diagnostic;
