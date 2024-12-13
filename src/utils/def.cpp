@@ -141,7 +141,7 @@ LocalString::LocalString(const int resid)
      { IDS_TB_TRIGGER, "Trigger" },
      { IDS_TB_TARGET, "Target" }
    };
-   const robin_hood::unordered_map<int, const char*>::iterator it = ids_map.find(resid);
+   const robin_hood::unordered_map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
    {
       const char* sz = it->second;
@@ -180,7 +180,7 @@ LocalStringW::LocalStringW(const int resid)
      { IDS_TB_TRIGGER, "Trigger" },
      { IDS_TB_TARGET, "Target" }
    };
-   const robin_hood::unordered_map<int, const char*>::iterator it = ids_map.find(resid);
+   const robin_hood::unordered_map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
    {
       const char* sz = it->second;
@@ -763,7 +763,7 @@ const char* gl_to_string(GLuint value)
      { (GLuint)GL_HALF_FLOAT, "GL_HALF_FLOAT" },
    };
 
-   const robin_hood::unordered_map<GLuint, const char*>::iterator it = value_map.find(value);
+   const robin_hood::unordered_map<GLuint, const char*>::const_iterator it = value_map.find(value);
    if (it != value_map.end()) {
       return it->second;
    }
