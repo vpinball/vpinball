@@ -56,6 +56,12 @@ public:
    void* GetSwapChainBackBuffer(const int index, const bool isDepth) const;
    void PollEvents();
    void RenderFrame(std::function<void(bool renderVR)> submitFrame);
+   void UpdateVisibilityMask(class RenderDevice* rd);
+   bool UseDepthBuffer() const { return m_depthExtensionSupported; }
+
+   void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; };
+   MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; };
+   Matrix3D m_visibilityMaskProj[2];
 
    enum class SwapchainType : uint8_t
    {
@@ -111,7 +117,17 @@ private:
    static Matrix3D XRPoseToMatrix3D(XrPosef pose);
 
    bool m_depthExtensionSupported = false;
+
    bool m_colorSpaceExtensionSupported = false;
+
+   bool m_debugUtilsExtensionSupported = false;
+   XrDebugUtilsMessengerEXT m_debugUtilsMessenger = XR_NULL_HANDLE;
+   static XrBool32 OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageType, const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+   
+   bool m_visibilityMaskExtensionSupported = false;
+   PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
+   bool m_visibilityMaskDirty = true;
+   MeshBuffer* m_visibilityMask = nullptr;
 
    class XRGraphicBackend* m_backend = nullptr;
 #endif

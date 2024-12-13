@@ -284,11 +284,11 @@ static pDEC mDwmEnableComposition = nullptr;
 
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
-//#define MSVC_CONCURRENCY_VIEWER
+#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
 using namespace Concurrency::diagnostic;
-extern marker_series series;
+marker_series series;
 #endif
 
 #if defined(ENABLE_BGFX)
@@ -418,22 +418,41 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_vrDevice->RenderFrame([rd](bool renderVR)
          {
             // Request and wait for frame preparation from GameLogic thread
+            #ifdef MSVC_CONCURRENCY_VIEWER
+            span *tagSpanFF = new span(series, 1, _T("vpxWaitFrame"));
+            #endif
             rd->m_framePending = false;
             rd->m_frameReadySem.wait();
+            #ifdef MSVC_CONCURRENCY_VIEWER
+            delete tagSpanFF;
+            #endif
             if (!rd->m_framePending)
                return;
 
             // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
             {
+               #ifdef MSVC_CONCURRENCY_VIEWER
+               span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
+               #endif
                std::lock_guard lock(rd->m_frameMutex);
                if (renderVR)
                   rd->SubmitRenderFrame();
                else
                   rd->DiscardRenderFrame(); // FIXME we should not discard but only render to preview
+               #ifdef MSVC_CONCURRENCY_VIEWER
+               delete tagSpan;
+               #endif
+               g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
             }
             
             // Request BGFX to submit to GPU (calls bgfx::frame())
+            #ifdef MSVC_CONCURRENCY_VIEWER
+            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
+            #endif
             rd->Flip();
+            #ifdef MSVC_CONCURRENCY_VIEWER
+            delete tagSpan;
+            #endif
          });
       }
    }
@@ -454,7 +473,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             std::lock_guard lock(rd->m_frameMutex);
             rd->m_framePending = false;
             #ifdef MSVC_CONCURRENCY_VIEWER
-            span *tagSpan = new span(series, 1, _T("Submit"));
+            span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
             #endif
             const bool needsVSync = useVSync && !noSync;
             if (vsync != needsVSync)
@@ -473,7 +492,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          if (!noSync && (g_pplayer->m_maxFramerate < 10000.f) && (g_pplayer->m_maxFramerate != rd->m_outputWnd[0]->GetRefreshRate()))
          {
             #ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("Wait"));
+            span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             U64 now = usec();
             const int refreshLength = static_cast<int>(1000000.f / rd->m_outputWnd[0]->GetRefreshRate());
@@ -494,7 +513,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          // Block until a flip happens then submit to GPU
          {
             #ifdef MSVC_CONCURRENCY_VIEWER
-            span* tagSpan = new span(series, 1, _T("Flip"));
+            span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
             #ifdef MSVC_CONCURRENCY_VIEWER

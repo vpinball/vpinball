@@ -1147,6 +1147,23 @@ void Renderer::RenderFrame()
    {
       m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
       m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+      #ifdef ENABLE_XR
+         MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
+         if (mask)
+         {
+            Vertex3Ds pos;
+            m_renderDevice->ResetRenderState();
+            m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+            m_renderDevice->SetRenderState(RenderState::COLORWRITEENABLE, RenderState::RS_FALSE);
+            m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
+            m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+            m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
+            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &g_pplayer->m_vrDevice->m_visibilityMaskProj[0], 2);
+            m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_vr_mask);
+            m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
+            UpdateBasicShaderMatrix();
+         }
+      #endif
    }
    else
    {
@@ -1372,6 +1389,7 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
 
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
 using namespace Concurrency::diagnostic;
@@ -1885,14 +1903,15 @@ static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
 void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 {
    const bool useAA = m_renderWidth > GetBackBufferTexture()->GetWidth();
+   const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable()));
    #ifdef ENABLE_XR
-      // OpenXR directly renders to the XR render target view without any copy
-      const bool stereo = (m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable());
+      // OpenXR directly renders to the XR render target view without any postprocess needs
+      const bool PostProcStereo = stereo && (m_stereo3D != STEREO_VR);
    #else
-      const bool stereo = m_stereo3D == STEREO_VR || ((m_stereo3D != STEREO_OFF) && m_stereo3Denabled && (!m_stereo3DfakeStereo || m_renderDevice->DepthBufferReadBackAvailable()));
+      const bool PostProcStereo = stereo;
    #endif
    // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
-   const bool PostProcAA = !m_stereo3DfakeStereo || (!stereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS));
+   const bool PostProcAA = !(PostProcStereo && m_stereo3DfakeStereo && (m_stereo3D != STEREO_TB) && (m_stereo3D != STEREO_SBS));
    #ifndef __OPENGLES__
       const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
    #else
@@ -1906,7 +1925,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    const bool ss_refl = m_ss_refl && m_table->m_enableSSR && m_renderDevice->DepthBufferReadBackAvailable() && m_table->m_SSRScale > 0.f;
    const unsigned int sharpen = PostProcAA ? m_sharpen : 0;
    const bool useAO = GetAOMode() == 2;
-   const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !stereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
+   const bool useUpscaler = (m_renderWidth < GetBackBufferTexture()->GetWidth()) && !PostProcStereo && (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen);
    const InfoMode infoMode = g_pplayer->GetInfoMode();
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
@@ -1981,7 +2000,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // Perform color grade LUT / dither / tonemapping, also applying bloom and AO
    {
       // switch to output buffer (main output frame buffer, or a temporary one for postprocessing)
-      if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || stereo || useUpscaler)
+      if (SMAA || DLAA || NFAA || FXAA1 || FXAA2 || FXAA3 || sharpen || PostProcStereo || useUpscaler)
          outputRT = GetPostProcessRenderTarget1();
       else
          outputRT = outputBackBuffer;
@@ -2266,7 +2285,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    if (NFAA || FXAA1 || FXAA2 || FXAA3)
    {
       assert(renderedRT == GetPostProcessRenderTarget1());
-      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
+      outputRT = sharpen || PostProcStereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget(SMAA ? "SMAA Color/Edge Detection"s : "Post Process AA Pass 1"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2295,7 +2314,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       renderedRT = outputRT;
 
       // Second pass: use edge detection from first pass (alpha channel) and RGB colors for actual filtering
-      outputRT = sharpen || stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
+      outputRT = sharpen || PostProcStereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("DLAA Neigborhood blending"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2334,7 +2353,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
 
-      outputRT = sharpen || stereo || useUpscaler ? GetPreviousBackBufferTexture() : outputBackBuffer;
+      outputRT = sharpen || PostProcStereo || useUpscaler ? GetPreviousBackBufferTexture() : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("SMAA Neigborhood blending"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
@@ -2350,7 +2369,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    if (sharpen)
    {
       assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
-      outputRT = stereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
+      outputRT = PostProcStereo || useUpscaler ? GetPostProcessRenderTarget(renderedRT) : outputBackBuffer;
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("Sharpen"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(renderedRT);
@@ -2373,66 +2392,78 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // Apply stereo
    if (stereo)
    {
-      #if defined(ENABLE_VR)
-      // For STEREO_OFF, STEREO_TB, STEREO_SBS, this won't do anything. The previous postprocess steps should already have written to OutputBackBuffer
-      // For VR, copy each eye to the HMD texture and render the wanted preview if activated
       if (m_stereo3D == STEREO_VR)
       {
-         assert(renderedRT != outputBackBuffer);
-         int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
+         #if defined(ENABLE_XR)
+            // Rendering is already directly being performed to the swapchain image, so nothing to do except for depth buffer
+            // TODO we should directly use the swapchain depth buffer too to avoid the copy
+            // FIXME this will not work as the current backbuffer is declared as not having a depth buffer (even if it has like here), beside BGFX does not support blitting depth to the default backbuffer
+            if (g_pplayer->m_vrDevice->UseDepthBuffer())
+            {
+               // Copy depth buffer to OpenXR swapchain's current depth target
+               m_renderDevice->SetRenderTarget("OpenXR-Depth"s, outputBackBuffer, true, true);
+               m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
+               m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), outputBackBuffer, false, true);
+            }
+            
+         #elif defined(ENABLE_VR)
+            // Copy each eye to the HMD texture and render the wanted preview if activated
+            // TODO preview and OpenVR submit should be splitted (and preview should be shared with OpenXR)
+            
+            assert(renderedRT != outputBackBuffer);
+            int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
+            
+            RenderTarget *leftTexture = GetOffscreenVR(0);
+            m_renderDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
+            m_renderDevice->AddRenderTargetDependency(renderedRT);
+            m_renderDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
+            if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
+               m_renderDevice->RenderLiveUI();
 
-         RenderTarget *leftTexture = GetOffscreenVR(0);
-         m_renderDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
-         m_renderDevice->AddRenderTargetDependency(renderedRT);
-         m_renderDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-         if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
-            m_renderDevice->RenderLiveUI();
+            RenderTarget *rightTexture = GetOffscreenVR(1);
+            m_renderDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
+            m_renderDevice->AddRenderTargetDependency(renderedRT);
+            m_renderDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
+            if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
+               m_renderDevice->RenderLiveUI();
 
-         RenderTarget *rightTexture = GetOffscreenVR(1);
-         m_renderDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
-         m_renderDevice->AddRenderTargetDependency(renderedRT);
-         m_renderDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-         if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
-            m_renderDevice->RenderLiveUI();
+            RenderTarget* outRT = outputBackBuffer;
+            m_renderDevice->SetRenderTarget("VR Preview"s, outRT, false);
+            m_renderDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
+            m_renderDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
+            m_renderDevice->AddRenderTargetDependency(renderedRT);
+            const int outW = m_vrPreview == VRPREVIEW_BOTH ? outRT->GetWidth() / 2 : outRT->GetWidth(), outH = outRT->GetHeight();
+            float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
+            int x = 0, y = 0;
+            int fw = w, fh = h;
+            if ((m_vrPreviewShrink && ar < outAr) || (!m_vrPreviewShrink && ar > outAr))
+            { // Fit on Y
+               const int scaledW = (int) (h * outAr);
+               x = (w - scaledW) / 2;
+               fw = scaledW;
+            }
+            else
+            { // Fit on X
+               const int scaledH = (int)(w / outAr);
+               y = (h - scaledH) / 2;
+               fh = scaledH;
+            }
+            if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+               m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+            if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+            {
+               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+            }
+            else if (m_vrPreview == VRPREVIEW_BOTH)
+            {
+               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, 0, 0);
+               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, outW, 0, outW, outH, 1, 0);
+            }
 
-         RenderTarget* outRT = outputBackBuffer;
-         m_renderDevice->SetRenderTarget("VR Preview"s, outRT, false);
-         m_renderDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
-         m_renderDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
-         m_renderDevice->AddRenderTargetDependency(renderedRT);
-         const int outW = m_vrPreview == VRPREVIEW_BOTH ? outRT->GetWidth() / 2 : outRT->GetWidth(), outH = outRT->GetHeight();
-         float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
-         int x = 0, y = 0;
-         int fw = w, fh = h;
-         if ((m_vrPreviewShrink && ar < outAr) || (!m_vrPreviewShrink && ar > outAr))
-         { // Fit on Y
-            const int scaledW = (int) (h * outAr);
-            x = (w - scaledW) / 2;
-            fw = scaledW;
-         }
-         else
-         { // Fit on X
-            const int scaledH = (int)(w / outAr);
-            y = (h - scaledH) / 2;
-            fh = scaledH;
-         }
-         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
-            m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
-         if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
-         {
-            m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
-         }
-         else if (m_vrPreview == VRPREVIEW_BOTH)
-         {
-            m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, 0, 0);
-            m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, outW, 0, outW, outH, 1, 0);
-         }
-
-         m_renderDevice->SubmitVR(renderedRT);
+            m_renderDevice->SubmitVR(renderedRT);
+         #endif
       }
-      else 
-      #endif
-      if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
+      else if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
       {
          // Anaglyph and 3DTV
          assert(renderedRT != outputBackBuffer);
