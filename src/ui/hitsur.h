@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 class HitSur : public Sur
@@ -5,7 +7,7 @@ class HitSur : public Sur
 public:
 
    HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground);
-   virtual ~HitSur();
+   virtual ~HitSur() { }
 
    virtual void Line(const float x, const float y, const float x2, const float y2);
    virtual void Rectangle(const float x, const float y, const float x2, float y2);
@@ -18,13 +20,13 @@ public:
    virtual void Polyline(const Vertex2D * const rgv, const int count);
    virtual void Lines(const Vertex2D * const rgv, const int count);
    virtual void Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y);
-   virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height);
+   virtual void Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height) { }
 
    virtual void SetObject(ISelect * const psel);
 
-   virtual void SetFillColor(const int rgb);
-   virtual void SetBorderColor(const int rgb, const bool dashed, const int width);
-   virtual void SetLineColor(const int rgb, const bool dashed, const int width);
+   virtual void SetFillColor(const int rgb) { }
+   virtual void SetBorderColor(const int rgb, const bool dashed, const int width) { }
+   virtual void SetLineColor(const int rgb, const bool dashed, const int width) { }
 
    ISelect *m_pselected;
 

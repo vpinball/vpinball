@@ -24,59 +24,37 @@ HitRectSur::HitRectSur(const HDC hdc, const float zoom, const float offx, const 
    SetObject(nullptr);
 }
 
-HitRectSur::~HitRectSur()
-{
-}
-
 void HitRectSur::Line(const float x, const float y, const float x2, const float y2)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    if (!PTINRECT(x, y) || !PTINRECT(x2, y2))
-   {
       FailObject();
-   }
 }
 
 void HitRectSur::Rectangle(const float x, const float y, const float x2, float y2)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    if (!PTINRECT(x, y) || !PTINRECT(x2, y2))
-   {
       FailObject();
-   }
-}
-
-void HitRectSur::Rectangle2(const int x, const int y, const int x2, const int y2)
-{
 }
 
 void HitRectSur::Ellipse(const float centerx, const float centery, const float radius)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    if (!PTINRECT(centerx - radius, centery - radius) || !PTINRECT(centerx + radius, centery + radius))
-   {
       FailObject();
-   }
 }
 
 void HitRectSur::Ellipse2(const float centerx, const float centery, const int radius)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    const int ix = SCALEXf(centerx);
    const int iy = SCALEYf(centery);
@@ -92,64 +70,38 @@ void HitRectSur::Ellipse2(const float centerx, const float centery, const int ra
    const int bottom = SCALEYf(m_rcRect.bottom);
 
    if (circleleft < left || circletop < top || circleright > right || circlebottom > bottom)
-   {
       FailObject();
-   }
 }
 
 void HitRectSur::Polygon(const Vertex2D * const rgv, const int count)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    for (int i = 0; i < count; ++i)
-   {
       if (!PTINRECT(rgv[i].x, rgv[i].y))
       {
          FailObject();
          return;
       }
-   }
 }
 // copy-pasted from above
 void HitRectSur::Polygon(const vector<RenderVertex> &rgv)
 {
    if (m_failedAlready)
-   {
       return;
-   }
 
    for (unsigned i = 0; i < rgv.size(); ++i)
-   {
       if (!PTINRECT(rgv[i].x, rgv[i].y))
       {
          FailObject();
          return;
       }
-   }
 }
 
 void HitRectSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const float left, const float top, const float right, const float bottom, const int bitmapwidth, const int bitmapheight)
 {
    Polygon(rgv);
-}
-
-void HitRectSur::Polyline(const Vertex2D * const rgv, const int count)
-{
-}
-
-void HitRectSur::Lines(const Vertex2D * const rgv, const int count)
-{
-}
-
-void HitRectSur::Arc(const float x, const float y, const float radius, const float pt1x, const float pt1y, const float pt2x, const float pt2y)
-{
-}
-
-void HitRectSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
-{
 }
 
 void HitRectSur::SetObject(ISelect * const psel)
@@ -192,16 +144,4 @@ void HitRectSur::FailObject()
 
    m_pvsel->erase(m_pvsel->begin() + m_indexcur); // perf?  Probably doesn't matter
    m_vselFailed.push_back(m_pcur);
-}
-
-void HitRectSur::SetFillColor(const int rgb)
-{
-}
-
-void HitRectSur::SetBorderColor(const int rgb, const bool dashed, const int width)
-{
-}
-
-void HitRectSur::SetLineColor(const int rgb, const bool dashed, const int width)
-{
 }

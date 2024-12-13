@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 HitSur::HitSur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height, const int hitx, const int hity, ISelect * const pbackground) : Sur(hdc, zoom, offx, offy, width, height)
@@ -8,10 +10,6 @@ HitSur::HitSur(const HDC hdc, const float zoom, const float offx, const float of
    m_hity = hity;
 
    SetObject(nullptr);
-}
-
-HitSur::~HitSur()
-{
 }
 
 void HitSur::Line(const float x, const float y, const float x2, const float y2)
@@ -44,7 +42,6 @@ void HitSur::Line(const float x, const float y, const float x2, const float y2)
    }
    else if (abs(x_2 - x_1) < abs(y_2 - y_1))
    {
-
       int lineX = m_hitx + 4;
       if (y_1 > y_2)
       {
@@ -266,23 +263,7 @@ void HitSur::Arc(const float x, const float y, const float radius, const float p
    //Ellipse(x, y, radius);
 }
 
-void HitSur::Image(const float x, const float y, const float x2, const float y2, HDC hdcSrc, const int width, const int height)
-{
-}
-
 void HitSur::SetObject(ISelect * const psel)
 {
    m_pcur = psel;
-}
-
-void HitSur::SetFillColor(const int rgb)
-{
-}
-
-void HitSur::SetBorderColor(const int rgb, const bool dashed, const int width)
-{
-}
-
-void HitSur::SetLineColor(const int rgb, const bool dashed, const int width)
-{
 }

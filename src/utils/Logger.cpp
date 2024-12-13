@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include <core/stdafx.h>
 #include "Logger.h"
 
@@ -40,7 +42,7 @@ public:
    }
 };
 
-Logger* Logger::m_pInstance = NULL;
+Logger* Logger::m_pInstance = nullptr;
 
 Logger* Logger::GetInstance()
 {
@@ -91,7 +93,7 @@ void Logger::SetupLogger(const bool enable)
 void Logger::Init()
 {
    plog::init<PLOG_DEFAULT_INSTANCE_ID>();
-   plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that do not show in the debug window to avoid duplicated messages
+   plog::init<PLOG_NO_DBG_OUT_INSTANCE_ID>(); // Logger that does not show in the debug window to avoid duplicated messages
 }
 
 void Logger::Truncate()

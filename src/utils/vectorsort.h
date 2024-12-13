@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 template<class T>

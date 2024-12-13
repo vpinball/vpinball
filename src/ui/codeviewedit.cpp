@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include "codeviewedit.h"
 
@@ -15,12 +17,9 @@ UserData::UserData(const int LineNo, const string &Desc, const string &Name, con
 {
 }
 
-////////////////Preferences
-CVPreference::CVPreference(
-		const COLORREF crTextColor,
-		const bool bDisplay, const string& szRegistryName,
-		const int szScintillaKeyword, const int IDC_ChkBox,
-		const int IDC_ColorBut, const int IDC_Font)
+// CodeViewer Preferences
+CVPreference::CVPreference(const COLORREF crTextColor, const bool bDisplay, const string& szRegistryName,
+                           const int szScintillaKeyword, const int IDC_ChkBox, const int IDC_ColorBut, const int IDC_Font)
    : m_rgb(crTextColor),
      m_sciKeywordID(szScintillaKeyword),
      IDC_ChkBox_code(IDC_ChkBox),

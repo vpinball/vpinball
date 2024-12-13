@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 //#define STYLE_SUBFUN 10
@@ -41,11 +43,8 @@ private:
    bool m_highlight;
 
 public:
-   CVPreference(
-      const COLORREF crTextColor,
-      const bool bDisplay, const string& szRegistryName,
-      const int szScintillaKeyword, const int IDC_ChkBox,
-      const int IDC_ColorBut, const int IDC_Font);
+   CVPreference(const COLORREF crTextColor, const bool bDisplay, const string& szRegistryName,
+                const int szScintillaKeyword, const int IDC_ChkBox, const int IDC_ColorBut, const int IDC_Font);
    ~CVPreference() {}
 
    void GetPrefsFromReg();

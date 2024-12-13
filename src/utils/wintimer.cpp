@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #include <ctime>
 //#ifndef _MSC_VER

@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 #ifndef __STANDALONE__
 #include "Intshcut.h"
@@ -117,7 +119,7 @@ LocalString::LocalString(const int resid)
    else
       m_szbuffer[0] = '\0';
 #else
-   static robin_hood::unordered_map<int, const char*> ids_map = {
+   static const robin_hood::unordered_map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
      { IDS_TB_BUMPER, "Bumper" },
      { IDS_TB_DECAL, "Decal" },
@@ -156,7 +158,7 @@ LocalStringW::LocalStringW(const int resid)
    else
       m_szbuffer[0] = L'\0';
 #else
-   static robin_hood::unordered_map<int, const char*> ids_map = {
+   static const robin_hood::unordered_map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
      { IDS_TB_BUMPER, "Bumper" },
      { IDS_TB_DECAL, "Decal" },
@@ -205,6 +207,7 @@ string MakeString(const wstring &wz)
    WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
    /*const*/ string result(szT); // const removed for auto-move
    delete [] szT;
+
    return result;
 }
 
@@ -216,6 +219,7 @@ wstring MakeWString(const string &sz)
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
    /*const*/ wstring result(wzT); // const removed for auto-move
    delete [] wzT;
+
    return result;
 }
 
@@ -734,9 +738,9 @@ vector<unsigned char> base64_decode(const string &encoded_string)
       for (j = 0; j < 4; j++)
          char_array_4[j] = base64_chars.find(char_array_4[j]);
 
-      char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[0] =  (char_array_4[0]        << 2) + ((char_array_4[1] & 0x30) >> 4);
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
 
       for (j = 0; (j < i - 1); j++) ret.push_back(char_array_3[j]);
    }
@@ -747,7 +751,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value)
 {
-   static robin_hood::unordered_map<GLuint, const char*> value_map = {
+   static const robin_hood::unordered_map<GLuint, const char*> value_map = {
      { (GLuint)GL_RGB, "GL_RGB" },
      { (GLuint)GL_RGBA, "GL_RGBA" },
      { (GLuint)GL_RGB8, "GL_RGB8" },
@@ -868,4 +872,5 @@ void external_log_error(const char* format, ...)
     va_end(args);
     PLOGE << buffer;
 }
+
 #endif

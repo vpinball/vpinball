@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #ifdef __STANDALONE__
@@ -83,7 +85,7 @@ public:
       if (!m_logWorstFrame)
          return;
       m_logWorstFrame = false;
-      const string labels[] = { 
+      static const string labels[] = { 
          "Misc:          "s, 
          "Script:        "s, 
          "Physics:       "s, 

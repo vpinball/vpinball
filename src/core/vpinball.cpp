@@ -1215,7 +1215,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
          const string& audit = ppt->AuditTable();
          if (audit.find(". Error:"s) != std::string::npos)
          {
-            InfoDialog info("This table contains error that needs to be fixed to ensure correct play.\r\n\r\n"s + audit);
+            InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n"s + audit);
             info.DoModal();
          }
 #endif

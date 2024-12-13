@@ -275,7 +275,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       m_tableVel          += (float)PHYS_FACTOR * force;
       m_tableDisplacement += (float)PHYS_FACTOR * m_tableVel;
 
-      m_tableAcceleration = (m_tableVel - m_tableVelOld) / (float)PHYS_FACTOR;
+      m_tableAcceleration = (m_tableVel - m_tableVelOld) * (float)(1.0/PHYS_FACTOR);
       m_tableVelOld = m_tableVel;
 
       // Acquire from sensor input
@@ -288,7 +288,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
          // Apply the external accelerometer-based nudge velocity input (which is
          // a separate input from the traditional acceleration input)
          Vertex3Ds sensorTableVelocity(sensor.x, sensor.y, 0.f);
-         m_tableAcceleration += (sensorTableVelocity - m_prevSensorTableVelocity) / (float)PHYS_FACTOR;
+         m_tableAcceleration += (sensorTableVelocity - m_prevSensorTableVelocity) * (float)(1.0/PHYS_FACTOR);
          m_prevSensorTableVelocity = sensorTableVelocity;
 
          // No ball 'nudge' force directly applied to the ball, only force resulting from table acceleration
@@ -328,8 +328,8 @@ void PhysicsEngine::UpdateNudge(float dtime)
    }
 
    // Convert to force
-   m_nudgeAcceleration.x /= (float)PHYS_FACTOR;
-   m_nudgeAcceleration.y /= (float)PHYS_FACTOR;
+   m_nudgeAcceleration.x *= (float)(1.0/PHYS_FACTOR);
+   m_nudgeAcceleration.y *= (float)(1.0/PHYS_FACTOR);
 
    if (m_enablePlumbTilt && m_plumbTiltThreshold > 0.0f && dtime > 0.f && dtime <= 0.1f) // Ignore large time slices... forces will get crazy!
    {
@@ -413,14 +413,14 @@ void PhysicsEngine::UpdateNudge(float dtime)
       plumbAcc += m_plumbMassFactor * nudge; // This is absolutely not physically correct
       plumbAcc -= plumbAcc.Dot(poleAxis) * poleAxis; // Keep acceleration ortogonal to pole
       m_plumbVel *= 0.999f;
-      m_plumbVel += plumbAcc * (float) PHYSICS_STEPTIME_S;
+      m_plumbVel += plumbAcc * (float)PHYSICS_STEPTIME_S;
       m_plumbVel -= m_plumbVel.Dot(poleAxis) * poleAxis; // Keep velocity ortogonal to pole
       m_plumbPos += m_plumbVel * (float)PHYSICS_STEPTIME_S;
       m_plumbPos *= m_plumbPoleLength / m_plumbPos.Length(); // Keep plumb at end of pole
 
       // Check if we hit the edge, using the pole angle (tilt threshold is 0..1000/1000 corresponding to 0..PI/4)
-      const float psi = atan2(sqrt(m_plumbPos.x * m_plumbPos.x + m_plumbPos.y * m_plumbPos.y), -m_plumbPos.z);
-      const float tiltAngle = M_PIf * 0.25f * m_plumbTiltThreshold;
+      const float psi = atan2f(sqrtf(m_plumbPos.x * m_plumbPos.x + m_plumbPos.y * m_plumbPos.y), -m_plumbPos.z);
+      const float tiltAngle = (float)(M_PI * 0.25) * m_plumbTiltThreshold;
       const float TiltPerc = 100.0f * psi / tiltAngle;
       bool tilted = false;
       if (TiltPerc > 100.0f)
@@ -428,10 +428,10 @@ void PhysicsEngine::UpdateNudge(float dtime)
          tilted = true;
          // Keep plumb inside tile limits
          const float limitAngle = tiltAngle - 1e-3f;
-         m_plumbPos.z = -m_plumbPoleLength * cos(limitAngle);
-         const float xy = m_plumbPoleLength * sin(limitAngle);
-         const float theta = atan2(m_plumbPos.x, m_plumbPos.y);
-         Vertex3Ds axis(sin(theta), cos(theta), 0.f);
+         m_plumbPos.z = -m_plumbPoleLength * cosf(limitAngle);
+         const float xy = m_plumbPoleLength * sinf(limitAngle);
+         const float theta = atan2f(m_plumbPos.x, m_plumbPos.y);
+         const Vertex3Ds axis(sinf(theta), cosf(theta), 0.f);
          m_plumbPos.x = xy * axis.x;
          m_plumbPos.y = xy * axis.y;
          // Bounce the plumb (reflect velocity against circle normal, dampen it)

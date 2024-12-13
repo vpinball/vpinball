@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 #include "core/stdafx.h"
@@ -13,6 +15,7 @@ class LiveUI
 public:
    LiveUI(RenderDevice* const rd);
    ~LiveUI();
+
    void Update(const RenderTarget* rt);
    void Render();
    bool HasKeyboardCapture() const;
@@ -131,7 +134,7 @@ private:
 
    // UI Context
    VPinball *m_app;
-   Player *m_player;
+   Player   *m_player;
    PinTable *m_table; // The edited table
    PinTable *m_live_table; // The live copy of the edited table being played by the player (all properties can be changed at any time by the script)
    PinInput *m_pininput;

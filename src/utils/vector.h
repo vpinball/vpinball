@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #pragma once
 
 template<class T> class VectorProtected  // keeps only -pointers- of elements and does -not- free them afterwards! AND with a critical section for some operations (see end of file)

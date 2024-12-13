@@ -1,3 +1,5 @@
+// license:GPLv3+
+
 #include "core/stdafx.h"
 
 #include "LiveUI.h"
@@ -3731,7 +3733,7 @@ void LiveUI::UpdatePlumbWindow()
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
             // Tilt circle
             const ImVec2 scale = halfSize * 1.5f;
-            const ImVec2 radius = scale * sin(m_player->m_physics->GetPlumbTiltThreshold() * M_PIf * 0.25f);
+            const ImVec2 radius = scale * sin(m_player->m_physics->GetPlumbTiltThreshold() * (float)(M_PI * 0.25));
             ImGui::GetWindowDrawList()->AddEllipse(pos + halfSize, radius, IM_COL32(255, 0, 0, 255));
             // Plumb position
             const Vertex3Ds &plumb = m_player->m_physics->GetPlumbPos();
@@ -3768,17 +3770,17 @@ void LiveUI::UpdatePlumbWindow()
             const Vertex3Ds& plumb = m_player->m_physics->GetPlumbPos();
             float radius = min(fullSize.x, fullSize.y) * 0.9f;
             // Tilt limits
-            float angle = m_player->m_physics->GetPlumbTiltThreshold() * M_PIf * 0.25f;
-            ImVec2 plumbPos = pos + ImVec2(halfSize.x + sin(angle) * radius, cos(angle) * radius);
+            float angle = m_player->m_physics->GetPlumbTiltThreshold() * (float)(M_PI * 0.25);
+            ImVec2 plumbPos = pos + ImVec2(halfSize.x + sinf(angle) * radius, cosf(angle) * radius);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 0, 0, 255));
             plumbPos = pos + ImVec2(halfSize.x - sin(angle) * radius, cos(angle) * radius);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 0, 0, 255));
             // Plumb position
-            angle = atan2(sqrt(plumb.x * plumb.x + plumb.y * plumb.y), -plumb.z);
+            angle = atan2f(sqrt(plumb.x * plumb.x + plumb.y * plumb.y), -plumb.z);
             const float theta = atan2(plumb.x, plumb.y);
-            if (theta + M_PI/2 < 0 || theta + M_PI/2 >= M_PI)
+            if (theta + (float)(M_PI/2.) < 0.f || theta + (float)(M_PI/2.) >= (float)M_PI)
                angle = -angle;
-            plumbPos = pos + ImVec2(halfSize.x + sin(angle) * radius, cos(angle) * radius);
+            plumbPos = pos + ImVec2(halfSize.x + sinf(angle) * radius, cosf(angle) * radius);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), plumbPos, IM_COL32(255, 128, 0, 255));
             ImGui::GetWindowDrawList()->AddCircleFilled(plumbPos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();

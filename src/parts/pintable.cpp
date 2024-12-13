@@ -111,37 +111,17 @@ STDMETHODIMP ScriptGlobalTable::NudgeGetCalibration(VARIANT *XMax, VARIANT *YMax
 
 STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGain, int YGain, int DeadZone, int TiltSensitivity)
 {
-	int newvalue;
-
-	newvalue = XGain;
-	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, newvalue);
-
-	newvalue = YGain;
-	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, newvalue);
-
-	newvalue = DeadZone;
-	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	if (newvalue > 100) { newvalue = 100; }
-	g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, newvalue);
-
-	newvalue = XMax;
-	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	if (newvalue > 100) { newvalue = 100; }
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, newvalue);
-
-	newvalue = YMax;
-	if ((SSIZE_T)newvalue < 0) { newvalue = 0; }
-	if (newvalue > 100) { newvalue = 100; }
-	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, newvalue);
+	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, max(XGain, 0));
+	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, max(YGain, 0));
+	g_pvp->m_settings.SaveValue(Settings::Player, "DeadZone"s, clamp(DeadZone, 0,100));
+	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, clamp(XMax, 0,100));
+	g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, clamp(YMax, 0,100));
 
 	g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensCB"s, TiltSensitivity > 0);
 	if (TiltSensitivity > 0)
 	{
-		newvalue = TiltSensitivity;
-		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensValue"s, newvalue);
-		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, newvalue);
+		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensValue"s, TiltSensitivity);
+		g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, TiltSensitivity);
 	}
 	else
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);

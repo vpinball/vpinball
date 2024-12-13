@@ -1270,7 +1270,7 @@ void Primitive::Render(const unsigned int renderMask)
    float alpha = m_d.m_alpha;
    if (m_lightmap)
    {
-      if (m_lightmap->m_d.m_intensity && m_lightmap->m_d.m_intensity_scale)
+      if (m_lightmap->m_d.m_intensity != 0.f && m_lightmap->m_d.m_intensity_scale != 0.f)
          alpha *= m_lightmap->m_currentIntensity / (m_lightmap->m_d.m_intensity * m_lightmap->m_d.m_intensity_scale);
       else
          alpha = 0.f;
