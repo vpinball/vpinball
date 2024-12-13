@@ -6,6 +6,14 @@
 // Undefine this if you want to debug OpenVR without a VR headset
 //#define OPEN_VR_TEST
 
+// MSVC Concurrency Viewer support
+// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+#define MSVC_CONCURRENCY_VIEWER
+#ifdef MSVC_CONCURRENCY_VIEWER
+#include <cvmarkersobj.h>
+using namespace Concurrency::diagnostic;
+extern marker_series series;
+#endif
 
 #if defined(ENABLE_XR) && defined(ENABLE_BGFX)
    #include "bgfx/platform.h"
@@ -189,8 +197,7 @@ public:
    int64_t SelectColorSwapchainFormat(const std::vector<int64_t>& formats)
    {
       const std::vector<int64_t>& supportSwapchainFormats = GetSupportedColorSwapchainFormats();
-      const std::vector<int64_t>::const_iterator& swapchainFormatIt
-         = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
+      const std::vector<int64_t>::const_iterator& swapchainFormatIt = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
       if (swapchainFormatIt == formats.end())
       {
          PLOGE << "ERROR: Unable to find supported Color Swapchain Format";
@@ -203,8 +210,7 @@ public:
    int64_t SelectDepthSwapchainFormat(const std::vector<int64_t>& formats)
    {
       const std::vector<int64_t>& supportSwapchainFormats = GetSupportedDepthSwapchainFormats();
-      const std::vector<int64_t>::const_iterator& swapchainFormatIt
-         = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
+      const std::vector<int64_t>::const_iterator& swapchainFormatIt = std::find_first_of(formats.begin(), formats.end(), std::begin(supportSwapchainFormats), std::end(supportSwapchainFormats));
       if (swapchainFormatIt == formats.end())
       {
          PLOGE << "ERROR: Unable to find supported Depth Swapchain Format";
@@ -659,10 +665,12 @@ VRDevice::VRDevice()
       if (!hasGraphicBackend)
          return;
 
-      // FIXME OpenXR: Strangely enough, performance drops if XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME is enabled
-      //m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME);
+      //m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME); // Should be supported but not yet implemented
       m_colorSpaceExtensionSupported = EnableExtensionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
-      //EnableExtensionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
+      #ifdef DEBUG
+         m_debugUtilsExtensionSupported = EnableExtensionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
+      #endif
 
       // Fill out an XrInstanceCreateInfo structure and create an XrInstance.
       XrInstanceCreateInfo instanceCI { XR_TYPE_INSTANCE_CREATE_INFO };
@@ -679,10 +687,26 @@ VRDevice::VRDevice()
          return;
       }
 
-      // Check that "XR_EXT_debug_utils" is in the active Instance Extensions before creating an XrDebugUtilsMessengerEXT.
-      //if (IsStringInVector(m_activeInstanceExtensions, XR_EXT_DEBUG_UTILS_EXTENSION_NAME))
+      if (m_visibilityMaskExtensionSupported)
       {
-         //m_debugUtilsMessenger = CreateOpenXRDebugUtilsMessenger(m_xrInstance); // From OpenXRDebugUtils.h.
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetVisibilityMaskKHR", (PFN_xrVoidFunction*)&xrGetVisibilityMaskKHR), "Failed to get xrGetVisibilityMaskKHR.");
+      }
+      if (m_debugUtilsExtensionSupported)
+      {
+         // Fill out a XrDebugUtilsMessengerCreateInfoEXT structure specifying all severities and types.
+         // Set the userCallback to OpenXRMessageCallbackFunction().
+         XrDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCI { XR_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
+         debugUtilsMessengerCI.messageSeverities = XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+         debugUtilsMessengerCI.messageTypes = XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | XR_DEBUG_UTILS_MESSAGE_TYPE_CONFORMANCE_BIT_EXT;
+         debugUtilsMessengerCI.userCallback = (PFN_xrDebugUtilsMessengerCallbackEXT)OpenXRMessageCallbackFunction;
+         debugUtilsMessengerCI.userData = nullptr;
+
+         // Load xrCreateDebugUtilsMessengerEXT() function pointer as it is not default loaded by the OpenXR loader.
+         PFN_xrCreateDebugUtilsMessengerEXT xrCreateDebugUtilsMessengerEXT;
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrCreateDebugUtilsMessengerEXT", (PFN_xrVoidFunction*)&xrCreateDebugUtilsMessengerEXT), "Failed to get InstanceProcAddr.");
+
+         // Finally create and return the XrDebugUtilsMessengerEXT.
+         OPENXR_CHECK(xrCreateDebugUtilsMessengerEXT(m_xrInstance, &debugUtilsMessengerCI, &m_debugUtilsMessenger), "Failed to create DebugUtilsMessenger.");
       }
 
       // Get the instance's properties and log the runtime name and version.
@@ -842,6 +866,13 @@ VRDevice::~VRDevice()
          OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
       delete m_backend;
 
+      if (m_debugUtilsExtensionSupported)
+      {
+         PFN_xrDestroyDebugUtilsMessengerEXT xrDestroyDebugUtilsMessengerEXT;
+         OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrDestroyDebugUtilsMessengerEXT", (PFN_xrVoidFunction*)&xrDestroyDebugUtilsMessengerEXT), "Failed to get InstanceProcAddr.");
+         OPENXR_CHECK(xrDestroyDebugUtilsMessengerEXT(m_debugUtilsMessenger), "Failed to destroy DebugUtilsMessenger.");
+      }
+
       // Destroy the reference XrSpace.
       OPENXR_CHECK(xrDestroySpace(m_localSpace), "Failed to destroy Space.")
 
@@ -851,6 +882,8 @@ VRDevice::~VRDevice()
       // Destroy the XrInstance.
       OPENXR_CHECK(xrDestroyInstance(m_xrInstance), "Failed to destroy Instance.");
    
+      DiscardVisibilityMask();
+      
    #elif defined(ENABLE_VR)
       if (m_pHMD)
       {
@@ -861,6 +894,88 @@ VRDevice::~VRDevice()
 }
 
 #ifdef ENABLE_XR
+
+XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageType, const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+   // Lambda to covert an XrDebugUtilsMessageSeverityFlagsEXT to std::string. Bitwise check to concatenate multiple severities to the output string.
+   auto GetMessageSeverityString = [](XrDebugUtilsMessageSeverityFlagsEXT messageSeverity) -> std::string
+   {
+      bool separator = false;
+
+      std::string msgFlags;
+      if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+      {
+         msgFlags += "VERBOSE";
+         separator = true;
+      }
+      if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+      {
+         if (separator)
+            msgFlags += ",";
+         msgFlags += "INFO";
+         separator = true;
+      }
+      if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+      {
+         if (separator)
+            msgFlags += ",";
+         msgFlags += "WARN";
+         separator = true;
+      }
+      if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+      {
+         if (separator)
+            msgFlags += ",";
+         msgFlags += "ERROR";
+      }
+      return msgFlags;
+   };
+   // Lambda to covert an XrDebugUtilsMessageTypeFlagsEXT to std::string. Bitwise check to concatenate multiple types to the output string.
+   auto GetMessageTypeString = [](XrDebugUtilsMessageTypeFlagsEXT messageType) -> std::string
+   {
+      bool separator = false;
+
+      std::string msgFlags;
+      if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT)
+      {
+         msgFlags += "GEN";
+         separator = true;
+      }
+      if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
+      {
+         if (separator)
+            msgFlags += ",";
+         msgFlags += "SPEC";
+         separator = true;
+      }
+      if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
+      {
+         if (separator)
+            msgFlags += ",";
+         msgFlags += "PERF";
+      }
+      return msgFlags;
+   };
+
+   std::string functionName = (pCallbackData->functionName) ? pCallbackData->functionName : "";
+   std::string messageSeverityStr = GetMessageSeverityString(messageSeverity);
+   std::string messageTypeStr = GetMessageTypeString(messageType);
+   std::string messageId = (pCallbackData->messageId) ? pCallbackData->messageId : "";
+   std::string message = (pCallbackData->message) ? pCallbackData->message : "";
+   std::stringstream errorMessage;
+   errorMessage << functionName << "(" << messageSeverityStr << " / " << messageTypeStr << "): msgNum: " << messageId << " - " << message;
+   if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+   {
+      PLOGE << errorMessage.str();
+      // assert(false);
+   }
+   else
+   {
+      PLOGI << errorMessage.str();
+   }
+   return XrBool32();
+}
+
 void* VRDevice::GetGraphicContext() const
 {
    return m_backend->GetGraphicContext();
@@ -1033,6 +1148,8 @@ void VRDevice::CreateSession()
       m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
 
+   m_visibilityMaskDirty = true;
+
    // Create an XrSessionCreateInfo structure.
    XrSessionCreateInfo sessionCI { XR_TYPE_SESSION_CREATE_INFO };
    sessionCI.next = m_backend->GetGraphicsBinding();
@@ -1168,11 +1285,77 @@ void VRDevice::PollEvents()
          m_sessionState = sessionStateChanged->state;
          break;
       }
+      // Visibility mask changed
+      case XR_TYPE_EVENT_DATA_VISIBILITY_MASK_CHANGED_KHR:
+      {
+         m_visibilityMaskDirty = true;
+         break;
+      }
       default:
       {
          break;
       }
       }
+   }
+}
+
+void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
+{
+   if (m_visibilityMaskExtensionSupported && m_visibilityMaskDirty)
+   {
+      DiscardVisibilityMask();
+      uint32_t indexCount = 0, vertexCount = 0, maxVertexCount = 0;
+      for (int view = 0; view < m_viewConfigurationViews.size(); view++)
+      {
+         XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         indexCount += visibilityMask.indexCountOutput;
+         vertexCount += visibilityMask.vertexCountOutput;
+         maxVertexCount = max(maxVertexCount, visibilityMask.vertexCountOutput);
+      }
+      IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
+      VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
+      XrVector2f* vert2d = new XrVector2f[maxVertexCount];
+      int vPos = 0;
+      uint32_t* indices;
+      indexBuffer->Lock(indices);
+      Vertex3D_NoTex2* vertices;
+      vertexBuffer->Lock(vertices);
+      uint32_t vertexOffset = 0;
+      for (int view = 0; view < m_viewConfigurationViews.size(); view++)
+      {
+         XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         visibilityMask.indexCapacityInput = visibilityMask.indexCountOutput;
+         visibilityMask.vertexCapacityInput = visibilityMask.vertexCountOutput;
+         visibilityMask.vertices = vert2d;
+         visibilityMask.indices = indices;
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         for (uint32_t i = 0; i < visibilityMask.vertexCountOutput; i++)
+         {
+            vertices->x = vert2d[i].x;
+            vertices->y = vert2d[i].y;
+            vertices->z = -1.f;
+            vertices->nx = static_cast<float>(view);
+            vertices->ny = 0.f;
+            vertices->nz = 0.f;
+            vertices->tu = 0.f;
+            vertices->tv = 0.f;
+            vertices++;
+         }
+         for (uint32_t i = 0; i < visibilityMask.indexCountOutput; i++)
+         {
+            (*indices) += vertexOffset;
+            indices++;
+         }
+         vertexOffset += visibilityMask.vertexCountOutput;
+      }
+      indexBuffer->Unlock();
+      vertexBuffer->Unlock();
+      delete[] vert2d;
+      m_visibilityMask = new MeshBuffer(L"VisibilityMask", vertexBuffer, indexBuffer, true);
+      m_visibilityMaskDirty = false;
+      PLOGI << "Headset visibility mask acquired";
    }
 }
 
@@ -1187,10 +1370,16 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
       return;
    }
 
-   // Let OpenXR throttle frame submisison and get the XrFrameState for timing and rendering info.
+   // Let OpenXR throttle frame submission and get the XrFrameState for timing and rendering info.
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   span *tagSpanFF = new span(series, 1, _T("xrWaitFrame"));
+   #endif
    XrFrameState frameState { XR_TYPE_FRAME_STATE };
    XrFrameWaitInfo frameWaitInfo { XR_TYPE_FRAME_WAIT_INFO };
    OPENXR_CHECK(xrWaitFrame(m_session, &frameWaitInfo, &frameState), "Failed to wait for XR Frame.");
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   delete tagSpanFF;
+   #endif
 
    // Tell the OpenXR compositor that the application is beginning the frame.
    XrFrameBeginInfo frameBeginInfo { XR_TYPE_FRAME_BEGIN_INFO };
@@ -1255,6 +1444,7 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
             Matrix3D view = XRPoseToMatrix3D(views[i].pose);
             Matrix3D proj;
             proj.SetPerspectiveFovRH(views[i].fov.angleLeft, views[i].fov.angleRight, views[i].fov.angleDown, views[i].fov.angleUp, zNear, zFar);
+            m_visibilityMaskProj[i] = proj;
             m_vrMatProj[i] = invView * scale * view * proj;
          }
 

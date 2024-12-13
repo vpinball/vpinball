@@ -129,6 +129,8 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(basic_reflection_only, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_staticColor_Alpha, SHADER_w_h_height,
       SHADER_mirrorNormal_factor, SHADER_tex_reflection, SHADER_clip_plane),
 
+   SHADER_TECHNIQUE(vr_mask, SHADER_matWorldViewProj),
+
    SHADER_TECHNIQUE(bg_decal_without_texture, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_cBase_Alpha, SHADER_clip_plane),
    SHADER_TECHNIQUE(bg_decal_with_texture, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_matWorld, SHADER_matWorldView, SHADER_matWorldViewInverseTranspose, SHADER_cBase_Alpha,
       SHADER_tex_base_color, SHADER_clip_plane),
@@ -908,6 +910,7 @@ void Shader::SetTechnique(ShaderTechniques technique)
    #elif defined(ENABLE_BGFX)
    if (!bgfx::isValid(m_techniques[technique]))
    {
+      assert(0);
       m_technique = SHADER_TECHNIQUE_INVALID;
       ShowError("Fatal Error: Could not find shader technique " + shaderTechniqueNames[technique].name);
       exit(-1);
@@ -1412,6 +1415,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_notex_ballshadow),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_unshaded_tex_ballshadow),
+      BGFX_EMBEDDED_SHADER(vs_vr_mask),
       // Ball shaders
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_ball_trail),
@@ -1555,6 +1559,8 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture,    STEREO(vs_basic_tex_clip),           STEREO(fs_unshaded_tex_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_clip),  STEREO(fs_unshaded_notex_ballshadow_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_clip),       STEREO(fs_unshaded_tex_ballshadow_clip), true);
+      // VR masking
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_mask, "vs_vr_mask", "fs_unshaded_notex_noclip");
       break;
    case BALL_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));

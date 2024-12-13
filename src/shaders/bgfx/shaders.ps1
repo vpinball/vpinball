@@ -66,6 +66,7 @@ if ($gen_basic)
 {
 	Write-Host "`n>>>>>>>>>>>>>>>> Base material shader"
 	New-Item -Path . -Name "../bgfx_basic.h" -ItemType "File" -Force -Value "// Base material Shaders`n"
+    Process-Shader "vs_vr_mask.sc" "basic.h" "vs_vr_mask_" "vertex"
 	foreach ($variant2 in @("CLIP", "NOCLIP"))
 	{
 	  for($k = 0; $k -lt 2; $k++)

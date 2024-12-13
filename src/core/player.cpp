@@ -53,7 +53,7 @@
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
 using namespace Concurrency::diagnostic;
-marker_series series;
+extern marker_series series;
 #endif
 
 #if __cplusplus >= 202002L && !defined(__clang__)
@@ -1056,6 +1056,8 @@ Player::~Player()
    m_pBCTarget = nullptr;
    delete m_ptable;
    //m_ptable = nullptr;
+   if (m_vrDevice)
+      m_vrDevice->DiscardVisibilityMask();
    delete m_renderer;
    m_renderer = nullptr;
    LockForegroundWindow(false);
