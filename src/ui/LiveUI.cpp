@@ -4,6 +4,7 @@
 
 #include "LiveUI.h"
 
+#include "renderer/VRDevice.h"
 #include "renderer/Shader.h"
 #include "renderer/Anaglyph.h"
 
@@ -605,11 +606,11 @@ static void HelpSplash(const string &text, int rotation)
 
 void LiveUI::UpdateTouchUI()
 {
-   if (!g_pplayer->m_supportsTouch)
+   if (!m_player->m_supportsTouch)
       return;
 
 #ifdef __LIBVPINBALL__
-   if (g_pplayer->m_liveUIOverride)
+   if (m_player->m_liveUIOverride)
       return;
 #endif
 
@@ -734,11 +735,22 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
    ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
    int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
-   m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
+   if (m_player->m_vrDevice)
+   {
+      // VR headset cover full view range, so use a relative part of the full range for the DPI
+      m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
+      ImGui_Implbgfx_SetStereoOfs(m_player->m_vrDevice->GetEyeWidth() * 0.15f);
+   }
+   else
+   {
+      // Use display DPI setting
+      m_dpi = SDL_GetWindowDisplayScale(m_player->m_playfieldWnd->GetCore());
+   }
 #else // Win32 Windowing
    ImGui_ImplWin32_Init(m_player->m_playfieldWnd->GetCore());
    m_dpi = ImGui_ImplWin32_GetDpiScaleForHwnd(m_player->m_playfieldWnd->GetCore());
 #endif
+   m_dpi = min(m_dpi, 10.f); // To avoid texture size overflows
 
    SetupImGuiStyle(1.0f);
 
@@ -753,12 +765,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    static constexpr ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_16_FK, 0 };
    io.Fonts->AddFontFromMemoryCompressedTTF(fork_awesome_compressed_data, fork_awesome_compressed_size, 13.0f * m_dpi, &icons_config, icons_ranges);
 
-   // Overlays are displayed in the VR headset for which we do not have a meaningful DPI. This is somewhat hacky but we would really need 2 UI for VR.
-   #ifndef __STANDALONE__
-      const float overlaySize = m_renderer->m_stereo3D == STEREO_VR ? 20.0f : min(32.f * m_dpi, (float)min(m_player->m_playfieldWnd->GetWidth(), m_player->m_playfieldWnd->GetHeight()) / (26.f * 2.0f)); // Fit 26 lines of text on screen
-   #else
-      const float overlaySize = 13.0f * m_dpi;
-   #endif
+   const float overlaySize = 13.0f * m_dpi;
    m_overlayFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsans_compressed_data, droidsans_compressed_size, overlaySize);
    m_overlayBoldFont = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize);
    ImFont *H1 = io.Fonts->AddFontFromMemoryCompressedTTF(droidsansbold_compressed_data, droidsansbold_compressed_size, overlaySize * 20.0f / 13.f);
@@ -892,7 +899,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   Sampler *sampler = g_pplayer->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
@@ -1175,9 +1182,7 @@ void LiveUI::Update(const RenderTarget *rt)
    }
    else if (m_tweakMode && showNotifications)
    { // Tweak UI
-      ImGui::PushFont(m_overlayFont);
       UpdateTweakModeUI();
-      ImGui::PopFont();
    }
    else if (m_player->m_throwBalls || m_player->m_ballControl)
    { // No UI displayed: process ball control & throw balls
@@ -1186,14 +1191,14 @@ void LiveUI::Update(const RenderTarget *rt)
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
          const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(rt, point);
-         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
+         for (size_t i = 0; i < m_player->m_vball.size(); i++)
          {
-            HitBall *const pBall = g_pplayer->m_vball[i];
+            HitBall *const pBall = m_player->m_vball[i];
             const float dx = fabsf(vertex.x - pBall->m_d.m_pos.x);
             const float dy = fabsf(vertex.y - pBall->m_d.m_pos.y);
             if (dx < pBall->m_d.m_radius * 2.f && dy < pBall->m_d.m_radius * 2.f)
             {
-                g_pplayer->DestroyBall(pBall);
+                m_player->DestroyBall(pBall);
                 break;
             }
          }
@@ -1303,10 +1308,17 @@ void LiveUI::Update(const RenderTarget *rt)
    if (m_show_fps > 0)
    {
       // Display simple FPS window
-      static float height = 50.f;
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.75f);
-      ImGui::SetNextWindowPos(ImVec2(10, io.DisplaySize.y - 10 - height)); //10 + m_menubar_height + m_toolbar_height));
+      if (m_player->m_vrDevice)
+      {
+         if (m_show_fps == 2)
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.3f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.f, 0.f));
+         else
+            ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.35f), 0, ImVec2(0.5f, 0.f));
+      }
+      else
+         ImGui::SetNextWindowPos(ImVec2(8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(0.f, 1.f));
       #if defined(ENABLE_BGFX)
       if (m_player->m_lastFrameSyncOnFPS)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.5f, 0.f, 1.f)); // Rendering at target framerate => green background
@@ -1321,7 +1333,6 @@ void LiveUI::Update(const RenderTarget *rt)
       ImGui::Text("Render: %5.1ffps %4.1fms (%4.1fms)\nLatency: %4.1fms (%4.1fms max)",
          1e6 / frameLength, 1e-3 * frameLength, 1e-3 * g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME),
          1e-3 * g_frameProfiler.GetSlidingInputLag(false), 1e-3 * g_frameProfiler.GetSlidingInputLag(true));
-      height = ImGui::GetWindowHeight();
       ImGui::End();
       #if defined(ENABLE_BGFX)
       if (m_player->m_lastFrameSyncOnFPS)
@@ -1338,7 +1349,10 @@ void LiveUI::Update(const RenderTarget *rt)
       // Display FPS window with plots
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowSize(ImVec2(530, 500));
-      ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 530 - 10, io.DisplaySize.y - 10 - 500)); //10 + m_menubar_height + m_toolbar_height));
+      if (m_player->m_vrDevice)
+         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.70f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
+      else
+         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(1.f, 1.f));
       ImGui::Begin("Plots", nullptr, window_flags);
       //!! This example assumes 60 FPS. Higher FPS requires larger buffer size.
       static ScrollingData sdata1, sdata2, sdata3, sdata4, sdata5, sdata6;
@@ -1542,23 +1556,23 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
    
    // Handle scrolling in rules/infos
    if ((m_tweakPages[m_activeTweakPageIndex] == TP_Rules || m_tweakPages[m_activeTweakPageIndex] == TP_Info)
-      && (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) && (keyEvent != 2))
+      && (keycode == m_player->m_rgKeys[eRightMagnaSave] || keycode == m_player->m_rgKeys[eLeftMagnaSave]) && (keyEvent != 2))
    {
       const float speed = m_overlayFont->FontSize * 0.5f;
-      if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave])
+      if (keycode == m_player->m_rgKeys[eLeftMagnaSave])
          m_tweakScroll -= speed;
-      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
+      else if (keycode == m_player->m_rgKeys[eRightMagnaSave])
          m_tweakScroll += speed;
    }
 
-   if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey])
+   if (keycode == m_player->m_rgKeys[eLeftFlipperKey] || keycode == m_player->m_rgKeys[eRightFlipperKey])
    {
       static U32 startOfPress = 0;
       if (keyEvent != 0)
          startOfPress = msec();
       if (keyEvent == 2) // Do not react on key up (only key down or long press)
          return;
-      const bool up = keycode == g_pplayer->m_rgKeys[eRightFlipperKey];
+      const bool up = keycode == m_player->m_rgKeys[eRightFlipperKey];
       const float step = up ? 1.f : -1.f;
       const float incSpeed = step * 0.05f * min(10.f, 0.75f + (float)(msec() - startOfPress) / 500.0f);
       ViewSetup &viewSetup = table->mViewSetups[table->m_BG_current_set];
@@ -1727,11 +1741,11 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
    }
    else if (keyEvent == 1) // Key down
    {
-      if (keycode == g_pplayer->m_rgKeys[eLeftTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+      if (keycode == m_player->m_rgKeys[eLeftTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eRightTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+      else if (keycode == m_player->m_rgKeys[eRightTiltKey] && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
          m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
-      else if (keycode == g_pplayer->m_rgKeys[eStartGameKey]) // Save tweak page
+      else if (keycode == m_player->m_rgKeys[eStartGameKey]) // Save tweak page
       {
          string iniFileName = m_live_table->GetSettingsFileName();
          string message;
@@ -1829,7 +1843,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
          if (g_pvp->m_povEdit && m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
             g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
       }
-      else if (keycode == g_pplayer->m_rgKeys[ePlungerKey]) // Reset tweak page
+      else if (keycode == m_player->m_rgKeys[ePlungerKey]) // Reset tweak page
       {
          if (m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
          {
@@ -1863,7 +1877,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             ViewSetupID id = table->m_BG_current_set;
             ViewSetup &viewSetup = table->mViewSetups[id];
             viewSetup.mViewportRotation = 0.f;
-            const bool portrait = g_pplayer->m_playfieldWnd->GetWidth() < g_pplayer->m_playfieldWnd->GetHeight();
+            const bool portrait = m_player->m_playfieldWnd->GetWidth() < m_player->m_playfieldWnd->GetHeight();
             switch (id)
             {
             case BG_DESKTOP:
@@ -1943,7 +1957,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             case BG_INVALID:
             case NUM_BG_SETS: assert(false); break;
             }
-            g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+            m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             UpdateTweakPage();
          }
          // Reset custom table/plugin options
@@ -1974,7 +1988,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
          }
       }
-      else if (keycode == g_pplayer->m_rgKeys[eAddCreditKey]) // Undo tweaks of page
+      else if (keycode == m_player->m_rgKeys[eAddCreditKey]) // Undo tweaks of page
       {
          if (g_pvp->m_povEdit)
             // Tweak mode from command line => quit
@@ -1986,11 +2000,11 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             {
                PushNotification("POV undo to startup values"s, 5000);
                ViewSetupID id = m_live_table->m_BG_current_set;
-               const PinTable *const __restrict src = g_pplayer->m_pEditorTable;
+               const PinTable *const __restrict src = m_player->m_pEditorTable;
                PinTable *const __restrict dst = m_live_table;
                dst->mViewSetups[id] = src->mViewSetups[id];
                dst->mViewSetups[id].ApplyTableOverrideSettings(m_live_table->m_settings, (ViewSetupID)id);
-               g_pplayer->m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
+               m_renderer->m_cam = Vertex3Ds(0.f, 0.f, 0.f);
             }
             if (m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
             {
@@ -1998,9 +2012,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             }
          }
       }
-      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave] || keycode == g_pplayer->m_rgKeys[eLeftMagnaSave])
+      else if (keycode == m_player->m_rgKeys[eRightMagnaSave] || keycode == m_player->m_rgKeys[eLeftMagnaSave])
       {
-         if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave])
+         if (keycode == m_player->m_rgKeys[eRightMagnaSave])
          {
             m_activeTweakIndex++;
             if (m_activeTweakIndex >= (int) m_tweakPageOptions.size())
@@ -2025,7 +2039,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 
 void LiveUI::UpdateTweakModeUI()
 {
-   PinTable* const table = m_live_table;
+   ImGui::PushFont(m_overlayFont);
+   PinTable *const table = m_live_table;
    constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
    ImVec2 minSize(min(m_overlayFont->FontSize * (m_tweakPages[m_activeTweakPageIndex] == TP_Rules ? 35.0f
                                                : m_tweakPages[m_activeTweakPageIndex] == TP_Info  ? 45.0f
@@ -2033,7 +2048,10 @@ void LiveUI::UpdateTweakModeUI()
                   min(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y)),0.f);
    ImVec2 maxSize(ImGui::GetIO().DisplaySize.x - 2.f * m_overlayFont->FontSize, 0.8f * ImGui::GetIO().DisplaySize.y - 1.f * m_overlayFont->FontSize);
    ImGui::SetNextWindowBgAlpha(0.5f);
-   ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
+   if (m_player->m_vrDevice)
+      ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.5f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 0.5f));
+   else
+      ImGui::SetNextWindowPos(ImVec2(0.5f * ImGui::GetIO().DisplaySize.x, 0.8f * ImGui::GetIO().DisplaySize.y), 0, ImVec2(0.5f, 1.f));
    ImGui::SetNextWindowSizeConstraints(minSize, maxSize);
    ImGui::Begin("TweakUI", nullptr, window_flags);
 
@@ -2255,6 +2273,7 @@ void LiveUI::UpdateTweakModeUI()
    ImGui::PopStyleColor();
 
    ImGui::End();
+   ImGui::PopFont();
 }
 
 void LiveUI::HideUI()
@@ -2661,7 +2680,7 @@ void LiveUI::UpdateMainUI()
                      m_selection = Selection(true, vhoHit[p].m_obj->m_editable);
                }
             }
-            // TODO add debug action to make ball active: g_pplayer->m_pactiveballDebug = m_pHitBall;
+            // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pHitBall;
          }
       }
    }
@@ -3309,7 +3328,7 @@ void LiveUI::UpdateVideoOptionsModal()
       
       if (ImGui::CollapsingHeader("Ball Rendering", ImGuiTreeNodeFlags_DefaultOpen))
       {
-         bool antiStretch = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
+         bool antiStretch = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "BallAntiStretch"s, false);
          if (ImGui::Checkbox("Force round ball", &antiStretch))
          {
             g_pvp->m_settings.SaveValue(Settings::Player, "BallAntiStretch"s, antiStretch);
@@ -4032,7 +4051,7 @@ void LiveUI::UpdateMainSplashModal()
          m_show_fps = (m_show_fps > 0) ? 0 : 1;
 
          if (m_show_fps)
-            g_pplayer->InitFPS();
+            m_player->InitFPS();
 
          ImGui::GetIO().MousePos.x = 0;
          ImGui::GetIO().MousePos.y = 0;
@@ -4118,7 +4137,7 @@ void LiveUI::UpdateMainSplashModal()
             max.x += pos.x;
             max.y += pos.y;
             if (!hovered && !(pos.x <= initialDragPos.x && initialDragPos.x <= max.x && pos.y <= initialDragPos.y && initialDragPos.y <= max.y) // Don't drag if mouse is over UI components
-             && !g_pplayer->m_playfieldWnd->IsFullScreen()) // Don't drag if window is fullscreen
+             && !m_player->m_playfieldWnd->IsFullScreen()) // Don't drag if window is fullscreen
             {
                const ImVec2 pos = ImGui::GetMousePos();
                const ImVec2 drag = ImGui::GetMouseDragDelta();
@@ -4267,7 +4286,7 @@ void LiveUI::ImageProperties()
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
    ImGui::Separator();
-   Sampler *sampler = g_pplayer->m_renderer->m_renderDevice->m_texMan.LoadTexture(
+   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(
       m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
 #if defined(ENABLE_BGFX)
    // FIXME implement

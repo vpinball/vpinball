@@ -1,6 +1,8 @@
 // Derived from this Gist by Richard Gale:
 //     https://gist.github.com/RichardGale/6e2b74bc42b3005e08397236e4be0fd0
 
+// WARNING WARNING heavily modified for VPX
+
 // ImGui BGFX binding
 
 // You can copy and use unmodified imgui_impl_* files in your project. See
@@ -16,6 +18,7 @@ void ImGui_Implbgfx_NewFrame();
 void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, struct ImDrawData* draw_data);
 
 void ImGui_Implbgfx_SetSDRColor(float* col);
+void ImGui_Implbgfx_SetStereoOfs(float ofs);
 
 // Use if you want to reset your rendering device without losing ImGui state.
 void ImGui_Implbgfx_InvalidateDeviceObjects();
