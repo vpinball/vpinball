@@ -1122,11 +1122,11 @@ void LiveUI::Update(const RenderTarget *rt)
           string line;
           std::istringstream iss(m_notifications[i].message);
           while (std::getline(iss, line)) {
-              const char *textEnd = line.c_str();
-              if (*textEnd == '\0') {
+              if (line.empty()) {
                  lines.push_back(line);
                  continue;
               }
+              const char *textEnd = line.c_str();
               while (*textEnd) {
                  const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
                  ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
@@ -1159,10 +1159,10 @@ void LiveUI::Update(const RenderTarget *rt)
           ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - text_size.x) / 2, notifY));
           ImGui::SetNextWindowSize(text_size);
           ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
-          for (string line : lines) {
+          for (const string& line : lines) {
              ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
-             ImGui::Text(line.c_str());
+             ImGui::Text("%s", line.c_str());
           }
           ImGui::End();
           notifY += text_size.y + 10.f;
