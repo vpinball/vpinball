@@ -52,12 +52,13 @@ public:
    void SetupHMD();
    bool IsOpenXRHMDReady() const { return m_systemID != XR_NULL_SYSTEM_ID; }
    void CreateSession();
+   void ReleaseSession();
    void* GetGraphicContext() const;
-   void* GetSwapChainBackBuffer(const int index, const bool isDepth) const;
    void PollEvents();
-   void RenderFrame(std::function<void(bool renderVR)> submitFrame);
+   void RenderFrame(class RenderDevice* rd, std::function<void(RenderTarget* vrRenderTarget)> submitFrame);
    void UpdateVisibilityMask(class RenderDevice* rd);
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
+   bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; };
 
    void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; };
    MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; };
@@ -69,6 +70,17 @@ public:
       DEPTH
    };
 
+   struct SwapchainInfo
+   {
+      XrSwapchain swapchain = XR_NULL_HANDLE;
+      uint32_t width = 0;
+      uint32_t height = 0;
+      uint32_t arraySize = 0;
+      bool isDepth = false;
+      int64_t backendFormat = 0;
+      bgfx::TextureFormat::Enum format;
+      std::vector<bgfx::TextureHandle> imageViews;
+   };
 private:
    XrInstance m_xrInstance = XR_NULL_HANDLE;
    std::vector<const char*> m_activeAPILayers;
@@ -89,18 +101,9 @@ private:
    XrViewConfigurationType m_viewConfiguration = XR_VIEW_CONFIGURATION_TYPE_MAX_ENUM;
    std::vector<XrViewConfigurationView> m_viewConfigurationViews;
 
-   struct SwapchainInfo
-   {
-      XrSwapchain swapchain = XR_NULL_HANDLE;
-      int64_t swapchainFormat = 0;
-      std::vector<void*> imageViews;
-      uint32_t width = 0;
-      uint32_t height = 0;
-      uint32_t arraySize = 0;
-   };
    SwapchainInfo m_colorSwapchainInfo = {};
    SwapchainInfo m_depthSwapchainInfo = {};
-   SwapchainInfo CreateSwapChain(XrSession session, class XRGraphicBackend* backend, SwapchainType type, int64_t format, uint32_t width, uint32_t height, uint32_t arraySize, uint32_t sampleCount, XrSwapchainCreateFlags createFlags, XrSwapchainUsageFlags usageFlags);
+   std::vector<RenderTarget*> m_swapchainRenderTargets = {};
    std::vector<XrEnvironmentBlendMode> m_applicationEnvironmentBlendModes = { XR_ENVIRONMENT_BLEND_MODE_OPAQUE, XR_ENVIRONMENT_BLEND_MODE_ADDITIVE };
    std::vector<XrEnvironmentBlendMode> m_environmentBlendModes = {};
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;

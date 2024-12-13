@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "RenderTarget.h"
 #include "RenderDevice.h"
+#include "VRDevice.h"
 
 #if defined(ENABLE_OPENGL)
 #include "Shader.h"
@@ -65,21 +66,24 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
 }
 
 #if defined(ENABLE_BGFX)
-RenderTarget::RenderTarget(RenderDevice* const rd, bgfx::FrameBufferHandle fbh, const string& name, const int width, const int height, const colorFormat format)
+RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx::FrameBufferHandle fbh, bgfx::TextureHandle colorTex, bgfx::TextureHandle depthTex, 
+   const string& name, const int width, const int height, const colorFormat format)
    : m_name(name)
-   , m_type(SurfaceType::RT_DEFAULT)
+   , m_type(type)
    , m_is_back_buffer(true)
-   , m_nLayers(1)
+   , m_nLayers(type == RT_DEFAULT ? 1 : type == RT_CUBEMAP ? 6 : 2)
    , m_rd(rd)
    , m_format(format)
    , m_width(width)
    , m_height(height)
    , m_nMSAASamples(1)
-   , m_has_depth(false)
+   , m_has_depth(bgfx::isValid(depthTex))
    , m_shared_depth(false)
    , m_color_sampler(nullptr)
    , m_depth_sampler(nullptr)
    , m_framebuffer(fbh)
+   , m_color_tex(colorTex)
+   , m_depth_tex(depthTex)
 {
 }
 #endif
@@ -145,7 +149,14 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    }
    else if (with_depth)
    {
-      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, bgfx::TextureFormat::D24, depthFlags);
+      bgfx::TextureFormat::Enum depthFormat = bgfx::TextureFormat::D24;
+      #ifdef ENABLE_XR
+      // For OpenXR, we need to be able to copy from the render depth buffer to the swapchain's depth buffer.
+      // TODO we should use directly the vr's swapchain depth buffer instead of creating a compatible one to avoid the blit
+      if (g_pplayer->m_vrDevice)
+         depthFormat = g_pplayer->m_vrDevice->GetDepthFormat();
+      #endif
+      m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, depthFormat, depthFlags);
       m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
       m_depth_sampler->SetName(name + ".Depth"s);
    }

@@ -146,39 +146,6 @@ inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
 class XRGraphicBackend
 {
 public:
-   struct ImageViewCreateInfo
-   {
-      void* image;
-      enum class Type : uint8_t
-      {
-         RTV,
-         DSV,
-         SRV,
-         UAV
-      } type;
-      enum class View : uint8_t
-      {
-         TYPE_1D,
-         TYPE_2D,
-         TYPE_3D,
-         TYPE_CUBE,
-         TYPE_1D_ARRAY,
-         TYPE_2D_ARRAY,
-         TYPE_CUBE_ARRAY,
-      } view;
-      int64_t format;
-      enum class Aspect : uint8_t
-      {
-         COLOR_BIT = 0x01,
-         DEPTH_BIT = 0x02,
-         STENCIL_BIT = 0x04
-      } aspect;
-      uint32_t baseMipLevel;
-      uint32_t levelCount;
-      uint32_t baseArrayLayer;
-      uint32_t layerCount;
-   };
-
    virtual void* GetGraphicContext() const = 0;
    virtual void* GetGraphicsBinding() = 0;
 
@@ -186,10 +153,7 @@ public:
    virtual void FreeSwapchainImageData(XrSwapchain swapchain) = 0;
    virtual void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) = 0;
 
-   virtual void* CreateImageView(const ImageViewCreateInfo& imageViewCI) = 0;
-   virtual void DestroyImageView(void*& imageView) = 0;
-
-   virtual void PresentFrame() = 0;
+   virtual void CreateImageViews(VRDevice::SwapchainInfo& swapchain) = 0;
 
    virtual const std::vector<int64_t> GetSupportedColorSwapchainFormats() = 0;
    virtual const std::vector<int64_t> GetSupportedDepthSwapchainFormats() = 0;
@@ -277,28 +241,6 @@ public:
       m_d3d11Dll = bx::dlopen(d3d11DllName);
       PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
       D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
-
-      // Also creates a swapchain for the preview window (and to support RenderDoc captures)
-      DXGI_SWAP_CHAIN_DESC1 scd;
-      scd.Width = g_pplayer->m_playfieldWnd->GetWidth();
-      scd.Height = g_pplayer->m_playfieldWnd->GetHeight();
-      scd.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-      scd.Stereo = 0;
-      scd.SampleDesc.Count = 1;
-      scd.SampleDesc.Quality = 0;
-      scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-      scd.BufferCount = 2;
-      scd.Scaling = DXGI_SCALING_STRETCH;
-      scd.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-      scd.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
-      scd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-      DXGI_SWAP_CHAIN_FULLSCREEN_DESC scfd;
-      scfd.RefreshRate.Numerator = 1;
-      scfd.RefreshRate.Denominator = 60;
-      scfd.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-      scfd.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-      scfd.Windowed = true;
-      D3D11_CHECK(factory->CreateSwapChainForHwnd(m_device, g_pplayer->m_playfieldWnd->GetNativeHWND(), &scd, &scfd, NULL, &m_swapChain), "Failed to create preview window swapchain");
       D3D11_SAFE_RELEASE(factory);
    }
 
@@ -324,9 +266,29 @@ public:
       return &graphicsBinding;
    }
 
-   void PresentFrame() override
+   void CreateImageViews(VRDevice::SwapchainInfo& swapchain) override
    {
-      m_swapChain->Present(0, 0);
+      for (int i = 0; i < swapchainImagesMap[swapchain.swapchain].second.size(); i++)
+      {
+         bgfx::TextureHandle handle;
+         swapchain.format = bgfx::TextureFormat::Enum::Count;
+         switch (swapchain.backendFormat)
+         { // Convert from values returned from GetSupportedColorSwapchainFormats / GetSupportedDepthSwapchainFormats
+         case DXGI_FORMAT_R8G8B8A8_UNORM: swapchain.format = bgfx::TextureFormat::RGBA8; break;
+         case DXGI_FORMAT_B8G8R8A8_UNORM: swapchain.format = bgfx::TextureFormat::BGRA8; break;
+         case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::RGBA8S; break;
+         case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: assert(false); break; // Not supported by BGFX
+         case DXGI_FORMAT_D32_FLOAT: swapchain.format = bgfx::TextureFormat::D32F; break;
+         case DXGI_FORMAT_D16_UNORM: swapchain.format = bgfx::TextureFormat::D16; break;
+         default: assert(false); break; // Unsupported format
+         };
+         // TODO BGFX_TEXTURE_BLIT_DST was added since we are blitting the depth instead of directly using it. Remove asap
+         handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+         bgfx::frame(); // TODO This is needed for BGFX to actually create the texture, but this is somewhat hacky and suboptimal
+         uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, i)));
+         assert(nativePtr); // Override failed
+         swapchain.imageViews.push_back(handle);
+      }
    }
 
    XrSwapchainImageBaseHeader* AllocateSwapchainImageData(XrSwapchain swapchain, VRDevice::SwapchainType type, uint32_t count) override
@@ -335,242 +297,21 @@ public:
       swapchainImagesMap[swapchain].second.resize(count, { XR_TYPE_SWAPCHAIN_IMAGE_D3D11_KHR });
       return reinterpret_cast<XrSwapchainImageBaseHeader*>(swapchainImagesMap[swapchain].second.data());
    }
-
-   void* CreateImageView(const ImageViewCreateInfo& imageViewCI) override
-   {
-      if (imageViewCI.type == ImageViewCreateInfo::Type::RTV)
-      {
-         D3D11_RENDER_TARGET_VIEW_DESC rtvDesc {};
-         rtvDesc.Format = (DXGI_FORMAT)imageViewCI.format;
-
-         switch (imageViewCI.view)
-         {
-         case ImageViewCreateInfo::View::TYPE_1D:
-         {
-            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1D;
-            rtvDesc.Texture1D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D:
-         {
-            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-            rtvDesc.Texture2D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_3D:
-         {
-            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
-            rtvDesc.Texture3D.MipSlice = imageViewCI.baseMipLevel;
-            rtvDesc.Texture3D.FirstWSlice = imageViewCI.baseArrayLayer;
-            rtvDesc.Texture3D.WSize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_1D_ARRAY:
-         {
-            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE1DARRAY;
-            rtvDesc.Texture1DArray.MipSlice = imageViewCI.baseMipLevel;
-            rtvDesc.Texture1DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            rtvDesc.Texture1DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D_ARRAY:
-         {
-            rtvDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-            rtvDesc.Texture2DArray.MipSlice = imageViewCI.baseMipLevel;
-            rtvDesc.Texture2DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            rtvDesc.Texture2DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         default:
-            assert(false);
-            PLOGE << "ERROR: D3D11: Unknown ImageView View.";
-            return nullptr;
-         }
-         ID3D11RenderTargetView* rtv = nullptr;
-         D3D11_CHECK(m_device->CreateRenderTargetView((ID3D11Resource*)imageViewCI.image, &rtvDesc, &rtv), "Failed to create ImageView.")
-         return rtv;
-      }
-      else if (imageViewCI.type == ImageViewCreateInfo::Type::DSV)
-      {
-         D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc {};
-         dsvDesc.Format = (DXGI_FORMAT)imageViewCI.format;
-
-         switch (imageViewCI.view)
-         {
-         case ImageViewCreateInfo::View::TYPE_1D:
-         {
-            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE1D;
-            dsvDesc.Texture1D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D:
-         {
-            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-            dsvDesc.Texture2D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_1D_ARRAY:
-         {
-            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE1DARRAY;
-            dsvDesc.Texture1DArray.MipSlice = imageViewCI.baseMipLevel;
-            dsvDesc.Texture1DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            dsvDesc.Texture1DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D_ARRAY:
-         {
-            dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-            dsvDesc.Texture2DArray.MipSlice = imageViewCI.baseMipLevel;
-            dsvDesc.Texture2DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            dsvDesc.Texture2DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         default:
-            assert(false);
-            PLOGE << "ERROR: D3D11: Unknown ImageView View.";
-            return nullptr;
-         }
-         ID3D11DepthStencilView* dsv = nullptr;
-         D3D11_CHECK(m_device->CreateDepthStencilView((ID3D11Resource*)imageViewCI.image, &dsvDesc, &dsv), "Failed to create ImageView.")
-         return dsv;
-      }
-      else if (imageViewCI.type == ImageViewCreateInfo::Type::SRV)
-      {
-         D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc {};
-         srvDesc.Format = (DXGI_FORMAT)imageViewCI.format;
-
-         switch (imageViewCI.view)
-         {
-         case ImageViewCreateInfo::View::TYPE_1D:
-         {
-            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1D;
-            srvDesc.Texture1D.MostDetailedMip = imageViewCI.baseMipLevel;
-            srvDesc.Texture1D.MipLevels = imageViewCI.levelCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D:
-         {
-            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-            srvDesc.Texture2D.MostDetailedMip = imageViewCI.baseMipLevel;
-            srvDesc.Texture2D.MipLevels = imageViewCI.levelCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_3D:
-         {
-            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
-            srvDesc.Texture3D.MostDetailedMip = imageViewCI.baseMipLevel;
-            srvDesc.Texture3D.MipLevels = imageViewCI.levelCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_1D_ARRAY:
-         {
-            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE1DARRAY;
-            srvDesc.Texture1DArray.MostDetailedMip = imageViewCI.baseMipLevel;
-            srvDesc.Texture1DArray.MipLevels = imageViewCI.levelCount;
-            srvDesc.Texture1DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            srvDesc.Texture1DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D_ARRAY:
-         {
-            srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-            srvDesc.Texture2DArray.MostDetailedMip = imageViewCI.baseMipLevel;
-            srvDesc.Texture2DArray.MipLevels = imageViewCI.levelCount;
-            srvDesc.Texture2DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            srvDesc.Texture2DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         default:
-            assert(false);
-            PLOGE << "ERROR: D3D11: Unknown ImageView View.";
-            return nullptr;
-         }
-         ID3D11ShaderResourceView* srv = nullptr;
-         D3D11_CHECK(m_device->CreateShaderResourceView((ID3D11Resource*)imageViewCI.image, &srvDesc, &srv), "Failed to create ImageView.")
-         return srv;
-      }
-      else if (imageViewCI.type == ImageViewCreateInfo::Type::UAV)
-      {
-         D3D11_UNORDERED_ACCESS_VIEW_DESC uavDesc {};
-         uavDesc.Format = (DXGI_FORMAT)imageViewCI.format;
-
-         switch (imageViewCI.view)
-         {
-         case ImageViewCreateInfo::View::TYPE_1D:
-         {
-            uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1D;
-            uavDesc.Texture1D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D:
-         {
-            uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
-            uavDesc.Texture2D.MipSlice = imageViewCI.baseMipLevel;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_3D:
-         {
-            uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
-            uavDesc.Texture3D.MipSlice = imageViewCI.baseMipLevel;
-            uavDesc.Texture3D.FirstWSlice = imageViewCI.baseArrayLayer;
-            uavDesc.Texture3D.WSize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_1D_ARRAY:
-         {
-            uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE1DARRAY;
-            uavDesc.Texture1DArray.MipSlice = imageViewCI.baseMipLevel;
-            uavDesc.Texture1DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            uavDesc.Texture1DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         case ImageViewCreateInfo::View::TYPE_2D_ARRAY:
-         {
-            uavDesc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
-            uavDesc.Texture2DArray.MipSlice = imageViewCI.baseMipLevel;
-            uavDesc.Texture2DArray.FirstArraySlice = imageViewCI.baseArrayLayer;
-            uavDesc.Texture2DArray.ArraySize = imageViewCI.layerCount;
-            break;
-         }
-         default:
-            assert(false);
-            PLOGE << "ERROR: D3D11: Unknown ImageView View.";
-            return nullptr;
-         }
-         ID3D11UnorderedAccessView* uav = nullptr;
-         D3D11_CHECK(m_device->CreateUnorderedAccessView((ID3D11Resource*)imageViewCI.image, &uavDesc, &uav), "Failed to create ImageView.")
-         return uav;
-      }
-      else
-      {
-         assert(false);
-         PLOGE << "ERROR: D3D11: Unknown ImageView Type.";
-         return nullptr;
-      }
-   }
-
-   void DestroyImageView(void*& imageView) override
-   {
-      ID3D11View* d3d11ImageView = (ID3D11View*)imageView;
-      D3D11_SAFE_RELEASE(d3d11ImageView);
-      imageView = nullptr;
-   }
-
+   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) override { return swapchainImagesMap[swapchain].second[index].texture; }
    void FreeSwapchainImageData(XrSwapchain swapchain) override
    {
       swapchainImagesMap[swapchain].second.clear();
       swapchainImagesMap.erase(swapchain);
    }
 
-   void* GetSwapchainImage(XrSwapchain swapchain, uint32_t index) override { return swapchainImagesMap[swapchain].second[index].texture; }
-   const std::vector<int64_t> GetSupportedColorSwapchainFormats() override { return { DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB }; }
+   const std::vector<int64_t> GetSupportedColorSwapchainFormats() override { return { DXGI_FORMAT_R8G8B8A8_UNORM, DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB /*, DXGI_FORMAT_B8G8R8A8_UNORM_SRGB  not supported by BGFX */ }; }
    const std::vector<int64_t> GetSupportedDepthSwapchainFormats() override { return { DXGI_FORMAT_D32_FLOAT, DXGI_FORMAT_D16_UNORM }; }
 
+private:
    void* m_dxgiDll = nullptr;
    void* m_d3d11Dll = nullptr;
    ID3D11Device* m_device = nullptr;
    ID3D11DeviceContext* m_immediateContext = nullptr;
-   IDXGISwapChain1* m_swapChain = nullptr;
    PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
    XrGraphicsBindingD3D11KHR graphicsBinding {};
    std::unordered_map<XrSwapchain, std::pair<VRDevice::SwapchainType, std::vector<XrSwapchainImageD3D11KHR>>> swapchainImagesMap {};
@@ -646,7 +387,7 @@ VRDevice::VRDevice()
          }
          return false;
       };
-      // FIXME VRDevice is created before bgfx initialization (since it manages the swapchain), so bgfx::getRendererType() is not defined at this point. For the time being only D3D11 is supported (enforced in RenderDevice)
+      // FIXME VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point. For the time being only D3D11 is supported (enforced in RenderDevice)
       // const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
       const bgfx::RendererType::Enum renderer = bgfx::RendererType::Enum::Direct3D11;
       bool hasGraphicBackend = false;
@@ -665,7 +406,7 @@ VRDevice::VRDevice()
       if (!hasGraphicBackend)
          return;
 
-      //m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME); // Should be supported but not yet implemented
+      m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME); // Should be supported but not yet implemented
       m_colorSpaceExtensionSupported = EnableExtensionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
       #ifdef DEBUG
@@ -847,24 +588,11 @@ VRDevice::VRDevice()
 VRDevice::~VRDevice()
 {
    #if defined(ENABLE_XR)
-      // Destroy the color and depth image views from GraphicsAPI.
-      for (void*& imageView : m_colorSwapchainInfo.imageViews)
-         m_backend->DestroyImageView(imageView);
-      for (void*& imageView : m_depthSwapchainInfo.imageViews)
-         m_backend->DestroyImageView(imageView);
+      // Destroy the reference XrSpace.
+      OPENXR_CHECK(xrDestroySpace(m_localSpace), "Failed to destroy Space.")
 
-      // Free the Swapchain Image Data.
-      if (m_colorSwapchainInfo.swapchain)
-         m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
-      if (m_depthSwapchainInfo.swapchain)
-         m_backend->FreeSwapchainImageData(m_depthSwapchainInfo.swapchain);
-
-      // Destroy the swapchains.
-      if (m_colorSwapchainInfo.swapchain)
-         OPENXR_CHECK(xrDestroySwapchain(m_colorSwapchainInfo.swapchain), "Failed to destroy Color Swapchain");
-      if (m_depthSwapchainInfo.swapchain)
-         OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
-      delete m_backend;
+      // Destroy the XrSession.
+      OPENXR_CHECK(xrDestroySession(m_session), "Failed to destroy Session.");
 
       if (m_debugUtilsExtensionSupported)
       {
@@ -873,17 +601,9 @@ VRDevice::~VRDevice()
          OPENXR_CHECK(xrDestroyDebugUtilsMessengerEXT(m_debugUtilsMessenger), "Failed to destroy DebugUtilsMessenger.");
       }
 
-      // Destroy the reference XrSpace.
-      OPENXR_CHECK(xrDestroySpace(m_localSpace), "Failed to destroy Space.")
-
-      // Destroy the XrSession.
-      OPENXR_CHECK(xrDestroySession(m_session), "Failed to destroy Session.");
-
       // Destroy the XrInstance.
       OPENXR_CHECK(xrDestroyInstance(m_xrInstance), "Failed to destroy Instance.");
    
-      DiscardVisibilityMask();
-      
    #elif defined(ENABLE_VR)
       if (m_pHMD)
       {
@@ -981,59 +701,6 @@ void* VRDevice::GetGraphicContext() const
    return m_backend->GetGraphicContext();
 }
 
-void* VRDevice::GetSwapChainBackBuffer(const int index, const bool isDepth) const
-{
-   assert(0 <= index && index < m_depthSwapchainInfo.imageViews.size());
-   if (isDepth)
-      return m_depthSwapchainInfo.imageViews[index];
-   else
-      return m_colorSwapchainInfo.imageViews[index];
-}
-
-VRDevice::SwapchainInfo VRDevice::CreateSwapChain(XrSession session, XRGraphicBackend* backend, SwapchainType type, int64_t format, 
-   uint32_t width, uint32_t height, uint32_t arraySize, uint32_t sampleCount, XrSwapchainCreateFlags createFlags, XrSwapchainUsageFlags usageFlags)
-{
-   VRDevice::SwapchainInfo swapchain;
-   swapchain.swapchainFormat = format;
-   swapchain.width = width;
-   swapchain.height = height;
-   swapchain.arraySize = arraySize;
-
-   XrSwapchainCreateInfo swapchainCreateInfo { XR_TYPE_SWAPCHAIN_CREATE_INFO };
-   swapchainCreateInfo.arraySize = arraySize;
-   swapchainCreateInfo.format = format;
-   swapchainCreateInfo.width = width;
-   swapchainCreateInfo.height = height;
-   swapchainCreateInfo.mipCount = 1;
-   swapchainCreateInfo.faceCount = 1;
-   swapchainCreateInfo.sampleCount = sampleCount;
-   swapchainCreateInfo.createFlags = createFlags;
-   swapchainCreateInfo.usageFlags = usageFlags;
-   OPENXR_CHECK(xrCreateSwapchain(session, &swapchainCreateInfo, &swapchain.swapchain), "Failed to create Color Swapchain");
-
-   uint32_t swapchainImageCount;
-   OPENXR_CHECK(xrEnumerateSwapchainImages(swapchain.swapchain, 0, &swapchainImageCount, nullptr), "Failed to enumerate Swapchain Images.");
-   XrSwapchainImageBaseHeader* swapchainImages = backend->AllocateSwapchainImageData(swapchain.swapchain, type, swapchainImageCount);
-   OPENXR_CHECK(xrEnumerateSwapchainImages(swapchain.swapchain, swapchainImageCount, &swapchainImageCount, swapchainImages), "Failed to enumerate Swapchain Images.");
-
-   for (uint32_t j = 0; j < swapchainImageCount; j++)
-   {
-      XRGraphicBackend::ImageViewCreateInfo imageViewCI;
-      imageViewCI.image = backend->GetSwapchainImage(swapchain.swapchain, j);
-      imageViewCI.type = type == SwapchainType::COLOR ? XRGraphicBackend::ImageViewCreateInfo::Type::RTV : XRGraphicBackend::ImageViewCreateInfo::Type::DSV;
-      imageViewCI.view = XRGraphicBackend::ImageViewCreateInfo::View::TYPE_2D_ARRAY;
-      imageViewCI.format = format;
-      imageViewCI.aspect = type == SwapchainType::COLOR ? XRGraphicBackend::ImageViewCreateInfo::Aspect::COLOR_BIT : XRGraphicBackend::ImageViewCreateInfo::Aspect::DEPTH_BIT;
-      imageViewCI.baseMipLevel = 0;
-      imageViewCI.levelCount = 1;
-      imageViewCI.baseArrayLayer = 0;
-      imageViewCI.layerCount = arraySize;
-      swapchain.imageViews.push_back(backend->CreateImageView(imageViewCI));
-   }
-
-   return swapchain;
-}
-
 Matrix3D VRDevice::XRPoseToMatrix3D(XrPosef pose)
 {
    Matrix3D view;
@@ -1103,7 +770,7 @@ void VRDevice::SetupHMD()
       for (auto& environmentBlendMode : m_environmentBlendModes)
       {
          static const char* blendModeNames[] = { "Opaque", "Additive", "Alpha" };
-         PLOGD << "OpenXR supported blend mode: " << (environmentBlendMode < 3 ? blendModeNames[environmentBlendMode] : std::to_string(environmentBlendMode).c_str());
+         PLOGD << "OpenXR supported blend mode: " << (0 <= environmentBlendMode && environmentBlendMode < 3 ? blendModeNames[environmentBlendMode] : std::to_string(environmentBlendMode).c_str());
       }
    #endif
    // Pick the first application supported blend mode supported by the hardware.
@@ -1120,14 +787,6 @@ void VRDevice::SetupHMD()
       PLOGE << "Failed to find a compatible blend mode. Defaulting to XR_ENVIRONMENT_BLEND_MODE_OPAQUE.";
       m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
    }
-}
-
-void VRDevice::CreateSession()
-{
-   assert(m_xrInstance != XR_NULL_HANDLE);
-   assert(m_systemID != XR_NULL_SYSTEM_ID);
-   assert(m_session == XR_NULL_HANDLE);
-   m_backend = new XRD3D11Backend(m_xrInstance, m_systemID);
 
    // Since we are using texture array rendering, we need target to be stereo views with the same setup
    assert(m_viewConfigurationViews.size() == 2);
@@ -1147,6 +806,20 @@ void VRDevice::CreateSession()
       m_eyeWidth = static_cast<int>(m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
       m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
+   PLOGI << "Headset recommended resolution: " << m_viewConfigurationViews[0].recommendedImageRectWidth << "x" << m_viewConfigurationViews[0].recommendedImageRectHeight;
+   PLOGI << "Headset maximum resolution: " << m_viewConfigurationViews[0].maxImageRectWidth << "x" << m_viewConfigurationViews[0].maxImageRectHeight;
+   PLOGI << "Selected resolution: " << m_eyeWidth << "x" << m_eyeHeight;
+
+   // Create the graphics backend as OpenXR impose some settings (adapter,...) and it is also needed to initialize BGFX
+   m_backend = new XRD3D11Backend(m_xrInstance, m_systemID);
+}
+
+void VRDevice::CreateSession()
+{
+   assert(m_xrInstance != XR_NULL_HANDLE);
+   assert(m_systemID != XR_NULL_SYSTEM_ID);
+   assert(m_backend != nullptr);
+   assert(m_session == XR_NULL_HANDLE);
 
    m_visibilityMaskDirty = true;
 
@@ -1182,16 +855,67 @@ void VRDevice::CreateSession()
       assert(false);
    }
 
-   m_colorSwapchainInfo = CreateSwapChain(m_session, m_backend, SwapchainType::COLOR, m_backend->SelectColorSwapchainFormat(formats), m_eyeWidth, m_eyeHeight,
-      static_cast<uint32_t>(m_viewConfigurationViews.size()), m_viewConfigurationViews[0].recommendedSwapchainSampleCount, 0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT);
+   for (int i = 0; i < 2; i++)
+   {
+      SwapchainInfo& swapchain = i == 0 ? m_colorSwapchainInfo : m_depthSwapchainInfo;
+      swapchain.backendFormat = i == 0 ? m_backend->SelectColorSwapchainFormat(formats) : m_backend->SelectDepthSwapchainFormat(formats);
+      swapchain.width = m_eyeWidth;
+      swapchain.height = m_eyeHeight;
+      swapchain.arraySize = static_cast<uint32_t>(m_viewConfigurationViews.size());
 
-   m_depthSwapchainInfo = CreateSwapChain(m_session, m_backend, SwapchainType::DEPTH, m_backend->SelectDepthSwapchainFormat(formats), m_eyeWidth, m_eyeHeight,
-      static_cast<uint32_t>(m_viewConfigurationViews.size()), m_viewConfigurationViews[0].recommendedSwapchainSampleCount, 0, XR_SWAPCHAIN_USAGE_SAMPLED_BIT | XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+      XrSwapchainCreateInfo swapchainCreateInfo { XR_TYPE_SWAPCHAIN_CREATE_INFO };
+      swapchainCreateInfo.arraySize = swapchain.arraySize;
+      swapchainCreateInfo.format = swapchain.backendFormat;
+      swapchainCreateInfo.width = swapchain.width;
+      swapchainCreateInfo.height = swapchain.height;
+      swapchainCreateInfo.mipCount = 1;
+      swapchainCreateInfo.faceCount = 1;
+      swapchainCreateInfo.sampleCount = m_viewConfigurationViews[0].recommendedSwapchainSampleCount;
+      swapchainCreateInfo.createFlags = 0;
+      swapchainCreateInfo.usageFlags = XR_SWAPCHAIN_USAGE_SAMPLED_BIT | (i == 0 ? XR_SWAPCHAIN_USAGE_COLOR_ATTACHMENT_BIT : XR_SWAPCHAIN_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+      OPENXR_CHECK(xrCreateSwapchain(m_session, &swapchainCreateInfo, &swapchain.swapchain), "Failed to create Swapchain");
+
+      uint32_t swapchainImageCount;
+      OPENXR_CHECK(xrEnumerateSwapchainImages(swapchain.swapchain, 0, &swapchainImageCount, nullptr), "Failed to enumerate Swapchain Images.");
+      XrSwapchainImageBaseHeader* swapchainImages = m_backend->AllocateSwapchainImageData(swapchain.swapchain, i == 0 ? SwapchainType::COLOR : SwapchainType::DEPTH, swapchainImageCount);
+      OPENXR_CHECK(xrEnumerateSwapchainImages(swapchain.swapchain, swapchainImageCount, &swapchainImageCount, swapchainImages), "Failed to enumerate Swapchain Images.");
+      m_backend->CreateImageViews(swapchain);
+   }
+   m_swapchainRenderTargets.resize(m_colorSwapchainInfo.imageViews.size() * m_depthSwapchainInfo.imageViews.size(), nullptr);
 }
 
+void VRDevice::ReleaseSession()
+{
+   assert(m_session);
+
+   // Destroy the swapchian render targets, and color/depth image views
+   for (auto& rt : m_swapchainRenderTargets)
+      delete rt;
+   for (auto& imageView : m_colorSwapchainInfo.imageViews)
+      bgfx::destroy(imageView);
+   for (auto& imageView : m_depthSwapchainInfo.imageViews)
+      bgfx::destroy(imageView);
+
+   // Free the Swapchain Image Data.
+   if (m_colorSwapchainInfo.swapchain)
+      m_backend->FreeSwapchainImageData(m_colorSwapchainInfo.swapchain);
+   if (m_depthSwapchainInfo.swapchain)
+      m_backend->FreeSwapchainImageData(m_depthSwapchainInfo.swapchain);
+
+   // Destroy the swapchains.
+   if (m_colorSwapchainInfo.swapchain)
+      OPENXR_CHECK(xrDestroySwapchain(m_colorSwapchainInfo.swapchain), "Failed to destroy Color Swapchain");
+   if (m_depthSwapchainInfo.swapchain)
+      OPENXR_CHECK(xrDestroySwapchain(m_depthSwapchainInfo.swapchain), "Failed to destroy Depth Swapchain");
+   delete m_backend;
+
+   DiscardVisibilityMask();
+}
 
 void VRDevice::PollEvents()
 {
+   assert(m_session);
+
    // Poll OpenXR for a new event.
    XrEventDataBuffer eventData { XR_TYPE_EVENT_DATA_BUFFER };
    auto XrPollEvents = [&]() -> bool
@@ -1301,6 +1025,8 @@ void VRDevice::PollEvents()
 
 void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
 {
+   assert(m_session);
+
    if (m_visibilityMaskExtensionSupported && m_visibilityMaskDirty)
    {
       DiscardVisibilityMask();
@@ -1359,14 +1085,15 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
    }
 }
 
-void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
+void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vrRenderTarget)> submitFrame)
 {
+   assert(m_session);
+
    bool rendered = true;
    if (!m_sessionRunning)
    {
       // FIXME we should perform preview rendering here
-      submitFrame(false);
-      m_backend->PresentFrame();
+      submitFrame(nullptr);
       return;
    }
 
@@ -1414,8 +1141,8 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
 
       if (rendered)
       {
-         const float zNear = 0.1f;
-         const float zFar = 5.f;
+         const float zNear = 0.2f;
+         const float zFar = 15.f;
          const float vpuScale = 0.0254f * 1.0625f / 50.f;
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
@@ -1495,17 +1222,25 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
             }
          }
 
-         // Reset BGFX backbuffer to point to the view from the swap chain selected by OpenXR
-         bgfx::PlatformData pdata;
-         pdata.context = m_backend->GetGraphicContext();
-         pdata.backBuffer = m_colorSwapchainInfo.imageViews[colorImageIndex];
-         pdata.backBufferDS = m_depthSwapchainInfo.imageViews[depthImageIndex];
-         bgfx::setPlatformData(pdata);
-         bgfx::reset(static_cast<int32_t>(imageRect.extent.width), static_cast<int32_t>(imageRect.extent.height), BGFX_RESET_NONE, bgfx::TextureFormat::RGBA8);
-
          // Prepare frame with the acquired views to limit position-visual latency (limit motion sickness)
-         // This can't be done earlier since view acquisition is done for the predicted frame display time (which we have only after xrWaitFrame)
-         submitFrame(true);
+         // This can't be done earlier since view acquisition is done for the predicted frame display time (which we have only after xrWaitFrame) 
+         // and we also need OpenXR to selected color/depth render target from xrAcquireSwapchainImage
+         RenderTarget* vrRenderTarget = m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()];
+         if (vrRenderTarget == nullptr)
+         {
+            uint16_t nViews = static_cast<uint16_t>(m_viewConfigurationViews.size());
+            bgfx::Attachment colorAttachment, depthAttachment;
+            colorAttachment.init(m_colorSwapchainInfo.imageViews[colorImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
+            depthAttachment.init(m_depthSwapchainInfo.imageViews[depthImageIndex], bgfx::Access::Write, 0, nViews, 0, BGFX_RESOLVE_NONE);
+            const bgfx::Attachment attachments[] = { colorAttachment, depthAttachment };
+            bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
+            vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
+               fbh, colorAttachment.handle, depthAttachment.handle,
+               "VRSwapchain ["s + std::to_string(colorImageIndex) + "/" + std::to_string(depthImageIndex) + "]",
+               m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
+            m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()] = vrRenderTarget;
+         }
+         submitFrame(vrRenderTarget);
 
          // Fill out the XrCompositionLayerProjection structure for usage with xrEndFrame().
          renderLayerInfo.layerProjection.layerFlags = XR_COMPOSITION_LAYER_BLEND_TEXTURE_SOURCE_ALPHA_BIT | XR_COMPOSITION_LAYER_CORRECT_CHROMATIC_ABERRATION_BIT;
@@ -1532,11 +1267,7 @@ void VRDevice::RenderFrame(std::function<void(bool renderVR)> submitFrame)
 
    // Perform preview window rendering only
    if (!rendered)
-      submitFrame(false);
-
-   // FIXME Also performs preview window rendering and present (to actually render the preview, but also enables RenderDoc)
-   // FIXME this needs to be preoperly cleaned up, splitting the preview output from the VR output
-   m_backend->PresentFrame();
+      submitFrame(nullptr);
 }
 #endif
 

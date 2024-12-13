@@ -11,7 +11,7 @@ class RenderTarget final
 public:
    RenderTarget(RenderDevice* const rd, const SurfaceType type, const int width, const int height, const colorFormat format); // Default output render target
    #if defined(ENABLE_BGFX)
-   RenderTarget(RenderDevice* const rd, bgfx::FrameBufferHandle fbh, const string& name, const int width, const int height, const colorFormat format); // Secondary window output render target
+   RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx::FrameBufferHandle fbh, bgfx::TextureHandle colorTex, bgfx::TextureHandle depthTex, const string& name, const int width, const int height, const colorFormat format);
    #endif
    RenderTarget(RenderDevice* const rd, const SurfaceType type, const string& name, const int width, const int height, const colorFormat format, bool with_depth, int nMSAASamples, const char* failureMessage, RenderTarget* sharedDepth = nullptr);
    ~RenderTarget();
