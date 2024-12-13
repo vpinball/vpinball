@@ -10,10 +10,10 @@
 // examples/README.txt and documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-void ImGui_Implbgfx_Init(int view);
+void ImGui_Implbgfx_Init();
 void ImGui_Implbgfx_Shutdown();
 void ImGui_Implbgfx_NewFrame();
-void ImGui_Implbgfx_RenderDrawLists(struct ImDrawData* draw_data);
+void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, struct ImDrawData* draw_data);
 
 void ImGui_Implbgfx_SetSDRColor(float* col);
 

@@ -775,7 +775,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    markdown_config.formatCallback = MarkdownFormatCallback;
 
 #if defined(ENABLE_BGFX)
-   ImGui_Implbgfx_Init(bgfx::getCaps()->limits.maxViews - 1);
+   ImGui_Implbgfx_Init();
    bgfx::setViewName(bgfx::getCaps()->limits.maxViews - 1, "ImGui");
    if (m_player && m_player->m_playfieldWnd->IsWCGBackBuffer())
    {
@@ -986,8 +986,7 @@ void LiveUI::Render()
    }
 
    #if defined(ENABLE_BGFX)
-   // FIXME scale down linear RGB colors by HDR headroom to get the right SDR white point on WCG displays
-   ImGui_Implbgfx_RenderDrawLists(draw_data);
+   ImGui_Implbgfx_RenderDrawLists(m_rd->m_activeViewId, RenderTarget::GetCurrentRenderTarget()->m_nLayers, draw_data);
 
    #elif defined(ENABLE_OPENGL)
    #ifndef __OPENGLES__

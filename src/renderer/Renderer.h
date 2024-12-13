@@ -121,6 +121,7 @@ public:
    float m_stereo3DDefocus = 0.f;
 
    RenderTarget* GetOffscreenVR(int eye) const { return eye == 0 ? m_pOffscreenVRLeft : m_pOffscreenVRRight; }
+   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
 
 private:
    void RenderDynamics();
@@ -138,7 +139,6 @@ private:
 
    RenderTarget* m_pOffscreenBackBufferTexture1 = nullptr;
    RenderTarget* m_pOffscreenBackBufferTexture2 = nullptr;
-   RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
    RenderTarget* GetPreviousBackBufferTexture() const { return m_pOffscreenBackBufferTexture2; } // Same as back buffer but for previous frame
    void SwapBackBufferRenderTargets();
 

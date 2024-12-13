@@ -2094,10 +2094,7 @@ void Player::PrepareFrame(std::function<void()> sync)
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
    g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   if (m_renderer->m_stereo3D != STEREO_VR)
-      m_liveUI->Update(m_playfieldWnd->GetBackBuffer());
-   else if (m_liveUI->IsTweakMode())
-      m_liveUI->Update(m_renderer->GetOffscreenVR(0));
+   m_liveUI->Update(m_renderer->GetBackBufferTexture());
 
 #ifdef __LIBVPINBALL__
    if (m_liveUIOverride)

@@ -2363,6 +2363,13 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       renderedRT = outputRT;
    }
 
+   // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
+   {
+      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+      m_renderDevice->RenderLiveUI();
+      g_frameProfiler.ExitProfileSection();
+   }
+
    // Apply stereo
    if (stereo)
    {
@@ -2466,15 +2473,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
-   }
-
-   if (m_stereo3D != STEREO_VR)
-   {
-      // Except for VR, render LiveUI after tonemapping and stereo (otherwise it would break the calibration process for stereo anaglyph)
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      m_renderDevice->SetRenderTarget("ImGui"s, outputBackBuffer);
-      m_renderDevice->RenderLiveUI();
-      g_frameProfiler.ExitProfileSection();
    }
 
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)
