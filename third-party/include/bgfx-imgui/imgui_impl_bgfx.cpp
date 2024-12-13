@@ -1,6 +1,8 @@
 // Derived from this Gist by Richard Gale:
 //     https://gist.github.com/RichardGale/6e2b74bc42b3005e08397236e4be0fd0
 
+// WARNING WARNING heavily modified for VPX
+
 // ImGui BFFX binding
 // In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture
 // identifier. Read the FAQ about ImTextureID in imgui.cpp.
@@ -27,10 +29,14 @@ static bgfx::ProgramHandle g_ShaderHandle = BGFX_INVALID_HANDLE;
 static bgfx::ProgramHandle g_ShaderStHandle = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationTex = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationCol = BGFX_INVALID_HANDLE;
+static bgfx::UniformHandle g_AttribLocationOfs = BGFX_INVALID_HANDLE;
 static bgfx::VertexLayout g_VertexLayout;
+
 static float g_SDRColor[4] = { 1.f, 1.f, 1.f, 1.f };
+static float g_stereoOfs[4] = { 0.f, 0.f, 0.f, 0.f };
 
 void ImGui_Implbgfx_SetSDRColor(float* col) { memcpy(g_SDRColor, col, 4 * sizeof(float)); }
+void ImGui_Implbgfx_SetStereoOfs(float ofs) { g_stereoOfs[0] = ofs; }
 
 // This is the main rendering function that you have to implement and call after
 // ImGui::Render(). Pass ImGui::GetDrawData() to this function.
@@ -61,9 +67,9 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
 
     // Setup viewport, orthographic projection matrix
     float ortho[16];
-    bx::mtxOrtho(
-        ortho, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 0.0f, 1000.0f,
-        0.0f, caps->homogeneousDepth);
+    bx::mtxOrtho(ortho, 
+        0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 
+        0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
     bgfx::setViewTransform(view, NULL, ortho);
     bgfx::setViewRect(view, 0, 0, (uint16_t)fb_width, (uint16_t)fb_height);
 
@@ -106,16 +112,21 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
             if (pcmd->UserCallback) {
                 pcmd->UserCallback(cmd_list, pcmd);
             } else {
-                const uint16_t xx = (uint16_t)bx::max(pcmd->ClipRect.x, 0.0f);
-                const uint16_t yy = (uint16_t)bx::max(pcmd->ClipRect.y, 0.0f);
-                bgfx::setScissor(
-                    xx, yy,
-                    (uint16_t)bx::min(pcmd->ClipRect.z, 65535.0f) - xx,
-                    (uint16_t)bx::min(pcmd->ClipRect.w, 65535.0f) - yy);
+                // TODO implement scissor for stereo rendering (not really used)
+                if (g_stereoOfs[0] == 0.f)
+                {
+                    const uint16_t xx = (uint16_t)bx::max(pcmd->ClipRect.x, 0.0f);
+                    const uint16_t yy = (uint16_t)bx::max(pcmd->ClipRect.y, 0.0f);
+                    bgfx::setScissor(
+                        xx, yy,
+                        (uint16_t)bx::min(pcmd->ClipRect.z, 65535.0f) - xx,
+                        (uint16_t)bx::min(pcmd->ClipRect.w, 65535.0f) - yy);
+                }
                 bgfx::setState(state);
                 bgfx::TextureHandle texture = { (uint16_t)((intptr_t)pcmd->TextureId & 0xffff) };
                 bgfx::setTexture(0, g_AttribLocationTex, texture);
                 bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
+                bgfx::setUniform(g_AttribLocationOfs, g_stereoOfs);
                 bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
                 bgfx::setIndexBuffer(&tib, pcmd->IdxOffset, pcmd->ElemCount);
                 bgfx::setInstanceCount(instanceCount);
@@ -173,11 +184,9 @@ bool ImGui_Implbgfx_CreateDeviceObjects()
         .add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
         .end();
 
-    g_AttribLocationTex =
-        bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
-
-    g_AttribLocationCol =
-        bgfx::createUniform("staticColor_Alpha", bgfx::UniformType::Vec4);
+    g_AttribLocationTex = bgfx::createUniform("s_tex", bgfx::UniformType::Sampler);
+    g_AttribLocationCol = bgfx::createUniform("u_sdrScale", bgfx::UniformType::Vec4);
+    g_AttribLocationOfs = bgfx::createUniform("u_stereoOfs", bgfx::UniformType::Vec4);
 
     ImGui_Implbgfx_CreateFontsTexture();
 
@@ -191,6 +200,9 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
 
     if (isValid(g_AttribLocationCol))
        bgfx::destroy(g_AttribLocationCol);
+
+    if (isValid(g_AttribLocationOfs))
+       bgfx::destroy(g_AttribLocationOfs);
 
     if (isValid(g_ShaderHandle))
         bgfx::destroy(g_ShaderHandle);

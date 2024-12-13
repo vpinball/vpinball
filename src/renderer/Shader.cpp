@@ -1560,7 +1560,8 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_without_texture_shadow, STEREO(vs_basic_notex_clip),  STEREO(fs_unshaded_notex_ballshadow_clip), true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_unshaded_with_texture_shadow, STEREO(vs_basic_tex_clip),       STEREO(fs_unshaded_tex_ballshadow_clip), true);
       // VR masking
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_mask, "vs_vr_mask", "fs_unshaded_notex_noclip");
+      if (m_isStereo)
+         loadProgram(embeddedShaders, SHADER_TECHNIQUE_vr_mask, "vs_vr_mask", "fs_unshaded_notex_noclip");
       break;
    case BALL_SHADER:
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_RenderBall,                        STEREO(vs_ball_noclip), STEREO(fs_ball_equirectangular_nodecal_noclip));
