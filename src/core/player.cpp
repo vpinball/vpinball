@@ -1056,8 +1056,10 @@ Player::~Player()
    m_pBCTarget = nullptr;
    delete m_ptable;
    //m_ptable = nullptr;
+   #ifdef ENABLE_XR
    if (m_vrDevice)
       m_vrDevice->DiscardVisibilityMask();
+   #endif
    delete m_renderer;
    m_renderer = nullptr;
    LockForegroundWindow(false);

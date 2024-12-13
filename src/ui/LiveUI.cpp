@@ -739,7 +739,9 @@ LiveUI::LiveUI(RenderDevice *const rd)
    {
       // VR headset cover full view range, so use a relative part of the full range for the DPI
       m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
+      #ifdef ENABLE_BGFX
       ImGui_Implbgfx_SetStereoOfs(m_player->m_vrDevice->GetEyeWidth() * 0.15f);
+      #endif
    }
    else
    {
