@@ -23,7 +23,7 @@
 	<key>CFBundleExecutable</key>
 	<string>BassFramework</string>
 	<key>MinimumOSVersion</key>
-	<string>17.5</string>
+	<string>18.0</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.vpinball.BassFramework</string>
 	<key>UIDeviceFamily</key>
