@@ -321,5 +321,8 @@ if ($gen_imgui)
 {
 	Write-Host "`n>>>>>>>>>>>>>>>> ImgUI shaders"
 	New-Item -Path . -Name "../bgfx_imgui.h" -ItemType "File" -Force -Value "// ImgUI Shaders`n"
-	Process-Shader "vs_imgui.sc" "imgui.h" "vs_imgui_" "vertex"
+	for($k = 0; $k -lt 2; $k++)
+	{
+		Process-Shader "vs_imgui.sc" "imgui.h" ("vs_imgui" + $stOutput[$k]) "vertex" @($stereo[$k])
+	}
 }

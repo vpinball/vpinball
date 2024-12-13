@@ -11,4 +11,7 @@ void main()
 	gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
 	v_texcoord0 = a_texcoord0;
 	v_color0    = a_color0 * staticColor_Alpha;
+	#ifdef STEREO
+		gl_Layer = gl_InstanceID;
+	#endif
 }

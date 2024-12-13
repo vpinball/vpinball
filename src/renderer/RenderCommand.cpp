@@ -122,28 +122,16 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    {
       if (g_pplayer->m_liveUI)
       {
-      #ifndef ENABLE_BGFX // Profiler is not thread safe
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      #endif
-      if (log) {
-         PLOGI << "> Draw LiveUI";
-      }
-      RenderTarget* rt = RenderTarget::GetCurrentRenderTarget();
-      if (rt->m_nLayers > 1)
-      {
-         // ImGui does not support layered rendering, so we need to render once per layer
-         for (int layer = 0; layer < rt->m_nLayers; layer++)
-         {
-            rt->Activate(layer);
-            g_pplayer->m_liveUI->Render();
+         #ifndef ENABLE_BGFX // Profiler is not thread safe
+            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+         #endif
+         if (log) {
+            PLOGI << "> Draw LiveUI";
          }
-         rt->Activate();
-      }
-      else
          g_pplayer->m_liveUI->Render();
-      #ifndef ENABLE_BGFX // Profiler is not thread safe
-      g_frameProfiler.ExitProfileSection();
-      #endif
+         #ifndef ENABLE_BGFX // Profiler is not thread safe
+            g_frameProfiler.ExitProfileSection();
+         #endif
       }
       break;
    }

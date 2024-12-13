@@ -22,9 +22,9 @@
 //#include "bx/timer.h"
 
 // Data
-static uint8_t g_View = 255;
 static bgfx::TextureHandle g_FontTexture = BGFX_INVALID_HANDLE;
 static bgfx::ProgramHandle g_ShaderHandle = BGFX_INVALID_HANDLE;
+static bgfx::ProgramHandle g_ShaderStHandle = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationTex = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationCol = BGFX_INVALID_HANDLE;
 static bgfx::VertexLayout g_VertexLayout;
@@ -37,7 +37,7 @@ void ImGui_Implbgfx_SetSDRColor(float* col) { memcpy(g_SDRColor, col, 4 * sizeof
 // Note: If text or lines are blurry when integrating ImGui into your engine,
 // in your Render function, try translating your projection matrix by
 // (0.5f,0.5f) or (0.375f,0.375f)
-void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
+void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* draw_data)
 {
     // Avoid rendering when minimized, scale coordinates for retina displays
     // (screen coordinates != framebuffer coordinates)
@@ -64,8 +64,8 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
     bx::mtxOrtho(
         ortho, 0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 0.0f, 1000.0f,
         0.0f, caps->homogeneousDepth);
-    bgfx::setViewTransform(g_View, NULL, ortho);
-    bgfx::setViewRect(g_View, 0, 0, (uint16_t)fb_width, (uint16_t)fb_height);
+    bgfx::setViewTransform(view, NULL, ortho);
+    bgfx::setViewRect(view, 0, 0, (uint16_t)fb_width, (uint16_t)fb_height);
 
     // Render command lists
     for (int n = 0; n < draw_data->CmdListsCount; n++) {
@@ -109,17 +109,17 @@ void ImGui_Implbgfx_RenderDrawLists(ImDrawData* draw_data)
                 const uint16_t xx = (uint16_t)bx::max(pcmd->ClipRect.x, 0.0f);
                 const uint16_t yy = (uint16_t)bx::max(pcmd->ClipRect.y, 0.0f);
                 bgfx::setScissor(
-                    xx, yy, (uint16_t)bx::min(pcmd->ClipRect.z, 65535.0f) - xx,
+                    xx, yy,
+                    (uint16_t)bx::min(pcmd->ClipRect.z, 65535.0f) - xx,
                     (uint16_t)bx::min(pcmd->ClipRect.w, 65535.0f) - yy);
-
                 bgfx::setState(state);
-                bgfx::TextureHandle texture = {
-                    (uint16_t)((intptr_t)pcmd->TextureId & 0xffff)};
+                bgfx::TextureHandle texture = { (uint16_t)((intptr_t)pcmd->TextureId & 0xffff) };
                 bgfx::setTexture(0, g_AttribLocationTex, texture);
                 bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
                 bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
                 bgfx::setIndexBuffer(&tib, pcmd->IdxOffset, pcmd->ElemCount);
-                bgfx::submit(g_View, g_ShaderHandle);
+                bgfx::setInstanceCount(instanceCount);
+                bgfx::submit(view, g_ShaderStHandle);
             }
         }
     }
@@ -150,7 +150,7 @@ bool ImGui_Implbgfx_CreateFontsTexture()
 
 static const bgfx::EmbeddedShader s_embeddedShaders[] = {
     //BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),
-    BGFX_EMBEDDED_SHADER(vs_imgui),
+    BGFX_EMBEDDED_SHADER(vs_imgui), BGFX_EMBEDDED_SHADER(vs_imgui_st),
     BGFX_EMBEDDED_SHADER(fs_ocornut_imgui), BGFX_EMBEDDED_SHADER_END()};
 
 bool ImGui_Implbgfx_CreateDeviceObjects()
@@ -159,6 +159,11 @@ bool ImGui_Implbgfx_CreateDeviceObjects()
     g_ShaderHandle = bgfx::createProgram(
         //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
         bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui"),
+        bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
+        true);
+    g_ShaderStHandle = bgfx::createProgram(
+        //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
+        bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui_st"),
         bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
         true);
 
@@ -190,16 +195,19 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
     if (isValid(g_ShaderHandle))
         bgfx::destroy(g_ShaderHandle);
 
-    if (isValid(g_FontTexture)) {
+    if (isValid(g_ShaderStHandle))
+       bgfx::destroy(g_ShaderStHandle);
+
+    if (isValid(g_FontTexture))
+    {
         bgfx::destroy(g_FontTexture);
         ImGui::GetIO().Fonts->TexID = 0;
         g_FontTexture.idx = bgfx::kInvalidHandle;
     }
 }
 
-void ImGui_Implbgfx_Init(int view)
+void ImGui_Implbgfx_Init()
 {
-    g_View = (uint8_t)(view & 0xff);
 }
 
 void ImGui_Implbgfx_Shutdown()
