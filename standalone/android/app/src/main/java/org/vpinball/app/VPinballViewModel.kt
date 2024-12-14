@@ -72,7 +72,7 @@ class VPinballViewModel(private val repository: PinTableRepository) : ViewModel(
     }
 
     fun stopped() {
-        _state.update { it.copy(loading = false, playing = false, liveUI = false) }
+        _state.update { it.copy(loading = false, playing = false, liveUI = false, table = null) }
     }
 
     fun toggleLiveUI() {

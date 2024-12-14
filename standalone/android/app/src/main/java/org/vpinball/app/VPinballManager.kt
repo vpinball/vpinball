@@ -9,6 +9,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import android.util.Size
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
@@ -36,6 +37,7 @@ import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.basePath
 import org.vpinball.app.util.hasArtwork
 import org.vpinball.app.util.saveArtwork
+import org.vpinball.app.util.tableFile
 
 object VPinballManager {
     private const val TAG = "VPinballManager"
@@ -75,7 +77,6 @@ object VPinballManager {
         vpinballJNI.VPinballInit { value, data ->
             val viewModel = activity.viewModel
             val event = VPinballEvent.entries.find { it.ordinal == value }
-
             when (event) {
                 VPinballEvent.ARCHIVE_UNCOMPRESSING,
                 VPinballEvent.ARCHIVE_COMPRESSING,
@@ -142,6 +143,7 @@ object VPinballManager {
                 }
                 VPinballEvent.STOPPED -> {
                     log(VPinballLogLevel.INFO, "event=${event.name}")
+                    activeTable = null
                     CoroutineScope(Dispatchers.Main).launch {
                         viewModel.stopped()
                         error?.let { error ->
@@ -159,13 +161,11 @@ object VPinballManager {
                     log(VPinballLogLevel.WARN, "event=${event}")
                 }
             }
-
             null
         }
 
         CoroutineScope(Dispatchers.Main).launch {
             delay(500)
-
             setIniDefaults()
             updateWebServer()
         }
@@ -201,7 +201,7 @@ object VPinballManager {
         activity.captureBitmap { bitmap -> callback(bitmap) }
     }
 
-    fun captureAndSaveBitmap() {
+    private fun captureAndSaveBitmap() {
         activeTable?.let { table ->
             if (table.hasArtwork()) {
                 return
@@ -361,168 +361,146 @@ object VPinballManager {
             try {
                 cacheDir.deleteRecursively()
                 cacheDir.mkdir()
-
                 val filename = FileUtils.filenameFromUri(context, uri)
                 if (filename == null) {
                     log(VPinballLogLevel.ERROR, "Unable to get filename: uri=$uri")
                     withContext(Dispatchers.Main) {
                         onError()
-                        delay(250)
-                        showError("Unable to import table.")
+                        showErrorAndReset("Unable to import table.")
                     }
                     return@launch
                 }
-
                 withContext(Dispatchers.Main) { onUpdate(0, "Staging") }
-
                 val outputFile = File(cacheDir, filename)
                 FileUtils.copyFile(context, uri, outputFile) { progress -> launch(Dispatchers.Main) { onUpdate(progress, "Copying") } }
-
                 if (!outputFile.extension.equals("vpx", ignoreCase = true)) {
                     if (vpinballJNI.VPinballUncompress(outputFile.absolutePath) != VPinballStatus.SUCCESS.value) {
                         log(VPinballLogLevel.ERROR, "Failed to uncompress file")
                         withContext(Dispatchers.Main) {
                             onError()
-                            delay(250)
-                            showError("Unable to import table.")
+                            showErrorAndReset("Unable to import table.")
                         }
                         return@launch
                     }
-
                     outputFile.delete()
                 }
-
                 val vpxFile = FileUtils.findFileByExtension(cacheDir, "vpx")
                 if (vpxFile == null) {
                     log(VPinballLogLevel.ERROR, "Unable to find vpx file")
                     withContext(Dispatchers.Main) {
                         onError()
-                        delay(250)
-                        showError("Unable to import table.")
+                        showErrorAndReset("Unable to import table.")
                     }
                     return@launch
                 }
-
                 val uuid = UUID.randomUUID().toString()
                 val uuidFolder = File(filesDir, uuid)
                 if (!uuidFolder.mkdir()) {
                     log(VPinballLogLevel.ERROR, "Failed to create UUID folder")
                     withContext(Dispatchers.Main) {
                         onError()
-                        delay(250)
-                        showError("Unable to import table.")
+                        showErrorAndReset("Unable to import table.")
                     }
                     return@launch
                 }
-
                 FileUtils.copyDirectoryContents(vpxFile.parentFile!!, uuidFolder)
-
                 val newVpxFile = FileUtils.findFileByExtension(uuidFolder, "vpx")
                 if (newVpxFile == null) {
                     log(VPinballLogLevel.ERROR, "Unable to find vpx file in UUID folder")
                     withContext(Dispatchers.Main) {
                         onError()
-                        delay(250)
-                        showError("Unable to import table.")
+                        showErrorAndReset("Unable to import table.")
                     }
                     return@launch
                 }
-
                 withContext(Dispatchers.Main) { onComplete(uuid, newVpxFile.name) }
             } catch (e: Exception) {
                 log(VPinballLogLevel.ERROR, "An error occurred: ${e.message}")
                 withContext(Dispatchers.Main) {
                     onError()
-                    delay(250)
-                    showError("Unable to import table.")
+                    showErrorAndReset("Unable to import script.")
                 }
             }
         }
     }
 
     fun extractScript(table: PinTable, onComplete: () -> Unit, onError: () -> Unit) {
+        if (activeTable != null) return
+        activeTable = table
         CoroutineScope(Dispatchers.IO).launch {
-            val file = File(filesDir, "${table.uuid}/${table.path}")
-            if (!file.exists()) {
+            if (!table.tableFile.exists()) {
                 withContext(Dispatchers.Main) {
                     onError()
-                    delay(250)
-                    showError("Unable to import table.")
+                    showErrorAndReset("Unable to extract script.")
                 }
                 return@launch
             }
-
-            activeTable = table
-            val status = vpinballJNI.VPinballExtractScript(file.absolutePath)
-
+            val status = vpinballJNI.VPinballExtractScript(table.tableFile.absolutePath)
             withContext(Dispatchers.Main) {
                 if (status == VPinballStatus.SUCCESS.value) {
                     onComplete()
                 } else {
                     onError()
-                    delay(250)
-                    showError("Unable to extract script.")
+                    showErrorAndReset("Unable to extract script.")
                 }
+                activeTable = null
             }
         }
     }
 
     fun share(table: PinTable, onComplete: (file: File) -> Unit, onError: () -> Unit) {
+        if (activeTable != null) return
+        activeTable = table
         CoroutineScope(Dispatchers.IO).launch {
+            if (!table.tableFile.exists()) {
+                withContext(Dispatchers.Main) {
+                    onError()
+                    showErrorAndReset("Unable to share table.")
+                }
+                return@launch
+            }
             try {
                 cacheDir.deleteRecursively()
                 cacheDir.mkdir()
-
                 val name = table.name.replace(Regex("[ ]"), "_")
-                val file = File(cacheDir, "${name}.vpxz")
-                val status = vpinballJNI.VPinballCompress(table.basePath.absolutePath, file.absolutePath)
-
+                val shareFile = File(cacheDir, "${name}.vpxz")
+                val status = vpinballJNI.VPinballCompress(table.basePath.absolutePath, shareFile.absolutePath)
                 withContext(Dispatchers.Main) {
                     if (status == VPinballStatus.SUCCESS.value) {
-                        onComplete(file)
+                        onComplete(shareFile)
+                        activeTable = null
                     } else {
                         onError()
-                        delay(250)
-                        showError("Unable to share table.")
+                        showErrorAndReset("Unable to share table.")
                     }
                 }
             } catch (e: Exception) {
                 log(VPinballLogLevel.ERROR, "An error occurred: ${e.message}")
-                withContext(Dispatchers.Main) { onError() }
+                showErrorAndReset("Unable to share table.")
             }
         }
     }
 
     fun play(table: PinTable) {
+        if (activeTable != null) return
+        activeTable = table
         error = null
-
         CoroutineScope(Dispatchers.IO).launch {
-            val file = File(filesDir, "${table.uuid}/${table.path}")
-            if (!file.exists()) {
+            if (!table.tableFile.exists()) {
+                showErrorAndReset("Unable to load table.")
                 return@launch
             }
-
-            activeTable = table
-
             if (loadValue(STANDALONE, "ResetLogOnPlay", true)) {
                 vpinballJNI.VPinballResetLog()
             }
-
             haptics = loadValue(STANDALONE, "Haptics", true)
-
-            val viewModel = activity.viewModel
-
-            withContext(Dispatchers.Main) { viewModel.loading(true, table) }
-
-            if (vpinballJNI.VPinballLoad(file.absolutePath) == VPinballStatus.SUCCESS.value) {
+            withContext(Dispatchers.Main) { activity.viewModel.loading(true, table) }
+            if (vpinballJNI.VPinballLoad(table.tableFile.absolutePath) == VPinballStatus.SUCCESS.value) {
                 vpinballJNI.VPinballPlay()
             } else {
-                delay(250)
-                withContext(Dispatchers.Main) {
-                    viewModel.stopped()
-                    delay(250)
-                    showError("Unable to load table.")
-                }
+                delay(500)
+                activity.viewModel.stopped()
+                showErrorAndReset("Unable to load table.")
             }
         }
     }
@@ -533,5 +511,13 @@ object VPinballManager {
 
     fun showError(message: String) {
         activity.viewModel.setError(message)
+    }
+
+    private fun showErrorAndReset(message: String) {
+        CoroutineScope(Dispatchers.Main).launch {
+            delay(250)
+            showError(message)
+            activeTable = null
+        }
     }
 }

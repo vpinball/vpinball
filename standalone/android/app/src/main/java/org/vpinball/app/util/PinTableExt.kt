@@ -12,6 +12,9 @@ import org.vpinball.app.data.entity.PinTable
 val PinTable.basePath: File
     get() = File(VPinballManager.getFilesDir(), uuid)
 
+val PinTable.tableFile: File
+    get() = File(basePath, path)
+
 val PinTable.baseFilename: String
     get() = path.substringBeforeLast('.', path)
 

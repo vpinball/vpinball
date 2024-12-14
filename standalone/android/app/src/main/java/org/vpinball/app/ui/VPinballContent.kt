@@ -61,7 +61,7 @@ fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
         if (state.splash) {
             SplashScreen()
         } else {
-            AnimatedVisibility(visible = !state.playing, modifier = Modifier.fillMaxSize()) {
+            AnimatedVisibility(visible = !(state.playing || state.loading), modifier = Modifier.fillMaxSize()) {
                 LandingScreen(
                     webServerURL = viewModel.webServerURL,
                     progress = viewModel.progress,
