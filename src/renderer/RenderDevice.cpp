@@ -372,9 +372,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    }
    
    // Dynamically toggle vsync
-   init.resolution.reset &= ~BGFX_RESET_VSYNC;
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
    bool vsync = useVSync;
+   init.resolution.reset &= ~BGFX_RESET_VSYNC;
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
 
@@ -390,7 +390,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
    // TODO the headset output should be separated from the preview window, each with the right RT definition
-   if (g_pplayer->m_vrDevice) {
+   if (g_pplayer->m_vrDevice)
+   {
       rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_STEREO, init.resolution.width, init.resolution.height, back_buffer_format), isWcg);
       rd->m_framePending = true; // Delay first frame preparation
    }
@@ -482,11 +483,12 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
          // lock prepared frame and submit it
          {
-            std::lock_guard lock(rd->m_frameMutex);
-            rd->m_framePending = false;
             #ifdef MSVC_CONCURRENCY_VIEWER
             span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
             #endif
+            std::lock_guard lock(rd->m_frameMutex);
+            rd->m_framePending = false; // Request next frame to be prepared as soon as possible
+            rd->m_frameNoSync = false;
             const bool needsVSync = useVSync && !noSync;
             if (vsync != needsVSync)
             {
@@ -494,7 +496,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
             }
             rd->SubmitRenderFrame();
-            rd->m_frameNoSync = false; // Request next frame to be prepared as soon as possible
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
