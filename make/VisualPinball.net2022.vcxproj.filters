@@ -2152,6 +2152,7 @@
     <None Include="src/shaders/bgfx/fs_dmd.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_dmd2.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_flasher.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/fs_imgui.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_light.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_ao.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_ao_display.sc"><Filter>shaders\bgfx</Filter></None>
@@ -2165,6 +2166,7 @@
     <None Include="src/shaders/bgfx/fs_pp_fxaa.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_irradiance.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_mirror.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/fs_pp_motionblur.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_nfaa.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc"><Filter>shaders\bgfx</Filter></None>
@@ -2179,14 +2181,17 @@
     <None Include="src/shaders/bgfx/SMAA.sh"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/varying.def.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_ball.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/vs_ball_trail.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_basic.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_dmd.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_flasher.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/vs_imgui.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_light.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_postprocess.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc"><Filter>shaders\bgfx</Filter></None>
     <None Include="src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc"><Filter>shaders\bgfx</Filter></None>
+    <None Include="src/shaders/bgfx/vs_vr_mask.sc"><Filter>shaders\bgfx</Filter></None>
 
 
     <None Include="src/shaders/hlsl_glsl/BasicShader.glfx">

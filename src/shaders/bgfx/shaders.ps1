@@ -325,5 +325,6 @@ if ($gen_imgui)
 	for($k = 0; $k -lt 2; $k++)
 	{
 		Process-Shader "vs_imgui.sc" "imgui.h" ("vs_imgui" + $stOutput[$k]) "vertex" @($stereo[$k])
+		Process-Shader "fs_imgui.sc" "imgui.h" ("fs_imgui" + $stOutput[$k]) "fragment" @($stereo[$k])
 	}
 }
