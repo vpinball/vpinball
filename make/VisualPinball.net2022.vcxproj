@@ -1385,6 +1385,7 @@
     <None Include="src/shaders/bgfx/fs_dmd.sc" />
     <None Include="src/shaders/bgfx/fs_dmd2.sc" />
     <None Include="src/shaders/bgfx/fs_flasher.sc" />
+    <None Include="src/shaders/bgfx/fs_imgui.sc" />
     <None Include="src/shaders/bgfx/fs_light.sc" />
     <None Include="src/shaders/bgfx/fs_pp_ao.sc" />
     <None Include="src/shaders/bgfx/fs_pp_ao_display.sc" />
@@ -1398,6 +1399,7 @@
     <None Include="src/shaders/bgfx/fs_pp_fxaa.sc" />
     <None Include="src/shaders/bgfx/fs_pp_irradiance.sc" />
     <None Include="src/shaders/bgfx/fs_pp_mirror.sc" />
+    <None Include="src/shaders/bgfx/fs_pp_motionblur.sc" />
     <None Include="src/shaders/bgfx/fs_pp_nfaa.sc" />
     <None Include="src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc" />
     <None Include="src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc" />
@@ -1412,14 +1414,17 @@
     <None Include="src/shaders/bgfx/SMAA.sh" />
     <None Include="src/shaders/bgfx/varying.def.sc" />
     <None Include="src/shaders/bgfx/vs_ball.sc" />
+    <None Include="src/shaders/bgfx/vs_ball_trail.sc" />
     <None Include="src/shaders/bgfx/vs_basic.sc" />
     <None Include="src/shaders/bgfx/vs_dmd.sc" />
     <None Include="src/shaders/bgfx/vs_flasher.sc" />
+    <None Include="src/shaders/bgfx/vs_imgui.sc" />
     <None Include="src/shaders/bgfx/vs_light.sc" />
     <None Include="src/shaders/bgfx/vs_postprocess.sc" />
     <None Include="src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc" />
     <None Include="src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc" />
     <None Include="src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc" />
+    <None Include="src/shaders/bgfx/vs_vr_mask.sc" />
     <None Include="src/shaders/hlsl_glsl/FBShader.fxh" />
     <None Include="src/shaders/hlsl_glsl/SMAA.fxh" />
     <None Include="src/shaders/hlsl_glsl/BallShader.glfx" />

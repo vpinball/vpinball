@@ -29,11 +29,11 @@ uniform mat4 matWorldViewInverseTranspose;
 uniform mat4 matWorld;
 uniform mat4 matView;
 #ifdef STEREO
-uniform mat4 matWorldViewProj[2];
 uniform mat4 matProj[2];
+#define mProj matProj[int(v_eye)]
 #else
-uniform mat4 matWorldViewProj;
 uniform mat4 matProj;
+#define mProj matProj
 #endif
 
 uniform vec4 objectSpaceNormalMap; // float extended to vec4 for BGFX FIXME float uniforms are not supported: group or declare as vec4
@@ -123,14 +123,9 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 #endif
 {
    // Compute refracted visible position then project from world view position to probe UV
-   // const vec4x4 matProj = mul(inverse4x4(matWorldView), matWorldViewProj[int(eye)]); // this has been moved to the matrix uniform stack for performance reasons
    const vec3 R = refract(V, N, 1.0 / 1.5); // n1 = 1.0 (air), n2 = 1.5 (plastic), eta = n1 / n2
    const vec3 refracted_pos = pos + refractionThickness * R; // Shift ray by the thickness of the material
-   #ifdef STEREO
-      const vec4 proj = mul(matProj[int(v_eye)], vec4(refracted_pos, 1.0));
-   #else
-      const vec4 proj = mul(matProj, vec4(refracted_pos, 1.0));
-   #endif
+   const vec4 proj = mul(mProj, vec4(refracted_pos, 1.0));
 
    #if BGFX_SHADER_LANGUAGE_GLSL
    // OpenGL and OpenGL ES have reversed render targets
@@ -151,13 +146,15 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
    //const vec3 biased = texture2D(tex_refraction, uv).rgb;
    //return mix(unbiased, biased, saturate((d - fragCoord.z) / fragCoord.w));
 
-   /* // Debug output
-   if (length(N) < 0.5) // invalid normal, shown as red for debugging
+   // Debug output
+   /* if (length(N) < 0.5) // invalid normal, shown as red for debugging
       return vec3(1.0, 0.0, 0.0);
-   if (dot(N, V) < 0.0) // Wrong orientation? (looking from the back, shown as blue for debugging)
+   if (dot(N, V) < 0.0) // Wrong orientation? looking from the back, shown as blue for debugging
       return vec3(0.0, 0.0, 1.0);
-   if (length(R) < 0.5) // invalid refraction state (no refraction, shown as green for debugging)
-      return vec3(0.0, 1.0, 0.0);*/
+   if (length(R) < 0.5) // invalid refraction state => no refraction, shown as green for debugging
+      return vec3(0.0, 1.0, 0.0);
+   if ((uv.x < 0.0) || (uv.x > 1.0) || (uv.y < 0.0) || (uv.y > 1.0)) // sample pos outside of probe, shown as yellow
+      return vec3(1.0, 1.0, 0.0); */
 
    return refractionTint.rgb * texStereo(tex_refraction, uv).rgb;
 }
