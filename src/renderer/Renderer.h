@@ -56,6 +56,9 @@ public:
       // We must evaluate this dynamically since AO scale and enabled/disable can be changed from script
       if (m_disableAO || !m_table->m_enableAO || !m_renderDevice->DepthBufferReadBackAvailable() || m_table->m_AOScale == 0.f)
          return 0;
+      // The existing implementation suffers for high temporal artefact that make it unsuitable for dynamic camera situation
+      if (m_stereo3D == STEREO_VR)
+         return 0;
       if (m_dynamicAO)
          return 2;
       return IsUsingStaticPrepass() ? 1 : 0; // If AO is static prepass only and we are running without it, disable AO
