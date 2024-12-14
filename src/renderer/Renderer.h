@@ -27,7 +27,7 @@ public:
    Vertex3Ds Unproject(const RenderTarget* surface, const Vertex3Ds& point);
    Vertex3Ds Get3DPointFrom2D(const RenderTarget* surface, const POINT& p);
 
-   void SetupShaders();
+   void MarkShaderDirty() { m_shaderDirty = true; }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());
    void UpdateBallShaderMatrix();
    void UpdateStereoShaderState();
@@ -131,6 +131,9 @@ private:
    void Bloom();
    void SSRefl();
    BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
+
+   bool m_shaderDirty = true;
+   void SetupShaders();
 
    int m_renderWidth, m_renderHeight; // Render size without supersampling (AAFactor) applied (depends on output VR/Display and stereo mode)
 

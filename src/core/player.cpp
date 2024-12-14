@@ -666,8 +666,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Initializing renderer"; // For profiling
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
-   m_renderer->SetupShaders();
-
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
    {
