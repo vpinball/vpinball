@@ -658,13 +658,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       {
          PLOGE << "Texture preloading failed";
       }
-      m_renderer->m_render_mask = m_vrDevice ? Renderer::DISABLE_BACKDROP : Renderer::DEFAULT;
    }
 
    //----------------------------------------------------------------------------------
 
    PLOGI << "Initializing renderer"; // For profiling
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
+
+   m_renderer->m_render_mask = m_vrDevice ? Renderer::DISABLE_BACKDROP : Renderer::DEFAULT;
 
    // search through all collection for elements which support group rendering
    for (int i = 0; i < m_ptable->m_vcollection.size(); i++)

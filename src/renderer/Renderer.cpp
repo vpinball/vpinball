@@ -1915,8 +1915,8 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    #else
       const bool PostProcStereo = stereo;
    #endif
-   // Since stereo is applied as a postprocess step for fake stereo, it disables AA and sharpening except for top/bottom & side by side modes
-   const bool PostProcAA = !(PostProcStereo && m_stereo3DfakeStereo && (m_stereo3D != STEREO_TB) && (m_stereo3D != STEREO_SBS));
+   // Postprocess stereo disables AA and sharpening except for top/bottom & side by side modes
+   const bool PostProcAA = !PostProcStereo || (m_stereo3D == STEREO_TB) || (m_stereo3D == STEREO_SBS);
    #ifndef __OPENGLES__
       const bool SMAA  = PostProcAA && m_FXAA == Quality_SMAA;
    #else
