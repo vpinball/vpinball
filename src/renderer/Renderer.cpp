@@ -2390,6 +2390,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
    {
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
+      m_renderDevice->SetRenderTarget("ImGui"s, outputBackBuffer, true, true);
       m_renderDevice->RenderLiveUI();
       g_frameProfiler.ExitProfileSection();
    }
