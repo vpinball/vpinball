@@ -26,7 +26,6 @@
 // Data
 static bgfx::TextureHandle g_FontTexture = BGFX_INVALID_HANDLE;
 static bgfx::ProgramHandle g_ShaderHandle = BGFX_INVALID_HANDLE;
-static bgfx::ProgramHandle g_ShaderStHandle = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationTex = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationCol = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationOfs = BGFX_INVALID_HANDLE;
@@ -130,7 +129,7 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
                 bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
                 bgfx::setIndexBuffer(&tib, pcmd->IdxOffset, pcmd->ElemCount);
                 bgfx::setInstanceCount(instanceCount);
-                bgfx::submit(view, g_ShaderStHandle);
+                bgfx::submit(view, g_ShaderHandle);
             }
         }
     }
@@ -155,28 +154,34 @@ bool ImGui_Implbgfx_CreateFontsTexture()
     return true;
 }
 
-#include "fs_ocornut_imgui.bin.h"
+//#include "fs_ocornut_imgui.bin.h"
 //#include "vs_ocornut_imgui.bin.h"
 #include "shaders/bgfx_imgui.h"
 
 static const bgfx::EmbeddedShader s_embeddedShaders[] = {
     //BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),
+    //BGFX_EMBEDDED_SHADER(fs_ocornut_imgui),
     BGFX_EMBEDDED_SHADER(vs_imgui), BGFX_EMBEDDED_SHADER(vs_imgui_st),
-    BGFX_EMBEDDED_SHADER(fs_ocornut_imgui), BGFX_EMBEDDED_SHADER_END()};
+    BGFX_EMBEDDED_SHADER(fs_imgui), BGFX_EMBEDDED_SHADER(fs_imgui_st),
+    BGFX_EMBEDDED_SHADER_END()};
 
 bool ImGui_Implbgfx_CreateDeviceObjects()
 {
     bgfx::RendererType::Enum type = bgfx::getRendererType();
-    g_ShaderHandle = bgfx::createProgram(
-        //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
-        bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui"),
-        bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
-        true);
-    g_ShaderStHandle = bgfx::createProgram(
-        //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
-        bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui_st"),
-        bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
-        true);
+    if (bgfx::getCaps()->supported & (BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY))
+    {
+       g_ShaderHandle = bgfx::createProgram(
+          //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
+          //bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
+          bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui_st"), bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_imgui_st"), true);
+    }
+    else
+    {
+       g_ShaderHandle = bgfx::createProgram(
+          //bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_ocornut_imgui"),
+          //bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_ocornut_imgui"),
+          bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui"), bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_imgui"), true);
+    }
 
     g_VertexLayout.begin()
         .add(bgfx::Attrib::Position, 2, bgfx::AttribType::Float)
@@ -206,9 +211,6 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
 
     if (isValid(g_ShaderHandle))
         bgfx::destroy(g_ShaderHandle);
-
-    if (isValid(g_ShaderStHandle))
-       bgfx::destroy(g_ShaderStHandle);
 
     if (isValid(g_FontTexture))
     {
