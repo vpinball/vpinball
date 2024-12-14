@@ -577,7 +577,7 @@ void VPinball::ProcessSetTableOptions(const TableOptions& options)
    g_pplayer->m_MusicVolume = options.musicVolume;
    g_pplayer->m_SoundVolume = options.soundVolume;
 
-   g_pplayer->m_renderer->SetupShaders();
+   g_pplayer->m_renderer->MarkShaderDirty();
    pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
 }
 
@@ -591,7 +591,7 @@ void VPinball::ProcessSetDefaultTableOptions()
 
    // TODO undo Day/Night, difficulty, ...
 
-   g_pplayer->m_renderer->SetupShaders();
+   g_pplayer->m_renderer->MarkShaderDirty();
    pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
 }
 
@@ -611,7 +611,7 @@ void VPinball::ProcessResetTableOptions()
    g_pplayer->m_MusicVolume = pTable->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
    g_pplayer->m_SoundVolume = pTable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
-   g_pplayer->m_renderer->SetupShaders();
+   g_pplayer->m_renderer->MarkShaderDirty();
    pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
 }
 
@@ -636,7 +636,7 @@ void VPinball::ProcessSetDefaultCustomTableOptions()
 
    // TODO
 
-   g_pplayer->m_renderer->SetupShaders();
+   g_pplayer->m_renderer->MarkShaderDirty();
    pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
 }
 
@@ -653,7 +653,7 @@ void VPinball::ProcessResetCustomTableOptions()
       pLiveTable->m_settings.DeleteValue(optionDef.section, optionDef.id);
    }
 
-   g_pplayer->m_renderer->SetupShaders();
+   g_pplayer->m_renderer->MarkShaderDirty();
    pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
 }
 

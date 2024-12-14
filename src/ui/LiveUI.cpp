@@ -1644,7 +1644,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_DayNight:
       {
          m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
-         m_renderer->SetupShaders();
+         m_renderer->MarkShaderDirty();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
       }
@@ -1870,7 +1870,7 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             m_player->m_MusicVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
             m_player->m_SoundVolume = m_table->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
-            m_renderer->SetupShaders();
+            m_renderer->MarkShaderDirty();
          }
          else if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
          {
@@ -4182,7 +4182,7 @@ void LiveUI::TableProperties(bool is_live)
    }
    if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
-      auto reinit_lights = [this](bool is_live, float prev, float v) { m_renderer->SetupShaders(); }; // Needed to update shaders with new light settings 
+      auto reinit_lights = [this](bool is_live, float prev, float v) { m_renderer->MarkShaderDirty(); }; // Needed to update shaders with new light settings 
       PropRGB("Ambient Color", m_table, is_live, &(m_table->m_lightAmbient), m_live_table ? &(m_live_table->m_lightAmbient) : nullptr);
       
       PropSeparator();
@@ -4237,7 +4237,7 @@ void LiveUI::CameraProperties(bool is_live)
    {
       table->ImportBackdropPOV(string());
       if (is_live)
-         m_renderer->SetupShaders();
+         m_renderer->MarkShaderDirty();
    }
    ImGui::SameLine();
    if (ImGui::Button("Export"))

@@ -925,6 +925,10 @@ Vertex3Ds Renderer::Get3DPointFrom2D(const RenderTarget* surface, const POINT& p
 
 void Renderer::SetupShaders()
 {
+   if (!m_shaderDirty)
+      return;
+   m_shaderDirty = false;
+
    const vec4 envEmissionScale_TexWidth(m_table->m_envEmissionScale * m_globalEmissionScale,
       (float) (m_envTexture ? *m_envTexture : m_builtinEnvTexture).m_height /*+m_builtinEnvTexture.m_width)*0.5f*/, 0.f, 0.f); //!! dto.
 
@@ -1103,6 +1107,7 @@ void Renderer::RenderFrame()
    SwapBackBufferRenderTargets();
 
    // Reinitialize parts that have been modified
+   SetupShaders();
    for (auto renderable : m_renderableToInit)
    {
       renderable->RenderRelease();
