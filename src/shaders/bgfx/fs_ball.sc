@@ -17,13 +17,14 @@ uniform mat4 matView;
 uniform mat4 matWorldView;
 uniform mat4 matWorldViewInverse;
 #ifdef STEREO
-uniform mat4 matWorldViewProj[2];
-uniform mat4 matProj[2];
-#define mProj matProj[int(v_eye)]
+	uniform mat4 matWorldViewProj[2];
+	uniform mat4 matProj[2];
+	// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+	#define mProj matProj[int(round(v_eye))]
 #else
-uniform mat4 matWorldViewProj;
-uniform mat4 matProj;
-#define mProj matProj
+	uniform mat4 matWorldViewProj;
+	uniform mat4 matProj;
+	#define mProj matProj
 #endif
 
 SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)

@@ -1606,7 +1606,7 @@ void RenderDevice::UploadAndSetSMAATextures()
 
 void RenderDevice::UploadTexture(BaseTexture* texture, const bool linearRGB)
 {
-   Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_NONE, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, linearRGB);
+   Sampler* sampler = m_texMan.LoadTexture(texture, SamplerFilter::SF_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, SamplerAddressMode::SA_UNDEFINED, linearRGB);
    #if defined(ENABLE_BGFX)
    // BGFX dispatch operations to the render thread, so the texture manager does not actually loads data to the GPU nor perform mipmap generation
    m_pendingTextureUploads.push_back(sampler);

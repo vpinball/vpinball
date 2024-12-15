@@ -29,11 +29,12 @@ uniform mat4 matWorldViewInverseTranspose;
 uniform mat4 matWorld;
 uniform mat4 matView;
 #ifdef STEREO
-uniform mat4 matProj[2];
-#define mProj matProj[int(v_eye)]
+	uniform mat4 matProj[2];
+	// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+	#define mProj matProj[int(round(v_eye))]
 #else
-uniform mat4 matProj;
-#define mProj matProj
+	uniform mat4 matProj;
+	#define mProj matProj
 #endif
 
 uniform vec4 objectSpaceNormalMap; // float extended to vec4 for BGFX FIXME float uniforms are not supported: group or declare as vec4
