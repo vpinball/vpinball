@@ -905,8 +905,11 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
-   // FIXME implement
-   ImTextureID image = 0;
+   union { struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; ImTextureID id; } tex;
+   tex.s.handle = sampler->GetCoreTexture();
+   tex.s.flags = 0;
+   tex.s.mip = 0;
+   ImTextureID image = tex.id;
    #elif defined(ENABLE_OPENGL)
    ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #elif defined(ENABLE_DX9)
