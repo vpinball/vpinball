@@ -6,7 +6,7 @@ vec4  v_texcoord4     : TEXCOORD4 = vec4(0.0, 0.0, 0.0, 0.0);
 vec3  v_normal        : NORMAL    = vec3(0.0, 0.0, 1.0);
 vec3  v_tablePos      : TEXCOORD1 = vec3(0.0, 0.0, 0.0);
 vec3  v_worldPos      : TEXCOORD2 = vec3(0.0, 0.0, 0.0);
-float v_eye           : TEXCOORD3 = float(0.0);
+flat float v_eye           : TEXCOORD3 = float(0.0);
 float v_clipDistance  : TEXCOORD4 = float(0.0);
 vec4  v_color0        : COLOR0    = vec4(1.0, 0.0, 0.0, 1.0);
 

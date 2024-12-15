@@ -1136,7 +1136,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
             if (clampv == SA_UNDEFINED)
                clampv = SA_CLAMP;
          }
-         uint32_t flags = 0;
+         uint32_t flags = BGFX_SAMPLER_W_CLAMP;
          switch (filter)
          {
          case SF_NONE:
@@ -1426,7 +1426,7 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
       // DMD & Sprite shaders
-      BGFX_EMBEDDED_SHADER(vs_dmd_noworld),
+      BGFX_EMBEDDED_SHADER_ST(vs_dmd_noworld),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
       BGFX_EMBEDDED_SHADER_CLIP(fs_dmd),
       BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_rgb),
@@ -1581,13 +1581,13 @@ void Shader::Load()
    case DMD_VR_SHADER:
    case DMD_SHADER:
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         "vs_dmd_noworld",            "fs_dmd_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         STEREO(vs_dmd_noworld),      "fs_dmd_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        "vs_dmd_noworld",            "fs_dmd2_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   "vs_dmd_noworld",            "fs_dmd2_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        STEREO(vs_dmd_noworld),      "fs_dmd2_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   STEREO(vs_dmd_noworld),      "fs_dmd2_srgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       "vs_dmd_noworld",            "fs_sprite_tex_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, "vs_dmd_noworld",            "fs_sprite_notex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       STEREO(vs_dmd_noworld),      "fs_sprite_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, STEREO(vs_dmd_noworld),      "fs_sprite_notex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
       // Variants with a clipping plane
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_clip", true);
@@ -1672,6 +1672,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_FXAA3, STEREO(vs_postprocess), STEREO(fs_pp_fxaa3));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_CAS, STEREO(vs_postprocess), STEREO(fs_pp_cas));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_BilateralSharp_CAS, STEREO(vs_postprocess), STEREO(fs_pp_bilateral_cas));
+      // FIXME add stereo support to SMAA
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_ColorEdgeDetection, "vs_pp_smaa_edgedetection", "fs_pp_smaa_edgedetection");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_BlendWeightCalculation, "vs_pp_smaa_blendweightcalculation", "fs_pp_smaa_blendweightcalculation");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_SMAA_NeighborhoodBlending, "vs_pp_smaa_neighborhoodblending", "fs_pp_smaa_neighborhoodblending");

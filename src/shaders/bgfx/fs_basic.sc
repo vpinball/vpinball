@@ -22,7 +22,7 @@ SAMPLER2DSTEREO(tex_base_transmission, 3); // bulb light buffer
 SAMPLER2D      (tex_base_normalmap, 4); // normal map
 SAMPLER2DSTEREO(tex_reflection, 5); // reflections
 SAMPLER2DSTEREO(tex_refraction, 6); // refractions
-SAMPLER2DSTEREO(tex_probe_depth, 7); // depth probe
+SAMPLER2DSTEREO(tex_probe_depth, 7); // refractions depth probe
 
 uniform mat4 matWorldView;
 uniform mat4 matWorldViewInverseTranspose;
@@ -211,13 +211,11 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
       const vec3 specular = cClearcoat_EdgeAlpha.rgb * 0.08;
       const float  edge   = doMetal ? 1.0 : Roughness_WrapL_Edge_Thickness.z;
 
-      const vec3 V = normalize(-v_worldPos);
+      const vec3 V = -normalize(v_worldPos);
+      vec3 N = normalize(v_normal);
       #ifdef TEX
-         vec3 N = normalize(v_normal);
          BRANCH if (doNormalMapping)
-             N = normal_map(N, normalize(v_worldPos), v_texcoord0);
-      #else
-         const vec3 N = normalize(v_normal);
+             N = normal_map(N, -V, v_texcoord0);
       #endif
 
       //color = vec4((N+1.0)*0.5,1.0); return; // visualize normals
@@ -243,18 +241,18 @@ vec3 compute_refraction(const vec3 pos, const vec3 screenCoord, const vec3 N, co
 
       BRANCH if (doReflections)
          #ifdef STEREO
-         color.rgb += compute_reflection(gl_FragCoord.xy, N, v_eye);
+			color.rgb += compute_reflection(gl_FragCoord.xy, N, v_eye);
          #else
-         color.rgb += compute_reflection(gl_FragCoord.xy, N);
+			color.rgb += compute_reflection(gl_FragCoord.xy, N);
          #endif
 
       BRANCH if (doRefractions)
       {
-         // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color
+         // alpha channel is the transparency of the object, tinting is supported even if alpha is 0 by applying a tint color to background
          #ifdef STEREO
-         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
+			color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V, v_eye), color.rgb, color.a);
          #else
-         color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
+			color.rgb = mix(compute_refraction(v_worldPos.xyz, gl_FragCoord.xyz, N, V), color.rgb, color.a);
          #endif
          color.a = 1.0;
       }

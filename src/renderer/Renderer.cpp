@@ -284,10 +284,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    PLOGI << "Environment map radiance computed"; // For profiling
 
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
-   IndexBuffer* ballIndexBuffer
-      = new IndexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer* ballVertexBuffer
-      = new VertexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   IndexBuffer* ballIndexBuffer = new IndexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
+   VertexBuffer* ballVertexBuffer = new VertexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
    m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 #ifdef DEBUG_BALL_SPIN
    {
@@ -1137,14 +1135,14 @@ void Renderer::RenderFrame()
    // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
    if (g_pplayer->m_headTracking)
    {
-      Matrix3D m_matView;
-      Matrix3D m_matProj[2];
       #ifndef __STANDALONE__
-      BAMView::createProjectionAndViewMatrix(&m_matProj[0]._11, &m_matView._11);
-      #endif
-      m_mvp->SetView(m_matView);
+      Matrix3D matView;
+      Matrix3D matProj[2];
+      BAMView::createProjectionAndViewMatrix(&matProj[0]._11, &matView._11);
+      m_mvp->SetView(matView);
       for (unsigned int eye = 0; eye < m_mvp->m_nEyes; eye++)
-         m_mvp->SetProj(eye, m_matProj[eye]);
+         m_mvp->SetProj(eye, matProj[eye]);
+      #endif
    }
 
    // Start from the prerendered parts/background or a clear background for VR
@@ -2390,7 +2388,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
    {
       g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      m_renderDevice->SetRenderTarget("ImGui"s, outputBackBuffer, true, true);
+      m_renderDevice->SetRenderTarget("ImGui"s, renderedRT, true, true);
       m_renderDevice->RenderLiveUI();
       g_frameProfiler.ExitProfileSection();
    }
