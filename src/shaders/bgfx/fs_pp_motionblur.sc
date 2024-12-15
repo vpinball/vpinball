@@ -99,8 +99,9 @@ void main()
 			// Intersection: build up render at current sample from corresponding points from previous and current renders
 			const vec3 intersect_ofs = (b - sqrt(det)) * rayDirection - sample_ball_pos; // intersection position relative to sphere center
 			#ifdef STEREO
-				vec4 prev_proj = mul(matProj[int(v_eye)], vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
-				vec4 cur_proj  = mul(matProj[int(v_eye)], vec4(ball_pos      + intersect_ofs, 1.0));
+	            // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+				vec4 prev_proj = mul(matProj[int(round(v_eye))], vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
+				vec4 cur_proj  = mul(matProj[int(round(v_eye))], vec4(ball_pos      + intersect_ofs, 1.0));
 			#else
 				vec4 prev_proj = mul(matProj, vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
 				vec4 cur_proj  = mul(matProj, vec4(ball_pos      + intersect_ofs, 1.0));
