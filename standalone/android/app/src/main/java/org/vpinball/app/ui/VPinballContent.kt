@@ -77,10 +77,6 @@ fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
                 )
             }
 
-            if (state.loading) {
-                LoadingScreen(state.table!!, state.progress, state.status)
-            }
-
             if (state.playing) {
                 if (state.touchInstructions) {
                     TouchInstructionsScreen()
@@ -98,6 +94,10 @@ fun VPinballContent(viewModel: VPinballViewModel = koinActivityViewModel()) {
                         )
                     }
                 }
+            }
+
+            if (state.loading) {
+                LoadingScreen(state.table!!, state.progress, state.status)
             }
 
             if (state.error != null) {

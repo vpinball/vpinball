@@ -16,6 +16,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.vpinball.app.data.entity.PinTable
 import org.vpinball.app.jni.VPinballCustomTableOption
@@ -135,6 +136,7 @@ object VPinballManager {
                 VPinballEvent.PLAYER_CLOSING -> {
                     log(VPinballLogLevel.INFO, "event=${event.name}")
                     if (error == null) {
+                        runBlocking { delay(500) }
                         captureAndSaveBitmap()
                     }
                 }
