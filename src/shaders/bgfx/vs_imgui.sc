@@ -16,8 +16,10 @@ void main()
 			ofsPos.x -= u_stereoOfs.x;
 		gl_Layer = gl_InstanceID;
 	#endif
-	vec4 pos = mul(u_viewProj, ofsPos );
+	vec4 pos = mul(u_viewProj, ofsPos);
 	gl_Position = vec4(pos.x, pos.y, 0.0, 1.0);
+	
 	v_texcoord0 = a_texcoord0;
-	v_color0    = a_color0 * u_sdrScale;
+
+	v_color0 = a_color0 * u_sdrScale;
 }
