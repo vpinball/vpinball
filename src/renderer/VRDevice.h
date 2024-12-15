@@ -133,5 +133,7 @@ private:
    MeshBuffer* m_visibilityMask = nullptr;
 
    class XRGraphicBackend* m_backend = nullptr;
+
+   float m_sceneSize = 0.f;
 #endif
 };
