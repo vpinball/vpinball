@@ -823,6 +823,37 @@ void VRDevice::CreateSession()
 
    m_visibilityMaskDirty = true;
 
+   // Evaluate scene size to be able to define a good far plane
+   // Adjust near/far plane for each projected bounding box
+   vector<Vertex3Ds> bounds;
+   bounds.reserve(16);
+   Vertex3Ds sceneMin(FLT_MAX, FLT_MAX, FLT_MAX);
+   Vertex3Ds sceneMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+   for (IEditable* editable : g_pplayer->m_ptable->m_vedit)
+   {
+      bool prevVisibility;
+      Primitive* prim = editable->GetItemType() == ItemTypeEnum::eItemPrimitive ? static_cast<Primitive*>(editable) : nullptr;
+      if (prim)
+      {
+         prevVisibility = prim->m_d.m_visible;
+         prim->m_d.m_visible = true;
+      }
+      editable->GetBoundingVertices(bounds, nullptr);
+      if (prim)
+         prim->m_d.m_visible = prevVisibility;
+      for (auto& v : bounds)
+      {
+         sceneMin.x = min(sceneMin.x, v.x);
+         sceneMin.y = min(sceneMin.y, v.y);
+         sceneMin.z = min(sceneMin.z, v.z);
+         sceneMax.x = max(sceneMax.x, v.x);
+         sceneMax.y = max(sceneMax.y, v.y);
+         sceneMax.z = max(sceneMax.z, v.z);
+      }
+      bounds.clear();
+   }
+   m_sceneSize = (sceneMax - sceneMin).Length();
+
    // Create an XrSessionCreateInfo structure.
    XrSessionCreateInfo sessionCI { XR_TYPE_SESSION_CREATE_INFO };
    sessionCI.next = m_backend->GetGraphicsBinding();
@@ -1141,9 +1172,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 
       if (rendered)
       {
-         const float zNear = 0.2f;
-         const float zFar = 15.f;
          const float vpuScale = 0.0254f * 1.0625f / 50.f;
+         const float zNear = 0.2f; // 20cm in front of player
+         const float zFar = m_sceneSize * vpuScale; // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
          XrPosef medianPose = views[0].pose;
