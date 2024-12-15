@@ -15,14 +15,18 @@
 #define texNoLod(tex, pos) texture2DLod(tex, pos, 0.0)
 
 #ifdef STEREO
-#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2DARRAY(_name, _reg)
-#define texStereo(tex, pos) texture2DArray(tex, vec3((pos).x, (pos).y, v_eye))
-#define texStereoLod(tex, pos, lod) texture2DArrayLod(tex, vec3((pos).x, (pos).y, v_eye), lod)
+	#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2DARRAY(_name, _reg)
+	#define texStereo(tex, pos) texture2DArray(tex, vec3((pos).x, (pos).y, v_eye))
+	#define texStereoLod(tex, pos, lod) texture2DArrayLod(tex, vec3((pos).x, (pos).y, v_eye), lod)
+	#define N_EYES 2
 #else
-#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2D(_name, _reg)
-#define texStereo(tex, pos) texture2D(tex, pos)
-#define texStereoLod(tex, pos, lod) texture2DLod(tex, pos, lod)
+	#define SAMPLER2DSTEREO(_name, _reg) SAMPLER2D(_name, _reg)
+	#define texStereo(tex, pos) texture2D(tex, pos)
+	#define texStereoLod(tex, pos, lod) texture2DLod(tex, pos, lod)
+	#define N_EYES 1
+	#define v_eye 0.
 #endif
+
 #define texStereoNoLod(tex, pos) texStereoLod(tex, pos, 0.0)
 
 #if BGFX_SHADER_LANGUAGE_GLSL || BGFX_SHADER_LANGUAGE_SPIRV

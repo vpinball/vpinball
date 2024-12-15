@@ -19,9 +19,11 @@ uniform mat4 matWorldViewInverse;
 #ifdef STEREO
 uniform mat4 matWorldViewProj[2];
 uniform mat4 matProj[2];
+#define mProj matProj[int(v_eye)]
 #else
 uniform mat4 matWorldViewProj;
 uniform mat4 matProj;
+#define mProj matProj
 #endif
 
 SAMPLER2D      (tex_ball_color, 0);     // base texture (used as a reflection map)
@@ -147,16 +149,12 @@ void main()
 
     // New implementation: use previous frame as a reflection probe instead of computing a simplified render (this is faster and more accurate, support playfield mesh, lighting,... but there can be artefacts, with self reflection,...)
     // TODO use previous frame projection instead of the one of the current frame to limit reflection distortion (still this is minimal)
-    #ifdef STEREO
-    const vec4 proj = mul(matProj[int(v_eye)], vec4(playfield_hit, 1.0));
-    #else
-    const vec4 proj = mul(matProj, vec4(playfield_hit, 1.0));
-    #endif
+    const vec4 proj = mul(mProj, vec4(playfield_hit, 1.0));
     #if BGFX_SHADER_LANGUAGE_GLSL
-    // OpenGL and OpenGL ES have reversed render targets
-    const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, proj.y) * (0.5 / proj.w);
+		// OpenGL and OpenGL ES have reversed render targets
+		const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, proj.y) * (0.5 / proj.w);
     #else
-    const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
+		const vec2 uvp = vec2(0.5, 0.5) + vec2(proj.x, -proj.y) * (0.5 / proj.w);
     #endif
     const vec3 playfieldColor = 0.25 * (
           texStereo(tex_ball_playfield, uvp + vec2(w_h_disableLighting.x, 0.)).rgb

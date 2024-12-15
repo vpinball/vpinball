@@ -122,6 +122,7 @@ if ($gen_dmd)
 	Write-Host "`n>>>>>>>>>>>>>>>> DMD & sprite shaders"
 	New-Item -Path . -Name "../bgfx_dmd.h" -ItemType "File" -Force -Value "// DMD Shaders`n"
 	Process-Shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_"  "vertex"
+	Process-Shader "vs_dmd.sc" "dmd.h" "vs_dmd_noworld_st_"  "vertex" @("STEREO")
 	foreach ($variant3 in @("CLIP", "NOCLIP"))
 	{
 	  Process-Shader "vs_dmd.sc" "dmd.h"  ("vs_dmd_world_" + $variant3.ToLower() + "_")    "vertex" @("WORLD", $variant3)
