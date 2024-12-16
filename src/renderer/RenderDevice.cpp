@@ -707,7 +707,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    memset(m_samplerStateCache, 0, sizeof(m_samplerStateCache));
 
-   #ifdef __OPENGLES__
+   #if defined(__OPENGLES__) || (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
    m_useLowPrecision = true;
    #else
    m_useLowPrecision = false;
