@@ -335,8 +335,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    if (g_pplayer->m_vrDevice)
    {
       init.type = bgfx::RendererType::Direct3D11; // TODO support other backends
-      init.resolution.width = g_pplayer->m_vrDevice->GetEyeWidth(); // Needed for bgfx::clear to work
-      init.resolution.height = g_pplayer->m_vrDevice->GetEyeHeight(); // Needed for bgfx::clear to work
+      init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
+      init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
       init.resolution.reset &= ~BGFX_RESET_VSYNC; // Disable display VSync as we are synced by OpenXR on the headset display
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext(); // Use the context selected by OpenXR
    }
@@ -392,7 +392,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    // TODO the headset output should be separated from the preview window, each with the right RT definition
    if (g_pplayer->m_vrDevice)
    {
-      rd->m_outputWnd[0]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_STEREO, init.resolution.width, init.resolution.height, back_buffer_format), isWcg);
+      rd->m_outputWnd[1] = rd->m_outputWnd[0]; // OS window is the preview window (first window is supposed to be main rendered window, as it is directly accessed by other objects, expecting a single render window)
+      rd->m_outputWnd[1]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, initReq.resolution.width, initReq.resolution.height, back_buffer_format), isWcg);
+      rd->m_outputWnd[0] = new VPX::Window(init.resolution.width, init.resolution.height);
+      rd->m_nOutputWnd = 2;
       rd->m_framePending = true; // Delay first frame preparation
    }
    else
@@ -411,8 +414,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    #ifdef ENABLE_XR
    if (g_pplayer->m_vrDevice)
    {
-      // TODO split preview backbuffer from headset backbuffer
-      RenderTarget* previewRT = new RenderTarget(rd, SurfaceType::RT_DEFAULT, init.resolution.width, init.resolution.height, back_buffer_format);
       // OpenXR renderloop, synchronized on headset (using xrWaitFrame), with game logic preparing frames when headset request them
       while (rd->m_renderDeviceAlive)
       {
@@ -420,7 +421,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          g_pplayer->m_vrDevice->PollEvents();
 
          // Let OpenXR throttle rendering, preparing frame on demand when view positions are acquired and predicted display time is defined
-         g_pplayer->m_vrDevice->RenderFrame(rd, [rd, previewRT](RenderTarget * vrRenderTarget)
+         g_pplayer->m_vrDevice->RenderFrame(rd, [rd](RenderTarget * vrRenderTarget)
          {
             // FIXME No VR target, we should still render to the preview window
             if (vrRenderTarget == nullptr)
@@ -446,10 +447,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
                #endif
                std::lock_guard lock(rd->m_frameMutex);
-               // TODO implement a clean preview
-               rd->SetRenderTarget("Render Scene"s, previewRT);
-               rd->AddRenderTargetDependency(vrRenderTarget);
-               rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
                rd->SubmitRenderFrame();
                #ifdef MSVC_CONCURRENCY_VIEWER
                delete tagSpan;
@@ -468,6 +465,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          });
       }
       g_pplayer->m_vrDevice->ReleaseSession();
+      delete rd->m_outputWnd[0];
+      rd->m_outputWnd[0] = rd->m_outputWnd[1];
+      rd->m_nOutputWnd = 1;
    }
    else
    #endif
@@ -538,6 +538,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    
    // Wait until main thread has released all native ressources
    rd->m_frameReadySem.wait();
+   delete rd->m_outputWnd[0]->GetBackBuffer();
+   rd->m_outputWnd[0]->SetBackBuffer(nullptr);
    bgfx::shutdown();
 }
 #endif
@@ -637,7 +639,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
                          | BGFX_RESET_MAXANISOTROPY;                                    /* Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?) */
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
-   switch (m_outputWnd[0]->GetBitDepth())
+   switch (wnd->GetBitDepth())
    {
    case 32: init.resolution.format = bgfx::TextureFormat::RGBA8; break;
    case 30: init.resolution.format = bgfx::TextureFormat::RGB10A2; break;

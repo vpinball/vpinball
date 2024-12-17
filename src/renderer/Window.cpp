@@ -18,9 +18,32 @@
 namespace VPX
 {
 
+Window::Window(const int width, const int height)
+   : m_settingsSection(Settings::PlayerVR)
+   , m_settingsPrefix("Headset")
+   , m_isVR(true)
+{
+   m_hidpiScale = 1.f;
+   m_width = width;
+   m_height = height;
+   m_display = -1;
+   m_adapter = -1;
+   m_screenwidth = width;
+   m_screenheight = height;
+   m_fullscreen = true;
+   //m_refreshrate;
+   //m_bitdepth;
+   m_sdrWhitePoint = 1.f;
+   m_hdrHeadRoom = 1.f;
+   m_wcgDisplay = false;
+   m_wcgBackbuffer = false;
+   m_backBuffer = nullptr;
+}
+
 Window::Window(const string &title, const Settings::Section section, const string &settingsPrefix)
    : m_settingsSection(section)
    , m_settingsPrefix(settingsPrefix)
+   , m_isVR(false)
 {
    const Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
    m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
@@ -326,6 +349,8 @@ Window::Window(const string &title, const Settings::Section section, const strin
 
 Window::~Window()
 {
+   if (m_isVR)
+      return;
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_DestroyWindow(m_nwnd);
    #else // Win32 Windowing
@@ -335,6 +360,8 @@ Window::~Window()
 
 void Window::Show(const bool show)
 {
+   if (m_isVR)
+      return;
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
       if (show)
          SDL_ShowWindow(m_nwnd);
@@ -347,6 +374,8 @@ void Window::Show(const bool show)
 
 void Window::RaiseAndFocus(const bool raise)
 {
+   if (m_isVR)
+      return;
    #if defined(ENABLE_SDL_VIDEO) // SDL Windowing
       SDL_RaiseWindow(m_nwnd);
    #else // Win32 Windowing
@@ -367,6 +396,12 @@ void Window::RaiseAndFocus(const bool raise)
 
 void Window::GetPos(int& x, int& y) const
 {
+   if (m_isVR)
+   {
+      x = 0;
+      y = 0;
+      return;
+   }
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_GetWindowPosition(m_nwnd, &x, &y);
    #else // Win32 Windowing
@@ -379,6 +414,8 @@ void Window::GetPos(int& x, int& y) const
 
 void Window::SetPos(const int x, const int y)
 {
+   if (m_isVR)
+      return;
    #ifdef ENABLE_SDL_VIDEO // SDL Windowing
       SDL_SetWindowPosition(m_nwnd, x, y);
    #else // Win32 Windowing

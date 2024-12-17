@@ -85,6 +85,10 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, bgfx:
    , m_color_tex(colorTex)
    , m_depth_tex(depthTex)
 {
+   if (bgfx::isValid(colorTex))
+      m_color_sampler = new Sampler(rd, type, colorTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
+   if (bgfx::isValid(depthTex))
+      m_depth_sampler = new Sampler(rd, type, depthTex, width, height, false, true, SA_UNDEFINED, SA_UNDEFINED, SF_UNDEFINED);
 }
 #endif
 
@@ -577,8 +581,36 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    }
    else
    {
-      // FIXME BGFX Not yet implemented, needed for VR preview
-      // assert(false);
+      assert((dstLayer == 0) || ((dstLayer == -1) && (dest->m_nLayers == 1)));
+      assert(srcLayer >= 0);
+      const float px1 = 2.f * (static_cast<float>(x2) / static_cast<float>(dest->GetWidth())) - 1.f;
+      const float py1 = 2.f * (static_cast<float>(y2)      / static_cast<float>(dest->GetHeight())) - 1.f;
+      const float px2 = 2.f * (static_cast<float>(x2 + w2) / static_cast<float>(dest->GetWidth())) - 1.f;
+      const float py2 = 2.f * (static_cast<float>(y2 + h2) / static_cast<float>(dest->GetHeight())) - 1.f;
+      const float qx1 =        static_cast<float>(x1)      / static_cast<float>(m_width);
+      const float qy1 = 1.f -  static_cast<float>(y1) / static_cast<float>(m_height);
+      const float qx2 =        static_cast<float>(x1 + w1) / static_cast<float>(m_width);
+      const float qy2 = 1.f -  static_cast<float>(y1 + h1) / static_cast<float>(m_height);
+      Vertex3D_TexelOnly verts[4] = {
+         { px1, py1, 0.0f, qx1, qy1 },
+         { px2, py1, 0.0f, qx2, qy1 },
+         { px1, py2, 0.0f, qx1, qy2 },
+         { px2, py2, 0.0f, qx2, qy2 }
+      };
+      Shader* shader = m_rd->m_FBShader;
+      shader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+      shader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
+      shader->SetInt(SHADER_layer, srcLayer);
+      shader->SetTexture(SHADER_tex_fb_unfiltered, GetColorSampler());
+      shader->Begin();
+      bgfx::TransientVertexBuffer tvb; // TODO only allocate one per frame instead of one per CopyTo
+      bgfx::allocTransientVertexBuffer(&tvb, 4, *m_rd->m_pVertexTexelDeclaration);
+      memcpy(tvb.data, verts, 4 * sizeof(Vertex3D_TexelOnly));
+      bgfx::setVertexBuffer(0, &tvb);
+      bgfx::setInstanceCount(1);
+      bgfx::setState(m_rd->m_bgfxState | BGFX_STATE_PT_TRISTRIP);
+      bgfx::submit(m_rd->m_activeViewId, shader->GetCore());
+      shader->End();
    }
    
 #elif defined(ENABLE_OPENGL)
