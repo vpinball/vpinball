@@ -1174,7 +1174,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
       {
          const float vpuScale = 0.0254f * 1.0625f / 50.f;
          const float zNear = 0.2f; // 20cm in front of player
-         const float zFar = m_sceneSize * vpuScale; // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
+         const float zFar = max(5.f, m_sceneSize * vpuScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
          XrPosef medianPose = views[0].pose;

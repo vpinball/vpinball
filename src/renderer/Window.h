@@ -16,7 +16,8 @@ namespace VPX
 class Window final
 {
 public:
-   Window(const string &title, const Settings::Section section, const string &settingsPrefix);
+   Window(const string &title, const Settings::Section section, const string &settingsPrefix); // OS Window
+   Window(const int width, const int height); // VR Output
    ~Window();
 
    void GetPos(int&x, int &y) const;
@@ -35,7 +36,7 @@ public:
    void Show(const bool show = true);
    void RaiseAndFocus(const bool raise = true);
 
-   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { /* assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); */ m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
+   void SetBackBuffer(RenderTarget* rt, const bool wcgBackbuffer = false) { assert(rt == nullptr || (rt->GetWidth() == m_width && rt->GetHeight() == m_height)); m_backBuffer = rt; m_wcgBackbuffer = wcgBackbuffer; }
    RenderTarget* GetBackBuffer() const { return m_backBuffer; }
    bool IsWCGBackBuffer() const { return m_wcgBackbuffer; } // Return true for HDR10/BT.2100 colorspace, otherwise Rec 709 colorspace
 
@@ -92,6 +93,7 @@ private:
    float m_hdrHeadRoom = 1.f;
    bool m_wcgDisplay = false;
    bool m_wcgBackbuffer = false;
+   const bool m_isVR;
 
    class RenderTarget* m_backBuffer = nullptr;
 

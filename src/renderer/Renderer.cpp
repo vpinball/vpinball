@@ -173,7 +173,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
    int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
 
-   if ((m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
+   if (m_renderDevice->GetOutputBackBuffer() && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
    #if defined(ENABLE_BGFX)
@@ -2398,6 +2398,8 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    {
       if (m_stereo3D == STEREO_VR)
       {
+         int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
+
          #if defined(ENABLE_XR)
             // Rendering is already directly being performed to the swapchain image, so nothing to do except for depth buffer
             // TODO we should directly use the swapchain depth buffer too to avoid the copy
@@ -2409,61 +2411,101 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
                m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture(), true);
                m_renderDevice->BlitRenderTarget(GetBackBufferTexture(), outputBackBuffer, false, true);
             }
-            
+
          #elif defined(ENABLE_VR)
-            // Copy each eye to the HMD texture and render the wanted preview if activated
-            // TODO preview and OpenVR submit should be splitted (and preview should be shared with OpenXR)
-            
+            // Copy each eye to the HMD texture
             assert(renderedRT != outputBackBuffer);
-            int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
             
             RenderTarget *leftTexture = GetOffscreenVR(0);
             m_renderDevice->SetRenderTarget("Left Eye"s, leftTexture, false);
             m_renderDevice->AddRenderTargetDependency(renderedRT);
             m_renderDevice->BlitRenderTarget(renderedRT, leftTexture, true, false, 0, 0, w, h, 0, 0, w, h, 0, 0);
-            if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
+            if (g_pplayer->m_liveUI->IsTweakMode()) // FIXME: unsupported / Render as an overlay in VR (not in preview) at the eye resolution, without depth
                m_renderDevice->RenderLiveUI();
 
             RenderTarget *rightTexture = GetOffscreenVR(1);
             m_renderDevice->SetRenderTarget("Right Eye"s, rightTexture, false);
             m_renderDevice->AddRenderTargetDependency(renderedRT);
             m_renderDevice->BlitRenderTarget(renderedRT, rightTexture, true, false, 0, 0, w, h, 0, 0, w, h, 1, 0);
-            if (g_pplayer->m_liveUI->IsTweakMode()) // Render as an overlay in VR (not in preview) at the eye resolution, without depth
+            if (g_pplayer->m_liveUI->IsTweakMode()) // FIXME: unsupported / Render as an overlay in VR (not in preview) at the eye resolution, without depth
                m_renderDevice->RenderLiveUI();
+         #endif
 
-            RenderTarget* outRT = outputBackBuffer;
-            m_renderDevice->SetRenderTarget("VR Preview"s, outRT, false);
+         // Blit preview
+         #if defined(ENABLE_XR)
+            assert(m_renderDevice->m_nOutputWnd == 2); // For the time being, we rely on the fact that the First output is the VR Headset, and the second is the VR preview OS window
+            RenderTarget* previewRT = m_renderDevice->m_outputWnd[1]->GetBackBuffer();
+            m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false, true);
+
+         #elif defined(ENABLE_VR)
+            RenderTarget* previewRT = outputBackBuffer;
+            m_renderDevice->SetRenderTarget("VR Preview"s, previewRT, false);
             m_renderDevice->AddRenderTargetDependency(leftTexture); // To ensure blit is made
             m_renderDevice->AddRenderTargetDependency(rightTexture); // To ensure blit is made
-            m_renderDevice->AddRenderTargetDependency(renderedRT);
-            const int outW = m_vrPreview == VRPREVIEW_BOTH ? outRT->GetWidth() / 2 : outRT->GetWidth(), outH = outRT->GetHeight();
-            float ar = (float)w / (float)h, outAr = (float)outW / (float)outH;
-            int x = 0, y = 0;
-            int fw = w, fh = h;
-            if ((m_vrPreviewShrink && ar < outAr) || (!m_vrPreviewShrink && ar > outAr))
-            { // Fit on Y
-               const int scaledW = (int) (h * outAr);
-               x = (w - scaledW) / 2;
-               fw = scaledW;
-            }
-            else
-            { // Fit on X
-               const int scaledH = (int)(w / outAr);
-               y = (h - scaledH) / 2;
-               fh = scaledH;
-            }
-            if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
-               m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+         #endif
+         m_renderDevice->AddRenderTargetDependency(renderedRT);
+         const int previewW = m_vrPreview == VRPREVIEW_BOTH ? previewRT->GetWidth() / 2 : previewRT->GetWidth(), previewH = previewRT->GetHeight();
+         float ar = (float)w / (float)h, previewAr = (float)previewW / (float)previewH;
+         int x = 0, y = 0;
+         int fw = w, fh = h;
+         if ((m_vrPreviewShrink && ar < previewAr) || (!m_vrPreviewShrink && ar > previewAr))
+         { // Fit on Y
+            const int scaledW = (int)(h * previewAr);
+            x = (w - scaledW) / 2;
+            fw = scaledW;
+         }
+         else
+         { // Fit on X
+            const int scaledH = (int)(w / previewAr);
+            y = (h - scaledH) / 2;
+            fh = scaledH;
+         }
+         if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
+            m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+
+         #if defined(ENABLE_XR)
+            Vertex3D_TexelOnly verts[4] =
+            {
+               {  1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
+               { -1.0f,  1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y     ) / h },
+               {  1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
+               { -1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
+            };
+            if (bgfx::getCaps()->originBottomLeft)
+               for (int i = 0; i < 4; i++)
+                  verts[i].tv = -verts[i].tv;
+            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+            m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
+            //m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
+            m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade, 0.f, 0.f, 0.f, 0.f);
+            m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*/ /*203.f*/ 350.f / 10000.f, 0.f); 
+            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_agxtonemap);
             if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
             {
-               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+               m_renderDevice->m_FBShader->SetInt(SHADER_layer, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1);
+               m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
             }
             else if (m_vrPreview == VRPREVIEW_BOTH)
             {
-               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, 0, 0, outW, outH, 0, 0);
-               m_renderDevice->BlitRenderTarget(renderedRT, outRT, true, false, x, y, fw, fh, outW, 0, outW, outH, 1, 0);
+               verts[0].x = verts[2].x = 0.f;
+               m_renderDevice->m_FBShader->SetInt(SHADER_layer, 0);
+               m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+               verts[0].x = verts[2].x = 1.f;
+               verts[1].x = verts[3].x = 0.f;
+               m_renderDevice->m_FBShader->SetInt(SHADER_layer, 1);
+               m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
             }
 
+         #elif defined(ENABLE_VR)
+            if (m_vrPreview == VRPREVIEW_LEFT || m_vrPreview == VRPREVIEW_RIGHT)
+            {
+               m_renderDevice->BlitRenderTarget(renderedRT, previewRT, true, false, x, y, fw, fh, 0, 0, previewW, previewH, m_vrPreview == VRPREVIEW_LEFT ? 0 : 1, 0);
+            }
+            else if (m_vrPreview == VRPREVIEW_BOTH)
+            {
+               m_renderDevice->BlitRenderTarget(renderedRT, previewRT, true, false, x, y, fw, fh, 0, 0, previewW, previewH, 0, 0);
+               m_renderDevice->BlitRenderTarget(renderedRT, previewRT, true, false, x, y, fw, fh, previewW, 0, previewW, previewH, 1, 0);
+            }
             m_renderDevice->SubmitVR(renderedRT);
          #endif
       }
