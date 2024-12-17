@@ -389,12 +389,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    case bgfx::TextureFormat::RGBA8: back_buffer_format = colorFormat::RGBA8; break;
    default: assert(false); back_buffer_format = colorFormat::RGBA8;
    }
-   // TODO the headset output should be separated from the preview window, each with the right RT definition
    if (g_pplayer->m_vrDevice)
    {
       rd->m_outputWnd[1] = rd->m_outputWnd[0]; // OS window is the preview window (first window is supposed to be main rendered window, as it is directly accessed by other objects, expecting a single render window)
       rd->m_outputWnd[1]->SetBackBuffer(new RenderTarget(rd, SurfaceType::RT_DEFAULT, initReq.resolution.width, initReq.resolution.height, back_buffer_format), isWcg);
-      rd->m_outputWnd[0] = new VPX::Window(init.resolution.width, init.resolution.height);
+      rd->m_outputWnd[0] = new VPX::Window(g_pplayer->m_vrDevice->GetEyeWidth(), g_pplayer->m_vrDevice->GetEyeHeight());
       rd->m_nOutputWnd = 2;
       rd->m_framePending = true; // Delay first frame preparation
    }
