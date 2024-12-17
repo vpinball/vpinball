@@ -2398,6 +2398,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    {
       if (m_stereo3D == STEREO_VR)
       {
+      #if defined(ENABLE_XR) || defined(ENABLE_VR)
          int w = renderedRT->GetWidth(), h = renderedRT->GetHeight();
 
          #if defined(ENABLE_XR)
@@ -2466,17 +2467,15 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          #if defined(ENABLE_XR)
             Vertex3D_TexelOnly verts[4] =
             {
-               {  1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
-               { -1.0f,  1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y     ) / h },
-               {  1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
-               { -1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
+               { -1.0f,  1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y     ) / h },
+               {  1.0f,  1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y     ) / h },
+               { -1.0f, -1.0f, 0.0f, static_cast<float>(x     ) / w, static_cast<float>(y + fh) / h },
+               {  1.0f, -1.0f, 0.0f, static_cast<float>(x + fw) / w, static_cast<float>(y + fh) / h }
             };
             if (bgfx::getCaps()->originBottomLeft)
                for (int i = 0; i < 4; i++)
-                  verts[i].tv = -verts[i].tv;
+                  verts[i].tv = 1.f - verts[i].tv;
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-            m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, 1.f, 1.f, 1.f, 1.f);
-            //m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
             m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade, 0.f, 0.f, 0.f, 0.f);
             m_renderDevice->m_FBShader->SetVector(SHADER_exposure_wcg, m_exposure, 1.f, /*100.f*/ /*203.f*/ 350.f / 10000.f, 0.f); 
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_agxtonemap);
@@ -2487,11 +2486,12 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             }
             else if (m_vrPreview == VRPREVIEW_BOTH)
             {
-               verts[0].x = verts[2].x = 0.f;
+               verts[0].x = verts[2].x = -1.f;
+               verts[1].x = verts[3].x = 0.f;
                m_renderDevice->m_FBShader->SetInt(SHADER_layer, 0);
                m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
-               verts[0].x = verts[2].x = 1.f;
-               verts[1].x = verts[3].x = 0.f;
+               verts[0].x = verts[2].x = 0.f;
+               verts[1].x = verts[3].x = 1.f;
                m_renderDevice->m_FBShader->SetInt(SHADER_layer, 1);
                m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
             }
@@ -2508,6 +2508,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             }
             m_renderDevice->SubmitVR(renderedRT);
          #endif
+      #endif
       }
       else if (IsAnaglyphStereoMode(m_stereo3D) || Is3DTVStereoMode(m_stereo3D))
       {
