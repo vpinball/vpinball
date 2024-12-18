@@ -2,6 +2,15 @@
 
 #pragma once
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#ifdef _M_ARM64
+#include <arm64intr.h>
+#endif
+#elif (defined(__x86_64__) || defined(__i386__))
+#include <x86intrin.h>
+#endif
+
 #ifdef min
 #undef min
 #endif
@@ -484,8 +493,6 @@ __forceinline unsigned int swap_byteorder(unsigned int x)
 {
 #if defined(__GNUC__) || defined(__clang__)
    return __builtin_bswap32(x);
-#elif defined(__linux__)
-   return bswap_32(x);
 #elif defined(_MSC_VER)
    return _byteswap_ulong(x);
 #else
@@ -556,7 +563,7 @@ __forceinline float rand_mt_m11() { return (float)((int)mwc64x(mwc64x_state) >> 
 __forceinline float radical_inverse(unsigned int i)
 {
 #if (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(_MSC_VER)
-   return (float)(_arm_rbit(i) >> 8) * 0.000000059604644775390625f;
+   return (float)(__rbit(i) >> 8) * 0.000000059604644775390625f;
 #elif (defined(_M_ARM) || defined(_M_ARM64) || defined(__arm__) || defined(__arm64__) || defined(__aarch64__)) && defined(__clang__) //!! gcc does not have an intrinsic yet
    return (float)(__builtin_arm_rbit(i) >> 8) * 0.000000059604644775390625f;
 #elif defined(__clang__)
@@ -577,9 +584,9 @@ __forceinline float radical_inverse(unsigned int i)
    i = ((i >> 4) & 0x0f0f0f0f) | ((i & 0x0f0f0f0f)*16);
    i = ((i >> 8) & 0x00ff00ff) | ((i & 0x00ff00ff)*256);
    i = i*65536 | (i >> 16);*/
-   i = _rotr(i & 0xaaaaaaaa, 2) | (i & 0x55555555);
-   i = _rotr(i & 0x66666666, 4) | (i & 0x99999999);
-   i = _rotr(i & 0x1e1e1e1e, 8) | (i & 0xe1e1e1e1);
+   i = _rotr(i & 0xaaaaaaaau, 2) | (i & 0x55555555u);
+   i = _rotr(i & 0x66666666u, 4) | (i & 0x99999999u);
+   i = _rotr(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
    i = _rotl(i, 7);
    return (float)(swap_byteorder(i) >> 8) * 0.000000059604644775390625f;
 #endif
