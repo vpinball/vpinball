@@ -2556,14 +2556,14 @@ Sub PinMAMETimer_Timer
 	End If
 
 	On Error Resume Next
-		If UpdateVisual And UseDMD Then
+		If UpdateVisual And UseDMD And HasStateBlock = 0 Then
 			DMDp = Controller.RawDmdPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth
 				DMDHeight = Controller.RawDmdHeight
 				DMDPixels = DMDp
 			End If
-		ElseIf UpdateVisual And UseColoredDMD Then
+		ElseIf UpdateVisual And UseColoredDMD And HasStateBlock = 0 Then
 			DMDp = Controller.RawDmdColoredPixels
 			If Not IsEmpty(DMDp) Then
 				DMDWidth = Controller.RawDmdWidth

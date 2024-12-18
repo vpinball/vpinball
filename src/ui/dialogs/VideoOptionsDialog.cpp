@@ -21,7 +21,7 @@ protected:
    void EndLoad() { m_loading--; }
    void ApplyChanges();
 
-   void InitDisplayControls(Settings::Section wndSection, string wndSettingPrefix);
+   void InitDisplayControls(const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable);
    void LoadDisplaySettings();
    void SaveDisplaySettings();
 
@@ -50,6 +50,7 @@ private:
    vector<VPX::Window::VideoMode> m_allVideoModes;
    Settings::Section m_wndSection = Settings::Plugin00;
    string m_wndSettingPrefix;
+   bool m_wndEmbeddable;
    CComboBox m_wndDisplay;
    CListBox m_wndVideoModes;
    CComboBox m_wndAspectRatio;
@@ -58,6 +59,8 @@ private:
    CButton m_wndForce10bit;
    CEdit m_wndWidth;
    CEdit m_wndHeight;
+   CEdit m_wndX;
+   CEdit m_wndY;
 };
 
 class RenderOptPage : public VideoOptionPropPage
@@ -216,10 +219,8 @@ private:
 
    int m_editedProfile = -1;
 
-   CComboBox m_viewMode;
-
-   CComboBox m_tonemapper;
-   CEdit m_exposure;
+   CComboBox m_defaultProfile;
+   ColorButton m_defaultTint;
 
    CEdit m_frameImage;
    CEdit m_framePadLeft;
@@ -227,12 +228,11 @@ private:
    CEdit m_framePadRight;
    CEdit m_framePadBottom;
 
-   CComboBox m_rendererProfile;
+   CComboBox m_dmdType;
    CButton m_legacyRenderer;
 
    CButton m_dmdScaleFX;
 
-   CColorDialog m_colorDialog;
    ColorButton m_dotTint;
    CEdit m_dotSize;
    CEdit m_dotBrightness;
@@ -249,6 +249,8 @@ private:
    CEdit m_glassPadBottom;
    ColorButton m_glassAmbiantLight;
    CEdit m_glassDotLight;
+
+   CColorDialog m_colorDialog;
 };
 
 class AlphaViewOptPage : public VideoOptionPropPage
@@ -396,10 +398,11 @@ void VideoOptionPropPage::BrowseImage(CEdit& editCtl)
 }
 
 
-void VideoOptionPropPage::InitDisplayControls(Settings::Section wndSection, string wndSettingPrefix)
+void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection, const string& wndSettingPrefix, const bool embeddable)
 {
    m_wndSection = wndSection;
    m_wndSettingPrefix = wndSettingPrefix;
+   m_wndEmbeddable = embeddable;
    AttachItem(IDC_DISPLAY_ID, m_wndDisplay);
    AddToolTip(m_wndDisplay, "Select Display for Video output.");
    AttachItem(IDC_SIZELIST, m_wndVideoModes);
@@ -414,12 +417,17 @@ void VideoOptionPropPage::InitDisplayControls(Settings::Section wndSection, stri
    AddToolTip(m_wndForce10bit, "Enforces 10Bit (WCG) rendering.\r\nRequires a corresponding 10Bit output capable graphics card and monitor.\r\nAlso requires to have exclusive fullscreen mode enforced (for now).");
    AttachItem(IDC_WIDTH_EDIT, m_wndWidth);
    AttachItem(IDC_HEIGHT_EDIT, m_wndHeight);
+   if (m_wndEmbeddable)
+   {
+      AttachItem(IDC_X_OFFSET_EDIT, m_wndX);
+      AttachItem(IDC_Y_OFFSET_EDIT, m_wndY);
+   }
    m_wndAspectRatio.SetRedraw(false);
    m_wndAspectRatio.AddString("Free");
    for (int j = 1; j < sizeof(aspectRatios) / sizeof(int2); j++)
    {
       char szT[128];
-      sprintf_s(szT, sizeof(szT), "%d x %d [%s]", max(aspectRatios[j].x, aspectRatios[j].y), min(aspectRatios[j].x, aspectRatios[j].y), aspectRatios[j].x > aspectRatios[j].y ? "Landscape" : "Portrait");
+      sprintf_s(szT, sizeof(szT), "%s: %d x %d", aspectRatios[j].x > aspectRatios[j].y ? "Landscape" : "Portrait" , max(aspectRatios[j].x, aspectRatios[j].y), min(aspectRatios[j].x, aspectRatios[j].y));
       m_wndAspectRatio.AddString(szT);
    }
    m_wndAspectRatio.SetRedraw(true);
@@ -429,7 +437,76 @@ void VideoOptionPropPage::InitDisplayControls(Settings::Section wndSection, stri
 void VideoOptionPropPage::UpdateFullscreenModesList()
 {
    int display = m_wndDisplay.GetCurSel();
-   int screenwidth = -1, screenheight = -1;//, x, y;
+   if (display < 0)
+      return;
+   if (m_wndEmbeddable)
+      display -= 2;
+
+   if (m_wndEmbeddable && (display == -2))
+   {
+      // Disabled
+      m_wndVideoModes.ShowWindow(0);
+      m_wndAspectRatio.ShowWindow(0);
+      m_wndFullscreen.ShowWindow(0);
+      m_wndWindowed.ShowWindow(0);
+      m_wndForce10bit.ShowWindow(0);
+      m_wndX.ShowWindow(0);
+      m_wndY.ShowWindow(0);
+      m_wndWidth.ShowWindow(0);
+      m_wndHeight.ShowWindow(0);
+      GetDlgItem(IDC_AR_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_X_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_Y_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_RESET_WINDOW).ShowWindow(0);
+      return;
+   }
+
+   if (m_wndEmbeddable && (display == -1))
+   {
+      // Display embedded in another display
+      m_wndVideoModes.ShowWindow(0);
+      m_wndAspectRatio.ShowWindow(1);
+      m_wndFullscreen.ShowWindow(0);
+      m_wndWindowed.ShowWindow(0);
+      m_wndForce10bit.ShowWindow(0);
+      m_wndX.ShowWindow(1);
+      m_wndY.ShowWindow(1);
+      m_wndWidth.ShowWindow(1);
+      m_wndHeight.ShowWindow(1);
+      GetDlgItem(IDC_AR_LABEL).ShowWindow(1);
+      GetDlgItem(IDC_X_LABEL).ShowWindow(1);
+      GetDlgItem(IDC_Y_LABEL).ShowWindow(1);
+      GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(1);
+      GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(1);
+      GetDlgItem(IDC_RESET_WINDOW).ShowWindow(0);
+      return;
+   }
+
+   m_wndFullscreen.ShowWindow(1);
+   m_wndWindowed.ShowWindow(1);
+   const bool fullscreen = m_wndFullscreen.GetCheck() == BST_CHECKED;
+   // Fullscreen settings
+   m_wndVideoModes.ShowWindow(fullscreen ? 1 : 0);
+   m_wndForce10bit.ShowWindow(fullscreen ? 1 : 0);
+   // Window settings
+   if (m_wndEmbeddable)
+   {
+      GetDlgItem(IDC_X_LABEL).ShowWindow(0);
+      GetDlgItem(IDC_Y_LABEL).ShowWindow(0);
+      m_wndX.ShowWindow(0);
+      m_wndY.ShowWindow(0);
+   }
+   GetDlgItem(IDC_AR_LABEL).ShowWindow(fullscreen ? 0 : 1);
+   m_wndAspectRatio.ShowWindow(fullscreen ? 0 : 1);
+   GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(fullscreen ? 0 : 1);
+   m_wndWidth.ShowWindow(fullscreen ? 0 : 1);
+   GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(fullscreen ? 0 : 1);
+   m_wndHeight.ShowWindow(fullscreen ? 0 : 1);
+   GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
+
+   int screenwidth = -1, screenheight = -1;
    vector<VPX::Window::DisplayConfig> displays;
    VPX::Window::GetDisplays(displays);
    for (const VPX::Window::DisplayConfig& displayConf : displays)
@@ -437,8 +514,6 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
       if ((display == -1 && displayConf.isPrimary) || display == displayConf.display)
       {
          display = displayConf.display;
-         //x = displayConf.left;
-         //y = displayConf.top;
          screenwidth = displayConf.width;
          screenheight = displayConf.height;
          break;
@@ -514,29 +589,44 @@ void VideoOptionPropPage::LoadDisplaySettings()
       m_wndForce10bit.EnableWindow(false);
    #endif
 
+   m_wndDisplay.SetRedraw(false);
+   m_wndDisplay.ResetContent();
+   m_wndDisplay.SetItemData((int)m_allVideoModes.size(), (DWORD)(m_allVideoModes.size() * 128));
+   int embedded = 2;
+   if (m_wndEmbeddable)
+   {
+      embedded = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Output", VPX::RenderOutput::OM_DISABLED);
+      m_wndDisplay.AddString("Disabled");
+      m_wndDisplay.AddString("Embedded");
+      if (embedded < 2)
+         m_wndDisplay.SetCurSel(embedded);
+   }
    vector<VPX::Window::DisplayConfig> displays;
    VPX::Window::GetDisplays(displays);
    int display;
    if (!settings.LoadValue(m_wndSection, m_wndSettingPrefix + "Display", display) || (display >= (int)displays.size()))
       display = -1;
-   m_wndDisplay.SetRedraw(false);
-   m_wndDisplay.ResetContent();
-   m_wndDisplay.SetItemData((int)m_allVideoModes.size(), (DWORD)(m_allVideoModes.size() * 128));
    for (vector<VPX::Window::DisplayConfig>::iterator dispConf = displays.begin(); dispConf != displays.end(); ++dispConf)
    {
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;
       char displayName[256];
-      sprintf_s(displayName, sizeof(displayName), "Display %d%s %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : "", dispConf->width, dispConf->height, dispConf->GPU_Name);
+      sprintf_s(displayName, sizeof(displayName), "Display %d%s: %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : " ", dispConf->width, dispConf->height, dispConf->GPU_Name);
       m_wndDisplay.AddString(displayName);
    }
-   m_wndDisplay.SetCurSel(display);
+   if (embedded == 2)
+      m_wndDisplay.SetCurSel(m_wndEmbeddable ? (display + 2) : display);
    m_wndDisplay.SetRedraw(true);
 
    const bool fullscreen = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "FullScreen", IsWindows10_1803orAbove());
    m_wndFullscreen.SetCheck(fullscreen ? BST_CHECKED : BST_UNCHECKED);
    m_wndWindowed.SetCheck(fullscreen ? BST_UNCHECKED : BST_CHECKED);
    OnCommand(IDC_EXCLUSIVE_FULLSCREEN, 0L); // Force UI update
+
+   const int x = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndX", -1);
+   const int y = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndY", -1);
+   SetDlgItemInt(IDC_X_OFFSET_EDIT, x, FALSE);
+   SetDlgItemInt(IDC_Y_OFFSET_EDIT, y, FALSE);
 
    const int width = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width", -1);
    const int height = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height", -1);
@@ -555,42 +645,71 @@ void VideoOptionPropPage::SaveDisplaySettings()
    Settings& settings = *m_editedSettings;
    const bool saveAll = !IsTableSettings();
 
-   const bool fullscreen = m_wndFullscreen.GetCheck() == BST_CHECKED;
-   if (fullscreen)
+   int display = m_wndDisplay.GetCurSel();
+   if (display < 0)
+      return;
+
+   bool embedded = false;
+   if (m_wndEmbeddable)
    {
-      int index = max(0, m_wndVideoModes.GetCurSel());
-      if (index >= 0 && (size_t)index < m_allVideoModes.size())
-      {
-         const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", pvm->width, !saveAll);
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", pvm->height, !saveAll);
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "ColorDepth", pvm->depth, !saveAll);
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "RefreshRate", pvm->refreshrate, !saveAll);
-      }
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Output", min(display, 2), !saveAll);
+      display -= 2;
+   }
+   if (display < 0)
+      embedded = true;
+   else
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Display", display, !saveAll);
+
+   if (embedded)
+   {
+      int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, false);
+      int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, false);
+      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
+      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
    }
    else
    {
-      int arMode = m_wndAspectRatio.GetCurSel();
-      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
-      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
-      if (arMode > 0)
-         height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
-      if (!saveAll)
+      const bool fullscreen = m_wndFullscreen.GetCheck() == BST_CHECKED;
+      if (fullscreen)
       {
-         settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Width");
-         settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Height");
-         settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "ColorDepth");
-         settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "RefreshRate");
+         int index = max(0, m_wndVideoModes.GetCurSel());
+         if (index >= 0 && (size_t)index < m_allVideoModes.size())
+         {
+            const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", pvm->width, !saveAll);
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", pvm->height, !saveAll);
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "ColorDepth", pvm->depth, !saveAll);
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "RefreshRate", pvm->refreshrate, !saveAll);
+         }
       }
-      if (width > 0 && height > 0)
+      else
       {
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
-         settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
+         int arMode = m_wndAspectRatio.GetCurSel();
+         int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
+         int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
+         if (arMode > 0)
+            height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
+         if (!saveAll)
+         {
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Width");
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Height");
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "ColorDepth");
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "RefreshRate");
+         }
+         if (width > 0 && height > 0)
+         {
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
+         }
       }
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "FullScreen", fullscreen, !saveAll);
+      settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Render10Bit", m_wndForce10bit.GetCheck() == BST_CHECKED, !saveAll);
    }
-   settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Display", m_wndDisplay.GetCurSel(), !saveAll);
-   settings.SaveValue(m_wndSection, m_wndSettingPrefix + "FullScreen", fullscreen, !saveAll);
-   settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Render10Bit", m_wndForce10bit.GetCheck() == BST_CHECKED, !saveAll);
+   settings.Validate(false);
    settings.Save();
 }
 
@@ -633,20 +752,7 @@ BOOL VideoOptionPropPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_EXCLUSIVE_FULLSCREEN:
       if (HIWORD(wParam) == BN_CLICKED)
          PropChanged();
-      {
-         const bool fullscreen = m_wndFullscreen.GetCheck() == BST_CHECKED;
-         // Fullscreen settings
-         m_wndVideoModes.ShowWindow(fullscreen ? 1 : 0);
-         m_wndForce10bit.ShowWindow(fullscreen ? 1 : 0);
-         // Window settings
-         GetDlgItem(IDC_AR_LABEL).ShowWindow(fullscreen ? 0 : 1);
-         m_wndAspectRatio.ShowWindow(fullscreen ? 0 : 1);
-         GetDlgItem(IDC_WIDTH_LABEL).ShowWindow(fullscreen ? 0 : 1);
-         m_wndWidth.ShowWindow(fullscreen ? 0 : 1);
-         GetDlgItem(IDC_HEIGHT_LABEL).ShowWindow(fullscreen ? 0 : 1);
-         m_wndHeight.ShowWindow(fullscreen ? 0 : 1);
-         GetDlgItem(IDC_RESET_WINDOW).ShowWindow(fullscreen ? 0 : 1);
-      }
+      UpdateFullscreenModesList();
       break;
    case IDC_DISPLAY_ID:
       if (HIWORD(wParam) == CBN_SELCHANGE)
@@ -1597,7 +1703,7 @@ BOOL PFViewOptPage::OnInitDialog()
    m_viewMode.AddString("Desktop (no FSS)");
    m_viewMode.SetRedraw(true);
    AddToolTip(m_viewMode, "Defines the view mode used when running a table\n\nDesktop/FSS will use the FSS view for table with FSS enabled, desktop otherwise.\n\nCabinet uses the 'fullscreen' view\n\nDesktop always uses the desktop view (no FSS)");
-   InitDisplayControls(Settings::Player, "Playfield");
+   InitDisplayControls(Settings::Player, "Playfield", false);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -1655,29 +1761,12 @@ DMDViewOptPage::DMDViewOptPage(Settings& appSettings, Settings& tableSettings)
 BOOL DMDViewOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
-   AttachItem(IDC_BG_SET, m_viewMode);
-   m_viewMode.SetRedraw(false);
-   m_viewMode.AddString("Disabled");
-   #if defined(ENABLE_BGFX)
-      m_viewMode.AddString("Enabled");
-      m_viewMode.AddString("2D Render Only");
-   #endif
-   m_viewMode.SetRedraw(true);
 
-   AttachItem(IDC_TONEMAPPER, m_tonemapper);
-   //m_tonemapper.AddString(_T("Reinhard"));
-   m_tonemapper.AddString(_T("AgX"));
-   //m_tonemapper.AddString(_T("Filmic"));
-   //m_tonemapper.AddString(_T("Neutral"));
-   #ifdef ENABLE_BGFX
-   //m_tonemapper.AddString(_T("AgX Punchy"));
-   #endif
-   m_tonemapper.SetCurSel(0);
-   m_tonemapper.EnableWindow(false); // Not yet implemented
-   AttachItem(IDC_EXPOSURE, m_exposure);
-
-   AttachItem(IDC_DMD_PROFILE, m_rendererProfile);
-   SetupCombo(m_rendererProfile, 10, "Custom #1", "Custom #2", "Custom #3", "Custom #4", "Custom #5", "Custom #6", "Custom #7", "Custom #8", "Custom #9", "Custom #10");
+   AttachItem(IDC_DEFAULT_DMD_TINT, m_defaultTint);
+   AttachItem(IDC_DMD_PROFILE, m_dmdType);
+   AttachItem(IDC_DEFAULT_DMD_PROFILE, m_defaultProfile);
+   for (int i = 0; i < 2; i++)
+      SetupCombo(i == 0 ? m_dmdType : m_defaultProfile, 10, "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED");
 
    AttachItem(IDC_LEGACY_RENDERER, m_legacyRenderer);
 
@@ -1706,59 +1795,29 @@ BOOL DMDViewOptPage::OnInitDialog()
    AttachItem(IDC_FRAME_PAD_RIGHT, m_framePadRight);
    AttachItem(IDC_FRAME_PAD_BOTTOM, m_framePadBottom);
 
-   m_rendererProfile.SetCurSel(0);
+   m_dmdType.SetCurSel(0);
    OnCommand(IDC_DMD_PROFILE, 0L);
    OnCommand(IDC_BG_SET, 0L);
-   InitDisplayControls(Settings::DMD, "DMD");
+   InitDisplayControls(Settings::DMD, "DMD", true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
 
 void DMDViewOptPage::LoadSettings(Settings& settings)
 {
-   char tmp[256];
    BeginLoad();
-   m_viewMode.SetCurSel(settings.LoadValueWithDefault(Settings::DMD, "ViewMode"s, 0));
-
-   // AttachItem(IDC_TONEMAPPER, m_tonemapper);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, "Exposure"s, 2.f));
-   m_exposure.SetWindowText(tmp);
-
-   string imageName;
-   if (!settings.LoadValue(Settings::DMD, "FrameImage"s, imageName))
-      imageName.clear();
-   m_frameImage.SetWindowText(imageName.c_str());
-   sprintf_s(tmp, sizeof(tmp), "%d", settings.LoadValueWithDefault(Settings::DMD, "FramePadLeft"s, 0));
-   m_framePadLeft.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%d", settings.LoadValueWithDefault(Settings::DMD, "FramePadRight"s, 0));
-   m_framePadRight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%d", settings.LoadValueWithDefault(Settings::DMD, "FramePadBottom"s, 0));
-   m_framePadBottom.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%d", settings.LoadValueWithDefault(Settings::DMD, "FramePadTop"s, 0));
-   m_framePadTop.SetWindowText(tmp);
-   
-   m_rendererProfile.SetCurSel(settings.LoadValueWithDefault(Settings::DMD, "RenderProfile"s, 0));
+   m_defaultProfile.SetCurSel(settings.LoadValueInt(Settings::DMD, "DefaultProfile"s));
+   m_defaultTint.SetColor(settings.LoadValueUInt(Settings::DMD, "DefaultTint"));
    OnCommand(IDC_DMD_PROFILE, 0L);
-
    LoadDisplaySettings();
    EndLoad();
 }
 
 void DMDViewOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
-   settings.SaveValue(Settings::DMD, "ViewMode"s, max(m_viewMode.GetCurSel(), 0), !saveAll);
-
-   settings.SaveValue(Settings::DMD, "Exposure"s, m_exposure.GetWindowText().GetString(), !saveAll);
-
-   settings.SaveValue(Settings::DMD, "FrameImage"s, m_frameImage.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, "FramePadLeft"s, (int)GetDlgItemInt(IDC_FRAME_PAD_LEFT, false), !saveAll);
-   settings.SaveValue(Settings::DMD, "FramePadRight"s, (int)GetDlgItemInt(IDC_FRAME_PAD_RIGHT, false), !saveAll);
-   settings.SaveValue(Settings::DMD, "FramePadBottom"s, (int)GetDlgItemInt(IDC_FRAME_PAD_BOTTOM, false), !saveAll);
-   settings.SaveValue(Settings::DMD, "FramePadTop"s, (int)GetDlgItemInt(IDC_FRAME_PAD_TOP, false), !saveAll);
-
-   settings.SaveValue(Settings::DMD, "RenderProfile"s, (int)m_rendererProfile.GetCurSel(), !saveAll);
+   settings.SaveValue(Settings::DMD, "DefaultProfile"s, m_defaultProfile.GetCurSel());
+   settings.SaveValue(Settings::DMD, "DefaultTint"s, static_cast<unsigned int>(m_defaultTint.GetColor()), !saveAll);
    SaveProfile();
-
    SaveDisplaySettings();
 }
 
@@ -1767,42 +1826,49 @@ void DMDViewOptPage::LoadProfile(const int n)
    char tmp[256];
    BeginLoad();
    Settings& settings = GetEditedSettings();
-   const string prefix = "User." + std::to_string(n + 1) + '.';
+   const string prefix = "Profile." + std::to_string(n + 1) + '.';
    m_editedProfile = n;
 
-   m_legacyRenderer.SetCheck(settings.LoadValueWithDefault(Settings::DMD, prefix + "Legacy", false) ? BST_CHECKED : BST_UNCHECKED);
-   m_dmdScaleFX.SetCheck(settings.LoadValueWithDefault(Settings::DMD, prefix + "ScaleFX", false) ? BST_CHECKED : BST_UNCHECKED);
+   m_legacyRenderer.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "Legacy") ? BST_CHECKED : BST_UNCHECKED);
+   m_dmdScaleFX.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "ScaleFX") ? BST_CHECKED : BST_UNCHECKED);
    
-   m_dotTint.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "DotTint", 0x002D52FF)); // Default tint is Neon plasma (255, 82, 45)
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSize", 0.85f));
+   m_dotTint.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "DotTint"));
+   m_unlitDotColor.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSize"));
    m_dotSize.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotBrightness", 5.f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotBrightness"));
    m_dotBrightness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotSharpness", 0.8f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness"));
    m_dotSharpness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotRounding", 0.85f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding"));
    m_dotRounding.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "DotGlow", 0.015f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotGlow"));
    m_dotGlow.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueWithDefault(Settings::DMD, prefix + "BackGlow", 0.005f));
+   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
    m_backGlow.SetWindowText(tmp);
-   m_unlitDotColor.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "UnlitDotColor", 0x00202020));
 
-   string imageName;
-   if (!settings.LoadValue(Settings::DMD, prefix + "GlassImage", imageName))
-      imageName.clear();
-   m_glassImage.SetWindowText(imageName.c_str());
-   m_glassAmbiantLight.SetColor(settings.LoadValueWithDefault(Settings::DMD, prefix + "GlassAmbiantLight", 0x00010101));
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "GlassDotLight", 0.4f));
+   m_glassImage.SetWindowText(settings.LoadValueString(Settings::DMD, prefix + "GlassImage").c_str());
+   m_glassAmbiantLight.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "GlassAmbiantLight"));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassDotLight"));
    m_glassDotLight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "PadLeft", 0.f));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadLeft"));
    m_glassPadLeft.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "PadRight", 0.f));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadRight"));
    m_glassPadRight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "PadBottom", 0.f));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadBottom"));
    m_glassPadBottom.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueWithDefault(Settings::DMD, prefix + "PadTop", 0.f));
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadTop"));
    m_glassPadTop.SetWindowText(tmp);
+
+   m_frameImage.SetWindowText(settings.LoadValueString(Settings::DMD, prefix + "FrameImage").c_str());
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadLeft"));
+   m_framePadLeft.SetWindowText(tmp);
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadRight"));
+   m_framePadRight.SetWindowText(tmp);
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadBottom"));
+   m_framePadBottom.SetWindowText(tmp);
+   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadTop"));
+   m_framePadTop.SetWindowText(tmp);
 
    OnCommand(IDC_LEGACY_RENDERER, 0L);
 
@@ -1816,27 +1882,27 @@ void DMDViewOptPage::SaveProfile()
 
    Settings& settings = GetEditedSettings();
    const bool saveAll = !IsTableSettings();
-   const string prefix = "User." + std::to_string(m_editedProfile + 1) + '.';
+   const string prefix = "Profile." + std::to_string(m_editedProfile + 1) + '.';
 
    settings.SaveValue(Settings::DMD, prefix + "Legacy", m_legacyRenderer.GetCheck() == BST_CHECKED, !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "ScaleFX", m_dmdScaleFX.GetCheck() == BST_CHECKED, !saveAll);
 
-   settings.SaveValue(Settings::DMD, prefix + "DotTint", (int) m_dotTint.GetColor(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "DotTint", static_cast<unsigned int>(m_dotTint.GetColor()), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "UnlitDotColor", static_cast<unsigned int>(m_unlitDotColor.GetColor()), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "DotSize", m_dotSize.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "DotBrightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "DotSharpness", m_dotSharpness.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "DotRounding", m_dotRounding.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "DotGlow", m_dotGlow.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "UnlitDotColor", (int)m_unlitDotColor.GetColor(), !saveAll);
 
    settings.SaveValue(Settings::DMD, prefix + "GlassImage", m_glassImage.GetWindowText().GetString(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassAmbiantLight", static_cast<unsigned int>(m_glassAmbiantLight.GetColor()), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "GlassDotLight", m_glassDotLight.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassAmbiantLight", (int)m_glassAmbiantLight.GetColor(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "PadLeft", m_glassPadLeft.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "PadRight", m_glassPadRight.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "PadBottom", m_glassPadBottom.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "PadTop", m_glassPadTop.GetWindowText().GetString(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassPadLeft", m_glassPadLeft.GetWindowText().GetString(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassPadRight", m_glassPadRight.GetWindowText().GetString(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassPadBottom", m_glassPadBottom.GetWindowText().GetString(), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassPadTop", m_glassPadTop.GetWindowText().GetString(), !saveAll);
 }
 
 BOOL DMDViewOptPage::OnApply()
@@ -1868,18 +1934,6 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_BG_SET:
       if (HIWORD(wParam) == CBN_SELCHANGE)
          PropChanged();
-      {
-         const bool hasWindow = m_viewMode.GetCurSel() != 0;
-         GetDlgItem(IDC_BROWSE_FRAME_PATH).EnableWindow(hasWindow);
-         m_exposure.EnableWindow(hasWindow);
-         m_frameImage.EnableWindow(hasWindow);
-         m_framePadLeft.EnableWindow(hasWindow);
-         m_framePadRight.EnableWindow(hasWindow);
-         m_framePadBottom.EnableWindow(hasWindow);
-         m_framePadTop.EnableWindow(hasWindow);
-         m_dotTint.EnableWindow(hasWindow);
-         m_dotBrightness.EnableWindow(hasWindow);
-      }
       break;
    case IDC_TONEMAPPER:
       if (HIWORD(wParam) == CBN_SELCHANGE)
@@ -1920,6 +1974,11 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
             const bool isNewRenderer = false;
          #endif
          GetDlgItem(IDC_BROWSE_GLASS_PATH).EnableWindow(isNewRenderer);
+         m_frameImage.EnableWindow(isNewRenderer);
+         m_framePadLeft.EnableWindow(isNewRenderer);
+         m_framePadRight.EnableWindow(isNewRenderer);
+         m_framePadBottom.EnableWindow(isNewRenderer);
+         m_framePadTop.EnableWindow(isNewRenderer);
          m_glassImage.EnableWindow(isNewRenderer);
          m_glassAmbiantLight.EnableWindow(isNewRenderer);
          m_glassDotLight.EnableWindow(isNewRenderer);
@@ -1939,7 +1998,17 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       if (HIWORD(wParam) == CBN_SELCHANGE)
          PropChanged();
       SaveProfile();
-      LoadProfile(m_rendererProfile.GetCurSel());
+      LoadProfile(m_dmdType.GetCurSel());
+      switch (m_dmdType.GetCurSel())
+      {
+      case 0: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching rendering style used in previous VPX versions."); break;
+      case 1: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching Neon Plasma DMD used in pinballs from 1991 to 2012."); break;
+      case 2: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching red LED DMD used in pinball machines after 2012."); break;
+      case 3: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering green LED matrix."); break;
+      case 4: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering blue LED matrix."); break;
+      case 5: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored Plasma for custom setup."); break;
+      case 6: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored Led for custom setup."); break;
+      }
       break;
    case IDC_DOT_TINT:
       {
@@ -2021,7 +2090,7 @@ BOOL AlphaViewOptPage::OnInitDialog()
    m_viewMode.SetRedraw(false);
    m_viewMode.AddString("Disabled");
    m_viewMode.SetRedraw(true);
-   InitDisplayControls(Settings::Alpha, "Alpha");
+   InitDisplayControls(Settings::Alpha, "Alpha", true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -2080,7 +2149,7 @@ BOOL BackglassViewOptPage::OnInitDialog()
    m_viewMode.SetRedraw(false);
    m_viewMode.AddString("Disabled");
    m_viewMode.SetRedraw(true);
-   InitDisplayControls(Settings::Backglass, "Backglass");
+   InitDisplayControls(Settings::Backglass, "Backglass", true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }

@@ -80,7 +80,7 @@ VS_OUTPUT vs_simple_world(const in float4 vPosition : POSITION0,
 float4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
 {
    const float4 rgba = texNoLod(tex_dmd, IN.tex0);
-   float3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
+   float3 color = vColor_Intensity.xyz.w; //!! create function that resembles LUT from VPM?
    if(rgba.a != 0.0)
       color *= rgba.rgb;
    else
@@ -161,12 +161,12 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
       const float2 dist = (frac(uv*vRes_Alpha_time.xy)*2.2 - 1.1) * dist_factor;
       const float d = smoothstep(0., 1., 1.0 - sqr(dist.x*dist.x + dist.y*dist.y));
 
-      if (rgba.a != 0.0)
+      if (vColor_Intensity.w != 0.0)
          color2 += rgba.rgb * d;
       else
-         color2 += rgba.r * (255.9 / 100.) * d;
+         color2 += rgba.r * d;
    }
-   color2 *= vColor_Intensity.xyz * ((vColor_Intensity.w/samples) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
+   color2 *= vColor_Intensity.xyz * ((1./samples) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
 
    /*float3 colorg = float3(0,0,0);
    UNROLL for(int j = -1; j <= 1; ++j)
@@ -178,7 +178,10 @@ float4 ps_main_DMD(const in VS_OUTPUT IN) : COLOR
    //if (rgba.r > 200.0)
    //   return float4(InvGamma(min(color2,float3(1.5,1.5,1.5))/*+colorg*/), 0.5);
    //else
-   return float4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
+   //return float4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
+
+   // Do not apply InvGamma anymore since it is already applied to DMD texture (BW) or during sampling (RGB), i.e. shading is now done in linear color space
+   return float4(color2/*+colorg*/, vRes_Alpha_time.z);
 }
 
 float4 ps_main_noDMD(const in VS_OUTPUT IN) : COLOR

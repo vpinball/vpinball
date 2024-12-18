@@ -415,8 +415,9 @@ public:
 #pragma region Rendering
 public:
    VPX::Window *m_playfieldWnd = nullptr;
-   VPX::Window *m_dmdWnd = nullptr;
-   VPX::Window *m_backglassWnd = nullptr;
+   int m_lastDmdFrameId = -1;
+   VPX::RenderOutput m_dmdOutput;
+   VPX::RenderOutput m_backglassOutput;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
@@ -500,8 +501,9 @@ public:
 
    // External DMD and displays
    bool m_capExtDMD = false; // frame capturing (hack for VR)
-   int2 m_dmd; // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
-   BaseTexture* m_texdmd = nullptr;
+   int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
+   BaseTexture* m_dmdFrame = nullptr;
+   int m_dmdFrameId = 0;
    struct ControllerDisplay // DMDs and video displays gathered through PinMame StateBlock
    {
       int frameId = -1;

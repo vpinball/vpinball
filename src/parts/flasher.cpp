@@ -838,91 +838,85 @@ void upscale(DWORD *const data, const int2 &res, const bool is_brightness_data);
 
 STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!! use 64bit instead of 8bit to reduce overhead??
 {
+
    SAFEARRAY *psa = V_ARRAY(&pVal);
-   if (m_rd == nullptr)
+   if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
       return E_FAIL;
 
-   if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
+   #ifdef DMD_UPSCALE
+      constexpr int scale = 3;
+   #else
+      constexpr int scale = 1;
+   #endif
+
+   if (m_dmdFrame == nullptr
+       || m_dmdFrame->width() != m_dmdSize.x * scale
+       || m_dmdFrame->height() != m_dmdSize.y * scale
+       || m_dmdFrame->m_format != BaseTexture::BW)
    {
-      const int size = m_dmdSize.x * m_dmdSize.y;
-      if (!m_texdmd
-#ifdef DMD_UPSCALE
-         || (m_texdmd->width() * m_texdmd->height() != size * (3 * 3)))
-#else
-         || (m_texdmd->width() * m_texdmd->height() != size))
-#endif
-      {
-         if (m_texdmd)
-         {
-            m_rd->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-            m_rd->m_texMan.UnloadTexture(m_texdmd);
-            delete m_texdmd;
-         }
-#ifdef DMD_UPSCALE
-         m_texdmd = new BaseTexture(m_dmdSize.x * 3, m_dmdSize.y * 3, BaseTexture::RGBA);
-#else
-         m_texdmd = new BaseTexture(m_dmdSize.x, m_dmdSize.y, BaseTexture::RGBA);
-#endif
-      }
-
-      DWORD *const data = (DWORD *)m_texdmd->data(); //!! assumes tex data to be always 32bit
-
-      VARIANT *p;
-      SafeArrayAccessData(psa, (void **)&p);
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = V_UI4(&p[ofs]); // store raw values (0..100), let shader do the rest
-      SafeArrayUnaccessData(psa);
-
-      if (g_pplayer->m_scaleFX_DMD)
-         upscale(data, m_dmdSize, true);
-
-      m_rd->m_texMan.SetDirty(m_texdmd);
+      delete m_dmdFrame;
+      m_dmdFrame = new BaseTexture(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::BW);
    }
-
+   const int size = m_dmdSize.x * m_dmdSize.y;
+   // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
+   VARIANT *p;
+   SafeArrayAccessData(psa, (void **)&p);
+   #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
+   if (g_pplayer->m_scaleFX_DMD)
+   {
+      DWORD *rgba = new DWORD[size * scale * scale];
+      for (int ofs = 0; ofs < size; ++ofs)
+         rgba[ofs] = V_UI4(&p[ofs]); 
+      upscale(rgba, m_dmdSize, true);
+      UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
+      for (int ofs = 0; ofs < size; ++ofs)
+         data[ofs] = static_cast<UINT8>(InvsRGB((rgba[ofs] & 0x0FF) / 100.f) * 255.f);
+      delete[] rgba;
+   }
+   else
+   {
+      UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
+      for (int ofs = 0; ofs < size; ++ofs)
+         data[ofs] = static_cast<UINT8>(InvsRGB(V_UI4(&p[ofs]) / 100.f) * 255.f);
+   }
+   #undef InvsRGB
+   SafeArrayUnaccessData(psa);
+   //m_dmdFrameId++;
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame);
    return S_OK;
 }
 
 STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as input //!! use 64bit instead of 32bit to reduce overhead??
 {
    SAFEARRAY *psa = V_ARRAY(&pVal);
+   if (psa == nullptr || m_dmdSize.x <= 0 || m_dmdSize.y <= 0)
+      return E_FAIL;
 
-   if (psa && m_dmdSize.x > 0 && m_dmdSize.y > 0)
+   #ifdef DMD_UPSCALE
+      constexpr int scale = 3;
+   #else
+      constexpr int scale = 1;
+   #endif
+
+   if (m_dmdFrame == nullptr
+       || m_dmdFrame->width() != m_dmdSize.x * scale
+       || m_dmdFrame->height() != m_dmdSize.y * scale
+       || m_dmdFrame->m_format != BaseTexture::SRGBA)
    {
-      const int size = m_dmdSize.x * m_dmdSize.y;
-      if (!m_texdmd
-#ifdef DMD_UPSCALE
-         || (m_texdmd->width() * m_texdmd->height() != size * (3 * 3)))
-#else
-         || (m_texdmd->width() * m_texdmd->height() != size))
-#endif
-      {
-         if (m_texdmd)
-         {
-            m_rd->m_DMDShader->SetTextureNull(SHADER_tex_dmd);
-            m_rd->m_texMan.UnloadTexture(m_texdmd);
-            delete m_texdmd;
-         }
-#ifdef DMD_UPSCALE
-         m_texdmd = new BaseTexture(m_dmdSize.x * 3, m_dmdSize.y * 3, BaseTexture::RGBA);
-#else
-         m_texdmd = new BaseTexture(m_dmdSize.x, m_dmdSize.y, BaseTexture::RGBA);
-#endif
-      }
-
-      DWORD *const data = (DWORD *)m_texdmd->data(); //!! assumes tex data to be always 32bit
-
-      VARIANT *p;
-      SafeArrayAccessData(psa, (void **)&p);
-      for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u; // store RGB values and let shader do the rest (set alpha to let shader know that this is RGB and not just brightness)
-      SafeArrayUnaccessData(psa);
-
-      if (g_pplayer->m_scaleFX_DMD)
-         upscale(data, m_dmdSize, false);
-
-      m_rd->m_texMan.SetDirty(m_texdmd);
+      delete m_dmdFrame;
+      m_dmdFrame = new BaseTexture(m_dmdSize.x * scale, m_dmdSize.y * scale, BaseTexture::SRGBA);
    }
-
+   const int size = m_dmdSize.x * m_dmdSize.y;
+   DWORD *const data = reinterpret_cast<DWORD *>(m_dmdFrame->data());
+   VARIANT *p;
+   SafeArrayAccessData(psa, (void **)&p);
+   for (int ofs = 0; ofs < size; ++ofs)
+      data[ofs] = V_UI4(&p[ofs]) | 0xFF000000u;
+   SafeArrayUnaccessData(psa);
+   if (g_pplayer->m_scaleFX_DMD)
+      upscale(data, m_dmdSize, false);
+   //m_dmdFrameId++;
+   g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(m_dmdFrame);
    return S_OK;
 }
 
@@ -1090,9 +1084,6 @@ void Flasher::RenderSetup(RenderDevice *device)
    assert(m_rd == nullptr);
    m_rd = device;
 
-   m_texdmd = nullptr;
-   m_dmdSize = int2(0, 0);
-
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
    vector<RenderVertex> vvertex;
@@ -1184,10 +1175,10 @@ void Flasher::RenderRelease()
    ResetVideoCap();
    delete m_meshBuffer;
    delete[] m_vertices;
-   delete m_texdmd;
+   delete m_dmdFrame;
    m_meshBuffer = nullptr;
    m_vertices = nullptr;
-   m_texdmd = nullptr;
+   m_dmdFrame = nullptr;
    m_dmdSize = int2(0, 0);
    m_lightmap = nullptr;
    m_rd = nullptr;
@@ -1217,11 +1208,6 @@ void Flasher::Render(const unsigned int renderMask)
    if (m_lockedByLS && !m_inPlayState)
       return;
    
-   // Don't render DMD if DMD connection not set
-   BaseTexture *texdmd = m_texdmd != nullptr ? m_texdmd : g_pplayer->m_texdmd;
-   if (m_d.m_isDMD && !texdmd)
-      return;
-
    // Update lightmap before checking anything that uses alpha
    float alpha = (float) m_d.m_alpha;
    if (m_lightmap)
@@ -1272,66 +1258,20 @@ void Flasher::Render(const unsigned int renderMask)
       else
          m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
 
-      /*const unsigned int alphamode = 1; //!! make configurable?
-      // add
-      if (alphamode == 1) {
-         m_rd->EnableAlphaBlend(true);
-      // max
-      } else if (alphamode == 2) {
-         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_MAX);
-         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
-         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
-      //subtract
-      } else if (alphamode == 3) {
-         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_SUBTRACT);
-         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::ZERO);
-         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_COLOR);
-      // normal
-      } else if (alphamode == 4) {
-         m_rd->SetRenderState(RenderDevice::ALPHABLENDENABLE, RenderDevice::RS_TRUE);
-         m_rd->SetRenderState(RenderDevice::BLENDOP, RenderDevice::BLENDOP_ADD);
-         m_rd->SetRenderState(RenderDevice::SRCBLEND, RenderDevice::SRC_ALPHA);
-         m_rd->SetRenderState(RenderDevice::DESTBLEND, RenderDevice::INVSRC_ALPHA);
-      }
-
-      const int alphatest = 0; //!!
-      if (alphatest)
-         g_pplayer->m_renderer->EnableAlphaTestReference(0x80);*/
-
-      if (true)
+      // TODO use the table's default profile instead of always using the backward compatibility one
+      const int dmdProfile = 0;
+      if (m_dmdFrame)
       {
-         m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world); //!! DMD_UPSCALE ?? -> should just work
-
-         m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
-
-         const int2 &dmdSize = m_texdmd != nullptr ? m_dmdSize : g_pplayer->m_dmd;
-
-         #ifdef DMD_UPSCALE
-         const vec4 r((float)(dmdSize.x * 3), (float)(dmdSize.y * 3), m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-         #else
-         const vec4 r((float)dmdSize.x, (float)dmdSize.y, m_d.m_modulate_vs_add, (float)(g_pplayer->m_overall_frames % 2048)); //(float)(0.5 / m_width), (float)(0.5 / m_height));
-         #endif
-         m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-
-   #ifndef __STANDALONE__
-         // If we're capturing Freezy DMD switch to ext technique to avoid incorrect colorization
-         if (HasDMDCapture())
-            m_rd->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD_world_ext);
-   #endif
-
-         m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, texdmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
+         const vec4 dotTint = m_dmdFrame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, dotTint, m_dmdFrame, m_d.m_modulate_vs_add, false);
       }
       else
       {
          Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
-         if (dmd.frame)
-         {
-            // convert color from sRGB to RGB ?
-            g_pplayer->m_renderer->SetupDMDRender(color, dmd.frame, m_d.m_modulate_vs_add, false, false);
-            m_rd->m_DMDShader->SetVector(SHADER_exposure_wcg, 1.f, 1.f, 1.f, 0.f);
-         }
+         if (dmd.frame == nullptr)
+            return;
+         const vec4 dotTint = dmd.frame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
+         g_pplayer->m_renderer->SetupDMDRender(0, dotTint, dmd.frame, m_d.m_modulate_vs_add, false);
       }
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);

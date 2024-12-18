@@ -461,8 +461,7 @@ void Textbox::Render(const unsigned int renderMask)
       || !m_d.m_visible
       || (m_backglass && isReflectionPass)
       || (m_backglass && isNoBackdrop)
-      || (!dmd && m_texture == nullptr)
-      || (dmd && g_pplayer->m_texdmd == nullptr))
+      || (!dmd && m_texture == nullptr))
       return;
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
@@ -515,29 +514,13 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      const vec4 color = convertColor(m_d.m_fontcolor, m_d.m_intensity_scale);
-      if (false)
-      {
-         Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
-         if (dmd.frame)
-         {
-            // convert color from sRGB to RGB ?
-            g_pplayer->m_renderer->SetupDMDRender(color, dmd.frame, 1.f, false, false);
-            m_rd->m_DMDShader->SetVector(SHADER_exposure_wcg, 1.f, 1.f, 1.f, 0.f);
-         }
-      }
-      else
-      {
-         m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &color);
-         #ifdef DMD_UPSCALE
-         const vec4 r((float)(g_pplayer->m_dmd.x * 3), (float)(g_pplayer->m_dmd.y * 3), 1.f, (float)(g_pplayer->m_overall_frames % 2048));
-         #else
-         const vec4 r((float)g_pplayer->m_dmd.x, (float)g_pplayer->m_dmd.y, 1.f, (float)(g_pplayer->m_overall_frames % 2048));
-         #endif
-         m_rd->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, &r);
-         m_rd->m_DMDShader->SetTexture(SHADER_tex_dmd, g_pplayer->m_texdmd, isExternalDMD ? SF_TRILINEAR : SF_NONE, SA_CLAMP, SA_CLAMP, !isExternalDMD); //!! or use linear RGB space? //!! mirror as edge?!
-      }
-
+      Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
+      if (dmd.frame == nullptr)
+         return;
+      // convert color from sRGB to RGB ?
+      // TODO use the table's default profile instead of the backward compatibility one
+      const vec4 color = dmd.frame->m_format == BaseTexture::BW ? convertColor(m_d.m_fontcolor, m_d.m_intensity_scale) : vec4(1.f, 1.f, 1.f, m_d.m_intensity_scale);
+      g_pplayer->m_renderer->SetupDMDRender(0, color, dmd.frame, 1.f, true);
       m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
       m_rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
       m_rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);
