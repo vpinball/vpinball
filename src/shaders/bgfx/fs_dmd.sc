@@ -27,7 +27,7 @@ SAMPLER2D(tex_sprite, 0); // Sprite
 vec4 ps_main_DMD_no(const in VS_OUTPUT IN) : COLOR
 {
    const vec4 rgba = texNoLod(tex_dmd, v_texcoord0);
-   vec3 color = vColor_Intensity.xyz * vColor_Intensity.w; //!! create function that resembles LUT from VPM?
+   vec3 color = vColor_Intensity.xyz; //!! create function that resembles LUT from VPM?
    if(rgba.a != 0.0)
       color *= rgba.rgb;
    else
@@ -119,12 +119,12 @@ void main()
 		  const vec2 dist = (fract(uv*vRes_Alpha_time.xy)*2.2 - 1.1) * dist_factor;
 		  const float d = smoothstep(0., 1., 1.0 - sqr(dist.x*dist.x + dist.y*dist.y));
 
-		  if (rgba.a != 0.0)
+		  if (vColor_Intensity.w != 0.0)
 			 color2 += rgba.rgb * d;
 		  else
-			 color2 += rgba.r * (255.9 / 100.) * d;
+			 color2 += rgba.r * d;
 	   }
-	   color2 *= vColor_Intensity.xyz * ((vColor_Intensity.w/samples_float) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
+	   color2 *= vColor_Intensity.xyz * ((1./samples_float) * sqr(dist_factor)); //!! create function that resembles LUT from VPM?
 
 	   /*vec3 colorg = vec3(0,0,0);
 	   UNROLL for(int j = -1; j <= 1; ++j)
@@ -136,7 +136,10 @@ void main()
 	   //if (rgba.r > 200.0)
 	   //   gl_FragColor = vec4(InvGamma(min(color2,vec3(1.5,1.5,1.5))/*+colorg*/), 0.5);
 	   //else
-	   gl_FragColor = vec4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
+	   //gl_FragColor = vec4(InvGamma(color2/*+colorg*/), vRes_Alpha_time.z);
+
+	   // Do not apply InvGamma anymore since it is already applied to DMD texture (BW) or during sampling (RGB), i.e. shading is now done in linear color space
+	   gl_FragColor = vec4(color2/*+colorg*/, vRes_Alpha_time.z);
 
 	#else // No DMD (sprite rendering)
 		#ifdef TEX

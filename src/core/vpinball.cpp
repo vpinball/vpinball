@@ -3022,7 +3022,7 @@ static void GenerateTournamentFileInternal2(BYTE *const dmd_data, const unsigned
 
 void VPinball::GenerateTournamentFile()
 {
-   unsigned int dmd_size = g_pplayer->m_dmd.x * g_pplayer->m_dmd.y;
+   unsigned int dmd_size = g_pplayer->m_dmdSize.x * g_pplayer->m_dmdSize.y;
    if (dmd_size == 0)
    {
       g_pplayer->m_liveUI->PushNotification("Tournament file export requires a valid DMD script connection to PinMAME via 'UseVPM(Colored)DMD = True'"s, 4000);
@@ -3030,19 +3030,13 @@ void VPinball::GenerateTournamentFile()
    }
 
    BYTE *const dmd_data = new BYTE[dmd_size + 16];
-   if (g_pplayer->m_texdmd->m_format == BaseTexture::BW)
-      memcpy(dmd_data, g_pplayer->m_texdmd->data(), dmd_size);
-   else if (g_pplayer->m_texdmd->m_format == BaseTexture::RGBA)
+   if (g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
+      memcpy(dmd_data, g_pplayer->m_dmdFrame->data(), dmd_size);
+   else if (g_pplayer->m_dmdFrame->m_format == BaseTexture::RGBA)
    {
-      const DWORD *const data = (DWORD*)g_pplayer->m_texdmd->data();
-      if (data[0] & 0xFF000000u) // real RGB 0..255
-      {
-         for (unsigned int i = 0; i < dmd_size; ++i)
-            dmd_data[i] = ((data[i] & 0xFF) + ((data[i] >> 8) & 0xFF) + ((data[i] >> 16) & 0xFF))/3;
-      }
-      else // single channel 0..100
-         for (unsigned int i = 0; i < dmd_size; ++i)
-            dmd_data[i] = (data[i] & 0xFF)*255 / 100;
+      const DWORD *const data = (DWORD *)g_pplayer->m_dmdFrame->data();
+      for (unsigned int i = 0; i < dmd_size; ++i)
+         dmd_data[i] = ((data[i] & 0xFF) + ((data[i] >> 8) & 0xFF) + ((data[i] >> 16) & 0xFF))/3;
    }
    generateMD5(dmd_data, dmd_size, dmd_data + dmd_size);
    dmd_size += 16;
@@ -3055,8 +3049,8 @@ void VPinball::GenerateTournamentFile()
    FILE *f;
    if (fopen_s(&f, (g_pvp->GetActiveTable()->m_szFileName + ".txt").c_str(), "w") == 0 && f)
    {
-      fprintf(f, "%03X", g_pplayer->m_dmd.x);
-      fprintf(f, "%03X", g_pplayer->m_dmd.y);
+      fprintf(f, "%03X", g_pplayer->m_dmdSize.x);
+      fprintf(f, "%03X", g_pplayer->m_dmdSize.y);
       fprintf(f, "%01X", GET_PLATFORM_CPU_ENUM);
       fprintf(f, "%01X", GET_PLATFORM_BITS_ENUM);
       fprintf(f, "%01X", GET_PLATFORM_OS_ENUM);

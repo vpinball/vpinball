@@ -4,6 +4,8 @@
 
 #define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
+#include "robin_hood.h"
+
 
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
@@ -86,6 +88,19 @@ public:
    bool LoadValue(const Section section, const string &key, int &pint) const;
    bool LoadValue(const Section section, const string &key, unsigned int &pint) const;
 
+   void Validate(const Section section, const string &key, const string& defVal, const bool addDefaults);
+   void Validate(const Section section, const string &key, const bool defVal, const bool addDefaults);
+   void Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults);
+   void Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults);
+   void Validate(const bool addDefaults);
+
+   // The following method must only be used for settings previously validated to guarantee successfull loading
+   string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
+   float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
+   bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return static_cast<bool>(v); }
+   int LoadValueInt(const Section section, const string &key) const { int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
+   unsigned int LoadValueUInt(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
+
    float LoadValueWithDefault(const Section section, const string &key, const float def) const;
    int LoadValueWithDefault(const Section section, const string &key, const int def) const;
    bool LoadValueWithDefault(const Section section, const string &key, const bool def) const;
@@ -95,6 +110,7 @@ public:
    bool SaveValue(const Section section, const string &key, const string &val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const float val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
+   bool SaveValue(const Section section, const string &key, const unsigned int val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const bool val, const bool overrideMode = false);
     
    bool DeleteValue(const Section section, const string &key, const bool deleteFromParent = false);
@@ -135,6 +151,9 @@ private:
    mINI::INIStructure m_ini;
    const Settings * m_parent;
    vector<OptionDef> m_tableOptions;
+   #ifdef DEBUG
+      robin_hood::unordered_map<Section, robin_hood::unordered_flat_set<string>> m_validatedKeys;
+   #endif
 
    // Shared accross all settings
    static vector<OptionDef> m_pluginOptions;

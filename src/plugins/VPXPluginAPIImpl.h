@@ -8,6 +8,7 @@ public:
    static VPXPluginAPIImpl& GetInstance();
 
    const VPXPluginAPI& getAPI() const { return m_api; };
+   unsigned int GetVPXEndPointId() const { return m_vpxEndpointId; }
 
    unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); };
    void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); };

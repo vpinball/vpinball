@@ -243,7 +243,7 @@ void BackGlass::Render()
       float tableWidth, glassHeight;
       g_pplayer->m_ptable->get_Width(&tableWidth);
       g_pplayer->m_ptable->get_GlassHeight(&glassHeight);
-      if (g_pplayer->m_texdmd)
+      if (g_pplayer->m_dmdFrame)
       {
          // If we expect a DMD the captured image is probably missing a grill in 3scr mode
          // 3scr mode preferable to support VR rooms, so better to just drop the grills in this experimental mode.
@@ -304,7 +304,7 @@ void BackGlass::GetDMDPos(float& DMDposx, float& DMDposy, float& DMDwidth, float
             g_pplayer->m_ptable->get_Width(&tableWidth);
             tableWidth *= m_backglass_scale;
             m_dmd_height = m_backglass_scale * scale * (float)m_backglass_grill_height / (float)m_backglass_width;
-            m_dmd_width = m_dmd_height / (float)g_pplayer->m_texdmd->height() * (float)g_pplayer->m_texdmd->width();
+            m_dmd_width = m_dmd_height / (float)g_pplayer->m_dmdFrame->height() * (float)g_pplayer->m_dmdFrame->width();
             m_dmd.x = tableWidth * (0.5f - m_dmd_width / 2.0f);
             m_dmd.y = tableWidth * (float)m_backglass_grill_height * (0.5f - scale / 2.0f) / (float)m_backglass_width;
          }

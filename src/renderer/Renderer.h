@@ -38,9 +38,9 @@ public:
    void RenderStaticPrepass();
 
    void RenderFrame();
-   void RenderDMD(BaseTexture* dmd, const bool isColored, RenderTarget* rt);
+   void RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, RenderTarget* rt, int x, int y, int w, int h);
 
-   void SetupDMDRender(const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, const bool isColored);
+   void SetupDMDRender(int profile, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
@@ -207,10 +207,10 @@ private:
    #endif
 
    // DMD rendering
-   vec4 m_dmdViewDot; // External window dot color and brightness
-   float m_dmdViewExposure; // External window dot color and brightness
-   bool m_dmdUseNewRenderer;
-   vec4 m_dmdDotProperties; // size, sharpness, rounding, glow
-   vec4 m_dmdUnlitDotColor; // unlit color and back glow
+   vec4 m_dmdDefaultDotTint; // Table's default Dmd tint
+   bool m_dmdUseNewRenderer[7];
+   vec4 m_dmdDotColor[7]; // Base dot color and brightness
+   vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, glow
+   vec4 m_dmdUnlitDotColor[7]; // unlit color and back glow
    RenderTarget* m_dmdBlurs[4] = { nullptr };
 };

@@ -8,8 +8,30 @@
 #include <windows.h>
 #endif
 
+#include "core/Settings.h"
+
 namespace VPX
 {
+
+class EmbeddedWindow final
+{
+public:
+   EmbeddedWindow(int x, int y, int w, int h)
+      : m_x(x)
+      , m_y(y)
+      , m_width(w)
+      , m_height(h)
+   {
+   }
+
+   void GetPos(int& x, int& y) const { x = m_x, y = m_y; }
+   int GetWidth() const { return m_width; }
+   int GetHeight() const { return m_height; }
+
+private:
+   int m_x, m_y;
+   int m_width, m_height;
+};
 
 // All coordinates are given in pixels, not logical units.
 // FIXME for MacOS/IOS HiDPI is applied (so giving 'logical' units with Retina scale factor but not user DPI)
@@ -102,6 +124,51 @@ private:
    #else // Win32 Windowing
       HWND m_nwnd = nullptr;
    #endif
+};
+
+class RenderOutput final
+{
+public:
+   RenderOutput(const string& title, Settings& settings, const Settings::Section section, const string& settingsPrefix)
+      : m_settingsSection(section)
+      , m_settingsPrefix(settingsPrefix)
+   {
+      m_mode = static_cast<OutputMode>(settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Output", OM_DISABLED));
+      if (m_mode == OM_EMBEDDED)
+      {
+         const int x = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndX", 0);
+         const int y = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "WndY", 0);
+         const int width = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Width", 640);
+         const int height = settings.LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "Height", 480);
+         m_embeddedWindow = new EmbeddedWindow(x, y, width, height);
+      }
+      else if (m_mode == OM_WINDOW)
+         m_window = new Window(title, section, settingsPrefix);
+   }
+
+   ~RenderOutput()
+   {
+      delete m_embeddedWindow;
+      delete m_window;
+   }
+
+   enum OutputMode
+   {
+      OM_DISABLED, // Output is disabled
+      OM_EMBEDDED, // Output is embedded in another output
+      OM_WINDOW // Output is a native system window (maybe a window, exclusive fullscreen, VR headset,...)
+   };
+
+   OutputMode GetMode() const { return m_mode; }
+   Window* GetWindow() const { return m_window; }
+   EmbeddedWindow* GetEmbeddedWindow() const { return m_embeddedWindow; }
+
+private:
+   const Settings::Section m_settingsSection;
+   const string m_settingsPrefix;
+   OutputMode m_mode = OutputMode::OM_DISABLED;
+   Window* m_window = nullptr;
+   EmbeddedWindow* m_embeddedWindow = nullptr;
 };
 
 }

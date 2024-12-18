@@ -163,8 +163,8 @@ private:
    HWND m_videoCapHwnd = nullptr;
    BaseTexture* m_videoCapTex = nullptr;
 
-   int2 m_dmdSize = int2(128,32);
-   BaseTexture *m_texdmd = nullptr;
+   int2 m_dmdSize = int2(0,0);
+   BaseTexture *m_dmdFrame = nullptr;
 
    Light *m_lightmap = nullptr;
 

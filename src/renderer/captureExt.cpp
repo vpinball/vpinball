@@ -11,7 +11,7 @@ ExtCaptureManager g_ExtCaptureManager;
 void StartDMDCapture()
 {
    static const vector<string> dmdlist = { "Virtual DMD"s, "pygame"s, "PUPSCREEN1"s, "formDMD"s, "PUPSCREEN5"s };
-   g_ExtCaptureManager.StartCapture("DMD"s, &g_pplayer->m_texdmd, dmdlist);
+   g_ExtCaptureManager.StartCapture("DMD"s, &g_pplayer->m_dmdFrame, dmdlist);
 }
 void StartPUPCapture()
 {

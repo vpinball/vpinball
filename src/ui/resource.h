@@ -1206,6 +1206,7 @@
 #define IDC_TREE_DEVICES                837
 #define IDC_LAYER_FILTER_STATIC         838
 #define IDC_FAR_LABEL                   838
+#define IDC_DMD_TYPE_INFO               838
 #define IDC_CAP_PUP                     839
 #define IDC_STATIC_ELEMENT_TYPE         839
 #define ID_APPLY                        840
@@ -1321,6 +1322,10 @@
 #define IDC_LEGACY_RENDERER             944
 #define IDC_DMD_PROFILE                 945
 #define IDC_GFX_BACKEND_LABEL           946
+#define IDC_DEFAULT_DMD_TINT            946
+#define IDC_X_LABEL                     947
+#define IDC_Y_LABEL                     948
+#define IDC_DEFAULT_DMD_PROFILE         949
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1517,7 +1522,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         947
+#define _APS_NEXT_CONTROL_VALUE         949
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif
