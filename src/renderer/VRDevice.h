@@ -81,6 +81,7 @@ public:
       bgfx::TextureFormat::Enum format;
       std::vector<bgfx::TextureHandle> imageViews;
    };
+
 private:
    XrInstance m_xrInstance = XR_NULL_HANDLE;
    std::vector<const char*> m_activeAPILayers;
@@ -126,7 +127,7 @@ private:
    bool m_debugUtilsExtensionSupported = false;
    XrDebugUtilsMessengerEXT m_debugUtilsMessenger = XR_NULL_HANDLE;
    static XrBool32 OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlagsEXT messageSeverity, XrDebugUtilsMessageTypeFlagsEXT messageType, const XrDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-   
+
    bool m_visibilityMaskExtensionSupported = false;
    PFN_xrGetVisibilityMaskKHR xrGetVisibilityMaskKHR;
    bool m_visibilityMaskDirty = true;

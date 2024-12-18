@@ -268,7 +268,7 @@ public:
 
    void CreateImageViews(VRDevice::SwapchainInfo& swapchain) override
    {
-      for (int i = 0; i < swapchainImagesMap[swapchain.swapchain].second.size(); i++)
+      for (size_t i = 0; i < swapchainImagesMap[swapchain.swapchain].second.size(); i++)
       {
          bgfx::TextureHandle handle;
          swapchain.format = bgfx::TextureFormat::Enum::Count;
@@ -285,7 +285,7 @@ public:
          // TODO BGFX_TEXTURE_BLIT_DST was added since we are blitting the depth instead of directly using it. Remove asap
          handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
          bgfx::frame(); // TODO This is needed for BGFX to actually create the texture, but this is somewhat hacky and suboptimal
-         uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, i)));
+         uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, (uint32_t)i)));
          assert(nativePtr); // Override failed
          swapchain.imageViews.push_back(handle);
       }
@@ -483,16 +483,12 @@ VRDevice::VRDevice()
             m_pHMD = vr::VR_Init(&VRError, vr::VRApplication_Scene);
             if (VRError != vr::VRInitError_None) {
                m_pHMD = nullptr;
-               char buf[1024];
-               sprintf_s(buf, sizeof(buf), "Unable to init VR runtime: %s", vr::VR_GetVRInitErrorAsEnglishDescription(VRError));
-               ShowError(buf);
+               ShowError("Unable to init VR runtime: "s + vr::VR_GetVRInitErrorAsEnglishDescription(VRError));
             }
             else if (!vr::VRCompositor())
             /*if (VRError != vr::VRInitError_None)*/ {
                m_pHMD = nullptr;
-               char buf[1024];
-               sprintf_s(buf, sizeof(buf), "Unable to init VR compositor");// :% s", vr::VR_GetVRInitErrorAsEnglishDescription(VRError));
-               ShowError(buf);
+               ShowError("Unable to init VR compositor"); // + vr::VR_GetVRInitErrorAsEnglishDescription(VRError))
             }
          }
       #endif
@@ -683,7 +679,7 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
    std::string messageId = (pCallbackData->messageId) ? pCallbackData->messageId : "";
    std::string message = (pCallbackData->message) ? pCallbackData->message : "";
    std::stringstream errorMessage;
-   errorMessage << functionName << "(" << messageSeverityStr << " / " << messageTypeStr << "): msgNum: " << messageId << " - " << message;
+   errorMessage << functionName << '(' << messageSeverityStr << " / " << messageTypeStr << "): msgNum: " << messageId << " - " << message;
    if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
    {
       PLOGE << errorMessage.str();
@@ -806,9 +802,9 @@ void VRDevice::SetupHMD()
       m_eyeWidth = static_cast<int>(m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
       m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
-   PLOGI << "Headset recommended resolution: " << m_viewConfigurationViews[0].recommendedImageRectWidth << "x" << m_viewConfigurationViews[0].recommendedImageRectHeight;
-   PLOGI << "Headset maximum resolution: " << m_viewConfigurationViews[0].maxImageRectWidth << "x" << m_viewConfigurationViews[0].maxImageRectHeight;
-   PLOGI << "Selected resolution: " << m_eyeWidth << "x" << m_eyeHeight;
+   PLOGI << "Headset recommended resolution: " << m_viewConfigurationViews[0].recommendedImageRectWidth << 'x' << m_viewConfigurationViews[0].recommendedImageRectHeight;
+   PLOGI << "Headset maximum resolution: " << m_viewConfigurationViews[0].maxImageRectWidth << 'x' << m_viewConfigurationViews[0].maxImageRectHeight;
+   PLOGI << "Selected resolution: " << m_eyeWidth << 'x' << m_eyeHeight;
 
    // Create the graphics backend as OpenXR impose some settings (adapter,...) and it is also needed to initialize BGFX
    m_backend = new XRD3D11Backend(m_xrInstance, m_systemID);
@@ -1062,32 +1058,32 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
    {
       DiscardVisibilityMask();
       uint32_t indexCount = 0, vertexCount = 0, maxVertexCount = 0;
-      for (int view = 0; view < m_viewConfigurationViews.size(); view++)
+      for (size_t view = 0; view < m_viewConfigurationViews.size(); view++)
       {
          XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
-         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
          indexCount += visibilityMask.indexCountOutput;
          vertexCount += visibilityMask.vertexCountOutput;
          maxVertexCount = max(maxVertexCount, visibilityMask.vertexCountOutput);
       }
       IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
       VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
-      XrVector2f* vert2d = new XrVector2f[maxVertexCount];
+      XrVector2f* const vert2d = new XrVector2f[maxVertexCount];
       int vPos = 0;
       uint32_t* indices;
       indexBuffer->Lock(indices);
       Vertex3D_NoTex2* vertices;
       vertexBuffer->Lock(vertices);
       uint32_t vertexOffset = 0;
-      for (int view = 0; view < m_viewConfigurationViews.size(); view++)
+      for (size_t view = 0; view < m_viewConfigurationViews.size(); view++)
       {
          XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
-         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
          visibilityMask.indexCapacityInput = visibilityMask.indexCountOutput;
          visibilityMask.vertexCapacityInput = visibilityMask.vertexCountOutput;
          visibilityMask.vertices = vert2d;
          visibilityMask.indices = indices;
-         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
          for (uint32_t i = 0; i < visibilityMask.vertexCountOutput; i++)
          {
             vertices->x = vert2d[i].x;
@@ -1172,8 +1168,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 
       if (rendered)
       {
-         const float vpuScale = 0.0254f * 1.0625f / 50.f;
-         const float zNear = 0.2f; // 20cm in front of player
+         constexpr float vpuScale = (float)(0.0254 * 1.0625 / 50.);
+         constexpr float zNear = 0.2f; // 20cm in front of player
          const float zFar = max(5.f, m_sceneSize * vpuScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
@@ -1185,7 +1181,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          medianPose.orientation.y = (medianPose.orientation.y + views[1].pose.orientation.y) * 0.5f;
          medianPose.orientation.z = (medianPose.orientation.z + views[1].pose.orientation.z) * 0.5f;
          medianPose.orientation.w = (medianPose.orientation.w + views[1].pose.orientation.w) * 0.5f;
-         float length = medianPose.orientation.x * medianPose.orientation.x + medianPose.orientation.y * medianPose.orientation.y + medianPose.orientation.z * medianPose.orientation.z
+         const float length = medianPose.orientation.x * medianPose.orientation.x + medianPose.orientation.y * medianPose.orientation.y + medianPose.orientation.z * medianPose.orientation.z
             + medianPose.orientation.w * medianPose.orientation.w;
          medianPose.orientation.x /= length;
          medianPose.orientation.y /= length;
@@ -1267,7 +1263,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
             vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
                fbh, colorAttachment.handle, depthAttachment.handle,
-               "VRSwapchain ["s + std::to_string(colorImageIndex) + "/" + std::to_string(depthImageIndex) + "]",
+               "VRSwapchain ["s + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
                m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
             m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()] = vrRenderTarget;
          }
@@ -1365,16 +1361,12 @@ void VRDevice::SubmitFrame(Sampler* leftEye, Sampler* rightEye)
       vr::EVRCompositorError errorLeft = vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
       if (errorLeft != vr::VRCompositorError_None)
       {
-         char msg[128];
-         sprintf_s(msg, sizeof(msg), "VRCompositor Submit Left Error %d", errorLeft);
-         ShowError(msg);
+         ShowError("VRCompositor Submit Left Error " + std::to_string(errorLeft));
       }
       vr::EVRCompositorError errorRight = vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
       if (errorRight != vr::VRCompositorError_None)
       {
-         char msg[128];
-         sprintf_s(msg, sizeof(msg), "VRCompositor Submit Right Error %d", errorRight);
-         ShowError(msg);
+         ShowError("VRCompositor Submit Right Error " + std::to_string(errorRight));
       }
       #if defined(ENABLE_OPENGL)
          glFlush();

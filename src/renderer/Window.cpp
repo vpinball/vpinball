@@ -20,7 +20,7 @@ namespace VPX
 
 Window::Window(const int width, const int height)
    : m_settingsSection(Settings::PlayerVR)
-   , m_settingsPrefix("Headset")
+   , m_settingsPrefix("Headset"s)
    , m_isVR(true)
 {
    m_hidpiScale = 1.f;
@@ -426,8 +426,8 @@ void Window::SetPos(const int x, const int y)
       SetWindowPos(m_nwnd, nullptr, x, y, m_width, m_height, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
    #endif
    Settings* settings = &(g_pvp->m_settings); // Always use main application settings (not overridable per table)
-   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndX"s, x);
-   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndY"s, y);
+   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndX", x);
+   settings->SaveValue(m_settingsSection, m_settingsPrefix + "WndY", y);
 }
 
 
