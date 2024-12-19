@@ -70,17 +70,15 @@ public:
 
    void MulScalar(const float scalar)
    {
-      return Matrix3{
-         m_d[0][0]*scalar,
-         m_d[0][1]*scalar,
-         m_d[0][2]*scalar,
-         m_d[1][0]*scalar,
-         m_d[1][1]*scalar,
-         m_d[1][2]*scalar,
-         m_d[2][0]*scalar,
-         m_d[2][1]*scalar,
-         m_d[2][2]*scalar
-      };
+         m_d[0][0]*=scalar;
+         m_d[0][1]*=scalar;
+         m_d[0][2]*=scalar;
+         m_d[1][0]*=scalar;
+         m_d[1][1]*=scalar;
+         m_d[1][2]*=scalar;
+         m_d[2][0]*=scalar;
+         m_d[2][1]*=scalar;
+         m_d[2][2]*=scalar;
    }
 
    Matrix3 operator+ (const Matrix3& m) const
