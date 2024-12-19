@@ -2,22 +2,21 @@
 #include "Properties/BackglassCameraProperty.h"
 #include <WindowsX.h>
 
-
 BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {
-    m_viewList.push_back("Desktop (DT)");
-    m_viewList.push_back("Fullscreen (FS)");
-    m_viewList.push_back("Full Single Screen (FSS)");
+    m_viewList.push_back("Desktop (DT)"s);
+    m_viewList.push_back("Fullscreen (FS)"s);
+    m_viewList.push_back("Full Single Screen (FSS)"s);
     m_viewCombo.SetDialog(this);
-    m_modeList.push_back("Legacy");
-    m_modeList.push_back("Camera");
-    m_modeList.push_back("Window");
+    m_modeList.push_back("Legacy"s);
+    m_modeList.push_back("Camera"s);
+    m_modeList.push_back("Window"s);
     m_modeCombo.SetDialog(this);
     m_testOverrideCombo.SetDialog(this);
-    m_overrideList.push_back("Test Desktop");
-    m_overrideList.push_back("Test Cabinet");
-    m_overrideList.push_back("Test FSS");
-    m_overrideList.push_back("Disabled");
+    m_overrideList.push_back("Test Desktop"s);
+    m_overrideList.push_back("Test Cabinet"s);
+    m_overrideList.push_back("Test FSS"s);
+    m_overrideList.push_back("Disabled"s);
     m_inclinationEdit.SetDialog(this);
     m_fovEdit.SetDialog(this);
     m_laybackEdit.SetDialog(this);
@@ -38,7 +37,7 @@ void BackglassCameraProperty::UpdateVisuals(const int dispid/*=-1*/)
    if (table == nullptr)
       return;
 
-   ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
+   const ViewSetup &viewSetup = table->mViewSetups[table->m_currentBackglassMode];
    if (dispid == IDC_BG_FSS || dispid == -1)
       PropertyDialog::SetCheckboxState(m_hFssModeCheck, table->IsFSSEnabled());
    if (dispid == IDC_BG_TEST_DESKTOP_CHECK || dispid == -1)
@@ -110,7 +109,7 @@ void BackglassCameraProperty::UpdateProperties(const int dispid)
    {
       case IDC_BG_FSS: CHECK_UPDATE_VALUE_SETTER(table->EnableFSS, table->IsFSSEnabled, PropertyDialog::GetCheckboxState, m_hFssModeCheck, table); table->UpdateCurrentBGSet(); break;
       case IDC_BG_OVERRIDE_COMBO: CHECK_UPDATE_ITEM(table->m_BG_override, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_testOverrideCombo, m_overrideList), table); table->UpdateCurrentBGSet(); break;
-      case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID) PropertyDialog::GetComboBoxIndex(m_viewCombo, m_viewList), table); break;
+      case IDC_BG_COMBOBOX: CHECK_UPDATE_ITEM(table->m_currentBackglassMode, (ViewSetupID)PropertyDialog::GetComboBoxIndex(m_viewCombo, m_viewList), table); break;
       case IDC_CAMERA_LAYOUT_MODE: CHECK_UPDATE_ITEM(viewSetup.mMode, (ViewLayoutMode)PropertyDialog::GetComboBoxIndex(m_modeCombo, m_modeList), table); break;
       case IDC_INCLINATION_EDIT: CHECK_UPDATE_ITEM(viewSetup.mLookAt, PropertyDialog::GetFloatTextbox(m_inclinationEdit), table); break;
       case IDC_FOV_EDIT: CHECK_UPDATE_ITEM(viewSetup.mFOV, PropertyDialog::GetFloatTextbox(m_fovEdit), table); break;

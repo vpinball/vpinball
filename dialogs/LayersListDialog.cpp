@@ -5,7 +5,7 @@
 LayersListDialog::LayersListDialog()
    : CDialog(IDD_LAYERS)
    , m_collapsed(true)
-    , m_isCaseSensitive(false)
+   , m_isCaseSensitive(false)
 {
    m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
@@ -95,6 +95,7 @@ void LayersListDialog::UpdateLayerList(const string& name)
       return;
 
    vector<HTREEITEM> visItemList;
+   {
    HTREEITEM item = m_layerTreeView.GetNextVisible(m_layerTreeView.GetRootItem());
    while (item)
    {
@@ -108,9 +109,10 @@ void LayersListDialog::UpdateLayerList(const string& name)
       }
       item = m_layerTreeView.GetNextVisible(item);
    }
+   }
 
    ClearList();
-   const bool checkName = name.empty() ? false : true;
+   const bool checkName = !name.empty();
    string sName{name};
    if (checkName) //transform the name to lower
       std::transform(sName.begin(), sName.end(), sName.begin(), tolower);
@@ -143,9 +145,9 @@ void LayersListDialog::UpdateLayerList(const string& name)
    else
    {
       ExpandLayers();
-      for (const auto& l_item : visItemList)
+      for (const auto& item : visItemList)
       {
-         m_layerTreeView.Expand(l_item, TVE_EXPAND);
+         m_layerTreeView.Expand(item, TVE_EXPAND);
       }
    }
 }
@@ -258,11 +260,11 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    const int id = LOWORD(wParam);
    switch (id)
    {
-       case IDC_SYNC:
-       {
-          UpdateLayerInfo();
-		   return TRUE;
-       }
+   case IDC_SYNC:
+   {
+      UpdateLayerInfo();
+      return TRUE;
+   }
    case IDC_ADD_LAYER_BUTTON:
    {
       if (!AddLayer("New Layer 0", nullptr))
@@ -431,19 +433,18 @@ void LayersListDialog::UpdateLayerInfo()
 	if (psel != nullptr)
 	{
         // Get the layer name of the selected element
-    	const string layerName{psel->m_layerName};
+        const string layerName{psel->m_layerName};
         // Set the active layer
-	    m_layerTreeView.SetActiveLayer(layerName);
+        m_layerTreeView.SetActiveLayer(layerName);
         // Find the selected element name and find it in the layer, selecting it
         const HTREEITEM item = m_layerTreeView.GetItemByElement(psel->GetIEditable());
         m_layerTreeView.SelectItem(item);
-	}
+    }
     else
     {
-	    m_layerTreeView.SetActiveLayer("");
+        m_layerTreeView.SetActiveLayer(string());
     }
 }
-
 
 CContainLayers::CContainLayers()
 {
@@ -778,7 +779,7 @@ vector<string> LayerTreeView::GetAllLayerNames()
    }
    vector<string> layerList;
    layerList.reserve(children.size());
-   for (auto& layer : children) 
+   for (const auto& layer : children) 
    { 
       layerList.push_back(GetItemText(layer).c_str());
    }
@@ -853,7 +854,7 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
          vector<HTREEITEM> layers = GetAllLayerItems();
 
-         for (auto dragItem : m_DragItems)
+         for (const auto& dragItem : m_DragItems)
          {
             TVITEM tvItem = {};
             tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
@@ -1150,4 +1151,3 @@ BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    return FALSE;
 }
-

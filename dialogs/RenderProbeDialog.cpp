@@ -13,7 +13,7 @@ BOOL RenderProbeDialog::OnInitDialog()
 
    ListView_SetExtendedListViewStyle(hListHwnd, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 
-   LVCOLUMN lvcol;
+   LVCOLUMN lvcol = {};
    lvcol.mask = LVCF_TEXT | LVCF_WIDTH;
    const LocalString ls(IDS_NAME);
    lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Name";
