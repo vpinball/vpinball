@@ -134,6 +134,7 @@ string MakeString(const wstring &wz)
    WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
    /*const*/ string result(szT); // const removed for auto-move
    delete [] szT;
+
    return result;
 }
 
@@ -145,6 +146,7 @@ wstring MakeWString(const string &sz)
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len + 1);
    /*const*/ wstring result(wzT); // const removed for auto-move
    delete [] wzT;
+
    return result;
 }
 

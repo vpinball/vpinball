@@ -1,4 +1,5 @@
 // license:GPLv3+
+
 // Ported at: VisualPinball.Engine/Common/Constants.cs
 
 #pragma once
@@ -11,50 +12,38 @@
 #define DEFAULT_STEPTIME      10000      // default physics rate: 1000Hz
 #define DEFAULT_STEPTIME_S    0.01       // default physics rate: 1000Hz
 
-#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S)
+#define PHYS_FACTOR         (PHYSICS_STEPTIME_S / DEFAULT_STEPTIME_S) // Physic step time expressed in Visual Pinball Time (VPT)
 
-#define DEFAULT_TABLE_GRAVITY           0.97f
-#define DEFAULT_TABLE_CONTACTFRICTION   0.075f
-#define DEFAULT_TABLE_SCATTERANGLE      0.5f
-#define DEFAULT_TABLE_ELASTICITY        0.25f
+#define DEFAULT_TABLE_GRAVITY            0.97f
+#define DEFAULT_TABLE_CONTACTFRICTION    0.075f
+#define DEFAULT_TABLE_SCATTERANGLE       0.5f
+#define DEFAULT_TABLE_ELASTICITY         0.25f
 #define DEFAULT_TABLE_ELASTICITY_FALLOFF 0.f
-#define DEFAULT_TABLE_PFSCATTERANGLE    0.f
-#define DEFAULT_TABLE_MIN_SLOPE         6.0f
-#define DEFAULT_TABLE_MAX_SLOPE         6.0f
+#define DEFAULT_TABLE_PFSCATTERANGLE     0.f
+#define DEFAULT_TABLE_MIN_SLOPE          6.0f
+#define DEFAULT_TABLE_MAX_SLOPE          6.0f
 
-#define HIT_SHAPE_DETAIL_LEVEL          7.0f // static detail level to approximate ramps and rubbers for the physics/collision code
+#define HIT_SHAPE_DETAIL_LEVEL           7.0f // static detail level to approximate ramps and rubbers for the physics/collision code
 
-//#define PRINT_DEBUG_COLLISION_TREE     // print collision acceleration structure info (will slow down debugging startup time if enabled)
+//#define PRINT_DEBUG_COLLISION_TREE // print collision acceleration structure info (will slow down debugging startup time if enabled)
 
 /*
  * NOTE ABOUT VP PHYSICAL UNITS:
  *
- * By convention, one VP length unit (U) corresponds to
- *   1 U = .53975 mm = 5.3975E-4 m,   or   1 m = 1852.71 U
+ * By convention, 50 VP length unit (U) corresponds to 1"1/16 (standard ball size)
+ *   1 U = 1.0625 / 50 inches = .53975 mm = 5.3975E-4 m,   or approximately  1 m = 1852.71 U
  *
- * For historical reasons, one VP time unit (T) corresponds to
+ * For historical reasons, one VP time unit (T) corresponds to 0.01s
  *   1 T = 10 ms = 0.01 s,            or   1 s = 100 T
  *
  * Therefore, Earth gravity in VP units can be computed as
  *   g  =  9.81 m/s^2  =  1.81751 U/T^2
- */
-/*
- * nFozzy explanation:
- * The inch conversion is nice because VP units are somewhat based on inches so you can use fractions:
- * VP units = (inches * 17) / 800
- * Inches = (VP units * 800) / 17
  * 
- * I have to switch between metric and VP units when modeling / rendering and I do that with these scales:
- * CM to VP units: (50 / 2.69875)
- * VP units to CM: (2.69875 / 50)
+ * For historical reason, 1 VP mass unit is defined as the mass of a standard ball, that is to say 80g.
  * 
- * I’m trying to move to this sort of thing in the future, modeling in pseudo-inches because Maya’s native inch support is for shits
- * Working inches Scale: 1
- * Scale up to CM for rendering: 2.54
- * Scale way up to VPu for export: (1*800)/17
+ * see def.h for exact helper conversion macros
  */
-
-#define GRAVITYCONST    1.81751f
+#define GRAVITYCONST 1.81751f
 
 // Collisions:
 //
@@ -87,7 +76,7 @@
 // old workarounds, not needed anymore?!
 #ifndef NEW_PHYSICS
  #define C_EMBEDSHOT_PLANE // push pos up if ball embedded in plane
- #define C_EMBEDDED 0.0f // can be undefd
+ #define C_EMBEDDED 0.0f   // can be undefd
  #define C_EMBEDSHOT 0.05f
  // Contact displacement corrections, hard ridgid contacts i.e. steel on hard plastic or hard wood
  #define C_DISP_GAIN 0.9875f // can be undefd
@@ -101,12 +90,12 @@
  //#define C_BALL_SPIN_HACK2 0.1 // dampens ball spin on collision contacts and at the same time very slow moving balls (smaller = less damp)
 #endif
 
-//trigger/kicker boundary crossing hysterisis, also slow/static ball<->ball and to some extent general ball<->object interactions
+// trigger/kicker boundary crossing hysterisis, also slow/static ball<->ball and to some extent general ball<->object interactions
 #define STATICTIME 0.02f // smallest time/intersection difference allowed in the simulation, if amount of all intersections found within that smaller timeframe is > STATICCNTS
-#define STATICCNTS 10     // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
+#define STATICCNTS 10    // 0=always clamp to the minimum STATICTIME difference, no exceptions, will/should lead to more penetration!
 
-//Flippers:
+// Flippers:
 #define C_INTERATIONS 20 // Precision level and cycles for interative calculations // acceptable contact time ... near zero time
 
-//Plumb:
-#define	VELOCITY_EPSILON 0.05f	// The threshold for zero velocity.
+// Plumb:
+#define	VELOCITY_EPSILON 0.05f // The threshold for zero velocity.

@@ -98,19 +98,19 @@ public:
    Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
    void Set(const float a, const float b) { x = a; y = b; }
-   void SetZero()       { Set(0.f, 0.f); }
+   void SetZero() { Set(0.f, 0.f); }
 
    Vertex2D operator+ (const Vertex2D& v) const
    {
-      return Vertex2D(x + v.x, y + v.y);
+      return {x + v.x, y + v.y};
    }
    Vertex2D operator- (const Vertex2D& v) const
    {
-      return Vertex2D(x - v.x, y - v.y);
+      return {x - v.x, y - v.y};
    }
    Vertex2D operator- () const
    {
-      return Vertex2D(-x, -y);
+      return {-x, -y};
    }
 
    Vertex2D& operator+= (const Vertex2D& v)
@@ -128,16 +128,16 @@ public:
 
    Vertex2D operator* (const float s) const
    {
-      return Vertex2D(s*x, s*y);
+      return {s*x, s*y};
    }
    friend Vertex2D operator* (const float s, const Vertex2D& v)
    {
-      return Vertex2D(s*v.x, s*v.y);
+      return {s*v.x, s*v.y};
    }
    Vertex2D operator/ (const float s) const
    {
       const float invs = 1.0f / s;
-      return Vertex2D(x*invs, y*invs);
+      return {x*invs, y*invs};
    }
 
    Vertex2D& operator*= (const float s)
@@ -178,8 +178,12 @@ public:
 
    void NormalizeSafe()
    {
-      if (!IsZero())
-         Normalize();
+      const float lengthsqr = x*x + y*y;
+      if (lengthsqr <= FLT_MIN)
+         return;
+      const float oneoverlength = 1.0f / sqrtf(lengthsqr);
+      x *= oneoverlength;
+      y *= oneoverlength;
    }
 
    bool IsZero() const
@@ -199,19 +203,19 @@ public:
    Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
    void Set(const float a, const float b, const float c) { x = a; y = b; z = c; }
-   void SetZero()       { Set(0.f, 0.f, 0.f); }
+   void SetZero() { Set(0.f, 0.f, 0.f); }
 
    Vertex3Ds operator+ (const Vertex3Ds& v) const
    {
-      return Vertex3Ds(x + v.x, y + v.y, z + v.z);
+      return {x + v.x, y + v.y, z + v.z};
    }
    Vertex3Ds operator- (const Vertex3Ds& v) const
    {
-      return Vertex3Ds(x - v.x, y - v.y, z - v.z);
+      return {x - v.x, y - v.y, z - v.z};
    }
    Vertex3Ds operator- () const
    {
-      return Vertex3Ds(-x, -y, -z);
+      return {-x, -y, -z};
    }
 
    Vertex3Ds& operator+= (const Vertex3Ds& v)
@@ -231,16 +235,16 @@ public:
 
    Vertex3Ds operator* (const float s) const
    {
-      return Vertex3Ds(s*x, s*y, s*z);
+      return {s*x, s*y, s*z};
    }
    friend Vertex3Ds operator* (const float s, const Vertex3Ds& v)
    {
-      return Vertex3Ds(s*v.x, s*v.y, s*v.z);
+      return {s*v.x, s*v.y, s*v.z};
    }
    Vertex3Ds operator/ (const float s) const
    {
       const float invs = 1.0f / s;
-      return Vertex3Ds(x*invs, y*invs, z*invs);
+      return {x*invs, y*invs, z*invs};
    }
 
    Vertex3Ds& operator*= (const float s)
@@ -278,8 +282,13 @@ public:
 
    void NormalizeSafe()
    {
-      if (!IsZero())
-         Normalize();
+      const float lengthsqr = x*x + y*y + z*z;
+      if (lengthsqr <= FLT_MIN)
+         return;
+      const float oneoverlength = 1.0f / sqrtf(lengthsqr);
+      x *= oneoverlength;
+      y *= oneoverlength;
+      z *= oneoverlength;
    }
 
    template <class VecIn> float Dot(const VecIn& pv) const
@@ -310,9 +319,9 @@ public:
 
 inline Vertex3Ds CrossProduct(const Vertex3Ds &pv1, const Vertex3Ds &pv2)
 {
-   return Vertex3Ds(pv1.y * pv2.z - pv1.z * pv2.y,
-                    pv1.z * pv2.x - pv1.x * pv2.z,
-                    pv1.x * pv2.y - pv1.y * pv2.x);
+   return {pv1.y * pv2.z - pv1.z * pv2.y,
+           pv1.z * pv2.x - pv1.x * pv2.z,
+           pv1.x * pv2.y - pv1.y * pv2.x};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,7 +353,7 @@ inline Vertex3Ds GetRotatedAxis(const float angle, const Vertex3Ds &axis, const 
    rotMatrixRow2.y = u.y*u.z*oneMinusCosAngle + sinAngle*u.x;
    rotMatrixRow2.z = u.z*u.z + cosAngle*(1.f - u.z*u.z);
 
-   return Vertex3Ds(temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2));
+   return {temp.Dot(rotMatrixRow0), temp.Dot(rotMatrixRow1), temp.Dot(rotMatrixRow2)};
 }
 
 //
@@ -361,7 +370,7 @@ inline Vertex3Ds sphere_sample(const float u, const float v) // u,v in [0..1), p
    const float phi = v * (float)(2.0 * M_PI);
    const float z = 1.0f - (u + u);
    const float r = sqrtf(1.0f - z * z);
-   return Vertex3Ds(cosf(phi) * r, z, sinf(phi) * r);
+   return {cosf(phi) * r, z, sinf(phi) * r};
 }
 
 // uniformly distributed vector over hemisphere
@@ -370,7 +379,7 @@ inline Vertex3Ds hemisphere_sample(const float u, const float v) // u,v in [0..1
    const float phi = v * (float)(2.0 * M_PI);
    const float cosTheta = 1.0f - u;
    const float sinTheta = sqrtf(1.0f - cosTheta * cosTheta);
-   return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
+   return {cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta};
 }
 
 // cosine distributed vector over hemisphere
@@ -379,7 +388,7 @@ inline Vertex3Ds cos_hemisphere_sample(const float u, const float v) // u,v in [
    const float phi = v * (float)(2.0 * M_PI);
    const float cosTheta = sqrtf(1.0f - u);
    const float sinTheta = sqrtf(u);
-   return Vertex3Ds(cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta);
+   return {cosf(phi) * sinTheta, cosTheta, sinf(phi) * sinTheta};
 }
 
 // rotate vec from world space (y-up, upper hemisphere only) to local space (defined f.e. by the normal of a surface and its implicit/orthogonal tangents),
@@ -402,10 +411,9 @@ inline Vertex3Ds rotate_to_vector_upper(const Vertex3Ds &vec, const Vertex3Ds &n
       const float h = 1.0f / (1.0f + normal.y);
       const float hz = h*normal.z;
       const float hzx = hz*normal.x;
-      return Vertex3Ds(
-         vec.x * (normal.y + hz*normal.z) + vec.y * normal.x - vec.z * hzx,
-         vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
-         vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h*normal.x*normal.x));
+      return {vec.x * (normal.y + hz*normal.z) + vec.y * normal.x - vec.z * hzx,
+              vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
+              vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h*normal.x*normal.x)};
    }
    else
       return -vec;
@@ -432,10 +440,9 @@ inline Vertex3Ds rotate_to_vector_full(const Vertex3Ds &vec, const Vertex3Ds &no
       const float zz = normal.z*normal.z;
       const float h = (1.0f - normal.y) / (xx + zz);
       const float hzx = h*normal.z*normal.x;
-      return Vertex3Ds(
-         vec.x * (normal.y + h*zz) + vec.y * normal.x - vec.z * hzx,
-         vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
-         vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h*xx));
+      return {vec.x * (normal.y + h*zz) + vec.y * normal.x - vec.z * hzx,
+              vec.y * normal.y - vec.x * normal.x - vec.z * normal.z,
+              vec.y * normal.z - vec.x * hzx + vec.z * (normal.y + h*xx)};
    }
    else
       return (normal.y < 0.0f) ? -vec : vec;

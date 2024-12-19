@@ -1,6 +1,7 @@
 #pragma once
 
-// this is the djb2 string hash algorithm, str is converted to lower case
+// this is the djb2 (with XOR mod) string hash algorithm, str is converted to lower case
+// in general found to only work well for chars/strings
 inline size_t StringHash(const string& str)
 {
    //MessageBox(0, str, 0, 0);
@@ -8,20 +9,29 @@ inline size_t StringHash(const string& str)
 
    const size_t l = str.length();
    for (size_t i = 0; i < l; ++i)
-      hash = ((hash << 5) + hash) + tolower(str[i]); /* hash * 33 + str[i] */
+      hash = ((hash << 5) + hash) ^ tolower(str[i]); /* hash * 33 ^ str[i] */
 
    return hash;
 }
 
-// very simple hash, but good enough so far for the obj loader (i.e. hash gen speed matters!)
+// simple hash (FNV1-a), but good enough for the obj loader (i.e. hash gen speed matters!)
+// in general a very good hash, but for large data blocks other ones (XXH3, etc) can be much faster and higher quality
 template <size_t T>
 size_t FloatHash(const float a[T])
 {
-   const unsigned char *in = reinterpret_cast<const unsigned char*>(a);
-   unsigned int ret = 2654435761u;
+   const unsigned char * __restrict in = reinterpret_cast<const unsigned char*>(a);
+   unsigned int ret = 0x811c9dc5u;
    for (size_t i = 0; i < (T * sizeof(float)); ++i)
-      ret = (ret * 2654435761u) ^ *in++;
-   
+      ret = (ret ^ *in++) * 0x1000193u;
+
+   /* optional post process scamble
+   hash += hash << 13;
+   hash ^= hash >> 7;
+   hash += hash << 3;
+   hash ^= hash >> 17;
+   hash += hash << 5;
+   */
+
    return ret;
 }
 
@@ -123,12 +133,12 @@ inline uint32_t rotateLeft(const uint32_t x, const uint8_t n) { return (x << n) 
  */
 inline void md5Init(MD5Context* ctx)
 {
-   ctx->size = (uint64_t)0;
+   ctx->size = 0;
 
-   ctx->buffer[0] = (uint32_t)0x67452301;
-   ctx->buffer[1] = (uint32_t)0xefcdab89;
-   ctx->buffer[2] = (uint32_t)0x98badcfe;
-   ctx->buffer[3] = (uint32_t)0x10325476;
+   ctx->buffer[0] = 0x67452301u;
+   ctx->buffer[1] = 0xefcdab89u;
+   ctx->buffer[2] = 0x98badcfeu;
+   ctx->buffer[3] = 0x10325476u;
 }
 
 /*
@@ -243,10 +253,10 @@ static void md5Finalize(MD5Context* ctx)
    // Move the result into digest (convert from little-endian)
    for (unsigned int i = 0; i < 4; ++i)
    {
-      ctx->digest[(i * 4) + 0] = (uint8_t)((ctx->buffer[i] & 0x000000FF));
-      ctx->digest[(i * 4) + 1] = (uint8_t)((ctx->buffer[i] & 0x0000FF00) >> 8);
-      ctx->digest[(i * 4) + 2] = (uint8_t)((ctx->buffer[i] & 0x00FF0000) >> 16);
-      ctx->digest[(i * 4) + 3] = (uint8_t)((ctx->buffer[i] & 0xFF000000) >> 24);
+      ctx->digest[(i * 4) + 0] = (uint8_t)((ctx->buffer[i] & 0x000000FFu));
+      ctx->digest[(i * 4) + 1] = (uint8_t)((ctx->buffer[i] & 0x0000FF00u) >> 8);
+      ctx->digest[(i * 4) + 2] = (uint8_t)((ctx->buffer[i] & 0x00FF0000u) >> 16);
+      ctx->digest[(i * 4) + 3] = (uint8_t)((ctx->buffer[i] & 0xFF000000u) >> 24);
    }
 }
 

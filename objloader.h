@@ -5,7 +5,6 @@
 class ObjLoader final
 {
 public:
-
    ObjLoader() = default;
    ~ObjLoader()
    {
@@ -44,16 +43,16 @@ public:
    bool LoadMaterial(const string& filename, Material* const mat);
    void WriteMaterial(const string& texelName, const string& texelFilename, const Material* const mat);
 
-   const vector<Vertex3D_NoTex2>& GetVertices()
+   const vector<Vertex3D_NoTex2>& GetVertices() const
    {
       return m_verts;
    }
-   const vector<unsigned int>& GetIndices()
+   const vector<unsigned int>& GetIndices() const
    {
       return m_indices;
    }
-private:
 
+private:
    struct MyPoly
    {
       int vi0, ti0, ni0;

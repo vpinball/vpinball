@@ -116,7 +116,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
             else
             {
                copy = nullptr;
-               assert(!"Bad RegKey");
+               assert(!"Bad Registry Key");
             }
 
             string name(szName);
@@ -238,7 +238,7 @@ bool Settings::LoadValue(const Section section, const string &key, float &pfloat
 {
    DataType type = DT_SZ;
    char szbuffer[16];
-   const bool success = LoadValue(section, key, type, szbuffer, 16);
+   const bool success = LoadValue(section, key, type, szbuffer, sizeof(szbuffer));
    if (!success || (type != DT_SZ))
       return false;
    const int len = lstrlen(szbuffer);
@@ -389,7 +389,7 @@ bool Settings::SaveValue(const Section section, const string &key, const string 
    return SaveValue(section, key, DT_SZ, val.c_str(), (DWORD)val.length(), overrideMode);
 }
 
-bool Settings::DeleteValue(const Section section, const string &key, const bool &deleteFromParent)
+bool Settings::DeleteValue(const Section section, const string &key, const bool deleteFromParent)
 {
    bool success = true;
    if (m_parent && deleteFromParent)
@@ -402,7 +402,7 @@ bool Settings::DeleteValue(const Section section, const string &key, const bool 
    return success;
 }
 
-bool Settings::DeleteSubKey(const Section section, const bool &deleteFromParent)
+bool Settings::DeleteSubKey(const Section section, const bool deleteFromParent)
 {
    bool success = true;
    if (m_parent && deleteFromParent)

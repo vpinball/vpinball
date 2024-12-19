@@ -15,9 +15,6 @@
 //-----------------------------------------------------------------------------
 static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfxInfo)
 {
-   MMCKINFO        ckIn;           // chunk info. for general use.
-   PCMWAVEFORMAT   pcmWaveFormat;  // Temp PCM structure to load in.
-
    *ppwfxInfo = nullptr;
 
    if ((0 != mmioDescend(hmmioIn, pckInRIFF, nullptr, 0)))
@@ -27,6 +24,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
       (pckInRIFF->fccType != mmioFOURCC('W', 'A', 'V', 'E')))
       return E_FAIL;
 
+   MMCKINFO ckIn; // chunk info. for general use.
    // Search the input file for for the 'fmt ' chunk.
    ckIn.ckid = mmioFOURCC('f', 'm', 't', ' ');
    if (0 != mmioDescend(hmmioIn, &ckIn, pckInRIFF, MMIO_FINDCHUNK))
@@ -37,6 +35,7 @@ static HRESULT ReadMMIO(HMMIO hmmioIn, MMCKINFO* pckInRIFF, WAVEFORMATEX** ppwfx
    if (ckIn.cksize < (LONG) sizeof(PCMWAVEFORMAT))
       return E_FAIL;
 
+   PCMWAVEFORMAT pcmWaveFormat; // Temp PCM structure to load in.
    // Read the 'fmt ' chunk into <pcmWaveFormat>.
    if (mmioRead(hmmioIn, (HPSTR)&pcmWaveFormat,
       sizeof(pcmWaveFormat)) != sizeof(pcmWaveFormat))
@@ -150,10 +149,9 @@ static HRESULT WaveStartDataRead(const HMMIO* phmmioIn, MMCKINFO* pckIn,
 static HRESULT WaveReadFile(HMMIO hmmioIn, UINT cbRead, BYTE* pbDest,
    MMCKINFO* pckIn, UINT* cbActualRead)
 {
-   MMIOINFO mmioinfoIn;         // current status of <hmmioIn>
-
    *cbActualRead = 0;
 
+   MMIOINFO mmioinfoIn; // current status of <hmmioIn>
    if (0 != mmioGetInfo(hmmioIn, &mmioinfoIn, 0))
       return E_FAIL;
 
@@ -214,7 +212,7 @@ HRESULT CWaveSoundRead::Open(const string& strFilename)
 {
    SAFE_DELETE(m_pwfx);
 
-   HRESULT  hr;
+   HRESULT hr;
 
    if (FAILED(hr = WaveOpenFile(strFilename, &m_hmmioIn, &m_pwfx, &m_ckInRiff)))
       return hr;

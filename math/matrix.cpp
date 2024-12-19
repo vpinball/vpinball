@@ -94,12 +94,10 @@ void RotateAround(const Vertex3Ds &pvAxis, Vertex3Ds * const pvPoint, const int 
 
    for (int i = 0; i < count; ++i)
    {
-      const Vertex3Ds result = {
+      pvPoint[i] = Vertex3Ds{
          mat.m_d[0][0] * pvPoint[i].x + mat.m_d[0][1] * pvPoint[i].y + mat.m_d[0][2] * pvPoint[i].z,
          mat.m_d[1][0] * pvPoint[i].x + mat.m_d[1][1] * pvPoint[i].y + mat.m_d[1][2] * pvPoint[i].z,
          mat.m_d[2][0] * pvPoint[i].x + mat.m_d[2][1] * pvPoint[i].y + mat.m_d[2][2] * pvPoint[i].z };
-
-      pvPoint[i] = result;
    }
 }
 
@@ -119,9 +117,9 @@ Vertex3Ds RotateAround(const Vertex3Ds &pvAxis, const Vertex2D &pvPoint, const f
    matrix[1][1] = pvAxis.y*pvAxis.y + rcos*(1.0f - pvAxis.y*pvAxis.y);
    matrix[2][1] = pvAxis.y*pvAxis.z*(1.0f - rcos) - pvAxis.x*rsin;
 
-   return Vertex3Ds(matrix[0][0] * pvPoint.x + matrix[0][1] * pvPoint.y,
-      matrix[1][0] * pvPoint.x + matrix[1][1] * pvPoint.y,
-      matrix[2][0] * pvPoint.x + matrix[2][1] * pvPoint.y);
+   return {matrix[0][0] * pvPoint.x + matrix[0][1] * pvPoint.y,
+           matrix[1][0] * pvPoint.x + matrix[1][1] * pvPoint.y,
+           matrix[2][0] * pvPoint.x + matrix[2][1] * pvPoint.y};
 }
 
 //D3D Matrices ----------------------------------------------------------------------------------------------------------------

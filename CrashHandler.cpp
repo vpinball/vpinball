@@ -201,7 +201,7 @@ namespace
          dumpInfo.ExceptionPointers = exceptionPtrs;
          dumpInfo.ThreadId = ::GetCurrentThreadId();
 
-         const MINIDUMP_TYPE dumpType = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory |
+         constexpr MINIDUMP_TYPE dumpType = (MINIDUMP_TYPE)(MiniDumpWithPrivateReadWriteMemory |
             MiniDumpWithThreadInfo | MiniDumpWithUnloadedModules);
 
          const BOOL success = ::MiniDumpWriteDump(

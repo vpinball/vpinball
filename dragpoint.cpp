@@ -170,8 +170,8 @@ void IHaveDragPoints::ScalePoints(const float scalex, const float scaley, const 
 
    if (useElementCenter)
    {
-      /* Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
-      Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter() */
+      // Don't use the pvCenter anymore! pvCenter is the mouse position when scaling is activated.
+      // Because the mouse position (scaling center) isn't shown in the editor use the element's center returned by GetPointCenter()
       const float centerx = newcenter.x;
       const float centery = newcenter.y;
 
@@ -436,6 +436,7 @@ IEditable *DragPoint::GetIEditable()
 {
    return M_PIHDP->GetIEditable();
 }
+
 const IEditable *DragPoint::GetIEditable() const
 {
    return M_PIHDP->GetIEditable();
@@ -565,11 +566,10 @@ STDMETHODIMP DragPoint::InterfaceSupportsErrorInfo(REFIID riid)
       &IID_IControlPoint,
    };
 
-   for (size_t i = 0; i < sizeof(arr) / sizeof(arr[0]); i++)
-   {
+   for (size_t i = 0; i < std::size(arr); i++)
       if (InlineIsEqualGUID(*arr[i], riid))
          return S_OK;
-   }
+
    return S_FALSE;
 }
 
@@ -618,7 +618,6 @@ STDMETHODIMP DragPoint::put_X(float newVal)
 STDMETHODIMP DragPoint::get_Y(float *pVal)
 {
    *pVal = m_v.y;
-
    return S_OK;
 }
 
@@ -634,7 +633,6 @@ STDMETHODIMP DragPoint::put_Y(float newVal)
 STDMETHODIMP DragPoint::get_Z(float *pVal)
 {
    *pVal = m_v.z;
-
    return S_OK;
 }
 
@@ -650,14 +648,12 @@ STDMETHODIMP DragPoint::put_Z(float newVal)
 STDMETHODIMP DragPoint::get_CalcHeight(float *pVal)
 {
    *pVal = m_calcHeight;
-
    return S_OK;
 }
 
 STDMETHODIMP DragPoint::get_Smooth(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_smooth);
-
    return S_OK;
 }
 
@@ -673,7 +669,6 @@ STDMETHODIMP DragPoint::put_Smooth(VARIANT_BOOL newVal)
 STDMETHODIMP DragPoint::get_IsAutoTextureCoordinate(VARIANT_BOOL *pVal)
 {
    *pVal = FTOVB(m_autoTexture);
-
    return S_OK;
 }
 
@@ -689,7 +684,6 @@ STDMETHODIMP DragPoint::put_IsAutoTextureCoordinate(VARIANT_BOOL newVal)
 STDMETHODIMP DragPoint::get_TextureCoordinateU(float *pVal)
 {
    *pVal = m_texturecoord;
-
    return S_OK;
 }
 

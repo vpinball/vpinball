@@ -429,7 +429,6 @@ void ObjLoader::WriteFaceInfoList(const WORD* faces, const unsigned int numIndic
          , faces[i + 1] + 1 + m_faceIndexOffset, faces[i + 1] + 1 + m_faceIndexOffset, faces[i + 1] + 1 + m_faceIndexOffset
          , faces[i] + 1 + m_faceIndexOffset, faces[i] + 1 + m_faceIndexOffset, faces[i] + 1 + m_faceIndexOffset);
    }
-
 }
 
 bool ObjLoader::LoadMaterial(const string& filename, Material* const mat)

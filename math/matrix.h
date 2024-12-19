@@ -31,10 +31,7 @@ public:
 class Matrix3 final
 {
 public:
-   Matrix3()
-   {
-   }
-
+   Matrix3() {}
    Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
    {
       _11 = __11; _12 = __12; _13 = __13;
@@ -73,21 +70,29 @@ public:
 
    void MulScalar(const float scalar)
    {
-      for (int i = 0; i < 3; ++i)
-         for (int l = 0; l < 3; ++l)
-            m_d[i][l] *= scalar;
+      return Matrix3{
+         m_d[0][0]*scalar,
+         m_d[0][1]*scalar,
+         m_d[0][2]*scalar,
+         m_d[1][0]*scalar,
+         m_d[1][1]*scalar,
+         m_d[1][2]*scalar,
+         m_d[2][0]*scalar,
+         m_d[2][1]*scalar,
+         m_d[2][2]*scalar
+      };
    }
 
    Matrix3 operator+ (const Matrix3& m) const
    {
-      return Matrix3(_11 + m._11, _12 + m._12, _13 + m._13,
+      return Matrix3{_11 + m._11, _12 + m._12, _13 + m._13,
                      _21 + m._21, _22 + m._22, _23 + m._23,
-                     _31 + m._31, _32 + m._32, _33 + m._33);
+                     _31 + m._31, _32 + m._32, _33 + m._33};
    }
 
    Matrix3 operator* (const Matrix3& m) const
    {
-      return Matrix3(
+      return Matrix3{
          m_d[0][0] * m.m_d[0][0] + m_d[1][0] * m.m_d[0][1] + m_d[2][0] * m.m_d[0][2],
          m_d[0][0] * m.m_d[1][0] + m_d[1][0] * m.m_d[1][1] + m_d[2][0] * m.m_d[1][2],
          m_d[0][0] * m.m_d[2][0] + m_d[1][0] * m.m_d[2][1] + m_d[2][0] * m.m_d[2][2],
@@ -97,16 +102,16 @@ public:
          m_d[0][2] * m.m_d[0][0] + m_d[1][2] * m.m_d[0][1] + m_d[2][2] * m.m_d[0][2],
          m_d[0][2] * m.m_d[1][0] + m_d[1][2] * m.m_d[1][1] + m_d[2][2] * m.m_d[1][2],
          m_d[0][2] * m.m_d[2][0] + m_d[1][2] * m.m_d[2][1] + m_d[2][2] * m.m_d[2][2]
-      );
+      };
    }
 
    template <class VecType>
    Vertex3Ds operator* (const VecType& v) const
    {
-      return Vertex3Ds(
+      return Vertex3Ds{
          m_d[0][0] * v.x + m_d[0][1] * v.y + m_d[0][2] * v.z,
          m_d[1][0] * v.x + m_d[1][1] * v.y + m_d[1][2] * v.z,
-         m_d[2][0] * v.x + m_d[2][1] * v.y + m_d[2][2] * v.z);
+         m_d[2][0] * v.x + m_d[2][1] * v.y + m_d[2][2] * v.z};
    }
 
    template <class VecType>
@@ -125,10 +130,10 @@ public:
    template <class VecType>
    Vertex3Ds MulVectorT(const VecType& v) const
    {
-      return Vertex3Ds(
+      return Vertex3Ds{
          m_d[0][0] * v.x + m_d[1][0] * v.y + m_d[2][0] * v.z,
          m_d[0][1] * v.x + m_d[1][1] * v.y + m_d[2][1] * v.z,
-         m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z);
+         m_d[0][2] * v.x + m_d[1][2] * v.y + m_d[2][2] * v.z};
    }
 
    void MulMatrices(const Matrix3& pmat1, const Matrix3& pmat2)
@@ -270,20 +275,12 @@ public:
       mat3D.m_d[ipvt[2]][1] = m_d[2][1];
       mat3D.m_d[ipvt[2]][2] = m_d[2][2];
 
-      m_d[0][0] = mat3D.m_d[0][0];
-      m_d[0][1] = mat3D.m_d[0][1];
-      m_d[0][2] = mat3D.m_d[0][2];
-      m_d[1][0] = mat3D.m_d[1][0];
-      m_d[1][1] = mat3D.m_d[1][1];
-      m_d[1][2] = mat3D.m_d[1][2];
-      m_d[2][0] = mat3D.m_d[2][0];
-      m_d[2][1] = mat3D.m_d[2][1];
-      m_d[2][2] = mat3D.m_d[2][2];
+      memcpy(&m_d[0][0], &mat3D.m_d[0][0], 3 * 3 * sizeof(float));
    }
 
    // Create matrix for rotating around an arbitrary vector
-   // NB: axis must be normalized
-   // NB: this actually rotates by -angle in right-handed coordinates
+   // axis must be normalized
+   // this actually rotates by -angle in right-handed coordinates
    void RotationAroundAxis(const Vertex3Ds& axis, const float angle)
    {
       const float rsin = sinf(angle);
@@ -336,7 +333,7 @@ public:
 
 
 // 4x4 matrix for representing affine transformations of 3D vectors
-class Matrix3D final : public D3DMATRIX
+class alignas(16) Matrix3D final : public D3DMATRIX
 {
 public:
    Matrix3D() {}
@@ -352,10 +349,10 @@ public:
    {
       std::stringstream ss;
       ss << std::fixed << std::setw(8) << std::setprecision(2);
-      ss << "[ " << _11 << " " << _12 << " " << _13 << " " << _14 << "\n"
-         << "  " << _21 << " " << _22 << " " << _23 << " " << _24 << "\n"
-         << "  " << _31 << " " << _32 << " " << _33 << " " << _34 << "\n"
-         << "  " << _41 << " " << _42 << " " << _43 << " " << _44 << "]\n";
+      ss << "[ " << _11 << ' ' << _12 << ' ' << _13 << ' ' << _14 << '\n'
+         << "  " << _21 << ' ' << _22 << ' ' << _23 << ' ' << _24 << '\n'
+         << "  " << _31 << ' ' << _32 << ' ' << _33 << ' ' << _34 << '\n'
+         << "  " << _41 << ' ' << _42 << ' ' << _43 << ' ' << _44 << "]\n";
       return ss.str();
    }
 
@@ -365,8 +362,8 @@ public:
 //
 
 #pragma region SetMatrix
-   ////////////////////////////////////////////////////////////////////////////////
-   // Math for definig usual affine transforms and projection matrices
+
+   // Math for defining common affine transforms and projection matrices
 
    void SetIdentity()
    {
@@ -429,39 +426,41 @@ public:
       _12 = -2.0f * n.x * n.y;
       _13 = -2.0f * n.x * n.z;
 
-      _21 = -2.0f * n.y * n.x;
+      _21 = _12;
       _22 = 1.0f - 2.0f * n.y * n.y;
       _23 = -2.0f * n.y * n.z;
 
-      _31 = -2.0f * n.z * n.x;
-      _32 = -2.0f * n.z * n.y;
+      _31 = _13;
+      _32 = _23;
       _33 = 1.0f - 2.0f * n.z * n.z;
 
-      _41 = -2.0f * n.x * d;
-      _42 = -2.0f * n.y * d;
-      _43 = -2.0f * n.z * d;
+      _41 = -2.0f * d * n.x;
+      _42 = -2.0f * d * n.y;
+      _43 = -2.0f * d * n.z;
    }
 
-   void SetOrthoOffCenterRH(const float l, const float r, const float b, const float t, const float zn, const float zf)
+   void SetOrthoOffCenterRH(const float left, const float right, const float bottom, const float top, const float znear, const float zfar)
    {
-      _11 = 2.f / (r - l);
+      const float r_l = right - left;
+      const float t_b = top - bottom;
+      _11 = 2.f / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
       _14 = 0.0f;
 
       _21 = 0.0f;
-      _22 = 2.f / (t - b);
+      _22 = 2.f / t_b;
       _23 = 0.0f;
       _24 = 0.0f;
 
       _31 = 0.0f;
       _32 = 0.0f;
-      _33 = 1.0f / (zf - zn);
+      _33 = 1.0f / (zfar - znear);
       _34 = 0.0f;
 
-      _41 = (l + r) / (l - r);
-      _42 = (t + b) / (b - t);
-      _43 = zn / (zn - zf);
+      _41 = (left + right) / -r_l;
+      _42 = (top + bottom) / -t_b;
+      _43 = znear * -_33;
       _44 = 1.0f;
    }
 
@@ -469,7 +468,6 @@ public:
    {
       const float r_l = right - left;
       const float t_b = top - bottom;
-      const float zn_zf = znear - zfar;
       _11 = 2.0f * znear / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
@@ -480,11 +478,11 @@ public:
       _24 = 0.0f;
       _31 = (right + left) / r_l;
       _32 = (top + bottom) / t_b;
-      _33 = zfar / zn_zf;
+      _33 = zfar / (znear - zfar);
       _34 = -1.0f;
       _41 = 0.0f;
       _42 = 0.0f;
-      _43 = znear * zfar / zn_zf;
+      _43 = znear * _33;
       _44 = 0.0f;
    }
 
@@ -492,7 +490,6 @@ public:
    {
       const float r_l = right - left;
       const float t_b = top - bottom;
-      const float zn_zf = znear - zfar;
       _11 = 2.0f * znear / r_l;
       _12 = 0.0f;
       _13 = 0.0f;
@@ -503,11 +500,11 @@ public:
       _24 = 0.0f;
       _31 = -(right + left) / r_l;
       _32 = -(top + bottom) / t_b;
-      _33 = -zfar / zn_zf;
+      _33 = -zfar / (znear - zfar);
       _34 = 1.0f;
       _41 = 0.0f;
       _42 = 0.0f;
-      _43 = znear * zfar / zn_zf;
+      _43 = znear * -_33;
       _44 = 0.0f;
    }
 
@@ -576,23 +573,17 @@ public:
 
    static Matrix3D MatrixScale(float scale)
    {
-      Matrix3D result;
-      result.SetScaling(scale, scale, scale);
-      return result;
+      return Matrix3D{scale,0.0f,0.0f,0.0f,0.0f,scale,0.0f,0.0f,0.0f,0.0f,scale,0.0f,0.0f,0.0f,0.0f,1.0f};
    }
 
    static Matrix3D MatrixScale(float sx, float sy, float sz)
    {
-      Matrix3D result;
-      result.SetScaling(sx, sy, sz);
-      return result;
+      return Matrix3D{sx,0.0f,0.0f,0.0f,0.0f,sy,0.0f,0.0f,0.0f,0.0f,sz,0.0f,0.0f,0.0f,0.0f,1.0f};
    }
 
    static Matrix3D MatrixTranslate(float x, float y, float z)
    {
-      Matrix3D result;
-      result.SetTranslation(x, y, z);
-      return result;
+      return Matrix3D{1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,0.0f,0.0f,0.0f,1.0f,0.0f,x,y,z,1.0f};
    }
 
    static Matrix3D MatrixPlaneReflection(const Vertex3Ds& n, const float d)
@@ -646,11 +637,11 @@ public:
       const float sy = sinf(yaw);
       const float cy = cosf(yaw);
       //!! This code should be validated!
-      return Matrix3D(
+      return Matrix3D{
          cr * cy, sr, cr * sy, 0.0f, 
-         -sr * cp * sy - sp * sy, cr * cp, sr * cp * sy + sp * cy, 0.0f, 
+         sy * (-sr * cp - sp), cr * cp, sr * cp * sy + sp * cy, 0.0f, 
          -sr * sp * cy - cp * sy, -cr * sp, -sr * sp * sy + cp * cy, 0.0f, 
-         0.0f, 0.0f, 0.0f, 1.0f);
+         0.0f, 0.0f, 0.0f, 1.0f};
    }
 
    static Matrix3D MatrixRotate(const float angRad, const Vertex3Ds& axis)
@@ -659,11 +650,11 @@ public:
       const float s = sinf(angRad), c = cosf(angRad);
       const float u_c = 1.f - c;
       const float x = axis.x, y = axis.y, z = axis.z;
-      return Matrix3D(
+      return Matrix3D{
          c + x * x * u_c, x * y * u_c - z * s, x * z * u_c + y * s, 0.0f, 
          y * x * u_c + z * s, c + y * y * u_c, y * z * u_c - x * s, 0.0f, 
          z * x * u_c - y * s, z * y * u_c + x * s, c + z * z * u_c, 0.0f, 
-         0.0f, 0.0f, 0.0f, 1.0f);
+         0.0f, 0.0f, 0.0f, 1.0f};
    }
 
 #pragma endregion FactoryConstructors
@@ -741,17 +732,32 @@ public:
 
    Matrix3D operator+(const Matrix3D& _m) const
    {
-      return Matrix3D(_11 + _m._11, _12 + _m._12, _13 + _m._13, _14 + _m._14,
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      Matrix3D matrixT;
+      _mm_storeu_ps(&matrixT._11, _mm_add_ps(_mm_loadu_ps(&_11),_mm_loadu_ps(&_m._11)));
+      _mm_storeu_ps(&matrixT._21, _mm_add_ps(_mm_loadu_ps(&_21),_mm_loadu_ps(&_m._21)));
+      _mm_storeu_ps(&matrixT._31, _mm_add_ps(_mm_loadu_ps(&_31),_mm_loadu_ps(&_m._31)));
+      _mm_storeu_ps(&matrixT._41, _mm_add_ps(_mm_loadu_ps(&_41),_mm_loadu_ps(&_m._41)));
+      return matrixT;
+#else
+      return Matrix3D{_11 + _m._11, _12 + _m._12, _13 + _m._13, _14 + _m._14,
                       _21 + _m._21, _22 + _m._22, _23 + _m._23, _24 + _m._24,
                       _31 + _m._31, _32 + _m._32, _33 + _m._33, _34 + _m._34,
-                      _41 + _m._41, _42 + _m._42, _43 + _m._43, _44 + _m._44);
+                      _41 + _m._41, _42 + _m._42, _43 + _m._43, _44 + _m._44};
+#endif
    }
    
    void Scale(const float x, const float y, const float z)
    {
+#ifdef ENABLE_SSE_OPTIMIZATIONS
+      _mm_storeu_ps(&_11, _mm_mul_ps(_mm_loadu_ps(&_11),_mm_set_ps(1.0f,x,x,x)));
+      _mm_storeu_ps(&_21, _mm_mul_ps(_mm_loadu_ps(&_21),_mm_set_ps(1.0f,y,y,y)));
+      _mm_storeu_ps(&_31, _mm_mul_ps(_mm_loadu_ps(&_31),_mm_set_ps(1.0f,z,z,z)));
+#else
       _11 *= x; _12 *= x; _13 *= x;
       _21 *= y; _22 *= y; _23 *= y;
       _31 *= z; _32 *= z; _33 *= z;
+#endif
    }
 
    // Normalize the 3 defining vector of an orthogonal matrix
@@ -850,7 +856,7 @@ public:
       const float wp = _14*v.x + _24*v.y + _34*v.z + _44;
 
       const float inv_wp = 1.0f / wp;
-      return Vertex3Ds(xp*inv_wp,yp*inv_wp,zp*inv_wp);
+      return Vertex3Ds{xp*inv_wp,yp*inv_wp,zp*inv_wp};
    }
 
    Vertex3Ds MultiplyVectorNoTranslate(const Vertex3Ds &v) const
@@ -860,7 +866,7 @@ public:
       const float yp = _12*v.x + _22*v.y + _32*v.z;
       const float zp = _13*v.x + _23*v.y + _33*v.z;
 
-      return Vertex3Ds(xp,yp,zp);
+      return Vertex3Ds{xp,yp,zp};
    }
 
 //
@@ -980,7 +986,7 @@ public:
          // y-components are transformed from device coords to screen coords.
          // Note 1: device coords range from -1 to +1 in the viewport.
          const float inv_wp = 1.0f / wp;
-         const float vTx = (1.0f + xp * inv_wp) * rClipWidth + xoffset;
+         const float vTx = (1.0f + xp * inv_wp) * rClipWidth  + xoffset;
          const float vTy = (1.0f - yp * inv_wp) * rClipHeight + yoffset;
 
          rgvout[l].x = vTx;

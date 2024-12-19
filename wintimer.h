@@ -70,24 +70,24 @@ public:
       }
    }
 
-   void EnableWorstFrameLogging(bool enable) { m_logWorstFrame = enable; }
+   void EnableWorstFrameLogging(const bool enable) { m_logWorstFrame = enable; }
 
    void LogWorstFrame()
    {
       if (!m_logWorstFrame)
          return;
       m_logWorstFrame = false;
-      const string labels[] = { 
-         "Misc:          ", 
-         "Script:        ", 
-         "Physics:       ", 
-         "Prepare Frame: ", 
-         "Submit Frame:  ", 
-         "GPU Flip:      ", 
-         "Sleep:         ", 
-         "Custom 1:      ", 
-         "Custom 2:      ", 
-         "Custom 3:      " };
+      static const string labels[] = { 
+         "Misc:          "s, 
+         "Script:        "s, 
+         "Physics:       "s, 
+         "Prepare Frame: "s, 
+         "Submit Frame:  "s, 
+         "GPU Flip:      "s, 
+         "Sleep:         "s, 
+         "Custom 1:      "s, 
+         "Custom 2:      "s, 
+         "Custom 3:      "s };
       for (int i = 0; i < N_WORST; i++)
       {
          if (m_profileWorstData[i][PROFILE_FRAME] == 0)
@@ -110,32 +110,34 @@ public:
                         ss.clear();
                         ss << "    . " << std::setw(4) << std::fixed << std::setprecision(1) << (v.second.totalLength * 1e-3) << "ms";
                      }
+                     {
                      string name;
                      switch (v.first)
                      {
-                     case 1000: name = "GameEvents:KeyDown"; break;
-                     case 1001: name = "GameEvents:KeyUp"; break;
-                     case 1002: name = "GameEvents:Init"; break;
-                     case 1003: name = "GameEvents:MusicDone"; break;
-                     case 1004: name = "GameEvents:Exit"; break;
-                     case 1005: name = "GameEvents:Paused"; break;
-                     case 1006: name = "GameEvents:UnPaused"; break;
-                     case 1007: name = "GameEvents:OptionEvent"; break;
-                     case 1101: name = "SurfaceEvents:Slingshot"; break;
-                     case 1200: name = "FlipperEvents:Collide"; break;
-                     case 1300: name = "TimerEvents:Timer"; break;
-                     case 1301: name = "SpinnerEvents:Spin"; break;
-                     case 1302: name = "TargetEvents:Dropped"; break;
-                     case 1303: name = "TargetEvents:Raised"; break;
-                     case 1320: name = "LightSeqEvents:PlayDone"; break;
-                     case 1400: name = "HitEvents:Hit"; break;
-                     case 1401: name = "HitEvents:Unhit"; break;
-                     case 1402: name = "LimitEvents:EOS"; break;
-                     case 1403: name = "LimitEvents:BOS"; break;
-                     case 1404: name = "AnimateEvents:Animate"; break;
-                     default: name = "DispID["s + std::to_string(v.first) + "]";
+                     case 1000: name = "GameEvents:KeyDown"s; break;
+                     case 1001: name = "GameEvents:KeyUp"s; break;
+                     case 1002: name = "GameEvents:Init"s; break;
+                     case 1003: name = "GameEvents:MusicDone"s; break;
+                     case 1004: name = "GameEvents:Exit"s; break;
+                     case 1005: name = "GameEvents:Paused"s; break;
+                     case 1006: name = "GameEvents:UnPaused"s; break;
+                     case 1007: name = "GameEvents:OptionEvent"s; break;
+                     case 1101: name = "SurfaceEvents:Slingshot"s; break;
+                     case 1200: name = "FlipperEvents:Collide"s; break;
+                     case 1300: name = "TimerEvents:Timer"s; break;
+                     case 1301: name = "SpinnerEvents:Spin"s; break;
+                     case 1302: name = "TargetEvents:Dropped"s; break;
+                     case 1303: name = "TargetEvents:Raised"s; break;
+                     case 1320: name = "LightSeqEvents:PlayDone"s; break;
+                     case 1400: name = "HitEvents:Hit"s; break;
+                     case 1401: name = "HitEvents:Unhit"s; break;
+                     case 1402: name = "LimitEvents:EOS"s; break;
+                     case 1403: name = "LimitEvents:BOS"s; break;
+                     case 1404: name = "AnimateEvents:Animate"s; break;
+                     default: name = "DispID[" + std::to_string(v.first) + ']';
                      }
                      ss << " spent in " << std::setw(3) << v.second.callCount << " calls of " << name;
+                     }
                      if (v.first == 1300)
                      {
                         struct info { int calls; U32 lengths; };
@@ -143,14 +145,14 @@ public:
                         size_t pos = 0;
                         while (pos < m_profileWorstProfileTimersLen[i])
                         {
-                           string name(&m_profileWorstProfileTimers[i][pos]);
-                           pos += name.length() + 1;
+                           string nameip(&m_profileWorstProfileTimers[i][pos]);
+                           pos += nameip.length() + 1;
                            U32 length = *((U32*)&m_profileWorstProfileTimers[i][pos]);
                            pos += 4;
-                           auto it = infos.find(name);
+                           auto it = infos.find(nameip);
                            if (it == infos.end())
                            {
-                              infos[name] = { 1, length };
+                              infos[nameip] = { 1, length };
                            }
                            else
                            {
@@ -159,7 +161,7 @@ public:
                            }
                         }
                         ss << " (";
-                        for (auto pair : infos)
+                        for (const auto& pair : infos)
                            ss << pair.second.calls << " x " << pair.first << " => " << std::setw(4) << std::fixed << std::setprecision(1) << (pair.second.lengths * 1e-3) << "ms, ";
                         ss.seekp(-2, ss.cur);
                         ss << ") ";
@@ -355,7 +357,7 @@ public:
       {
          count++;
          pos = (pos + N_SAMPLES - 1) % N_SAMPLES;
-         unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
+         const unsigned int period = m_profileData[pos][PROFILE_INPUT_POLL_PERIOD];
          sum += period;
          if (isMax)
             latency = max(latency, period);

@@ -148,8 +148,8 @@ public:
 
    void InitDirectSound(const HWND hwnd, const bool IsBackglass);
    static float PanTo3D(float input);
-   static float PanSSF(float input);
-   static float FadeSSF(float input);
+   static float PanSSF(float pan);
+   static float FadeSSF(float front_rear_fade);
 
    LPDIRECTSOUND m_pDS;
 
@@ -280,7 +280,6 @@ public:
 		else // Couldn't or didn't want to create a copy - just play the original
 		{
 			delete ppsc;
-
 			pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
 		}
 	}

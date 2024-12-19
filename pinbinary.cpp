@@ -8,10 +8,7 @@ PinBinary::PinBinary()
 
 PinBinary::~PinBinary()
 {
-   if (m_pdata)
-   {
-      delete[] m_pdata;
-   }
+   delete[] m_pdata;
 }
 
 bool PinBinary::ReadFromFile(const string& szFileName)
@@ -27,10 +24,7 @@ bool PinBinary::ReadFromFile(const string& szFileName)
       return false;
    }
 
-   if (m_pdata)
-   {
-      delete[] m_pdata;
-   }
+   delete[] m_pdata;
 
    m_cdata = GetFileSize(hFile, nullptr);
 

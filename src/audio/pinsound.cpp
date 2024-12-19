@@ -78,8 +78,7 @@ PinSound::~PinSound()
 {
    UnInitialize();
 
-   if (m_pdata)
-      delete [] m_pdata;
+   delete [] m_pdata;
 }
 
 void PinSound::UnInitialize()
@@ -211,8 +210,8 @@ HRESULT PinSound::ReInitialize()
    if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
    {
 	   const unsigned int bps = wfx.wBitsPerSample / 8;
-	   char * __restrict s = m_pdata;
-	   char * __restrict d = (char*)pbData;
+	   const char * __restrict s = m_pdata;
+	         char * __restrict d = (char*)pbData;
 
 	   for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
 	   {
@@ -336,7 +335,7 @@ void PinSound::Stop()
    else
       if (m_BASSstream)
       {
-			SetBassDevice();
+         SetBassDevice();
          BASS_ChannelStop(m_BASSstream);
       }
 }
@@ -372,7 +371,7 @@ void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
 
    DSAudioDevices DSads;
    int DSidx = 0;
-   if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+   if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
    {
       const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
       if ((!hr) || ((size_t)DSidx >= DSads.size()))
@@ -509,11 +508,11 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
    for (unsigned int idx = 0; idx < 2; ++idx)
    {
       int deviceIdx = (idx == 0) ? bass_STD_idx : bass_BG_idx;
-		BASS_INFO info;
+      BASS_INFO info;
       const bool isReInit = BASS_SetDevice(deviceIdx) && BASS_GetInfo(&info);
-      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << "]";
+      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << ']';
       if (!BASS_Init(deviceIdx, 44100, 
-				(isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
+            (isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
             g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
       {
          const int code = BASS_ErrorGetCode();
@@ -775,7 +774,7 @@ float PinDirectSound::PanSSF(float pan)
 
 float PinDirectSound::FadeSSF(float front_rear_fade)
 {
-	float z = 0.0f;
+	float z;
 
 	// Clip the fade input range to -1.0 to 1.0
 
