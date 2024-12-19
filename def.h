@@ -525,7 +525,6 @@ __forceinline float radical_inverse(unsigned int i)
    i = _rotr(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
    i = _rotl(i, 7);
    return (float)(swap_byteorder(i) >> 8) * 0.000000059604644775390625f;
-#endif
 }
 
 template <unsigned int base>
