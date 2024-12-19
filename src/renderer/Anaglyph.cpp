@@ -75,7 +75,7 @@ void Anaglyph::SetupShader(Shader* shader)
 
 vec3 Anaglyph::Gamma(const vec3& rgb) const
 {
-   #define sRGB(x) ((x <= 0.0031308f) ? (12.92f * x) : (1.055f * powf(x, (float)(1.0 / 2.4)) - 0.055f))
+   #define sRGB(x) (((x) <= 0.0031308f) ? (12.92f * (x)) : (1.055f * powf(x, (float)(1.0 / 2.4)) - 0.055f))
    if (m_sRGBDisplay)
       return vec3(sRGB(rgb.x), sRGB(rgb.y), sRGB(rgb.z));
    else
@@ -85,7 +85,7 @@ vec3 Anaglyph::Gamma(const vec3& rgb) const
 
 vec3 Anaglyph::InvGamma(const vec3& rgb) const
 {
-   #define InvsRGB(x) ((x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
+   #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
    if (m_sRGBDisplay)
       return vec3(InvsRGB(rgb.x), InvsRGB(rgb.y), InvsRGB(rgb.z));
    else
@@ -151,7 +151,7 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
    // So far, it is not used in the application, but only kept for future reference (or to be used to prepare better
    // filters since the ones in Dubois paper were made with old CRT display with a fairly different emission spectrum
    // from nowadays LCD or OLED displays). Another point to look at if using this method is that it is made to 
-   // work with a sRGB calibrated display but modern HDR display can have a fairly different gamma curve.
+   // work with a sRGB calibrated display but modern HDR displays can have a fairly different gamma curve.
 
    #if 0
    // Matrix that transform a linear RGB color to its XYZ projection by the display
@@ -220,7 +220,7 @@ void Anaglyph::SetPhotoCalibration(const Matrix3& display, const Matrix3& leftFi
       for (int j = 0; j < 3; j++)
          dMat[(j + 3) + (i + 3) * 6] = display.m_d[i][j];
    float rMat[3 * 6]; // R matrix made from left and right transmission matrices
-   memcpy(&rMat[0], &leftFilter._11, 3 * 3 * sizeof(float));
+   memcpy(rMat, &leftFilter._11, 3 * 3 * sizeof(float));
    memcpy(&rMat[3 * 3], &rightFilter._11, 3 * 3 * sizeof(float));
    Matrix3 bMat;
    bMat.Identity(0.f); // B = transpose(R) x R

@@ -146,7 +146,7 @@ enum VertexFormat
    VF_POS_NORMAL_TEX
 };
 
-//These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
+// These Structs are used for rendering and loading meshes. They must match the VertexDeclaration in RenderDevice.cpp and the loaded meshes.
 class Vertex3D_TexelOnly final // for rendering, uses VF_POS_TEX
 {
 public:
@@ -161,7 +161,7 @@ public:
 };
 
 
-// NB: this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
+// this struct MUST NOT BE CHANGED as the Primitive class uses it for file I/O...
 class Vertex3D_NoTex2 final // for rendering, uses VF_POS_NORMAL_TEX
 {
 public:
@@ -443,6 +443,27 @@ __forceinline float sgn(const float a)
 {
    return (a > 0.f) ? 1.f : ((a < 0.f) ? -1.f : 0.f);
 }
+
+#if !defined(_MSC_VER) && !defined(_rotl) //!!
+#define _rotl(x,y)  (((x) << (y)) | ((x) >> (-(y) & 31)))
+#endif
+
+#if !defined(_MSC_VER) && !defined(_rotr) //!!
+#define _rotr(x,y)  (((x) >> (y)) | ((x) << (-(y) & 31)))
+#endif
+
+__forceinline unsigned int swap_byteorder(unsigned int x)
+{
+#if defined(__GNUC__) || defined(__clang__)
+   return __builtin_bswap32(x);
+#elif defined(_MSC_VER)
+   return _byteswap_ulong(x);
+#else
+   x = ((x << 8) & 0xFF00FF00u) | ((x >> 8) & 0xFF00FFu);
+   return (x << 16) | (x >> 16);
+#endif
+}
+
 //
 // TinyMT64 for random numbers (much better than rand())
 //
@@ -482,14 +503,29 @@ __forceinline float rand_mt_m11() { return (float)((int64_t)tinymtu(tinymt64stat
 //
 
 // flip bits on decimal point (bit reversal)/van der Corput/radical inverse
-__forceinline float radical_inverse(unsigned int v)
+__forceinline float radical_inverse(unsigned int i)
 {
-   v = (v << 16) | (v >> 16);
+   /*v = (v << 16) | (v >> 16);
    v = ((v & 0x55555555u) << 1) | ((v & 0xAAAAAAAAu) >> 1);
    v = ((v & 0x33333333u) << 2) | ((v & 0xCCCCCCCCu) >> 2);
    v = ((v & 0x0F0F0F0Fu) << 4) | ((v & 0xF0F0F0F0u) >> 4);
-   v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);
-   return (float)(v >> 8) * 0.000000059604644775390625f;
+   v = ((v & 0x00FF00FFu) << 8) | ((v & 0xFF00FF00u) >> 8);*/
+   /*i = i*65536 | (i >> 16);
+   i =    ((i & 0x00ff00ff)*256)  | ((i & 0xff00ff00) >> 8);
+   i =    ((i & 0x0f0f0f0f)*16)   | ((i & 0xf0f0f0f0) >> 4);
+   i =    ((i & 0x33333333)*4)    | ((i & 0xcccccccc) >> 2);
+   i = ((i & 0x55555555)*2) | ((i & 0xaaaaaaaa) >> 1);*/
+   /*i = ((i >> 1) & 0x55555555) | ((i & 0x55555555)*2);
+   i = ((i >> 2) & 0x33333333) | ((i & 0x33333333)*4);
+   i = ((i >> 4) & 0x0f0f0f0f) | ((i & 0x0f0f0f0f)*16);
+   i = ((i >> 8) & 0x00ff00ff) | ((i & 0x00ff00ff)*256);
+   i = i*65536 | (i >> 16);*/
+   i = _rotr(i & 0xaaaaaaaau, 2) | (i & 0x55555555u);
+   i = _rotr(i & 0x66666666u, 4) | (i & 0x99999999u);
+   i = _rotr(i & 0x1e1e1e1eu, 8) | (i & 0xe1e1e1e1u);
+   i = _rotl(i, 7);
+   return (float)(swap_byteorder(i) >> 8) * 0.000000059604644775390625f;
+#endif
 }
 
 template <unsigned int base>
@@ -621,7 +657,7 @@ inline void StrToLower(string& str)
 
 inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
-   return strA.size() == strB.size()
+   return strA.length() == strB.length()
       && std::equal(strA.begin(), strA.end(), strB.begin(), 
          [](char a, char b) { return std::tolower(static_cast<unsigned char>(a)) == std::tolower(static_cast<unsigned char>(b)); });
 }

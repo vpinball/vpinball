@@ -28,75 +28,75 @@ void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 
 void ViewSetup::ApplyTableOverrideSettings(const Settings& settings, const ViewSetupID id)
 {
-   const string& keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Mode"s, (int&)mMode);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs);
-   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback);
+   const string keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Mode", (int&)mMode);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleX", mSceneScaleX);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleY", mSceneScaleY);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "ScaleZ", mSceneScaleZ);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Rotation", mViewportRotation);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerX", mViewX);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerY", mViewY);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "PlayerZ", mViewZ);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "LookAt", mLookAt);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "FOV", mFOV);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "HOfs", mViewHOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "VOfs", mViewVOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowTop", mWindowTopZOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "WindowBot", mWindowBottomZOfs);
+   settings.LoadValue(Settings::TableOverride, keyPrefix + "Layback", mLayback);
 }
 
 void ViewSetup::SaveToTableOverrideSettings(Settings& settings, const ViewSetupID id) const
 {
-   const string& keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode"s, mMode, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX"s, mSceneScaleX, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY"s, mSceneScaleY, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ"s, mSceneScaleZ, false);
-   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation"s, mViewportRotation, false);
+   const string keyPrefix = id == BG_DESKTOP ? "ViewDT"s : id == BG_FSS ? "ViewFSS"s : "ViewCab"s;
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Mode", mMode, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleX", mSceneScaleX, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleY", mSceneScaleY, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "ScaleZ", mSceneScaleZ, false);
+   settings.SaveValue(Settings::TableOverride, keyPrefix + "Rotation", mViewportRotation, false);
    if (mMode == VLM_LEGACY || mMode == VLM_CAMERA)
    {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX"s, mViewX, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY"s, mViewY, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ"s, mViewZ, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt"s, mLookAt, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV"s, mFOV, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerX", mViewX, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerY", mViewY, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "PlayerZ", mViewZ, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "LookAt", mLookAt, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "FOV", mFOV, false);
    }
    else
    {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerX");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerY");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "PlayerZ");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "LookAt");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "FOV");
    }
    if (mMode == VLM_CAMERA || mMode == VLM_WINDOW)
    {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs"s, mViewHOfs, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs"s, mViewVOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "HOfs", mViewHOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "VOfs", mViewVOfs, false);
    }
    else
    {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "HOfs");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "VOfs");
    }
    if (mMode == VLM_WINDOW)
    {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop"s, mWindowTopZOfs, false);
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot"s, mWindowBottomZOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowTop", mWindowTopZOfs, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "WindowBot", mWindowBottomZOfs, false);
    }
    else
    {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop"s);
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowTop");
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "WindowBot");
    }
    if (mMode == VLM_LEGACY)
    {
-      settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback"s, mLayback, false);
+      settings.SaveValue(Settings::TableOverride, keyPrefix + "Layback", mLayback, false);
    }
    else
    {
-      settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback"s);
+      settings.DeleteValue(Settings::TableOverride, keyPrefix + "Layback");
    }
 }
 
@@ -162,7 +162,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    int quadrant;
    if (isWindow)
    {
-      quadrant = ((int)mViewportRotation) - (((int)mViewportRotation) / 360) * 360;
+      quadrant = (int)mViewportRotation - ((int)mViewportRotation / 360) * 360;
       quadrant = (aspect < 1.f ? 0 : 3) + (quadrant < 0 ? quadrant + 360 : quadrant) / 90; // 0 / 90 / 180 / 270
       rotation = ANGTORAD((float)(quadrant * 90));
    }
@@ -203,17 +203,17 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
          else if (aspect > 1.5f)
             camz -= 1070.0f; // 650
          else if (aspect > 1.4f)
-            camz -= 900.0f; // 580
+            camz -= 900.0f;  // 580
          else if (aspect > 1.3f)
-            camz -= 820.0f; // 500 // 600
+            camz -= 820.0f;  // 500 // 600
          else
-            camz -= 800.0f; // 480
+            camz -= 800.0f;  // 480
       }
       else if (height > width)
       {
          // layout portrait(game vert) in portrait(LCD\LED vert)
          if (aspect > 0.6f)
-            camz += 10.0f; // 50
+            camz += 10.0f;  // 50
          else if (aspect > 0.5f)
             camz += 300.0f; // 100
          else
