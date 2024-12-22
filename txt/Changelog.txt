@@ -1,6 +1,12 @@
 VP 10.8.0 Changelog
 ------------------------
 
+LIMITATIONS:
+
+- Broken PROC support
+
+- Broken SMAA postprocessing, will be fixed in 10.8.1
+
 FEATURES:
 
 - VPX and VPVR are finally reunited!
