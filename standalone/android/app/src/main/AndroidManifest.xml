@@ -75,7 +75,9 @@
             android:allowBackup="true"
             android:theme="@style/Theme.VPinball"
             android:hardwareAccelerated="true"
-            android:largeHeap="true">
+            android:largeHeap="true"
+            android:isGame="true"
+            android:appCategory="game">
 
         <meta-data android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK" android:value="0"/>
         <provider
