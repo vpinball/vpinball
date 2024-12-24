@@ -683,8 +683,8 @@ BOOL VideoOptionPropPage::OnCommand(WPARAM wParam, LPARAM lParam)
       break;
    case IDC_RESET_WINDOW:
       PropChanged();
-      (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndX"s);
-      (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndY"s);
+      (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndX");
+      (void)m_appSettings.DeleteValue(m_wndSection, m_wndSettingPrefix + "WndY");
       break;
    default:
       return FALSE;

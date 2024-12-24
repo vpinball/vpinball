@@ -704,7 +704,7 @@ public:
 #endif
             {
 #ifndef __STANDALONE__
-               ::MessageBox(NULL, ("File '"s + path + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
+               ::MessageBox(NULL, ("File '" + path + "' was not found").c_str(), "Command Line Error", MB_ICONERROR);
 #else
                std::cout
                   << "Command Line Error"
@@ -717,7 +717,7 @@ public:
 
             if (tournament && (i + 2 >= nArgs))
             {
-               ::MessageBox(NULL, ("Option '"s + szArglist[i] + "' must be followed by two valid file paths"s).c_str(), "Command Line Error", MB_ICONERROR);
+               ::MessageBox(NULL, ("Option '"s + szArglist[i] + "' must be followed by two valid file paths").c_str(), "Command Line Error", MB_ICONERROR);
                exit(1);
             }
             if (tournament)
@@ -726,7 +726,7 @@ public:
                i++; // three params processed
                if (!FileExists(m_szTournamentName))
                {
-                  ::MessageBox(NULL, ("File '"s + m_szTournamentName + "' was not found"s).c_str(), "Command Line Error", MB_ICONERROR);
+                  ::MessageBox(NULL, ("File '" + m_szTournamentName + "' was not found").c_str(), "Command Line Error", MB_ICONERROR);
                   exit(1);
                }
             }

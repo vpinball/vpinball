@@ -38,7 +38,7 @@ void main()
 		const vec2 screenUV = v_texcoord0.xy; //const vec2 screenUV = vec2(gl_FragCoord.x/w_h_height.x, gl_FragCoord.y/w_h_height.y);
 		const float screenDepth = texStereoNoLod(tex_depth, screenUV).x;
 	#endif
-	
+
 	// Compute position in world/view space of rendered fragment
 	const vec4 projPos = vec4(v_texcoord0.x * 2. - 1., 1. - v_texcoord0.y * 2., screenDepth, 1.);
 	#ifdef STEREO
@@ -46,8 +46,8 @@ void main()
 	#else
 		vec4 pixelPos = mul(matProjInv, projPos);
 	#endif
-	pixelPos.xyz = pixelPos.xyz / pixelPos.w;
-	
+	pixelPos.xyz /= pixelPos.w;
+
 	// Compute camera ray, knowing that camera is always at origin in world/view space
 	const vec3 rayDirection = normalize(pixelPos.xyz);
 
@@ -80,7 +80,7 @@ void main()
 			noIntersectColor = texStereoNoLod(tex_prev_render, screenUV).rgb;
 		}
 	}
-	
+
 	// Process interpolated positions from previous (excluded as part of previous frame) to current (excluded as already processed)
 	//float weight_sum = 1.;
 	for (int i = 1; i < nSamples; i++)
@@ -99,7 +99,7 @@ void main()
 			// Intersection: build up render at current sample from corresponding points from previous and current renders
 			const vec3 intersect_ofs = (b - sqrt(det)) * rayDirection - sample_ball_pos; // intersection position relative to sphere center
 			#ifdef STEREO
-	            // FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
+				// FIXME v_eye needs to be flat interpolated, but if declared as such in varying.def.sc, DX11 will fail (OpenGL/Vulkan are good)
 				vec4 prev_proj = mul(matProj[int(round(v_eye))], vec4(prev_ball_pos + intersect_ofs, 1.0)); // FIXME should use previous MVP
 				vec4 cur_proj  = mul(matProj[int(round(v_eye))], vec4(ball_pos      + intersect_ofs, 1.0));
 			#else
@@ -119,7 +119,7 @@ void main()
 			color += mix(prev_sample, cur_sample, mix_pos); // * weight;
 		}
 	}
-	
+
 	//gl_FragColor = vec4(color / weight_sum, 1.0);
 	gl_FragColor = vec4(color / NSAMPLES_F, 1.0);
 }

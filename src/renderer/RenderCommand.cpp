@@ -416,7 +416,7 @@ void RenderCommand::SetRenderLiveUI()
 
 void RenderCommand::SetDrawMesh(
    Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, 
-   const DWORD startIndex, const DWORD indexCount,const bool isTransparent, const float depth)
+   const DWORD startIndex, const DWORD indexCount, const bool isTransparent, const float depth)
 {
    assert(mb != nullptr);
    m_command = Command::RC_DRAW_MESH;
@@ -440,13 +440,13 @@ void RenderCommand::SetDrawMesh(
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
-void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices)
+void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent, const float depth)
 {
    m_command = Command::RC_DRAW_QUAD_PT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_TexelOnly));
    m_rd->CopyRenderStates(true, m_renderState);
-   m_depth = 0.f;
-   m_isTransparent = false; // FIXME
+   m_depth = depth;
+   m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)
@@ -459,13 +459,13 @@ void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly
    m_shader->m_state->CopyTo(true, m_shaderState, m_shaderTechnique);
 }
 
-void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices)
+void RenderCommand::SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent, const float depth)
 {
    m_command = Command::RC_DRAW_QUAD_PNT;
    memcpy(m_vertices, vertices, 4 * sizeof(Vertex3D_NoTex2));
    m_rd->CopyRenderStates(true, m_renderState);
-   m_depth = 0.f;
-   m_isTransparent = false; // FIXME
+   m_depth = depth;
+   m_isTransparent = isTransparent;
    m_shader = shader;
    m_shaderTechnique = m_shader->GetCurrentTechnique();
    if (m_shaderState == nullptr || m_shader->GetStateSize() > m_shaderState->m_stateSize)

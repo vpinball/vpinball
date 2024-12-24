@@ -134,6 +134,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    case colorFormat::RED16F: fmt = bgfx::TextureFormat::R16F; break;
    case colorFormat::RG16F: fmt = bgfx::TextureFormat::RG16F; break;
    case colorFormat::RGB16F: fmt = bgfx::TextureFormat::RGBA16F; break;
+   case colorFormat::RGBA16F: fmt = bgfx::TextureFormat::RGBA16F; break;
    case colorFormat::RGB5: fmt = bgfx::TextureFormat::RGB5A1; break;
    case colorFormat::RGB8: fmt = bgfx::TextureFormat::RGB8; break;
    case colorFormat::RGB10: fmt = bgfx::TextureFormat::RGB10A2; break;
@@ -144,7 +145,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
    }
    m_color_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, fmt, colorFlags);
    m_color_sampler = new Sampler(m_rd, m_type, m_color_tex, m_width, m_height, false, true);
-   m_color_sampler->SetName(name + ".Color"s);
+   m_color_sampler->SetName(name + ".Color");
 
    if (m_shared_depth)
    {
@@ -162,7 +163,7 @@ RenderTarget::RenderTarget(RenderDevice* const rd, const SurfaceType type, const
       #endif
       m_depth_tex = bgfx::createTexture2D(m_width, m_height, false, m_nLayers, depthFormat, depthFlags);
       m_depth_sampler = new Sampler(m_rd, m_type, m_depth_tex, m_width, m_height, false, true);
-      m_depth_sampler->SetName(name + ".Depth"s);
+      m_depth_sampler->SetName(name + ".Depth");
    }
 
    if (with_depth)

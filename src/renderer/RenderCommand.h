@@ -20,26 +20,26 @@ public:
    bool IsDrawCommand() const { return m_command == RC_DRAW_MESH || m_command == RC_DRAW_QUAD_PT || m_command == RC_DRAW_QUAD_PNT || m_command == RC_DRAW_LIVEUI; }
    bool IsDrawMeshCommand() const { return m_command == RC_DRAW_MESH; }
    bool IsDrawLiveUICommand() const { return m_command == RC_DRAW_LIVEUI; }
-   inline RenderState GetRenderState() const { return m_renderState; }
-   inline Shader::ShaderState* GetShaderState() const { return m_shaderState; }
-   inline ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
-   inline MeshBuffer* GetMeshBuffer() const { return m_mb; }
-   inline float GetDepth() const { return m_depth; }
-   inline void SetTransparent(bool t) { m_isTransparent = t; }
-   inline void SetDepth(float d) { m_depth = d; }
+   RenderState GetRenderState() const { return m_renderState; }
+   Shader::ShaderState* GetShaderState() const { return m_shaderState; }
+   ShaderTechniques GetShaderTechnique() const { return m_shaderTechnique; }
+   MeshBuffer* GetMeshBuffer() const { return m_mb; }
+   float GetDepth() const { return m_depth; }
+   void SetTransparent(bool t) { m_isTransparent = t; }
+   void SetDepth(float d) { m_depth = d; }
 
    void Execute(const int nInstances, const bool log);
 
    // Build from render device live state
    void SetClear(DWORD clearFlags, DWORD clearARGB);
-   void SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,  
-      const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
-      const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1, const int srcLayer = -1, const int dstLayer = -1);
+   void SetCopy(RenderTarget* from, RenderTarget* to, bool color, bool depth,
+                const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
+                const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1, const int srcLayer = -1, const int dstLayer = -1);
    void SetSubmitVR(RenderTarget* from);
    void SetRenderLiveUI();
    void SetDrawMesh(Shader* shader, MeshBuffer* mb, const RenderDevice::PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount, const bool isTransparent, const float depth);
-   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
-   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
+   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
+   void SetDrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
 
    RenderPass* m_dependency;
 

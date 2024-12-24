@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "VRDevice.h"
+#include "core/vpversion.h"
 
 // Undefine this if you want to debug OpenVR without a VR headset
 //#define OPEN_VR_TEST
@@ -335,7 +336,8 @@ VRDevice::VRDevice()
       // The application/engine name and version are user-definied. These may help IHVs or runtimes.
       XrApplicationInfo AI;
       strcpy_s(AI.applicationName, XR_MAX_APPLICATION_NAME_SIZE, "Visual Pinball X");
-      AI.applicationVersion = 0x1081; // 10.8.1
+      constexpr uint32_t ver = (VP_VERSION_MAJOR / 10) << 12 | (VP_VERSION_MAJOR % 10) << 8 | (VP_VERSION_MINOR) << 4 | VP_VERSION_REV; // e.g. 0x1081 for 10.8.1
+      AI.applicationVersion = ver;
       strcpy_s(AI.engineName, XR_MAX_ENGINE_NAME_SIZE, "");
       AI.engineVersion = 0;
       AI.apiVersion = XR_MAKE_VERSION(1, 0, 0); //XR_CURRENT_API_VERSION;
@@ -1263,7 +1265,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             bgfx::FrameBufferHandle fbh = bgfx::createFrameBuffer(2, attachments);
             vrRenderTarget = new RenderTarget(rd, SurfaceType::RT_STEREO, 
                fbh, colorAttachment.handle, depthAttachment.handle,
-               "VRSwapchain ["s + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
+               "VRSwapchain [" + std::to_string(colorImageIndex) + '/' + std::to_string(depthImageIndex) + ']',
                m_colorSwapchainInfo.width, m_colorSwapchainInfo.height, colorFormat::RGBA);
             m_swapchainRenderTargets[colorImageIndex + depthImageIndex * m_colorSwapchainInfo.imageViews.size()] = vrRenderTarget;
          }

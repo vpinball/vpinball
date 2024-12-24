@@ -495,10 +495,10 @@ STDMETHODIMP ScriptGlobalTable::get_MusicDirectory(VARIANT pSubDir, BSTR *pVal)
       return E_FAIL;
 
    const string endPath = V_VT(&pSubDir) == VT_BSTR ? (MakeString(V_BSTR(&pSubDir)) + PATH_SEPARATOR_CHAR) : string();
-   string szPath = m_vpinball->m_szMyPath + "music"s + PATH_SEPARATOR_CHAR + endPath;
+   string szPath = m_vpinball->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + endPath;
    if (!DirExists(szPath))
    {
-      szPath = m_vpinball->m_currentTablePath + "music"s + PATH_SEPARATOR_CHAR + endPath;
+      szPath = m_vpinball->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + endPath;
       if (!DirExists(szPath))
       {
          szPath = PATH_MUSIC + endPath;
@@ -6725,7 +6725,7 @@ void PinTable::ExportBackdropPOV()
    }
    else if (g_pplayer)
    {
-      g_pplayer->m_liveUI->PushNotification("POV was not exported to "s + iniFileName + " (nothing to save)", 5000);
+      g_pplayer->m_liveUI->PushNotification("POV was not exported to " + iniFileName + " (nothing to save)", 5000);
    }
 
    PLOGI << "View setup exported to '" << iniFileName << '\'';

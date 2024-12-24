@@ -124,14 +124,14 @@ public:
    void AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt);
    void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
-      const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
-      const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
-      const int srcLayer = -1, const int dstLayer = -1);
+                         const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
+                         const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
+                         const int srcLayer = -1, const int dstLayer = -1);
    void SubmitVR(RenderTarget* source);
    void RenderLiveUI();
    void DrawMesh(Shader* shader, const bool isTranparentPass, const Vertex3Ds& center, const float depthBias, MeshBuffer* mb, const PrimitiveTypes type, const DWORD startIndex, const DWORD indexCount);
-   void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices);
-   void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices);
+   void DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent = false, const float depth = 0.f);
+   void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
    void AddEndOfFrameCmd(std::function<void()> cmd) { m_renderFrame.AddEndOfFrameCmd(cmd); }
@@ -149,10 +149,10 @@ public:
    void CopyRenderStates(const bool copyTo, RenderState& state);
    void CopyRenderStates(const bool copyTo, RenderDeviceState& state);
    void EnableAlphaBlend(const bool additiveBlending, const bool set_dest_blend = true, const bool set_blend_op = true);
-   
+
    ////////////////////////////////////////////////////////////////////////////////////////////////
    // (live) RenderDevice state and operation API
-   
+
    void Flip();
    void WaitForVSync(const bool asynchronous);
 
