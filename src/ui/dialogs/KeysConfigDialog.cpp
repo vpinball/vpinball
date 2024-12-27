@@ -355,7 +355,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     SendDlgItemMessage(IDC_CBGLOBALROTATION, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     int key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
-    SetDlgItemInt( IDC_GLOBALROTATION, key, FALSE);
+    SetDlgItemInt(IDC_GLOBALROTATION, key, TRUE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "AccelVelocityInput"s, false);
     SendDlgItemMessage(IDC_CBGLOBALACCVEL, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -364,13 +364,13 @@ BOOL KeysConfigDialog::OnInitDialog()
     SendDlgItemMessage(IDC_CBGLOBALTILT, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensValue"s, 400);
-    SetDlgItemInt( IDC_GLOBALTILT, key, FALSE);
+    SetDlgItemInt(IDC_GLOBALTILT, key, TRUE);
 
     const float fv = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f);
     SetDlgItemText(IDC_TILT_INERTIA, f2sz(fv).c_str());
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
-    SetDlgItemInt( IDC_DEADZONEAMT, key, FALSE);
+    SetDlgItemInt(IDC_DEADZONEAMT, key, TRUE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, false);
     SendDlgItemMessage(IDC_GLOBALACCEL, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -391,19 +391,19 @@ BOOL KeysConfigDialog::OnInitDialog()
     SendDlgItemMessage(IDC_UDAXISFLIP, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150);
-    SetDlgItemInt( IDC_LRAXISGAIN, key, FALSE);
+    SetDlgItemInt(IDC_LRAXISGAIN, key, TRUE);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150);
-    SetDlgItemInt( IDC_UDAXISGAIN, key, FALSE);
+    SetDlgItemInt(IDC_UDAXISGAIN, key, TRUE);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100);
-    SetDlgItemInt( IDC_XMAX_EDIT, key, FALSE);
+    SetDlgItemInt(IDC_XMAX_EDIT, key, TRUE);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100);
-    SetDlgItemInt( IDC_YMAX_EDIT, key, FALSE);
+    SetDlgItemInt(IDC_YMAX_EDIT, key, TRUE);
 
     key = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100);
-    SetDlgItemInt(IDC_PLUNGERSPEEDSCALE, key, FALSE);
+    SetDlgItemInt(IDC_PLUNGERSPEEDSCALE, key, TRUE);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true);
     SendDlgItemMessage(IDC_ENABLE_MOUSE_PLAYER, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -879,7 +879,7 @@ void KeysConfigDialog::OnOK()
     selected = IsDlgButtonChecked(IDC_ENABLE_LEGACY_NUDGE);
     g_pvp->m_settings.SaveValue(Settings::Player, "EnableLegacyNudge"s, selected != 0);
 
-    newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, TRUE);
+    newvalue = GetDlgItemInt(IDC_LEGACY_NUDGE_STRENGTH, nothing, FALSE);
     g_pvp->m_settings.SaveValue(Settings::Player, "LegacyNudgeStrength"s, dequantizeUnsignedPercent((unsigned int)newvalue));
 
     selected = IsDlgButtonChecked(IDC_ENABLE_MOUSE_PLAYER);

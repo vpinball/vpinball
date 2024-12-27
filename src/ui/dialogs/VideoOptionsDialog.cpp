@@ -625,13 +625,13 @@ void VideoOptionPropPage::LoadDisplaySettings()
 
    const int x = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndX", -1);
    const int y = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "WndY", -1);
-   SetDlgItemInt(IDC_X_OFFSET_EDIT, x, FALSE);
-   SetDlgItemInt(IDC_Y_OFFSET_EDIT, y, FALSE);
+   SetDlgItemInt(IDC_X_OFFSET_EDIT, x, TRUE);
+   SetDlgItemInt(IDC_Y_OFFSET_EDIT, y, TRUE);
 
    const int width = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Width", -1);
    const int height = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height", -1);
-   SetDlgItemInt(IDC_WIDTH_EDIT, width, FALSE);
-   SetDlgItemInt(IDC_HEIGHT_EDIT, height, FALSE);
+   SetDlgItemInt(IDC_WIDTH_EDIT, width, TRUE);
+   SetDlgItemInt(IDC_HEIGHT_EDIT, height, TRUE);
    SelectAspectRatio(width, height);
 
    UpdateDisplayHeightFromWidth();
@@ -662,10 +662,10 @@ void VideoOptionPropPage::SaveDisplaySettings()
 
    if (embedded)
    {
-      int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, false);
-      int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, false);
-      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
-      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
+      int x = GetDlgItemInt(IDC_X_OFFSET_EDIT, TRUE);
+      int y = GetDlgItemInt(IDC_Y_OFFSET_EDIT, TRUE);
+      int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
+      int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndX", x, !saveAll);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "WndY", y, !saveAll);
       settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
@@ -689,8 +689,8 @@ void VideoOptionPropPage::SaveDisplaySettings()
       else
       {
          int arMode = m_wndAspectRatio.GetCurSel();
-         int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
-         int height = GetDlgItemInt(IDC_HEIGHT_EDIT, false);
+         int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
+         int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
          if (arMode > 0)
             height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
          if (!saveAll)
@@ -770,8 +770,8 @@ BOOL VideoOptionPropPage::OnCommand(WPARAM wParam, LPARAM lParam)
          if (index >= 0 && (size_t)index < m_allVideoModes.size())
          {
             const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
-            SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, FALSE);
-            SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, FALSE);
+            SetDlgItemInt(IDC_WIDTH_EDIT, pvm->width, TRUE);
+            SetDlgItemInt(IDC_HEIGHT_EDIT, pvm->height, TRUE);
             SelectAspectRatio(pvm->width, pvm->height);
          }
       }
@@ -804,9 +804,9 @@ void VideoOptionPropPage::UpdateDisplayHeightFromWidth()
    m_wndHeight.EnableWindow(arMode == 0);
    if (arMode > 0)
    {
-      int width = GetDlgItemInt(IDC_WIDTH_EDIT, false);
+      int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
       int height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
-      SetDlgItemInt(IDC_HEIGHT_EDIT, height, FALSE);
+      SetDlgItemInt(IDC_HEIGHT_EDIT, height, TRUE);
    }
 }
 
@@ -1105,7 +1105,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    }
    if (maxFPS < 0)
       maxFPS = 0;
-   SetDlgItemInt(IDC_MAX_FPS, maxFPS, FALSE);
+   SetDlgItemInt(IDC_MAX_FPS, maxFPS, TRUE);
    #if defined(ENABLE_BGFX)
    syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
    #else
@@ -1113,7 +1113,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    #endif
    SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_SETCURSEL, syncMode, 0);
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
-   SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, FALSE);
+   SetDlgItemInt(IDC_MAX_PRE_FRAMES, maxPrerenderedFrames, TRUE);
    #if defined(ENABLE_OPENGL)
    m_maxFrameLatency.EnableWindow(false); // OpenGL does not support this option
    #endif
@@ -1386,8 +1386,8 @@ void RenderOptPage::ResetVideoPreferences(int profile)
       m_ballDecal.SetWindowText("");
    }
 
-   SetDlgItemInt(IDC_MAX_FPS, 0, FALSE);
-   SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, FALSE);
+   SetDlgItemInt(IDC_MAX_FPS, 0, TRUE);
+   SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, TRUE);
 
    m_maxAO.SetCurSel(profile == 2 ? 2 : 1);
    m_maxReflection.SetCurSel(profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC);
