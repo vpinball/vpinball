@@ -584,15 +584,15 @@ void RenderTarget::CopyTo(RenderTarget* dest, const bool copyColor, const bool c
    {
       assert((dstLayer == 0) || ((dstLayer == -1) && (dest->m_nLayers == 1)));
       assert(srcLayer >= 0);
-      const float px1 = 2.f * (static_cast<float>(x2) / static_cast<float>(dest->GetWidth())) - 1.f;
+      const float px1 = 2.f * (static_cast<float>(x2)      / static_cast<float>(dest->GetWidth())) - 1.f;
       const float py1 = 2.f * (static_cast<float>(y2)      / static_cast<float>(dest->GetHeight())) - 1.f;
       const float px2 = 2.f * (static_cast<float>(x2 + w2) / static_cast<float>(dest->GetWidth())) - 1.f;
       const float py2 = 2.f * (static_cast<float>(y2 + h2) / static_cast<float>(dest->GetHeight())) - 1.f;
       const float qx1 =        static_cast<float>(x1)      / static_cast<float>(m_width);
-      const float qy1 = 1.f -  static_cast<float>(y1) / static_cast<float>(m_height);
+      const float qy1 = 1.f -  static_cast<float>(y1)      / static_cast<float>(m_height);
       const float qx2 =        static_cast<float>(x1 + w1) / static_cast<float>(m_width);
       const float qy2 = 1.f -  static_cast<float>(y1 + h1) / static_cast<float>(m_height);
-      Vertex3D_TexelOnly verts[4] = {
+      const Vertex3D_TexelOnly verts[4] = {
          { px1, py1, 0.0f, qx1, qy1 },
          { px2, py1, 0.0f, qx2, qy1 },
          { px1, py2, 0.0f, qx1, qy2 },
