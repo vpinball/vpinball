@@ -1855,12 +1855,15 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       }
       else
       {
-         // Sadly we are forced to use spin wait (very CPU intensive) to achieve sub ms overall latency
-         // Very imprecise on Windows:
-         // - std::this_thread::sleep_for(std::chrono::microseconds(10));
-         // - usleep(100);
-         // - SDL_DelayNS(100000); // Experiments on Windows 11 shows a minimum delay around 300-500us (half a ms)
-         YieldProcessor();
+         // Sadly waiting is very imprecvise (at leats on Windows) and we suffer a bit from it.
+         // On Windows 10/11 experiment shows a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
+         // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive
+         #ifdef ENABLE_SDL_VIDEO
+            SDL_DelayNS(100000); // Experiments on Windows 11 shows a minimum delay around 300-500us (half a ms)
+         #else
+            std::this_thread::sleep_for(std::chrono::nanoseconds(100000));
+         #endif
+         // YieldProcessor();
       }
 #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
       // iOS has its own game loop so we need to break here
