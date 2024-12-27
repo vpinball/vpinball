@@ -861,7 +861,6 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
    // Convert from gamma compressed [0..100] luminance to linear [0..255] luminance, eventually applying ScaleFX upscaling
    VARIANT *p;
    SafeArrayAccessData(psa, (void **)&p);
-   #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
    if (g_pplayer->m_scaleFX_DMD)
    {
       DWORD *rgba = new DWORD[size * scale * scale];
@@ -870,16 +869,15 @@ STDMETHODIMP Flasher::put_DMDPixels(VARIANT pVal) // assumes VT_UI1 as input //!
       upscale(rgba, m_dmdSize, true);
       UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB((rgba[ofs] & 0x0FF) / 100.f) * 255.f);
+         data[ofs] = static_cast<UINT8>(InvsRGB((float)(rgba[ofs] & 0xFF) * (float)(1.0/100.)) * 255.f);
       delete[] rgba;
    }
    else
    {
       UINT8 *const data = reinterpret_cast<UINT8 *>(m_dmdFrame->data());
       for (int ofs = 0; ofs < size; ++ofs)
-         data[ofs] = static_cast<UINT8>(InvsRGB(V_UI4(&p[ofs]) / 100.f) * 255.f);
+         data[ofs] = static_cast<UINT8>(InvsRGB((float)V_UI4(&p[ofs]) * (float)(1.0/100.)) * 255.f);
    }
-   #undef InvsRGB
    SafeArrayUnaccessData(psa);
    //m_dmdFrameId++;
    g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(g_pplayer->m_dmdFrame);

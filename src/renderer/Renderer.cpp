@@ -324,7 +324,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    // Cache DMD renderer properties
    for (int profile = 0; profile < 7; profile++)
    {
-      const string prefix = "Profile."s + std::to_string(profile + 1) + ".";
+      const string prefix = "Profile." + std::to_string(profile + 1) + '.';
       m_dmdUseNewRenderer[profile] = m_table->m_settings.LoadValueBool(Settings::DMD, prefix + "Legacy");
       #if !defined(ENABLE_BGFX)
          m_dmdUseNewRenderer[profile] = false; // Only available for BGFX
@@ -340,14 +340,12 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"),
          m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
       // Convert color as settings are sRGB color while shader needs linear RGB color
-      #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
       m_dmdDotColor[profile].x = InvsRGB(m_dmdDotColor[profile].x);
       m_dmdDotColor[profile].y = InvsRGB(m_dmdDotColor[profile].y);
       m_dmdDotColor[profile].z = InvsRGB(m_dmdDotColor[profile].z);
       m_dmdUnlitDotColor[profile].x = InvsRGB(m_dmdUnlitDotColor[profile].x);
       m_dmdUnlitDotColor[profile].y = InvsRGB(m_dmdUnlitDotColor[profile].y);
       m_dmdUnlitDotColor[profile].z = InvsRGB(m_dmdUnlitDotColor[profile].z);
-      #undef InvsRGB
    }
 
    m_renderDevice->ResetRenderState();
@@ -1189,7 +1187,7 @@ void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, Render
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderTarget("DMDView", rt, true, true);
+   m_renderDevice->SetRenderTarget("DMDView"s, rt, true, true);
    SetupDMDRender(profile, tint, dmd, 1.f, true);
    const float rtAR = static_cast<float>(w) / static_cast<float>(h);
    const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
@@ -1737,6 +1735,9 @@ void Renderer::Bloom()
 
    const double w = (double)GetBackBufferTexture()->GetWidth();
    const double h = (double)GetBackBufferTexture()->GetHeight();
+   #if !defined(ENABLE_BGFX)
+   const
+   #endif
    Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f,  1.0f, 0.0f, 1.0f + (float)(2.25 / w), 0.0f + (float)(2.25 / h) },
@@ -2141,6 +2142,9 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
 
+   #if !defined(ENABLE_BGFX)
+   const
+   #endif
    Vertex3D_TexelOnly shiftedVerts[4] =
    {
       {  1.0f + m_ScreenOffset.x,  1.0f + m_ScreenOffset.y, 0.0f, 1.0f, 0.0f },
@@ -2220,7 +2224,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             { xMax, yMin, 0.0f, xMax * 0.5f + 0.5f, 0.5f - yMin * 0.5f },
             { xMin, yMin, 0.0f, xMin * 0.5f + 0.5f, 0.5f - yMin * 0.5f }
          };
-         memcpy(&quads[nQuads * 4], verts, 4 * sizeof(Vertex3D_TexelOnly));
+         memcpy(quads + nQuads * 4, verts, sizeof(verts));
          nQuads++;
 
          m_renderDevice->m_FBShader->SetFloat4v(SHADER_balls, balls, MAX_BALL_SHADOW);

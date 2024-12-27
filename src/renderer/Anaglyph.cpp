@@ -87,12 +87,10 @@ vec3 Anaglyph::Gamma(const vec3& rgb) const
 
 vec3 Anaglyph::InvGamma(const vec3& rgb) const
 {
-   #define InvsRGB(x) (((x) <= 0.04045f) ? ((x) * (float)(1.0 / 12.92)) : (powf((x) * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f)))
    if (m_sRGBDisplay)
       return vec3(InvsRGB(rgb.x), InvsRGB(rgb.y), InvsRGB(rgb.z));
    else
       return vec3(powf(rgb.x, m_displayGamma), powf(rgb.y, m_displayGamma), powf(rgb.z, m_displayGamma));
-   #undef InvsRGB
 }
 
 vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB) const
