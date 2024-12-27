@@ -171,8 +171,8 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_dmdOutput("Visual Pinball - DMD", live_table->m_settings, Settings::DMD, "DMD")
-   , m_backglassOutput("Visual Pinball - Backglass", live_table->m_settings, Settings::Backglass, "Backglass")
+   , m_dmdOutput("Visual Pinball - DMD"s, live_table->m_settings, Settings::DMD, "DMD")
+   , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
    assert(g_pplayer == nullptr);
@@ -1187,7 +1187,7 @@ void Player::OnFocusChanged(const bool isGameFocused)
             }
             char title[1000];
             GetWindowText(foregroundWnd, title, 1000);
-            PLOGI << "Focus lost. Current focused window: " << focusedWnd << ", with title: '" << title << "'";
+            PLOGI << "Focus lost. Current focused window: " << focusedWnd << ", with title: '" << title << '\'';
          }
          else
       #endif
@@ -1855,14 +1855,10 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       }
       else
       {
-         // Sadly waiting is very imprecvise (at leats on Windows) and we suffer a bit from it.
-         // On Windows 10/11 experiment shows a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
-         // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive
-         #ifdef ENABLE_SDL_VIDEO
-            SDL_DelayNS(100000); // Experiments on Windows 11 shows a minimum delay around 300-500us (half a ms)
-         #else
-            std::this_thread::sleep_for(std::chrono::nanoseconds(100000));
-         #endif
+         // Sadly waiting is very imprecise (at least on Windows) and we suffer a bit from it.
+         // On Windows 10/11 experiments show a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
+         uOverSleep(100000);
+         // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive:
          // YieldProcessor();
       }
 #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
@@ -1917,7 +1913,7 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
       if (m_videoSyncMode == VideoSyncMode::VSM_NONE || m_maxFramerate < m_playfieldWnd->GetRefreshRate()) // The synchronization is not already performed by VSYNC
       {
          const int timeForFrame = static_cast<int>(usec() - m_startFrameTick);
-         const int targetTime = static_cast<int>(1000000.f / m_maxFramerate);
+         const int targetTime = static_cast<int>(1000000. / (double)m_maxFramerate);
          if (timeForFrame < targetTime)
          {
             g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
@@ -2007,8 +2003,8 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
          const U64 now = usec();
-         const int refreshLength = static_cast<int>(1000000.f / m_playfieldWnd->GetRefreshRate());
-         const int minimumFrameLength = static_cast<int>(1000000.f / m_maxFramerate);
+         const int refreshLength = static_cast<int>(1000000. / (double)m_playfieldWnd->GetRefreshRate());
+         const int minimumFrameLength = static_cast<int>(1000000. / (double)m_maxFramerate);
          const int maximumFrameLength = 5 * refreshLength;
          const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
          while (now - m_renderer->m_renderDevice->m_lastPresentFrameTick < targetFrameLength)
@@ -2341,7 +2337,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &msg);
    if (msg.frame == nullptr)
       return { -1, nullptr };
-   
+
    // (re) Create DMD texture
    BaseTexture::Format format = msg.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
    if (display.frame == nullptr || display.frame->width() != msg.width || display.frame->height() != msg.height || display.frame->m_format != format)

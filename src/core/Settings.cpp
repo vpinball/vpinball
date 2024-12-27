@@ -104,14 +104,14 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // DMD section
 
-   /* Validate(Section::DMD, "DMDOutput", 0, 0, 100, addDefaults);
-   Validate(Section::DMD, "DMDWndX", 0, -10000, 10000, addDefaults);
-   Validate(Section::DMD, "DMDWndY", 0, -10000, 10000, addDefaults);
-   Validate(Section::DMD, "DMDWidth", 512, 1, 16384, addDefaults);
-   Validate(Section::DMD, "DMDHeight", 128, 1, 16384, addDefaults);*/
+   /* Validate(Section::DMD, "DMDOutput"s, 0, 0, 100, addDefaults);
+   Validate(Section::DMD, "DMDWndX"s, 0, -10000, 10000, addDefaults);
+   Validate(Section::DMD, "DMDWndY"s, 0, -10000, 10000, addDefaults);
+   Validate(Section::DMD, "DMDWidth"s, 512, 1, 16384, addDefaults);
+   Validate(Section::DMD, "DMDHeight"s, 128, 1, 16384, addDefaults);*/
 
-   Validate(Section::DMD, "DefaultProfile", 1, 1, 7, addDefaults);
-   Validate(Section::DMD, "DefaultTint", 0x00FFFFFF, 0x00000000, 0x00FFFFFF, addDefaults);
+   Validate(Section::DMD, "DefaultProfile"s, 1, 1, 7, addDefaults);
+   Validate(Section::DMD, "DefaultTint"s, 0x00FFFFFF, 0x00000000, 0x00FFFFFF, addDefaults);
    for (int i = 1; i <= 7; i++)
    {
       const string prefix = "Profile." + std::to_string(i) + '.';

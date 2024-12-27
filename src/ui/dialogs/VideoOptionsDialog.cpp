@@ -1703,7 +1703,7 @@ BOOL PFViewOptPage::OnInitDialog()
    m_viewMode.AddString("Desktop (no FSS)");
    m_viewMode.SetRedraw(true);
    AddToolTip(m_viewMode, "Defines the view mode used when running a table\n\nDesktop/FSS will use the FSS view for table with FSS enabled, desktop otherwise.\n\nCabinet uses the 'fullscreen' view\n\nDesktop always uses the desktop view (no FSS)");
-   InitDisplayControls(Settings::Player, "Playfield", false);
+   InitDisplayControls(Settings::Player, "Playfield"s, false);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -1798,7 +1798,7 @@ BOOL DMDViewOptPage::OnInitDialog()
    m_dmdType.SetCurSel(0);
    OnCommand(IDC_DMD_PROFILE, 0L);
    OnCommand(IDC_BG_SET, 0L);
-   InitDisplayControls(Settings::DMD, "DMD", true);
+   InitDisplayControls(Settings::DMD, "DMD"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -2007,7 +2007,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       case 3: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering green LED matrix."); break;
       case 4: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering blue LED matrix."); break;
       case 5: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored Plasma for custom setup."); break;
-      case 6: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored Led for custom setup."); break;
+      case 6: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored LED for custom setup."); break;
       }
       break;
    case IDC_DOT_TINT:
@@ -2090,7 +2090,7 @@ BOOL AlphaViewOptPage::OnInitDialog()
    m_viewMode.SetRedraw(false);
    m_viewMode.AddString("Disabled");
    m_viewMode.SetRedraw(true);
-   InitDisplayControls(Settings::Alpha, "Alpha", true);
+   InitDisplayControls(Settings::Alpha, "Alpha"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
@@ -2149,7 +2149,7 @@ BOOL BackglassViewOptPage::OnInitDialog()
    m_viewMode.SetRedraw(false);
    m_viewMode.AddString("Disabled");
    m_viewMode.SetRedraw(true);
-   InitDisplayControls(Settings::Backglass, "Backglass", true);
+   InitDisplayControls(Settings::Backglass, "Backglass"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
