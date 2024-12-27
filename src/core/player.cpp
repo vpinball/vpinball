@@ -183,7 +183,19 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Creating Player..."s, 1);
 
 #if !(defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
- #pragma message ( "Warning: No CPU float ignore denorm implemented" )
+   constexpr int denormalBitMask = 1 << 24;
+   int status_word;
+#if defined(__aarch64__)
+   asm volatile("mrs %x[status_word], FPCR" : [status_word] "=r"(status_word));
+   status_word |= denormalBitMask;
+   asm volatile("msr FPCR, %x[src]" : : [src] "r"(status_word));
+#elif defined(__arm__)
+   asm volatile("vmrs %[status_word], FPSCR" : [status_word] "=r"(status_word));
+   status_word |= denormalBitMask;
+   asm volatile("vmsr FPSCR, %[src]" : : [src] "r"(status_word));
+#else
+   #pragma message ( "Warning: No CPU float ignore denorm implemented" )
+#endif
 #else
    {
       init_cpu_detection
