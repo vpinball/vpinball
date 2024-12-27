@@ -1766,7 +1766,7 @@ BOOL DMDViewOptPage::OnInitDialog()
    AttachItem(IDC_DMD_PROFILE, m_dmdType);
    AttachItem(IDC_DEFAULT_DMD_PROFILE, m_defaultProfile);
    for (int i = 0; i < 2; i++)
-      SetupCombo(i == 0 ? m_dmdType : m_defaultProfile, 10, "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED");
+      SetupCombo(i == 0 ? m_dmdType : m_defaultProfile, 7, "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED");
 
    AttachItem(IDC_LEGACY_RENDERER, m_legacyRenderer);
 
