@@ -1087,9 +1087,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
    if (!FileExists(szFileName))
    {
-      char msg[MAXSTRING + 32];
-      sprintf_s(msg, sizeof(msg), "File not found \"%s\"", szFileName.c_str());
-      ShowError(msg);
+      ShowError("File not found \"" + szFileName + '"');
       return;
    }
 

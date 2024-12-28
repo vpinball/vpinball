@@ -743,11 +743,11 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                }
                else
                {
-                  char textBuf[MAXNAMEBUFFER];
+                  string textBuf;
                   int suffix = 1;
                   do
                   {
-                     sprintf_s(textBuf, sizeof(textBuf), "%s%i", pinfo->item.pszText, suffix);
+                     textBuf = pinfo->item.pszText + std::to_string(suffix);
                      suffix++;
                   } while (!pt->IsMaterialNameUnique(textBuf));
                   pmat->m_szName = textBuf;

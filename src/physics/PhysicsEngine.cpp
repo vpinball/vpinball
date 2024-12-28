@@ -60,10 +60,8 @@ PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nud
             CComBSTR bstr;
             pe->GetScriptable()->get_Name(&bstr);
             char * bstr2 = MakeChar(bstr);
-            CHAR wzDst[256];
-            sprintf_s(wzDst, sizeof(wzDst), "Initializing Object-Physics %s...", bstr2);
+            g_pplayer->m_progressDialog.SetProgress(("Initializing Object-Physics "s + bstr2 + "...").c_str());
             delete [] bstr2;
-            g_pplayer->m_progressDialog.SetProgress(wzDst);
          }
 #endif
          ph->PhysicSetup(this, false);
