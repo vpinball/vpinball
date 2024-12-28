@@ -2138,8 +2138,14 @@ void Player::PrepareFrame(std::function<void()> sync)
 
    m_renderer->RenderFrame();
 
-   if (m_dmdOutput.GetMode() != VPX::RenderOutput::OM_DISABLED)
+   // BGFX has a single thread for all swapchain, this leads to stutters since all 'Present' operations are odne on the same thread.
+   // To avoid this, ancilliary window are only rendered (and therefore presented) when we are sure that present will not block.
+   // This should be replaced in favor of clean VSync synchronization on each display, using a thread per swapchain
+   static U64 lastDMDRender = 0;
+   U64 now;
+   if ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && ((now = usec()) - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate()))
    {
+      lastDMDRender = now;
       ControllerDisplay dmd = GetControllerDisplay(-1);
       if (dmd.frame && (m_lastDmdFrameId != dmd.frameId || (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)))
       {
