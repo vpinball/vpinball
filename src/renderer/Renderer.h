@@ -24,8 +24,8 @@ public:
    void InitLayout(const float xpixoff = 0.f, const float ypixoff = 0.f);
    ModelViewProj& GetMVP() { return *m_mvp; }
    const ModelViewProj& GetMVP() const { return *m_mvp; }
-   Vertex3Ds Unproject(const RenderTarget* surface, const Vertex3Ds& point);
-   Vertex3Ds Get3DPointFrom2D(const RenderTarget* surface, const POINT& p);
+   Vertex3Ds Unproject(const int width, const int height, const Vertex3Ds& point);
+   Vertex3Ds Get3DPointFrom2D(const int width, const int height, const POINT& p);
 
    void MarkShaderDirty() { m_shaderDirty = true; }
    void UpdateBasicShaderMatrix(const Matrix3D& objectTrafo = Matrix3D::MatrixIdentity());

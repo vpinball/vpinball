@@ -16,7 +16,7 @@ public:
    LiveUI(RenderDevice* const rd);
    ~LiveUI();
 
-   void Update(const RenderTarget* rt);
+   void Update(const int width, const int height);
    void Render();
    bool HasKeyboardCapture() const;
    bool HasMouseCapture() const;

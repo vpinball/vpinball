@@ -1065,7 +1065,7 @@ void LiveUI::ResetCameraFromPlayer()
    m_camView = Matrix3D::MatrixScale(1.f, 1.f, -1.f) * m_renderer->GetMVP().GetView() * Matrix3D::MatrixScale(1.f, -1.f, 1.f);
 }
 
-void LiveUI::Update(const RenderTarget *rt)
+void LiveUI::Update(const int width, const int height)
 {
    // For the time being, the UI is only available inside a running player
    if (m_player == nullptr || m_player->GetCloseState() != Player::CS_PLAYING)
@@ -1088,7 +1088,7 @@ void LiveUI::Update(const RenderTarget *rt)
    #endif
 
    ImGuiIO &io = ImGui::GetIO();
-   io.DisplaySize = ImVec2((float)rt->GetWidth(), (float)rt->GetHeight()); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
+   io.DisplaySize = ImVec2(static_cast<float>(width), static_cast<float>(height)); // The render size may not match the window size used by ImGui_ImplWin32_NewFrame (for example for VR)
    io.DisplayFramebufferScale = ImVec2(1.f, 1.f); // Retina display scaling is already applied since we override the value fom NewFrame with the rt size 
    const bool isInteractiveUI = m_ShowUI || m_ShowSplashModal || m_ShowBAMModal;
    const bool isVR = m_renderer->m_stereo3D == STEREO_VR;
@@ -1195,7 +1195,7 @@ void LiveUI::Update(const RenderTarget *rt)
       {
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
-         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(rt, point);
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(width, height, point);
          for (size_t i = 0; i < m_player->m_vball.size(); i++)
          {
             HitBall *const pBall = m_player->m_vball[i];
@@ -1214,9 +1214,9 @@ void LiveUI::Update(const RenderTarget *rt)
          const ImVec2 mouseDrag = ImGui::GetMouseDragDelta();
          const ImVec2 mouseInitalPos = mousePos - mouseDrag;
          const POINT point { (LONG)mouseInitalPos.x, (LONG)mouseInitalPos.y };
-         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(rt, point);
+         const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(width, height, point);
          const POINT newPoint { (LONG)mousePos.x, (LONG)mousePos.y };
-         const Vertex3Ds vert = m_renderer->Get3DPointFrom2D(rt, newPoint);
+         const Vertex3Ds vert = m_renderer->Get3DPointFrom2D(width, height, newPoint);
 
          ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
          ImGui::SetNextWindowPos(ImVec2(0, 0));
@@ -1288,7 +1288,7 @@ void LiveUI::Update(const RenderTarget *rt)
          // Note that ball control release is handled by pininput
          const ImVec2 mousePos = ImGui::GetMousePos();
          POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
-         m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(rt, point));
+         m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(width, height, point));
          m_player->m_pBCTarget->x = clamp(m_player->m_pBCTarget->x, 0.f, m_live_table->m_right);
          m_player->m_pBCTarget->y = clamp(m_player->m_pBCTarget->y, 0.f, m_live_table->m_bottom);
          if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))

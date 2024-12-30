@@ -895,23 +895,23 @@ void Renderer::InitLayout(const float xpixoff, const float ypixoff)
    SetupShaders();
 }
 
-Vertex3Ds Renderer::Unproject(const RenderTarget* surface, const Vertex3Ds& point)
+Vertex3Ds Renderer::Unproject(const int width, const int height, const Vertex3Ds& point)
 {
    Matrix3D invMVP = m_mvp->GetModelViewProj(0);
    invMVP.Invert();
    const Vertex3Ds p(
-             2.0f * point.x / (float)surface->GetWidth()  - 1.0f,
-      1.0f - 2.0f * point.y / (float)surface->GetHeight(),
+      2.0f * point.x / static_cast<float>(width)  - 1.0f,
+      1.0f - 2.0f * point.y / static_cast<float>(height),
       (point.z - 0.f /* MinZ */) / (1.f /* MaxZ */ - 0.f /* MinZ */));
    return invMVP * p;
 }
 
-Vertex3Ds Renderer::Get3DPointFrom2D(const RenderTarget* surface, const POINT& p)
+Vertex3Ds Renderer::Get3DPointFrom2D(const int width, const int height, const POINT& p)
 {
    const Vertex3Ds pNear((float)p.x, (float)p.y, 0.f /* MinZ */);
    const Vertex3Ds pFar ((float)p.x, (float)p.y, 1.f /* MaxZ */);
-   const Vertex3Ds p1 = Unproject(surface, pNear);
-   const Vertex3Ds p2 = Unproject(surface, pFar);
+   const Vertex3Ds p1 = Unproject(width, height, pNear);
+   const Vertex3Ds p2 = Unproject(width, height, pFar);
    constexpr float wz = 0.f;
    const float wx = ((wz - p1.z)*(p2.x - p1.x)) / (p2.z - p1.z) + p1.x;
    const float wy = ((wz - p1.z)*(p2.y - p1.y)) / (p2.z - p1.z) + p1.y;
