@@ -1188,7 +1188,7 @@ void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, Render
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderTarget("DMDView"s, rt, true, true);
-   SetupDMDRender(profile, tint, dmd, 1.f, true);
+   SetupDMDRender(profile, true, tint, dmd, 1.f, true);
    const float rtAR = static_cast<float>(w) / static_cast<float>(h);
    const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
    const float pw = 2.f * (rtAR > dmdAR ? dmdAR / rtAR : 1.f) * static_cast<float>(w) / static_cast<float>(rt->GetWidth());
@@ -1204,7 +1204,7 @@ void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, Render
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
 }
 
-void Renderer::SetupDMDRender(int profile, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB)
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB)
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
@@ -1220,7 +1220,7 @@ void Renderer::SetupDMDRender(int profile, const vec4& color, BaseTexture* dmd, 
       #else
          m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       #endif
-      m_renderDevice->m_DMDShader->SetTechnique(SHADER_TECHNIQUE_basic_DMD);
+      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
    }
    // New DMD renderer
@@ -1281,7 +1281,9 @@ void Renderer::SetupDMDRender(int profile, const vec4& color, BaseTexture* dmd, 
          m_dmdDotProperties[profile].w /* dot glow */ * brightness,
          m_dmdUnlitDotColor[profile].w /* back glow */ * brightness);
 
-      m_renderDevice->m_DMDShader->SetTechnique(sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb : SHADER_TECHNIQUE_basic_DMD2);
+      m_renderDevice->m_DMDShader->SetTechnique(
+          isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb : SHADER_TECHNIQUE_basic_DMD2
+                     : sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb_world : SHADER_TECHNIQUE_basic_DMD2_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
       m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[1]);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[1]->GetColorSampler());

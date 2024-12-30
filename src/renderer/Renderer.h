@@ -40,7 +40,7 @@ public:
    void RenderFrame();
    void RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, RenderTarget* rt, int x, int y, int w, int h);
 
-   void SetupDMDRender(int profile, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB);
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
