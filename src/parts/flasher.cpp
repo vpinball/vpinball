@@ -1261,7 +1261,7 @@ void Flasher::Render(const unsigned int renderMask)
       if (m_dmdFrame)
       {
          const vec4 dotTint = m_dmdFrame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, dotTint, m_dmdFrame, m_d.m_modulate_vs_add, false);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, m_dmdFrame, m_d.m_modulate_vs_add, false);
       }
       else
       {
@@ -1269,7 +1269,7 @@ void Flasher::Render(const unsigned int renderMask)
          if (dmd.frame == nullptr)
             return;
          const vec4 dotTint = dmd.frame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
-         g_pplayer->m_renderer->SetupDMDRender(0, dotTint, dmd.frame, m_d.m_modulate_vs_add, false);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, dmd.frame, m_d.m_modulate_vs_add, false);
       }
 
       Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);

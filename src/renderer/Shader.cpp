@@ -170,6 +170,7 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(basic_DMD2, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
    SHADER_TECHNIQUE(basic_DMD2_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
    SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_srgb_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity, SHADER_clip_plane),
@@ -1586,6 +1587,7 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        STEREO(vs_dmd_noworld),      "fs_dmd2_rgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   STEREO(vs_dmd_noworld),      "fs_dmd2_srgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_srgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       STEREO(vs_dmd_noworld),      "fs_sprite_tex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, STEREO(vs_dmd_noworld),      "fs_sprite_notex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
