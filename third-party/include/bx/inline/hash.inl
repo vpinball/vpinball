@@ -142,7 +142,7 @@ namespace bx
 	template<typename HashT, typename Ty>
 	inline uint32_t hash(const Ty& _data)
 	{
-		BX_STATIC_ASSERT(isTriviallyCopyable<Ty>() );
+		static_assert(isTriviallyCopyable<Ty>() );
 		return hash<HashT>(&_data, sizeof(Ty) );
 	}
 

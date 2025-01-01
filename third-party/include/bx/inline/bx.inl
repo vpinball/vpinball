@@ -96,13 +96,13 @@ namespace bx
 	template<typename Ty>
 	inline constexpr Ty max()
 	{
-		return bx::LimitsT<Ty>::max;
+		return LimitsT<Ty>::max;
 	}
 
 	template<typename Ty>
 	inline constexpr Ty min()
 	{
-		return bx::LimitsT<Ty>::min;
+		return LimitsT<Ty>::min;
 	}
 
 	template<typename Ty>
@@ -147,24 +147,32 @@ namespace bx
 		return _a && !(_a & (_a - 1) );
 	}
 
+	constexpr bool isConstantEvaluated()
+	{
+		return __builtin_is_constant_evaluated();
+	}
+
 	template <typename Ty, typename FromT>
 	inline constexpr Ty bitCast(const FromT& _from)
 	{
 		static_assert(sizeof(Ty) == sizeof(FromT)
 			, "bx::bitCast failed! Ty and FromT must be the same size."
 			);
+		static_assert(isTriviallyCopyable<FromT>()
+			, "bx::bitCast failed! FromT must be trivially copyable."
+			);
+		static_assert(isTriviallyCopyable<Ty>()
+			, "bx::bitCast failed! Ty must be trivially copyable."
+			);
 		static_assert(isTriviallyConstructible<Ty>()
-			, "bx::bitCast failed! Destination target must be trivially constructible."
+			, "bx::bitCast failed! Ty must be trivially constructible."
 			);
 
-		Ty to;
-		memCopy(&to, &_from, sizeof(Ty) );
-
-		return to;
+		return __builtin_bit_cast(Ty, _from);
 	}
 
 	template<typename Ty, typename FromT>
-	inline constexpr Ty narrowCast(const FromT& _from, Location _location)
+	inline Ty narrowCast(const FromT& _from, Location _location)
 	{
 		Ty to = static_cast<Ty>(_from);
 		BX_ASSERT_LOC(_location, static_cast<FromT>(to) == _from
@@ -172,5 +180,8 @@ namespace bx
 			);
 		return to;
 	}
+
+	constexpr float  kFloatInfinity  = bitCast<float>(kFloatExponentMask);
+	constexpr double kDoubleInfinity = bitCast<double>(kDoubleExponentMask);
 
 } // namespace bx

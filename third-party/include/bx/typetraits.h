@@ -273,15 +273,15 @@ namespace bx
 
 	/// Removes reference from type `Ty` if present.
 	template<typename Ty>
-	constexpr RemoveReferenceType<Ty>&& move(Ty&& _a);
+	[[nodiscard]] BX_ATTRIBUTE_INTRINSIC constexpr RemoveReferenceType<Ty>&& move(Ty&& _a);
 
 	/// Forwards Lvalues as either Lvalues or as Rvalues.
 	template<typename Ty>
-	constexpr Ty&& forward(RemoveReferenceType<Ty>& _type);
+	[[nodiscard]] BX_ATTRIBUTE_INTRINSIC constexpr Ty&& forward(RemoveReferenceType<Ty>& _type);
 
 	/// Forwards Rvalues as Rvalues and prohibits forwarding of Rvalues as Lvalues.
 	template<typename Ty>
-	constexpr Ty&& forward(RemoveReferenceT<Ty>&& _type);
+	[[nodiscard]] BX_ATTRIBUTE_INTRINSIC constexpr Ty&& forward(RemoveReferenceT<Ty>&& _type);
 
 	/// Converts any type `Ty` to a reference type, making it possible to use member functions
 	/// in decltype expressions without the need to go through constructors.

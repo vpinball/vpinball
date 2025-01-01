@@ -16,6 +16,9 @@
 #	define BX_DL_EXT "so"
 #endif //
 
+BX_ERROR_RESULT(kErrorMemoryMapFailed,   BX_MAKEFOURCC('b', 'x', '8', '0') );
+BX_ERROR_RESULT(kErrorMemoryUnmapFailed, BX_MAKEFOURCC('b', 'x', '8', '1') );
+
 namespace bx
 {
 	///
@@ -57,6 +60,15 @@ namespace bx
 
 	///
 	[[noreturn]] void exit(int32_t _exitCode);
+
+	///
+	void* memoryMap(void* _address, size_t _size, Error* _err);
+
+	///
+	void memoryUnmap(void* _address, size_t _size, Error* _err);
+
+	///
+	size_t memoryPageSize();
 
 } // namespace bx
 
