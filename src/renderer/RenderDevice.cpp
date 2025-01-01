@@ -342,6 +342,8 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    }
    #endif
 
+   g_pplayer->m_renderProfiler->SetThreadLock();
+
    // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
    // as the one from which init is called, and spawn a BGFX render thread in charge of submitting
    // render queue from the CPU to the GPU.
@@ -371,9 +373,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
    }
    
-   // Dynamically toggle vsync
+   // Set up to dynamically toggle vsync
+   if (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate())
+      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS higher than display FPS, then disable VSYNC
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-   bool vsync = useVSync;
    init.resolution.reset &= ~BGFX_RESET_VSYNC;
 
    //bgfx::setDebug(BGFX_DEBUG_STATS);
@@ -447,10 +450,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                #endif
                std::lock_guard lock(rd->m_frameMutex);
                rd->SubmitRenderFrame();
+               g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
                #ifdef MSVC_CONCURRENCY_VIEWER
                delete tagSpan;
                #endif
-               g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
             }
             
             // Request BGFX to submit to GPU (calls bgfx::frame())
@@ -458,6 +461,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
+
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
@@ -471,14 +475,20 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    else
    #endif
    {
+      U64 lastFlipTick = 0;
+      bool vsync = useVSync;
+
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
       {
          // wait for a frame to be prepared by the logic thread
+         g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
          rd->m_frameReadySem.wait();
+         g_pplayer->m_renderProfiler->ExitProfileSection();
          if (!rd->m_framePending)
             continue;
-         bool noSync = rd->m_frameNoSync;
+         const bool noSync = rd->m_frameNoSync;
+         const bool needsVSync = useVSync && !noSync;
 
          // lock prepared frame and submit it
          {
@@ -486,9 +496,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
             #endif
             std::lock_guard lock(rd->m_frameMutex);
+            g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
-            const bool needsVSync = useVSync && !noSync;
             if (vsync != needsVSync)
             {
                vsync = needsVSync;
@@ -498,32 +509,37 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
+            g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
-         // If the user asked to sync on a lower frame rate than the refresh rate, then wait for it
-         if (!noSync && (g_pplayer->m_maxFramerate < 10000.f) && (g_pplayer->m_maxFramerate != rd->m_outputWnd[0]->GetRefreshRate()))
+         // If the user asked to sync on another frame rate than the refresh rate, then perform manual synchronization
+         if (!noSync && (g_pplayer->GetTargetRefreshRate() != rd->m_outputWnd[0]->GetRefreshRate()))
          {
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
             #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             U64 now = usec();
             const int refreshLength = static_cast<int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate());
-            const int minimumFrameLength = static_cast<int>(1000000. / (double)g_pplayer->m_maxFramerate);
+            const int minimumFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
             const int maximumFrameLength = 5 * refreshLength;
             const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
-            while (now - rd->m_lastPresentFrameTick < targetFrameLength)
+            while (now - lastFlipTick < targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
                YieldProcessor();
                now = usec();
             }
+            lastFlipTick = now;
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
+            g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
-         // Block until a flip happens then submit to GPU
+         // Flip (eventually blocking until a VSYNC happens) then submit render commands to GPU
          {
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
@@ -531,6 +547,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
+            const bgfx::Stats* stats = bgfx::getStats();
+            const U32 bgfxSubmit = static_cast<U32>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
          }
       }
    }
@@ -632,10 +653,14 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
    init.resolution.numBackBuffers = maxPrerenderedFrames;
-   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER                                /* Flush (send data from CPU to GPU) after submission */
-                         | BGFX_RESET_FLIP_AFTER_RENDER                                 /*  */
-                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE : BGFX_RESET_VSYNC)  /* Wait for VSync */
-                         | BGFX_RESET_MAXANISOTROPY;                                    /* Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?) */
+   // - Flush (send data from CPU to GPU) after submission.
+   // - Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?).
+   // - If synchronizing on display's VSYNC, performs flip as late as possible to increase CPU/GPU parallelism (flip is likely the blocking call when vsynced, so do just before submitting next frame).
+   //   If doing user synchronization, flip as soon as possible after submitting frame to limit latency.
+   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER
+                         | (syncMode == VSM_NONE ? BGFX_RESET_FLIP_AFTER_RENDER : BGFX_RESET_NONE)
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE              : BGFX_RESET_VSYNC)
+                         | BGFX_RESET_MAXANISOTROPY;
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
    switch (wnd->GetBitDepth())
@@ -1492,14 +1517,14 @@ void RenderDevice::Flip()
    SubmitAndFlipFrame();
 
    #elif defined(ENABLE_OPENGL)
-   if (!m_isVR)
-      g_frameProfiler.OnPresent();
    SDL_GL_SwapWindow(m_outputWnd[0]->GetCore());
+   if (!m_isVR)
+      g_pplayer->m_logicProfiler.OnPresented(usec());
 
    #elif defined(ENABLE_DX9)
-   if (!m_isVR)
-      g_frameProfiler.OnPresent();
    CHECKD3D(m_pD3DDevice->Present(nullptr, nullptr, nullptr, nullptr));
+   if (!m_isVR)
+      g_pplayer->m_logicProfiler.OnPresented(usec());
    #endif
 }
 

@@ -561,7 +561,7 @@ void PhysicsEngine::UpdatePhysics()
    if (!g_pplayer) //!! meh, we have a race condition somewhere where we delete g_pplayer while still in use (e.g. if we have a script compile error and cancel the table start)
       return;
 
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
+   g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
 
    // DJRobX's crazy latency-reduction code
@@ -638,6 +638,7 @@ void PhysicsEngine::UpdatePhysics()
 
       // DJRobX's crazy latency-reduction code: Artificially lengthen the execution of the physics loop by X usecs, to give more opportunities to read changes from input(s) (try values in the multiple 100s up to maximum 1000 range, in general: the more, the faster the CPU is)
       //                                        Intended mainly to be used if vsync is enabled (e.g. most idle time is shifted from vsync-waiting to here)
+      // FIXME the initial idea of this implementation is somewhat defeated by the fact that in single threaded mode, the main thread is mostly stalled waiting for GPU (solved in multithreaded mode) => remove ?
       #if !defined(ENABLE_BGFX)
       if (g_pplayer->m_minphyslooptime > 0)
       {
@@ -648,9 +649,9 @@ void PhysicsEngine::UpdatePhysics()
             g_pplayer->FireSyncController();
          if (basetime < targettime)
          {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
             uSleep(targettime - basetime);
-            g_frameProfiler.ExitProfileSection();
+            g_pplayer->m_renderProfiler->ExitProfileSection();
          }
       }
       #endif
@@ -682,7 +683,7 @@ void PhysicsEngine::UpdatePhysics()
       #ifdef ACCURATETIMERS
       g_pplayer->ApplyDeferredTimerChanges();
       #if !defined(ENABLE_BGFX)
-      if (g_pplayer->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_frameProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
+      if (g_pplayer->m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING || g_pplayer->m_logicProfiler.Get(FrameProfiler::PROFILE_SCRIPT) <= 1000 * MAX_TIMERS_MSEC_OVERALL) // if overall script time per frame exceeded, skip
       #endif
          g_pplayer->FireTimers(g_pplayer->m_time_msec);
       #endif
@@ -725,7 +726,7 @@ void PhysicsEngine::UpdatePhysics()
    //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
    // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
-   g_frameProfiler.ExitProfileSection();
+   g_pplayer->m_logicProfiler.ExitProfileSection();
 }
 
 void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to this time
@@ -969,8 +970,8 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
 string PhysicsEngine::GetPerfInfo(bool resetMax)
 {
-   if (resetMax || g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) > m_phys_max)
-      m_phys_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS);
+   if (resetMax || g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS) > m_phys_max)
+      m_phys_max = g_pplayer->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS);
 
    if (resetMax || m_phys_iterations > m_phys_max_iterations)
       m_phys_max_iterations = m_phys_iterations;

@@ -1195,18 +1195,22 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    }
    else
    {
-      // Debug only, for testing parts of the left flipper input lag, also release ball control
+      // Left flipper releases ball control
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
       {
-         m_leftkey_down_usec = usec();
-         m_leftkey_down_frame = g_pplayer->m_overall_frames;
          delete g_pplayer->m_pBCTarget;
          g_pplayer->m_pBCTarget = nullptr;
       }
 
-      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey])
-          && dispid == DISPID_GameEvents_KeyDown)
+      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey]
+          || keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey])
+         && dispid == DISPID_GameEvents_KeyDown)
+      {
          g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
+         // Debug only, for testing parts of the flipper input lag
+         m_leftkey_down_usec = usec();
+         m_leftkey_down_frame = g_pplayer->m_overall_frames;
+      }
 
       // Mixer volume only
       m_mixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
@@ -1838,7 +1842,7 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
 void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // last one is negative if only key events should be fired
 {
    if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
-   g_frameProfiler.OnProcessInput();
+   g_pplayer->m_logicProfiler.OnProcessInput();
 
    if (curr_time_msec >= 0)
    {

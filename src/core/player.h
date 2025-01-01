@@ -303,10 +303,14 @@ public:
    bool m_lastFrameSyncOnVBlank = false;
    bool m_lastFrameSyncOnFPS = false;
 
-   float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
+   float GetTargetRefreshRate() const { return m_maxFramerate < 10000.f ? m_maxFramerate : m_playfieldWnd->GetRefreshRate(); }
    bool m_curFrameSyncOnFPS = false;
+   
+   FrameProfiler m_logicProfiler; // Frame timing profiler to be used when measuring timings from the game logic thread
+   FrameProfiler* m_renderProfiler = nullptr; // Frame timing profiler to be used when measuring timings from the render thread (same as game logic profiler for single threaded mode)
 
 private:
+   float m_maxFramerate = 0.f; // targeted refresh rate in Hz, if larger refresh rate it will limit FPS by uSleep() //!! currently does not work adaptively as it would require IDirect3DDevice9Ex which is not supported on WinXP
    bool m_curFrameSyncOnVBlank = false;
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onGameStartMsgId;
@@ -315,7 +319,6 @@ private:
    void MultithreadedGameLoop(std::function<void()> sync);
    void FramePacingGameLoop(std::function<void()> sync);
    void GPUQueueStuffingGameLoop(std::function<void()> sync);
-
 #pragma endregion
 
 

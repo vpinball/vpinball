@@ -178,6 +178,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    assert(g_pplayer == nullptr);
    g_pplayer = this; 
 
+   m_logicProfiler.NewFrame(0);
+   m_renderProfiler = new FrameProfiler();
+   m_renderProfiler->NewFrame(0);
+   g_frameProfiler = &m_logicProfiler;
+
    m_progressDialog.Create(g_pvp->GetHwnd());
    m_progressDialog.ShowWindow(g_pvp->m_open_minimized ? SW_HIDE : SW_SHOWNORMAL);
    m_progressDialog.SetProgress("Creating Player..."s, 1);
@@ -887,9 +892,6 @@ Player::~Player()
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onPrepareFrameMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdMsgId);
 
-   g_frameProfiler.LogWorstFrame();
-   g_frameProfiler.Reset();
-
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
    {
@@ -1071,6 +1073,15 @@ Player::~Player()
    delete m_vrDevice;
    m_vrDevice = nullptr;
 
+   m_logicProfiler.LogWorstFrame();
+   if (&m_logicProfiler != m_renderProfiler)
+   {
+      m_renderProfiler->LogWorstFrame();
+      delete m_renderProfiler;
+      m_renderProfiler = nullptr;
+   }
+   g_frameProfiler = nullptr;
+
    g_pplayer = nullptr;
 
    restore_win_timer_resolution();
@@ -1124,7 +1135,9 @@ void Player::InitFPS()
    m_lastMaxChangeTime = 0;
    m_script_max = 0;
    m_physics->ResetStats();
-   g_frameProfiler.Reset();
+   m_logicProfiler.Reset();
+   if (&m_logicProfiler != m_renderProfiler)
+      m_renderProfiler->Reset();
 }
 
 InfoMode Player::GetInfoMode() const {
@@ -1307,9 +1320,9 @@ void Player::FireSyncController()
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval == -2)
       {
-         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
+         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         g_frameProfiler.ExitScriptSection(pht->m_name);
+         m_logicProfiler.ExitScriptSection(pht->m_name);
       }
 }
 
@@ -1322,9 +1335,9 @@ void Player::FireTimers(const unsigned int simulationTime)
       if (pht->m_interval >= 0 && pht->m_nextfire <= simulationTime)
       {
          const unsigned int curnextfire = pht->m_nextfire;
-         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
+         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name);
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         g_frameProfiler.ExitScriptSection(pht->m_name);
+         m_logicProfiler.ExitScriptSection(pht->m_name);
          // Only add interval if the next fire time hasn't changed since the event was run. 
          // Handles corner case:
          //Timer1.Enabled = False
@@ -1717,8 +1730,8 @@ string Player::GetPerfInfo()
    
    const bool resetMax = m_time_msec - m_lastMaxChangeTime > 1000;
 
-   if (g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT) > m_script_max || resetMax)
-      m_script_max = g_frameProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT);
+   if (m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT) > m_script_max || resetMax)
+      m_script_max = m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT);
 
    if (resetMax)
       m_lastMaxChangeTime = m_time_msec;
@@ -1726,7 +1739,7 @@ string Player::GetPerfInfo()
    // Renderer additional information
    info << "Triangles: " << ((m_renderer->m_renderDevice->m_frameDrawnTriangles + 999) / 1000) << "k per frame, "
         << ((m_renderer->GetNPrerenderTris() + m_renderer->m_renderDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
-        << "%%\n";
+        << "%\n";
    info << "Draw calls: " << m_renderer->m_renderDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_renderDevice->Perf_GetNumLockCalls() << " Locks)\n";
    info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << "\n";
    info << "Texture changes: " << m_renderer->m_renderDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_renderDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
@@ -1739,7 +1752,7 @@ string Player::GetPerfInfo()
    info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << " "
         << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
 
-   info << "Left Flipper keypress to rotate: "
+   info << "Flipper keypress to rotate: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
       << ((int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame) < 0 ? -1 : (int)(m_pininput.m_leftkey_down_frame_rotate_to_end - m_pininput.m_leftkey_down_frame)) << " f) to eos: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_EOS - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
@@ -1822,32 +1835,35 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
    };
 
    #ifdef ENABLE_BGFX
-   // Flush any pending frame
-   m_renderer->m_renderDevice->m_frameReadySem.post();
+      // Flush any pending frame
+      m_renderer->m_renderDevice->m_frameReadySem.post();
 
-#ifdef __ANDROID__
-  MultithreadedGameLoop(sync);
-#else
-#ifdef __LIBVPINBALL__
-   auto gameLoop = [this, sync]() {
-      MultithreadedGameLoop(sync);
-   };
-   VPinballLib::VPinball::GetInstance().SetGameLoop(gameLoop);
-#else
-   MultithreadedGameLoop(sync);
-#endif
-#endif
+      #ifdef __ANDROID__
+         MultithreadedGameLoop(sync);
+      #else
+         #ifdef __LIBVPINBALL__
+            auto gameLoop = [this, sync]() {
+               MultithreadedGameLoop(sync);
+            };
+            VPinballLib::VPinball::GetInstance().SetGameLoop(gameLoop);
+         #else
+            MultithreadedGameLoop(sync);
+         #endif
+      #endif
    #else
-   if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
-      FramePacingGameLoop(sync);
-   else
-      GPUQueueStuffingGameLoop(sync);
+      delete m_renderProfiler;
+      m_renderProfiler = &m_logicProfiler;
+      if (m_videoSyncMode == VideoSyncMode::VSM_FRAME_PACING)
+         FramePacingGameLoop(sync);
+      else
+         GPUQueueStuffingGameLoop(sync);
    #endif
 }
 
 void Player::MultithreadedGameLoop(std::function<void()> sync)
 {
 #ifdef ENABLE_BGFX
+   m_logicProfiler.SetThreadLock();
    while (GetCloseState() == CS_PLAYING || GetCloseState() == CS_USER_INPUT)
    {
       // Continuously process input, synchronize with emulation and step physics to keep latency low
@@ -1857,9 +1873,7 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       if (!m_renderer->m_renderDevice->m_framePending && m_renderer->m_renderDevice->m_frameMutex.try_lock())
       {
          FinishFrame();
-         g_frameProfiler.NewFrame(m_time_msec);
-         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
-         m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
+         m_lastFrameSyncOnFPS = (m_videoSyncMode != VideoSyncMode::VSM_NONE) && ((m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME) - 100) * m_playfieldWnd->GetRefreshRate() < 1000000);
          PrepareFrame(sync);
          m_renderer->m_renderDevice->m_framePending = true;
          m_renderer->m_renderDevice->m_frameReadySem.post();
@@ -1867,11 +1881,13 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
       }
       else
       {
+         m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
          // Sadly waiting is very imprecise (at least on Windows) and we suffer a bit from it.
          // On Windows 10/11 experiments show a minimum delay around 300-500us (half a ms) leading to an overall latency around 2ms
          uOverSleep(100000);
          // The other option would be to use spin wait to achieve sub ms overall latency but this is too CPU intensive:
          // YieldProcessor();
+         m_logicProfiler.ExitProfileSection();
       }
 #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
       // iOS has its own game loop so we need to break here
@@ -1893,10 +1909,6 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
       series.write_flag(_T("Frame"));
       #endif
 
-      // Collect stats from previous frame and starts profiling a new frame
-      g_frameProfiler.NewFrame(m_time_msec);
-      m_overall_frames++;
-
       sync();
 
       PrepareFrame(sync);
@@ -1911,13 +1923,13 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
       #ifdef MSVC_CONCURRENCY_VIEWER
       span* tagSpan = new span(series, 1, _T("Flip"));
       #endif
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
+      m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
       m_renderer->m_renderDevice->Flip();
       #if defined(ENABLE_DX9) // DirectX 9 does not support native adaptive sync, so we must emulate it at the application level
       if (m_videoSyncMode == VideoSyncMode::VSM_ADAPTIVE_VSYNC && m_fps > m_maxFramerate * ADAPT_VSYNC_FACTOR)
          m_renderer->m_renderDevice->WaitForVSync(false);
       #endif
-      g_frameProfiler.ExitProfileSection();
+      m_renderProfiler->ExitProfileSection();
 
       FinishFrame();
 
@@ -1928,9 +1940,9 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
          const int targetTime = static_cast<int>(1000000. / (double)m_maxFramerate);
          if (timeForFrame < targetTime)
          {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+            m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
             uSleep(targetTime - timeForFrame);
-            g_frameProfiler.ExitProfileSection();
+            m_renderProfiler->ExitProfileSection();
          }
       }
 
@@ -1989,19 +2001,16 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       series.write_flag(_T("Frame"));
       #endif
 
-      g_frameProfiler.NewFrame(m_time_msec);
-      m_overall_frames++;
-
       sync();
 
-      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)g_frameProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
+      PLOGI_IF(debugLog) << "Frame Collect [Last frame length: " << ((double)m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME) / 1000.0) << "ms] at " << usec();
       PrepareFrame(sync);
 
       sync();
 
       PLOGI_IF(debugLog) << "Frame Submit at " << usec();
       SubmitFrame();
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_SLEEP);
+      m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
 
       // Wait for at least one VBlank after last frame submission (adaptive sync)
       while (m_renderer->m_renderDevice->m_vsyncCount == 0)
@@ -2035,11 +2044,11 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
       m_lastFrameSyncOnFPS = m_curFrameSyncOnFPS;
       PLOGI_IF(debugLog) << "Frame Scheduled at " << usec() << ", Waited for VBlank: " << m_curFrameSyncOnVBlank << ", Waited for FPS: " << m_curFrameSyncOnFPS;
       m_renderer->m_renderDevice->m_vsyncCount = 0;
-      g_frameProfiler.ExitProfileSection(); // Out of Sleep section
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP);
+      m_renderProfiler->ExitProfileSection(); // Out of Sleep section
+      m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
       m_renderer->m_renderDevice->Flip();
       m_renderer->m_renderDevice->WaitForVSync(true);
-      g_frameProfiler.ExitProfileSection();
+      m_renderProfiler->ExitProfileSection();
       FinishFrame();
       m_curFrameSyncOnVBlank = m_curFrameSyncOnFPS = false;
       #ifdef MSVC_CONCURRENCY_VIEWER
@@ -2057,12 +2066,15 @@ void Player::PrepareFrame(std::function<void()> sync)
    span* tagSpan = new span(series, 1, _T("Prepare"));
    #endif
 
+   m_logicProfiler.NewFrame(m_time_msec);
+   m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
+
+   m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
    m_LastKnownGoodCounter++;
    m_startFrameTick = usec();
-   g_frameProfiler.OnPrepare();
-
+   
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
-
+   
    m_physics->OnPrepareFrame();
 
    #ifdef EXT_CAPTURE
@@ -2088,23 +2100,40 @@ void Player::PrepareFrame(std::function<void()> sync)
    // New Frame event: Legacy implementation with timers with magic interval value have special behaviors, here -1 for onNewFrame event
    for (HitTimer *const pht : m_vht)
       if (pht->m_interval == -1) {
-         g_frameProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
+         m_logicProfiler.EnterScriptSection(DISPID_TimerEvents_Timer, pht->m_name); 
          pht->m_pfe->FireGroupEvent(DISPID_TimerEvents_Timer);
-         g_frameProfiler.ExitScriptSection(pht->m_name);
+         m_logicProfiler.ExitScriptSection(pht->m_name);
       }
 
    // Check if we should turn animate the plunger light.
    ushock_output_set(HID_OUTPUT_PLUNGER, ((m_time_msec - m_LastPlungerHit) < 512) && ((m_time_msec & 512) > 0));
 
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-   m_liveUI->Update(m_playfieldWnd->GetWidth(), m_playfieldWnd->GetHeight());
-
-#ifdef __LIBVPINBALL__
-   if (m_liveUIOverride)
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
-#endif
-
-   g_frameProfiler.ExitProfileSection();
+   // Update Live UI (must be rendered using a display resolution matching the final composition)
+   {
+      int w, h;
+      m_renderer->GetRenderSize(w, h); // LiveUI is rendered after up/downscaling, so don't use AA render size;
+      if (m_renderer->IsStereo())
+      {
+         if (m_renderer->m_stereo3Denabled)
+         {
+            // LiveUI is rendered before stereo and upscaling, but after downscaling
+            w = min(w, m_renderer->GetBackBufferTexture()->GetWidth());
+            h = min(h, m_renderer->GetBackBufferTexture()->GetHeight());
+         }
+         else
+         {
+            // FIXME disabled stereo is not really supported since the change to layered rendering, it will fail if AA is not 100%. It has never been properly supported beside fake stereo since render buffer do not have the right resolution
+            //assert(false);
+            w = m_playfieldWnd->GetWidth();
+            h = m_playfieldWnd->GetHeight();
+         }
+      }
+      m_liveUI->Update(w, h);
+      #ifdef __LIBVPINBALL__
+         if (m_liveUIOverride)
+            VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
+      #endif
+   }
 
    // Shake screen when nudging
    if (m_NudgeShake > 0.0f)
@@ -2134,8 +2163,6 @@ void Player::PrepareFrame(std::function<void()> sync)
    tagSpan = new span(series, 1, _T("Build.RF"));
    #endif
 
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_COLLECT);
-
    m_renderer->RenderFrame();
 
    // BGFX has a single thread for all swapchains, this leads to stutters since all 'Present' operations are done on the same thread 
@@ -2144,8 +2171,8 @@ void Player::PrepareFrame(std::function<void()> sync)
    // display, using a thread per swapchain but this needs either to heavily modify BGFX or to implement all swapchain management 
    // outside of BGFX (still modifying BGFX for semaphore syncing with rendering)...
    static U64 lastDMDRender = 0;
-   U64 now;
-   if ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && ((now = usec()) - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate()))
+   U64 now = usec();
+   if ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate()))
    {
       lastDMDRender = now;
       ControllerDisplay dmd = GetControllerDisplay(-1);
@@ -2174,7 +2201,7 @@ void Player::PrepareFrame(std::function<void()> sync)
       }
    }
 
-   g_frameProfiler.ExitProfileSection();
+   m_logicProfiler.ExitProfileSection();
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
    #endif
@@ -2185,9 +2212,9 @@ void Player::SubmitFrame()
    #ifdef MSVC_CONCURRENCY_VIEWER
    span* tagSpan = new span(series, 1, _T("Submit"));
    #endif
-   g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_SUBMIT);
+   m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
    m_renderer->m_renderDevice->SubmitRenderFrame();
-   g_frameProfiler.ExitProfileSection();
+   m_renderProfiler->ExitProfileSection();
 
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
@@ -2202,7 +2229,7 @@ void Player::FinishFrame()
       m_renderer->m_gpu_profiler.EndFrame();
 
    // Update FPS counter
-   m_fps = (float) (1e6 / g_frameProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
+   m_fps = (float) (1e6 / m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
 #ifndef ACCURATETIMERS
    ApplyDeferredTimerChanges();
