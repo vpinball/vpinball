@@ -109,10 +109,10 @@ void RenderCommand::Execute(const int nInstances, const bool log)
       #if defined(ENABLE_VR)
          if (g_pplayer->m_vrDevice && g_pplayer->m_vrDevice->IsVRReady())
          {
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_GPU_FLIP); 
-            g_frameProfiler.OnPresent();
+            g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP); 
             g_pplayer->m_vrDevice->SubmitFrame(g_pplayer->m_renderer->GetOffscreenVR(0)->GetColorSampler(), g_pplayer->m_renderer->GetOffscreenVR(1)->GetColorSampler());
-            g_frameProfiler.ExitProfileSection();
+            g_pplayer->m_logicProfiler.OnPresented(usec());
+            g_pplayer->m_logicProfiler.ExitProfileSection();
          }
       #endif
       break;
@@ -122,16 +122,10 @@ void RenderCommand::Execute(const int nInstances, const bool log)
    {
       if (g_pplayer->m_liveUI)
       {
-         #ifndef ENABLE_BGFX // Profiler is not thread safe
-            g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-         #endif
          if (log) {
             PLOGI << "> Draw LiveUI";
          }
          g_pplayer->m_liveUI->Render();
-         #ifndef ENABLE_BGFX // Profiler is not thread safe
-            g_frameProfiler.ExitProfileSection();
-         #endif
       }
       break;
    }

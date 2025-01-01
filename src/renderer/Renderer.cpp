@@ -1148,6 +1148,8 @@ void Renderer::RenderFrame()
       m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
       m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
       #ifdef ENABLE_XR
+      if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
+      {
          MeshBuffer* mask = g_pplayer->m_vrDevice->GetVisibilityMask();
          if (mask)
          {
@@ -1163,6 +1165,7 @@ void Renderer::RenderFrame()
             m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
             UpdateBasicShaderMatrix();
          }
+      }
       #endif
    }
    else
@@ -1639,7 +1642,6 @@ void Renderer::RenderStaticPrepass()
 
 void Renderer::RenderDynamics()
 {
-   PROFILE_FUNCTION(FrameProfiler::PROFILE_GPU_COLLECT);
    TRACE_FUNCTION();
 
    // Mark all probes to be re-rendered for this frame (only if needed, lazily rendered)
@@ -2404,17 +2406,15 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       renderedRT = outputRT;
    }
 
-   // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
-   {
-      g_frameProfiler.EnterProfileSection(FrameProfiler::PROFILE_MISC);
-      m_renderDevice->SetRenderTarget("ImGui"s, renderedRT, true, true);
-      m_renderDevice->RenderLiveUI();
-      g_frameProfiler.ExitProfileSection();
-   }
-
    // Apply stereo
    if (stereo)
    {
+      // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph) but before stereo to support VR UI
+      {
+         m_renderDevice->SetRenderTarget("ImGui"s, renderedRT, true, true);
+         m_renderDevice->RenderLiveUI();
+      }
+
       if (m_stereo3D == STEREO_VR)
       {
       #if defined(ENABLE_XR) || defined(ENABLE_VR)
@@ -2558,18 +2558,27 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          assert(renderedRT == outputBackBuffer);
       }
    }
-   // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
-   else if (useUpscaler)
+   else 
    {
-      assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
-      outputRT = outputBackBuffer;
-      assert(outputRT != renderedRT);
-      m_renderDevice->SetRenderTarget("Upscale"s, outputRT, false);
-      m_renderDevice->AddRenderTargetDependency(renderedRT);
-      m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
-      m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
-      m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-      renderedRT = outputRT;
+      // Upscale: When using downscaled backbuffer (for performance reason), upscaling is done after postprocessing
+      if (useUpscaler)
+      {
+         assert(renderedRT != outputBackBuffer); // At this point, renderedRT may be PP1, PP2 or backbuffer
+         outputRT = outputBackBuffer;
+         assert(outputRT != renderedRT);
+         m_renderDevice->SetRenderTarget("Upscale"s, outputRT, false);
+         m_renderDevice->AddRenderTargetDependency(renderedRT);
+         m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, renderedRT->GetColorSampler());
+         m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+         m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+         renderedRT = outputRT;
+      }
+
+      // Render LiveUI after tonemapping (otherwise it would break the calibration process for stereo anaglyph)
+      {
+         m_renderDevice->SetRenderTarget("ImGui"s, renderedRT, true, true);
+         m_renderDevice->RenderLiveUI();
+      }
    }
 
    if (g_pplayer->GetProfilingMode() == PF_ENABLED)

@@ -57,6 +57,7 @@ public:
 
    void FireVoidGroupEvent(const int dispid)
    {
+      g_frameProfiler->EnterScriptSection(dispid);
       T* const pT = (T*)this;
       for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
       {
@@ -81,10 +82,12 @@ public:
 
       if (pT->m_singleEvents)
          FireVoidEvent(dispid);
+      g_frameProfiler->ExitScriptSection();
    }
 
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override
    {
+      g_frameProfiler->EnterScriptSection(dispid);
       T* const pT = (T*)this;
       pT->Lock();
       IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
@@ -92,14 +95,13 @@ public:
       {
          if (*pp != nullptr)
          {
-            g_frameProfiler.EnterScriptSection(dispid);
             IDispatch* const pDispatch = reinterpret_cast<IDispatch*>(*pp);
             pDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
-            g_frameProfiler.ExitScriptSection();
          }
          ++pp;
       }
       pT->Unlock();
+      g_frameProfiler->ExitScriptSection();
 
       return S_OK;
    }

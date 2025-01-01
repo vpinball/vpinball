@@ -36,7 +36,15 @@ public:
    void PushNotification(const string &message, const U32 lengthMs) { m_notifications.push_back(Notification(message, msec() + lengthMs)); }
 
 private:
-   // Interactive Camera Mode
+   // Main UI frame & panels
+   void UpdateMainUI();
+   void UpdateOutlinerUI();
+   void UpdatePropertyUI();
+
+   // FPS and performance overlays
+   void UpdatePerfOverlay();
+
+   // Tweak UI
    enum TweakType { TT_Int, TT_Float, TT_Set };
    struct TweakOption
    {
@@ -69,11 +77,6 @@ private:
 
    // Touch UI
    void UpdateTouchUI();
-
-   // Main UI frame & panels
-   void UpdateMainUI();
-   void UpdateOutlinerUI();
-   void UpdatePropertyUI();
 
    // Popups & Modals
    void UpdateMainSplashModal();
@@ -223,7 +226,75 @@ private:
    int m_esc_mode = 0; // What to do if Esc is pressed while on splash screen (depends on why the splash was opened)
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
    U64 m_StartTime_msec = 0; // Used for timed splash overlays
+   
+   // Profiler display data
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
+   bool m_showAvgFPS = true;
+   bool m_showRollingFPS = true;
+   class PlotData
+   {
+   public:
+      PlotData() : m_maxSize(500)
+      {
+         m_data.reserve(m_maxSize);
+         SetRolling(!m_rolling);
+      }
+      void SetRolling(bool rolling)
+      {
+         if (rolling == m_rolling)
+            return;
+         if (!m_data.empty())
+            m_data.shrink(0);
+         m_offset = 0;
+         m_rolling = rolling;
+      }
+      void AddPoint(const float x, const float y)
+      {
+         if (!m_data.empty() && m_data.back().x == x)
+            return;
+         if (isinf(y))
+            return;
+         if (m_rolling)
+         {
+            const float xmod = fmodf(x, m_timeSpan);
+            if (!m_data.empty() && xmod < m_data.back().x)
+               m_data.shrink(0);
+            m_data.push_back(ImVec2(xmod, y));
+         }
+         else
+         {
+            if (m_data.size() < m_maxSize)
+               m_data.push_back(ImVec2(x, y));
+            else
+            {
+               m_data[m_offset] = ImVec2(x, y);
+               m_offset++;
+               if (m_offset == m_maxSize)
+                  m_offset = 0;
+            }
+         }
+      }
+      bool HasData() const { return !m_data.empty(); }
+      ImVec2 GetLast() const
+      {
+         if (m_data.empty())
+            return ImVec2 { 0.f, 0.f };
+         else if (m_data.size() < m_maxSize || m_offset == 0)
+            return m_data.back();
+         else
+            return m_data[m_offset - 1];
+      }
+
+   public:
+      int m_offset = 0;
+      float m_timeSpan = 2.5f;
+      ImVector<ImVec2> m_data;
+      bool m_rolling = true;
+
+   private:
+      const int m_maxSize;
+   };
+   PlotData m_plotFPS, m_plotFPSSmoothed, m_plotPhysx, m_plotPhysxSmoothed, m_plotScript, m_plotScriptSmoothed;
 
    // 3D editor
    ImGuizmo::OPERATION m_gizmoOperation = ImGuizmo::NONE;

@@ -289,8 +289,8 @@ char* replace(const char* const original, const char* const pattern, const char*
 
   {
     // allocate memory for the new string
-    const size_t retlen = orilen + patcnt * (replen - patlen);
-    char * const returned = new char[retlen + 1];
+    size_t retlen = orilen + patcnt * (replen - patlen) + 1;
+    char * const returned = new char[retlen];
 
     //if (returned != nullptr)
     {
@@ -302,14 +302,28 @@ char* replace(const char* const original, const char* const pattern, const char*
       {
         const size_t skplen = patloc - oriptr;
         // copy the section until the occurence of the pattern
+        #ifdef _MSC_VER
+        strncpy_s(retptr, retlen, oriptr, skplen);
+        retlen -= skplen;
+        #else
         strncpy(retptr, oriptr, skplen);
+        #endif
         retptr += skplen;
         // copy the replacement 
+        #ifdef _MSC_VER
+        strncpy_s(retptr, retlen, replacement, replen);
+        retlen -= replen;
+        #else
         strncpy(retptr, replacement, replen);
+        #endif
         retptr += replen;
       }
       // copy the rest of the string.
+      #ifdef _MSC_VER
+      strcpy_s(retptr, retlen, oriptr);
+      #else
       strcpy(retptr, oriptr);
+      #endif
     }
     return returned;
   }
