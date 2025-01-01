@@ -6,6 +6,8 @@
 #ifndef BGFX_H_HEADER_GUARD
 #define BGFX_H_HEADER_GUARD
 
+#define BGFX_IDL_CPP 0
+
 #include <stdarg.h> // va_list
 #include <stdint.h> // uint32_t
 #include <stdlib.h> // NULL
@@ -348,7 +350,7 @@ namespace bgfx
 		enum Enum
 		{
 			TriListFlipWinding,  //!< Flip winding order of triangle list.
-			TriStripFlipWinding, //!< Flip winding order of trinagle strip.
+			TriStripFlipWinding, //!< Flip winding order of triangle strip.
 			TriListToLineList,   //!< Convert triangle list to line list.
 			TriStripToTriList,   //!< Convert triangle strip to triangle list.
 			LineStripToLineList, //!< Convert line strip to line list.

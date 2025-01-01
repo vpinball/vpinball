@@ -1220,7 +1220,7 @@ void Player::OnFocusChanged(const bool isGameFocused)
          PLOGI << "Focus lost.";
       }
 
-      #ifdef _MSC_VER
+      #if defined(_MSC_VER) && !defined(DEBUG)
          // FIXME Hacky handling of auxiliary windows (B2S, DMD, Pup,...) stealing focus under Windows: keep focused during first 5 seconds
          // Note that m_liveUI might be null, such as when a message box pops up before the UI finishes initializing
          if (m_time_msec < 5000 && m_liveUI != nullptr && !m_liveUI->IsOpened() && !m_debuggerDialog.IsWindow())
