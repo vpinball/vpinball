@@ -19,6 +19,7 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, struct ImDrawDa
 
 void ImGui_Implbgfx_SetSDRColor(float* col); // vec4 multiplied with color for SDR scaling (including alpha)
 void ImGui_Implbgfx_SetStereoOfs(float ofs); // +/- offset applied on stereo view rendering
+void ImGui_Implbgfx_SetRotation(int rotate);
 
 // Use if you want to reset your rendering device without losing ImGui state.
 void ImGui_Implbgfx_InvalidateDeviceObjects();

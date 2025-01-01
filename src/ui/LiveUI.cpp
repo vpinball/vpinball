@@ -891,22 +891,27 @@ void LiveUI::Render()
       ImGui::GetBackgroundDrawList()->AddCallback(
          [](const ImDrawList *parent_list, const ImDrawCmd *cmd)
          {
+            ImGuiIO &io = ImGui::GetIO();
             LiveUI *const lui = (LiveUI *)cmd->UserCallbackData;
             const Matrix3D matRotate = Matrix3D::MatrixRotateZ((float)(lui->m_rotate * (M_PI / 2.0)));
             Matrix3D matTranslate;
             switch (lui->m_rotate)
             {
-            case 1: matTranslate = Matrix3D::MatrixTranslate(ImGui::GetIO().DisplaySize.y, 0, 0); break;
-            case 2: matTranslate = Matrix3D::MatrixTranslate(ImGui::GetIO().DisplaySize.x, ImGui::GetIO().DisplaySize.y, 0); break;
-            case 3: matTranslate = Matrix3D::MatrixTranslate(0, ImGui::GetIO().DisplaySize.x, 0); break;
+            case 1: matTranslate = Matrix3D::MatrixTranslate(io.DisplaySize.y, 0, 0); break;
+            case 2: matTranslate = Matrix3D::MatrixTranslate(io.DisplaySize.x, io.DisplaySize.y, 0); break;
+            case 3: matTranslate = Matrix3D::MatrixTranslate(0, io.DisplaySize.x, 0); break;
             }
             matTranslate = matRotate * matTranslate;
+            const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? io.DisplaySize.y : io.DisplaySize.x;
+            const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? io.DisplaySize.x : io.DisplaySize.y;
+
             #if defined(ENABLE_BGFX)
-            // FIXME implement BGFX
+            Matrix3D matProj;
+            bx::mtxOrtho(&matProj.m[0][0], L, R, B, T, 0.0f, 1000.0f, 0.0f, bgfx::getCaps()->homogeneousDepth);
+            matProj = matTranslate * matProj;
+            bgfx::setViewTransform(lui->m_rd->m_activeViewId, NULL, &matProj.m[0][0]);
 
             #elif defined(ENABLE_OPENGL)
-            const float L = 0, R = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.y : ImGui::GetIO().DisplaySize.x;
-            const float T = 0, B = (lui->m_rotate == 1 || lui->m_rotate == 3) ? ImGui::GetIO().DisplaySize.x : ImGui::GetIO().DisplaySize.y;
             Matrix3D matProj(
                2.0f / (R - L), 0.0f, 0.0f, 0.0f, 
                0.0f, 2.0f / (T - B), 0.0f, 0.0f, 
@@ -936,6 +941,7 @@ void LiveUI::Render()
    }
 
    #if defined(ENABLE_BGFX)
+   ImGui_Implbgfx_SetRotation(m_rotate);
    ImGui_Implbgfx_RenderDrawLists(m_rd->m_activeViewId, RenderTarget::GetCurrentRenderTarget()->m_nLayers, draw_data);
 
    #elif defined(ENABLE_OPENGL)
@@ -1098,8 +1104,8 @@ void LiveUI::UpdatePerfOverlay()
             FrameProfiler *profiler = i == 0 ? &m_player->m_logicProfiler : m_player->m_renderProfiler;
             if (profiler->GetPrevStart(sections[i]) == 0)
                continue;
-            minTS = min(minTS, profiler->GetPrevStart(sections[i]));
-            //maxTS = max(maxTS, profiler->GetPrevEnd(sections[i]));
+            minTS = std::min(minTS, static_cast<U64>(profiler->GetPrevStart(sections[i])));
+            //maxTS = max(maxTS, static_cast<U64>(profiler->GetPrevEnd(sections[i])));
          }
          const float elapse = static_cast<float>(m_player->m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME)) * 1.5f;
          const float width = inner_bb.Max.x - inner_bb.Min.x;

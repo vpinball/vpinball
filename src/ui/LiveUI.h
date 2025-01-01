@@ -252,7 +252,7 @@ private:
       {
          if (!m_data.empty() && m_data.back().x == x)
             return;
-         if (isinf(y))
+         if (std::isinf(y))
             return;
          if (m_rolling)
          {

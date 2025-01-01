@@ -128,4 +128,9 @@
             <ExpandedItem>(DebugDrawEncoderImpl *)this</ExpandedItem>
         </Expand>
     </Type>
+
+    <Type Name="bgfx::Rect">
+        <DisplayString>{{ x={m_x}, y={m_y}, w={m_width}, h={m_height} }}</DisplayString>
+    </Type>
+
 </AutoVisualizer>

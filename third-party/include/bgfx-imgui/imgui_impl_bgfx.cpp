@@ -33,9 +33,11 @@ static bgfx::VertexLayout g_VertexLayout;
 
 static float g_SDRColor[4] = { 1.f, 1.f, 1.f, 1.f };
 static float g_stereoOfs[4] = { 0.f, 0.f, 0.f, 0.f };
+static int g_rotate = 0;
 
 void ImGui_Implbgfx_SetSDRColor(float* col) { memcpy(g_SDRColor, col, 4 * sizeof(float)); }
 void ImGui_Implbgfx_SetStereoOfs(float ofs) { g_stereoOfs[0] = ofs; }
+void ImGui_Implbgfx_SetRotation(int rotate) { g_rotate = rotate; }
 
 // This is the main rendering function that you have to implement and call after
 // ImGui::Render(). Pass ImGui::GetDrawData() to this function.
@@ -70,7 +72,10 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
       0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 
       0.0f, 1000.0f, 0.0f, caps->homogeneousDepth);
    bgfx::setViewTransform(view, NULL, ortho);
-   bgfx::setViewRect(view, 0, 0, (uint16_t)fb_width, (uint16_t)fb_height);
+   if (g_rotate == 0 || g_rotate == 2)
+      bgfx::setViewRect(view, 0, 0, (uint16_t)fb_width, (uint16_t)fb_height);
+   else
+      bgfx::setViewRect(view, 0, 0, (uint16_t)fb_height, (uint16_t)fb_width);
 
    // Render command lists
    for (int n = 0; n < draw_data->CmdListsCount; n++) {
@@ -82,23 +87,23 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
       uint32_t numVertices = (uint32_t)cmd_list->VtxBuffer.size();
       uint32_t numIndices = (uint32_t)cmd_list->IdxBuffer.size();
 
-      if (numVertices == 0)
-         continue;
+      if ((numVertices != 0) && (numIndices != 0))
+      {
+         if ((numVertices != bgfx::getAvailTransientVertexBuffer(numVertices, g_VertexLayout)) || (numIndices != bgfx::getAvailTransientIndexBuffer(numIndices)))
+         {
+            // not enough space in transient buffer, quit drawing the rest...
+            break;
+         }
 
-      if ((numVertices != bgfx::getAvailTransientVertexBuffer(numVertices, g_VertexLayout)) ||
-         (numIndices != bgfx::getAvailTransientIndexBuffer(numIndices))) {
-         // not enough space in transient buffer, quit drawing the rest...
-         break;
+         bgfx::allocTransientVertexBuffer(&tvb, numVertices, g_VertexLayout);
+         bgfx::allocTransientIndexBuffer(&tib, numIndices);
+
+         ImDrawVert* verts = (ImDrawVert*)tvb.data;
+         memcpy(verts, cmd_list->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert));
+
+         ImDrawIdx* indices = (ImDrawIdx*)tib.data;
+         memcpy(indices, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
       }
-
-      bgfx::allocTransientVertexBuffer(&tvb, numVertices, g_VertexLayout);
-      bgfx::allocTransientIndexBuffer(&tib, numIndices);
-
-      ImDrawVert* verts = (ImDrawVert*)tvb.data;
-      memcpy(verts, cmd_list->VtxBuffer.begin(), numVertices * sizeof(ImDrawVert));
-
-      ImDrawIdx* indices = (ImDrawIdx*)tib.data;
-      memcpy(indices, cmd_list->IdxBuffer.begin(), numIndices * sizeof(ImDrawIdx));
 
       for (const ImDrawCmd *cmd = cmd_list->CmdBuffer.begin(), *cmdEnd = cmd_list->CmdBuffer.end(); cmd != cmdEnd; ++cmd)
       {
@@ -110,8 +115,8 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
          {
             uint64_t state = BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_MSAA | BGFX_STATE_BLEND_FUNC(BGFX_STATE_BLEND_SRC_ALPHA, BGFX_STATE_BLEND_INV_SRC_ALPHA);
 
-            // TODO implement scissor for stereo rendering (not really used)
-            if (g_stereoOfs[0] == 0.f)
+            // TODO implement scissor for stereo rendering (not really used) and for rotated view (not really used either)
+            if (g_stereoOfs[0] == 0.f && g_rotate == 0)
             {
                const uint16_t xx = (uint16_t)bx::max(cmd->ClipRect.x, 0.0f);
                const uint16_t yy = (uint16_t)bx::max(cmd->ClipRect.y, 0.0f);
