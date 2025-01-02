@@ -11,8 +11,8 @@ LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=9c28ddf9bf4a988f00f4bc936d9867dd705617c1
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
 FFMPEG_SHA=b08d7969c550a804a59511c7b83f2dd8cc0499b8
-BGFX_CMAKE_VERSION=1.128.8832-488
-BGFX_PATCH_SHA=0b58b383119cce1c78aaa67cc3340a02e883d447
+BGFX_CMAKE_VERSION=1.129.8863-490
+BGFX_PATCH_SHA=1d0967155c375155d1f778ded4061f35c80fc96f
 OPENXR_SHA=b15ef6ce120dad1c7d3ff57039e73ba1a9f17102
 
 if [[ $(uname) == "Linux" ]]; then
@@ -98,7 +98,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build SDL3, SDL_image, SDL_ttf and copy to external
@@ -126,8 +126,8 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
    cp -r include/SDL3/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.jar ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.jar ../../${CACHE_DIR}/${CACHE_NAME}/lib
    rm build/SDL3jarTargets.cmake
    cd ..
 
@@ -152,7 +152,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image
    cp -r include/SDL3_image/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
 
    curl -sL https://github.com/libsdl-org/SDL_ttf/archive/${SDL_TTF_SHA}.zip -o SDL_ttf-${SDL_TTF_SHA}.zip
@@ -174,7 +174,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf
    cp -r include/SDL3_ttf/* ../../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
 
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
@@ -186,8 +186,8 @@ mkdir -p ../external/include/SDL3_image
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_image/* ../external/include/SDL3_image
 mkdir -p ../external/include/SDL3_ttf
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/SDL3_ttf/* ../external/include/SDL3_ttf
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.jar ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.jar ../external/lib
 
 #
 # build libpinmame and copy to external
@@ -213,7 +213,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build libaltsound and copy to external
@@ -236,13 +236,13 @@ if [ ! -f  "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp src/altsound.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build libdmdutil (and deps) and copy to external
@@ -266,14 +266,14 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cp -r include/DMDUtil ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r third-party/include/sockpp ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a third-party/runtime-libs/android/arm64-v8a/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp third-party/runtime-libs/android/arm64-v8a/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build libdof (and deps) and copy to external
@@ -296,20 +296,62 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp -r include/DOF ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a third-party/runtime-libs/android/arm64-v8a/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp third-party/runtime-libs/android/arm64-v8a/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build FFMPEG libraries and copy to external
 #
 
-# TODO: build FFMPEG libraries for android
+CACHE_NAME="FFmpeg-${FFMPEG_SHA}"
+
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+   curl -sL https://github.com/FFmpeg/FFmpeg/archive/${FFMPEG_SHA}.zip -o ffmpeg.zip
+   unzip ffmpeg.zip
+   cd FFmpeg-$FFMPEG_SHA
+   if [[ $(uname) == "Linux" ]]; then
+      TOOLCHAIN=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/linux-x86_64
+   elif [[ $(uname) == "Darwin" ]]; then
+      TOOLCHAIN=${ANDROID_NDK_HOME}/toolchains/llvm/prebuilt/darwin-x86_64
+   fi
+   ./configure \
+      --enable-cross-compile \
+      --target-os=android \
+      --arch=aarch64 \
+      --sysroot=${TOOLCHAIN}/sysroot \
+      --cc=${TOOLCHAIN}/bin/aarch64-linux-android21-clang \
+      --cxx=${TOOLCHAIN}/bin/aarch64-linux-android21-clang++ \
+      --ld=${TOOLCHAIN}/bin/aarch64-linux-android21-clang \
+      --ar=${TOOLCHAIN}/bin/llvm-ar \
+      --as=${TOOLCHAIN}/bin/aarch64-linux-android21-clang \
+      --nm=${TOOLCHAIN}/bin/llvm-nm \
+      --ranlib=${TOOLCHAIN}/bin/llvm-ranlib \
+      --strip=${TOOLCHAIN}/bin/llvm-strip \
+      --extra-cflags="-O3 -fPIC" \
+      --extra-ldflags="-Wl,-z,max-page-size=16384" \
+      --disable-programs \
+      --disable-doc \
+      --enable-shared \
+      --disable-static
+   make -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   for lib in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
+      mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp ${lib}/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/${lib}
+      cp ${lib}/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   done
+   cd ..
+   touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
+fi
+
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
 
 #
 # build patched bgfx and copy to external
@@ -372,11 +414,11 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include/openxr
    cp -r build/include/openxr/*.h ../../${CACHE_DIR}/${CACHE_NAME}/include/openxr
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp -a build/src/loader/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp build/src/loader/*.so ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 mkdir -p ../external/include/openxr
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/openxr/* ../external/include/openxr
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
+cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so ../external/lib
