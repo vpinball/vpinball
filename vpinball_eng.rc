@@ -333,7 +333,7 @@ BEGIN
     LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
-    CTEXT           "Copyright (C) 2000-2024 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
+    CTEXT           "Copyright (C) 2000-2025 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
@@ -2897,7 +2897,7 @@ BEGIN
 #endif
             VALUE "FileVersion", VP_VERSION_STRING_POINTS_FULL
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2024"
+            VALUE "LegalCopyright", "Copyright 2000-2025"
             VALUE "ProductVersion", VP_VERSION_STRING_POINTS_FULL 
         END
     END
