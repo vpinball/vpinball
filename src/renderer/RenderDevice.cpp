@@ -653,14 +653,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames;
    init.resolution.numBackBuffers = maxPrerenderedFrames;
-   // - Flush (send data from CPU to GPU) after submission.
    // - Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?).
    // - If synchronizing on display's VSYNC, performs flip as late as possible to increase CPU/GPU parallelism (flip is likely the blocking call when vsynced, so do just before submitting next frame).
    //   If doing user synchronization, flip as soon as possible after submitting frame to limit latency.
-   init.resolution.reset = BGFX_RESET_FLUSH_AFTER_RENDER
+   init.resolution.reset = BGFX_RESET_MAXANISOTROPY
                          | (syncMode == VSM_NONE ? BGFX_RESET_FLIP_AFTER_RENDER : BGFX_RESET_NONE)
-                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE              : BGFX_RESET_VSYNC)
-                         | BGFX_RESET_MAXANISOTROPY;
+                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE              : BGFX_RESET_VSYNC);
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
    switch (wnd->GetBitDepth())

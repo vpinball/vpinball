@@ -2176,15 +2176,16 @@ void Player::PrepareFrame(std::function<void()> sync)
    {
       lastDMDRender = now;
       ControllerDisplay dmd = GetControllerDisplay(-1);
-      if (dmd.frame && (m_lastDmdFrameId != dmd.frameId || (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)))
+      if (dmd.frame)
       {
          RenderTarget *scenePass = m_renderer->m_renderDevice->GetCurrentRenderTarget();
-         m_lastDmdFrameId = dmd.frameId;
          // TODO table data should define which DMD they use for their main Dmd (Plasma, Led,...) beside the application default
          vec4 dmdTint = dmd.frame->m_format == BaseTexture::BW ? convertColor(m_ptable->m_settings.LoadValueUInt(Settings::DMD, "DefaultTint"s), 1.f) : vec4(1.f, 1.f, 1.f, 1.f);
          const int dmdProfile = m_ptable->m_settings.LoadValueInt(Settings::DMD, "DefaultProfile"s);
-         if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         // We could update only when DMD changes but (surprisingly) this breaks the overall timing and FPS become unstable if we do so
+         if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) // && (m_lastDmdFrameId != dmd.frameId))
          {
+            m_lastDmdFrameId = dmd.frameId;
             m_dmdOutput.GetWindow()->Show();
             m_renderer->RenderDMD(dmdProfile, dmdTint, dmd.frame, m_dmdOutput.GetWindow()->GetBackBuffer(),
                0, 0, m_dmdOutput.GetWindow()->GetBackBuffer()->GetWidth(), m_dmdOutput.GetWindow()->GetBackBuffer()->GetHeight());
