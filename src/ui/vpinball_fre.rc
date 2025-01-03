@@ -80,7 +80,7 @@ BEGIN
 #endif
             VALUE "FileVersion", VP_VERSION_STRING_POINTS_FULL
             VALUE "InternalName", "Visual Pinball"
-            VALUE "LegalCopyright", "Copyright 2000-2024"
+            VALUE "LegalCopyright", "Copyright 2000-2025"
             VALUE "ProductVersion", VP_VERSION_STRING_POINTS_FULL 
         END
     END

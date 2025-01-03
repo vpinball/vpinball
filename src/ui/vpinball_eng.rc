@@ -378,7 +378,7 @@ BEGIN
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
     LTEXT           "Caligula",IDC_STATIC,48,152,32,9
     LTEXT           "Rawnei",IDC_STATIC,48,162,32,9
-    CTEXT           "Copyright (C) 2000-2024 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
+    CTEXT           "Copyright (C) 2000-2025 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     CTEXT           "VP10 Active Development",IDC_STATIC,52,183,102,9,WS_BORDER
