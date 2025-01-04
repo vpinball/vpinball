@@ -768,7 +768,7 @@ void VRDevice::SetupHMD()
       for (auto& environmentBlendMode : m_environmentBlendModes)
       {
          static const char* blendModeNames[] = { "Opaque", "Additive", "Alpha" };
-         PLOGD << "OpenXR supported blend mode: " << (0 <= environmentBlendMode && environmentBlendMode < 3 ? blendModeNames[environmentBlendMode] : std::to_string(environmentBlendMode).c_str());
+         PLOGD << "OpenXR supported blend mode: " << (1 <= environmentBlendMode && environmentBlendMode < 4 ? blendModeNames[environmentBlendMode - 1] : std::to_string(environmentBlendMode).c_str());
       }
    #endif
    // Pick the first application supported blend mode supported by the hardware.

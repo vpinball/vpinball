@@ -488,10 +488,13 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 
    #if defined(ENABLE_BGFX)
-   if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-      m_renderer->m_renderDevice->AddWindow(m_dmdOutput.GetWindow());
-   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-      m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+   if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
+   {
+      if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_dmdOutput.GetWindow());
+      if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+   }
    #endif
 
    // Disable static prerendering for VR and legacy headtracking (this won't be reenabled)
@@ -2175,7 +2178,8 @@ void Player::PrepareFrame(std::function<void()> sync)
    // outside of BGFX (still modifying BGFX for semaphore syncing with rendering)...
    static U64 lastDMDRender = 0;
    U64 now = usec();
-   if ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate()))
+   if ((m_vrDevice == nullptr) 
+      && ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate())))
    {
       lastDMDRender = now;
       ControllerDisplay dmd = GetControllerDisplay(-1);

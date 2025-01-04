@@ -857,7 +857,7 @@ void Renderer::DrawBackground()
    m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_CCW);
    if (pin)
    {
-      m_renderDevice->Clear(clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_renderDevice->Clear(clearType::ZBUFFER, 0);
       m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
       m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
@@ -866,7 +866,7 @@ void Renderer::DrawBackground()
    else
    {
       const D3DCOLOR d3dcolor = COLORREF_to_D3DCOLOR(ptable->m_colorbackdrop);
-      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, d3dcolor, 1.0f, 0L);
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, d3dcolor);
    }
 }
 
@@ -1152,7 +1152,7 @@ void Renderer::RenderFrame()
    if (m_stereo3D == STEREO_VR || g_pplayer->GetInfoMode() == IF_DYNAMIC_ONLY)
    {
       m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
-      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
       #ifdef ENABLE_XR
       if (g_pplayer->m_vrDevice && m_stereo3D == STEREO_VR)
       {
@@ -1323,7 +1323,7 @@ void Renderer::DrawBulbLightBuffer()
    // switch to 'bloom' output buffer to collect all bulb lights
    m_renderDevice->SetRenderTarget("Transmitted Light " + std::to_string(id) + " Clear", GetBloomBufferTexture(), false);
    m_renderDevice->ResetRenderState();
-   m_renderDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+   m_renderDevice->Clear(clearType::TARGET, 0x00000000);
 
    // Draw bulb lights
    m_render_mask |= Renderer::LIGHT_BUFFER;
@@ -1585,7 +1585,7 @@ void Renderer::RenderStaticPrepass()
          m_renderDevice->AddRenderTargetDependency(renderRT);
          m_renderDevice->AddRenderTargetDependency(GetAORenderTarget(1));
          if (i == 0)
-            m_renderDevice->Clear(clearType::TARGET, 0, 1.0f, 0L);
+            m_renderDevice->Clear(clearType::TARGET, 0x00000000);
 
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetAORenderTarget(1)->GetColorSampler()); //!! ?
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, GetAORenderTarget(1)->GetColorSampler()); //!! ?
@@ -2382,7 +2382,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
       assert(outputRT != renderedRT);
       m_renderDevice->SetRenderTarget("SMAA Color/Edge Detection"s, outputRT, false);
       m_renderDevice->AddRenderTargetDependency(sourceRT); // PostProcess RT 1
-      m_renderDevice->Clear(clearType::TARGET, 0, 1.0f, 0L); // Needed since shader uses discard
+      m_renderDevice->Clear(clearType::TARGET, 0x00000000); // Needed since shader uses discard
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_SMAA_ColorEdgeDetection);
       m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
       renderedRT = outputRT;
@@ -2501,7 +2501,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
             fh = scaledH;
          }
          if (m_vrPreviewShrink || m_vrPreview == VRPREVIEW_DISABLED)
-            m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+            m_renderDevice->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
 
          #if defined(ENABLE_XR)
             Vertex3D_TexelOnly verts[4] =

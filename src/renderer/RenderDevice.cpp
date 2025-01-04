@@ -1921,7 +1921,7 @@ void RenderDevice::AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt
    m_nextRenderCommandDependency = rt->m_lastRenderPass;
 }
 
-void RenderDevice::Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil)
+void RenderDevice::Clear(const DWORD flags, const DWORD color)
 {
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
