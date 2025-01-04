@@ -2431,7 +2431,7 @@ void PinTable::Play(const int playMode)
    live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
    wcscpy(implicitDMD->m_wzName, L"ImplicitDMD");
    implicitDMD->m_d.m_visible = false;
-   implicitDMD->m_d.m_renderMode = FlasherData::DMD;
+   implicitDMD->m_d.m_isDMD = true;
    implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
    live_table->m_vedit.push_back(implicitDMD);
    live_table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);

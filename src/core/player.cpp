@@ -2383,7 +2383,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          return { -1, nullptr };
 
       // Update in display list
-      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [msg](const ControllerDisplay &cd) { return cd.getMsg.dmdId == msg.dmdId; });
+      auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [msg](const ControllerDisplay &cd) { return cd.getMsg.dmdId == msg.dmdId; });
       if (pCD == m_controllerDisplays.end())
       {
          m_controllerDisplays.push_back({-1, nullptr, msg});
@@ -2397,7 +2397,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    }
    else
    {
-      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.getMsg.dmdId == id; });
+      auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.getMsg.dmdId == id; });
       if (pCD == m_controllerDisplays.end())
       {
          // Search for the requested DMD
