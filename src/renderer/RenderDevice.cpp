@@ -433,10 +433,12 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             span *tagSpanFF = new span(series, 1, _T("vpxWaitFrame"));
             #endif
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_WAIT);
             rd->m_outputWnd[0]->SetBackBuffer(vrRenderTarget, false);
             rd->m_framePending = false;
             rd->m_frameReadySem.wait();
             rd->m_outputWnd[0]->SetBackBuffer(nullptr, false); // as the vrRenderTarget is not valid outside of this scope
+            g_pplayer->m_renderProfiler->ExitProfileSection();
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpanFF;
             #endif
@@ -449,8 +451,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                span *tagSpan = new span(series, 1, _T("VPX->BGFX"));
                #endif
                std::lock_guard lock(rd->m_frameMutex);
+               g_pplayer->m_renderProfiler->NewFrame(g_pplayer->m_time_msec);
+               g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
                rd->SubmitRenderFrame();
                g_pplayer->m_vrDevice->UpdateVisibilityMask(rd);
+               g_pplayer->m_renderProfiler->ExitProfileSection();
                #ifdef MSVC_CONCURRENCY_VIEWER
                delete tagSpan;
                #endif
@@ -460,7 +465,13 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
+            g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
             rd->Flip();
+            const bgfx::Stats* stats = bgfx::getStats();
+            const U32 bgfxSubmit = static_cast<U32>((stats->cpuTimeEnd - stats->cpuTimeBegin) * 1000000ull / stats->cpuTimerFreq);
+            g_pplayer->m_logicProfiler.OnPresented(usec() - bgfxSubmit);
+            g_pplayer->m_renderProfiler->ExitProfileSection();
+            g_pplayer->m_renderProfiler->AdjustBGFXSubmit(bgfxSubmit);
 
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;

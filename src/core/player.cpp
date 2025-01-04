@@ -2112,7 +2112,12 @@ void Player::PrepareFrame(std::function<void()> sync)
       m_renderer->GetRenderSize(w, h); // LiveUI is rendered after up/downscaling, so don't use AA render size;
       if (m_renderer->IsStereo())
       {
-         if (m_renderer->m_stereo3Denabled)
+         if (m_vrDevice)
+         {
+            w = m_vrDevice->GetEyeWidth();
+            h = m_vrDevice->GetEyeHeight();
+         }
+         else if (m_renderer->m_stereo3Denabled)
          {
             // LiveUI is rendered before stereo and upscaling, but after downscaling
             w = min(w, m_renderer->GetBackBufferTexture()->GetWidth());

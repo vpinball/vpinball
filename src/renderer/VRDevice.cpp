@@ -1130,9 +1130,11 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    #ifdef MSVC_CONCURRENCY_VIEWER
    span *tagSpanFF = new span(series, 1, _T("xrWaitFrame"));
    #endif
+   g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_FLIP);
    XrFrameState frameState { XR_TYPE_FRAME_STATE };
    XrFrameWaitInfo frameWaitInfo { XR_TYPE_FRAME_WAIT_INFO };
    OPENXR_CHECK(xrWaitFrame(m_session, &frameWaitInfo, &frameState), "Failed to wait for XR Frame.");
+   g_pplayer->m_renderProfiler->ExitProfileSection();
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpanFF;
    #endif
