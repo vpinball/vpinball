@@ -1237,7 +1237,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
    {
       // Update gaussian blurs for back/dot/glass glows
       int slot = -1; 
-      for (int i = 0; i < m_dmdBlurSlot; i++)
+      for (unsigned int i = 0; i < m_dmdBlurSlot; i++)
       {
          if (m_dmdBlurred[i] == dmd)
          {

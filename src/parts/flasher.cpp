@@ -1368,10 +1368,10 @@ void Flasher::Render(const unsigned int renderMask)
                   }
                   if ((endpointId != 0)
                    && (uri.path == "/getstate") 
-                   && (uri.query.contains("src")) && (uri.query.at("src") == "dmd"))
+                   && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end()) && (uri.query.at("src") == "dmd"))
                   {
                      int dmdId = 0;
-                     if (uri.query.contains("id"))
+                     if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
                         try { dmdId = std::stoi(uri.query.at("id")); } catch (...) {};
                      Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay((endpointId << 16) | (dmdId));
                      dmdFrame = dmd.frame;
