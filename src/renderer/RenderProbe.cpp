@@ -341,7 +341,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
 
       m_rd->SetRenderTarget("PreRender Reflection"s, m_prerenderRT, false);
       m_rd->ResetRenderState();
-      m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
       DoRenderReflectionProbe(true, false, false);
 
       // Rendering is done to the static render target then accumulated to accumulationSurface
@@ -357,7 +357,7 @@ void RenderProbe::PreRenderStaticReflectionProbe()
       m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
       m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
       if (iter == STATIC_PRERENDER_ITERATIONS - 1)
-         m_rd->Clear(clearType::TARGET, 0, 1.0f, 0L);
+         m_rd->Clear(clearType::TARGET, 0x00000000);
       m_rd->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_mirror);
       m_rd->m_FBShader->SetVector(
          SHADER_w_h_height, (float)(1.0 / (double)m_prerenderRT->GetWidth()), (float)(1.0 / (double)m_prerenderRT->GetHeight()), (float)((double)STATIC_PRERENDER_ITERATIONS), 1.0f);
@@ -415,7 +415,7 @@ void RenderProbe::RenderReflectionProbe(const unsigned int renderMask)
    if (isDynamicOnly && mode == REFL_DYNAMIC)
       m_rd->BlitRenderTarget(m_prerenderRT, m_dynamicRT, true, true);
    else
-      m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0, 1.0f, 0L);
+      m_rd->Clear(clearType::TARGET | clearType::ZBUFFER, 0x00000000);
    const bool render_static = !isDynamicOnly;
    const bool render_balls = !isStaticOnly && (mode == REFL_BALLS || mode >= REFL_STATIC_N_BALLS);
    const bool render_dynamic = !isStaticOnly && (mode >= REFL_STATIC_N_DYNAMIC);

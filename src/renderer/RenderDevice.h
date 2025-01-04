@@ -122,7 +122,7 @@ public:
    void SetRenderTarget(const string& passName, RenderTarget* rt, const bool useRTContent = true, const bool forceNewPass = false);
    void AddRenderTargetDependency(RenderTarget* rt, const bool needDepth = false);
    void AddRenderTargetDependencyOnNextRenderCommand(RenderTarget* rt);
-   void Clear(const DWORD flags, const D3DCOLOR color, const D3DVALUE z, const DWORD stencil);
+   void Clear(const DWORD flags, const DWORD colorARGB);
    void BlitRenderTarget(RenderTarget* source, RenderTarget* destination, const bool copyColor = true, const bool copyDepth = true,  
                          const int x1 = -1, const int y1 = -1, const int w1 = -1, const int h1 = -1,
                          const int x2 = -1, const int y2 = -1, const int w2 = -1, const int h2 = -1,
