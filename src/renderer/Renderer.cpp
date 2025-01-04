@@ -400,6 +400,9 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
+   for (int j = 0; j < 32; j++)
+      for (int i = 0; i < 4; i++)
+         delete m_dmdBlurs[j][i];
    delete m_renderDevice;
 }
 
@@ -1110,6 +1113,9 @@ void Renderer::RenderFrame()
    }
    m_renderableToInit.clear();
 
+   // Reset DMD blur
+   m_dmdBlurSlot = 0;
+
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
    m_ballReflectedLights.clear();
@@ -1229,41 +1235,50 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
    // New DMD renderer
    else
    {
-      static int lastFrame = -1;
-      static BaseTexture* lastDmd = nullptr;
-      const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
-                                                             : vec4(color.x, color.y, color.z, 0.f);
-      const float brightness = color.w * m_dmdDotColor[profile].w;
-      Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, true);
-      if (m_dmdBlurs[0] == nullptr || m_dmdBlurs[0]->GetWidth() != dmdSampler->GetWidth() || m_dmdBlurs[0]->GetHeight() != dmdSampler->GetHeight())
+      // Update gaussian blurs for back/dot/glass glows
+      int slot = -1; 
+      for (int i = 0; i < m_dmdBlurSlot; i++)
       {
-         lastFrame = -1;
-         for (int i = 0; i < 4; i++)
+         if (m_dmdBlurred[i] == dmd)
          {
-            delete m_dmdBlurs[i];
-            m_dmdBlurs[i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RGBA8, false, 1, "");
+            slot = i;
+            break;
          }
       }
-      if (g_pplayer->m_overall_frames != lastFrame || lastDmd != dmd)
+      if (slot == -1)
       {
-         lastDmd = dmd;
-         lastFrame = g_pplayer->m_overall_frames;
+         slot = m_dmdBlurSlot;
+         m_dmdBlurSlot++;
+         if (m_dmdBlurSlot >= 32)
+         {
+            assert(false); // Slot overflow
+            return;
+         }
+         Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, true);
+         if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != dmdSampler->GetWidth() || m_dmdBlurs[slot][0]->GetHeight() != dmdSampler->GetHeight())
+         {
+            for (int i = 0; i < 4; i++)
+            {
+               delete m_dmdBlurs[slot][i];
+               m_dmdBlurs[slot][i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RGBA8, false, 1, "");
+            }
+         }
          RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
          for (int i = 0; i < 3; i++)
          {
             {
-               m_renderDevice->SetRenderTarget("DMD HBlur " + std::to_string(i + 1), m_dmdBlurs[0], false);
+               m_renderDevice->SetRenderTarget("DMD HBlur " + std::to_string(i + 1), m_dmdBlurs[slot][0], false);
                if (i > 0)
-                  m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[i]);
-               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, i == 0 ? dmdSampler : m_dmdBlurs[i]->GetColorSampler());
+                  m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][i]);
+               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, i == 0 ? dmdSampler : m_dmdBlurs[slot][i]->GetColorSampler());
                m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
                m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_horiz7x7 : SHADER_TECHNIQUE_fb_blur_horiz9x9);
                m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
             }
             {
-               m_renderDevice->SetRenderTarget("DMD VBlur " + std::to_string(i + 1), m_dmdBlurs[i + 1], false);
-               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[0]);
-               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[0]->GetColorSampler());
+               m_renderDevice->SetRenderTarget("DMD VBlur " + std::to_string(i + 1), m_dmdBlurs[slot][i + 1], false);
+               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
+               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
                m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
                m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_vert7x7 : SHADER_TECHNIQUE_fb_blur_vert9x9);
                m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
@@ -1272,6 +1287,11 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
          m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
          initial_rt->m_name += '-';
       }
+
+      // Render DMD
+      const float brightness = color.w * m_dmdDotColor[profile].w;
+      const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
+                                                               : vec4(color.x, color.y, color.z, 0.f);
       m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
          m_dmdDotProperties[profile].x /* size */, 
          m_dmdDotProperties[profile].y /* sharpness */,
@@ -1288,10 +1308,10 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
           isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb : SHADER_TECHNIQUE_basic_DMD2
                      : sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb_world : SHADER_TECHNIQUE_basic_DMD2_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
-      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[1]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[1]->GetColorSampler());
-      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[3]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[3]->GetColorSampler()); // FIXME why don't we directly blur from 1 to 3 ?
+      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[slot][1]->GetColorSampler());
+      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][3]);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[slot][3]->GetColorSampler()); // FIXME why don't we directly blur from 1 to 3 ?
    }
 }
 

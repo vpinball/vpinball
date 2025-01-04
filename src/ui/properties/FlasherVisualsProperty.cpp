@@ -6,20 +6,20 @@
 
 FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLASHER_VISUALS, pvsel)
 {
+    m_imageAlignList.push_back("World"s);
+    m_imageAlignList.push_back("Wrap"s);
+
     m_filterList.push_back("None"s);
     m_filterList.push_back("Additive"s);
     m_filterList.push_back("Overlay"s);
     m_filterList.push_back("Multiply"s);
     m_filterList.push_back("Screen"s);
 
-    m_imageAlignList.push_back("World"s);
-    m_imageAlignList.push_back("Wrap"s);
-
+    m_modeCombo.SetDialog(this);
+    m_styleCombo.SetDialog(this);
+    m_linkEdit.SetDialog(this);
     m_opacityAmountEdit.SetDialog(this);
     m_filterAmountEdit.SetDialog(this);
-    m_intensityEdit.SetDialog(this);
-    m_fadeSpeedUpEdit.SetDialog(this);
-    m_fadeSpeedDownEdit.SetDialog(this);
     m_heightEdit.SetDialog(this);
     m_rotXEdit.SetDialog(this);
     m_rotYEdit.SetDialog(this);
@@ -30,9 +30,8 @@ FlasherVisualsProperty::FlasherVisualsProperty(const VectorProtected<ISelect> *p
     m_modulateEdit.SetDialog(this);
     m_imageACombo.SetDialog(this);
     m_imageBCombo.SetDialog(this);
-    m_modeCombo.SetDialog(this);
+    m_texModeCombo.SetDialog(this);
     m_filterCombo.SetDialog(this);
-
     m_lightmapCombo.SetDialog(this);
 }
 
@@ -44,14 +43,114 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             continue;
         Flasher * const flash = (Flasher *)m_pvsel->ElementAt(i);
 
-        if (dispid == IDC_DMD || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hUseDMDCheck, flash->m_d.m_isDMD);
-        if (dispid == IDC_DISPLAY_IMAGE_CHECK || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hDisplayInEditorCheck, flash->m_d.m_displayTexture);
-        if (dispid == IDC_ADDBLEND || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, flash->m_d.m_addBlend);
+        if (dispid == IDC_STYLE_COMBO || dispid == -1)
+        {
+           FlasherData::RenderMode mode = clamp(flash->m_d.m_renderMode, FlasherData::FLASHER, FlasherData::ALPHASEG);
+           switch (mode)
+           {
+           case FlasherData::FLASHER:
+              m_modeCombo.SetCurSel(0);
+              break;
+           case FlasherData::DMD:
+              m_modeCombo.SetCurSel(1);
+              m_styleCombo.ResetContent();
+              m_styleCombo.AddString("Legacy VPX");
+              m_styleCombo.AddString("Neon Plasma");
+              m_styleCombo.AddString("Red LED");
+              m_styleCombo.AddString("Green LED");
+              m_styleCombo.AddString("Blue LED");
+              m_styleCombo.AddString("Generic Plasma");
+              m_styleCombo.AddString("Generic LED");
+              UpdateVisuals(IDC_DMD);
+              break;
+           case FlasherData::DISPLAY:
+              m_modeCombo.SetCurSel(1);
+              m_styleCombo.ResetContent();
+              m_styleCombo.AddString("Pixelated");
+              m_styleCombo.AddString("Smoothed");
+              m_styleCombo.AddString("ScaleFX");
+              m_styleCombo.AddString("Horizontal CRT");
+              m_styleCombo.AddString("Vertical CRT");
+              break;
+           case FlasherData::ALPHASEG:
+              m_modeCombo.SetCurSel(1);
+              m_styleCombo.ResetContent();
+              // TODO
+              break;
+           }
+
+           //::ShowWindow(GetDlgItem(IDC_STATIC21), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           GetDlgItem(IDC_STATIC21).SetWindowText(mode == FlasherData::FLASHER ? "Images" 
+                                                : mode == FlasherData::DMD     ? "DMD Style"
+                                                : mode == FlasherData::DISPLAY ? "Display Style"
+                                                                               : "Alpha Seg. Style");
+
+           ::ShowWindow(GetDlgItem(IDC_STATIC1), mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_styleCombo.ShowWindow(mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(GetDlgItem(IDC_STATIC24), mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_linkEdit.ShowWindow(mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+
+           ::ShowWindow(GetDlgItem(IDC_STATIC2), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(GetDlgItem(IDC_STATIC3), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(GetDlgItem(IDC_STATIC5), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(GetDlgItem(IDC_STATIC6), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(GetDlgItem(IDC_STATIC20), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+
+           m_imageACombo.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_imageBCombo.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_filterCombo.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_filterAmountEdit.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           ::ShowWindow(m_hDisplayInEditorCheck, mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+
+           //::ShowWindow(GetDlgItem(IDC_STATIC22), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           //::ShowWindow(GetDlgItem(IDC_STATIC7), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_opacityAmountEdit.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
+           //::ShowWindow(GetDlgItem(IDC_STATIC8), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           //::ShowWindow(GetDlgItem(IDC_STATIC19), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           m_lightmapCombo.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
+           //::ShowWindow(m_hAdditiveBlendCheck, mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           //::ShowWindow(GetDlgItem(IDC_STATIC11), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+           //m_modulateEdit.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+        }
         if (dispid == IDC_VISIBLE_CHECK || dispid == -1)
-            PropertyDialog::SetCheckboxState(m_hVisibleCheck, flash->m_d.m_isVisible);
+           PropertyDialog::SetCheckboxState(m_hVisibleCheck, flash->m_d.m_isVisible);
+        if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
+           m_colorButton.SetColor(flash->m_d.m_color);
+        if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
+           PropertyDialog::UpdateComboBox(m_imageAlignList, m_texModeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment]);
+        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
+           PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
+
+        if (dispid == IDC_DMD || dispid == -1)
+           m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0, 6));
+        if (dispid == IDC_IMAGE_LINK_EDIT || dispid == -1)
+           m_linkEdit.SetWindowText(flash->m_d.m_imageSrcLink.c_str());
+
+        if (dispid == DISPID_Image || dispid == -1)
+           PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageACombo, flash->m_d.m_szImageA);
+        if (dispid == DISPID_Image2 || dispid == -1)
+        {
+           PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo, flash->m_d.m_szImageB);
+           BOOL hasB = flash->GetPTable()->GetImage(flash->m_d.m_szImageB) ? 1 : 0;
+           m_filterCombo.EnableWindow(hasB);
+           m_filterAmountEdit.EnableWindow(hasB);
+        }
+        if (dispid == IDC_EFFECT_COMBO || dispid == -1)
+           PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter]);
+        if (dispid == IDC_FILTERAMOUNT_EDIT || dispid == -1)
+           PropertyDialog::SetIntTextbox(m_filterAmountEdit, flash->m_d.m_filterAmount);
+        if (dispid == IDC_DISPLAY_IMAGE_CHECK || dispid == -1)
+           PropertyDialog::SetCheckboxState(m_hDisplayInEditorCheck, flash->m_d.m_displayTexture);
+
+        if (dispid == IDC_ALPHA_EDIT || dispid == -1)
+           PropertyDialog::SetIntTextbox(m_opacityAmountEdit, flash->m_d.m_alpha);
+        if (dispid == IDC_LIGHTMAP || dispid == -1)
+           UpdateLightmapComboBox(flash->GetPTable(), m_lightmapCombo, flash->m_d.m_szLightmap);
+        if (dispid == IDC_ADDBLEND || dispid == -1)
+           PropertyDialog::SetCheckboxState(m_hAdditiveBlendCheck, flash->m_d.m_addBlend);
+        if (dispid == IDC_MODULATE_VS_ADD || dispid == -1)
+           PropertyDialog::SetFloatTextbox(m_modulateEdit, flash->m_d.m_modulate_vs_add);
+
         if (dispid == 5 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_posXEdit, flash->m_d.m_vCenter.x);
         if (dispid == 6 || dispid == -1)
@@ -64,26 +163,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
             PropertyDialog::SetFloatTextbox(m_rotYEdit, flash->m_d.m_rotY);
         if (dispid == 1 || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_rotZEdit, flash->m_d.m_rotZ);
-        if (dispid == IDC_FILTERAMOUNT_EDIT || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_filterAmountEdit, flash->m_d.m_filterAmount);
-        if (dispid == IDC_ALPHA_EDIT || dispid == -1)
-            PropertyDialog::SetIntTextbox(m_opacityAmountEdit, flash->m_d.m_alpha);
-        if (dispid == IDC_DEPTH_BIAS || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
-        if (dispid == IDC_MODULATE_VS_ADD || dispid == -1)
-            PropertyDialog::SetFloatTextbox(m_modulateEdit, flash->m_d.m_modulate_vs_add);
-        if (dispid == DISPID_Image || dispid == -1)
-            PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageACombo, flash->m_d.m_szImageA);
-        if (dispid == DISPID_Image2 || dispid == -1)
-            PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageBCombo, flash->m_d.m_szImageB);
-        if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_imageAlignList, m_modeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment]);
-        if (dispid == IDC_EFFECT_COMBO || dispid == -1)
-            PropertyDialog::UpdateComboBox(m_filterList, m_filterCombo, m_filterList[flash->m_d.m_filter]);
-        if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
-            m_colorButton.SetColor(flash->m_d.m_color);
-        if (dispid == IDC_LIGHTMAP || dispid == -1)
-            UpdateLightmapComboBox(flash->GetPTable(), m_lightmapCombo, flash->m_d.m_szLightmap);
+
         //only show the first element on multi-select
         break;
     }
@@ -131,6 +211,22 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
         Flasher * const flash = (Flasher *)m_pvsel->ElementAt(i);
         switch (dispid)
         {
+            case IDC_STYLE_COMBO:
+               PropertyDialog::StartUndo(flash);
+               flash->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(clamp(m_modeCombo.GetCurSel(), 0, 3));
+               PropertyDialog::EndUndo(flash);
+               UpdateVisuals(-1);
+               break;
+            case IDC_DMD:
+               PropertyDialog::StartUndo(flash);
+               flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, 3); // FIXME use the right values
+               PropertyDialog::EndUndo(flash);
+               break;
+            case IDC_IMAGE_LINK_EDIT:
+               PropertyDialog::StartUndo(flash);
+               flash->m_d.m_imageSrcLink = m_linkEdit.GetWindowText();
+               PropertyDialog::EndUndo(flash);
+               break;
             case IDC_VISIBLE_CHECK:
                 CHECK_UPDATE_ITEM(flash->m_d.m_isVisible, PropertyDialog::GetCheckboxState(m_hVisibleCheck), flash);
                 break;
@@ -140,9 +236,6 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
             case IDC_ADDBLEND:
                 CHECK_UPDATE_ITEM(flash->m_d.m_addBlend, PropertyDialog::GetCheckboxState(m_hAdditiveBlendCheck), flash);
                 break;
-            case IDC_DMD:
-                CHECK_UPDATE_ITEM(flash->m_d.m_isDMD, PropertyDialog::GetCheckboxState(m_hUseDMDCheck), flash);
-                break;
             case DISPID_Image:
                 CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageA, m_imageACombo, flash);
                 break;
@@ -150,7 +243,7 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
                 CHECK_UPDATE_COMBO_TEXT_STRING(flash->m_d.m_szImageB, m_imageBCombo, flash);
                 break;
             case IDC_FLASHER_MODE_COMBO:
-                CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_modeCombo, m_imageAlignList)), flash);
+                CHECK_UPDATE_ITEM(flash->m_d.m_imagealignment, (RampImageAlignment)(PropertyDialog::GetComboBoxIndex(m_texModeCombo, m_imageAlignList)), flash);
                 break;
             case IDC_EFFECT_COMBO:
                 CHECK_UPDATE_ITEM(flash->m_d.m_filter, (Filters)PropertyDialog::GetComboBoxIndex(m_filterCombo, m_filterList), flash);
@@ -240,10 +333,9 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_imageACombo.AttachItem(DISPID_Image);
     m_hDisplayInEditorCheck = ::GetDlgItem(GetHwnd(), IDC_DISPLAY_IMAGE_CHECK);
     m_imageBCombo.AttachItem(DISPID_Image2);
-    m_modeCombo.AttachItem(IDC_FLASHER_MODE_COMBO);
+    m_texModeCombo.AttachItem(IDC_FLASHER_MODE_COMBO);
     m_filterCombo.AttachItem(IDC_EFFECT_COMBO);
     m_hAdditiveBlendCheck = ::GetDlgItem(GetHwnd(), IDC_ADDBLEND);
-    m_hUseDMDCheck = ::GetDlgItem(GetHwnd(), IDC_DMD);
     m_filterAmountEdit.AttachItem(IDC_FILTERAMOUNT_EDIT);
     m_opacityAmountEdit.AttachItem(IDC_ALPHA_EDIT);
     m_depthBiasEdit.AttachItem(IDC_DEPTH_BIAS);
@@ -256,48 +348,49 @@ BOOL FlasherVisualsProperty::OnInitDialog()
     m_rotZEdit.AttachItem(1);
     AttachItem(IDC_COLOR_BUTTON1, m_colorButton);
     m_lightmapCombo.AttachItem(IDC_LIGHTMAP);
+    m_modeCombo.AttachItem(IDC_STYLE_COMBO);
+    m_styleCombo.AttachItem(IDC_DMD);
+    m_linkEdit.AttachItem(IDC_IMAGE_LINK_EDIT);
+    
+    m_modeCombo.AddString("Flasher");
+    m_modeCombo.AddString("DMD");
+    m_modeCombo.AddString("Display");
+    m_modeCombo.AddString("Alpha.Seg.");
+
     UpdateVisuals();
 
     m_resizer.Initialize(*this, CRect(0, 0, 0, 0));
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC1), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC2), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC3), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC4), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC5), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC7), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topright, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC9), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC10), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC11), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC13), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC14), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC15), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC16), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC17), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC18), CResizer::topleft, 0);
-    m_resizer.AddChild(GetDlgItem(IDC_STATIC19), CResizer::topleft, 0);
-    m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_imageACombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_hDisplayInEditorCheck, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_imageBCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+
     m_resizer.AddChild(m_modeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_filterCombo, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_hUseDMDCheck, CResizer::topleft, 0);
-    m_resizer.AddChild(m_filterAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hVisibleCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_colorButton, CResizer::topleft, 0);
     m_resizer.AddChild(m_depthBiasEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_texModeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(m_styleCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH); // Images Group
+    m_resizer.AddChild(m_imageACombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_imageBCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_filterCombo, CResizer::topleft, 0);
+    m_resizer.AddChild(m_filterAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hDisplayInEditorCheck, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topright, 0);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC22), CResizer::topleft, RD_STRETCH_WIDTH); // Transparency Group
+    m_resizer.AddChild(m_opacityAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC8), CResizer::topright, 0);
+    m_resizer.AddChild(m_lightmapCombo, CResizer::topleft, RD_STRETCH_WIDTH);
+    m_resizer.AddChild(m_hAdditiveBlendCheck, CResizer::topleft, 0);
     m_resizer.AddChild(m_modulateEdit, CResizer::topleft, RD_STRETCH_WIDTH);
+
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC12), CResizer::topleft, RD_STRETCH_WIDTH); // Position Group
     m_resizer.AddChild(m_posXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_posYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_heightEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_rotXEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_rotYEdit, CResizer::topleft, RD_STRETCH_WIDTH);
     m_resizer.AddChild(m_rotZEdit, CResizer::topleft, RD_STRETCH_WIDTH);
-    m_resizer.AddChild(m_colorButton, CResizer::topleft, 0);
 
     return TRUE;
 }
@@ -306,17 +399,17 @@ INT_PTR FlasherVisualsProperty::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPar
 {
    m_resizer.HandleMessage(uMsg, wParam, lParam);
    switch (uMsg)
-    {
-        case WM_DRAWITEM:
-        {
-            const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
-            const UINT nID = static_cast<UINT>(wParam);
-            if (nID == IDC_COLOR_BUTTON1)
-            {
-                m_colorButton.DrawItem(lpDrawItemStruct);
-            }
-            return TRUE;
-        }
-    }
-    return DialogProcDefault(uMsg, wParam, lParam);
+   {
+   case WM_DRAWITEM:
+   {
+      const LPDRAWITEMSTRUCT lpDrawItemStruct = reinterpret_cast<LPDRAWITEMSTRUCT>(lParam);
+      const UINT nID = static_cast<UINT>(wParam);
+      if (nID == IDC_COLOR_BUTTON1)
+      {
+         m_colorButton.DrawItem(lpDrawItemStruct);
+      }
+      return TRUE;
+   }
+   }
+   return DialogProcDefault(uMsg, wParam, lParam);
 }

@@ -43,7 +43,6 @@
 #include "tinyxml2/tinyxml2.h"
 
 #include "plugins/MsgPlugin.h"
-#include "plugins/CorePlugin.h"
 #include "plugins/VPXPlugin.h"
 #include "plugins/VPXPluginAPIImpl.h"
 
@@ -763,7 +762,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_controllerDisplays.push_back({-1, nullptr}); // Default DMD
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
@@ -2343,76 +2341,130 @@ void Player::FinishFrame()
 
 Player::ControllerDisplay Player::GetControllerDisplay(int id)
 {
-   // For the time being, we only support the default DMD (no DMD id scheme defined & implemented inside VPX)
-   ControllerDisplay& display = m_controllerDisplays[0];
-
-   // Script DMD takes precedence over plugin DMD
-   if (m_dmdFrame)
-      return { m_dmdFrameId, m_dmdFrame };
-
-   // Search for the main DMD
-   GetDmdMsg msg;
-   memset(&msg, 0, sizeof(GetDmdMsg));
-   unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   bool mainDMDFound = false;
-   GetDmdSrcMsg getSrcMsg;
-   memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
-   getSrcMsg.maxEntryCount = 1024;
-   getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
-   unsigned int largest = 128;
-   for (unsigned int i = 0; i < getSrcMsg.count; i++)
+   ControllerDisplay* display = nullptr;
+   if (id == -1)
    {
-      if ((getSrcMsg.entries[i].width >= largest) // Select a large DMD
-         && (msg.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8) // Prefer color over monochrome
-         && ((getSrcMsg.entries[i].dmdId >> 16) != VPXPluginAPIImpl::GetInstance().GetVPXEndPointId())) // Don't select internal script DMD
+      // Script DMD takes precedence over plugin DMD
+      if (m_dmdFrame)
+         return { m_dmdFrameId, m_dmdFrame };
+
+      // Search for the main DMD
+      GetDmdMsg msg;
+      memset(&msg, 0, sizeof(GetDmdMsg));
+      unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
+      bool dmdFound = false;
+      GetDmdSrcMsg getSrcMsg;
+      memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
+      getSrcMsg.maxEntryCount = 1024;
+      getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
+      VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
+      unsigned int largest = 128;
+      for (unsigned int i = 0; i < getSrcMsg.count; i++)
       {
-         largest = getSrcMsg.entries[i].width;
-         msg.dmdId = getSrcMsg.entries[i].dmdId;
-         msg.width = getSrcMsg.entries[i].width;
-         msg.height = getSrcMsg.entries[i].height;
-         msg.format = getSrcMsg.entries[i].format;
-         mainDMDFound = true;
+         if ((getSrcMsg.entries[i].width >= largest) // Select a large DMD
+            && (msg.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
+         {
+            largest = getSrcMsg.entries[i].width;
+            msg.dmdId = getSrcMsg.entries[i].dmdId;
+            msg.width = getSrcMsg.entries[i].width;
+            msg.height = getSrcMsg.entries[i].height;
+            msg.format = getSrcMsg.entries[i].format;
+            dmdFound = true;
+         }
+      }
+      delete[] getSrcMsg.entries;
+      VPXPluginAPIImpl::GetInstance().ReleaseMsgID(getDmdSrcId);
+      if (!dmdFound)
+         return { -1, nullptr };
+
+      // Update in display list
+      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [msg](const ControllerDisplay &cd) { return cd.getMsg.dmdId == msg.dmdId; });
+      if (pCD == m_controllerDisplays.end())
+      {
+         m_controllerDisplays.push_back({-1, nullptr, msg});
+         display = &m_controllerDisplays.back();
+      }
+      else
+      {
+         pCD->getMsg = msg;
+         display = &(*pCD);
       }
    }
-   delete[] getSrcMsg.entries;
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(getDmdSrcId);
-   if (!mainDMDFound)
-      return { -1, nullptr };
+   else
+   {
+      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.getMsg.dmdId == id; });
+      if (pCD == m_controllerDisplays.end())
+      {
+         // Search for the requested DMD
+         GetDmdMsg msg;
+         memset(&msg, 0, sizeof(GetDmdMsg));
+         unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
+         bool dmdFound = false;
+         GetDmdSrcMsg getSrcMsg;
+         memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
+         getSrcMsg.maxEntryCount = 1024;
+         getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
+         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
+         unsigned int largest = 128;
+         for (unsigned int i = 0; i < getSrcMsg.count; i++)
+         {
+            if ((getSrcMsg.entries[i].dmdId == id) && (msg.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
+            {
+               largest = getSrcMsg.entries[i].width;
+               msg.dmdId = getSrcMsg.entries[i].dmdId;
+               msg.width = getSrcMsg.entries[i].width;
+               msg.height = getSrcMsg.entries[i].height;
+               msg.format = getSrcMsg.entries[i].format;
+               dmdFound = true;
+            }
+         }
+         delete[] getSrcMsg.entries;
+         VPXPluginAPIImpl::GetInstance().ReleaseMsgID(getDmdSrcId);
+         if (!dmdFound)
+            return { -1, nullptr };
+         m_controllerDisplays.push_back({ -1, nullptr, msg });
+         display = &m_controllerDisplays.back();
+      }
+      else
+      {
+         display = &(*pCD);
+      }
+   }
 
    // Obtain DMD frame from controller plugin
-   msg.requestFlags = CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ | CTLPI_GETDMD_FLAG_RENDER_FMT_REQ;
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &msg);
-   if (msg.frame == nullptr)
+   display->getMsg.frame = nullptr;
+   display->getMsg.requestFlags = CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ | CTLPI_GETDMD_FLAG_RENDER_FMT_REQ;
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &display->getMsg);
+   if (display->getMsg.frame == nullptr)
       return { -1, nullptr };
 
    // (re) Create DMD texture
-   BaseTexture::Format format = msg.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
-   if (display.frame == nullptr || display.frame->width() != msg.width || display.frame->height() != msg.height || display.frame->m_format != format)
+   BaseTexture::Format format = display->getMsg.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
+   if (display->frame == nullptr || display->frame->width() != display->getMsg.width || display->frame->height() != display->getMsg.height || display->frame->m_format != format)
    {
       // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
-      BaseTexture* tex = display.frame;
+      BaseTexture *tex = display->frame;
       m_renderer->m_renderDevice->AddEndOfFrameCmd([tex] { delete tex; });
-      display.frame = new BaseTexture(msg.width, msg.height, format);
-      display.frame->SetIsOpaque(true);
-      display.frameId = -1;
+      display->frame = new BaseTexture(display->getMsg.width, display->getMsg.height, format);
+      display->frame->SetIsOpaque(true);
+      display->frameId = -1;
    }
 
    // Update DMD texture
-   if (display.frameId != msg.frameId)
+   if (display->frameId != display->getMsg.frameId)
    {
-      display.frameId = msg.frameId;
-      const int size = msg.width * msg.height;
-      if (msg.format == CTLPI_GETDMD_FORMAT_LUM8)
-         memcpy(display.frame->data(), msg.frame, size);
-      else if (msg.format == CTLPI_GETDMD_FORMAT_SRGB565)
+      display->frameId = display->getMsg.frameId;
+      const int size = display->getMsg.width * display->getMsg.height;
+      if (display->getMsg.format == CTLPI_GETDMD_FORMAT_LUM8)
+         memcpy(display->frame->data(), display->getMsg.frame, size);
+      else if (display->getMsg.format == CTLPI_GETDMD_FORMAT_SRGB565)
       {
          static const UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
          static const UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
-         DWORD *const data = reinterpret_cast<DWORD *>(display.frame->data());
+         DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
          for (int ofs = 0; ofs < size; ofs++)
          {
-            const uint16_t rgb565 = reinterpret_cast<uint16_t *>(msg.frame)[ofs];
+            const uint16_t rgb565 = reinterpret_cast<uint16_t *>(display->getMsg.frame)[ofs];
             data[ofs] = 0xFF000000 | (lum32[(rgb565 >> 11) & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[rgb565 & 0x1F];
             // uint8_t r = (((rgb565 >> 11) & 0x1F) * 255) / 31;
             // uint8_t g = (((rgb565 >>  5) & 0x3F) * 255) / 63;
@@ -2420,16 +2472,16 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
             // data[ofs] = 0xFF000000 | (r << 16) | (g << 8) | b;
          }
       }
-      else if (msg.format == CTLPI_GETDMD_FORMAT_SRGB888)
+      else if (display->getMsg.format == CTLPI_GETDMD_FORMAT_SRGB888)
       {
-         DWORD *const data = reinterpret_cast<DWORD*>(display.frame->data());
+         DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
          for (int ofs = 0; ofs < size; ofs++)
-            data[ofs] = 0xFF000000 | (msg.frame[ofs * 3 + 2] << 16) | (msg.frame[ofs * 3 + 1] << 8) | msg.frame[ofs * 3];
+            data[ofs] = 0xFF000000 | (display->getMsg.frame[ofs * 3 + 2] << 16) | (display->getMsg.frame[ofs * 3 + 1] << 8) | display->getMsg.frame[ofs * 3];
       }
-      m_renderer->m_renderDevice->m_texMan.SetDirty(display.frame);
+      m_renderer->m_renderDevice->m_texMan.SetDirty(display->frame);
    }
 
-   return display;
+   return *display;
 }
 
 void Player::PauseMusic()

@@ -4606,7 +4606,7 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
       // Missing Filter Image B
       // Missing Amount
       PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
-      PropCheckbox("Use Script DMD", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isDMD) : nullptr, live_obj ? &(live_obj->m_d.m_isDMD) : nullptr);
+      // FIXME PropCheckbox("Use Script DMD", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isDMD) : nullptr, live_obj ? &(live_obj->m_d.m_isDMD) : nullptr);
       PropRGB("Color", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_color) : nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
       PropInt("Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr);
       PropFloat("Modulate", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_modulate_vs_add) : nullptr, live_obj ? &(live_obj->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f);

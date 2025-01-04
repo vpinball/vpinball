@@ -124,6 +124,12 @@
     <Filter Include="third-party\openxr">
       <UniqueIdentifier>{49343BB8-F179-4DA3-8FDF-5119D31F3386}</UniqueIdentifier>
     </Filter>
+	<Filter Include="scripts">
+      <UniqueIdentifier>{e528ec17-3a14-4355-aff0-2359664399c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\simple-uri-parser">
+      <UniqueIdentifier>{d2ad50dc-81bf-4ece-9513-85e36260bc19}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src/audio/mixer.cpp">
@@ -1781,6 +1787,9 @@
     <ClInclude Include="third-party/include/openxr/openxr_reflection_structs.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
+    <ClInclude Include="third-party\include\simple-uri-parser\uri_parser.h">
+      <Filter>third-party\simple-uri-parser</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src/ui/vpinball.rc">
@@ -1853,6 +1862,231 @@
     </None>
     <None Include="src/assets/TableSizes.csv">
       <Filter>assets</Filter>
+    </None>
+	<None Include="scripts\6803.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\ALI.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\alving.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\antar.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Atari.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Atari1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Atari1b.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Atari2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\B2B.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\B2Bcollision.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\b2s.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Bally.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\BallyG.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\capcom.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Class1812.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\controller.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\core.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\de.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\de2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\FPVPX.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\GamePlan.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\gts1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\gts3.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Hankin.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\idsa.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\inder.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\inder_atleta.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\inder_centaur.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\inder_skateboard.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\ironballs.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\joctronic.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\juegos.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\juegos2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\jvh.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\lancelot.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\LTD.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\LTD3.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\LTD4a.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\LTDPecmen.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\mac.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\mrgame.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\NudgePlugIn_blur2NoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\NudgePlugIn_blurNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\NudgePlugIn_mjrAccelAndTilt.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\NudgePlugIn_robBlurNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\NudgePlugIn_robNoAccel.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\nuova.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\PDB.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\peyper.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Play1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Play2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\Play4.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\s4.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\s6.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\s7.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\s8_StillCrazy.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\s11.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sam.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sega.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sega2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sleic.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\solarwars.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\spinball.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\stern.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\sys80.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\taito.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\UltraDMD_Options.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\vbsdoc_outdated.html">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\VPMKeys.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\WPC.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\wpc_ph.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\zac.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\zac1.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\zac2.vbs">
+      <Filter>scripts</Filter>
+    </None>
+    <None Include="scripts\zacproto.vbs">
+      <Filter>scripts</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

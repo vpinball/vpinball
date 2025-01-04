@@ -212,5 +212,7 @@ private:
    vec4 m_dmdDotColor[7]; // Base dot color and brightness
    vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, glow
    vec4 m_dmdUnlitDotColor[7]; // unlit color and back glow
-   RenderTarget* m_dmdBlurs[4] = { nullptr };
+   unsigned int m_dmdBlurSlot = 0;
+   BaseTexture* m_dmdBlurred[32] = { nullptr };
+   RenderTarget* m_dmdBlurs[32][4] = { nullptr };
 };

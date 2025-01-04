@@ -223,7 +223,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userDa
       PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
       for (unsigned int index = 0; index < state->nDisplays; index++)
       {
-         if (msg->dmdId == ((me.m_pinMameEndpointId << 16) | frame->displayId))
+         if ((msg->dmdId & 0x0FFFF) == frame->displayId)
          {
             // If asked for a fixed size render frame with a different size from what we have, don't answer
             if ((msgId == me.m_getRenderDmdMsgId) && (msg->requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ) && ((msg->width != frame->width) || (msg->height != frame->height)))

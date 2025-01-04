@@ -198,6 +198,12 @@ Using generator from https://github.com/juliettef/IconFontCppHeaders
 - Version: ?
 - License: ZLib
 
+## simple-uri-parser
+
+- Upstream: https://github.com/jholloc/simple-uri-parser
+- Version: ?
+- License: MIT
+
 ## win32xx
 
 - Upstream: https://sourceforge.net/projects/win32-framework/
