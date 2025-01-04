@@ -1326,6 +1326,7 @@
 #define IDC_X_LABEL                     948
 #define IDC_Y_LABEL                     949
 #define IDC_DEFAULT_DMD_PROFILE         950
+#define IDC_IMAGE_LINK_EDIT             953
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1344,6 +1345,7 @@
 #define DISPID_Surface                  1502
 #define IDC_SURFACE_COMBO               1502
 #define DISPID_REFLECTION_PROBE         1502
+#define IDC_STYLE_COMBO                 1502
 #define DISPID_Shape                    1503
 #define DISPID_REFRACTION_PROBE         1503
 #define IDC_LIGHT_TYPE_COMBO            1503
@@ -1522,7 +1524,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         951
+#define _APS_NEXT_CONTROL_VALUE         954
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

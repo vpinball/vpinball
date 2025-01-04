@@ -26,8 +26,18 @@ public:
    bool m_displayTexture;
    bool m_isVisible;
    bool m_addBlend;
-   bool m_isDMD;
    string m_szLightmap;
+
+   enum RenderMode
+   {
+      FLASHER,    // Custom blended images
+      DMD,        // Dot matrix display (Plasma, LED, ...)
+      DISPLAY,    // Screen (CRT, LCD, ...)
+      ALPHASEG    // Alphanumeric segment display (VFD, Plasma, LED, ...)
+   };
+   RenderMode m_renderMode;
+   int m_renderStyle;       // application defined style profile reference
+   string m_imageSrcLink;   // image source (default is script)
 };
 
 class Flasher :

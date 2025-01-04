@@ -2431,7 +2431,7 @@ void PinTable::Play(const int playMode)
    live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
    wcscpy(implicitDMD->m_wzName, L"ImplicitDMD");
    implicitDMD->m_d.m_visible = false;
-   implicitDMD->m_d.m_isDMD = true;
+   implicitDMD->m_d.m_renderMode = FlasherData::DMD;
    implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
    live_table->m_vedit.push_back(implicitDMD);
    live_table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
@@ -2451,7 +2451,7 @@ void PinTable::Play(const int playMode)
    implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
    implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
    implicitDMD2->m_d.m_isVisible = false;
-   implicitDMD2->m_d.m_isDMD = true;
+   implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
    implicitDMD2->m_d.m_color = RGB(255, 255, 255);
    implicitDMD2->m_d.m_filter = Filter_Overlay;
    implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
