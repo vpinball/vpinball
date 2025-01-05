@@ -13,7 +13,6 @@ LightSeq::~LightSeq()
 LightSeq *LightSeq::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(LightSeq, live_table)
-   dst->m_backglass = m_backglass;
    return dst;
 }
 

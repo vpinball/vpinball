@@ -422,6 +422,7 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    bw.WriteInt(FID(FILT), m_d.m_filter);
    bw.WriteInt(FID(FIAM), m_d.m_filterAmount);
    bw.WriteString(FID(LMAP), m_d.m_szLightmap);
+   bw.WriteBool(FID(BGLS), m_backglass);
    ISelect::SaveData(pstm, hcrypthash);
 
    HRESULT hr;
@@ -487,6 +488,7 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    case FID(RDMD): { int m; pbr->GetInt(m); m_d.m_renderMode = static_cast<FlasherData::RenderMode>(m); } break;
    case FID(RSTL): pbr->GetInt(&m_d.m_renderStyle); break;
    case FID(LINK): pbr->GetString(m_d.m_imageSrcLink); break;
+   case FID(BGLS): pbr->GetBool(m_backglass); break;
    case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
    case FID(FLDB): pbr->GetFloat(m_d.m_depthBias); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
@@ -1287,14 +1289,11 @@ void Flasher::Render(const unsigned int renderMask)
       const float height = m_d.m_height;
       const float movx = m_minx + (m_maxx - m_minx)*0.5f;
       const float movy = m_miny + (m_maxy - m_miny)*0.5f;
-
-      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx, //-m_d.m_vCenter.x,
-                                                            -movy, //-m_d.m_vCenter.y,
-                                                            0.f)
-                      * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
-                         * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
-                         * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
-                         * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx /* -m_d.m_vCenter.x */, -movy /* -m_d.m_vCenter.y */, 0.f)
+                             * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
+                                * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
+                                * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
+                                * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
 
       Vertex3D_NoTex2 *buf;
       m_meshBuffer->m_vb->Lock(buf);
@@ -1302,9 +1301,26 @@ void Flasher::Render(const unsigned int renderMask)
       {
          Vertex3D_NoTex2 vert = m_vertices[i];
          tempMatrix.MultiplyVector(vert);
+         if (m_backglass)
+            vert.z = 1.f;
          buf[i] = vert;
       }
       m_meshBuffer->m_vb->Unlock();
+   }
+
+   if (m_backglass)
+   {
+      Matrix3D matWorldViewProj[2];
+      matWorldViewProj[0] = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj[0]._11 = 2.0f / static_cast<float>(EDITOR_BG_WIDTH /* m_rd->GetCurrentRenderTarget()->GetWidth() */);
+      matWorldViewProj[0]._41 = -1.0f;
+      matWorldViewProj[0]._22 = -2.0f / static_cast<float>(EDITOR_BG_HEIGHT /* m_rd->GetCurrentRenderTarget()->GetHeight() */);
+      matWorldViewProj[0]._42 = 1.0f;
+      const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
+      if (eyes > 1)
+         memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+      m_rd->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+      m_rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    }
 
    m_rd->ResetRenderState();
@@ -1388,7 +1404,11 @@ void Flasher::Render(const unsigned int renderMask)
          if (frame == nullptr)
             frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay(-1).frame;
          if (frame == nullptr)
+         {
+            if (m_backglass)
+               g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
+         }
          if (m_d.m_modulate_vs_add < 1.f)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
@@ -1406,7 +1426,11 @@ void Flasher::Render(const unsigned int renderMask)
       {
          BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
          if (frame == nullptr)
+         {
+            if (m_backglass)
+               g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
+         }
          if (m_d.m_modulate_vs_add < 1.f)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
@@ -1460,6 +1484,9 @@ void Flasher::Render(const unsigned int renderMask)
          break;
       }
    }
+
+   if (m_backglass)
+      g_pplayer->m_renderer->UpdateBasicShaderMatrix();
 }
 
 #pragma endregion

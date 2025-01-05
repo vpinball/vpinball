@@ -20,7 +20,6 @@ Decal::~Decal()
 Decal *Decal::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Decal, live_table)
-   dst->m_backglass = m_backglass;
 #ifndef __STANDALONE__
    m_pIFont->Clone(&dst->m_pIFont);
 #endif
@@ -819,13 +818,17 @@ void Decal::Render(const unsigned int renderMask)
 
    if (m_backglass)
    {
-      Matrix3D matWorldViewProj = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
-      matWorldViewProj._11 = 2.0f / (float)m_rd->GetCurrentRenderTarget()->GetWidth();
-      matWorldViewProj._41 = -1.0f;
-      matWorldViewProj._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
-      matWorldViewProj._42 = 1.0f;
+      Matrix3D matWorldViewProj[2];
+      matWorldViewProj[0] = Matrix3D::MatrixIdentity(); // MVP to move from back buffer space (0..w, 0..h) to clip space (-1..1, -1..1)
+      matWorldViewProj[0]._11 = 2.0f / (float)m_rd->GetCurrentRenderTarget()->GetWidth();
+      matWorldViewProj[0]._41 = -1.0f;
+      matWorldViewProj[0]._22 = -2.0f / (float)m_rd->GetCurrentRenderTarget()->GetHeight();
+      matWorldViewProj[0]._42 = 1.0f;
       #if defined(ENABLE_BGFX)
-      // FIXME implement
+      const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
+      if (eyes > 1)
+         memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
       #elif defined(ENABLE_OPENGL)
       struct
       {
@@ -835,11 +838,11 @@ void Decal::Render(const unsigned int renderMask)
          Matrix3D matWorldViewInverseTranspose;
          Matrix3D matWorldViewProj[2];
       } matrices;
-      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
-      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj.m[0][0], 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[0].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+      memcpy(&matrices.matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
       m_rd->m_basicShader->SetUniformBlock(SHADER_basicMatrixBlock, &matrices.matWorld.m[0][0]);
       #elif defined(ENABLE_DX9)
-      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj);
+      m_rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0]);
       #endif
    }
 

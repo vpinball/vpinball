@@ -42,7 +42,6 @@ Light *Light::CopyForPlay(PinTable *live_table) const
 {
    STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(Light, live_table, m_vdpoint)
    // Light specific copy and live data (not really needed)
-   dst->m_backglass = m_backglass;
    dst->m_currentIntensity = m_currentIntensity;
    dst->m_currentFilamentTemperature = m_currentFilamentTemperature;
    dst->m_duration = m_duration;
