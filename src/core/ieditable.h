@@ -176,6 +176,7 @@ public:
    dst->m_oldLayerIndex = m_oldLayerIndex; \
    dst->m_layerName = m_layerName; \
    dst->m_isVisible = m_isVisible; \
+   dst->m_backglass = m_backglass; \
    dst->m_locked = m_locked; \
    dst->m_d = m_d;
 

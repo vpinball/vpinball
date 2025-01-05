@@ -254,66 +254,41 @@ void ToolbarDialog::EnableButtons()
         m_timerButton.EnableWindow(FALSE);
         m_lightseqButton.EnableWindow(FALSE);
     }
-    else if (g_pvp->m_backglassView)
-    {
-        m_magnifyButton.EnableWindow(TRUE);
-        m_selectButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_scriptButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_backglassButton.EnableWindow(TRUE);
-        m_playButton.EnableWindow(TRUE);
-        m_playCameraButton.EnableWindow(TRUE);
-
-        m_textboxButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_reelButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_decalButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_lightButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_timerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_lightseqButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-
-        m_wallButton.EnableWindow(FALSE);
-        m_gateButton.EnableWindow(FALSE);
-        m_rampButton.EnableWindow(FALSE);
-        m_flipperButton.EnableWindow(FALSE);
-        m_plungerButton.EnableWindow(FALSE);
-        m_ballButton.EnableWindow(FALSE);
-        m_bumperButton.EnableWindow(FALSE);
-        m_spinnerButton.EnableWindow(FALSE);
-        m_triggerButton.EnableWindow(FALSE);
-        m_targetButton.EnableWindow(FALSE);
-        m_kickerButton.EnableWindow(FALSE);
-        m_primitiveButton.EnableWindow(FALSE);
-        m_flasherButton.EnableWindow(FALSE);
-        m_rubberButton.EnableWindow(FALSE);
-    }
     else
     {
+        BOOL lockable = ptCur->IsLocked() ? FALSE : TRUE;
+
         m_magnifyButton.EnableWindow(TRUE);
-        m_selectButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_scriptButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
+        m_selectButton.EnableWindow(lockable);
+        m_scriptButton.EnableWindow(lockable);
         m_backglassButton.EnableWindow(TRUE);
         m_playButton.EnableWindow(TRUE);
         m_playCameraButton.EnableWindow(TRUE);
 
-        m_textboxButton.EnableWindow(FALSE);
-        m_reelButton.EnableWindow(FALSE);
-        m_wallButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_gateButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_rampButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_flipperButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_plungerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_ballButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_bumperButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_spinnerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_triggerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_kickerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_primitiveButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_flasherButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_rubberButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_decalButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_lightButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_timerButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_lightseqButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
-        m_targetButton.EnableWindow(ptCur->IsLocked() ? FALSE : TRUE);
+        m_decalButton.EnableWindow(lockable);
+        m_lightButton.EnableWindow(lockable);
+        m_timerButton.EnableWindow(lockable);
+        m_lightseqButton.EnableWindow(lockable);
+        m_flasherButton.EnableWindow(lockable);
+
+        BOOL lockableNo3D = g_pvp->m_backglassView ? lockable : FALSE;
+        m_textboxButton.EnableWindow(lockableNo3D);
+        m_reelButton.EnableWindow(lockableNo3D);
+
+        BOOL lockableNoBG = g_pvp->m_backglassView ? FALSE : lockable;
+        m_wallButton.EnableWindow(lockableNoBG);
+        m_gateButton.EnableWindow(lockableNoBG);
+        m_rampButton.EnableWindow(lockableNoBG);
+        m_flipperButton.EnableWindow(lockableNoBG);
+        m_plungerButton.EnableWindow(lockableNoBG);
+        m_ballButton.EnableWindow(lockableNoBG);
+        m_bumperButton.EnableWindow(lockableNoBG);
+        m_spinnerButton.EnableWindow(lockableNoBG);
+        m_triggerButton.EnableWindow(lockableNoBG);
+        m_targetButton.EnableWindow(lockableNoBG);
+        m_kickerButton.EnableWindow(lockableNoBG);
+        m_primitiveButton.EnableWindow(lockableNoBG);
+        m_rubberButton.EnableWindow(lockableNoBG);
     }
 }
 
