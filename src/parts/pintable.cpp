@@ -4359,6 +4359,54 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName)
             }
          }
 
+         // Since 10.8.1, Flashers are allowed on 2D backdrop, with advanced rendering capabilities.
+         /* This code woudl replace DMD textbox by flahser. It is deactivated since it would break scripting (but does anyone scripted this ?)
+         for (size_t i = 0; i < m_vedit.size(); ++i)
+         {
+            if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
+            {
+               Textbox *const textbox = (Textbox *)m_vedit[i];
+               if (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_sztext.c_str(), "DMD") != nullptr)
+               {
+                  if (textbox->GetScriptable())
+                     m_pcv->RemoveItem(textbox->GetScriptable());
+                  Flasher *dmd = (Flasher *)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, this, 0, 0);
+                  m_pcv->RemoveItem(dmd->GetScriptable());
+                  #ifdef _MSC_VER
+                  wcscpy_s(dmd->m_wzName, textbox->m_wzName);
+                  #else
+                  wcscpy(dmd->m_wzName, textbox->m_wzName);
+                  #endif
+                  dmd->UpdatePoint(0, textbox->m_d.m_v1.x, textbox->m_d.m_v1.y);
+                  dmd->UpdatePoint(1, textbox->m_d.m_v1.x, textbox->m_d.m_v2.y);
+                  dmd->UpdatePoint(2, textbox->m_d.m_v2.x, textbox->m_d.m_v2.y);
+                  dmd->UpdatePoint(3, textbox->m_d.m_v2.x, textbox->m_d.m_v1.y);
+                  dmd->m_backglass = true;
+                  dmd->m_d.m_isVisible = textbox->m_d.m_visible;
+                  dmd->m_d.m_renderMode = FlasherData::DMD;
+                  dmd->m_d.m_renderStyle = 0; // Legacy rendering style
+                  dmd->m_d.m_imagealignment = ImageModeWrap;
+                  dmd->m_d.m_color = textbox->m_d.m_fontcolor;
+                  dmd->m_d.m_addBlend = false;
+                  dmd->m_d.m_modulate_vs_add = 1.f; // Actually alpha
+                  dmd->m_d.m_alpha = static_cast<int>(100.f * textbox->m_d.m_intensity_scale); // Actually brightness
+                  dmd->m_d.m_intensity_scale = 1.f; // Actually brightness scale
+                  dmd->m_vCollection.insert(dmd->m_vCollection.begin(), textbox->m_vCollection.begin(), textbox->m_vCollection.end());
+                  for (Collection *const pcollection : textbox->m_vCollection)
+                  {
+                     pcollection->m_visel.find_erase(textbox->GetISelect());
+                     pcollection->m_visel.push_back(dmd);
+                  }
+                  m_vedit[i] = dmd;
+                  m_pcv->AddItem(dmd->GetScriptable(), false);
+                  char *szT = MakeChar(dmd->m_wzName);
+                  PLOGI << "Textbox used as DMD replaced by a flasher (name=" << szT << ")";
+                  delete[] szT;
+                  break;
+               }
+            }
+         }*/
+
          // Do not consider properties converted to settings as changes to avoid creating an ini for each opened old table (they will be imported again as they are part of the VPX file)
          m_settings.SetModified(false);
 
@@ -8095,10 +8143,14 @@ string PinTable::AuditTable() const
       Primitive *prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
       Light *light = type == eItemLight ? (Light *)part : nullptr;
       Surface *surf = type == eItemSurface ? (Surface *)part : nullptr;
+      Textbox *textbox = type == eItemTextbox ? (Textbox *)part : nullptr;
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
+
+      if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_sztext.c_str(), "DMD") != nullptr))
+         ss << ". Warning: legacy Textbox '" << textbox->GetName() << "' is used for DMD rendering. It should be replaced by a flasher to get better rendering.\r\n";
 
       if (type == eItemTimer) {
          string name = ((Timer *)part)->GetName();
