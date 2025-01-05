@@ -64,16 +64,16 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
               UpdateVisuals(IDC_DMD);
               break;
            case FlasherData::DISPLAY:
-              m_modeCombo.SetCurSel(1);
+              m_modeCombo.SetCurSel(2);
               m_styleCombo.ResetContent();
               m_styleCombo.AddString("Pixelated");
               m_styleCombo.AddString("Smoothed");
-              m_styleCombo.AddString("ScaleFX");
-              m_styleCombo.AddString("Horizontal CRT");
-              m_styleCombo.AddString("Vertical CRT");
+              //m_styleCombo.AddString("ScaleFX");
+              //m_styleCombo.AddString("Horizontal CRT");
+              //m_styleCombo.AddString("Vertical CRT");
               break;
            case FlasherData::ALPHASEG:
-              m_modeCombo.SetCurSel(1);
+              m_modeCombo.SetCurSel(3);
               m_styleCombo.ResetContent();
               // TODO
               break;
@@ -122,7 +122,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
            PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
 
         if (dispid == IDC_DMD || dispid == -1)
-           m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0, 6));
+           m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0, flash->m_d.m_renderMode == FlasherData::DMD ? 6
+                                                                   : flash->m_d.m_renderMode == FlasherData::DISPLAY ? 1
+                                                                   : 0));
         if (dispid == IDC_IMAGE_LINK_EDIT || dispid == -1)
            m_linkEdit.SetWindowText(flash->m_d.m_imageSrcLink.c_str());
 
@@ -213,13 +215,15 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
         {
             case IDC_STYLE_COMBO:
                PropertyDialog::StartUndo(flash);
-               flash->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(clamp(m_modeCombo.GetCurSel(), 0, 3));
+               flash->m_d.m_renderMode = static_cast<FlasherData::RenderMode>(clamp(m_modeCombo.GetCurSel(), FlasherData::FLASHER, FlasherData::ALPHASEG));
                PropertyDialog::EndUndo(flash);
                UpdateVisuals(-1);
                break;
             case IDC_DMD:
                PropertyDialog::StartUndo(flash);
-               flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, 3); // FIXME use the right values
+               flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, flash->m_d.m_renderMode == FlasherData::DMD ? 6
+                                                                           : flash->m_d.m_renderMode == FlasherData::DISPLAY ? 1
+                                                                           : 0);
                PropertyDialog::EndUndo(flash);
                break;
             case IDC_IMAGE_LINK_EDIT:

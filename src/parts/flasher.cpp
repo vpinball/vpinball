@@ -1193,6 +1193,61 @@ void Flasher::UpdateAnimation(const float diff_time_msec)
 {
 }
 
+// This is the initial implementation of a general link URI system to allow to link part properties to script/plugin items
+// Warning: for the time being, this is a pre-alpha syntax which will be validated over time
+// script://dmd => DMD defined by the script on the part or the table
+// plugin://pinmame/getstate?src=display&id=0 => DMD bitmap
+// plugin://pinmame/getstate?src=display&id=1 => Display bitmap
+// plugin://pinmame/getstate?src=alpha&id=1 => Alphanumeric segment display state
+// plugin://pinmame/getstate?src=lamp&id=2&value=brightness => Intensity
+// plugin://pinmame/getstate?src=lamp&id=2&value=tint => Tint
+// plugin://pinmame/getstate?src=display&id=0&x=0&y=0 => Intensity/Color of the top left dot of the first display
+BaseTexture *Flasher::GetLinkedTexture(const string &link, const IEditable *context)
+{
+   if (link.empty())
+      return nullptr;
+
+   auto uri = uri::parse_uri(link);
+   if (uri.error != uri::Error::None)
+      return nullptr;
+
+   if (uri.scheme == "script")
+   {
+      if (context == nullptr)
+         return nullptr;
+      if ((context->GetItemType() == ItemTypeEnum::eItemFlasher) && (uri.authority.host == "dmd"))
+      {
+         const Flasher *flasher = reinterpret_cast<const Flasher *>(context);
+         return flasher->m_dmdFrame != nullptr ? flasher->m_dmdFrame : g_pplayer->m_dmdFrame;
+      }
+      if ((context->GetItemType() == ItemTypeEnum::eItemTable) && (uri.authority.host == "dmd"))
+         return g_pplayer->m_dmdFrame;
+   }
+   else if (uri.scheme == "plugin")
+   {
+      unsigned int endpointId = 0;
+      if (uri.authority.host == "pinmame") // Hack while migrating to PinMame plugin
+         endpointId = VPXPluginAPIImpl::GetInstance().GetPinMameEndPointId();
+      else
+      {
+         auto plugin = MsgPluginManager::GetInstance().GetPlugin(uri.authority.host);
+         if (plugin.get())
+            endpointId = plugin->m_endpointId;
+      }
+      if ((endpointId != 0) 
+         && (uri.path == "/getstate") 
+         && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
+         && (uri.query.at("src") == "display"))
+      {
+         int displayId = 0;
+         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
+            try { displayId = std::stoi(uri.query.at("id")); } catch (...) { };
+         return g_pplayer->GetControllerDisplay((endpointId << 16) | (displayId)).frame;
+      }
+   }
+   return nullptr;
+}
+
 void Flasher::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
@@ -1255,7 +1310,9 @@ void Flasher::Render(const unsigned int renderMask)
    m_rd->ResetRenderState();
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
-   const vec4 color = convertColor(m_d.m_color, (float)alpha*m_d.m_intensity_scale / 100.0f);
+   Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+   const vec4 color = convertColor(m_d.m_color, (float)alpha * m_d.m_intensity_scale / 100.0f);
+   const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
    switch (m_d.m_renderMode)
    {
       case FlasherData::FLASHER:
@@ -1306,11 +1363,8 @@ void Flasher::Render(const unsigned int renderMask)
          else
             flasherMode = 2.f;
 
-         const vec4 flasherData2((float)m_d.m_filterAmount / 100.0f,
-            min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f), // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
-            flasherMode, 0.f);
          m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, &flasherData);
-         m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, &flasherData2);
+         m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, static_cast<float>(m_d.m_filterAmount) / 100.0f, clampedModulateVsAdd, flasherMode, 0.f);
 
          // Check if this flasher is used as a lightmap and should be convoluted with the light shadows
          if (m_lightmap != nullptr && m_lightmap->m_d.m_shadows == ShadowMode::RAYTRACED_BALL_SHADOWS)
@@ -1322,7 +1376,6 @@ void Flasher::Render(const unsigned int renderMask)
          m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
          m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
 
-         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
          m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
 
          m_rd->m_flasherShader->SetVector(SHADER_lightCenter_doShadow, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -1331,76 +1384,79 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DMD:
       {
+         BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
+         if (frame == nullptr)
+            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay(-1).frame;
+         if (frame == nullptr)
+            return;
          if (m_d.m_modulate_vs_add < 1.f)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-
-         BaseTexture *dmdFrame = nullptr;
-         if (!m_d.m_imageSrcLink.empty())
-         {
-            // TODO Parse only on Setup or when changed
-            // script://dmd
-            // plugin://pinmame/getstate?src=display&id=1 => DMD bitmap
-            // plugin://pinmame/getstate?src=display&id=2 => Display bitmap
-		      // plugin://pinmame/getstate?src=alpha&id=1 => Alphanum state
-		      // plugin://pinmame/getstate?src=lamp&id=2&value=brightness => Intensity
-		      // plugin://pinmame/getstate?src=lamp&id=2&value=tint => Tint
-            auto uri = uri::parse_uri(m_d.m_imageSrcLink);
-            if (uri.error == uri::Error::None)
-            {
-               if (uri.scheme == "script")
-               {
-                  // Useless as this is the default, but still this is what is expected here
-                  if (uri.authority.host == "dmd")
-                     dmdFrame = m_dmdFrame;
-               }
-               else if (uri.scheme == "plugin")
-               {
-                  unsigned int endpointId = 0;
-                  if (uri.authority.host == "pinmame") // Hack while migrating to PinMame plugin
-                     endpointId = VPXPluginAPIImpl::GetInstance().GetPinMameEndPointId();
-                  else
-                  {
-                     auto plugin = MsgPluginManager::GetInstance().GetPlugin(uri.authority.host);
-                     if (plugin.get())
-                        endpointId = plugin->m_endpointId;
-                  }
-                  if ((endpointId != 0)
-                   && (uri.path == "/getstate") 
-                   && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end()) && (uri.query.at("src") == "dmd"))
-                  {
-                     int dmdId = 0;
-                     if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
-                        try { dmdId = std::stoi(uri.query.at("id")); } catch (...) {};
-                     Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay((endpointId << 16) | (dmdId));
-                     dmdFrame = dmd.frame;
-                  }
-               }
-            }
-         }
-         if (dmdFrame == nullptr)
-         {
-            if (m_dmdFrame)
-            {
-               dmdFrame = m_dmdFrame;
-            }
-            else
-            {
-               Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
-               dmdFrame = dmd.frame;
-            }
-         }
-         if (dmdFrame == nullptr)
-            return;
-         const vec4 dotTint = dmdFrame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
+         const vec4 dotTint = frame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, dmdFrame, m_d.m_modulate_vs_add, false);
-
-         Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, frame, m_d.m_modulate_vs_add, false);
          // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
-         // There we shift the depthbias to reproduce this behavior.
+         // There we shift the depthbias to reproduce this behavior for backward compatibility.
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         break;
+      }
+
+      case FlasherData::DISPLAY:
+      {
+         BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
+         if (frame == nullptr)
+            return;
+         if (m_d.m_modulate_vs_add < 1.f)
+            m_rd->EnableAlphaBlend(m_d.m_addBlend);
+         else
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         const int displayProfile = clamp(m_d.m_renderStyle, 0, 1);  // 4);
+         switch (displayProfile)
+         {
+         case 0: // Pixelated
+            // FIXME BGFX: if the same texture is used multiple times in the same frame with different clamp/filter then only one is applied (may happen here if a DMD window is also enabled with the same texture source)
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_POINT);
+            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+            m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
+            m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
+            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
+            m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
+            m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
+            break;
+         case 1: // Smoothed
+            m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_TRILINEAR);
+            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+            m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
+            m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
+            m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+            m_rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+            m_rd->SetRenderState(RenderState::DESTBLEND, m_d.m_addBlend ? RenderState::INVSRC_COLOR : RenderState::INVSRC_ALPHA);
+            m_rd->SetRenderState(RenderState::BLENDOP, m_d.m_addBlend ? RenderState::BLENDOP_REVSUBTRACT : RenderState::BLENDOP_ADD);
+            m_rd->m_flasherShader->SetTechnique(SHADER_TECHNIQUE_basic_noLight);
+            break;
+         case 2: // ScaleFX
+            assert(false); // Not yet implemented
+            break;
+         case 3: // Vertical CRT
+            assert(false); // Not yet implemented
+            break;
+         case 4: // Horizontal CRT
+            assert(false); // Not yet implemented
+            break;
+         }
+         // We also apply the depth bias shift, not for backward compatibility (as display did not exist before 10.8.1) but for consistency between DMD and Display mode
+         m_rd->DrawMesh(m_rd->m_flasherShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
+         break;
+      }
+
+      case FlasherData::ALPHASEG:
+      {
+         // Not yet implemented
          break;
       }
    }

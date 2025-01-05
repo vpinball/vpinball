@@ -178,6 +178,8 @@ private:
 
    Light *m_lightmap = nullptr;
 
+   static BaseTexture *GetLinkedTexture(const string& link, const IEditable* context = nullptr);
+
    // IFlasher
 public:
    STDMETHOD(get_ImageA)(/*[out, retval]*/ BSTR *pVal);
