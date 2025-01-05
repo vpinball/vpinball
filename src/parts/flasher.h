@@ -65,7 +65,7 @@ public:
    Flasher();
    virtual ~Flasher();
 
-   STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 1)
+   STANDARD_EDITABLE_DECLARES(Flasher, eItemFlasher, FLASHER, 3)
 
    BEGIN_COM_MAP(Flasher)
       COM_INTERFACE_ENTRY(IFlasher)
@@ -112,9 +112,7 @@ protected:
    RenderDevice *m_rd = nullptr;
 
 public:
-#ifdef __STANDALONE__
-   void UpdatePoint(int index, int x, int y);
-#endif
+   void UpdatePoint(int index, float x, float y);
 
    float GetDepth(const Vertex3Ds& viewDir) const final
    {

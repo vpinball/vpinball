@@ -383,15 +383,13 @@ void Flasher::AddPoint(int x, int y, const bool smooth)
       STOPUNDO
 }
 
-#ifdef __STANDALONE__
-void Flasher::UpdatePoint(int index, int x, int y)
+void Flasher::UpdatePoint(int index, float x, float y)
 {
      CComObject<DragPoint> *pdp = m_vdpoint[index];
      pdp->m_v.x = x;
      pdp->m_v.y = y;
 
 }
-#endif
 
 HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
 {
@@ -1327,7 +1325,7 @@ void Flasher::Render(const unsigned int renderMask)
    m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    Vertex3Ds pos(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height);
-   const vec4 color = convertColor(m_d.m_color, (float)alpha * m_d.m_intensity_scale / 100.0f);
+   const vec4 color = convertColor(m_d.m_color, static_cast<float>(alpha) * m_d.m_intensity_scale / 100.0f);
    const float clampedModulateVsAdd = min(max(m_d.m_modulate_vs_add, 0.00001f), 0.9999f); // avoid 0, as it disables the blend and avoid 1 as it looks not good with day->night changes
    switch (m_d.m_renderMode)
    {
@@ -1441,7 +1439,7 @@ void Flasher::Render(const unsigned int renderMask)
          case 0: // Pixelated
             // FIXME BGFX: if the same texture is used multiple times in the same frame with different clamp/filter then only one is applied (may happen here if a DMD window is also enabled with the same texture source)
             m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_POINT);
-            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
             m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
@@ -1453,7 +1451,7 @@ void Flasher::Render(const unsigned int renderMask)
             break;
          case 1: // Smoothed
             m_rd->m_flasherShader->SetTexture(SHADER_tex_flasher_A, frame, SF_TRILINEAR);
-            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, &color);
+            m_rd->m_flasherShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, 1.f);
             m_rd->m_flasherShader->SetVector(SHADER_alphaTestValueAB_filterMode_addBlend, -1.f, -1.f, 0.f, m_d.m_addBlend ? 1.f : 0.f);
             m_rd->m_flasherShader->SetVector(SHADER_amount_blend_modulate_vs_add_flasherMode, 0.f, clampedModulateVsAdd, 0.f, 0.f);
             m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);

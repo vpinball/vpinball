@@ -104,7 +104,8 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
 
            //::ShowWindow(GetDlgItem(IDC_STATIC22), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
            //::ShowWindow(GetDlgItem(IDC_STATIC7), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
-           m_opacityAmountEdit.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
+           GetDlgItem(IDC_STATIC7).SetWindowText(mode == FlasherData::FLASHER ? "Opacity" : "Brightness");
+           //m_opacityAmountEdit.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
            //::ShowWindow(GetDlgItem(IDC_STATIC8), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
            //::ShowWindow(GetDlgItem(IDC_STATIC19), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
            m_lightmapCombo.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
