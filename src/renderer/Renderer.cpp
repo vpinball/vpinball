@@ -1230,7 +1230,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
          m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
       #endif
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd, SF_NONE, SA_CLAMP, SA_CLAMP, true);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
    }
    // New DMD renderer
    else
@@ -1254,7 +1254,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
             assert(false); // Slot overflow
             return;
          }
-         Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, true);
+         Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
          if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != dmdSampler->GetWidth() || m_dmdBlurs[slot][0]->GetHeight() != dmdSampler->GetHeight())
          {
             for (int i = 0; i < 4; i++)

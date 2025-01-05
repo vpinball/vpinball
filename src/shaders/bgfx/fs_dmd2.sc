@@ -43,8 +43,8 @@ float udRoundBox(vec2 p, float b, float r)
 // Apply dot tint and brightness scale
 vec3 convertDmdToColor(vec3 samp)
 {
-	if (coloredDMD) // sRGB data
-		return InvGamma(samp.rgb) * dotColor;
+	if (coloredDMD) // RGB data (eventually sRGB but this is handled by the hardware)
+		return samp.rgb * dotColor;
 	else // linear brightness data
 		return samp.r * dotColor;
 }

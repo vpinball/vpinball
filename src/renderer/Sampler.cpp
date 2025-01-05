@@ -298,7 +298,10 @@ void Sampler::Unbind()
 void Sampler::UpdateTexture(BaseTexture* const surf, const bool force_linear_rgb)
 {
 #if defined(ENABLE_BGFX)
-   assert(force_linear_rgb == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
+   #ifdef DEBUG
+   bool linear = ((surf->m_format == BaseTexture::SRGBA) || (surf->m_format == BaseTexture::SRGB)) ? force_linear_rgb : true;
+   assert(linear == m_isLinear); // TODO BGFX we could support changing the linearRGB flag but is this really useful ?
+   #endif
    const std::lock_guard<std::mutex> lock(m_textureUpdateMutex);
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
