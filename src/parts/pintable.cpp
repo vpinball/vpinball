@@ -3993,7 +3993,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             PLOGI << "LoadData loaded"; // For profiling
 
             const int ctotalitems = csubobj + csounds + ctextures + cfonts;
-            int cloadeditems = 0;
             feedback.AboutToProcessTable(ctotalitems);
 
             for (int i = 0; i < csubobj; i++)
@@ -4021,7 +4020,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
 
                   //hr = piedit->InitPostLoad();
                }
-               cloadeditems++;
 #ifdef __LIBVPINBALL__
                VPinballLib::ProgressData progressData = { (i * 100) / csubobj };
                VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingItems, &progressData);
@@ -4043,7 +4041,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
 #ifdef __LIBVPINBALL__
                VPinballLib::ProgressData progressData = { (i * 100) / csounds };
                VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingSounds, &progressData);
@@ -4085,7 +4082,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                      pstmItem = nullptr;
                      return hr;
                   });
-                  cloadeditems++;
                }
                pool.wait_until_nothing_in_flight();
             }
@@ -4172,7 +4168,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
 #ifdef __LIBVPINBALL__
                VPinballLib::ProgressData progressData = { (i * 100) / cfonts };
                VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingFonts, &progressData);
@@ -4199,7 +4194,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-               cloadeditems++;
 #ifdef __LIBVPINBALL__
                VPinballLib::ProgressData progressData = { (i * 100) / ccollection };
                VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingCollections, &progressData);
