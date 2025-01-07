@@ -866,7 +866,7 @@ SERUM_API Serum_Frame_Struc* Serum_Load(const char* const altcolorpath, const ch
 	mySerum.modifiedelements64 = NULL;
 
 	std::string pathbuf = std::string(altcolorpath);
-	if (pathbuf.back() != '\\' && pathbuf.back() != '/')
+	if (pathbuf.empty() || (pathbuf.back() != '\\' && pathbuf.back() != '/'))
 		pathbuf += '/';
 	pathbuf += romname;
 	pathbuf += '/';
