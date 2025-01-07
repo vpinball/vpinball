@@ -18,6 +18,12 @@ VPXLoadFileProgressBar::~VPXLoadFileProgressBar()
 
 void VPXLoadFileProgressBar::OperationStarted()
 {
+   const LocalString loadingText(IDS_LOADING);
+   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (size_t)loadingText.m_szbuffer);
+
+   const HCURSOR cursor = ::LoadCursor(nullptr, IDC_WAIT);
+   ::SetCursor(cursor);
+
    if (m_progressBar != nullptr) {
       return;
    }
@@ -95,6 +101,11 @@ void VPXLoadFileProgressBar::CollectionHasBeenProcessed(int collectionCount, int
 
 void VPXLoadFileProgressBar::Done()
 {
+   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (size_t)L"");
+
+   const HCURSOR cursor = ::LoadCursor(nullptr, IDC_ARROW);
+   ::SetCursor(cursor);
+
    if (m_progressBar == nullptr) {
       return;
    }

@@ -3885,11 +3885,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
       return hr;
    }
 
-#ifndef __STANDALONE__
-   const LocalString ls(IDS_LOADING);
-   m_vpinball->SetActionCur(ls.m_szbuffer);
-   m_vpinball->SetCursorCur(nullptr, IDC_WAIT);
-#endif
    feedback.OperationStarted();
 
    HCRYPTPROV hcp = NULL;
@@ -3948,7 +3943,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             {
                pstmGame->Release();
                pstgData->Release();
-               m_vpinball->SetActionCur(string());
                ShowError("Tables from Tech Beta 3 and below are not supported in this version.");
                feedback.Done();
                return E_FAIL;
@@ -4418,8 +4412,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
    feedback.Done();
 
    pstgRoot->Release();
-
-   m_vpinball->SetActionCur(string());
 
 #ifndef __STANDALONE__
    m_vpinball->GetLayersListDialog()->ClearList();
