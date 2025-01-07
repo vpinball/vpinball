@@ -435,7 +435,10 @@
     <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VPXFileProgressBar.cpp">
+    <ClCompile Include="src/ui/dialogs/VPXLoadFileProgressBar.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="src/ui/dialogs/VPXSaveFileProgressBar.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
     <ClCompile Include="src/ui/properties/PropertyDialog.cpp">
@@ -1154,7 +1157,10 @@
     <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VPXFileProgressBar.h">
+    <ClInclude Include="src/ui/dialogs/VPXLoadFileProgressBar.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/VPXSaveFileProgressBar.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/properties/PropertyDialog.h">
