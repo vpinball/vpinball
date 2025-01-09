@@ -14,7 +14,7 @@
 #ifdef ENABLE_SDL_INPUT //!! test
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
-//#define ENABLE_SDL_GAMECONTROLLER //!! test
+//#define ENABLE_SDL_GAMEPAD //!! test
 #endif
 
 #ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet
@@ -272,9 +272,9 @@ private:
 #endif
 
 #ifdef ENABLE_SDL_INPUT
-   #ifdef ENABLE_SDL_GAMECONTROLLER
+   #ifdef ENABLE_SDL_GAMEPAD
       SDL_Gamepad* m_pSDLGamePad = nullptr;
-      void RefreshSDLGameController();
+      void RefreshSDLGamepad();
    #else
       SDL_Joystick* m_pSDLJoystick = nullptr;
       SDL_Haptic* m_pSDLRumbleDevice = nullptr;

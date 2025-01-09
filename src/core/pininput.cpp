@@ -139,7 +139,7 @@ PinInput::PinInput()
    m_ud_axis = 2;
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
+#ifdef ENABLE_SDL_GAMEPAD
    m_joylflipkey = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1;
    m_joyrflipkey = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1;
    m_joylmagnasave = SDL_GAMEPAD_BUTTON_LEFT_STICK + 1;
@@ -166,7 +166,7 @@ PinInput::PinInput()
 PinInput::~PinInput()
 {
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
+#ifdef ENABLE_SDL_GAMEPAD
    if (m_pSDLGamePad)
       SDL_CloseGamepad(m_pSDLGamePad);
 #else
@@ -262,8 +262,8 @@ void PinInput::LoadSettings(const Settings& settings)
 }
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
-void PinInput::RefreshSDLGameController()
+#ifdef ENABLE_SDL_GAMEPAD
+void PinInput::RefreshSDLGamepad()
 {
    if (m_pSDLGamePad) {
       SDL_CloseGamepad(m_pSDLGamePad);
@@ -804,10 +804,10 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
          break;
       #endif
 
-      #ifdef ENABLE_SDL_GAMECONTROLLER
+      #ifdef ENABLE_SDL_GAMEPAD
       case SDL_EVENT_GAMEPAD_ADDED:
       case SDL_EVENT_GAMEPAD_REMOVED:
-         RefreshSDLGameController();
+         RefreshSDLGamepad();
          break;
       case SDL_EVENT_GAMEPAD_AXIS_MOTION:
          if (e.gaxis.axis < 6) {
@@ -897,7 +897,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    case PI_SDL: //SDL
    {
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
+#ifdef ENABLE_SDL_GAMEPAD
       SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
       if (m_pSDLGamePad && SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false))
          SDL_RumbleGamepad(m_pSDLGamePad, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
@@ -935,7 +935,7 @@ void PinInput::Init()
 #endif
 
    #if defined(ENABLE_SDL_INPUT)
-      #ifdef ENABLE_SDL_GAMECONTROLLER
+      #ifdef ENABLE_SDL_GAMEPAD
          SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
          string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
          if (!std::filesystem::exists(path))
@@ -1027,8 +1027,8 @@ void PinInput::Init()
       break;
    case PI_SDL:
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMECONTROLLER
-      RefreshSDLGameController();
+#ifdef ENABLE_SDL_GAMEPAD
+      RefreshSDLGamepad();
 #else
       RefreshSDLJoystick();
 #endif
