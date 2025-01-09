@@ -732,13 +732,13 @@ STDMETHODIMP Flasher::put_Filter(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Opacity(long *pVal)
+STDMETHODIMP Flasher::get_Opacity(LONG *pVal)
 {
    *pVal = m_d.m_alpha;
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Opacity(long newVal)
+STDMETHODIMP Flasher::put_Opacity(LONG newVal)
 {
    SetAlpha(newVal);
    return S_OK;
@@ -768,13 +768,13 @@ STDMETHODIMP Flasher::put_ModulateVsAdd(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP Flasher::get_Amount(long *pVal)
+STDMETHODIMP Flasher::get_Amount(LONG *pVal)
 {
    *pVal = m_d.m_filterAmount;
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_Amount(long newVal)
+STDMETHODIMP Flasher::put_Amount(LONG newVal)
 {
    SetFilterAmount(newVal);
    return S_OK;
@@ -925,7 +925,7 @@ STDMETHODIMP Flasher::put_DMDColoredPixels(VARIANT pVal) //!! assumes VT_UI4 as 
    return S_OK;
 }
 
-STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
+STDMETHODIMP Flasher::put_VideoCapWidth(LONG cWidth)
 {
     if (m_videoCapWidth != cWidth) ResetVideoCap(); //resets capture
     m_videoCapWidth = cWidth;
@@ -933,7 +933,7 @@ STDMETHODIMP Flasher::put_VideoCapWidth(long cWidth)
     return S_OK;
 }
 
-STDMETHODIMP Flasher::put_VideoCapHeight(long cHeight)
+STDMETHODIMP Flasher::put_VideoCapHeight(LONG cHeight)
 {
     if (m_videoCapHeight != cHeight) ResetVideoCap(); //resets capture
     m_videoCapHeight = cHeight;

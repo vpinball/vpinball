@@ -85,8 +85,8 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // ITimer
-   STDMETHOD(get_Interval)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Interval)(/*[in]*/ long newVal);
+   STDMETHOD(get_Interval)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Interval)(/*[in]*/ LONG newVal);
    STDMETHOD(get_Enabled)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Enabled)(/*[in]*/ VARIANT_BOOL newVal);
 

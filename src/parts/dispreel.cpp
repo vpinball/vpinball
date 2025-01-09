@@ -775,13 +775,13 @@ STDMETHODIMP DispReel::put_Range(float newVal)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::get_UpdateInterval(long *pVal)
+STDMETHODIMP DispReel::get_UpdateInterval(LONG *pVal)
 {
    *pVal = GetUpdateInterval();
    return S_OK;
 }
 
-STDMETHODIMP DispReel::put_UpdateInterval(long newVal)
+STDMETHODIMP DispReel::put_UpdateInterval(LONG newVal)
 {
    SetUpdateInterval((int)newVal);
    if (g_pplayer)
@@ -814,19 +814,19 @@ STDMETHODIMP DispReel::put_Visible(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::get_ImagesPerGridRow(long *pVal)
+STDMETHODIMP DispReel::get_ImagesPerGridRow(LONG *pVal)
 {
    *pVal = GetImagesPerGridRow();
    return S_OK;
 }
 
-STDMETHODIMP DispReel::put_ImagesPerGridRow(long newVal)
+STDMETHODIMP DispReel::put_ImagesPerGridRow(LONG newVal)
 {
    SetImagesPerGridRow((int)newVal);
    return S_OK;
 }
 
-STDMETHODIMP DispReel::AddValue(long Value)
+STDMETHODIMP DispReel::AddValue(LONG Value)
 {
    const bool bNegative = (Value < 0);
 
@@ -856,7 +856,7 @@ STDMETHODIMP DispReel::AddValue(long Value)
    return S_OK;
 }
 
-STDMETHODIMP DispReel::SetValue(long Value)
+STDMETHODIMP DispReel::SetValue(LONG Value)
 {
    // ensure a positive number
    long val = labs(Value);
@@ -915,7 +915,7 @@ STDMETHODIMP DispReel::ResetToZero()
    return S_OK;
 }
 
-STDMETHODIMP DispReel::SpinReel(long ReelNumber, long PulseCount)
+STDMETHODIMP DispReel::SpinReel(LONG ReelNumber, LONG PulseCount)
 {
    if ((ReelNumber >= 1) && (ReelNumber <= m_d.m_reelcount))
    {

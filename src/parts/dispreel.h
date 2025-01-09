@@ -207,17 +207,17 @@ public:
    STDMETHOD(put_Steps)(/*[in]*/ float newVal);
    STDMETHOD(get_Range)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_Range)(/*[in]*/ float newVal);
-   STDMETHOD(get_UpdateInterval)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_UpdateInterval)(/*[in]*/ long newVal);
+   STDMETHOD(get_UpdateInterval)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_UpdateInterval)(/*[in]*/ LONG newVal);
    STDMETHOD(get_UseImageGrid)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_UseImageGrid)(/*[in]*/ VARIANT_BOOL newVal);
-   STDMETHOD(get_ImagesPerGridRow)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_ImagesPerGridRow)(/*[in]*/ long newVal);
+   STDMETHOD(get_ImagesPerGridRow)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_ImagesPerGridRow)(/*[in]*/ LONG newVal);
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
    // methods
    STDMETHOD(ResetToZero)();
-   STDMETHOD(AddValue)(/*[in]*/ long Value);
-   STDMETHOD(SetValue)(/*[in]*/ long Value);
-   STDMETHOD(SpinReel)(/*[in]*/ long ReelNumber, /*[in]*/ long PulseCount);
+   STDMETHOD(AddValue)(/*[in]*/ LONG Value);
+   STDMETHOD(SetValue)(/*[in]*/ LONG Value);
+   STDMETHOD(SpinReel)(/*[in]*/ LONG ReelNumber, /*[in]*/ LONG PulseCount);
 };

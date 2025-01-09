@@ -152,7 +152,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeTiltStatus(VARIANT *XPlumb, VARIANT *YPlumb
 	return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
+STDMETHODIMP ScriptGlobalTable::PlaySound(BSTR bstr, LONG LoopCount, float volume, float pan, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade)
 {
    if (g_pplayer && g_pplayer->m_PlaySound)
       m_pt->PlaySound(bstr, LoopCount, volume, pan, randompitch, pitch, usesame, restart, front_rear_fade);
@@ -224,103 +224,103 @@ STDMETHODIMP ScriptGlobalTable::get_Name(BSTR *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_LeftFlipperKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftFlipperKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_RightFlipperKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightFlipperKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_StagedLeftFlipperKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_StagedRightFlipperKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_LeftTiltKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftTiltKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_RightTiltKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightTiltKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_CenterTiltKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eCenterTiltKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_PlungerKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_PlungerKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[ePlungerKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_StartGameKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_StartGameKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eStartGameKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_AddCreditKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eAddCreditKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_AddCreditKey2(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eAddCreditKey2];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_MechanicalTilt(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eMechanicalTilt];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_LeftMagnaSave(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLeftMagnaSave];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_RightMagnaSave(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eRightMagnaSave];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_ExitGame(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_ExitGame(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eExitGame];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_LockbarKey(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_LockbarKey(LONG *pVal)
 {
    *pVal = g_pplayer->m_rgKeys[eLockbarKey];
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(long index, long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_JoyCustomKey(LONG index, LONG *pVal)
 {
    switch (index)
    {
@@ -399,7 +399,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
    return false;
 }
 
-STDMETHODIMP ScriptGlobalTable::GetCustomParam(long index, BSTR *param)
+STDMETHODIMP ScriptGlobalTable::GetCustomParam(LONG index, BSTR *param)
 {
    if (index <= 0 || index > MAX_CUSTOM_PARAM_INDEX)
       return E_FAIL;
@@ -581,7 +581,7 @@ STDMETHODIMP ScriptGlobalTable::put_ShowCursor(VARIANT_BOOL enable)
 #ifdef _WIN64
 STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(SIZE_T *pVal)
 #else
-STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_GetPlayerHWnd(LONG *pVal)
 #endif
 {
    if (!g_pplayer)
@@ -803,7 +803,7 @@ STDMETHODIMP ScriptGlobalTable::get_ActiveBall(IBall **pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_FrameIndex(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_FrameIndex(LONG *pVal)
 {
    if (!g_pplayer)
       return E_POINTER;
@@ -812,7 +812,7 @@ STDMETHODIMP ScriptGlobalTable::get_FrameIndex(long *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_GameTime(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_GameTime(LONG *pVal)
 {
    if (!g_pplayer)
       return E_POINTER;
@@ -830,7 +830,7 @@ STDMETHODIMP ScriptGlobalTable::get_PreciseGameTime(double *pVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::get_SystemTime(long *pVal)
+STDMETHODIMP ScriptGlobalTable::get_SystemTime(LONG *pVal)
 {
    if (!g_pplayer)
       return E_POINTER;
@@ -9926,7 +9926,7 @@ STDMETHODIMP PinTable::put_EnvironmentImage(BSTR newVal)
 }
 
 // deprecated
-STDMETHODIMP PinTable::get_YieldTime(long *pVal)
+STDMETHODIMP PinTable::get_YieldTime(LONG *pVal)
 {
    if (!g_pplayer)
    {
@@ -9940,7 +9940,7 @@ STDMETHODIMP PinTable::get_YieldTime(long *pVal)
 }
 
 // deprecated
-STDMETHODIMP PinTable::put_YieldTime(long newVal)
+STDMETHODIMP PinTable::put_YieldTime(LONG newVal)
 {
    if (!g_pplayer)
       return E_FAIL;

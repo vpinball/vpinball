@@ -1321,13 +1321,13 @@ STDMETHODIMP Light::put_BlinkPattern(BSTR newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_BlinkInterval(long *pVal)
+STDMETHODIMP Light::get_BlinkInterval(LONG *pVal)
 {
    *pVal = m_d.m_blinkinterval;
    return S_OK;
 }
 
-STDMETHODIMP Light::put_BlinkInterval(long newVal)
+STDMETHODIMP Light::put_BlinkInterval(LONG newVal)
 {
    m_d.m_blinkinterval = newVal;
    if (g_pplayer)
@@ -1337,7 +1337,7 @@ STDMETHODIMP Light::put_BlinkInterval(long newVal)
 }
 
 
-STDMETHODIMP Light::Duration(float startState, long newVal, float endState)
+STDMETHODIMP Light::Duration(float startState, LONG newVal, float endState)
 {
     m_inPlayState = clampLightState(startState);
     m_duration = newVal;
@@ -1533,25 +1533,25 @@ STDMETHODIMP Light::put_ShowReflectionOnBall(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Light::get_Shadows(long *pVal)
+STDMETHODIMP Light::get_Shadows(LONG *pVal)
 {
    *pVal = (long)m_d.m_shadows;
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Shadows(long newVal)
+STDMETHODIMP Light::put_Shadows(LONG newVal)
 {
    m_d.m_shadows = (ShadowMode)newVal;
    return S_OK;
 }
 
-STDMETHODIMP Light::get_Fader(long *pVal)
+STDMETHODIMP Light::get_Fader(LONG *pVal)
 {
    *pVal = (long)m_d.m_fader;
    return S_OK;
 }
 
-STDMETHODIMP Light::put_Fader(long newVal)
+STDMETHODIMP Light::put_Fader(LONG newVal)
 {
    m_d.m_fader = (Fader)newVal;
    return S_OK;

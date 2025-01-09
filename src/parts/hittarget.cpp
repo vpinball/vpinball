@@ -1334,13 +1334,13 @@ STDMETHODIMP HitTarget::get_HitThreshold(float *pVal)
    return S_OK;
 }
 
-STDMETHODIMP HitTarget::get_RaiseDelay(long *pVal)
+STDMETHODIMP HitTarget::get_RaiseDelay(LONG *pVal)
 {
     *pVal = m_d.m_raiseDelay;
     return S_OK;
 }
 
-STDMETHODIMP HitTarget::put_RaiseDelay(long newVal)
+STDMETHODIMP HitTarget::put_RaiseDelay(LONG newVal)
 {
     m_d.m_raiseDelay = newVal;
     return S_OK;

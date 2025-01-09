@@ -22,9 +22,6 @@
 #include <limits.h>
 #include <assert.h>
 #include <wchar.h>
-#if defined(__STANDALONE__)
-#include <wctype.h>
-#endif
 
 #include "windef.h"
 #include "winbase.h"

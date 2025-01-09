@@ -147,8 +147,8 @@ public:
    STDMETHOD(put_LegacyMode)(/*[in]*/ VARIANT_BOOL newVal);
    STDMETHOD(get_DrawStyle)(/*[out, retval]*/ TargetType *pVal);
    STDMETHOD(put_DrawStyle)(/*[in]*/ TargetType newVal);
-   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_RaiseDelay)(/*[in]*/ long newVal);
+   STDMETHOD(get_RaiseDelay)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_RaiseDelay)(/*[in]*/ LONG newVal);
    STDMETHOD(get_PhysicsMaterial)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_PhysicsMaterial)(/*[in]*/ BSTR newVal);
    STDMETHOD(get_OverwritePhysics)(/*[out, retval]*/ VARIANT_BOOL *pVal);

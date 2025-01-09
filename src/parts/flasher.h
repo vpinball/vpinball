@@ -198,8 +198,8 @@ public:
    STDMETHOD(put_RotY)(/*[in]*/ float newVal);
    STDMETHOD(get_RotZ)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_RotZ)(/*[in]*/ float newVal);
-   STDMETHOD(get_Opacity)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Opacity)(/*[in]*/ long newVal);
+   STDMETHOD(get_Opacity)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Opacity)(/*[in]*/ LONG newVal);
    STDMETHOD(get_IntensityScale)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_IntensityScale)(/*[in]*/ float newVal);
    STDMETHOD(get_ModulateVsAdd)(/*[out, retval]*/ float *pVal);
@@ -218,8 +218,8 @@ public:
    STDMETHOD(put_DMDPixels)(/*[in]*/ VARIANT pVal);
    STDMETHOD(put_DMDColoredPixels)(/*[in]*/ VARIANT pVal);
 
-   STDMETHOD(put_VideoCapWidth)(/*[in]*/ long cWidth);
-   STDMETHOD(put_VideoCapHeight)(/*[in]*/ long cHeight);
+   STDMETHOD(put_VideoCapWidth)(/*[in]*/ LONG cWidth);
+   STDMETHOD(put_VideoCapHeight)(/*[in]*/ LONG cHeight);
    STDMETHOD(put_VideoCapUpdate)(/*[in]*/ BSTR cWinTitle);
 
    STDMETHOD(get_DepthBias)(/*[out, retval]*/ float *pVal);
@@ -228,6 +228,6 @@ public:
    STDMETHOD(put_ImageAlignment)(/*[in]*/ RampImageAlignment newVal);
    STDMETHOD(get_Filter)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_Filter)(/*[in]*/ BSTR newVal);
-   STDMETHOD(get_Amount)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_Amount)(/*[in]*/ long newVal);
+   STDMETHOD(get_Amount)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_Amount)(/*[in]*/ LONG newVal);
 };

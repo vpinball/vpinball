@@ -4123,13 +4123,13 @@ bool Collection::LoadToken(const int id, BiffReader * const pbr)
    return true;
 }
 
-STDMETHODIMP Collection::get_Count(long __RPC_FAR *plCount)
+STDMETHODIMP Collection::get_Count(LONG __RPC_FAR *plCount)
 {
    *plCount = m_visel.size();
    return S_OK;
 }
 
-STDMETHODIMP Collection::get_Item(long index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp)
+STDMETHODIMP Collection::get_Item(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp)
 {
    if (index < 0 || index >= m_visel.size())
       return TYPE_E_OUTOFBOUNDS;
