@@ -275,11 +275,11 @@ void PinInput::RefreshSDLGameController()
    SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
    if(joystick_count > 0) {
       for (int idx = 0; idx < joystick_count; ++idx) {
-         if (SDL_IsGamepad(idx)) {
+         if (SDL_IsGamepad(joystick_ids[idx])) {
 #if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
             if (!lstrcmpi(SDL_GetGamepadNameForID(idx), "Remote")) continue;
 #endif
-            m_pSDLGamePad = SDL_OpenGamepad(idx);
+            m_pSDLGamePad = SDL_OpenGamepad(joystick_ids[idx]);
             if (m_pSDLGamePad) {
                m_num_joy = 1;
                SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
