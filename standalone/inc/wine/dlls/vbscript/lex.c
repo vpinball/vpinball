@@ -19,9 +19,6 @@
 #include <assert.h>
 #include <limits.h>
 #include <math.h>
-#if defined(__STANDALONE__)
-#include <wctype.h>
-#endif
 
 #include "vbscript.h"
 #include "parse.h"

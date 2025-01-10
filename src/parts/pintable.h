@@ -95,9 +95,9 @@ public:
    STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
    // deprecated
-   STDMETHOD(get_YieldTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_YieldTime)(/*[out, retval]*/ LONG *pVal);
    // deprecated
-   STDMETHOD(put_YieldTime)(/*[in]*/ long newVal);
+   STDMETHOD(put_YieldTime)(/*[in]*/ LONG newVal);
    STDMETHOD(get_BallImage)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallImage)(/*[in]*/ BSTR newVal);
 
@@ -886,14 +886,14 @@ public:
    STDMETHOD(EndModal)();
    STDMETHOD(BeginModal)();
    STDMETHOD(GetTextFile)(BSTR FileName, /*[out, retval]*/ BSTR *pContents);
-   STDMETHOD(GetCustomParam)(/*[in]*/ long index, /*[out, retval]*/ BSTR *param);
+   STDMETHOD(GetCustomParam)(/*[in]*/ LONG index, /*[out, retval]*/ BSTR *param);
    STDMETHOD(get_Setting)(BSTR Section, BSTR SettingName, /*[out, retval]*/ BSTR *param);
-   STDMETHOD(get_FrameIndex)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_GameTime)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_FrameIndex)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_GameTime)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_PreciseGameTime)(/*[out, retval]*/ double *pVal);
-   STDMETHOD(get_SystemTime)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_SystemTime)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_AddCreditKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_AddCreditKey2)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(get_ActiveBall)(/*[out, retval]*/ IBall **pVal);
    STDMETHOD(LoadValue)(BSTR TableName, BSTR ValueName, /*[out, retval]*/ VARIANT *Value);
    STDMETHOD(SaveValue)(BSTR TableName, BSTR ValueName, VARIANT Value);
@@ -902,7 +902,7 @@ public:
 #ifdef _WIN64
    STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ SIZE_T *pVal);
 #else
-   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_GetPlayerHWnd)(/*[out, retval]*/ LONG *pVal);
 #endif
    STDMETHOD(get_UserDirectory)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_TablesDirectory)(/*[out, retval]*/ BSTR *pVal);
@@ -912,18 +912,18 @@ public:
    STDMETHOD(get_PlatformCPU)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(get_PlatformBits)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_ShowCursor)(/*[in]*/ VARIANT_BOOL enable);
-   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_StartGameKey)(/*[out, retval]*/ LONG *pVal);
    STDMETHOD(PlayMusic)(BSTR str, float volume);
    STDMETHOD(put_MusicVolume)(float volume);
    STDMETHOD(EndMusic)();
-   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ long *pVal);
+   STDMETHOD(get_PlungerKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_CenterTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftTiltKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedRightFlipperKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_StagedLeftFlipperKey)(/*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(put_DMDWidth)(/*[in]*/ int pVal);
    STDMETHOD(put_DMDHeight)(/*[in]*/ int pVal);
@@ -943,7 +943,7 @@ public:
 
    STDMETHOD(get_ShowFSS)(/*[out, retval]*/ VARIANT_BOOL *pVal);
 
-   STDMETHOD(PlaySound)(BSTR bstr, long LoopCount, float volume, float pan, float randompitch, long pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
+   STDMETHOD(PlaySound)(BSTR bstr, LONG LoopCount, float volume, float pan, float randompitch, LONG pitch, VARIANT_BOOL usesame, VARIANT_BOOL restart, float front_rear_fade);
    STDMETHOD(FireKnocker)(/*[in]*/ int Count);
    STDMETHOD(QuitPlayer)(/*[in]*/ int CloseType);
 
@@ -954,12 +954,12 @@ public:
    STDMETHOD(NudgeTiltStatus)(VARIANT *XPlumb, VARIANT *YPlumb, VARIANT *Tilt);
 
    STDMETHOD(get_Name)(BSTR *pVal);
-   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_ExitGame)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(get_JoyCustomKey)(/*[in]*/ long index, /*[out, retval]*/ long *pVal);
+   STDMETHOD(get_MechanicalTilt)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LeftMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_RightMagnaSave)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_ExitGame)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_LockbarKey)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(get_JoyCustomKey)(/*[in]*/ LONG index, /*[out, retval]*/ LONG *pVal);
 
    STDMETHOD(GetBalls)(/*[out, retval]*/ LPSAFEARRAY *pVal);
    STDMETHOD(GetElements)(/*[out, retval]*/ LPSAFEARRAY *pVal);

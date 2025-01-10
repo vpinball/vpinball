@@ -29,9 +29,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#if defined(__STANDALONE__)
-#include <wctype.h>
-#endif
 
 #include "windef.h"
 #include "winbase.h"

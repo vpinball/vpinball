@@ -177,20 +177,20 @@ STDMETHODIMP Timer::put_Enabled(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Timer::get_Interval(long *pVal)
+STDMETHODIMP Timer::get_Interval(LONG *pVal)
 {
    *pVal = m_d.m_tdr.m_TimerInterval;
    return S_OK;
 }
 
-STDMETHODIMP Timer::put_Interval(long newVal)
+STDMETHODIMP Timer::put_Interval(LONG newVal)
 {
    STARTUNDO
    m_d.m_tdr.m_TimerInterval = newVal;
 
    if (g_pplayer && m_phittimer)
    {
-      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : max(-2l, newVal);
+      m_phittimer->m_interval = m_d.m_tdr.m_TimerInterval >= 0 ? max(m_d.m_tdr.m_TimerInterval, MAX_TIMER_MSEC_INTERVAL) : max((LONG)-2, newVal);
       m_phittimer->m_nextfire = g_pplayer->m_time_msec + m_phittimer->m_interval;
    }
    STOPUNDO

@@ -155,10 +155,10 @@ public:
    STDMETHOD(put_CenterX)(/*[in]*/ float newVal);
    STDMETHOD(get_CenterY)(/*[out, retval]*/ float *pVal);
    STDMETHOD(put_CenterY)(/*[in]*/ float newVal);
-   STDMETHOD(get_UpdateInterval)(/*[out, retval]*/ long *pVal);
-   STDMETHOD(put_UpdateInterval)(/*[in]*/ long newVal);
+   STDMETHOD(get_UpdateInterval)(/*[out, retval]*/ LONG *pVal);
+   STDMETHOD(put_UpdateInterval)(/*[in]*/ LONG newVal);
    // methods
-   STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ long TailLength, /*[in]*/ long Repeat, /*[in]*/ long Pause);
+   STDMETHOD(Play)(/*[in]*/ SequencerState Animation, /*[in]*/ LONG TailLength, /*[in]*/ LONG Repeat, /*[in]*/ LONG Pause);
    STDMETHOD(StopPlay)();
 
    float    GetX() const { return m_d.m_vCenter.x; }

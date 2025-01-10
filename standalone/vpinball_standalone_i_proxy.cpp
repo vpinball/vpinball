@@ -64,7 +64,7 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 459: [propget,helpcontext(0x5009004)]HRESULT Count([out, retval] long *Count);
 				V_VT(&res) = VT_I4;
-				hres = get_Count((long*)&V_I4(&res));
+				hres = get_Count((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -670,7 +670,7 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 548: [propget, id(7), helpstring("property YieldTime")] HRESULT YieldTime([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_YieldTime((long*)&V_I4(&res));
+				hres = get_YieldTime((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 549: [propput, id(7), helpstring("property YieldTime")] HRESULT YieldTime([in] long newVal);
@@ -2045,7 +2045,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 702: [propget, id(4), helpstring("property LeftFlipperKey")] HRESULT LeftFlipperKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_LeftFlipperKey((long*)&V_I4(&res));
+				hres = get_LeftFlipperKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2053,7 +2053,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 703: [propget, id(5), helpstring("property RightFlipperKey")] HRESULT RightFlipperKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_RightFlipperKey((long*)&V_I4(&res));
+				hres = get_RightFlipperKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2061,7 +2061,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 704: [propget, id(825), helpstring("property StagedLeftFlipperKey")] HRESULT StagedLeftFlipperKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_StagedLeftFlipperKey((long*)&V_I4(&res));
+				hres = get_StagedLeftFlipperKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2069,7 +2069,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 705: [propget, id(826), helpstring("property StagedRightFlipperKey")] HRESULT StagedRightFlipperKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_StagedRightFlipperKey((long*)&V_I4(&res));
+				hres = get_StagedRightFlipperKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2077,7 +2077,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 706: [propget, id(6), helpstring("property LeftTiltKey")] HRESULT LeftTiltKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_LeftTiltKey((long*)&V_I4(&res));
+				hres = get_LeftTiltKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2085,7 +2085,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 707: [propget, id(7), helpstring("property RightTiltKey")] HRESULT RightTiltKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_RightTiltKey((long*)&V_I4(&res));
+				hres = get_RightTiltKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2093,7 +2093,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 708: [propget, id(8), helpstring("property CenterTiltKey")] HRESULT CenterTiltKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_CenterTiltKey((long*)&V_I4(&res));
+				hres = get_CenterTiltKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2101,7 +2101,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 709: [propget, id(9), helpstring("property PlungerKey")] HRESULT PlungerKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_PlungerKey((long*)&V_I4(&res));
+				hres = get_PlungerKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2143,7 +2143,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 713: [propget, id(12), helpstring("property StartGameKey")] HRESULT StartGameKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_StartGameKey((long*)&V_I4(&res));
+				hres = get_StartGameKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2283,7 +2283,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 732: [propget, id(20), helpstring("property AddCreditKey")] HRESULT AddCreditKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_AddCreditKey((long*)&V_I4(&res));
+				hres = get_AddCreditKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2291,7 +2291,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 733: [propget, id(67), helpstring("property AddCreditKey2")] HRESULT AddCreditKey2([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_AddCreditKey2((long*)&V_I4(&res));
+				hres = get_AddCreditKey2((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2299,7 +2299,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 734: [propget, id(22), helpstring("property GameTime")] HRESULT GameTime([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_GameTime((long*)&V_I4(&res));
+				hres = get_GameTime((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2315,7 +2315,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 736: [propget, id(232), helpstring("property FrameIndex")] HRESULT FrameIndex([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_FrameIndex((long*)&V_I4(&res));
+				hres = get_FrameIndex((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2323,7 +2323,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 737: [propget, id(225), helpstring("property SystemTime")] HRESULT SystemTime([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_SystemTime((long*)&V_I4(&res));
+				hres = get_SystemTime((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2463,7 +2463,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 749: [propget, id(30), helpstring("property MechanicalTilt")] HRESULT MechanicalTilt([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_MechanicalTilt((long*)&V_I4(&res));
+				hres = get_MechanicalTilt((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2471,7 +2471,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 750: [propget, id(31), helpstring("property LeftMagnaSave")] HRESULT LeftMagnaSave([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_LeftMagnaSave((long*)&V_I4(&res));
+				hres = get_LeftMagnaSave((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2479,7 +2479,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 751: [propget, id(32), helpstring("property RightMagnaSave")] HRESULT RightMagnaSave([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_RightMagnaSave((long*)&V_I4(&res));
+				hres = get_RightMagnaSave((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2487,7 +2487,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 752: [propget, id(34), helpstring("property ExitGame")] HRESULT ExitGame([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_ExitGame((long*)&V_I4(&res));
+				hres = get_ExitGame((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2495,7 +2495,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 753: [propget, id(803), helpstring("property LockbarKey")] HRESULT LockbarKey([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_LockbarKey((long*)&V_I4(&res));
+				hres = get_LockbarKey((LONG*)&V_I4(&res));
 			}
 			break;
 		}
@@ -2506,7 +2506,7 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
 				V_VT(&res) = VT_I4;
-				hres = get_JoyCustomKey(V_I4(&var0), (long*)&V_I4(&res));
+				hres = get_JoyCustomKey(V_I4(&var0), (LONG*)&V_I4(&res));
 				VariantClear(&var0);
 			}
 			break;
@@ -4399,7 +4399,7 @@ STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 859: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 860: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -5375,7 +5375,7 @@ STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1002: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1003: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -5957,7 +5957,7 @@ STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1094: [propget, id(DISPID_Timer_Interval), helpstring("property Interval")] HRESULT Interval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_Interval((long*)&V_I4(&res));
+				hres = get_Interval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1095: [propput, id(DISPID_Timer_Interval), helpstring("property Interval")] HRESULT Interval([in] long newVal);
@@ -6238,7 +6238,7 @@ STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1138: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1139: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -6998,7 +6998,7 @@ STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1247: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1248: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -7401,7 +7401,7 @@ STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1307: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1308: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -7860,7 +7860,7 @@ STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1377: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1378: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -8385,7 +8385,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1454: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1455: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -8449,7 +8449,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1462: [propget, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_BlinkInterval((long*)&V_I4(&res));
+				hres = get_BlinkInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1463: [propput, id(DISPID_Light_BlinkInterval), helpstring("property BlinkInterval")] HRESULT BlinkInterval([in] long newVal);
@@ -8787,7 +8787,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1503: [propget, id(456), helpstring("property Shadows")] HRESULT Shadows([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_Shadows((long*)&V_I4(&res));
+				hres = get_Shadows((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1504: [propput, id(456), helpstring("property Shadows")] HRESULT Shadows([in] long newVal);
@@ -8803,7 +8803,7 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1505: [propget, id(458), helpstring("property Fader")] HRESULT Fader([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_Fader((long*)&V_I4(&res));
+				hres = get_Fader((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1506: [propput, id(458), helpstring("property Fader")] HRESULT Fader([in] long newVal);
@@ -9032,7 +9032,7 @@ STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1544: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1545: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -11008,7 +11008,7 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1834: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1835: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -11479,7 +11479,7 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1901: [propget, id(726), helpstring("property RaiseDelay")] HRESULT RaiseDelay([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_RaiseDelay((long*)&V_I4(&res));
+				hres = get_RaiseDelay((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1902: [propput, id(726), helpstring("property RaiseDelay")] HRESULT RaiseDelay([in] long newVal);
@@ -11699,7 +11699,7 @@ STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 1942: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 1943: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -12237,7 +12237,7 @@ STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2025: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2026: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -12685,7 +12685,7 @@ STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2095: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2096: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -13435,7 +13435,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2201: [propget, id(377), helpstring("property Opacity")] HRESULT Opacity([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_Opacity((long*)&V_I4(&res));
+				hres = get_Opacity((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2202: [propput, id(377), helpstring("property Opacity")] HRESULT Opacity([in] long newVal);
@@ -13655,7 +13655,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2230: [propget, id(379), helpstring("property Amount")] HRESULT Amount([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_Amount((long*)&V_I4(&res));
+				hres = get_Amount((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2231: [propput, id(379), helpstring("property Amount")] HRESULT Amount([in] long newVal);
@@ -13687,7 +13687,7 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2234: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2235: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -14111,7 +14111,7 @@ STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2298: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2299: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -15088,7 +15088,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2456: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2457: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
@@ -15168,7 +15168,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2466: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_UpdateInterval((long*)&V_I4(&res));
+				hres = get_UpdateInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2467: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
@@ -15231,7 +15231,7 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2474: [propget, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_ImagesPerGridRow((long*)&V_I4(&res));
+				hres = get_ImagesPerGridRow((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2475: [propput, id(18), helpstring("property ImagesPerGridRow")] HRESULT ImagesPerGridRow([in] long newVal);
@@ -15468,7 +15468,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2512: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_UpdateInterval((long*)&V_I4(&res));
+				hres = get_UpdateInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2513: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
@@ -15500,7 +15500,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 			if (wFlags & DISPATCH_PROPERTYGET) {
 				// line 2516: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
-				hres = get_TimerInterval((long*)&V_I4(&res));
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
 				// line 2517: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);

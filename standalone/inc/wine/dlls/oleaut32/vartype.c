@@ -18,10 +18,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
  */
 
-#if defined(__STANDALONE__)
-#include <wctype.h>
-#endif
-
 #define COBJMACROS
 #include "wine/debug.h"
 #include "winbase.h"

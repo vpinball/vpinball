@@ -4,6 +4,10 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 01/09/24
+    * Bump Wine source to 7af71662366406a899e1bca35f638a0fa245dec4
+    * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7049) mid() throws when passed VT_EMPTY instead of returning empty string. (@francisdb)
+
 * 12/04/24
     * Bump libdmdutil (libzedmd, libserum) (requires ZeDMD 4.1.0+ firmware)
 

@@ -496,8 +496,8 @@ public:
    HRESULT LoadData(IStream *pstm, PinTable *ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
    bool LoadToken(const int id, BiffReader * const pbr) final;
 
-   STDMETHOD(get_Count)(long __RPC_FAR *plCount);
-   STDMETHOD(get_Item)(long index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp);
+   STDMETHOD(get_Count)(LONG __RPC_FAR *plCount);
+   STDMETHOD(get_Item)(LONG index, IDispatch __RPC_FAR * __RPC_FAR *ppidisp);
    STDMETHOD(get__NewEnum)(IUnknown** ppunk);
 
    BEGIN_COM_MAP(Collection)
