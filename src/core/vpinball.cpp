@@ -3,6 +3,7 @@
 // implementation of the VPinball class.
 
 #include "core/stdafx.h"
+#include "parts/VPXFileFeedback.h"
 #include "ui/resource.h"
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"
@@ -1059,7 +1060,7 @@ void VPinball::DoPlay(const int playMode)
       ptCur->Play(playMode);
 }
 
-bool VPinball::LoadFile(const bool updateEditor)
+bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)
 {
    string szInitialDir = g_pvp->m_settings.LoadValueWithDefault(Settings::RecentDir, "LoadDir"s, PATH_TABLES);
 
@@ -1072,12 +1073,12 @@ bool VPinball::LoadFile(const bool updateEditor)
    if (index != string::npos)
       g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, szFileName[0].substr(0, index));
 
-   LoadFileName(szFileName[0], updateEditor);
+   LoadFileName(szFileName[0], updateEditor, feedback);
 
    return true;
 }
 
-void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
+void VPinball::LoadFileName(const string& szFileName, const bool updateEditor, VPXFileFeedback* feedback)
 {
    if (m_vtable.size() == MAX_OPEN_TABLES)
    {
@@ -1099,7 +1100,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor)
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
    CComObject<PinTable> * const ppt = mdiTable->GetTable();
-   const HRESULT hr = ppt->LoadGameFromFilename(szFileName);
+   const HRESULT hr = feedback != nullptr ? ppt->LoadGameFromFilename(szFileName, *feedback) : ppt->LoadGameFromFilename(szFileName);
 
    const bool hashing_error = (hr == APPX_E_BLOCK_HASH_INVALID || hr == APPX_E_CORRUPT_CONTENT);
    if (hashing_error)

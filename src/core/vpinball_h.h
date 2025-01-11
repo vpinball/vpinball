@@ -37,6 +37,7 @@
 
 class PinTable;
 class PinTableMDI;
+class VPXFileFeedback;
 
 class VPinball : public CMDIDockFrame
 {
@@ -95,8 +96,8 @@ public:
    void ReInitSound();
 
    CComObject<PinTable> *GetActiveTable();
-   bool LoadFile(const bool updateEditor);
-   void LoadFileName(const string& szFileName, const bool updateEditor);
+   bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);
+   void LoadFileName(const string& szFileName, const bool updateEditor, VPXFileFeedback* feedback = nullptr);
    void SetClipboard(vector<IStream*> * const pvstm);
 
    void DoPlay(const int playMode);
