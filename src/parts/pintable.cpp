@@ -4020,10 +4020,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
 
                   //hr = piedit->InitPostLoad();
                }
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / csubobj };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingItems, &progressData);
-#endif
                feedback.ItemHasBeenProcessed(i + 1, csubobj);
             }
 
@@ -4041,10 +4037,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / csounds };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingSounds, &progressData);
-#endif
                feedback.SoundHasBeenProcessed(i + 1, csounds);
             }
 
@@ -4073,10 +4065,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                         m_vimage[i] = ppi;
                      else
                         delete ppi;
-                     #ifdef __LIBVPINBALL__
-                        VPinballLib::ProgressData progressData = { (++count * 100) / ctextures };
-                        VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingImages, &progressData);
-                     #endif
                      feedback.ImageHasBeenProcessed(++count, ctextures);
                      pstmItem->Release();
                      pstmItem = nullptr;
@@ -4168,10 +4156,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / cfonts };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingFonts, &progressData);
-#endif
                feedback.FontHasBeenProcessed(i + 1, cfonts);
             }
 
@@ -4194,10 +4178,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   pstmItem->Release();
                   pstmItem = nullptr;
                }
-#ifdef __LIBVPINBALL__
-               VPinballLib::ProgressData progressData = { (i * 100) / ccollection };
-               VPinballLib::VPinball::SendEvent(VPinballLib::Event::LoadingCollections, &progressData);
-#endif
                feedback.CollectionHasBeenProcessed(i + 1, ccollection);
             }
 

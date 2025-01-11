@@ -669,6 +669,8 @@ set(VPINBALL_SOURCES
    standalone/VPinballLib.cpp
    standalone/VPinball.h
    standalone/VPinball.cpp
+   standalone/VPXProgress.h
+   standalone/VPXProgress.cpp
 )
 
 if(PLATFORM STREQUAL "android")
