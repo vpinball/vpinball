@@ -855,6 +855,10 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    {
       ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGB 32F");
    }
+   else if (ppi->m_pdsBuffer->m_format == BaseTexture::RGBA_FP32)
+   {
+      ListView_SetItemText(hwndListView, index, 5, (LPSTR) "RGBA 32F");
+   }
    else
       assert(!"unknown format");
 

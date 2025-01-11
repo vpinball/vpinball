@@ -656,6 +656,12 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
                      g = ((float*)envmap)[offs*3+1];
                      b = ((float*)envmap)[offs*3+2];
                   }
+                  else if (env_format == BaseTexture::RGBA_FP32)
+                  {
+                     r = half2float(((float*)envmap)[offs * 4]);
+                     g = half2float(((float*)envmap)[offs * 4 + 1]);
+                     b = half2float(((float*)envmap)[offs * 4 + 2]);
+                  }
                   else if (env_format == BaseTexture::RGB)
                   {
                      r = (float)((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);

@@ -19,7 +19,8 @@ public:
       SRGBA,     // sRGB with alpha channel, 1 byte per channel
       RGB_FP16,  // Linear RGB, 1 half float per channel
       RGBA_FP16, // Linear RGB with alpha channel, 1 half float per channel
-      RGB_FP32   // Linear RGB, 1 float per channel
+      RGB_FP32,   // Linear RGB, 1 float per channel
+      RGBA_FP32, // Linear RGB with alpha channel, 1 float per channel
    };
 
    BaseTexture(const unsigned int w, const unsigned int h, const Format format);
@@ -27,10 +28,10 @@ public:
 
    unsigned int width() const  { return m_width; }
    unsigned int height() const { return m_height; }
-   unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * (m_format == RGB_FP32 ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
+   unsigned int pitch() const  { return (m_format == BW ? 1 : (has_alpha() ? 4 : 3)) * ((m_format == RGB_FP32 || m_format == RGBA_FP32) ? 4 : (m_format == RGB_FP16 || m_format == RGBA_FP16) ? 2 : 1) * m_width; } // pitch in bytes
    BYTE* data()                { return m_data; }
    const BYTE* datac() const   { return m_data; }
-   bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16; }
+   bool has_alpha() const      { return m_format == RGBA || m_format == SRGBA || m_format == RGBA_FP16 || m_format == RGBA_FP32; }
 
    BaseTexture *ToBGRA(); // swap R and B channels, also tonemaps floating point buffers during conversion and adds an opaque alpha channel (if format with missing alpha)
    void AddAlpha();
@@ -92,7 +93,7 @@ public:
 
    bool IsHDR() const
    {
-      return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32);
+      return m_pdsBuffer != nullptr && (m_pdsBuffer->m_format == BaseTexture::RGB_FP16 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP16 || m_pdsBuffer->m_format == BaseTexture::RGB_FP32 || m_pdsBuffer->m_format == BaseTexture::RGBA_FP32);
    }
 
    void SetSizeFrom(const BaseTexture* const tex)
