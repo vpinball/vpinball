@@ -73,8 +73,8 @@ End Function
 
 Private Const conStackSw	= 8  ' Stack switches
 Private Const conMaxBalls	= 13 ' Because of Apollo 13
-Private Const conMaxTimers	= 20 ' Spinners can generate a lot of timers
-Private Const conTimerPulse = 40 ' Timer runs at 25Hz
+Private Const conMaxTimers	= 50 ' Some tables want to generate a lot of timers
+Private Const conTimerPulse	= 40 ' Timer runs at 25Hz
 Private Const conFastTicks	= 4  ' Fast is 4 times per timer pulse
 Private Const conMaxSwHit	= 5  ' Don't stack up more than 5 events for each switch
 
