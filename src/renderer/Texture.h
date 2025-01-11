@@ -19,7 +19,7 @@ public:
       SRGBA,     // sRGB with alpha channel, 1 byte per channel
       RGB_FP16,  // Linear RGB, 1 half float per channel
       RGBA_FP16, // Linear RGB with alpha channel, 1 half float per channel
-      RGB_FP32,   // Linear RGB, 1 float per channel
+      RGB_FP32,  // Linear RGB, 1 float per channel
       RGBA_FP32, // Linear RGB with alpha channel, 1 float per channel
    };
 

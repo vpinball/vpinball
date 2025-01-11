@@ -658,9 +658,9 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
                   }
                   else if (env_format == BaseTexture::RGBA_FP32)
                   {
-                     r = half2float(((float*)envmap)[offs * 4]);
-                     g = half2float(((float*)envmap)[offs * 4 + 1]);
-                     b = half2float(((float*)envmap)[offs * 4 + 2]);
+                     r = ((float*)envmap)[offs*4];
+                     g = ((float*)envmap)[offs*4+1];
+                     b = ((float*)envmap)[offs*4+2];
                   }
                   else if (env_format == BaseTexture::RGB)
                   {
@@ -1297,7 +1297,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
       // Render DMD
       const float brightness = color.w * m_dmdDotColor[profile].w;
       const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
-                                                               : vec4(color.x, color.y, color.z, 0.f);
+                                                             : vec4(color.x, color.y, color.z, 0.f);
       m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
          m_dmdDotProperties[profile].x /* size */, 
          m_dmdDotProperties[profile].y /* sharpness */,
