@@ -25,7 +25,7 @@ BaseTexture::BaseTexture(const unsigned int w, const unsigned int h, const Forma
    , m_realHeight(h)
    , m_format(format)
 {
-   m_data = new BYTE[(format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * (format == RGB_FP32 ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h];
+   m_data = new BYTE[(format == RGBA || format == SRGBA || format == RGBA_FP16 ? 4 : (format == BW ? 1 : 3)) * ((format == RGB_FP32 || format == RGBA_FP32) ? 4 : (format == RGB_FP16 || format == RGBA_FP16) ? 2 : 1) * w * h];
 }
 
 BaseTexture::~BaseTexture()
@@ -396,7 +396,7 @@ void BaseTexture::UpdateOpaque() const
    m_isOpaque = true;
    if (m_format == RGBA || m_format == SRGBA)
    {
-      // RGBA_FP16 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
+      // RGBA_FP16/RGBA_FP32 could be transparent but for the time being, the alpha channel is always opaque, only added for driver's texture format support
       BYTE* const __restrict pdst = m_data;
       constexpr unsigned int stride = 4;
       for (unsigned int y = 0; y < m_height && m_isOpaque; ++y)
@@ -427,6 +427,7 @@ void BaseTexture::AddAlpha()
    case RGB: m_format = RGBA; break;
    case SRGB: m_format = SRGBA; break;
    case RGB_FP16: m_format = RGBA_FP16; break;
+   case RGB_FP32: m_format = RGBA_FP32; break;
    default: assert(!"unknown format in AddAlpha"); break;
    }
 
@@ -436,8 +437,9 @@ void BaseTexture::AddAlpha()
       delete[] m_data;
       m_data = new_data;
    }
-   else {
-      BYTE* new_data = new BYTE[(size_t)8 * width() * height()];
+   else if (m_format == RGBA_FP16)
+   {
+      BYTE* new_data = new BYTE[(size_t)(4*2) * width() * height()];
       unsigned short* const __restrict dest_data16 = (unsigned short*)new_data;
       const unsigned short* const __restrict src_data16 = (unsigned short*)m_data;
       size_t o = 0;
@@ -448,6 +450,23 @@ void BaseTexture::AddAlpha()
             dest_data16[o * 4 + 1] = src_data16[o * 3 + 1];
             dest_data16[o * 4 + 2] = src_data16[o * 3 + 2];
             dest_data16[o * 4 + 3] = 0x3C00; //=1.f
+         }
+      delete[] m_data;
+      m_data = new_data;
+   }
+   else if (m_format == RGBA_FP32)
+   {
+      BYTE* new_data = new BYTE[(size_t)(4*4) * width() * height()];
+      UINT32* const __restrict dest_data32 = (UINT32*)new_data;
+      const UINT32* const __restrict src_data32 = (UINT32*)m_data;
+      size_t o = 0;
+      for (unsigned int j = 0; j < height(); ++j)
+         for (unsigned int i = 0; i < width(); ++i, ++o)
+         {
+            dest_data32[o * 4 + 0] = src_data32[o * 3 + 0];
+            dest_data32[o * 4 + 1] = src_data32[o * 3 + 1];
+            dest_data32[o * 4 + 2] = src_data32[o * 3 + 2];
+            dest_data32[o * 4 + 3] = 0x3f800000; //=1.f
          }
       delete[] m_data;
       m_data = new_data;
