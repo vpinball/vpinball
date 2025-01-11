@@ -64,8 +64,8 @@ End Function
 
 Private Const conStackSw	= 8  ' Stack switches
 Private Const conMaxBalls	= 13 ' Because of Apollo 13
-Private Const conMaxTimers	= 20 ' Spinners can generate a lot of timers
-Private Const conTimerPulse = 40 ' Timer runs at 25Hz
+Private Const conMaxTimers	= 50 ' Some tables want to generate a lot of timers
+Private Const conTimerPulse	= 40 ' Timer runs at 25Hz
 Private Const conFastTicks	= 4  ' Fast is 4 times per timer pulse
 Private Const conMaxSwHit	= 5  ' Don't stack up more than 5 events for each switch
 
@@ -2121,7 +2121,6 @@ If LoadScript("NudgePlugIn.vbs") Then Set vpmNudge = New cvpmNudge2 Else Set vpm
 'test more tables
 'test Red & Ted with the left side flippers
 'test region safety
-'update SAM.vbs ?
 
 dim vpmFlips : set vpmFlips = New cvpmFlips2 : vpmFlips.Name = "vpmFlips"
 
@@ -2372,7 +2371,7 @@ Public Sub vpmInit(aTable)
 	End If
 
 	If HasTimeFence Then
-		' Force emulation to be in sync with VPX (in turn it pauses it on startup until VPX is ready, this way both starts together in sync)
+		' Force emulation to be in sync with VPX (in turn it pauses it on startup until VPX is ready, this way both start together in sync)
 		If PreciseGameTime > 0 Then Controller.TimeFence = PreciseGameTime Else Controller.TimeFence = 0.01
 	End If
 
@@ -2456,7 +2455,7 @@ End Sub
 
 Dim LastPinMameVisualSync : LastPinMameVisualSync = 0
 Sub PinMAMETimer_Timer
-	Dim ChgLamp, ChgSol,ChgGI, ii, tmp, idx, ChgLed
+	Dim ChgLamp,ChgSol,ChgGI,ChgLed, ii, tmp, idx
 	Dim DMDp
 	Dim ChgNVRAM
 
@@ -2466,7 +2465,7 @@ Sub PinMAMETimer_Timer
 		UpdateVisual = (FrameIndex <> LastPinMameVisualSync)
 		If UpdateVisual Then LastPinMameVisualSync = FrameIndex
 	Else
-		UpdateVisual = GameTime - LastPinMameVisualSync > 10
+		UpdateVisual = (GameTime - LastPinMameVisualSync > 10)
 		If UpdateVisual Then LastPinMameVisualSync = GameTime
 	End If
 
