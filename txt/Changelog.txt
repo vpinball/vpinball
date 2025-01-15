@@ -278,6 +278,8 @@ FIXES:
 
 - improve script editing performance again
 
+- fix crash during script editing
+
 - improve mouse cursor hide/unhide in (windowed) fullscreen
 
 - fix 'O'-key ball debugging
@@ -356,6 +358,8 @@ FIXES:
 - fix Light Debugger dialog 2nd color button
 
 - improve script editing performance again
+
+- fix crash during script editing
 
 - fix crash if sound card(s) hardware/driver setup changed
 

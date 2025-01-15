@@ -252,6 +252,8 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
+	if (Pos >= (int)ListIn.size())
+		return -1;
 	int result;
 	do 
 	{
@@ -679,8 +681,6 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
 {
    if (m_pScript)
    {
-      //m_pScript->SetScriptState(SCRIPTSTATE_DISCONNECTED);
-      //m_pScript->SetScriptState(SCRIPTSTATE_CLOSED);
       // Cleanly wait for the script to end to allow Exit event, triggered just before closing, to be processed
       SCRIPTSTATE state;
       m_pScript->GetScriptState(&state);
@@ -696,7 +696,7 @@ STDMETHODIMP CodeViewer::CleanUpScriptEngine()
          }
          if (state != SCRIPTSTATE_CLOSED)
          {
-            PLOGE << "Script did not terminated within 5s after request. Forcing close of interpreter #" << m_pScript;
+            PLOGE << "Script did not terminate within 5s after request. Forcing close of interpreter #" << m_pScript;
             EXCEPINFO eiInterrupt = {};
             const LocalString ls(IDS_HANG);
             const WCHAR *const wzError = MakeWide(ls.m_szbuffer);
@@ -756,17 +756,17 @@ void CodeViewer::SetVisible(const bool visible)
 
    if (visible)
    {
-	   if (!m_visible)
-	   {
-		   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
+      if (!m_visible)
+      {
+         const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
          const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
          const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
          const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
          POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
-	   }
-	   SetForegroundWindow();
+      }
+      SetForegroundWindow();
    }
    m_visible = visible;
 }
@@ -1063,7 +1063,7 @@ void CodeViewer::Destroy()
 
 	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
-   CWnd::Destroy();
+	CWnd::Destroy();
 }
 
 bool CodeViewer::PreTranslateMessage(MSG *msg)
@@ -1138,7 +1138,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	pscripterror->GetExceptionInfo(&exception);
 	nLine++;
 
-	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"");
+	const char* const szT = MakeChar((exception.bstrDescription) ? exception.bstrDescription : L"Description unavailable");
 
 	PLOGE_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "Script Error at line " << nLine << " : " << szT;
 
@@ -1164,8 +1164,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	if (pt)
 	{
 		pt->m_pcv->SetVisible(true);
-      pt->m_pcv->ShowWindow(SW_RESTORE);
-      pt->m_pcv->ColorError(nLine, nChar);
+		pt->m_pcv->ShowWindow(SW_RESTORE);
+		pt->m_pcv->ColorError(nLine, nChar);
 	}
 
 	// Check if this is a compile error or a runtime error
@@ -1195,11 +1195,11 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
-   if (pt)
-   {
-      pt->m_pcv->AppendLastErrorTextW(errorStr);
-      pt->m_pcv->SetLastErrorVisibility(true);
-   }
+	if (pt)
+	{
+		pt->m_pcv->AppendLastErrorTextW(errorStr);
+		pt->m_pcv->SetLastErrorVisibility(true);
+	}
 
 	// Also pop up a dialog if this is a runtime error
 	if (isRuntimeError && !m_suppressErrorDialogs 
@@ -1212,13 +1212,13 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-         ::SetFocus(pt->m_pcv->m_hwndScintilla);
+			::SetFocus(pt->m_pcv->m_hwndScintilla);
 	}
 
 	g_pvp->EnableWindow(TRUE);
 
 	if (pt != nullptr)
-      ::SetFocus(pt->m_pcv->m_hwndScintilla);
+		::SetFocus(pt->m_pcv->m_hwndScintilla);
 
 	return S_OK;
 }
@@ -1325,8 +1325,8 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	if (pt)
 	{
 		pt->m_pcv->SetVisible(true);
-      pt->m_pcv->ShowWindow(SW_RESTORE);
-      pt->m_pcv->ColorError(nLine, nChar);
+		pt->m_pcv->ShowWindow(SW_RESTORE);
+		pt->m_pcv->ColorError(nLine, nChar);
 	}
 	
 	// Error log content
@@ -1421,14 +1421,14 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log of the active table
-   if (pt != nullptr)
-   {
-      pt->m_pcv->AppendLastErrorTextW(errorStr);
-      pt->m_pcv->SetLastErrorVisibility(true);
-   }
+	if (pt != nullptr)
+	{
+		pt->m_pcv->AppendLastErrorTextW(errorStr);
+		pt->m_pcv->SetLastErrorVisibility(true);
+	}
 
 	// Also pop up a dialog
-    if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSED))
+	if (!m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSED))
 	{
 		g_pvp->EnableWindow(FALSE);
 		ScriptErrorDialog scriptErrorDialog(errorStr);
@@ -1441,7 +1441,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-         ::SetFocus(pt->m_pcv->m_hwndScintilla);
+			::SetFocus(pt->m_pcv->m_hwndScintilla);
 	}
 
 	return S_OK;
@@ -1810,15 +1810,15 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    m_ignoreDirty = false;
    m_sdsDirty = eSaveClean;
 
-   // Allow updates to take now we know the script size
+   // Allow updates to take, now that we know the script size
    UpdateScinFromPrefs();
 }
 
 void CodeViewer::LoadFromFile(const string& filename)
 {
-   FILE * fScript;
-   if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
-   {
+	FILE * fScript;
+	if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
+	{
 		external_script_name = filename;
 
 		fseek(fScript, 0L, SEEK_END);
@@ -1847,7 +1847,7 @@ void CodeViewer::LoadFromFile(const string& filename)
 
 		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
-   }
+	}
 }
 
 
@@ -3539,13 +3539,13 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
+					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
+					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
@@ -3699,8 +3699,8 @@ void CodeViewer::UpdateScinFromPrefs()
 	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
 
 	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
-   //Update the margin width to fit the number of characters required to display the line number * font size
-   SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10(scriptLines) + 3) : 1) * m_prefEverythingElse->m_pointSize);
+	//Update the margin width to fit the number of characters required to display the line number * font size
+	SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10((double)scriptLines) + 3.) : 1) * m_prefEverythingElse->m_pointSize);
 }
 
 void CodeViewer::ResizeScintillaAndLastError()
