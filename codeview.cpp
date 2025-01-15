@@ -252,6 +252,8 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
+	if (Pos >= (int)ListIn.size())
+		return -1;
 	int result;
 	do 
 	{
