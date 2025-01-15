@@ -33,6 +33,8 @@ FIXES:
 
 - improve script editing performance again
 
+- fix crash during script editing
+
 - fix crash if sound card(s) hardware/driver setup changed
 
 - fix crash on tables with weird table info
