@@ -269,6 +269,8 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
+	if (Pos >= (int)ListIn.size())
+		return -1;
 	int result;
 	do 
 	{
@@ -811,17 +813,17 @@ void CodeViewer::SetVisible(const bool visible)
 
    if (visible)
    {
-	   if (!m_visible)
-	   {
-		   const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
+      if (!m_visible)
+      {
+         const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosX"s, 0);
          const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosY"s, 0);
          const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosWidth"s, 640);
          const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "CodeViewPosHeight"s, 490);
          POINT p { x, y };
          if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
             SetWindowPos(HWND_TOP, x, y, w, h, SWP_NOMOVE | SWP_NOSIZE);
-	   }
-	   SetForegroundWindow();
+      }
+      SetForegroundWindow();
    }
    m_visible = visible;
 #endif
@@ -1230,8 +1232,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	{
 #ifndef __STANDALONE__
 		pt->m_pcv->SetVisible(true);
-      pt->m_pcv->ShowWindow(SW_RESTORE);
-      pt->m_pcv->ColorError(nLine, nChar);
+		pt->m_pcv->ShowWindow(SW_RESTORE);
+		pt->m_pcv->ColorError(nLine, nChar);
 #endif
 	}
 
@@ -1287,11 +1289,11 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log
-   if (pt)
-   {
-      pt->m_pcv->AppendLastErrorTextW(errorStr);
-      pt->m_pcv->SetLastErrorVisibility(true);
-   }
+	if (pt)
+	{
+		pt->m_pcv->AppendLastErrorTextW(errorStr);
+		pt->m_pcv->SetLastErrorVisibility(true);
+	}
 
 	// Also pop up a dialog if this is a runtime error
 	if (isRuntimeError && !m_suppressErrorDialogs && !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
@@ -1304,7 +1306,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-         ::SetFocus(pt->m_pcv->m_hwndScintilla);
+			::SetFocus(pt->m_pcv->m_hwndScintilla);
 #endif
 	}
 
@@ -1312,7 +1314,7 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	g_pvp->EnableWindow(TRUE);
 
 	if (pt != nullptr)
-      ::SetFocus(pt->m_pcv->m_hwndScintilla);
+		::SetFocus(pt->m_pcv->m_hwndScintilla);
 #endif
 
 	return S_OK;
@@ -1422,8 +1424,8 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	if (pt)
 	{
 		pt->m_pcv->SetVisible(true);
-      pt->m_pcv->ShowWindow(SW_RESTORE);
-      pt->m_pcv->ColorError(nLine, nChar);
+		pt->m_pcv->ShowWindow(SW_RESTORE);
+		pt->m_pcv->ColorError(nLine, nChar);
 	}
 	
 	// Error log content
@@ -1520,16 +1522,16 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 	const wstring errorStr{errorStream.str()};
 
 	// Show the error in the last error log of the active table
-   if (pt != nullptr)
-   {
-      pt->m_pcv->AppendLastErrorTextW(errorStr);
-      pt->m_pcv->SetLastErrorVisibility(true);
-   }
+	if (pt != nullptr)
+	{
+		pt->m_pcv->AppendLastErrorTextW(errorStr);
+		pt->m_pcv->SetLastErrorVisibility(true);
+	}
 
 	// Also pop up a dialog.  Suppress the dialog if the user has so
-    // directed, or if the player Close State is CLOSE APP, since in
-    // that case the decision to exit the whole program has already
-    // been made, precluding further UI input.
+	// directed, or if the player Close State is CLOSE APP, since in
+	// that case the decision to exit the whole program has already
+	// been made, precluding further UI input.
 	if (!m_suppressErrorDialogs
 		&& !(g_pplayer != nullptr && g_pplayer->GetCloseState() == Player::CloseState::CS_CLOSE_APP))
 	{
@@ -1545,7 +1547,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		g_pvp->EnableWindow(TRUE);
 
 		if (pt != nullptr)
-         ::SetFocus(pt->m_pcv->m_hwndScintilla);
+			::SetFocus(pt->m_pcv->m_hwndScintilla);
 #endif
 	}
 #endif
@@ -1961,11 +1963,11 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
 void CodeViewer::LoadFromFile(const string& filename)
 {
 #ifdef __STANDALONE__
-   PLOGI.printf("filename=%s", filename.c_str());
+	PLOGI.printf("filename=%s", filename.c_str());
 #endif
-   FILE * fScript;
-   if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
-   {
+	FILE * fScript;
+	if ((fopen_s(&fScript, filename.c_str(), "rb") == 0) && fScript)
+	{
 		external_script_name = filename;
 
 		fseek(fScript, 0L, SEEK_END);
@@ -1998,7 +2000,7 @@ void CodeViewer::LoadFromFile(const string& filename)
 
 		m_ignoreDirty = false;
 		m_sdsDirty = eSaveClean;
-   }
+	}
 }
 
 
@@ -3794,13 +3796,13 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 				case IDC_CVP_CHKBOX_HELPWITHDWELL:
 				{
 					pcv->m_dwellHelp = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_HELPWITHDWELL);
-               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
+					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DwellHelp"s, pcv->m_dwellHelp);
 				}
 				break;
 				case IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE:
 				{
 					pcv->m_displayAutoComplete = !!IsDlgButtonChecked(hwndDlg, IDC_CVP_CHKBOX_SHOWAUTOCOMPLETE);
-               g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
+					g_pvp->m_settings.SaveValue(Settings::CVEdit, "DisplayAutoComplete"s, pcv->m_displayAutoComplete);
 				}
 				break;
 				case IDC_CVP_BUT_COL_BACKGROUND:
