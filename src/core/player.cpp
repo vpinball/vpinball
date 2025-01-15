@@ -2474,7 +2474,8 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          for (int ofs = 0; ofs < size; ofs++)
          {
             const uint16_t rgb565 = reinterpret_cast<uint16_t *>(display->getMsg.frame)[ofs];
-            data[ofs] = 0xFF000000 | (lum32[(rgb565 >> 11) & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[rgb565 & 0x1F];
+            //data[ofs] = 0xFF000000 | (lum32[(rgb565 >> 11) & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[rgb565 & 0x1F];
+            data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
             // uint8_t r = (((rgb565 >> 11) & 0x1F) * 255) / 31;
             // uint8_t g = (((rgb565 >>  5) & 0x3F) * 255) / 63;
             // uint8_t b = (((rgb565      ) & 0x1F) * 255) / 31;

@@ -110,7 +110,7 @@ void Settings::Validate(const bool addDefaults)
    Validate(Section::DMD, "DMDWidth"s, 512, 1, 16384, addDefaults);
    Validate(Section::DMD, "DMDHeight"s, 128, 1, 16384, addDefaults);*/
 
-   Validate(Section::DMD, "DefaultProfile"s, 1, 1, 7, addDefaults);
+   Validate(Section::DMD, "DefaultProfile"s, 1, 0, 7, addDefaults);
    Validate(Section::DMD, "DefaultTint"s, 0x00FFFFFF, 0x00000000, 0x00FFFFFF, addDefaults);
    for (int i = 1; i <= 7; i++)
    {
