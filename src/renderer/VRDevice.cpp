@@ -213,7 +213,7 @@ public:
 class XRD3D11Backend : public XRGraphicBackend
 {
 public:
-   XRD3D11Backend(XrInstance& m_xrInstance, XrSystemId& m_systemID)
+   XRD3D11Backend(const XrInstance& m_xrInstance, const XrSystemId& m_systemID)
    {
       PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrGetD3D11GraphicsRequirementsKHR", (PFN_xrVoidFunction*)&xrGetD3D11GraphicsRequirementsKHR), "Failed to get InstanceProcAddr xrGetD3D11GraphicsRequirementsKHR.");
@@ -391,7 +391,7 @@ VRDevice::VRDevice()
       };
       // FIXME VRDevice is created before bgfx initialization (since it creates the graphic context expected by OpenXR), so bgfx::getRendererType() is not defined at this point. For the time being only D3D11 is supported (enforced in RenderDevice)
       // const bgfx::RendererType::Enum renderer = bgfx::getRendererType();
-      const bgfx::RendererType::Enum renderer = bgfx::RendererType::Enum::Direct3D11;
+      constexpr bgfx::RendererType::Enum renderer = bgfx::RendererType::Enum::Direct3D11;
       bool hasGraphicBackend = false;
       switch (renderer)
       {
@@ -699,7 +699,7 @@ void* VRDevice::GetGraphicContext() const
    return m_backend->GetGraphicContext();
 }
 
-Matrix3D VRDevice::XRPoseToMatrix3D(XrPosef pose)
+Matrix3D VRDevice::XRPoseToMatrix3D(const XrPosef& pose)
 {
    Matrix3D view;
    bx::Quaternion orientation(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
@@ -1071,7 +1071,6 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
       IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
       VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
       XrVector2f* const vert2d = new XrVector2f[maxVertexCount];
-      int vPos = 0;
       uint32_t* indices;
       indexBuffer->Lock(indices);
       Vertex3D_NoTex2* vertices;

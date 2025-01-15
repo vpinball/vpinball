@@ -31,8 +31,8 @@ class ColorizationState
 {
 public:
    ColorizationState(unsigned int width, unsigned int height)
-      : m_width(width), m_height(height), m_size(width * height)
-      , m_colorFrame(pSerum->SerumVersion == SERUM_V1 ? new uint8_t[width * height * 3] : nullptr)
+      : m_colorFrame(pSerum->SerumVersion == SERUM_V1 ? new uint8_t[width * height * 3] : nullptr)
+      , m_width(width), m_height(height), m_size(width * height)
       , m_colorizedFrameFormat(pSerum->SerumVersion == SERUM_V1 ? CTLPI_GETDMD_FORMAT_SRGB888 : CTLPI_GETDMD_FORMAT_SRGB565)
    {
       assert(m_width > 0);
@@ -82,7 +82,7 @@ public:
    unsigned int m_width64 = 0;
    uint8_t* m_colorFrame64 = nullptr;
    
-   // Common state informations
+   // Common state information
    const unsigned int m_width, m_height, m_size;
    const unsigned int m_colorizedFrameFormat;
    
@@ -164,8 +164,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
       return;
    
    // Update to the last 'raw' frame
-   GetDmdMsg getRawDmdMsg;
-   memset(&getRawDmdMsg, 0, sizeof(getRawDmdMsg));
+   GetDmdMsg getRawDmdMsg = {};
    getRawDmdMsg.dmdId = dmdId;
    msgApi->BroadcastMsg(endpointId, getIdentifyDmdId, &getRawDmdMsg);
    onGetIdentifyDMD(getIdentifyDmdId, nullptr, static_cast<void*>(&getRawDmdMsg));

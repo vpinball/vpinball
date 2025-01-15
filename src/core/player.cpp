@@ -907,12 +907,12 @@ Player::~Player()
       {
          std::ifstream myFile(path);
          std::stringstream buffer;
-         vector<tinyxml2::XMLElement *> toRemove;
          buffer << myFile.rdbuf();
          myFile.close();
          auto xml = buffer.str();
          if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
          {
+            vector<tinyxml2::XMLElement *> toRemove;
             int age;
             root = xmlDoc.FirstChildElement("textures");
             for (tinyxml2::XMLElement* node = root->FirstChildElement("texture"); node != nullptr; node = node->NextSiblingElement())
@@ -943,7 +943,7 @@ Player::~Player()
                }
                else
                {
-                  it++;
+                  ++it;
                }
             }
             // Delete too old, duplicates and invalid nodes
@@ -1861,7 +1861,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
    #endif
 }
 
-void Player::MultithreadedGameLoop(std::function<void()> sync)
+void Player::MultithreadedGameLoop(const std::function<void()>& sync)
 {
 #ifdef ENABLE_BGFX
    m_logicProfiler.SetThreadLock();
@@ -1898,7 +1898,7 @@ void Player::MultithreadedGameLoop(std::function<void()> sync)
 #endif
 }
 
-void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
+void Player::GPUQueueStuffingGameLoop(const std::function<void()>& sync)
 {
    // Legacy main loop performs the frame as a single block. This leads to having the input <-> physics stall between frames increasing
    // the latency and causing syncing problems with PinMAME (which runs in real-time and expects real-time inputs, especially for video modes
@@ -1953,7 +1953,7 @@ void Player::GPUQueueStuffingGameLoop(std::function<void()> sync)
    }
 }
 
-void Player::FramePacingGameLoop(std::function<void()> sync)
+void Player::FramePacingGameLoop(const std::function<void()>& sync)
 {
    // The main loop tries to perform a constant input/physics cycle at a 1ms pace while feeding the GPU command queue at a stable rate, without multithreading.
    // These 2 tasks are designed as follows:
@@ -2058,7 +2058,7 @@ void Player::FramePacingGameLoop(std::function<void()> sync)
    }
 }
 
-void Player::PrepareFrame(std::function<void()> sync)
+void Player::PrepareFrame(const std::function<void()>& sync)
 {
    // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
    // Then it is tonemapped/bloom/dither/... to m_renderDevice->GetPostProcessRenderTarget1() if needed for postprocessing (sharpen, FXAA,...), or directly to the main output framebuffer otherwise
@@ -2358,12 +2358,10 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          return { m_dmdFrameId, m_dmdFrame };
 
       // Search for the main DMD
-      GetDmdMsg msg;
-      memset(&msg, 0, sizeof(GetDmdMsg));
+      GetDmdMsg msg = {};
       unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
       bool dmdFound = false;
-      GetDmdSrcMsg getSrcMsg;
-      memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
+      GetDmdSrcMsg getSrcMsg = {};
       getSrcMsg.maxEntryCount = 1024;
       getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
       VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
@@ -2405,21 +2403,19 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
       if (pCD == m_controllerDisplays.end())
       {
          // Search for the requested DMD
-         GetDmdMsg msg;
-         memset(&msg, 0, sizeof(GetDmdMsg));
+         GetDmdMsg msg = {};
          unsigned int getDmdSrcId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
          bool dmdFound = false;
-         GetDmdSrcMsg getSrcMsg;
-         memset(&getSrcMsg, 0, sizeof(GetDmdSrcMsg));
+         GetDmdSrcMsg getSrcMsg = {};
          getSrcMsg.maxEntryCount = 1024;
          getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
          VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(getDmdSrcId, &getSrcMsg);
-         unsigned int largest = 128;
+         //unsigned int largest = 128;
          for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
             if ((getSrcMsg.entries[i].dmdId == id) && (msg.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
             {
-               largest = getSrcMsg.entries[i].width;
+               //largest = getSrcMsg.entries[i].width;
                msg.dmdId = getSrcMsg.entries[i].dmdId;
                msg.width = getSrcMsg.entries[i].width;
                msg.height = getSrcMsg.entries[i].height;

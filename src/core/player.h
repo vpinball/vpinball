@@ -317,9 +317,9 @@ private:
    unsigned int m_onGameStartMsgId;
    unsigned int m_onPrepareFrameMsgId;
 
-   void MultithreadedGameLoop(std::function<void()> sync);
-   void FramePacingGameLoop(std::function<void()> sync);
-   void GPUQueueStuffingGameLoop(std::function<void()> sync);
+   void MultithreadedGameLoop(const std::function<void()>& sync);
+   void FramePacingGameLoop(const std::function<void()>& sync);
+   void GPUQueueStuffingGameLoop(const std::function<void()>& sync);
 #pragma endregion
 
 
@@ -428,7 +428,7 @@ public:
    bool m_scaleFX_DMD = false;
 
 private:
-   void PrepareFrame(std::function<void()> sync);
+   void PrepareFrame(const std::function<void()>& sync);
    void SubmitFrame();
    void FinishFrame();
 #pragma endregion

@@ -672,7 +672,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    // using the specialized initializer is not needed
    // ImGui_ImplSDL3_InitForOpenGL(m_player->m_playfieldSdlWnd, rd->m_sdl_context);
    ImGui_ImplSDL3_InitForOther(m_player->m_playfieldWnd->GetCore());
-   int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
+   //int displayIndex = SDL_GetDisplayForWindow(m_player->m_playfieldWnd->GetCore());
    if (m_player->m_vrDevice)
    {
       // VR headset cover full view range, so use a relative part of the full range for the DPI
@@ -864,7 +864,8 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    return imageData;
 }
 
-bool LiveUI::HasKeyboardCapture() const {
+bool LiveUI::HasKeyboardCapture() const
+{
    return ImGui::GetIO().WantCaptureKeyboard;
 }
 
@@ -1066,7 +1067,7 @@ void LiveUI::UpdatePerfOverlay()
          FrameProfiler::PROFILE_RENDER_SLEEP,
          FrameProfiler::PROFILE_RENDER_SUBMIT, // For BGFX, since BGFX performs CPU->GPU submit after flip
       };
-      const ImU32 cols[] = {
+      constexpr ImU32 cols[] = {
          IM_COL32(128, 255, 128, 255), // Prepare
          IM_COL32(255,   0,   0, 255), // Wait for Render Frame
          IM_COL32(  0, 128, 255, 255), // Submit (VPX->BGFX)
@@ -1074,10 +1075,10 @@ void LiveUI::UpdatePerfOverlay()
          IM_COL32(128, 128, 128, 255), // Sleep
          IM_COL32(  0, 128, 255, 255), // Submit (BGFX->Driver)
       };
-      const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x77FFFFFF;
-      const ImU32 col_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x77FFFFFF;
-      const ImU32 col_outline_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x7FFFFFFF;
-      const ImU32 col_outline_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x7FFFFFFF;
+      //const ImU32 col_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x77FFFFFF;
+      //const ImU32 col_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x77FFFFFF;
+      //const ImU32 col_outline_base = ImGui::GetColorU32(ImGuiCol_PlotHistogram) & 0x7FFFFFFF;
+      //const ImU32 col_outline_hovered = ImGui::GetColorU32(ImGuiCol_PlotHistogramHovered) & 0x7FFFFFFF;
       ImGuiContext &g = *GImGui;
       const ImGuiStyle &style = g.Style;
       ImVec2 graph_size;
@@ -1252,13 +1253,13 @@ void LiveUI::UpdatePerfOverlay()
    // Display plots
    if (m_show_fps == 2)
    {
-      constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+      constexpr ImGuiWindowFlags window_flags_plots = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowSize(ImVec2(530, 500));
       if (m_player->m_vrDevice)
          ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.70f, io.DisplaySize.y * 0.35f), 0, ImVec2(1.f, 0.f));
       else
          ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x - 8.f * m_dpi, io.DisplaySize.y - 8.f * m_dpi), 0, ImVec2(1.f, 1.f));
-      ImGui::Begin("Plots", nullptr, window_flags);
+      ImGui::Begin("Plots", nullptr, window_flags_plots);
 
       float t = static_cast<float>(m_player->m_time_sec);
       constexpr int rt_axis = ImPlotAxisFlags_NoTickLabels;
@@ -3828,7 +3829,7 @@ void LiveUI::UpdatePlumbWindow()
       int accOrientation = accOrientationEnabled ? m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 500) : 0;
       if (ImGui::InputInt("Acc. Rotation", &accOrientation))
       {
-         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, accOrientation == 0 ? false : true);
+         g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, accOrientation != 0);
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, accOrientation);
          m_player->ReadAccelerometerCalibration();
       }
@@ -4250,7 +4251,7 @@ void LiveUI::UpdateMainSplashModal()
             if (!hovered && !(pos.x <= initialDragPos.x && initialDragPos.x <= max.x && pos.y <= initialDragPos.y && initialDragPos.y <= max.y) // Don't drag if mouse is over UI components
              && !m_player->m_playfieldWnd->IsFullScreen()) // Don't drag if window is fullscreen
             {
-               const ImVec2 pos = ImGui::GetMousePos();
+               //const ImVec2 pos = ImGui::GetMousePos();
                const ImVec2 drag = ImGui::GetMouseDragDelta();
                int x, y;
                m_player->m_playfieldWnd->GetPos(x, y);
@@ -4970,7 +4971,7 @@ void LiveUI::PropSeparator(const char *label)
    ImGui::TableNextColumn();
 }
 
-void LiveUI::PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, OnBoolPropChange chg_callback)
+void LiveUI::PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, bool *startup_v, bool *live_v, const OnBoolPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(bool)
    if (ImGui::Checkbox(label, v))
@@ -4986,7 +4987,7 @@ void LiveUI::PropCheckbox(const char *label, IEditable *undo_obj, bool is_live, 
    PROP_HELPER_END
 }
 
-void LiveUI::PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, OnFloatPropChange chg_callback)
+void LiveUI::PropFloat(const char *label, IEditable* undo_obj, bool is_live, float *startup_v, float *live_v, float step, float step_fast, const char *format, ImGuiInputTextFlags flags, const OnFloatPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(float)
    if (ImGui::InputFloat(label, v, step, step_fast, format, flags))
@@ -5034,7 +5035,7 @@ void LiveUI::PropRGB(const char *label, IEditable *undo_obj, bool is_live, COLOR
    PROP_HELPER_END
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_x, float *startup_y, float *startup_z, float *live_x, float *live_y, float *live_z, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_x, float *startup_y, float *startup_z, float *live_x, float *live_y, float *live_z, const char *format, ImGuiInputTextFlags flags, const OnVec3PropChange &chg_callback)
 {
    PROP_TABLE_SETUP
    ImGui::TableNextColumn();
@@ -5073,7 +5074,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    PROP_HELPER_END
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v2, float *live_v2, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, float *startup_v2, float *live_v2, const char *format, ImGuiInputTextFlags flags, const OnVec3PropChange &chg_callback)
 {
    Vertex3Ds startV, liveV;
    Vertex3Ds *startup_v = nullptr, *live_v = nullptr;
@@ -5102,7 +5103,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, floa
    }
 }
 
-void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags, OnVec3PropChange chg_callback)
+void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vertex3Ds *startup_v, Vertex3Ds *live_v, const char *format, ImGuiInputTextFlags flags, const OnVec3PropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(Vertex3Ds)
    float col[3] = { v->x, v->y, v->z };
@@ -5121,7 +5122,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
    PROP_HELPER_END
 }
 
-void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], OnIntPropChange chg_callback)
+void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], const OnIntPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(int)
    const char * const preview_value = labels[*v].c_str();
@@ -5144,7 +5145,7 @@ void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int
    PROP_HELPER_END
 }
 
-void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, const OnStringPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(string)
    const char *const preview_value = v->c_str();
@@ -5170,7 +5171,7 @@ void LiveUI::PropImageCombo(const char *label, IEditable *undo_obj, bool is_live
    PROP_HELPER_END
 }
 
-void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, const OnStringPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(string)
    const char *const preview_value = v->c_str();
@@ -5196,7 +5197,7 @@ void LiveUI::PropMaterialCombo(const char *label, IEditable *undo_obj, bool is_l
    PROP_HELPER_END
 }
 
-void LiveUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+void LiveUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, const OnStringPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(string)
    const char *const preview_value = v->c_str();
@@ -5222,7 +5223,7 @@ void LiveUI::PropLightmapCombo(const char *label, IEditable *undo_obj, bool is_l
    PROP_HELPER_END
 }
 
-void LiveUI::PropRenderProbeCombo(const char *label, RenderProbe::ProbeType type, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, OnStringPropChange chg_callback)
+void LiveUI::PropRenderProbeCombo(const char *label, RenderProbe::ProbeType type, IEditable *undo_obj, bool is_live, string *startup_v, string *live_v, PinTable *table, const OnStringPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(string)
    const char *const preview_value = v->c_str();

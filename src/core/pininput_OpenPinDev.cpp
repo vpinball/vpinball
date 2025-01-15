@@ -276,7 +276,7 @@ void PinInput::InitOpenPinballDevices()
                      {
                         // Check for an opaque byte array, usage 0x00 (undefined/vendor-specific),
                         // with an associated usage string that matches the OPD signature string.
-                        const size_t nStrBuf = 128;
+                        constexpr size_t nStrBuf = 128;
                         wchar_t strBuf[nStrBuf];
                         if (f.usageRanges.size() == 1 && f.usageRanges.front().Equals(USAGE_PAGE_GAMECONTROLS, 0)
                            && f.stringRanges.size() == 1 && !f.stringRanges.front().IsRange()
@@ -335,7 +335,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Combined report.  In keeping with Visual Pinball's treatment of
    // multiple gamepads, we merge the input across devices if there are
    // multiple Pinball Devices sending us data.
-   OpenPinballDeviceReport cr { 0 };
+   OpenPinballDeviceReport cr = {};
 
    // read input from each device
    bool isNewReport = false;
@@ -398,7 +398,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
-   int const scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+   constexpr int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
 
    // Process the analog axis inputs.  Each VP functional axis has a
    // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8

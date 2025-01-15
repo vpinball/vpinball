@@ -4,7 +4,7 @@
 #include <Windows.h>
 
 #include <cassert>
-#include <stdint.h>
+#include <cstdint>
 #include <tchar.h>
 #include <string>
 #include <chrono>
@@ -27,12 +27,12 @@
 // stretched to fit 128x32 frame, shaded using 0xFF4500 color (C# Colors.OrangeRed), 
 // with non linear shading for 2 bitplane frames.
 
-MsgPluginAPI* msgApi = nullptr;
-unsigned int endpointId, getDmdSrcId, getDmdId, onGameStartId, onGameEndId, onSerumTriggerId;
+static MsgPluginAPI* msgApi = nullptr;
+static unsigned int endpointId, getDmdSrcId, getDmdId, onGameStartId, onGameEndId, onSerumTriggerId;
 
-HMODULE dmdDevicePupDll = nullptr;
-unsigned int dmdId = 0, lastFrameId = 0;
-std::chrono::high_resolution_clock::time_point lastFrameTick;
+static HMODULE dmdDevicePupDll = nullptr;
+static unsigned int dmdId = 0, lastFrameId = 0;
+static std::chrono::high_resolution_clock::time_point lastFrameTick;
 
 typedef int (*pup_open)();
 typedef void (*pup_setGameName)(const char* cName, int len);
@@ -40,15 +40,15 @@ typedef void (*pup_trigger)(unsigned short triggerId);
 typedef void (*pup_renderRGB24)(unsigned short width, unsigned short height, uint8_t* frame);
 typedef int (*pup_close)();
 
-pup_open pupOpen;
-pup_setGameName pupSetGameName;
-pup_trigger pupTrigger;
-pup_renderRGB24 pupRender_RGB24;
-pup_close pupClose;
+static pup_open pupOpen;
+static pup_setGameName pupSetGameName;
+static pup_trigger pupTrigger;
+static pup_renderRGB24 pupRender_RGB24;
+static pup_close pupClose;
 
-uint8_t rgbFrame[128 * 32 * 3];
-uint8_t palette4[4 * 3];
-uint8_t palette16[16 * 3];
+static uint8_t rgbFrame[128 * 32 * 3];
+static uint8_t palette4[4 * 3];
+static uint8_t palette16[16 * 3];
 
 // Introduced in Windows 7 (not supported in Windows XP)
 #ifndef LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR
@@ -85,7 +85,7 @@ void processDMD(const GetDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::
    }
    else if (getDmdMsg.width == 128 && getDmdMsg.height < 32)
    {
-      const int ofsY = ((32 - getDmdMsg.height) / 2) * 128;
+      const unsigned int ofsY = ((32 - getDmdMsg.height) / 2) * 128;
       for (unsigned int i = 0; i < 128 * 16; i++)
          memcpy(&rgbFrame[(ofsY + i) * 3], &palette[getDmdMsg.frame[i] * 3], 3);
    }
@@ -115,14 +115,14 @@ void processDMD(const GetDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::
                {
                   const int px = x * 2 + dx;
                   const int py = y * 2 + dy;
-                  float weight = radius * radius - static_cast<float>(fabs(dx - 0.5f) * fabs(dy - 0.5f));
-                  if (px >= 0 && px < static_cast<int>(getDmdMsg.width) && py >= 0 && py < static_cast<int>(getDmdMsg.height))
+                  const float weight = radius * radius - fabsf(dx - 0.5f) * fabsf(dy - 0.5f);
+                  if (/*px >= 0 &&*/ static_cast<unsigned int>(px) < getDmdMsg.width && /*py >= 0 &&*/ static_cast<unsigned int>(py) < getDmdMsg.height) // unsigned int tests include the >= 0 ones
                      lum += getDmdMsg.frame[py * getDmdMsg.width + px] * weight;
                   sum += weight;
                }
             }
-            const int l = (int)round(lum / sum);
-            memcpy(&rgbFrame[(y * 128 + x + ofsX) * 3], &palette[l * 3], 3);
+            const int l = (int)roundf(lum / sum);
+            memcpy(&rgbFrame[(y * 128 + ofsX + x) * 3], &palette[l * 3], 3);
          }
       }
    }
@@ -143,8 +143,7 @@ void onUpdateDMD(void* userData)
    auto now = std::chrono::high_resolution_clock::now();
    if (now - lastFrameTick >= std::chrono::milliseconds(16))
    {
-      GetDmdMsg getDmdMsg;
-      memset(&getDmdMsg, 0, sizeof(getDmdMsg));
+      GetDmdMsg getDmdMsg = {};
       getDmdMsg.dmdId = dmdId;
       msgApi->BroadcastMsg(endpointId, getDmdId, &getDmdMsg);
       processDMD(getDmdMsg, now);
@@ -172,8 +171,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
    // Select main DMD from the list of DMD sources
    bool mainDMDFound = false;
-   GetDmdSrcMsg getSrcMsg;
-   memset(&getSrcMsg, 0, sizeof(getSrcMsg));
+   GetDmdSrcMsg getSrcMsg = {};
    getSrcMsg.maxEntryCount = 1024;
    getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
    msgApi->BroadcastMsg(endpointId, getDmdSrcId, &getSrcMsg);
@@ -252,7 +250,7 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(sessionId, onSerumTriggerId = msgApi->GetMsgID("Serum", "OnDmdTrigger"), onSerumTrigger, nullptr);
    dmdDevicePupDll = nullptr;
-   unsigned int mapping4[] = { 0, 1, 4, 15 };
+   constexpr unsigned int mapping4[] = { 0, 1, 4, 15 };
    for (int i = 0; i < 4; i++)
    {
       palette4[i * 3 + 0] = (mapping4[i] * 0xFF) / 0xF; // R

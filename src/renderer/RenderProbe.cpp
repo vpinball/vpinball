@@ -210,7 +210,7 @@ void RenderProbe::ApplyAreaOfInterest(RenderPass* pass)
 //////////////////////////////////////////////////////////////////////////////////////////////////
 // Roughness implementation, using downscaling and bluring
 
-int RenderProbe::GetRoughnessDownscale(const int roughness)
+int RenderProbe::GetRoughnessDownscale(const int roughness) const
 {
    if (m_type == SCREEN_SPACE_TRANSPARENCY)
       return 1; // No downscaling since this is not supported by hardware for depth buffer

@@ -118,7 +118,7 @@ private:
       std::vector<XrCompositionLayerProjectionView> layerProjectionViews;
       std::vector<XrCompositionLayerDepthInfoKHR> depthInfoViews;
    };
-   static Matrix3D XRPoseToMatrix3D(XrPosef pose);
+   static Matrix3D XRPoseToMatrix3D(const XrPosef& pose);
 
    bool m_depthExtensionSupported = false;
 

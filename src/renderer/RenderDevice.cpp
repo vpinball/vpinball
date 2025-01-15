@@ -1468,7 +1468,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
       #endif
 #endif
       m_vsyncCount++;
-      const U64 now = usec();
+      //const U64 now = usec();
       //static U64 lastUs = 0;
       //PLOGD_(PLOG_NO_DBG_OUT_INSTANCE_ID) << "VSYNC " << ((double)(now - lastUs) / 1000.0) << "ms";
       //lastUs = now;

@@ -58,7 +58,7 @@ public:
    static MsgPluginManager& GetInstance();
    ~MsgPluginManager();
 
-   void ScanPluginFolder(const std::string& pluginDir, std::function<void(MsgPlugin&)> callback);
+   void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
    void ProcessAsyncCallbacks();

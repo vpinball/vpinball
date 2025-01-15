@@ -134,7 +134,7 @@ void MsgPluginManager::UnsubscribeMsg(const unsigned int msgId, const msgpi_msg_
    assert(callback != nullptr);
    assert(msgId < pm.m_msgs.size());
    assert(pm.m_msgs[msgId].refCount > 0);
-   for (std::vector<CallbackEntry>::iterator it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); it++)
+   for (std::vector<CallbackEntry>::iterator it = pm.m_msgs[msgId].callbacks.begin(); it != pm.m_msgs[msgId].callbacks.end(); ++it)
    {
       if (it->callback == callback)
       {
@@ -200,7 +200,7 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    else
    {
       auto timer = TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
-      pm.m_timers.insert(std::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](TimerEntry a, TimerEntry b) { return a.time < b.time; }), timer);
+      pm.m_timers.insert(std::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry &a, const TimerEntry &b) { return a.time < b.time; }), timer);
    }
 }
 
@@ -224,7 +224,7 @@ void MsgPluginManager::ProcessAsyncCallbacks()
       }
    }
    // Release lock before calling callbacks to avoid deadlock
-   for (auto it = timers.begin(); it < timers.end(); it++)
+   for (auto it = timers.begin(); it < timers.end(); ++it)
       it->callback(it->userData);
 }
 
@@ -239,7 +239,7 @@ std::string unquote(const std::string& str)
    return str;
 }
 
-void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, std::function<void(MsgPlugin&)> callback)
+void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback)
 {
    assert(std::this_thread::get_id() == m_apiThread);
    if (!std::filesystem::exists(pluginDir))

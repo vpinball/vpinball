@@ -60,7 +60,7 @@ public:
    void RenderRelease();
 
 private:
-   int GetRoughnessDownscale(const int roughness);
+   int GetRoughnessDownscale(const int roughness) const;
    void ApplyRoughness(RenderTarget* probe, const int roughness);
 
    void RenderScreenSpaceTransparency();
