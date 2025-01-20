@@ -42,8 +42,6 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    PLOGI.printf("PUP path: %s", m_szPath.c_str());
 
-   TTF_Init();
-
    // Load screens
 
    string szScreensPath = find_path_case_insensitive(m_szPath + "screens.pup");
@@ -336,6 +334,4 @@ void PUPManager::Stop()
 
    m_szPath.clear();
    m_init = false;
-
-   TTF_Quit();
 }
