@@ -58,8 +58,8 @@ IScriptable::IScriptable()
 
 int CodeViewDispatch::SortAgainstValue(const wstring& pv) const
 {
-   char* szName1 = MakeChar(pv.c_str());
-   char* szName2 = MakeChar(m_wName.c_str());
+   const char* szName1 = MakeChar(pv.c_str());
+   const char* szName2 = MakeChar(m_wName.c_str());
    int ret = lstrcmp(szName1, szName2);
    delete[] szName1;
    delete[] szName2;
@@ -215,7 +215,7 @@ static int UDKeyIndexHelper(const fi_vector<UserData>& ListIn, const string& str
 	while (!(curPosOut & ListSize) && (curPosOut > 1))
 		curPosOut >>= 1;
 	int iJumpDelta = curPosOut >> 1;
-	--curPosOut; //Zero Base
+	--curPosOut; // Zero Base
 	while (true)
 	{
 		const int result = (curPosOut >= ListSize) ? -1 : strSearchData.compare(uniqueKey ? ListIn[curPosOut].m_uniqueKey : lowerCase(ListIn[curPosOut].m_keyName));
@@ -566,10 +566,10 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
    if (SUCCEEDED(piscript->GetDispatch()->GetTypeInfo(NULL, NULL, &ti))) {
       BSTR bstrTypeName;
       if (SUCCEEDED(ti->GetDocumentation(MEMBERID_NIL, &bstrTypeName, NULL, NULL, NULL))) {
-           const char* szType = MakeChar(bstrTypeName);
-           PLOGD.printf("type=%s, name=%s", szType, szT);
-           delete[] szType;
-           SysFreeString(bstrTypeName);
+         const char* szType = MakeChar(bstrTypeName);
+         PLOGD.printf("type=%s, name=%s", szType, szT);
+         delete[] szType;
+         SysFreeString(bstrTypeName);
       }
       ti->Release();
    }
@@ -622,9 +622,9 @@ void CodeViewer::SelectItem(IScriptable * const piscript)
    const LRESULT index = ::SendMessage(m_hwndItemList, CB_FINDSTRINGEXACT, ~0u, (size_t)szT);
    if (index != CB_ERR)
    {
-       ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
+      ::SendMessage(m_hwndItemList, CB_SETCURSEL, index, 0);
 
-       ListEventsFromItem();
+      ListEventsFromItem();
    }
 #endif
 }
@@ -973,7 +973,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
       0, 0, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
    SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
-   
+
    //////////////////////// Scintilla text editor
 
    m_hwndScintilla = CreateWindowEx(0, "Scintilla", "",
@@ -1132,7 +1132,7 @@ void CodeViewer::Destroy()
 
 	if (m_hwndFind) DestroyWindow(m_hwndFind);
 
-   CWnd::Destroy();
+	CWnd::Destroy();
 #endif
 }
 
@@ -1191,7 +1191,7 @@ STDMETHODIMP CodeViewer::GetItemInfo(LPCOLESTR pstrName, DWORD dwReturnMask,
    return S_OK;
 }
 
-/**
+/*
  * Called on compilation errors. Also called on runtime errors in we couldn't create a "process debug manager" (such
  * as when running on wine), or if no debug application is available (where a "debug application" is something like
  * VS 2010 Isolated Shell).
@@ -1353,7 +1353,7 @@ STDMETHODIMP CodeViewer::GetApplication(
 	else
 		return E_NOTIMPL;
 #else
-   return S_OK;
+	return S_OK;
 #endif
 }
 
@@ -1381,7 +1381,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 )
 {
 #ifndef __STANDALONE__
-	// TODO: What debuggers even work with VBScript? It might be an idea to offer a "Debug" button (set pfEnterDebugger to
+	// TODO: Which debuggers even work with VBScript? It might be an idea to offer a "Debug" button (set pfEnterDebugger to
 	//       true) if it can pop open some old version of visual studio to debug stuff.
 	//
 	//       VS 2010 Isolated Shell seems to work, but trying to enter debugging with it complains with an "invalid
@@ -1427,7 +1427,7 @@ STDMETHODIMP CodeViewer::OnScriptErrorDebug(
 		pt->m_pcv->ShowWindow(SW_RESTORE);
 		pt->m_pcv->ColorError(nLine, nChar);
 	}
-	
+
 	// Error log content
 	std::wstringstream errorStream;
 	errorStream << L"Runtime error\r\n";
@@ -2350,7 +2350,6 @@ HRESULT STDMETHODCALLTYPE CodeViewer::ProcessUrlAction(
    DWORD dwFlags,
    DWORD dwReserved)
 {
-
    *pPolicy = (dwAction == URLACTION_ACTIVEX_RUN && (g_pvp->m_securitylevel < eSecurityNoControls)) ?
    URLPOLICY_ALLOW : URLPOLICY_DISALLOW;
 
@@ -2486,10 +2485,7 @@ bool CodeViewer::FUserManuallyOkaysControl(const CONFIRMSAFETY *pcs)
 #endif
 }
 
-HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(
-   REFGUID guidService,
-   REFIID riid,
-   void **ppv)
+HRESULT STDMETHODCALLTYPE CodeViewer::QueryService(REFGUID guidService, REFIID riid, void **ppv)
 {
    const HRESULT hr = (riid == IID_IInternetHostSecurityManager) ? QueryInterface(riid /*IID_IInternetHostSecurityManager*/, ppv) : E_NOINTERFACE;
 
@@ -2940,7 +2936,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				CommPos = RemainingLine.find_first_of(',');
 			}
 		}
-		else 
+		else
 		{
 			ud.m_uniqueKey = lowerCase(ud.m_keyName) + m_currentParentKey;
 			ud.m_uniqueParent = m_currentParentKey;
@@ -2981,7 +2977,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 				return true;
 			}
 			else
-			{ 
+			{
 				if (m_parentLevel > 0)
 				{//finished with child ===== END =====
 					const int iCurParent = UDKeyIndex<true>(ListIn, m_currentParentKey);
@@ -3015,7 +3011,7 @@ bool CodeViewer::ParseStructureName(fi_vector<UserData>& ListIn, const UserData&
 string CodeViewer::ParseDelimtByColon(string &wholeline)
 {
 	string result;
-	const size_t idx = wholeline.find(':'); 
+	const size_t idx = wholeline.find(':');
 	if (idx == string::npos || idx == 0)
 	{
 		result = wholeline;
@@ -3104,30 +3100,30 @@ void CodeViewer::ParseFindConstruct(size_t &Pos, const string &UCLineIn, WordTyp
 
 void CodeViewer::ReadLineToParseBrain(string wholeline, const int linecount, fi_vector<UserData>& ListIn)
 {
-		const string comment = ParseRemoveVBSLineComments(wholeline);
-		while (wholeline.length() > 1)
+	const string comment = ParseRemoveVBSLineComments(wholeline);
+	while (wholeline.length() > 1)
+	{
+		string line = ParseDelimtByColon(wholeline);
+		RemovePadding(line);
+		const string UCline = upperCase(line);
+		UserData UD;
+		UD.eTyping = eUnknown;
+		UD.m_lineNum = linecount;
+		UD.m_comment = comment;
+		int SearchLength = 0;
+		size_t idx = string::npos;
+		ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
+		if (idx != string::npos) // Found something structural
 		{
-			string line = ParseDelimtByColon(wholeline);
-			RemovePadding(line);
-			const string UCline = upperCase(line);
-			UserData UD;
-			UD.eTyping = eUnknown;
-			UD.m_lineNum = linecount;
-			UD.m_comment = comment;
-			int SearchLength = 0;
-			size_t idx = string::npos;
-			ParseFindConstruct(idx, UCline, UD.eTyping, SearchLength);
-			if (idx != string::npos) // Found something structural
-			{
-				const size_t doubleQuoteIdx = line.find('\"');
-				if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
-				UD.m_description = line;
-				UD.m_keyName = ExtractWordOperand(line, idx + SearchLength); // sSubName
-				//UserData ud(linecount, line, sSubName, Type);
-				if (!ParseStructureName(ListIn, UD, UCline, line, linecount))
-				{/*A critical brain error occurred */}
-			}// if ( idx != string::npos)
-		}// while (wholeline.length > 1)
+			const size_t doubleQuoteIdx = line.find('"');
+			if ((doubleQuoteIdx != string::npos) && (doubleQuoteIdx < idx)) continue; // in a string literal
+			UD.m_description = line;
+			UD.m_keyName = ExtractWordOperand(line, idx + SearchLength); // sSubName
+			//UserData ud(linecount, line, sSubName, Type);
+			if (!ParseStructureName(ListIn, UD, UCline, line, linecount))
+			{/*A critical brain error occurred */}
+		}// if ( idx != string::npos)
+	}// while (wholeline.length > 1)
 }
 
 void CodeViewer::RemoveByVal(string &line)
@@ -3756,7 +3752,7 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 		//#if !(defined(IMSPANISH))
 		//      ShowWindow(GetDlgItem(hwndDlg, IDC_TRANSLATEWEBSITE), SW_HIDE);
 		//#endif
-	}
+   }
    break; //case WM_INITDIALOG:
 
    case WM_COMMAND:

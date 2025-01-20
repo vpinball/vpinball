@@ -642,6 +642,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         m_nameEdit.SetReadOnly(0);
     }
 
+    m_nameEdit.EnableWindow(psel->GetItemType() != eItemLightCenter); // Cannot rename light center
+
     for (int i = 0; i < PROPERTY_TABS; i++)
     {
         if (m_tabs[i])
