@@ -149,12 +149,16 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
       return false;
 
    string szFamilyName = string(TTF_GetFontFamilyName(pFont));
-   string szNormalizedFamilyName = string_to_lower(string_replace_all(szFamilyName, "  ", " "));
+   string szStyleName = string(TTF_GetFontStyleName(pFont));
+   string szFullName = szFamilyName;
+   if (szStyleName != "Regular")
+      szFullName += " " + szStyleName;
+   string szNormalizedFullName = string_to_lower(string_replace_all(szFullName, "  ", " "));
 
-   m_fontMap[szNormalizedFamilyName] = pFont;
+   m_fontMap[szNormalizedFullName] = pFont;
    m_fontFilenameMap[string_to_lower(szFilename.substr(0, szFilename.length() - 4))] = pFont;
 
-   PLOGI.printf("Font added: familyName=%s, filename=%s", szFamilyName.c_str(), szFilename.c_str());
+   PLOGI.printf("Font added: familyName=%s, styleName=%s, filename=%s", szFamilyName.c_str(), szStyleName.c_str(), szFilename.c_str());
 
    return true;
 }
