@@ -120,8 +120,8 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
             m_elementTypeName.SetWindowText("Table");
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableVisualsProperty(&pvsel), _T("Visuals")));
             m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableLightsProperty(&pvsel), _T("Lights")));
-            m_tabs[2] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
-            m_tabs[3] = static_cast<BasePropertyDialog *>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
+            m_tabs[2] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TablePhysicsProperty(&pvsel), _T("Physics")));
+            m_tabs[3] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TableAudioProperty(&pvsel), _T("Sound")));
             if (m_tab.m_activeTabText == CString("Visuals"))
                 activePage = 0;
             else if (m_tab.m_activeTabText == CString("Lights"))
@@ -547,7 +547,7 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
       m_elementTypeName.ShowWindow(SW_HIDE);
       m_tab.ShowWindow(SW_HIDE);
       while (m_tab.GetItemCount() > 0)
-            m_tab.RemoveTabPage(0);
+         m_tab.RemoveTabPage(0);
       memset(m_tabs, 0, sizeof(m_tabs));
       m_previousType = eItemTypeCount;
       return;
@@ -614,7 +614,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         CComBSTR bstr;
         psel->GetTypeName(&bstr);
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, nullptr, nullptr);
-        sprintf_s(header, sizeof(header), "%s(%d)", name, pvsel.size());
 
         if (collection[0] != '\0')
             sprintf_s(header, sizeof(header), "%s [%s](%d)", collection, name, pvsel.size());
@@ -629,6 +628,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         m_nameEdit.SetWindowText(psel->GetPTable()->GetElementName(psel->GetIEditable()));
         m_nameEdit.SetReadOnly(0);
     }
+
+    m_nameEdit.EnableWindow(psel->GetItemType() != eItemLightCenter); // Cannot rename light center
 
     for (int i = 0; i < PROPERTY_TABS; i++)
     {
