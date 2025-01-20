@@ -447,7 +447,10 @@ void PropertyDialog::UpdateMaterialComboBox(const vector<Material *>& contentLis
        for (const auto mat : contentList)
        {
            if (mat->m_szName==selectName)
+           {
                matFound = true;
+               break;
+           }
        }
        need_reset |= !matFound; // Selection is not part of the list
     }
@@ -589,7 +592,6 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         CComBSTR bstr;
         psel->GetTypeName(&bstr);
         WideCharToMultiByteNull(CP_ACP, 0, bstr, -1, name, 64, nullptr, nullptr);
-        sprintf_s(header, sizeof(header), "%s(%d)", name, pvsel.size());
 
         if (collection[0] != '\0')
             sprintf_s(header, sizeof(header), "%s [%s](%d)", collection, name, pvsel.size());
@@ -604,6 +606,8 @@ void PropertyDialog::UpdateTabs(VectorProtected<ISelect> &pvsel)
         m_nameEdit.SetWindowText(psel->GetPTable()->GetElementName(psel->GetIEditable()));
         m_nameEdit.SetReadOnly(0);
     }
+
+    m_nameEdit.EnableWindow(psel->GetItemType() != eItemLightCenter); // Cannot rename light center
 
     for (int i = 0; i < PROPERTY_TABS; i++)
     {
