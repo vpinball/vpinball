@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -23,6 +23,10 @@
  * # CategoryMetal
  *
  * Functions to creating Metal layers and views on SDL windows.
+ *
+ * This provides some platform-specific glue for Apple platforms. Most macOS
+ * and iOS apps can use SDL without these functions, but this API they can be
+ * useful for specific OS-level integration tasks.
  */
 
 #ifndef SDL_metal_h_

@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,8 +25,8 @@
  * SDL joystick support.
  *
  * This is the lower-level joystick handling. If you want the simpler option,
- * where what buttons does what is well-defined, you should use the gamepad
- * API instead.
+ * where what each button does is well-defined, you should use the gamepad API
+ * instead.
  *
  * The term "instance_id" is the current instantiation of a joystick device in
  * the system, if the joystick is removed and then re-inserted then it will

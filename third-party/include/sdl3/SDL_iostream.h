@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -25,7 +25,7 @@
  * # CategoryIOStream
  *
  * SDL provides an abstract interface for reading and writing data streams. It
- * offers implementations for files, memory, etc, and the app can provideo
+ * offers implementations for files, memory, etc, and the app can provide
  * their own implementations, too.
  *
  * SDL_IOStream is not related to the standard C++ iostream class, other than
@@ -260,6 +260,8 @@ typedef struct SDL_IOStream SDL_IOStream;
  * \returns a pointer to the SDL_IOStream structure that is created or NULL on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_CloseIO
@@ -302,6 +304,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromFile(const char *file, cons
  * \param size the buffer size, in bytes.
  * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -347,6 +351,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromMem(void *mem, size_t size)
  * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
  *          SDL_GetError() for more information.
  *
+ * \threadsafety It is safe to call this function from any thread.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_IOFromMem
@@ -374,6 +380,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromConstMem(const void *mem, s
  *
  * \returns a pointer to a new SDL_IOStream structure or NULL on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -407,6 +415,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_IOFromDynamicMem(void);
  * \param userdata the pointer that will be passed to the interface functions.
  * \returns a pointer to the allocated memory on success or NULL on failure;
  *          call SDL_GetError() for more information.
+ *
+ * \threadsafety It is safe to call this function from any thread.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -442,6 +452,8 @@ extern SDL_DECLSPEC SDL_IOStream * SDLCALL SDL_OpenIO(const SDL_IOStreamInterfac
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_OpenIO
@@ -454,6 +466,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_CloseIO(SDL_IOStream *context);
  * \param context a pointer to an SDL_IOStream structure.
  * \returns a valid property ID on success or 0 on failure; call
  *          SDL_GetError() for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -473,8 +487,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetIOProperties(SDL_IOStream *c
  * \param context the SDL_IOStream to query.
  * \returns an SDL_IOStatus enum with the current state.
  *
- * \threadsafety This function should not be called at the same time that
- *               another thread is operating on the same SDL_IOStream.
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -487,6 +500,8 @@ extern SDL_DECLSPEC SDL_IOStatus SDLCALL SDL_GetIOStatus(SDL_IOStream *context);
  * \returns the size of the data stream in the SDL_IOStream on success or a
  *          negative error code on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -513,6 +528,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_GetIOSize(SDL_IOStream *context);
  * \returns the final offset in the data stream after the seek or -1 on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_TellIO
@@ -531,6 +548,8 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_SeekIO(SDL_IOStream *context, Sint64 offs
  * \returns the current offset in the stream, or -1 if the information can not
  *          be determined.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_SeekIO
@@ -541,16 +560,20 @@ extern SDL_DECLSPEC Sint64 SDLCALL SDL_TellIO(SDL_IOStream *context);
  * Read from a data source.
  *
  * This function reads up `size` bytes from the data source to the area
- * pointed at by `ptr`. This function may read less bytes than requested. It
- * will return zero when the data stream is completely read, and
- * SDL_GetIOStatus() will return SDL_IO_STATUS_EOF, or on error, and
- * SDL_GetIOStatus() will return SDL_IO_STATUS_ERROR.
+ * pointed at by `ptr`. This function may read less bytes than requested.
+ *
+ * This function will return zero when the data stream is completely read, and
+ * SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If zero is returned and
+ * the stream is not at EOF, SDL_GetIOStatus() will return a different error
+ * value and SDL_GetError() will offer a human-readable message.
  *
  * \param context a pointer to an SDL_IOStream structure.
  * \param ptr a pointer to a buffer to read data into.
  * \param size the number of bytes to read from the data source.
  * \returns the number of bytes read, or 0 on end of file or other failure;
  *          call SDL_GetError() for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -579,6 +602,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_ReadIO(SDL_IOStream *context, void *ptr, 
  * \returns the number of bytes written, which will be less than `size` on
  *          failure; call SDL_GetError() for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_IOprintf
@@ -601,6 +626,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_WriteIO(SDL_IOStream *context, const void
  * \returns the number of bytes written or 0 on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_IOvprintf
@@ -619,6 +646,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOprintf(SDL_IOStream *context, SDL_PRINT
  * \returns the number of bytes written or 0 on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_IOprintf
@@ -636,6 +665,8 @@ extern SDL_DECLSPEC size_t SDLCALL SDL_IOvprintf(SDL_IOStream *context, SDL_PRIN
  * \param context SDL_IOStream structure to flush.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -661,9 +692,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FlushIO(SDL_IOStream *context);
  * \returns the data or NULL on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_LoadFile
+ * \sa SDL_SaveFile_IO
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *datasize, bool closeio);
 
@@ -681,11 +715,54 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile_IO(SDL_IOStream *src, size_t *da
  * \returns the data or NULL on failure; call SDL_GetError() for more
  *          information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_LoadFile_IO
+ * \sa SDL_SaveFile
  */
 extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasize);
+
+/**
+ * Save all the data into an SDL data stream.
+ *
+ * \param src the SDL_IOStream to write all data to.
+ * \param data the data to be written. If datasize is 0, may be NULL or a
+ *             invalid pointer.
+ * \param datasize the number of bytes to be written.
+ * \param closeio if true, calls SDL_CloseIO() on `src` before returning, even
+ *                in the case of an error.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.1.8.
+ *
+ * \sa SDL_SaveFile
+ * \sa SDL_LoadFile_IO
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile_IO(SDL_IOStream *src, const void *data, size_t datasize, bool closeio);
+
+/**
+ * Save all the data into a file path.
+ *
+ * \param file the path to write all available data into.
+ * \param data the data to be written. If datasize is 0, may be NULL or a
+ *             invalid pointer.
+ * \param datasize the number of bytes to be written.
+ * \returns true on success or false on failure; call SDL_GetError() for more
+ *          information.
+ *
+ * \threadsafety This function is not thread safe.
+ *
+ * \since This function is available since SDL 3.1.8.
+ *
+ * \sa SDL_SaveFile_IO
+ * \sa SDL_LoadFile
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_SaveFile(const char *file, const void *data, size_t datasize);
 
 /**
  *  \name Read endian functions
@@ -697,10 +774,17 @@ extern SDL_DECLSPEC void * SDLCALL SDL_LoadFile(const char *file, size_t *datasi
 /**
  * Use this function to read a byte from an SDL_IOStream.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the SDL_IOStream to read from.
  * \param value a pointer filled in with the data read.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
+ * \returns true on success or false on failure or EOF; call SDL_GetError()
+ *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -709,10 +793,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU8(SDL_IOStream *src, Uint8 *value);
 /**
  * Use this function to read a signed byte from an SDL_IOStream.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the SDL_IOStream to read from.
  * \param value a pointer filled in with the data read.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -725,10 +816,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS8(SDL_IOStream *src, Sint8 *value);
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -741,10 +839,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16LE(SDL_IOStream *src, Uint16 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -757,10 +862,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16LE(SDL_IOStream *src, Sint16 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -773,10 +885,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU16BE(SDL_IOStream *src, Uint16 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -789,10 +908,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS16BE(SDL_IOStream *src, Sint16 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -805,10 +931,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32LE(SDL_IOStream *src, Uint32 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -821,10 +954,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32LE(SDL_IOStream *src, Sint32 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -837,10 +977,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU32BE(SDL_IOStream *src, Uint32 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -853,10 +1000,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS32BE(SDL_IOStream *src, Sint32 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -869,10 +1023,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64LE(SDL_IOStream *src, Uint64 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -885,10 +1046,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64LE(SDL_IOStream *src, Sint64 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -901,10 +1069,17 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadU64BE(SDL_IOStream *src, Uint64 *value)
  * SDL byteswaps the data only if necessary, so the data returned will be in
  * the native byte order.
  *
+ * This function will return false when the data stream is completely read,
+ * and SDL_GetIOStatus() will return SDL_IO_STATUS_EOF. If false is returned
+ * and the stream is not at EOF, SDL_GetIOStatus() will return a different
+ * error value and SDL_GetError() will offer a human-readable message.
+ *
  * \param src the stream from which to read data.
  * \param value a pointer filled in with the data read.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -926,6 +1101,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ReadS64BE(SDL_IOStream *src, Sint64 *value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
@@ -937,6 +1114,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU8(SDL_IOStream *dst, Uint8 value);
  * \param value the byte value to write.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -955,6 +1134,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS8(SDL_IOStream *dst, Sint8 value);
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value);
@@ -972,6 +1153,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16LE(SDL_IOStream *dst, Uint16 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value);
@@ -988,6 +1171,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16LE(SDL_IOStream *dst, Sint16 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value);
@@ -1003,6 +1188,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU16BE(SDL_IOStream *dst, Uint16 value)
  * \param value the data to be written, in native format.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -1021,6 +1208,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS16BE(SDL_IOStream *dst, Sint16 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value);
@@ -1038,6 +1227,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32LE(SDL_IOStream *dst, Uint32 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value);
@@ -1054,6 +1245,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32LE(SDL_IOStream *dst, Sint32 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value);
@@ -1069,6 +1262,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU32BE(SDL_IOStream *dst, Uint32 value)
  * \param value the data to be written, in native format.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */
@@ -1087,6 +1282,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS32BE(SDL_IOStream *dst, Sint32 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value);
@@ -1104,6 +1301,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64LE(SDL_IOStream *dst, Uint64 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value);
@@ -1120,6 +1319,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteS64LE(SDL_IOStream *dst, Sint64 value)
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
  *
+ * \threadsafety This function is not thread safe.
+ *
  * \since This function is available since SDL 3.1.3.
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value);
@@ -1135,6 +1336,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_WriteU64BE(SDL_IOStream *dst, Uint64 value)
  * \param value the data to be written, in native format.
  * \returns true on successful write or false on failure; call SDL_GetError()
  *          for more information.
+ *
+ * \threadsafety This function is not thread safe.
  *
  * \since This function is available since SDL 3.1.3.
  */

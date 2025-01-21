@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -101,6 +101,23 @@ typedef enum SDL_ThreadPriority {
     SDL_THREAD_PRIORITY_HIGH,
     SDL_THREAD_PRIORITY_TIME_CRITICAL
 } SDL_ThreadPriority;
+
+/**
+ * The SDL thread state.
+ *
+ * The current state of a thread can be checked by calling SDL_GetThreadState.
+ *
+ * \since This enum is available since SDL 3.1.3.
+ *
+ * \sa SDL_GetThreadState
+ */
+typedef enum SDL_ThreadState
+{
+    SDL_THREAD_UNKNOWN,     /**< The thread is not valid */
+    SDL_THREAD_ALIVE,       /**< The thread is currently running */
+    SDL_THREAD_DETACHED,    /**< The thread is detached and can't be waited on */
+    SDL_THREAD_COMPLETE     /**< The thread has finished and should be cleaned up with SDL_WaitThread() */
+} SDL_ThreadState;
 
 /**
  * The function passed to SDL_CreateThread() as the new thread's entry point.
@@ -390,15 +407,15 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
 /**
  * Wait for a thread to finish.
  *
- * Threads that haven't been detached will remain (as a "zombie") until this
- * function cleans them up. Not doing so is a resource leak.
+ * Threads that haven't been detached will remain until this function cleans
+ * them up. Not doing so is a resource leak.
  *
  * Once a thread has been cleaned up through this function, the SDL_Thread
  * that references it becomes invalid and should not be referenced again. As
  * such, only one thread may call SDL_WaitThread() on another.
  *
- * The return code for the thread function is placed in the area pointed to by
- * `status`, if `status` is not NULL.
+ * The return code from the thread function is placed in the area pointed to
+ * by `status`, if `status` is not NULL.
  *
  * You may not wait on a thread that has been used in a call to
  * SDL_DetachThread(). Use either that function or this one, but not both, or
@@ -411,9 +428,9 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
  *
  * \param thread the SDL_Thread pointer that was returned from the
  *               SDL_CreateThread() call that started this thread.
- * \param status pointer to an integer that will receive the value returned
- *               from the thread function by its 'return', or NULL to not
- *               receive such value back.
+ * \param status a pointer filled in with the value returned from the thread
+ *               function by its 'return', or -1 if the thread has been
+ *               detached or isn't valid, may be NULL.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -421,6 +438,19 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetCurrentThreadPriority(SDL_ThreadPriority
  * \sa SDL_DetachThread
  */
 extern SDL_DECLSPEC void SDLCALL SDL_WaitThread(SDL_Thread *thread, int *status);
+
+/**
+ * Get the current state of a thread.
+ *
+ * \param thread the thread to query.
+ * \returns the current state of a thread, or SDL_THREAD_UNKNOWN if the thread
+ *          isn't valid.
+ *
+ * \since This function is available since SDL 3.1.8.
+ *
+ * \sa SDL_ThreadState
+ */
+extern SDL_DECLSPEC SDL_ThreadState SDLCALL SDL_GetThreadState(SDL_Thread *thread);
 
 /**
  * Let a thread clean up on exit without intervention.

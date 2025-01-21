@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -24,7 +24,7 @@
  *
  * Blend modes decide how two colors will mix together. There are both
  * standard modes for basic needs and a means to create custom modes,
- * dictating what sort of math to do what on what color components.
+ * dictating what sort of math to do on what color components.
  */
 
 #ifndef SDL_blendmode_h_

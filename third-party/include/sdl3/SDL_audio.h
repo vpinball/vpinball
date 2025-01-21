@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -33,8 +33,9 @@
  * even if the data format changes on either side halfway through.
  *
  * An app opens an audio device and binds any number of audio streams to it,
- * feeding more data to it as available. When the devices needs more data, it
- * will pull it from all bound streams and mix them together for playback.
+ * feeding more data to the streams as available. When the device needs more
+ * data, it will pull it from all bound streams and mix them together for
+ * playback.
  *
  * Audio streams can also use an app-provided callback to supply data
  * on-demand, which maps pretty closely to the SDL2 audio model.
@@ -65,6 +66,22 @@
  * migrate the logical devices to the correct physical device seamlessly and
  * keep playing; the app doesn't even have to know it happened if it doesn't
  * want to.
+ *
+ * ## Simplified audio
+ *
+ * As a simplified model for when a single source of audio is all that's
+ * needed, an app can use SDL_OpenAudioDeviceStream, which is a single
+ * function to open an audio device, create an audio stream, bind that stream
+ * to the newly-opened device, and (optionally) provide a callback for
+ * obtaining audio data. When using this function, the primary interface is
+ * the SDL_AudioStream and the device handle is mostly hidden away; destroying
+ * a stream created through this function will also close the device, stream
+ * bindings cannot be changed, etc. One other quirk of this is that the device
+ * is started in a _paused_ state and must be explicitly resumed; this is
+ * partially to offer a clean migration for SDL2 apps and partially because
+ * the app might have to do more setup before playback begins; in the
+ * non-simplified form, nothing will play until a stream is bound to a device,
+ * so they start _unpaused_.
  *
  * ## Channel layouts
  *
@@ -124,14 +141,68 @@
 extern "C" {
 #endif
 
-/* masks for different parts of SDL_AudioFormat. */
+/**
+ * Mask of bits in an SDL_AudioFormat that contains the format bit size.
+ *
+ * Generally one should use SDL_AUDIO_BITSIZE instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_BITSIZE       (0xFFu)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the floating point flag.
+ *
+ * Generally one should use SDL_AUDIO_ISFLOAT instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_FLOAT         (1u<<8)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the bigendian flag.
+ *
+ * Generally one should use SDL_AUDIO_ISBIGENDIAN or SDL_AUDIO_ISLITTLEENDIAN
+ * instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_BIG_ENDIAN    (1u<<12)
+
+/**
+ * Mask of bits in an SDL_AudioFormat that contain the signed data flag.
+ *
+ * Generally one should use SDL_AUDIO_ISSIGNED instead of this macro directly.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_AUDIO_MASK_SIGNED        (1u<<15)
 
-#define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, float, size) \
-    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(float) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
+/**
+ * Define an SDL_AudioFormat value.
+ *
+ * SDL does not support custom audio formats, so this macro is not of much use
+ * externally, but it can be illustrative as to what the various bits of an
+ * SDL_AudioFormat mean.
+ *
+ * For example, SDL_AUDIO_S32LE looks like this:
+ *
+ * ```c
+ * SDL_DEFINE_AUDIO_FORMAT(1, 0, 0, 32)
+ * ```
+ *
+ * \param signed 1 for signed data, 0 for unsigned data.
+ * \param bigendian 1 for bigendian data, 0 for littleendian data.
+ * \param flt 1 for floating point data, 0 for integer data.
+ * \param size number of bits per sample.
+ * \returns a format value in the style of SDL_AudioFormat.
+ *
+ * \threadsafety It is safe to call this macro from any thread.
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
+#define SDL_DEFINE_AUDIO_FORMAT(signed, bigendian, flt, size) \
+    (((Uint16)(signed) << 15) | ((Uint16)(bigendian) << 12) | ((Uint16)(flt) << 8) | ((size) & SDL_AUDIO_MASK_BITSIZE))
 
 /**
  * Audio format.
@@ -383,14 +454,6 @@ typedef struct SDL_AudioStream SDL_AudioStream;
 /* Function prototypes */
 
 /**
- *  \name Driver discovery functions
- *
- *  These functions return the list of built in audio drivers, in the
- *  order that they are normally initialized by default.
- */
-/* @{ */
-
-/**
  * Use this function to get the number of built-in audio drivers.
  *
  * This function returns a hardcoded number. This never returns a negative
@@ -436,7 +499,6 @@ extern SDL_DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
  * \sa SDL_GetNumAudioDrivers
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDriver(int index);
-/* @} */
 
 /**
  * Get the name of the current audio driver.
@@ -525,7 +587,6 @@ extern SDL_DECLSPEC SDL_AudioDeviceID * SDLCALL SDL_GetAudioRecordingDevices(int
  *
  * \sa SDL_GetAudioPlaybackDevices
  * \sa SDL_GetAudioRecordingDevices
- * \sa SDL_GetDefaultAudioInfo
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAudioDeviceName(SDL_AudioDeviceID devid);
 
@@ -662,6 +723,45 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioDeviceChannelMap(SDL_AudioDeviceID
  * \sa SDL_GetAudioDeviceFormat
  */
 extern SDL_DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(SDL_AudioDeviceID devid, const SDL_AudioSpec *spec);
+
+/**
+ * Determine if an audio device is physical (instead of logical).
+ *
+ * An SDL_AudioDeviceID that represents physical hardware is a physical
+ * device; there is one for each piece of hardware that SDL can see. Logical
+ * devices are created by calling SDL_OpenAudioDevice or
+ * SDL_OpenAudioDeviceStream, and while each is associated with a physical
+ * device, there can be any number of logical devices on one physical device.
+ *
+ * For the most part, logical and physical IDs are interchangeable--if you try
+ * to open a logical device, SDL understands to assign that effort to the
+ * underlying physical device, etc. However, it might be useful to know if an
+ * arbitrary device ID is physical or logical. This function reports which.
+ *
+ * This function may return either true or false for invalid device IDs.
+ *
+ * \param devid the device ID to query.
+ * \returns true if devid is a physical device, false if it is logical.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.8.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePhysical(SDL_AudioDeviceID devid);
+
+/**
+ * Determine if an audio device is a playback device (instead of recording).
+ *
+ * This function may return either true or false for invalid device IDs.
+ *
+ * \param devid the device ID to query.
+ * \returns true if devid is a playback device, false if it is recording.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.1.8.
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_IsAudioDevicePlayback(SDL_AudioDeviceID devid);
 
 /**
  * Use this function to pause audio playback on a specified device.
@@ -842,7 +942,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * Binding a stream to a device will set its output format for playback
  * devices, and its input format for recording devices, so they match the
  * device's settings. The caller is welcome to change the other end of the
- * stream's format at any time.
+ * stream's format at any time with SDL_SetAudioStreamFormat().
  *
  * \param devid an audio device to bind a stream to.
  * \param streams an array of audio streams to bind.
@@ -858,7 +958,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID devid);
  * \sa SDL_UnbindAudioStream
  * \sa SDL_GetAudioStreamDevice
  */
-extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream **streams, int num_streams);
+extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStreams(SDL_AudioDeviceID devid, SDL_AudioStream * const *streams, int num_streams);
 
 /**
  * Bind a single audio stream to an audio device.
@@ -890,7 +990,8 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SD
  *
  * Unbinding a stream that isn't bound to a device is a legal no-op.
  *
- * \param streams an array of audio streams to unbind.
+ * \param streams an array of audio streams to unbind. Can be NULL or contain
+ *                NULL.
  * \param num_streams number streams listed in the `streams` array.
  *
  * \threadsafety It is safe to call this function from any thread.
@@ -899,7 +1000,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_BindAudioStream(SDL_AudioDeviceID devid, SD
  *
  * \sa SDL_BindAudioStreams
  */
-extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **streams, int num_streams);
+extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream * const *streams, int num_streams);
 
 /**
  * Unbind a single audio stream from its audio device.
@@ -907,7 +1008,7 @@ extern SDL_DECLSPEC void SDLCALL SDL_UnbindAudioStreams(SDL_AudioStream **stream
  * This is a convenience function, equivalent to calling
  * `SDL_UnbindAudioStreams(&stream, 1)`.
  *
- * \param stream an audio stream to unbind from a device.
+ * \param stream an audio stream to unbind from a device. Can be NULL.
  *
  * \threadsafety It is safe to call this function from any thread.
  *
@@ -1002,6 +1103,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetAudioStreamFormat(SDL_AudioStream *strea
  * the end of a sound file in one format to a stream, change formats for the
  * next sound file, and start putting that new data while the previous sound
  * file is still queued, and everything will still play back correctly.
+ *
+ * If a stream is bound to a device, then the format of the side of the stream
+ * bound to a device cannot be changed (src_spec for recording devices,
+ * dst_spec for playback devices). Attempts to make a change to this side will
+ * be ignored, but this will not report an error. The other side's format can
+ * be changed.
  *
  * \param stream the stream the format is being changed.
  * \param src_spec the new format of the audio input; if NULL, it is not
@@ -1173,8 +1280,12 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * channel that it should be remapped to. To reverse a stereo signal's left
  * and right values, you'd have an array of `{ 1, 0 }`. It is legal to remap
  * multiple channels to the same thing, so `{ 1, 1 }` would duplicate the
- * right channel to both channels of a stereo signal. You cannot change the
- * number of channels through a channel map, just reorder them.
+ * right channel to both channels of a stereo signal. An element in the
+ * channel map set to -1 instead of a valid channel will mute that channel,
+ * setting it to a silence value.
+ *
+ * You cannot change the number of channels through a channel map, just
+ * reorder/mute them.
  *
  * Data that was previously queued in the stream will still be operated on in
  * the order that was current when it was added, which is to say you can put
@@ -1189,9 +1300,14 @@ extern SDL_DECLSPEC int * SDLCALL SDL_GetAudioStreamOutputChannelMap(SDL_AudioSt
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a a
- * race condition hasn't changed the format while you this call is setting the
+ * stream's format, this will fail. This is a safety measure to make sure a
+ * race condition hasn't changed the format while this call is setting the
  * channel map.
+ *
+ * Unlike attempting to change the stream's format, the input channel map on a
+ * stream bound to a recording device is permitted to change at any time; any
+ * data added to the stream from the device after this call will have the new
+ * mapping, but previously-added data will still have the prior mapping.
  *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.
@@ -1219,12 +1335,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * The output channel map reorders data that leaving a stream via
  * SDL_GetAudioStreamData.
  *
- * Each item in the array represents an output channel, and its value is the
+ * Each item in the array represents an input channel, and its value is the
  * channel that it should be remapped to. To reverse a stereo signal's left
  * and right values, you'd have an array of `{ 1, 0 }`. It is legal to remap
  * multiple channels to the same thing, so `{ 1, 1 }` would duplicate the
- * right channel to both channels of a stereo signal. You cannot change the
- * number of channels through a channel map, just reorder them.
+ * right channel to both channels of a stereo signal. An element in the
+ * channel map set to -1 instead of a valid channel will mute that channel,
+ * setting it to a silence value.
+ *
+ * You cannot change the number of channels through a channel map, just
+ * reorder/mute them.
  *
  * The output channel map can be changed at any time, as output remapping is
  * applied during SDL_GetAudioStreamData.
@@ -1236,9 +1356,16 @@ extern SDL_DECLSPEC bool SDLCALL SDL_SetAudioStreamInputChannelMap(SDL_AudioStre
  * after this call.
  *
  * If `count` is not equal to the current number of channels in the audio
- * stream's format, this will fail. This is a safety measure to make sure a a
- * race condition hasn't changed the format while you this call is setting the
+ * stream's format, this will fail. This is a safety measure to make sure a
+ * race condition hasn't changed the format while this call is setting the
  * channel map.
+ *
+ * Unlike attempting to change the stream's format, the output channel map on
+ * a stream bound to a recording device is permitted to change at any time;
+ * any data added to the stream after this call will have the new mapping, but
+ * previously-added data will still have the prior mapping. When the channel
+ * map doesn't match the hardware's channel layout, SDL will convert the data
+ * before feeding it to the device for playback.
  *
  * \param stream the SDL_AudioStream to change.
  * \param chmap the new channel map, NULL to reset to default.
@@ -1467,6 +1594,26 @@ extern SDL_DECLSPEC bool SDLCALL SDL_PauseAudioStreamDevice(SDL_AudioStream *str
  * \sa SDL_PauseAudioStreamDevice
  */
 extern SDL_DECLSPEC bool SDLCALL SDL_ResumeAudioStreamDevice(SDL_AudioStream *stream);
+
+/**
+ * Use this function to query if an audio device associated with a stream is
+ * paused.
+ *
+ * Unlike in SDL2, audio devices start in an _unpaused_ state, since an app
+ * has to bind a stream before any audio will flow.
+ *
+ * \param stream the audio stream associated with the audio device to query.
+ * \returns true if device is valid and paused, false otherwise.
+ *
+ * \threadsafety It is safe to call this function from any thread.
+ *
+ * \since This function is available since SDL 3.2.0.
+ *
+ * \sa SDL_PauseAudioStreamDevice
+ * \sa SDL_ResumeAudioStreamDevice
+ */
+extern SDL_DECLSPEC bool SDLCALL SDL_AudioStreamDevicePaused(SDL_AudioStream *stream);
+
 
 /**
  * Lock an audio stream for serialized access.

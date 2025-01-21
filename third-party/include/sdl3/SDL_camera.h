@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -28,6 +28,41 @@
  * devices can be enumerated, queried, and opened. Once opened, it will
  * provide SDL_Surface objects as new frames of video come in. These surfaces
  * can be uploaded to an SDL_Texture or processed as pixels in memory.
+ *
+ * Several platforms will alert the user if an app tries to access a camera,
+ * and some will present a UI asking the user if your application should be
+ * allowed to obtain images at all, which they can deny. A successfully opened
+ * camera will not provide images until permission is granted. Applications,
+ * after opening a camera device, can see if they were granted access by
+ * either polling with the SDL_GetCameraPermissionState() function, or waiting
+ * for an SDL_EVENT_CAMERA_DEVICE_APPROVED or SDL_EVENT_CAMERA_DEVICE_DENIED
+ * event. Platforms that don't have any user approval process will report
+ * approval immediately.
+ *
+ * Note that SDL cameras only provide video as individual frames; they will
+ * not provide full-motion video encoded in a movie file format, although an
+ * app is free to encode the acquired frames into any format it likes. It also
+ * does not provide audio from the camera hardware through this API; not only
+ * do many webcams not have microphones at all, many people--from streamers to
+ * people on Zoom calls--will want to use a separate microphone regardless of
+ * the camera. In any case, recorded audio will be available through SDL's
+ * audio API no matter what hardware provides the microphone.
+ *
+ * ## Camera gotchas
+ *
+ * Consumer-level camera hardware tends to take a little while to warm up,
+ * once the device has been opened. Generally most camera apps have some sort
+ * of UI to take a picture (a button to snap a pic while a preview is showing,
+ * some sort of multi-second countdown for the user to pose, like a photo
+ * booth), which puts control in the users' hands, or they are intended to
+ * stay on for long times (Pokemon Go, etc).
+ *
+ * It's not uncommon that a newly-opened camera will provide a couple of
+ * completely black frames, maybe followed by some under-exposed images. If
+ * taking a single frame automatically, or recording video from a camera's
+ * input without the user initiating it from a preview, it could be wise to
+ * drop the first several frames (if not the first several _seconds_ worth of
+ * frames!) before using images from a camera.
  */
 
 #ifndef SDL_camera_h_
@@ -409,7 +444,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetCameraFormat(SDL_Camera *camera, SDL_Cam
  * After use, the frame should be released with SDL_ReleaseCameraFrame(). If
  * you don't do this, the system may stop providing more video!
  *
- * Do not call SDL_FreeSurface() on the returned surface! It must be given
+ * Do not call SDL_DestroySurface() on the returned surface! It must be given
  * back to the camera subsystem with SDL_ReleaseCameraFrame!
  *
  * If the system is waiting for the user to approve access to the camera, as
@@ -471,7 +506,6 @@ extern SDL_DECLSPEC void SDLCALL SDL_ReleaseCameraFrame(SDL_Camera *camera, SDL_
  *
  * \since This function is available since SDL 3.1.3.
  *
- * \sa SDL_OpenCameraWithSpec
  * \sa SDL_OpenCamera
  */
 extern SDL_DECLSPEC void SDLCALL SDL_CloseCamera(SDL_Camera *camera);

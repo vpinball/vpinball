@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,18 @@
 /**
  * # CategoryMessagebox
  *
- * Message box support routines.
+ * SDL offers a simple message box API, which is useful for simple alerts,
+ * such as informing the user when something fatal happens at startup without
+ * the need to build a UI for it (or informing the user _before_ your UI is
+ * ready).
+ *
+ * These message boxes are native system dialogs where possible.
+ *
+ * There is both a customizable function (SDL_ShowMessageBox()) that offers
+ * lots of options for what to display and reports on what choice the user
+ * made, and also a much-simplified version (SDL_ShowSimpleMessageBox()),
+ * merely takes a text message and title, and waits until the user presses a
+ * single "OK" UI button. Often, this is all that is necessary.
  */
 
 #ifndef SDL_messagebox_h_
@@ -39,7 +50,7 @@ extern "C" {
 #endif
 
 /**
- * SDL_MessageBox flags.
+ * Message box flags.
  *
  * If supported will display warning icon, etc.
  *

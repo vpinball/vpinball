@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -29,6 +29,12 @@
  * These functions are largely concerned with reporting if the system has
  * access to various SIMD instruction sets, but also has other important info
  * to share, such as system RAM size and number of logical CPU cores.
+ *
+ * CPU instruction set checks, like SDL_HasSSE() and SDL_HasNEON(), are
+ * available on all platforms, even if they don't make sense (an ARM processor
+ * will never have SSE and an x86 processor will never have NEON, for example,
+ * but these functions still exist and will simply return false in these
+ * cases).
  */
 
 #ifndef SDL_cpuinfo_h_

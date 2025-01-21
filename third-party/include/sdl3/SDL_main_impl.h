@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -130,18 +130,6 @@
             #endif
 
             /* end of SDL_PLATFORM_WINDOWS impls */
-
-        #elif defined(SDL_PLATFORM_NGAGE)
-            /* same typedef as in ngage SDKs e32def.h */
-            typedef signed int TInt;
-            /* TODO: if it turns out that this only works when built as C++,
-                     move SDL_PLATFORM_NGAGE into the C++ section in SDL_main.h */
-            TInt E32Main()
-            {
-                return SDL_RunApp(0, NULL, SDL_main, NULL);
-            }
-
-            /* end of SDL_PLATFORM_NGAGE impl */
 
         #else /* platforms that use a standard main() and just call SDL_RunApp(), like iOS and 3DS */
             int main(int argc, char *argv[])

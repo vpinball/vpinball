@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -31,7 +31,7 @@
  *
  * There is also a simple .bmp loader, SDL_LoadBMP(). SDL itself does not
  * provide loaders for various other file formats, but there are several
- * excellent external libraries that do, including it's own satellite library,
+ * excellent external libraries that do, including its own satellite library,
  * SDL_image:
  *
  * https://github.com/libsdl-org/SDL_image
@@ -115,6 +115,11 @@ typedef enum SDL_FlipMode
  * remaining bytes to reach the pitch are used as padding to reach a desired
  * alignment, and have undefined contents.
  *
+ * When a surface holds YUV format data, the planes are assumed to be
+ * contiguous without padding between them, e.g. a 32x32 surface in NV12
+ * format with a pitch of 32 would consist of 32x32 bytes of Y plane followed
+ * by 32x16 bytes of UV plane.
+ *
  * \since This struct is available since SDL 3.1.3.
  *
  * \sa SDL_CreateSurface
@@ -192,7 +197,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_CreateSurfaceFrom(int width, int h
  *
  * \since This function is available since SDL 3.1.3.
  *
- * \sa SDL_CreateStackSurface
  * \sa SDL_CreateSurface
  * \sa SDL_CreateSurfaceFrom
  */
@@ -237,7 +241,7 @@ extern SDL_DECLSPEC SDL_PropertiesID SDLCALL SDL_GetSurfaceProperties(SDL_Surfac
  * interpreted in color operations.
  *
  * \param surface the SDL_Surface structure to update.
- * \param colorspace an SDL_ColorSpace value describing the surface
+ * \param colorspace an SDL_Colorspace value describing the surface
  *                   colorspace.
  * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
@@ -352,7 +356,7 @@ extern SDL_DECLSPEC bool SDLCALL SDL_AddSurfaceAlternateImage(SDL_Surface *surfa
  * Return whether a surface has alternate versions available.
  *
  * \param surface the SDL_Surface structure to query.
- * \returns true if alternate versions are available or true otherwise.
+ * \returns true if alternate versions are available or false otherwise.
  *
  * \since This function is available since SDL 3.1.3.
  *
@@ -856,7 +860,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurface(SDL_Surface *surfac
  * \since This function is available since SDL 3.1.3.
  *
  * \sa SDL_ConvertSurface
- * \sa SDL_ConvertSurface
  * \sa SDL_DestroySurface
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Surface *surface, SDL_PixelFormat format, SDL_Palette *palette, SDL_Colorspace colorspace, SDL_PropertiesID props);
@@ -872,7 +875,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL SDL_ConvertSurfaceAndColorspace(SDL_Su
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
@@ -888,20 +891,20 @@ extern SDL_DECLSPEC bool SDLCALL SDL_ConvertPixels(int width, int height, SDL_Pi
  * \param width the width of the block to copy, in pixels.
  * \param height the height of the block to copy, in pixels.
  * \param src_format an SDL_PixelFormat value of the `src` pixels format.
- * \param src_colorspace an SDL_ColorSpace value describing the colorspace of
+ * \param src_colorspace an SDL_Colorspace value describing the colorspace of
  *                       the `src` pixels.
  * \param src_properties an SDL_PropertiesID with additional source color
  *                       properties, or 0.
  * \param src a pointer to the source pixels.
  * \param src_pitch the pitch of the source pixels, in bytes.
  * \param dst_format an SDL_PixelFormat value of the `dst` pixels format.
- * \param dst_colorspace an SDL_ColorSpace value describing the colorspace of
+ * \param dst_colorspace an SDL_Colorspace value describing the colorspace of
  *                       the `dst` pixels.
  * \param dst_properties an SDL_PropertiesID with additional destination color
  *                       properties, or 0.
  * \param dst a pointer to be filled in with new pixel data.
  * \param dst_pitch the pitch of the destination pixels, in bytes.
- * \returns false on success or false on failure; call SDL_GetError() for more
+ * \returns true on success or false on failure; call SDL_GetError() for more
  *          information.
  *
  * \since This function is available since SDL 3.1.3.
@@ -1018,12 +1021,14 @@ extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRect(SDL_Surface *dst, const SDL
 extern SDL_DECLSPEC bool SDLCALL SDL_FillSurfaceRects(SDL_Surface *dst, const SDL_Rect *rects, int count, Uint32 color);
 
 /**
- * Performs a fast blit from the source surface to the destination surface.
+ * Performs a fast blit from the source surface to the destination surface
+ * with clipping.
  *
- * This assumes that the source and destination rectangles are the same size.
  * If either `srcrect` or `dstrect` are NULL, the entire surface (`src` or
- * `dst`) is copied. The final blit rectangles are saved in `srcrect` and
- * `dstrect` after all clipping is performed.
+ * `dst`) is copied while ensuring clipping to `dst->clip_rect`.
+ *
+ * The final blit rectangles are saved in `srcrect` and `dstrect` after all
+ * clipping is performed.
  *
  * The blit function should not be called on a locked surface.
  *

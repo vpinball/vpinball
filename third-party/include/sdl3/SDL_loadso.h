@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -46,6 +46,11 @@
  *   not defined whether or not it goes into the global symbol namespace for
  *   the application. If it does and it conflicts with symbols in your code or
  *   other shared libraries, you will not get the results you expect. :)
+ * - Once a library is unloaded, all pointers into it obtained through
+ *   SDL_LoadFunction() become invalid, even if the library is later reloaded.
+ *   Don't unload a library if you plan to use these pointers in the future.
+ *   Notably: beware of giving one of these pointers to atexit(), since it may
+ *   call that pointer after the library unloads.
  */
 
 #ifndef SDL_loadso_h_

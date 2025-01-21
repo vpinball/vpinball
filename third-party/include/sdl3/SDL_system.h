@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -22,7 +22,13 @@
 /**
  * # CategorySystem
  *
- * Platform-specific SDL API functions.
+ * Platform-specific SDL API functions. These are functions that deal with
+ * needs of specific operating systems, that didn't make sense to offer as
+ * platform-independent, generic APIs.
+ *
+ * Most apps can make do without these functions, but they can be useful for
+ * integrating with other parts of a specific system, adding platform-specific
+ * polish to an app, or solving problems that only affect one target.
  */
 
 #ifndef SDL_system_h_
@@ -129,7 +135,29 @@ extern SDL_DECLSPEC bool SDLCALL SDL_GetDXGIOutputInfo(SDL_DisplayID displayID, 
  * Platform specific functions for UNIX
  */
 
+/* this is defined in Xlib's headers, just need a simple declaration here. */
 typedef union _XEvent XEvent;
+
+/**
+ * A callback to be used with SDL_SetX11EventHook.
+ *
+ * This callback may modify the event, and should return true if the event
+ * should continue to be processed, or false to prevent further processing.
+ *
+ * As this is processing an event directly from the X11 event loop, this
+ * callback should do the minimum required work and return quickly.
+ *
+ * \param userdata the app-defined pointer provided to SDL_SetX11EventHook.
+ * \param xevent a pointer to an Xlib XEvent union to process.
+ * \returns true to let event continue on, false to drop it.
+ *
+ * \threadsafety This may only be called (by SDL) from the thread handling the
+ *               X11 event loop.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ *
+ * \sa SDL_SetX11EventHook
+ */
 typedef bool (SDLCALL *SDL_X11EventHook)(void *userdata, XEvent *xevent);
 
 /**
@@ -380,6 +408,13 @@ extern SDL_DECLSPEC void SDLCALL SDL_SendAndroidBackButton(void);
  * \since This macro is available since SDL 3.1.3.
  */
 #define SDL_ANDROID_EXTERNAL_STORAGE_READ   0x01
+
+/**
+ * See the official Android developer guide for more information:
+ * http://developer.android.com/guide/topics/data/data-storage.html
+ *
+ * \since This macro is available since SDL 3.1.3.
+ */
 #define SDL_ANDROID_EXTERNAL_STORAGE_WRITE  0x02
 
 /**
@@ -468,7 +503,17 @@ extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidExternalStoragePath(void)
  */
 extern SDL_DECLSPEC const char * SDLCALL SDL_GetAndroidCachePath(void);
 
-
+/**
+ * Callback that presents a response from a SDL_RequestAndroidPermission call.
+ *
+ * \param userdata an app-controlled pointer that is passed to the callback.
+ * \param permission the Android-specific permission name that was requested.
+ * \param granted true if permission is granted, false if denied.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ *
+ * \sa SDL_RequestAndroidPermission
+ */
 typedef void (SDLCALL *SDL_RequestAndroidPermissionCallback)(void *userdata, const char *permission, bool granted);
 
 /**
@@ -595,7 +640,7 @@ typedef enum SDL_Sandbox
  * \returns the application sandbox environment or SDL_SANDBOX_NONE if the
  *          application is not running in a sandbox environment.
  *
- * \since This function is available since SDL 3.2.0.
+ * \since This function is available since SDL 3.1.6.
  */
 extern SDL_DECLSPEC SDL_Sandbox SDLCALL SDL_GetSandbox(void);
 

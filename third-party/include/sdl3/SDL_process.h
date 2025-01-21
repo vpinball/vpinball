@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2024 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -54,6 +54,13 @@
 extern "C" {
 #endif
 
+/**
+ * An opaque handle representing a system process.
+ *
+ * \since This datatype is available since SDL 3.1.3.
+ *
+ * \sa SDL_CreateProcess
+ */
 typedef struct SDL_Process SDL_Process;
 
 /**
@@ -102,8 +109,8 @@ extern SDL_DECLSPEC SDL_Process *SDLCALL SDL_CreateProcess(const char * const *a
  * Description of where standard I/O should be directed when creating a
  * process.
  *
- * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERIT, it will go to
- * the same place as the application's I/O stream. This is the default for
+ * If a standard I/O stream is set to SDL_PROCESS_STDIO_INHERITED, it will go
+ * to the same place as the application's I/O stream. This is the default for
  * standard output and standard error.
  *
  * If a standard I/O stream is set to SDL_PROCESS_STDIO_NULL, it is connected
@@ -298,7 +305,7 @@ extern SDL_DECLSPEC void * SDLCALL SDL_ReadProcess(SDL_Process *process, size_t 
  *
  * Writing to this stream can return less data than expected if the process
  * hasn't read its input. It may be blocked waiting for its output to be read,
- * so if you may need to call SDL_GetOutputStream() and read the output in
+ * if so you may need to call SDL_GetProcessOutput() and read the output in
  * parallel with writing input.
  *
  * \param process The process to get the input stream for.
@@ -370,6 +377,12 @@ extern SDL_DECLSPEC bool SDLCALL SDL_KillProcess(SDL_Process *process, bool forc
  * The exit code will be the exit code of the process if it terminates
  * normally, a negative signal if it terminated due to a signal, or -255
  * otherwise. It will not be changed if the process is still running.
+ *
+ * If you create a process with standard output piped to the application
+ * (`pipe_stdio` being true) then you should read all of the process output
+ * before calling SDL_WaitProcess(). If you don't do this the process might be
+ * blocked indefinitely waiting for output to be read and SDL_WaitProcess()
+ * will never return true;
  *
  * \param process The process to wait for.
  * \param block If true, block until the process finishes; otherwise, report
