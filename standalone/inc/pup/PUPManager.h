@@ -84,6 +84,7 @@ private:
    string m_szRootPath;
    string m_szPath;
    std::map<int, PUPScreen*> m_screenMap;
+   vector<TTF_Font*> m_fonts;
    std::map<string, TTF_Font*> m_fontMap;
    std::map<string, TTF_Font*> m_fontFilenameMap;
    vector<PUPWindow*> m_windows;

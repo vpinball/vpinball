@@ -86,7 +86,14 @@ void PUPManager::LoadConfig(const string& szRomName)
          if (entry.is_regular_file()) {
             string szFontPath = entry.path().string();
             if (extension_from_path(szFontPath) == "ttf")
-               AddFont(TTF_OpenFont(szFontPath.c_str(), 8), entry.path().filename());
+            {
+               if (TTF_Font* pFont = TTF_OpenFont(szFontPath.c_str(), 8))
+               {
+                  AddFont(pFont, entry.path().filename());
+               }else{
+                  PLOGE.printf("Failed to load font: %s %s", szFontPath.c_str(), SDL_GetError());
+               }
+            }
          }
       }
    }
@@ -148,15 +155,23 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
    if (!pFont)
       return false;
 
-   string szFamilyName = string(TTF_GetFontFamilyName(pFont));
-   string szStyleName = string(TTF_GetFontStyleName(pFont));
-   string szFullName = szFamilyName;
-   if (szStyleName != "Regular")
-      szFullName += " " + szStyleName;
-   string szNormalizedFullName = string_to_lower(string_replace_all(szFullName, "  ", " "));
+   m_fonts.push_back(pFont);
 
-   m_fontMap[szNormalizedFullName] = pFont;
-   m_fontFilenameMap[string_to_lower(szFilename.substr(0, szFilename.length() - 4))] = pFont;
+   string szFamilyName = string(TTF_GetFontFamilyName(pFont));
+
+   string szNormalizedFamilyName = string_to_lower(string_replace_all(szFamilyName, "  ", " "));
+   m_fontMap[szNormalizedFamilyName] = pFont;
+
+   string szStyleName = string(TTF_GetFontStyleName(pFont));
+   if (szStyleName != "Regular")
+   {
+      string szFullName = szFamilyName + " " + szStyleName;
+      string szNormalizedFullName = string_to_lower(string_replace_all(szFullName, "  ", " "));
+      m_fontMap[szNormalizedFullName] = pFont;
+   }
+
+   string szNormalizedFilename = string_to_lower(szFilename.substr(0, szFilename.length() - 4));
+   m_fontFilenameMap[szNormalizedFilename] = pFont;
 
    PLOGI.printf("Font added: familyName=%s, styleName=%s, filename=%s", szFamilyName.c_str(), szStyleName.c_str(), szFilename.c_str());
 
@@ -329,10 +344,12 @@ void PUPManager::Stop()
 
    m_screenMap.clear();
 
-   for (auto& [key, pFont] : m_fontMap)
+   for (auto& pFont : m_fonts)
       TTF_CloseFont(pFont);
 
+   m_fonts.clear();
    m_fontMap.clear();
+   m_fontFilenameMap.clear();
 
    m_szPath.clear();
    m_init = false;
