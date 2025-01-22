@@ -1,6 +1,5 @@
 package org.libsdl.app;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -48,13 +47,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.ComponentActivity;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Locale;
 
+import android.annotation.SuppressLint;
+import androidx.activity.ComponentActivity;
 
 /**
     SDL Activity
@@ -63,8 +62,8 @@ import java.util.Locale;
 public class SDLActivity extends ComponentActivity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
     private static final int SDL_MAJOR_VERSION = 3;
-    private static final int SDL_MINOR_VERSION = 1;
-    private static final int SDL_MICRO_VERSION = 8;
+    private static final int SDL_MINOR_VERSION = 2;
+    private static final int SDL_MICRO_VERSION = 0;
 /*
     // Display InputType.SOURCE/CLASS of events and devices
     //
@@ -235,6 +234,7 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
     protected static boolean mSDLMainFinished = false;
     protected static boolean mActivityCreated = false;
     private static SDLFileDialogState mFileDialogState = null;
+    protected static boolean mDispatchingKeyEvent = false;
 
     protected static SDLGenericMotionListener_API14 getMotionListener() {
         if (mMotionListener == null) {
@@ -811,7 +811,14 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
             ) {
             return false;
         }
-        return super.dispatchKeyEvent(event);
+        mDispatchingKeyEvent = true;
+        boolean result = super.dispatchKeyEvent(event);
+        mDispatchingKeyEvent = false;
+        return result;
+    }
+
+    public static boolean dispatchingKeyEvent() {
+        return mDispatchingKeyEvent;
     }
 
     /* Transition to next state */
@@ -1499,7 +1506,6 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
                 // on some devices key events are sent for mouse BUTTON_BACK/FORWARD presses
                 // they are ignored here because sending them as mouse input to SDL is messy
                 if ((keyCode == KeyEvent.KEYCODE_BACK) || (keyCode == KeyEvent.KEYCODE_FORWARD)) {
-    Log.v("SDL", "keycode is back or forward");
                     switch (event.getAction()) {
                     case KeyEvent.ACTION_DOWN:
                     case KeyEvent.ACTION_UP:
@@ -1512,6 +1518,8 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
         }
 
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            onNativeKeyDown(keyCode);
+
             if (isTextInputEvent(event)) {
                 if (ic != null) {
                     ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
@@ -1519,7 +1527,6 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
                     SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
                 }
             }
-            onNativeKeyDown(keyCode);
             return true;
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
             onNativeKeyUp(keyCode);
@@ -1951,11 +1958,11 @@ public class SDLActivity extends ComponentActivity implements View.OnSystemUiVis
         }
     }
 
-    /*@Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        boolean result = (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
-        nativePermissionResult(requestCode, result);
-    }*/
+    //@Override
+    //public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    //    boolean result = (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED);
+    //    nativePermissionResult(requestCode, result);
+    //}
 
     /**
      * This method is called by SDL using JNI.
