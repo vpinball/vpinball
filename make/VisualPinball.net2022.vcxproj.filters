@@ -684,6 +684,9 @@
     <ClCompile Include="third-party/include/imgui/imgui_impl_sdl3.cpp">
       <Filter>third-party\imgui\sdl3</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\DynamicScript.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -1787,7 +1790,10 @@
     <ClInclude Include="third-party/include/openxr/openxr_reflection_structs.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\simple-uri-parser\uri_parser.h">
+    <ClInclude Include="src\core\DynamicScript.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/simple-uri-parser/uri_parser.h">
       <Filter>third-party\simple-uri-parser</Filter>
     </ClInclude>
   </ItemGroup>

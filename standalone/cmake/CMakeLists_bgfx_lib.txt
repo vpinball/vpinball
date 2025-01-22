@@ -88,6 +88,8 @@ set(VPINBALL_SOURCES
    src/audio/pinsound.h
 
    src/core/dispid.h
+   src/core/DynamicScript.cpp
+   src/core/DynamicScript.h
    src/core/editablereg.cpp
    src/core/editablereg.h
    src/core/extern.cpp

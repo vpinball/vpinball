@@ -279,7 +279,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    const char* gameId = static_cast<const char*>(msgData);
    assert(gameId != nullptr);
    char crzFolder[512];
-   msgApi->GetSetting("serum.dmd", "crz_folder", crzFolder, sizeof(crzFolder));
+   msgApi->GetSetting("Serum", "crz_folder", crzFolder, sizeof(crzFolder));
    pSerum = Serum_Load(crzFolder, gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    dmdSelected = false;
    if (pSerum)

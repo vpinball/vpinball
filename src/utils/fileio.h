@@ -5,7 +5,6 @@ bool DirExists(const string& dirPath);
 bool FileExists(const string& filePath);
 string TitleFromFilename(const string& szfilename);
 string ExtensionFromFilename(const string& szfilename);
-bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout);
 string PathFromFilename(const string& szfilename);
 string TitleAndPathFromFilename(const char * const szfilename);
 bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension);

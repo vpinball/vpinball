@@ -7,7 +7,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // General information API
 
-void GetTableInfo(VPXTableInfo* info)
+void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 {
    assert(g_pplayer); // Only allowed in game
    info->path = g_pplayer->m_ptable->m_szFileName.c_str();
@@ -19,7 +19,7 @@ void GetTableInfo(VPXTableInfo* info)
 ///////////////////////////////////////////////////////////////////////////////
 // User Input API
 
-float GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
+float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step,
    const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values)
 {
    // TODO handle showMask flag
@@ -50,7 +50,7 @@ float GetOption(const char* pageId, const char* optionId, const unsigned int sho
    }
 }
 
-void* PushNotification(const char* msg, const unsigned int lengthMs)
+void* VPXPluginAPIImpl::PushNotification(const char* msg, const unsigned int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
@@ -58,7 +58,7 @@ void* PushNotification(const char* msg, const unsigned int lengthMs)
    return nullptr;
 }
 
-void UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs)
+void VPXPluginAPIImpl::UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
    // FIXME implement
@@ -68,13 +68,13 @@ void UpdateNotification(const void* handle, const char* msg, const unsigned int 
 ///////////////////////////////////////////////////////////////////////////////
 // View API
 
-void DisableStaticPrerendering(const BOOL disable)
+void VPXPluginAPIImpl::DisableStaticPrerendering(const BOOL disable)
 {
    assert(g_pplayer); // Only allowed in game
    g_pplayer->m_renderer->DisableStaticPrePass(disable);
 }
 
-void GetActiveViewSetup(VPXViewSetupDef* view)
+void VPXPluginAPIImpl::GetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    const ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -99,7 +99,7 @@ void GetActiveViewSetup(VPXViewSetupDef* view)
    view->realToVirtualScale = viewSetup.GetRealToVirtualScale(g_pplayer->m_ptable);
 }
 
-void SetActiveViewSetup(VPXViewSetupDef* view)
+void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 {
    assert(g_pplayer); // Only allowed in game
    ViewSetup& viewSetup = g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set];
@@ -107,6 +107,80 @@ void SetActiveViewSetup(VPXViewSetupDef* view)
    viewSetup.mViewY = view->viewY;
    viewSetup.mViewZ = view->viewZ;
    g_pplayer->m_renderer->InitLayout();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Script support for plugin API
+
+void VPXPluginAPIImpl::RegisterScriptClass(ScriptClassDef* classDef)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   pi.m_dynamicTypeLibrary.RegisterScriptClass(classDef);
+}
+
+void VPXPluginAPIImpl::RegisterScriptTypeAlias(const char* name, const char* aliasedType)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   pi.m_dynamicTypeLibrary.RegisterScriptTypeAlias(name, aliasedType);
+}
+
+void VPXPluginAPIImpl::RegisterScriptArray(ScriptArrayDef *arrayDef)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   pi.m_dynamicTypeLibrary.RegisterScriptArray(arrayDef);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// API to support overriding legacy COM objects
+
+void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const char* pluginId, const char* classId)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   // FIXME remove when plugin is unloaded
+   pi.m_scriptCOMObjectOverrides.push_back(ScriptCOMObjectOverride { className, pluginId, classId });
+}
+
+#include <regex>
+string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
+{
+   if (m_scriptCOMObjectOverrides.empty())
+      return script;
+   std::regex re(R"(CreateObject\(\s*\"(.*)\"\s*\))");
+   std::smatch res;
+   string::const_iterator searchStart(script.cbegin());
+   std::stringstream result;
+   while (std::regex_search(searchStart, script.cend(), res, re))
+   {
+      result << res.prefix().str();
+      const string className = res[1].str();
+      auto match = std::find_if(m_scriptCOMObjectOverrides.cbegin(), m_scriptCOMObjectOverrides.cend(), [className](const ScriptCOMObjectOverride& over) { return over.className == className; });
+      if (match != m_scriptCOMObjectOverrides.cend())
+      {
+         PLOGI << "Legacy COM script object " << className << " overriden with class " << match->classId << " from plugin " << match->pluginId;
+         result << "CreatePluginObject(\"" << match->pluginId << "\", \"" << match->classId << "\")";
+      }
+      else
+      {
+         result << res.str();
+      }
+      searchStart = res.suffix().first;
+   }
+   result << std::string(searchStart, script.cend());
+   return result.str();
+}
+
+IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& pluginId, const string& classId)
+{
+   // FIXME we are not separating type library per plugin, therefore collision may occur
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   ScriptTypeNameDef type { classId.c_str(), 0 };
+   ScriptClassDef* scriptClass = pi.m_dynamicTypeLibrary.ResolveClass(type);
+   void* pScriptObject = scriptClass->CreateObject();
+   if (pScriptObject != nullptr)
+      return new DynamicDispatch(&pi.m_dynamicTypeLibrary, scriptClass, pScriptObject);
+   return nullptr;
 }
 
 
@@ -264,6 +338,8 @@ VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
 
 VPXPluginAPIImpl::VPXPluginAPIImpl()
 {
+   // Message host
+   auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
          Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
@@ -282,18 +358,7 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
          }
       });
 
-   auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   m_vpxEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
-   m_pinMameEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
    // VPX API
-   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetPluginAPI, nullptr);
-   // Generic controller
-   m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetDMD, this);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetDMD, this);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
-
    m_api.GetTableInfo = GetTableInfo;
 
    m_api.GetOption = GetOption;
@@ -303,11 +368,38 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.DisableStaticPrerendering = DisableStaticPrerendering;
    m_api.GetActiveViewSetup = GetActiveViewSetup;
    m_api.SetActiveViewSetup = SetActiveViewSetup;
+
+   m_api.SetCOMObjectOverride = SetCOMObjectOverride;
+
+   m_vpxEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
+   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
+
+   // Scriptable API
+   m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
+   m_scriptableApi.RegisterScriptTypeAlias = RegisterScriptTypeAlias;
+   m_scriptableApi.RegisterScriptArrayType = RegisterScriptArray;
+   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
+
+   // Generic controller bridge
+   m_pinMameEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
+   m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
+   m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetDMD, this);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetDMD, this);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 
-void VPXPluginAPIImpl::OnGetPluginAPI(const unsigned int msgId, void* userData, void* msgData)
+void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    VPXPluginAPI** pResult = static_cast<VPXPluginAPI**>(msgData);
    *pResult = &pi.m_api;
 }
+
+void VPXPluginAPIImpl::OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   ScriptablePluginAPI** pResult = static_cast<ScriptablePluginAPI**>(msgData);
+   *pResult = &pi.m_scriptableApi;
+}
+

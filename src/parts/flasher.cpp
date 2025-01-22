@@ -1217,7 +1217,7 @@ BaseTexture *Flasher::GetLinkedTexture(const string &link, const IEditable *cont
          return nullptr;
       if ((context->GetItemType() == ItemTypeEnum::eItemFlasher) && (uri.authority.host == "dmd"))
       {
-         const Flasher *flasher = reinterpret_cast<const Flasher *>(context);
+         const Flasher *flasher = static_cast<const Flasher *>(context);
          return flasher->m_dmdFrame != nullptr ? flasher->m_dmdFrame : g_pplayer->m_dmdFrame;
       }
       if ((context->GetItemType() == ItemTypeEnum::eItemTable) && (uri.authority.host == "dmd"))

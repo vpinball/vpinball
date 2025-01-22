@@ -6,7 +6,8 @@ else()
 	set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
 endif()
 
-# --- HelloWorld colorization plugin ---
+
+# --- HelloWorld plugin ---
 add_library(HelloWorldPlugin MODULE plugins/helloworld/helloworld.cpp)
 if (WIN32)
 set_target_properties(HelloWorldPlugin PROPERTIES
@@ -28,6 +29,31 @@ add_custom_command(TARGET HelloWorldPlugin POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloworld/plugin.cfg" "${PLUGINS_DIR}/helloworld/plugin.cfg"
    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "${PLUGINS_DIR}/helloworld/plugin-helloworld.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloWorldPlugin>"
+)
+
+
+# --- HelloScript plugin ---
+add_library(HelloScriptPlugin MODULE plugins/helloscript/helloscript.cpp)
+if (WIN32)
+set_target_properties(HelloScriptPlugin PROPERTIES
+   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+)
+target_compile_options(HelloScriptPlugin PUBLIC
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+)
+target_link_options(HelloScriptPlugin PUBLIC
+   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+   $<$<CONFIG:RELEASE>:/OPT:REF>
+   $<$<CONFIG:RELEASE>:/OPT:ICF>
+   $<$<CONFIG:RELEASE>:/LTCG>
+)
+endif()
+target_include_directories(HelloScriptPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
+add_custom_command(TARGET HelloScriptPlugin POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloscript/plugin.cfg" "${PLUGINS_DIR}/helloscript/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloScriptPlugin>" "${PLUGINS_DIR}/helloscript/plugin-helloscript.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloScriptPlugin>"
 )
 
 
@@ -56,7 +82,8 @@ target_link_options(SerumPlugin PUBLIC
 )
 endif()
 target_include_directories(SerumPlugin PUBLIC
-   ${CMAKE_CURRENT_SOURCE_DIR} src/plugins
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   src/plugins
    plugins/serum/third-party/include
 )
 add_custom_command(TARGET SerumPlugin POST_BUILD
@@ -64,6 +91,7 @@ add_custom_command(TARGET SerumPlugin POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:SerumPlugin>" "${PLUGINS_DIR}/serum/plugin-serum.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:SerumPlugin>"
 )
+
 
 # Pinup DMD plugin is only available on Windows as is talks to the closed-source Pinup Player
 if (WIN32)
