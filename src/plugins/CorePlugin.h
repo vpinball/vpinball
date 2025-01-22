@@ -21,6 +21,9 @@
 
 #define CTLPI_NAMESPACE                       "Controller"
 
+// Broadcasted when a DMD source is added or removed
+#define CTLPI_ONDMD_SRC_CHG_MSG               "OnDMDSourceChange"
+
 // Request subscribers to fill up an array with the list of DMD sources
 #define CTLPI_GETDMD_SRC_MSG                  "GetDMDSource"
 
@@ -45,7 +48,7 @@
 
 typedef struct GetDmdSrcEntry
 {
-   unsigned int dmdId;  // Unique Id of the DMD, built with source endpointId in the upper word, and controller local id in the lowest word. A DMD may be reported mutiple times with the same dmdId but different size/format thanks to frame improvment like colorization.
+   unsigned int dmdId;  // Unique Id of the DMD. A DMD may be reported mutiple times with the same dmdId but different size/format thanks to frame improvment like colorization.
    unsigned int width;  //
    unsigned int height; //
    unsigned int format; //
@@ -63,7 +66,7 @@ typedef struct GetDmdSrcMsg
 typedef struct GetDmdMsg
 {
    // Request
-   unsigned int dmdId;        // Uniquely identify a DMD (see GetDmdSrcMsg)
+   unsigned int dmdId;        // Uniquely identify the requested DMD (see GetDmdSrcMsg)
    unsigned int requestFlags; // Request options, see CTLPI_GETDMD_FLAG_xxx constants
    // Request & Response
    unsigned int width;        // Frame width, always defined on response, valid on request if CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ is set

@@ -21,13 +21,14 @@ typedef void (*msgpi_unload_plugin)();
 class MsgPlugin
 {
 public:
-   MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const std::string& library, const unsigned int endpointId)
+   MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const std::string& directory, const std::string& library, const unsigned int endpointId)
       : m_id(id)
       , m_name(name)
       , m_description(description)
       , m_author(author)
       , m_version(version)
       , m_link(link)
+      , m_directory(directory)
       , m_library(library)
       , m_endpointId(endpointId) { }
    ~MsgPlugin();
@@ -43,6 +44,7 @@ public:
    const std::string m_version; // Human-readable version
    const std::string m_link; // Web link to online information
    const std::string m_library; // Library implementing this plugin for the current platform
+   const std::string m_directory; // Directory containing this plugin
 
    const unsigned int m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
 

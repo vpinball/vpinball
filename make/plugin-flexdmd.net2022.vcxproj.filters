@@ -1,0 +1,297 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="source\Actors">
+      <UniqueIdentifier>{3502d8a3-fce9-4755-8119-1b31c6498706}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Resources">
+      <UniqueIdentifier>{c35af0af-fa04-477c-a33f-81e82e5bfacb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party">
+      <UniqueIdentifier>{bf1b1ea1-a40e-4271-a73d-fb80e1b75b57}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="source\Scenes">
+      <UniqueIdentifier>{2583fa9b-6847-42d9-afc8-6443a364615b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\SDL3_Image">
+      <UniqueIdentifier>{96ce3a7e-65d6-4195-98ed-af6e3d18408a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\SDL3">
+      <UniqueIdentifier>{bd305945-2e0c-4510-9404-5e80001edce2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third-party\pole">
+      <UniqueIdentifier>{02a27a37-b03d-4b20-9ac5-4b7b4cf93968}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="plugins/flexdmd/FlexDmdPlugin.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/FlexDMD.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/AdditiveFilter.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Actor.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/AnimatedActor.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/Bitmap.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/BitmapFilter.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/DotFilter.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/PadFilter.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/RegionFilter.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Label.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Group.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/GIFImage.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Frame.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/FadeOverlay.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/AssetManager.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/AssetSrc.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/Font.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/UltraDMD.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/ressources/VPXFile.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/third-party/include/pole/pole.cpp">
+      <Filter>third-party\pole</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Video.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/BackgroundScene.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/TwoLineScene.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/SingleLineScene.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/ScrollingCreditsScene.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/bmfonts/BitmapFont.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/ImageSequence.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/Image.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/actors/ScoreBoard.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/Sequence.cpp">
+      <Filter>source\Actors</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/scenes/Scene.cpp">
+      <Filter>source\Scenes</Filter>
+    </ClCompile>
+    <ClCompile Include="plugins/flexdmd/SurfaceGraphics.cpp">
+      <Filter>source\Resources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="plugins/flexdmd/plugin.cfg">
+      <Filter>source</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="plugins/flexdmd/FlexDMD.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/AdditiveFilter.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Actor.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/AnimatedActor.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/Bitmap.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/BitmapFilter.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/DotFilter.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/PadFilter.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/RegionFilter.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/RessourceDef.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Video.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Label.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Image.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Group.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/GIFImage.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Frame.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/FadeOverlay.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Actions.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/ImageSequence.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/Layout.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/AssetManager.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/AssetSrc.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/Font.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/tweeny-3.2.0.h">
+      <Filter>third-party</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/ressources/VPXFile.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/pole/pole.h">
+      <Filter>third-party\pole</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_surface.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_begin_code.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_blendmode.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_endian.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_error.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_pixels.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_platform_defines.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_properties.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_rect.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_stdinc.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3_image/SDL_image.h">
+      <Filter>third-party\SDL3_Image</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/BackgroundScene.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/ScrollingCreditsScene.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/SingleLineScene.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/TwoLineScene.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/AnimationType.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/bmfonts/BitmapFont.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/bmfonts/Character.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/bmfonts/Kerning.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/bmfonts/Page.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/Sequence.h">
+      <Filter>source\Actors</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/scenes/Scene.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/UltraDMD.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/actors/ScoreBoard.h">
+      <Filter>source\Scenes</Filter>
+    </ClInclude>
+    <ClInclude Include="plugins/flexdmd/SurfaceGraphics.h">
+      <Filter>source\Resources</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
