@@ -41,7 +41,7 @@ jobs:
 
   build-sbc:
     name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04-arm
     needs: [ version ]
     strategy:
       fail-fast: false
@@ -51,6 +51,9 @@ jobs:
         arch: [ aarch64 ]
         board: [ rpi, rk3588 ]
     steps:
+      - run: |
+          sudo apt-get update
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
       - uses: actions/checkout@v4
       - name: Calculate timestamp
         run: |
@@ -58,54 +61,49 @@ jobs:
       - uses: actions/cache/restore@v4
         with:
           path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-
-      - uses: pguyot/arm-runner-action@v2
-        id: arm_runner_make
-        with:
-          base_image: raspios_lite_arm64:latest
-          image_additional_mb: 4096
-          cpu: cortex-a53
-          cpu_info: cpuinfo/raspberrypi_zero2_w_arm64
-          bind_mount_repository: true
-          shell: /bin/bash
-          commands: |
-            apt-get update -y --allow-releaseinfo-change
-            apt-get install --no-install-recommends -y git pkg-config cmake bison autoconf automake libtool zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa libgles2-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
-            perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-            perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-            NUM_PROCS=$(nproc)
-            cd standalone/linux-${{ matrix.arch }}
-            BUILD_TYPE=${{ matrix.config }} ./external.sh
-            cd ../..
-            TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-            cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
-            OPTIONS=""
-            if [[ "${{ matrix.board }}" == "rpi" ]]; then
-              OPTIONS="-DBUILD_RPI=ON"
-            elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
-              OPTIONS="-DBUILD_RK3588=ON"
-            fi
-            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B make/${{ matrix.config }}
-            cmake --build make/${{ matrix.config }} -- -j${NUM_PROCS}
-            mkdir tmp
-            cp make/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
-            cp -a make/${{ matrix.config }}/*.{so,so.*} tmp
-            cp -r make/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
-            cp -r make/${{ matrix.config }}/assets tmp
-            cp -r make/${{ matrix.config }}/scripts tmp
-            cp -r make/${{ matrix.config }}/tables tmp
-            cp -r make/${{ matrix.config }}/docs tmp
-            cd tmp
-            tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
+             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-
+      - name: Build Deps
+        run: |
+          cd standalone/linux-${{ matrix.arch }}
+          BUILD_TYPE=${{ matrix.config }} ./external.sh
       - uses: actions/cache/save@v4
         if: ${{ !cancelled() }}
         with:
           path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-${{ env.TIMESTAMP }}
+      - name: Build
+        run: |
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
+          NUM_PROCS=$(nproc)
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          OPTIONS=""
+          if [[ "${{ matrix.board }}" == "rpi" ]]; then
+            OPTIONS="-DBUILD_RPI=ON"
+          elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
+            OPTIONS="-DBUILD_RK3588=ON"
+          fi
+          cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
+          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
+      - run: |
+          mkdir tmp
+          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
+          cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
+          cp -r build/${{ matrix.config }}/flexdmd tmp
+          if [[ "${{ matrix.type }}" == "GL" ]]; then
+            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+          fi
+          cp -r build/${{ matrix.config }}/assets tmp
+          cp -r build/${{ matrix.config }}/scripts tmp
+          cp -r build/${{ matrix.config }}/tables tmp
+          cp -r build/${{ matrix.config }}/docs tmp
+      - run: |
+          cd tmp
+          tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
       - uses: actions/upload-artifact@v4
         with:
           name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}
           path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz
-
