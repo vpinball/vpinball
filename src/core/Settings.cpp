@@ -163,6 +163,14 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
    {
       PLOGI << "Settings file was loaded from '" << path << '\'';
       Validate(createDefault);
+      for (const auto& entry : m_ini)
+      {
+         if (FindIndexOf(m_settingKeys, entry.first) < 0)
+         {
+            PLOGI << "Registering section '" << entry.first << "' used in settings file '" << path << "'";
+            m_settingKeys.push_back(entry.first);
+         }
+      }
       return true;
    }
    else if (createDefault)

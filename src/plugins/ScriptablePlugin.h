@@ -85,6 +85,7 @@ typedef union ScriptVariant
    ScriptArray*     vArray;
 } ScriptVariant;
 
+#define PSC_CALL_MAX_ARG_COUNT 16
 typedef struct ScriptClassMemberDef
 {
    ScriptTypeNameDef name;
@@ -92,7 +93,7 @@ typedef struct ScriptClassMemberDef
    void (*Get)(void* me, int memberIndex, ScriptVariant* pVal);
    void (*Set)(void* me, int memberIndex, ScriptVariant* pRet);
    void (*Call)(void* me, int memberIndex, ScriptVariant* pRet, ScriptVariant* pArgs);
-   ScriptTypeNameDef callArgType[6];
+   ScriptTypeNameDef callArgType[PSC_CALL_MAX_ARG_COUNT];
 } ScriptClassMemberDef;
 
 #pragma warning(disable : 4200) // 0 length array is a non standard extension used intentionally, so disable corresponding warning (this breaks default copy constructor & equal)
@@ -280,4 +281,59 @@ typedef struct ScriptablePluginAPI
       [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
          { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )) }, \
       { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } } } );
+
+#define PSC_FUNCTION5(className, type, name, arg1, arg2, arg3, arg4, arg5) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg4(pArgs[4]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 } } } );
+
+#define PSC_FUNCTION6(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg4(pArgs[4]), PSC_VAR_##arg4(pArgs[5]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 } } } );
+
+#define PSC_FUNCTION7(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 } } } );
+
+#define PSC_FUNCTION8(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 } } } );
+
+#define PSC_FUNCTION9(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 } } } );
+
+#define PSC_FUNCTION10(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 } } } );
+
+#define PSC_FUNCTION11(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 }, { #arg11 } } } );
+
+#define PSC_FUNCTION12(className, type, name, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12) \
+   members.push_back( { { #name }, { #type }, nullptr, nullptr, \
+      [](void* me, int, ScriptVariant* pRet, ScriptVariant* pArgs) \
+         { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
+                                                                         PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]), PSC_VAR_##arg12(pArgs[11]) )) }, \
+      { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 }, { #arg5 }, { #arg6 }, { #arg7 }, { #arg8 }, { #arg9 }, { #arg10 }, { #arg10 }, { #arg12 } } } );
+
 

@@ -2179,6 +2179,9 @@
     <ProjectReference Include="plugin-helloscript.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77A}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-flexdmd.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77B}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-pinup-events.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
     </ProjectReference>

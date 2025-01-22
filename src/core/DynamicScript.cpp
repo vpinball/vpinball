@@ -19,6 +19,8 @@
 #define DOUBLE_TYPEID    12
 #define STRING_TYPEID    13
 
+// Set to 1 to log all COM Invoke
+#define LOG_INVOKES 1
 
 DynamicTypeLibrary::DynamicTypeLibrary()
 {
@@ -63,7 +65,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
       ScriptClassMemberDef& memberDef = classDef->members[i];
       memberDef.name.id = static_cast<unsigned int>(m_scriptMembers.size());
       ResolveClassId(memberDef.type);
-      for (int j = 0; j < 6; j++)
+      for (int j = 0; j < PSC_CALL_MAX_ARG_COUNT; j++)
          ResolveClassId(memberDef.callArgType[j]);
       m_scriptMembers.push_back(std::pair(classDef, i));
    }
@@ -107,7 +109,7 @@ void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
    ResolveClassId(arrayDef->type);
    arrayDef->name.id = static_cast<unsigned int>(m_types.size());
    #ifdef ENABLE_DX9
-   TypeDef typeDef { TypeDef::TD_ARRAY }; typeDef.arrayDef = typeDef.arrayDef;
+   TypeDef typeDef { TypeDef::TD_ARRAY }; typeDef.arrayDef = arrayDef;
    m_types.push_back(typeDef);
    #else
    m_types.push_back({ .category = TypeDef::TD_ARRAY, .arrayDef = arrayDef });
@@ -145,6 +147,11 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, ScriptTypeNameDef
 {
    ResolveClassId(type);
    const TypeDef& typeDef = m_types[type.id];
+   if (V_VT(&cv) == (VT_BYREF | VT_VARIANT))
+   {
+      COMToScriptVariant(*V_VARIANTREF(&cv), type, sv);
+      return;
+   }
    switch (typeDef.category)
    {
    case TypeDef::TD_ALIAS:
@@ -180,6 +187,9 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, ScriptTypeNameDef
          case VT_UI1: sv.vInt = V_UI1(&cv); break;
          case VT_UI2: sv.vInt = V_UI2(&cv); break;
          case VT_UI4: sv.vInt = V_UI4(&cv); break;
+         case VT_R4: sv.vInt = static_cast<int>(V_R4(&cv)); break;
+         case VT_R8: sv.vInt = static_cast<int>(V_R8(&cv)); break;
+         case VT_EMPTY: sv.vInt = 0; break;
          default: assert(false);
          }
          break;
@@ -240,37 +250,53 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, ScriptTypeNameDef
          }
          break;
       case STRING_TYPEID:
-      {
-         assert(V_VT(&cv) == VT_BSTR);
-         const wstring wz(V_BSTR(&cv));
-         const int len = (int)wz.length();
-         char* const szT = new char[len + 1];
-         WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
-         sv.vString = szT;
+         switch (V_VT(&cv))
+         {
+         case VT_I2:
+         {
+            string txt = std::to_string(V_I2(&cv));
+            char* const szT = new char[txt.size() + 1];
+            memcpy(szT, txt.c_str(), txt.size() + 1);
+            sv.vString = szT;
+            break;
+         }
+         case VT_I4:
+         {
+            string txt = std::to_string(V_I4(&cv));
+            char* const szT = new char[txt.size() + 1];
+            memcpy(szT, txt.c_str(), txt.size() + 1);
+            sv.vString = szT;
+            break;
+         }
+         case VT_R8:
+         {
+            string txt = std::to_string(V_R8(&cv));
+            char* const szT = new char[txt.size() + 1];
+            memcpy(szT, txt.c_str(), txt.size() + 1);
+            sv.vString = szT;
+            break;
+         }
+         case VT_BSTR:
+         {
+            const wstring wz(V_BSTR(&cv));
+            const int len = (int)wz.length();
+            char* const szT = new char[len + 1];
+            WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
+            sv.vString = szT;
+            break;
+         }
+         default: assert(false);
+         }
          break;
-      }
       }
       break;
 
    case TypeDef::TD_CLASS:
    {
-      DynamicDispatch* dd = nullptr;
-      switch (V_VT(&cv))
-      {
-      case VT_DISPATCH:
-         dd = static_cast<DynamicDispatch*>(V_DISPATCH(&cv));
-         break;
-      case VT_VARIANT | VT_BYREF:
-         assert(V_VT(V_VARIANTREF(&cv)) == VT_DISPATCH);
-         dd = static_cast<DynamicDispatch*>(V_DISPATCH(V_VARIANTREF(&cv)));
-         break;
-      }
-      // assert(dd->m_classDef->name.id == type.id); // Can also be an inherited class
+      assert(V_VT(&cv) == VT_DISPATCH);
       // Shouldn't we add a reference for the duration of the call ?
-      if (dd != nullptr)
-         sv.vObject = dd->m_nativeObject;
-      else
-         sv.vObject = nullptr;
+      // assert(static_cast<DynamicDispatch*>(V_DISPATCH(&cv))->m_classDef->name.id == type.id); // Can also be an inherited class
+      sv.vObject = static_cast<DynamicDispatch*>(V_DISPATCH(&cv))->m_nativeObject;
       break;
    }
 
@@ -292,17 +318,87 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, ScriptTypeNameDef
       ScriptArray* array = nullptr;
       switch (arrayTypeDef.nativeType.id)
       {
+      case CHAR_TYPEID:
+      {
+         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
+         array = static_cast<ScriptArray*>(malloc(arraySize));
+         array->Release = [](ScriptArray* me) { free(me); };
+         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+         int8_t* pData = reinterpret_cast<int8_t*>(&array->lengths[1]);
+         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         {
+            assert(V_VT(p) == VT_I1);
+            *pData = V_I1(p);
+         }
+         break;
+      }
       case SHORT_TYPEID:
       {
          int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         short* pData = reinterpret_cast<short*>(&array->lengths[1]);
+         int16_t* pData = reinterpret_cast<int16_t*>(&array->lengths[1]);
          for (LONG i = lBound; i <= uBound; i++, pData++, p++)
          {
             assert(V_VT(p) == VT_I2);
             *pData = V_I2(p);
+         }
+         break;
+      }
+      case INT_TYPEID:
+      {
+         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
+         array = static_cast<ScriptArray*>(malloc(arraySize));
+         array->Release = [](ScriptArray* me) { free(me); };
+         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+         int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[1]);
+         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         {
+            assert(V_VT(p) == VT_I4);
+            *pData = V_I4(p);
+         }
+         break;
+      }
+      case UCHAR_TYPEID:
+      {
+         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
+         array = static_cast<ScriptArray*>(malloc(arraySize));
+         array->Release = [](ScriptArray* me) { free(me); };
+         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+         uint8_t* pData = reinterpret_cast<uint8_t*>(&array->lengths[1]);
+         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         {
+            assert(V_VT(p) == VT_UI1);
+            *pData = V_UI1(p);
+         }
+         break;
+      }
+      case USHORT_TYPEID:
+      {
+         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
+         array = static_cast<ScriptArray*>(malloc(arraySize));
+         array->Release = [](ScriptArray* me) { free(me); };
+         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+         uint16_t* pData = reinterpret_cast<uint16_t*>(&array->lengths[1]);
+         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         {
+            assert(V_VT(p) == VT_UI2);
+            *pData = V_UI2(p);
+         }
+         break;
+      }
+      case UINT_TYPEID:
+      {
+         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
+         array = static_cast<ScriptArray*>(malloc(arraySize));
+         array->Release = [](ScriptArray* me) { free(me); };
+         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
+         uint32_t* pData = reinterpret_cast<uint32_t*>(&array->lengths[1]);
+         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
+         {
+            assert(V_VT(p) == VT_UI4);
+            *pData = V_UI4(p);
          }
          break;
       }
@@ -455,13 +551,23 @@ void DynamicTypeLibrary::ScriptToCOMVariant(ScriptTypeNameDef& type, const Scrip
          }
          break;
       }
+      case SHORT_TYPEID:
+      {
+         int16_t* pSrc = reinterpret_cast<int16_t*>(&sv.vArray->lengths[1]);
+         for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
+         {
+            V_VT(&pData[i]) = VT_I2;
+            V_I4(&pData[i]) = pSrc[i];
+         }
+         break;
+      }
       case INT_TYPEID:
       {
          int32_t* pSrc = reinterpret_cast<int32_t*>(&sv.vArray->lengths[1]);
          for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
          {
             V_VT(&pData[i]) = VT_I4;
-            V_UI1(&pData[i]) = pSrc[i];
+            V_I4(&pData[i]) = pSrc[i];
          }
          break;
       }
@@ -475,13 +581,23 @@ void DynamicTypeLibrary::ScriptToCOMVariant(ScriptTypeNameDef& type, const Scrip
          }
          break;
       }
+      case USHORT_TYPEID:
+      {
+         uint16_t* pSrc = reinterpret_cast<uint16_t*>(&sv.vArray->lengths[1]);
+         for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
+         {
+            V_VT(&pData[i]) = VT_UI2;
+            V_UI2(&pData[i]) = pSrc[i];
+         }
+         break;
+      }
       case UINT_TYPEID:
       {
          uint32_t* pSrc = reinterpret_cast<uint32_t*>(&sv.vArray->lengths[1]);
          for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
          {
             V_VT(&pData[i]) = VT_UI4;
-            V_UI1(&pData[i]) = pSrc[i];
+            V_UI4(&pData[i]) = pSrc[i];
          }
          break;
       }
@@ -496,6 +612,42 @@ void DynamicTypeLibrary::ScriptToCOMVariant(ScriptTypeNameDef& type, const Scrip
    }
 }
 
+string DynamicTypeLibrary::ScriptVariantToString(ScriptTypeNameDef& type, ScriptVariant& sv) const
+{
+   ResolveClassId(type);
+   const TypeDef& typeDef = m_types[type.id];
+   switch (typeDef.category)
+   {
+   case TypeDef::TD_ALIAS: return ScriptVariantToString(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv);
+
+   case TypeDef::TD_NATIVE:
+      switch (typeDef.nativeType.id)
+      {
+      case INVALID_TYPEID: return "Invalid";
+      case VOID_TYPEID: return "void";
+      case BOOL_TYPEID: return sv.vBool ? "true" : "false";
+      case CHAR_TYPEID: return std::to_string(sv.vByte);
+      case SHORT_TYPEID: return std::to_string(sv.vShort);
+      case INT_TYPEID: return std::to_string(sv.vInt);
+      case LONG_TYPEID: return std::to_string(sv.vLong);
+      case UCHAR_TYPEID: return std::to_string(sv.vUByte);
+      case USHORT_TYPEID: return std::to_string(sv.vUShort);
+      case UINT_TYPEID: return std::to_string(sv.vUInt);
+      case ULONG_TYPEID: return std::to_string(sv.vULong);
+      case FLOAT_TYPEID: return std::to_string(sv.vFloat);
+      case DOUBLE_TYPEID: return std::to_string(sv.vDouble);
+      case STRING_TYPEID: return "\""s.append(sv.vString).append("\"");
+      default: assert(false);
+      }
+      break;
+
+   case TypeDef::TD_CLASS: return GetClassDef(type)->name.name;
+
+   case TypeDef::TD_ARRAY: return typeDef.arrayDef->name.name;
+   }
+
+   return "<< bug >>";
+}
 
 HRESULT STDMETHODCALLTYPE DynamicTypeLibrary::Invoke(void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT*) const
 {
@@ -505,12 +657,14 @@ HRESULT STDMETHODCALLTYPE DynamicTypeLibrary::Invoke(void* nativeObject, DISPID 
       auto member = m_scriptMembers[dispIdMember];
       ScriptClassDef* classDef = member.first;
       ScriptClassMemberDef& memberDef = classDef->members[member.second];
-      PLOGD << "Invoke: " << classDef->name.name << "." << memberDef.name.name;
       if ((wFlags & DISPATCH_PROPERTYGET) && (memberDef.Get != nullptr))
       {
          if (pVarResult == nullptr)
             return E_POINTER;
          ScriptVariant value;
+         #if LOG_INVOKES
+            PLOGD << "Invoke Get: " << classDef->name.name << "." << memberDef.name.name;
+         #endif
          memberDef.Get(nativeObject, member.second, &value);
          ScriptToCOMVariant(memberDef.type, value, *pVarResult);
          return S_OK;
@@ -522,6 +676,9 @@ HRESULT STDMETHODCALLTYPE DynamicTypeLibrary::Invoke(void* nativeObject, DISPID 
          ScriptVariant value;
          assert(pDispParams->cArgs == 1);
          COMToScriptVariant(pDispParams->rgvarg[0], memberDef.type, value);
+         #if LOG_INVOKES
+         PLOGD << "Invoke Set: " << classDef->name.name << "." << memberDef.name.name << " = " << ScriptVariantToString(memberDef.type, value).c_str();
+         #endif
          memberDef.Set(nativeObject, member.second, &value);
          ReleaseCOMToScriptVariant(pDispParams->rgvarg[0], memberDef.type, value);
          return S_OK;
@@ -532,10 +689,18 @@ HRESULT STDMETHODCALLTYPE DynamicTypeLibrary::Invoke(void* nativeObject, DISPID 
          if (pVarResult == nullptr && (memberDef.type.id != VOID_TYPEID))
             return E_POINTER;
          ScriptVariant retVal;
-         ScriptVariant args[6];
+         ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
          assert(pDispParams->cNamedArgs == 0);
+         assert(pDispParams->cArgs <= PSC_CALL_MAX_ARG_COUNT);
          for (unsigned int i = 0; i < pDispParams->cArgs; i++)
             COMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]);
+         #if LOG_INVOKES
+            std::stringstream ss;
+            ss << "Invoke Call: " << classDef->name.name << "." << memberDef.name.name << "(";
+            for (unsigned int i = 0; i < pDispParams->cArgs; i++)
+               ss << ((i != 0) ? ", " : "") << ScriptVariantToString(memberDef.callArgType[i], args[i]).c_str();
+            PLOGD << ss.str() << ")";
+         #endif
          memberDef.Call(nativeObject, member.second, &retVal, args);
          if (pVarResult != nullptr)
             ScriptToCOMVariant(memberDef.type, retVal, *pVarResult);

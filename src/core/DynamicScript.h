@@ -28,6 +28,7 @@ private:
    void COMToScriptVariant(const VARIANT &cv, ScriptTypeNameDef &type, ScriptVariant &sv) const;
    void ReleaseCOMToScriptVariant(VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
    void ScriptToCOMVariant(ScriptTypeNameDef &type, const ScriptVariant &sv, VARIANT &cv) const;
+   string ScriptVariantToString(ScriptTypeNameDef &type, ScriptVariant &sv) const;
 
    struct TypeDef {
       enum {

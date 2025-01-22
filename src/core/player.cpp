@@ -2190,6 +2190,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
          vec4 dmdTint = dmd.frame->m_format == BaseTexture::BW ? convertColor(m_ptable->m_settings.LoadValueUInt(Settings::DMD, "DefaultTint"s), 1.f) : vec4(1.f, 1.f, 1.f, 1.f);
          const int dmdProfile = m_ptable->m_settings.LoadValueInt(Settings::DMD, "DefaultProfile"s);
          // We could update only when DMD changes but (surprisingly) this breaks the overall timing and FPS become unstable if we do so
+         #ifdef ENABLE_BGFX
          if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) // && (m_lastDmdFrameId != dmd.frameId))
          {
             m_lastDmdFrameId = dmd.frameId;
@@ -2198,7 +2199,9 @@ void Player::PrepareFrame(const std::function<void()>& sync)
                0, 0, m_dmdOutput.GetWindow()->GetBackBuffer()->GetWidth(), m_dmdOutput.GetWindow()->GetBackBuffer()->GetHeight());
             m_renderer->m_renderDevice->AddRenderTargetDependency(scenePass, false);
          }
-         else if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+         else 
+         #endif
+         if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
          {
             int x, y;
             m_dmdOutput.GetEmbeddedWindow()->GetPos(x, y);
