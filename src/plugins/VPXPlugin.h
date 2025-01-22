@@ -27,13 +27,14 @@
 #define VPXPI_NAMESPACE "VPX" // Namespace used for all VPX message definition
 
 // Core VPX messages
-#define VPXPI_MSG_GET_API             "GetAPI"            // Get the main VPX plugin API
+#define VPXPI_MSG_GET_API               "GetAPI"              // Get the main VPX plugin API
 
 // Core VPX events
-#define VPXPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted during player creation, before script initialization
-#define VPXPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted during player shutdown
-#define VPXPI_EVT_ON_PREPARE_FRAME    "OnPrepareFrame"    // Broadcasted when player starts preparing a new frame
-#define VPXPI_EVT_ON_SETTINGS_CHANGED "OnSettingsChanged" // Broadcasted when settings have been changed
+#define VPXPI_EVT_ON_GAME_START         "OnGameStart"         // Broadcasted during player creation, before script initialization
+#define VPXPI_EVT_ON_GAME_END           "OnGameEnd"           // Broadcasted during player shutdown
+#define VPXPI_EVT_ON_PREPARE_FRAME      "OnPrepareFrame"      // Broadcasted when player starts preparing a new frame
+#define VPXPI_EVT_ON_SETTINGS_CHANGED   "OnSettingsChanged"   // Broadcasted when settings have been changed
+
 
 // Core VPX settings pages
 // GetOption 'pageId' parameter is either the id of a loaded plugin or the id of one of the core VPX pages defined below
@@ -56,7 +57,6 @@
 #define INCHESTOVPU(x) ((x) * (float)(50. / 1.0625))
 #define VPUTOINCHES(x) ((x) * (float)(1.0625 / 50.))
 #endif
-
 
 typedef struct VPXTableInfo
 {
@@ -82,7 +82,7 @@ typedef struct VPXViewSetupDef
    float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
 } VPXViewSetupDef;
 
-typedef struct VPPluginAPI
+typedef struct VPXPluginAPI
 {
    // General information API
    void (*GetTableInfo)(VPXTableInfo* info);
@@ -97,5 +97,8 @@ typedef struct VPPluginAPI
    void (*DisableStaticPrerendering)(const int /* bool */ disable);
    void (*GetActiveViewSetup)(VPXViewSetupDef* view);
    void (*SetActiveViewSetup)(VPXViewSetupDef* view);
+
+   // Script extension
+   void (*SetCOMObjectOverride)(const char* className, const char* pluginId, const char* classId);
 
 } VPXPluginAPI;

@@ -121,6 +121,8 @@ add_executable(vpinball WIN32
    src/audio/wavread.h
 
    src/core/dispid.h
+   src/core/DynamicScript.cpp
+   src/core/DynamicScript.h
    src/core/editablereg.cpp
    src/core/editablereg.h
    src/core/extern.cpp

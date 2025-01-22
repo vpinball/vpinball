@@ -996,6 +996,8 @@ public:
 
    STDMETHOD(put_PinMameStateBlock)(BSTR sharedMemName);
 
+   STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR pluginId, /*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
+
    void Init(VPinball *vpinball, PinTable *pt);
    ~ScriptGlobalTable();
 

@@ -1128,6 +1128,7 @@
     <ClCompile Include="src/core/stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src/core/DynamicScript.cpp" />
     <ClCompile Include="src/core/extern.cpp" />
     <ClCompile Include="src/core/ieditable.cpp" />
     <ClCompile Include="src/core/editablereg.cpp" />
@@ -1637,6 +1638,7 @@
     <Image Include="src\ui\res\ball.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="src/audio/mixer.h" />
     <ClInclude Include="src/audio/audioplayer.h" />
@@ -1644,6 +1646,7 @@
     <ClInclude Include="src/audio/wavread.h" />
     <ClInclude Include="src/core/def.h" />
     <ClInclude Include="src/core/dispid.h" />
+    <ClInclude Include="src/core/DynamicScript.h" />
     <ClInclude Include="src/core/editablereg.h" />
     <ClInclude Include="src/core/extern.h" />
     <ClInclude Include="src/core/ieditable.h" />
@@ -2172,6 +2175,9 @@
   <ItemGroup>
     <ProjectReference Include="plugin-helloworld.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-helloscript.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77A}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-pinup-events.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>

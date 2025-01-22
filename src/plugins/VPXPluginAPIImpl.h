@@ -3,6 +3,7 @@
 #pragma once
 
 #include "VPXPlugin.h"
+#include "core/DynamicScript.h"
 
 class VPXPluginAPIImpl
 {
@@ -19,21 +20,52 @@ public:
    void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxEndpointId, msgId, data); };
    void BroadcastPinMameMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_pinMameEndpointId, msgId, data); };
 
+   string ApplyScriptCOMObjectOverrides(string& script) const;
+   IDispatch* CreateCOMPluginObject(const string& pluginId, const string& classId);
+
    // Helpers method for transitionning from COM object to plugins
    void PinMameOnStart();
 
 private:
    VPXPluginAPIImpl();
 
-   static void OnGetPluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   // VPX API
+   unsigned int m_vpxEndpointId;
+   static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   VPXPluginAPI m_api;
+
+   static void GetTableInfo(VPXTableInfo* info);
+
+   static float GetOption(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const VPXPluginAPI::OptionUnit unit, const char** values);
+   static void* PushNotification(const char* msg, const unsigned int lengthMs);
+   static void UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs);
+
+   static void DisableStaticPrerendering(const BOOL disable);
+   static void GetActiveViewSetup(VPXViewSetupDef* view);
+   static void SetActiveViewSetup(VPXViewSetupDef* view);
+
+   static void SetCOMObjectOverride(const char* className, const char* pluginId, const char* classId);
+   struct ScriptCOMObjectOverride
+   {
+      const char* className;
+      const char* pluginId;
+      const char* classId;
+   };
+   std::vector<ScriptCOMObjectOverride> m_scriptCOMObjectOverrides;
+
+   // Scriptable plugin API
+   static void OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   static void RegisterScriptClass(ScriptClassDef* classDef);
+   static void RegisterScriptTypeAlias(const char* name, const char* aliasedType);
+   static void RegisterScriptArray(ScriptArrayDef *arrayDef);
+   DynamicTypeLibrary m_dynamicTypeLibrary;
+   ScriptablePluginAPI m_scriptableApi;
+
+   // Controller bridge
+   unsigned int m_pinMameEndpointId;
+   unsigned int m_getRenderDmdMsgId;
+   unsigned int m_getIdentifyDmdMsgId;
    static void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData);
-
-   unsigned int m_getRenderDmdMsgId;
-   unsigned int m_getIdentifyDmdMsgId;
-   
-   unsigned int m_vpxEndpointId;
-   unsigned int m_pinMameEndpointId;
-   VPXPluginAPI m_api;
 };

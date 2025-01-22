@@ -153,35 +153,6 @@ bool ReplaceExtensionFromFilename(string& szfilename, const string& newextension
        return false;
 }
 
-bool RawReadFromFile(const char * const szfilename, int *const psize, char **pszout)
-{
-#ifndef __STANDALONE__
-   const HANDLE hFile = CreateFile(szfilename,
-      GENERIC_READ, FILE_SHARE_READ,
-      nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-
-   if (hFile == INVALID_HANDLE_VALUE)
-   {
-      //ShowError("The file could not be opened.");
-      return false;
-   }
-
-   *psize = GetFileSize(hFile, nullptr);
-
-   *pszout = new char[*psize + 2];
-
-   DWORD read;
-   /*BOOL foo =*/ ReadFile(hFile, *pszout, *psize, &read, nullptr);
-
-   (*pszout)[*psize] = '\0';
-   (*pszout)[*psize + 1] = '\0'; // In case this is a unicode file, end it with a null character properly
-
-   /*foo =*/ CloseHandle(hFile);
-#endif
-
-   return true;
-}
-
 BiffWriter::BiffWriter(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
    m_pistream = pistream;

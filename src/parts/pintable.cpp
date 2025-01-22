@@ -22,6 +22,7 @@
 #ifdef ENABLE_SDL_VIDEO
 #include "imgui/imgui_impl_sdl3.h"
 #endif
+#include "plugins/VPXPluginAPIImpl.h"
 
 #include "serial.h"
 static serial Serial;
@@ -341,61 +342,29 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
       szPath = m_vpinball->m_szMyPath + dirname;
    // else: use current directory
    szPath += szfilename;
-
-#ifndef __STANDALONE__
-   int len;
-   BYTE *szContents;
-   if (RawReadFromFile(szPath.c_str(), &len, (char **)&szContents))
-   {
-      BYTE *szDataStart = szContents;
-      int encoding = CP_ACP;
-
-      if (szContents[0] == 0xEF && szContents[1] == 0xBB && szContents[2] == 0xBF)
-      {
-         encoding = CP_UTF8;
-         szDataStart += 3;
-         len -= 3;
-      }
-
-      if (szContents[0] == 0xFF && szContents[1] == 0xFE)
-      {
-         // Unicode
-         szDataStart += 2;
-         len -= 2;
-         *pContents = SysAllocString((WCHAR *)szDataStart);
-      }
-      else
-      {
-         WCHAR * const wzContents = new WCHAR[len + 1];
-
-         MultiByteToWideCharNull(encoding, 0, (char *)szDataStart, len, wzContents, len + 1);
-
-         *pContents = SysAllocString(wzContents);
-         delete[] wzContents;
-      }
-
-      delete[] szContents;
-
-      return true;
-   }
-#else
+   #ifdef __STANDALONE__
    szPath = find_path_case_insensitive(szPath);
+   #endif
    if (!szPath.empty()) {
       std::ifstream scriptFile;
       scriptFile.open(szPath, std::ifstream::in);
       if (scriptFile.is_open()) {
          std::stringstream buffer;
          buffer << scriptFile.rdbuf();
-
-         const WCHAR * const wz = MakeWide(buffer.str());
+         string content = buffer.str();
+         #ifdef ENABLE_DX9
+         const string ext = ".vbs"s; // C++ 11 only for DX9
+         if ((ext.size() <= szfilename.size()) && std::equal(ext.rbegin(), ext.rend(), szfilename.rbegin()))
+         #else
+         if (szfilename.ends_with(".vbs"))
+         #endif
+            content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
+         const WCHAR * const wz = MakeWide(content);
          *pContents = SysAllocString(wz);
          delete[] wz;
-
          return true;
       }
    }
-#endif
-
    return false;
 }
 
@@ -998,6 +967,16 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
       return E_FAIL;
 
    return S_OK;
+}
+
+STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR pluginId, /*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch** pVal)
+{
+   char szPlugin[MAX_PATH], szClass[MAX_PATH];
+   WideCharToMultiByteNull(CP_ACP, 0, pluginId, -1, szPlugin, MAX_PATH, nullptr, nullptr);
+   WideCharToMultiByteNull(CP_ACP, 0, classId, -1, szClass, MAX_PATH, nullptr, nullptr);
+   VPXPluginAPIImpl &pi = VPXPluginAPIImpl::GetInstance();
+   *pVal = pi.CreateCOMPluginObject(szPlugin, szClass);
+   return (*pVal != nullptr) ? S_OK : E_FAIL;
 }
 
 STDMETHODIMP ScriptGlobalTable::LoadTexture(BSTR imageName, BSTR fileName)
@@ -2261,10 +2240,14 @@ void PinTable::Play(const int playMode)
    const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    char *const szText = new char[cchar + 1];
    SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-   SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
+   std::string script = szText;
    delete[] szText;
+   script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
+   SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
 #else
-   dst->m_pcv->m_script_text = src->m_pcv->m_script_text;
+   std::string script = src->m_pcv->m_script_text;
+   script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
+   dst->m_pcv->m_script_text = script;
 #endif
 
    dst->m_settings = src->m_settings;
