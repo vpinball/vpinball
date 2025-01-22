@@ -6,6 +6,10 @@
 
 #include "ui/resource.h"
 
+#ifdef __STANDALONE__
+#include <SDL3_ttf/SDL_ttf.h>
+#endif
+
 class TextboxData final
 {
 public:
@@ -81,6 +85,14 @@ public:
    HFONT GetFont();
 
    IFont *m_pIFont = nullptr;
+#ifdef __STANDALONE__
+   bool m_fontItalic;
+   bool m_fontUnderline;
+   bool m_fontStrikeThrough;
+   bool m_fontBold;
+   float m_fontSize;
+   string m_szFontName;
+#endif
 
    TextboxData m_d;
 
@@ -91,6 +103,10 @@ private:
    bool m_textureDirty = true;
    BaseTexture *m_texture = nullptr;
    IFont *m_pIFontPlay = nullptr; // Our font, scaled to match play window resolution
+
+#ifdef __STANDALONE__
+   TTF_Font* LoadFont();
+#endif
 
 public:
    // ITextbox

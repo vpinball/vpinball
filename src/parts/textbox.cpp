@@ -22,6 +22,14 @@ Textbox *Textbox::CopyForPlay(PinTable *live_table) const
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Textbox, live_table)
    if (m_pIFont)
       m_pIFont->Clone(&dst->m_pIFont);
+#ifdef __STANDALONE__
+   dst->m_fontItalic = m_fontItalic;
+   dst->m_fontUnderline = m_fontUnderline;
+   dst->m_fontStrikeThrough = m_fontStrikeThrough;
+   dst->m_fontBold = m_fontBold;
+   dst->m_fontSize = m_fontSize;
+   dst->m_szFontName = m_szFontName;
+#endif
    return dst;
 }
 
@@ -250,17 +258,31 @@ bool Textbox::LoadToken(const int id, BiffReader * const pbr)
       ips->Load(pbr->m_pistream);
       SAFE_RELEASE_NO_RCC(ips);
 #else
-      // https://github.com/freezy/VisualPinball.Engine/blob/master/VisualPinball.Engine/VPT/Font.cs#L25
-
-      char data[255];
-
       ULONG read;
-      pbr->ReadBytes(data, 3, &read);
-      pbr->ReadBytes(data, 1, &read); // Italic
-      pbr->ReadBytes(data, 2, &read); // Weight
-      pbr->ReadBytes(data, 4, &read); // Size
-      pbr->ReadBytes(data, 1, &read); // nameLen
-      pbr->ReadBytes(data, (int)data[0], &read); // name
+      BYTE buffer[255];
+      BYTE attributes;
+      short weight;
+      int size;
+      int len;
+
+      pbr->ReadBytes(buffer, 1, &read); // version
+      pbr->ReadBytes(buffer, sizeof(short), &read); // charset
+      pbr->ReadBytes(&attributes, sizeof(BYTE), &read); // attributes
+      m_fontItalic = (attributes & 0x02) > 0;
+      m_fontUnderline = (attributes & 0x04) > 0;
+      m_fontStrikeThrough = (attributes & 0x08) > 0;
+      pbr->ReadBytes(&weight, sizeof(short), &read); // weight
+      m_fontBold = weight > 550;
+      pbr->ReadBytes(&size, sizeof(int), &read); // size
+      m_fontSize = (float)size / 10000;
+      pbr->ReadBytes(buffer, 1, &read); // name length
+      len = (int)buffer[0];
+      if (len > 0) {
+         pbr->ReadBytes(buffer, len, &read); // name
+         m_szFontName = string(reinterpret_cast<char*>(buffer), len);
+      }
+      else
+         m_szFontName.clear();
 #endif
       break;
    }
@@ -422,6 +444,8 @@ void Textbox::RenderSetup(RenderDevice *device)
    m_pIFontPlay->get_Size(&size);
    size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight());
    m_pIFontPlay->put_Size(size);
+#else
+   m_fontSize *= 1.5;
 #endif
 
    const int width = (int)max(m_d.m_v1.x, m_d.m_v2.x) - (int)min(m_d.m_v1.x, m_d.m_v2.x);
@@ -530,7 +554,6 @@ void Textbox::Render(const unsigned int renderMask)
       if (m_textureDirty)
       {
          m_textureDirty = false;
-#ifndef __STANDALONE__
          RECT rect;
          rect.left = (int)min(m_d.m_v1.x, m_d.m_v2.x);
          rect.top = (int)min(m_d.m_v1.y, m_d.m_v2.y);
@@ -540,6 +563,14 @@ void Textbox::Render(const unsigned int renderMask)
          const int width = rect.right - rect.left;
          const int height = rect.bottom - rect.top;
 
+         const int border = (4 * g_pplayer->m_playfieldWnd->GetWidth()) / EDITOR_BG_WIDTH;
+         RECT rcOut;
+         rcOut.left = border;
+         rcOut.top = border;
+         rcOut.right = width - border * 2;
+         rcOut.bottom = height - border * 2;
+
+#ifndef __STANDALONE__
          BITMAPINFO bmi = {};
          bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
          bmi.bmiHeader.biWidth = width;
@@ -580,13 +611,6 @@ void Textbox::Render(const unsigned int renderMask)
          case TextAlignRight: alignment = DT_RIGHT; break;
          }
 
-         const int border = (4 * g_pplayer->m_playfieldWnd->GetWidth()) / EDITOR_BG_WIDTH;
-         RECT rcOut;
-         rcOut.left = border;
-         rcOut.top = border;
-         rcOut.right = width - border * 2;
-         rcOut.bottom = height - border * 2;
-
          DrawText(hdc, m_d.m_sztext.c_str(), (int)m_d.m_sztext.length(), &rcOut, alignment | DT_NOCLIP | DT_NOPREFIX | DT_WORDBREAK);
 
          GdiFlush(); // make sure everything is drawn
@@ -612,14 +636,58 @@ void Textbox::Render(const unsigned int renderMask)
          DeleteDC(hdc);
          DeleteObject(hbm);
 #else
-         //!! temporary workaround
-         if (m_d.m_transparent)
-            memset(m_texture->data(), 0, (size_t)m_texture->height()*m_texture->width() * 4);
-         else
-         {
-            unsigned int *const __restrict dest = (unsigned int *)m_texture->data();
-            for (size_t i = 0; i < (size_t)m_texture->height()*m_texture->width(); ++i)
-               dest[i] = 0xFF000000u;
+         SDL_Surface* pSurface = SDL_CreateSurface(m_texture->width(), m_texture->height(), SDL_PIXELFORMAT_ABGR8888);
+         if (pSurface) {
+            SDL_FillSurfaceRect(pSurface, NULL,
+               SDL_MapRGBA(SDL_GetPixelFormatDetails(pSurface->format), NULL,
+               GetRValue(m_d.m_backcolor),
+               GetGValue(m_d.m_backcolor),
+               GetBValue(m_d.m_backcolor),
+               m_d.m_transparent ? 0 : 255));
+
+            TTF_Font* pFont = LoadFont();
+            if (pFont) {
+               SDL_Color textColor = {
+                  GetRValue(m_d.m_fontcolor),
+                  GetGValue(m_d.m_fontcolor),
+                  GetBValue(m_d.m_fontcolor),
+                  255
+               };
+
+               int maxWidth = rcOut.right - rcOut.left;
+               SDL_Surface* pTextSurface = TTF_RenderText_Blended_Wrapped(pFont, m_d.m_sztext.c_str(), m_d.m_sztext.length(), textColor, maxWidth);
+               if (pTextSurface) {
+                  SDL_Rect textRect;
+                  textRect.y = rcOut.top;
+
+                  switch (m_d.m_talign) {
+                     case TextAlignLeft:
+                        textRect.x = rcOut.left;
+                        break;
+                     case TextAlignCenter:
+                        textRect.x = rcOut.left + (maxWidth - pTextSurface->w) / 2;
+                        break;
+                     case TextAlignRight:
+                        textRect.x = rcOut.right - pTextSurface->w;
+                        break;
+                     default:
+                        textRect.x = rcOut.left;
+                        break;
+                  }
+
+                  textRect.w = pTextSurface->w;
+                  textRect.h = pTextSurface->h;
+
+                  if (textRect.y + textRect.h > rcOut.bottom)
+                     textRect.h = rcOut.bottom - textRect.y;
+
+                  SDL_BlitSurface(pTextSurface, NULL, pSurface, &textRect);
+                  SDL_DestroySurface(pTextSurface);
+               }
+               TTF_CloseFont(pFont);
+            }
+            memcpy(m_texture->data(), pSurface->pixels, pSurface->pitch * pSurface->h);
+            SDL_DestroySurface(pSurface);
          }
 #endif
          m_rd->m_texMan.SetDirty(m_texture);
@@ -819,5 +887,59 @@ STDMETHODIMP Textbox::put_Visible(VARIANT_BOOL newVal)
    m_d.m_visible = VBTOb(newVal);
    return S_OK;
 }
+
+#ifdef __STANDALONE__
+TTF_Font* Textbox::LoadFont()
+{
+   TTF_Font* pFont = NULL;
+
+   string szFontName = string_replace_all(m_szFontName, " ", "");
+
+   vector<string> styles;
+   if (m_fontBold && m_fontItalic)
+      styles.push_back("-BoldItalic");
+   if (m_fontBold)
+      styles.push_back("-Bold");
+   if (m_fontItalic)
+      styles.push_back("-Italic");
+   styles.push_back("-Regular");
+
+   string szPath;
+   for (const auto& szStyle : styles) {
+      szPath = find_path_case_insensitive(g_pvp->m_currentTablePath + szFontName + szStyle + ".ttf");
+      if (!szPath.empty()) {
+         pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
+         if (pFont) {
+            PLOGI.printf("Font loaded: szPath=%s", szPath.c_str());
+            break;
+         }
+      }
+   }
+
+   if (!pFont) {
+      szPath = g_pvp->m_currentTablePath + szFontName + styles[0] + ".ttf";
+      PLOGW.printf("Unable to locate font: szPath=%s", szPath.c_str());
+
+      szPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+      pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
+      if (pFont) {
+         PLOGW.printf("Default font loaded: szPath=%s", szPath.c_str());
+      }
+      else {
+         PLOGW.printf("Unable to load font: szPath=%s", szPath.c_str());
+         return NULL;
+      }
+   }
+
+   TTF_FontStyleFlags style = TTF_STYLE_NORMAL;
+   if (m_fontBold) style |= TTF_STYLE_BOLD;
+   if (m_fontItalic) style |= TTF_STYLE_ITALIC;
+   if (m_fontUnderline) style |= TTF_STYLE_UNDERLINE;
+   if (m_fontStrikeThrough) style |= TTF_STYLE_STRIKETHROUGH;
+   TTF_SetFontStyle(pFont, style);
+
+   return pFont;
+}
+#endif
 
 #pragma endregion

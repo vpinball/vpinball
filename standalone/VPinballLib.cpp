@@ -6,6 +6,7 @@
 #include "standalone/inc/webserver/WebServer.h"
 
 #include <SDL3/SDL_main.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 #include "miniz/miniz.h"
 
@@ -47,6 +48,7 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
 
    SDL_InitSubSystem(SDL_INIT_VIDEO);
    SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+   TTF_Init();
 
    g_pvp = new ::VPinball();
    g_pvp->SetLogicalNumberOfProcessors(SDL_GetNumLogicalCPUCores());

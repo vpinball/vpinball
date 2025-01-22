@@ -21,7 +21,7 @@
 
 ## Fonts
 
-DroidSans
+Droid Sans
 - Upstream: https://www.fontsquirrel.com/fonts/droid-sans
 - License: Apache 2 licensed
 
@@ -29,6 +29,10 @@ ForkAwesome
 - Upstream: https://github.com/ForkAwesome/Fork-Awesome
 - License: SIL OFL 1.1
 Using generator from https://github.com/juliettef/IconFontCppHeaders
+
+Liberation Sans
+- Upstream: https://www.fontsquirrel.com/fonts/liberation-sans
+- License: SIL Open Font License (OFL)
 
 ## FFmpeg
 

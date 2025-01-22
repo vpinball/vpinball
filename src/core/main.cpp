@@ -31,6 +31,10 @@
 #include <SDL3/SDL_main.h>
 #endif
 
+#ifdef __STANDALONE__
+#include <SDL3_ttf/SDL_ttf.h>
+#endif
+
 #ifdef CRASH_HANDLER
 extern "C" int __cdecl _purecall()
 {
@@ -1203,6 +1207,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       #ifdef ENABLE_SDL_INPUT
          SDL_InitSubSystem(SDL_INIT_JOYSTICK);
       #endif
+      #ifdef __STANDALONE__
+         TTF_Init();
+      #endif
 
       // Start Win32++
       VPApp theApp(hInstance);
@@ -1239,6 +1246,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    #endif
    #ifdef ENABLE_SDL_INPUT
       SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+   #endif
+   #ifdef __STANDALONE__
+      TTF_Quit();
    #endif
 
    #if defined(ENABLE_OPENGL) && !defined(__STANDALONE__) 
