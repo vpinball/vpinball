@@ -56,9 +56,6 @@ class SettingsViewModel : ViewModel() {
     var zedmdWiFiAddr by mutableStateOf("192.168.4.1")
         private set
 
-    var zedmdWiFiPort by mutableIntStateOf(3333)
-        private set
-
     // Display
 
     var bgSet by mutableStateOf(VPinballViewMode.DESKTOP_FSS)
@@ -168,7 +165,6 @@ class SettingsViewModel : ViewModel() {
         dmdServerAddr = VPinballManager.loadValue(STANDALONE, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = VPinballManager.loadValue(STANDALONE, "DMDServerPort", 6789)
         zedmdWiFiAddr = VPinballManager.loadValue(STANDALONE, "ZeDMDWiFiAddr", "192.168.4.1")
-        zedmdWiFiPort = VPinballManager.loadValue(STANDALONE, "ZeDMDWiFiPort", 3333)
 
         // Display
 
@@ -281,11 +277,6 @@ class SettingsViewModel : ViewModel() {
     fun handleZeDMDWiFiAddr(value: String) {
         zedmdWiFiAddr = value
         VPinballManager.saveValue(STANDALONE, "ZeDMDWiFiAddr", zedmdWiFiAddr)
-    }
-
-    fun handleZeDMDWiFiPort(value: Int) {
-        zedmdWiFiPort = value
-        VPinballManager.saveValue(STANDALONE, "ZeDMDWiFiPort", zedmdWiFiPort)
     }
 
     // Display

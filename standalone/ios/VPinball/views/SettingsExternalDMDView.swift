@@ -33,18 +33,19 @@ struct SettingsExternalDMDView: View {
                     }
                 }
 
-                Button(action: {
-                    handleShowPort()
-                }) {
-                    HStack {
-                        Text("Port")
-                            .foregroundStyle(Color.primary)
-                        Spacer()
-                        Text(settingsModel.externalDMD == .dmdServer ?
-                            String(settingsModel.dmdServerPort) : String(settingsModel.zedmdWiFiPort))
-                            .foregroundStyle(Color.secondary)
-                            .frame(minWidth: 50,
-                                   alignment: .trailing)
+                if settingsModel.externalDMD == .dmdServer {
+                    Button(action: {
+                        handleShowPort()
+                    }) {
+                        HStack {
+                            Text("Port")
+                                .foregroundStyle(Color.primary)
+                            Spacer()
+                            Text(String(settingsModel.dmdServerPort))
+                                .foregroundStyle(Color.secondary)
+                                .frame(minWidth: 50,
+                                       alignment: .trailing)
+                        }
                     }
                 }
             }
@@ -63,9 +64,7 @@ struct SettingsExternalDMDView: View {
         {
             handleAddr()
         }
-        .onChange(of: [settingsModel.dmdServerPort,
-                       settingsModel.zedmdWiFiPort])
-        {
+        .onChange(of: settingsModel.dmdServerPort) {
             handlePort()
         }
     }
@@ -133,11 +132,6 @@ struct SettingsExternalDMDView: View {
                       String(settingsModel.dmdServerPort),
                       .numberPad,
                       handlePortConfirm)
-        case .zedmdWiFi:
-            showInput("ZeDMD WiFi Port",
-                      String(settingsModel.zedmdWiFiPort),
-                      .numberPad,
-                      handlePortConfirm)
         default:
             break
         }
@@ -148,8 +142,6 @@ struct SettingsExternalDMDView: View {
             switch settingsModel.externalDMD {
             case .dmdServer:
                 settingsModel.dmdServerPort = port
-            case .zedmdWiFi:
-                settingsModel.zedmdWiFiPort = port
             default:
                 break
             }
@@ -164,8 +156,6 @@ struct SettingsExternalDMDView: View {
         switch settingsModel.externalDMD {
         case .dmdServer:
             vpinballManager.saveValue(.standalone, "DMDServerPort", settingsModel.dmdServerPort)
-        case .zedmdWiFi:
-            vpinballManager.saveValue(.standalone, "ZeDMDWiFiPort", settingsModel.zedmdWiFiPort)
         default:
             break
         }
