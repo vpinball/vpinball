@@ -334,7 +334,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    {
       if (pFlex->GetShow() && (msg.count < msg.maxEntryCount) && ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4) || (pFlex->GetRenderMode() == RenderMode_DMD_RGB)))
       {
-         msg.entries[msg.count].dmdId = (endpointId << 16) | pFlex->GetId();
+         msg.entries[msg.count].id = (endpointId << 16) | pFlex->GetId();
          msg.entries[msg.count].format = (pFlex->GetRenderMode() == RenderMode_DMD_RGB) ? CTLPI_GETDMD_FORMAT_SRGB888 : CTLPI_GETDMD_FORMAT_LUM8;
          msg.entries[msg.count].width = pFlex->GetWidth();
          msg.entries[msg.count].height = pFlex->GetHeight();
@@ -346,12 +346,12 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
 void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
-   if ((getDmdMsg.dmdId >> 16) != endpointId)
+   if ((getDmdMsg.dmdId.id >> 16) != endpointId)
       return;
-   int id = getDmdMsg.dmdId & 0x0FFFF;
+   int id = getDmdMsg.dmdId.id & 0x0FFFF;
    for (FlexDMD* pFlex : flexDmds)
    {
-      if ((pFlex->GetId() == id) && (getDmdMsg.width == pFlex->GetWidth()) && (getDmdMsg.height == pFlex->GetHeight()))
+      if ((pFlex->GetId() == id) && (getDmdMsg.dmdId.width == pFlex->GetWidth()) && (getDmdMsg.dmdId.height == pFlex->GetHeight()))
       {
          pFlex->Render();
          getDmdMsg.frameId = pFlex->GetFrameId();

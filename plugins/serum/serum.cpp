@@ -21,7 +21,7 @@
 // - Controller/GetDMD: msgData is a request/response struct
 
 MsgPluginAPI* msgApi = nullptr;
-unsigned int endpointId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
+unsigned int endpointId, onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
 
 Serum_Frame_Struc* pSerum;
 unsigned int dmdId, lastRawFrameId;
@@ -32,7 +32,7 @@ class ColorizationState
 public:
    ColorizationState(unsigned int width, unsigned int height)
       : m_colorFrame(pSerum->SerumVersion == SERUM_V1 ? new uint8_t[width * height * 3] : nullptr)
-      , m_width(width), m_height(height), m_size(width * height)
+      , m_width(width), m_height(height)
       , m_colorizedFrameFormat(pSerum->SerumVersion == SERUM_V1 ? CTLPI_GETDMD_FORMAT_SRGB888 : CTLPI_GETDMD_FORMAT_SRGB565)
    {
       assert(m_width > 0);
@@ -48,7 +48,7 @@ public:
    void UpdateFrameV1()
    {
       assert(pSerum && (pSerum->SerumVersion == SERUM_V1));
-      for (unsigned int i = 0; i < m_size; i++)
+      for (unsigned int i = 0; i < m_width * m_height; i++)
          memcpy(&(m_colorFrame[i * 3]), &pSerum->palette[pSerum->frame[i] * 3], 3);
       m_colorizedframeId++;
    }
@@ -83,9 +83,8 @@ public:
    uint8_t* m_colorFrame64 = nullptr;
    
    // Common state information
-   const unsigned int m_width, m_height, m_size;
+   const unsigned int m_width, m_height; // Size of identify frame (which can differ of the size of the colorized frame)
    const unsigned int m_colorizedFrameFormat;
-   
    unsigned int m_colorizedframeId = 0;
    bool m_hasAnimation = false;
    std::chrono::high_resolution_clock::time_point m_animationTick;
@@ -98,7 +97,7 @@ ColorizationState* state = nullptr;
 void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    assert(pSerum);
-   GetDmdMsg* const getDmdMsg = static_cast<GetDmdMsg*>(msgData);
+   GetRawDmdMsg* const getDmdMsg = static_cast<GetRawDmdMsg*>(msgData);
 
    // Only process selected DMD
    if (!dmdSelected || getDmdMsg->dmdId != dmdId)
@@ -116,11 +115,15 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    if (firstrot != IDENTIFY_NO_FRAME)
    { // New frame, eventually starting a new animation
       if (state == nullptr)
+      {
          state = new ColorizationState(getDmdMsg->width, getDmdMsg->height);
+         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+      }
       else if (state->m_width != getDmdMsg->width || state->m_height != getDmdMsg->height)
       {
          delete state;
          state = new ColorizationState(getDmdMsg->width, getDmdMsg->height);
+         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
       }
       
       state->m_hasAnimation = firstrot != 0;
@@ -149,26 +152,27 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
    // If main DMD not yet selected then do it
    if (!dmdSelected)
    {
-      if (getDmdMsg.width < 128)
+      if (getDmdMsg.dmdId.width < 128)
          return;
-      dmdId = getDmdMsg.dmdId;
+      dmdId = getDmdMsg.dmdId.id;
       dmdSelected = true;
    }
 
    // Only process selected DMD
-   if (getDmdMsg.dmdId != dmdId)
+   if (getDmdMsg.dmdId.id != dmdId)
       return;
    
    // Does someone requested a DMD frame to render that no one has colorized yet ?
-   if ((getDmdMsg.frame != nullptr) && (getDmdMsg.format != CTLPI_GETDMD_FORMAT_LUM8))
+   if ((getDmdMsg.frame != nullptr) && (getDmdMsg.dmdId.format != CTLPI_GETDMD_FORMAT_LUM8))
       return;
    
    // Update to the last 'raw' frame
-   GetDmdMsg getRawDmdMsg = {};
-   getRawDmdMsg.dmdId = dmdId;
+   GetRawDmdMsg getRawDmdMsg = { dmdId };
    msgApi->BroadcastMsg(endpointId, getIdentifyDmdId, &getRawDmdMsg);
    onGetIdentifyDMD(getIdentifyDmdId, nullptr, static_cast<void*>(&getRawDmdMsg));
    if (state == nullptr)
+      return;
+   if (getDmdMsg.dmdId.format != state->m_colorizedFrameFormat)
       return;
    
    // Perform current animation (catching up to the current time point)
@@ -195,49 +199,24 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
       }
    }
 
-   // Answer to requester with last colorized frame (matching fixed size if requested)
-   int frameSrc = -1;
-   if (getDmdMsg.requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ)
+   // Answer to requester with last colorized frame
+   if ((getDmdMsg.dmdId.height == 32) && (getDmdMsg.dmdId.width == state->m_width32) && (state->m_colorFrame32 != nullptr))
    {
-      if ((getDmdMsg.height == 32) && (getDmdMsg.width == state->m_width32) && (state->m_colorFrame32))
-         frameSrc = 2;
-      else if ((getDmdMsg.height == 64) && (getDmdMsg.width == state->m_width64) && (state->m_colorFrame64))
-         frameSrc = 3;
-      else if ((getDmdMsg.height == state->m_height) && (getDmdMsg.width == state->m_width) && (state->m_colorFrame))
-         frameSrc = 1;
-   }
-   else
-   {
-      if (state->m_colorFrame32)
-         frameSrc = ((state->m_colorFrame64 == nullptr) || (state->m_height <= 32)) ? 2 : 3;
-      else if (state->m_colorFrame64)
-         frameSrc = 3;
-      else if (state->m_colorFrame)
-         frameSrc = 1;
-   }
-   
-   if (frameSrc == -1)
-      return;
-   
-   getDmdMsg.frameId = state->m_colorizedframeId;
-   getDmdMsg.format = state->m_colorizedFrameFormat;
-   switch (frameSrc)
-   {
-   case 1: // Serum V1
-      getDmdMsg.frame = state->m_colorFrame;
-      getDmdMsg.width = state->m_width;
-      getDmdMsg.height = state->m_height;
-      break;
-   case 2: // Serum V2 Height 32
+      // Serum V2 Height 32
+      getDmdMsg.frameId = state->m_colorizedframeId;
       getDmdMsg.frame = state->m_colorFrame32;
-      getDmdMsg.width = state->m_width32;
-      getDmdMsg.height = 32;
-      break;
-   case 3: // Serum V2 Height 64
+   }
+   else if ((getDmdMsg.dmdId.height == 64) && (getDmdMsg.dmdId.width == state->m_width64) && (state->m_colorFrame64 != nullptr))
+   {
+      // Serum V2 Height 64
+      getDmdMsg.frameId = state->m_colorizedframeId;
       getDmdMsg.frame = state->m_colorFrame64;
-      getDmdMsg.width = state->m_width64;
-      getDmdMsg.height = 64;
-      break;
+   }
+   else if ((getDmdMsg.dmdId.height == state->m_height) && (getDmdMsg.dmdId.width == state->m_width) && (state->m_colorFrame != nullptr))
+   {
+      // Serum V1
+      getDmdMsg.frameId = state->m_colorizedframeId;
+      getDmdMsg.frame = state->m_colorFrame;
    }
 }
 
@@ -249,7 +228,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
    if (state->m_colorFrame32 && state->m_width32 && msg.count < msg.maxEntryCount)
    {
-      msg.entries[msg.count].dmdId = dmdId;
+      msg.entries[msg.count].id = dmdId;
       msg.entries[msg.count].format = CTLPI_GETDMD_FORMAT_SRGB565;
       msg.entries[msg.count].width = state->m_width32;
       msg.entries[msg.count].height = 32;
@@ -257,7 +236,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    }
    if (state->m_colorFrame64 && state->m_width64 && msg.count < msg.maxEntryCount)
    {
-      msg.entries[msg.count].dmdId = dmdId;
+      msg.entries[msg.count].id = dmdId;
       msg.entries[msg.count].format = CTLPI_GETDMD_FORMAT_SRGB565;
       msg.entries[msg.count].width = state->m_width64;
       msg.entries[msg.count].height = 64;
@@ -265,7 +244,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    }
    if (state->m_colorFrame && state->m_width && state->m_height && msg.count < msg.maxEntryCount)
    {
-      msg.entries[msg.count].dmdId = dmdId;
+      msg.entries[msg.count].id = dmdId;
       msg.entries[msg.count].format = CTLPI_GETDMD_FORMAT_SRGB888;
       msg.entries[msg.count].width = state->m_width;
       msg.entries[msg.count].height = state->m_height;
@@ -296,6 +275,7 @@ void onGameEnd(const unsigned int eventId, void* userData, void* msgData)
    {
       delete state;
       state = nullptr;
+      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
       msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc);
       msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
       msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
@@ -308,12 +288,13 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
+   onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
    getRenderDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    getIdentifyDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
    onDmdTrigger = msgApi->GetMsgID("Serum", "OnDmdTrigger");
-   msgApi->SubscribeMsg(sessionId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
-   msgApi->SubscribeMsg(sessionId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
+   msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
 }
 
 MSGPI_EXPORT void PluginUnload()
@@ -323,6 +304,7 @@ MSGPI_EXPORT void PluginUnload()
    msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onDmdTrigger);
+   msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->ReleaseMsgID(getRenderDmdId);
    msgApi->ReleaseMsgID(getIdentifyDmdId);
