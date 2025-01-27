@@ -18,7 +18,6 @@ class SettingsModel: ObservableObject {
     @Published var dmdServerAddr: String = ""
     @Published var dmdServerPort: Int = 0
     @Published var zedmdWiFiAddr: String = ""
-    @Published var zedmdWiFiPort: Int = 0
 
     // Environment Lighting
 
@@ -86,7 +85,6 @@ class SettingsModel: ObservableObject {
         dmdServerAddr = vpinballManager.loadValue(.standalone, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = vpinballManager.loadValue(.standalone, "DMDServerPort", 6789)
         zedmdWiFiAddr = vpinballManager.loadValue(.standalone, "ZeDMDWiFiAddr", "zedmd-wifi.local")
-        zedmdWiFiPort = vpinballManager.loadValue(.standalone, "ZeDMDWiFiPort", 3333)
 
         // Environment Lighting
 

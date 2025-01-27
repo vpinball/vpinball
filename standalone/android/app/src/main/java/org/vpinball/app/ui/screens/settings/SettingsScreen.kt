@@ -203,15 +203,6 @@ fun SettingsScreen(
                                     validateAsIpAddress = true,
                                     onValueChange = { viewModel.handleZeDMDWiFiAddr(value = it) },
                                 )
-
-                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-
-                                IPAddressPortInputRow(
-                                    label = "ZeDMD WiFi Port",
-                                    value = viewModel.zedmdWiFiPort.toString(),
-                                    validateAsIpAddress = false,
-                                    onValueChange = { viewModel.handleZeDMDWiFiPort(value = it.toInt()) },
-                                )
                             }
                         }
                     }
