@@ -253,7 +253,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
       {
          if (msg.count < msg.maxEntryCount)
          {
-            msg.entries[msg.count].dmdId = (me.m_pinMameEndpointId << 16) | frame->displayId;
+            msg.entries[msg.count].id = (me.m_pinMameEndpointId << 16) | frame->displayId;
             msg.entries[msg.count].format = frame->dataFormat;
             msg.entries[msg.count].width = frame->width;
             msg.entries[msg.count].height = frame->height;
@@ -267,7 +267,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    // TODO supported RGB frame format are either sRGB888 or sRGB565, not sRGBA8888, therefore RGB frame can not be broadcasted on the plugin bus for the time being
    if (g_pplayer->m_dmdFrame && msg.count < msg.maxEntryCount && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
    {
-      msg.entries[msg.count].dmdId = (me.m_vpxEndpointId << 16) | 0x00;
+      msg.entries[msg.count].id = (me.m_vpxEndpointId << 16) | 0x00;
       msg.entries[msg.count].format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
       msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
       msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
@@ -275,7 +275,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    }
 }
 
-void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData)
+void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData)
 {
    if (g_pplayer == nullptr
     || g_pplayer->m_pStateMappedMem == nullptr
@@ -283,6 +283,51 @@ void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userDa
       return;
       
    GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
+   if (msg->frame != nullptr) // Already answered
+      return;
+
+   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
+
+   // PinMame DMD shared through state block
+   if ((msg->dmdId.id >> 16) == me.m_pinMameEndpointId)
+   {
+      PinMame::core_tDisplayState* state = (msgId == me.m_getIdentifyDmdMsgId) ? g_pplayer->m_pStateMappedMem->rawDMDState : g_pplayer->m_pStateMappedMem->displayState;
+      if (state == nullptr)
+         return;
+      PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
+      for (unsigned int index = 0; index < state->nDisplays; index++)
+      {
+         if ((msg->dmdId.id & 0x0FFFF) == frame->displayId)
+         {
+            if ((msg->dmdId.width == frame->width) && (msg->dmdId.height == frame->height) && (msg->dmdId.format == frame->dataFormat))
+            {
+               msg->frameId = frame->frameId;
+               msg->frame = frame->frameData;
+            }
+            return;
+         }
+         frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
+      }
+      return;
+   }
+
+   // Script DMD
+   if (((msg->dmdId.id >> 16) == me.m_vpxEndpointId) && ((msg->dmdId.id & 0x0FFFF) == 0) 
+      && (msg->dmdId.format == g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888)
+      && (msg->dmdId.width == g_pplayer->m_dmdFrame->width()) && (msg->dmdId.height == g_pplayer->m_dmdFrame->height())
+      && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
+   {
+      msg->frameId = g_pplayer->m_dmdFrameId;
+      msg->frame = g_pplayer->m_dmdFrame->data();
+   }
+}
+
+void VPXPluginAPIImpl::ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData)
+{
+   if (g_pplayer == nullptr || g_pplayer->m_pStateMappedMem == nullptr || g_pplayer->m_pStateMappedMem->versionID != 1)
+      return;
+
+   GetRawDmdMsg* msg = static_cast<GetRawDmdMsg*>(msgData);
    if (msg->frame != nullptr) // Already answered
       return;
 
@@ -299,14 +344,10 @@ void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userDa
       {
          if ((msg->dmdId & 0x0FFFF) == frame->displayId)
          {
-            // If asked for a fixed size render frame with a different size from what we have, don't answer
-            if ((msgId == me.m_getRenderDmdMsgId) && (msg->requestFlags & CTLPI_GETDMD_FLAG_RENDER_SIZE_REQ) && ((msg->width != frame->width) || (msg->height != frame->height)))
-               return;
-
-            msg->frameId = frame->frameId;
-            msg->format = frame->dataFormat;
+            msg->format == frame->dataFormat;
             msg->width = frame->width;
             msg->height = frame->height;
+            msg->frameId = frame->frameId;
             msg->frame = frame->frameData;
             return;
          }
@@ -316,12 +357,14 @@ void VPXPluginAPIImpl::ControllerOnGetDMD(const unsigned int msgId, void* userDa
    }
 
    // Script DMD
-   if (((msg->dmdId >> 16) == me.m_vpxEndpointId) && ((msg->dmdId & 0x0FFFF) == 0) && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
+   if (((msg->dmdId >> 16) == me.m_vpxEndpointId) && ((msg->dmdId & 0x0FFFF) == 0)
+      && g_pplayer->m_dmdFrame
+      && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
    {
-      msg->frameId = g_pplayer->m_dmdFrameId;
       msg->format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
       msg->width = g_pplayer->m_dmdFrame->width();
       msg->height = g_pplayer->m_dmdFrame->height();
+      msg->frameId = g_pplayer->m_dmdFrameId;
       msg->frame = g_pplayer->m_dmdFrame->data();
    }
 }
@@ -384,8 +427,8 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_pinMameEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
    m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetDMD, this);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetDMD, this);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
+   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
    msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 

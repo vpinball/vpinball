@@ -67,5 +67,6 @@ private:
    unsigned int m_getIdentifyDmdMsgId;
    static void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
-   static void ControllerOnGetDMD(const unsigned int msgId, void* userData, void* msgData);
+   static void ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData);
+   static void ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData);
 };

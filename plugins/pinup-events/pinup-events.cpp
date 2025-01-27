@@ -60,7 +60,7 @@ static uint8_t palette16[16 * 3];
 #define LOAD_LIBRARY_SEARCH_DEFAULT_DIRS 0x00001000
 #endif
 
-void processDMD(const GetDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::time_point now)
+void processDMD(const GetRawDmdMsg& getDmdMsg, std::chrono::high_resolution_clock::time_point now)
 {
    if (getDmdMsg.frame == nullptr)
       return;
@@ -143,8 +143,7 @@ void onUpdateDMD(void* userData)
    auto now = std::chrono::high_resolution_clock::now();
    if (now - lastFrameTick >= std::chrono::milliseconds(16))
    {
-      GetDmdMsg getDmdMsg = {};
-      getDmdMsg.dmdId = dmdId;
+      GetRawDmdMsg getDmdMsg = { dmdId };
       msgApi->BroadcastMsg(endpointId, getDmdId, &getDmdMsg);
       processDMD(getDmdMsg, now);
    }
@@ -154,7 +153,7 @@ void onUpdateDMD(void* userData)
 // Catch raw frame broadcasted for other uses
 void onGetDMD(const unsigned int eventId, void* userData, void* eventData)
 {
-   GetDmdMsg* getDmdMsg = static_cast<GetDmdMsg*>(eventData);
+   GetRawDmdMsg* getDmdMsg = static_cast<GetRawDmdMsg*>(eventData);
    if (getDmdMsg->dmdId == dmdId)
       processDMD(*getDmdMsg, std::chrono::high_resolution_clock::now());
 }
@@ -171,15 +170,13 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
 {
    // Select main DMD from the list of DMD sources
    bool mainDMDFound = false;
-   GetDmdSrcMsg getSrcMsg = {};
-   getSrcMsg.maxEntryCount = 1024;
-   getSrcMsg.entries = new GetDmdSrcEntry[getSrcMsg.maxEntryCount];
+   GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
    msgApi->BroadcastMsg(endpointId, getDmdSrcId, &getSrcMsg);
    for (unsigned int i = 0; !mainDMDFound && (i < getSrcMsg.count); i++)
    {
       if (getSrcMsg.entries[i].width >= 128) // First DMD with a width of 128 or more is considered as the main one
       {
-         dmdId = getSrcMsg.entries[i].dmdId;
+         dmdId = getSrcMsg.entries[i].id;
          mainDMDFound = true;
       }
    }

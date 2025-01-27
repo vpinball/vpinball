@@ -510,14 +510,17 @@ public:
    int m_dmdFrameId = 0;
    struct ControllerDisplay // DMDs and video displays gathered through PinMame StateBlock
    {
+      DmdSrcId dmdId;
       int frameId = -1;
       BaseTexture *frame = nullptr;
-      GetDmdMsg getMsg;
    };
    ControllerDisplay GetControllerDisplay(int id);
 
 private:
-   unsigned int m_getDmdMsgId;
+   static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
+   unsigned int m_getDmdMsgId, m_getDmdSrcMsgId, m_onDmdChangedMsgId;
+   bool m_defaultDmdSelected = false;
+   DmdSrcId m_defaultDmdId;
    vector<ControllerDisplay> m_controllerDisplays;
 
 public:

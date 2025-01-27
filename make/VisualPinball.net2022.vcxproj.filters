@@ -684,7 +684,9 @@
     <ClCompile Include="third-party/include/imgui/imgui_impl_sdl3.cpp">
       <Filter>third-party\imgui\sdl3</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/DynamicScript.cpp" />
+    <ClCompile Include="src/core/DynamicScript.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -1791,9 +1793,11 @@
     <ClInclude Include="third-party/include/simple-uri-parser/uri_parser.h">
       <Filter>third-party\simple-uri-parser</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/DynamicScript.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h">
       <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/DynamicScript.h">
+      <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -2629,6 +2633,9 @@
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="make\vpinball.natvis">
+      <Filter>utils</Filter>
+    </Natvis>
+    <Natvis Include="make\bgfx.natvis">
       <Filter>utils</Filter>
     </Natvis>
   </ItemGroup>
