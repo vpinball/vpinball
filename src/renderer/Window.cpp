@@ -208,12 +208,9 @@ Window::Window(const string &title, const Settings::Section section, const strin
       #elif defined(ENABLE_DX9)
          // DX9 does not need any special flag either
       #endif
+      wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
       #if defined(_MSC_VER) // Win32 (we use _MSC_VER since standalone also defines WIN32 for non Win32 builds)
-         wnd_flags |= SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
          SDL_SetHint(SDL_HINT_FORCE_RAISEWINDOW, "1");
-      #elif defined(__STANDALONE__)
-         if (g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Standalone, "HighDPI"s, true))
-            wnd_flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
       #endif
       if (m_fullscreen)
          wnd_flags |= SDL_WINDOW_FULLSCREEN;

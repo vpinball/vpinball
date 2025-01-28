@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ressources/AssetManager.h"
+#include "resources/AssetManager.h"
 #include "AnimatedActor.h"
 #include "Image.h"
 

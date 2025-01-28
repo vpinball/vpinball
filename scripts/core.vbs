@@ -54,6 +54,9 @@ Dim HasPreciseGameTime : HasPreciseGameTime = Not IsEmpty(Eval("PreciseGameTime"
 ' Does the controller support synchronization through time fence
 Dim HasTimeFence : HasTimeFence = False
 
+' Are we using the plugin version of PinMAME
+Dim IsPluginPinMAME : IsPluginPinMAME = False
+
 ' Does the controller support state exchange through a global state block
 Dim HasStateBlock : HasStateBlock = 2
 
@@ -2556,20 +2559,27 @@ Sub PinMAMETimer_Timer
 	End If
 
 	On Error Resume Next
-		If UpdateVisual And UseDMD And HasStateBlock = 0 Then
-			DMDp = Controller.RawDmdPixels
-			If Not IsEmpty(DMDp) Then
-				DMDWidth = Controller.RawDmdWidth
-				DMDHeight = Controller.RawDmdHeight
-				DMDPixels = DMDp
+		If UpdateVisual Then
+			If Not IsPluginPinMAME And HasStateBlock = 0 Then
+				If UseDMD Then
+					DMDp = Controller.RawDmdPixels
+					If Not IsEmpty(DMDp) Then
+						DMDWidth = Controller.RawDmdWidth
+						DMDHeight = Controller.RawDmdHeight
+						DMDPixels = DMDp
+					End If
+				ElseIf UseColoredDMD Then
+					DMDp = Controller.RawDmdColoredPixels
+					If Not IsEmpty(DMDp) Then
+						DMDWidth = Controller.RawDmdWidth
+						DMDHeight = Controller.RawDmdHeight
+						DMDColoredPixels = DMDp
+					End If
+				End If
 			End If
-		ElseIf UpdateVisual And UseColoredDMD And HasStateBlock = 0 Then
-			DMDp = Controller.RawDmdColoredPixels
-			If Not IsEmpty(DMDp) Then
-				DMDWidth = Controller.RawDmdWidth
-				DMDHeight = Controller.RawDmdHeight
-				DMDColoredPixels = DMDp
-			End If
+			If UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
+			If UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
+			If (Not GICallback is Nothing) Or (Not GICallback2 is Nothing) Then ChgGI = Controller.ChangedGIStrings
 		End If
 		If UseNVRAM Then
 			If isObject(NVRAMCallback) Then
@@ -2577,10 +2587,7 @@ Sub PinMAMETimer_Timer
 				If(Not IsEmpty(ChgNVRAM)) Then NVRAMCallback ChgNVRAM
 			End If
 		End If
-		If UpdateVisual And UseLamps Then ChgLamp = Controller.ChangedLamps Else LampCallback
-		If UpdateVisual And UsePdbLeds Then ChgLed = Controller.ChangedPDLeds Else PDLedCallback
 		If UseSolenoids Then ChgSol = Controller.ChangedSolenoids
-		If UpdateVisual And ((Not GICallback is Nothing) Or (Not GICallback2 is Nothing)) Then ChgGI = Controller.ChangedGIStrings
 		MotorCallback
 	On Error Goto 0
 

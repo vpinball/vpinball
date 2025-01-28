@@ -331,7 +331,12 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
 std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& pluginId) const
 {
    for (auto plugin : m_plugins)
-      if (plugin->m_id == pluginId)
+      if (plugin->m_id.length() == pluginId.length()
+         && std::equal(plugin->m_id.begin(), plugin->m_id.end(), pluginId.begin(), [](char a, char b) { 
+            if (a >= 'A' && a <= 'Z') a ^= 32; //ASCII convention
+            if (b >= 'A' && b <= 'Z') b ^= 32; //ASCII convention
+               return a == b; 
+            }))
          return plugin;
    return nullptr;
 }

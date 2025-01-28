@@ -538,7 +538,7 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay(-1);
+      Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay({ 0, 0 });
       if (dmd.frame == nullptr)
          return;
       // convert color from sRGB to RGB ?

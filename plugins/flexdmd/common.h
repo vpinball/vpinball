@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <assert.h>
 
 #include <string>
 using namespace std::string_literals;

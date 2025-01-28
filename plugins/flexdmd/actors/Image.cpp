@@ -1,6 +1,6 @@
 #include "Image.h"
-#include "ressources/Bitmap.h"
-#include "ressources/AssetManager.h"
+#include "resources/Bitmap.h"
+#include "resources/AssetManager.h"
 
 Image::Image(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 {

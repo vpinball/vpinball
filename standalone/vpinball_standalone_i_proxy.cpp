@@ -2982,17 +2982,13 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		}
 		case 265: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 809: [id(265), helpstring("method CreatePluginObject") ] HRESULT CreatePluginObject([in] BSTR pluginId, [in] BSTR classId, [out, retval] IDispatch* *pVal);
+				// line 809: [id(265), helpstring("method CreatePluginObject") ] HRESULT CreatePluginObject([in] BSTR classId, [out, retval] IDispatch* *pVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
-				VARIANT var1;
-				V_VT(&var1) = VT_EMPTY;
-				VariantChangeType(&var1, &pDispParams->rgvarg[--index], 0, VT_BSTR);
 				V_VT(&res) = VT_DISPATCH;
-				hres = CreatePluginObject(V_BSTR(&var0), V_BSTR(&var1), (IDispatch**)&V_DISPATCH(&res));
+				hres = CreatePluginObject(V_BSTR(&var0), (IDispatch**)&V_DISPATCH(&res));
 				VariantClear(&var0);
-				VariantClear(&var1);
 			}
 			break;
 		}

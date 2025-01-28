@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 ///////////////////////////////////////////////////////////////////////////////
 // Generic Message Plugin API
 //
@@ -40,7 +42,7 @@
 // A basic setting mechanism is also provided to allow easier integration.
 //
 // Plugins must implement and export the load/unload functions to be valid.
-// MSGPI_EXPORT void PluginLoad(const unsigned int endpointId, MsgPluginAPI* api);
+// MSGPI_EXPORT void PluginLoad(const uint32_t endpointId, MsgPluginAPI* api);
 // MSGPI_EXPORT void PluginUnload();
 //
 // Plugins can be statically linked to host application on platforms requiring it or loaded
@@ -53,14 +55,37 @@
 
 
 #if defined(_MSC_VER)
-// Microsoft
-#define MSGPI_EXPORT extern "C" __declspec(dllexport)
+   // Microsoft
+   #ifdef _WIN64
+      // Windows x64 standard calling convention (implicit)
+      #define MSGPIAPI
+   #else
+      // Other platforms, uses C calling convetion as we need variadic
+      #define MSGPIAPI __cdecl
+   #endif
+   #define MSGPI_EXPORT extern "C" __declspec(dllexport)
 #elif defined(__GNUC__)
-// GCC
-#define MSGPI_EXPORT extern "C" __attribute__((visibility("default")))
+   // GCC
+   #ifdef _WIN64
+      // Windows x64 standard calling convention (implicit)
+      #define MSGPIAPI
+   #else
+      // Other platforms, uses C calling convetion as we need variadic
+      // TODO: #define MSGPIAPI __attribute__((__cdecl))
+      #define MSGPIAPI
+   #endif
+   #define MSGPI_EXPORT extern "C" __attribute__((visibility("default"))) MSGPIAPI
 #else
-// Others: hope that all symbols are exported
-#define MSGPI_EXPORT extern "C"
+   // Others
+   #ifdef _WIN64
+      // Windows x64 standard calling convention (implicit)
+      #define MSGPIAPI
+   #else
+      // Other platforms, uses C calling convetion as we need variadic
+      #define MSGPIAPI __cdecl
+   #endif
+   // Hope that all symbols are exported
+   #define MSGPI_EXPORT extern "C"
 #endif
 
 // Callbacks
@@ -70,13 +95,13 @@ typedef void (*msgpi_timer_callback)(void* userData);
 typedef struct MsgPluginAPI
 {
    // Messageing
-   unsigned int (*GetMsgID)(const char* name_space, const char* name);
-   void (*SubscribeMsg)(const unsigned int endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
-   void (*UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
-   void (*BroadcastMsg)(const unsigned int endpointId, const unsigned int msgId, void* data);
-   void (*ReleaseMsgID)(const unsigned int msgId);
+   unsigned int (MSGPIAPI *GetMsgID)(const char* name_space, const char* name);
+   void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
+   void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);
+   void (MSGPIAPI *BroadcastMsg)(const uint32_t endpointId, const unsigned int msgId, void* data);
+   void (MSGPIAPI *ReleaseMsgID)(const unsigned int msgId);
    // Setting
-   void (*GetSetting)(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
+   void (MSGPIAPI *GetSetting)(const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize);
    // Threading
-   void (*RunOnMainThread)(const double delayInS, const msgpi_timer_callback callback, void* userData);
+   void (MSGPIAPI *RunOnMainThread)(const double delayInS, const msgpi_timer_callback callback, void* userData);
 } MsgPluginAPI;

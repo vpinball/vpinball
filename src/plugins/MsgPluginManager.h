@@ -15,7 +15,7 @@
 #include <memory>
 #include <functional>
 
-typedef void (*msgpi_load_plugin)(const unsigned int pluginId, const MsgPluginAPI* api);
+typedef void (*msgpi_load_plugin)(const uint32_t pluginId, const MsgPluginAPI* api);
 typedef void (*msgpi_unload_plugin)();
 
 class MsgPlugin
@@ -46,7 +46,7 @@ public:
    const std::string m_library; // Library implementing this plugin for the current platform
    const std::string m_directory; // Directory containing this plugin
 
-   const unsigned int m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
+   const uint32_t m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
 
 private:
    msgpi_load_plugin m_loadPlugin = nullptr;
@@ -113,7 +113,7 @@ private:
  
    MsgPluginAPI m_api;
    
-   unsigned int m_nextEndpointId = 1;
+   uint32_t m_nextEndpointId = 1;
 
    std::thread::id m_apiThread;
 };

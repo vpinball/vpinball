@@ -2173,14 +2173,20 @@
     <Natvis Include="make\bgfx.natvis" Condition="('$(Configuration)'=='Debug_BGFX')or('$(Configuration)'=='Release_BGFX')" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="plugin-alphadmd.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-helloscript.vcxproj">
+      <Project>{bd05ba74-3676-42d7-ad6a-79c2de31100e}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-helloworld.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af777}</Project>
     </ProjectReference>
-    <ProjectReference Include="plugin-helloscript.vcxproj">
-      <Project>{2bf90d88-9139-4e66-a778-4327311af77A}</Project>
-    </ProjectReference>
     <ProjectReference Include="plugin-flexdmd.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af77B}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-pinmame.vcxproj">
+      <Project>{2bf90d88-9139-4e66-a778-4327311af77c}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-pinup-events.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>

@@ -762,5 +762,6 @@ set(CPACK_DMG_VOLUME_NAME "VPinballX_BGFX ${CMAKE_PROJECT_VERSION}")
 set(CPACK_PACKAGE_ICON ${CMAKE_CURRENT_SOURCE_DIR}/standalone/macos-x64/VPinballX.icns)
 include(CPack)
 
-set(PluginArch "x86_64")
+set(PluginPlatform "macos")
+set(PluginArch "x64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

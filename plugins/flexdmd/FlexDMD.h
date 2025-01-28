@@ -3,7 +3,7 @@
 #include "common.h"
 #include "SurfaceGraphics.h"
 #include "VPXPlugin.h"
-#include "ressources/AssetManager.h"
+#include "resources/AssetManager.h"
 #include "actors/Group.h"
 
 class Frame;
@@ -75,7 +75,7 @@ public:
    std::vector<uint32_t> GetDmdColoredPixels();
    std::vector<uint8_t> GetDmdPixels();
    
-   void SetSegments(const std::vector<short>& segments);
+   void SetSegments(const std::vector<uint16_t>& segments);
 
    void LockRenderThread() { m_renderLockCount++; }
    void UnlockRenderThread() { m_renderLockCount--; }
@@ -95,8 +95,8 @@ public:
    
    AssetManager* GetAssetManager() { return m_pAssetManager; }
 
-   void SetId(int id) { m_id = id; }
-   int GetId() const { return m_id; }
+   void SetId(uint32_t id) { m_id = id; }
+   uint32_t GetId() const { return m_id; }
 
    void SetOnDMDChangedHandler(void (*handler)(FlexDMD*)) { m_onDMDChangedHandler = handler; }
    void SetOnDestroyHandler(void (*handler)(FlexDMD*)) { m_onDestroyHandler = handler; }
@@ -155,7 +155,7 @@ private:
    AssetManager* m_pAssetManager;
    bool m_show = true;
    bool m_run = false;
-   int m_id = -1;
+   uint32_t m_id = 0;
    VP::SurfaceGraphics* m_pSurface;
 
    //std::thread* m_pThread;

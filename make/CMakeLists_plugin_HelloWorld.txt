@@ -1,23 +1,24 @@
 # plugin CMake file to be included in main project CMakelists
 
+
 # --- HelloWorld plugin ---
 
 add_library(HelloWorldPlugin MODULE plugins/helloworld/helloworld.cpp)
 
 if (WIN32)
-set_target_properties(HelloWorldPlugin PROPERTIES
-   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-)
-target_compile_options(HelloWorldPlugin PUBLIC
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-)
-target_link_options(HelloWorldPlugin PUBLIC
-   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-   $<$<CONFIG:RELEASE>:/OPT:REF>
-   $<$<CONFIG:RELEASE>:/OPT:ICF>
-   $<$<CONFIG:RELEASE>:/LTCG>
-)
+	set_target_properties(HelloWorldPlugin PROPERTIES
+	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+	)
+	target_compile_options(HelloWorldPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+	)
+	target_link_options(HelloWorldPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+	   $<$<CONFIG:RELEASE>:/OPT:REF>
+	   $<$<CONFIG:RELEASE>:/OPT:ICF>
+	   $<$<CONFIG:RELEASE>:/LTCG>
+	)
 endif()
 
 target_include_directories(HelloWorldPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)

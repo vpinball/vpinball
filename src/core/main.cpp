@@ -1218,7 +1218,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       MsgPluginManager::GetInstance().ScanPluginFolder(g_pvp->m_szMyPath + "plugins", [](MsgPlugin& plugin) {
          const char *enableDisable[] = { "Disabled", "Enabled" };
          int enabled = (int)VPXPluginAPIImpl::GetInstance().getAPI().GetOption(plugin.m_id.c_str(), 
-            "enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
+            "Enable", VPX_OPT_SHOW_UI, "Enable plugin", 0.f, 1.f, 1.f, 0.f, VPXPluginAPI::NONE, enableDisable);
          if (enabled)
          {
             plugin.Load(&MsgPluginManager::GetInstance().GetMsgAPI());

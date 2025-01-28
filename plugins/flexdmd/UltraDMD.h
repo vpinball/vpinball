@@ -5,7 +5,7 @@
 #include "scenes/Sequence.h"
 #include "actors/ScoreBoard.h"
 #include "actors/Image.h"
-#include "ressources/RessourceDef.h"
+#include "resources/ResourceDef.h"
 #include "VPXPlugin.h"
 
 #include <map>

@@ -5,6 +5,8 @@
 #include "AnimatedActor.h"
 #include "Image.h"
 
+#include <algorithm>
+
 Group::~Group()
 {
    while (!m_children.empty())

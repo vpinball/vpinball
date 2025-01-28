@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Actor.h"
-#include "ressources/Font.h"
+#include "resources/Font.h"
 
 class Label : public Actor
 {

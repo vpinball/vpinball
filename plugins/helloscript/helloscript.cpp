@@ -9,23 +9,26 @@ MsgPluginAPI* msgApi = nullptr;
 VPXPluginAPI* vpxApi = nullptr;
 ScriptablePluginAPI* scriptApi = nullptr;
 
-unsigned int endpointId;
+uint32_t endpointId;
 
-void get_Property1(void* me, int, ScriptVariant* value) { value->vInt = 42; }
-void get_Property2(void* me, int, ScriptVariant* value) { value->vFloat = 42.5f; }
-void put_Property2(void* me, int, ScriptVariant* value) { }
-void AddRef(void* me, int, ScriptVariant*, ScriptVariant*) { }
-void Release(void* me, int, ScriptVariant*, ScriptVariant*) { }
+static float property2 = 42.5f;
+
+void get_Property1(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { pRet->vInt = 42; }
+void get_Property2(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { pRet->vFloat = property2; }
+void put_Property2(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { property2 = pArgs[0].vFloat; }
+void AddRef(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { }
+void Release(void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { }
 
 ScriptClassDef helloScriptClass { { "DummyClass" }, []() { return static_cast<void*>(new int[4]); }, 4,
    {
-      { { "AddRef" },    { "ulong" }, nullptr,       nullptr,       AddRef  },
-      { { "Release" },   { "ulong" }, nullptr,       nullptr,       Release },
-      { { "Property1" }, { "int" },   get_Property1, nullptr,       nullptr },
-      { { "Property2" }, { "float" }, get_Property2, put_Property2, nullptr }
+      { { "AddRef" },    { "ulong" }, 0, {}, AddRef  },
+      { { "Release" },   { "ulong" }, 0, {}, Release },
+      { { "Property1" }, { "int" },   0, {}, get_Property1 },
+      { { "Property2" }, { "float" }, 0, {}, get_Property2 },
+      { { "Property2" }, { "void" }, 1, { { "float" } }, put_Property2 },
    } };
 
-MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -38,7 +41,7 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    scriptApi->RegisterScriptClass(&helloScriptClass);
 }
 
-MSGPI_EXPORT void PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
    vpxApi = nullptr;
    msgApi = nullptr;

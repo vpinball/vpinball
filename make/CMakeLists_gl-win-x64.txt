@@ -687,6 +687,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/hidapi64.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
 
-
+set(PluginPlatform "win")
 set(PluginArch "x86_64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

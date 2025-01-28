@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AnimatedActor.h"
-#include "ressources/AssetManager.h"
+#include "resources/AssetManager.h"
 
 class GIFImage : public AnimatedActor 
 {

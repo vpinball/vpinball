@@ -2,6 +2,9 @@
 
 #pragma once
 
+#include <stdint.h>
+
+
 ///////////////////////////////////////////////////////////////////////////////
 // Core Virtual Pinball plugins
 //
@@ -16,6 +19,16 @@
 //
 
 #define CTLPI_NAMESPACE                       "Controller"
+
+// Generic structure used to identify a resource belonging to an endpoint
+typedef union CtlResId
+{
+   struct {
+      uint32_t endpointId;
+      uint32_t resId;
+   };
+   uint64_t id;
+} CtlResId;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -46,13 +59,13 @@
 #define CTLPI_GETDMD_IDENTIFY_MSG             "GetDMDIdentify"
 
 // Render DMD frame formats
-#define CTLPI_GETDMD_FORMAT_LUM8              1
-#define CTLPI_GETDMD_FORMAT_SRGB888           2
-#define CTLPI_GETDMD_FORMAT_SRGB565           5
+#define CTLPI_GETDMD_FORMAT_LUM8              0
+#define CTLPI_GETDMD_FORMAT_SRGB888           1
+#define CTLPI_GETDMD_FORMAT_SRGB565           4
 
 // Identify DMD frame formats
-#define CTLPI_GETDMD_FORMAT_BITPLANE2         3
-#define CTLPI_GETDMD_FORMAT_BITPLANE4         4
+#define CTLPI_GETDMD_FORMAT_BITPLANE2         2
+#define CTLPI_GETDMD_FORMAT_BITPLANE4         3
 
 // Hardware type
 #define CTLPI_GETDMD_HARDWARE_TYPE_MASK       0xFFFF0000
@@ -67,7 +80,7 @@
 // different size/format thanks to frame improvment like colorization or upscaler.
 typedef struct DmdSrcId
 {
-   unsigned int id;        // Unique Id of the frame stream
+   CtlResId id;            // Unique Id of the frame stream
    unsigned int width;     //
    unsigned int height;    //
    unsigned int format;    //
@@ -95,7 +108,7 @@ typedef struct GetDmdMsg
 typedef struct GetRawDmdMsg
 {
    // Request that must match one of the DMD source definitions reported by GetDmdSrcMsg
-   unsigned int dmdId;   // Uniquely identify the DMD source, we only match on the original frame source
+   CtlResId dmdId;       // Uniquely identify the DMD source, we only match on the original frame source
    // Response
    unsigned int width;   //
    unsigned int height;  //
@@ -120,21 +133,18 @@ typedef struct GetRawDmdMsg
 // Request subscribers for a alpha numeric state suited for rendering (best visual), message data is a pointer to a GetSegMsg structure
 #define CTLPI_GETSEG_MSG               "GetSeg"
 
-// Segment display layouts
-#define CTLPI_GETSEG_LAYOUT_16         0 // 16 segments
-#define CTLPI_GETSEG_LAYOUT_16R        1 // 16 segments with comma and period reversed
-#define CTLPI_GETSEG_LAYOUT_10         2 // 9  segments and comma
-#define CTLPI_GETSEG_LAYOUT_9          3 // 9  segments
-#define CTLPI_GETSEG_LAYOUT_8          4 // 7  segments and comma
-#define CTLPI_GETSEG_LAYOUT_8D         5 // 7  segments and period
-#define CTLPI_GETSEG_LAYOUT_7          6 // 7  segments
-#define CTLPI_GETSEG_LAYOUT_87         7 // 7  segments, comma every three
-#define CTLPI_GETSEG_LAYOUT_87F        8 // 7  segments, forced comma every three
-#define CTLPI_GETSEG_LAYOUT_98         9 // 9  segments, comma every three
-#define CTLPI_GETSEG_LAYOUT_98F       10 // 9  segments, forced comma every three
-#define CTLPI_GETSEG_LAYOUT_7S        11 // 7  segments, small
-#define CTLPI_GETSEG_LAYOUT_7SC       12 // 7  segments, small, with comma
-#define CTLPI_GETSEG_LAYOUT_16S       13 // 16 segments with split top and bottom line
+// Individual segment display layouts
+typedef enum {
+   CTLPI_GETSEG_LAYOUT_7,          //  7 segments
+   CTLPI_GETSEG_LAYOUT_7C,         //  7 segments and comma
+   CTLPI_GETSEG_LAYOUT_7D,         //  7 segments and dot
+   CTLPI_GETSEG_LAYOUT_9,          //  9 segments
+   CTLPI_GETSEG_LAYOUT_9C,         //  9 segments and comma
+   CTLPI_GETSEG_LAYOUT_14,         // 14 segments
+   CTLPI_GETSEG_LAYOUT_14D,        // 14 segments with dot
+   CTLPI_GETSEG_LAYOUT_14DC,       // 14 segments with dot and comma
+   CTLPI_GETSEG_LAYOUT_16,         // 16 segments (split top/bottom segments)
+} SegElementType;
 
 // Hardware type
 #define CTLPI_GETSEG_HARDWARE_TYPE_MASK       0xFFFF0000
@@ -144,14 +154,14 @@ typedef struct GetRawDmdMsg
 #define CTLPI_GETSEG_HARDWARE_VFD_GREEN       0x00020000
 #define CTLPI_GETSEG_HARDWARE_VFD_BLUE        0x00030000
 
+#define CTLPI_SEG_MAX_DISP_ELEMENTS  32
 
-// Structure uniquely identifying a segment display
 typedef struct SegSrcId
 {
-   unsigned int id;        // Unique Id of the frame stream
-   unsigned int dispCount; // Number of elements composing the display
-   unsigned int segLayout; // Segment layout
-   unsigned int hardware;  // Hardware type
+   CtlResId id;                                             // Unique Id of the frame stream
+   unsigned int hardware;                                   // Hardware hint, see CTLPI_GETSEG_HARDWARE_xxx
+   unsigned int nElements;                                  // Number of individual element forming this display
+   SegElementType elementType[CTLPI_SEG_MAX_DISP_ELEMENTS]; // Type of each individual element forming this display
 } SegSrcId;
 
 typedef struct GetSegSrcMsg
@@ -166,9 +176,34 @@ typedef struct GetSegSrcMsg
 typedef struct GetSegMsg
 {
    // Request that must match one of the Segment source definitions reported by GetSegSrcMsg
-   SegSrcId segId;            // Uniquely identify the segment source
+   CtlResId segId;            // Uniquely identify the segment source
    // Response
    unsigned int frameId;      // Id that can be used to discard identical frames
-   float* frame;              // Pointer to frame data (one relative luminance value per segment), null until a provider answers the request, owned by the provider
+   float* frame;              // Pointer to frame data (one relative luminance value per segment, 16 segments per element), null until a provider answers the request, owned by the provider
 } GetSegMsg;
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Audio streams (backglass, pinsound/altsound/gsound, ...)
+//
+
+// Broadcasted when an audio stream is made available, updated or ended
+#define CTLPI_ONAUDIO_UPDATE_MSG "AudioUpdate"
+
+#define CTLPI_AUDIO_SRC_BACKGLASS_MONO       0
+#define CTLPI_AUDIO_SRC_BACKGLASS_STEREO     1
+
+#define CTLPI_AUDIO_FORMAT_SAMPLE_INT16      0
+#define CTLPI_AUDIO_FORMAT_SAMPLE_FLOAT      1
+
+typedef struct AudioUpdateMsg
+{
+   CtlResId id;                  // Unique Id of the audio source
+   unsigned int type;            // The type of audio source (see CTLPI_AUDIO_SRC_xxx)
+   unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
+   double sampleRate;            // The sample rate
+   unsigned int bufferSize;      // The size of the audio buffer
+   void* buffer;                 // The sample data, or null for immediate stream destruction
+} AudioUpdateMsg;

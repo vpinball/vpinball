@@ -1225,24 +1225,19 @@ BaseTexture *Flasher::GetLinkedTexture(const string &link, const IEditable *cont
    }
    else if (uri.scheme == "plugin")
    {
-      unsigned int endpointId = 0;
-      if (uri.authority.host == "pinmame") // Hack while migrating to PinMame plugin
-         endpointId = VPXPluginAPIImpl::GetInstance().GetPinMameEndPointId();
-      else
-      {
-         auto plugin = MsgPluginManager::GetInstance().GetPlugin(uri.authority.host);
-         if (plugin.get())
-            endpointId = plugin->m_endpointId;
-      }
+      uint32_t endpointId = 0;
+      auto plugin = MsgPluginManager::GetInstance().GetPlugin(uri.authority.host);
+      if (plugin.get())
+         endpointId = plugin->m_endpointId;
       if ((endpointId != 0) 
          && (uri.path == "/getstate") 
          && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
          && (uri.query.at("src") == "display"))
       {
-         int displayId = 0;
+         uint32_t displayId = 0;
          if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
             try { displayId = std::stoi(uri.query.at("id")); } catch (...) { };
-         return g_pplayer->GetControllerDisplay((endpointId << 16) | (displayId)).frame;
+         return g_pplayer->GetControllerDisplay({ endpointId, displayId }).frame;
       }
    }
    return nullptr;
@@ -1400,7 +1395,7 @@ void Flasher::Render(const unsigned int renderMask)
       {
          BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
          if (frame == nullptr)
-            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay(-1).frame;
+            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay({ 0, 0 }).frame;
          if (frame == nullptr)
          {
             if (m_backglass)

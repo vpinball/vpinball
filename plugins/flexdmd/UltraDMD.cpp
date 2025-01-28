@@ -9,7 +9,7 @@
 #include "actors/Video.h"
 #include "actors/ImageSequence.h"
 
-#include "ressources/RessourceDef.h"
+#include "resources/ResourceDef.h"
 
 #include <sstream>
 

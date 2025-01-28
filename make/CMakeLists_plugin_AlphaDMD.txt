@@ -1,0 +1,30 @@
+# plugin CMake file to be included in main project CMakelists
+
+
+# --- AlphaDMD plugin ---
+
+add_library(AlphaDMDPlugin MODULE plugins/alphadmd/alphadmd.cpp)
+
+if (WIN32)
+	set_target_properties(AlphaDMDPlugin PROPERTIES
+	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+	)
+	target_compile_options(AlphaDMDPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+	)
+	target_link_options(AlphaDMDPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+	   $<$<CONFIG:RELEASE>:/OPT:REF>
+	   $<$<CONFIG:RELEASE>:/OPT:ICF>
+	   $<$<CONFIG:RELEASE>:/LTCG>
+	)
+endif()
+
+target_include_directories(AlphaDMDPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
+
+add_custom_command(TARGET AlphaDMDPlugin POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/alphadmd/plugin.cfg" "${PLUGINS_DIR}/alphadmd/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:AlphaDMDPlugin>" "${PLUGINS_DIR}/alphadmd/plugin-alphadmd.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:AlphaDMDPlugin>"
+)

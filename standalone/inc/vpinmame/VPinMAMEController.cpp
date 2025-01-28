@@ -13,7 +13,7 @@
 #define PINMAME_SETTINGS_WINDOW_HEIGHT 75
 #define PINMAME_ZORDER                 350
 
-void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGame, void* const pUserData)
 {
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
@@ -24,7 +24,7 @@ void PINMAMECALLBACK VPinMAMEController::GetGameCallback(PinmameGame* pPinmameGa
    memcpy(pController->m_pPinmameGame, pPinmameGame, sizeof(PinmameGame));
 }
 
-void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout *p_displayLayout, void* const pUserData)
 {
    PLOGI.printf("index=%d, displayCount=%d, type=%d, top=%d, left=%d, width=%d, height=%d, depth=%d, length=%d", 
       index,
@@ -83,7 +83,7 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayAvailable(int index, int displ
    pController->m_displays.push_back(pDisplay);
 }
 
-void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* const pUserData)
 {
    VPinMAMEDisplay* pDisplay = ((VPinMAMEController*)pUserData)->m_displays[index];
 
@@ -93,7 +93,7 @@ void PINMAMECALLBACK VPinMAMEController::OnDisplayUpdated(int index, void* p_dis
    }
 }
 
-int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData)
+int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData)
 {
    PLOGI.printf("format=%d, channels=%d, sampleRate=%.2f, framesPerSecond=%.2f, samplesPerFrame=%d, bufferSize=%d", 
       p_audioInfo->format,
@@ -112,7 +112,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_aud
    return p_audioInfo->samplesPerFrame;
 }
 
-int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples, const void* pUserData)
+int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int samples, void* const pUserData)
 {
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
@@ -122,7 +122,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int sampl
    return samples;
 }
 
-void PINMAMECALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData)
 {
    char buffer[4096];
    vsnprintf(buffer, sizeof(buffer), format, args);
@@ -135,7 +135,7 @@ void PINMAMECALLBACK VPinMAMEController::OnLogMessage(PINMAME_LOG_LEVEL logLevel
    }
 }
 
-void PINMAMECALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, const void* pUserData)
+void PINMAMECALLBACK VPinMAMEController::OnSoundCommand(int boardNo, int cmd, void* const pUserData)
 {
    AltsoundProcessCommand(cmd, 0);
 }
@@ -242,7 +242,7 @@ VPinMAMEController::VPinMAMEController()
 
 VPinMAMEController::~VPinMAMEController()
 {
-   if (PinmameIsRunning())
+   if (PinmameIsRunning() != 0)
       PinmameStop();
 
    m_running = false;
@@ -318,7 +318,7 @@ STDMETHODIMP VPinMAMEController::Run(/*[in]*/ LONG_PTR hParentWnd, /*[in,default
       if (status == PINMAME_STATUS_OK) {
          int timeout = 0;
 
-         while (!PinmameIsRunning() && timeout < 20) {
+         while ((PinmameIsRunning() == 2) && timeout < 20) {
             SDL_Delay(75);
             timeout++;
          }
@@ -358,7 +358,7 @@ STDMETHODIMP VPinMAMEController::Stop()
 {
    PinmameSetTimeFence(0.0);
 
-   if (PinmameIsRunning())
+   if (PinmameIsRunning() != 0)
       PinmameStop();
 
    if (m_pThread) {
@@ -746,7 +746,7 @@ STDMETHODIMP VPinMAMEController::get_Machines(BSTR sMachine, VARIANT* pVal)
 }
 
 STDMETHODIMP VPinMAMEController::get_Running(VARIANT_BOOL *pVal) { 
-   return PinmameIsRunning() ? VARIANT_TRUE : VARIANT_FALSE; 
+   return (PinmameIsRunning() != 0) ? VARIANT_TRUE : VARIANT_FALSE; 
 }
 
 STDMETHODIMP VPinMAMEController::get_ChangedLamps(VARIANT* pVal)

@@ -1,7 +1,6 @@
 // license:GPLv3+
 
 #include "MsgPlugin.h"
-#include "VPXPlugin.h"
 #include "CorePlugin.h"
 #include "ScriptablePlugin.h"
 
@@ -13,7 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Resource & resource Identifiers
 
-#include "ressources/RessourceDef.h"
+#include "resources/ResourceDef.h"
 
 PSC_CLASS_START(FontDef)
 PSC_CLASS_END(FontDef)
@@ -24,11 +23,11 @@ PSC_CLASS_END(VideoDef)
 PSC_CLASS_START(ImageSequenceDef)
 PSC_CLASS_END(ImageSequenceDef)
 
-#include "ressources/AssetSrc.h"
+#include "resources/AssetSrc.h"
 PSC_CLASS_START(AssetSrc)
 PSC_CLASS_END(AssetSrc)
 
-#include "ressources/Font.h"
+#include "resources/Font.h"
 #define PSC_VAR_Font(variant) PSC_VAR_object(Font, variant)
 #define PSC_VAR_SET_Font(variant, value) PSC_VAR_SET_object(Font, variant, value)
 PSC_CLASS_START(Font)
@@ -93,7 +92,7 @@ PSC_CLASS_START(Frame)
    PSC_PROP_RW(Frame, int, FillColor)
 PSC_CLASS_END(Frame)
 
-#include "ressources/Bitmap.h"
+#include "resources/Bitmap.h"
 #define PSC_VAR_Bitmap(variant) PSC_VAR_object(Bitmap, variant)
 #define PSC_VAR_SET_Bitmap(variant, value) PSC_VAR_SET_object(Bitmap, variant, value)
 PSC_CLASS_START(Bitmap)
@@ -279,14 +278,14 @@ PSC_CLASS_END(UltraDMD)
 #define PSC_VAR_SET_RenderMode(variant, value) PSC_VAR_SET_enum(RenderMode, variant, value)
 PSC_CLASS_ALIAS(RenderMode, int)
 
-PSC_ARRAY1(ByteArray, char, 0)
+PSC_ARRAY1(ByteArray, uchar, 0)
 #define PSC_VAR_SET_ByteArray(variant, value) PSC_VAR_SET_array1(ByteArray, variant, value)
 
-PSC_ARRAY1(ShortArray, short, 0)
+PSC_ARRAY1(ShortArray, ushort, 0)
 #define PSC_VAR_SET_ShortArray(variant, value) PSC_VAR_SET_array1(ShortArray, variant, value)
-#define PSC_VAR_ShortArray(variant) PSC_VAR_array1(short, variant)
+#define PSC_VAR_ShortArray(variant) PSC_VAR_array1(uint16_t, variant)
 
-PSC_ARRAY1(IntArray, int, 0)
+PSC_ARRAY1(IntArray, uint, 0)
 #define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
 
 PSC_CLASS_START(FlexDMD)
@@ -322,10 +321,10 @@ PSC_CLASS_END(FlexDMD)
 // Plugin interface
 
 static MsgPluginAPI* msgApi = nullptr;
-static VPXPluginAPI* vpxApi = nullptr;
+static ScriptablePluginAPI* scriptApi = nullptr;
 
-static unsigned int endpointId, getDmdSrcId, getRenderDmdId, onDmdSrcChangeId;
-static int nextDmdId;
+static uint32_t endpointId, nextDmdId;
+static unsigned int getDmdSrcId, getRenderDmdId, onDmdSrcChangeId;
 
 static std::vector<FlexDMD*> flexDmds;
 
@@ -336,7 +335,7 @@ static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
    {
       if (pFlex->GetShow() && (msg.count < msg.maxEntryCount) && ((pFlex->GetRenderMode() == RenderMode_DMD_GRAY_2) || (pFlex->GetRenderMode() == RenderMode_DMD_GRAY_4) || (pFlex->GetRenderMode() == RenderMode_DMD_RGB)))
       {
-         msg.entries[msg.count].id = (endpointId << 16) | pFlex->GetId();
+         msg.entries[msg.count].id = { endpointId , pFlex->GetId() };
          msg.entries[msg.count].format = (pFlex->GetRenderMode() == RenderMode_DMD_RGB) ? CTLPI_GETDMD_FORMAT_SRGB888 : CTLPI_GETDMD_FORMAT_LUM8;
          msg.entries[msg.count].width = pFlex->GetWidth();
          msg.entries[msg.count].height = pFlex->GetHeight();
@@ -348,12 +347,11 @@ static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* 
 static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
-   if ((getDmdMsg.dmdId.id >> 16) != endpointId)
+   if (getDmdMsg.dmdId.id.endpointId != endpointId)
       return;
-   int id = getDmdMsg.dmdId.id & 0x0FFFF;
    for (FlexDMD* pFlex : flexDmds)
    {
-      if ((pFlex->GetId() == id) && (getDmdMsg.dmdId.width == pFlex->GetWidth()) && (getDmdMsg.dmdId.height == pFlex->GetHeight()))
+      if ((pFlex->GetId() == getDmdMsg.dmdId.id.resId) && (getDmdMsg.dmdId.width == pFlex->GetWidth()) && (getDmdMsg.dmdId.height == pFlex->GetHeight()))
       {
          pFlex->Render();
          getDmdMsg.frameId = pFlex->GetFrameId();
@@ -368,13 +366,10 @@ static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msg
 
 static void OnDMDDestroyed(FlexDMD* pFlex) { flexDmds.erase(std::remove(flexDmds.begin(), flexDmds.end(), pFlex), flexDmds.end()); }
 
-MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
-   const unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
-   msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
-   msgApi->ReleaseMsgID(getVpxApiId);
 
    // Contribute DMDs when show is true
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
@@ -383,15 +378,14 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetRenderDMDSrc, nullptr);
    msgApi->SubscribeMsg(endpointId, getRenderDmdId, onGetRenderDMD, nullptr);
 
-   // Contribute our API to VPX scripting
-   ScriptablePluginAPI* scriptApi = nullptr;
+   // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
    msgApi->ReleaseMsgID(getScriptApiId);
 
-   auto regLambda = [scriptApi](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
-   auto aliasLambda = [scriptApi](const char* name, const char* aliasedType) { scriptApi->RegisterScriptTypeAlias(name, aliasedType); };
-   auto arrayLambda = [scriptApi](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
+   auto regLambda = [&](ScriptClassDef* scd) { scriptApi->RegisterScriptClass(scd); };
+   auto aliasLambda = [&](const char* name, const char* aliasedType) { scriptApi->RegisterScriptTypeAlias(name, aliasedType); };
+   auto arrayLambda = [&](ScriptArrayDef* sad) { scriptApi->RegisterScriptArrayType(sad); };
 
    RegisterAlignmentSCD(aliasLambda);
    RegisterInterpolationSCD(aliasLambda);
@@ -401,8 +395,10 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    RegisterLabelSCD(regLambda);
    RegisterFrameSCD(regLambda);
    RegisterImageSCD(regLambda);
+   RegisterVideoSCD(regLambda);
    RegisterGroupSCD(regLambda);
 
+   RegisterBitmapSCD(regLambda);
    RegisterFontDefSCD(regLambda);
    RegisterFontSCD(regLambda);
 
@@ -421,12 +417,16 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    RegisterActionFactorySCD(regLambda);
 
    RegisterRenderModeSCD(aliasLambda);
+   RegisterScalingSCD(aliasLambda);
    RegisterByteArraySCD(arrayLambda);
    RegisterShortArraySCD(arrayLambda);
    RegisterIntArraySCD(arrayLambda);
    RegisterUltraDMDSCD(regLambda);
    RegisterFlexDMDSCD(regLambda);
 
+   scriptApi->SubmitTypeLibrary();
+
+   nextDmdId = 0;
    FlexDMD_SCD->CreateObject = []() {
       FlexDMD* pFlex = new FlexDMD();
       pFlex->SetId(nextDmdId);
@@ -437,17 +437,18 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
       return static_cast<void*>(pFlex);
    };
 
-   vpxApi->SetCOMObjectOverride("FlexDMD.FlexDMD", "FlexDMD", "FlexDMD");
-   vpxApi->SetCOMObjectOverride("UltraDMD.DMDObject", "FlexDMD", "UltraDMD");
+   scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", FlexDMD_SCD);
+   // FIXME scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", UltraDMD_SCD);
 }
 
-MSGPI_EXPORT void PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
+   // TODO we should unregister the script API contribution
    msgApi->ReleaseMsgID(onDmdSrcChangeId);
    msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->ReleaseMsgID(getRenderDmdId);
-   vpxApi->SetCOMObjectOverride("UltraDMD.DMDObject", nullptr, nullptr);
-   vpxApi->SetCOMObjectOverride("FlexDMD.FlexDMD", nullptr, nullptr);
-   vpxApi = nullptr;
+   // scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", nullptr);
+   scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", nullptr);
+   scriptApi = nullptr;
    msgApi = nullptr;
 }

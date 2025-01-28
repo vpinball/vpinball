@@ -9,10 +9,17 @@
 
 void VPXPluginAPIImpl::GetTableInfo(VPXTableInfo* info)
 {
-   assert(g_pplayer); // Only allowed in game
-   info->path = g_pplayer->m_ptable->m_szFileName.c_str();
-   info->tableWidth = g_pplayer->m_ptable->m_right;
-   info->tableHeight = g_pplayer->m_ptable->m_bottom;
+   // Only valid in game
+   if (g_pplayer != nullptr)
+   {
+      info->path = g_pplayer->m_ptable->m_szFileName.c_str();
+      info->tableWidth = g_pplayer->m_ptable->m_right;
+      info->tableHeight = g_pplayer->m_ptable->m_bottom;
+   }
+   else
+   {
+      memset(info, 0, sizeof(VPXTableInfo));
+   }
 }
 
 
@@ -111,6 +118,22 @@ void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// Shared logging support for plugin API
+
+void VPXPluginAPIImpl::PluginLog(unsigned int level, const char* message)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   switch (level)
+   {
+   case LPI_LVL_DEBUG: PLOGD.printf(message); break;
+   case LPI_LVL_INFO: PLOGI.printf(message); break;
+   case LPI_LVL_ERROR: PLOGE.printf(message); break;
+   default: assert(false); PLOGE << "Invalid plugin log message level";
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 // Script support for plugin API
 
 void VPXPluginAPIImpl::RegisterScriptClass(ScriptClassDef* classDef)
@@ -131,15 +154,33 @@ void VPXPluginAPIImpl::RegisterScriptArray(ScriptArrayDef *arrayDef)
    pi.m_dynamicTypeLibrary.RegisterScriptArray(arrayDef);
 }
 
+void VPXPluginAPIImpl::SubmitTypeLibrary()
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   pi.m_dynamicTypeLibrary.ResolveAllClasses();
+}
+
+void VPXPluginAPIImpl::OnScriptError(unsigned int type, const char* message)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   // FIXME implement in DynamicDispatch
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // API to support overriding legacy COM objects
 
-void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const char* pluginId, const char* classId)
+void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef)
 {
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
-   // FIXME remove when plugin is unloaded
-   pi.m_scriptCOMObjectOverrides.push_back(ScriptCOMObjectOverride { className, pluginId, classId });
+   // FIXME remove when classDef is unregistered
+   // FIXME check that classDef has been registered in the type library ?
+   string classId(className);
+   StrToLower(classId);
+   if (classDef == nullptr)
+      pi.m_scriptCOMObjectOverrides.erase(classId);
+   else
+      pi.m_scriptCOMObjectOverrides[classId] = classDef;
 }
 
 #include <regex>
@@ -154,12 +195,13 @@ string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
    while (std::regex_search(searchStart, script.cend(), res, re))
    {
       result << res.prefix().str();
-      const string className = res[1].str();
-      auto match = std::find_if(m_scriptCOMObjectOverrides.cbegin(), m_scriptCOMObjectOverrides.cend(), [className](const ScriptCOMObjectOverride& over) { return over.className == className; });
-      if (match != m_scriptCOMObjectOverrides.cend())
+      string className = res[1].str();
+      StrToLower(className);
+      const auto& overrideEntry = m_scriptCOMObjectOverrides.find(className);
+      if (overrideEntry != m_scriptCOMObjectOverrides.end())
       {
-         PLOGI << "Legacy COM script object " << className << " overriden with class " << match->classId << " from plugin " << match->pluginId;
-         result << "CreatePluginObject(\"" << match->pluginId << "\", \"" << match->classId << "\")";
+         PLOGI << "COM script object " << className << " overriden to be provided by a plugin";
+         result << "CreatePluginObject(\"" << className << "\")";
       }
       else
       {
@@ -171,103 +213,52 @@ string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
    return result.str();
 }
 
-IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& pluginId, const string& classId)
+IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 {
    // FIXME we are not separating type library per plugin, therefore collision may occur
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
-   ScriptTypeNameDef type { classId.c_str(), 0 };
-   ScriptClassDef* scriptClass = pi.m_dynamicTypeLibrary.ResolveClass(type);
-   void* pScriptObject = scriptClass->CreateObject();
-   if (pScriptObject != nullptr)
-      return new DynamicDispatch(&pi.m_dynamicTypeLibrary, scriptClass, pScriptObject);
-   return nullptr;
+   string className(classId);
+   StrToLower(className);
+   const auto& overrideEntry = m_scriptCOMObjectOverrides.find(className);
+   if (overrideEntry == m_scriptCOMObjectOverrides.end())
+   {
+      PLOGE << "Asked to create object of type " << classId << " which is not registered";
+      return nullptr;
+
+   }
+   const ScriptClassDef* classDef = overrideEntry->second;
+   if (classDef->CreateObject == nullptr)
+   {
+      PLOGE << "Asked to create object of type " << classId << " which is registered without a factory method";
+      return nullptr;
+   }
+   void* pScriptObject = classDef->CreateObject();
+   if (pScriptObject == nullptr)
+   {
+      PLOGE << "Failed to create object of class " << classId;
+      return nullptr;
+   }
+   return new DynamicDispatch(&pi.m_dynamicTypeLibrary, classDef, pScriptObject);
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// Binding between plugin API and VBScript managed COM objects (needed for
-// backward compatibility while COM objects are slowly migrated to plugin)
+// Expose VPX contributions through plugin API
 
 #include "CorePlugin.h"
-#include "PinMamePlugin.h"
-
-void VPXPluginAPIImpl::PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData)
-{
-   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
-   auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-   unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END);
-   msgApi.BroadcastMsg(pi.m_pinMameEndpointId, msg, nullptr);
-   msgApi.ReleaseMsgID(msg);
-}
-
-void VPXPluginAPIImpl::PinMameOnStart()
-{
-   assert(g_pplayer);
-   IDispatch* pScriptDispatch = NULL;
-   if (g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(NULL, &pScriptDispatch) == S_OK)
-   {
-      DISPID dispid;
-      LPOLESTR name = (LPOLESTR)L"cGameName";
-      if (pScriptDispatch->GetIDsOfNames(IID_NULL, &name, 1, LOCALE_USER_DEFAULT, &dispid) == S_OK)
-      {
-         DISPPARAMS dispparamsNoArgs = { NULL, NULL, 0, 0 };
-         VARIANT varResult;
-         VariantInit(&varResult);
-         if (pScriptDispatch->Invoke(dispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_PROPERTYGET, &dispparamsNoArgs, &varResult, NULL, NULL) == S_OK)
-         {
-            if (varResult.vt == VT_BSTR)
-            {
-               char buf[MAXTOKEN];
-               WideCharToMultiByteNull(CP_ACP, 0, varResult.bstrVal, -1, buf, MAXTOKEN, nullptr, nullptr);
-               auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
-               unsigned int msg = msgApi.GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START);
-               msgApi.BroadcastMsg(m_pinMameEndpointId, msg, static_cast<void*>(buf));
-               msgApi.ReleaseMsgID(msg);
-               msg = msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
-               msgApi.SubscribeMsg(m_pinMameEndpointId, msg, &PinMameOnEnd, nullptr);
-               msgApi.ReleaseMsgID(msg);
-            }
-         }else
-         {
-            PLOGW << "Failed to get cGameName property from script, can't broadcast onGameStart event";
-         }
-      }
-      pScriptDispatch->Release();
-   }
-}
 
 void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
 {
    if (g_pplayer == nullptr)
       return;
 
-   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   
-   // Report all DMD displays from PinMame state block
-   if (g_pplayer->m_pStateMappedMem != nullptr && g_pplayer->m_pStateMappedMem->versionID == 1 && g_pplayer->m_pStateMappedMem->displayState != nullptr)
-   {
-      PinMame::core_tDisplayState* state = g_pplayer->m_pStateMappedMem->displayState;
-      PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
-      for (unsigned int index = 0; index < state->nDisplays; index++)
-      {
-         if (msg.count < msg.maxEntryCount)
-         {
-            msg.entries[msg.count].id = (me.m_pinMameEndpointId << 16) | frame->displayId;
-            msg.entries[msg.count].format = frame->dataFormat;
-            msg.entries[msg.count].width = frame->width;
-            msg.entries[msg.count].height = frame->height;
-            msg.count++;
-         }
-         frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
-      }
-   }
-
    // Report main script DMD (we do not report ancialliary DMD directly set on flashers, but only the main table one)
    // TODO supported RGB frame format are either sRGB888 or sRGB565, not sRGBA8888, therefore RGB frame can not be broadcasted on the plugin bus for the time being
+   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
+   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
    if (g_pplayer->m_dmdFrame && msg.count < msg.maxEntryCount && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
    {
-      msg.entries[msg.count].id = (me.m_vpxEndpointId << 16) | 0x00;
+      msg.entries[msg.count].id = { me.m_vpxEndpointId, 0 };
       msg.entries[msg.count].format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
       msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
       msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
@@ -277,42 +268,15 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
 
 void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData)
 {
-   if (g_pplayer == nullptr
-    || g_pplayer->m_pStateMappedMem == nullptr
-    || g_pplayer->m_pStateMappedMem->versionID != 1)
+   if (g_pplayer == nullptr)
       return;
-      
    GetDmdMsg* msg = static_cast<GetDmdMsg*>(msgData);
    if (msg->frame != nullptr) // Already answered
       return;
 
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-
-   // PinMame DMD shared through state block
-   if ((msg->dmdId.id >> 16) == me.m_pinMameEndpointId)
-   {
-      PinMame::core_tDisplayState* state = (msgId == me.m_getIdentifyDmdMsgId) ? g_pplayer->m_pStateMappedMem->rawDMDState : g_pplayer->m_pStateMappedMem->displayState;
-      if (state == nullptr)
-         return;
-      PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
-      for (unsigned int index = 0; index < state->nDisplays; index++)
-      {
-         if ((msg->dmdId.id & 0x0FFFF) == frame->displayId)
-         {
-            if ((msg->dmdId.width == frame->width) && (msg->dmdId.height == frame->height) && (msg->dmdId.format == frame->dataFormat))
-            {
-               msg->frameId = frame->frameId;
-               msg->frame = frame->frameData;
-            }
-            return;
-         }
-         frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
-      }
-      return;
-   }
-
    // Script DMD
-   if (((msg->dmdId.id >> 16) == me.m_vpxEndpointId) && ((msg->dmdId.id & 0x0FFFF) == 0) 
+   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
+   if ((msg->dmdId.id.endpointId == me.m_vpxEndpointId) && (msg->dmdId.id.resId == 0) 
       && (msg->dmdId.format == g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888)
       && (msg->dmdId.width == g_pplayer->m_dmdFrame->width()) && (msg->dmdId.height == g_pplayer->m_dmdFrame->height())
       && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
@@ -324,40 +288,15 @@ void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* 
 
 void VPXPluginAPIImpl::ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData)
 {
-   if (g_pplayer == nullptr || g_pplayer->m_pStateMappedMem == nullptr || g_pplayer->m_pStateMappedMem->versionID != 1)
+   if (g_pplayer == nullptr)
       return;
-
    GetRawDmdMsg* msg = static_cast<GetRawDmdMsg*>(msgData);
    if (msg->frame != nullptr) // Already answered
       return;
 
-   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-
-   // PinMame DMD shared through state block
-   if ((msg->dmdId >> 16) == me.m_pinMameEndpointId)
-   {
-      PinMame::core_tDisplayState* state = (msgId == me.m_getIdentifyDmdMsgId) ? g_pplayer->m_pStateMappedMem->rawDMDState : g_pplayer->m_pStateMappedMem->displayState;
-      if (state == nullptr)
-         return;
-      PinMame::core_tFrameState* frame = (PinMame::core_tFrameState*)((UINT8*)state + sizeof(PinMame::core_tDisplayState));
-      for (unsigned int index = 0; index < state->nDisplays; index++)
-      {
-         if ((msg->dmdId & 0x0FFFF) == frame->displayId)
-         {
-            msg->format == frame->dataFormat;
-            msg->width = frame->width;
-            msg->height = frame->height;
-            msg->frameId = frame->frameId;
-            msg->frame = frame->frameData;
-            return;
-         }
-         frame = (PinMame::core_tFrameState*)((UINT8*)frame + frame->structSize);
-      }
-      return;
-   }
-
    // Script DMD
-   if (((msg->dmdId >> 16) == me.m_vpxEndpointId) && ((msg->dmdId & 0x0FFFF) == 0)
+   VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
+   if ((msg->dmdId.endpointId == me.m_vpxEndpointId) && (msg->dmdId.resId == 0)
       && g_pplayer->m_dmdFrame
       && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
    {
@@ -412,24 +351,28 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.GetActiveViewSetup = GetActiveViewSetup;
    m_api.SetActiveViewSetup = SetActiveViewSetup;
 
-   m_api.SetCOMObjectOverride = SetCOMObjectOverride;
-
    m_vpxEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
    msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
+
+   // Logging API
+   m_loggingApi.Log = PluginLog;
+   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API), &OnGetLoggingPluginAPI, nullptr);
 
    // Scriptable API
    m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
    m_scriptableApi.RegisterScriptTypeAlias = RegisterScriptTypeAlias;
    m_scriptableApi.RegisterScriptArrayType = RegisterScriptArray;
+   m_scriptableApi.SubmitTypeLibrary = SubmitTypeLibrary;
+   m_scriptableApi.SetCOMObjectOverride = SetCOMObjectOverride;
+   m_scriptableApi.OnError = OnScriptError;
    msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
 
-   // Generic controller bridge
-   m_pinMameEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
+   // Generic controller API
    m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
-   msgApi.SubscribeMsg(m_pinMameEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
+   msgApi.SubscribeMsg(m_vpxEndpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
+   msgApi.SubscribeMsg(m_vpxEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
+   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)
@@ -446,3 +389,9 @@ void VPXPluginAPIImpl::OnGetScriptablePluginAPI(const unsigned int msgId, void* 
    *pResult = &pi.m_scriptableApi;
 }
 
+void VPXPluginAPIImpl::OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData)
+{
+   VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
+   LoggingPluginAPI** pResult = static_cast<LoggingPluginAPI**>(msgData);
+   *pResult = &pi.m_loggingApi;
+}

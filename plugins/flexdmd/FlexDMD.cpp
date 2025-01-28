@@ -9,7 +9,7 @@
 #include "actors/ImageSequence.h"
 #include "actors/GIFImage.h"
 #include "actors/Video.h"
-#include "ressources/AssetManager.h"
+#include "resources/AssetManager.h"
 
 #include <sstream>
 #include <iomanip>
@@ -189,7 +189,7 @@ std::vector<uint8_t> FlexDMD::GetDmdPixels()
    return m_lumFrame;
 }
 
-void FlexDMD::SetSegments(const std::vector<short>& segments)
+void FlexDMD::SetSegments(const std::vector<uint16_t>& segments)
 {
    int size1 = 0;
    int size2 = 0;

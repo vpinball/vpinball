@@ -1,7 +1,7 @@
 #pragma once
 
 #include "common.h"
-#include "SDL3/SDL_surface.h"
+#include <SDL3/SDL_surface.h>
 
 namespace VP {
 

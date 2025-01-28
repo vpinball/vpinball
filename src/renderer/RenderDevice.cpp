@@ -567,7 +567,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       }
    }
    
-   // Wait until main thread has released all native ressources
+   // Wait until main thread has released all native resources
    rd->m_frameReadySem.wait();
    delete rd->m_outputWnd[0]->GetBackBuffer();
    rd->m_outputWnd[0]->SetBackBuffer(nullptr);
@@ -1289,7 +1289,7 @@ RenderDevice::~RenderDevice()
    delete m_pVertexTexelDeclaration;
    delete m_pVertexNormalTexelDeclaration;
 
-   // Shutdown BGFX once all native ressources have been cleaned up
+   // Shutdown BGFX once all native resources have been cleaned up
    m_frameReadySem.post();
    if (m_renderThread.joinable())
       m_renderThread.join();

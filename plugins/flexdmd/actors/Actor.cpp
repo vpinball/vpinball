@@ -2,7 +2,7 @@
 #include "Actions.h"
 
 #include <cassert>
-#include "SDL3/SDL_surface.h"
+#include <SDL3/SDL_surface.h>
 
 Actor::Actor(FlexDMD *pFlexDMD, const string& name)
    : m_pFlexDMD(pFlexDMD)

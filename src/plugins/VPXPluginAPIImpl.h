@@ -3,8 +3,20 @@
 #pragma once
 
 #include "VPXPlugin.h"
+#include "ScriptablePlugin.h"
+#include "LoggingPlugin.h"
 #include "core/DynamicScript.h"
+#include "robin_hood.h"
 
+// VPX serves as a plugin host, using the generic messaging plugin API
+// 
+// It provides the following features:
+// - Plugin host: discover & manage plugin lifecycle, offer core messaging API implementation
+// - Shared logging: allow plugins to perform logging usiong a shared log
+// - Scripting host: support plugins contributing scriptable objects
+// - Expose part of VPX API to plugins
+// - Share running table content like a normal controller with plugins
+//
 class VPXPluginAPIImpl
 {
 public:
@@ -12,25 +24,19 @@ public:
 
    const VPXPluginAPI& getAPI() const { return m_api; };
    unsigned int GetVPXEndPointId() const { return m_vpxEndpointId; }
-   unsigned int GetPinMameEndPointId() const { return m_pinMameEndpointId; }
+   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxEndpointId, msgId, data); };
 
    unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); };
    void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); };
 
-   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxEndpointId, msgId, data); };
-   void BroadcastPinMameMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_pinMameEndpointId, msgId, data); };
-
    string ApplyScriptCOMObjectOverrides(string& script) const;
-   IDispatch* CreateCOMPluginObject(const string& pluginId, const string& classId);
-
-   // Helpers method for transitionning from COM object to plugins
-   void PinMameOnStart();
+   IDispatch* CreateCOMPluginObject(const string& classId);
 
 private:
    VPXPluginAPIImpl();
 
    // VPX API
-   unsigned int m_vpxEndpointId;
+   uint32_t m_vpxEndpointId;
    static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    VPXPluginAPI m_api;
 
@@ -44,28 +50,26 @@ private:
    static void GetActiveViewSetup(VPXViewSetupDef* view);
    static void SetActiveViewSetup(VPXViewSetupDef* view);
 
-   static void SetCOMObjectOverride(const char* className, const char* pluginId, const char* classId);
-   struct ScriptCOMObjectOverride
-   {
-      const char* className;
-      const char* pluginId;
-      const char* classId;
-   };
-   std::vector<ScriptCOMObjectOverride> m_scriptCOMObjectOverrides;
+   // Plugin logging API
+   static void OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);
+   static void PluginLog(unsigned int level, const char* message);
+   LoggingPluginAPI m_loggingApi;
 
    // Scriptable plugin API
    static void OnGetScriptablePluginAPI(const unsigned int msgId, void* userData, void* msgData);
    static void RegisterScriptClass(ScriptClassDef* classDef);
    static void RegisterScriptTypeAlias(const char* name, const char* aliasedType);
    static void RegisterScriptArray(ScriptArrayDef *arrayDef);
+   static void SubmitTypeLibrary();
+   static void OnScriptError(unsigned int type, const char* message);
+   static void SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
+   robin_hood::unordered_map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;
    ScriptablePluginAPI m_scriptableApi;
 
-   // Controller bridge
-   unsigned int m_pinMameEndpointId;
+   // Contribute VPX API through plugin API
    unsigned int m_getRenderDmdMsgId;
    unsigned int m_getIdentifyDmdMsgId;
-   static void PinMameOnEnd(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData);
