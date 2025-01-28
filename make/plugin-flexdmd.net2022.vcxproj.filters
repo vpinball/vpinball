@@ -34,7 +34,7 @@
     <ClCompile Include="plugins/flexdmd/FlexDMD.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/AdditiveFilter.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/AdditiveFilter.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
     <ClCompile Include="plugins/flexdmd/actors/Actor.cpp">
@@ -43,19 +43,19 @@
     <ClCompile Include="plugins/flexdmd/actors/AnimatedActor.cpp">
       <Filter>source\Actors</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/Bitmap.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/Bitmap.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/BitmapFilter.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/BitmapFilter.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/DotFilter.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/DotFilter.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/PadFilter.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/PadFilter.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/RegionFilter.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/RegionFilter.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
     <ClCompile Include="plugins/flexdmd/actors/Label.cpp">
@@ -73,13 +73,13 @@
     <ClCompile Include="plugins/flexdmd/actors/FadeOverlay.cpp">
       <Filter>source\Actors</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/AssetManager.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/AssetManager.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/AssetSrc.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/AssetSrc.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/Font.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/Font.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
     <ClCompile Include="plugins/flexdmd/common.cpp">
@@ -88,7 +88,7 @@
     <ClCompile Include="plugins/flexdmd/UltraDMD.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/ressources/VPXFile.cpp">
+    <ClCompile Include="plugins/flexdmd/resources/VPXFile.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
     <ClCompile Include="plugins/flexdmd/third-party/include/pole/pole.cpp">
@@ -140,7 +140,7 @@
     <ClInclude Include="plugins/flexdmd/FlexDMD.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/AdditiveFilter.h">
+    <ClInclude Include="plugins/flexdmd/resources/AdditiveFilter.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/actors/Actor.h">
@@ -149,22 +149,22 @@
     <ClInclude Include="plugins/flexdmd/actors/AnimatedActor.h">
       <Filter>source\Actors</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/Bitmap.h">
+    <ClInclude Include="plugins/flexdmd/resources/Bitmap.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/BitmapFilter.h">
+    <ClInclude Include="plugins/flexdmd/resources/BitmapFilter.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/DotFilter.h">
+    <ClInclude Include="plugins/flexdmd/resources/DotFilter.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/PadFilter.h">
+    <ClInclude Include="plugins/flexdmd/resources/PadFilter.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/RegionFilter.h">
+    <ClInclude Include="plugins/flexdmd/resources/RegionFilter.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/RessourceDef.h">
+    <ClInclude Include="plugins/flexdmd/resources/ResourceDef.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/actors/Video.h">
@@ -197,19 +197,19 @@
     <ClInclude Include="plugins/flexdmd/actors/Layout.h">
       <Filter>source\Actors</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/AssetManager.h">
+    <ClInclude Include="plugins/flexdmd/resources/AssetManager.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/AssetSrc.h">
+    <ClInclude Include="plugins/flexdmd/resources/AssetSrc.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/Font.h">
+    <ClInclude Include="plugins/flexdmd/resources/Font.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/third-party/include/tweeny-3.2.0.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/ressources/VPXFile.h">
+    <ClInclude Include="plugins/flexdmd/resources/VPXFile.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/third-party/include/pole/pole.h">

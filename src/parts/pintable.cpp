@@ -969,13 +969,12 @@ STDMETHODIMP ScriptGlobalTable::MaterialColor(BSTR pVal, OLE_COLOR newVal)
    return S_OK;
 }
 
-STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR pluginId, /*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch** pVal)
+STDMETHODIMP ScriptGlobalTable::CreatePluginObject(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch** pVal)
 {
-   char szPlugin[MAX_PATH], szClass[MAX_PATH];
-   WideCharToMultiByteNull(CP_ACP, 0, pluginId, -1, szPlugin, MAX_PATH, nullptr, nullptr);
+   char szClass[MAX_PATH];
    WideCharToMultiByteNull(CP_ACP, 0, classId, -1, szClass, MAX_PATH, nullptr, nullptr);
    VPXPluginAPIImpl &pi = VPXPluginAPIImpl::GetInstance();
-   *pVal = pi.CreateCOMPluginObject(szPlugin, szClass);
+   *pVal = pi.CreateCOMPluginObject(szClass);
    return (*pVal != nullptr) ? S_OK : E_FAIL;
 }
 

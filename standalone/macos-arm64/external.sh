@@ -6,7 +6,7 @@ FREEIMAGE_VERSION=3.18.0
 SDL_SHA=535d80badefc83c5c527ec5748f2a20d6a9310fe
 SDL_IMAGE_SHA=4ff27afa450eabd2a827e49ed86fab9e3bf826c5
 SDL_TTF_SHA=5e651ee5054a95fdb91702ba1b398d751155febc
-PINMAME_SHA=afa11cf595cb291565ebc36220f574e363c44686
+PINMAME_SHA=2e373f334b9e9d6fa109ecc30f0201a6208708d4
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=bd27866d620d2218eb54d8094e7cc0771df05ac2
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
@@ -174,7 +174,7 @@ cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.dylib ../external/lib
 CACHE_NAME="pinmame-${PINMAME_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   curl -sL https://github.com/vpinball/pinmame/archive/${PINMAME_SHA}.zip -o pinmame.zip
+   curl -sL https://github.com/vbousquet/pinmame/archive/${PINMAME_SHA}.zip -o pinmame.zip
    unzip pinmame.zip
    cd pinmame-$PINMAME_SHA
    cp cmake/libpinmame/CMakeLists.txt .
@@ -187,6 +187,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp src/libpinmame/libpinmame.h ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp src/libpinmame/pinmamedef.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cp -a build/*.dylib ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..

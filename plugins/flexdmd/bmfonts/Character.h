@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SDL3/SDL_surface.h"
+#include <SDL3/SDL_surface.h>
 
 class Character {
 public:

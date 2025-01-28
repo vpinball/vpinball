@@ -5,19 +5,19 @@
 add_library(HelloScriptPlugin MODULE plugins/helloscript/helloscript.cpp)
 
 if (WIN32)
-set_target_properties(HelloScriptPlugin PROPERTIES
-   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-)
-target_compile_options(HelloScriptPlugin PUBLIC
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-)
-target_link_options(HelloScriptPlugin PUBLIC
-   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-   $<$<CONFIG:RELEASE>:/OPT:REF>
-   $<$<CONFIG:RELEASE>:/OPT:ICF>
-   $<$<CONFIG:RELEASE>:/LTCG>
-)
+	set_target_properties(HelloScriptPlugin PROPERTIES
+	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+	)
+	target_compile_options(HelloScriptPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+	)
+	target_link_options(HelloScriptPlugin PUBLIC
+	   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+	   $<$<CONFIG:RELEASE>:/OPT:REF>
+	   $<$<CONFIG:RELEASE>:/OPT:ICF>
+	   $<$<CONFIG:RELEASE>:/LTCG>
+	)
 endif()
 
 target_include_directories(HelloScriptPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)

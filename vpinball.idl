@@ -806,7 +806,7 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
 
                 [id(229), helpstring("method LoadTexture")] HRESULT LoadTexture([in] BSTR imageName, [in] BSTR fileName);
 
-                [id(265), helpstring("method CreatePluginObject") ] HRESULT CreatePluginObject([in] BSTR pluginId, [in] BSTR classId, [out, retval] IDispatch* *pVal);
+                [id(265), helpstring("method CreatePluginObject") ] HRESULT CreatePluginObject([in] BSTR classId, [out, retval] IDispatch* *pVal);
 
                 // This function is NOT part of the VPX API. It is a tempory addition while migrating from COM component to portable plugins
                 [ propput, id(264), helpstring("property PinMameStateBlock") ] HRESULT PinMameStateBlock([in] BSTR sharedMemName);

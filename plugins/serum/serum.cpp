@@ -21,10 +21,12 @@
 // - Controller/GetDMD: msgData is a request/response struct
 
 MsgPluginAPI* msgApi = nullptr;
-unsigned int endpointId, onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
+uint32_t endpointId;
+unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
 
 Serum_Frame_Struc* pSerum;
-unsigned int dmdId, lastRawFrameId;
+CtlResId dmdId;
+unsigned int lastRawFrameId;
 bool dmdSelected = false;
 
 class ColorizationState
@@ -100,7 +102,7 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    GetRawDmdMsg* const getDmdMsg = static_cast<GetRawDmdMsg*>(msgData);
 
    // Only process selected DMD
-   if (!dmdSelected || getDmdMsg->dmdId != dmdId)
+   if (!dmdSelected || getDmdMsg->dmdId.id != dmdId.id)
       return;
    
    // Only process response with a new frame
@@ -159,7 +161,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
    }
 
    // Only process selected DMD
-   if (getDmdMsg.dmdId.id != dmdId)
+   if (getDmdMsg.dmdId.id.id != dmdId.id)
       return;
    
    // Does someone requested a DMD frame to render that no one has colorized yet ?
@@ -258,7 +260,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    const char* gameId = static_cast<const char*>(msgData);
    assert(gameId != nullptr);
    char crzFolder[512];
-   msgApi->GetSetting("Serum", "crz_folder", crzFolder, sizeof(crzFolder));
+   msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
    pSerum = Serum_Load(crzFolder, gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    dmdSelected = false;
    if (pSerum)
@@ -284,7 +286,7 @@ void onGameEnd(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
+MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {
    msgApi = api;
    endpointId = sessionId;
@@ -297,7 +299,7 @@ MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
 }
 
-MSGPI_EXPORT void PluginUnload()
+MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
    msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);

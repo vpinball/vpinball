@@ -770,6 +770,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_onDmdChangedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
+   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
+   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
 
@@ -835,8 +837,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    ::PostMessage(HWND_BROADCAST, nMsgID, NULL, NULL);
 #endif
 
-   VPXPluginAPIImpl::GetInstance().PinMameOnStart();
-
    // Show the window (for VR, even without preview, we need to create a window).
    m_focused = true; // For some reason, we do not always receive the 'on focus' event after creation event on SDL. Just take for granted that focus is given upon showing
    m_playfieldWnd->Show();
@@ -895,6 +895,8 @@ Player::~Player()
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onDmdChangedMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdSrcMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdMsgId);
+   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onAudioUpdatedMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onGameStartMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(onGameEndMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onPrepareFrameMsgId);
@@ -999,10 +1001,17 @@ Player::~Player()
 
    m_ptable->StopAllSounds();
 
+   // Stop all played musics, including ones streamed from plugins
    if (m_audio)
       m_audio->MusicPause();
    delete m_audio;
    m_audio = nullptr;
+   for (const auto& entry : m_externalAudioPlayers)
+   {
+      entry.second->MusicPause();
+      delete entry.second;
+   }
+   m_externalAudioPlayers.clear();
 
    mixer_shutdown();
    ushock_output_shutdown();
@@ -2188,7 +2197,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
       && ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate())))
    {
       lastDMDRender = now;
-      ControllerDisplay dmd = GetControllerDisplay(-1);
+      ControllerDisplay dmd = GetControllerDisplay({ 0, 0 });
       if (dmd.frame)
       {
          RenderTarget *scenePass = m_renderer->m_renderDevice->GetCurrentRenderTarget();
@@ -2360,16 +2369,46 @@ void Player::FinishFrame()
 #endif
 }
 
+void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
+{
+   Player *me = reinterpret_cast<Player *>(userData);
+   AudioUpdateMsg &msg = *reinterpret_cast<AudioUpdateMsg *>(msgData);
+   const auto &entry = me->m_externalAudioPlayers.find(msg.id.id);
+   if (entry == me->m_externalAudioPlayers.end())
+   {
+      if (msg.buffer != nullptr)
+      {
+         const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
+         AudioPlayer* player = new AudioPlayer();
+         player->StreamInit(static_cast<DWORD>(msg.sampleRate), nChannels, 1.f);
+         player->StreamUpdate(msg.buffer, msg.bufferSize);
+         me->m_externalAudioPlayers[msg.id.id] = player;
+      }
+   }
+   else
+   {
+      if (msg.buffer != nullptr)
+      {
+         entry->second->StreamUpdate(msg.buffer, msg.bufferSize);
+      }
+      else
+      {
+         entry->second->MusicPause();
+         delete entry->second;
+         me->m_externalAudioPlayers.erase(entry);
+      }
+   }
+}
+
 void Player::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    reinterpret_cast<Player*>(userData)->m_defaultDmdSelected = false;
 }
 
-
-Player::ControllerDisplay Player::GetControllerDisplay(int id)
+Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
 {
    ControllerDisplay* display = nullptr;
-   if (id == -1)
+   if (id.id == 0)
    {
       // FIXME script should be declared as other DMD and priorized during selection
       // Script DMD takes precedence over plugin DMD
@@ -2430,7 +2469,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
    else
    {
       // FIXME this only match on the frame source id, not on the other properties (size/format)
-      auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.dmdId.id == id; });
+      auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.dmdId.id.id == id.id; });
       if (pCD == m_controllerDisplays.end())
       {
          // Search for the requested DMD
@@ -2440,7 +2479,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdSrcMsgId, &getSrcMsg);
          for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
-            if ((getSrcMsg.entries[i].id == id) && (dmdId.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
+            if ((getSrcMsg.entries[i].id.id == id.id) && (dmdId.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
             {
                dmdId = getSrcMsg.entries[i];
                dmdFound = true;

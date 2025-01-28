@@ -3541,7 +3541,6 @@ ITableGlobal : public IDispatch
         BSTR fileName) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE CreatePluginObject(
-        BSTR pluginId,
         BSTR classId,
         IDispatch **pVal) = 0;
 
@@ -4014,7 +4013,6 @@ typedef struct ITableGlobalVtbl {
 
     HRESULT (STDMETHODCALLTYPE *CreatePluginObject)(
         ITableGlobal *This,
-        BSTR pluginId,
         BSTR classId,
         IDispatch **pVal);
 

@@ -56,7 +56,7 @@ public:
    STDMETHOD(get_Item)(VARIANT *pKey, IGame **pGame);
    STDMETHOD(get__NewEnum)(IUnknown** ppunkEnum);
 
-   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
+   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, void* const pUserData);
 
 private:
    PinmameGame m_pinmameGame;

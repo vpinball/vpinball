@@ -14,7 +14,7 @@
 // This file defines the identifiers and messages used by the PinMame controller
 // plugin
 
-#define PMPI_NAMESPACE               "PinMame"
+#define PMPI_NAMESPACE               "PinMAME"
 
 #define PMPI_EVT_ON_GAME_START       "OnGameStart"       // Broadcasted when emulation starts, msgData is a pointer to a const char * with the rom name
 #define PMPI_EVT_ON_GAME_END         "OnGameEnd"         // Broadcasted when emulation ends

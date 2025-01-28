@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "MsgPlugin.h"
+
 ///////////////////////////////////////////////////////////////////////////////
 // VPX plugins
 //
@@ -85,20 +87,17 @@ typedef struct VPXViewSetupDef
 typedef struct VPXPluginAPI
 {
    // General information API
-   void (*GetTableInfo)(VPXTableInfo* info);
+   void (MSGPIAPI *GetTableInfo)(VPXTableInfo* info);
 
    // User Interface
    enum OptionUnit { NONE, PERCENT };
-   float (*GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const enum OptionUnit unit, const char** values);
-   void* (*PushNotification)(const char* msg, const unsigned int lengthMs);
-   void (*UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
+   float (MSGPIAPI *GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const enum OptionUnit unit, const char** values);
+   void* (MSGPIAPI *PushNotification)(const char* msg, const unsigned int lengthMs);
+   void (MSGPIAPI *UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
 
    // View management
-   void (*DisableStaticPrerendering)(const int /* bool */ disable);
-   void (*GetActiveViewSetup)(VPXViewSetupDef* view);
-   void (*SetActiveViewSetup)(VPXViewSetupDef* view);
-
-   // Script extension
-   void (*SetCOMObjectOverride)(const char* className, const char* pluginId, const char* classId);
+   void (MSGPIAPI *DisableStaticPrerendering)(const int /* bool */ disable);
+   void (MSGPIAPI *GetActiveViewSetup)(VPXViewSetupDef* view);
+   void (MSGPIAPI *SetActiveViewSetup)(VPXViewSetupDef* view);
 
 } VPXPluginAPI;

@@ -508,13 +508,13 @@ public:
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    BaseTexture* m_dmdFrame = nullptr;
    int m_dmdFrameId = 0;
-   struct ControllerDisplay // DMDs and video displays gathered through PinMame StateBlock
+   struct ControllerDisplay // DMDs and video displays gathered through plugin API
    {
       DmdSrcId dmdId;
       int frameId = -1;
       BaseTexture *frame = nullptr;
    };
-   ControllerDisplay GetControllerDisplay(int id);
+   ControllerDisplay GetControllerDisplay(CtlResId id);
 
 private:
    static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
@@ -522,6 +522,14 @@ private:
    bool m_defaultDmdSelected = false;
    DmdSrcId m_defaultDmdId;
    vector<ControllerDisplay> m_controllerDisplays;
+
+
+   // External audio sources
+private:
+   static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
+   unsigned int m_onAudioUpdatedMsgId;
+   robin_hood::unordered_flat_map<uint64_t, AudioPlayer*> m_externalAudioPlayers;
+
 
 public:
    bool m_capPUP = false;

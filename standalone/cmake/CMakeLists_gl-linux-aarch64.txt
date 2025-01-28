@@ -757,5 +757,6 @@ if(POST_BUILD_COPY_EXT_LIBS)
    )
 endif()
 
+set(PluginPlatform "linux")
 set(PluginArch "aarch64")
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugins.txt")

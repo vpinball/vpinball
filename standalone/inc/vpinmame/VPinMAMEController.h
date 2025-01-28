@@ -172,13 +172,13 @@ public:
    STDMETHOD(put_SoundMode)(/*[in]*/ int newVal);
    STDMETHOD(get_ROMName)(/*[out, retval]*/ BSTR *pVal);
 
-   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, const void* pUserData);
-   static void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
-   static void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, const void* pUserData);
-   static int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, const void* pUserData);
-   static int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, const void* pUserData);
-   static void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, const void* pUserData);
-   static void PINMAMECALLBACK OnSoundCommand(int boardNo, int cmd, const void* pUserData);
+   static void PINMAMECALLBACK GetGameCallback(PinmameGame* pPinmameGame, void* const pUserData);
+   static void PINMAMECALLBACK OnDisplayAvailable(int index, int displayCount, PinmameDisplayLayout* p_displayLayout, void* const pUserData);
+   static void PINMAMECALLBACK OnDisplayUpdated(int index, void* p_displayData, PinmameDisplayLayout* p_displayLayout, void* const pUserData);
+   static int PINMAMECALLBACK OnAudioAvailable(PinmameAudioInfo* p_audioInfo, void* const pUserData);
+   static int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUserData);
+   static void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData);
+   static void PINMAMECALLBACK OnSoundCommand(int boardNo, int cmd, void* const pUserData);
    string GetIniPath() { return m_szIniPath; }
 
 private:

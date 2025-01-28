@@ -4,7 +4,7 @@
 #include "Kerning.h"
 #include "Character.h"
 #include "Page.h"
-#include "SDL3/SDL_surface.h"
+#include <SDL3/SDL_surface.h>
 
 #include <map>
 

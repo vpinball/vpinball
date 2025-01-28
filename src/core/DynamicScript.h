@@ -13,31 +13,42 @@ class DynamicTypeLibrary
 {
 public:
    DynamicTypeLibrary();
+   ~DynamicTypeLibrary();
+   
    void RegisterScriptClass(ScriptClassDef *classDef);
    void RegisterScriptTypeAlias(const char *name, const char *aliasedType);
    void RegisterScriptArray(ScriptArrayDef *arrayDef);
+   void ResolveAllClasses();
 
-   ScriptClassDef *ResolveClass(ScriptTypeNameDef &name) const;
+   // FIXME allow to unregister
+   
+   ScriptClassDef *ResolveClass(const char * name) const;
+   int ResolveMemberId(const ScriptClassDef *classDef, const char *memberName) const;
 
-   HRESULT STDMETHODCALLTYPE Invoke(void *nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *, UINT *) const;
+   HRESULT Invoke(const ScriptClassDef * classDef, void *nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *, UINT *) const;
 
 private:
-   void ResolveClassId(ScriptTypeNameDef &typeName) const;
-   ScriptClassDef *GetClassDef(const ScriptTypeNameDef &name) const;
+   int ResolveClassId(const char *name) const;
+   ScriptClassDef *GetClass(const ScriptTypeNameDef &name) const;
 
-   void COMToScriptVariant(const VARIANT &cv, ScriptTypeNameDef &type, ScriptVariant &sv) const;
+   void COMToScriptVariant(const VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
    void ReleaseCOMToScriptVariant(VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
-   void ScriptToCOMVariant(ScriptTypeNameDef &type, const ScriptVariant &sv, VARIANT &cv) const;
-   string ScriptVariantToString(ScriptTypeNameDef &type, ScriptVariant &sv) const;
+   void ScriptToCOMVariant(const ScriptTypeNameDef &type, const ScriptVariant &sv, VARIANT &cv) const;
+   string ScriptVariantToString(const ScriptTypeNameDef &type, const ScriptVariant &sv) const;
 
+   struct ClassDef {
+      ScriptClassDef * classDef;
+      std::vector<std::vector<int>> members; // DispID (index in vector, corresponding to a case insensitive member name) to list of members (allowing overloads)
+      robin_hood::unordered_map<string, int> memberMap; // Name to DispID map
+   };
    struct TypeDef {
       enum {
-         TD_NATIVE, TD_CLASS, TD_ALIAS, TD_ARRAY
+         TD_INVALID, TD_NATIVE, TD_CLASS, TD_ALIAS, TD_ARRAY
       } category;
       union
       {
          ScriptTypeNameDef nativeType;
-         ScriptClassDef *classDef;
+         ClassDef *classDef;
          ScriptArrayDef *arrayDef;
          struct
          {
@@ -46,11 +57,8 @@ private:
          } aliasDef;
       };
    };
-   std::vector<TypeDef> m_types;
-   robin_hood::unordered_map<string, int> m_typenames;
-
-   std::vector<ScriptClassDef *> m_scriptClasses;
-   std::vector<std::pair<ScriptClassDef *, unsigned int>> m_scriptMembers;
+   std::vector<TypeDef> m_types; // id (index in vector, corresponding to a case insensitive type name) to type definition
+   robin_hood::unordered_map<string, int> m_typenames; // Name to type id map
 };
 
 
@@ -63,8 +71,7 @@ public:
       , m_nativeObject(nativeObject)
    {
       #ifdef DEBUG
-      ScriptTypeNameDef type { classDef->name.name };
-      assert(classDef == typeLibrary->ResolveClass(type));
+      assert(classDef == typeLibrary->ResolveClass(classDef->name.name));
       #endif
    }
 
@@ -84,17 +91,17 @@ public:
    ULONG STDMETHODCALLTYPE AddRef() override
    {
       ScriptVariant refCount;
-      m_classDef->members[0].Call(m_nativeObject, 0, &refCount, nullptr);
-      return refCount.vLong;
+      m_classDef->members[0].Call(m_nativeObject, 0, nullptr, &refCount);
+      return refCount.vULong;
    }
 
    ULONG STDMETHODCALLTYPE Release() override
    {
       ScriptVariant refCount;
-      m_classDef->members[1].Call(m_nativeObject, 1, &refCount, nullptr);
+      m_classDef->members[1].Call(m_nativeObject, 1, nullptr, &refCount);
       if (refCount.vLong == 0)
          delete this;
-      return refCount.vLong;
+      return refCount.vULong;
    }
 
    // IDispatch methods
@@ -127,17 +134,8 @@ public:
          #else
          LPCSTR name = OLE2CA(rgszNames[i]);
          #endif
-         // TODO use a hash map to speed up things
-         for (UINT j = 0; j < m_classDef->nMembers; j++)
-         {
-            if (lstrcmpi(m_classDef->members[j].name.name, name) == 0)
-            {
-               found = true;
-               rgDispId[i] = static_cast<DISPID>(m_classDef->members[j].name.id);
-               break;
-            }
-         }
-         if (!found)
+         rgDispId[i] = m_typeLibrary->ResolveMemberId(m_classDef, name);
+         if (rgDispId[i] < 0)
          {
             PLOGE << m_classDef->name.name << "." << name << " was referenced while it is not declared. Did you forget to register a class member ?";
             return DISP_E_UNKNOWNNAME;
@@ -148,7 +146,7 @@ public:
 
    HRESULT STDMETHODCALLTYPE Invoke(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr) override
    {
-      return m_typeLibrary->Invoke(m_nativeObject, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
+      return m_typeLibrary->Invoke(m_classDef, m_nativeObject, dispIdMember, riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
    }
 
 public:

@@ -2,6 +2,7 @@
 #include "FlexDMD.h"
 
 #include <sstream>
+#include <math.h>
 
 Label::Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name) : Actor(pFlexDMD, name)
 {

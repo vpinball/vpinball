@@ -281,6 +281,9 @@ Sub LoadController(TableType, VPMver, VBSfile, VBSver)
 		Controller.TimeFence = 0
 		If Err Then HasTimeFence = False Else HasTimeFence = True
 		Err.Clear
+		IsPluginPinMAME = Controller.IsPlugin
+		If Err Then IsPluginPinMAME = False
+		Err.Clear
 	On Error Goto 0
 End sub
 
