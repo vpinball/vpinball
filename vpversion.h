@@ -23,10 +23,10 @@
 // Complete version string for log, crash handler,...
 #ifdef ENABLE_SDL
 #define VP_VERSION_STRING_FULL_LITERAL "v" STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR) "." STR(VP_VERSION_REV) \
-	" Beta (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " OpenGL " GET_PLATFORM_BITS "bits)"
+	" Final (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " OpenGL " GET_PLATFORM_BITS "bits)"
 #else
 #define VP_VERSION_STRING_FULL_LITERAL "v" STR(VP_VERSION_MAJOR) "." STR(VP_VERSION_MINOR) "." STR(VP_VERSION_REV) \
-	" Beta (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " DirectX " GET_PLATFORM_BITS "bits)"
+	" Final (Rev. " STR(GIT_REVISION) " (" GIT_SHA "), " GET_PLATFORM_OS " DirectX " GET_PLATFORM_BITS "bits)"
 #endif
 
 #define PASTE2(a,b) a##b

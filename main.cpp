@@ -957,6 +957,9 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          PLOGI << "Disabling NVIDIA Threaded Optimization";
          SetNVIDIAThreadOptimization(NV_THREAD_OPTIMIZATION_DISABLE);
       }
+
+      // Prevent window from being top most, to allow DMD, B2S,... to be over the VPX window
+      SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
       #endif
 
       #if defined(ENABLE_SDL) || defined(ENABLE_SDL_INPUT)

@@ -544,9 +544,6 @@ void Player::CreateWnd(HWND parent /* = 0 */)
    cs.y = SDL_WINDOWPOS_CENTERED_DISPLAY(adapter);
 #endif
 
-   // Prevent from being top most, to allow DMD, B2S,... to be over the VPX window
-   SDL_SetHint(SDL_HINT_ALLOW_TOPMOST, "0");
-
    PLOGI << "Creating main window"; // For profiling (SDL create window is fairly slow, can be more than 1 second, but there doesn't seem to be any workaround)
 
    if (m_fullScreen)
@@ -559,7 +556,8 @@ void Player::CreateWnd(HWND parent /* = 0 */)
       SDL_GetWindowDisplayMode(m_sdl_playfieldHwnd, &mode);
       Uint32 format = mode.format;
       bool found = false;
-      for (int index = 0; index < SDL_GetNumDisplayModes(adapter); index++)
+      const int indices = SDL_GetNumDisplayModes(adapter);
+      for (int index = 0; index < indices; index++)
       {
          SDL_GetDisplayMode(adapter, index, &mode);
          // if (mode.w == m_wnd_width && mode.h == m_wnd_height && mode.refresh_rate == m_refreshrate && mode.format == format)

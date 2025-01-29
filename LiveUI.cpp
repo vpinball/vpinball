@@ -875,15 +875,15 @@ void LiveUI::Render()
 #endif
 }
 
-int m_VRTweakUI_X, m_VRTweakUI_Y;
+static int m_VRTweakUI_X, m_VRTweakUI_Y;
 void LiveUI::Render(int LR)
-{  
+{
    ImGui::Render();
-   ImDrawData *const draw_data = ImGui::GetDrawData();   
+   ImDrawData *const draw_data = ImGui::GetDrawData();
    int w = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetWidth();
    int h = g_pplayer->m_pin3d.m_pd3dPrimaryDevice->GetBackBufferTexture()->GetHeight();
-   float PosX_diff = m_VRTweakUI_X * w / 3000;
-   float PosY_diff = m_VRTweakUI_Y * h / 3000;
+   float PosX_diff = (float)(m_VRTweakUI_X * w / 3000.);
+   float PosY_diff = (float)(m_VRTweakUI_Y * h / 3000.);
    const float PosX = draw_data->DisplayPos.x;
    const float PosY = draw_data->DisplayPos.y;
    draw_data->DisplayPos.y = PosY + PosY_diff;

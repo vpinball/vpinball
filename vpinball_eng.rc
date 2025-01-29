@@ -310,7 +310,7 @@ BEGIN
     CTEXT           "This application uses Visual Basic Scripting Edition by Microsoft",IDC_STATIC,23,318,119,17
     CONTROL         IDC_RIGHTFLIPPERBUTTON,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE,7,7,218,49
     LTEXT           "A Randy Davis and Visual Pinball team Production",IDC_STATIC,7,65,161,8
-    LTEXT           "Version 10.8.0 Beta",IDC_ABOUT_VERSION,7,75,200,10
+    LTEXT           "Version 10.8.0 Final",IDC_ABOUT_VERSION,7,75,200,10
     GROUPBOX        "Credits",IDC_STATIC,7,91,216,116
     LTEXT           "Original VP8/VP9 Team",IDC_STATIC,68,99,88,9
     LTEXT           "Randy Davis",IDC_STATIC,13,110,59,9
