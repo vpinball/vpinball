@@ -700,7 +700,7 @@ target_link_libraries(vpinball PUBLIC
    FreeImage
    bass
    hidapi
-   pinmame.3.6
+   pinmame
    altsound
    dmdutil
    dof
