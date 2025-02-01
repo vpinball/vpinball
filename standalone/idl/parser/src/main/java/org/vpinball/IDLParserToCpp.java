@@ -456,6 +456,12 @@ public class IDLParserToCpp {
 		buffer.append("static WCHAR wzName[MAXSTRING];\n");
 		buffer.append("size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;\n");
 		buffer.append("int r;\n");
+
+		// Crash on exit temporary workaround
+		buffer.append("#ifdef __STANDALONE__\n");
+		buffer.append("if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;\n");
+		buffer.append("#endif\n");
+
 		buffer.append("while(min <= max) {\n");
 		buffer.append("i = (min + max) / 2;\n");
 		buffer.append("if (idsNamesList[i].dispId == dispid) {\n");
