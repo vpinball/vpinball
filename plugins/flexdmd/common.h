@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
 
 #include <string>
 using std::string;
@@ -12,8 +11,8 @@ using std::vector;
 typedef uint32_t ColorRGBA32;
 #define RGB(r, g, b) static_cast<ColorRGBA32>(static_cast<uint8_t>(r) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16))
 #define GetRValue(rgba32) static_cast<uint8_t>(rgba32)
-#define GetGValue(rgba32) static_cast<uint8_t>(rgba32 >> 8)
-#define GetBValue(rgba32) static_cast<uint8_t>(rgba32 >> 16)
+#define GetGValue(rgba32) static_cast<uint8_t>((rgba32) >> 8)
+#define GetBValue(rgba32) static_cast<uint8_t>((rgba32) >> 16)
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
@@ -36,6 +35,6 @@ string to_lower(const string& str);
 string trim_string(const string& str);
 string extension_from_path(const string& path);
 string normalize_path_separators(const string& szPath);
-int string_to_int(const string& str, int default_value = 0);
+int string_to_int(const string& str, int defaultValue = 0);
 bool try_parse_int(const string& str, int& value);
 bool try_parse_color(const string& str, ColorRGBA32& value);
