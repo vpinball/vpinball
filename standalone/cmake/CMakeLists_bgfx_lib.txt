@@ -730,7 +730,7 @@ target_link_libraries(vpinball PUBLIC
    SDL3_image
    SDL3_ttf
    bass
-   pinmame.3.6
+   pinmame
    altsound
    zedmd
    serum

@@ -66,7 +66,7 @@ class VPinballActivity : SDLActivity() {
             "SDL3_ttf",
             "FreeImage",
             "bass",
-            "pinmame.3.6",
+            "pinmame",
             "altsound",
             "zedmd",
             "serum",

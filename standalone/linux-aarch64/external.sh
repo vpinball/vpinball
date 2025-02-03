@@ -6,9 +6,9 @@ FREEIMAGE_VERSION=3.18.0
 SDL_SHA=535d80badefc83c5c527ec5748f2a20d6a9310fe
 SDL_IMAGE_SHA=4ff27afa450eabd2a827e49ed86fab9e3bf826c5
 SDL_TTF_SHA=5e651ee5054a95fdb91702ba1b398d751155febc
-PINMAME_SHA=38f4a9f6eadadf7cb58fcd947cfdd434d803d86c
+PINMAME_SHA=afa11cf595cb291565ebc36220f574e363c44686
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
-LIBDMDUTIL_SHA=64831a3258dba303db6baf9c6358fdbafe4de75c
+LIBDMDUTIL_SHA=bd27866d620d2218eb54d8094e7cc0771df05ac2
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
 FFMPEG_SHA=b08d7969c550a804a59511c7b83f2dd8cc0499b8
 BGFX_CMAKE_VERSION=1.129.8863-490
@@ -170,21 +170,24 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/vpinball/pinmame/archive/${PINMAME_SHA}.zip -o pinmame.zip
    unzip pinmame.zip
    cd pinmame-$PINMAME_SHA
-   cp cmake/libpinmame/CMakeLists_linux-x64.txt CMakeLists.txt
+   cp cmake/libpinmame/CMakeLists.txt .
    cmake \
+      -DPLATFORM=linux \
+      -DARCH=aarch64 \
+      -DBUILD_STATIC=OFF \
       -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -B build
    cmake --build build -- -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
    cp src/libpinmame/libpinmame.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp build/libpinmame.so.3.6 ../../${CACHE_DIR}/${CACHE_NAME}/lib
+   cp -a build/*.{so,so.*} ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
 cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
-cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.so.* ../external/lib
+cp -a ../${CACHE_DIR}/${CACHE_NAME}/lib/*.{so,so.*} ../external/lib
 
 #
 # build libaltsound and copy to external

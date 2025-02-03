@@ -3540,6 +3540,11 @@ ITableGlobal : public IDispatch
         BSTR imageName,
         BSTR fileName) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE CreatePluginObject(
+        BSTR pluginId,
+        BSTR classId,
+        IDispatch **pVal) = 0;
+
     virtual HRESULT STDMETHODCALLTYPE put_PinMameStateBlock(
         BSTR sharedMemName) = 0;
 
@@ -4007,6 +4012,12 @@ typedef struct ITableGlobalVtbl {
         BSTR imageName,
         BSTR fileName);
 
+    HRESULT (STDMETHODCALLTYPE *CreatePluginObject)(
+        ITableGlobal *This,
+        BSTR pluginId,
+        BSTR classId,
+        IDispatch **pVal);
+
     HRESULT (STDMETHODCALLTYPE *put_PinMameStateBlock)(
         ITableGlobal *This,
         BSTR sharedMemName);
@@ -4114,6 +4125,7 @@ interface ITableGlobal {
 #define ITableGlobal_get_DisableStaticPrerendering(This,pVal) (This)->lpVtbl->get_DisableStaticPrerendering(This,pVal)
 #define ITableGlobal_put_DisableStaticPrerendering(This,newVal) (This)->lpVtbl->put_DisableStaticPrerendering(This,newVal)
 #define ITableGlobal_LoadTexture(This,imageName,fileName) (This)->lpVtbl->LoadTexture(This,imageName,fileName)
+#define ITableGlobal_CreatePluginObject(This,pluginId,classId,pVal) (This)->lpVtbl->CreatePluginObject(This,pluginId,classId,pVal)
 #define ITableGlobal_put_PinMameStateBlock(This,sharedMemName) (This)->lpVtbl->put_PinMameStateBlock(This,sharedMemName)
 #else
 /*** IUnknown methods ***/
@@ -4391,6 +4403,9 @@ static inline HRESULT ITableGlobal_put_DisableStaticPrerendering(ITableGlobal* T
 }
 static inline HRESULT ITableGlobal_LoadTexture(ITableGlobal* This,BSTR imageName,BSTR fileName) {
     return This->lpVtbl->LoadTexture(This,imageName,fileName);
+}
+static inline HRESULT ITableGlobal_CreatePluginObject(ITableGlobal* This,BSTR pluginId,BSTR classId,IDispatch **pVal) {
+    return This->lpVtbl->CreatePluginObject(This,pluginId,classId,pVal);
 }
 static inline HRESULT ITableGlobal_put_PinMameStateBlock(ITableGlobal* This,BSTR sharedMemName) {
     return This->lpVtbl->put_PinMameStateBlock(This,sharedMemName);
