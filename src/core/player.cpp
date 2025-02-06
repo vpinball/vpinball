@@ -2351,7 +2351,10 @@ void Player::FinishFrame()
          if (hVPMWnd == nullptr)
             hVPMWnd = FindWindow(windowtext.c_str(), nullptr);
          if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
+         {
             ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
+            BringWindowToTop(hVPMWnd);
+         }
       }
    }
 #endif
@@ -2482,8 +2485,8 @@ Player::ControllerDisplay Player::GetControllerDisplay(int id)
          memcpy(display->frame->data(), getMsg.frame, size);
       else if (display->dmdId.format == CTLPI_GETDMD_FORMAT_SRGB565)
       {
-         static const UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
-         static const UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
+         static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
+         static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
          DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
          uint16_t *frame = reinterpret_cast<uint16_t *>(getMsg.frame);
          for (int ofs = 0; ofs < size; ofs++)

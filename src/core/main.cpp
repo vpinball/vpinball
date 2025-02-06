@@ -1202,6 +1202,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       #endif
 
       #ifdef ENABLE_SDL_VIDEO
+         SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
          SDL_InitSubSystem(SDL_INIT_VIDEO);
       #endif
       #ifdef ENABLE_SDL_INPUT
