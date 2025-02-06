@@ -4,7 +4,7 @@
 #include "AnimatedActor.h"
 #include "Image.h"
 
-class ImageSequence : public AnimatedActor 
+class ImageSequence : public AnimatedActor
 {
 public:
    ~ImageSequence();
@@ -14,7 +14,7 @@ public:
    void SetFPS(int fps) { m_fps = fps; }
    float GetPrefWidth() const override { return m_frames[0]->GetWidth(); };
    float GetPrefHeight() const override { return m_frames[0]->GetHeight(); };
-   float GetLength() override { return m_frames.size() * GetFrameDuration(); };
+   float GetLength() const override { return (float)m_frames.size() * GetFrameDuration(); };
    void Rewind() override;
    void ReadNextFrame() override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;
