@@ -4410,7 +4410,7 @@ bool Player::FinishFrame()
          {
             ::SetWindowPos(
                hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
-            BringWindowToTop(hVPMWnd);
+            ::BringWindowToTop(hVPMWnd);
          }
       }
    }
