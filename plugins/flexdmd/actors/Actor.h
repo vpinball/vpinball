@@ -15,7 +15,7 @@ class ActionFactory;
 class Actor
 {
 public:
-   Actor(FlexDMD *pFlexDMD, string name);
+   Actor(FlexDMD *pFlexDMD, const string& name);
    ~Actor();
 
    PSC_IMPLEMENT_REFCOUNT()

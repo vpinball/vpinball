@@ -2,11 +2,9 @@
 #include "FlexDMD.h"
 
 #include <sstream>
-#include <assert.h>
 
 Label::Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& name) : Actor(pFlexDMD, name)
 {
-   m_autopack = false;
    m_alignment = Alignment_Center;
 
    m_pFont = pFont;
@@ -32,8 +30,8 @@ void Label::SetText(const string& szText)
 {
    string szTmp = szText;
 
-   static string patterns[] = { "\r\n" };
-   static string replaceWith = "\n";
+   static const string patterns[] = { "\r\n"s };
+   static const string replaceWith = "\n"s;
 
    for (const auto& pattern : patterns) {
       size_t pos = 0;

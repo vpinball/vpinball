@@ -50,7 +50,7 @@ void ImageSequence::Rewind()
 
 void ImageSequence::ReadNextFrame()
 {
-    if (m_frame == m_frames.size() - 1)
+    if (m_frame == (int)m_frames.size() - 1)
        SetEndOfAnimation(true);
     else {
        m_frame++;

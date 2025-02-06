@@ -15,7 +15,7 @@ public:
    Group(FlexDMD *pFlexDMD, const string &name) : Actor(pFlexDMD, name) {}
    ~Group();
 
-   virtual ActorType GetType() const override { return AT_Group; }
+   ActorType GetType() const override { return AT_Group; }
 
    int GetChildCount() const { return static_cast<int>(m_children.size()); }
    bool HasChild(const string &name) { return Get(name) != nullptr; }

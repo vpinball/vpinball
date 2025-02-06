@@ -1,8 +1,6 @@
 #include "Actor.h"
 #include "Actions.h"
 
-#include <assert.h>
-
 
 void AnimatedActor::Seek(float posInSeconds)
 {

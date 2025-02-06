@@ -6,11 +6,12 @@
 #include "ScriptablePlugin.h"
 
 #include <functional>
+#include <cassert>
 
 #include "common.h"
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Ressource & ressource Identifiers
+// Resource & resource Identifiers
 
 #include "ressources/RessourceDef.h"
 
@@ -320,14 +321,15 @@ PSC_CLASS_END(FlexDMD)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin interface
 
-MsgPluginAPI* msgApi = nullptr;
-VPXPluginAPI* vpxApi = nullptr;
+static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
 
-unsigned int endpointId, getDmdSrcId, getRenderDmdId, onDmdSrcChangeId, nextDmdId;
+static unsigned int endpointId, getDmdSrcId, getRenderDmdId, onDmdSrcChangeId;
+static int nextDmdId;
 
-std::vector<FlexDMD*> flexDmds;
+static std::vector<FlexDMD*> flexDmds;
 
-void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
 {
    GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
    for (const FlexDMD* pFlex : flexDmds)
@@ -343,7 +345,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    }
 }
 
-void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
    if ((getDmdMsg.dmdId.id >> 16) != endpointId)
@@ -364,7 +366,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void OnDMDDestroyed(FlexDMD* pFlex) { flexDmds.erase(std::remove(flexDmds.begin(), flexDmds.end(), pFlex), flexDmds.end()); }
+static void OnDMDDestroyed(FlexDMD* pFlex) { flexDmds.erase(std::remove(flexDmds.begin(), flexDmds.end(), pFlex), flexDmds.end()); }
 
 MSGPI_EXPORT void PluginLoad(const unsigned int sessionId, MsgPluginAPI* api)
 {

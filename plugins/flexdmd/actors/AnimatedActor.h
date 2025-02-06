@@ -2,6 +2,7 @@
 
 #include "Actor.h"
 #include "VPXPlugin.h"
+#include <cassert>
 
 class AnimatedActor : public Actor
 {
@@ -16,26 +17,26 @@ public:
    virtual void Rewind();
    virtual void ReadNextFrame() = 0;
 
-   float GetFrameTime() { return m_frameTime; }
+   float GetFrameTime() const { return m_frameTime; }
    void SetFrameTime(float frameTime) { m_frameTime = frameTime; }
-   float GetFrameDuration() { return m_frameDuration; }
+   float GetFrameDuration() const { return m_frameDuration; }
    void SetFrameDuration(float frameDuration) { assert(frameDuration > 0.f); m_frameDuration = frameDuration; }
    void SetTime(float time) { m_time = time; }
    void SetEndOfAnimation(bool endOfAnimation) { m_endOfAnimation = endOfAnimation; }
-   Scaling GetScaling() { return m_scaling; }
+   Scaling GetScaling() const { return m_scaling; }
    void SetScaling(Scaling scaling) { m_scaling = scaling; }
-   Alignment GetAlignment() { return m_alignment; }
+   Alignment GetAlignment() const { return m_alignment; }
    void SetAlignment(Alignment alignment) { m_alignment = alignment; }
-   virtual float GetLength() { return m_length; }
+   virtual float GetLength() const { return m_length; }
    void SetLength(float length) { m_length = length; }
-   bool GetLoop() { return m_loop; }
+   bool GetLoop() const { return m_loop; }
    void SetLoop(bool loop) { m_loop = loop; }
 
 private:
    float m_frameTime = 0.f;
-   float m_frameDuration = 1.f / 60.f;
+   float m_frameDuration = (float)(1. / 60.);
    float m_time = 0.f;
-   bool m_endOfAnimation = 0.f;
+   bool m_endOfAnimation = false;
 
    Scaling m_scaling = Scaling_Stretch;
    Alignment m_alignment = Alignment_Center;

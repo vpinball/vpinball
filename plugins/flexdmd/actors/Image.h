@@ -14,7 +14,7 @@ public:
 
    static Image* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& image, const string& name);
 
-   virtual ActorType GetType() const override { return AT_Image; }
+   ActorType GetType() const override { return AT_Image; }
 
    Bitmap* GetBitmap();
    void SetBitmap(Bitmap* pBitmap);

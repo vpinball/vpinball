@@ -9,7 +9,7 @@ public:
       : Actor(pFlexDMD, name) { }
    ~Frame() = default;
 
-   virtual ActorType GetType() const override { return AT_Frame; }
+   ActorType GetType() const override { return AT_Frame; }
 
    int GetThickness() const { return m_thickness; }
    void SetThickness(int v) { m_thickness = v; }

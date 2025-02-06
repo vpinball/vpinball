@@ -1,10 +1,10 @@
 #include "Actor.h"
 #include "Actions.h"
 
-#include <assert.h>
+#include <cassert>
 #include "SDL3/SDL_surface.h"
 
-Actor::Actor(FlexDMD *pFlexDMD, string name)
+Actor::Actor(FlexDMD *pFlexDMD, const string& name)
    : m_pFlexDMD(pFlexDMD)
    , m_name(name)
 {

@@ -5,7 +5,6 @@
 #include "Group.h"
 #include "ScriptablePlugin.h"
 
-#include <assert.h>
 #include "tweeny-3.2.0.h"
 
 class Action
@@ -28,7 +27,7 @@ public:
       , m_add(add)
    {
    }
-   ~AddChildAction() = default;
+   ~AddChildAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -55,11 +54,11 @@ public:
       , m_secondsShow(secondsShow)
       , m_secondsHide(secondsHide)
       , m_repeat(repeat)
-      , m_time(0.f)
       , m_n(0)
+      , m_time(0.f)
    {
    }
-   ~BlinkAction() = default;
+   ~BlinkAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -100,7 +99,7 @@ public:
       , m_time(0.0f)
    {
    }
-   ~DelayedAction() = default;
+   ~DelayedAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -165,14 +164,14 @@ public:
       , m_ease(Interpolation_Linear)
    {
    }
-   ~TweenAction() = default;
+   ~TweenAction() override = default;
 
    Interpolation GetEase() const { return m_ease; }
    void SetEase(Interpolation ease) { m_ease = ease; }
 
    bool Update(float secondsElapsed) override
    {
-      if (m_tweens.size() == 0)
+      if (m_tweens.empty())
       {
          Begin();
          switch (m_ease)
@@ -326,10 +325,10 @@ public:
    virtual void Begin() = 0;
    virtual void End() {};
 
-   Actor *GetTarget() { return m_pTarget; }
-   float GetDuration() { return m_duration; }
+   Actor *GetTarget() const { return m_pTarget; }
+   float GetDuration() const { return m_duration; }
 
-   tweeny::tween<float> &AddTween(float from, float to, float duration, std::function<bool(float)> callback)
+   tweeny::tween<float> &AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
    {
       m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during((int)(duration * 1000.0f)).onStep(callback)));
       return m_tweens.back();
@@ -353,7 +352,7 @@ public:
       , m_y(y)
    {
    }
-   ~MoveToAction() = default;
+   ~MoveToAction() override = default;
 
    void Begin() override
    {
@@ -393,7 +392,7 @@ class ParallelAction : public Action
 {
 public:
    ParallelAction() { }
-   ~ParallelAction() = default;
+   ~ParallelAction() override = default;
 
    ParallelAction* Add(Action* action)
    {
@@ -405,7 +404,8 @@ public:
    bool Update(float secondsElapsed) override
    {
       bool alive = false;
-      for (int i = 0; i < (int)m_actions.size(); i++)
+      const int a = (int)m_actions.size();
+      for (int i = 0; i < a; i++)
       {
          if (m_runMask[i])
          {
@@ -417,7 +417,7 @@ public:
       }
       if (!alive)
       {
-         for (int i = 0; i < (int)m_actions.size(); i++)
+         for (int i = 0; i < a; i++)
             m_runMask[i] = true;
       }
       return false;
@@ -436,7 +436,7 @@ public:
       : m_pTarget(pTarget)
    {
    }
-   ~RemoveFromParentAction() = default;
+   ~RemoveFromParentAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -458,7 +458,7 @@ public:
       , m_n(0)
    {
    }
-   ~RepeatAction() = default;
+   ~RepeatAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -490,7 +490,7 @@ public:
       , m_position(position)
    {
    }
-   ~SeekAction() = default;
+   ~SeekAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -511,7 +511,7 @@ public:
       : m_pos(0)
    {
    }
-   ~SequenceAction() = default;
+   ~SequenceAction() override = default;
 
    SequenceAction *Add(Action *action)
    {
@@ -521,7 +521,8 @@ public:
 
    bool Update(float secondsElapsed) override
    {
-      if (m_pos >= (int)m_actions.size())
+      const int a = (int)m_actions.size();
+      if (m_pos >= a)
       {
          m_pos = 0;
          return true;
@@ -529,7 +530,7 @@ public:
       while (m_actions[m_pos]->Update(secondsElapsed))
       {
          m_pos++;
-         if (m_pos >= (int)m_actions.size())
+         if (m_pos >= a)
          {
             m_pos = 0;
             return true;
@@ -552,7 +553,7 @@ public:
       , m_visible(visible)
    {
    }
-   ~ShowAction() = default;
+   ~ShowAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -574,7 +575,7 @@ public:
       , m_time(0.0f)
    {
    }
-   ~WaitAction() = default;
+   ~WaitAction() override = default;
 
    bool Update(float secondsElapsed) override
    {
@@ -614,9 +615,9 @@ public:
    ShowAction* Show(bool visible) const { return new ShowAction(m_pTarget, visible); }
    AddChildAction* AddTo(Group* parent) const { return new AddChildAction(parent, m_pTarget, true); }
    RemoveFromParentAction* RemoveFromParent() const { return new RemoveFromParentAction(m_pTarget); }
-   AddChildAction* AddChild(Actor* child) const { return new AddChildAction(static_cast<Group *>(m_pTarget), child, true); }
-   AddChildAction* RemoveChild(Actor* child) const { return new AddChildAction(static_cast<Group *>(m_pTarget), child, false); }
-   SeekAction* Seek(float pos) const { return new SeekAction(static_cast<AnimatedActor *>(m_pTarget), pos); }
+   AddChildAction* AddChild(Actor* child) const { return new AddChildAction(dynamic_cast<Group *>(m_pTarget), child, true); }
+   AddChildAction *RemoveChild(Actor *child) const { return new AddChildAction(dynamic_cast<Group *>(m_pTarget), child, false); }
+   SeekAction *Seek(float pos) const { return new SeekAction(dynamic_cast<AnimatedActor *>(m_pTarget), pos); }
    MoveToAction* MoveTo(float x, float y, float duration) { return new MoveToAction(m_pTarget, x, y, duration); }
 
 private:

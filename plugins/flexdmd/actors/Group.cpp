@@ -1,4 +1,3 @@
-#include <assert.h>
 #include "FlexDMD.h"
 #include "Group.h"
 #include "Label.h"
@@ -24,11 +23,12 @@ void Group::Update(float delta)
    if (!GetOnStage())
       return;
    size_t i = 0;
-   while (i < m_children.size())
+   const size_t c = m_children.size();
+   while (i < c)
    {
       Actor* child = m_children[i];
       child->Update(delta);
-      if (i < m_children.size() && child == m_children[i])
+      if (child == m_children[i])
          i++;
    }
 }
@@ -63,7 +63,7 @@ void Group::Draw(VP::SurfaceGraphics* pGraphics)
 Group* Group::GetRoot()
 {
    Group* root = this;
-   while (root->GetParent() != NULL)
+   while (root->GetParent() != nullptr)
       root = root->GetParent();
    return root;
 }
@@ -126,7 +126,7 @@ Group* Group::GetGroup(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Group))
-      return static_cast<Group*>(actor);
+      return dynamic_cast<Group*>(actor);
    return nullptr;
 }
 
@@ -134,7 +134,7 @@ Frame* Group::GetFrame(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Frame))
-      return static_cast<Frame*>(actor);
+      return dynamic_cast<Frame*>(actor);
    return nullptr;
 }
 
@@ -142,7 +142,7 @@ Label* Group::GetLabel(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Label))
-      return static_cast<Label*>(actor);
+      return dynamic_cast<Label*>(actor);
    return nullptr;
 }
 
@@ -150,7 +150,7 @@ AnimatedActor* Group::GetVideo(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_AnimatedActor))
-      return static_cast<AnimatedActor*>(actor);
+      return dynamic_cast<AnimatedActor*>(actor);
    return nullptr;
 }
 
@@ -158,7 +158,7 @@ Image* Group::GetImage(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Image))
-      return static_cast<Image*>(actor);
+      return dynamic_cast<Image*>(actor);
    return nullptr;
 }
 
@@ -167,7 +167,7 @@ void Group::RemoveAll()
    //PLOGD.printf("Remove all children %s", GetName().c_str());
    for (Actor* child : m_children)
    {
-      child->SetParent(NULL);
+      child->SetParent(nullptr);
       child->SetOnStage(false);
       child->Release();
    }

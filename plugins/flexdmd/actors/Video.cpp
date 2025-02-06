@@ -60,7 +60,7 @@ void Video::Draw(VP::SurfaceGraphics* pGraphics)
       float x = 0;
       float y = 0;
       Layout::Align(GetAlignment(), w, h, GetWidth(), GetHeight(), x, y);
-      SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
+      //SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
       //pGraphics->DrawImage(m_pFrame, NULL, &rect);
    }
 }
