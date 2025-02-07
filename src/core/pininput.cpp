@@ -1027,11 +1027,6 @@ void PinInput::Init()
       break;
    case PI_SDL:
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMEPAD
-      RefreshSDLGamepad();
-#else
-      RefreshSDLJoystick();
-#endif
       uShockType = USHOCKTYPE_GENERIC;
 #else
       m_inputApi = PI_DIRECTINPUT;
