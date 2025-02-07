@@ -311,7 +311,7 @@ void PinInput::RefreshSDLJoystick()
    SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
    if(joystick_count > 0) {
       for (int idx = 0; idx < joystick_count; ++idx) {
-         m_pSDLJoystick = SDL_OpenJoystick(idx);
+         m_pSDLJoystick = SDL_OpenJoystick(joystick_ids[idx]);
          if (m_pSDLJoystick) {
             m_num_joy = 1;
             if (SDL_IsJoystickHaptic(m_pSDLJoystick)) {
