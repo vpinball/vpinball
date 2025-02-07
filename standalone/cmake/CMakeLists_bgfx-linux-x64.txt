@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 
 option(POST_BUILD_COPY_EXT_LIBS "Copy external libraries to build directory" ON)
+option(ENABLE_SDL_GAMEPAD "Enable SDL gamepad support" ON)
 
 file(READ src/core/vpversion.h version)
 string(REGEX MATCH "VP_VERSION_MAJOR[ ]+([0-9]+)" _tmp ${version})
@@ -29,7 +30,7 @@ add_compile_definitions(
    ENABLE_BGFX
    ENABLE_SDL_VIDEO
    ENABLE_SDL_INPUT
-   ENABLE_SDL_GAMEPAD
+   $<$<BOOL:${ENABLE_SDL_GAMEPAD}>:ENABLE_SDL_GAMEPAD>
 
    __WINESRC__
    WINE_UNICODE_NATIVE

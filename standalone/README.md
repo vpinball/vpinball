@@ -237,7 +237,8 @@ cd vpinball/standalone/linux-x64
 ./external.sh
 cd ../..
 cp standalone/cmake/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
-cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake -DCMAKE_BUILD_TYPE=Release -B build #With SDL GamePad Mapping or
+cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_SDL_GAMEPAD=OFF -B build #With SDL Joystick passthrough
 cmake --build build -- -j$(nproc)
 ```
 
