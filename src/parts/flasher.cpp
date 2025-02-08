@@ -414,6 +414,12 @@ HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveF
    bw.WriteBool(FID(ADDB), m_d.m_addBlend);
    bw.WriteInt(FID(RDMD), m_d.m_renderMode);
    bw.WriteInt(FID(RSTL), m_d.m_renderStyle);
+   bw.WriteFloat(FID(GRGH), m_d.m_glassRoughness);
+   bw.WriteInt(FID(GAMB), m_d.m_glassAmbient);
+   bw.WriteFloat(FID(GTOP), m_d.m_glassPadTop);
+   bw.WriteFloat(FID(GBOT), m_d.m_glassPadBottom);
+   bw.WriteFloat(FID(GLFT), m_d.m_glassPadLeft);
+   bw.WriteFloat(FID(GRHT), m_d.m_glassPadRight);
    bw.WriteString(FID(LINK), m_d.m_imageSrcLink);
    bw.WriteFloat(FID(FLDB), m_d.m_depthBias);
    bw.WriteInt(FID(ALGN), m_d.m_imagealignment);
@@ -486,6 +492,12 @@ bool Flasher::LoadToken(const int id, BiffReader * const pbr)
    case FID(RDMD): { int m; pbr->GetInt(m); m_d.m_renderMode = static_cast<FlasherData::RenderMode>(m); } break;
    case FID(RSTL): pbr->GetInt(&m_d.m_renderStyle); break;
    case FID(LINK): pbr->GetString(m_d.m_imageSrcLink); break;
+   case FID(GRGH): pbr->GetFloat(m_d.m_glassRoughness); break;
+   case FID(GAMB): pbr->GetInt(m_d.m_glassAmbient); break;
+   case FID(GTOP): pbr->GetFloat(m_d.m_glassPadTop); break;
+   case FID(GBOT): pbr->GetFloat(m_d.m_glassPadBottom); break;
+   case FID(GLFT): pbr->GetFloat(m_d.m_glassPadLeft); break;
+   case FID(GRHT): pbr->GetFloat(m_d.m_glassPadRight); break;
    case FID(BGLS): pbr->GetBool(m_backglass); break;
    case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
    case FID(FLDB): pbr->GetFloat(m_d.m_depthBias); break;
@@ -1402,13 +1414,14 @@ void Flasher::Render(const unsigned int renderMask)
                g_pplayer->m_renderer->UpdateBasicShaderMatrix();
             return;
          }
+         Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
          if (m_d.m_modulate_vs_add < 1.f)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
          const vec4 dotTint = frame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, frame, m_d.m_modulate_vs_add, false);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, frame, m_d.m_modulate_vs_add, false, glass, m_d.m_glassAmbient, m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
          // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
          // There we shift the depthbias to reproduce this behavior for backward compatibility.
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);

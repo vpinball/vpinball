@@ -139,7 +139,7 @@ void Settings::Validate(const bool addDefaults)
       Validate(Section::DMD, prefix + "BackGlow",      0.005f, 0.f,    1.f, addDefaults);
 
       Validate(Section::DMD, prefix + "GlassImage", ""s, addDefaults);
-      Validate(Section::DMD, prefix + "GlassAmbiantLight", 0x00010101, 0x00000000, 0x00FFFFFF, addDefaults);
+      Validate(Section::DMD, prefix + "GlassAmbientLight", 0x00010101, 0x00000000, 0x00FFFFFF, addDefaults);
       Validate(Section::DMD, prefix + "GlassDotLight",  0.4f, 0.f, 1.f, addDefaults);
       Validate(Section::DMD, prefix + "GlassPadLeft",   0.f, 0.f, 1.f, addDefaults);
       Validate(Section::DMD, prefix + "GlassPadRight",  0.f, 0.f, 1.f, addDefaults);

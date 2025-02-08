@@ -1112,11 +1112,12 @@ void Renderer::RenderFrame()
 
    // Reinitialize parts that have been modified
    SetupShaders();
+   /* FIXME this breaks bumper and flashers
    for (auto renderable : m_renderableToInit)
    {
       renderable->RenderRelease();
       renderable->RenderSetup(m_renderDevice);
-   }
+   } */
    m_renderableToInit.clear();
 
    // Reset DMD blur
@@ -1203,7 +1204,7 @@ void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, Render
    m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->SetRenderTarget("DMDView"s, rt, true, true);
-   SetupDMDRender(profile, true, tint, dmd, 1.f, true);
+   SetupDMDRender(profile, true, tint, dmd, 1.f, true, nullptr, 0x000000, 0.f, 0.f, 0.f, 0.f, 0.f);
    const float rtAR = static_cast<float>(w) / static_cast<float>(h);
    const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
    const float pw = 2.f * (rtAR > dmdAR ? dmdAR / rtAR : 1.f) * static_cast<float>(w) / static_cast<float>(rt->GetWidth());
@@ -1219,7 +1220,8 @@ void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, Render
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB)
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, 
+      Texture* const glass, const COLORREF glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
@@ -1260,24 +1262,39 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
             assert(false); // Slot overflow
             return;
          }
+         const int w2 = 2 * dmd->width(), h2 = 2 * dmd->height();
          Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
-         if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != dmdSampler->GetWidth() || m_dmdBlurs[slot][0]->GetHeight() != dmdSampler->GetHeight())
+         if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != w2 || m_dmdBlurs[slot][0]->GetHeight() != h2)
          {
             for (int i = 0; i < 4; i++)
             {
                delete m_dmdBlurs[slot][i];
-               m_dmdBlurs[slot][i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), dmd->width(), dmd->height(), colorFormat::RGBA8, false, 1, "");
+               m_dmdBlurs[slot][i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), w2, h2, colorFormat::RGBA8, false, 1, "");
             }
          }
          RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / w2), (float)(1.0 / h2), 1.0f, 1.0f);
+         { // Copy at center, to get some extra room for light bleeding in padding
+            m_renderDevice->SetRenderTarget("DMD Copy for blur", m_dmdBlurs[slot][3], false);
+            m_renderDevice->Clear(clearType::TARGET, 0x00000000);
+            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
+            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
+            Vertex3D_TexelOnly vertices[4] =
+            {
+               {  0.5f, -0.5f, 0.f, 1.f, 1.f },
+               { -0.5f, -0.5f, 0.f, 0.f, 1.f },
+               {  0.5f,  0.5f, 0.f, 1.f, 0.f },
+               { -0.5f,  0.5f, 0.f, 0.f, 0.f }
+            };
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, vertices);
+         }
          for (int i = 0; i < 3; i++)
          {
             {
                m_renderDevice->SetRenderTarget("DMD HBlur " + std::to_string(i + 1), m_dmdBlurs[slot][0], false);
-               if (i > 0)
-                  m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][i]);
-               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, i == 0 ? dmdSampler : m_dmdBlurs[slot][i]->GetColorSampler());
-               m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
+               int src = i == 0 ? 3 : i;
+               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][src]);
+               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][src]->GetColorSampler());
                m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_horiz7x7 : SHADER_TECHNIQUE_fb_blur_horiz9x9);
                m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
             }
@@ -1285,7 +1302,6 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
                m_renderDevice->SetRenderTarget("DMD VBlur " + std::to_string(i + 1), m_dmdBlurs[slot][i + 1], false);
                m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
                m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
-               m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / dmdSampler->GetWidth()), (float)(1.0 / dmdSampler->GetHeight()), 1.0f, 1.0f);
                m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_vert7x7 : SHADER_TECHNIQUE_fb_blur_vert9x9);
                m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
             }
@@ -1311,13 +1327,21 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
          m_dmdUnlitDotColor[profile].w /* back glow */ * brightness);
 
       m_renderDevice->m_DMDShader->SetTechnique(
-          isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb : SHADER_TECHNIQUE_basic_DMD2
-                     : sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb_world : SHADER_TECHNIQUE_basic_DMD2_world);
+         glass == nullptr ? isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb             : SHADER_TECHNIQUE_basic_DMD2
+                                       : sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb_world       : SHADER_TECHNIQUE_basic_DMD2_world
+                          : isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_glass_srgb       : SHADER_TECHNIQUE_basic_DMD2_glass
+                                       : sRGB ? SHADER_TECHNIQUE_basic_DMD2_glass_srgb_world : SHADER_TECHNIQUE_basic_DMD2_glass_world);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
+      if (glass)
+      {
+         m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdGlass, glass);
+         m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness, GetRValue(glassAmbient) / 255.f, GetGValue(glassAmbient) / 255.f, GetBValue(glassAmbient) / 255.f, glassRougness);
+      }
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft, padRight, padTop, padBottom);
       m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[slot][1]->GetColorSampler());
       m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][3]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[slot][3]->GetColorSampler()); // FIXME why don't we directly blur from 1 to 3 ?
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[slot][3]->GetColorSampler()); // why don't we directly blur from 1 to 3 ?
    }
 }
 

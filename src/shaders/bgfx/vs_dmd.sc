@@ -1,7 +1,7 @@
 // license:GPLv3+
 
 $input a_position, a_texcoord0
-$output v_texcoord0
+$output v_texcoord0, v_texcoord1
 #ifdef CLIP
 	$output v_clipDistance
 #endif
@@ -21,10 +21,17 @@ $output v_texcoord0
 	#endif
 #endif
 
+uniform vec4 glassPad;
+#define glassPadLeft (glassPad.x)
+#define glassPadRight (glassPad.y)
+#define glassPadTop (glassPad.z)
+#define glassPadBottom (glassPad.w)
+
 void main()
 {
 	vec4 pos = vec4(a_position, 1.0);
-	v_texcoord0 = a_texcoord0;
+	v_texcoord0 = a_texcoord0; // Glass
+	v_texcoord1 = a_texcoord0 * vec2(1.0 + glassPadLeft + glassPadRight, 1.0 + glassPadTop + glassPadBottom) - vec2(glassPadLeft, glassPadTop); // Dmd
 	#ifdef STEREO
 		gl_Layer = gl_InstanceID;
 	#endif

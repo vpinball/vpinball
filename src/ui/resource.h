@@ -742,7 +742,7 @@
 #define IDC_OVERWRITE_MATERIAL_SETTINGS 432
 #define IDC_LIGHT_FALLOFF_POWER         432
 #define IDC_JOYTABLEUP                  432
-#define IDC_GLASS_AMBIANT               432
+#define IDC_GLASS_AMBIENT               432
 #define IDC_TARGET_LEGACY_MODE_CHECK    433
 #define IDC_MODULATE_VS_ADD             433
 #define IDC_REFLECT_ENABLED_CHECK2      433
@@ -1317,7 +1317,7 @@
 #define IDC_DOT_ROUNDING                939
 #define IDC_UNLIT_DOT_COLOR             940
 #define IDC_BACK_GLOW                   941
-#define IDC_GLASS_PATH                  942
+#define IDC_GLASS_IMAGE                  942
 #define IDC_BROWSE_GLASS_PATH           943
 #define IDC_LEGACY_RENDERER             944
 #define IDC_DMD_PROFILE                 945
@@ -1327,6 +1327,9 @@
 #define IDC_Y_LABEL                     949
 #define IDC_DEFAULT_DMD_PROFILE         950
 #define IDC_IMAGE_LINK_EDIT             951
+#define IDC_STATIC27                    952
+#define IDC_STATIC28                    953
+#define IDC_STATIC29                    954
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1524,7 +1527,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         952
+#define _APS_NEXT_CONTROL_VALUE         955
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

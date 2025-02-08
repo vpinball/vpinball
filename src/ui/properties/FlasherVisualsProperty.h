@@ -28,16 +28,24 @@ private:
     ComboBox    m_styleCombo;
     EditBox     m_linkEdit;
 
+    ComboBox    m_glassImageCombo;
+    EditBox     m_glassRoughnessEdit;
+    ColorButton m_glassAmbientButton;
+    EditBox     m_glassPadTopEdit;
+    EditBox     m_glassPadBottomEdit;
+    EditBox     m_glassPadLeftEdit;
+    EditBox     m_glassPadRightEdit;
+
     ComboBox    m_imageACombo;
     ComboBox    m_imageBCombo;
     ComboBox    m_filterCombo;
     vector<string> m_filterList;
     EditBox     m_filterAmountEdit;
-    HWND        m_hDisplayInEditorCheck;
+    HWND        m_hDisplayInEditorCheck = NULL;
 
     EditBox     m_opacityAmountEdit;
     ComboBox    m_lightmapCombo;
-    HWND        m_hAdditiveBlendCheck;
+    HWND        m_hAdditiveBlendCheck = NULL;
     EditBox     m_modulateEdit;
 
     EditBox     m_heightEdit;
