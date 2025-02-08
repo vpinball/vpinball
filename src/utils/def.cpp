@@ -828,19 +828,33 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
 {
    HRESULT hres = E_NOTIMPL;
 
+   Settings* pSettings = &g_pplayer->m_ptable->m_settings;
+
    if (!wcsicmp(progid, L"WMPlayer.OCX")) {
       CComObject<WMPCore>* pObj = nullptr;
       if (SUCCEEDED(CComObject<WMPCore>::CreateInstance(&pObj)))
          hres = pObj->QueryInterface(IID_IWMPCore, (void**)obj);
    }
-   //elseif (!wcsicmp(progid, L"VPinMAME.Controller"))
-   //   hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);
-   //else if (!wcsicmp(progid, L"FlexDMD.FlexDMD"))
-   //   hres = (new FlexDMD())->QueryInterface(IID_IFlexDMD, (void**)obj);
-   //else if (!wcsicmp(progid, L"UltraDMD.DMDObject"))
-   //   hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
-   //else if (!wcsicmp(progid, L"B2S.Server"))
-   //   hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
+   else if (!wcsicmp(progid, L"VPinMAME.Controller")) {
+      Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
+      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
+         hres = (new VPinMAMEController())->QueryInterface(IID_IController, (void**)obj);
+   }
+   else if (!wcsicmp(progid, L"FlexDMD.FlexDMD")) {
+      Settings::Section section = pSettings->GetSection("Plugin.FlexDMD");
+      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
+         hres = (new FlexDMD())->QueryInterface(IID_IFlexDMD, (void**)obj);
+   }
+   else if (!wcsicmp(progid, L"UltraDMD.DMDObject")) {
+      Settings::Section section = pSettings->GetSection("Plugin.FlexDMD");
+      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
+         hres = (new UltraDMDDMDObject())->QueryInterface(IID_IDMDObject, (void**)obj);
+   }
+   else if (!wcsicmp(progid, L"B2S.Server")) {
+      Settings::Section section = pSettings->GetSection("Plugin.PinMAME");
+      if (!pSettings->LoadValueWithDefault(section, "Enable"s, false))
+         hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
+   }
    else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
       hres = (new PUPPinDisplay())->QueryInterface(IID_IPinDisplay, (void**)obj);
    }
