@@ -22,7 +22,7 @@
 #ifdef ENABLE_SDL_VIDEO
 #include "imgui/imgui_impl_sdl3.h"
 #endif
-#include "plugins/VPXPluginAPIImpl.h"
+#include "core/VPXPluginAPIImpl.h"
 
 #include "serial.h"
 static serial Serial;

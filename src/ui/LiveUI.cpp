@@ -18,7 +18,7 @@
 #include "utils/wintimer.h"
 
 #include "plugins/VPXPlugin.h"
-#include "plugins/VPXPluginAPIImpl.h"
+#include "core/VPXPluginAPIImpl.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h" // Needed for FindRenderedTextEnd in HelpSplash (should be adapted when this function will refactored in ImGui)

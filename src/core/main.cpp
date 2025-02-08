@@ -7,7 +7,7 @@
 #include "vpversion.h"
 
 #include "plugins/VPXPlugin.h"
-#include "plugins/VPXPluginAPIImpl.h"
+#include "core/VPXPluginAPIImpl.h"
 
 #ifdef CRASH_HANDLER
 #include "utils/StackTrace.h"

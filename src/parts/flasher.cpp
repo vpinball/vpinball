@@ -8,7 +8,7 @@
 #include "renderer/captureExt.h"
 #endif
 #include "simple-uri-parser/uri_parser.h"
-#include "plugins/VPXPluginAPIImpl.h"
+#include "core/VPXPluginAPIImpl.h"
 
 Flasher::Flasher()
 {

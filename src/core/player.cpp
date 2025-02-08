@@ -44,7 +44,7 @@
 
 #include "plugins/MsgPlugin.h"
 #include "plugins/VPXPlugin.h"
-#include "plugins/VPXPluginAPIImpl.h"
+#include "core/VPXPluginAPIImpl.h"
 
 // MSVC Concurrency Viewer support
 // This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
