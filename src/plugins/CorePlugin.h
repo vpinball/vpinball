@@ -2,8 +2,11 @@
 
 #pragma once
 
-#include <stdint.h>
-
+#ifdef __cplusplus
+ #include <cstdint>
+#else
+ #include <stdint.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Core Virtual Pinball plugins
@@ -205,5 +208,5 @@ typedef struct AudioUpdateMsg
    unsigned int format;          // The sample data format (see CTLPI_AUDIO_FORMAT_xxx)
    double sampleRate;            // The sample rate
    unsigned int bufferSize;      // The size of the audio buffer
-   void* buffer;                 // The sample data, or null for immediate stream destruction
+   uint8_t* buffer;              // The sample data, or null for immediate stream destruction
 } AudioUpdateMsg;

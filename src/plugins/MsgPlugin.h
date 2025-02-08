@@ -2,7 +2,11 @@
 
 #pragma once
 
-#include <stdint.h>
+#ifdef __cplusplus
+ #include <cstdint>
+#else
+ #include <stdint.h>
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Generic Message Plugin API
@@ -17,7 +21,7 @@
 // pinball application. It is minimalistic and only defines the core collaboration
 // mechanism. Then each application/plugin should define its API & messages.
 //
-// For the sake of simplicity and portability, the API only use C definitions.
+// For the sake of simplicity and portability, the API only uses C definitions.
 //
 // Plugins are designed to be hosted into the main application process. Therefore
 // they share the same memory space. Passing data pointer is safe as long as the
