@@ -1,7 +1,6 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
-#include "VPXPlugin.h"
 #include "VPXPluginAPIImpl.h"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -245,7 +244,7 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 ///////////////////////////////////////////////////////////////////////////////
 // Expose VPX contributions through plugin API
 
-#include "CorePlugin.h"
+#include "plugins/CorePlugin.h"
 
 void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData)
 {
