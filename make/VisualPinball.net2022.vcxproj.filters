@@ -184,7 +184,7 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/VPXPluginAPIImpl.cpp">
-      <Filter>plugin</Filter>
+      <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/math/math.cpp">
       <Filter>math</Filter>
@@ -750,7 +750,7 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/core/VPXPluginAPIImpl.h">
-      <Filter>plugin</Filter>
+      <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/math/bbox.h">
       <Filter>math</Filter>

@@ -2,9 +2,9 @@
 
 #pragma once
 
-#include "VPXPlugin.h"
-#include "ScriptablePlugin.h"
-#include "LoggingPlugin.h"
+#include "plugins/VPXPlugin.h"
+#include "plugins/ScriptablePlugin.h"
+#include "plugins/LoggingPlugin.h"
 #include "core/DynamicScript.h"
 #include "robin_hood.h"
 
