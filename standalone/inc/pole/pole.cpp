@@ -1231,7 +1231,7 @@ StorageIO::StorageIO( Storage* st, const char* fname )
   filesize(0),        
   writeable(false),        
   header(new Header()),        
-  dirtree(new DirTree(1 << header->b_shift)),        
+  dirtree(new DirTree(1ull << header->b_shift)),        
   bbat(new AllocTable()),        
   sbat(new AllocTable()),
   sb_blocks(),
@@ -1941,7 +1941,7 @@ void StreamIO::setSize(uint64 newSize)
         uint64 len = newSize;
         if (len > entry->size)
             len = entry->size;
-        unsigned char *buffer = 0;
+        unsigned char *buffer = nullptr;
         uint64 savePos = tell();
         if (len)
         {
@@ -1974,7 +1974,7 @@ void StreamIO::setSize(uint64 newSize)
         if (len)
         {
             write(0, buffer, len);
-            delete buffer;
+            delete [] buffer;
         }
         if (savePos <= entry->size)
             seek(savePos);
@@ -2071,7 +2071,7 @@ uint64 StreamIO::read( uint64 pos, unsigned char* data, uint64 maxlen )
       index++;
       offset = 0;
     }
-    delete[] buf;
+    delete [] buf;
 
   }
 

@@ -1943,7 +1943,7 @@ void StreamIO::setSize(uint64 newSize)
         uint64 len = newSize;
         if (len > entry->size)
             len = entry->size;
-        unsigned char *buffer = 0;
+        unsigned char *buffer = nullptr;
         uint64 savePos = tell();
         if (len)
         {
@@ -1976,7 +1976,7 @@ void StreamIO::setSize(uint64 newSize)
         if (len)
         {
             write(0, buffer, len);
-            delete buffer;
+            delete [] buffer;
         }
         if (savePos <= entry->size)
             seek(savePos);
