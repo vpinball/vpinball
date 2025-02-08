@@ -9,24 +9,8 @@
 class FlasherData final
 {
 public:
-   Vertex2D m_vCenter;
-   float m_height;
    COLORREF m_color;
-   TimerDataRoot m_tdr;
-   float m_rotX, m_rotY, m_rotZ;
-   int m_alpha;
-   float m_intensity_scale;
-   float m_modulate_vs_add;
-   float m_depthBias;      // for determining depth sorting
-   int  m_filterAmount;
-   Filters m_filter;
-   RampImageAlignment m_imagealignment;
-   string m_szImageA;
-   string m_szImageB;
-   bool m_displayTexture;
-   bool m_isVisible;
-   bool m_addBlend;
-   string m_szLightmap;
+   float m_depthBias = 0.f; // for determining depth sorting
 
    enum RenderMode
    {
@@ -35,9 +19,41 @@ public:
       DISPLAY,    // Screen (CRT, LCD, ...)
       ALPHASEG    // Alphanumeric segment display (VFD, Plasma, LED, ...)
    };
-   RenderMode m_renderMode;
-   int m_renderStyle;       // application defined style profile reference
-   string m_imageSrcLink;   // image source (default is script)
+   RenderMode m_renderMode = RenderMode::FLASHER;
+
+   // For DMD, Alphanum and Display rendering mode
+   int m_renderStyle = 0;                 // application defined style profile reference
+   string m_imageSrcLink;                 // image source (default is script)
+
+   // For DMD, render the glass
+   // string m_szImageA;                  // glass image is store as image A
+   float m_glassRoughness = 0.f;
+   COLORREF m_glassAmbient = 0x00000000;
+   float m_glassPadTop = 0.f;
+   float m_glassPadBottom = 0.f;
+   float m_glassPadLeft = 0.f;
+   float m_glassPadRight = 0.f;
+
+   // For flasher rendering mode
+   int m_filterAmount;
+   Filters m_filter;
+   RampImageAlignment m_imagealignment;
+   string m_szImageA;
+   string m_szImageB;
+   bool m_displayTexture;
+   bool m_isVisible = true;
+   bool m_addBlend;
+
+   int m_alpha;
+   float m_intensity_scale;
+   float m_modulate_vs_add;
+   string m_szLightmap;
+
+   Vertex2D m_vCenter;
+   float m_height;
+   float m_rotX, m_rotY, m_rotZ;
+
+   TimerDataRoot m_tdr;
 };
 
 class Flasher :

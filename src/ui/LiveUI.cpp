@@ -4598,21 +4598,53 @@ void LiveUI::BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_ob
 void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj)
 {
    m_renderer->ReinitRenderable(live_obj);
+   Flasher *const flasher = (is_live ? live_obj : startup_obj);
+   if (flasher == nullptr)
+      return;
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isVisible) : nullptr, live_obj ? &(live_obj->m_d.m_isVisible) : nullptr);
-      PropImageCombo("Image A", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
-      PropImageCombo("Image B", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageB) : nullptr, live_obj ? &(live_obj->m_d.m_szImageB) : nullptr, m_table);
-      // Missing Mode
-      // Missing Filter Image B
-      // Missing Amount
-      PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
-      // FIXME PropCheckbox("Use Script DMD", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_isDMD) : nullptr, live_obj ? &(live_obj->m_d.m_isDMD) : nullptr);
+      static const string renderModes[] = { "Flasher"s, "DMD"s, "Display"s, "Alpha.Seg."s };
+      PropCombo("Render Mode", m_table, is_live, startup_obj ? (int *)&(startup_obj->m_d.m_renderMode) : nullptr, live_obj ? (int *)&(live_obj->m_d.m_renderMode) : nullptr, std::size(renderModes), renderModes);
       PropRGB("Color", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_color) : nullptr, live_obj ? &(live_obj->m_d.m_color) : nullptr);
-      PropInt("Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr);
-      PropFloat("Modulate", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_modulate_vs_add) : nullptr, live_obj ? &(live_obj->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f);
+      // Missing Tex coord mode
       PropFloat("Depth bias", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_depthBias) : nullptr, live_obj ? &(live_obj->m_d.m_depthBias) : nullptr, 10.f, 100.f);
+
+      if (flasher->m_d.m_renderMode == FlasherData::FLASHER)
+      {
+         PropImageCombo("Image A", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
+         PropImageCombo("Image B", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageB) : nullptr, live_obj ? &(live_obj->m_d.m_szImageB) : nullptr, m_table);
+         // Missing Mode
+         // Missing Filter Image B
+         // Missing Amount
+      }
+      else if (flasher->m_d.m_renderMode == FlasherData::DMD)
+      {
+         static const string renderStyles[] = { "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED" };
+         PropCombo("Render Style", m_table, is_live, startup_obj ? &(startup_obj->m_d.m_renderStyle) : nullptr, live_obj ? &(live_obj->m_d.m_renderStyle) : nullptr, std::size(renderStyles), renderStyles);
+         // Missing source
+         PropImageCombo("Glass", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
+         PropFloat("Glass Roughness", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassRoughness) : nullptr, live_obj ? &(live_obj->m_d.m_glassRoughness) : nullptr, 0.f, 5.f);
+         PropRGB("Glass Ambient", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassAmbient) : nullptr, live_obj ? &(live_obj->m_d.m_glassAmbient) : nullptr);
+         PropFloat("Glass Pad Left", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassPadLeft) : nullptr, live_obj ? &(live_obj->m_d.m_glassPadLeft) : nullptr, 0.f, 1.f);
+         PropFloat("Glass Pad Right", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassPadRight) : nullptr, live_obj ? &(live_obj->m_d.m_glassPadRight) : nullptr, 0.f, 1.f);
+         PropFloat("Glass Pad Top", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassPadTop) : nullptr, live_obj ? &(live_obj->m_d.m_glassPadTop) : nullptr, 0.f, 1.f);
+         PropFloat("Glass Pad Bottom", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_glassPadBottom) : nullptr, live_obj ? &(live_obj->m_d.m_glassPadBottom) : nullptr, 0.f, 1.f);
+      }
+      else if (flasher->m_d.m_renderMode == FlasherData::DISPLAY)
+      {
+         static const string renderStyles[] = { "Pixelated", "Smoothed" };
+         PropCombo("Render Mode", m_table, is_live, startup_obj ? &(startup_obj->m_d.m_renderStyle) : nullptr, live_obj ? &(live_obj->m_d.m_renderStyle) : nullptr, std::size(renderStyles), renderStyles);
+         // Missing source
+      }
+      ImGui::EndTable();
+   }
+   if (ImGui::CollapsingHeader("Transparency", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
+   {
+      PropInt("Opacity", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_alpha) : nullptr, live_obj ? &(live_obj->m_d.m_alpha) : nullptr);
       PropLightmapCombo("Lightmap", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szLightmap) : nullptr, live_obj ? &(live_obj->m_d.m_szLightmap) : nullptr, m_table);
+      PropCheckbox("Additive Blend", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_addBlend) : nullptr, live_obj ? &(live_obj->m_d.m_addBlend) : nullptr);
+      PropFloat("Modulate", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_modulate_vs_add) : nullptr, live_obj ? &(live_obj->m_d.m_modulate_vs_add) : nullptr, 0.1f, 0.5f);
       ImGui::EndTable();
    }
    if (ImGui::CollapsingHeader("Position", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
@@ -5125,7 +5157,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
 void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], const OnIntPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(int)
-   const char * const preview_value = labels[*v].c_str();
+   const char * const preview_value = labels[clamp(*v, 0, n_values-1)].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       for (int i = 0; i < (int)n_values; i++)

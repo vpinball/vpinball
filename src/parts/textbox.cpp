@@ -541,10 +541,9 @@ void Textbox::Render(const unsigned int renderMask)
       Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay({ 0, 0 });
       if (dmd.frame == nullptr)
          return;
-      // convert color from sRGB to RGB ?
-      // TODO use the table's default profile instead of the backward compatibility one
+      // DMD support for textbox is for backward compatibility only, so only use compatibility style #0
       const vec4 color = dmd.frame->m_format == BaseTexture::BW ? convertColor(m_d.m_fontcolor, m_d.m_intensity_scale) : vec4(1.f, 1.f, 1.f, m_d.m_intensity_scale);
-      g_pplayer->m_renderer->SetupDMDRender(0, true, color, dmd.frame, 1.f, true);
+      g_pplayer->m_renderer->SetupDMDRender(0, true, color, dmd.frame, 1.f, true, nullptr, 0x000000, 0.f, 0.f, 0.f, 0.f, 0.f);
       m_rd->DrawTexturedQuad(m_rd->m_DMDShader, vertices);
       m_rd->GetCurrentPass()->m_commands.back()->SetTransparent(true);
       m_rd->GetCurrentPass()->m_commands.back()->SetDepth(-10000.f);

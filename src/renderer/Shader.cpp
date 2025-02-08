@@ -163,14 +163,18 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
       SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
       SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff, SHADER_clip_plane),
 
-   SHADER_TECHNIQUE(basic_DMD, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
-   SHADER_TECHNIQUE(basic_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
-   SHADER_TECHNIQUE(basic_DMD_ext, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
-   SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd, SHADER_clip_plane),
-   SHADER_TECHNIQUE(basic_DMD2, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb_world, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD2, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_srgb_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_glass, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_glass_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_glass_srgb, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+   SHADER_TECHNIQUE(basic_DMD2_glass_srgb_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity, SHADER_clip_plane),
@@ -387,6 +391,8 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
+   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
+   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
    SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
    SHADER_SAMPLER(dmdDotGlow, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
@@ -1430,8 +1436,10 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(vs_dmd_noworld),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
       BGFX_EMBEDDED_SHADER_CLIP(fs_dmd),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_rgb),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_srgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_noglass_rgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_noglass_srgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_glass_rgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_glass_srgb),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       // Bulb light shaders
@@ -1584,16 +1592,21 @@ void Shader::Load()
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         STEREO(vs_dmd_noworld),      "fs_dmd_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        STEREO(vs_dmd_noworld),      "fs_dmd2_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   STEREO(vs_dmd_noworld),      "fs_dmd2_srgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        STEREO(vs_dmd_noworld),      "fs_dmd2_noglass_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   STEREO(vs_dmd_noworld),      "fs_dmd2_noglass_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_noglass_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_noglass_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass,        STEREO(vs_dmd_noworld),      "fs_dmd2_glass_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_srgb, STEREO(vs_dmd_noworld), "fs_dmd2_glass_srgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_glass_rgb_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_glass_srgb_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       STEREO(vs_dmd_noworld),      "fs_sprite_tex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, STEREO(vs_dmd_noworld),      "fs_sprite_notex_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
       // Variants with a clipping plane
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_clip", true);
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_clip), "fs_dmd2_rgb_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_clip), "fs_dmd2_noglass_rgb_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_world, STEREO(vs_dmd_world_clip), "fs_dmd2_glass_rgb_clip", true);
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_clip), "fs_sprite_tex_clip", true);
       break;
    //case DMD_VR_SHADER:

@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-$input v_texcoord0
+$input v_texcoord0, v_texcoord1
 #ifdef CLIP
 	$input v_clipDistance
 #endif

@@ -247,7 +247,7 @@ private:
    CEdit m_glassPadTop;
    CEdit m_glassPadRight;
    CEdit m_glassPadBottom;
-   ColorButton m_glassAmbiantLight;
+   ColorButton m_glassAmbientLight;
    CEdit m_glassDotLight;
 
    CColorDialog m_colorDialog;
@@ -1781,8 +1781,8 @@ BOOL DMDViewOptPage::OnInitDialog()
    AttachItem(IDC_UNLIT_DOT_COLOR, m_unlitDotColor);
    AttachItem(IDC_BACK_GLOW, m_backGlow);
 
-   AttachItem(IDC_GLASS_PATH, m_glassImage);
-   AttachItem(IDC_GLASS_AMBIANT, m_glassAmbiantLight);
+   AttachItem(IDC_GLASS_IMAGE, m_glassImage);
+   AttachItem(IDC_GLASS_AMBIENT, m_glassAmbientLight);
    AttachItem(IDC_GLASS_DOT_LIGHT, m_glassDotLight);
    AttachItem(IDC_GLASS_PAD_LEFT, m_glassPadLeft);
    AttachItem(IDC_GLASS_PAD_TOP, m_glassPadTop);
@@ -1848,7 +1848,7 @@ void DMDViewOptPage::LoadProfile(const int n)
    m_backGlow.SetWindowText(tmp);
 
    m_glassImage.SetWindowText(settings.LoadValueString(Settings::DMD, prefix + "GlassImage").c_str());
-   m_glassAmbiantLight.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "GlassAmbiantLight"));
+   m_glassAmbientLight.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "GlassAmbientLight"));
    sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassDotLight"));
    m_glassDotLight.SetWindowText(tmp);
    sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadLeft"));
@@ -1897,7 +1897,7 @@ void DMDViewOptPage::SaveProfile()
    settings.SaveValue(Settings::DMD, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
 
    settings.SaveValue(Settings::DMD, prefix + "GlassImage", m_glassImage.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassAmbiantLight", static_cast<unsigned int>(m_glassAmbiantLight.GetColor()), !saveAll);
+   settings.SaveValue(Settings::DMD, prefix + "GlassAmbientLight", static_cast<unsigned int>(m_glassAmbientLight.GetColor()), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "GlassDotLight", m_glassDotLight.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "GlassPadLeft", m_glassPadLeft.GetWindowText().GetString(), !saveAll);
    settings.SaveValue(Settings::DMD, prefix + "GlassPadRight", m_glassPadRight.GetWindowText().GetString(), !saveAll);
@@ -1920,7 +1920,7 @@ INT_PTR DMDViewOptPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
       case IDC_DOT_TINT: m_dotTint.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
       case IDC_UNLIT_DOT_COLOR: m_unlitDotColor.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
-      case IDC_GLASS_AMBIANT: m_glassAmbiantLight.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
+      case IDC_GLASS_AMBIENT: m_glassAmbientLight.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
       }
       break;
    }
@@ -1950,7 +1950,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DOT_ROUNDING:
    case IDC_DOT_GLOW:
    case IDC_BACK_GLOW:
-   case IDC_GLASS_PATH:
+   case IDC_GLASS_IMAGE:
    case IDC_GLASS_DOT_LIGHT:
    case IDC_GLASS_PAD_LEFT:
    case IDC_GLASS_PAD_TOP:
@@ -1980,7 +1980,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
          m_framePadBottom.EnableWindow(isNewRenderer);
          m_framePadTop.EnableWindow(isNewRenderer);
          m_glassImage.EnableWindow(isNewRenderer);
-         m_glassAmbiantLight.EnableWindow(isNewRenderer);
+         m_glassAmbientLight.EnableWindow(isNewRenderer);
          m_glassDotLight.EnableWindow(isNewRenderer);
          m_glassPadLeft.EnableWindow(isNewRenderer);
          m_glassPadRight.EnableWindow(isNewRenderer);
@@ -2042,19 +2042,19 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
          }
       }
       break;
-   case IDC_GLASS_AMBIANT:
+   case IDC_GLASS_AMBIENT:
       {
          CHOOSECOLOR cc = m_colorDialog.GetParameters();
          cc.Flags = CC_FULLOPEN | CC_RGBINIT;
          m_colorDialog.SetParameters(cc);
          if (g_pvp->GetActiveTable())
             m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
-         m_colorDialog.SetColor(m_glassAmbiantLight.GetColor());
+         m_colorDialog.SetColor(m_glassAmbientLight.GetColor());
          if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
          {
             if (g_pvp->GetActiveTable())
                memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
-            m_glassAmbiantLight.SetColor(m_colorDialog.GetColor());
+            m_glassAmbientLight.SetColor(m_colorDialog.GetColor());
          }
       }
       break;
