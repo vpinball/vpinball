@@ -89,6 +89,8 @@ add_executable(vpinball
    src/core/Settings.h
    src/core/TableDB.cpp
    src/core/TableDB.h
+   src/core/VPXPluginAPIImpl.h
+   src/core/VPXPluginAPIImpl.cpp
 
    src/math/bbox.h
    src/math/math.cpp
@@ -202,9 +204,9 @@ add_executable(vpinball
    src/plugins/MsgPlugin.h
    src/plugins/MsgPluginManager.h
    src/plugins/MsgPluginManager.cpp
-   src/plugins/VPXPluginAPIImpl.h
-   src/plugins/VPXPluginAPIImpl.cpp
    src/plugins/VPXPlugin.h
+   src/plugins/CorePlugin.h
+   src/plugins/ScriptablePlugin.h
 
    src/renderer/trace.h
    src/renderer/Anaglyph.cpp

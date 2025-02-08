@@ -183,6 +183,9 @@
     <ClCompile Include="src/core/vpinball.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src/core/VPXPluginAPIImpl.cpp">
+      <Filter>plugin</Filter>
+    </ClCompile>
     <ClCompile Include="src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
@@ -289,9 +292,6 @@
       <Filter>physics</Filter>
     </ClCompile>
     <ClCompile Include="src/plugins/MsgPluginManager.cpp">
-      <Filter>plugin</Filter>
-    </ClCompile>
-    <ClCompile Include="src/plugins/VPXPluginAPIImpl.cpp">
       <Filter>plugin</Filter>
     </ClCompile>
     <ClInclude Include="src/plugins/MsgPluginManager.h">
@@ -749,6 +749,9 @@
     <ClInclude Include="src/core/TableDB.h">
       <Filter>core</Filter>
     </ClInclude>
+    <ClInclude Include="src/core/VPXPluginAPIImpl.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
     <ClInclude Include="src/math/bbox.h">
       <Filter>math</Filter>
     </ClInclude>
@@ -978,9 +981,6 @@
       <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="src/plugins/PinMamePlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
-    <ClInclude Include="src/plugins/VPXPluginAPIImpl.h">
       <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="src/renderer/Anaglyph.h">

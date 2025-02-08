@@ -1141,6 +1141,7 @@
     <ClCompile Include="src/core/player.cpp" />
     <ClCompile Include="src/core/Settings.cpp" />
     <ClCompile Include="src/core/TableDB.cpp" />
+    <ClCompile Include="src/core/VPXPluginAPIImpl.cpp" />
     <ClCompile Include="src/math/math.cpp" />
     <ClCompile Include="src/math/matrix.cpp" />
     <ClCompile Include="src/parts/backGlass.cpp" />
@@ -1179,7 +1180,6 @@
     <ClCompile Include="src/plugins/MsgPluginManager.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="src/plugins/VPXPluginAPIImpl.cpp" />
     <ClCompile Include="src/renderer/Anaglyph.cpp" />
     <ClCompile Include="src/renderer/captureExt.cpp" />
     <ClCompile Include="src/renderer/IndexBuffer.cpp" />
@@ -1660,6 +1660,7 @@
     <ClInclude Include="src/core/player.h" />
     <ClInclude Include="src/core/Settings.h" />
     <ClInclude Include="src/core/TableDB.h" />
+    <ClInclude Include="src/core/VPXPluginAPIImpl.h" />
     <ClInclude Include="src/math/bbox.h" />
     <ClInclude Include="src/math/math.h" />
     <ClInclude Include="src/math/matrix.h" />
@@ -1736,7 +1737,6 @@
     <ClInclude Include="src/plugins/MsgPlugin.h" />
     <ClInclude Include="src/plugins/CorePlugin.h" />
     <ClInclude Include="src/plugins/PinMamePlugin.h" />
-    <ClInclude Include="src/plugins/VPXPluginAPIImpl.h" />
     <ClInclude Include="src/plugins/MsgPluginManager.h" />
     <ClInclude Include="src/plugins/VPXPlugin.h" />
     <ClInclude Include="src/renderer/captureExt.h" />
