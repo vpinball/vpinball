@@ -2,6 +2,9 @@
 
 # --- FlexDMD plugin ---
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
 add_library(FlexDMDPlugin MODULE
    plugins/flexdmd/common.cpp
    plugins/flexdmd/FlexDMD.cpp
@@ -100,6 +103,22 @@ endif()
 target_include_directories(FlexDMDPlugin PUBLIC ${PLUGIN_INCLUDE_DIRS})
 
 if(PluginPlatform STREQUAL "win")
+	add_compile_options(
+	   $<$<CONFIG:RELEASE>:/Ob2>
+	   $<$<CONFIG:RELEASE>:/O2>
+	   $<$<CONFIG:RELEASE>:/Oi>
+	   $<$<CONFIG:RELEASE>:/arch:SSE2>
+	   $<$<CONFIG:RELEASE>:/fp:fast>
+	   $<$<CONFIG:RELEASE>:/fp:except->
+	   $<$<CONFIG:RELEASE>:/Ot>
+	   $<$<CONFIG:RELEASE>:/GF>
+	   $<$<CONFIG:RELEASE>:/GS->
+	   $<$<CONFIG:RELEASE>:/Gy>
+	   $<$<CONFIG:RELEASE>:/GR>
+	   $<$<CONFIG:RELEASE>:/Oy>
+	   $<$<CONFIG:RELEASE>:/GT>
+	   $<$<CONFIG:RELEASE>:/GL>
+	)
    if (PluginArch STREQUAL "x86_64")
       target_link_directories(FlexDMDPlugin PUBLIC plugins/flexdmd/third-party/build-libs/windows-x64)
       target_link_libraries(FlexDMDPlugin SDL3.lib SDL3_image.lib)

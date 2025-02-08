@@ -2,8 +2,27 @@
 
 # --- Pinup DMD trigger plugin ---
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
 # Pinup DMD plugin is only available on Windows as is talks to the closed-source Pinup Player
 if (WIN32)
+	add_compile_options(
+	   $<$<CONFIG:RELEASE>:/Ob2>
+	   $<$<CONFIG:RELEASE>:/O2>
+	   $<$<CONFIG:RELEASE>:/Oi>
+	   $<$<CONFIG:RELEASE>:/arch:SSE2>
+	   $<$<CONFIG:RELEASE>:/fp:fast>
+	   $<$<CONFIG:RELEASE>:/fp:except->
+	   $<$<CONFIG:RELEASE>:/Ot>
+	   $<$<CONFIG:RELEASE>:/GF>
+	   $<$<CONFIG:RELEASE>:/GS->
+	   $<$<CONFIG:RELEASE>:/Gy>
+	   $<$<CONFIG:RELEASE>:/GR>
+	   $<$<CONFIG:RELEASE>:/Oy>
+	   $<$<CONFIG:RELEASE>:/GT>
+	   $<$<CONFIG:RELEASE>:/GL>
+	)
 	add_library(PinupEventsPlugin MODULE plugins/pinup-events/pinup-events.cpp)
 	set_target_properties(PinupEventsPlugin PROPERTIES
 	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"

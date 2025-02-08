@@ -2,9 +2,28 @@
 
 # --- HelloScript plugin ---
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
 add_library(HelloScriptPlugin MODULE plugins/helloscript/helloscript.cpp)
 
 if (WIN32)
+	add_compile_options(
+	   $<$<CONFIG:RELEASE>:/Ob2>
+	   $<$<CONFIG:RELEASE>:/O2>
+	   $<$<CONFIG:RELEASE>:/Oi>
+	   $<$<CONFIG:RELEASE>:/arch:SSE2>
+	   $<$<CONFIG:RELEASE>:/fp:fast>
+	   $<$<CONFIG:RELEASE>:/fp:except->
+	   $<$<CONFIG:RELEASE>:/Ot>
+	   $<$<CONFIG:RELEASE>:/GF>
+	   $<$<CONFIG:RELEASE>:/GS->
+	   $<$<CONFIG:RELEASE>:/Gy>
+	   $<$<CONFIG:RELEASE>:/GR>
+	   $<$<CONFIG:RELEASE>:/Oy>
+	   $<$<CONFIG:RELEASE>:/GT>
+	   $<$<CONFIG:RELEASE>:/GL>
+	)
 	set_target_properties(HelloScriptPlugin PROPERTIES
 	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
 	)
