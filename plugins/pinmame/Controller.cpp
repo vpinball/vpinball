@@ -287,7 +287,7 @@ std::vector<uint8_t> Controller::GetRawDmdPixels() const
    pinmame_tDisplayStates* state = m_stateBlock->displayStates;
    if (state == nullptr)
       return pixels;
-   pinmame_tFrameState* frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
+   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
    for (unsigned int index = 0; index < state->nDisplays; index++)
       if (frame->width >= 128)
       {
@@ -297,11 +297,11 @@ std::vector<uint8_t> Controller::GetRawDmdPixels() const
          {
          case PINMAME_FRAME_FORMAT_LUM:
             for (int i = 0; i < size; i++)
-               pixels[i] = frame->frameData[i] * 100 / 255;
+               pixels[i] = (uint32_t)frame->frameData[i] * 100u / 255u;
             break;
          case PINMAME_FRAME_FORMAT_RGB:
             for (int i = 0; i < size; i++)
-               pixels[i] = static_cast<uint8_t>(21.26f * frame->frameData[i * 3] + 71.52f * frame->frameData[i * 3 + 1] + 7.22f * frame->frameData[i * 3 + 2]);
+               pixels[i] = static_cast<uint8_t>(21.26f * (float)frame->frameData[i * 3] + 71.52f * (float)frame->frameData[i * 3 + 1] + 7.22f * (float)frame->frameData[i * 3 + 2]);
             break;
          default:
             pixels.resize(0);
@@ -321,7 +321,7 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels() const
    pinmame_tDisplayStates* state = m_stateBlock->displayStates;
    if (state == nullptr)
       return pixels;
-   pinmame_tFrameState* frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
+   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
    for (unsigned int index = 0; index < state->nDisplays; index++)
       if (frame->width >= 128)
       {
@@ -333,13 +333,13 @@ std::vector<uint32_t> Controller::GetRawDmdColoredPixels() const
             for (int i = 0; i < size; i++)
             {
                // TODO implement original PinMame / VPinMame coloring
-               const uint8_t lum = frame->frameData[i];
-               pixels[i] = (lum << 16) || (lum << 8) || (lum);
+               const uint32_t lum = frame->frameData[i];
+               pixels[i] = (lum << 16) | (lum << 8) | lum;
             }
             break;
          case PINMAME_FRAME_FORMAT_RGB:
             for (int i = 0; i < size; i++)
-               pixels[i] = (frame->frameData[i * 3] << 16) | (frame->frameData[i * 3 + 1] << 8) | (frame->frameData[i * 3 + 2]);
+               pixels[i] = ((uint32_t)frame->frameData[i * 3] << 16) | ((uint32_t)frame->frameData[i * 3 + 1] << 8) | (frame->frameData[i * 3 + 2]);
             break;
          default:
             pixels.resize(0);
