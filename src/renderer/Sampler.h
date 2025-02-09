@@ -3,10 +3,13 @@
 #pragma once
 
 #include <mutex>
+#include <string>
+using std::string;
 #include "robin_hood.h"
 #include "typedefs3D.h"
 
 class RenderDevice;
+class BaseTexture;
 
 enum SamplerFilter : unsigned int
 {
@@ -81,9 +84,7 @@ public:
    const SurfaceType m_type;
 
 private:
-#ifndef ENABLE_BGFX
    bool m_ownTexture;
-#endif
    bool m_isLinear;
    RenderDevice* const m_rd;
    unsigned int m_width;

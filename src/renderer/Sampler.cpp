@@ -17,9 +17,7 @@ Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool for
    m_type(SurfaceType::RT_DEFAULT), 
    m_dirty(false),
    m_rd(rd),
-#ifndef ENABLE_BGFX
    m_ownTexture(true),
-#endif
    m_width(surf->width()),
    m_height(surf->height()),
    m_clampu(clampu),
@@ -123,7 +121,7 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTex
    : m_type(type)
    , m_rd(rd)
    , m_dirty(false)
-   //, m_ownTexture(ownTexture)
+   , m_ownTexture(ownTexture)
    , m_clampu(clampu)
    , m_clampv(clampv)
    , m_filter(filter)
@@ -195,15 +193,16 @@ namespace bgfx { extern void release(const bgfx::Memory* _mem); }
 
 Sampler::~Sampler()
 {
-   m_rd->UnbindSampler(this);
+   if (m_rd)
+      m_rd->UnbindSampler(this);
 
    #if defined(ENABLE_BGFX)
    if (m_textureUpdate)
       bgfx::release(m_textureUpdate);
-   if (bgfx::isValid(m_mipsTexture))
-      bgfx::destroy(m_mipsTexture);
    if (bgfx::isValid(m_nomipsTexture))
       bgfx::destroy(m_nomipsTexture);
+   if (m_ownTexture && bgfx::isValid(m_mipsTexture))
+      bgfx::destroy(m_mipsTexture);
 
    #elif defined(ENABLE_OPENGL)
    Unbind();
