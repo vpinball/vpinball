@@ -27,7 +27,7 @@ uniform vec4 glassAmbient_Roughness;
 #define dmdSize        vRes_Alpha_time.xy
 #define dotGlow        vRes_Alpha_time.z
 #define backGlow       vRes_Alpha_time.w
-#define glassAmbiant   glassAmbient_Roughness.xyz
+#define glassAmbient   glassAmbient_Roughness.xyz
 #define glassRoughness glassAmbient_Roughness.w
 
 #define UNLIT
@@ -116,10 +116,10 @@ void main()
 	#endif
 
 	#ifdef GLASS
-		// Apply the glass as a tinted (lighten by the base ambiant color + DMD using large blur) additive blend.
+		// Apply the glass as a tinted (lighten by the base ambient color + DMD using large blur) additive blend.
 		// The glass texture modulates the lighting (so sort of a tinted roughness map)
 		vec4 glass = texture2D(dmdGlass, glassUv);
-		vec3 glassLight = glassAmbiant + glassRoughness * convertDmdToColor(texNoLod(dmdBackGlow, glowUv).rgb);
+		vec3 glassLight = glassAmbient + glassRoughness * convertDmdToColor(texNoLod(dmdBackGlow, glowUv).rgb);
 		color += glass.rgb * glassLight.rgb;
 	#endif
 
