@@ -159,7 +159,7 @@ bool ImGui_Implbgfx_CreateDeviceObjects()
    bgfx::RendererType::Enum type = bgfx::getRendererType();
    // OpenGL ES does not define ARB_shader_viewport_layer_array which is needed for layered rendering.
    // TODO this is hacky and should not be needed since BGFX_CAPS_VIEWPORT_LAYER_ARRAY should be false on OpenGL ES but tests shows it isn't
-   if ((bgfx::getCaps()->supported & (BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY)) && (bgfx::getRendererType() != bgfx::RendererType::OpenGLES))
+   if ((bgfx::getCaps()->supported & (BGFX_CAPS_INSTANCING | BGFX_CAPS_TEXTURE_2D_ARRAY | BGFX_CAPS_VIEWPORT_LAYER_ARRAY)) && (bgfx::getRendererType() != bgfx::RendererType::OpenGLES) && (bgfx::getRendererType() != bgfx::RendererType::Metal))
       g_ShaderHandle = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui_st"), bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_imgui_st"), true);
    else
       g_ShaderHandle = bgfx::createProgram(bgfx::createEmbeddedShader(s_embeddedShaders, type, "vs_imgui"), bgfx::createEmbeddedShader(s_embeddedShaders, type, "fs_imgui"), true);
