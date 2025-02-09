@@ -23,8 +23,10 @@
 #include "bx/math.h"
 //#include "bx/timer.h"
 
+#include "renderer/Sampler.h"
+
 // Data
-static bgfx::TextureHandle g_FontTexture = BGFX_INVALID_HANDLE;
+static Sampler* g_FontTexture = nullptr;
 static bgfx::ProgramHandle g_ShaderHandle = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationTex = BGFX_INVALID_HANDLE;
 static bgfx::UniformHandle g_AttribLocationCol = BGFX_INVALID_HANDLE;
@@ -125,12 +127,12 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
                   (uint16_t)bx::min(cmd->ClipRect.w, 65535.0f) - yy);
             }
 
-            bgfx::TextureHandle texture = { (uint16_t)((intptr_t)cmd->TextureId & 0xffff) };
-
+            Sampler* sampler = (Sampler*)cmd->TextureId;
+            if (sampler)
+               bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture());
             bgfx::setState(state);
             bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
             bgfx::setUniform(g_AttribLocationOfs, g_stereoOfs);
-            bgfx::setTexture(0, g_AttribLocationTex, texture);
             bgfx::setVertexBuffer(0, &tvb, 0, numVertices);
             bgfx::setIndexBuffer(&tib, cmd->IdxOffset, cmd->ElemCount);
             bgfx::setInstanceCount(instanceCount);
@@ -173,8 +175,9 @@ bool ImGui_Implbgfx_CreateDeviceObjects()
    unsigned char* pixels;
    int width, height;
    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-   g_FontTexture = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::copy(pixels, (size_t)width * height * 4));
-   io.Fonts->TexID = (ImTextureID)g_FontTexture.idx;
+   bgfx::TextureHandle fontTex = bgfx::createTexture2D((uint16_t)width, (uint16_t)height, false, 1, bgfx::TextureFormat::BGRA8, BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, bgfx::copy(pixels, (size_t)width * height * 4));
+   g_FontTexture = new Sampler(nullptr, SurfaceType::RT_DEFAULT, fontTex, width, height, true, false);
+   io.Fonts->TexID = (ImTextureID)g_FontTexture;
 
    return true;
 }
@@ -193,12 +196,9 @@ void ImGui_Implbgfx_InvalidateDeviceObjects()
    if (isValid(g_ShaderHandle))
       bgfx::destroy(g_ShaderHandle);
 
-   if (isValid(g_FontTexture))
-   {
-      bgfx::destroy(g_FontTexture);
-      ImGui::GetIO().Fonts->TexID = 0;
-      g_FontTexture.idx = bgfx::kInvalidHandle;
-   }
+   delete g_FontTexture;
+   g_FontTexture = nullptr;
+   ImGui::GetIO().Fonts->TexID = 0;
 }
 
 void ImGui_Implbgfx_Init()
@@ -212,7 +212,6 @@ void ImGui_Implbgfx_Shutdown()
 
 void ImGui_Implbgfx_NewFrame()
 {
-   if (!isValid(g_FontTexture)) {
+   if (g_FontTexture == nullptr)
       ImGui_Implbgfx_CreateDeviceObjects();
-   }
 }

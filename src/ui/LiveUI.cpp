@@ -843,11 +843,7 @@ ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallba
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
-   union { struct { bgfx::TextureHandle handle; uint8_t flags; uint8_t mip; } s; ImTextureID id; } tex;
-   tex.s.handle = sampler->GetCoreTexture();
-   tex.s.flags = 0;
-   tex.s.mip = 0;
-   ImTextureID image = tex.id;
+   ImTextureID image = (ImTextureID)sampler;
    #elif defined(ENABLE_OPENGL)
    ImTextureID image = (ImTextureID)sampler->GetCoreTexture();
    #elif defined(ENABLE_DX9)
@@ -4398,11 +4394,9 @@ void LiveUI::ImageProperties()
       m_table->SetNonUndoableDirty(eSaveDirty);
    ImGui::EndDisabled();
    ImGui::Separator();
-   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(
-      m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *sampler = m_renderer->m_renderDevice->m_texMan.LoadTexture(m_selection.image->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
 #if defined(ENABLE_BGFX)
-   // FIXME implement
-   ImTextureID image = 0;
+   ImTextureID image = (ImTextureID)sampler;
 #elif defined(ENABLE_OPENGL)
    ImTextureID image = sampler ? (ImTextureID)sampler->GetCoreTexture() : 0;
 #elif defined(ENABLE_DX9)
@@ -5157,7 +5151,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
 void LiveUI::PropCombo(const char *label, IEditable *undo_obj, bool is_live, int *startup_v, int *live_v, size_t n_values, const string labels[], const OnIntPropChange &chg_callback)
 {
    PROP_HELPER_BEGIN(int)
-   const char * const preview_value = labels[clamp(*v, 0, n_values-1)].c_str();
+   const char * const preview_value = labels[clamp(*v, 0, static_cast<int>(n_values) - 1)].c_str();
    if (ImGui::BeginCombo(label, preview_value))
    {
       for (int i = 0; i < (int)n_values; i++)
