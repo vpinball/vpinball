@@ -497,6 +497,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
 #elif defined(ENABLE_SDL_VIDEO)
    int i = 0;
    int displayCount = 0;
+   SDL_DisplayID primaryID = SDL_GetPrimaryDisplay();
    SDL_DisplayID* displayIDs = SDL_GetDisplays(&displayCount);
    for (; i < displayCount; ++i)
    {
@@ -505,7 +506,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          DisplayConfig displayConf;
          displayConf.display = i; // SDL Display identifier. Will be used for creating the display
          displayConf.adapter = displayIDs[i];
-         displayConf.isPrimary = (displayBounds.x == 0) && (displayBounds.y == 0);
+         displayConf.isPrimary = primaryID != 0 ? displayIDs[i] == primaryID : (displayBounds.x == 0) && (displayBounds.y == 0);
          displayConf.top = displayBounds.y;
          displayConf.left = displayBounds.x;
          displayConf.width = displayBounds.w;
