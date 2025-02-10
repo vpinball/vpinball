@@ -7,6 +7,7 @@
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
 #include "parts/backGlass.h"
+#include "plugins/CorePlugin.h"
 
 class Renderable;
 
@@ -38,10 +39,17 @@ public:
    void RenderStaticPrepass();
 
    void RenderFrame();
-   void RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, RenderTarget* rt, int x, int y, int w, int h);
 
-   void SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, 
-      Texture* const glass, const COLORREF glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
+   enum ColorSpace
+   {
+      Linear,
+      Reinhard,
+      Reinhard_sRGB
+   };
+   void SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
+   void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
+      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
@@ -207,13 +215,18 @@ private:
    BaseTexture* m_envRadianceTexture = nullptr;
    #endif
 
+   // Segment display rendering
+   Texture m_segDisplaySDF[9];
+   vec4 m_segColor[7]; // Base seg color and brightness
+   vec4 m_segUnlitColor[7]; // unlit color and back glow
+
    // DMD rendering
    vec4 m_dmdDefaultDotTint; // Table's default Dmd tint
    bool m_dmdUseNewRenderer[7];
    vec4 m_dmdDotColor[7]; // Base dot color and brightness
-   vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, glow
-   vec4 m_dmdUnlitDotColor[7]; // unlit color and back glow
+   vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, back glow
+   vec4 m_dmdUnlitDotColor[7]; // unlit color
    unsigned int m_dmdBlurSlot = 0;
    BaseTexture* m_dmdBlurred[32] = { nullptr };
-   RenderTarget* m_dmdBlurs[32][4] = { nullptr };
+   RenderTarget* m_dmdBlurs[32][2] = { nullptr };
 };

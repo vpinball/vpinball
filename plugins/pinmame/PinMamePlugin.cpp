@@ -262,8 +262,8 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
 bool hasAlpha = false;
 unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
 unsigned int segFrameId = 0;
-float segLuminances[16 * 32] = { 0 };
-float segPrevLuminances[16 * 32] = { 0 };
+float segLuminances[16 * 128] = { 0 };
+float segPrevLuminances[16 * 128] = { 0 };
 
 void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
 {

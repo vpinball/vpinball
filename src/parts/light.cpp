@@ -646,7 +646,7 @@ void Light::Render(const unsigned int renderMask)
 
       // early out all lights with no contribution
       vec4 lightColor2_falloff_power = convertColor(m_d.m_color2, m_d.m_falloff_power);
-      vec4 lightColor_intensity = convertColor(m_d.m_color);
+      vec4 lightColor_intensity = convertColor(m_d.m_color, 1.f);
       if (m_d.m_BulbLight ||
          (!m_d.m_BulbLight && (m_surfaceTexture == (offTexel = m_ptable->GetImage(m_d.m_szImage))) && (offTexel != nullptr) && !m_backglass && !m_d.m_imageMode)) // assumes/requires that the light in this kind of state is basically -exactly- the same as the static/(un)lit playfield/surface and accompanying image
       {

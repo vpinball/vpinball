@@ -892,7 +892,6 @@
 #define IDC_3D_STEREO_OFS               543
 #define IDC_TILT_INERTIA                543
 #define IDC_3D_STEREO_Y                 544
-#define IDC_DOT_GLOW                    544
 #define IDC_ADAPTIVE_VSYNC              545
 #define IDC_MAX_FPS                     545
 #define IDC_3D_STEREO_OFS3              545
@@ -1318,7 +1317,7 @@
 #define IDC_WHERE_LIST                  930
 #define IDD_PFVIEW_OPT                  931
 #define IDD_ALPHAVIEW_OPT               932
-#define IDD_DMDVIEW_OPT                 933
+#define IDD_SCOREVIEW_OPT               933
 #define IDD_BACKGLASS_OPT               934
 #define IDC_DOT_TINT                    935
 #define IDC_DOT_SIZE                    936
@@ -1327,7 +1326,7 @@
 #define IDC_DOT_ROUNDING                939
 #define IDC_UNLIT_DOT_COLOR             940
 #define IDC_BACK_GLOW                   941
-#define IDC_GLASS_IMAGE                  942
+#define IDC_GLASS_IMAGE                 942
 #define IDC_BROWSE_GLASS_PATH           943
 #define IDC_LEGACY_RENDERER             944
 #define IDC_DMD_PROFILE                 945
@@ -1340,6 +1339,8 @@
 #define IDC_STATIC27                    952
 #define IDC_STATIC28                    953
 #define IDC_STATIC29                    954
+#define IDD_DMDSTYLE_OPT                955
+#define IDD_ALPHASEGSTYLE_OPT           956
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1537,7 +1538,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         955
+#define _APS_NEXT_CONTROL_VALUE         957
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

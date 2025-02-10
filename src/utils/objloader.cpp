@@ -530,10 +530,10 @@ void ObjLoader::WriteMaterial(const string& texelName, const string& texelFilena
    RemoveSpaces(texelNameCopy);
    fprintf_s(m_matFile, "newmtl %s\n", texelNameCopy);
    fprintf_s(m_matFile, "Ns 7.843137\n");
-   vec4 color = convertColor(mat->m_cBase);
+   vec4 color = convertColor(mat->m_cBase, 1.f);
    fprintf_s(m_matFile, "Ka 0.000000 0.000000 0.000000\n");
    fprintf_s(m_matFile, "Kd %f %f %f\n", color.x, color.y, color.z);
-   color = convertColor(mat->m_cGlossy);
+   color = convertColor(mat->m_cGlossy, 1.f);
    fprintf_s(m_matFile, "Ks %f %f %f\n", color.x, color.y, color.z);
    fprintf_s(m_matFile, "Ni 1.500000\n");
    fprintf_s(m_matFile, "d %f\n", mat->m_fOpacity);

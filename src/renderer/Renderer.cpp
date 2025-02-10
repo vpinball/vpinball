@@ -335,10 +335,8 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_dmdDotProperties[profile].x = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSize");
       m_dmdDotProperties[profile].y = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness");
       m_dmdDotProperties[profile].z = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding");
-      m_dmdDotProperties[profile].w = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotGlow");
-      m_dmdUnlitDotColor[profile] = convertColor(
-         m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"),
-         m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
+      m_dmdDotProperties[profile].w = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow");
+      m_dmdUnlitDotColor[profile] = convertColor(m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"), 1.f);
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_dmdDotColor[profile].x = InvsRGB(m_dmdDotColor[profile].x);
       m_dmdDotColor[profile].y = InvsRGB(m_dmdDotColor[profile].y);
@@ -347,6 +345,26 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_dmdUnlitDotColor[profile].y = InvsRGB(m_dmdUnlitDotColor[profile].y);
       m_dmdUnlitDotColor[profile].z = InvsRGB(m_dmdUnlitDotColor[profile].z);
    }
+
+   // Cache Seg display renderer properties
+   for (int profile = 0; profile < 8; profile++)
+   {
+      const string prefix = "Profile." + std::to_string(profile + 1) + '.';
+      m_segColor[profile] = convertColor(
+         m_table->m_settings.LoadValueUInt(Settings::Alpha, prefix + "Color"),
+         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "Brightness"));
+      m_segUnlitColor[profile] = convertColor(
+         m_table->m_settings.LoadValueUInt(Settings::Alpha, prefix + "Unlit"),
+         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "BackGlow"));
+      // Convert color as settings are sRGB color while shader needs linear RGB color
+      m_segColor[profile].x = InvsRGB(m_segColor[profile].x);
+      m_segColor[profile].y = InvsRGB(m_segColor[profile].y);
+      m_segColor[profile].z = InvsRGB(m_segColor[profile].z);
+      m_segUnlitColor[profile].x = InvsRGB(m_segUnlitColor[profile].x);
+      m_segUnlitColor[profile].y = InvsRGB(m_segUnlitColor[profile].y);
+      m_segUnlitColor[profile].z = InvsRGB(m_segUnlitColor[profile].z);
+   }
+
 
    m_renderDevice->ResetRenderState();
    #if defined(ENABLE_DX9)
@@ -401,7 +419,7 @@ Renderer::~Renderer()
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
    for (int j = 0; j < 32; j++)
-      for (int i = 0; i < 4; i++)
+      for (int i = 0; i < 2; i++)
          delete m_dmdBlurs[j][i];
    delete m_renderDevice;
 }
@@ -958,7 +976,7 @@ void Renderer::SetupShaders()
    m_table->m_Light[0].pos.z = m_table->m_lightHeight;
    m_table->m_Light[1].pos.z = m_table->m_lightHeight;
 
-   vec4 emission = convertColor(m_table->m_Light[0].emission);
+   vec4 emission = convertColor(m_table->m_Light[0].emission, 1.f);
    emission.x *= m_table->m_lightEmissionScale * m_globalEmissionScale;
    emission.y *= m_table->m_lightEmissionScale * m_globalEmissionScale;
    emission.z *= m_table->m_lightEmissionScale * m_globalEmissionScale;
@@ -1196,32 +1214,92 @@ void Renderer::RenderFrame()
    PrepareVideoBuffers(m_renderDevice->GetOutputBackBuffer());
 }
 
-void Renderer::RenderDMD(int profile, const vec4& tint, BaseTexture* dmd, RenderTarget* rt, int x, int y, int w, int h)
+Texture* LoadSegSDF(Texture& tex, string path)
 {
-   m_renderDevice->ResetRenderState();
-   m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-   m_renderDevice->SetRenderTarget("DMDView"s, rt, true, true);
-   SetupDMDRender(profile, true, tint, dmd, 1.f, true, nullptr, 0x000000, 0.f, 0.f, 0.f, 0.f, 0.f);
-   const float rtAR = static_cast<float>(w) / static_cast<float>(h);
-   const float dmdAR = static_cast<float>(dmd->width()) / static_cast<float>(dmd->height());
-   const float pw = 2.f * (rtAR > dmdAR ? dmdAR / rtAR : 1.f) * static_cast<float>(w) / static_cast<float>(rt->GetWidth());
-   const float ph = 2.f * (rtAR < dmdAR ? rtAR / dmdAR : 1.f) * static_cast<float>(h) / static_cast<float>(rt->GetHeight());
-   const float px = static_cast<float>(x + w/2) / static_cast<float>(rt->GetWidth()) * 2.f - 1.f - pw * 0.5f;
-   const float py = static_cast<float>(y + h/2) / static_cast<float>(rt->GetHeight()) * 2.f - 1.f - ph * 0.5f;
-   const Vertex3D_NoTex2 vertices[4] = {
-      { px+pw, py,    0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
-      { px,    py,    0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
-      { px+pw, py+ph, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-      { px,    py+ph, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f }
-   };
-   m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
+   if (tex.m_pdsBuffer == nullptr)
+   {
+      tex.LoadFromFile(path);
+      if (tex.m_pdsBuffer == nullptr)
+         return nullptr;
+      tex.m_pdsBuffer->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA
+      tex.m_alphaTestValue = (float)(-1.0 / 255.0);
+   }
+   return &tex;
 }
 
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& color, BaseTexture* dmd, const float alpha, const bool sRGB, 
-      Texture* const glass, const COLORREF glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
+void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+   Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
+{
+   Texture* segSDF = nullptr;
+   switch (type)
+   {
+   case CTLPI_GETSEG_LAYOUT_7:    segSDF = LoadSegSDF(m_segDisplaySDF[0], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_7C:   segSDF = LoadSegSDF(m_segDisplaySDF[1], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c.png"); break;
+   case CTLPI_GETSEG_LAYOUT_7D:   segSDF = LoadSegSDF(m_segDisplaySDF[2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-d.png"); break;
+   case CTLPI_GETSEG_LAYOUT_9:    segSDF = LoadSegSDF(m_segDisplaySDF[3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_9C:   segSDF = LoadSegSDF(m_segDisplaySDF[4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14:   segSDF = LoadSegSDF(m_segDisplaySDF[5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14D:  segSDF = LoadSegSDF(m_segDisplaySDF[6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[7], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc.png"); break;
+   case CTLPI_GETSEG_LAYOUT_16:   segSDF = LoadSegSDF(m_segDisplaySDF[8], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
+   }
+   if (segSDF == nullptr)
+      return;
+
+   const float fullBrightness = brightness * m_segColor[profile].w;
+   const vec4 segColor = vec4(color.x * m_segColor[profile].x, color.y * m_segColor[profile].y, color.z * m_segColor[profile].z, 0.f);
+   m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
+      segColor.x * fullBrightness, segColor.y * fullBrightness, segColor.z * fullBrightness, // Lit segment color
+      m_segUnlitColor[profile].w * fullBrightness); // Back glow
+   m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, 
+      m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit color (ambient)
+      static_cast<float>(colorSpace)); // Output colorspace
+   m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
+      glass != nullptr ? 1.f : 0.f, // Apply glass
+      0.f, 0.f, 0.f); // Unused yet
+   float parallaxU = 0.f, parallaxV = 0.f;
+   if (glass)
+   {
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glass);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness,
+         glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass ambient color
+         glassRougness); // Glass roughness (more rough leads to more display light shattering)
+      if (!isBackdrop && (vertices != nullptr))
+      { // (fake) depth by applying some parallax mapping
+         Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+         Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+         Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
+         Vertex2D u0(vertices[0].tu, vertices[0].tv);
+         Vertex2D u1(vertices[1].tu, vertices[1].tv);
+         Vertex2D u2(vertices[2].tu, vertices[2].tv);
+         Vertex3Ds dv1 = v1 - v0;
+         Vertex3Ds dv2 = v2 - v0;
+         Vertex2D duv1 = u1 - u0;
+         Vertex2D duv2 = u2 - u0;
+         float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+         Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
+         Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
+         const Matrix3D& mv = GetMVP().GetModelView();
+         tangent = mv.MultiplyVectorNoTranslate(tangent);
+         bitangent = mv.MultiplyVectorNoTranslate(bitangent);
+         Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
+         eye = mv.MultiplyVectorNoPerspective(eye);
+         eye.Normalize();
+         float tN = tangent.Length();
+         float btN = bitangent.Length();
+         float depth = CMTOVPU(0.5f); // depth between glass and display
+         parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
+         parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
+      }
+   }
+   m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft - parallaxU, padRight + parallaxU, padTop - parallaxV, padBottom + parallaxV);
+   m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<vec4*>(segs), 4);
+   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, SF_BILINEAR);
+   m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_AlphaSeg : SHADER_TECHNIQUE_display_AlphaSeg_world);
+}
+
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
 {
    // Legacy DMD renderer
    #ifdef ENABLE_BGFX
@@ -1230,7 +1308,6 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
    if (true)
    #endif
    {
-      const float brightness = color.w;
       m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW ? 1.f : 0.f);
       #ifdef DMD_UPSCALE
          m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)(dmd->width() * 3), (float)(dmd->height() * 3), alpha, (float)(g_pplayer->m_overall_frames % 2048));
@@ -1243,7 +1320,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
    // New DMD renderer
    else
    {
-      // Update gaussian blurs for back/dot/glass glows
+      // Update gaussian blurs for glows
       int slot = -1; 
       for (unsigned int i = 0; i < m_dmdBlurSlot; i++)
       {
@@ -1256,17 +1333,16 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
       if (slot == -1)
       {
          slot = m_dmdBlurSlot;
-         m_dmdBlurSlot++;
-         if (m_dmdBlurSlot >= 32)
+         if (m_dmdBlurSlot < 31)
          {
-            assert(false); // Slot overflow
-            return;
+            m_dmdBlurred[slot] = dmd;
+            m_dmdBlurSlot++;
          }
          const int w2 = 2 * dmd->width(), h2 = 2 * dmd->height();
          Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
          if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != w2 || m_dmdBlurs[slot][0]->GetHeight() != h2)
          {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < 2; i++)
             {
                delete m_dmdBlurs[slot][i];
                m_dmdBlurs[slot][i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), w2, h2, colorFormat::RGBA8, false, 1, "");
@@ -1275,7 +1351,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
          RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
          m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / w2), (float)(1.0 / h2), 1.0f, 1.0f);
          { // Copy at center, to get some extra room for light bleeding in padding
-            m_renderDevice->SetRenderTarget("DMD Copy for blur", m_dmdBlurs[slot][3], false);
+            m_renderDevice->SetRenderTarget("DMD Copy for blur", m_dmdBlurs[slot][0], false);
             m_renderDevice->Clear(clearType::TARGET, 0x00000000);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
@@ -1288,60 +1364,84 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
             };
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, vertices);
          }
-         for (int i = 0; i < 3; i++)
          {
-            {
-               m_renderDevice->SetRenderTarget("DMD HBlur " + std::to_string(i + 1), m_dmdBlurs[slot][0], false);
-               int src = i == 0 ? 3 : i;
-               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][src]);
-               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][src]->GetColorSampler());
-               m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_horiz7x7 : SHADER_TECHNIQUE_fb_blur_horiz9x9);
-               m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-            }
-            {
-               m_renderDevice->SetRenderTarget("DMD VBlur " + std::to_string(i + 1), m_dmdBlurs[slot][i + 1], false);
-               m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
-               m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
-               m_renderDevice->m_FBShader->SetTechnique(i == 0 ? SHADER_TECHNIQUE_fb_blur_vert7x7 : SHADER_TECHNIQUE_fb_blur_vert9x9);
-               m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-            }
+            m_renderDevice->SetRenderTarget("DMD HBlur", m_dmdBlurs[slot][1], false);
+            m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
+            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
+            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_horiz13x13);
+            m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
+         }
+         {
+            m_renderDevice->SetRenderTarget("DMD VBlur", m_dmdBlurs[slot][0], false);
+            m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
+            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][1]->GetColorSampler());
+            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_vert13x13);
+            m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
          }
          m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
          initial_rt->m_name += '-';
       }
 
       // Render DMD
-      const float brightness = color.w * m_dmdDotColor[profile].w;
+      const float fullBrightness = brightness * m_dmdDotColor[profile].w;
       const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
                                                              : vec4(color.x, color.y, color.z, 0.f);
-      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
-         m_dmdDotProperties[profile].x /* size */, 
-         m_dmdDotProperties[profile].y /* sharpness */,
-         m_dmdDotProperties[profile].z /* rounding */,
-         dmd->m_format != BaseTexture::BW ? 1.f : 0.f /* luminance or RGB */);
-      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, dotColor.x * brightness, dotColor.y * brightness, dotColor.z * brightness, brightness); // dot color (only used if we received brightness data, premultiplied by overall brightness) and overall brightness (used for colored date)
-      m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, m_dmdUnlitDotColor[profile].x, m_dmdUnlitDotColor[profile].y, m_dmdUnlitDotColor[profile].z, 0.f /* unused */);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
+         dotColor.x * fullBrightness, dotColor.y * fullBrightness, dotColor.z * fullBrightness, // Dot color (applied for luminance as well as sRGB frames)
+         m_dmdDotProperties[profile].w); // Back glow
+      m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, 
+         m_dmdUnlitDotColor[profile].x, m_dmdUnlitDotColor[profile].y, m_dmdUnlitDotColor[profile].z, // Unlit color (ambient)
+         static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
       m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, 
-         (float)dmd->width(), (float)dmd->height(), 
-         m_dmdDotProperties[profile].w /* dot glow */ * brightness,
-         m_dmdUnlitDotColor[profile].w /* back glow */ * brightness);
-
-      m_renderDevice->m_DMDShader->SetTechnique(
-         glass == nullptr ? isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb             : SHADER_TECHNIQUE_basic_DMD2
-                                       : sRGB ? SHADER_TECHNIQUE_basic_DMD2_srgb_world       : SHADER_TECHNIQUE_basic_DMD2_world
-                          : isBackdrop ? sRGB ? SHADER_TECHNIQUE_basic_DMD2_glass_srgb       : SHADER_TECHNIQUE_basic_DMD2_glass
-                                       : sRGB ? SHADER_TECHNIQUE_basic_DMD2_glass_srgb_world : SHADER_TECHNIQUE_basic_DMD2_glass_world);
+         static_cast<float>(dmd->width()), static_cast<float>(dmd->height()), // DMD size in dots
+         m_dmdDotProperties[profile].x / 2.0f, // Dot size (radius, so divided by 2)
+         m_dmdDotProperties[profile].z * m_dmdDotProperties[profile].x / 2.0f); // Dot rounding, scaled by dot radius
+      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
+         glass != nullptr ? 1.f : 0.f, // Apply glass
+         0.f, // Unused yet
+         -(0.025f /* Antialiasing */ + m_dmdDotProperties[profile].x * (1.0f - m_dmdDotProperties[profile].y) /* Dot border darkening */), // Dot internal SDF threshold
+         dmd->m_format != BaseTexture::BW ? 1.f : 0.f); // luminance or (s)RGB frame source
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
+      float parallaxU = 0.f, parallaxV = 0.f;
       if (glass)
       {
-         m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdGlass, glass);
-         m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness, GetRValue(glassAmbient) / 255.f, GetGValue(glassAmbient) / 255.f, GetBValue(glassAmbient) / 255.f, glassRougness);
+         m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glass);
+         m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness,
+            glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass ambient color
+            glassRougness); // Glass roughness (more rough leads to more display light shattering)
+         if (!isBackdrop && (vertices != nullptr))
+         { // (fake) depth by applying some parallax mapping
+            Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+            Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+            Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
+            Vertex2D u0(vertices[0].tu, vertices[0].tv);
+            Vertex2D u1(vertices[1].tu, vertices[1].tv);
+            Vertex2D u2(vertices[2].tu, vertices[2].tv);
+            Vertex3Ds dv1 = v1 - v0;
+            Vertex3Ds dv2 = v2 - v0;
+            Vertex2D duv1 = u1 - u0;
+            Vertex2D duv2 = u2 - u0;
+            float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+            Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
+            Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
+            const Matrix3D& mv = GetMVP().GetModelView();
+            tangent = mv.MultiplyVectorNoTranslate(tangent);
+            bitangent = mv.MultiplyVectorNoTranslate(bitangent);
+            Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
+            eye = mv.MultiplyVectorNoPerspective(eye);
+            eye.Normalize();
+            float tN = tangent.Length();
+            float btN = bitangent.Length();
+            float depth = CMTOVPU(0.5f); // depth between glass and display
+            parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
+            parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
+         }
       }
-      m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft, padRight, padTop, padBottom);
-      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdDotGlow, m_dmdBlurs[slot][1]->GetColorSampler());
-      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][3]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdBackGlow, m_dmdBlurs[slot][3]->GetColorSampler()); // why don't we directly blur from 1 to 3 ?
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft - parallaxU, padRight + parallaxU, padTop - parallaxV, padBottom + parallaxV);
+      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdGlowTex, m_dmdBlurs[slot][0]->GetColorSampler());
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, dmd);
+      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_DMD : SHADER_TECHNIQUE_display_DMD_world);
    }
 }
 

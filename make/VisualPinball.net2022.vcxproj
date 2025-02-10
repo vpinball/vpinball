@@ -1290,6 +1290,8 @@
     <ClCompile Include="src/utils/ushock_output.cpp" />
     <ClCompile Include="src/utils/variant.cpp" />
     <ClCompile Include="src/utils/wintimer.cpp" />
+    <ClCompile Include="src\core\ResURIResolver.cpp" />
+    <ClCompile Include="src\core\ScoreView.cpp" />
     <ClCompile Include="third-party/include/hid-report-parser/hid_report_parser.cpp" />
     <ClCompile Include="third-party/include/imgui/imgui.cpp" />
     <ClCompile Include="third-party/include/imgui/imgui_draw.cpp" />
@@ -1640,6 +1642,8 @@
     <Image Include="src\ui\res\ball.ico" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\core\ResURIResolver.h" />
+    <ClInclude Include="src\core\ScoreView.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="src/audio/mixer.h" />

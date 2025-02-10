@@ -1,0 +1,26 @@
+# Default layout for alphanumeric display with 4 x 7 digit score displays
+
+Width: 80
+Height: 20
+Fit: Contain
+
+Visuals:
+	- SegDisplay:
+		Rect: [0,3,80,5]
+		Src: default://alpha?sub=0
+		Style: VFD Blue
+		Glass:
+			Image: ./Glass-Dirty-1.webp
+			Pad: [0,0,0,0]
+			Ambient: [32,32,32]
+			Roughness: 0.15
+		
+	- SegDisplay:
+		Rect: [0,12,80,5]
+		Src: default://alpha?sub=1
+		Style: VFD Blue
+		Glass:
+			Image: ./Glass-Dirty-1.webp
+			Pad: [0,0,0,0]
+			Ambient: [32,32,32]
+			Roughness: 0.15

@@ -693,6 +693,12 @@
     <ClCompile Include="src/core/DynamicScript.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src\core\ScoreView.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\core\ResURIResolver.cpp">
+      <Filter>core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -1812,6 +1818,12 @@
       <Filter>plugin</Filter>
     </ClInclude>
     <ClInclude Include="src/core/DynamicScript.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ScoreView.h">
+      <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\ResURIResolver.h">
       <Filter>core</Filter>
     </ClInclude>
   </ItemGroup>

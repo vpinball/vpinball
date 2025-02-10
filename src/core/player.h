@@ -10,6 +10,8 @@
 #include "ui/LiveUI.h"
 #include "pininput.h"
 #include "plugins/CorePlugin.h"
+#include "ResURIResolver.h"
+#include "ScoreView.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -420,7 +422,7 @@ public:
 public:
    VPX::Window *m_playfieldWnd = nullptr;
    int m_lastDmdFrameId = -1;
-   VPX::RenderOutput m_dmdOutput;
+   VPX::RenderOutput m_scoreviewOutput;
    VPX::RenderOutput m_backglassOutput;
    Renderer *m_renderer = nullptr;
    VRDevice *m_vrDevice = nullptr;
@@ -503,12 +505,14 @@ public:
 
    Primitive *m_implicitPlayfieldMesh = nullptr;
 
-   // External DMD and displays
+   // External DMD and displays, defined from script or captured
    bool m_capExtDMD = false; // frame capturing (hack for VR)
    int2 m_dmdSize = int2(0, 0); // DMD defined through VPX API DMDWidth/DMDHeight/DMDPixels/DMDColoredPixels
    BaseTexture* m_dmdFrame = nullptr;
    int m_dmdFrameId = 0;
-   struct ControllerDisplay // DMDs and video displays gathered through plugin API
+
+   // DMDs and video displays gathered through plugin API
+   struct ControllerDisplay
    {
       DmdSrcId dmdId;
       int frameId = -1;
@@ -516,12 +520,32 @@ public:
    };
    ControllerDisplay GetControllerDisplay(CtlResId id);
 
+   // Segment displays gathered through plugin API
+   struct ControllerSegDisplay
+   {
+      CtlResId segId;
+      unsigned int nElements;
+      float *frame = nullptr;
+      vector<vector<SegElementType>> displays;
+   };
+   ControllerSegDisplay GetControllerSegDisplay(CtlResId id);
+
+   ResURIResolver m_resURIResolver;
+
 private:
    static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
    unsigned int m_getDmdMsgId, m_getDmdSrcMsgId, m_onDmdChangedMsgId;
+   vector<ControllerDisplay> m_controllerDisplays;
    bool m_defaultDmdSelected = false;
    DmdSrcId m_defaultDmdId;
-   vector<ControllerDisplay> m_controllerDisplays;
+
+   static void OnSegChanged(const unsigned int msgId, void *userData, void *msgData);
+   unsigned int m_getSegMsgId, m_getSegSrcMsgId, m_onSegChangedMsgId;
+   vector<ControllerSegDisplay> m_controllerSegDisplays;
+   bool m_defaultSegSelected = false;
+   CtlResId m_defaultSegId; 
+   
+   ScoreView m_scoreView;
 
 
    // External audio sources

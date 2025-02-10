@@ -168,14 +168,11 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD2, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_srgb, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_srgb_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+
+   SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_AlphaSeg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_AlphaSeg_world, SHADER_matWorldViewProj, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity),
@@ -402,13 +399,16 @@ enum ShaderUniforms
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
-   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
-   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
    SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
-   SHADER_SAMPLER(dmdDotGlow, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
-   SHADER_SAMPLER(dmdBackGlow, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
-   SHADER_SAMPLER(dmdGlass, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+
+   // Display Shader
+   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
+   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
+   SHADER_UNIFORM(SUT_Float4v, alphaSegState, 4),
+   SHADER_SAMPLER(displayTex, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
+   SHADER_SAMPLER(displayGlass, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(dmdGlowTex, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),

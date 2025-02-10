@@ -339,7 +339,7 @@ void Ball::Render(const unsigned int renderMask)
    float *pLightPos = (float *)l, *pLightEm = (float *)l;
    constexpr int lightStride = 6, lightOfs = 3;
    #endif
-   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission);
+   vec4 emission = convertColor(g_pplayer->m_ptable->m_Light[0].emission, 1.f);
    emission.x *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
    emission.y *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
    emission.z *= g_pplayer->m_ptable->m_lightEmissionScale * g_pplayer->m_renderer->m_globalEmissionScale;
@@ -358,7 +358,7 @@ void Ball::Render(const unsigned int renderMask)
          pLightPos[pPos + 1] = reflectedLights[light_i]->m_d.m_vCenter.y;
          pLightPos[pPos + 2] = reflectedLights[light_i]->GetCurrentHeight();
          const float c = map_bulblight_to_emission(reflectedLights[light_i]) * m_d.m_bulb_intensity_scale;
-         const vec4 color = convertColor(reflectedLights[light_i]->m_d.m_color);
+         const vec4 color = convertColor(reflectedLights[light_i]->m_d.m_color, 1.f);
          pLightEm[pEm + 0] = color.x * c;
          pLightEm[pEm + 1] = color.y * c;
          pLightEm[pEm + 2] = color.z * c;

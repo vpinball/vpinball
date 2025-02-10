@@ -102,7 +102,7 @@ void Settings::Validate(const Section section, const string &key, const float de
 void Settings::Validate(const bool addDefaults)
 {
    //////////////////////////////////////////////////////////////////////////
-   // DMD section
+   // ScoreView section
 
    /* Validate(Section::DMD, "DMDOutput"s, 0, 0, 100, addDefaults);
    Validate(Section::DMD, "DMDWndX"s, 0, -10000, 10000, addDefaults);
@@ -110,8 +110,9 @@ void Settings::Validate(const bool addDefaults)
    Validate(Section::DMD, "DMDWidth"s, 512, 1, 16384, addDefaults);
    Validate(Section::DMD, "DMDHeight"s, 128, 1, 16384, addDefaults);*/
 
-   Validate(Section::DMD, "DefaultProfile"s, 1, 0, 7, addDefaults);
-   Validate(Section::DMD, "DefaultTint"s, 0x00FFFFFF, 0x00000000, 0x00FFFFFF, addDefaults);
+   //////////////////////////////////////////////////////////////////////////
+   // DMD section
+
    for (int i = 1; i <= 7; i++)
    {
       const string prefix = "Profile." + std::to_string(i) + '.';
@@ -122,7 +123,7 @@ void Settings::Validate(const bool addDefaults)
       case 2: dotColor = 0x002D52FF; break; // Classic Neon plasma DMD
       case 3: dotColor = 0x001523FF; break; // Red Led DMD (used after RoHS regulation entry into force)
       case 4: dotColor = 0x0023FF15; break; // Green Led
-      case 5: dotColor = 0x00FF2315; break; // Blue Led
+      case 5: dotColor = 0x0023FFFF; break; // Yellow Led
       case 6: dotColor = 0x00FFFFFF; break; // Generic Plasma
       case 7: dotColor = 0x00FFFFFF; break; // Generic Led
       default: assert(false);
@@ -131,27 +132,42 @@ void Settings::Validate(const bool addDefaults)
       Validate(Section::DMD, prefix + "ScaleFX",       false, addDefaults);
       Validate(Section::DMD, prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, addDefaults);
       Validate(Section::DMD, prefix + "UnlitDotColor", 0x00202020, 0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::DMD, prefix + "DotBrightness", 5.0f,   0.001f, 10.f, addDefaults);
+      Validate(Section::DMD, prefix + "DotBrightness", 5.0f,   0.001f, 100.f, addDefaults);
       Validate(Section::DMD, prefix + "DotSize",       0.85f,  0.001f, 1.f, addDefaults);
       Validate(Section::DMD, prefix + "DotSharpness",  0.80f,  0.f,    1.f, addDefaults);
       Validate(Section::DMD, prefix + "DotRounding",   0.85f,  0.f,    1.f, addDefaults);
-      Validate(Section::DMD, prefix + "DotGlow",       0.015f, 0.f,    1.f, addDefaults);
       Validate(Section::DMD, prefix + "BackGlow",      0.005f, 0.f,    1.f, addDefaults);
-
-      Validate(Section::DMD, prefix + "GlassImage", ""s, addDefaults);
-      Validate(Section::DMD, prefix + "GlassAmbientLight", 0x00010101, 0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::DMD, prefix + "GlassDotLight",  0.4f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "GlassPadLeft",   0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "GlassPadRight",  0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "GlassPadBottom", 0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "GlassPadTop",    0.f, 0.f, 1.f, addDefaults);
-
-      Validate(Section::DMD, prefix + "FrameImage", ""s, addDefaults);
-      Validate(Section::DMD, prefix + "FramePadLeft",   0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "FramePadRight",  0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "FramePadBottom", 0.f, 0.f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "FramePadTop",    0.f, 0.f, 1.f, addDefaults);
    }
+
+   //////////////////////////////////////////////////////////////////////////
+   // Alpha segment section
+
+   for (int i = 1; i <= 8; i++)
+   {
+      const string prefix = "Profile." + std::to_string(i) + '.';
+      int color;
+      switch (i)
+      {
+      case 1: color = 0x002D52FF; break; // Neon plasma
+      case 2: color = 0x00FFEFBF; break; // VFD Blueish
+      case 3: color = 0x00ECFF48; break; // VFD Greenish
+      case 4: color = 0x001523FF; break; // Red Led
+      case 5: color = 0x0023FF15; break; // Green Led
+      case 6: color = 0x0023FFFF; break; // Yellow Led
+      case 7: color = 0x00FFFFFF; break; // Generic Plasma
+      case 8: color = 0x00FFFFFF; break; // Generic Led
+      default: assert(false);
+      }
+      Validate(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, addDefaults);
+      Validate(Section::Alpha, prefix + "Unlit", 0x00202020, 0x00000000, 0x00FFFFFF, addDefaults);
+      Validate(Section::Alpha, prefix + "Brightness", 2.0f, 0.001f, 100.f, addDefaults);
+      Validate(Section::Alpha, prefix + "BackGlow", 0.050f, 0.f, 1.f, addDefaults);
+   }
+}
+
+void Settings::ResetValue(const Section section, const string& key)
+{
+   // FIXME implement
 }
 
 bool Settings::LoadFromFile(const string& path, const bool createDefault)

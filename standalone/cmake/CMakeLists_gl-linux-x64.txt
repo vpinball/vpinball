@@ -87,6 +87,10 @@ add_executable(vpinball
    src/core/vpinball_h.h
    src/core/player.cpp
    src/core/player.h
+   src/core/ResURIResolver.h
+   src/core/ResURIResolver.cpp
+   src/core/ScoreView.h
+   src/core/ScoreView.cpp
    src/core/Settings.cpp
    src/core/Settings.h
    src/core/TableDB.cpp

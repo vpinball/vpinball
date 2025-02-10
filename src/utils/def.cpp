@@ -154,7 +154,7 @@ LocalStringW::LocalStringW(const int resid)
 {
 #ifndef __STANDALONE__
    if (resid > 0)
-      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, std::size(m_szbuffer));
+      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, static_cast<int>(std::size(m_szbuffer)));
    else
       m_szbuffer[0] = L'\0';
 #else
@@ -407,7 +407,6 @@ bool IsWindowsVistaOr7()
 }
 
 
-#ifdef __STANDALONE__
 void copy_folder(const string& srcPath, const string& dstPath)
 {
    if (!std::filesystem::exists(srcPath) || !std::filesystem::is_directory(srcPath)) {
@@ -424,7 +423,7 @@ void copy_folder(const string& srcPath, const string& dstPath)
 
    for (const auto& entry : std::filesystem::directory_iterator(srcPath)) {
       const string& sourceFilePath = entry.path().string();
-      const string& destinationFilePath = std::filesystem::path(dstPath) / entry.path().filename();
+      const string& destinationFilePath = (std::filesystem::path(dstPath) / entry.path()).string();
 
       if (std::filesystem::is_directory(entry.status()))
          copy_folder(sourceFilePath, destinationFilePath);
@@ -473,11 +472,12 @@ string find_path_case_insensitive(const string& szPath)
 
    std::filesystem::path parentPath = path.parent_path();
    if (!parentPath.empty() && std::filesystem::is_directory(parentPath)) {
-      const string lowerFilename = string_to_lower(path.filename());
+      const string lowerFilename = string_to_lower(path.filename().string());
       for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
-         if (string_to_lower(entry.path().filename()) == lowerFilename) {
+         if (string_to_lower(entry.path().filename().string()) == lowerFilename)
+         {
             PLOGW.printf("exact path not found, but a case-insensitive match was found: path=%s, match=%s", szPath.c_str(), entry.path().c_str());
-            return entry.path();
+            return entry.path().string();
          }
       }
    }
@@ -723,7 +723,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    input.erase(std::remove(input.begin(), input.end(), '\r'), input.end());
    input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
 
-   int in_len = input.size();
+   int in_len = static_cast<int>(input.size());
    int i = 0, j = 0, in_ = 0;
    unsigned char char_array_4[4], char_array_3[3];
    vector<unsigned char> ret;
@@ -809,6 +809,7 @@ vector<string> add_line_numbers(const char* src)
    return result;
 }
 
+#ifdef __STANDALONE__
 HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen)
 {
    char szName[1024];
