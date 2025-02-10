@@ -179,6 +179,9 @@
     <ClCompile Include="plugins/alphadmd/alphadmd.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="plugins/alphadmd/usbalphanumeric.h" />
+  </ItemGroup>
+  <ItemGroup>
     <CopyFileToFolders Include="plugins/alphadmd/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>

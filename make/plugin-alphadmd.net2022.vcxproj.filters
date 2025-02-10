@@ -12,6 +12,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="plugins/alphadmd/usbalphanumeric.h">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
     <CopyFileToFolders Include="plugins/alphadmd/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
