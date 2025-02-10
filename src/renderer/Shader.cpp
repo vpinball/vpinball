@@ -167,14 +167,11 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
    SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD2, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_srgb_world, SHADER_glassPad, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_srgb, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
-   SHADER_TECHNIQUE(basic_DMD2_glass_srgb_world, SHADER_glassPad, SHADER_dmdGlass, SHADER_glassAmbient_Roughness, SHADER_staticColor_Alpha, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_w_h_height, SHADER_tex_dmd, SHADER_dmdDotGlow, SHADER_dmdBackGlow, SHADER_dmdGlass),
+
+   SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_AlphaSeg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_AlphaSeg_world, SHADER_matWorldViewProj, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
 
    SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite, SHADER_clip_plane),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity, SHADER_clip_plane),
@@ -391,13 +388,17 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
-   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
-   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
    SHADER_SAMPLER(tex_dmd, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
-   SHADER_SAMPLER(dmdDotGlow, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
-   SHADER_SAMPLER(dmdBackGlow, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
-   SHADER_SAMPLER(dmdGlass, 3, SA_CLAMP, SA_CLAMP, SF_BILINEAR), // DMD
+
+   // Display Shader
+   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
+   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
+   SHADER_UNIFORM(SUT_Float4v, alphaSegState, 4),
+   SHADER_SAMPLER(displayTex, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
+   SHADER_SAMPLER(displayGlass, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(dmdGlowTex, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),
@@ -1329,6 +1330,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    if (!bgfx::isValid(vsh) || !bgfx::isValid(fsh))
    {
       PLOGE << "Failed to setup shader from " << vsName << " / " << fsName;
+      assert(false);
       m_hasError = true;
       return;
    }
@@ -1336,6 +1338,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
    if (!bgfx::isValid(ph))
    {
       PLOGE << "Failed to build program from " << vsName << " / " << fsName;
+      assert(false);
       m_hasError = true;
       return;
    }
@@ -1432,14 +1435,12 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_spherical_decal),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_trail),
       BGFX_EMBEDDED_SHADER_ST_CLIP(fs_ball_debug),
-      // DMD & Sprite shaders
+      // DMD, Display & Sprite shaders
       BGFX_EMBEDDED_SHADER_ST(vs_dmd_noworld),
       BGFX_EMBEDDED_SHADER_ST_CLIP(vs_dmd_world),
       BGFX_EMBEDDED_SHADER_CLIP(fs_dmd),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_noglass_rgb),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_noglass_srgb),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_glass_rgb),
-      BGFX_EMBEDDED_SHADER_CLIP(fs_dmd2_glass_srgb),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_display_dmd),
+      BGFX_EMBEDDED_SHADER_CLIP(fs_display_alphaseg),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_tex),
       BGFX_EMBEDDED_SHADER_CLIP(fs_sprite_notex),
       // Bulb light shaders
@@ -1592,22 +1593,19 @@ void Shader::Load()
       // basic_DMD_ext and basic_DMD_world_ext are not implemented as they are designed for external DMD capture which is not implemented for BGFX (and expected to be removed at some point in future)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD,         STEREO(vs_dmd_noworld),      "fs_dmd_noclip");
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_noclip), "fs_dmd_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2,        STEREO(vs_dmd_noworld),      "fs_dmd2_noglass_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb,   STEREO(vs_dmd_noworld),      "fs_dmd2_noglass_srgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_noclip), "fs_dmd2_noglass_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_noglass_srgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass,        STEREO(vs_dmd_noworld),      "fs_dmd2_glass_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_srgb, STEREO(vs_dmd_noworld), "fs_dmd2_glass_srgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_glass_rgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_srgb_world, STEREO(vs_dmd_world_noclip), "fs_dmd2_glass_srgb_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       STEREO(vs_dmd_noworld),      "fs_sprite_tex_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, STEREO(vs_dmd_noworld),      "fs_sprite_notex_noclip");
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
-      // Variants with a clipping plane
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD_world,   STEREO(vs_dmd_world_clip), "fs_dmd_clip", true);
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_world,  STEREO(vs_dmd_world_clip), "fs_dmd2_noglass_rgb_clip", true);
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_DMD2_glass_world, STEREO(vs_dmd_world_clip), "fs_dmd2_glass_rgb_clip", true);
+
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_clip), "fs_sprite_tex_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD,       STEREO(vs_dmd_noworld), "fs_sprite_tex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_notex, STEREO(vs_dmd_noworld), "fs_sprite_notex_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_basic_noDMD_world, STEREO(vs_dmd_world_noclip), "fs_sprite_tex_noclip");
+
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_DMD,                  STEREO(vs_dmd_noworld), "fs_display_dmd_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_AlphaSeg,             STEREO(vs_dmd_noworld), "fs_display_alphaseg_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_DMD_world,            STEREO(vs_dmd_world_noclip), "fs_display_dmd_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_AlphaSeg_world,       STEREO(vs_dmd_world_noclip), "fs_display_alphaseg_noclip");
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_DMD_world,            STEREO(vs_dmd_world_clip), "fs_display_dmd_clip", true);
+      loadProgram(embeddedShaders, SHADER_TECHNIQUE_display_AlphaSeg_world,       STEREO(vs_dmd_world_clip), "fs_display_alphaseg_clip", true);
       break;
    //case DMD_VR_SHADER:
       //assert(false);

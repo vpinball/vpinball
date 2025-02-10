@@ -28,7 +28,7 @@ public:
    // For DMD, render the glass
    // string m_szImageA;                  // glass image is store as image A
    float m_glassRoughness = 0.f;
-   COLORREF m_glassAmbient = 0x00000000;
+   COLORREF m_glassAmbient = 0x000000;
    float m_glassPadTop = 0.f;
    float m_glassPadBottom = 0.f;
    float m_glassPadLeft = 0.f;
@@ -164,6 +164,8 @@ public:
    bool m_lockedByLS;
    bool m_inPlayState;
 
+   BaseTexture *m_dmdFrame = nullptr;
+
 private:
    void InitShape();
 
@@ -188,11 +190,8 @@ private:
    BaseTexture* m_videoCapTex = nullptr;
 
    int2 m_dmdSize = int2(0,0);
-   BaseTexture *m_dmdFrame = nullptr;
 
    Light *m_lightmap = nullptr;
-
-   static BaseTexture *GetLinkedTexture(const string& link, const IEditable* context = nullptr);
 
    // IFlasher
 public:

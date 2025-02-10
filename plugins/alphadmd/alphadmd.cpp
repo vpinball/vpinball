@@ -219,7 +219,7 @@ void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
    {
       SegElementType type = segSrc.elementType[i];
       SegImgs img = SegImg_Invalid;
-      switch (segSrc.elementType[i])
+      switch (type)
       {
       case CTLPI_GETSEG_LAYOUT_7:    img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
       case CTLPI_GETSEG_LAYOUT_7C:   img = large ? SegImg_Seg9C_8x10   : SegImg_Seg9C_8x6;    break;
@@ -232,7 +232,7 @@ void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
       case CTLPI_GETSEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
       default: assert(false); break;
       }
-      DrawChar(x, y, segDisplays[img], lum, nSegments[segSrc.elementType[i]]);
+      DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
       x += segDisplays[img].width;
       lum += 16;
    }

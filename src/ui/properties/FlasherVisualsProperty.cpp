@@ -52,10 +52,10 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
       if ((m_pvsel->ElementAt(i) == nullptr) || (m_pvsel->ElementAt(i)->GetItemType() != eItemFlasher))
          continue;
       Flasher *const flash = (Flasher *)m_pvsel->ElementAt(i);
+      FlasherData::RenderMode mode = clamp(flash->m_d.m_renderMode, FlasherData::FLASHER, FlasherData::ALPHASEG);
 
       if (dispid == IDC_STYLE_COMBO || dispid == -1)
       {
-         FlasherData::RenderMode mode = clamp(flash->m_d.m_renderMode, FlasherData::FLASHER, FlasherData::ALPHASEG);
          switch (mode)
          {
          case FlasherData::FLASHER: m_modeCombo.SetCurSel(0); break;
@@ -66,7 +66,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
             m_styleCombo.AddString("Neon Plasma");
             m_styleCombo.AddString("Red LED");
             m_styleCombo.AddString("Green LED");
-            m_styleCombo.AddString("Blue LED");
+            m_styleCombo.AddString("Yellow LED");
             m_styleCombo.AddString("Generic Plasma");
             m_styleCombo.AddString("Generic LED");
             UpdateVisuals(IDC_DMD);
@@ -94,27 +94,29 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
                   : mode == FlasherData::DISPLAY        ? "Display Style"
                                                         : "Alpha Seg. Style");
 
-         int isStyleNSourced = mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE;
-         ::ShowWindow(GetDlgItem(IDC_STATIC24), isStyleNSourced);
-         m_styleCombo.ShowWindow(isStyleNSourced);
-         ::ShowWindow(GetDlgItem(IDC_STATIC1), isStyleNSourced);
-         m_linkEdit.ShowWindow(isStyleNSourced);
+         int isDisplay = mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE;
+         ::ShowWindow(GetDlgItem(IDC_STATIC24), isDisplay);
+         m_styleCombo.ShowWindow(isDisplay);
+         ::ShowWindow(GetDlgItem(IDC_STATIC1), isDisplay);
+         m_linkEdit.ShowWindow(isDisplay);
 
-         int isDmd = mode == FlasherData::DMD ? SW_SHOWNORMAL : SW_HIDE;
-         ::ShowWindow(GetDlgItem(IDC_STATIC25), isDmd);
-         m_glassImageCombo.ShowWindow(isDmd);
-         ::ShowWindow(GetDlgItem(IDC_STATIC26), isDmd);
-         m_glassRoughnessEdit.ShowWindow(isDmd);
-         ::ShowWindow(GetDlgItem(IDC_STATIC27), isDmd);
-         m_glassAmbientButton.ShowWindow(isDmd);
-         ::ShowWindow(GetDlgItem(IDC_STATIC28), isDmd);
-         m_glassPadTopEdit.ShowWindow(isDmd);
-         m_glassPadBottomEdit.ShowWindow(isDmd);
-         ::ShowWindow(GetDlgItem(IDC_STATIC29), isDmd);
-         m_glassPadLeftEdit.ShowWindow(isDmd);
-         m_glassPadRightEdit.ShowWindow(isDmd);
+         int isDmdOrAlpha = ((mode == FlasherData::DMD) || (mode == FlasherData::ALPHASEG)) ? SW_SHOWNORMAL : SW_HIDE;
+         ::ShowWindow(GetDlgItem(IDC_STATIC25), isDmdOrAlpha);
+         m_glassImageCombo.ShowWindow(isDmdOrAlpha);
+         ::ShowWindow(GetDlgItem(IDC_STATIC26), isDmdOrAlpha);
+         m_glassRoughnessEdit.ShowWindow(isDmdOrAlpha);
+         ::ShowWindow(GetDlgItem(IDC_STATIC27), isDmdOrAlpha);
+         m_glassAmbientButton.ShowWindow(isDmdOrAlpha);
+         ::ShowWindow(GetDlgItem(IDC_STATIC28), isDmdOrAlpha);
+         m_glassPadTopEdit.ShowWindow(isDmdOrAlpha);
+         m_glassPadBottomEdit.ShowWindow(isDmdOrAlpha);
+         ::ShowWindow(GetDlgItem(IDC_STATIC29), isDmdOrAlpha);
+         m_glassPadLeftEdit.ShowWindow(isDmdOrAlpha);
+         m_glassPadRightEdit.ShowWindow(isDmdOrAlpha);
 
          int isFlasher = mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE;
+         ::ShowWindow(GetDlgItem(IDC_STATIC4), isFlasher);
+         m_texModeCombo.ShowWindow(isFlasher);
          ::ShowWindow(GetDlgItem(IDC_STATIC20), isFlasher);
          m_imageACombo.ShowWindow(isFlasher);
          ::ShowWindow(GetDlgItem(IDC_STATIC2), isFlasher);
@@ -141,8 +143,6 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          PropertyDialog::SetCheckboxState(m_hVisibleCheck, flash->m_d.m_isVisible);
       if (dispid == IDC_COLOR_BUTTON1 || dispid == -1)
          m_colorButton.SetColor(flash->m_d.m_color);
-      if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
-         PropertyDialog::UpdateComboBox(m_imageAlignList, m_texModeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment]);
       if (dispid == IDC_DEPTH_BIAS || dispid == -1)
          PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
 
@@ -151,7 +151,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
       if (dispid == IDC_IMAGE_LINK_EDIT || dispid == -1)
          m_linkEdit.SetWindowText(flash->m_d.m_imageSrcLink.c_str());
 
-      if (dispid == IDC_GLASS_IMAGE || dispid == -1)
+      if ((mode != FlasherData::FLASHER) && (dispid == IDC_GLASS_IMAGE || dispid == -1))
          PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_glassImageCombo, flash->m_d.m_szImageA);
       if (dispid == IDC_GLASS_DOT_LIGHT || dispid == -1)
          PropertyDialog::SetFloatTextbox(m_glassRoughnessEdit, flash->m_d.m_glassRoughness);
@@ -166,7 +166,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
       if (dispid == IDC_GLASS_PAD_RIGHT || dispid == -1)
          PropertyDialog::SetFloatTextbox(m_glassPadRightEdit, flash->m_d.m_glassPadRight);
 
-      if (dispid == DISPID_Image || dispid == -1)
+      if (dispid == IDC_FLASHER_MODE_COMBO || dispid == -1)
+         PropertyDialog::UpdateComboBox(m_imageAlignList, m_texModeCombo, m_imageAlignList[(int)flash->m_d.m_imagealignment]);
+      if ((mode == FlasherData::FLASHER) && (dispid == DISPID_Image || dispid == -1))
          PropertyDialog::UpdateTextureComboBox(flash->GetPTable()->GetImageList(), m_imageACombo, flash->m_d.m_szImageA);
       if (dispid == DISPID_Image2 || dispid == -1)
       {
@@ -413,6 +415,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
    m_resizer.AddChild(m_texModeCombo, CResizer::topleft, RD_STRETCH_WIDTH);
 
    m_resizer.AddChild(m_styleCombo, CResizer::topleft, RD_STRETCH_WIDTH); // Display Group
+   m_resizer.AddChild(m_linkEdit, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_glassImageCombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_glassRoughnessEdit, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_glassAmbientButton, CResizer::topleft, RD_STRETCH_WIDTH);

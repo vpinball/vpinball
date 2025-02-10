@@ -7,7 +7,6 @@
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
 #endif
-#include "simple-uri-parser/uri_parser.h"
 #include "core/VPXPluginAPIImpl.h"
 
 Flasher::Flasher()
@@ -1205,56 +1204,6 @@ void Flasher::UpdateAnimation(const float diff_time_msec)
 {
 }
 
-// This is the initial implementation of a general link URI system to allow to link part properties to script/plugin items
-// Warning: for the time being, this is a pre-alpha syntax which will be validated over time
-// script://dmd => DMD defined by the script on the part or the table
-// plugin://pinmame/getstate?src=display&id=0 => DMD bitmap
-// plugin://pinmame/getstate?src=display&id=1 => Display bitmap
-// plugin://pinmame/getstate?src=alpha&id=1 => Alphanumeric segment display state
-// plugin://pinmame/getstate?src=lamp&id=2&value=brightness => Intensity
-// plugin://pinmame/getstate?src=lamp&id=2&value=tint => Tint
-// plugin://pinmame/getstate?src=display&id=0&x=0&y=0 => Intensity/Color of the top left dot of the first display
-BaseTexture *Flasher::GetLinkedTexture(const string &link, const IEditable *context)
-{
-   if (link.empty())
-      return nullptr;
-
-   auto uri = uri::parse_uri(link);
-   if (uri.error != uri::Error::None)
-      return nullptr;
-
-   if (uri.scheme == "script")
-   {
-      if (context == nullptr)
-         return nullptr;
-      if ((context->GetItemType() == ItemTypeEnum::eItemFlasher) && (uri.authority.host == "dmd"))
-      {
-         const Flasher *flasher = static_cast<const Flasher *>(context);
-         return flasher->m_dmdFrame != nullptr ? flasher->m_dmdFrame : g_pplayer->m_dmdFrame;
-      }
-      if ((context->GetItemType() == ItemTypeEnum::eItemTable) && (uri.authority.host == "dmd"))
-         return g_pplayer->m_dmdFrame;
-   }
-   else if (uri.scheme == "plugin")
-   {
-      uint32_t endpointId = 0;
-      auto plugin = MsgPluginManager::GetInstance().GetPlugin(uri.authority.host);
-      if (plugin.get())
-         endpointId = plugin->m_endpointId;
-      if ((endpointId != 0) 
-         && (uri.path == "/getstate") 
-         && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
-         && (uri.query.at("src") == "display"))
-      {
-         uint32_t displayId = 0;
-         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
-            try { displayId = std::stoi(uri.query.at("id")); } catch (...) { };
-         return g_pplayer->GetControllerDisplay({ endpointId, displayId }).frame;
-      }
-   }
-   return nullptr;
-}
-
 void Flasher::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
@@ -1405,7 +1354,7 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DMD:
       {
-         BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
+         BaseTexture *frame = g_pplayer->m_resURIResolver.GetDisplay(m_d.m_imageSrcLink, this);
          if (frame == nullptr)
             frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay({ 0, 0 }).frame;
          if (frame == nullptr)
@@ -1419,9 +1368,10 @@ void Flasher::Render(const unsigned int renderMask)
             m_rd->EnableAlphaBlend(m_d.m_addBlend);
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
-         const vec4 dotTint = frame->m_format == BaseTexture::BW ? color : vec4(1.f, 1.f, 1.f, color.w);
+         const vec3 dotTint = frame->m_format == BaseTexture::BW ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, frame, m_d.m_modulate_vs_add, false, glass, m_d.m_glassAmbient, m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
+         g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_vertices,
+            glass, vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f), m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
          // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
          // There we shift the depthbias to reproduce this behavior for backward compatibility.
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
@@ -1430,7 +1380,7 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::DISPLAY:
       {
-         BaseTexture *frame = GetLinkedTexture(m_d.m_imageSrcLink); // TODO Parse only on Setup or when changed
+         BaseTexture *frame = g_pplayer->m_resURIResolver.GetDisplay(m_d.m_imageSrcLink, this);
          if (frame == nullptr)
          {
             if (m_backglass)
@@ -1486,7 +1436,19 @@ void Flasher::Render(const unsigned int renderMask)
 
       case FlasherData::ALPHASEG:
       {
-         // Not yet implemented
+         ResURIResolver::SegDisplay segs = g_pplayer->m_resURIResolver.GetSegDisplay(m_d.m_imageSrcLink, this);
+         if (segs.frame == nullptr)
+            return;
+         Texture *const glass = m_ptable->GetImage(m_d.m_szImageA);
+         if (m_d.m_modulate_vs_add < 1.f)
+            m_rd->EnableAlphaBlend(m_d.m_addBlend);
+         else
+            m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         const int renderStyle = clamp(m_d.m_renderStyle, 0, 7);
+         g_pplayer->m_renderer->SetupAlphaSegRender(renderStyle, false, vec3(color.x, color.y, color.z), color.w, SegElementType::CTLPI_GETSEG_LAYOUT_16, segs.frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_vertices,
+            glass, vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f), m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
+         // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
+         m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          break;
       }
    }

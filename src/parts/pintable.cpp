@@ -2593,7 +2593,7 @@ void PinTable::Play(const int playMode)
                {
                   // Handle dragging of auxiliary windows
                   SDL_Window * sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
-                  VPX::Window *windows[] = { g_pplayer->m_dmdOutput.GetWindow(), g_pplayer->m_backglassOutput.GetWindow() };
+                  VPX::Window *windows[] = { g_pplayer->m_scoreviewOutput.GetWindow(), g_pplayer->m_backglassOutput.GetWindow() };
                   for (int i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
                   {
                      if (windows[i] && sdlWnd == windows[i]->GetCore())

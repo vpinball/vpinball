@@ -1,0 +1,15 @@
+# Default layout for 4:1 DMD
+
+Width: 128
+Height: 32
+Fit: Contain
+
+Visuals:
+	- DMD:
+		Rect: [0,0,128,32]
+		Style: Neon Plasma
+		Glass:
+			Image: ./Glass-Dirty-1.webp
+			Pad: [0,0,0,0]
+			Ambient: [20,20,20]
+			Roughness: 0.15

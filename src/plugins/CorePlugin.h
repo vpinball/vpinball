@@ -156,6 +156,10 @@ typedef enum {
 #define CTLPI_GETSEG_HARDWARE_NEON_PLASMA     0x00010000
 #define CTLPI_GETSEG_HARDWARE_VFD_GREEN       0x00020000
 #define CTLPI_GETSEG_HARDWARE_VFD_BLUE        0x00030000
+#define CTLPI_GETSEG_HARDWARE_GTS1_4DIGIT     0x00030001 // Futaba VFD used for Gottlieb System 1 and 80A status display
+#define CTLPI_GETSEG_HARDWARE_GTS1_6DIGIT     0x00030002 // Futaba VFD used for Gottlieb System 1 and 80 score display
+#define CTLPI_GETSEG_HARDWARE_GTS80A_7DIGIT   0x00030003 // Futaba VFD used for Gottlieb System 80A score display
+#define CTLPI_GETSEG_HARDWARE_GTS80B_20DIGIT  0x00030004 // Futaba VFD used for Gottlieb System 80B
 
 #define CTLPI_SEG_MAX_DISP_ELEMENTS  32
 

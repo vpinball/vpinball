@@ -170,7 +170,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_dmdOutput("Visual Pinball - DMD"s, live_table->m_settings, Settings::DMD, "DMD")
+   , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::DMD, "DMD")
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
 {
    // For the time being, lots of access are made through the global singleton, so ensure we are unique, and define it as soon as needed
@@ -490,8 +490,11 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
    {
-      if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
-         m_renderer->m_renderDevice->AddWindow(m_dmdOutput.GetWindow());
+      m_scoreView.Load(PathFromFilename(m_ptable->m_szFileName));
+      if (!m_scoreView.HasLayouts())
+         m_scoreView.Load(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR);
+      if (m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+         m_renderer->m_renderDevice->AddWindow(m_scoreviewOutput.GetWindow());
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
    }
@@ -765,15 +768,21 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
    m_getDmdSrcMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
    m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_onDmdChangedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
+   m_getSegSrcMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
+   m_getSegMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
+   m_onSegChangedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
+   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
    m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
+   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+
+   m_scoreView.Select();
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -891,6 +900,10 @@ Player::~Player()
    m_ptable->m_pcv->CleanUpScriptEngine();
 
    // Release plugin message Ids
+   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onSegChangedMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getSegSrcMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getSegMsgId);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdChanged);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onDmdChangedMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdSrcMsgId);
@@ -1057,6 +1070,14 @@ Player::~Player()
       {
          m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
          delete display.frame;
+         display.frame = nullptr;
+      }
+   }
+   for (ControllerSegDisplay &display : m_controllerSegDisplays)
+   {
+      if (display.frame)
+      {
+         delete[] display.frame;
          display.frame = nullptr;
       }
    }
@@ -2191,40 +2212,14 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    // presented) when we are sure that present will not block. This should be replaced in favor of clean VSync synchronization on each
    // display, using a thread per swapchain but this needs either to heavily modify BGFX or to implement all swapchain management 
    // outside of BGFX (still modifying BGFX for semaphore syncing with rendering)...
-   static U64 lastDMDRender = 0;
+   static U64 lastScoreViewRender = 0;
    U64 now = usec();
    if ((m_vrDevice == nullptr) 
-      && ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED) || ((m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastDMDRender) > 1e6f / m_dmdOutput.GetWindow()->GetRefreshRate())))
+      && ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
+         || ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastScoreViewRender) > 1e6f / m_scoreviewOutput.GetWindow()->GetRefreshRate())))
    {
-      lastDMDRender = now;
-      ControllerDisplay dmd = GetControllerDisplay({ 0, 0 });
-      if (dmd.frame)
-      {
-         RenderTarget *scenePass = m_renderer->m_renderDevice->GetCurrentRenderTarget();
-         // TODO table data should define which DMD they use for their main Dmd (Plasma, Led,...) beside the application default
-         vec4 dmdTint = dmd.frame->m_format == BaseTexture::BW ? convertColor(m_ptable->m_settings.LoadValueUInt(Settings::DMD, "DefaultTint"s), 1.f) : vec4(1.f, 1.f, 1.f, 1.f);
-         const int dmdProfile = m_ptable->m_settings.LoadValueInt(Settings::DMD, "DefaultProfile"s);
-         // We could update only when DMD changes but (surprisingly) this breaks the overall timing and FPS become unstable if we do so
-         #ifdef ENABLE_BGFX
-         if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) // && (m_lastDmdFrameId != dmd.frameId))
-         {
-            m_lastDmdFrameId = dmd.frameId;
-            m_dmdOutput.GetWindow()->Show();
-            m_renderer->RenderDMD(dmdProfile, dmdTint, dmd.frame, m_dmdOutput.GetWindow()->GetBackBuffer(),
-               0, 0, m_dmdOutput.GetWindow()->GetBackBuffer()->GetWidth(), m_dmdOutput.GetWindow()->GetBackBuffer()->GetHeight());
-            m_renderer->m_renderDevice->AddRenderTargetDependency(scenePass, false);
-         }
-         else 
-         #endif
-         if (m_dmdOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-         {
-            int x, y;
-            m_dmdOutput.GetEmbeddedWindow()->GetPos(x, y);
-            m_renderer->RenderDMD(dmdProfile, dmdTint, dmd.frame, m_playfieldWnd->GetBackBuffer(),
-               x, m_playfieldWnd->GetBackBuffer()->GetHeight() - y - m_dmdOutput.GetEmbeddedWindow()->GetHeight(), 
-               m_dmdOutput.GetEmbeddedWindow()->GetWidth(), m_dmdOutput.GetEmbeddedWindow()->GetHeight());
-         }
-      }
+      lastScoreViewRender = now;
+      m_scoreView.Render(m_scoreviewOutput);
    }
 
    m_logicProfiler.ExitProfileSection();
@@ -2400,9 +2395,107 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
    }
 }
 
+void Player::OnSegChanged(const unsigned int msgId, void *userData, void *msgData)
+{
+   reinterpret_cast<Player *>(userData)->m_defaultSegSelected = false;
+   reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
+   reinterpret_cast<Player *>(userData)->m_scoreView.Select();
+}
+
+Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
+{
+   ControllerSegDisplay* display = nullptr;
+   if (id.id == 0)
+   {
+      if (m_defaultSegSelected)
+      {
+         auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
+         if (pCD == m_controllerSegDisplays.end())
+         {
+            assert(false); // This is not supposed to happen (we identify default by storing m_defaultSefId instead of the controller display only to manage vector resize operation)
+            m_defaultSegSelected = false;
+         }
+         else
+            display = &(*pCD);
+      }
+
+      // Search for the default seg display
+      if (!m_defaultSegSelected)
+      {
+         m_defaultSegId = { 0 };
+         GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
+         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
+         if (getSrcMsg.count == 0)
+         {
+            delete[] getSrcMsg.entries;
+            return { { 0 }, 0, nullptr };
+         }
+
+         // Update seg display list
+         m_defaultSegId = getSrcMsg.entries[0].id;
+         auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
+         if (pCD == m_controllerSegDisplays.end())
+         {
+            m_controllerSegDisplays.push_back({ m_defaultSegId, 0, nullptr });
+            display = &m_controllerSegDisplays.back();
+            for (int i = 0; i < getSrcMsg.count; i++)
+            {
+               if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
+               {
+                  display->displays.push_back(vector<SegElementType>(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]));
+                  display->nElements += getSrcMsg.entries[i].nElements;
+               }
+            }
+            display->frame = new float[16 * display->nElements];
+         }
+         else
+            display = &(*pCD);
+         delete[] getSrcMsg.entries;
+         m_defaultSegSelected = true;
+      }
+   }
+   else
+   {
+      auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [id](const ControllerSegDisplay &cd) { return cd.segId.id == id.id; });
+      if (pCD == m_controllerSegDisplays.end())
+      {
+         // Search for the requested display
+         bool segFound = false;
+         GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
+         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
+         m_controllerSegDisplays.push_back({ id, 0, nullptr });
+         display = &m_controllerSegDisplays.back();
+         for (unsigned int i = 0; i < getSrcMsg.count; i++)
+         {
+            if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
+            {
+               display->displays.push_back(vector<SegElementType>(getSrcMsg.entries[i].elementType[0], getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]));
+               display->nElements += getSrcMsg.entries[i].nElements;
+            }
+         }
+         display->frame = new float[16 * display->nElements];
+         delete[] getSrcMsg.entries;
+      }
+      else
+      {
+         display = &(*pCD);
+      }
+   }
+
+   // Obtain frame from controller plugin
+   GetSegMsg getMsg = { display->segId, 0, nullptr };
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegMsgId, &getMsg);
+   if (getMsg.frame == nullptr)
+      return { display->segId, 0, nullptr };
+   memcpy(display->frame, getMsg.frame, display->nElements * 16 * sizeof(float));
+   return *display;
+}
+
 void Player::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    reinterpret_cast<Player*>(userData)->m_defaultDmdSelected = false;
+   reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
+   reinterpret_cast<Player *>(userData)->m_scoreView.Select();
 }
 
 Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)

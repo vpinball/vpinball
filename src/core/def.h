@@ -769,7 +769,6 @@ bool IsOnWine();
 bool IsWindowsVistaOr7();
 bool IsWindows10_1803orAbove();
 
-#ifdef __STANDALONE__
 #include "renderer/typedefs3D.h"
 
 #include <filesystem>
@@ -803,7 +802,8 @@ const char* gl_to_string(GLuint value);
 #endif
 vector<string> add_line_numbers(const char* src);
 
-extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage **ppstgOpen);
+#ifdef __STANDALONE__
+extern "C" HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage** ppstgOpen);
 extern "C" HRESULT external_create_object(const WCHAR *progid, IClassFactory* cf, IUnknown* obj);
 extern "C" void external_log_info(const char* format, ...);
 extern "C" void external_log_debug(const char* format, ...);

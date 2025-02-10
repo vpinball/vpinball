@@ -28,6 +28,7 @@ protected:
    virtual void LoadSettings(Settings& settings) = 0;
    virtual void SaveSettings(Settings& settings, bool saveAll) = 0;
 
+   void SetupList(CListBox& combo, int n, ...);
    void SetupCombo(CComboBox& combo, int n, ...);
    void AddToolTip(CWnd& wnd, const char* tip);
    void BrowseImage(CEdit& editCtl);
@@ -143,6 +144,46 @@ private:
    #endif
 };
 
+class DisplayStyleOptPage : public VideoOptionPropPage
+{
+public:
+   DisplayStyleOptPage(Settings& appSettings, Settings& tableSettings);
+   virtual ~DisplayStyleOptPage() override { }
+
+protected:
+   virtual BOOL OnInitDialog();
+   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   virtual BOOL OnApply() override;
+
+   virtual void LoadSettings(Settings& settings);
+   virtual void SaveSettings(Settings& settings, bool saveAll);
+
+   void LoadProfile(const int n);
+   void ResetProfile(const int n);
+   void SaveProfile();
+
+private:
+   DisplayStyleOptPage(const DisplayStyleOptPage&) = delete;
+   DisplayStyleOptPage& operator=(const DisplayStyleOptPage&) = delete;
+
+   int m_editedProfile = -1;
+
+   CListBox m_dmdType;
+
+   CButton m_legacyRenderer;
+   CButton m_dmdScaleFX;
+
+   ColorButton m_dotTint;
+   CEdit m_dotSize;
+   CEdit m_dotBrightness;
+   CEdit m_dotSharpness;
+   CEdit m_dotRounding;
+   ColorButton m_unlitDotColor;
+   CEdit m_backGlow;
+
+   CColorDialog m_colorDialog;
+};
 
 class CabinetOptPage : public VideoOptionPropPage
 {
@@ -173,7 +214,6 @@ private:
    CEdit m_displayInclination;
 };
 
-
 class PFViewOptPage : public VideoOptionPropPage
 {
 public:
@@ -195,62 +235,22 @@ private:
    CComboBox m_viewMode;
 };
 
-class DMDViewOptPage : public VideoOptionPropPage
+class ScoreViewOptPage : public VideoOptionPropPage
 {
 public:
-   DMDViewOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~DMDViewOptPage() override { }
+   ScoreViewOptPage(Settings& appSettings, Settings& tableSettings);
+   virtual ~ScoreViewOptPage() override { }
 
 protected:
    virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
    virtual BOOL OnApply() override;
 
    virtual void LoadSettings(Settings& settings);
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
-   void LoadProfile(const int n);
-   void SaveProfile();
-
 private:
-   DMDViewOptPage(const DMDViewOptPage&) = delete;
-   DMDViewOptPage& operator=(const DMDViewOptPage&) = delete;
-
-   int m_editedProfile = -1;
-
-   CComboBox m_defaultProfile;
-   ColorButton m_defaultTint;
-
-   CEdit m_frameImage;
-   CEdit m_framePadLeft;
-   CEdit m_framePadTop;
-   CEdit m_framePadRight;
-   CEdit m_framePadBottom;
-
-   CComboBox m_dmdType;
-   CButton m_legacyRenderer;
-
-   CButton m_dmdScaleFX;
-
-   ColorButton m_dotTint;
-   CEdit m_dotSize;
-   CEdit m_dotBrightness;
-   CEdit m_dotSharpness;
-   CEdit m_dotRounding;
-   CEdit m_dotGlow;
-   ColorButton m_unlitDotColor;
-   CEdit m_backGlow;
-
-   CEdit m_glassImage;
-   CEdit m_glassPadLeft;
-   CEdit m_glassPadTop;
-   CEdit m_glassPadRight;
-   CEdit m_glassPadBottom;
-   ColorButton m_glassAmbientLight;
-   CEdit m_glassDotLight;
-
-   CColorDialog m_colorDialog;
+   ScoreViewOptPage(const ScoreViewOptPage&) = delete;
+   ScoreViewOptPage& operator=(const ScoreViewOptPage&) = delete;
 };
 
 class AlphaViewOptPage : public VideoOptionPropPage
@@ -307,10 +307,11 @@ VideoOptionProperties::VideoOptionProperties(HWND hParent /* = nullptr*/)
       m_tableSettings.SetParent(&m_appSettings);
    }
    AddPage(new RenderOptPage(m_appSettings, m_tableSettings));
+   AddPage(new DisplayStyleOptPage(m_appSettings, m_tableSettings));
    AddPage(new CabinetOptPage(m_appSettings, m_tableSettings));
    AddPage(new PFViewOptPage(m_appSettings, m_tableSettings));
    #if defined(ENABLE_BGFX)
-      AddPage(new DMDViewOptPage(m_appSettings, m_tableSettings));
+      AddPage(new ScoreViewOptPage(m_appSettings, m_tableSettings));
       // AddPage(new AlphaViewOptPage(m_appSettings, m_tableSettings));
       // AddPage(new BackglassViewOptPage(m_appSettings, m_tableSettings));
    #endif
@@ -361,6 +362,18 @@ BOOL VideoOptionPropPage::OnInitDialog()
    return TRUE;
 }
 
+void VideoOptionPropPage::SetupList(CListBox& combo, int n, ...)
+{
+   va_list arguments;
+   va_start(arguments, n);
+   combo.SetRedraw(false);
+   combo.ResetContent();
+   for (int i = 0; i < n; i++)
+      combo.AddString(va_arg(arguments, char*));
+   combo.SetRedraw(true);
+   va_end(arguments);
+}
+
 void VideoOptionPropPage::SetupCombo(CComboBox& combo, int n, ...)
 {
    va_list arguments;
@@ -373,8 +386,7 @@ void VideoOptionPropPage::SetupCombo(CComboBox& combo, int n, ...)
    va_end(arguments);
 }
 
-void VideoOptionPropPage::AddToolTip(CWnd& wnd, const char* const text)
-{
+void VideoOptionPropPage::AddToolTip(CWnd& wnd, const char* const text) {
    m_tooltip.AddTool(wnd, text);
 }
 
@@ -1749,24 +1761,23 @@ BOOL PFViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// DMD View Options
+// Display Render Options (CRT, DMD, Alpha segment)
 
-#pragma region DMDViewOptPage
+#pragma region DMDDisplayStyleOptPage
 
-DMDViewOptPage::DMDViewOptPage(Settings& appSettings, Settings& tableSettings)
-   : VideoOptionPropPage(IDD_DMDVIEW_OPT, _T("DMD View"), appSettings, tableSettings)
+DisplayStyleOptPage::DisplayStyleOptPage(Settings& appSettings, Settings& tableSettings)
+   : VideoOptionPropPage(IDD_DMDSTYLE_OPT, _T("Display Styles"), appSettings, tableSettings)
 {
 }
 
-BOOL DMDViewOptPage::OnInitDialog()
+BOOL DisplayStyleOptPage::OnInitDialog()
 {
    VideoOptionPropPage::OnInitDialog();
 
-   AttachItem(IDC_DEFAULT_DMD_TINT, m_defaultTint);
    AttachItem(IDC_DMD_PROFILE, m_dmdType);
-   AttachItem(IDC_DEFAULT_DMD_PROFILE, m_defaultProfile);
-   for (int i = 0; i < 2; i++)
-      SetupCombo(i == 0 ? m_dmdType : m_defaultProfile, 7, "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED");
+   SetupList(m_dmdType , 15, 
+      "DMD: Legacy VPX", "DMD: Neon Plasma", "DMD: Red LED", "DMD: Green LED", "DMD: Yellow LED", "DMD: Generic Plasma", "DMD: Generic LED",
+      "Alpha: Neon Plasma", "Alpha: Blue VFD", "Alpha: Green VFD", "Alpha: Red LED", "Alpha: Green LED", "Alpha: Yellow LED", "Alpha: Generic Plasma", "Alpha: Generic LED");
 
    AttachItem(IDC_LEGACY_RENDERER, m_legacyRenderer);
 
@@ -1777,141 +1788,134 @@ BOOL DMDViewOptPage::OnInitDialog()
    AttachItem(IDC_DOT_BRIGHTNESS, m_dotBrightness);
    AttachItem(IDC_DOT_SHARPNESS, m_dotSharpness);
    AttachItem(IDC_DOT_ROUNDING, m_dotRounding);
-   AttachItem(IDC_DOT_GLOW, m_dotGlow);
    AttachItem(IDC_UNLIT_DOT_COLOR, m_unlitDotColor);
    AttachItem(IDC_BACK_GLOW, m_backGlow);
-
-   AttachItem(IDC_GLASS_IMAGE, m_glassImage);
-   AttachItem(IDC_GLASS_AMBIENT, m_glassAmbientLight);
-   AttachItem(IDC_GLASS_DOT_LIGHT, m_glassDotLight);
-   AttachItem(IDC_GLASS_PAD_LEFT, m_glassPadLeft);
-   AttachItem(IDC_GLASS_PAD_TOP, m_glassPadTop);
-   AttachItem(IDC_GLASS_PAD_RIGHT, m_glassPadRight);
-   AttachItem(IDC_GLASS_PAD_BOTTOM, m_glassPadBottom);
-
-   AttachItem(IDC_FRAME_PATH, m_frameImage);
-   AttachItem(IDC_FRAME_PAD_LEFT, m_framePadLeft);
-   AttachItem(IDC_FRAME_PAD_TOP, m_framePadTop);
-   AttachItem(IDC_FRAME_PAD_RIGHT, m_framePadRight);
-   AttachItem(IDC_FRAME_PAD_BOTTOM, m_framePadBottom);
 
    m_dmdType.SetCurSel(0);
    OnCommand(IDC_DMD_PROFILE, 0L);
    OnCommand(IDC_BG_SET, 0L);
-   InitDisplayControls(Settings::DMD, "DMD"s, true);
    LoadSettings(GetEditedSettings());
    return TRUE;
 }
 
-void DMDViewOptPage::LoadSettings(Settings& settings)
+void DisplayStyleOptPage::LoadSettings(Settings& settings)
 {
    BeginLoad();
-   m_defaultProfile.SetCurSel(settings.LoadValueInt(Settings::DMD, "DefaultProfile"s));
-   m_defaultTint.SetColor(settings.LoadValueUInt(Settings::DMD, "DefaultTint"));
    OnCommand(IDC_DMD_PROFILE, 0L);
-   LoadDisplaySettings();
    EndLoad();
 }
 
-void DMDViewOptPage::SaveSettings(Settings& settings, bool saveAll)
+void DisplayStyleOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
-   settings.SaveValue(Settings::DMD, "DefaultProfile"s, m_defaultProfile.GetCurSel());
-   settings.SaveValue(Settings::DMD, "DefaultTint"s, static_cast<unsigned int>(m_defaultTint.GetColor()), !saveAll);
    SaveProfile();
-   SaveDisplaySettings();
 }
 
-void DMDViewOptPage::LoadProfile(const int n)
+void DisplayStyleOptPage::ResetProfile(const int n)
+{
+   Settings& settings = GetEditedSettings();
+   if (n < 7) // DMD
+   {
+      const string prefix = "Profile." + std::to_string(n + 1) + '.';
+      settings.ResetValue(Settings::DMD, prefix + "Legacy");
+      settings.ResetValue(Settings::DMD, prefix + "ScaleFX");
+      settings.ResetValue(Settings::DMD, prefix + "DotTint");
+      settings.ResetValue(Settings::DMD, prefix + "UnlitDotColor");
+      settings.ResetValue(Settings::DMD, prefix + "DotSize");
+      settings.ResetValue(Settings::DMD, prefix + "DotBrightness");
+      settings.ResetValue(Settings::DMD, prefix + "DotSharpness");
+      settings.ResetValue(Settings::DMD, prefix + "DotRounding");
+      settings.ResetValue(Settings::DMD, prefix + "BackGlow");
+   }
+   else if (n < 7 + 8) // Alpha Seg
+   {
+      const string prefix = "Profile." + std::to_string(n - 7 + 1) + '.';
+      settings.ResetValue(Settings::Alpha, prefix + "Color");
+      settings.ResetValue(Settings::Alpha, prefix + "Unlit");
+      settings.ResetValue(Settings::Alpha, prefix + "Brightness");
+      settings.ResetValue(Settings::Alpha, prefix + "BackGlow");
+   }
+   LoadProfile(n);
+}
+
+void DisplayStyleOptPage::LoadProfile(const int n)
 {
    char tmp[256];
    BeginLoad();
    Settings& settings = GetEditedSettings();
-   const string prefix = "Profile." + std::to_string(n + 1) + '.';
    m_editedProfile = n;
 
-   m_legacyRenderer.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "Legacy") ? BST_CHECKED : BST_UNCHECKED);
-   m_dmdScaleFX.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "ScaleFX") ? BST_CHECKED : BST_UNCHECKED);
-   
-   m_dotTint.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "DotTint"));
-   m_unlitDotColor.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"));
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSize"));
-   m_dotSize.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotBrightness"));
-   m_dotBrightness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness"));
-   m_dotSharpness.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding"));
-   m_dotRounding.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotGlow"));
-   m_dotGlow.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
-   m_backGlow.SetWindowText(tmp);
-
-   m_glassImage.SetWindowText(settings.LoadValueString(Settings::DMD, prefix + "GlassImage").c_str());
-   m_glassAmbientLight.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "GlassAmbientLight"));
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassDotLight"));
-   m_glassDotLight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadLeft"));
-   m_glassPadLeft.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadRight"));
-   m_glassPadRight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadBottom"));
-   m_glassPadBottom.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "GlassPadTop"));
-   m_glassPadTop.SetWindowText(tmp);
-
-   m_frameImage.SetWindowText(settings.LoadValueString(Settings::DMD, prefix + "FrameImage").c_str());
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadLeft"));
-   m_framePadLeft.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadRight"));
-   m_framePadRight.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadBottom"));
-   m_framePadBottom.SetWindowText(tmp);
-   sprintf_s(tmp, sizeof(tmp), "%.2f", settings.LoadValueFloat(Settings::DMD, prefix + "FramePadTop"));
-   m_framePadTop.SetWindowText(tmp);
+   if (n < 7) // DMD
+   {
+      const string prefix = "Profile." + std::to_string(n + 1) + '.';
+      m_legacyRenderer.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "Legacy") ? BST_CHECKED : BST_UNCHECKED);
+      m_dmdScaleFX.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "ScaleFX") ? BST_CHECKED : BST_UNCHECKED);
+      m_dotTint.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "DotTint"));
+      m_unlitDotColor.SetColor(settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"));
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSize"));
+      m_dotSize.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotBrightness"));
+      m_dotBrightness.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness"));
+      m_dotSharpness.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding"));
+      m_dotRounding.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
+      m_backGlow.SetWindowText(tmp);
+   }
+   else if (n < 7 + 8) // Alpha Seg
+   {
+      const string prefix = "Profile." + std::to_string(n - 7 + 1) + '.';
+      m_dotTint.SetColor(settings.LoadValueUInt(Settings::Alpha, prefix + "Color"));
+      m_unlitDotColor.SetColor(settings.LoadValueUInt(Settings::Alpha, prefix + "Unlit"));
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::Alpha, prefix + "Brightness"));
+      m_dotBrightness.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::Alpha, prefix + "BackGlow"));
+      m_backGlow.SetWindowText(tmp);
+   }
 
    OnCommand(IDC_LEGACY_RENDERER, 0L);
 
    EndLoad();
 }
 
-void DMDViewOptPage::SaveProfile()
+void DisplayStyleOptPage::SaveProfile()
 {
    if (m_editedProfile < 0)
       return;
 
    Settings& settings = GetEditedSettings();
    const bool saveAll = !IsTableSettings();
-   const string prefix = "Profile." + std::to_string(m_editedProfile + 1) + '.';
 
-   settings.SaveValue(Settings::DMD, prefix + "Legacy", m_legacyRenderer.GetCheck() == BST_CHECKED, !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "ScaleFX", m_dmdScaleFX.GetCheck() == BST_CHECKED, !saveAll);
-
-   settings.SaveValue(Settings::DMD, prefix + "DotTint", static_cast<unsigned int>(m_dotTint.GetColor()), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "UnlitDotColor", static_cast<unsigned int>(m_unlitDotColor.GetColor()), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "DotSize", m_dotSize.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "DotBrightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "DotSharpness", m_dotSharpness.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "DotRounding", m_dotRounding.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "DotGlow", m_dotGlow.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
-
-   settings.SaveValue(Settings::DMD, prefix + "GlassImage", m_glassImage.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassAmbientLight", static_cast<unsigned int>(m_glassAmbientLight.GetColor()), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassDotLight", m_glassDotLight.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassPadLeft", m_glassPadLeft.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassPadRight", m_glassPadRight.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassPadBottom", m_glassPadBottom.GetWindowText().GetString(), !saveAll);
-   settings.SaveValue(Settings::DMD, prefix + "GlassPadTop", m_glassPadTop.GetWindowText().GetString(), !saveAll);
+   if (m_editedProfile < 7) // DMD
+   {
+      const string prefix = "Profile." + std::to_string(m_editedProfile + 1) + '.';
+      settings.SaveValue(Settings::DMD, prefix + "Legacy", m_legacyRenderer.GetCheck() == BST_CHECKED, !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "ScaleFX", m_dmdScaleFX.GetCheck() == BST_CHECKED, !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DotTint", static_cast<unsigned int>(m_dotTint.GetColor()), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "UnlitDotColor", static_cast<unsigned int>(m_unlitDotColor.GetColor()), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DotSize", m_dotSize.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DotBrightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DotSharpness", m_dotSharpness.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DotRounding", m_dotRounding.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
+   }
+   else if (m_editedProfile < 7 + 8) // AlphaSeg
+   {
+      const string prefix = "Profile." + std::to_string(m_editedProfile - 7 + 1) + '.';
+      settings.SaveValue(Settings::Alpha, prefix + "Color", static_cast<unsigned int>(m_dotTint.GetColor()), !saveAll);
+      settings.SaveValue(Settings::Alpha, prefix + "Unlit", static_cast<unsigned int>(m_unlitDotColor.GetColor()), !saveAll);
+      settings.SaveValue(Settings::Alpha, prefix + "Brightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::Alpha, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
+   }
 }
 
-BOOL DMDViewOptPage::OnApply()
+BOOL DisplayStyleOptPage::OnApply()
 {
    ApplyChanges();
    return TRUE;
 }
 
-INT_PTR DMDViewOptPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+INT_PTR DisplayStyleOptPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
@@ -1920,24 +1924,19 @@ INT_PTR DMDViewOptPage::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
       case IDC_DOT_TINT: m_dotTint.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
       case IDC_UNLIT_DOT_COLOR: m_unlitDotColor.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
-      case IDC_GLASS_AMBIENT: m_glassAmbientLight.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
       }
       break;
    }
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
+BOOL DisplayStyleOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 {
    switch (LOWORD(wParam))
    {
-   case IDC_BG_SET:
-      if (HIWORD(wParam) == CBN_SELCHANGE)
-         PropChanged();
-      break;
-   case IDC_TONEMAPPER:
-      if (HIWORD(wParam) == CBN_SELCHANGE)
-         PropChanged();
+   case IDC_RESET_WINDOW:
+      PropChanged();
+      ResetProfile(m_dmdType.GetCurSel());
       break;
    case IDC_SCALE_FX_DMD:
       if (HIWORD(wParam) == BN_CLICKED)
@@ -1948,19 +1947,7 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DOT_BRIGHTNESS:
    case IDC_DOT_SHARPNESS:
    case IDC_DOT_ROUNDING:
-   case IDC_DOT_GLOW:
    case IDC_BACK_GLOW:
-   case IDC_GLASS_IMAGE:
-   case IDC_GLASS_DOT_LIGHT:
-   case IDC_GLASS_PAD_LEFT:
-   case IDC_GLASS_PAD_TOP:
-   case IDC_GLASS_PAD_RIGHT:
-   case IDC_GLASS_PAD_BOTTOM:
-   case IDC_FRAME_PATH:
-   case IDC_FRAME_PAD_LEFT:
-   case IDC_FRAME_PAD_TOP:
-   case IDC_FRAME_PAD_RIGHT:
-   case IDC_FRAME_PAD_BOTTOM:
       if (HIWORD(wParam) == EN_CHANGE)
          PropChanged();
       break;
@@ -1968,28 +1955,14 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       if (HIWORD(wParam) == BN_CLICKED)
          PropChanged();
       {
-         #ifdef ENABLE_BGFX
-            const bool isNewRenderer = m_legacyRenderer.GetCheck() == BST_UNCHECKED;
-         #else
-            const bool isNewRenderer = false;
-         #endif
-         GetDlgItem(IDC_BROWSE_GLASS_PATH).EnableWindow(isNewRenderer);
-         m_frameImage.EnableWindow(isNewRenderer);
-         m_framePadLeft.EnableWindow(isNewRenderer);
-         m_framePadRight.EnableWindow(isNewRenderer);
-         m_framePadBottom.EnableWindow(isNewRenderer);
-         m_framePadTop.EnableWindow(isNewRenderer);
-         m_glassImage.EnableWindow(isNewRenderer);
-         m_glassAmbientLight.EnableWindow(isNewRenderer);
-         m_glassDotLight.EnableWindow(isNewRenderer);
-         m_glassPadLeft.EnableWindow(isNewRenderer);
-         m_glassPadRight.EnableWindow(isNewRenderer);
-         m_glassPadBottom.EnableWindow(isNewRenderer);
-         m_glassPadTop.EnableWindow(isNewRenderer);
+#ifdef ENABLE_BGFX
+         const bool isNewRenderer = m_legacyRenderer.GetCheck() == BST_UNCHECKED;
+#else
+         const bool isNewRenderer = false;
+#endif
          m_dotSize.EnableWindow(isNewRenderer);
          m_dotSharpness.EnableWindow(isNewRenderer);
          m_dotRounding.EnableWindow(isNewRenderer);
-         m_dotGlow.EnableWindow(isNewRenderer);
          m_unlitDotColor.EnableWindow(isNewRenderer);
          m_backGlow.EnableWindow(isNewRenderer);
       }
@@ -2001,71 +1974,99 @@ BOOL DMDViewOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
       LoadProfile(m_dmdType.GetCurSel());
       switch (m_dmdType.GetCurSel())
       {
-      case 0: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching rendering style used in previous VPX versions."); break;
-      case 1: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching Neon Plasma DMD used in pinballs from 1991 to 2012."); break;
-      case 2: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile matching red LED DMD used in pinball machines after 2012."); break;
-      case 3: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering green LED matrix."); break;
-      case 4: SetDlgItemText(IDC_DMD_TYPE_INFO, "Profile designed for rendering blue LED matrix."); break;
-      case 5: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored Plasma for custom setup."); break;
-      case 6: SetDlgItemText(IDC_DMD_TYPE_INFO, "Generic uncolored LED for custom setup."); break;
+      case 0: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile matching rendering style used in previous VPX versions."); break;
+      case 1: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile matching Neon Plasma DMD used in pinballs from 1991 to 2012."); break;
+      case 2: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile matching red LED DMD used in pinball machines after 2012."); break;
+      case 3: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile designed for rendering green LED matrix."); break;
+      case 4: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile designed for rendering yellow LED matrix."); break;
+      case 5: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile for custom setup (Generic uncolored Plasma)."); break;
+      case 6: SetDlgItemText(IDC_DMD_TYPE_INFO, "DMD rendering profile for custom setup (Generic uncolored LED)."); break;
+
+      case 7: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile matching Neon Plasma displays"); break;
+      case 8: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile matching blue VFD displays largely used by Gottlieb manufacturer (Futaba VFD parts)"); break;
+      case 9: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile matching green VFD displays"); break;
+      case 10: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile matching common red LED display"); break;
+      case 11: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile designed for rendering green LED"); break;
+      case 12: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile designed for rendering yellow LED"); break;
+      case 13: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile for custom setup (Generic uncolored Plasma)."); break;
+      case 14: SetDlgItemText(IDC_DMD_TYPE_INFO, "Alpha rendering profile for custom setup (Generic uncolored LED)."); break;
       }
       break;
    case IDC_DOT_TINT:
+   {
+      CHOOSECOLOR cc = m_colorDialog.GetParameters();
+      cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+      m_colorDialog.SetParameters(cc);
+      if (g_pvp->GetActiveTable())
+         m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
+      m_colorDialog.SetColor(m_dotTint.GetColor());
+      if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
       {
-         CHOOSECOLOR cc = m_colorDialog.GetParameters();
-         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-         m_colorDialog.SetParameters(cc);
          if (g_pvp->GetActiveTable())
-            m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
-         m_colorDialog.SetColor(m_dotTint.GetColor());
-         if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-         {
-            if (g_pvp->GetActiveTable())
-               memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
-            m_dotTint.SetColor(m_colorDialog.GetColor());
-         }
+            memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
+         m_dotTint.SetColor(m_colorDialog.GetColor());
       }
-      break;
+   }
+   break;
    case IDC_UNLIT_DOT_COLOR:
+   {
+      CHOOSECOLOR cc = m_colorDialog.GetParameters();
+      cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+      m_colorDialog.SetParameters(cc);
+      if (g_pvp->GetActiveTable())
+         m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
+      m_colorDialog.SetColor(m_unlitDotColor.GetColor());
+      if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
       {
-         CHOOSECOLOR cc = m_colorDialog.GetParameters();
-         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-         m_colorDialog.SetParameters(cc);
          if (g_pvp->GetActiveTable())
-            m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
-         m_colorDialog.SetColor(m_unlitDotColor.GetColor());
-         if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-         {
-            if (g_pvp->GetActiveTable())
-               memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
-            m_unlitDotColor.SetColor(m_colorDialog.GetColor());
-         }
+            memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
+         m_unlitDotColor.SetColor(m_colorDialog.GetColor());
       }
-      break;
-   case IDC_GLASS_AMBIENT:
-      {
-         CHOOSECOLOR cc = m_colorDialog.GetParameters();
-         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
-         m_colorDialog.SetParameters(cc);
-         if (g_pvp->GetActiveTable())
-            m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
-         m_colorDialog.SetColor(m_glassAmbientLight.GetColor());
-         if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
-         {
-            if (g_pvp->GetActiveTable())
-               memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
-            m_glassAmbientLight.SetColor(m_colorDialog.GetColor());
-         }
-      }
-      break;
-   case IDC_BROWSE_GLASS_PATH:
-      BrowseImage(m_glassImage);
-      break;
-   case IDC_BROWSE_FRAME_PATH:
-      BrowseImage(m_frameImage);
-      break;
+   }
+   break;
    default: return VideoOptionPropPage::OnCommand(wParam, lParam);
    }
+   return TRUE;
+}
+
+#pragma endregion
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Score View Options (DMD or Alpha Seg)
+
+#pragma region ScoreViewOptPage
+
+ScoreViewOptPage::ScoreViewOptPage(Settings& appSettings, Settings& tableSettings)
+   : VideoOptionPropPage(IDD_SCOREVIEW_OPT, _T("Score View"), appSettings, tableSettings)
+{
+}
+
+BOOL ScoreViewOptPage::OnInitDialog()
+{
+   VideoOptionPropPage::OnInitDialog();
+   InitDisplayControls(Settings::DMD, "DMD"s, true);
+   LoadSettings(GetEditedSettings());
+   return TRUE;
+}
+
+void ScoreViewOptPage::LoadSettings(Settings& settings)
+{
+   BeginLoad();
+   LoadDisplaySettings();
+   EndLoad();
+}
+
+void ScoreViewOptPage::SaveSettings(Settings& settings, bool saveAll)
+{
+   SaveDisplaySettings();
+}
+
+BOOL ScoreViewOptPage::OnApply()
+{
+   ApplyChanges();
    return TRUE;
 }
 

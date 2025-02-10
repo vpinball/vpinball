@@ -4614,7 +4614,7 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
       }
       else if (flasher->m_d.m_renderMode == FlasherData::DMD)
       {
-         static const string renderStyles[] = { "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Blue LED", "Generic Plasma", "Generic LED" };
+         static const string renderStyles[] = { "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Yellow LED", "Generic Plasma", "Generic LED" };
          PropCombo("Render Style", m_table, is_live, startup_obj ? &(startup_obj->m_d.m_renderStyle) : nullptr, live_obj ? &(live_obj->m_d.m_renderStyle) : nullptr, std::size(renderStyles), renderStyles);
          // Missing source
          PropImageCombo("Glass", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
