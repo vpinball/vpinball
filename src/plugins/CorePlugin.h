@@ -161,9 +161,11 @@ typedef enum {
 
 typedef struct SegSrcId
 {
-   CtlResId id;                                             // Unique Id of the frame stream
+   CtlResId id;                                             // Unique Id of the display group
+   unsigned int nDisplaysInGroup;                           // Number of displays inside this group
+   unsigned int displayIndex;                               // Index of the display inside the display group (0..nDisplaysInGroup-1)
    unsigned int hardware;                                   // Hardware hint, see CTLPI_GETSEG_HARDWARE_xxx
-   unsigned int nElements;                                  // Number of individual element forming this display
+   unsigned int nElements;                                  // Number of individual elements forming this display
    SegElementType elementType[CTLPI_SEG_MAX_DISP_ELEMENTS]; // Type of each individual element forming this display
 } SegSrcId;
 
@@ -179,7 +181,7 @@ typedef struct GetSegSrcMsg
 typedef struct GetSegMsg
 {
    // Request that must match one of the Segment source definitions reported by GetSegSrcMsg
-   CtlResId segId;            // Uniquely identify the segment source
+   CtlResId segId;            // Uniquely identify the segment source (a group of displays, each of them composed of multiple elements)
    // Response
    unsigned int frameId;      // Id that can be used to discard identical frames
    float* frame;              // Pointer to frame data (one relative luminance value per segment, 16 segments per element), null until a provider answers the request, owned by the provider

@@ -262,8 +262,8 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
 bool hasAlpha = false;
 unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
 unsigned int segFrameId = 0;
-int segOffsets[32] = { 0 };
-float segLuminances[16 * 32];
+float segLuminances[16 * 32] = { 0 };
+float segPrevLuminances[16 * 32] = { 0 };
 
 void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
 {
@@ -277,18 +277,17 @@ void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
    pinmame_tAlphaStates* states = block->alphaDisplayStates;
    if (states == nullptr)
       return;
-   assert(states->nDisplays < 32);
-
-   int pos = 0;
    pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(states);
-   for (unsigned int i = 0; (msg.count < msg.maxEntryCount) && (i < states->nDisplays); i++)
+   for (unsigned int i = 0, pos = 0; (msg.count < msg.maxEntryCount) && (i < states->nDisplays); i++)
    {
-      msg.entries[msg.count].id = { endpointId, static_cast<uint32_t>(i) };
+      assert(states->displayDefs[i].nElements < CTLPI_SEG_MAX_DISP_ELEMENTS);
+      msg.entries[msg.count].id = { endpointId, 0 };
+      msg.entries[msg.count].nDisplaysInGroup = states->nDisplays;
+      msg.entries[msg.count].displayIndex = i;
       msg.entries[msg.count].hardware = CTLPI_GETSEG_HARDWARE_UNKNOWN;
       msg.entries[msg.count].nElements = states->displayDefs[i].nElements;
-      for (unsigned int j = 0; j < states->displayDefs[i].nElements; j++)
-         msg.entries[msg.count].elementType[j] = static_cast<SegElementType>(alphaStates[pos + j].type);
-      pos += states->displayDefs[i].nElements;
+      for (unsigned int j = 0; j < states->displayDefs[i].nElements; j++, pos++)
+         msg.entries[msg.count].elementType[j] = static_cast<SegElementType>(alphaStates[pos].type);
       msg.count++;
    }
 }
@@ -298,7 +297,7 @@ void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
    if (!hasAlpha || (controller == nullptr))
       return;
    GetSegMsg& msg = *static_cast<GetSegMsg*>(msgData);
-   if ((msg.frame != nullptr) || (msg.segId.endpointId != endpointId))
+   if ((msg.frame != nullptr) || (msg.segId.endpointId != endpointId) || (msg.segId.resId != 0))
       return;
 
    auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_ALPHA_DEVICE_STATE);
@@ -307,17 +306,21 @@ void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
    pinmame_tAlphaStates* state = block->alphaDisplayStates;
    if (state == nullptr)
       return;
-   if (msg.segId.resId >= state->nDisplays)
-      return;
-   assert(state->nDisplays < 32);
 
-   segFrameId++;
-   msg.frame = segLuminances;
-   msg.frameId = segFrameId;
    pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(state);
    static int nSegments[] = { 7, 8, 8, 9, 10, 14, 15, 16, 16, 16 };
-   for (unsigned int i = 0; i < state->displayDefs[msg.segId.resId].nElements; i++)
-      memcpy(&segLuminances[i * 16], alphaStates[segOffsets[msg.segId.resId] + i].luminance, nSegments[alphaStates[segOffsets[msg.segId.resId] + i].type] * sizeof(float));
+   unsigned int nElements = 0;
+   for (unsigned int display = 0; display < state->nDisplays; display++)
+      nElements += state->displayDefs[display].nElements;
+   for (unsigned int i = 0; i < nElements; i++)
+      memcpy(&segLuminances[i * 16], alphaStates[i].luminance, nSegments[alphaStates[i].type] * sizeof(float));
+   if (memcmp(segPrevLuminances, segLuminances, nElements * 16 * sizeof(float)) != 0)
+   {
+      memcpy(segPrevLuminances, segLuminances, nElements * 16 * sizeof(float));
+      segFrameId++;
+   }
+   msg.frame = segLuminances;
+   msg.frameId = segFrameId;
 }
 
 
@@ -440,8 +443,6 @@ void OnControllerGameStart(Controller*)
       hasAlpha = (block->alphaDisplayStates != nullptr) && (block->alphaDisplayStates->nDisplays > 0);
       if (hasAlpha)
       {
-         for (unsigned int i = 1; i < block->alphaDisplayStates->nDisplays; i++)
-            segOffsets[i] = segOffsets[i - 1] + block->alphaDisplayStates->displayDefs[i].nElements;
          msgApi->SubscribeMsg(endpointId, getSegSrcId, onGetSegSrc, controller);
          msgApi->SubscribeMsg(endpointId, getSegId, onGetSeg, controller);
          msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
