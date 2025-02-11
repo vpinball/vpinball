@@ -138,7 +138,7 @@ void HitSur::Ellipse2(const float centerx, const float centery, const int radius
 
 void HitSur::Polygon(const Vertex2D * const rgv, const int count)
 {
-   if (m_pcur == nullptr)
+   if (m_pcur == nullptr || count <= 0)
       return;
 
    int x1 = SCALEXf(rgv[count - 1].x);
