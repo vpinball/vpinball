@@ -310,7 +310,7 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
             if (!std::filesystem::exists(libraryPath))
             {
                PLOGE << "Plugin " << id << " has an invalid library reference to a missing file for " << libraryKey << ": " << libraryFile;
-               return;
+               continue;
             }
             std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, 
                unquote(ini["configuration"s].get("name"s)),
