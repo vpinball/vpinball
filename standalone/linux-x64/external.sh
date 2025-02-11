@@ -59,7 +59,7 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    unzip ${FREEIMAGE_BASENAME}.zip
    cd FreeImage
    cp ../../freeimage/Makefile.gnu .
-   make -f Makefile.gnu -j${NUM_PROCS}
+   CFLAGS=-Wno-implicit-function-declaration make -f Makefile.gnu -j${NUM_PROCS}
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cp Dist/libfreeimage.a ../../${CACHE_DIR}/${CACHE_NAME}/lib/libfreeimage.a
    cd ..
