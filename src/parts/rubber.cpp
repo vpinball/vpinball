@@ -344,6 +344,15 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
    // vvertex are the 2D vertices forming the central curve of the rubber as seen from above
 
    const int cvertex = (int)vvertex.size();
+   if (cvertex == 0)
+   {
+      pcvertex = 0;
+      if (pMiddlePoints)
+         *pMiddlePoints = nullptr;
+      if (ppfCross)
+         *ppfCross = nullptr; 
+      return nullptr;
+   }
    Vertex2D * const rgvLocal = new Vertex2D[(cvertex + 1) * 2];
 
    if (pMiddlePoints)
