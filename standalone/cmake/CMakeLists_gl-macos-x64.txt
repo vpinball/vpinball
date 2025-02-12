@@ -699,7 +699,7 @@ target_link_libraries(vpinball PUBLIC
    SDL3
    SDL3_image
    SDL3_ttf
-   FreeImage
+   freeimage
    bass
    hidapi
    pinmame

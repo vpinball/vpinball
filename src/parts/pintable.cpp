@@ -18,8 +18,8 @@
 #include "renderer/captureExt.h"
 #include "ui/dialogs/VPXLoadFileProgressBar.h"
 #include "ui/dialogs/VPXSaveFileProgressBar.h"
+#include "FreeImage.h"
 #endif
-#include "freeimage.h"
 #include "ThreadPool.h"
 #include "scalefx.h"
 #ifdef ENABLE_SDL_VIDEO

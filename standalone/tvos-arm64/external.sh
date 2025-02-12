@@ -2,7 +2,7 @@
 
 set -e
 
-FREEIMAGE_VERSION=3.18.0
+FREEIMAGE_SHA=3532c976f9853219d42d8cbab6c1f4c0990e3ed8
 SDL2_VERSION=2.30.8
 SDL2_IMAGE_VERSION=2.8.2
 SDL2_TTF_VERSION=2.22.0
@@ -17,7 +17,7 @@ BGFX_PATCH_SHA=1d0967155c375155d1f778ded4061f35c80fc96f
 NUM_PROCS=$(sysctl -n hw.ncpu)
 
 echo "Building external libraries..."
-echo "  FREEIMAGE_VERSION: ${FREEIMAGE_VERSION}"
+echo "  FREEIMAGE_SHA: ${FREEIMAGE_SHA}"
 echo "  SDL2_VERSION: ${SDL2_VERSION}"
 echo "  SDL2_IMAGE_VERSION: ${SDL2_IMAGE_VERSION}"
 echo "  SDL2_TTF_VERSION: ${SDL2_TTF_VERSION}"
@@ -51,22 +51,30 @@ cd tmp
 # build freeimage and copy to external
 #
 
-CACHE_NAME="FreeImage-${FREEIMAGE_VERSION}"
+CACHE_NAME="FreeImage-${FREEIMAGE_SHA}"
 
 if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
-   FREEIMAGE_BASENAME="FreeImage${FREEIMAGE_VERSION//./}"
-   curl -sL https://downloads.sourceforge.net/project/freeimage/Source%20Distribution/${FREEIMAGE_VERSION}/${FREEIMAGE_BASENAME}.zip -o ${FREEIMAGE_BASENAME}.zip
-   unzip ${FREEIMAGE_BASENAME}.zip
-   cd FreeImage
-   patch -i ../../freeimage/FreeImage3180.patch
-   cp ../../freeimage/Makefile.tvos.arm64 .
-   make -f Makefile.tvos.arm64 -j${NUM_PROCS}
+   curl -sL https://github.com/toxieainc/freeimage/archive/${FREEIMAGE_SHA}.zip -o freeimage-${FREEIMAGE_SHA}.zip
+   unzip freeimage-${FREEIMAGE_SHA}.zip
+   cd freeimage-${FREEIMAGE_SHA}
+   cp ../../freeimage/CMakeLists.txt .
+   cp ../../freeimage/PluginEXR.cpp Source/FreeImage/PluginEXR.cpp
+   cmake \
+      -DPLATFORM=tvos \
+      -DARCH=arm64 \
+      -DBUILD_SHARED=OFF \
+      -DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
+      -B build
+   cmake --build build -- -j${NUM_PROCS}
+   mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/include
+   cp Source/FreeImage.h ../../${CACHE_DIR}/${CACHE_NAME}/include
    mkdir -p ../../${CACHE_DIR}/${CACHE_NAME}/lib
-   cp Dist/libfreeimage.a ../../${CACHE_DIR}/${CACHE_NAME}/lib/libfreeimage.a
+   cp build/*.a ../../${CACHE_DIR}/${CACHE_NAME}/lib
    cd ..
    touch "../${CACHE_DIR}/${CACHE_NAME}.cache"
 fi
 
+cp -r ../${CACHE_DIR}/${CACHE_NAME}/include/* ../external/include
 cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 #
@@ -206,7 +214,7 @@ cp ../${CACHE_DIR}/${CACHE_NAME}/lib/*.a ../external/lib
 
 CACHE_NAME="libaltsound-${LIBALTSOUND_SHA}"
 
-if [ ! -f  "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
+if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/vpinball/libaltsound/archive/${LIBALTSOUND_SHA}.zip -o libaltsound.zip
    unzip libaltsound.zip
    cd libaltsound-$LIBALTSOUND_SHA

@@ -3,7 +3,11 @@
 #include "core/stdafx.h"
 #include "Texture.h"
 
-#include "freeimage.h"
+#ifndef __STANDALONE__
+#include "FreeImage.h"
+#else
+#include "standalone/FreeImage.h"
+#endif
 
 #include "math/math.h"
 
