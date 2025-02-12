@@ -26,7 +26,7 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
       return;
    }
 
-   PLOGW.printf("screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d",
+   PLOGD.printf("screen={%s}, playlist={%s}, playFile=%s, path=%s, volume=%.1f, priority=%d",
       m_pScreen->ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), szPath.c_str(), volume, priority);
 
    m_pMainPlayer->player.Play(szPath);
@@ -46,17 +46,17 @@ void PUPMediaManager::SetBG(bool isBackground)
 {
    if (isBackground) {
       if (m_pBackgroundPlayer) {
-         PLOGW.printf("Stopping background player, screen={%s}", m_pScreen->ToString(false).c_str());
+         PLOGD.printf("Stopping background player, screen={%s}", m_pScreen->ToString(false).c_str());
          m_pBackgroundPlayer->player.Stop();
       }
-      PLOGW.printf("Transferring main player to background, screen={%s}", m_pScreen->ToString(false).c_str());
+      PLOGD.printf("Transferring main player to background, screen={%s}", m_pScreen->ToString(false).c_str());
       m_pBackgroundPlayer = m_pMainPlayer;
       m_pBackgroundPlayer->player.SetLoop(true);
       m_pMainPlayer = (m_pMainPlayer == &m_player1) ? &m_player2 : &m_player1;
    }
    else {
       if (m_pBackgroundPlayer) {
-         PLOGW.printf("Removing looping from background player, screen={%s}", m_pScreen->ToString(false).c_str());
+         PLOGD.printf("Removing looping from background player, screen={%s}", m_pScreen->ToString(false).c_str());
          m_pBackgroundPlayer->player.SetLoop(false);
       }
    }
@@ -75,11 +75,11 @@ void PUPMediaManager::Stop()
 void PUPMediaManager::Stop(int priority)
 {
    if (priority > m_pMainPlayer->priority) {
-      PLOGW.printf("Priority > main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
+      PLOGD.printf("Priority > main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
       m_pMainPlayer->player.Stop();
    }
    else {
-      PLOGW.printf("Priority <= main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
+      PLOGD.printf("Priority <= main player priority: screen={%s}, priority=%d", m_pScreen->ToString(false).c_str(), priority);
    }
 }
 
@@ -87,7 +87,7 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
    string szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && szPath == m_pMainPlayer->szPath) {
-      PLOGW.printf("Main player path match: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
+      PLOGD.printf("Main player path match: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
       m_pMainPlayer->player.Stop();
    }
    else {

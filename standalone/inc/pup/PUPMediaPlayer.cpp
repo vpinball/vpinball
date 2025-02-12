@@ -75,7 +75,7 @@ void PUPMediaPlayer::SetRenderer(SDL_Renderer* pRenderer)
 
 void PUPMediaPlayer::Play(const string& szFilename)
 {
-   PLOGW.printf("filename=%s", szFilename.c_str());
+   PLOGD.printf("filename=%s", szFilename.c_str());
 
    Stop();
 
@@ -173,7 +173,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
       return;
    }
 
-   PLOGW.printf("Playing: filename=%s", m_szFilename.c_str());
+   PLOGD.printf("Playing: filename=%s", m_szFilename.c_str());
    m_pAudioPlayer->StreamVolume(0);
 
    m_running = true;
@@ -196,7 +196,7 @@ void PUPMediaPlayer::Pause(bool pause)
 void PUPMediaPlayer::Stop()
 {
    if (IsPlaying()) {
-      PLOGW.printf("Stop: %s", m_szFilename.c_str());
+      PLOGD.printf("Stop: %s", m_szFilename.c_str());
    }
 
    {
@@ -266,7 +266,7 @@ void PUPMediaPlayer::Run()
       if (!flushing) {
          if (av_read_frame(m_pFormatContext, pPacket) < 0) {
             if (count == 0)  {
-               PLOGW.printf("End of stream, finishing decode: %s", m_szFilename.c_str());
+               PLOGD.printf("End of stream, finishing decode: %s", m_szFilename.c_str());
             }
 
             if (m_pAudioContext)
@@ -372,7 +372,7 @@ void PUPMediaPlayer::SetLoop(bool loop)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    if (m_loop != loop) {
-      PLOGW.printf("setting loop: loop=%d", loop);
+      PLOGD.printf("setting loop: loop=%d", loop);
       m_loop = loop;
    }
 }
@@ -381,7 +381,7 @@ void PUPMediaPlayer::SetVolume(float volume)
 {
    std::lock_guard<std::mutex> lock(m_mutex);
    if (m_volume != volume) {
-       PLOGW.printf("setting volume: volume=%.1f%%", volume);
+       PLOGD.printf("setting volume: volume=%.1f%%", volume);
        m_volume = volume;
    }
 }
