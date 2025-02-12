@@ -231,7 +231,7 @@ cd standalone/android
 
 In a terminal execute the following:
 ```
-sudo apt install git build-essential autoconf automake libtool cmake nasm bison curlzlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
 git clone -b 10.8.1 https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-x64
 ./external.sh
