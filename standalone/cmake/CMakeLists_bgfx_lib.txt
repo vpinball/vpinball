@@ -733,6 +733,7 @@ target_link_libraries(vpinball PUBLIC
    SDL3
    SDL3_image
    SDL3_ttf
+   freeimage
    bass
    pinmame
    altsound
@@ -748,7 +749,6 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    target_link_libraries(vpinball PUBLIC
       freetype
       harfbuzz
-      freeimage
       avcodec
       avdevice
       avfilter
@@ -781,7 +781,6 @@ if(PLATFORM STREQUAL "ios" OR PLATFORM STREQUAL "ios-simulator")
    )
 elseif(PLATFORM STREQUAL "android")
    target_link_libraries(vpinball PUBLIC
-      FreeImage
       EGL
       GLESv3
       android

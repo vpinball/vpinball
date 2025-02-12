@@ -14,7 +14,11 @@
 #endif
 
 #include <filesystem>
-#include "freeimage.h"
+#ifndef __STANDALONE__
+#include "FreeImage.h"
+#else
+#include "standalone/FreeImage.h"
+#endif
 #include "vpversion.h"
 
 #if defined(IMSPANISH)
