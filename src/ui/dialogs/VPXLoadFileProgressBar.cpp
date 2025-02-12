@@ -1,3 +1,4 @@
+#include "core/stdafx.h"
 #include "VPXLoadFileProgressBar.h"
 
 
@@ -19,7 +20,7 @@ VPXLoadFileProgressBar::~VPXLoadFileProgressBar()
 void VPXLoadFileProgressBar::OperationStarted()
 {
    const LocalString loadingText(IDS_LOADING);
-   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (size_t)loadingText.m_szbuffer);
+   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (LPARAM)loadingText.m_szbuffer);
 
    const HCURSOR cursor = ::LoadCursor(nullptr, IDC_WAIT);
    ::SetCursor(cursor);
@@ -29,7 +30,7 @@ void VPXLoadFileProgressBar::OperationStarted()
    }
 
    RECT rc;
-   ::SendMessage(m_statusBar, SB_GETRECT, 2, (size_t)&rc);
+   ::SendMessage(m_statusBar, SB_GETRECT, 2, (LPARAM)&rc);
 
    m_progressBar = ::CreateWindowEx(
       0,
@@ -41,7 +42,7 @@ void VPXLoadFileProgressBar::OperationStarted()
       rc.right - rc.left,
       rc.bottom - rc.top,
       m_statusBar,
-      (HMENU)0,
+      (HMENU)nullptr,
       m_app, 
       nullptr
    );
@@ -101,7 +102,7 @@ void VPXLoadFileProgressBar::CollectionHasBeenProcessed(int collectionCount, int
 
 void VPXLoadFileProgressBar::Done()
 {
-   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (size_t)L"");
+   ::SendMessage(m_statusBar, SB_SETTEXT, 3 | 0, (LPARAM)L"");
 
    const HCURSOR cursor = ::LoadCursor(nullptr, IDC_ARROW);
    ::SetCursor(cursor);

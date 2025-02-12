@@ -1,3 +1,4 @@
+#include "core/stdafx.h"
 #include "VPXSaveFileProgressBar.h"
 
 
@@ -24,7 +25,7 @@ void VPXSaveFileProgressBar::OperationStarted()
    }
 
    RECT rc;
-   ::SendMessage(m_statusBar, SB_GETRECT, 2, (size_t)&rc);
+   ::SendMessage(m_statusBar, SB_GETRECT, 2, (LPARAM)&rc);
    m_progressBar = ::CreateWindowEx(
       0,
       PROGRESS_CLASS,
@@ -35,7 +36,7 @@ void VPXSaveFileProgressBar::OperationStarted()
       rc.right - rc.left,
       rc.bottom - rc.top,
       m_statusBar,
-      (HMENU)0,
+      (HMENU)nullptr,
       m_app,
       nullptr
    );

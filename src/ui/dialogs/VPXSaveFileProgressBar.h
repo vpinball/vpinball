@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/stdafx.h"
-
 #include "parts/VPXFileFeedback.h"
 
 
