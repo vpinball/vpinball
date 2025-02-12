@@ -267,7 +267,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forgot to call 'Register" << type.name << "SCD(...)' ?";
          assert(false);
          break;
-      case BOOL_TYPEID: VariantChangeType(&v, &cv, 0, VT_BOOL); sv.vBool = static_cast<sc_bool>(V_BOOL(&cv)); break;
+      case BOOL_TYPEID: VariantChangeType(&v, &cv, 0, VT_BOOL); sv.vBool = static_cast<sc_bool>(V_BOOL(&v)); break;
       case CHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI1); sv.vByte = V_I1(&v); break;
       case SHORT_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI2); sv.vShort = V_I2(&v); break;
       case INT_TYPEID: VariantChangeType(&v, &cv, 0, VT_I4); sv.vLong = V_I4(&v); break;
@@ -493,7 +493,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
          break;
       case BOOL_TYPEID:
          V_VT(&cv) = VT_BOOL;
-         V_BOOL(&cv) = sv.vBool;
+         V_BOOL(&cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
          break;
       case CHAR_TYPEID:
          V_VT(&cv) = VT_I1;
