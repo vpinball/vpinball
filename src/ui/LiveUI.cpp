@@ -1835,8 +1835,8 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                tm = ToneMapper::TM_REINHARD;
             #else
             if (tm < 0)
-               tm = ToneMapper::TM_AGX;
-            if (tm > ToneMapper::TM_AGX)
+               tm = ToneMapper::TM_NEUTRAL;
+            if (tm > ToneMapper::TM_NEUTRAL)
                tm = ToneMapper::TM_REINHARD;
             #endif
             m_renderer->m_toneMapper = (ToneMapper)tm;
@@ -2224,7 +2224,7 @@ void LiveUI::UpdateTweakModeUI()
       ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
       #define CM_ROW(id, label, format, value, unit) \
       { \
-         char buf[1024]; snprintf(buf, 1024, format, value); \
+         char buf[1024]; snprintf(buf, sizeof(buf), format, value); \
          ImGui::TableNextColumn(); ImGui::Text("%s",label); ImGui::TableNextColumn(); \
          float textWidth = ImGui::CalcTextSize(buf).x; vWidth = max(vWidth, textWidth); \
          if (textWidth < vWidth) ImGui::SameLine(vWidth - textWidth); \
@@ -2283,7 +2283,7 @@ void LiveUI::UpdateTweakModeUI()
                      : m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView ? "Point of View"s
                      : m_tweakPages[m_activeTweakPageIndex] == TP_Rules       ? "Rules"s
                                                                               : "Information"s;
-            CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append("/").append(std::to_string(m_tweakPages.size())).c_str(), "%s", title.c_str(), "");
+            CM_ROW(setting, "Page "s.append(std::to_string(1 + m_activeTweakPageIndex)).append(1,'/').append(std::to_string(m_tweakPages.size())).c_str(), "%s", title.c_str(), "");
             CM_SKIP_LINE;
             break;
          }
@@ -3759,7 +3759,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
       float y = win_size.y * 0.5f + t + line_height;
       string step_info = "Anaglyph glasses calibration step #"s.append(std::to_string(calibrationStep + 1)).append("/6");
       CENTERED_TEXT(y + 0 * line_height, step_info.c_str());
-      step_info = (calibrationStep < 3 ? "Left eye's "s : "Right eye's "s).append((calibrationStep % 3) == 0 ? "red"s : (calibrationStep % 3) == 1 ? "green"s : "blue"s).append(" perceived luminance: "s).append(std::to_string((int)(calibrationBrightness * 100.f))).append("%%"s);
+      step_info = (calibrationStep < 3 ? "Left eye's "s : "Right eye's "s).append((calibrationStep % 3) == 0 ? "red"s : (calibrationStep % 3) == 1 ? "green"s : "blue"s).append(" perceived luminance: "s).append(std::to_string((int)(calibrationBrightness * 100.f))).append(1,'%');
       CENTERED_TEXT(y + 1 * line_height, step_info.c_str());
       CENTERED_TEXT(y + 3 * line_height, calibrationStep < 3 ? "Close your right eye" : "Close your left eye");
       CENTERED_TEXT(y + 5 * line_height, calibrationStep == 0 ? "Use Left Control to exit calibration" : "Use Left Control to move to previous step");
