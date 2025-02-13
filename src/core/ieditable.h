@@ -45,7 +45,7 @@ public:
 			{ \
 				{ \
 				GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
-				WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, sizeof(m_wzName)/sizeof(m_wzName[0]));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
+				WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
 				} \
 			} \
 		InitScript(); \
@@ -89,7 +89,7 @@ public:
 			} \
 		if (GetPTable()->m_pcv->ReplaceName(this, newVal) == S_OK) \
 			{ \
-			WideStrNCopy(newVal, (WCHAR *)m_wzName, sizeof(m_wzName)/sizeof(m_wzName[0]));/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
+			WideStrNCopy(newVal, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, newVal);*/ \
 			return S_OK; \
 			} \
 		return E_FAIL; \
@@ -170,7 +170,7 @@ public:
 #define STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
    type *dst = type::COMCreate(); \
    dst->Init(table, 0.f, 0.f, false, true); \
-   memcpy(dst->m_wzName, m_wzName, MAXNAMEBUFFER * sizeof(m_wzName[0])); \
+   memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
    if (dst->GetScriptable()) \
       table->m_pcv->AddItem(dst->GetScriptable(), false); \
    dst->m_oldLayerIndex = m_oldLayerIndex; \
