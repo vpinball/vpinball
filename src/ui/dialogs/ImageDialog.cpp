@@ -57,10 +57,10 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_INITDIALOG:
       {
-		 const HWND toolTipHwnd = CreateWindowEx(
+         const HWND toolTipHwnd = CreateWindowEx(
             0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-		 AddToolTip("Import a new image from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
+         AddToolTip("Import a new image from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
          AddToolTip("ReImport selected image(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
          AddToolTip("ReImport this image (using a different file path).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORTFROM).GetHwnd());
          AddToolTip("ReImport all images using the existing file paths", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd());
@@ -77,7 +77,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd(), CResizer::topright, 0);
-		 m_resizer.AddChild(GetDlgItem(IDC_SHOW_WHERE_USED).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_SHOW_WHERE_USED).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_DELETE_IMAGE).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), CResizer::topright, 0);
@@ -382,7 +382,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_DELETE_IMAGE: DeleteImage(); break;
       case IDC_REIMPORT: Reimport(); break;
       case IDC_UPDATE_ALL_BUTTON: UpdateAll(); break;
-	  case IDC_SHOW_WHERE_USED: ShowWhereUsed(); break;
+      case IDC_SHOW_WHERE_USED: ShowWhereUsed(); break;
       case IDC_REIMPORTFROM: ReimportFrom(); break;
       case IDC_RENAME:
       {
@@ -739,17 +739,16 @@ void ImageDialog::UpdateAll()
 }
 
 void ImageDialog::ShowWhereUsed()
-{ 
-
-    CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
+{
+   CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
    if (ptCur)
    {
       WhereUsedDialog spd;
       if (spd.DoModal() == IDOK)
       {
-        SetFocus();         
+         SetFocus();
       }
-   } 
+   }
 }
 
 void ImageDialog::ReimportFrom()
@@ -1125,7 +1124,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             CW2A szUsedByObject(where.whereUsedObjectname);
             // Now Convert it to a LPSTR
             usedByObject = LPSTR(szUsedByObject);
-            usedByPropertyName = LPSTR(where.WhereUsedPropertyName.c_str());
+            usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
             LVITEM lvitem;
             lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
@@ -1218,11 +1217,11 @@ BOOL WhereUsedDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             //Get the index of the selected item in the 'WhereUsed' listview
             const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
-          if (sel == -1)
+            if (sel == -1)
             {
                 MessageBox("Nothing is selected!", "No item selected", MB_OK);
             }
-          else
+            else
             {
                 //Create a buffer for the controlName to be returned
                 char controlName[MAX_PATH];
@@ -1266,14 +1265,6 @@ void WhereUsedDialog::OnOK()
 
 void WhereUsedDialog::OnCancel()
 {
-}
-
-void WhereUsedDialog::ShowWhereUsed()
-{
-    MessageBox("Show Where Used", "Show Where Used", MB_OK);
-    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-    vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
-    pt->ShowWhereImagesUsed(vWhereUsed);
 }
 
 void WhereUsedDialog::LoadPosition()
@@ -1329,7 +1320,7 @@ void WhereUsedDialog::RefreshList()
                 CW2A szUsedByObject(where.whereUsedObjectname);
                 // Now Convert it to a LPSTR
                 usedByObject = LPSTR(szUsedByObject);
-                usedByPropertyName = LPSTR(where.WhereUsedPropertyName.c_str());
+                usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
                 LVITEM lvitem;
                 lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;

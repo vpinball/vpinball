@@ -57,7 +57,6 @@ protected:
 private:
    CResizer m_resizer;
 
-   void ShowWhereUsed();
    void LoadPosition();
    void SavePosition();
    void RefreshList();

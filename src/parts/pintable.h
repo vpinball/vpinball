@@ -52,7 +52,7 @@ struct WhereUsedInfo
 {
    string searchObjectName;
    CComBSTR whereUsedObjectname;
-   string WhereUsedPropertyName;
+   string whereUsedPropertyName;
 };
 
 class ScriptGlobalTable;
@@ -367,7 +367,7 @@ public:
    void FireKeyEvent(int dispid, int keycode);
 
    void HandleLoadFailure();
-   
+
    void Play(const int playMode); // Duplicate table into a live instance, create a player to run it, suspend edit mode
 
    void ImportSound(const HWND hwndListView, const string &filename);
@@ -386,7 +386,7 @@ public:
    PinBinary *GetImageLinkBinary(const int id);
    Light *GetLight(const string &szName) const;
    RenderProbe *GetRenderProbe(const string &szName) const;
-   
+
    void ShowWhereImagesUsed(vector<WhereUsedInfo> &);
    void ShowWhereImageUsed(vector<WhereUsedInfo> &,Texture *const ppi);
 
@@ -704,7 +704,6 @@ public:
 
    string m_envImage;
 
-   vector<IScriptable *> m_vscript;
    vector<IEditable *> m_vedit;
    vector<IEditable *> m_layer[MAX_LAYERS];
    vector<ISelect *> m_allHitElements;

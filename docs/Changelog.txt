@@ -15,10 +15,10 @@ FEATURES:
 
 - improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor or using the LiveUI which as a dedicated UI for it.
 
-- add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11, OpenGL,...) with some unique benefits:
-  . it supports Variable Refresh Rate display (when VSync is switched off),
-  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost,
-  . it supports rendering to multiple output (windows).
+- add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11/12, OpenGL,...) with some unique benefits:
+  . it supports Variable Refresh Rate display (when VSync is switched off)
+  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost
+  . it supports rendering to multiple outputs (windows)
 
 - add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
 
@@ -29,7 +29,16 @@ FEATURES:
   and an additional global exposure scale multiplier to adapt to the display capabilities
   (note that one should use Windows 11 and the MS HDR calibration tool for best results with optimal range)
 
+- add 'Where Used' dialog in the Image Manager
+   One of the challenges when creating or modding tables is hunting down all the table objects that reference a particular image
+   that should be updated with a new (better) one.
+   The new dialog contains a listview of all the images in use and each table object that is referencing them.
+   One can select any row of the listview and click a button on the dialog labeled 'Edit Control' and it will place
+   that table object into the 'Properties' editor dialog for you.
+
 FIXES:
+
+- fix 0-scaled rubber crash (like it can happen if invalid UI-inputs like 'Scale' are mapped to 0)
 
 - DirectX 8 port for input handling (currently disabled)
 
