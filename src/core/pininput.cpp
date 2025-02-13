@@ -250,7 +250,7 @@ void PinInput::LoadSettings(const Settings& settings)
       const string deviceName = "Device" + std::to_string(i) + "_Name";
       const string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
 
-      if (m_pInputDeviceSettingsInfo->count(name) == 0)
+      if (!m_pInputDeviceSettingsInfo->contains(name))
       {
          const string deviceState = "Device" + std::to_string(i) + "_State";
          const bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
@@ -936,7 +936,11 @@ void PinInput::Init()
 
    #if defined(ENABLE_SDL_INPUT)
       #ifdef ENABLE_SDL_GAMEPAD
-         SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+         if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
+         {
+            PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed: " << SDL_GetError();
+            exit(1);
+         }
          string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
          if (!std::filesystem::exists(path))
             std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
@@ -948,7 +952,11 @@ void PinInput::Init()
             PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
          }
       #else
-         SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+         if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK))
+         {
+            PLOGE << "SDL_InitSubSystem(SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
+            exit(1);
+         }
       #endif
    #endif
 

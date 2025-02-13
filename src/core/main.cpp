@@ -1203,10 +1203,19 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       #ifdef ENABLE_SDL_VIDEO
          SDL_SetHint(SDL_HINT_WINDOW_ALLOW_TOPMOST, "0");
-         SDL_InitSubSystem(SDL_INIT_VIDEO);
+         if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+         {
+            PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+            exit(1);
+         }
+         PLOGI << "Using video driver " << SDL_GetCurrentVideoDriver();
       #endif
       #ifdef ENABLE_SDL_INPUT
-         SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+         if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK))
+         {
+            PLOGE << "SDL_InitSubSystem(SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
+            exit(1);
+         }
       #endif
       #ifdef __STANDALONE__
          TTF_Init();
