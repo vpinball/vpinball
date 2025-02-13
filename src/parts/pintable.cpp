@@ -11075,4 +11075,245 @@ BOOL PinTableMDI::OnEraseBkgnd(CDC& dc)
    return TRUE;
 }
 
+void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
+{
+   for (size_t i = 0; i < m_vimage.size(); i++)
+       ShowWhereImageUsed(vWhereUsed,m_vimage[i]);
+}
+
+void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *const ppi)
+{
+   char sizeString[MAXTOKEN];
+   constexpr char usedStringYes[] = "X";
+   constexpr char usedStringNo[] = " ";
+
+    for (size_t i = 0; i < m_vedit.size(); i++)
+    {
+       CComBSTR bstr;
+       WhereUsedInfo whereUsed;
+       bool inUse = false;
+       IEditable *const pEdit = m_vedit[i];
+       //IScriptable *const pScript = m_vscript[i];
+       if (pEdit == nullptr)
+       {
+           continue;
+       }
+
+       switch (pEdit->GetItemType())
+       {
+       case eItemDispReel:
+       {
+           const DispReel *const pReel = (DispReel *)pEdit;
+           if (lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pReel->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemPrimitive:
+       {
+           const Primitive *const pPrim = (Primitive *)pEdit;
+           if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pPrim->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           if (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pPrim->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Normal Map";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemRamp:
+       {
+           const Ramp *const pRamp = (Ramp *)pEdit;
+           if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pRamp->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemSurface:
+       {
+           const Surface *const pSurf = (Surface *)pEdit;
+           if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pSurf->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           if (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pSurf->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Side Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+           break;
+       }
+       case eItemDecal:
+       {
+           const Decal *const pDecal = (Decal *)pEdit;
+           if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pDecal->m_d.m_szImage;
+               //m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
+               whereUsed.whereUsedObjectname = "decal";
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemFlasher:
+       {
+           const Flasher *const pFlash = (Flasher *)pEdit;
+           if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0))
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pFlash->m_d.m_szImageA;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "ImageA";
+               vWhereUsed.push_back(whereUsed);
+           }
+           if (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pFlash->m_d.m_szImageB;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "ImageB";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemFlipper:
+       {
+           const Flipper *const pFlip = (Flipper *)pEdit;
+           if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pFlip->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemHitTarget:
+       {
+           const HitTarget *const pHit = (HitTarget *)pEdit;
+           if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pHit->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemLight:
+       {
+           const Light *const pLight = (Light *)pEdit;
+           if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pLight->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemPlunger:
+       {
+           const Plunger *const pPlung = (Plunger *)pEdit;
+           if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pPlung->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       case eItemRubber:
+       {
+           const Rubber *const pRub = (Rubber *)pEdit;
+           if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pRub->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+           break;
+       }
+       case eItemSpinner:
+       {
+           const Spinner *const pSpin = (Spinner *)pEdit;
+           if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+           {
+               inUse = true;
+               whereUsed.searchObjectName = pSpin->m_d.m_szImage;
+               m_vedit[i]->GetScriptable()->get_Name(&bstr);
+               whereUsed.whereUsedObjectname = bstr;
+               whereUsed.WhereUsedPropertyName = "Image";
+               vWhereUsed.push_back(whereUsed);
+           }
+
+           break;
+       }
+       default:
+       {
+           break;
+       }
+       }
+    }
+}
 #pragma endregion

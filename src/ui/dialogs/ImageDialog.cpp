@@ -4,6 +4,7 @@
 #include "ui/resource.h"
 #include "ImageDialog.h"
 #include "core/vpversion.h"
+#include "atlconv.h"
 
 typedef struct _tagSORTDATA
 {
@@ -17,6 +18,8 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 extern int CALLBACK MyCompProcMemValues(LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption);
 int ImageDialog::m_columnSortOrder;
 bool ImageDialog::m_doNotChange;
+int WhereUsedDialog::m_columnSortOrder;
+bool WhereUsedDialog::m_doNotChange;
 
 ImageDialog::ImageDialog() : CDialog(IDD_IMAGEDIALOG)
 {
@@ -54,7 +57,19 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    {
       case WM_INITDIALOG:
       {
+		 const HWND toolTipHwnd = CreateWindowEx(
+            0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
          const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+		 AddToolTip("Import a new image from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
+         AddToolTip("ReImport selected image(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
+         AddToolTip("ReImport this image (using a different file path).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORTFROM).GetHwnd());
+         AddToolTip("ReImport all images using the existing file paths", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd());
+         AddToolTip("Displays a list the images in use and the table objects referencing them.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SHOW_WHERE_USED).GetHwnd());
+         AddToolTip("Rename this image.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_RENAME).GetHwnd());
+         AddToolTip("Export the selected image(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_EXPORT).GetHwnd());
+         AddToolTip("Delete the selected image(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_DELETE_IMAGE).GetHwnd());
+         AddToolTip("Define an alpha mask for the selected image(s)", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_ALPHA_MASK_EDIT).GetHwnd());
+         AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
          m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 720, 450));
          m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
          m_resizer.AddChild(GetDlgItem(IDC_PICTUREPREVIEW).GetHwnd(), CResizer::topright, 0);
@@ -62,6 +77,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_UPDATE_ALL_BUTTON).GetHwnd(), CResizer::topright, 0);
+		 m_resizer.AddChild(GetDlgItem(IDC_SHOW_WHERE_USED).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_DELETE_IMAGE).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
          m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), CResizer::topright, 0);
@@ -366,6 +382,7 @@ BOOL ImageDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       case IDC_DELETE_IMAGE: DeleteImage(); break;
       case IDC_REIMPORT: Reimport(); break;
       case IDC_UPDATE_ALL_BUTTON: UpdateAll(); break;
+	  case IDC_SHOW_WHERE_USED: ShowWhereUsed(); break;
       case IDC_REIMPORTFROM: ReimportFrom(); break;
       case IDC_RENAME:
       {
@@ -721,6 +738,20 @@ void ImageDialog::UpdateAll()
       MessageBox( "Not all images were updated!", "  FILES NOT FOUND!  ", MB_OK);
 }
 
+void ImageDialog::ShowWhereUsed()
+{ 
+
+    CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
+   if (ptCur)
+   {
+      WhereUsedDialog spd;
+      if (spd.DoModal() == IDOK)
+      {
+        SetFocus();         
+      }
+   } 
+}
+
 void ImageDialog::ReimportFrom()
 {
    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
@@ -985,4 +1016,343 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
 #else
    return 0L;
 #endif
+}
+
+void ImageDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = parentHwnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)controlHwnd;
+    toolInfo.lpszText = (char *)text;
+    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+}
+
+
+WhereUsedDialog::WhereUsedDialog()
+   : CDialog(IDD_WHEREUSEDDIALOG)
+{
+    m_columnSortOrder = 1;
+    m_doNotChange = false;
+}
+
+WhereUsedDialog::~WhereUsedDialog() { }
+
+void WhereUsedDialog::OnDestroy() { CDialog::OnDestroy(); }
+
+void WhereUsedDialog::OnClose()
+{
+    SavePosition();
+    CDialog::OnClose();
+}
+
+BOOL WhereUsedDialog::OnInitDialog()
+{
+    m_columnSortOrder = 1;
+    return TRUE;
+}
+
+INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    m_resizer.HandleMessage(uMsg, wParam, lParam);
+
+    switch (uMsg)
+    {
+    case WM_INITDIALOG:
+    {
+      const HWND toolTipHwnd = CreateWindowEx(
+         0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
+
+      //Get active pinball table (one currently selected...you can edit more than one at a time)
+      CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+      vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
+      if (pt)
+      {
+         //Fill a vector with a list of all images and the table objects that reference them
+         pt->ShowWhereImagesUsed(vWhereUsed);
+
+         AddToolTip("Edit the selected control in the table properties editor", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_EDIT_CONTROL).GetHwnd());
+         AddToolTip("Refresh this list (recommended after editing a control)", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REFRESH_LIST).GetHwnd());
+         AddToolTip("Clicking 'OK' will close this window", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
+
+
+         //Create a listview for the Where Used dialog
+         const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+         m_resizer.Initialize(*this, CRect(0, 0, 720, 450));
+         m_resizer.AddChild(hListView, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+         m_resizer.AddChild(GetDlgItem(IDC_EDIT_CONTROL).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_REFRESH_LIST).GetHwnd(), CResizer::topright, 0);
+         m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), CResizer::topright, 0);
+         //Get the listview's position
+         LoadPosition();
+
+         ListView_SetExtendedListViewStyle(hListView, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+         // Create listvew columns then fill it with the items in the vector 'vWhereUsed'
+         //
+         //Create Listview Column Headings
+         LVCOLUMN lvcol = {};
+         lvcol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_FMT;
+         const LocalString ls(IDS_WHERE_USED_SRC_IMAGE);
+         lvcol.pszText = (LPSTR)ls.m_szbuffer; // = "Image Name";
+         lvcol.cx = 150;
+         lvcol.fmt = LVCFMT_LEFT;
+         ListView_InsertColumn(hListView, 0, &lvcol);
+
+         const LocalString ls2(IDS_WHERE_USED_OBJECT_NAME);
+         lvcol.pszText = (LPSTR)ls2.m_szbuffer; // = "In Use By";
+         lvcol.cx = 200;
+         lvcol.fmt = LVCFMT_LEFT;
+         ListView_InsertColumn(hListView, 1, &lvcol);
+
+         const LocalString ls3(IDS_WHERE_USED_PROPERTY);
+         lvcol.pszText = (LPSTR)ls3.m_szbuffer; // = "Image Property";
+         lvcol.cx = 200;
+         lvcol.fmt = LVCFMT_LEFT;
+         ListView_InsertColumn(hListView, 2, &lvcol);
+
+         //For each loop iterator to fill the Listview rows
+         int i = 0;
+         for (const WhereUsedInfo &where : vWhereUsed)
+         {
+            //Create Listview Item
+            LPSTR srcImage;
+            LPSTR usedByObject;
+            LPSTR usedByPropertyName;
+            srcImage = LPSTR(where.searchObjectName.c_str());
+
+            // Convert the string into an ANSI string
+            CW2A szUsedByObject(where.whereUsedObjectname);
+            // Now Convert it to a LPSTR
+            usedByObject = LPSTR(szUsedByObject);
+            usedByPropertyName = LPSTR(where.WhereUsedPropertyName.c_str());
+
+            LVITEM lvitem;
+            lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+            lvitem.iItem = i;
+            lvitem.iSubItem = 0;
+            lvitem.pszText = srcImage;
+            const int index = ListView_InsertItem(hListView, &lvitem);
+            //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
+            ListView_SetItemText(hListView, index, 1, usedByObject);
+            //Create Listview SubItem for 'Where Used By Object Property Name'...lime 'Image' or 'Side Image'
+            ListView_SetItemText(hListView, index, 2, usedByPropertyName);
+            i++;
+         }
+         ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+         GotoDlgCtrl(hListView);
+         return FALSE;
+      }
+    }
+    case WM_NOTIFY:
+    {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      if (wParam == IDC_SOUNDLIST)
+      {
+         LPNMLISTVIEW lpnmListView = (LPNMLISTVIEW)lParam;
+         if (lpnmListView->hdr.code == LVN_COLUMNCLICK)
+         {
+            //Add code here if you want to support resorting the listview when a column heading is clicked
+         }
+      }
+
+      switch (pnmhdr->code)
+      {
+      case LVN_ENDLABELEDIT:
+      {
+      }
+      break;
+
+      case LVN_ITEMCHANGING:
+      {
+      }
+      break;
+
+      case LVN_ITEMCHANGED:
+      {
+      }
+      break;
+      }
+    }
+    break;
+
+    case WM_DRAWITEM:
+    {
+      
+    }
+    break;
+    }
+    return DialogProcDefault(uMsg, wParam, lParam);
+}
+
+BOOL WhereUsedDialog::OnCommand(WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    const HWND hSoundList = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+
+    switch (LOWORD(wParam))
+    {
+        {
+          const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+          if (sel != -1)
+          {
+             ::SetFocus(hSoundList);
+             ListView_EditLabel(hSoundList, sel);
+             CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+             pt->SetNonUndoableDirty(eSaveDirty);
+          }
+          break;
+        }
+        case IDC_OK:
+        {
+          const int count = ListView_GetSelectedCount(hSoundList);
+          if (count > 0)
+          {
+             SetFocus();
+          }
+          SavePosition();
+          CDialog::OnOK();
+          break;
+        }
+        case IDC_EDIT_CONTROL:
+        {
+            //Get the index of the selected item in the 'WhereUsed' listview
+            const int sel = ListView_GetNextItem(hSoundList, -1, LVNI_SELECTED);
+          if (sel == -1)
+            {
+                MessageBox("Nothing is selected!", "No item selected", MB_OK);
+            }
+          else
+            {
+                //Create a buffer for the controlName to be returned
+                char controlName[MAX_PATH];
+                //Make the call to get the item text from the listview item at the 'sel' index and subitem 1.  Store the listview item text in 'controlName'.
+                ListView_GetItemText(hSoundList, sel, 1, controlName, sizeof(controlName));
+                //Make sure the controlName returned isn't 'Decal' as Decal doesn't support a unique name so we can't issue the 'GetElementByName' method on it.
+                if (strcmp(controlName, "decal") == 0)
+                {
+                    MessageBox("Decal objects don't have unique names so these objects need to be selected/edited manually.", "DECALS", MB_OK);
+                }
+                else
+                {
+                    IEditable *const pedit = g_pvp->GetActiveTable()->GetElementByName(controlName);
+                    if (pedit != nullptr)
+                    {
+                        ISelect *const psel = pedit->GetISelect();
+                        if (psel != nullptr)
+                        {
+                            CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+                            pt->AddMultiSel(psel, false, false, false);
+                            pt->RefreshProperties();
+                        }
+                    }
+                }
+            }
+            break;
+        }
+        case IDC_REFRESH_LIST:
+        {
+            RefreshList();
+        }
+    }
+    return FALSE;
+}
+
+
+void WhereUsedDialog::OnOK()
+{
+    // do not call CDialog::OnOk() here because if you rename images keys like backspace or escape in rename mode cause an IDOK message and this function is called
+}
+
+void WhereUsedDialog::OnCancel()
+{
+}
+
+void WhereUsedDialog::ShowWhereUsed()
+{
+    MessageBox("Show Where Used", "Show Where Used", MB_OK);
+    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+    vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
+    pt->ShowWhereImagesUsed(vWhereUsed);
+}
+
+void WhereUsedDialog::LoadPosition()
+{
+    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedPosX"s, 0);
+    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedPosY"s, 0);
+    const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedWidth"s, 1000);
+    const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "WhereUsedHeight"s, 800);
+    POINT p { x, y };
+    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
+      SetWindowPos(nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void WhereUsedDialog::SavePosition()
+{
+    const CRect rect = GetWindowRect();
+
+    g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedPosX"s, (int)rect.left);
+    g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedPosY"s, (int)rect.top);
+    const int w = rect.right - rect.left;
+    g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedWidth"s, w);
+    const int h = rect.bottom - rect.top;
+    g_pvp->m_settings.SaveValue(Settings::Editor, "WhereUsedHeight"s, h);
+}
+
+void WhereUsedDialog::RefreshList()
+{
+    //This method is very similar to the WhereUsedDialog WM_INITDIALOG code.  We don't need to build the dialog from scratch through.  Just need to delete existing items and re-add them.
+    //Get active pinball table (one currently selected...you can edit more than one at a time)
+    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
+    vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
+    if (pt)
+    {
+      //Fill a vector with a list of all images and the table objects that reference them
+      pt->ShowWhereImagesUsed(vWhereUsed);
+
+      //Get the handle to the listview for the Where Used dialog
+      const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
+      //Delete all the current items in the 'Where Used' listview because we are going to re-add them and we don't want duplicates
+      ListView_DeleteAllItems(hListView);
+
+      //For each loop iterator to build the Listview items
+      int i = 0;
+      for (const WhereUsedInfo &where : vWhereUsed)
+      {
+                //Create Listview Item
+                LPSTR srcImage;
+                LPSTR usedByObject;
+                LPSTR usedByPropertyName;
+                srcImage = LPSTR(where.searchObjectName.c_str());
+
+                // Convert the string into an ANSI string
+                CW2A szUsedByObject(where.whereUsedObjectname);
+                // Now Convert it to a LPSTR
+                usedByObject = LPSTR(szUsedByObject);
+                usedByPropertyName = LPSTR(where.WhereUsedPropertyName.c_str());
+
+                LVITEM lvitem;
+                lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
+                lvitem.iItem = i;
+                lvitem.iSubItem = 0;
+                lvitem.pszText = srcImage;
+                const int index = ListView_InsertItem(hListView, &lvitem);
+                //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
+                ListView_SetItemText(hListView, index, 1, usedByObject);
+                //Create Listview SubItem for 'Where Used By Object Property Name'...lime 'Image' or 'Side Image'
+                ListView_SetItemText(hListView, index, 2, usedByPropertyName);
+                i++;
+      }
+    }
+}
+
+void WhereUsedDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+    TOOLINFO toolInfo = { 0 };
+    toolInfo.cbSize = sizeof(toolInfo);
+    toolInfo.hwnd = parentHwnd;
+    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+    toolInfo.uId = (UINT_PTR)controlHwnd;
+    toolInfo.lpszText = (char *)text;
+    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }

@@ -48,6 +48,13 @@ struct ProtectionData
    int32_t spare2;
 };
 
+struct WhereUsedInfo
+{
+   string searchObjectName;
+   CComBSTR whereUsedObjectname;
+   string WhereUsedPropertyName;
+};
+
 class ScriptGlobalTable;
 
 class PinTableMDI : public CMDIChild
@@ -379,6 +386,9 @@ public:
    PinBinary *GetImageLinkBinary(const int id);
    Light *GetLight(const string &szName) const;
    RenderProbe *GetRenderProbe(const string &szName) const;
+   
+   void ShowWhereImagesUsed(vector<WhereUsedInfo> &);
+   void ShowWhereImageUsed(vector<WhereUsedInfo> &,Texture *const ppi);
 
    string AuditTable() const;
 
@@ -694,6 +704,7 @@ public:
 
    string m_envImage;
 
+   vector<IScriptable *> m_vscript;
    vector<IEditable *> m_vedit;
    vector<IEditable *> m_layer[MAX_LAYERS];
    vector<ISelect *> m_allHitElements;
