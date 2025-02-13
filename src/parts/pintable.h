@@ -458,7 +458,7 @@ public:
    Vertex2D TransformPoint(int x, int y) const;
 
    void ClearMultiSel(ISelect *newSel = nullptr);
-   bool MultiSelIsEmpty();
+   bool MultiSelIsEmpty() const;
    ISelect *GetSelectedItem() const { return m_vmultisel.ElementAt(0); }
    void AddMultiSel(ISelect *psel, const bool add, const bool update, const bool contextClick);
 

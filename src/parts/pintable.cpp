@@ -6090,7 +6090,7 @@ Vertex2D PinTable::GetCenter() const
       //ty += m_vdpoint[i]->m_v.y;
    }
 
-   return Vertex2D((maxx + minx)*0.5f, (maxy + miny)*0.5f);
+   return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
 }
 
 void PinTable::PutCenter(const Vertex2D& pv)
@@ -6993,7 +6993,7 @@ void PinTable::ClearMultiSel(ISelect* newSel)
    newSel->m_selectstate = eSelected;
 }
 
-bool PinTable::MultiSelIsEmpty()
+bool PinTable::MultiSelIsEmpty() const
 {
    // empty selection means only the table itself is selected
    return (m_vmultisel.size() == 1 && m_vmultisel.ElementAt(0) == this);
@@ -7985,7 +7985,7 @@ string PinTable::AuditTable() const
 #ifndef __STANDALONE__
    const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    char * const szText = new char[cchar + 1];
-   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
 #else
    const char * const szText = (char*)m_pcv->m_script_text.c_str();
 #endif
@@ -11083,14 +11083,10 @@ void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
 
 void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *const ppi)
 {
-   constexpr char usedStringYes[] = "X";
-   constexpr char usedStringNo[] = " ";
-
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
       CComBSTR bstr;
       WhereUsedInfo whereUsed;
-      bool inUse = false;
       IEditable *const pEdit = m_vedit[i];
       if (pEdit == nullptr)
       {
@@ -11104,7 +11100,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const DispReel *const pReel = (DispReel *)pEdit;
          if (lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pReel->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11119,7 +11114,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Primitive *const pPrim = (Primitive *)pEdit;
          if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
          {
-            inUse = true;
             whereUsed.searchObjectName = pPrim->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11129,7 +11123,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
 
          if (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pPrim->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11144,7 +11137,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Ramp *const pRamp = (Ramp *)pEdit;
          if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pRamp->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11159,7 +11151,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Surface *const pSurf = (Surface *)pEdit;
          if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
          {
-            inUse = true;
             whereUsed.searchObjectName = pSurf->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11169,7 +11160,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
 
          if (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pSurf->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11183,7 +11173,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Decal *const pDecal = (Decal *)pEdit;
          if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pDecal->m_d.m_szImage;
             //m_vedit[i]->GetScriptable()->get_Name(&bstr);
             //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
@@ -11199,7 +11188,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Flasher *const pFlash = (Flasher *)pEdit;
          if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0))
          {
-            inUse = true;
             whereUsed.searchObjectName = pFlash->m_d.m_szImageA;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11208,7 +11196,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          }
          if (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pFlash->m_d.m_szImageB;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11223,7 +11210,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Flipper *const pFlip = (Flipper *)pEdit;
          if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pFlip->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11238,7 +11224,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const HitTarget *const pHit = (HitTarget *)pEdit;
          if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pHit->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11253,7 +11238,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Light *const pLight = (Light *)pEdit;
          if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pLight->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11268,7 +11252,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Plunger *const pPlung = (Plunger *)pEdit;
          if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pPlung->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
@@ -11283,13 +11266,13 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Rubber *const pRub = (Rubber *)pEdit;
          if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pRub->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
+
          break;
       }
       case eItemSpinner:
@@ -11297,7 +11280,6 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
          const Spinner *const pSpin = (Spinner *)pEdit;
          if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
          {
-            inUse = true;
             whereUsed.searchObjectName = pSpin->m_d.m_szImage;
             m_vedit[i]->GetScriptable()->get_Name(&bstr);
             whereUsed.whereUsedObjectname = bstr;

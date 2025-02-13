@@ -836,7 +836,7 @@ int ImageDialog::AddListImage(HWND hwndListView, Texture *const ppi)
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
    lvitem.pszText = (LPSTR)ppi->m_szName.c_str();
-   lvitem.lParam = (size_t)ppi;
+   lvitem.lParam = (LPARAM)ppi;
 
    if (ppi->m_realWidth == ppi->m_width && ppi->m_realHeight == ppi->m_height)
       _snprintf_s(sizeString, MAXTOKEN - 1, "%ix%i", ppi->m_realWidth, ppi->m_realHeight);
@@ -1065,9 +1065,9 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
       //Get active pinball table (one currently selected...you can edit more than one at a time)
       CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-      vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
       if (pt)
       {
+         vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
          //Fill a vector with a list of all images and the table objects that reference them
          pt->ShowWhereImagesUsed(vWhereUsed);
 
@@ -1311,16 +1311,13 @@ void WhereUsedDialog::RefreshList()
       for (const WhereUsedInfo &where : vWhereUsed)
       {
                 //Create Listview Item
-                LPSTR srcImage;
-                LPSTR usedByObject;
-                LPSTR usedByPropertyName;
-                srcImage = LPSTR(where.searchObjectName.c_str());
+                LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
                 // Convert the string into an ANSI string
                 CW2A szUsedByObject(where.whereUsedObjectname);
                 // Now Convert it to a LPSTR
-                usedByObject = LPSTR(szUsedByObject);
-                usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
+                LPSTR usedByObject = LPSTR(szUsedByObject);
+                LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
                 LVITEM lvitem;
                 lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
