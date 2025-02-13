@@ -1850,7 +1850,7 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
          glGetShaderInfoLog(geometryShader, maxLength, &maxLength, errorText);
          PLOGE << shaderCodeName << ": Geometry Shader compilation failed with: " << errorText;
-         string e = "Fatal Error: Geometry Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText);
+         string e = "Fatal Error: Geometry Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
          ReportError(e.c_str(), -1, __FILE__, __LINE__);
          free(errorText);
          success = false;
@@ -2158,7 +2158,7 @@ void Shader::Load(const std::string& name)
    if (!parsing) {
       m_hasError = true;
       PLOGE << "Parsing failed";
-      string e = "Fatal Error: Shader parsing of " + m_shaderCodeName + " failed!");
+      string e = "Fatal Error: Shader parsing of " + m_shaderCodeName + " failed!";
       ReportError(e.c_str(), -1, __FILE__, __LINE__);
       return;
    }
@@ -2243,7 +2243,7 @@ void Shader::Load(const std::string& name)
       m_hasError = true;
       PLOGE << "No techniques found.";
       string e = "Fatal Error: No shader techniques found in " + m_shaderCodeName + '!';
-      ReportError(msg, -1, __FILE__, __LINE__);
+      ReportError(e.c_str(), -1, __FILE__, __LINE__);
       return;
    }
 }
