@@ -121,14 +121,17 @@
 #define IDC_X_OFFSET_EDIT2              106
 #define IDC_KICKER_ORIENTATION_EDIT     107
 #define IDC_Y_OFFSET_EDIT2              107
+#define IDS_WHERE_USED_SRC_IMAGE        107
 #define IDC_TABLE_SCALEZ                108
 #define ID_ASSIGN_TO_CURRENT_LAYER      108
 #define IDR_FLIPPER                     108
 #define IDC_SHOW_BRACKET_CHECK          108
+#define IDS_WHERE_USED_OBJECT_NAME      108
 #define IDC_SELECT                      109
 #define DISPID_Table_GridSize           109
 #define IDS_ASSIGNTO                    109
 #define IDC_CAP_VISIBLE_CHECK           109
+#define IDS_WHERE_USED_PROPERTY         109
 #define IDC_ELASTICITY_EDIT             110
 #define ID_INSERT_WALL                  110
 #define IDC_LIGHT                       110
@@ -312,6 +315,7 @@
 #define IDI_VPINBALL                    218
 #define IDC_STEP                        218
 #define IDC_STATUSNAME                  218
+#define IDC_SHOW_WHERE_USED             219
 #define IDI_BALL                        219
 #define IDR_SURFACEMENU                 221
 #define IDD_ROTATE                      222
@@ -413,6 +417,7 @@
 #define IDC_APPLY_TO_TABLE              280
 #define IDC_FONT_DIALOG_BUTTON          280
 #define IDC_ADD_LAYER_BUTTON            280
+#define IDC_EDIT_CONTROL                280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -1090,6 +1095,7 @@
 #define IDC_DELETE_LAYER_BUTTON         765
 #define IDC_RESET_WINDOW                765
 #define IDC_DEVICES_BUTTON              765
+#define IDC_REFRESH_LIST                765
 #define IDC_LAYER_FILTER_CASE_BUTTON    766
 #define IDC_COLOR_BUTTON2               766
 #define IDC_SAVE_ALL                    766
@@ -1244,6 +1250,8 @@
 #define IDD_SCRIPT_ERROR                868
 #define IDC_STATIC_INSTALL_DEBUGGER     868
 #define IDC_ERROR_EDIT                  869
+#define IDD_IMAGEDIALOG1                869
+#define IDD_WHEREUSEDDIALOG             869
 #define IDC_SCRIPT_CONTINUE             870
 #define IDC_SCRIPT_STOP                 871
 #define IDC_SUPPRESS_ERRORS_CHECK       872
@@ -1306,6 +1314,8 @@
 #define IDC_SYNC                        928
 #define IDD_RENDER_OPT                  929
 #define IDD_CABINET_OPT                 930
+#define IDC_LIST1                       930
+#define IDC_WHERE_LIST                  930
 #define IDD_PFVIEW_OPT                  931
 #define IDD_ALPHAVIEW_OPT               932
 #define IDD_DMDVIEW_OPT                 933
