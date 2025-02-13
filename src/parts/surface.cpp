@@ -1299,7 +1299,7 @@ bool Surface::LoadToken(const int id, BiffReader * const pbr)
    case FID(HTBT): pbr->GetFloat(m_d.m_heightbottom); break;
    case FID(HTTP): pbr->GetFloat(m_d.m_heighttop); break;
    case FID(INNR): pbr->GetBool(m_d.m_inner); break; //!! Deprecated, do not use anymore
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(DSPT): pbr->GetBool(m_d.m_displayTexture); break;
    case FID(SLGF): pbr->GetFloat(m_d.m_slingshotforce); break;
    case FID(SLTH): pbr->GetFloat(m_d.m_slingshot_threshold); break;

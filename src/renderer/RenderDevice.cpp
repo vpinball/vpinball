@@ -735,7 +735,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #endif
    default:
    {
-      ShowError("Invalid Output format: "s.append(std::to_string(mode->format).c_str()));
+      ShowError("Invalid Output format: "s.append(std::to_string(mode->format)));
       exit(-1);
    }
    }
@@ -1299,7 +1299,7 @@ RenderDevice::~RenderDevice()
       delete binding;
    m_samplerBindings.clear();
 
-   for (size_t i = 0; i < sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]); i++)
+   for (size_t i = 0; i < std::size(m_samplerStateCache); i++)
    {
       if (m_samplerStateCache[i] != 0)
       {
@@ -1652,7 +1652,7 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
 {
 #if defined(ENABLE_BGFX)
 #elif defined(ENABLE_OPENGL)
-   assert(sizeof(m_samplerStateCache)/sizeof(m_samplerStateCache[0]) == 3*3*5);
+   assert(std::size(m_samplerStateCache) == 3*3*5);
    int samplerStateId = min((int)clamp_u, 2) * 5 * 3
                       + min((int)clamp_v, 2) * 5
                       + min((int)filter, 4);

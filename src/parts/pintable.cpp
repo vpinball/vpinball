@@ -1933,9 +1933,9 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
       WideStrNCopy(wzRoot, wzName, wzUniqueName_maxlength-3);
       WCHAR wzSuffix[4] = { 0 };
 #ifndef __STANDALONE__
-      _itow_s(suffix, wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), 10);
+      _itow_s(suffix, wzSuffix, std::size(wzSuffix), 10);
 #else
-      swprintf(wzSuffix, sizeof(wzSuffix)/sizeof(wzSuffix[0]), L"%d", suffix);
+      swprintf(wzSuffix, std::size(wzSuffix), L"%d", suffix);
 #endif
       if(suffix < 10)
          WideStrCat(L"0", wzName, wzUniqueName_maxlength);
@@ -1953,7 +1953,7 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    delete[] wzName;
 }
 
-void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength)
+void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
 {
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
    //otherwise add/increase the suffix until we find a name that's not used yet
@@ -3810,7 +3810,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
    }
 
    // HACK!!!! - Don't save special values when copying for undo.  For instance, don't reset the code.
-   // Someday save these values into there own stream, used only when saving to file.
+   // Someday save these values into their own stream, used only when saving to file.
 
    if (hcrypthash != 0)
    {
@@ -4585,7 +4585,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
    case FID(SIMG): pbr->GetInt(&((int *)pbr->m_pdata)[3]); break;
    case FID(SFNT): pbr->GetInt(&((int *)pbr->m_pdata)[4]); break;
    case FID(SCOL): pbr->GetInt(&((int *)pbr->m_pdata)[5]); break;
-   case FID(NAME): pbr->GetWideString(m_wzName, sizeof(m_wzName) / sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(BIMG): pbr->GetString(m_BG_image[0]); break;
    case FID(BIMF): pbr->GetString(m_BG_image[1]); break;
    case FID(BIMS): pbr->GetString(m_BG_image[2]); break;
@@ -5661,7 +5661,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
                   // so the ID_SELECT_ELEMENT is the global ID for selecting an element from the list and the rest is
                   // added for finding the element out of the list
                   // the selection is done in ISelect::DoCommand()
-                  const unsigned long id = 0x80000000 + ((unsigned long)i << 16) + ID_SELECT_ELEMENT;
+                  const UINT_PTR id = 0x80000000 + ((UINT_PTR)i << 16) + ID_SELECT_ELEMENT;
                   newMenu.AppendMenu(MF_STRING, id, szTemp);
                }
             }
@@ -6910,7 +6910,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
 
          if (type != eItemDecal)
          {
-            GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName, sizeof(peditNew->GetScriptable()->m_wzName)/sizeof(peditNew->GetScriptable()->m_wzName[0]));
+            GetUniqueNamePasting(type, peditNew->GetScriptable()->m_wzName, std::size(peditNew->GetScriptable()->m_wzName));
             peditNew->InitVBA(fTrue, 0, peditNew->GetScriptable()->m_wzName);
          }
 
@@ -7800,15 +7800,15 @@ Material* PinTable::GetMaterial(const string &szName) const
 void PinTable::AddMaterial(Material * const pmat)
 {
    if (pmat->m_szName.empty() || pmat->m_szName == "dummyMaterial")
-      pmat->m_szName = "Material";
+      pmat->m_szName = "Material"s;
 
    if (!IsMaterialNameUnique(pmat->m_szName) || pmat->m_szName == "Material")
    {
       int suffix = 1;
-      char textBuf[MAXNAMEBUFFER];
+      string textBuf;
       do
       {
-         sprintf_s(textBuf, sizeof(textBuf), "%s%i", pmat->m_szName.c_str(), suffix);
+         textBuf = pmat->m_szName + std::to_string(suffix);
          suffix++;
       } while (!IsMaterialNameUnique(textBuf));
       pmat->m_szName = textBuf;
@@ -8172,7 +8172,7 @@ string PinTable::AuditTable() const
       ss << "No issue identified.\r\n";
 
    // Also output a log of the table file content to allow easier size optimization
-   unsigned long totalSize = 0, totalGpuSize = 0;
+   unsigned long long totalSize = 0, totalGpuSize = 0;
    for (auto sound : m_vsound)
    {
       //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";

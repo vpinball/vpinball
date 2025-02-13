@@ -694,9 +694,9 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    case TypeDef::TD_NATIVE:
       switch (typeDef.nativeType.id)
       {
-      case UNRESOLVED_TYPEID: return "Invalid";
-      case VOID_TYPEID: return "void";
-      case BOOL_TYPEID: return sv.vBool ? "true" : "false";
+      case UNRESOLVED_TYPEID: return "Invalid"s;
+      case VOID_TYPEID: return "void"s;
+      case BOOL_TYPEID: return sv.vBool ? "true"s : "false"s;
       case CHAR_TYPEID: return std::to_string(sv.vByte);
       case SHORT_TYPEID: return std::to_string(sv.vShort);
       case INT_TYPEID: return std::to_string(sv.vInt);
@@ -707,7 +707,7 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
       case ULONG_TYPEID: return std::to_string(sv.vULong);
       case FLOAT_TYPEID: return std::to_string(sv.vFloat);
       case DOUBLE_TYPEID: return std::to_string(sv.vDouble);
-      case STRING_TYPEID: return "\""s.append(sv.vString).append("\"");
+      case STRING_TYPEID: return "\""s.append(sv.vString).append(1,'"');
       default: assert(false);
       }
       break;
@@ -720,7 +720,7 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
       break;
    }
 
-   return "<< bug >>";
+   return "<< bug >>"s;
 }
 
 HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT*) const
@@ -805,10 +805,10 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
 
    #if LOG_INVOKES
       std::stringstream ss;
-      ss << "Invoke Call: " << classDef->name.name << "." << memberDef.name.name << "(";
+      ss << "Invoke Call: " << classDef->name.name << "." << memberDef.name.name << '(';
       for (unsigned int i = 0; i < pDispParams->cArgs; i++)
          ss << ((i != 0) ? ", " : "") << ScriptVariantToString(memberDef.callArgType[i], args[i]).c_str();
-      PLOGD << ss.str() << ")";
+      PLOGD << ss.str() << ')';
    #endif
 
    ScriptVariant retValue;

@@ -823,7 +823,7 @@ bool Rubber::LoadToken(const int id, BiffReader * const pbr)
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
    case FID(ELFO): pbr->GetFloat(m_d.m_elasticityFalloff); break;
    case FID(RFCT): pbr->GetFloat(m_d.m_friction); break;

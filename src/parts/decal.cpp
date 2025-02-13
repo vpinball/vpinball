@@ -363,7 +363,7 @@ bool Decal::LoadToken(const int id, BiffReader * const pbr)
    case FID(ROTA): pbr->GetFloat(m_d.m_rotation); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(TEXT): pbr->GetString(m_d.m_sztext); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_decaltype); break;
    case FID(COLR): pbr->GetInt(m_d.m_color); break;

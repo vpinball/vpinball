@@ -1752,8 +1752,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
          if (line.compare(0, 4, "////") == 0) {
             string newMode = line.substr(4, line.length() - 4);
             if (newMode == "DEFINES") {
-               currentElement.append("#define GLSL\n"s);
-               currentElement.append("\n"s);
+               currentElement.append("#define GLSL\n\n"s);
                if (UseGeometryShader())
                   currentElement.append("#define USE_GEOMETRY_SHADER 1\n"s);
                else
@@ -1776,7 +1775,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
             currentElement = values[currentMode];
          }
          else {
-            currentElement.append(line).append("\n"s);
+            currentElement.append(line).append(1,'\n');
          }
       }
       values[currentMode] = currentElement;
@@ -1818,10 +1817,9 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
       glGetShaderInfoLog(vertexShader, maxLength, &maxLength, errorText);
       PLOGE << shaderCodeName << ": Vertex Shader compilation failed with: " << errorText;
-      char msg[16384];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: Vertex Shader compilation of %s:%s failed!\n\n%s", fileNameRoot.c_str(), shaderCodeName.c_str(),errorText);
-      ReportError(msg, -1, __FILE__, __LINE__);
+      string e = "Fatal Error: Vertex Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
       free(errorText);
+      ReportError(e.c_str(), -1, __FILE__, __LINE__);
       success = false;
 
 #ifdef __STANDALONE__
@@ -1852,9 +1850,8 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
          glGetShaderInfoLog(geometryShader, maxLength, &maxLength, errorText);
          PLOGE << shaderCodeName << ": Geometry Shader compilation failed with: " << errorText;
-         char msg[2048];
-         sprintf_s(msg, sizeof(msg), "Fatal Error: Geometry Shader compilation of %s:%s failed!\n\n%s", fileNameRoot.c_str(), shaderCodeName.c_str(), errorText);
-         ReportError(msg, -1, __FILE__, __LINE__);
+         string e = "Fatal Error: Geometry Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText);
+         ReportError(e.c_str(), -1, __FILE__, __LINE__);
          free(errorText);
          success = false;
 
@@ -1886,9 +1883,8 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 
          glGetShaderInfoLog(fragmentShader, maxLength, &maxLength, errorText);
          PLOGE << shaderCodeName << ": Fragment Shader compilation failed with: " << errorText;
-         char msg[16384];
-         sprintf_s(msg, sizeof(msg), "Fatal Error: Fragment Shader compilation of %s:%s failed!\n\n%s", fileNameRoot.c_str(), shaderCodeName.c_str(), errorText);
-         ReportError(msg, -1, __FILE__, __LINE__);
+         string e = "Fatal Error: Fragment Shader compilation of " + fileNameRoot + ':' + shaderCodeName + " failed!\n\n" + errorText;
+         ReportError(e.c_str(), -1, __FILE__, __LINE__);
          free(errorText);
          success = false;
 
@@ -2162,9 +2158,8 @@ void Shader::Load(const std::string& name)
    if (!parsing) {
       m_hasError = true;
       PLOGE << "Parsing failed";
-      char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: Shader parsing of %s failed!", m_shaderCodeName.c_str());
-      ReportError(msg, -1, __FILE__, __LINE__);
+      string e = "Fatal Error: Shader parsing of " + m_shaderCodeName + " failed!");
+      ReportError(e.c_str(), -1, __FILE__, __LINE__);
       return;
    }
    robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL"s);
@@ -2211,22 +2206,22 @@ void Shader::Load(const std::string& name)
             {
                //PLOGI << "Compiling technique: " << shaderTechniqueNames[technique].name;
                string vertexShaderCode = vertex;
-               vertexShaderCode.append("\n//"s).append(_technique).append("\n//"s).append(element[2]).append("\n"s);
-               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append("\0"s);
+               vertexShaderCode.append("\n//"s).append(_technique).append("\n//"s).append(element[2]).append(1,'\n');
+               vertexShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[2], values)).append(1,'\0');
                vertexShaderCode = PreprocessGLShader(vertexShaderCode);
                string geometryShaderCode;
                if (elem == 5 && element[3].length() > 0)
                {
                   geometryShaderCode = geometry;
-                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append("\n"s);
-                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append("\0"s);
+                  geometryShaderCode.append("\n//").append(_technique).append("\n//").append(element[3]).append(1,'\n');
+                  geometryShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[3], values)).append(1,'\0');
                }
                geometryShaderCode = PreprocessGLShader(geometryShaderCode);
                string fragmentShaderCode = fragment;
-               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append("\n"s);
-               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append("\0"s);
+               fragmentShaderCode.append("\n//").append(_technique).append("\n//").append(element[elem - 1]).append(1,'\n');
+               fragmentShaderCode.append(analyzeFunction(m_shaderCodeName, _technique, element[elem - 1], values)).append(1,'\0');
                fragmentShaderCode = PreprocessGLShader(fragmentShaderCode);
-               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append("_"s).append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
+               ShaderTechnique* build = compileGLShader(technique, m_shaderCodeName, element[0] /*.append(1,'_').append(element[1])*/, vertexShaderCode, geometryShaderCode, fragmentShaderCode);
                if (build != nullptr)
                {
                   m_techniques[technique] = build;
@@ -2235,9 +2230,8 @@ void Shader::Load(const std::string& name)
                else
                {
                   m_hasError = true;
-                  char msg[128];
-                  sprintf_s(msg, sizeof(msg), "Fatal Error: Compilation failed for technique %s of %s!", shaderTechniqueNames[technique].name.c_str(), m_shaderCodeName.c_str());
-                  ReportError(msg, -1, __FILE__, __LINE__);
+                  string e = "Fatal Error: Compilation failed for technique " + shaderTechniqueNames[technique].name + " of " + m_shaderCodeName + '!';
+                  ReportError(e.c_str(), -1, __FILE__, __LINE__);
                   return;
                }
             }
@@ -2248,8 +2242,7 @@ void Shader::Load(const std::string& name)
    else {
       m_hasError = true;
       PLOGE << "No techniques found.";
-      char msg[128];
-      sprintf_s(msg, sizeof(msg), "Fatal Error: No shader techniques found in %s!", m_shaderCodeName.c_str());
+      string e = "Fatal Error: No shader techniques found in " + m_shaderCodeName + '!';
       ReportError(msg, -1, __FILE__, __LINE__);
       return;
    }

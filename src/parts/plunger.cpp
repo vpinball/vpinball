@@ -230,7 +230,7 @@ constexpr static PlungerCoord modernCoords[] =
    { 0.25f, 100.0f, 1.00f, 0.3f, 0.0f } // shaft
 };
 const static PlungerDesc modernDesc = {
-   sizeof(modernCoords) / sizeof(modernCoords[0]), (PlungerCoord*)modernCoords
+   std::size(modernCoords), (PlungerCoord*)modernCoords
 };
 
 // Flat Plunger.  This is a special case with no "lathe" entries;
@@ -950,7 +950,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(MECH): pbr->GetBool(m_d.m_mechPlunger); break;
    case FID(APLG): pbr->GetBool(m_d.m_autoPlunger); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(TYPE): pbr->GetInt(&m_d.m_type); break;
    case FID(ANFR): pbr->GetInt(m_d.m_animFrames); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;

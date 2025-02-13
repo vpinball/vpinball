@@ -1009,7 +1009,7 @@ bool Trigger::LoadToken(const int id, BiffReader * const pbr)
    case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(SHAP): pbr->GetInt(&m_d.m_shape); break;
    case FID(ANSP): pbr->GetFloat(m_d.m_animSpeed); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    default:
    {
       LoadPointToken(id, pbr, pbr->m_version);

@@ -873,7 +873,7 @@ bool HitTarget::LoadToken(const int id, BiffReader * const pbr)
    case FID(ROTZ): pbr->GetFloat(m_d.m_rotZ); break;
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(TRTY): pbr->GetInt(&m_d.m_targetType); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
    case FID(LEMO): pbr->GetBool(m_d.m_legacy); break;

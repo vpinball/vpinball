@@ -512,7 +512,7 @@ public:
    bool IsNameUnique(const WCHAR *const wzName) const;
    void GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
    void GetUniqueName(const WCHAR *const wzRoot, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
-   void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength);
+   void GetUniqueNamePasting(const int type, WCHAR *const wzUniqueName, const DWORD wzUniqueName_maxlength) const;
 
    float GetSurfaceHeight(const string &name, float x, float y) const;
 

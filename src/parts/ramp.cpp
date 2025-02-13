@@ -1394,7 +1394,7 @@ bool Ramp::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(ALGN): pbr->GetInt(&m_d.m_imagealignment); break;
    case FID(IMGW): pbr->GetBool(m_d.m_imageWalls); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(WLHL): pbr->GetFloat(m_d.m_leftwallheight); break;
    case FID(WLHR): pbr->GetFloat(m_d.m_rightwallheight); break;
    case FID(WVHL): pbr->GetFloat(m_d.m_leftwallheightvisible); break;

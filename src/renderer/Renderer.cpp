@@ -1279,7 +1279,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec4& co
             m_renderDevice->Clear(clearType::TARGET, 0x00000000);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
-            Vertex3D_TexelOnly vertices[4] =
+            static const Vertex3D_TexelOnly vertices[4] =
             {
                {  0.5f, -0.5f, 0.f, 1.f, 1.f },
                { -0.5f, -0.5f, 0.f, 0.f, 1.f },
@@ -1838,7 +1838,7 @@ static float pl_hdr_rescale(const bool from, const bool to, float x)
    if (from == to)
       return x;
 
-   x = fmaxf(x, 0.0f);
+   x = max(x, 0.0f);
    if (x == 0.0f)
       return 0.0f;
 
@@ -1846,7 +1846,7 @@ static float pl_hdr_rescale(const bool from, const bool to, float x)
    if (from == PL_HDR_PQ)
    {
       x = powf(x, (float)(1.0 / ((2523. / 4096.) * 128.)));
-      x = fmaxf(x - (float)(3424. / 4096.), 0.f) / ((float)((2413. / 4096.) * 32.) - (float)((2392. / 4096.) * 32.) * x);
+      x = max(x - (float)(3424. / 4096.), 0.f) / ((float)((2413. / 4096.) * 32.) - (float)((2392. / 4096.) * 32.) * x);
       x = powf(x, (float)(1.0 / ((2610. / 4096.) / 4.)));
       x *= (float)(10000. / 203.);
    }
@@ -1868,7 +1868,7 @@ static float pl_hdr_rescale(const bool from, const bool to, float x)
 // precompute spline parameters based on all the constants in here and the HDR display range (in nits)
 static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
 {
-   const float src_hdr_max = fmaxf(1000.f, displayMaxLum); // assumes 1000 nits as scene input max, but adapts to displays with higher nits, as then everything stays perfectly linear //!! use 10000. for max input?
+   const float src_hdr_max = max(1000.f, displayMaxLum); // assumes 1000 nits as scene input max, but adapts to displays with higher nits, as then everything stays perfectly linear //!! use 10000. for max input?
 
    constexpr float slope_tuning    = 1.5f; //[0..10]
    constexpr float slope_offset    = 0.2f; //[0..1]
@@ -1928,8 +1928,8 @@ static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
    const float src_avg = clamp(10.0f, 0.f, src_hdr_max);
    const float dst_avg = clamp(sdr_avg, 0.f, displayMaxLum);
 
-   const float src_pivot = fminf(src_avg, 0.8f * src_hdr_max);
-   const float dst_pivot = fminf(sqrtf(src_avg * dst_avg), 0.8f * displayMaxLum);
+   const float src_pivot = min(src_avg, 0.8f * src_hdr_max);
+   const float dst_pivot = min(sqrtf(src_avg * dst_avg), 0.8f * displayMaxLum);
 #endif
 
    // Solve for linear knee (Pa = 0)

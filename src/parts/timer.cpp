@@ -236,7 +236,7 @@ bool Timer::LoadToken(const int id, BiffReader * const pbr)
    case FID(VCEN): pbr->GetVector2(m_d.m_v); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(BGLS): pbr->GetBool(m_backglass); break;
    default: ISelect::LoadToken(id, pbr); break;
    }

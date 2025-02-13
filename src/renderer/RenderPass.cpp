@@ -238,7 +238,7 @@ bool RenderPass::Execute(const bool log)
       if (m_areaOfInterest.x != FLT_MAX)
          bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
-      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append("]").c_str());
+      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(1,']').c_str());
       #endif
       #endif
       for (RenderCommand* cmd : m_commands)
@@ -252,7 +252,7 @@ bool RenderPass::Execute(const bool log)
       if (m_areaOfInterest.x != FLT_MAX)
          bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
       #if defined(_DEBUG)
-      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(m_singleLayerRendering)).append("]").c_str());
+      bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(m_singleLayerRendering)).append(1,']').c_str());
       #endif
       #endif
       for (RenderCommand* cmd : m_commands)
@@ -267,7 +267,7 @@ bool RenderPass::Execute(const bool log)
          if (m_areaOfInterest.x != FLT_MAX)
             bgfx::setViewScissor(m_rt->GetRenderDevice()->m_activeViewId, left, m_rt->GetHeight() - top, right - left, top - bottom);
          #if defined(_DEBUG)
-         bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append("]").c_str());
+         bgfx::setViewName(m_rt->GetRenderDevice()->m_activeViewId, m_name.append(" [RT=").append(m_rt->m_name).append(" / Layer=").append(std::to_string(layer)).append(1,']').c_str());
          #endif
          #endif
          for (RenderCommand* cmd : m_commands)

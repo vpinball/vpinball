@@ -781,7 +781,7 @@ bool Bumper::LoadToken(const int id, BiffReader * const pbr)
    case FID(ORIN): pbr->GetFloat(m_d.m_orientation); break;
    case FID(RDLI): pbr->GetFloat(m_d.m_ringDropOffset); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(BVIS):
    {
       // backwards compatibility when loading old VP9 tables

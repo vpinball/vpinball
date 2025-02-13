@@ -154,7 +154,7 @@ LocalStringW::LocalStringW(const int resid)
 {
 #ifndef __STANDALONE__
    if (resid > 0)
-      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, sizeof(m_szbuffer)/sizeof(WCHAR));
+      LoadStringW(g_pvp->theInstance, resid, m_szbuffer, std::size(m_szbuffer));
    else
       m_szbuffer[0] = L'\0';
 #else

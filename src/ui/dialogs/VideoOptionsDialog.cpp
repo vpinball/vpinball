@@ -424,7 +424,7 @@ void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection
    }
    m_wndAspectRatio.SetRedraw(false);
    m_wndAspectRatio.AddString("Free");
-   for (int j = 1; j < sizeof(aspectRatios) / sizeof(int2); j++)
+   for (int j = 1; j < std::size(aspectRatios); j++)
    {
       char szT[128];
       sprintf_s(szT, sizeof(szT), "%s: %d x %d", aspectRatios[j].x > aspectRatios[j].y ? "Landscape" : "Portrait" , max(aspectRatios[j].x, aspectRatios[j].y), min(aspectRatios[j].x, aspectRatios[j].y));
@@ -539,7 +539,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    {
       double best = DBL_MAX;
       int2 bestAR;
-      for (int j = 1; j < sizeof(aspectRatios) / sizeof(int2); j++)
+      for (int j = 1; j < std::size(aspectRatios); j++)
       {
          const double fit = abs(1. - (double)(m_allVideoModes[i].height * aspectRatios[j].x) / (double)(m_allVideoModes[i].width * aspectRatios[j].y));
          if (fit < best)
@@ -717,7 +717,7 @@ void VideoOptionPropPage::SelectAspectRatio(int width, int height)
 {
    double best = DBL_MAX;
    int bestAR;
-   for (int j = 1; j < sizeof(aspectRatios) / sizeof(int2); j++)
+   for (int j = 1; j < std::size(aspectRatios); j++)
    {
       const double fit = abs(1. - (double)(height * aspectRatios[j].x) / (double)(width * aspectRatios[j].y));
       if (fit < best)

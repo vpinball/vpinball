@@ -1008,7 +1008,7 @@ bool Light::LoadToken(const int id, BiffReader * const pbr)
    case FID(BWTH): pbr->GetFloat(m_d.m_intensity); break;
    case FID(TRMS): pbr->GetFloat(m_d.m_transmissionScale); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(BGLS): pbr->GetBool(m_backglass); break;
    case FID(LIDB): pbr->GetFloat(m_d.m_depthBias); break;
    case FID(FASP): pbr->GetFloat(m_d.m_fadeSpeedUp); break;

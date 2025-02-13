@@ -12,7 +12,7 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 
 Ball::Ball() : m_id(GetNextBallID())
 {
-   swprintf_s(m_wzName, sizeof(m_wzName) / sizeof(WCHAR), L"LiveBall%d", m_id); // Default name
+   swprintf_s(m_wzName, std::size(m_wzName), L"LiveBall%d", m_id); // Default name
    m_d.m_useTableRenderSettings = true;
    m_d.m_color = RGB(255, 255, 255);
    m_d.m_bulb_intensity_scale = 1.0f;
@@ -166,7 +166,7 @@ bool Ball::LoadToken(const int id, BiffReader *const pbr)
    case FID(SPHR): pbr->GetBool(m_d.m_pinballEnvSphericalMapping); break;
    case FID(TMON): pbr->GetBool(m_d.m_tdr.m_TimerEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
    default: ISelect::LoadToken(id, pbr); break;
    }
    return true;

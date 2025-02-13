@@ -602,7 +602,7 @@ bool Gate::LoadToken(const int id, BiffReader * const pbr)
    case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(TMIN): pbr->GetInt(m_d.m_tdr.m_TimerInterval); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName, std::size(m_wzName)); break;
    case FID(ELAS): pbr->GetFloat(m_d.m_elasticity); break;
    case FID(GAMA): pbr->GetFloat(m_d.m_angleMax); break;
    case FID(GAMI): pbr->GetFloat(m_d.m_angleMin); break;

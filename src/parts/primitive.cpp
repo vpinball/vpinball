@@ -1732,7 +1732,7 @@ bool Primitive::LoadToken(const int id, BiffReader * const pbr)
    case FID(IMAG): pbr->GetString(m_d.m_szImage); break;
    case FID(NRMA): pbr->GetString(m_d.m_szNormalMap); break;
    case FID(SIDS): pbr->GetInt(m_d.m_Sides); break;
-   case FID(NAME): pbr->GetWideString(m_wzName,sizeof(m_wzName)/sizeof(m_wzName[0])); break;
+   case FID(NAME): pbr->GetWideString(m_wzName,std::size(m_wzName)); break;
    case FID(MATR): pbr->GetString(m_d.m_szMaterial); break;
    case FID(SCOL): pbr->GetInt(m_d.m_SideColor); break;
    case FID(TVIS): pbr->GetBool(m_d.m_visible); break;
