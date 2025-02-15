@@ -18,17 +18,17 @@ enum Link {
     var url: URL {
         switch self {
         case .docs:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md")!
         case .troubleshooting:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md#troubleshooting")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting")!
         case .discord:
             return URL(string: "https://discord.com/channels/652274650524418078/1076655472846831667")!
         case .licenses:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/LICENSE")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/LICENSE")!
         case .zedmdos:
             return URL(string: "https://github.com/PPUC/zedmdos")!
         case .vpinball:
-            return URL(string: "https://github.com/vpinball/vpinball/tree/10.8.1")!
+            return URL(string: "https://github.com/vpinball/vpinball")!
         case .pinmame:
             return URL(string: "https://github.com/vpinball/pinmame")!
         case .libaltsound:
@@ -42,7 +42,7 @@ enum Link {
         case .libdof:
             return URL(string: "https://github.com/jsm174/libdof")!
         case .thirdparty:
-            return URL(string: "https://github.com/vpinball/vpinball/blob/10.8.1/third-party/README.md")!
+            return URL(string: "https://github.com/vpinball/vpinball/blob/master/third-party/README.md")!
         }
     }
 
@@ -100,7 +100,7 @@ enum Credit {
     var authors: String? {
         switch self {
         case .vpinball:
-            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam, LeHaine"
+            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam, LeHaine, claytgreene"
         case .pinmame:
             return "volkenborn, toxieainc, Steve Ellenoff, bcd, Tom Haukap, wpcmame, Matthias Buecher, jsm174, mkalkbrenner, droscoe, vbousquet, djrobx, Thomas Behrens, bontango, mjrgh, Oliver Kaegi, syllebra, gstellenberg, Randall, Perlow, JockeJarre, tomlogic, Netsplits, gnulnulf, freezy, Sunnucks, Mark, uid68989, francisdb, diego-link-eggy, Sereda, Pavel, tomlogic"
         case .libaltsound:

@@ -306,7 +306,7 @@ In settings, select *DMDServer* for *DMD Type* and enter the correct *Address* a
 
 **Q: Can *Visual Pinball for iOS* be customized to do this or that?**
 
-**A:** *Visual Pinball for iOS* is completely free and has been in development for over two years. The [source code](https://github.com/vpinball/vpinball/tree/10.8.1) is open and available for anyone interested in contributing. Contributions are welcome, whether for fixing bugs, adding features, or helping with documentation!
+**A:** *Visual Pinball for iOS* is completely free and has been in development for over two years. The [source code](https://github.com/vpinball/vpinball) is open and available for anyone interested in contributing. Contributions are welcome, whether for fixing bugs, adding features, or helping with documentation!
 
 ## Support
 

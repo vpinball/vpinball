@@ -6,19 +6,19 @@ import androidx.browser.customtabs.CustomTabsIntent
 import java.io.File
 
 enum class Link(val url: String) {
-    DOCS("https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md"),
-    TROUBLESHOOTING("https://github.com/vpinball/vpinball/blob/10.8.1/standalone/docs/ios/README.md#troubleshooting"),
+    DOCS("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md"),
+    TROUBLESHOOTING("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting"),
     DISCORD("https://discord.com/channels/652274650524418078/1076655472846831667"),
-    LICENSES("https://github.com/vpinball/vpinball/blob/10.8.1/LICENSE"),
+    LICENSES("https://github.com/vpinball/vpinball/blob/master/LICENSE"),
     ZEDMDOS("https://github.com/PPUC/zedmdos"),
-    VPINBALL("https://github.com/vpinball/vpinball/tree/10.8.1"),
+    VPINBALL("https://github.com/vpinball/vpinball"),
     PINMAME("https://github.com/vpinball/pinmame"),
     LIBALTSOUND("https://github.com/vpinball/libaltsound"),
     LIBDMDUTIL("https://github.com/vpinball/libdmdutil"),
     LIBZEDMD("https://github.com/ppuc/libzedmd"),
     LIBSERUM("https://github.com/zesinger/libserum"),
     LIBDOF("https://github.com/jsm174/libdof"),
-    THIRDPARTY("https://github.com/vpinball/vpinball/blob/10.8.1/third-party/README.md");
+    THIRDPARTY("https://github.com/vpinball/vpinball/blob/master/third-party/README.md");
 
     fun open(context: Context) {
         val intent = CustomTabsIntent.Builder().build()
@@ -33,7 +33,7 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
             "shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, " +
             "mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, " +
             "ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, " +
-            "CapitaineSheridan, Billiam, LeHaine",
+            "CapitaineSheridan, Billiam, LeHaine, claytgreene",
         Link.VPINBALL,
     ),
     PINMAME(
