@@ -10,7 +10,7 @@ PINMAME_SHA=62b70673f58b22a3945e6c1dce70757207a54834
 LIBALTSOUND_SHA=b8f397858cbc7a879f7392c14a509f00c8bdc7dd
 LIBDMDUTIL_SHA=2eefb13e331c8618e49a855af85076ba541e4bb9
 LIBDOF_SHA=5c43c99ea28b44bb58b74554c4303a505e208148
-FFMPEG_SHA=b08d7969c550a804a59511c7b83f2dd8cc0499b8
+FFMPEG_SHA=ef590ee9ccc2b3042a666d9f812f67cdfb2fc7ca
 BGFX_CMAKE_VERSION=1.129.8863-490
 BGFX_PATCH_SHA=1d0967155c375155d1f778ded4061f35c80fc96f
 
@@ -57,8 +57,6 @@ if [ ! -f "../${CACHE_DIR}/${CACHE_NAME}.cache" ]; then
    curl -sL https://github.com/toxieainc/freeimage/archive/${FREEIMAGE_SHA}.zip -o freeimage-${FREEIMAGE_SHA}.zip
    unzip freeimage-${FREEIMAGE_SHA}.zip
    cd freeimage-${FREEIMAGE_SHA}
-   cp ../../freeimage/CMakeLists.txt .
-   cp ../../freeimage/PluginEXR.cpp Source/FreeImage/PluginEXR.cpp
    cmake \
       -DPLATFORM=macos \
       -DARCH=arm64 \
