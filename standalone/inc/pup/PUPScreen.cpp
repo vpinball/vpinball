@@ -403,7 +403,7 @@ void PUPScreen::QueuePlay(const string& szPlaylist, const string& szPlayFile, fl
       return;
    }
 
-   PLOGW.printf("queueing play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d",
+   PLOGD.printf("queueing play, screen={%s}, playlist={%s}, playFile=%s, volume=%.f, priority=%d",
       ToString(false).c_str(), pPlaylist->ToString().c_str(), szPlayFile.c_str(), volume, priority);
 
    PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
@@ -422,7 +422,7 @@ void PUPScreen::QueuePlay(const string& szPlaylist, const string& szPlayFile, fl
 
 void PUPScreen::QueueStop()
 {
-   PLOGW.printf("queueing stop, screen={%s}", ToString(false).c_str());
+   PLOGD.printf("queueing stop, screen={%s}", ToString(false).c_str());
 
    PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
    pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_STOP;
@@ -436,7 +436,7 @@ void PUPScreen::QueueStop()
 
 void PUPScreen::QueueLoop(int state)
 {
-   PLOGW.printf("queueing loop, screen={%s}, state=%d", ToString(false).c_str(), state);
+   PLOGD.printf("queueing loop, screen={%s}, state=%d", ToString(false).c_str(), state);
 
    PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
    pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_LOOP;
@@ -451,7 +451,7 @@ void PUPScreen::QueueLoop(int state)
 
 void PUPScreen::QueueBG(int mode)
 {
-   PLOGW.printf("queueing bg, screen={%s}, mode=%d", ToString(false).c_str(), mode);
+   PLOGD.printf("queueing bg, screen={%s}, mode=%d", ToString(false).c_str(), mode);
 
    PUPPinDisplayRequest* pRequest = new PUPPinDisplayRequest();
    pRequest->type = PUP_PINDISPLAY_REQUEST_TYPE_SET_BG;
@@ -488,7 +488,7 @@ void PUPScreen::QueueTrigger(char type, int number, int value)
 
 void PUPScreen::Start()
 {
-   PLOGW.printf("Starting: screen={%s}", ToString(false).c_str());
+   PLOGD.printf("Starting: screen={%s}", ToString(false).c_str());
 
    m_isRunning = true;
    m_thread = std::thread(&PUPScreen::ProcessQueue, this);
@@ -496,7 +496,7 @@ void PUPScreen::Start()
 
 void PUPScreen::Init(SDL_Renderer* pRenderer)
 {
-   PLOGW.printf("Initializing: screen={%s}", ToString(false).c_str());
+   PLOGD.printf("Initializing: screen={%s}", ToString(false).c_str());
 
    m_pRenderer = pRenderer;
 
@@ -538,7 +538,7 @@ void PUPScreen::ProcessQueue()
 
 void PUPScreen::ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest)
 {
-   PLOGW.printf("processing pin display request: screen={%s}, type=%s, playlist={%s}, playFile=%s, volume=%.1f, priority=%d, value=%d",
+   PLOGD.printf("processing pin display request: screen={%s}, type=%s, playlist={%s}, playFile=%s, volume=%.1f, priority=%d, value=%d",
       ToString(false).c_str(),
       PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(pRequest->type),
       pRequest->pPlaylist ? pRequest->pPlaylist->ToString().c_str() : "",
@@ -591,7 +591,7 @@ void PUPScreen::ProcessTriggerRequest(PUPTriggerRequest* pRequest)
    }
    pTrigger->SetTriggered();
 
-   PLOGW.printf("processing trigger: trigger={%s}", pTrigger->ToString().c_str());
+   PLOGD.printf("processing trigger: trigger={%s}", pTrigger->ToString().c_str());
 
    switch(pTrigger->GetPlayAction()) {
       case PUP_TRIGGER_PLAY_ACTION_NORMAL:
