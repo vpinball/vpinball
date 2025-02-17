@@ -2,21 +2,21 @@
 
 #include "BitmapFilter.h"
 
-class RegionFilter : public BitmapFilter
+class RegionFilter final : public BitmapFilter
 {
 public:
    RegionFilter() = default;
-   ~RegionFilter() = default;
+   ~RegionFilter() override = default;
 
    void Filter(Bitmap* pBitmap) override;
 
-   int GetX() { return m_x; }
+   int GetX() const { return m_x; }
    void SetX(int x) { m_x = x; }
-   int GetY() { return m_y; }
+   int GetY() const { return m_y; }
    void SetY(int y) { m_y = y; }
-   int GetWidth() { return m_width; }
+   int GetWidth() const { return m_width; }
    void SetWidth(int width) { m_width = width; }
-   int GetHeight() { return m_height; }
+   int GetHeight() const { return m_height; }
    void SetHeight(int height) { m_height = height; }
 
 private:

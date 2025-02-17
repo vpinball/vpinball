@@ -7,8 +7,8 @@
 #include <cstring>
 #include <cstdint>
 #include <sstream>
-#include <assert.h>
-#include <stdarg.h>
+#include <cassert>
+#include <cstdarg>
 
 // Uses original bitplane rendering from DmdDevice for backward compatible colorization support
 #define LIBPINMAME
@@ -29,21 +29,21 @@
 // and segment API. It listen for alphanumeric source and, when found, broadcast
 // corresponding DMD sources (128x32 and 256x64 variants)
 
-MsgPluginAPI* msgApi = nullptr;
-uint32_t endpointId;
-unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
-unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
+static MsgPluginAPI* msgApi = nullptr;
+static uint32_t endpointId;
+static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
+static unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
 
-GetSegSrcMsg segSources;
-int nSelectedSources = -1;
-int selectedSource[32];
-DmdSrcId dmd128Id, dmd256Id;
-uint8_t dmd128Frame[128 * 32];
-uint8_t dmd256Frame[256 * 64];
-unsigned int frameId = 0;
+static GetSegSrcMsg segSources;
+static int nSelectedSources = -1;
+static int selectedSource[32];
+static DmdSrcId dmd128Id, dmd256Id;
+static uint8_t dmd128Frame[128 * 32];
+static uint8_t dmd256Frame[256 * 64];
+static unsigned int frameId = 0;
 
 static uint8_t lastIdentifyFrame[128*32] = {0};
-unsigned int identifyFrameId = 0;
+static unsigned int identifyFrameId = 0;
 
 LPI_USE();
 LPI_IMPLEMENT // Implement shared login support
@@ -63,10 +63,10 @@ typedef enum {
    Layout_4x7_5x2,
    Layout_4x6_2x2_1x6,
 } DmdLayouts;
-DmdLayouts dmdLayout = DmdLayouts::Undefined;
+static DmdLayouts dmdLayout = DmdLayouts::Undefined;
 
 // Number of segments corresponding to CTLPI_GETSEG_LAYOUT_xxx
-static int nSegments[] = { 7, 8, 8, 9, 10, 14, 15, 16, 16 };
+static constexpr int nSegments[] = { 7, 8, 8, 9, 10, 14, 15, 16, 16 };
 
 // Segment layouts, derived from PinMame, itself taking it from 'usbalphanumeric.h'
 
@@ -94,7 +94,7 @@ typedef struct
    segLine segs[16];
 } segDisplay;
 
-static const segDisplay segDisplays[6] = {
+static constexpr segDisplay segDisplays[6] = {
    // 14 Segments + dot/comma
    { 8, 10,
       {
@@ -197,11 +197,11 @@ static const segDisplay segDisplays[6] = {
       } },
 };
 
-void DrawChar(const int x, const int y, const segDisplay& display, const float* lum, const int nSeg)
+static void DrawChar(const int x, const int y, const segDisplay& display, const float* const lum, const int nSeg)
 {
    for (int seg = 0; seg < nSeg; seg++)
    {
-      uint8_t v = static_cast<uint8_t>((lum[seg] < 0.01f ? 0.01f : lum[seg] > 1.f ? 1.f : lum[seg]) * 255.f);
+      const uint8_t v = static_cast<uint8_t>((lum[seg] < 0.01f ? 0.01f : lum[seg] > 1.f ? 1.f : lum[seg]) * 255.f);
       for (int i = 0; i < display.segs[seg].nDots; i++)
       {
          const int px = x + display.segs[seg].dots[i][0];
@@ -212,12 +212,12 @@ void DrawChar(const int x, const int y, const segDisplay& display, const float* 
    }
 }
 
-void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
+static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
 {
    SegSrcId& segSrc = segSources.entries[srcIndex];
-   for (int i = 0; i < segSrc.nElements; i++)
+   for (unsigned int i = 0; i < segSrc.nElements; i++)
    {
-      SegElementType type = segSrc.elementType[i];
+      const SegElementType type = segSrc.elementType[i];
       SegImgs img = SegImg_Invalid;
       switch (type)
       {
@@ -238,7 +238,7 @@ void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
    }
 }
 
-void onGetDMDSrc(const unsigned int eventId, void* userData, void* msgData)
+static void onGetDMDSrc(const unsigned int eventId, void* userData, void* msgData)
 {
    if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
       return;
@@ -255,7 +255,7 @@ void onGetDMDSrc(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
       return;
@@ -376,7 +376,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 }
 
 
-void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    if ((nSelectedSources <= 0) || (dmdLayout == DmdLayouts::Undefined))
       return;
@@ -389,13 +389,13 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    msgApi->BroadcastMsg(endpointId, getSegId, &getSegMsg);
    if (getSegMsg.frame == nullptr)
       return;
-   float* lum = getSegMsg.frame;
+   const float* lum = getSegMsg.frame;
    static UINT16 seg_data[128] = { 0 };
    static UINT16 seg_data2[128] = { 0 };
-   for (int i = 0, pos = 0; i < segSources.entries[0].nDisplaysInGroup; i++)
+   for (unsigned int i = 0, pos = 0; i < segSources.entries[0].nDisplaysInGroup; i++)
    {
       const SegSrcId& segSrc = segSources.entries[i];
-      for (int j = 0; j < segSrc.nElements; j++, pos++, lum += 16)
+      for (unsigned int j = 0; j < segSrc.nElements; j++, pos++, lum += 16)
       {
          const int nSegs = nSegments[segSrc.elementType[j]];
          seg_data[pos] = 0;
@@ -404,7 +404,7 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
                seg_data[pos] |= 1 << k;
       }
    }
-   
+
    // Render to bitplane surface
    memset(AlphaNumericFrameBuffer, 0, sizeof(AlphaNumericFrameBuffer));
    const SegElementType firstType = segSources.entries[0].elementType[0];
@@ -452,7 +452,7 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    getDmdMsg.frame = lastIdentifyFrame;
 }
 
-void UpdateSegSources()
+static void UpdateSegSources()
 {
    bool wasRendering = nSelectedSources > 0;
 
@@ -469,7 +469,7 @@ void UpdateSegSources()
 
       // Select a DMD layout
       nSelectedSources = 0;
-      for (int i = 0; (nSelectedSources < 32) && (i < segSources.count); i++)
+      for (unsigned int i = 0; (nSelectedSources < 32) && (i < segSources.count); i++)
       {
          if (segSources.entries[i].id.id == selectedSrc.id)
          {
@@ -478,7 +478,7 @@ void UpdateSegSources()
          }
       }
       dmdLayout = DmdLayouts::Undefined;
-      int layouts[13][16] = {
+      static constexpr int layouts[13][16] = {
          { DmdLayouts::Undefined, 0 }, { DmdLayouts::Layout_4x6_2x2, 6, 6, 6, 6, 6, 2, 2 }, // Bally, GTS1, GTS80, S3, S4, S6, ...
          { DmdLayouts::Layout_4x7, 4, 7, 7, 7, 7 }, // Bally, S11, ...
          { DmdLayouts::Layout_4x7_2x2, 6, 7, 7, 7, 7, 2, 2 }, // Bally, GTS1, GTS80, Data East, ...
@@ -513,7 +513,7 @@ void UpdateSegSources()
          ss << "Unsupported segment layout (" << nSelectedSources << " displays: ";
          for (int i = 0; i < nSelectedSources; i++)
             ss << (i == 0 ? "" : ", ") << segSources.entries[selectedSource[i]].nElements;
-         ss << ")";
+         ss << ')';
          LPI_LOGI("%s", ss.str().c_str());
       }
    }
@@ -537,7 +537,7 @@ void UpdateSegSources()
    }
 }
 
-void onSegSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateSegSources(); }
+static void onSegSrcChanged(const unsigned int eventId, void* userData, void* msgData) { UpdateSegSources(); }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
 {

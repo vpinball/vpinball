@@ -1,6 +1,6 @@
 #include "ScoreBoard.h"
 
-ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont) : Group(pFlexDMD, "")
+ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont) : Group(pFlexDMD, string())
 {
    m_pScoreFont = pScoreFont;
    m_pScoreFont->AddRef();
@@ -11,17 +11,17 @@ ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont
    m_pTextFont = pTextFont;
    m_pTextFont->AddRef();
    
-   m_pLowerLeft = new Label(pFlexDMD, pTextFont, "", "");
-   AddActor((Actor*)m_pLowerLeft);
+   m_pLowerLeft = new Label(pFlexDMD, pTextFont, string(), string());
+   AddActor(m_pLowerLeft);
 
-   m_pLowerRight = new Label(pFlexDMD, pTextFont, "", "");
-   AddActor((Actor*)m_pLowerRight);
+   m_pLowerRight = new Label(pFlexDMD, pTextFont, string(), string());
+   AddActor(m_pLowerRight);
 
    for (int i = 0; i < 4; i++) {
-      m_pScores[i] = new Label(pFlexDMD, pScoreFont, "0", "");
-      AddActor((Actor*)m_pScores[i]);
+      m_pScores[i] = new Label(pFlexDMD, pScoreFont, "0"s, string());
+      AddActor(m_pScores[i]);
    }
-   m_pBackground = NULL;
+   m_pBackground = nullptr;
    m_highlightedPlayer = 0;
 }
 
@@ -85,19 +85,10 @@ void ScoreBoard::SetHighlightedPlayer(int player)
 
 void ScoreBoard::SetScore(int score1, int score2, int score3, int score4)
 {
-   char score[20];
-    
-   snprintf(score, sizeof(score), "%d", score1);
-   m_pScores[0]->SetText(score);
-
-   snprintf(score, sizeof(score), "%d", score2);
-   m_pScores[1]->SetText(score);
-
-   snprintf(score, sizeof(score), "%d", score3);
-   m_pScores[2]->SetText(score);
-
-   snprintf(score, sizeof(score), "%d", score4);
-   m_pScores[3]->SetText(score);
+   m_pScores[0]->SetText(std::to_string(score1));
+   m_pScores[1]->SetText(std::to_string(score2));
+   m_pScores[2]->SetText(std::to_string(score3));
+   m_pScores[3]->SetText(std::to_string(score4));
 }
 
 void ScoreBoard::Update(float delta)
@@ -107,7 +98,7 @@ void ScoreBoard::Update(float delta)
     float yText = GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight() - 1;
     // float yLine2 = 1 + m_pHighlightFont->m_pBitmapFont->m_baseHeight + (GetHeight() - 2 -  m_pTextFont->m_pBitmapFont->m_baseHeight - 2 * m_pHighlightFont->m_pBitmapFont->m_baseHeight ) / 2;
     float yLine2 = (GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
-    float dec = (m_pHighlightFont->GetBitmapFont()->GetBaseHeight() - m_pScoreFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
+    float dec = (float)(m_pHighlightFont->GetBitmapFont()->GetBaseHeight() - m_pScoreFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
     // float yLine2 = (1 + yText) * 0.5f;
     m_pScores[0]->Pack();
     m_pScores[1]->Pack();

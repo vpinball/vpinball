@@ -1,5 +1,3 @@
-/* #include <algorithm>
-*/
 #include "FlexDMD.h"
 #include "UltraDMD.h"
 #include "actors/Group.h"
@@ -18,7 +16,7 @@
 
 FlexDMD::FlexDMD()
 {
-   m_pStage = new Group(this, "Stage");
+   m_pStage = new Group(this, "Stage"s);
    m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height));
    m_pAssetManager = new AssetManager();
 }
@@ -93,10 +91,9 @@ uint8_t* FlexDMD::UpdateLum8Frame()
    m_lum8FrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
-   uint8_t* pixels = static_cast<uint8_t*>(surf->pixels);
-   uint8_t* dst = m_lum8Frame;
-   for (int y = 0; y < m_height; y++)
-      for (int x = 0; x < m_width; x++)
+   const uint8_t* __restrict pixels = static_cast<uint8_t*>(surf->pixels);
+   uint8_t* __restrict dst = m_lum8Frame;
+   for (int o = 0; o < m_height*m_width; o++)
       {
          float r = static_cast<float>(*pixels++);
          float g = static_cast<float>(*pixels++);
@@ -119,12 +116,11 @@ void FlexDMD::UpdateLumFrame()
       return;
    m_lumFrameDirty = false;
    UpdateLum8Frame();
-   uint8_t* src = m_lum8Frame;
-   uint8_t* dst = m_lumFrame.data();
-   const uint8_t lum4[] = { 0, 85, 170, 255 };
-   const uint8_t lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
-   for (int y = 0; y < m_height; y++)
-      for (int x = 0; x < m_width; x++)
+   const uint8_t* __restrict src = m_lum8Frame;
+   uint8_t* __restrict dst = m_lumFrame.data();
+   static constexpr uint8_t lum4[] = { 0, 85, 170, 255 };
+   static constexpr uint8_t lum16[] = { 0, 17, 34, 51, 68, 85, 102, 119, 136, 153, 170, 187, 204, 221, 238, 255 };
+   for (int o = 0; o < m_height*m_width; o++)
          if (m_renderMode == RenderMode_DMD_GRAY_2)
             *dst++ = lum4[(*src++) >> 6];
          else if (m_renderMode == RenderMode_DMD_GRAY_4)
@@ -162,10 +158,9 @@ void FlexDMD::UpdateRGBAFrame()
    m_rgbaFrameDirty = false;
    SDL_Surface* surf = m_pSurface->GetSurface();
    SDL_LockSurface(surf);
-   uint8_t* pixels = static_cast<uint8_t*>(surf->pixels);
-   uint32_t* dst = m_rgbaFrame.data();
-   for (int y = 0; y < m_height; y++)
-      for (int x = 0; x < m_width; x++)
+   const uint8_t* __restrict pixels = static_cast<uint8_t*>(surf->pixels);
+   uint32_t* __restrict dst = m_rgbaFrame.data();
+   for (int o = 0; o < m_height*m_width; o++)
       {
          uint8_t r = *pixels++;
          uint8_t g = *pixels++;
@@ -175,14 +170,14 @@ void FlexDMD::UpdateRGBAFrame()
    SDL_UnlockSurface(surf);
 }
 
-std::vector<uint32_t> FlexDMD::GetDmdColoredPixels()
+const std::vector<uint32_t>& FlexDMD::GetDmdColoredPixels()
 {
    Render();
    UpdateRGBAFrame();
    return m_rgbaFrame;
 }
 
-std::vector<uint8_t> FlexDMD::GetDmdPixels()
+const std::vector<uint8_t>& FlexDMD::GetDmdPixels()
 {
    Render();
    UpdateLumFrame();
@@ -262,7 +257,7 @@ Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, i
    std::stringstream tintHex, borderHex;
    tintHex << std::setfill('0') << std::setw(8) << std::hex << (((tint & 0x0000FF) << 24) | ((tint & 0x00FF00) << 8) | ((tint & 0xFF0000) >> 8) | 0xFF);
    borderHex << std::setfill('0') << std::setw(8) << std::hex << (((borderTint & 0x0000FF) << 24) | ((borderTint & 0x00FF00) << 8) | ((borderTint & 0xFF0000) >> 8) | 0xFF);
-   AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex.str() + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex.str(), NULL);
+   AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex.str() + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex.str(), nullptr);
    Font* pFont = m_pAssetManager->GetFont(pAssetSrc);
    delete pAssetSrc;
    return pFont;
@@ -273,7 +268,7 @@ AnimatedActor* FlexDMD::NewVideo(const string& szVideo, const string& szName)
    if (szVideo.find('|') != string::npos)
       return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
    else {
-      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(szVideo, NULL);
+      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(szVideo, nullptr);
       AssetType assetType = pAssetSrc->GetAssetType();
       delete pAssetSrc;
 

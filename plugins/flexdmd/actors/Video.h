@@ -2,7 +2,7 @@
 
 #include "AnimatedActor.h"
 
-class Video : public AnimatedActor 
+class Video final : public AnimatedActor 
 {
 public:
    ~Video();

@@ -8,7 +8,7 @@
 #include "resources/ResourceDef.h"
 #include "VPXPlugin.h"
 
-#include <map>
+#include <unordered_map>
 
 class UltraDMD
 {
@@ -21,9 +21,9 @@ public:
    void LoadSetup() { /* Unimplemented */ }
    void Init() { m_pFlexDMD->SetRun(true); }
    void Uninit() { m_pFlexDMD->SetRun(false); }
-   int GetMajorVersion() const { return 1; }
-   int GetMinorVersion() const { return 9999; }
-   int GetBuildNumber() const { return 9999; }
+   static int GetMajorVersion() { return 1; }
+   static int GetMinorVersion() { return 9999; }
+   static int GetBuildNumber() { return 9999; }
    bool SetVisibleVirtualDMD(bool visible) { /* Unimplemented */ return false; }
    bool SetFlipY(bool flipY) { /* Unimplemented */ return false; }
    bool IsRendering() const { return !m_pQueue->IsFinished(); }
@@ -54,6 +54,7 @@ private:
    Font* GetFont(const string& path, float brightness, float outlineBrightness);
    Label* GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness);
 
+   FlexDMD* m_pFlexDMD;
    Sequence* m_pQueue;
    ScoreBoard* m_pScoreBoard;
    FontDef* m_pScoreFontText;
@@ -65,6 +66,5 @@ private:
    bool m_visible = true;
    int m_stretchMode = 0;
    int m_nextId = 1;
-   std::map<int, BaseDef*> m_preloads;
-   FlexDMD* m_pFlexDMD;
+   std::unordered_map<int, BaseDef*> m_preloads;
 };

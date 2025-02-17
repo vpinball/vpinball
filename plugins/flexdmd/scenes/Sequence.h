@@ -3,7 +3,7 @@
 #include "actors/Group.h"
 #include "Scene.h"
 
-class Sequence : public Group
+class Sequence final : public Group
 {
 public:
    Sequence(FlexDMD* pFlexDMD, const string& name);
@@ -12,8 +12,8 @@ public:
    void Enqueue(Scene* scene);
    void RemoveAllScenes();
    void RemoveScene(const string& name);
-   bool IsFinished();
-   Scene* GetActiveScene() { return m_pActiveScene; };
+   bool IsFinished() const;
+   Scene* GetActiveScene() const { return m_pActiveScene; };
    void Update(float delta) override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;
 

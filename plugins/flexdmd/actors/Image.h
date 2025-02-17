@@ -7,7 +7,7 @@ class AssetManager;
 class AssetSrc;
 class Bitmap;
 
-class Image : public Actor
+class Image final : public Actor
 {
 public:
    ~Image();

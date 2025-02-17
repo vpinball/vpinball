@@ -31,7 +31,7 @@ public:
 
    int ReadInt32()
    {
-      uint32_t v;
+      int v;
       m_stream.read(reinterpret_cast<unsigned char*>(&v), 4);
       /* if (_reverse)
          v = BinaryPrimitives.ReverseEndianness(v);*/
@@ -132,7 +132,7 @@ std::pair<unsigned int, uint8_t*> VPXFile::ReadImage(const string& path, bool na
       reader.Seek(fieldStart + bytesInRecordRemaining);
    }
    if (!entry.name.empty())
-      m_images[to_lower(entry.name)] = entry;
+      m_images[string_to_lower(entry.name)] = entry;
    return { 0, nullptr };
 }
 
@@ -141,7 +141,7 @@ const string VPXFile::GetImportFile(const string& path)
    auto it = m_images.find(path);
    if (it != m_images.end())
       return it->second.file;
-   return "";
+   return string();
 }
 
 std::pair<unsigned int, uint8_t*> VPXFile::GetImage(const string& path)

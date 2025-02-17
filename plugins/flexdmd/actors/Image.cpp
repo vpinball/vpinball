@@ -31,8 +31,7 @@ Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
 
 Image::~Image()
 {
-   if (m_pSrc)
-      delete m_pSrc;
+   delete m_pSrc;
 
    if (m_pBitmap)
       m_pBitmap->Release();
@@ -45,11 +44,11 @@ Bitmap* Image::GetBitmap()
    return m_pBitmap;
 }
 
-void Image::SetBitmap(Bitmap *pRetVal)
+void Image::SetBitmap(Bitmap *pBitmap)
 {
    if (m_pBitmap)
       m_pBitmap->Release();
-   m_pBitmap = dynamic_cast<Bitmap*>((Bitmap*)pRetVal);
+   m_pBitmap = pBitmap;
    if (m_pBitmap)
       m_pBitmap->AddRef();
 }

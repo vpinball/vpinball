@@ -2,10 +2,10 @@
 
 TwoLineScene::TwoLineScene(FlexDMD* pFlexDMD, Actor* pBackground, const string& topText, Font* pTopFont, const string& bottomText, Font* pBottomFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
 {
-   m_pTopText = new Label(pFlexDMD, pTopFont, topText, "");
+   m_pTopText = new Label(pFlexDMD, pTopFont, topText, string());
    AddActor(m_pTopText);
 
-   m_pBottomText = new Label(pFlexDMD, pBottomFont, bottomText, "");
+   m_pBottomText = new Label(pFlexDMD, pBottomFont, bottomText, string());
    AddActor(m_pBottomText);
 }
 

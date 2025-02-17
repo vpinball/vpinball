@@ -14,14 +14,14 @@ public:
    void UpdateState();
    virtual void Begin() { };
    float StartAnimation(AnimationType animation);
-   bool IsFinished();
+   bool IsFinished() const;
    void SetVisible(bool visible) override { Group::SetVisible(visible); UpdateState(); }
    void SetAnimateIn(AnimationType animateIn) { m_animateIn = animateIn; };
    void SetPause(float pauseS) { m_pause = pauseS; };
-   float GetTime() { return m_time; };
+   float GetTime() const { return m_time; };
    void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; };
-   tweeny::tween<float>& AddTween(float from, float to, float duration, std::function<bool (float)> callback);
-   void Update(float delta) override;
+   void AddTween(float from, float to, float duration, const std::function<bool (float)>& callback);
+   void Update(float secondsElapsed) override;
    void OnStageStateChanged() override;
 
 private:

@@ -33,7 +33,7 @@ typedef uint32_t ColorRGBA32;
 template <typename T> __forceinline T min(const T x, const T y) { return x < y ? x : y; }
 template <typename T> __forceinline T max(const T x, const T y) { return x < y ? y : x; }
 
-string to_lower(const string& str);
+string string_to_lower(string str);
 string trim_string(const string& str);
 string extension_from_path(const string& path);
 string normalize_path_separators(const string& szPath);

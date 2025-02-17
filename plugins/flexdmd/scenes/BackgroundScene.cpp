@@ -1,6 +1,6 @@
 #include "BackgroundScene.h"
 
-BackgroundScene::BackgroundScene(FlexDMD* pFlexDMD, Actor* pBackground, AnimationType animateIn, float pauseS, AnimationType animateOut, string id) : Scene(pFlexDMD, animateIn, pauseS, animateOut, id)
+BackgroundScene::BackgroundScene(FlexDMD* pFlexDMD, Actor* pBackground, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : Scene(pFlexDMD, animateIn, pauseS, animateOut, id)
 {
    m_pBackground = pBackground;
    AddActor(m_pBackground);
@@ -13,10 +13,10 @@ BackgroundScene::~BackgroundScene()
 void BackgroundScene::SetBackground(Actor* pBackground)
 {
    if (m_pBackground == pBackground) return;
-   if (m_pBackground != NULL)
+   if (m_pBackground != nullptr)
       RemoveActor(m_pBackground);
    m_pBackground = pBackground;
-   if (m_pBackground != NULL)
+   if (m_pBackground != nullptr)
       AddActorAt(m_pBackground, 0);
 }
 

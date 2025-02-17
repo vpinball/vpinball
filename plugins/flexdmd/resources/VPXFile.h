@@ -2,9 +2,9 @@
 
 #include "common.h"
 #include "pole/pole.h"
-#include <map>
+#include <unordered_map>
 
-class VPXFile
+class VPXFile final
 {
 public:
    VPXFile(const string& path);
@@ -23,7 +23,7 @@ private:
       string name;
    };
 
-   std::map<string, Entry> m_images;
+   std::unordered_map<string, Entry> m_images;
    const string m_path;
    POLE::Storage* m_pStorage;
 };

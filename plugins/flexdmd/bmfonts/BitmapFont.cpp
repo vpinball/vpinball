@@ -35,7 +35,7 @@ BitmapFont::~BitmapFont()
    m_pages.clear();
 }
 
-BitmapFont* BitmapFont::Create(string fileName)
+BitmapFont* BitmapFont::Create(const string& fileName)
 {
    BitmapFont* obj = new BitmapFont();
    obj->Load(fileName);
@@ -58,7 +58,7 @@ int BitmapFont::GetKerning(char previous, char current)
     return result;
 }
 
-void BitmapFont::Load(string fileName)
+void BitmapFont::Load(const string& fileName)
 {
    std::ifstream fontFile;
    fontFile.open(fileName, std::ifstream::in);
@@ -70,64 +70,64 @@ void BitmapFont::Load(string fileName)
 
    string line;
    while (std::getline(fontFile, line)) {
-      std::map<string, string> parts = ParseParts(trim_string(line));
+      std::unordered_map<string, string> parts = ParseParts(trim_string(line));
 
-      if (parts.size() == 0)
+      if (parts.empty())
          continue;
 
-      if (parts["section"] == "info") {
-         m_szFamilyName = GetNamedString(parts, "face");
-         m_fontSize = GetNamedInt(parts, "size");
-         m_bold = GetNamedBool(parts, "bold");
-         m_italic = GetNamedBool(parts, "italic");
-         m_szCharset = GetNamedString(parts, "charset");
-         m_unicode = GetNamedBool(parts, "unicode");
-         m_stretchedHeight = GetNamedInt(parts, "stretchH");
-         m_smoothed = GetNamedBool(parts, "smooth");
-         m_superSampling = GetNamedInt(parts, "aa");
-         m_padding = ParsePadding(GetNamedString(parts, "padding"));
-         m_spacing = ParsePoint(GetNamedString(parts, "spacing"));
-         m_outlineSize = GetNamedInt(parts, "outline");
+      if (parts["section"s] == "info") {
+         m_szFamilyName = GetNamedString(parts, "face"s);
+         m_fontSize = GetNamedInt(parts, "size"s);
+         m_bold = GetNamedBool(parts, "bold"s);
+         m_italic = GetNamedBool(parts, "italic"s);
+         m_szCharset = GetNamedString(parts, "charset"s);
+         m_unicode = GetNamedBool(parts, "unicode"s);
+         m_stretchedHeight = GetNamedInt(parts, "stretchH"s);
+         m_smoothed = GetNamedBool(parts, "smooth"s);
+         m_superSampling = GetNamedInt(parts, "aa"s);
+         m_padding = ParsePadding(GetNamedString(parts, "padding"s));
+         m_spacing = ParsePoint(GetNamedString(parts, "spacing"s));
+         m_outlineSize = GetNamedInt(parts, "outline"s);
       }
-      else if (parts["section"] == "common") {
-         m_lineHeight = GetNamedInt(parts, "lineHeight");
-         m_baseHeight = GetNamedInt(parts, "base");
-         m_textureSize = { 0, 0, GetNamedInt(parts, "scaleW"), GetNamedInt(parts, "scaleH") };
-         m_packed = GetNamedBool(parts, "packed");
-         m_alphaChannel = GetNamedInt(parts, "alphaChnl");
-         m_redChannel = GetNamedInt(parts, "redChnl");
-         m_greenChannel = GetNamedInt(parts, "greenChnl");
-         m_blueChannel = GetNamedInt(parts, "blueChnl");
+      else if (parts["section"s] == "common") {
+         m_lineHeight = GetNamedInt(parts, "lineHeight"s);
+         m_baseHeight = GetNamedInt(parts, "base"s);
+         m_textureSize = { 0, 0, GetNamedInt(parts, "scaleW"s), GetNamedInt(parts, "scaleH"s) };
+         m_packed = GetNamedBool(parts, "packed"s);
+         m_alphaChannel = GetNamedInt(parts, "alphaChnl"s);
+         m_redChannel = GetNamedInt(parts, "redChnl"s);
+         m_greenChannel = GetNamedInt(parts, "greenChnl"s);
+         m_blueChannel = GetNamedInt(parts, "blueChnl"s);
       }
-      else if (parts["section"] == "page") {
+      else if (parts["section"s] == "page") {
          Page* pPage = new Page();
-         pPage->SetId(GetNamedInt(parts, "id"));
-         pPage->SetFilename(GetNamedString(parts, "file"));
+         pPage->SetId(GetNamedInt(parts, "id"s));
+         pPage->SetFilename(GetNamedString(parts, "file"s));
 
          m_pages.push_back(pPage);
       }
-      else if (parts["section"] == "char") {
+      else if (parts["section"s] == "char") {
          char character = (char)GetNamedInt(parts, "id");
 
          Character* pCharacter = new Character();
          pCharacter->SetChar(character);
-         pCharacter->SetBounds({ GetNamedInt(parts, "x"), GetNamedInt(parts, "y"), GetNamedInt(parts, "width"), GetNamedInt(parts, "height") });
-         pCharacter->SetOffset({ GetNamedInt(parts, "xoffset"), GetNamedInt(parts, "yoffset") });
-         pCharacter->SetXAdvance(GetNamedInt(parts, "xadvance"));
-         pCharacter->SetTexturePage(GetNamedInt(parts, "page"));
-         pCharacter->SetChannel(GetNamedInt(parts, "chnl"));
+         pCharacter->SetBounds({ GetNamedInt(parts, "x"s), GetNamedInt(parts, "y"s), GetNamedInt(parts, "width"s), GetNamedInt(parts, "height"s) });
+         pCharacter->SetOffset({ GetNamedInt(parts, "xoffset"s), GetNamedInt(parts, "yoffset"s) });
+         pCharacter->SetXAdvance(GetNamedInt(parts, "xadvance"s));
+         pCharacter->SetTexturePage(GetNamedInt(parts, "page"s));
+         pCharacter->SetChannel(GetNamedInt(parts, "chnl"s));
 
          m_characters[character] = pCharacter;
       }
-      else if (parts["section"] == "kerning") {
+      else if (parts["section"s] == "kerning") {
          Kerning* pKerning = new Kerning();
-         pKerning->SetFirstCharacter((char)GetNamedInt(parts, "first"));
-         pKerning->SetSecondCharacter((char)GetNamedInt(parts, "second"));
+         pKerning->SetFirstCharacter((char)GetNamedInt(parts, "first"s));
+         pKerning->SetSecondCharacter((char)GetNamedInt(parts, "second"s));
          pKerning->SetAmount(GetNamedInt(parts, "amount"));
 
-         auto it = m_kernings.find(pKerning->GetHash());
-         if (it == m_kernings.end())
-            m_kernings[pKerning->GetHash()] = pKerning;
+         const int h = pKerning->GetHash();
+         if (!m_kernings.contains(h))
+            m_kernings[h] = pKerning;
       }
    }
 
@@ -138,7 +138,7 @@ void BitmapFont::Load(string fileName)
 
 SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
 {
-   if (text.length() == 0)
+   if (text.empty())
       return { 0, 0, 0, 0 };
 
    char previousCharacter = ' ';
@@ -166,7 +166,7 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
       else {
          auto it = m_characters.find(character);
          if (it != m_characters.end()) {
-            Character* data = m_characters[character];
+            Character* data = it->second;
             int width = data->GetXAdvance() + GetKerning(previousCharacter, character);
             if (maxWidth != NoMaxWidth && currentLineWidth + width >= maxWidth) {
                lineHeights.push_back(currentLineHeight);
@@ -197,18 +197,18 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
    return { 0, 0, max(currentLineWidth, blockWidth), blockHeight };
 }
 
-string BitmapFont::GetNamedString(const std::map<string, string>& parts, const string& name)
+string BitmapFont::GetNamedString(const std::unordered_map<string, string>& parts, const string& name)
 {
    auto it = parts.find(name);
    return (it != parts.end()) ? it->second : string();
 }
 
-int BitmapFont::GetNamedInt(const std::map<string, string>& parts, const string& name, int defaultValue)
+int BitmapFont::GetNamedInt(const std::unordered_map<string, string>& parts, const string& name, int defaultValue)
 {
    return string_to_int(GetNamedString(parts, name), defaultValue);
 }
 
-bool BitmapFont::GetNamedBool(const std::map<string, string>& parts, const string& name, bool defaultValue)
+bool BitmapFont::GetNamedBool(const std::unordered_map<string, string>& parts, const string& name, bool defaultValue)
 {
    return string_to_int(GetNamedString(parts, name), defaultValue ? 1 : 0) > 0;
 }
@@ -235,9 +235,9 @@ SDL_Point BitmapFont::ParsePoint(const string& s)
    return { parts[0], parts[1] };
 }
 
-std::map<string, string> BitmapFont::ParseParts(const string &line)
+std::unordered_map<string, string> BitmapFont::ParseParts(const string& line)
 {
-   std::map<std::string, std::string> result;
+   std::unordered_map<string, string> result;
    std::istringstream iss(line);
 
    string token;
@@ -247,7 +247,7 @@ std::map<string, string> BitmapFont::ParseParts(const string &line)
    bool isQuote = false;
 
    iss >> token;
-   result["section"] = token;
+   result["section"s] = token;
 
    while (iss) {
       char c;

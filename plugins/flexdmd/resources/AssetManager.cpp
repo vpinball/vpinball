@@ -58,9 +58,9 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
 {
    string normalizedSrc = normalize_path_separators(src);
 
-   if (normalizedSrc.find("|") != string::npos) {
+   if (normalizedSrc.find('|') != string::npos) {
       // PLOGW.printf("'|' is not allowed inside file names as it is the separator for image sequences: %s", normalizedSrc.c_str());
-      return NULL;
+      return nullptr;
    }
 
    AssetSrc* pAssetSrc = new AssetSrc();
@@ -88,7 +88,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    string id;
    for (size_t i = 0; i < parts.size(); ++i) {
       if (i != 0)
-         id += "&";
+         id += '&';
       id += parts[i];
    }
 
@@ -122,7 +122,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
          {
             pAssetSrc->SetAssetType(AssetType_Image);
             if (file.size() > 4)
-               ext = to_lower(extension_from_path(file));
+               ext = string_to_lower(extension_from_path(file));
          }
       }
    }
@@ -227,12 +227,12 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
 
 void* AssetManager::Open(AssetSrc* pSrc)
 {
-   void* pAsset = NULL;
+   void* pAsset = nullptr;
 
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        string path = pSrc->GetPath();
+        const string path = pSrc->GetPath();
         
         if (pSrc->GetAssetType() == AssetType_BMFont)
            pAsset = BitmapFont::Create(path);
@@ -246,7 +246,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
       {
          string path = SDL_GetBasePath();
          #if SDL_PLATFORM_WINDOWS
-            HMODULE hModule = NULL;
+            HMODULE hModule = nullptr;
             if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("Open"), &hModule))
             {
                TCHAR dllPath[MAX_PATH];
@@ -285,9 +285,9 @@ void* AssetManager::Open(AssetSrc* pSrc)
             {
                SDL_IOStream* rwops = SDL_IOFromConstMem(data.second, data.first);
                if (pSrc->GetAssetType() != AssetType_GIF)
-                  pAsset = IMG_Load_IO(rwops, 0);
+                  pAsset = IMG_Load_IO(rwops, false);
                else
-                  pAsset = IMG_LoadAnimation_IO(rwops, 0);
+                  pAsset = IMG_LoadAnimation_IO(rwops, false);
                SDL_CloseIO(rwops);
                delete[] data.second;
             }
@@ -314,7 +314,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
    it = m_cachedBitmaps.find(pSrc->GetIdWithoutOptions());
    if (it != m_cachedBitmaps.end()) {
       // The bitmap from which the requested one is derived is cached
-      Bitmap* pCachedBitmap = new Bitmap(m_cachedBitmaps[pSrc->GetIdWithoutOptions()]);
+      Bitmap* pCachedBitmap = new Bitmap(it->second);
       pCachedBitmap->AddRef();
       m_cachedBitmaps[pSrc->GetId()] = pCachedBitmap;
       //PLOGI.printf("Bitmap added to cache: %s", pSrc->GetId().c_str());
@@ -333,7 +333,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
           m_cachedBitmaps[pSrc->GetIdWithoutOptions()] = pCachedBitmap;
           //PLOGI.printf("Bitmap added to cache: %s", pSrc->GetIdWithoutOptions().c_str());
           if (pSrc->GetAssetType() == AssetType_Image) {
-             if (pSrc->GetBitmapFilters().size() > 0) {
+             if (!pSrc->GetBitmapFilters().empty()) {
                 pCachedBitmap = new Bitmap(pCachedBitmap);
                 pCachedBitmap->AddRef();
                 m_cachedBitmaps[pSrc->GetId()] = pCachedBitmap;

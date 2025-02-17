@@ -5,7 +5,7 @@
 
 class Font;
 
-class ScrollingCreditsScene : public BackgroundScene
+class ScrollingCreditsScene final : public BackgroundScene
 {
 public:
    ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackground, vector<string> text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id);

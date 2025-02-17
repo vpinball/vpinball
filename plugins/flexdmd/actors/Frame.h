@@ -2,7 +2,7 @@
 
 #include "Actor.h"
 
-class Frame : public Actor
+class Frame final : public Actor
 {
 public:
    Frame(FlexDMD* pFlexDMD, const string& name)

@@ -15,7 +15,7 @@ public:
 };
 
 
-class FontDef : public BaseDef
+class FontDef final : public BaseDef
 {
 public:
    FontDef(const string& path, uint32_t tint, uint32_t borderTint, int borderSize = 0)
@@ -24,7 +24,7 @@ public:
       , m_borderTint(borderTint)
       , m_borderSize(borderSize)
    {}
-   ~FontDef() {}
+   ~FontDef() override {}
 
    bool operator==(const FontDef& other) const
    {
@@ -57,7 +57,7 @@ private:
 };
 
 
-class VideoDef : public BaseDef
+class VideoDef final : public BaseDef
 {
 public:
    VideoDef(const string& videoFilename, bool loop)
@@ -66,7 +66,7 @@ public:
       , m_scaling(Scaling_Stretch)
       , m_alignment(Alignment_Center)
       {}
-   ~VideoDef() {}
+   ~VideoDef() override {}
 
    bool operator==(const VideoDef& other) const
    {
@@ -103,7 +103,7 @@ private:
 };
 
 
-class ImageSequenceDef : public BaseDef
+class ImageSequenceDef final : public BaseDef
 {
 public:
    ImageSequenceDef(const string& images, int fps, bool loop)
@@ -113,7 +113,7 @@ public:
       , m_scaling(Scaling_Stretch)
       , m_alignment(Alignment_Center)
       {}
-   ~ImageSequenceDef() {}
+   ~ImageSequenceDef() override {}
 
    bool operator==(const ImageSequenceDef& other) const
    {

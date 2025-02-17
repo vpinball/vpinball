@@ -2,7 +2,7 @@
 
 #include "BitmapFilter.h"
 
-class DotFilter : public BitmapFilter
+class DotFilter final : public BitmapFilter
 {
 public:
    DotFilter() = default;

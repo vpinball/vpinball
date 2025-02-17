@@ -49,11 +49,11 @@ float Scene::StartAnimation(AnimationType animation)
    switch (animation) {
       case AnimationType_FadeIn:
       {
-         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), "");
+         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), string());
          AddActor(pFade);
          pFade->SetAlpha(1.0f);
          pFade->SetColor(RGB(0, 0, 0));
-         AddTween(pFade->GetAlpha(), 0, alphaLength, ([pFade](float newValue) {
+         AddTween(pFade->GetAlpha(), 0.f, alphaLength, ([pFade](float newValue) {
             pFade->SetAlpha(newValue);
             return false;
          }));
@@ -61,7 +61,7 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_FadeOut:
       {
-         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), "");
+         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), string());
          AddActor(pFade);
          pFade->SetAlpha(0.0f);
          pFade->SetColor(RGB(0, 0, 0));
@@ -145,12 +145,12 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_FillFadeIn:
       {
-         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), "");
+         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), string());
          pFade->SetAlpha(1.0f);
          pFade->SetColor(RGB(0, 0, 0));
          AddActor(pFade);
 
-         pFade = new FadeOverlay(GetFlexDMD(), "");
+         pFade = new FadeOverlay(GetFlexDMD(), string());
          pFade->SetAlpha(0.0f);
          pFade->SetColor(RGB(255, 255, 255));
          AddActor(pFade);
@@ -162,11 +162,11 @@ float Scene::StartAnimation(AnimationType animation)
       }
       case AnimationType_FillFadeOut:
       {
-         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), "");
+         FadeOverlay* pFade = new FadeOverlay(GetFlexDMD(), string());
          pFade->SetAlpha(1.0f);
          pFade->SetColor(RGB(255, 255, 255));
          AddActor(pFade);
-         pFade = new FadeOverlay(GetFlexDMD(), "");
+         pFade = new FadeOverlay(GetFlexDMD(), string());
          pFade->SetAlpha(0.0f);
          pFade->SetColor(RGB(0, 0, 0));
          AddActor(pFade);
@@ -188,25 +188,24 @@ void Scene::Update(float secondsElapsed)
 {
    Group::Update(secondsElapsed);
    m_time += secondsElapsed;
-   if (m_pause >= 0.0f && m_outAnimLength < 0 && m_time >= m_inAnimLength + m_pause)
+   if (m_pause >= 0.0f && m_outAnimLength < 0.f && m_time >= m_inAnimLength + m_pause)
       m_outAnimLength = StartAnimation(m_animateOut);
 
    for (auto it = m_tweens.begin(); it != m_tweens.end();) {
       it->step((int)(secondsElapsed * 1000.0f));
-      if (it->progress() >= 1.0)
+      if (it->progress() >= 1.0f)
          m_tweens.erase(it);
       else
         ++it;
    }
 }
 
-bool Scene::IsFinished()
+bool Scene::IsFinished() const
 {
-   return m_pause >= 0.0f && m_outAnimLength >= 0 && m_time >= m_inAnimLength + m_pause + m_outAnimLength;
+   return m_pause >= 0.0f && m_outAnimLength >= 0.f && m_time >= m_inAnimLength + m_pause + m_outAnimLength;
 }
 
-tweeny::tween<float>& Scene::AddTween(float from, float to, float duration, std::function<bool (float)> callback)
+void Scene::AddTween(float from, float to, float duration, const std::function<bool (float)>& callback)
 {
-   m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during((int)(duration * 1000.0f)).onStep(callback)));
-   return m_tweens.back();
+   m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback)));
 }

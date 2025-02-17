@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-class Page {
+class Page final {
 public:
    Page() = default;
    ~Page() = default;

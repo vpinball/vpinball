@@ -25,7 +25,8 @@ enum Scaling
    Scaling_None = 7
 };
 
-class Layout {
+class Layout final
+{
 public:
    static void Scale(Scaling mode, float sourceWidth, float sourceHeight, float targetWidth, float targetHeight, float& width, float& height)
    {

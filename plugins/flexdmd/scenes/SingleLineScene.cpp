@@ -2,8 +2,8 @@
 
 SingleLineScene::SingleLineScene(FlexDMD* pFlexDMD, Actor* pBackground, const string& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, bool scroll, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
 {
-   m_pText = new Label(pFlexDMD, pFont, text, "");
-   AddActor((Actor*)m_pText);
+   m_pText = new Label(pFlexDMD, pFont, text, string());
+   AddActor(m_pText);
 
    m_scroll = scroll;
 }

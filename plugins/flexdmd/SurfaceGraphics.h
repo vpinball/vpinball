@@ -19,7 +19,7 @@ public:
    void TranslateTransform(int x, int y);
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
-   SDL_Surface* GetSurface() { return m_pSurface; }
+   SDL_Surface* GetSurface() const { return m_pSurface; }
 
 private:
    SDL_Surface* m_pSurface;

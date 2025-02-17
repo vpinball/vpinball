@@ -18,7 +18,7 @@ public:
 };
 
 
-class AddChildAction : public Action
+class AddChildAction final : public Action
 {
 public:
    AddChildAction(Group *pTarget, Actor *pChild, bool add)
@@ -46,7 +46,7 @@ private:
 };
 
 
-class BlinkAction : public Action
+class BlinkAction final : public Action
 {
 public:
    BlinkAction(Actor *pTarget, float secondsShow, float secondsHide, int repeat)
@@ -90,7 +90,7 @@ private:
 };
 
 
-class DelayedAction : public Action
+class DelayedAction final : public Action
 {
 public:
    DelayedAction(float secondsToWait, Action *pAction)
@@ -104,7 +104,7 @@ public:
    bool Update(float secondsElapsed) override
    {
       m_time += m_secondsToWait;
-      if (m_time >= m_secondsToWait && m_pAction->Update((secondsElapsed)))
+      if (m_time >= m_secondsToWait && m_pAction->Update(secondsElapsed))
       {
          // Prepare for restart
          m_time = 0.0f;
@@ -323,15 +323,14 @@ public:
    }
 
    virtual void Begin() = 0;
-   virtual void End() {};
+   virtual void End() {}
 
    Actor *GetTarget() const { return m_pTarget; }
    float GetDuration() const { return m_duration; }
 
-   tweeny::tween<float> &AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
+   void AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
    {
-      m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during((int)(duration * 1000.0f)).onStep(callback)));
-      return m_tweens.back();
+      m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback)));
    }
 
 private:
@@ -343,7 +342,7 @@ private:
 };
 
 
-class MoveToAction : public TweenAction
+class MoveToAction final : public TweenAction
 {
 public:
    MoveToAction(Actor *pTarget, float x, float y, float duration)
@@ -388,7 +387,7 @@ private:
 };
 
 
-class ParallelAction : public Action
+class ParallelAction final : public Action
 {
 public:
    ParallelAction() { }
@@ -429,7 +428,7 @@ private:
 };
 
 
-class RemoveFromParentAction : public Action
+class RemoveFromParentAction final : public Action
 {
 public:
    RemoveFromParentAction(Actor *pTarget)
@@ -449,7 +448,7 @@ private:
 };
 
 
-class RepeatAction : public Action
+class RepeatAction final : public Action
 {
 public:
    RepeatAction(Action *pAction, int count)
@@ -482,7 +481,7 @@ private:
 };
 
 
-class SeekAction : public Action
+class SeekAction final : public Action
 {
 public:
    SeekAction(AnimatedActor *pTarget, float position)
@@ -504,7 +503,7 @@ private:
 };
 
 
-class SequenceAction : public Action
+class SequenceAction final : public Action
 {
 public:
    SequenceAction()
@@ -545,7 +544,7 @@ private:
 };
 
 
-class ShowAction : public Action
+class ShowAction final : public Action
 {
 public:
    ShowAction(Actor *pTarget, bool visible)
@@ -567,7 +566,7 @@ private:
 };
 
 
-class WaitAction : public Action
+class WaitAction final : public Action
 {
 public:
    WaitAction(float secondsToWait)
@@ -595,7 +594,7 @@ private:
 };
 
 
-class ActionFactory
+class ActionFactory final
 {
 public:
    ActionFactory(Actor *pTarget)

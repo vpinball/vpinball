@@ -3,13 +3,13 @@
 #include "AssetSrc.h"
 #include "Bitmap.h"
 
-#include <map>
+#include <unordered_map>
 
 
 class Font;
 class VPXFile;
 
-class AssetManager
+class AssetManager final
 {
 public:
    AssetManager();
@@ -18,7 +18,7 @@ public:
    const string& GetBasePath() { return m_szBasePath; }
    void SetBasePath(const string& szBasePath);
    const string& GetTableFile() const { return m_szTableFile; }
-   void SetTableFile(string name) { m_szTableFile = name; }
+   void SetTableFile(const string& name) { m_szTableFile = name; }
 
    AssetSrc* ResolveSrc(const string& src, AssetSrc* pBaseSrc);
    Bitmap* GetBitmap(AssetSrc* pSrc);
@@ -27,8 +27,8 @@ public:
    void ClearAll();
 
 private:
-   std::map<string, Bitmap*> m_cachedBitmaps;
-   std::map<string, Font*> m_cachedFonts;
+   std::unordered_map<string, Bitmap*> m_cachedBitmaps;
+   std::unordered_map<string, Font*> m_cachedFonts;
 
    string m_szBasePath;
    string m_szTableFile;

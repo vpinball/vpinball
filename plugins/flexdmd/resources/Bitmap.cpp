@@ -35,17 +35,17 @@ void Bitmap::SetData(void* pData)
    m_pData = pData;
 }
 
-SDL_Surface* Bitmap::GetSurface()
+SDL_Surface* Bitmap::GetSurface() const
 {
-   return (m_pData && (m_assetType == AssetType_Image)) ? (SDL_Surface*)m_pData : NULL;
+   return (m_pData && (m_assetType == AssetType_Image)) ? (SDL_Surface*)m_pData : nullptr;
 }
 
-SDL_Surface* Bitmap::GetFrameSurface(int pos)
+SDL_Surface* Bitmap::GetFrameSurface(int pos) const
 {
-   return (m_pData && (m_assetType == AssetType_GIF)) ? ((IMG_Animation*)m_pData)->frames[pos] : NULL;
+   return (m_pData && (m_assetType == AssetType_GIF)) ? ((IMG_Animation*)m_pData)->frames[pos] : nullptr;
 }
 
-int Bitmap::GetWidth()
+int Bitmap::GetWidth() const
 {
    if (m_pData) {
       if (m_assetType == AssetType_Image)
@@ -57,7 +57,7 @@ int Bitmap::GetWidth()
    return 0;
 }
 
-int Bitmap::GetHeight()
+int Bitmap::GetHeight() const
 {
    if (m_pData) {
       if (m_assetType == AssetType_Image)
@@ -69,19 +69,19 @@ int Bitmap::GetHeight()
    return 0;
 }
 
-float Bitmap::GetLength()
+float Bitmap::GetLength() const
 {
-   float length = 0;
+   int length = 0;
    if (m_pData && m_assetType == AssetType_GIF)
    {
       IMG_Animation* pAnimation = (IMG_Animation*)m_pData;
       for (int index = 0; index < pAnimation->count; index++)
          length += pAnimation->delays[index];
    }
-   return length;
+   return (float)length;
 }
 
-float Bitmap::GetFrameDelay(int pos)
+float Bitmap::GetFrameDelay(int pos) const
 {
    if (m_pData && m_assetType == AssetType_GIF)
       return static_cast<float>(((IMG_Animation*)m_pData)->delays[pos]);
@@ -89,7 +89,7 @@ float Bitmap::GetFrameDelay(int pos)
    return 0.0f;
 }
 
-int Bitmap::GetFrameCount()
+int Bitmap::GetFrameCount() const
 {
    if (m_pData && m_assetType == AssetType_GIF)
       return ((IMG_Animation*)m_pData)->count;

@@ -3,7 +3,7 @@
 #include "AnimatedActor.h"
 #include "resources/AssetManager.h"
 
-class GIFImage : public AnimatedActor 
+class GIFImage final : public AnimatedActor 
 {
 public:
    ~GIFImage();

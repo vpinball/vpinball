@@ -7,7 +7,7 @@
 
 class AssetManager;
 
-class Font {
+class Font final {
 public:
    Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc);
    ~Font();
@@ -17,7 +17,7 @@ public:
    void DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char previousCharacter, float& x, float& y);
    SDL_Rect MeasureFont(const string& text);
    void DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const string& text);
-   BitmapFont* GetBitmapFont() { return m_pBitmapFont; }
+   BitmapFont* GetBitmapFont() const { return m_pBitmapFont; }
 
 private:
    BitmapFont* m_pBitmapFont;

@@ -4,7 +4,7 @@
 #include "AnimatedActor.h"
 #include "Image.h"
 
-class ImageSequence : public AnimatedActor
+class ImageSequence final : public AnimatedActor
 {
 public:
    ~ImageSequence();

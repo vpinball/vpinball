@@ -4,13 +4,6 @@
 #include <algorithm>
 
 
-std::string to_lower(const std::string& str)
-{
-   std::string lower_str;
-   std::transform(str.begin(), str.end(), std::back_inserter(lower_str), [](unsigned char c) { return std::tolower(c); });
-   return lower_str;
-}
-
 string normalize_path_separators(const string& szPath)
 {
    string szResult = szPath;
@@ -26,7 +19,7 @@ string normalize_path_separators(const string& szPath)
    return szResult;
 }
 
-inline char cLower(char c)
+static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention
@@ -41,22 +34,21 @@ string string_to_lower(string str)
 
 string extension_from_path(const string& path)
 {
-   const string lowerPath = string_to_lower(path);
    const size_t pos = path.find_last_of('.');
-   return pos != string::npos ? lowerPath.substr(pos + 1) : string();
+   return pos != string::npos ? string_to_lower(path).substr(pos + 1) : string();
 }
 
 
 string trim_string(const string& str)
 {
-   string s = str;
+   string s;
    try
    {
-      s = s.substr(str.find_first_not_of(" \t\r\n"), s.find_last_not_of(" \t\r\n") - s.find_first_not_of(" \t\r\n") + 1);
+      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
    }
    catch (...)
    {
-      s.clear();
+      //s.clear();
    }
    return s;
 }

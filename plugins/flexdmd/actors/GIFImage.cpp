@@ -6,11 +6,11 @@ GIFImage::GIFImage(FlexDMD* pFlexDMD, const string& name) : AnimatedActor(pFlexD
 
 GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& path, const string& name)
 {
-   AssetSrc* pSrc = pAssetManager->ResolveSrc(path, NULL);
+   AssetSrc* pSrc = pAssetManager->ResolveSrc(path, nullptr);
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
    if (!pBitmap) {
        free(pSrc);
-       return NULL;
+       return nullptr;
    }
 
    GIFImage* pImage = new GIFImage(pFlexDMD, name);
@@ -23,16 +23,15 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
    pImage->SetLength(pBitmap->GetLength() / 1000.0f);
    pImage->Rewind();
    pImage->Pack();
-   pImage->m_pBitmap = NULL;
-   pImage->m_pActiveFrameSurface = NULL;
+   pImage->m_pBitmap = nullptr;
+   pImage->m_pActiveFrameSurface = nullptr;
 
    return pImage;
 }
 
 GIFImage::~GIFImage()
 {
-   if (m_pSrc)
-      delete m_pSrc;
+   delete m_pSrc;
 }
 
 void GIFImage::OnStageStateChanged()

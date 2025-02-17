@@ -41,21 +41,21 @@ public:
 
    PSC_IMPLEMENT_REFCOUNT()
 
-   long GetVersion() const { return 1009; }
-   long GetRuntimeVersion() const { return m_runtimeVersion; }
-   void SetRuntimeVersion(long v) { m_runtimeVersion = v; }
+   static int32_t GetVersion() { return 1009; }
+   int32_t GetRuntimeVersion() const { return m_runtimeVersion; }
+   void SetRuntimeVersion(int32_t v) { m_runtimeVersion = v; }
    
    bool GetRun() const { return m_run; }
-   void SetRun(bool v);
+   void SetRun(bool run);
 
    bool GetShow() const { return m_show; }
    void SetShow(bool v) { if (m_show != v) { m_show = v; if (m_run) OnDMDChanged(); } }
 
    const string& GetGameName() const { return m_szGameName; }
-   void SetGameName(string name) { m_szGameName = name; }
+   void SetGameName(const string& name) { m_szGameName = name; }
 
    const string& GetTableFile() const { return m_pAssetManager->GetTableFile(); }
-   void SetTableFile(string name) { m_pAssetManager->SetTableFile(name); }
+   void SetTableFile(const string& name) { m_pAssetManager->SetTableFile(name); }
 
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
@@ -66,14 +66,14 @@ public:
    void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); }
 
    const string& GetProjectFolder() const { return m_pAssetManager->GetBasePath(); }
-   void SetProjectFolder(string folder) { m_pAssetManager->SetBasePath(folder); }
+   void SetProjectFolder(const string& folder) { m_pAssetManager->SetBasePath(folder); }
 
    bool GetClear() const { return m_clear; }
    void SetClear(bool v) { m_clear = v; }
 
    void Render();
-   std::vector<uint32_t> GetDmdColoredPixels();
-   std::vector<uint8_t> GetDmdPixels();
+   const std::vector<uint32_t>& GetDmdColoredPixels();
+   const std::vector<uint8_t>& GetDmdPixels();
    
    void SetSegments(const std::vector<uint16_t>& segments);
 
@@ -93,7 +93,7 @@ public:
    uint32_t GetColor() const { return m_dmdColor; }
    void SetColor(uint32_t dmdColor) { m_dmdColor = dmdColor; }
    
-   AssetManager* GetAssetManager() { return m_pAssetManager; }
+   AssetManager* GetAssetManager() const { return m_pAssetManager; }
 
    void SetId(uint32_t id) { m_id = id; }
    uint32_t GetId() const { return m_id; }
@@ -101,7 +101,7 @@ public:
    void SetOnDMDChangedHandler(void (*handler)(FlexDMD*)) { m_onDMDChangedHandler = handler; }
    void SetOnDestroyHandler(void (*handler)(FlexDMD*)) { m_onDestroyHandler = handler; }
 
-   VP::SurfaceGraphics* GetGraphics() { return m_pSurface; }
+   VP::SurfaceGraphics* GetGraphics() const { return m_pSurface; }
 
    uint8_t* UpdateRGBFrame();
    uint8_t* UpdateLum8Frame();
@@ -142,7 +142,7 @@ private:
    string m_szGameName;
    Uint64 m_lastRenderTick = 0;
    unsigned int m_frameId = 0;
-   long m_runtimeVersion = 1008;
+   int32_t m_runtimeVersion = 1008;
    bool m_clear = false;
    int m_renderLockCount = 0;
    uint16_t m_segData1[128] = { 0 };

@@ -4,7 +4,7 @@
 #include "AssetSrc.h"
 #include <SDL3/SDL_surface.h>
 
-class Bitmap
+class Bitmap final
 {
 public:
    Bitmap(void* pData, AssetType assetType);
@@ -13,13 +13,13 @@ public:
    
    PSC_IMPLEMENT_REFCOUNT()
 
-   int GetWidth();
-   int GetHeight();
-   float GetLength();
-   float GetFrameDelay(int pos);
-   int GetFrameCount();
-   SDL_Surface* GetSurface();
-   SDL_Surface* GetFrameSurface(int pos);
+   int GetWidth() const;
+   int GetHeight() const;
+   float GetLength() const;
+   float GetFrameDelay(int pos) const;
+   int GetFrameCount() const;
+   SDL_Surface* GetSurface() const;
+   SDL_Surface* GetFrameSurface(int pos) const;
    void SetData(void* pData);
 
 private:
