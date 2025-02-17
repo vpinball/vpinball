@@ -79,7 +79,8 @@ void CollectionManagerDialog::EditCollection()
         char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
         WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
         ListView_SetItemText(hListHwnd, sel, 0, szT);
-        ListView_SetItemText(hListHwnd, sel, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
+        const string tmp = std::to_string(pcol->m_visel.size());
+        ListView_SetItemText(hListHwnd, sel, 1, (LPSTR)tmp.c_str());
     }
 }
 
@@ -118,7 +119,8 @@ INT_PTR CollectionManagerDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lPa
                        lvitem.iSubItem = 0;
                        ListView_GetItem(hListHwnd, &lvitem);
                        const Collection * const pcol = (Collection *)lvitem.lParam;
-                       ListView_SetItemText(hListHwnd, i, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
+                       const string tmp = std::to_string(pcol->m_visel.size());
+                       ListView_SetItemText(hListHwnd, i, 1, (LPSTR)tmp.c_str());
                     }
                 }
             }
@@ -208,7 +210,8 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
                 WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
                 ListView_SetItemText(hListHwnd, idx - 1, 0, szT);
-                ListView_SetItemText(hListHwnd, idx - 1, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
+                const string tmp = std::to_string(pcol->m_visel.size());
+                ListView_SetItemText(hListHwnd, idx - 1, 1, (LPSTR)tmp.c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx - 1, LVIS_SELECTED, LVIS_SELECTED);
@@ -236,7 +239,8 @@ BOOL CollectionManagerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                 char szT[sizeof(pcol->m_wzName)/sizeof(pcol->m_wzName[0])];
                 WideCharToMultiByteNull(CP_ACP, 0, pcol->m_wzName, -1, szT, sizeof(szT), nullptr, nullptr);
                 ListView_SetItemText(hListHwnd, idx + 1, 0, szT);
-                ListView_SetItemText(hListHwnd, idx + 1, 1, (LPSTR)std::to_string(pcol->m_visel.size()).c_str());
+                const string tmp = std::to_string(pcol->m_visel.size());
+                ListView_SetItemText(hListHwnd, idx + 1, 1, (LPSTR)tmp.c_str());
 
                 ListView_SetItemState(hListHwnd, -1, 0, LVIS_SELECTED);
                 ListView_SetItemState(hListHwnd, idx + 1, LVIS_SELECTED, LVIS_SELECTED);
