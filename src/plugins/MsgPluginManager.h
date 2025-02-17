@@ -68,7 +68,7 @@ public:
 
    unsigned int NewEndpointId() { return m_nextEndpointId++; }
 
-   void SetSettingsHandler(std::function<void(const char*, const char*, char*, unsigned int)> handler) { m_settingHandler = handler; }
+   void SetSettingsHandler(const std::function<void(const char*, const char*, char*, unsigned int)>& handler) { m_settingHandler = handler; }
 
 private:
    MsgPluginManager();

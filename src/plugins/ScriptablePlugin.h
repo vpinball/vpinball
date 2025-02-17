@@ -184,7 +184,7 @@ typedef struct ScriptablePluginAPI
 #define PSC_VAR_SET_float(variant, value) PSC_VAR_float(variant) = value;
 #define PSC_VAR_SET_double(variant, value) PSC_VAR_double(variant) = value;
 #define PSC_VAR_SET_enum(type, variant, value) (variant).vInt = static_cast<int>(value);
-#define PSC_VAR_SET_string(variant, value) (variant).vString = value.c_str(); // FIXME This is awfully not clean, opening doors to access to temp memory allocated for string
+#define PSC_VAR_SET_string(variant, value) (variant).vString = (value).c_str(); // FIXME This is awfully not clean, opening doors to access to temp memory allocated for string
 #define PSC_VAR_SET_object(vtype, variant, value) { (variant).vObject = static_cast<void*>(value); }
 
 #define PSC_ARRAY1(name, type, lowerBound) \

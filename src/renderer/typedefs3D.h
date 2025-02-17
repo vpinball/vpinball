@@ -48,8 +48,8 @@ enum StereoMode
    STEREO_ANAGLYPH_10           = 14, // Anaglyph Glasses Set
    STEREO_VR                    = 15, // Hardware VR set (not supported by DX9)
 };
-#define Is3DTVStereoMode(stereo)     (STEREO_TB <= stereo && stereo <= STEREO_SBS)
-#define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_1 <= stereo && stereo <= STEREO_ANAGLYPH_10)
+#define Is3DTVStereoMode(stereo)     (STEREO_TB <= (stereo) && (stereo) <= STEREO_SBS)
+#define IsAnaglyphStereoMode(stereo) (STEREO_ANAGLYPH_1 <= (stereo) && (stereo) <= STEREO_ANAGLYPH_10)
 
 // ToneMapper implemented as an enum to be future proof since there are many more than the 2 currently implemented
 enum ToneMapper

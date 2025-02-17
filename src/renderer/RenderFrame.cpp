@@ -40,7 +40,6 @@ public:
    DX9Flush(RenderDevice* const pd3dDevice, const int numFrames)
       : m_pd3dDevice(pd3dDevice)
    {
-      m_curIdx = 0;
       m_buffers.resize(numFrames, nullptr);
       m_curIdx = 0;
    }
@@ -344,7 +343,7 @@ bool RenderFrame::Execute(const bool log)
    if (!m_endOfFrameCmds.empty())
    {
       rendered = true;
-      for (auto cmd : m_endOfFrameCmds)
+      for (const auto& cmd : m_endOfFrameCmds)
          cmd();
       m_endOfFrameCmds.clear();
    }

@@ -26,7 +26,6 @@ public:
 private:
    int m_eyeWidth = 1080;
    int m_eyeHeight = 1020;
-   float m_scale = 1.0f;
    float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
    Matrix3D m_vrMatView;
    Matrix3D m_vrMatProj[2];
@@ -41,6 +40,7 @@ public:
    void SubmitFrame(Sampler* leftEye, Sampler* rightEye);
 
 private:
+   float m_scale = 1.0f;
    static vr::IVRSystem* m_pHMD;
    vr::TrackedDevicePose_t m_hmdPosition;
    vr::TrackedDevicePose_t* m_rTrackedDevicePose = nullptr;

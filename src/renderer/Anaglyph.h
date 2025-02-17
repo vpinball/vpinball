@@ -34,7 +34,7 @@ public:
    bool IsReversedColorPair() const { return m_reversedColorPair; }
    vec3 GetLeftEyeColor(const bool linear) const { return linear ? m_leftEyeColor : Gamma(m_leftEyeColor); }
    vec3 GetRightEyeColor(const bool linear) const { return linear ? m_rightEyeColor : Gamma(m_rightEyeColor); }
-   const vec3 GetAnaglyphRatio() const { return m_anaglyphRatio; }
+   vec3 GetAnaglyphRatio() const { return m_anaglyphRatio; }
 
 private:
    void Update();

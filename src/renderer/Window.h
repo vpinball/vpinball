@@ -24,7 +24,7 @@ public:
    {
    }
 
-   void GetPos(int& x, int& y) const { x = m_x, y = m_y; }
+   void GetPos(int& x, int& y) const { x = m_x; y = m_y; }
    int GetWidth() const { return m_width; }
    int GetHeight() const { return m_height; }
 

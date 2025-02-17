@@ -134,7 +134,7 @@ public:
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
-   void AddEndOfFrameCmd(std::function<void()> cmd) { m_renderFrame.AddEndOfFrameCmd(cmd); }
+   void AddEndOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame.AddEndOfFrameCmd(cmd); }
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
    void SubmitRenderFrame();
@@ -142,7 +142,7 @@ public:
 
    // RenderState used in submitted render command
    void SetDefaultRenderState() { m_defaultRenderState = m_renderstate; }
-   void ResetRenderState() { m_renderstate = m_defaultRenderState; };
+   void ResetRenderState() { m_renderstate = m_defaultRenderState; }
    RenderState& GetRenderState() { return m_renderstate; }
    void SetRenderState(const RenderState::RenderStates p1, const RenderState::RenderStateValue p2);
    void SetRenderStateDepthBias(float bias);
@@ -185,7 +185,7 @@ public:
    TextureManager m_texMan;
    const bool m_compressTextures;
 
-   bool UseLowPrecision() const { return m_useLowPrecision; };
+   bool UseLowPrecision() const { return m_useLowPrecision; }
 
    unsigned int m_vsyncCount = 0;
 
