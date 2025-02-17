@@ -352,6 +352,15 @@ FORCE_INLINE void _sse2neon_smp_mb(void)
 #define _MM_SHUFFLE(fp3, fp2, fp1, fp0) \
     (((fp3) << 6) | ((fp2) << 4) | ((fp1) << 2) | ((fp0)))
 
+/**
+ * MACRO for shuffle parameter for _mm_shuffle_pd().
+ * Argument fp1 is a digit[01] that represents the fp from argument "b"
+ * of mm_shuffle_pd that will be placed in fp1 of result.
+ * fp0 is a digit[01] that represents the fp from argument "a" of mm_shuffle_pd
+ * that will be placed in fp0 of result.
+ */
+#define _MM_SHUFFLE2(fp1, fp0) (((fp1) << 1) | (fp0))
+
 #if __has_builtin(__builtin_shufflevector)
 #define _sse2neon_shuffle(type, a, b, ...) \
     __builtin_shufflevector(a, b, __VA_ARGS__)
@@ -2414,7 +2423,7 @@ FORCE_INLINE __m64 _mm_sad_pu8(__m64 a, __m64 b)
     uint64x1_t t = vpaddl_u32(vpaddl_u16(
         vpaddl_u8(vabd_u8(vreinterpret_u8_m64(a), vreinterpret_u8_m64(b)))));
     return vreinterpret_m64_u16(
-        vset_lane_u16((int) vget_lane_u64(t, 0), vdup_n_u16(0), 0));
+        vset_lane_u16((uint16_t) vget_lane_u64(t, 0), vdup_n_u16(0), 0));
 }
 
 // Macro: Set the flush zero bits of the MXCSR control and status register to
@@ -5337,7 +5346,7 @@ FORCE_INLINE __m128i _mm_slli_epi16(__m128i a, int imm)
     if (_sse2neon_unlikely(imm & ~15))
         return _mm_setzero_si128();
     return vreinterpretq_m128i_s16(
-        vshlq_s16(vreinterpretq_s16_m128i(a), vdupq_n_s16(imm)));
+        vshlq_s16(vreinterpretq_s16_m128i(a), vdupq_n_s16((int16_t) imm)));
 }
 
 // Shift packed 32-bit integers in a left by imm8 while shifting in zeros, and
@@ -5416,7 +5425,7 @@ FORCE_INLINE __m128i _mm_sra_epi16(__m128i a, __m128i count)
     if (_sse2neon_unlikely(c & ~15))
         return _mm_cmplt_epi16(a, _mm_setzero_si128());
     return vreinterpretq_m128i_s16(
-        vshlq_s16((int16x8_t) a, vdupq_n_s16((int) -c)));
+        vshlq_s16((int16x8_t) a, vdupq_n_s16((int16_t) -c)));
 }
 
 // Shift packed 32-bit integers in a right by count while shifting in sign bits,
@@ -5436,7 +5445,7 @@ FORCE_INLINE __m128i _mm_sra_epi32(__m128i a, __m128i count)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_srai_epi16
 FORCE_INLINE __m128i _mm_srai_epi16(__m128i a, int imm)
 {
-    const int count = (imm & ~15) ? 15 : imm;
+    const int16_t count = (imm & ~15) ? 15 : (int16_t) imm;
     return (__m128i) vshlq_s16((int16x8_t) a, vdupq_n_s16(-count));
 }
 
@@ -8610,7 +8619,7 @@ FORCE_INLINE __m128i _mm_cmpgt_epi64(__m128i a, __m128i b)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u16
 FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32ch %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8629,7 +8638,7 @@ FORCE_INLINE uint32_t _mm_crc32_u16(uint32_t crc, uint16_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u32
 FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cw %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8648,7 +8657,7 @@ FORCE_INLINE uint32_t _mm_crc32_u32(uint32_t crc, uint32_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u64
 FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cx %w[c], %w[c], %x[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
@@ -8666,7 +8675,7 @@ FORCE_INLINE uint64_t _mm_crc32_u64(uint64_t crc, uint64_t v)
 // https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_crc32_u8
 FORCE_INLINE uint32_t _mm_crc32_u8(uint32_t crc, uint8_t v)
 {
-#if defined(__aarch64__) && defined(__ARM_FEATURE_CRC32)
+#if (defined(__aarch64__) || defined(_M_ARM64)) && defined(__ARM_FEATURE_CRC32)
     __asm__ __volatile__("crc32cb %w[c], %w[c], %w[v]\n\t"
                          : [c] "+r"(crc)
                          : [v] "r"(v));
