@@ -4,9 +4,9 @@ BitmapFilter::BitmapFilter()
 {
 }
 
-ColorRGBA32 BitmapFilter::GetPixel(SDL_Surface* surface, int x, int y)
+ColorRGBA32 BitmapFilter::GetPixel(const SDL_Surface* const surface, int x, int y)
 {
-   const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(surface->format);
+   const SDL_PixelFormatDetails* const format = SDL_GetPixelFormatDetails(surface->format);
    const uint8_t* const pixel = (uint8_t*)surface->pixels + y * surface->pitch + x * format->bytes_per_pixel;
 
    switch (format->bytes_per_pixel) {

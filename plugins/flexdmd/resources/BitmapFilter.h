@@ -14,5 +14,5 @@ public:
    virtual void Filter(Bitmap* pBitmap) = 0;
 
 protected:
-   static ColorRGBA32 GetPixel(SDL_Surface* surface, int x, int y);
+   static ColorRGBA32 GetPixel(const SDL_Surface* const surface, int x, int y);
 };

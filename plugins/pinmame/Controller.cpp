@@ -19,7 +19,7 @@ Controller::~Controller()
    delete m_pPinmameMechConfig;
 }
 
-const string Controller::GetVersion() const
+string Controller::GetVersion() const
 {
    // TODO libpinmame should report its version
    int nVersionNo0 = 03;
@@ -45,7 +45,7 @@ Game* Controller::GetGames(const string& name) const
    GameCBData cbData { this, nullptr };
    PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData)
       {
-         GameCBData* pGame = reinterpret_cast<GameCBData*>(pUserData);
+         GameCBData* pGame = static_cast<GameCBData*>(pUserData);
          pGame->game = new Game(const_cast<Controller*>(pGame->controller), *pPinmameGame);
       }, &cbData);
    return cbData.game;
@@ -56,7 +56,7 @@ void Controller::SetGameName(const string& name)
    delete m_pPinmameGame;
    m_pPinmameGame = nullptr;
    PINMAME_STATUS status = PinmameGetGame(name.c_str(), [](PinmameGame* pPinmameGame, void* const pUserData) {
-      Controller* me = reinterpret_cast<Controller*>(pUserData);
+      Controller* me = static_cast<Controller*>(pUserData);
       me->m_pPinmameGame = new PinmameGame();
       memcpy(me->m_pPinmameGame, pPinmameGame, sizeof(PinmameGame));
    }, this);

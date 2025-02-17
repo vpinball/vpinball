@@ -16,7 +16,7 @@ public:
    void SetOnGameStartHandler(void (*handler)(Controller*)) { m_onGameStartHandler = handler; }
    void SetOnGameEndHandler(void (*handler)(Controller*)) { m_onGameEndHandler = handler; }
 
-   const string GetVersion() const;
+   string GetVersion() const;
 
    // TODO may also be accessed as a collection object
    Game* GetGames(const string& name) const;
