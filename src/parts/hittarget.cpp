@@ -790,7 +790,7 @@ void HitTarget::MoveOffset(const float dx, const float dy)
 
 Vertex2D HitTarget::GetCenter() const
 {
-   return Vertex2D(m_d.m_vPosition.x, m_d.m_vPosition.y);
+   return {m_d.m_vPosition.x, m_d.m_vPosition.y};
 }
 
 void HitTarget::PutCenter(const Vertex2D& pv)

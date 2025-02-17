@@ -191,7 +191,7 @@ public:
    STDMETHOD(get_Visible)(/*[out, retval]*/ VARIANT_BOOL *pVal);
    STDMETHOD(put_Visible)(/*[in]*/ VARIANT_BOOL newVal);
 
-   static void ResetBallIDCounter() { m_nextBallID = 0; };
+   static void ResetBallIDCounter() { m_nextBallID = 0; }
 
    BallData m_d;
    HitBall m_hitBall;

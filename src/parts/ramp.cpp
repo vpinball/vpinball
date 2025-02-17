@@ -23,8 +23,7 @@ Ramp::Ramp()
 Ramp::~Ramp()
 {
    assert(m_rd == nullptr);
-   if (m_rgheightInit)
-      delete[] m_rgheightInit;
+   delete[] m_rgheightInit;
 }
 
 Ramp *Ramp::CopyForPlay(PinTable *live_table) const
@@ -1078,8 +1077,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    if (!mat->m_bOpacityActive)
       accuracy = (int)(10.f*1.3f); // see above
 
-   if (m_rgheightInit)
-       delete [] m_rgheightInit;
+   delete [] m_rgheightInit;
    m_rgheightInit = nullptr;
 
    int splinePoints;
@@ -1168,8 +1166,7 @@ void Ramp::GenerateWireMesh(Vertex3D_NoTex2 **meshBuf1, Vertex3D_NoTex2 **meshBu
    }*/
 
    delete[] rgvLocal;
-   if (middlePoints)
-      delete[] middlePoints;
+   delete[] middlePoints;
    delete[] tmpPoints;
 }
 
@@ -2130,7 +2127,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
             loader.WriteMaterial(m_d.m_szMaterial, string(), mat);
             loader.UseTexture(m_d.m_szMaterial);
             loader.WriteFaceInfo(m_meshIndices);
-            WORD * const idx = new WORD[m_meshIndices.size()];
+            WORD * const __restrict idx = new WORD[m_meshIndices.size()];
             for (size_t i = 0; i < m_meshIndices.size(); i++)
                idx[i] = m_meshIndices[i] + m_numVertices;
             loader.WriteFaceInfoList(idx, (unsigned int)m_meshIndices.size());
@@ -2333,8 +2330,7 @@ void Ramp::GenerateRampMesh(Vertex3D_NoTex2 **meshBuf)
    m_vertBuffer = nullptr;
    delete[] rgvLocal;
    delete[] rgheight;
-   if (rgratio)
-      delete[] rgratio;
+   delete[] rgratio;
 }
 
 void Ramp::GenerateVertexBuffer()

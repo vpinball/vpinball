@@ -33,7 +33,7 @@ Vertex2D IHaveDragPoints::GetPointCenter() const
       maxy = max(maxy, v.y);
    }
 
-   return Vertex2D((maxx + minx)*0.5f, (maxy + miny)*0.5f);
+   return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
 }
 
 void IHaveDragPoints::PutPointCenter(const Vertex2D& pv)
@@ -468,7 +468,7 @@ void DragPoint::MoveOffset(const float dx, const float dy)
 
 Vertex2D DragPoint::GetCenter() const
 {
-   return Vertex2D(m_v.x, m_v.y);
+   return {m_v.x, m_v.y};
 }
 
 void DragPoint::PutCenter(const Vertex2D& pv)
@@ -739,7 +739,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
          {
             case BN_CLICKED:
             {
-               if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
+               if (SendDlgItemMessage(hwndDlg, IDC_CHECK_ROTATE_CENTER, BM_GETCHECK, 0, 0) != BST_CHECKED)
                {
                   SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
                   SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
@@ -877,7 +877,7 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
             {
             case BN_CLICKED:
             {
-               if (!(SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) == BST_CHECKED))
+               if (SendDlgItemMessage(hwndDlg, IDC_CHECK_SCALE_CENTER, BM_GETCHECK, 0, 0) != BST_CHECKED)
                {
                   SetDlgItemText(hwndDlg, IDC_CENTERX, f2sz(g_pvp->m_mouseCursorPosition.x).c_str());
                   SetDlgItemText(hwndDlg, IDC_CENTERY, f2sz(g_pvp->m_mouseCursorPosition.y).c_str());
@@ -988,8 +988,8 @@ INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam
          case IDC_SQUARE:
          {
             const size_t checked = SendDlgItemMessage(hwndDlg, IDC_SQUARE, BM_GETCHECK, 0, 0);
-            EnableWindow(GetDlgItem(hwndDlg, IDC_SCALEY), !(checked == BST_CHECKED));
-            EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC_SCALEY), !(checked == BST_CHECKED));
+            EnableWindow(GetDlgItem(hwndDlg, IDC_SCALEY), checked != BST_CHECKED);
+            EnableWindow(GetDlgItem(hwndDlg, IDC_STATIC_SCALEY), checked != BST_CHECKED);
          }
          break;
          }

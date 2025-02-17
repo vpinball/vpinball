@@ -711,9 +711,9 @@ float HitFlipper::HitTestFlipperFace(const BallS& ball, const float dtime, Colli
    float ballvtx, ballvty; // new ball position at time t in flipper face coordinate
    float contactAng;
 
-   float t, t0, t1, d0, d1, dp; // Modified False Position control
+   float t0, t1, d0, d1, dp; // Modified False Position control
 
-   t = 0.f; //start first interval ++++++++++++++++++++++++++
+   float t = 0.f; //start first interval ++++++++++++++++++++++++++
    int k;
    for (k = 1; k <= C_INTERATIONS; ++k)
    {

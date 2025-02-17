@@ -480,12 +480,12 @@ void Textbox::Render(const unsigned int renderMask)
    const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
-   const bool dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
+   const bool is_dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
    if (isStaticOnly
       || !m_d.m_visible
       || (m_backglass && isReflectionPass)
       || (m_backglass && isNoBackdrop)
-      || (!dmd && m_texture == nullptr))
+      || (!is_dmd && m_texture == nullptr))
       return;
 
    constexpr float mult  = (float)(1.0 / EDITOR_BG_WIDTH);
@@ -501,12 +501,12 @@ void Textbox::Render(const unsigned int renderMask)
    float w = (rect_right - rect_left)*mult;
    float h = (rect_bottom - rect_top)*ymult;
 
-   if (dmd)
+   if (is_dmd)
    {
 #ifndef __STANDALONE__
       const bool isExternalDMD = HasDMDCapture();
 #else
-      const bool isExternalDMD = false;
+      constexpr bool isExternalDMD = false;
 #endif
 
       m_rd->ResetRenderState();
@@ -538,7 +538,7 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay({ 0, 0 });
+      const Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay({ 0, 0 });
       if (dmd.frame == nullptr)
          return;
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0

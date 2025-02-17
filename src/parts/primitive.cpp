@@ -751,7 +751,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
                   drawVertices[o] = Vertex2D(B.x, B.y);
                }
 
-               psur->Polyline(&drawVertices[0], (int)drawVertices.size());
+               psur->Polyline(drawVertices.data(), (int)drawVertices.size());
             }
          }
       }
@@ -784,7 +784,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
          }
 
          if (!drawVertices.empty())
-            psur->Lines(&drawVertices[0], (int)(drawVertices.size() / 2));
+            psur->Lines(drawVertices.data(), (int)(drawVertices.size() / 2));
       }
    }
 
@@ -881,7 +881,7 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
                drawVertices[o] = Vertex2D(B.x, B.y);
             }
 
-            psur->Polyline(&drawVertices[0], (int)drawVertices.size());
+            psur->Polyline(drawVertices.data(), (int)drawVertices.size());
          }
       }
    }
@@ -962,8 +962,7 @@ void Primitive::CalculateBuiltinOriginal()
 
    m_mesh.m_vertices.resize(4 * m_d.m_Sides + 2);
 
-   Vertex3D_NoTex2 *middle;
-   middle = &m_mesh.m_vertices[0]; // middle point top
+   Vertex3D_NoTex2 *middle = m_mesh.m_vertices.data(); // middle point top
    middle->x = 0.0f;
    middle->y = 0.0f;
    middle->z = 0.5f;
@@ -1022,7 +1021,7 @@ void Primitive::CalculateBuiltinOriginal()
    }
 
    // these have to be replaced for image mapping
-   middle = &m_mesh.m_vertices[0]; // middle point top
+   middle = m_mesh.m_vertices.data(); // middle point top
    middle->tu = 0.25f;   // /4
    middle->tv = 0.25f;   // /4
    middle = &m_mesh.m_vertices[m_d.m_Sides + 1]; // middle point bottom
@@ -1205,7 +1204,7 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_d.m_isBackGlassImage = IsBackglass();
 
    delete m_meshBuffer;
-   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.size() == 0));
+   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
    IndexBuffer* indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
@@ -1519,7 +1518,7 @@ void Primitive::MoveOffset(const float dx, const float dy)
 
 Vertex2D Primitive::GetCenter() const
 {
-   return Vertex2D(m_d.m_vPosition.x, m_d.m_vPosition.y);
+   return {m_d.m_vPosition.x, m_d.m_vPosition.y};
 }
 
 void Primitive::PutCenter(const Vertex2D& pv)

@@ -164,32 +164,32 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
-      HRESULT GetTypeName(BSTR *pVal) final { return m_plight->GetTypeName(pVal); }
-      IDispatch *GetDispatch() final { return m_plight->GetDispatch(); }
-      const IDispatch *GetDispatch() const final { return m_plight->GetDispatch(); }
+      HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
+      IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
+      const IDispatch *GetDispatch() const { return m_plight->GetDispatch(); }
 
-      void Delete() final { m_plight->Delete(); }
-      void Uncreate() final { m_plight->Uncreate(); }
+      void Delete() { m_plight->Delete(); }
+      void Uncreate() { m_plight->Uncreate(); }
 
-      int GetSelectLevel() const final { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+      int GetSelectLevel() const { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
 
-      IEditable *GetIEditable() final { return (IEditable *)m_plight; }
-      const IEditable *GetIEditable() const final { return (const IEditable *)m_plight; }
+      IEditable *GetIEditable() { return (IEditable *)m_plight; }
+      const IEditable *GetIEditable() const { return (const IEditable *)m_plight; }
 
-      PinTable *GetPTable() final { return m_plight->GetPTable(); }
-      const PinTable *GetPTable() const final { return m_plight->GetPTable(); }
+      PinTable *GetPTable() { return m_plight->GetPTable(); }
+      const PinTable *GetPTable() const { return m_plight->GetPTable(); }
 
-      bool LoadToken(const int id, BiffReader * const pbr) final { return true; }
+      bool LoadToken(const int id, BiffReader * const pbr) { return true; }
 
-      Vertex2D GetCenter() const final { return m_plight->m_d.m_vCenter; }
-      void PutCenter(const Vertex2D& pv) final { m_plight->m_d.m_vCenter = pv; }
+      Vertex2D GetCenter() const { return m_plight->m_d.m_vCenter; }
+      void PutCenter(const Vertex2D& pv) { m_plight->m_d.m_vCenter = pv; }
 
-      void MoveOffset(const float dx, const float dy) final {
+      void MoveOffset(const float dx, const float dy) {
           m_plight->m_d.m_vCenter.x += dx;
           m_plight->m_d.m_vCenter.y += dy;
       }
 
-      ItemTypeEnum GetItemType() const final { return eItemLightCenter; }
+      ItemTypeEnum GetItemType() const { return eItemLightCenter; }
 
    private:
       Light *m_plight;

@@ -24,7 +24,7 @@ static constexpr float vertsTipBottomf[13 * 3] =
    0.101425f, 0.786319f, 0.003753f
 };
 
-static const Vertex3Ds* const vertsTipBottom = (Vertex3Ds*)vertsTipBottomf;
+static const Vertex3Ds* const vertsTipBottom = (const Vertex3Ds*)vertsTipBottomf;
 
 static constexpr float vertsTipTopf[13 * 3] =
 {
@@ -43,7 +43,7 @@ static constexpr float vertsTipTopf[13 * 3] =
    0.101425f, 0.786319f, 1.004253f
 };
 
-static const Vertex3Ds* const vertsTipTop = (Vertex3Ds*)vertsTipTopf;
+static const Vertex3Ds* const vertsTipTop = (const Vertex3Ds*)vertsTipTopf;
 
 static constexpr float vertsBaseBottomf[13 * 3] =
 {
@@ -62,7 +62,7 @@ static constexpr float vertsBaseBottomf[13 * 3] =
    0.100762f, -0.000000f, 0.003753f
 };
 
-static const Vertex3Ds* const vertsBaseBottom = (Vertex3Ds*)vertsBaseBottomf;
+static const Vertex3Ds* const vertsBaseBottom = (const Vertex3Ds*)vertsBaseBottomf;
 
 static constexpr float vertsBaseTopf[13 * 3] =
 {
@@ -81,7 +81,7 @@ static constexpr float vertsBaseTopf[13 * 3] =
    0.100762f, -0.000000f, 1.004253f
 };
 
-static const Vertex3Ds* const vertsBaseTop = (Vertex3Ds*)vertsBaseTopf;
+static const Vertex3Ds* const vertsBaseTop = (const Vertex3Ds*)vertsBaseTopf;
 
 Flipper::Flipper()
 {

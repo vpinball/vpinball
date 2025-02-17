@@ -726,7 +726,7 @@ public:
    void RemoveRenderProbe(RenderProbe *pb) { m_vrenderprobe.erase(std::remove(m_vrenderprobe.begin(), m_vrenderprobe.end(), pb), m_vrenderprobe.end()); }
    RenderProbe *NewRenderProbe() { auto pb = new RenderProbe(); m_vrenderprobe.push_back(pb); return pb; }
    const vector<RenderProbe *> &GetRenderProbeList() const { return m_vrenderprobe; }
-   const vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
+   vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
    {
       std::vector<RenderProbe *> list;
       std::copy_if(m_vrenderprobe.begin(), m_vrenderprobe.end(), std::back_inserter(list), [type](RenderProbe *rp) { return rp->GetType() == type; });

@@ -3020,7 +3020,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ItemHasBeenProcessed(i + 1, m_vedit.size());
+               feedback.ItemHasBeenProcessed((int)i + 1, (int)m_vedit.size());
             }
 
             for (size_t i = 0; i < m_vsound.size(); i++)
@@ -3036,7 +3036,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.SoundHasBeenProcessed(i + 1, m_vsound.size());
+               feedback.SoundHasBeenProcessed((int)i + 1, (int)m_vsound.size());
             }
 
             for (size_t i = 0; i < m_vimage.size(); i++)
@@ -3052,7 +3052,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ImageHasBeenProcessed(i + 1, m_vimage.size());
+               feedback.ImageHasBeenProcessed((int)i + 1, (int)m_vimage.size());
             }
 
             for (size_t i = 0; i < m_vfont.size(); i++)
@@ -3068,7 +3068,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.FontHasBeenProcessed(i + 1, m_vfont.size());
+               feedback.FontHasBeenProcessed((int)i + 1, (int)m_vfont.size());
             }
 
             for (int i = 0; i < m_vcollection.size(); i++)
@@ -3084,7 +3084,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
                }
 
                csaveditems++;
-               feedback.ItemHasBeenProcessed(i + 1, m_vfont.size());
+               feedback.ItemHasBeenProcessed(i + 1, (int)m_vfont.size());
             }
 
          }

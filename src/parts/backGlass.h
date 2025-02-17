@@ -20,8 +20,10 @@ private:
    Texture* m_backgroundFallback;
    Sampler* m_backgroundTexture;
    int2 m_backglass_dmd;
+#if defined(ENABLE_VR) || defined(ENABLE_XR)
    unsigned int m_backglass_dmd_width;
    unsigned int m_backglass_dmd_height;
+#endif
    float m_dmd_height;
    float m_dmd_width;
    Vertex2D m_dmd;

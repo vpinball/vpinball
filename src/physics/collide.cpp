@@ -364,13 +364,14 @@ void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
    if (m_enabled)
    {
       const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
-      Vertex2D p0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zlow)), p1, p2;
-      Vertex2D q0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zhigh)), q1, q2;
+      const Vertex2D p0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zlow));
+      const Vertex2D q0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zhigh));
+      Vertex2D p2, q2;
       for (int i = 0; i <= 32; i++)
       {
-         p1 = p2;
+         const Vertex2D p1 = p2;
          p2 = project(Vertex3Ds(center.x + radius * cosf((float)i * (float)(2. * M_PI / 32.)), center.y + radius * sinf((float)i * (float)(2. * M_PI / 32.)), m_hitBBox.zlow));
-         q1 = q2;
+         const Vertex2D q1 = q2;
          q2 = project(Vertex3Ds(center.x + radius * cosf((float)i * (float)(2. * M_PI / 32.)), center.y + radius * sinf((float)i * (float)(2. * M_PI / 32.)), m_hitBBox.zhigh));
          if (i > 0 && p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
          {
