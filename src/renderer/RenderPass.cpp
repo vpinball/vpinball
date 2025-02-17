@@ -180,12 +180,13 @@ bool RenderPass::Execute(const bool log)
    if (m_commands.empty())
       return false;
 
+   int left,bottom,right,top;
    if (m_areaOfInterest.x != FLT_MAX)
    {
-      const int left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
-      const int right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
-      const int top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      bottom = clamp((int)((0.5f + m_areaOfInterest.y * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
+      right  = clamp((int)((0.5f + m_areaOfInterest.z * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());
+      top    = clamp((int)((0.5f + m_areaOfInterest.w * 0.5f) * (float)m_rt->GetHeight()), 0, m_rt->GetHeight());
       assert((left <= right) && (bottom <= top));
       if (left == right || bottom == top)
          return false;
