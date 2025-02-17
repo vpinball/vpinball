@@ -258,7 +258,11 @@ void* AssetManager::Open(AssetSrc* pSrc)
                   std::string fullpath(dllPath);
                   #endif
                   fullpath = fullpath.substr(0, fullpath.find_last_of(_T("\\/"))) + _T('\\');
-                  path = std::string(fullpath.begin(), fullpath.end());
+                  #ifdef _UNICODE
+                  path = POLE::UTF16toUTF8(fullpath);
+                  #else
+                  path = fullpath;
+                  #endif
                }
             }
          #endif
