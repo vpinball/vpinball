@@ -4,11 +4,11 @@
 
 #include "MsgPlugin.h"
 
-#include <cstring>
-
 #ifdef __cplusplus
+ #include <cstring>
  #include <cstdint>
 #else
+ #include <string.h>
  #include <stdint.h>
 #endif
 
@@ -240,16 +240,16 @@ typedef struct ScriptablePluginAPI
       assert(name##_SCD == nullptr); \
       std::vector<ScriptClassMemberDef> members; \
       members.push_back( { { "AddRef" }, { "ulong" }, 0, { }, \
-         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { long rc = static_cast<name *>(me)->AddRef(); if (pRet != nullptr) pRet->vULong = rc; } } ); \
+         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { unsigned long rc = static_cast<name *>(me)->AddRef(); if (pRet != nullptr) pRet->vULong = rc; } } ); \
       members.push_back( { { "Release" }, { "ulong" }, 0, { }, \
-         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { long rc = static_cast<name *>(me)->Release(); if (pRet != nullptr) pRet->vULong = rc; } } );
+         [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { unsigned long rc = static_cast<name *>(me)->Release(); if (pRet != nullptr) pRet->vULong = rc; } } );
 
 #define PSC_IMPLEMENT_REFCOUNT() \
    protected: \
       int m_refCount = 1; \
    public: \
       unsigned long AddRef() { m_refCount++; return m_refCount; } \
-      unsigned long Release() { m_refCount--; long rc = m_refCount; if (rc == 0) delete this; return rc; }
+      unsigned long Release() { m_refCount--; unsigned long rc = m_refCount; if (rc == 0) delete this; return rc; }
 
 #define PSC_ADD_REF(classDef, object) classDef->members[0].Call(object, 0, nullptr, nullptr);
 #define PSC_RELEASE(classDef, object) classDef->members[1].Call(object, 1, nullptr, nullptr);
@@ -385,5 +385,3 @@ typedef struct ScriptablePluginAPI
       [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) \
          { PSC_VAR_SET_##type(*pRet, static_cast<className *>(me)->name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]), PSC_VAR_##arg5(pArgs[4]), PSC_VAR_##arg6(pArgs[5]), \
                                                                          PSC_VAR_##arg7(pArgs[6]), PSC_VAR_##arg8(pArgs[7]), PSC_VAR_##arg9(pArgs[8]), PSC_VAR_##arg10(pArgs[9]), PSC_VAR_##arg11(pArgs[10]), PSC_VAR_##arg12(pArgs[11]) )) } } );
-
-

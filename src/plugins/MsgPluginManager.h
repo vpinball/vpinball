@@ -8,6 +8,7 @@
 
 #include "MsgPlugin.h"
 
+#include <chrono>
 #include <vector>
 #include <string>
 #include <thread>
@@ -28,8 +29,8 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
-      , m_directory(directory)
       , m_library(library)
+      , m_directory(directory)
       , m_endpointId(endpointId) { }
    ~MsgPlugin();
 
