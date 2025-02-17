@@ -569,7 +569,7 @@ void ImageDialog::Export()
                char pathName[MAXSTRING];
                if (begin > 0)
                   memcpy(pathName, ofn.lpstrFile, begin);
-               pathName[begin] = 0;
+               pathName[begin] = '\0';
 
                while (sel != -1 && ppi != nullptr)
                {
@@ -1295,9 +1295,9 @@ void WhereUsedDialog::RefreshList()
     //This method is very similar to the WhereUsedDialog WM_INITDIALOG code.  We don't need to build the dialog from scratch through.  Just need to delete existing items and re-add them.
     //Get active pinball table (one currently selected...you can edit more than one at a time)
     CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-    vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
     if (pt)
     {
+      vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
       //Fill a vector with a list of all images and the table objects that reference them
       pt->ShowWhereImagesUsed(vWhereUsed);
 

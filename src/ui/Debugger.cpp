@@ -5,8 +5,8 @@
 #include <windowsx.h>
 #include "Debugger.h"
 
-#define RECOMPUTEBUTTONCHECK WM_USER+100
-#define RESIZE_FROM_EXPAND   WM_USER+101
+#define RECOMPUTEBUTTONCHECK (WM_USER+100)
+#define RESIZE_FROM_EXPAND   (WM_USER+101)
 
 DebuggerDialog::DebuggerDialog() : CDialog(IDD_DEBUGGER)
 {

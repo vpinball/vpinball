@@ -442,20 +442,20 @@ void copy_folder(const string& srcPath, const string& dstPath)
    }
 }
 
-vector<string> find_files_by_extension(const string& srcPath, const string& extension)
+vector<string> find_files_by_extension(const string& directoryPath, const string& extension)
 {
    vector<string> files;
 
-   if (!std::filesystem::exists(srcPath) || !std::filesystem::is_directory(srcPath)) {
-      PLOGE.printf("source path does not exist or is not a directory: %s", srcPath.c_str());
+   if (!std::filesystem::exists(directoryPath) || !std::filesystem::is_directory(directoryPath)) {
+      PLOGE.printf("source path does not exist or is not a directory: %s", directoryPath.c_str());
       return files;
    }
 
-   for (const auto& entry : std::filesystem::recursive_directory_iterator(srcPath)) {
+   for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryPath)) {
       if (entry.is_regular_file()) {
          const string& filePath = entry.path().string();
          if (path_has_extension(filePath, extension)) {
-            string subDirName = filePath.substr(srcPath.length());
+            string subDirName = filePath.substr(directoryPath.length());
             files.push_back(subDirName);
          }
       }
@@ -585,22 +585,22 @@ bool is_string_numeric(const string& str)
    return !str.empty() && std::find_if(str.begin(), str.end(), [](char c) { return !std::isdigit(c); }) == str.end();
 }
 
-int string_to_int(const string& str, int defaultValue)
+int string_to_int(const string& str, int default_value)
 {
    int value;
    if (try_parse_int(str, value))
       return value;
 
-   return defaultValue;
+   return default_value;
 }
 
-float string_to_float(const string& str, float defaultValue)
+float string_to_float(const string& str, float default_value)
 {
    float value;
    if (try_parse_float(str, value))
       return value;
 
-   return defaultValue;
+   return default_value;
 }
 
 string trim_string(const string& str)
@@ -724,7 +724,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    input.erase(std::remove(input.begin(), input.end(), '\n'), input.end());
 
    int in_len = static_cast<int>(input.size());
-   int i = 0, j = 0, in_ = 0;
+   int i = 0, in_ = 0;
    unsigned char char_array_4[4], char_array_3[3];
    vector<unsigned char> ret;
 
@@ -733,7 +733,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
       in_++;
       if (i == 4) {
          for (i = 0; i < 4; i++)
-            char_array_4[i] = base64_chars.find(char_array_4[i]);
+            char_array_4[i] = (unsigned char)base64_chars.find(char_array_4[i]);
 
          char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
          char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
@@ -746,17 +746,17 @@ vector<unsigned char> base64_decode(const string &encoded_string)
    }
 
    if (i) {
-      for (j = i; j < 4; j++)
+      for (int j = i; j < 4; j++)
          char_array_4[j] = 0;
 
-      for (j = 0; j < 4; j++)
-         char_array_4[j] = base64_chars.find(char_array_4[j]);
+      for (int j = 0; j < 4; j++)
+         char_array_4[j] = (unsigned char)base64_chars.find(char_array_4[j]);
 
       char_array_3[0] =  (char_array_4[0]        << 2) + ((char_array_4[1] & 0x30) >> 4);
       char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
       char_array_3[2] = ((char_array_4[2] & 0x3) << 6) +   char_array_4[3];
 
-      for (j = 0; (j < i - 1); j++) ret.push_back(char_array_3[j]);
+      for (int j = 0; (j < i - 1); j++) ret.push_back(char_array_3[j]);
    }
 
    return ret;

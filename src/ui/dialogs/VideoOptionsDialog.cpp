@@ -9,12 +9,16 @@
 
 class VideoOptionPropPage : public CPropertyPage
 {
+public:
+   VideoOptionPropPage(const VideoOptionPropPage&) = delete;
+   VideoOptionPropPage& operator=(const VideoOptionPropPage&) = delete;
+
 protected:
    VideoOptionPropPage(UINT templateID, LPCTSTR title, Settings& appSettings, Settings& tableSettings);
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
 
-   Settings& GetEditedSettings() const { return *m_editedSettings; };
+   Settings& GetEditedSettings() const { return *m_editedSettings; }
    bool IsTableSettings() const { return m_editedSettings == &m_appSettings; }
    void BeginLoad() { m_loading++;  }
    void PropChanged() { if (m_loading == 0) PropSheet_Changed(GetParent(), GetHwnd()); }
@@ -34,9 +38,6 @@ protected:
    void BrowseImage(CEdit& editCtl);
 
 private:
-   VideoOptionPropPage(const VideoOptionPropPage&) = delete;
-   VideoOptionPropPage& operator=(const VideoOptionPropPage&) = delete;
-
    int m_loading = 0;
    Settings* m_editedSettings = nullptr;
    Settings& m_appSettings, m_tableSettings;
@@ -70,6 +71,9 @@ public:
    RenderOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~RenderOptPage() override { }
 
+   RenderOptPage(const RenderOptPage&) = delete;
+   RenderOptPage& operator=(const RenderOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -79,9 +83,6 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
 private:
-   RenderOptPage(const RenderOptPage&) = delete;
-   RenderOptPage& operator=(const RenderOptPage&) = delete;
-
    void ResetVideoPreferences(int profile);
 
    int m_initialMaxTexDim;
@@ -150,6 +151,9 @@ public:
    DisplayStyleOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~DisplayStyleOptPage() override { }
 
+   DisplayStyleOptPage(const DisplayStyleOptPage&) = delete;
+   DisplayStyleOptPage& operator=(const DisplayStyleOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -164,9 +168,6 @@ protected:
    void SaveProfile();
 
 private:
-   DisplayStyleOptPage(const DisplayStyleOptPage&) = delete;
-   DisplayStyleOptPage& operator=(const DisplayStyleOptPage&) = delete;
-
    int m_editedProfile = -1;
 
    CListBox m_dmdType;
@@ -191,6 +192,9 @@ public:
    CabinetOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~CabinetOptPage() override { }
 
+   CabinetOptPage(const RenderOptPage&) = delete;
+   CabinetOptPage& operator=(const CabinetOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -200,9 +204,6 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
 private:
-   CabinetOptPage(const RenderOptPage&) = delete;
-   CabinetOptPage& operator=(const CabinetOptPage&) = delete;
-
    CEdit m_playerX;
    CEdit m_playerY;
    CEdit m_playerZ;
@@ -220,6 +221,9 @@ public:
    PFViewOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~PFViewOptPage() override { }
 
+   PFViewOptPage(const PFViewOptPage&) = delete;
+   PFViewOptPage& operator=(const PFViewOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -229,9 +233,6 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
 private:
-   PFViewOptPage(const PFViewOptPage&) = delete;
-   PFViewOptPage& operator=(const PFViewOptPage&) = delete;
-
    CComboBox m_viewMode;
 };
 
@@ -241,16 +242,15 @@ public:
    ScoreViewOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~ScoreViewOptPage() override { }
 
+   ScoreViewOptPage(const ScoreViewOptPage&) = delete;
+   ScoreViewOptPage& operator=(const ScoreViewOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnApply() override;
 
    virtual void LoadSettings(Settings& settings);
    virtual void SaveSettings(Settings& settings, bool saveAll);
-
-private:
-   ScoreViewOptPage(const ScoreViewOptPage&) = delete;
-   ScoreViewOptPage& operator=(const ScoreViewOptPage&) = delete;
 };
 
 class AlphaViewOptPage : public VideoOptionPropPage
@@ -258,6 +258,9 @@ class AlphaViewOptPage : public VideoOptionPropPage
 public:
    AlphaViewOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~AlphaViewOptPage() override { }
+
+   AlphaViewOptPage(const AlphaViewOptPage&) = delete;
+   AlphaViewOptPage& operator=(const AlphaViewOptPage&) = delete;
 
 protected:
    virtual BOOL OnInitDialog();
@@ -268,9 +271,6 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
 private:
-   AlphaViewOptPage(const AlphaViewOptPage&) = delete;
-   AlphaViewOptPage& operator=(const AlphaViewOptPage&) = delete;
-
    CComboBox m_viewMode;
 };
 
@@ -280,6 +280,9 @@ public:
    BackglassViewOptPage(Settings& appSettings, Settings& tableSettings);
    virtual ~BackglassViewOptPage() override { }
 
+   BackglassViewOptPage(const BackglassViewOptPage&) = delete;
+   BackglassViewOptPage& operator=(const BackglassViewOptPage&) = delete;
+
 protected:
    virtual BOOL OnInitDialog();
    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
@@ -289,9 +292,6 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 
 private:
-   BackglassViewOptPage(const BackglassViewOptPage&) = delete;
-   BackglassViewOptPage& operator=(const BackglassViewOptPage&) = delete;
-
    CComboBox m_viewMode;
 };
 
@@ -1133,7 +1133,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    const float AAfactor = settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 1.5f : 1.0f);
    m_supersampling.SetCurSel(getBestMatchingAAfactorIndex(AAfactor));
    const int MSAASamples = settings.LoadValueWithDefault(Settings::Player, "MSAASamples"s, 1);
-   const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + (sizeof(MSAASamplesOpts) / sizeof(MSAASamplesOpts[0])), MSAASamples) - MSAASamplesOpts);
+   const int CurrMSAAPos = static_cast<const int>(std::find(MSAASamplesOpts, MSAASamplesOpts + std::size(MSAASamplesOpts), MSAASamples) - MSAASamplesOpts);
    m_msaaSamples.SetCurSel(CurrMSAAPos);
    const int fxaa = settings.LoadValueWithDefault(Settings::Player, "FXAA"s, (int)Standard_FXAA);
    m_postprocAA.SetCurSel(fxaa);
@@ -1958,7 +1958,7 @@ BOOL DisplayStyleOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 #ifdef ENABLE_BGFX
          const bool isNewRenderer = m_legacyRenderer.GetCheck() == BST_UNCHECKED;
 #else
-         const bool isNewRenderer = false;
+         constexpr bool isNewRenderer = false;
 #endif
          m_dotSize.EnableWindow(isNewRenderer);
          m_dotSharpness.EnableWindow(isNewRenderer);

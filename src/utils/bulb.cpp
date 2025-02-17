@@ -65,7 +65,7 @@ typedef struct {
 #define TUNGSTEN_DENSITY 19300.0         // tungsten density of 19300 g/m3
 
 // Tungsten filament resistance depending on its base R0 and temperature
-#define BULB_R(bulb, T) (bulbs[bulb].r0 * (1.0 + 0.0045 * (T - 293.0)))
+#define BULB_R(bulb, T) (bulbs[bulb].r0 * (1.0 + 0.0045 * ((T) - 293.0)))
 
 /*-------------------
 /  local variables

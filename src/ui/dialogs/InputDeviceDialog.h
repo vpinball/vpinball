@@ -23,7 +23,7 @@ public:
    HTREEITEM GetDeviceByItem(HTREEITEM hChildItem);
    vector<HTREEITEM> GetAllDeviceItems() const;
    string GetDeviceName(HTREEITEM item) { return string { GetItemText(item) }; }
-   bool IsDeviceChecked(string name);
+   bool IsDeviceChecked(const string& name);
 
 protected:
    virtual void OnAttach();

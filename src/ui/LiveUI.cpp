@@ -878,8 +878,8 @@ void LiveUI::Render()
 
    // Rendering must happen on a render target matching the dimension we used to prepare the UI frame
    ImGuiIO &io = ImGui::GetIO();
-   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.y)
-        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == io.DisplaySize.x));
+   assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y)
+        || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x));
 
    if (m_rotate != 0 && !m_rotation_callback_added)
    {
@@ -1434,10 +1434,10 @@ void LiveUI::Update(const int width, const int height)
           ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - text_size.x) / 2, notifY));
           ImGui::SetNextWindowSize(text_size);
           ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
-          for (const string& line : lines) {
-             ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, line.c_str());
+          for (const string& lline : lines) {
+             ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, lline.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
-             ImGui::Text("%s", line.c_str());
+             ImGui::Text("%s", lline.c_str());
           }
           ImGui::End();
           notifY += text_size.y + 10.f;

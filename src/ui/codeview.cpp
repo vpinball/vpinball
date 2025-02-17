@@ -266,7 +266,7 @@ static int FindUD(const fi_vector<UserData>& ListIn, const string& strSearchData
 	do
 	{
 		--Pos;
-	} while (Pos >= 0 && strSearchData.compare(ListIn[Pos].m_uniqueKey.substr(0, SearchWidth)) == 0);
+	} while (Pos >= 0 && strSearchData == ListIn[Pos].m_uniqueKey.substr(0, SearchWidth));
 	++Pos;
 	// now walk down list of Keynames looking for what we want.
 	if (Pos >= (int)ListIn.size())
@@ -389,7 +389,7 @@ static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLin
 	do
 	{
 		--iNewPos;
-	} while (iNewPos >= 0 && strSearchData.compare(ListIn[iNewPos].m_uniqueKey.substr(0, SearchWidth)) == 0);
+	} while (iNewPos >= 0 && strSearchData == ListIn[iNewPos].m_uniqueKey.substr(0, SearchWidth));
 	++iNewPos;
 	//Now at top of list
 	//find nearest definition above current line
@@ -400,14 +400,14 @@ static int FindClosestUD(const fi_vector<UserData>& ListIn, const int CurrentLin
 	{
 		const int NewLineNum = ListIn[iNewPos].m_lineNum;
 		const int NewDelta = NewLineNum - CurrentLine;
-		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName).compare(strSearchData) == 0)
+		if (NewDelta >= Delta && NewLineNum <= CurrentLine && lowerCase(ListIn[iNewPos].m_keyName) == strSearchData)
 		{
 			Delta = NewDelta;
 			//ClosestLineNum = NewLineNum;
 			ClosestPos = iNewPos;
 		}
 		++iNewPos;
-	} while (iNewPos != (int)ListIn.size() && strSearchData.compare(lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth)) == 0);
+	} while (iNewPos != (int)ListIn.size() && strSearchData == lowerCase(ListIn[iNewPos].m_keyName).substr(0, SearchWidth));
 	//--iNewPos;
 	return ClosestPos;
 }

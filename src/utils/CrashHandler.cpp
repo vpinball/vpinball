@@ -23,7 +23,7 @@ namespace
       const HMODULE hModule = nullptr;
       GetModuleFileName(hModule, buffer, MAX_PATH);
       const char* lastSeparatorPos = strrchr(buffer, PATH_SEPARATOR_CHAR);
-      if (lastSeparatorPos != 0)
+      if (lastSeparatorPos != nullptr)
          fprintf(f, "%s", lastSeparatorPos + 1); // +1 -> skip over separator
       else
          fprintf(f, "%s", buffer);
