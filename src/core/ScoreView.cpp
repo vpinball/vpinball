@@ -42,24 +42,24 @@ void ScoreView::Load(const string& path)
    }
 }
 
-string TrimLeading(const string& str, const std::string& whitespace)
+static string TrimLeading(const string& str, const std::string& whitespace)
 {
    if (str.empty())
       return str;
    const auto strBegin = str.find_first_not_of(whitespace);
    if (strBegin == std::string::npos)
-      return "";
+      return string();
    return string(str.cbegin() + strBegin, str.cend());
 }
 
-string TrimTrailing(const string& str, const std::string& whitespace)
+static string TrimTrailing(const string& str, const std::string& whitespace)
 {
    if (str.empty())
       return str;
    const auto strBegin = str.cbegin();
    const auto pos = str.find_last_not_of(whitespace);
    if (pos == string::npos)
-      return "";
+      return string();
    const auto strEnd = strBegin + pos + 1;
    return string(strBegin, strEnd);
 }
@@ -67,27 +67,27 @@ string TrimTrailing(const string& str, const std::string& whitespace)
 void ScoreView::Parse(const string& path, std::istream& f)
 {
    #define CHECK_FIELD(check) if (!(check)) { PLOGE << "Invalid field '" << key << ": " << value << "' at line " << lineIndex << " in ScoreView file " << path; return; }
-   const string whitespace = " \t";
-   Layout layout { "" };
+   const string whitespace = " \t"s;
+   Layout layout { string() };
    layout.path = path;
    layout.width = 1920.f;
    layout.height = 1080.f;
    std::string line;
    size_t indentSize = 0;
    unsigned int lineIndex = 0;
-   int expectedIndent = 0;
+   size_t expectedIndent = 0;
    float fValue;
    Visual* visual = nullptr;
    const auto parseArray = [](const string& value, int size) -> vector<float>
    {
       vector<float> array(size);
       array.resize(size);
-      int pos1 = value.find('[');
+      size_t pos1 = value.find('[');
       if (pos1 == string::npos)
          return vector<float>();
       for (int i = 0; i < size; i++)
       {
-         int pos2 = value.find(i == size -1 ? ']' : ',', pos1 + 1);
+         size_t pos2 = value.find(i == size -1 ? ']' : ',', pos1 + 1);
          if (pos2 == string::npos)
             return vector<float>();
          if (!try_parse_float(value.substr(pos1 + 1, pos2 - pos1 - 1), array[i]))
@@ -351,7 +351,7 @@ void ScoreView::LoadGlass(Visual& visual)
          Texture* tex = new Texture();
          if (std::filesystem::exists(fullPath))
          {
-            tex->LoadFromFile(fullPath.string().c_str());
+            tex->LoadFromFile(fullPath.string());
             tex->m_alphaTestValue = (float)(-1.0 / 255.0); // Disable alpha testing
          }
          visual.glass = tex;

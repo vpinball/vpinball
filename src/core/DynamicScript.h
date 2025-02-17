@@ -127,7 +127,6 @@ public:
       #endif
       for (UINT i = 0; i < cNames; ++i)
       {
-         bool found = false;
          #ifdef __STANDALONE__
          const string sname = MakeString(wstring(rgszNames[i]));
          LPCSTR name = sname.c_str();

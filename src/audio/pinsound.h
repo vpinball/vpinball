@@ -263,7 +263,6 @@ public:
 #ifndef __STANDALONE__
 		ClearStoppedCopiedWavs();
 
-		PinDirectSoundWavCopy * ppsc = nullptr;
 		if (usesame)
 		{
 			const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
@@ -271,18 +270,18 @@ public:
 			{
 				if (m_copiedwav[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
 				{
-               m_copiedwav[i2]->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-               return;
+					m_copiedwav[i2]->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+					return;
 				}
 			}
 		}
 
-      ppsc = new PinDirectSoundWavCopy(pps);
-      if (ppsc->m_pDSBuffer)
-      {
-         m_copiedwav.push_back(ppsc);
-         ppsc->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-      }
+		PinDirectSoundWavCopy* ppsc = new PinDirectSoundWavCopy(pps);
+		if (ppsc->m_pDSBuffer)
+		{
+			m_copiedwav.push_back(ppsc);
+			ppsc->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
+		}
 		else // Couldn't or didn't want to create a copy - just play the original
 		{
 			delete ppsc;
@@ -293,7 +292,7 @@ public:
 
 	PinSound *LoadFile(const string& strFileName);
 
-   int bass_STD_idx = -2, bass_BG_idx = -2;
+	int bass_STD_idx = -2, bass_BG_idx = -2;
 
 private:
 	PinDirectSound m_pds;

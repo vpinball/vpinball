@@ -78,7 +78,7 @@ public:
 
    static Section GetSection(const string& szName);
    static const string& GetSectionName(const Section section);
-   static int GetNPluginSections() { return (int)m_settingKeys.size() - Plugin00; };
+   static int GetNPluginSections() { return (int)m_settingKeys.size() - Plugin00; }
 
    bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
