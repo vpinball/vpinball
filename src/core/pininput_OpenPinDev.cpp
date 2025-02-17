@@ -170,7 +170,7 @@ protected:
          acc += (*p - '0');
       }
       return acc;
-   };
+   }
 
    // device handle (hidapi library type)
    hid_device *hDevice = nullptr;
@@ -212,7 +212,7 @@ class OpenPinDevContext
 void PinInput::InitOpenPinballDevices()
 {
    // discard any prior context object and create a new one
-   if (m_OpenPinDevContext != nullptr) delete m_OpenPinDevContext;
+   delete m_OpenPinDevContext;
    m_OpenPinDevContext = new OpenPinDevContext();
 
    // Get a list of available HID devices.  (Passing VID/PID 0/0 
@@ -251,7 +251,7 @@ void PinInput::InitOpenPinballDevices()
          if (hDevice != nullptr)
          {
             // read the report descriptor
-            std::unique_ptr<unsigned char> reportDescBuf(new unsigned char[HID_API_MAX_REPORT_DESCRIPTOR_SIZE]);
+            std::unique_ptr<unsigned char[]> reportDescBuf(new unsigned char[HID_API_MAX_REPORT_DESCRIPTOR_SIZE]);
             unsigned char *rp = reportDescBuf.get();
             int rdSize = hid_get_report_descriptor(hDevice.get(), rp, HID_API_MAX_REPORT_DESCRIPTOR_SIZE);
             if (rdSize > 0)
