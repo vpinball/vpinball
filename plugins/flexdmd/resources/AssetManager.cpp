@@ -167,31 +167,31 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
             pAssetSrc->GetBitmapFilters().push_back(pFilter);
          }
          else if (definition.starts_with("region=")) {
-            vector<int> parts;
-            std::stringstream ss(definition.substr(7));
-            string token;
-            while (std::getline(ss, token, ','))
-               parts.push_back(string_to_int(token));
-
+            vector<int> rparts;
+            std::stringstream rss(definition.substr(7));
+            string rtoken;
+            while (std::getline(rss, rtoken, ','))
+               rparts.push_back(string_to_int(rtoken));
+            assert(rparts.size() >= 4);
             RegionFilter* pFilter = new RegionFilter();
-            pFilter->SetX(parts[0]);
-            pFilter->SetY(parts[1]);
-            pFilter->SetWidth(parts[2]);
-            pFilter->SetHeight(parts[3]);
+            pFilter->SetX(rparts[0]);
+            pFilter->SetY(rparts[1]);
+            pFilter->SetWidth(rparts[2]);
+            pFilter->SetHeight(rparts[3]);
             pAssetSrc->GetBitmapFilters().push_back(pFilter);
          }
          else if (definition.starts_with("pad=")) {
-            vector<int> parts;
-            std::stringstream ss(definition.substr(4));
-            string token;
-            while (std::getline(ss, token, ','))
-               parts.push_back(string_to_int(token));
-
+            vector<int> pparts;
+            std::stringstream pss(definition.substr(4));
+            string ptoken;
+            while (std::getline(pss, ptoken, ','))
+               pparts.push_back(string_to_int(ptoken));
+            assert(pparts.size() >= 4);
             PadFilter* pFilter = new PadFilter();
-            pFilter->SetLeft(parts[0]);
-            pFilter->SetTop(parts[1]);
-            pFilter->SetRight(parts[2]);
-            pFilter->SetBottom(parts[3]);
+            pFilter->SetLeft(pparts[0]);
+            pFilter->SetTop(pparts[1]);
+            pFilter->SetRight(pparts[2]);
+            pFilter->SetBottom(pparts[3]);
             pAssetSrc->GetBitmapFilters().push_back(pFilter);
          }
          else {

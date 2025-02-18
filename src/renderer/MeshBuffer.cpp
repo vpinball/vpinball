@@ -64,7 +64,6 @@ unsigned int MeshBuffer::GetSortKey() const
 
 void MeshBuffer::bind()
 {
-   RenderDevice* const rd = m_vb->m_rd;
 #if defined(ENABLE_BGFX)
    m_vb->Upload();
    /* if (m_vb->m_isStatic)
@@ -81,6 +80,7 @@ void MeshBuffer::bind()
    }
 
 #elif defined(ENABLE_OPENGL)
+   RenderDevice* const rd = m_vb->m_rd;
    if (m_vao == 0)
    {
       // If index & vertex buffer are using shared buffers (for static objects), then we can also use a shared VAO

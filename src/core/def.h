@@ -677,7 +677,7 @@ HRESULT OpenURL(const string& szURL);
 WCHAR *MakeWide(const string& sz);
 char *MakeChar(const WCHAR *const wz);
 string MakeString(const wstring &wz);
-wstring MakeWString(const string &wz);
+wstring MakeWString(const string &sz);
 
 // in case the incoming string length is >= the maximum char length of the outgoing one, WideCharToMultiByte will not produce a zero terminated string
 // this variant always makes sure that the outgoing string is zero terminated

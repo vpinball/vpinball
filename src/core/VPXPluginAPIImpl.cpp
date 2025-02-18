@@ -276,7 +276,7 @@ void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* 
    // Script DMD
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
    if ((msg->dmdId.id.endpointId == me.m_vpxEndpointId) && (msg->dmdId.id.resId == 0) 
-      && (msg->dmdId.format == g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888)
+      && (msg->dmdId.format == (g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888))
       && (msg->dmdId.width == g_pplayer->m_dmdFrame->width()) && (msg->dmdId.height == g_pplayer->m_dmdFrame->height())
       && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
    {
@@ -320,7 +320,7 @@ VPXPluginAPIImpl& VPXPluginAPIImpl::GetInstance()
 VPXPluginAPIImpl::VPXPluginAPIImpl()
 {
    // Message host
-   auto msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
+   const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
          Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;

@@ -180,7 +180,7 @@ bool RenderPass::Execute(const bool log)
    if (m_commands.empty())
       return false;
 
-   int left, bottom, right, top;
+   int left,bottom,right,top;
    if (m_areaOfInterest.x != FLT_MAX)
    {
       left   = clamp((int)((0.5f + m_areaOfInterest.x * 0.5f) * (float)m_rt->GetWidth() ), 0, m_rt->GetWidth());

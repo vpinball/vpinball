@@ -12,7 +12,7 @@ class SharedVertexBuffer;
 class VertexBuffer final
 {
 public:
-   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts = nullptr, const bool isDynamic = false, const VertexFormat fvf = VertexFormat::VF_POS_NORMAL_TEX);
+   VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts = nullptr, const bool isDynamic = false, const VertexFormat fmt = VertexFormat::VF_POS_NORMAL_TEX);
    ~VertexBuffer();
 
    // Position of buffer in a bigger shared data block

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "core/stdafx.h"
 #include "typedefs3D.h"
 
 template<class Fmt, class Buf>

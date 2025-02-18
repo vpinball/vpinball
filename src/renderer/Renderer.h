@@ -17,8 +17,8 @@ public:
    Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D);
    ~Renderer();
 
-   void GetRenderSize(int& w, int& h) const { w = m_renderWidth, h = m_renderHeight; }
-   void GetRenderSizeAA(int& w, int& h) const { w = m_pOffscreenBackBufferTexture1->GetWidth(), h = m_pOffscreenBackBufferTexture1->GetHeight(); }
+   void GetRenderSize(int& w, int& h) const { w = m_renderWidth; h = m_renderHeight; }
+   void GetRenderSizeAA(int& w, int& h) const { w = m_pOffscreenBackBufferTexture1->GetWidth(); h = m_pOffscreenBackBufferTexture1->GetHeight(); }
    bool IsStereo() const { return m_pOffscreenBackBufferTexture1->m_type == SurfaceType::RT_STEREO; }
    colorFormat GetRenderFormat() const { return m_pOffscreenBackBufferTexture1->GetColorFormat(); }
 
@@ -34,7 +34,7 @@ public:
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
-   bool IsUsingStaticPrepass() const { return m_disableStaticPrepass <= 0; };
+   bool IsUsingStaticPrepass() const { return m_disableStaticPrepass <= 0; }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
    void RenderStaticPrepass();
 
@@ -46,7 +46,7 @@ public:
       Reinhard,
       Reinhard_sRGB
    };
-   void SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+   void SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* const vertices,
       Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
    void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
       Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
@@ -228,5 +228,5 @@ private:
    vec4 m_dmdUnlitDotColor[7]; // unlit color
    unsigned int m_dmdBlurSlot = 0;
    BaseTexture* m_dmdBlurred[32] = { nullptr };
-   RenderTarget* m_dmdBlurs[32][2] = { nullptr };
+   RenderTarget* m_dmdBlurs[32][2] = { { nullptr, nullptr } };
 };

@@ -74,7 +74,7 @@ void DeviceTreeView::SetAllItemStates(const bool checked)
 void DeviceTreeView::DeleteAll() { }
 void DeviceTreeView::SetActiveDevice(const string& name) { }
 
-bool DeviceTreeView::IsDeviceChecked(string name)
+bool DeviceTreeView::IsDeviceChecked(const string& name)
 {
    auto itemIt = m_deviceItems.find(name);
    HTREEITEM item = itemIt->second;
@@ -338,8 +338,8 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
       const string lookForName = m_attachedDeviceInfo[i].name;
       for (int j = 0; j < PININ_JOYMXCNT; j++)
       {
-         const InputDeviceInfo testInfo = deviceInfoPrefs[j];
-         if (lookForName.compare(testInfo.name) == 0)
+         const InputDeviceInfo& testInfo = deviceInfoPrefs[j];
+         if (lookForName == testInfo.name)
          {
             m_attachedDeviceInfo[i].state = testInfo.state;
             break;

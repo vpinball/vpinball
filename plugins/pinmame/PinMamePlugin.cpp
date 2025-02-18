@@ -203,7 +203,7 @@ void StopAudioStream()
       AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
       memcpy(pendingAudioUpdate, audioSrc, sizeof(AudioUpdateMsg));
       msgApi->RunOnMainThread(0, [](void* userData) {
-            AudioUpdateMsg* msg = reinterpret_cast<AudioUpdateMsg*>(userData);
+            AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
             msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
             delete msg;
          }, pendingAudioUpdate);
@@ -246,7 +246,7 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
       pendingAudioUpdate->buffer = new uint8_t[pendingAudioUpdate->bufferSize];
       memcpy(pendingAudioUpdate->buffer, p_buffer, pendingAudioUpdate->bufferSize);
       msgApi->RunOnMainThread(0, [](void* userData) {
-            AudioUpdateMsg* msg = reinterpret_cast<AudioUpdateMsg*>(userData);
+            AudioUpdateMsg* msg = static_cast<AudioUpdateMsg*>(userData);
             msgApi->BroadcastMsg(endpointId, onAudioUpdateId, msg);
             delete[] msg->buffer;
             delete msg;

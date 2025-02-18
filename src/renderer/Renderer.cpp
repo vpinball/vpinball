@@ -288,7 +288,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
 
    const bool lowDetailBall = (m_table->GetDetailLevel() < 10);
    IndexBuffer* ballIndexBuffer = new IndexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumFaces : basicBallMidNumFaces, lowDetailBall ? basicBallLoIndices : basicBallMidIndices);
-   VertexBuffer* ballVertexBuffer = new VertexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (float*)(lowDetailBall ? basicBallLo : basicBallMid));
+   VertexBuffer* ballVertexBuffer = new VertexBuffer(m_renderDevice, lowDetailBall ? basicBallLoNumVertices : basicBallMidNumVertices, (const float*)(lowDetailBall ? basicBallLo : basicBallMid));
    m_ballMeshBuffer = new MeshBuffer(L"Ball"s, ballVertexBuffer, ballIndexBuffer, true);
 #ifdef DEBUG_BALL_SPIN
    {
@@ -322,7 +322,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    m_ballTrailMeshBuffer = new MeshBuffer(L"Ball.Trail"s, ballTrailVertexBuffer);
 
    // Cache DMD renderer properties
-   for (int profile = 0; profile < 7; profile++)
+   for (int profile = 0; profile < (int)std::size(m_dmdUseNewRenderer); profile++)
    {
       const string prefix = "Profile." + std::to_string(profile + 1) + '.';
       m_dmdUseNewRenderer[profile] = m_table->m_settings.LoadValueBool(Settings::DMD, prefix + "Legacy");
@@ -347,7 +347,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    }
 
    // Cache Seg display renderer properties
-   for (int profile = 0; profile < 8; profile++)
+   for (int profile = 0; profile < (int)std::size(m_segColor); profile++)
    {
       const string prefix = "Profile." + std::to_string(profile + 1) + '.';
       m_segColor[profile] = convertColor(
@@ -530,8 +530,8 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
    {
       const float scale_factor = (float)env_xres*(float)(1.0 / 64.);
       const int xs = (int)(scale_factor*0.5f + 0.5f);
-      const void* const __restrict envmap2 = malloc(env_xres * env_yres * (3 * 4));
-      const void* const __restrict envmap3 = malloc(env_xres * env_yres * (3 * 4));
+      void* const __restrict envmap2 = malloc(env_xres * env_yres * (3 * 4));
+      void* const __restrict envmap3 = malloc(env_xres * env_yres * (3 * 4));
       const float sigma = (scale_factor - 1.f)*0.25f;
       float* const __restrict weights = (float*)malloc((xs * 2 + 1) * 4);
       for (int x = 0; x < (xs * 2 + 1); ++x)
@@ -556,15 +556,15 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
                const unsigned int offs = xt * 3 + yoffs;
                if (env_format == BaseTexture::RGB_FP16)
                {
-                  sum_r += half2float(((unsigned short*)envmap)[offs    ]) * w;
-                  sum_g += half2float(((unsigned short*)envmap)[offs + 1]) * w;
-                  sum_b += half2float(((unsigned short*)envmap)[offs + 2]) * w;
+                  sum_r += half2float(((const unsigned short*)envmap)[offs    ]) * w;
+                  sum_g += half2float(((const unsigned short*)envmap)[offs + 1]) * w;
+                  sum_b += half2float(((const unsigned short*)envmap)[offs + 2]) * w;
                }
                else
                {
-                  sum_r += ((float*)envmap)[offs    ] * w;
-                  sum_g += ((float*)envmap)[offs + 1] * w;
-                  sum_b += ((float*)envmap)[offs + 2] * w;
+                  sum_r += ((const float*)envmap)[offs    ] * w;
+                  sum_g += ((const float*)envmap)[offs + 1] * w;
+                  sum_b += ((const float*)envmap)[offs + 2] * w;
                }
                sum_w += w;
             }
@@ -658,50 +658,50 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
                      offs = 0;
                   if (env_format == BaseTexture::RGB_FP16)
                   {
-                     r = half2float(((unsigned short*)envmap)[offs*3  ]);
-                     g = half2float(((unsigned short*)envmap)[offs*3+1]);
-                     b = half2float(((unsigned short*)envmap)[offs*3+2]);
+                     r = half2float(((const unsigned short*)envmap)[offs*3  ]);
+                     g = half2float(((const unsigned short*)envmap)[offs*3+1]);
+                     b = half2float(((const unsigned short*)envmap)[offs*3+2]);
                   }
                   else if (env_format == BaseTexture::RGBA_FP16)
                   {
-                     r = half2float(((unsigned short*)envmap)[offs*4  ]);
-                     g = half2float(((unsigned short*)envmap)[offs*4+1]);
-                     b = half2float(((unsigned short*)envmap)[offs*4+2]);
+                     r = half2float(((const unsigned short*)envmap)[offs*4  ]);
+                     g = half2float(((const unsigned short*)envmap)[offs*4+1]);
+                     b = half2float(((const unsigned short*)envmap)[offs*4+2]);
                   }
                   else if (env_format == BaseTexture::RGB_FP32)
                   {
-                     r = ((float*)envmap)[offs*3  ];
-                     g = ((float*)envmap)[offs*3+1];
-                     b = ((float*)envmap)[offs*3+2];
+                     r = ((const float*)envmap)[offs*3  ];
+                     g = ((const float*)envmap)[offs*3+1];
+                     b = ((const float*)envmap)[offs*3+2];
                   }
                   else if (env_format == BaseTexture::RGBA_FP32)
                   {
-                     r = ((float*)envmap)[offs*4];
-                     g = ((float*)envmap)[offs*4+1];
-                     b = ((float*)envmap)[offs*4+2];
+                     r = ((const float*)envmap)[offs*4];
+                     g = ((const float*)envmap)[offs*4+1];
+                     b = ((const float*)envmap)[offs*4+2];
                   }
                   else if (env_format == BaseTexture::RGB)
                   {
-                     r = (float)((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
-                     g = (float)((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
-                     b = (float)((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
+                     r = (float)((const BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0);
+                     g = (float)((const BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0);
+                     b = (float)((const BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0);
                   }
                   else if (env_format == BaseTexture::RGBA)
                   {
-                     const DWORD rgb = ((DWORD*)envmap)[offs];
+                     const DWORD rgb = ((const DWORD*)envmap)[offs];
                      r = (float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0);
                      g = (float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0);
                      b = (float)(rgb & 0x000000FF) * (float)(1.0 /      255.0);
                   }
                   else if (env_format == BaseTexture::SRGB)
                   {
-                     r = invGammaApprox((float)((BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
-                     g = invGammaApprox((float)((BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
-                     b = invGammaApprox((float)((BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
+                     r = invGammaApprox((float)((const BYTE*)envmap)[offs*3  ] * (float)(1.0 / 255.0));
+                     g = invGammaApprox((float)((const BYTE*)envmap)[offs*3+1] * (float)(1.0 / 255.0));
+                     b = invGammaApprox((float)((const BYTE*)envmap)[offs*3+2] * (float)(1.0 / 255.0));
                   }
                   else if (env_format == BaseTexture::SRGBA)
                   {
-                     const DWORD rgb = ((DWORD*)envmap)[offs];
+                     const DWORD rgb = ((const DWORD*)envmap)[offs];
                      r = invGammaApprox((float)(rgb & 0x00FF0000) * (float)(1.0 / 16711680.0));
                      g = invGammaApprox((float)(rgb & 0x0000FF00) * (float)(1.0 /    65280.0));
                      b = invGammaApprox((float)(rgb & 0x000000FF) * (float)(1.0 /      255.0));
@@ -1214,7 +1214,7 @@ void Renderer::RenderFrame()
    PrepareVideoBuffers(m_renderDevice->GetOutputBackBuffer());
 }
 
-Texture* LoadSegSDF(Texture& tex, string path)
+Texture* LoadSegSDF(Texture& tex, const string& path)
 {
    if (tex.m_pdsBuffer == nullptr)
    {
@@ -1227,7 +1227,7 @@ Texture* LoadSegSDF(Texture& tex, string path)
    return &tex;
 }
 
-void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* const vertices,
    Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
 {
    Texture* segSDF = nullptr;
@@ -1355,14 +1355,14 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
             m_renderDevice->Clear(clearType::TARGET, 0x00000000);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
-            static const Vertex3D_TexelOnly vertices[4] =
+            static constexpr Vertex3D_TexelOnly fixed_vertices[4] =
             {
                {  0.5f, -0.5f, 0.f, 1.f, 1.f },
                { -0.5f, -0.5f, 0.f, 0.f, 1.f },
                {  0.5f,  0.5f, 0.f, 1.f, 0.f },
                { -0.5f,  0.5f, 0.f, 0.f, 0.f }
             };
-            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, vertices);
+            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, fixed_vertices);
          }
          {
             m_renderDevice->SetRenderTarget("DMD HBlur", m_dmdBlurs[slot][1], false);
@@ -2295,6 +2295,8 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    else if (m_toneMapper == TM_AGX_PUNCHY)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_agxptonemap_AO : SHADER_TECHNIQUE_fb_agxptonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_agxptonemap    : SHADER_TECHNIQUE_fb_agxptonemap_no_filter;
+   else
+      assert(!"unknown tonemapper");
 
    #if !defined(ENABLE_BGFX)
    const

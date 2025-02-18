@@ -136,7 +136,7 @@ std::pair<unsigned int, uint8_t*> VPXFile::ReadImage(const string& path, bool na
    return { 0, nullptr };
 }
 
-const string VPXFile::GetImportFile(const string& path)
+string VPXFile::GetImportFile(const string& path)
 {
    auto it = m_images.find(path);
    if (it != m_images.end())

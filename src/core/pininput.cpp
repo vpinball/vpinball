@@ -130,7 +130,7 @@ PinInput::PinInput()
       m_attachedDeviceInfo[k] = nullptr;
    }
 
-   m_pInputDeviceSettingsInfo = std::unique_ptr<std::map<string, bool>>(new std::map<string, bool>);
+   m_pInputDeviceSettingsInfo = std::make_unique<std::map<string, bool>>();
 #endif
 
    m_plunger_axis = 3;

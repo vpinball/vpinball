@@ -23,7 +23,7 @@ void Sequence::RemoveAllScenes()
    if (m_pActiveScene)
       m_pActiveScene->Remove();
 
-   m_pActiveScene = NULL;
+   m_pActiveScene = nullptr;
    m_pendingScenes.clear();
    m_finished = true;
 }
@@ -32,7 +32,7 @@ void Sequence::RemoveScene(const string& name)
 {
    if (m_pActiveScene->GetName() == name) {
       m_pActiveScene->Remove();
-      m_pActiveScene = NULL;
+      m_pActiveScene = nullptr;
    }
    m_pendingScenes.erase(std::remove_if(m_pendingScenes.begin(), m_pendingScenes.end(), [name](Group* p) {
       return p->GetName() == name;

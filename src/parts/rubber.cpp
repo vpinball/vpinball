@@ -437,7 +437,7 @@ Vertex2D *Rubber::GetSplineVertex(int &pcvertex, bool ** const ppfCross, Vertex2
       const float widthcur = (float)m_d.m_thickness;
 
       if (pMiddlePoints)
-         (*pMiddlePoints)[i] = vmiddle;
+         (*pMiddlePoints)[i] = {vmiddle.x,vmiddle.y};
 
       rgvLocal[i] = vmiddle + (widthcur*0.5f) * vnormal;
       rgvLocal[(cvertex + 1) * 2 - i - 1] = vmiddle - (widthcur*0.5f) * vnormal;

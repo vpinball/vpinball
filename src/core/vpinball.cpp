@@ -276,8 +276,6 @@ void VPinball::InitTools()
 //Gets the last loaded Tables (List under File-Menu)
 void VPinball::InitRegValues()
 {
-   const int deadz = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
-
    m_alwaysDrawDragPoints = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ShowDragPoints"s, false);
    m_alwaysDrawLightCenters = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "DrawLightCenters"s, false);
    m_gridSize = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "GridSize"s, 50);

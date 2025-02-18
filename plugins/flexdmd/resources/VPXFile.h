@@ -10,7 +10,7 @@ public:
    VPXFile(const string& path);
    ~VPXFile();
 
-   const string GetImportFile(const string& path);
+   string GetImportFile(const string& path);
    std::pair<unsigned int, uint8_t*> GetImage(const string& path);
 
 private:

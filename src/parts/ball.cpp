@@ -319,7 +319,7 @@ void Ball::Render(const unsigned int renderMask)
 
    // collect the x nearest lights that can reflect on balls
    vector<Light*>& reflectedLights = g_pplayer->m_renderer->m_ballReflectedLights;
-   std::sort(reflectedLights.begin(), reflectedLights.end(), [this](Light* pLight1, Light* pLight2) {
+   std::sort(reflectedLights.begin(), reflectedLights.end(), [this](Light* const pLight1, Light* const pLight2) {
       const float dist1 = Vertex3Ds(pLight1->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight1->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight1->m_d.m_meshRadius + pLight1->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       const float dist2 = Vertex3Ds(pLight2->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight2->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight2->m_d.m_meshRadius + pLight2->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       return dist1 < dist2;

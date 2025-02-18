@@ -30,11 +30,11 @@ public:
    bool RecordContact(const CollisionEvent& newColl);
 
    void Nudge(float angle, float force);
-   Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; }; // Table acceleration (due to nudge) expressed in VP units
+   Vertex3Ds GetNudgeAcceleration() const { return m_tableAcceleration + m_nudgeAcceleration; } // Table acceleration (due to nudge) expressed in VP units
    Vertex2D GetScreenNudge() const; // Table displacement
    const Vertex3Ds& GetPlumbPos() const { return m_plumbPos; }
-   const float GetPlumbPoleLength() const { return m_plumbPoleLength; }
-   const float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
+   float GetPlumbPoleLength() const { return m_plumbPoleLength; }
+   float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
    void ReadNudgeSettings(Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);

@@ -423,7 +423,7 @@ void SoundDialog::Export()
                 char pathName[MAXSTRING];
                 if(begin > 0)
                     memcpy( pathName, ofn.lpstrFile, begin );
-                pathName[begin] = 0;
+                pathName[begin] = '\0';
 
                 while(sel != -1)
                 {

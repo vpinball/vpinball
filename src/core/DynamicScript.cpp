@@ -219,7 +219,7 @@ ScriptClassDef* DynamicTypeLibrary::ResolveClass(const char* name) const
 int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const char* memberName) const
 {
    assert(classDef->name.id != UNRESOLVED_TYPEID);
-   assert(0 <= classDef->name.id && classDef->name.id < m_types.size());
+   assert(classDef->name.id < m_types.size());
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
    ClassDef* cd = type.classDef;
@@ -234,7 +234,7 @@ int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const ch
 ScriptClassDef* DynamicTypeLibrary::GetClass(const ScriptTypeNameDef& name) const
 {
    assert(name.id != UNRESOLVED_TYPEID);
-   assert((name.id >= 0) && (name.id < static_cast<int>(m_types.size())));
+   assert(name.id < static_cast<int>(m_types.size()));
    const TypeDef& def = m_types[name.id];
    assert(def.category == TypeDef::TD_CLASS);
    assert(strcmp(def.classDef->classDef->name.name, name.name) == 0);
@@ -646,7 +646,6 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
          assert(typeDef.arrayDef->type.id != UNRESOLVED_TYPEID);
          const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
          assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
-         LONG ix[2];
          VARIANT varValue;
          V_VT(&varValue) = VT_I4;
          switch (arrayTypeDef.nativeType.id)
@@ -656,6 +655,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
             int32_t* pSrc = reinterpret_cast<int32_t*>(&sv.vArray->lengths[2]);
             for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
             {
+               LONG ix[2];
                ix[0] = i;
                for (unsigned int j = 0; j < sv.vArray->lengths[1]; j++)
                {
@@ -726,7 +726,7 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
 HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT*) const
 {
    assert(classDef->name.id != UNRESOLVED_TYPEID);
-   assert(0 <= classDef->name.id && classDef->name.id < m_types.size());
+   assert(classDef->name.id < m_types.size());
    //if (pDispParams->cNamedArgs != 0)
    //   return DISP_E_NONAMEDARGS;
    if (pDispParams->cArgs > PSC_CALL_MAX_ARG_COUNT)

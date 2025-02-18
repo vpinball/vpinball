@@ -117,7 +117,7 @@
 /// <param name="Z_near">The z_near. [mm] Suprise :)</param>
 /// <param name="Z_far">The z_far. [mm] Suprise :) </param>
 /// <param name="Rotation">The rotation of image. CCW. 0 - none, 1 - 90 deg, 3 - 180 deg, 4 - 270 deg.</param>
-void BuildProjectionMatrix(
+inline void BuildProjectionMatrix(
 	float *ProjectionMatrix /* output */,
 	float DisplaySize,
 	float DisplayNativeResolutionWidth, float DisplayNativeResolutionHeight,

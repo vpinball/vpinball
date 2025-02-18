@@ -67,7 +67,7 @@ public:
 
    void Apply(RenderDevice* device);
 
-   const string GetLog() const;
+   string GetLog() const;
 
    unsigned int m_state;
    float m_depthBias;

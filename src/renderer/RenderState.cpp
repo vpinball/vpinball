@@ -84,7 +84,7 @@ bool RenderState::IsOpaque() const
       && ((m_state & RENDER_STATE_MASK_ZFUNC) >> RENDER_STATE_SHIFT_ZFUNC) == Z_LESSEQUAL ; // Depth testing use default depth camparison
 }
 
-const string RenderState::GetLog() const
+string RenderState::GetLog() const
 {
    const auto blend = (m_state & RENDER_STATE_MASK_ALPHABLENDENABLE) != 0;
    const auto z_test = (m_state & RENDER_STATE_MASK_ZENABLE) != 0;
@@ -102,12 +102,12 @@ const string RenderState::GetLog() const
    static const string blend_functions[] = { "  0  "s, "  1  "s, " SA  "s, " DA  "s, " RSA "s, " RSC "s };
    string s { "Blend: {"s };
    s.append(blend ? " B " : " _ ");
-   s.append(blend ? blend_modes[blend_op] : " _ ");
-   s.append(blend ? blend_functions[blend_dest] : " ___ ");
-   s.append(blend ? blend_functions[blend_src] : " ___ ");
+   s.append(blend ? blend_modes[blend_op] : " _ "s);
+   s.append(blend ? blend_functions[blend_dest] : " ___ "s);
+   s.append(blend ? blend_functions[blend_src] : " ___ "s);
    s.append("} Depth: {");
    s.append(z_test ? " Z " : " _ ");
-   s.append(z_test ? functions[z_func] : " __ ");
+   s.append(z_test ? functions[z_func] : " __ "s);
    s.append(z_write ? " ZW " : " __ ");
    s.append("} Clip:");
    s.append(clip_plane ? " C " : " _ ");
