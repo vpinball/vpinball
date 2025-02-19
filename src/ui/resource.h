@@ -121,7 +121,7 @@
 #define IDC_X_OFFSET_EDIT2              106
 #define IDC_KICKER_ORIENTATION_EDIT     107
 #define IDC_Y_OFFSET_EDIT2              107
-#define IDS_WHERE_USED_SRC_IMAGE        107
+#define IDS_WHERE_USED_SRC_OBJECT       107
 #define IDC_TABLE_SCALEZ                108
 #define ID_ASSIGN_TO_CURRENT_LAYER      108
 #define IDR_FLIPPER                     108
@@ -417,7 +417,7 @@
 #define IDC_APPLY_TO_TABLE              280
 #define IDC_FONT_DIALOG_BUTTON          280
 #define IDC_ADD_LAYER_BUTTON            280
-#define IDC_EDIT_CONTROL                280
+#define IDC_EDIT_OBJECT                 280
 #define IDC_ITEMLIST                    281
 #define IDC_OUT                         281
 #define IDC_SENDMAIL                    281
@@ -1315,6 +1315,8 @@
 #define IDD_CABINET_OPT                 930
 #define IDC_LIST1                       930
 #define IDC_WHERE_LIST                  930
+#define IDC_WHERE_TEXT						 930
+#define IDC_WHERE_DESCR						 930
 #define IDD_PFVIEW_OPT                  931
 #define IDD_ALPHAVIEW_OPT               932
 #define IDD_SCOREVIEW_OPT               933
