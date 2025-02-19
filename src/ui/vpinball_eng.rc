@@ -3170,17 +3170,7 @@ BEGIN
             VALUE "CompanyName", "Visual Pinball development team"
             VALUE "Comments", "For more information, visit https://github.com/vpinball/vpinball"
             VALUE "ProductName", VP_PRODUCTNAME
-#if defined(ENABLE_OPENGL)
-#ifndef __OPENGLES__
-            VALUE "OriginalFilename", "VPinballX_GL.exe"
-#else
-            VALUE "OriginalFilename", "VPinballX_GLES.exe"
-#endif
-#elif defined(ENABLE_BGFX)
-            VALUE "OriginalFilename", "VPinballX_BGFX.exe"
-#else
-            VALUE "OriginalFilename", "VPinballX.exe"
-#endif
+            VALUE "OriginalFilename", VP_ORIGINALFILENAME
             VALUE "FileVersion", VP_VERSION_STRING_POINTS
             VALUE "InternalName", "Visual Pinball"
             VALUE "LegalCopyright", "Copyright 2000-2025"
