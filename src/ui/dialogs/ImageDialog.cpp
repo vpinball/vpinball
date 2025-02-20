@@ -168,7 +168,6 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
                    ListView_SortItems(SortData.hwndList, MyCompProc, &SortData);
             }
          }
-         break;
 
          switch (pnmhdr->code)
          {
