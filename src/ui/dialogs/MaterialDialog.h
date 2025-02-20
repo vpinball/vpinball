@@ -29,6 +29,7 @@ private:
    void  setItemText(int id, float value);
    void LoadPosition();
    void SavePosition();
+   void ShowWhereUsed();
    HWND m_hMaterialList;
    CResizer m_resizer;
    static int m_columnSortOrder;

@@ -11078,16 +11078,17 @@ BOOL PinTableMDI::OnEraseBkgnd(CDC& dc)
 void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
 {
    for (size_t i = 0; i < m_vimage.size(); i++)
-      ShowWhereImageUsed(vWhereUsed,m_vimage[i]);
+      ShowWhereImageUsed(vWhereUsed, m_vimage[i]);
 }
 
-void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *const ppi)
+void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *const ppi)
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      CComBSTR bstr;
+      CComBSTR bstr, bstrFoundObject;
       WhereUsedInfo whereUsed;
       IEditable *const pEdit = m_vedit[i];
+      LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
       if (pEdit == nullptr)
       {
          continue;
@@ -11098,71 +11099,68 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
       case eItemDispReel:
       {
          const DispReel *const pReel = (DispReel *)pEdit;
-         if (lstrcmpi(pReel->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pReel->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pReel->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (Primitive *)pEdit;
-         if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
+         if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), searchObjectName) == 0))
          {
-            whereUsed.searchObjectName = pPrim->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
 
-         if (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pPrim->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Normal Map"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (Ramp *)pEdit;
-         if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pRamp->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemSurface:
       {
          const Surface *const pSurf = (Surface *)pEdit;
-         if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0))
+         if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), searchObjectName) == 0))
          {
-            whereUsed.searchObjectName = pSurf->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
 
-         if (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pSurf->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Side Image"s;
             vWhereUsed.push_back(whereUsed);
          }
@@ -11171,123 +11169,395 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed,Texture *con
       case eItemDecal:
       {
          const Decal *const pDecal = (Decal *)pEdit;
-         if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pDecal->m_d.m_szImage;
-            //m_vedit[i]->GetScriptable()->get_Name(&bstr);
+            whereUsed.searchObjectName = searchObjectName;
             //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
             whereUsed.whereUsedObjectname = "decal"; //!!
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemFlasher:
       {
          const Flasher *const pFlash = (Flasher *)pEdit;
-         if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), ppi->m_szName.c_str()) == 0))
+         if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), searchObjectName) == 0))
          {
-            whereUsed.searchObjectName = pFlash->m_d.m_szImageA;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "ImageA"s;
             vWhereUsed.push_back(whereUsed);
          }
-         if (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pFlash->m_d.m_szImageB;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "ImageB"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (Flipper *)pEdit;
-         if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pFlip->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (HitTarget *)pEdit;
-         if (lstrcmpi(pHit->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pHit->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pHit->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemLight:
       {
          const Light *const pLight = (Light *)pEdit;
-         if (lstrcmpi(pLight->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pLight->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pLight->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (Plunger *)pEdit;
-         if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pPlung->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (Rubber *)pEdit;
-         if (lstrcmpi(pRub->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pRub->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pRub->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
          }
-
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (Spinner *)pEdit;
-         if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), ppi->m_szName.c_str()) == 0)
+         if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
-            whereUsed.searchObjectName = pSpin->m_d.m_szImage;
-            m_vedit[i]->GetScriptable()->get_Name(&bstr);
-            whereUsed.whereUsedObjectname = bstr;
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
             whereUsed.whereUsedPropertyName = "Image"s;
             vWhereUsed.push_back(whereUsed);
-          }
+         }
+         break;
+      }
+      default:
+      {
+         break;
+      }
+      }
+   }
+}
 
-          break;
+void PinTable::ShowWhereMaterialsUsed(vector<WhereUsedInfo> &vWhereUsed)
+{
+   for (size_t i = 0; i < m_materials.size(); i++)
+      ShowWhereMaterialUsed(vWhereUsed, m_materials[i]);
+}
+
+void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material *const ppi)
+{
+   for (size_t i = 0; i < m_vedit.size(); i++)
+   {
+      CComBSTR bstrFoundObject;
+      WhereUsedInfo whereUsed;
+      IEditable *const pEdit = m_vedit[i];
+      LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      if (pEdit == nullptr)
+      {
+         continue;
+      }
+
+      switch (pEdit->GetItemType())
+      {
+      case eItemBumper:
+      {
+         const Bumper *const pBumper = (Bumper *)pEdit;
+         if (lstrcmpi(pBumper->m_d.m_szCapMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Cap Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pBumper->m_d.m_szBaseMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Base Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pBumper->m_d.m_szSkirtMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Skirt Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pBumper->m_d.m_szRingMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Ring Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemPrimitive:
+      {
+         const Primitive *const pPrim = (Primitive *)pEdit;
+         if ((lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if ((lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemRamp:
+      {
+         const Ramp *const pRamp = (Ramp *)pEdit;
+         if (lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemSurface: //'Wall' table objects are surfaces
+      {
+         const Surface *const pSurf = (Surface *)pEdit;
+         if ((lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Top Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if ((lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Side Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if ((lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Slingshot Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if ((lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemDecal:
+      {
+         const Decal *const pDecal = (Decal *)pEdit;
+         if (lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            //Had to hardcode 'decal' below because it doesn't have a unique 'Name' field.
+            whereUsed.whereUsedObjectname = "decal"; //!!
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemFlipper:
+      {
+         const Flipper *const pFlip = (Flipper *)pEdit;
+         if (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Rubber Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemHitTarget:
+      {
+         const HitTarget *const pHit = (HitTarget *)pEdit;
+         if (lstrcmpi(pHit->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemPlunger:
+      {
+         const Plunger *const pPlung = (Plunger *)pEdit;
+         if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemRubber:
+      {
+         const Rubber *const pRub = (Rubber *)pEdit;
+         if (lstrcmpi(pRub->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemSpinner:
+      {
+         const Spinner *const pSpin = (Spinner *)pEdit;
+         if (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         if (lstrcmpi(pSpin->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Physics Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eItemKicker:
+      {
+         const Kicker *const pKicker = (Kicker *)pEdit;
+         if (lstrcmpi(pKicker->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
+      }
+      case eTrigger:
+      {
+         const Trigger *const pTrigger = (Trigger *)pEdit;
+         if (lstrcmpi(pTrigger->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
+         {
+            whereUsed.searchObjectName = searchObjectName;
+            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
+            whereUsed.whereUsedObjectname = bstrFoundObject;
+            whereUsed.whereUsedPropertyName = "Material"s;
+            vWhereUsed.push_back(whereUsed);
+         }
+         break;
       }
       default:
       {
