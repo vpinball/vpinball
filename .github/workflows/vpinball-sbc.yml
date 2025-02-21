@@ -12,7 +12,7 @@ defaults:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
@@ -39,71 +39,75 @@ jobs:
           echo "sha7=${SHA7}" >> $GITHUB_OUTPUT
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
-  build-sbc:
-    name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}
-    runs-on: ubuntu-24.04-arm
+  build:
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: ${{ matrix.os }}
     needs: [ version ]
     strategy:
       fail-fast: false
       matrix:
-        type: [ GL, BGFX ]
-        config: [ Release ]  
-        arch: [ aarch64 ]
-        board: [ rpi, rk3588 ]
+        include:
+          - { os: ubuntu-24.04-arm, type: BGFX, board: rpi, platform: linux, arch: aarch64, config: Release }
+          - { os: ubuntu-24.04-arm, type: BGFX, board: rk3588, platform: linux, arch: aarch64, config: Release }
+          - { os: ubuntu-24.04-arm, type: GL, board: rpi, platform: linux, arch: aarch64, config: Release }
+          - { os: ubuntu-24.04-arm, type: GL, board: rk3588, platform: linux, arch: aarch64, config: Release }
     steps:
       - run: |
           sudo apt-get update
-          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev
       - uses: actions/checkout@v4
-      - name: Calculate timestamp
+      - name: Calculate external cache timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
+      - name: Restore external cache
+        uses: actions/cache/restore@v4
         with:
-          path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-${{ env.TIMESTAMP }}
+          path: external
+          key: ${{ matrix.type }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-
-      - name: Build Deps
+             ${{ matrix.type }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build external cache
         run: |
-          cd standalone/linux-${{ matrix.arch }}
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
+          BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+      - if: ${{ !cancelled() }}
+        name: Save external cache
+        uses: actions/cache/save@v4
         with:
-          path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-${{ matrix.board }}-external-${{ env.TIMESTAMP }}
-      - name: Build
+          path: external
+          key: ${{ matrix.type }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(nproc)
+      - name: Build
+        run: |
           TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           OPTIONS=""
           if [[ "${{ matrix.board }}" == "rpi" ]]; then
             OPTIONS="-DBUILD_RPI=ON"
           elif [[ "${{ matrix.board }}" == "rk3588" ]]; then
             OPTIONS="-DBUILD_RK3588=ON"
           fi
-          cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
           cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} ${OPTIONS} -B build/${{ matrix.config }}
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-      - run: |
+          cmake --build build/${{ matrix.config }} -- -j$(nproc)
+      - name: Stage artifacts
+        run: |
           mkdir tmp
-          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
-          cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
-          cp -r build/${{ matrix.config }}/flexdmd tmp
+          mkdir stage
+          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} stage
+          cp -a build/${{ matrix.config }}/*.{so,so.*} stage
           if [[ "${{ matrix.type }}" == "GL" ]]; then
-            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
           fi
-          cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
-          cp -r build/${{ matrix.config }}/docs tmp
-      - run: |
-          cd tmp
-          tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz *
-      - uses: actions/upload-artifact@v4
+          cp -r build/${{ matrix.config }}/flexdmd stage
+          cp -r build/${{ matrix.config }}/assets stage
+          cp -r build/${{ matrix.config }}/scripts stage
+          cp -r build/${{ matrix.config }}/tables stage
+          cp -r build/${{ matrix.config }}/docs stage
+          tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}
-          path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}-${{ matrix.board }}.tar.gz
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.board }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+          path: tmp

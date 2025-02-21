@@ -56,37 +56,38 @@ jobs:
           brew install bison autoconf automake libtool ldid
           echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
       - uses: actions/checkout@v4
-      - name: Calculate timestamp
+      - name: Calculate external cache timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
+      - name: Restore external cache
+        uses: actions/cache/restore@v4
         with:
-          path: standalone/ios-arm64/external/cache
+          path: external
           key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-             BGFX-ios-arm64-${{ matrix.config }}-external-
-      - name: Build deps
+            BGFX-ios-arm64-${{ matrix.config }}-external-
+      - name: Build external cache
         run: |
-          cd standalone/ios-arm64
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
+          BUILD_TYPE=${{ matrix.config }} ./platforms/ios-arm64/external.sh
+      - if: ${{ !cancelled() }} 
+        name: Save external cache
+        uses: actions/cache/save@v4
         with:
-          path: standalone/ios-arm64/external/cache
+          path: external
           key: BGFX-ios-arm64-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build libvpinball
+      - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(sysctl -n hw.ncpu)
-          cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+      - name: Build libvpinball 
+        run: |
+          cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
           cmake \
                 -DPLATFORM=ios \
                 -DARCH=arm64 \
-                -DBUILD_FRAMEWORKS=ON \
                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
                 -B build/ios-arm64
-          cmake --build build/ios-arm64 -- -j${NUM_PROCS}
+          cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
       - name: Build app
         run: |
           MARKETING_VERSION="${{ needs.version.outputs.version_ios }}"
@@ -95,11 +96,12 @@ jobs:
           perl -i -pe "s/MARKETING_VERSION = [0-9.]+/MARKETING_VERSION = $MARKETING_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           perl -i -pe "s/CURRENT_PROJECT_VERSION = [0-9.]+/CURRENT_PROJECT_VERSION = $CURRENT_PROJECT_VERSION/g" "VPinball.xcodeproj/project.pbxproj"
           fastlane build_unsigned_ipa
-      - name: Copy ipa
+      - name: Stage artifacts
         run: |
           mkdir tmp
           cp standalone/ios/fastlane/VPinballX.ipa tmp/VPinballX_BGFX-${{ needs.version.outputs.tag }}.ipa
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-ios
           path: tmp
@@ -120,38 +122,40 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
       - uses: actions/checkout@v4
-      - name: Calculate timestamp
+      - name: Calculate external cache timestamp
         run: |
           echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
+      - name: Restore external cache
+        uses: actions/cache/restore@v4
         with:
-          path: standalone/android-arm64-v8a/external/cache
+          path: external
           key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
           restore-keys: |
-             BGFX-android-arm64-v8a-${{ matrix.config }}-external-
-      - name: Build deps
+            BGFX-android-arm64-v8a-${{ matrix.config }}-external-
+      - name: Build external cache
         run: |
-          cd standalone/android-arm64-v8a
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
+          BUILD_TYPE=${{ matrix.config }} ./platforms/android-arm64-v8a/external.sh
+      - if: ${{ !cancelled() }}
+        name: Save external cache
+        uses: actions/cache/save@v4
         with:
-          path: standalone/android-arm64-v8a/external/cache
+          path: external
           key: BGFX-android-arm64-v8a-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build libvpinball
+      - name: Set version
         run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(nproc)
-          cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+      - name: Build libvpinball
+        run: |
+          cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
           cmake \
                 -DPLATFORM=android \
                 -DARCH=arm64-v8a \
                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
                 -B build/android-arm64-v8a
-          cmake --build build/android-arm64-v8a -- -j${NUM_PROCS}
-      - name: Build app
-        if: github.repository == 'vpinball/vpinball'
+          cmake --build build/android-arm64-v8a -- -j$(nproc)
+      - if: github.repository == 'vpinball/vpinball'
+        name: Build app
         env:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
@@ -159,9 +163,13 @@ jobs:
         run: |
           cd standalone/android
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/vpinball.jks
-          ./gradlew assemble${{ matrix.config }} bundle${{ matrix.config }} -PversionName="${{ needs.version.outputs.version_full }}" -Psha7="${{ needs.version.outputs.sha7 }}"
-      - name: Build app (fork)
-        if: github.repository != 'vpinball/vpinball'
+          ./gradlew \
+            assemble${{ matrix.config }} \
+            bundle${{ matrix.config }} \
+            -PversionName="${{ needs.version.outputs.version_full }}" \
+            -Psha7="${{ needs.version.outputs.sha7 }}"
+      - if: github.repository != 'vpinball/vpinball'
+        name: Build app (fork)
         run: |
           export ANDROID_KEYSTORE_PASSWORD=vpinball
           export ANDROID_KEY_ALIAS=vpinball
@@ -173,8 +181,12 @@ jobs:
                 -keypass "$ANDROID_KEY_PASSWORD" \
                 -alias "$ANDROID_KEY_ALIAS" \
                 -dname "CN=VPinball Android, O=VPinball, C=XX"
-          ./gradlew assemble${{ matrix.config }} bundle${{ matrix.config }} -PversionName="${{ needs.version.outputs.version_full }}" -Psha7="${{ needs.version.outputs.sha7 }}"
-      - name: Copy apk/aab
+          ./gradlew \
+            assemble${{ matrix.config }} \
+            bundle${{ matrix.config }} \
+            -PversionName="${{ needs.version.outputs.version_full }}" \
+            -Psha7="${{ needs.version.outputs.sha7 }}"
+      - name: Stage apk/aab artifacts
         run: |
           CONFIG_LC=$(echo "${{ matrix.config }}" | tr '[:upper:]' '[:lower:]')
           mkdir tmp
@@ -182,7 +194,8 @@ jobs:
           if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
              cp standalone/android/app/build/outputs/bundle/${CONFIG_LC}/*.aab tmp
           fi
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-android
           path: tmp

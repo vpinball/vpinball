@@ -64,6 +64,7 @@ class VPinballActivity : SDLActivity() {
             "SDL3",
             "SDL3_image",
             "SDL3_ttf",
+            "SDL3_mixer",
             "freeimage",
             "bass",
             "pinmame",

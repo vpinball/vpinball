@@ -12,7 +12,7 @@ defaults:
 jobs:
   version:
     name: Version
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     outputs:
       revision: ${{ steps.version.outputs.revision }}
       version_short: ${{ steps.version.outputs.version_short }}
@@ -48,8 +48,8 @@ jobs:
         with:
           path: DXSDK
           key: cache-dxsdk
-      - name: Create Cache
-        if: steps.cache.outputs.cache-hit != 'true'
+      - if: steps.cache.outputs.cache-hit != 'true'
+        name: Create Cache
         run: |
           curl -sL https://download.microsoft.com/download/a/e/7/ae743f1f-632b-4809-87a9-aa1bb3458e31/DXSDK_Jun10.exe -o DXSDK_Jun10.exe
           7z x DXSDK_Jun10.exe DXSDK/Include -otmp
@@ -59,38 +59,212 @@ jobs:
           ls -Ra DXSDK
 
   build:
-    name: Build VPinballX-${{ matrix.config }}-${{ matrix.platform }}
-    runs-on: windows-2019
+    name: Build VPinballX_${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: ${{ matrix.os }}
     needs: [ version, dxsdk ]
     strategy:
       fail-fast: false
       matrix:
-        platform: [ win-x64, win-x86 ]
-        config: [ Release, Debug ]
+        include:
+          - { os: windows-2025, type: BGFX, platform: windows, arch: x64, config: Release }
+          - { os: windows-2025, type: BGFX, platform: windows, arch: x64, config: Debug }
+          - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Release }
+          - { os: windows-2025, type: BGFX, platform: windows, arch: x86, config: Debug }
+          - { os: macos-latest, type: BGFX, platform: macos, arch: arm64, config: Release }
+          - { os: macos-latest, type: BGFX, platform: macos, arch: x64, config: Release }
+          - { os: ubuntu-latest, type: BGFX, platform: linux, arch: x64, config: Release }
+          - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Release }
+          - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Release }
+          - { os: windows-2025, type: GL, platform: windows, arch: x64, config: Debug }
+          - { os: windows-2025, type: GL, platform: windows, arch: x86, config: Debug }
+          - { os: macos-latest, type: GL, platform: macos, arch: arm64, config: Release }
+          - { os: macos-latest, type: GL, platform: macos, arch: x64, config: Release }
+          - { os: ubuntu-latest, type: GL, platform: linux, arch: x64, config: Release }
     steps:
+      - if: (matrix.platform == 'windows')
+        uses: microsoft/setup-msbuild@v2
+      - if: (matrix.platform == 'macos')
+        run: |
+          brew install bison autoconf automake libtool nasm
+          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
+      - if: (matrix.platform == 'linux')
+        run: |
+          sudo apt-get update
+          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev
+      - uses: actions/checkout@v4
+      - if: (matrix.platform == 'windows')
+        uses: actions/cache@v4
+        with:
+          path: DXSDK
+          key: cache-dxsdk
+      - name: Calculate external cache timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - name: Restore external cache
+        uses: actions/cache/restore@v4
+        with:
+          path: external
+          key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build external cache
+        run: |
+          BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+      - if: ${{ !cancelled() }}
+        name: Save external cache
+        uses: actions/cache/save@v4
+        with:
+          path: external
+          key: ${{ matrix.type }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - if: (matrix.platform == 'windows' && matrix.type == 'BGFX')
+        name: Save third-party artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX-${{ needs.version.outputs.tag }}-dev-third-party-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+          path: third-party
+      - name: Set version
+        run: |
+          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
+          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
+      - name: Build
+        run: |
+          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
+          cp make/CMakeLists_${TYPE}-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
+            if [[ "${{ matrix.arch }}" == "x64" ]]; then
+              cmake -G "Visual Studio 17 2022" -A x64 -B build
+            else
+              cmake -G "Visual Studio 17 2022" -A Win32 -B build
+            fi
+            cmake --build build --config ${{ matrix.config }}
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
+              KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+              echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
+              security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+              security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+              security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
+              security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+              security list-keychain -d user -s $KEYCHAIN_PATH
+              cmake \
+                 -DOPT_CODESIGN=ON \
+                 -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
+                 -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
+                 -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
+                 -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" \
+                 -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            else
+              cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            fi
+            cmake --build build/${{ matrix.config }} -- -j$(sysctl -n hw.ncpu)
+            cd build/${{ matrix.config }}
+            cpack
+          else
+            cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
+            cmake --build build/${{ matrix.config }} -- -j$(nproc)
+          fi
+      - name: Stage artifacts
+        run: |
+          mkdir tmp
+          if [[ "${{ matrix.platform }}" == "windows" ]]; then
+            if [[ "${{ matrix.arch }}" == "x64" ]]; then
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}64.exe tmp
+            else
+              cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }}.exe tmp
+            fi
+            cp build/${{ matrix.config }}/*.dll tmp
+            if [[ "${{ matrix.type }}" == "GL" ]]; then
+              cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
+            fi
+            cp -r build/${{ matrix.config }}/assets tmp
+            cp -r build/${{ matrix.config }}/plugins tmp
+            cp -r build/${{ matrix.config }}/scripts tmp
+            cp -r build/${{ matrix.config }}/tables tmp
+            cp -r build/${{ matrix.config }}/docs tmp
+          elif [[ "${{ matrix.platform }}" == "macos" ]]; then
+            cp build/${{ matrix.config }}/*.dmg tmp
+          elif [[ "${{ matrix.platform }}" == "linux" ]]; then
+            mkdir stage
+            cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} stage
+            cp -a build/${{ matrix.config }}/*.{so,so.*} stage
+            if [[ "${{ matrix.type }}" == "GL" ]]; then
+              cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} stage
+            fi
+            cp -r build/${{ matrix.config }}/flexdmd stage
+            cp -r build/${{ matrix.config }}/assets stage
+            cp -r build/${{ matrix.config }}/scripts stage
+            cp -r build/${{ matrix.config }}/tables stage
+            cp -r build/${{ matrix.config }}/docs stage
+            tar czf tmp/VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}.tar.gz -C stage .
+          fi
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+          path: tmp
+
+  build-dx:
+    name: Build VPinballX-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
+    runs-on: windows-2025
+    needs: [ version, dxsdk ]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: windows, arch: x64, config: Release }
+          - { platform: windows, arch: x64, config: Debug }
+          - { platform: windows, arch: x86, config: Release }
+          - { platform: windows, arch: x86, config: Debug }
+    steps:
+      - uses: microsoft/setup-msbuild@v2
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: DXSDK
           key: cache-dxsdk
-      - run: |
+      - name: Calculate external cache timestamp
+        run: |
+          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
+      - name: Restore external cache
+        uses: actions/cache/restore@v4
+        with:
+          path: external
+          key: dx-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+          restore-keys: |
+             dx-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-
+      - name: Build external cache
+        run: |
+          BUILD_TYPE=${{ matrix.config }} ./platforms/${{ matrix.platform }}-${{ matrix.arch }}/external.sh
+      - if: ${{ !cancelled() }}
+        name: Save external cache
+        uses: actions/cache/save@v4
+        with:
+          path: external
+          key: dx-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
+      - name: Setup build tools
+        run: |
+          "/c/Program Files (x86)/Microsoft Visual Studio/Installer/vs_installer.exe" modify --installPath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise" --add Microsoft.VisualStudio.Component.WinXP Microsoft.VisualStudio.Component.VC.v141.x86.x64 Microsoft.VisualStudio.Component.VC.v141.ATL Microsoft.VisualStudio.Component.VC.v141.MFC --passive --norestart
+          # cmake can't find fxc.exe so copy one into the a directory in the path
+          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.26100.0/x86/fxc.exe" /mingw64/bin
+      - name: Set version
+        run: |
           perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
           perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
       - name: Build
-        run: |
+        run : |
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp make/CMakeLists_dx9-${{ matrix.platform }}.txt CMakeLists.txt
-          # cmake can't find fxc.exe so copy one into the a directory in the path
-          cp "/c/Program Files (x86)/Windows Kits/10/bin/10.0.19041.0/x86/fxc.exe" /mingw64/bin
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            cmake -T v141_xp -G "Visual Studio 16 2019" -A x64 -B build
+          cp make/CMakeLists_dx9-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            cmake -T v141_xp -G "Visual Studio 17 2022" -A x64 -B build
           else
-            cmake -T v141_xp -G "Visual Studio 16 2019" -A Win32 -B build
+            cmake -T v141_xp -G "Visual Studio 17 2022" -A Win32 -B build
           fi
           cmake --build build --config ${{ matrix.config }}
-      - run: |
+      - name: Stage artifacts
+        run: |
           mkdir tmp
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
             cp build/${{ matrix.config }}/VPinballX64.exe tmp
           else
             cp build/${{ matrix.config }}/VPinballX.exe tmp
@@ -100,233 +274,8 @@ jobs:
           cp -r build/${{ matrix.config }}/scripts tmp
           cp -r build/${{ matrix.config }}/tables tmp
           cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
         with:
-          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
+          name: VPinballX-${{ needs.version.outputs.tag }}-${{ matrix.platform }}-${{ matrix.arch }}-${{ matrix.config }}
           path: tmp
-
-  build-gl:
-    name: Build VPinballX_GL-${{ matrix.config }}-${{ matrix.platform }}
-    runs-on: windows-2022
-    needs: [ version, dxsdk ]
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ win-x64, win-x86 ]
-        config: [ Release, Debug ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: DXSDK
-          key: cache-dxsdk
-      - run: |
-          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-      - name: Build
-        run: |
-          export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp make/CMakeLists_gl-${{ matrix.platform }}.txt CMakeLists.txt
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            cmake -G "Visual Studio 17 2022" -A x64 -B build
-          else
-            cmake -G "Visual Studio 17 2022" -A Win32 -B build
-          fi
-          cmake --build build --config ${{ matrix.config }}
-      - run: |
-          mkdir tmp
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            cp build/${{ matrix.config }}/VPinballX_GL64.exe tmp
-          else
-            cp build/${{ matrix.config }}/VPinballX_GL.exe tmp
-          fi
-          cp build/${{ matrix.config }}/*.dll tmp
-          cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
-          cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
-          cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_GL-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
-          path: tmp
-
-  build-bgfx:
-    name: Build VPinballX_BGFX-${{ matrix.config }}-${{ matrix.platform }}
-    runs-on: windows-2022
-    needs: [ version, dxsdk ]
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ win-x64, win-x86 ]
-        config: [ Release, Debug ]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/cache@v4
-        with:
-          path: DXSDK
-          key: cache-dxsdk
-      - run: |
-          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-      - name: Build
-        run: |
-          export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
-          cp make/CMakeLists_bgfx-${{ matrix.platform }}.txt CMakeLists.txt
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            cmake -G "Visual Studio 17 2022" -A x64 -B build
-          else
-            cmake -G "Visual Studio 17 2022" -A Win32 -B build
-          fi
-          cmake --build build --config ${{ matrix.config }}
-      - run: |
-          mkdir tmp
-          if [[ "${{ matrix.platform }}" == "win-x64" ]]; then
-            cp build/${{ matrix.config }}/VPinballX_BGFX64.exe tmp
-          else
-            cp build/${{ matrix.config }}/VPinballX_BGFX.exe tmp
-          fi
-          cp build/${{ matrix.config }}/*.dll tmp
-          cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/plugins tmp
-          cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
-          cp -r build/${{ matrix.config }}/docs tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_BGFX-${{ needs.version.outputs.tag }}-${{ matrix.config }}-${{ matrix.platform }}
-          path: tmp
-
-  build-macos:
-    name: Build VPinballX_${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: macos-latest
-    needs: [ version ]
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [ GL, BGFX ]
-        config: [ Release ]  
-        arch: [ arm64, x64 ]
-    steps:
-      - run: |
-          brew install bison autoconf automake libtool nasm
-          echo "$(brew --prefix bison)/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v4
-      - run: |
-          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
-             KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-             echo "${{ secrets.MACOS_CODESIGN_P12 }}" | base64 --decode > certificate.p12
-             security create-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-             security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
-             security unlock-keychain -p "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" $KEYCHAIN_PATH
-             security import certificate.p12 -P "${{ secrets.MACOS_CODESIGN_P12_PASSWORD }}" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
-             security list-keychain -d user -s $KEYCHAIN_PATH
-          fi
-      - name: Calculate timestamp
-        run: |
-          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
-        with:
-          path: standalone/macos-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-          restore-keys: |
-             ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-
-      - name: Build Deps
-        run: |
-          cd standalone/macos-${{ matrix.arch }}
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: standalone/macos-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-macos-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build
-        run: |
-          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(sysctl -n hw.ncpu)
-          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-          cp standalone/cmake/CMakeLists_${TYPE}-macos-${{ matrix.arch }}.txt CMakeLists.txt
-          if [ "${{ github.repository }}" == "vpinball/vpinball" ]; then
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} \
-                -DOPT_CODESIGN=ON \
-                -DCODESIGN_DEVELOPER_ID="${{ secrets.MACOS_CODESIGN_DEVELOPER_ID }}" \
-                -DCODESIGN_APPLE_ID="${{ secrets.MACOS_CODESIGN_APPLE_ID }}" \
-                -DCODESIGN_PASSWORD="${{ secrets.MACOS_CODESIGN_PASSWORD }}" \
-                -DCODESIGN_TEAM_ID="${{ secrets.MACOS_CODESIGN_TEAM_ID }}" \
-                -B build/${{ matrix.config }}
-          else
-             cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-          fi
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-          cd build/${{ matrix.config }}
-          cpack
-      - run: |
-          mkdir tmp
-          cp build/${{ matrix.config }}/*.dmg tmp
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-macos-${{ matrix.arch }}
-          path: tmp
-
-  build-linux:
-    name: Build VPinballX_${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}
-    runs-on: ubuntu-22.04
-    needs: [ version ]
-    strategy:
-      fail-fast: false
-      matrix:
-        type: [ GL, BGFX ]
-        config: [ Release ]  
-        arch: [ x64 ]
-    steps:
-      - run: |
-          sudo apt-get update
-          sudo apt install cmake nasm bison zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
-      - uses: actions/checkout@v4
-      - name: Calculate timestamp
-        run: |
-          echo "TIMESTAMP=$(date +%s)" >> $GITHUB_ENV
-      - uses: actions/cache/restore@v4
-        with:
-          path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-          restore-keys: |
-             ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-
-      - name: Build Deps
-        run: |
-          cd standalone/linux-${{ matrix.arch }}
-          BUILD_TYPE=${{ matrix.config }} ./external.sh
-      - uses: actions/cache/save@v4
-        if: ${{ !cancelled() }}
-        with:
-          path: standalone/linux-${{ matrix.arch }}/external/cache
-          key: ${{ matrix.type }}-linux-${{ matrix.arch }}-${{ matrix.config }}-external-${{ env.TIMESTAMP }}
-      - name: Build
-        run: |
-          perl -i -pe"s/9999/${{ needs.version.outputs.revision }}/g" src/core/git_version.h
-          perl -i -pe"s/unknown/${{ needs.version.outputs.sha7 }}/g" src/core/git_version.h
-          NUM_PROCS=$(nproc)
-          TYPE=$(echo "${{ matrix.type }}" | tr '[:upper:]' '[:lower:]')
-          cp standalone/cmake/CMakeLists_${TYPE}-linux-${{ matrix.arch }}.txt CMakeLists.txt
-          cmake -DCMAKE_BUILD_TYPE=${{ matrix.config }} -B build/${{ matrix.config }}
-          cmake --build build/${{ matrix.config }} -- -j${NUM_PROCS}
-      - run: |
-          mkdir tmp
-          cp build/${{ matrix.config }}/VPinballX_${{ matrix.type }} tmp
-          cp -a build/${{ matrix.config }}/*.{so,so.*} tmp
-          cp -r build/${{ matrix.config }}/flexdmd tmp
-          if [[ "${{ matrix.type }}" == "GL" ]]; then
-            cp -r build/${{ matrix.config }}/shaders-${{ needs.version.outputs.version_short }} tmp
-          fi
-          cp -r build/${{ matrix.config }}/assets tmp
-          cp -r build/${{ matrix.config }}/scripts tmp
-          cp -r build/${{ matrix.config }}/tables tmp
-          cp -r build/${{ matrix.config }}/docs tmp
-      - run: |
-          cd tmp
-          tar -czf ../VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz *
-      - uses: actions/upload-artifact@v4
-        with:
-          name: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}
-          path: VPinballX_${{ matrix.type }}-${{ needs.version.outputs.tag }}-${{ matrix.config }}-linux-${{ matrix.arch }}.tar.gz

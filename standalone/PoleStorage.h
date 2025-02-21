@@ -1,7 +1,7 @@
 #pragma once
 
 #include "objidl.h"
-#include "pole.h"
+#include "pole/pole.h"
 
 #include <string>
 using std::string;

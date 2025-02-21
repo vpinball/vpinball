@@ -9,8 +9,8 @@
 #include "MsgPlugin.h"
 #include "CorePlugin.h"
 #include "PinMamePlugin.h"
-#include "libserum/serum-decode.h"
 #include "common.h"
+#include "serum-decode.h"
 
 #ifndef _MSC_VER
  #define strcpy_s(A, B, C) strncpy(A, C, B)

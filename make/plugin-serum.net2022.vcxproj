@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName Condition="'$(Platform)'=='Win32'">plugin-serum.x86_32</TargetName>
-    <TargetName Condition="'$(Platform)'=='x64'">plugin-serum.x86_64</TargetName>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-serum</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-serum64</TargetName>
     <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins;./plugins/serum/third-party/include</IncludePath>
@@ -166,6 +166,7 @@
       </Command>
     </PostBuildEvent>
     <ClCompile>
+      <AdditionalIncludeDirectories>plugins/serum;third-party/include/</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -178,17 +179,17 @@
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</FloatingPointExceptions>
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
     </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Platform)'=='x64'">serum64.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Platform)'=='Win32'">serum.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="plugins/serum/common.h" />
     <ClCompile Include="plugins/serum/common.cpp" />
     <ClCompile Include="plugins/serum/serum.cpp" />
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum.h" />
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-version.h" />
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-decode.h" />
-    <ClCompile Include="plugins/serum/third-party/include/libserum/serum-decode.cpp" />
-    <ClInclude Include="plugins/serum/third-party/include/miniz/miniz.h" />
-    <ClCompile Include="plugins/serum/third-party/include/miniz/miniz.c" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="plugins/serum/plugin.cfg">

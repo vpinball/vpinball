@@ -1,49 +1,68 @@
 # plugin CMake file to be included in main project CMakelists
 
-
 # --- HelloWorld plugin ---
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
-add_library(HelloWorldPlugin MODULE plugins/helloworld/helloworld.cpp)
+add_library(HelloWorldPlugin MODULE
+   plugins/helloworld/helloworld.cpp
+)
 
-if (WIN32)
-	add_compile_options(
-	   $<$<CONFIG:RELEASE>:/Ob2>
-	   $<$<CONFIG:RELEASE>:/O2>
-	   $<$<CONFIG:RELEASE>:/Oi>
-	   $<$<CONFIG:RELEASE>:/arch:SSE2>
-	   $<$<CONFIG:RELEASE>:/fp:fast>
-	   $<$<CONFIG:RELEASE>:/fp:except->
-	   $<$<CONFIG:RELEASE>:/Ot>
-	   $<$<CONFIG:RELEASE>:/GF>
-	   $<$<CONFIG:RELEASE>:/GS->
-	   $<$<CONFIG:RELEASE>:/Gy>
-	   $<$<CONFIG:RELEASE>:/GR>
-	   $<$<CONFIG:RELEASE>:/Oy>
-	   $<$<CONFIG:RELEASE>:/GT>
-	   $<$<CONFIG:RELEASE>:/GL>
-	)
-	set_target_properties(HelloWorldPlugin PROPERTIES
-	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-	)
-	target_compile_options(HelloWorldPlugin PUBLIC
-	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-	)
-	target_link_options(HelloWorldPlugin PUBLIC
-	   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-	   $<$<CONFIG:RELEASE>:/OPT:REF>
-	   $<$<CONFIG:RELEASE>:/OPT:ICF>
-	   $<$<CONFIG:RELEASE>:/LTCG>
-	)
+target_include_directories(HelloWorldPlugin PUBLIC
+   plugins/helloworld
+   ${CMAKE_SOURCE_DIR}/third-party/include
+   src/plugins
+)
+
+if(PluginPlatform STREQUAL "windows")
+   add_compile_options(
+      $<$<CONFIG:RELEASE>:/Ob2>
+      $<$<CONFIG:RELEASE>:/O2>
+      $<$<CONFIG:RELEASE>:/Oi>
+      $<$<CONFIG:RELEASE>:/arch:SSE2>
+      $<$<CONFIG:RELEASE>:/fp:fast>
+      $<$<CONFIG:RELEASE>:/fp:except->
+      $<$<CONFIG:RELEASE>:/Ot>
+      $<$<CONFIG:RELEASE>:/GF>
+      $<$<CONFIG:RELEASE>:/GS->
+      $<$<CONFIG:RELEASE>:/Gy>
+      $<$<CONFIG:RELEASE>:/GR>
+      $<$<CONFIG:RELEASE>:/Oy>
+      $<$<CONFIG:RELEASE>:/GT>
+      $<$<CONFIG:RELEASE>:/GL>
+   )
+   set_target_properties(HelloWorldPlugin PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   )
+   target_compile_options(HelloWorldPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+   target_link_options(HelloWorldPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+      $<$<CONFIG:RELEASE>:/OPT:REF>
+      $<$<CONFIG:RELEASE>:/OPT:ICF>
+      $<$<CONFIG:RELEASE>:/LTCG>
+   )
+   if (PluginArch STREQUAL "x64")
+      set_target_properties(HelloWorldPlugin PROPERTIES
+         OUTPUT_NAME "plugin-helloworld64"
+      )
+   else()
+      set_target_properties(HelloWorldPlugin PROPERTIES
+         OUTPUT_NAME "plugin-helloworld"
+      )
+   endif()
+else()
+   set_target_properties(HelloWorldPlugin PROPERTIES
+      PREFIX ""
+      OUTPUT_NAME "plugin-helloworld"
+   )
 endif()
-
-target_include_directories(HelloWorldPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
 
 add_custom_command(TARGET HelloWorldPlugin POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/helloworld/plugin.cfg" "${PLUGINS_DIR}/helloworld/plugin.cfg"
-   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "${PLUGINS_DIR}/helloworld/plugin-helloworld.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:HelloWorldPlugin>" "${PLUGINS_DIR}/helloworld"
    COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:HelloWorldPlugin>"
 )
