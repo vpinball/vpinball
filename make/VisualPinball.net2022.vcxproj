@@ -1231,6 +1231,7 @@
     <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/VideoOptionsDialog.cpp" />
     <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp" />
+    <ClCompile Include="src/ui/dialogs/WhereUsedDialog.cpp" />
     <ClCompile Include="src/ui/properties/BackglassCameraProperty.cpp" />
     <ClCompile Include="src/ui/properties/BackglassVisualsProperty.cpp" />
     <ClCompile Include="src/ui/properties/BallPhysicsProperty.cpp" />
@@ -1804,6 +1805,7 @@
     <ClInclude Include="src/ui/dialogs/ToolbarDialog.h" />
     <ClInclude Include="src/ui/dialogs/VideoOptionsDialog.h" />
     <ClInclude Include="src/ui/dialogs/VROptionsDialog.h" />
+    <ClInclude Include="src/ui/dialogs/WhereUsedDialog.h" />
     <ClInclude Include="src/ui/properties/BackglassCameraProperty.h" />
     <ClInclude Include="src/ui/properties/BackglassVisualsProperty.h" />
     <ClInclude Include="src/ui/properties/BallPhysicsProperty.h" />

@@ -576,6 +576,9 @@
     <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="src/ui/dialogs/WhereUsedDialog.cpp">
+      <Filter>ui\dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
@@ -1149,6 +1152,9 @@
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/dialogs/VROptionsDialog.h">
+      <Filter>ui\dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="src/ui/dialogs/WhereUsedDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
     <ClInclude Include="src/ui/dialogs/ToolbarDialog.h">
