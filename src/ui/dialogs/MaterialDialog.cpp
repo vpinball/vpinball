@@ -4,6 +4,7 @@
 #include "ui/resource.h"
 #include "MaterialDialog.h"
 #include <fstream>
+#include "WhereUsedDialog.h"
 
 typedef struct _tagSORTDATA
 {
@@ -17,6 +18,7 @@ extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM l
 
 int MaterialDialog::m_columnSortOrder;
 bool MaterialDialog::m_deletingItem;
+WhereUsedDialog m_whereUsedDlg_Materials;
 
 void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 {
@@ -117,6 +119,7 @@ BOOL MaterialDialog::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDC_EXPORT).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDC_DELETE_MATERIAL).GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(GetDlgItem(IDC_SHOW_WHERE_USED).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDOK).GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(GetDlgItem(IDCANCEL).GetHwnd(), CResizer::topright, 0);
 
@@ -519,6 +522,7 @@ BOOL MaterialDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          }
          break;
       }
+      case IDC_SHOW_WHERE_USED: ShowWhereUsed(); break;
       case IDC_DELETE_MATERIAL:
       {
          const int count = ListView_GetSelectedCount(m_hMaterialList);
@@ -693,6 +697,14 @@ INT_PTR MaterialDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
    switch (uMsg)
    {
+      case WM_DESTROY:
+      {
+         if (m_whereUsedDlg_Materials.IsWindow())
+            {
+            m_whereUsedDlg_Materials.Destroy(); //Need to destroy the 'WhereUsed' dialog when ImageDialog is closed.  Otherwise there can be a run time error when loading a new table.
+            }
+      }
+      break;
       case WM_NOTIFY:
       {
          CCO(PinTable) *const pt = g_pvp->GetActiveTable();
@@ -969,4 +981,17 @@ void MaterialDialog::SavePosition()
     g_pvp->m_settings.SaveValue(Settings::Editor, "MaterialMngWidth"s, w);
     const int h = rect.bottom - rect.top;
     g_pvp->m_settings.SaveValue(Settings::Editor, "MaterialMngHeight"s, h);
+}
+
+void MaterialDialog::ShowWhereUsed()
+{
+    CCO(PinTable) *const ptCur = g_pvp->GetActiveTable();
+    if (ptCur)
+    {
+      m_whereUsedDlg_Materials.m_whereUsedSource = MATERIALS;
+      if (m_whereUsedDlg_Materials.DoModal() == IDOK)
+      {
+         SetFocus();
+      }
+    }
 }

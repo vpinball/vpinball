@@ -50,9 +50,15 @@ struct ProtectionData
 
 struct WhereUsedInfo
 {
-   string searchObjectName;
-   CComBSTR whereUsedObjectname;
-   string whereUsedPropertyName;
+   string searchObjectName; //Source object to search for (images, materials etc)
+   CComBSTR whereUsedObjectname; //Table object (Bumpers, Lights, Ramps, Walls etc) found to be using the source object
+   string whereUsedPropertyName; //Property name where used (If searching for images this could be 'Image', 'Side Image' etc.  If search for materials this could be 'Material', 'Cap Material, 'Base Material' etc.
+};
+
+enum EnumWhereUsedSource //The 'Where Used' button appears on both the 'Image Manager' and the 'Materials Manager'.  The 'WhereUsed' dialog has a property of this enum type to 'remember' whether it's to display a list of images or materials.
+{
+   IMAGES,
+   MATERIALS
 };
 
 class ScriptGlobalTable;
@@ -389,6 +395,8 @@ public:
 
    void ShowWhereImagesUsed(vector<WhereUsedInfo> &);
    void ShowWhereImageUsed(vector<WhereUsedInfo> &,Texture *const ppi);
+   void ShowWhereMaterialsUsed(vector<WhereUsedInfo> &);
+   void ShowWhereMaterialUsed(vector<WhereUsedInfo> &, Material *const ppi);
 
    string AuditTable() const;
 
