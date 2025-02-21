@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName Condition="'$(Platform)'=='Win32'">plugin-pinmame.x86_32</TargetName>
-    <TargetName Condition="'$(Platform)'=='x64'">plugin-pinmame.x86_64</TargetName>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-pinmame</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-pinmame64</TargetName>
     <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
@@ -151,21 +151,21 @@
         if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)plugins\pinmame\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
+		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\pinmame\"
 
         if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)plugins\pinmame\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
+		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\pinmame\"
 
         if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
         xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
-		xcopy /y /d /q "$(SolutionDir)plugins\pinmame\third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
+		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\pinmame\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>plugins/pinmame;plugins/pinmame/third-party/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>plugins/pinmame;third-party/include/</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -179,8 +179,8 @@
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">plugins/pinmame/third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">plugins/pinmame/third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies Condition="'$(Platform)'=='x64'">pinmame64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">pinmame.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
@@ -212,7 +212,7 @@
     <ClInclude Include="plugins/pinmame/Rom.h" />
     <ClInclude Include="plugins/pinmame/Roms.h" />
     <ClInclude Include="plugins/pinmame/Settings.h" />
-    <ClInclude Include="plugins/pinmame/third-party/include/libpinmame.h" />
+    <ClInclude Include="third-party/include/libpinmame.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

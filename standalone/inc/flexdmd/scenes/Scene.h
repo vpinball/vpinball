@@ -3,7 +3,7 @@
 #include "../actors/Group.h"
 #include "AnimationType.h"
 
-#include "../inc/tweeny-3.2.0.h"
+#include "tweeny-3.2.0.h"
 
 class Scene : public Group
 {

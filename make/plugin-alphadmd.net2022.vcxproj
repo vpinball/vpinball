@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <TargetName Condition="'$(Platform)'=='Win32'">plugin-alphadmd.x86_32</TargetName>
-    <TargetName Condition="'$(Platform)'=='x64'">plugin-alphadmd.x86_64</TargetName>
+    <TargetName Condition="'$(Platform)'=='Win32'">plugin-alphadmd</TargetName>
+    <TargetName Condition="'$(Platform)'=='x64'">plugin-alphadmd64</TargetName>
     <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>

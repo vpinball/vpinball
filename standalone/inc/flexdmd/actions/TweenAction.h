@@ -3,7 +3,7 @@
 #include "Action.h"
 #include "../actors/Actor.h"
 
-#include "../inc/tweeny-3.2.0.h"
+#include "tweeny-3.2.0.h"
 
 class TweenAction : public Action
 {

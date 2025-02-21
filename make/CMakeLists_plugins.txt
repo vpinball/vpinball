@@ -18,9 +18,9 @@ elseif(PluginPlatform STREQUAL "android")
 endif()
 
 if(PluginPlatform STREQUAL "macos")
-	set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources/plugins")
+   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/../Resources/plugins")
 else()
-	set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
+   set(PLUGINS_DIR "$<TARGET_FILE_DIR:vpinball>/plugins")
 endif()
 
 include("${CMAKE_SOURCE_DIR}/make/CMakeLists_plugin_HelloWorld.txt")

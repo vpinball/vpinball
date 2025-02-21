@@ -146,10 +146,8 @@ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 brew install autoconf automake libtool cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/macos-arm64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-macos-arm64.txt CMakeLists.txt
+./platforms/macos-arm64/external.sh
+cp make/CMakeLists_gl-macos-arm64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
 ```
@@ -164,10 +162,8 @@ sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
 brew install autoconf automake libtool cmake nasm bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/macos-x64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-macos-x64.txt CMakeLists.txt
+./platforms/macos-x64/external.sh
+cp make/CMakeLists_gl-macos-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(sysctl -n hw.ncpu)
 ```
@@ -181,31 +177,12 @@ In a terminal execute the following:
 brew install cmake bison curl
 export PATH="$(brew --prefix bison)/bin:$PATH"
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/ios-arm64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+./platforms/ios-arm64/external.sh
+cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=ios -DARCH=arm64 -DBUILD_FRAMEWORKS=ON -DCMAKE_BUILD_TYPE=Release -B build/ios-arm64
 cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
 open standalone/ios/VPinball.xcodeproj
 ```
-
-### tvOS
-
-In a terminal execute the following:
-```
-brew install cmake bison curl ios-deploy fastlane
-export PATH="$(brew --prefix bison)/bin:$PATH"
-git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/tvos-arm64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-tvos-arm64.txt CMakeLists.txt
-cmake -G Xcode -B XCode
-open XCode/vpinball.xcodeproj
-```
-
-*Note:* BASS for tvOS is not publicly available for open source projects. You will need to buy an iOS license. More information can be found [here](https://www.un4seen.com/).
 
 ### Android (arm64-v8a)
 
@@ -217,10 +194,8 @@ export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
 export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
 export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/android-arm64-v8a
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_bgfx_lib.txt CMakeLists.txt
+./platforms/android-arm64-v8a/external.sh
+cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
 cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
 cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
 cd standalone/android
@@ -233,10 +208,8 @@ In a terminal execute the following:
 ```
 sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux-x64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
+./platforms/linux-x64/external.sh
+cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
@@ -248,10 +221,8 @@ In a terminal execute the following:
 sudo dnf groupinstall "Development Tools"
 sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux-x64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-linux-x64.txt CMakeLists.txt
+./platforms/linux-x64/external.sh
+cp make/CMakeLists_gl-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
 cmake --build build -- -j$(nproc)
 ```
@@ -269,10 +240,8 @@ sudo apt dist-upgrade
 sudo apt install mali-g610-firmware rockchip-multimedia-config
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
 git clone https://github.com/vpinball/vpinball
-cd vpinball/standalone/linux-aarch64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
+./platforms/linux-aarch64/external.sh
+cp make/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_RK3588=ON -B build
 cmake --build build
 ```
@@ -284,9 +253,8 @@ Start with a [Raspberry Pi OS Lite (64-Bit)](https://www.raspberrypi.com/softwar
 sudo apt-get install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev
 git clone https://github.com/vpinball/vpinball
 cd vpinball/standalone/linux-aarch64
-./external.sh
-cd ../..
-cp standalone/cmake/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
+./platforms/linux-aarch64/external.sh
+cp make/CMakeLists_gl-linux-aarch64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_RPI=ON -B build
 cmake --build build
 ```

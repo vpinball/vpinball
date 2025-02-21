@@ -6,41 +6,56 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 # Pinup DMD plugin is only available on Windows as is talks to the closed-source Pinup Player
-if (WIN32)
-	add_compile_options(
-	   $<$<CONFIG:RELEASE>:/Ob2>
-	   $<$<CONFIG:RELEASE>:/O2>
-	   $<$<CONFIG:RELEASE>:/Oi>
-	   $<$<CONFIG:RELEASE>:/arch:SSE2>
-	   $<$<CONFIG:RELEASE>:/fp:fast>
-	   $<$<CONFIG:RELEASE>:/fp:except->
-	   $<$<CONFIG:RELEASE>:/Ot>
-	   $<$<CONFIG:RELEASE>:/GF>
-	   $<$<CONFIG:RELEASE>:/GS->
-	   $<$<CONFIG:RELEASE>:/Gy>
-	   $<$<CONFIG:RELEASE>:/GR>
-	   $<$<CONFIG:RELEASE>:/Oy>
-	   $<$<CONFIG:RELEASE>:/GT>
-	   $<$<CONFIG:RELEASE>:/GL>
-	)
-	add_library(PinupEventsPlugin MODULE plugins/pinup-events/pinup-events.cpp)
-	set_target_properties(PinupEventsPlugin PROPERTIES
-	   MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
-	)
-	target_compile_options(PinupEventsPlugin PUBLIC
-	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
-	   $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
-	)
-	target_link_options(PinupEventsPlugin PUBLIC
-	   $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
-	   $<$<CONFIG:RELEASE>:/OPT:REF>
-	   $<$<CONFIG:RELEASE>:/OPT:ICF>
-	   $<$<CONFIG:RELEASE>:/LTCG>
-	)
-	target_include_directories(PinupEventsPlugin PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} src/plugins)
-	add_custom_command(TARGET PinupEventsPlugin POST_BUILD
-	   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinup-events/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin.cfg"
-	   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin-pinup-events.${PluginArch}${CMAKE_SHARED_LIBRARY_SUFFIX}"
-	   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinupEventsPlugin>"
-	)
+if(PluginPlatform STREQUAL "windows")
+   add_library(PinupEventsPlugin MODULE
+      plugins/pinup-events/pinup-events.cpp
+   )
+   target_include_directories(PinupEventsPlugin PUBLIC
+      plugins/pinup-events
+      ${CMAKE_SOURCE_DIR}/third-party/include
+      src/plugins
+   )
+   add_compile_options(
+      $<$<CONFIG:RELEASE>:/Ob2>
+      $<$<CONFIG:RELEASE>:/O2>
+      $<$<CONFIG:RELEASE>:/Oi>
+      $<$<CONFIG:RELEASE>:/arch:SSE2>
+      $<$<CONFIG:RELEASE>:/fp:fast>
+      $<$<CONFIG:RELEASE>:/fp:except->
+      $<$<CONFIG:RELEASE>:/Ot>
+      $<$<CONFIG:RELEASE>:/GF>
+      $<$<CONFIG:RELEASE>:/GS->
+      $<$<CONFIG:RELEASE>:/Gy>
+      $<$<CONFIG:RELEASE>:/GR>
+      $<$<CONFIG:RELEASE>:/Oy>
+      $<$<CONFIG:RELEASE>:/GT>
+      $<$<CONFIG:RELEASE>:/GL>
+   )
+   set_target_properties(PinupEventsPlugin PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   )
+   target_compile_options(PinupEventsPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+   target_link_options(PinupEventsPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+      $<$<CONFIG:RELEASE>:/OPT:REF>
+      $<$<CONFIG:RELEASE>:/OPT:ICF>
+      $<$<CONFIG:RELEASE>:/LTCG>
+   )
+   if (PluginArch STREQUAL "x64")
+      set_target_properties(PinupEventsPlugin PROPERTIES
+         OUTPUT_NAME "plugin-pinup-events64"
+      )
+   else()
+      set_target_properties(PinupEventsPlugin PROPERTIES
+         OUTPUT_NAME "plugin-pinup-events"
+      )
+   endif()
+   add_custom_command(TARGET PinupEventsPlugin POST_BUILD
+      COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/pinup-events/plugin.cfg" "$<TARGET_FILE_DIR:vpinball>/plugins/pinup-events/plugin.cfg"
+      COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:PinupEventsPlugin>" "${PLUGINS_DIR}/pinup-events"
+      COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:PinupEventsPlugin>"
+   )
 endif()
