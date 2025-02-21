@@ -1,7 +1,5 @@
 // license:GPLv3+
 
-// license:GPLv3+
-
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "WhereUsedDialog.h"
@@ -303,20 +301,20 @@ void WhereUsedDialog::RefreshList()
    //This method is very similar to the WhereUsedDialog WM_INITDIALOG code.  We don't need to build the dialog from scratch through.  Just need to delete existing items and re-add them.
    //Get active pinball table (one currently selected...you can edit more than one at a time)
    CCO(PinTable) *const pt = g_pvp->GetActiveTable();
-   vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
    if (pt)
    {
+      vector<WhereUsedInfo> vWhereUsed; //vector storing a list of the names of objects using this image.
       //There is a 'Where Used' button on the 'Image Manager' as well as the 'Materials Manager' window.  Since we are using the WhereUsedDialog for both we need a switch here
       switch (m_whereUsedSource)
       {
          case IMAGES:
          {
-               pt->ShowWhereImagesUsed(vWhereUsed); //Fill a vector with a list of all images and the table objects that reference them
+            pt->ShowWhereImagesUsed(vWhereUsed); //Fill a vector with a list of all images and the table objects that reference them
          }
          break;
          case MATERIALS:
          {
-               pt->ShowWhereMaterialsUsed(vWhereUsed); //Fill a vector with a list of all materials and the table objects that reference them
+            pt->ShowWhereMaterialsUsed(vWhereUsed); //Fill a vector with a list of all materials and the table objects that reference them
          }
          break;
          case Default:
@@ -327,7 +325,7 @@ void WhereUsedDialog::RefreshList()
 
       //Get the handle to the listview for the Where Used dialog
       const HWND hListView = GetDlgItem(IDC_SOUNDLIST).GetHwnd();
-      //Delete all the current items in the 'Where Used' listview because we are going to re-add them and we don't want duplicates
+      //Delete all the current items in the 'Where Used' listview because we are going to re-add them, and we don't want duplicates
       ListView_DeleteAllItems(hListView);
 
       //For each loop iterator to build the Listview items

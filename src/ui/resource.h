@@ -1313,10 +1313,7 @@
 #define IDC_SYNC                        928
 #define IDD_RENDER_OPT                  929
 #define IDD_CABINET_OPT                 930
-#define IDC_LIST1                       930
-#define IDC_WHERE_LIST                  930
-#define IDC_WHERE_TEXT						 930
-#define IDC_WHERE_DESCR						 930
+#define IDC_WHERE_DESCR                 930
 #define IDD_PFVIEW_OPT                  931
 #define IDD_ALPHAVIEW_OPT               932
 #define IDD_SCOREVIEW_OPT               933

@@ -29,10 +29,10 @@ FEATURES:
   and an additional global exposure scale multiplier to adapt to the display capabilities
   (note that one should use Windows 11 and the MS HDR calibration tool for best results with optimal range)
 
-- add 'Where Used' dialog in the Image Manager
-   One of the challenges when creating or modding tables is hunting down all the table objects that reference a particular image
+- add 'Where Used' dialog in the Image/Material Manager
+   One of the challenges when creating or modding tables is hunting down all the table objects that reference a particular image/material
    that should be updated with a new (better) one.
-   The new dialog contains a listview of all the images in use and each table object that is referencing them.
+   The new dialog contains a listview of all the images/materials in use and each table object that is referencing them.
    One can select any row of the listview and click a button on the dialog labeled 'Edit Control' and it will place
    that table object into the 'Properties' editor dialog for you.
 

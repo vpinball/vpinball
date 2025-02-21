@@ -1351,7 +1351,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
          RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
          m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / w2), (float)(1.0 / h2), 1.0f, 1.0f);
          { // Copy at center, to get some extra room for light bleeding in padding
-            m_renderDevice->SetRenderTarget("DMD Copy for blur", m_dmdBlurs[slot][0], false);
+            m_renderDevice->SetRenderTarget("DMD Copy for Blur"s, m_dmdBlurs[slot][0], false);
             m_renderDevice->Clear(clearType::TARGET, 0x00000000);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
@@ -1365,14 +1365,14 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
             m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, fixed_vertices);
          }
          {
-            m_renderDevice->SetRenderTarget("DMD HBlur", m_dmdBlurs[slot][1], false);
+            m_renderDevice->SetRenderTarget("DMD HBlur"s, m_dmdBlurs[slot][1], false);
             m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_horiz13x13);
             m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
          }
          {
-            m_renderDevice->SetRenderTarget("DMD VBlur", m_dmdBlurs[slot][0], false);
+            m_renderDevice->SetRenderTarget("DMD VBlur"s, m_dmdBlurs[slot][0], false);
             m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
             m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][1]->GetColorSampler());
             m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_vert13x13);

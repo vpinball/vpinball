@@ -2949,7 +2949,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
    foo = GetLastError();
 
    // create a key hash (we have to use a second hash as deriving a key from the
-   // integrity hash actually modifies it and thus it calculates the wrong hash)
+   // integrity hash actually modifies it, and thus it calculates the wrong hash)
    foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
    foo = GetLastError();
    // hash the password
@@ -3899,7 +3899,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
    foo = GetLastError();
 
    // create a key hash (we have to use a second hash as deriving a key from the
-   // integrity hash actually modifies it and thus it calculates the wrong hash)
+   // integrity hash actually modifies it, and thus it calculates the wrong hash)
    foo = CryptCreateHash(hcp, CALG_MD5, NULL, 0, &hchkey);
    foo = GetLastError();
    // hash the password
@@ -11081,18 +11081,28 @@ void PinTable::ShowWhereImagesUsed(vector<WhereUsedInfo> &vWhereUsed)
       ShowWhereImageUsed(vWhereUsed, m_vimage[i]);
 }
 
+// also change decal special cases below when changing this snippet
+#define INSERT_WHERE_USED(x) \
+{ \
+   whereUsed.searchObjectName = searchObjectName; \
+   m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject); \
+   whereUsed.whereUsedObjectname = bstrFoundObject; \
+   whereUsed.whereUsedPropertyName = (x); \
+   vWhereUsed.push_back(whereUsed); \
+}
+
 void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *const ppi)
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
-      CComBSTR bstr, bstrFoundObject;
+      CComBSTR bstrFoundObject;
       WhereUsedInfo whereUsed;
-      IEditable *const pEdit = m_vedit[i];
-      LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const IEditable *const pEdit = m_vedit[i];
       if (pEdit == nullptr)
       {
          continue;
       }
+      const LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {
@@ -11100,70 +11110,30 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       {
          const DispReel *const pReel = (DispReel *)pEdit;
          if (lstrcmpi(pReel->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (Primitive *)pEdit;
-         if ((lstrcmpi(pPrim->m_d.m_szImage.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-
-         if (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Normal Map"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool image = (lstrcmpi(pPrim->m_d.m_szImage.c_str(), searchObjectName) == 0);
+         if (image || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(image ? "Image"s : "Normal Map"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (Ramp *)pEdit;
          if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSurface:
       {
          const Surface *const pSurf = (Surface *)pEdit;
-         if ((lstrcmpi(pSurf->m_d.m_szImage.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-
-         if (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Side Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool image = (lstrcmpi(pSurf->m_d.m_szImage.c_str(), searchObjectName) == 0);
+         if (image || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(image ? "Image"s : "Side Image"s);
          break;
       }
       case eItemDecal:
@@ -11182,100 +11152,51 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       case eItemFlasher:
       {
          const Flasher *const pFlash = (Flasher *)pEdit;
-         if ((lstrcmpi(pFlash->m_d.m_szImageA.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "ImageA"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "ImageB"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool imageA = (lstrcmpi(pFlash->m_d.m_szImageA.c_str(), searchObjectName) == 0);
+         if (imageA || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(imageA ? "ImageA"s : "ImageB"s);
          break;
       }
       case eItemFlipper:
       {
          const Flipper *const pFlip = (Flipper *)pEdit;
          if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (HitTarget *)pEdit;
          if (lstrcmpi(pHit->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemLight:
       {
          const Light *const pLight = (Light *)pEdit;
          if (lstrcmpi(pLight->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (Plunger *)pEdit;
          if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (Rubber *)pEdit;
          if (lstrcmpi(pRub->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (Spinner *)pEdit;
          if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Image"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Image"s);
          break;
       }
       default:
@@ -11298,129 +11219,49 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
    {
       CComBSTR bstrFoundObject;
       WhereUsedInfo whereUsed;
-      IEditable *const pEdit = m_vedit[i];
-      LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
+      const IEditable *const pEdit = m_vedit[i];
       if (pEdit == nullptr)
       {
          continue;
       }
+      const LPCSTR searchObjectName = ppi->m_szName.c_str(); //searchObjectName will be an image or material that we want to find table objects that are using it.
 
       switch (pEdit->GetItemType())
       {
       case eItemBumper:
       {
          const Bumper *const pBumper = (Bumper *)pEdit;
-         if (lstrcmpi(pBumper->m_d.m_szCapMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Cap Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pBumper->m_d.m_szBaseMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Base Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pBumper->m_d.m_szSkirtMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Skirt Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pBumper->m_d.m_szRingMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Ring Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool capmat   = (lstrcmpi(pBumper->m_d.m_szCapMaterial.c_str(),   searchObjectName) == 0);
+         const bool basemat  = (lstrcmpi(pBumper->m_d.m_szBaseMaterial.c_str(),  searchObjectName) == 0);
+         const bool skirtmat = (lstrcmpi(pBumper->m_d.m_szSkirtMaterial.c_str(), searchObjectName) == 0);
+         if (capmat || basemat || skirtmat || (lstrcmpi(pBumper->m_d.m_szRingMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(capmat ? "Cap Material"s : (basemat ? "Base Material"s : (skirtmat ? "Skirt Material"s : "Ring Material"s)));
          break;
       }
       case eItemPrimitive:
       {
          const Primitive *const pPrim = (Primitive *)pEdit;
-         if ((lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if ((lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemRamp:
       {
          const Ramp *const pRamp = (Ramp *)pEdit;
-         if (lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemSurface: //'Wall' table objects are surfaces
       {
          const Surface *const pSurf = (Surface *)pEdit;
-         if ((lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Top Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if ((lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Side Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if ((lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Slingshot Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if ((lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool topmat   = (lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(),       searchObjectName) == 0);
+         const bool sidemat  = (lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(),      searchObjectName) == 0);
+         const bool slingmat = (lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), searchObjectName) == 0);
+         if (topmat || sidemat || slingmat || (lstrcmpi(pSurf->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(topmat ? "Top Material"s : (sidemat ? "Side Material"s : (slingmat ? "Slingshot Material"s : "Physics Material"s)));
          break;
       }
       case eItemDecal:
@@ -11439,124 +11280,54 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       case eItemFlipper:
       {
          const Flipper *const pFlip = (Flipper *)pEdit;
-         if (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Rubber Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Rubber Material"s);
          break;
       }
       case eItemHitTarget:
       {
          const HitTarget *const pHit = (HitTarget *)pEdit;
-         if (lstrcmpi(pHit->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pHit->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemPlunger:
       {
          const Plunger *const pPlung = (Plunger *)pEdit;
          if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemRubber:
       {
          const Rubber *const pRub = (Rubber *)pEdit;
-         if (lstrcmpi(pRub->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pRub->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemSpinner:
       {
          const Spinner *const pSpin = (Spinner *)pEdit;
-         if (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
-         if (lstrcmpi(pSpin->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Physics Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+         const bool mat = (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
+         if (mat || (lstrcmpi(pSpin->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
+            INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
          break;
       }
       case eItemKicker:
       {
          const Kicker *const pKicker = (Kicker *)pEdit;
          if (lstrcmpi(pKicker->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Material"s);
          break;
       }
       case eTrigger:
       {
          const Trigger *const pTrigger = (Trigger *)pEdit;
          if (lstrcmpi(pTrigger->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
-         {
-            whereUsed.searchObjectName = searchObjectName;
-            m_vedit[i]->GetScriptable()->get_Name(&bstrFoundObject);
-            whereUsed.whereUsedObjectname = bstrFoundObject;
-            whereUsed.whereUsedPropertyName = "Material"s;
-            vWhereUsed.push_back(whereUsed);
-         }
+            INSERT_WHERE_USED("Material"s);
          break;
       }
       default:

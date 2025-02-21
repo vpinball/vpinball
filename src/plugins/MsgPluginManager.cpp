@@ -232,7 +232,7 @@ void MsgPluginManager::ProcessAsyncCallbacks()
 ///////////////////////////////////////////////////////////////////////////////
 // Plugin management
 
-std::string unquote(const std::string& str)
+static std::string unquote(const std::string& str)
 {
    if (str.front() == '"' && str.back() == '"')
       return str.substr(1, str.size() - 2);

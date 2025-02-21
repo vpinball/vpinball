@@ -2,12 +2,12 @@
 
 #pragma once
 
-class WhereUsedDialog : public CDialog
+class WhereUsedDialog final : public CDialog
 {
 public:
    WhereUsedDialog();
    virtual ~WhereUsedDialog();
-   int m_whereUsedSource;
+   EnumWhereUsedSource m_whereUsedSource;
 
 protected:
    virtual void OnDestroy();

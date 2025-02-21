@@ -2659,8 +2659,8 @@ BEGIN
     DEFPUSHBUTTON   "Edit Object",IDC_EDIT_OBJECT,279,6,50,14
     PUSHBUTTON      "Refresh List",IDC_REFRESH_LIST,280,26,50,14 
     CONTROL         "",201, "SysListView32", LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP, 0, 30, 268,253 
-    LTEXT           "This list shows the table objects that are using a resource (images etc).  To edit an object select a row and then either press <enter>, double-click or click the 'Edit Object' button.  That table object will then appear in the table 'Properties' editor.",IDC_WHERE_DESCR, 9, 2, 258,
-   25 END
+    LTEXT           "This list shows the table objects that are using a resource (images etc).  To edit an object select a row and then either press <enter>, double-click or click the 'Edit Object' button.  That table object will then appear in the table 'Properties' editor.",IDC_WHERE_DESCR, 9, 2, 258, 25
+END
 
 IDD_INPUT_DEVICES DIALOGEX 0, 0, 241, 176
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
@@ -4168,9 +4168,9 @@ BEGIN
     IDS_TB_SELECT           "Select"
     IDS_TB_WALL             "Wall"
     IDS_TB_FLIPPER          "Flipper"
-    IDS_TB_PLAY             "Play" 
-    IDS_WHERE_USED_SRC_OBJECT    "Resource" 
-    IDS_WHERE_USED_OBJECT_NAME   "Used By Object"
+    IDS_TB_PLAY             "Play"
+    IDS_WHERE_USED_SRC_OBJECT  "Resource" 
+    IDS_WHERE_USED_OBJECT_NAME "Used By Object"
     IDS_WHERE_USED_PROPERTY "Used By Property Name"
 END
 
