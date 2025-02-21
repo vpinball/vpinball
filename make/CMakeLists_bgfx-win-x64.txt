@@ -314,6 +314,8 @@ add_executable(vpinball WIN32
    src/ui/dialogs/PhysicsOptionsDialog.h
    src/ui/dialogs/VROptionsDialog.cpp
    src/ui/dialogs/VROptionsDialog.h
+   src/ui/dialogs/WhereUsedDialog.cpp
+   src/ui/dialogs/WhereUsedDialog.h
    src/ui/dialogs/SearchSelectDialog.cpp
    src/ui/dialogs/SearchSelectDialog.h
    src/ui/dialogs/SoundDialog.cpp
