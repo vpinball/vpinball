@@ -178,7 +178,9 @@ GlobalDimDeclaration
     : tPRIVATE tCONST ConstDeclList         { $$ = new_const_statement(ctx, @$, $3); CHECK_ERROR; }
     | tPUBLIC  tCONST ConstDeclList         { $$ = new_const_statement(ctx, @$, $3); CHECK_ERROR; }
     | tPRIVATE DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2); CHECK_ERROR; }
-    | tPUBLIC  DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2); CHECK_ERROR; }
+    | tPUBLIC  DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2);
+                                              (void)parser_nerrs; /* avoid unused variable warning */
+                                              CHECK_ERROR; }
 
 ExpressionNl_opt
     : /* empty */                           { $$ = NULL; }
@@ -257,12 +259,12 @@ Preserve_opt
 
 MemberDeclList
     : MemberDecl                            { $$ = $1; }
-    | MemberDecl ',' MemberDeclList          { $1->next = $3; $$ = $1; }
+    | MemberDecl ',' MemberDeclList         { $1->next = $3; $$ = $1; }
 
 MemberDecl
     : MemberIdentifier                      { $$ = new_dim_decl(ctx, $1, FALSE, NULL); CHECK_ERROR; }
-    | MemberIdentifier '(' DimList ')'            { $$ = new_dim_decl(ctx, $1, TRUE, $3); CHECK_ERROR; }
-    | MemberIdentifier tEMPTYBRACKETS             { $$ = new_dim_decl(ctx, $1, TRUE, NULL); CHECK_ERROR; }
+    | MemberIdentifier '(' DimList ')'      { $$ = new_dim_decl(ctx, $1, TRUE, $3); CHECK_ERROR; }
+    | MemberIdentifier tEMPTYBRACKETS       { $$ = new_dim_decl(ctx, $1, TRUE, NULL); CHECK_ERROR; }
 
 ReDimDecl
     : tIdentifier '(' ArgumentList ')'      { $$ = new_redim_decl(ctx, $1, $3); CHECK_ERROR; }
@@ -517,15 +519,18 @@ ArgumentDecl
     | tBYVAL Identifier EmptyBrackets_opt       { $$ = new_argument_decl(ctx, $2, FALSE); }
 
 /* these keywords may also be an identifier, depending on context */
-Identifier
-    : MemberIdentifier { $$ = $1; }
-    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
-
 MemberIdentifier
+    : tIdentifier    { $$ = $1; }
+    | tERROR         { ctx->last_token = tIdentifier; $$ = $1; }
+    | tEXPLICIT      { ctx->last_token = tIdentifier; $$ = $1; }
+    | tSTEP          { ctx->last_token = tIdentifier; $$ = $1; }
+
+Identifier
     : tIdentifier    { $$ = $1; }
     | tDEFAULT       { ctx->last_token = tIdentifier; $$ = $1; }
     | tERROR         { ctx->last_token = tIdentifier; $$ = $1; }
     | tEXPLICIT      { ctx->last_token = tIdentifier; $$ = $1; }
+    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
     | tSTEP          { ctx->last_token = tIdentifier; $$ = $1; }
 
 StSep_opt
