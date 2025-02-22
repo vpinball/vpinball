@@ -1,26 +1,33 @@
-# Default layout for alphanumeric display with 4 x 7 digit score displays
+# Default layout for alphanumeric display with 2 x 20 digit score displays
+# Based on Gottlieb System 80B and System 3 displays with a blue glass filter
 
-Width: 80
-Height: 20
+Width: 49.5
+Height: 12.375
 Fit: Contain
 
 Visuals:
 	- SegDisplay:
-		Rect: [0,3,80,5]
+		Rect: [0,1.2,49.5,5]
 		Src: default://alpha?sub=0
-		Style: VFD Blue
+		Type: Gottlieb
+		Style: Blue VFD
+		XPos: [0.00, 2.42, 4.84, 7.27, 9.69, 12.11, 14.53, 16.95, 19.38, 21.80, 24.22, 26.64, 29.06, 31.48, 33.91, 36.33, 38.75, 41.17, 43.59, 46.02]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,32,990,100]
+			Ambient:   [0.4,0.4,0.4]
 		
 	- SegDisplay:
-		Rect: [0,12,80,5]
+		Rect: [0,6.2,49.5,5]
 		Src: default://alpha?sub=1
-		Style: VFD Blue
+		Type: Gottlieb
+		Style: Blue VFD
+		XPos: [0.00, 2.42, 4.84, 7.27, 9.69, 12.11, 14.53, 16.95, 19.38, 21.80, 24.22, 26.64, 29.06, 31.48, 33.91, 36.33, 38.75, 41.17, 43.59, 46.02]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
+			#Tint:      [0.030,0.250,0.500]
 			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,132,990,100]
+			Ambient:   [0.4,0.4,0.4]

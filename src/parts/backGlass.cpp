@@ -287,6 +287,7 @@ void BackGlass::Render()
       { 0.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }
    };
 
+   m_pd3dDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
    m_pd3dDevice->DrawTexturedQuad(m_pd3dDevice->m_DMDShader, vertices);
 }
 

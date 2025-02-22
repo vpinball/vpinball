@@ -1,16 +1,16 @@
-# Default layout for 128x32 DMD
+# Default layout for 192x64 DMD used by Sega
 
-Width: 128
-Height: 32
+Width: 192
+Height: 64
 Fit: Contain
 
 Visuals:
 	- DMD:
-		Rect: [0,0,128,32]
+		Rect: [0,0,192,64]
 		Style: Neon Plasma
-		Size: [128, 32]
+		Size: [192, 64]
 		Glass:
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
-			Area:      [0,0,1024,256]
+			Area:      [0,0,768,256]
 			Ambient:   [0.4,0.4,0.4]

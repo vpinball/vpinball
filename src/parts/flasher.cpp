@@ -1371,7 +1371,9 @@ void Flasher::Render(const unsigned int renderMask)
          const vec3 dotTint = frame->m_format == BaseTexture::BW ? vec3(color.x, color.y, color.z) : vec3(1.f, 1.f, 1.f);
          const int dmdProfile = clamp(m_d.m_renderStyle, 0, 7);
          g_pplayer->m_renderer->SetupDMDRender(dmdProfile, false, dotTint, color.w, frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_vertices,
-            glass, vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f), m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
+            vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
+            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness, 
+            glass, vec4(0.f, 0.f, 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient) / 255.f, GetGValue(m_d.m_glassAmbient) / 255.f, GetBValue(m_d.m_glassAmbient) / 255.f));
          // DMD flasher are rendered transparent. They used to be drawn as a separate pass after opaque parts and before other transparents.
          // There we shift the depthbias to reproduce this behavior for backward compatibility.
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
@@ -1445,8 +1447,10 @@ void Flasher::Render(const unsigned int renderMask)
          else
             m_rd->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
          const int renderStyle = clamp(m_d.m_renderStyle, 0, 7);
-         g_pplayer->m_renderer->SetupAlphaSegRender(renderStyle, false, vec3(color.x, color.y, color.z), color.w, SegElementType::CTLPI_GETSEG_LAYOUT_16, segs.frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_vertices,
-            glass, vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f), m_d.m_glassRoughness, m_d.m_glassPadLeft, m_d.m_glassPadRight, m_d.m_glassPadTop, m_d.m_glassPadBottom);
+         g_pplayer->m_renderer->SetupSegmentRenderer(renderStyle, false, vec3(color.x, color.y, color.z), color.w, Renderer::Generic, SegElementType::CTLPI_GETSEG_LAYOUT_16, segs.frame, m_d.m_modulate_vs_add, m_backglass ? Renderer::Reinhard : Renderer::Linear, m_vertices,
+            vec4(m_d.m_glassPadLeft, m_d.m_glassPadTop, m_d.m_glassPadRight, m_d.m_glassPadBottom),
+            vec3(1.f, 1.f, 1.f), m_d.m_glassRoughness,
+            glass, vec4(0.f, 0.f , 1.f, 1.f), vec3(GetRValue(m_d.m_glassAmbient)/255.f, GetGValue(m_d.m_glassAmbient)/255.f, GetBValue(m_d.m_glassAmbient)/255.f));
          // We also apply the depth bias shift, not for backward compatibility (as alphaseg display did not exist before 10.8.1) but for consistency between DMD and Display mode
          m_rd->DrawMesh(m_rd->m_DMDShader, true, pos, m_d.m_depthBias - 10000.f, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_numPolys * 3);
          break;

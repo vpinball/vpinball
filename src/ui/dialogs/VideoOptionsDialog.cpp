@@ -179,9 +179,8 @@ private:
    CEdit m_dotSize;
    CEdit m_dotBrightness;
    CEdit m_dotSharpness;
-   CEdit m_dotRounding;
    ColorButton m_unlitDotColor;
-   CEdit m_backGlow;
+   CEdit m_diffuseGlow;
 
    CColorDialog m_colorDialog;
 };
@@ -1787,9 +1786,8 @@ BOOL DisplayStyleOptPage::OnInitDialog()
    AttachItem(IDC_DOT_SIZE, m_dotSize);
    AttachItem(IDC_DOT_BRIGHTNESS, m_dotBrightness);
    AttachItem(IDC_DOT_SHARPNESS, m_dotSharpness);
-   AttachItem(IDC_DOT_ROUNDING, m_dotRounding);
    AttachItem(IDC_UNLIT_DOT_COLOR, m_unlitDotColor);
-   AttachItem(IDC_BACK_GLOW, m_backGlow);
+   AttachItem(IDC_BACK_GLOW, m_diffuseGlow);
 
    m_dmdType.SetCurSel(0);
    OnCommand(IDC_DMD_PROFILE, 0L);
@@ -1823,8 +1821,7 @@ void DisplayStyleOptPage::ResetProfile(const int n)
       settings.ResetValue(Settings::DMD, prefix + "DotSize");
       settings.ResetValue(Settings::DMD, prefix + "DotBrightness");
       settings.ResetValue(Settings::DMD, prefix + "DotSharpness");
-      settings.ResetValue(Settings::DMD, prefix + "DotRounding");
-      settings.ResetValue(Settings::DMD, prefix + "BackGlow");
+      settings.ResetValue(Settings::DMD, prefix + "DiffuseGlow");
    }
    else if (n < 7 + 8) // Alpha Seg
    {
@@ -1832,7 +1829,7 @@ void DisplayStyleOptPage::ResetProfile(const int n)
       settings.ResetValue(Settings::Alpha, prefix + "Color");
       settings.ResetValue(Settings::Alpha, prefix + "Unlit");
       settings.ResetValue(Settings::Alpha, prefix + "Brightness");
-      settings.ResetValue(Settings::Alpha, prefix + "BackGlow");
+      settings.ResetValue(Settings::Alpha, prefix + "DiffuseGlow");
    }
    LoadProfile(n);
 }
@@ -1844,8 +1841,10 @@ void DisplayStyleOptPage::LoadProfile(const int n)
    Settings& settings = GetEditedSettings();
    m_editedProfile = n;
 
+   int mode = -1;
    if (n < 7) // DMD
    {
+      mode = 0;
       const string prefix = "Profile." + std::to_string(n + 1) + '.';
       m_legacyRenderer.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "Legacy") ? BST_CHECKED : BST_UNCHECKED);
       m_dmdScaleFX.SetCheck(settings.LoadValueBool(Settings::DMD, prefix + "ScaleFX") ? BST_CHECKED : BST_UNCHECKED);
@@ -1857,21 +1856,27 @@ void DisplayStyleOptPage::LoadProfile(const int n)
       m_dotBrightness.SetWindowText(tmp);
       sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness"));
       m_dotSharpness.SetWindowText(tmp);
-      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding"));
-      m_dotRounding.SetWindowText(tmp);
-      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow"));
-      m_backGlow.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::DMD, prefix + "DiffuseGlow"));
+      m_diffuseGlow.SetWindowText(tmp);
    }
    else if (n < 7 + 8) // Alpha Seg
    {
+      mode = 1;
       const string prefix = "Profile." + std::to_string(n - 7 + 1) + '.';
       m_dotTint.SetColor(settings.LoadValueUInt(Settings::Alpha, prefix + "Color"));
       m_unlitDotColor.SetColor(settings.LoadValueUInt(Settings::Alpha, prefix + "Unlit"));
       sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::Alpha, prefix + "Brightness"));
       m_dotBrightness.SetWindowText(tmp);
-      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::Alpha, prefix + "BackGlow"));
-      m_backGlow.SetWindowText(tmp);
+      sprintf_s(tmp, sizeof(tmp), "%.3f", settings.LoadValueFloat(Settings::Alpha, prefix + "DiffuseGlow"));
+      m_diffuseGlow.SetWindowText(tmp);
    }
+
+   m_legacyRenderer.ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
+   m_dmdScaleFX.ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
+   GetDlgItem(IDC_STATIC20).ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
+   m_dotSize.ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
+   GetDlgItem(IDC_STATIC21).ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
+   m_dotSharpness.ShowWindow(mode == 0 ? SW_SHOWNORMAL : SW_HIDE);
 
    OnCommand(IDC_LEGACY_RENDERER, 0L);
 
@@ -1896,8 +1901,7 @@ void DisplayStyleOptPage::SaveProfile()
       settings.SaveValue(Settings::DMD, prefix + "DotSize", m_dotSize.GetWindowText().GetString(), !saveAll);
       settings.SaveValue(Settings::DMD, prefix + "DotBrightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
       settings.SaveValue(Settings::DMD, prefix + "DotSharpness", m_dotSharpness.GetWindowText().GetString(), !saveAll);
-      settings.SaveValue(Settings::DMD, prefix + "DotRounding", m_dotRounding.GetWindowText().GetString(), !saveAll);
-      settings.SaveValue(Settings::DMD, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::DMD, prefix + "DiffuseGlow", m_diffuseGlow.GetWindowText().GetString(), !saveAll);
    }
    else if (m_editedProfile < 7 + 8) // AlphaSeg
    {
@@ -1905,7 +1909,7 @@ void DisplayStyleOptPage::SaveProfile()
       settings.SaveValue(Settings::Alpha, prefix + "Color", static_cast<unsigned int>(m_dotTint.GetColor()), !saveAll);
       settings.SaveValue(Settings::Alpha, prefix + "Unlit", static_cast<unsigned int>(m_unlitDotColor.GetColor()), !saveAll);
       settings.SaveValue(Settings::Alpha, prefix + "Brightness", m_dotBrightness.GetWindowText().GetString(), !saveAll);
-      settings.SaveValue(Settings::Alpha, prefix + "BackGlow", m_backGlow.GetWindowText().GetString(), !saveAll);
+      settings.SaveValue(Settings::Alpha, prefix + "DiffuseGlow", m_diffuseGlow.GetWindowText().GetString(), !saveAll);
    }
 }
 
@@ -1946,7 +1950,6 @@ BOOL DisplayStyleOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_DOT_SIZE:
    case IDC_DOT_BRIGHTNESS:
    case IDC_DOT_SHARPNESS:
-   case IDC_DOT_ROUNDING:
    case IDC_BACK_GLOW:
       if (HIWORD(wParam) == EN_CHANGE)
          PropChanged();
@@ -1962,9 +1965,8 @@ BOOL DisplayStyleOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
 #endif
          m_dotSize.EnableWindow(isNewRenderer);
          m_dotSharpness.EnableWindow(isNewRenderer);
-         m_dotRounding.EnableWindow(isNewRenderer);
-         m_unlitDotColor.EnableWindow(isNewRenderer);
-         m_backGlow.EnableWindow(isNewRenderer);
+         m_unlitDotColor.EnableWindow(isNewRenderer || (m_dmdType.GetCurSel() > 6));
+         m_diffuseGlow.EnableWindow(isNewRenderer || (m_dmdType.GetCurSel() > 6));
       }
       break;
    case IDC_DMD_PROFILE:

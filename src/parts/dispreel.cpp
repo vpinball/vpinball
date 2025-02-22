@@ -408,6 +408,8 @@ void DispReel::Render(const unsigned int renderMask)
    const vec4 c = convertColor(0xFFFFFFFF, 1.f);
    m_rd->m_DMDShader->SetVector(SHADER_vColor_Intensity, &c);
 
+   m_rd->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
+
    m_rd->m_DMDShader->SetTexture(SHADER_tex_sprite, pin, SF_TRILINEAR, SA_REPEAT, SA_REPEAT);
 
    // set up all the reel positions within the object frame

@@ -164,19 +164,21 @@ enum ShaderTechniques
       SHADER_cAmbient_LightRange, SHADER_tex_env, SHADER_tex_diffuse_env, SHADER_cClearcoat_EdgeAlpha, SHADER_cGlossy_ImageLerp, SHADER_u_basic_shade_mode, SHADER_lightCenter_maxRange,
       SHADER_lightColor2_falloff_power, SHADER_lightColor_intensity, SHADER_lightingOff),
 
-   SHADER_TECHNIQUE(basic_DMD, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassPad, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
-   SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassPad, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_world, SHADER_glassArea, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_ext, SHADER_glassArea, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
+   SHADER_TECHNIQUE(basic_DMD_world_ext, SHADER_glassArea, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_vColor_Intensity, SHADER_tex_dmd),
 
-   SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_dmdGlowTex, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_AlphaSeg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
-   SHADER_TECHNIQUE(display_AlphaSeg_world, SHADER_matWorldViewProj, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassAmbient_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_DMD, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_DMD_world, SHADER_matWorldViewProj, SHADER_vRes_Alpha_time, SHADER_w_h_height, SHADER_displayProperties, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_Seg, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayProperties, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_Seg_world, SHADER_matWorldViewProj, SHADER_alphaSegState, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayProperties, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_CRT, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
+   SHADER_TECHNIQUE(display_CRT_world, SHADER_matWorldViewProj, SHADER_glassPad, SHADER_glassArea, SHADER_glassTint_Roughness, SHADER_displayGlass, SHADER_vColor_Intensity, SHADER_staticColor_Alpha, SHADER_w_h_height, SHADER_displayTex),
 
-   SHADER_TECHNIQUE(basic_noDMD, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite),
+   SHADER_TECHNIQUE(basic_noDMD, SHADER_glassArea, SHADER_alphaTestValue, SHADER_vColor_Intensity, SHADER_tex_sprite),
    SHADER_TECHNIQUE(basic_noDMD_notex, SHADER_vColor_Intensity),
-   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_vColor_Intensity, SHADER_tex_sprite),
+   SHADER_TECHNIQUE(basic_noDMD_world, SHADER_glassArea, SHADER_alphaTestValue, SHADER_matWorldViewProj, SHADER_vColor_Intensity, SHADER_tex_sprite),
 
    SHADER_TECHNIQUE(basic_noLight, SHADER_matWorldViewProj, SHADER_lightCenter_doShadow, SHADER_balls, SHADER_staticColor_Alpha, SHADER_alphaTestValueAB_filterMode_addBlend,
       SHADER_amount_blend_modulate_vs_add_flasherMode, SHADER_tex_flasher_A, SHADER_tex_flasher_B),
@@ -396,6 +398,8 @@ enum ShaderUniforms
    SHADER_SAMPLER(tex_light_color, 0, SA_REPEAT, SA_REPEAT, SF_TRILINEAR), // Classic only
 
    // DMD Shader
+   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
+   SHADER_UNIFORM(SUT_Float4, glassArea, 1),
    SHADER_UNIFORM(SUT_Float4, vRes_Alpha_time, 1),
    SHADER_UNIFORM(SUT_Float4, backBoxSize, 1),
    SHADER_UNIFORM(SUT_Float4, vColor_Intensity, 1),
@@ -403,12 +407,11 @@ enum ShaderUniforms
    SHADER_SAMPLER(tex_sprite, 0, SA_MIRROR, SA_MIRROR, SF_TRILINEAR), // Sprite
 
    // Display Shader
-   SHADER_UNIFORM(SUT_Float4, glassPad, 1),
-   SHADER_UNIFORM(SUT_Float4, glassAmbient_Roughness, 1),
+   SHADER_UNIFORM(SUT_Float4, glassTint_Roughness, 1),
+   SHADER_UNIFORM(SUT_Float4, displayProperties, 1),
    SHADER_UNIFORM(SUT_Float4v, alphaSegState, 4),
    SHADER_SAMPLER(displayTex, 0, SA_CLAMP, SA_CLAMP, SF_NONE), // DMD (Point sampling), Alpha seg (bilinear sampling), Display (Point sampling)
-   SHADER_SAMPLER(displayGlass, 1, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
-   SHADER_SAMPLER(dmdGlowTex, 2, SA_CLAMP, SA_CLAMP, SF_BILINEAR),
+   SHADER_SAMPLER(displayGlass, 1, SA_CLAMP, SA_CLAMP, SF_TRILINEAR),
 
    // Flasher Shader
    SHADER_UNIFORM(SUT_Float4, alphaTestValueAB_filterMode_addBlend, 1),

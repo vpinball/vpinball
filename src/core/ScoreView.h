@@ -2,6 +2,8 @@
 
 #pragma once
 
+
+
 class ScoreView final
 {
 public:
@@ -11,7 +13,7 @@ public:
    bool HasLayouts() const { return !m_layouts.empty(); }
    void Load(const string& path);
    void Reset() { m_layouts.clear(); }
-   void Select();
+   void Select(const VPX::RenderOutput& output);
    void Render(const VPX::RenderOutput& output);
 
 private:
@@ -38,10 +40,18 @@ private:
       // For DMD, CRT and segment displays
       string style;
       vec3 tint;
-      string glassPath;
+      vec4 glassPad;
+      vec3 glassTint;
       float glassRoughness;
+      string glassPath;
+      vec4 glassArea;
       vec3 glassAmbient;
-      float glassPadL, glassPadR, glassPadT, glassPadB;
+      // For segment displays
+      Renderer::SegmentFamily segFamilyHint;
+      int nElements;
+      std::vector<float> xOffsets;
+      // For DMD displays
+      int2 dmdSize;
       // Live data (not serialized)
       Texture* glass;
       int liveStyle;
@@ -55,6 +65,7 @@ private:
       // Live data
       unsigned int unmatchedVisuals;
       unsigned int matchedVisuals;
+      float unfittedPixels;
    };
 
    vector<Layout> m_layouts;

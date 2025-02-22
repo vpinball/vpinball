@@ -1322,7 +1322,6 @@
 #define IDC_DOT_SIZE                    936
 #define IDC_DOT_BRIGHTNESS              937
 #define IDC_DOT_SHARPNESS               938
-#define IDC_DOT_ROUNDING                939
 #define IDC_UNLIT_DOT_COLOR             940
 #define IDC_BACK_GLOW                   941
 #define IDC_GLASS_IMAGE                 942

@@ -1,67 +1,74 @@
 # Default layout for alphanumeric display with 4 x 7 digit score displays
+# Based on Gottlieb System 1/80/80A displays with a blue glass filter
 
-Width: 160
-Height: 40
+Width: 320
+Height: 80
 Fit: Contain
 
 Visuals:
 	- SegDisplay:
-		Rect: [5,0,70,10]
+		Rect: [0,-4,140,32]
 		Src: default://alpha?sub=0
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 		
 	- SegDisplay:
-		Rect: [85,0,70,10]
+		Rect: [180,-4,140,32]
 		Src: default://alpha?sub=1
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 		
 	- SegDisplay:
-		Rect: [5,15,70,10]
+		Rect: [0,24,140,32]
 		Src: default://alpha?sub=2
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 		
 	- SegDisplay:
-		Rect: [85,15,70,10]
+		Rect: [180,24,140,32]
 		Src: default://alpha?sub=3
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 
 	- SegDisplay:
-		Rect: [55,30,20,10]
+		Rect: [106,52,54,32]
 		Src: default://alpha?sub=4
+		XPos: [0, 22]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 
 	- SegDisplay:
-		Rect: [85,30,20,10]
+		Rect: [160,52,54,32]
 		Src: default://alpha?sub=5
+		XPos: [0, 22]
 		Style: VFD Blue
 		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
 			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
 			Ambient: [32,32,32]
-			Roughness: 0.15
 		
