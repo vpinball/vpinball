@@ -1,7 +1,7 @@
 #!/bin/bash
 
-WINE_SRC="/Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4"
-WINE_VPX="/Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine"
+WINE_SRC="/Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369"
+WINE_VPX="/Users/jmillard/vpinball/standalone/inc/wine"
 
 find $WINE_VPX -type f | while read i; do
   if [[ "$i" == *".DS_Store" ]]; then

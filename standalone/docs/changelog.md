@@ -4,6 +4,11 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
+* 02/22/24
+    * Bump Wine source to wine-41abefccebf2729a70be9ec7bdb1c6226a56e369 (10.2)
+    * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7068) vbscript: class single line multivar on a single line. (@sloper42/@francisdb)
+    * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7304) Add Join implementation (@jacek/@francisdb)
+
 * 02/12/24
     * Use toxie's fork of FreeImage
 

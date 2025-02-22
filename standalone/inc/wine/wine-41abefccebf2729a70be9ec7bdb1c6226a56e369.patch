@@ -1,5 +1,5 @@
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/include/winternl.h	2025-01-09 09:47:53
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/winternl.h	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/include/winternl.h	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/include/winternl.h	2025-02-22 13:35:27
 @@ -21,7 +21,16 @@
  #ifndef __WINE_WINTERNL_H
  #define __WINE_WINTERNL_H
@@ -17,8 +17,8 @@
  #include <windef.h>
  
  #ifdef __cplusplus
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/include/winnt.h	2025-01-09 09:47:53
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/winnt.h	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/include/winnt.h	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/include/winnt.h	2025-02-22 13:35:27
 @@ -401,10 +401,14 @@
  
  /* Compile time assertion */
@@ -56,8 +56,8 @@
  #endif
  
  #ifdef NONAMELESSUNION
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/include/windef.h	2025-01-09 09:47:53
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/include/windef.h	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/include/windef.h	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/include/windef.h	2025-02-22 13:35:27
 @@ -21,6 +21,11 @@
  #ifndef _WINDEF_
  #define _WINDEF_
@@ -110,8 +110,8 @@
  #ifdef __cplusplus
  }
  #endif
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/atl/atl.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/atl/atl.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/atl/atl.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/atl/atl.c	2025-02-22 13:35:27
 @@ -967,6 +967,7 @@
      return _ATL_VER;
  }
@@ -125,8 +125,8 @@
      return TRUE;
  }
 +#endif
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/kernelbase/locale.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/kernelbase/locale.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/kernelbase/locale.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/kernelbase/locale.c	2025-02-22 13:35:27
 @@ -595,6 +595,7 @@
  
  static const NLS_LOCALE_LCID_INDEX *find_lcid_entry( LCID lcid )
@@ -310,8 +310,8 @@
  }
  
  
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/scrrun/dictionary.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/dictionary.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/scrrun/dictionary.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/dictionary.c	2025-02-22 13:35:27
 @@ -188,10 +188,12 @@
      {
          return hash == pair->hash && numeric_key_eq(key, &pair->key);
@@ -373,8 +373,8 @@
 +#include "dictionary_proxy.c"
 +#endif
 \ No newline at end of file
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/scrrun/filesystem.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/filesystem.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/scrrun/filesystem.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/filesystem.c	2025-02-22 13:35:27
 @@ -349,6 +349,11 @@
      return get_typeinfo(ITextStream_tid, ppTInfo);
  }
@@ -387,7 +387,6 @@
  static HRESULT WINAPI textstream_GetIDsOfNames(ITextStream *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-\ No newline at end of file
 @@ -367,10 +372,17 @@
  
      return hr;
@@ -406,7 +405,6 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
 @@ -389,6 +401,7 @@
  
      return hr;
@@ -415,8 +413,7 @@
  
  static HRESULT WINAPI textstream_get_Line(ITextStream *iface, LONG *line)
  {
-\ No newline at end of file
-@@ -1044,6 +1057,11 @@
+@@ -1052,6 +1065,11 @@
      return get_typeinfo(IDrive_tid, ppTInfo);
  }
  
@@ -428,8 +425,7 @@
  static HRESULT WINAPI drive_GetIDsOfNames(IDrive *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-\ No newline at end of file
-@@ -1062,7 +1080,14 @@
+@@ -1070,7 +1088,14 @@
  
      return hr;
  }
@@ -444,8 +440,7 @@
  static HRESULT WINAPI drive_Invoke(IDrive *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-\ No newline at end of file
-@@ -1084,6 +1109,7 @@
+@@ -1092,6 +1117,7 @@
  
      return hr;
  }
@@ -453,8 +448,7 @@
  
  static HRESULT WINAPI drive_get_Path(IDrive *iface, BSTR *path)
  {
-\ No newline at end of file
-@@ -1877,8 +1903,13 @@
+@@ -1885,8 +1911,13 @@
      return get_typeinfo(IFolderCollection_tid, ppTInfo);
  }
  
@@ -468,8 +462,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -1895,7 +1926,14 @@
+@@ -1903,7 +1934,14 @@
  
      return hr;
  }
@@ -484,8 +477,7 @@
  static HRESULT WINAPI foldercoll_Invoke(IFolderCollection *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-\ No newline at end of file
-@@ -1917,6 +1955,7 @@
+@@ -1925,6 +1963,7 @@
  
      return hr;
  }
@@ -493,8 +485,7 @@
  
  static HRESULT WINAPI foldercoll_Add(IFolderCollection *iface, BSTR name, IFolder **folder)
  {
-\ No newline at end of file
-@@ -2269,6 +2308,11 @@
+@@ -2277,6 +2316,11 @@
      return get_typeinfo(IDriveCollection_tid, ppTInfo);
  }
  
@@ -506,8 +497,7 @@
  static HRESULT WINAPI drivecoll_GetIDsOfNames(IDriveCollection *iface, REFIID riid,
                                          LPOLESTR *rgszNames, UINT cNames,
                                          LCID lcid, DISPID *rgDispId)
-\ No newline at end of file
-@@ -2287,7 +2331,14 @@
+@@ -2295,7 +2339,14 @@
  
      return hr;
  }
@@ -522,8 +512,7 @@
  static HRESULT WINAPI drivecoll_Invoke(IDriveCollection *iface, DISPID dispIdMember,
                                        REFIID riid, LCID lcid, WORD wFlags,
                                        DISPPARAMS *pDispParams, VARIANT *pVarResult,
-\ No newline at end of file
-@@ -2309,6 +2360,7 @@
+@@ -2317,6 +2368,7 @@
  
      return hr;
  }
@@ -531,8 +520,7 @@
  
  static HRESULT WINAPI drivecoll_get_Item(IDriveCollection *iface, VARIANT key, IDrive **drive)
  {
-\ No newline at end of file
-@@ -2443,8 +2495,13 @@
+@@ -2451,8 +2503,13 @@
      return get_typeinfo(IFolder_tid, ppTInfo);
  }
  
@@ -546,8 +534,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -2461,10 +2518,17 @@
+@@ -2469,10 +2526,17 @@
  
      return hr;
  }
@@ -565,8 +552,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -2483,6 +2547,7 @@
+@@ -2491,6 +2555,7 @@
  
      return hr;
  }
@@ -574,8 +560,7 @@
  
  static HRESULT WINAPI folder_get_Path(IFolder *iface, BSTR *path)
  {
-\ No newline at end of file
-@@ -2820,7 +2885,11 @@
+@@ -2828,7 +2893,11 @@
      return get_typeinfo(IFile_tid, ppTInfo);
  }
  
@@ -587,8 +572,7 @@
          LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -2836,7 +2905,12 @@
+@@ -2844,7 +2913,12 @@
      }
      return hr;
  }
@@ -601,8 +585,7 @@
  static HRESULT WINAPI file_Invoke(IFile *iface, DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags,
          DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
-\ No newline at end of file
-@@ -2855,6 +2929,7 @@
+@@ -2863,6 +2937,7 @@
      }
      return hr;
  }
@@ -610,8 +593,7 @@
  
  static HRESULT WINAPI file_get_Path(IFile *iface, BSTR *path)
  {
-\ No newline at end of file
-@@ -3215,8 +3290,13 @@
+@@ -3223,8 +3298,13 @@
      return get_typeinfo(IFileSystem3_tid, ppTInfo);
  }
  
@@ -625,8 +607,7 @@
                                          LCID lcid, DISPID *rgDispId)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -3233,10 +3313,17 @@
+@@ -3241,10 +3321,17 @@
  
      return hr;
  }
@@ -644,8 +625,7 @@
                                        EXCEPINFO *pExcepInfo, UINT *puArgErr)
  {
      ITypeInfo *typeinfo;
-\ No newline at end of file
-@@ -3255,6 +3342,7 @@
+@@ -3263,6 +3350,7 @@
  
      return hr;
  }
@@ -653,8 +633,7 @@
  
  static HRESULT WINAPI filesys_get_Drives(IFileSystem3 *iface, IDriveCollection **ppdrives)
  {
-\ No newline at end of file
-@@ -4179,3 +4267,7 @@
+@@ -4187,3 +4275,7 @@
      init_classinfo(&CLSID_FileSystemObject, (IUnknown *)&filesystem.IFileSystem3_iface, &filesystem.classinfo);
      return IFileSystem3_QueryInterface(&filesystem.IFileSystem3_iface, riid, ppv);
  }
@@ -662,9 +641,8 @@
 +#ifdef __STANDALONE__
 +#include "filesystem_proxy.c"
 +#endif
-\ No newline at end of file
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/scrrun/scrrun.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/scrrun/scrrun.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/scrrun/scrrun.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/scrrun/scrrun.c	2025-02-22 13:35:27
 @@ -234,6 +234,7 @@
      classinfo->guid = guid;
  }
@@ -681,8 +659,8 @@
  
  /***********************************************************************
   *      DllGetClassObject (scrrun.@)
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/compile.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/compile.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/compile.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/compile.c	2025-02-22 13:35:27
 @@ -1074,7 +1074,9 @@
          break;
      case EXPR_CALL:
@@ -716,8 +694,8 @@
          }
      }
  
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/vbdisp.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbdisp.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/vbdisp.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbdisp.c	2025-02-22 13:35:27
 @@ -128,7 +128,11 @@
                  return DISP_E_MEMBERNOTFOUND; /* That's what tests show */
              }
@@ -1000,8 +978,8 @@
  }
  
  static HRESULT WINAPI DispatchEx_GetIDsOfNames(IDispatchEx *iface, REFIID riid,
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/vbscript.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/vbscript.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.c	2025-02-22 13:35:27
 @@ -91,7 +91,11 @@
          || This->state == SCRIPTSTATE_DISCONNECTED;
  }
@@ -1014,8 +992,8 @@
  {
      ScriptDisp *obj = ctx->script_obj;
      function_t *func_iter, **new_funcs;
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/interp.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/interp.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/interp.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/interp.c	2025-02-22 13:35:27
 @@ -629,6 +629,12 @@
              return variant_call(ctx, ref.u.v, arg_cnt, res);
  
@@ -1144,8 +1122,8 @@
          LIST_FOR_EACH_ENTRY(item, &ctx->script->named_items, named_item_t, entry) {
              if(!(item->flags & SCRIPTITEM_GLOBALMEMBERS)) continue;
              disp = item->disp;
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/vbscript.h	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript.h	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/vbscript.h	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript.h	2025-02-22 13:35:27
 @@ -32,6 +32,12 @@
  #include "vbscript_defs.h"
  
@@ -1172,8 +1150,8 @@
  void release_dynamic_var(dynamic_var_t*);
  named_item_t *lookup_named_item(script_ctx_t*,const WCHAR*,unsigned);
  void release_named_item(named_item_t*);
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/vbscript_main.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/vbscript_main.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/vbscript_main.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/vbscript_main.c	2025-02-22 13:35:27
 @@ -39,7 +39,115 @@
  BSTR get_vbscript_string(int id)
  {
@@ -1316,111 +1294,8 @@
      return CLASS_E_CLASSNOTAVAILABLE;
  }
 +#endif
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/parser.y	2025-01-09 19:54:41
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/parser.y	2025-01-09 20:23:27
-@@ -150,11 +150,11 @@
- %type <elseif> ElseIfs_opt ElseIfs ElseIf
- %type <class_decl> ClassDeclaration ClassBody
- %type <uint> Storage Storage_opt IntegerValue
--%type <dim_decl> DimDeclList DimDecl
-+%type <dim_decl> DimDeclList DimDecl MemberDeclList MemberDecl
- %type <dim_list> DimList
- %type <redim_decl> ReDimDeclList ReDimDecl
- %type <const_decl> ConstDecl ConstDeclList
--%type <string> Identifier
-+%type <string> Identifier MemberIdentifier
- %type <case_clausule> CaseClausules
- 
- %%
-@@ -178,9 +178,7 @@
-     : tPRIVATE tCONST ConstDeclList         { $$ = new_const_statement(ctx, @$, $3); CHECK_ERROR; }
-     | tPUBLIC  tCONST ConstDeclList         { $$ = new_const_statement(ctx, @$, $3); CHECK_ERROR; }
-     | tPRIVATE DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2); CHECK_ERROR; }
--    | tPUBLIC  DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2);
--                                              (void)parser_nerrs; /* avoid unused variable warning */
--                                              CHECK_ERROR; }
-+    | tPUBLIC  DimDeclList                  { $$ = new_dim_statement(ctx, @$, $2); CHECK_ERROR; }
- 
- ExpressionNl_opt
-     : /* empty */                           { $$ = NULL; }
-@@ -256,7 +254,16 @@
- Preserve_opt
-     : /* empty */                           { $$ = FALSE; }
-     | tPRESERVE                             { $$ = TRUE; }
-+
-+MemberDeclList
-+    : MemberDecl                            { $$ = $1; }
-+    | MemberDecl ',' MemberDeclList          { $1->next = $3; $$ = $1; }
- 
-+MemberDecl
-+    : MemberIdentifier                      { $$ = new_dim_decl(ctx, $1, FALSE, NULL); CHECK_ERROR; }
-+    | MemberIdentifier '(' DimList ')'            { $$ = new_dim_decl(ctx, $1, TRUE, $3); CHECK_ERROR; }
-+    | MemberIdentifier tEMPTYBRACKETS             { $$ = new_dim_decl(ctx, $1, TRUE, NULL); CHECK_ERROR; }
-+
- ReDimDecl
-     : tIdentifier '(' ArgumentList ')'      { $$ = new_redim_decl(ctx, $1, $3); CHECK_ERROR; }
- 
-@@ -458,13 +465,10 @@
-     : /* empty */                                 { $$ = new_class_decl(ctx); }
-     | FunctionDecl                                { $$ = add_class_function(ctx, new_class_decl(ctx), $1); CHECK_ERROR; }
-     | FunctionDecl StSep ClassBody                { $$ = add_class_function(ctx, $3, $1); CHECK_ERROR; }
--    /* FIXME: We should use DimDecl here to support arrays, but that conflicts with PropertyDecl. */
--    | Storage tIdentifier                         { dim_decl_t *dim_decl = new_dim_decl(ctx, $2, FALSE, NULL); CHECK_ERROR;
--                                                  $$ = add_dim_prop(ctx, new_class_decl(ctx), dim_decl, $1); CHECK_ERROR; }
--    | Storage tIdentifier StSep ClassBody         { dim_decl_t *dim_decl = new_dim_decl(ctx, $2, FALSE, NULL); CHECK_ERROR;
--                                                  $$ = add_dim_prop(ctx, $4, dim_decl, $1); CHECK_ERROR; }
--    | tDIM DimDecl                                { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, 0); CHECK_ERROR; }
--    | tDIM DimDecl StSep ClassBody                { $$ = add_dim_prop(ctx, $4, $2, 0); CHECK_ERROR; }
-+    | Storage MemberDeclList                      { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, $1); CHECK_ERROR; }
-+    | Storage MemberDeclList StSep ClassBody      { $$ = add_dim_prop(ctx, $4, $2, $1); CHECK_ERROR; }
-+    | tDIM DimDeclList                            { $$ = add_dim_prop(ctx, new_class_decl(ctx), $2, 0); CHECK_ERROR; }
-+    | tDIM DimDeclList StSep ClassBody            { $$ = add_dim_prop(ctx, $4, $2, 0); CHECK_ERROR; }
-     | PropertyDecl                                { $$ = add_class_function(ctx, new_class_decl(ctx), $1); CHECK_ERROR; }
-     | PropertyDecl StSep ClassBody                { $$ = add_class_function(ctx, $3, $1); CHECK_ERROR; }
- 
-@@ -514,11 +518,14 @@
- 
- /* these keywords may also be an identifier, depending on context */
- Identifier
-+    : MemberIdentifier { $$ = $1; }
-+    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
-+
-+MemberIdentifier
-     : tIdentifier    { $$ = $1; }
-     | tDEFAULT       { ctx->last_token = tIdentifier; $$ = $1; }
-     | tERROR         { ctx->last_token = tIdentifier; $$ = $1; }
-     | tEXPLICIT      { ctx->last_token = tIdentifier; $$ = $1; }
--    | tPROPERTY      { ctx->last_token = tIdentifier; $$ = $1; }
-     | tSTEP          { ctx->last_token = tIdentifier; $$ = $1; }
- 
- StSep_opt
-@@ -1135,14 +1142,22 @@
- 
- static class_decl_t *add_dim_prop(parser_ctx_t *ctx, class_decl_t *class_decl, dim_decl_t *dim_decl, unsigned storage_flags)
- {
-+    dim_decl_t *iter;
-+
-     if(storage_flags & STORAGE_IS_DEFAULT) {
-         FIXME("variant prop can't be default value\n");
-         ctx->hres = E_FAIL;
-         return NULL;
-     }
- 
--    dim_decl->is_public = !(storage_flags & STORAGE_IS_PRIVATE);
--    dim_decl->next = class_decl->props;
-+    iter = dim_decl;
-+    while(1) {
-+        iter->is_public = !(storage_flags & STORAGE_IS_PRIVATE);
-+        if (!iter->next) break;
-+        iter = iter->next;
-+    }
-+
-+    iter->next = class_decl->props;
-     class_decl->props = dim_decl;
-     return class_decl;
- }
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/vbscript/global.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/vbscript/global.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/vbscript/global.c	2025-02-22 08:55:03
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/vbscript/global.c	2025-02-22 13:35:27
 @@ -28,6 +28,11 @@
  
  #include "wine/debug.h"
@@ -1433,10 +1308,11 @@
  WINE_DEFAULT_DEBUG_CHANNEL(vbscript);
  
  #define VB_E_CANNOT_CREATE_OBJ 0x800a01ad
-@@ -37,6 +42,152 @@
+@@ -36,7 +41,153 @@
+ /* Defined as extern in urlmon.idl, but not exported by uuid.lib */
  const GUID GUID_CUSTOM_CONFIRMOBJECTSAFETY =
      {0x10200490,0xfa38,0x11d0,{0xac,0x0e,0x00,0xa0,0xc9,0xf,0xff,0xc0}};
- 
++
 +#ifdef __STANDALONE__
 +typedef struct {
 +    IDispatch IDispatch_iface;
@@ -1561,7 +1437,7 @@
 +    GetRef_GetIDsOfNames,
 +    GetRef_Invoke
 +};
-+
+ 
 +static HRESULT create_getref_dispatch(script_ctx_t *ctx, BSTR name, GetRefDisp **ret)
 +{
 +    GetRefDisp *disp;
@@ -1689,7 +1565,7 @@
  {
 +#ifndef __STANDALONE__
      FIXME("\n");
-+    return E_NOTIMPL;
+     return E_NOTIMPL;
 +#else
 +    SYSTEMTIME st1, st2;
 +    FILETIME ft1, ft2;
@@ -1728,14 +1604,14 @@
 +    else if (!wcsicmp(interval, L"w"))
 +        return E_NOTIMPL;
 +    else if (!wcsicmp(interval, L"ww"))
-     return E_NOTIMPL;
++        return E_NOTIMPL;
 +    else if (!wcsicmp(interval, L"h")) {
 +        ui1.LowPart = ft1.dwLowDateTime;
 +        ui1.HighPart = ft1.dwHighDateTime;
 +        ui2.LowPart = ft2.dwLowDateTime;
 +        ui2.HighPart = ft2.dwHighDateTime;
 +        diff = (ui2.QuadPart - ui1.QuadPart) / (10000LL * 1000 * 60 * 60);
- }
++    }
 +    else if (!wcsicmp(interval, L"n")) {
 +        ui1.LowPart = ft1.dwLowDateTime;
 +        ui1.HighPart = ft1.dwHighDateTime;
@@ -1752,14 +1628,14 @@
 +    }
 +    else
 +        return E_INVALIDARG;
- 
++
 +    V_VT(res) = VT_I4;
 +    V_I4(res) = (int)diff;
 +
 +    return S_OK;
 +#endif
-+}
-+
+ }
+ 
  static HRESULT Global_DatePart(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
  {
 +#ifndef __STANDALONE__
@@ -1813,122 +1689,7 @@
  }
  
  static HRESULT Global_TypeName(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
-@@ -2581,12 +2887,113 @@
-     return E_NOTIMPL;
- }
- 
--static HRESULT Global_Join(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
-+static HRESULT Global_Join(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
- {
-+#ifndef __STANDALONE__
-     FIXME("\n");
-     return E_NOTIMPL;
-+#else
-+    BSTR string, tmp, str, conv_str = NULL, delimiter = NULL;
-+    SAFEARRAY *sa;
-+    HRESULT hres;
-+    int i, delimiterlen, stringLen, strLen;
-+    LONG lbound, ubound;
-+
-+    switch(V_VT(args)) {
-+    case VT_VARIANT|VT_ARRAY:
-+        sa = V_ARRAY(args);
-+        break;
-+    case VT_VARIANT|VT_ARRAY|VT_BYREF:
-+        sa = *V_ARRAYREF(args);
-+        break;
-+    default:
-+        return E_NOTIMPL;
-+    }
-+
-+    if (SafeArrayGetDim(sa) != 1) {
-+        return E_NOTIMPL;
-+    }
-+
-+    hres = SafeArrayGetLBound(sa, 1, &lbound);
-+    if(FAILED(hres))
-+        return hres;
-+
-+    hres = SafeArrayGetUBound(sa, 1, &ubound);
-+    if(FAILED(hres))
-+        return hres;
-+
-+    VARIANT *data;
-+    hres = SafeArrayAccessData(sa, (void**)&data);
-+    if (FAILED(hres))
-+        return hres;
-+
-+    if (args_cnt == 2) {
-+        if(V_VT(args+1) != VT_BSTR) {
-+            hres = to_string(args+1, &delimiter);
-+            if(FAILED(hres)) {
-+                SafeArrayUnaccessData(sa);
-+                return hres;
-+            }
-+        }
-+        else
-+            delimiter = V_BSTR(args+1);
-+    }
-+    else
-+        delimiter = SysAllocString(L" ");
-+
-+    delimiterlen = SysStringLen(delimiter);
-+
-+    string = SysAllocString(L"");
-+
-+    for (i = lbound; i <= ubound; i++) {
-+        if(V_VT(&data[i]) != VT_BSTR) {
-+            hres = to_string(&data[i], &conv_str);
-+            if(FAILED(hres)) {
-+                SafeArrayUnaccessData(sa);
-+                SysFreeString(string);
-+
-+                if (args_cnt == 2)
-+                    if(V_VT(args+1) != VT_BSTR)
-+                        SysFreeString(delimiter);
-+
-+                return hres;
-+            }
-+            str = conv_str;
-+        }
-+        else
-+            str = V_BSTR(&data[i]);
-+
-+        if (i > lbound) {
-+            stringLen = SysStringLen(string);
-+            tmp = SysAllocStringLen(string,  stringLen + delimiterlen);
-+            memcpy(tmp + stringLen, delimiter, delimiterlen * sizeof(WCHAR));
-+            SysFreeString(string);
-+            string = tmp;
- }
- 
-+        stringLen = SysStringLen(string);
-+        strLen = SysStringLen(str);
-+        tmp = SysAllocStringLen(string, stringLen + strLen);
-+        memcpy(tmp + stringLen, str, strLen * sizeof(WCHAR));
-+        SysFreeString(string);
-+        string = tmp;
-+
-+        if (conv_str) {
-+            SysFreeString(conv_str);
-+            conv_str = NULL;
-+        }
-+    }
-+
-+    SafeArrayUnaccessData(sa);
-+
-+    if (args_cnt == 2)
-+        if(V_VT(args+1) != VT_BSTR)
-+            SysFreeString(delimiter);
-+
-+    return return_bstr(res, string);
-+#endif
-+}
-+
- static HRESULT Global_Split(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
- {
-     BSTR string, delimiter = NULL;
-@@ -2965,6 +3372,7 @@
+@@ -3075,6 +3381,7 @@
  
  static HRESULT Global_FormatNumber(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
  {
@@ -1936,7 +1697,7 @@
      union
      {
          struct
-@@ -2993,8 +3401,90 @@
+@@ -3103,8 +3410,90 @@
      if (FAILED(hres)) return hres;
  
      return return_bstr(res, str);
@@ -1958,9 +1719,9 @@
 +           hres = to_int(args+1, &decimal_places);
 +           if (FAILED(hres))
 +              return hres;
-+        }
+ }
 +    }
-+
+ 
 +    if (args_cnt > 2) {
 +        if (V_VT(args+2) != VT_ERROR) {
 +           hres = to_int(args+2, &inc_leading_zero);
@@ -1993,8 +1754,8 @@
 +        setlocale(LC_NUMERIC, "");
 +
 +        swprintf(format, ARRAY_SIZE(format), L"%%'.%df", decimal_places);
- }
- 
++    }
++
 +    WCHAR buf[128];
 +    swprintf(buf, ARRAY_SIZE(buf), format, number);
 +
@@ -2027,7 +1788,7 @@
  static HRESULT Global_FormatCurrency(BuiltinDisp *This, VARIANT *args, unsigned args_cnt, VARIANT *res)
  {
      union
-@@ -3213,26 +3703,145 @@
+@@ -3323,26 +3712,145 @@
  
  static HRESULT Global_Eval(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
  {
@@ -2173,8 +1934,8 @@
  }
  
  static HRESULT Global_Err(BuiltinDisp *This, VARIANT *arg, unsigned args_cnt, VARIANT *res)
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/oleaut32/oleaut.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/oleaut32/oleaut.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/oleaut32/oleaut.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/oleaut32/oleaut.c	2025-02-22 13:35:27
 @@ -282,9 +282,13 @@
  
      bstr = bstr_from_str(str);
@@ -2218,8 +1979,8 @@
  
  /***********************************************************************
   *		DllRegisterServer (OLEAUT32.@)
---- /Users/jmillard/vpx/wine-7af71662366406a899e1bca35f638a0fa245dec4/dlls/oleaut32/vartype.c	2025-01-09 09:47:52
-+++ /Users/jmillard/vpx-vpinball-standalone/standalone/inc/wine/dlls/oleaut32/vartype.c	2025-01-09 20:23:27
+--- /Users/jmillard/wine-41abefccebf2729a70be9ec7bdb1c6226a56e369/dlls/oleaut32/vartype.c	2025-02-22 08:55:02
++++ /Users/jmillard/vpinball/standalone/inc/wine/dlls/oleaut32/vartype.c	2025-02-22 13:35:27
 @@ -6540,15 +6540,21 @@
  static HRESULT VARIANT_BstrFromReal(DOUBLE dblIn, LCID lcid, ULONG dwFlags,
                                      BSTR* pbstrOut, int ndigits)

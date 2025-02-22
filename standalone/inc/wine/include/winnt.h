@@ -7093,13 +7093,16 @@ static FORCEINLINE void MemoryBarrier(void)
 #pragma intrinsic(__iso_volatile_load32)
 #pragma intrinsic(__iso_volatile_load64)
 #pragma intrinsic(__iso_volatile_store32)
+#pragma intrinsic(__iso_volatile_store64)
 #define __WINE_LOAD32_NO_FENCE(src) (__iso_volatile_load32(src))
 #define __WINE_LOAD64_NO_FENCE(src) (__iso_volatile_load64(src))
 #define __WINE_STORE32_NO_FENCE(dest, value) (__iso_volatile_store32(dest, value))
+#define __WINE_STORE64_NO_FENCE(dest, value) (__iso_volatile_store64(dest, value))
 #else  /* _MSC_VER >= 1700 */
 #define __WINE_LOAD32_NO_FENCE(src) (*(src))
 #define __WINE_LOAD64_NO_FENCE(src) (*(src))
 #define __WINE_STORE32_NO_FENCE(dest, value) ((void)(*(dest) = (value)))
+#define __WINE_STORE64_NO_FENCE(dest, value) ((void)(*(dest) = (value)))
 #endif  /* _MSC_VER >= 1700 */
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -7134,7 +7137,16 @@ static FORCEINLINE LONG ReadNoFence( LONG const volatile *src )
 
 static FORCEINLINE LONG64 ReadNoFence64( LONG64 const volatile *src )
 {
-    LONG64 value = __WINE_LOAD64_NO_FENCE( (__int64 const volatile *)src );
+    LONG64 value;
+#if defined(__i386__) && _MSC_VER < 1700
+    __asm {
+        mov   eax, src
+        fild  qword ptr [eax]
+        fistp value
+    }
+#else
+    value = __WINE_LOAD64_NO_FENCE( (__int64 const volatile *)src );
+#endif
     return value;
 }
 
@@ -7142,6 +7154,20 @@ static FORCEINLINE void WriteRelease( LONG volatile *dest, LONG value )
 {
     __wine_memory_barrier_acq_rel();
     __WINE_STORE32_NO_FENCE( (int volatile *)dest, value );
+}
+
+static FORCEINLINE void WriteRelease64( LONG64 volatile *dest, LONG64 value )
+{
+#if defined(__i386__) && _MSC_VER < 1700
+    __asm {
+        mov   eax, dest
+        fild  value
+        fistp qword ptr [eax]
+    }
+#else
+    __wine_memory_barrier_acq_rel();
+    __WINE_STORE64_NO_FENCE( (__int64 volatile *)dest, value );
+#endif
 }
 
 static FORCEINLINE void WriteNoFence( LONG volatile *dest, LONG value )
@@ -7299,10 +7325,10 @@ static FORCEINLINE void MemoryBarrier(void)
 
 #if defined(__x86_64__) || defined(__i386__)
 /* On x86, Support old GCC with either no or buggy (GCC BZ#81316) __atomic_* support */
-#define __WINE_ATOMIC_LOAD_ACQUIRE(ptr, ret) do { *(ret) = *(ptr); __asm__ __volatile__( "" ::: "memory" ); } while (0)
-#define __WINE_ATOMIC_LOAD_RELAXED(ptr, ret) do { *(ret) = *(ptr); } while (0)
-#define __WINE_ATOMIC_STORE_RELEASE(ptr, val) do { __asm__ __volatile__( "" ::: "memory" ); *(ptr) = *(val); } while (0)
-#define __WINE_ATOMIC_STORE_RELAXED(ptr, val) do { *(ptr) = *(val); } while (0)
+#define __WINE_ATOMIC_LOAD_ACQUIRE(ptr, ret) do { C_ASSERT(sizeof(*(ptr)) <= sizeof(void *)); *(ret) = *(ptr); __asm__ __volatile__( "" ::: "memory" ); } while (0)
+#define __WINE_ATOMIC_LOAD_RELAXED(ptr, ret) do { C_ASSERT(sizeof(*(ptr)) <= sizeof(void *)); *(ret) = *(ptr); } while (0)
+#define __WINE_ATOMIC_STORE_RELEASE(ptr, val) do { C_ASSERT(sizeof(*(ptr)) <= sizeof(void *)); __asm__ __volatile__( "" ::: "memory" ); *(ptr) = *(val); } while (0)
+#define __WINE_ATOMIC_STORE_RELAXED(ptr, val) do { C_ASSERT(sizeof(*(ptr)) <= sizeof(void *)); *(ptr) = *(val); } while (0)
 #else
 #define __WINE_ATOMIC_LOAD_ACQUIRE(ptr, ret) __atomic_load(ptr, ret, __ATOMIC_ACQUIRE)
 #define __WINE_ATOMIC_LOAD_RELAXED(ptr, ret) __atomic_load(ptr, ret, __ATOMIC_RELAXED)
@@ -7327,13 +7353,26 @@ static FORCEINLINE LONG ReadNoFence( LONG const volatile *src )
 static FORCEINLINE LONG64 ReadNoFence64( LONG64 const volatile *src )
 {
     LONG64 value;
+#ifdef __i386__
+    __asm__ __volatile__( "fildq %1\n\tfistpq %0" : "=m" (value) : "m" (*src) : "memory", "st" );
+#else
     __WINE_ATOMIC_LOAD_RELAXED( src, &value );
+#endif
     return value;
 }
 
 static FORCEINLINE void WriteRelease( LONG volatile *dest, LONG value )
 {
     __WINE_ATOMIC_STORE_RELEASE( dest, &value );
+}
+
+static FORCEINLINE void WriteRelease64( LONG64 volatile *dest, LONG64 value )
+{
+#ifdef __i386__
+    __asm__ __volatile__( "fildq %1\n\tfistpq %0" : "=m" (*dest) : "m" (value) : "memory", "st" );
+#else
+    __WINE_ATOMIC_STORE_RELEASE( dest, &value );
+#endif
 }
 
 static FORCEINLINE void WriteNoFence( LONG volatile *dest, LONG value )
