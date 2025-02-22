@@ -14,7 +14,6 @@
 #ifdef ENABLE_SDL_INPUT //!! test
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
-//#define ENABLE_SDL_GAMEPAD //!! test
 #endif
 
 #ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet
