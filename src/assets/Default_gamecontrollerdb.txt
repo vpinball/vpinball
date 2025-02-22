@@ -1,47 +1,79 @@
 # SDL Game Controller DB for common Visual Pinball joysticks
 
+# By default, all joysticks are handled as standard joysticks with numbered buttons (1 to N).
+# This is the recommended mode as it's simpler and supports more buttons.
+# In joystick mode, you can directly map buttons in VPX settings:
+# Example: JoyStartGameKey = 1 //will map First button to StartGameKey
+#
+# However, if you want to map your joystick as a gamepad with standardized buttons (A,B,X,Y...), 
+# uncomment the appropriate mapping line below or add your own using AntiMicro.
+# Popular gamepads like Xbox/PS4 controllers are automatically recognized without mapping.
+#
+# To create your own gamepad mapping:
+# 1. Download and install AntiMicro from: https://github.com/AntiMicro/antimicro/releases
+# 2. Run AntiMicro and select your controller
+# 3. Click 'Game Controller Mapping'
+# 4. Follow the wizard to map your buttons and axes
+# 5. Save the generated SDL mapping string below (remove the # at the start)
+#
+# Standard mappable buttons:
+# - a, b, x, y (face buttons)
+# - back, guide, start
+# - leftstick, rightstick (the stick buttons)
+# - leftshoulder, rightshoulder (bumpers)
+# - dpup, dpdown, dpleft, dpright (dpad)
+#
+# Standard mappable axes:
+# - leftx, lefty (left stick)
+# - rightx, righty (right stick)
+# - lefttrigger, righttrigger
+#
+# Note: In joystick mode, button numbers start at 0 but mapping values start at 1
+# (JoyStartGameKey=1 means button 0, JoyStartGameKey=2 means button 1, etc.)
+
+
 # Windows
-0300f020790000000600000000000000,Generic USB Joystick,a:b4,b:b1,y:b2,leftshoulder:b0,rightshoulder:b6,dpdown:b5,lefttrigger:b7,righttrigger:b8,platform:Windows,
+#0300f020790000000600000000000000,Generic USB Joystick,a:b4,b:b1,y:b2,leftshoulder:b0,rightshoulder:b6,dpdown:b5,lefttrigger:b7,righttrigger:b8,platform:Windows,
 
 # Mac OS
 #  Pinscape exclusive PID
-03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
 #  Pinscape emulating LedWiz
-03000000fafa0000f00000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f10000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f20000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f30000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f40000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f50000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f60000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f70000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f80000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000f90000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000fa0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000fb0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000fc0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000fd0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000fe0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
-03000000fafa0000ff0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f00000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f10000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f20000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f30000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f40000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f50000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f60000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f70000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f80000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000f90000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000fa0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000fb0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000fc0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000fd0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000fe0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
+#03000000fafa0000ff0000000a000000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Mac OS X,
 
 # Linux
-03000000790000000600000010010000,DragonRise Inc.   Generic   USB  Joystick,a:b4,b:b1,y:b2,leftshoulder:b0,rightshoulder:b6,dpdown:b5,platform:Linux,
+#03000000790000000600000010010000,DragonRise Inc.   Generic   USB  Joystick,a:b4,b:b1,y:b2,leftshoulder:b0,rightshoulder:b6,dpdown:b5,platform:Linux,
 #  Pinscape exclusive PID
-03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c8009120000eaea000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
 #  Pinscape emulating LedWiz
-03004c80fafa0000f000000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f100000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f200000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f300000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f400000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f500000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f600000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f700000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f800000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000f900000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000fa00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000fb00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000fc00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000fd00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000fe00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
-03004c80fafa0000ff00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f000000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f100000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f200000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f300000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f400000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f500000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f600000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f700000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f800000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000f900000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000fa00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000fb00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000fc00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000fd00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000fe00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,
+#03004c80fafa0000ff00000011010000,mjrnet Pinscape Controller,leftx:a0,lefty:a1~,righty:a2,platform:Linux,

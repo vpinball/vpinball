@@ -272,14 +272,10 @@ private:
 #endif
 
 #ifdef ENABLE_SDL_INPUT
-   #ifdef ENABLE_SDL_GAMEPAD
-      SDL_Gamepad* m_pSDLGamePad = nullptr;
-      void RefreshSDLGamepad();
-   #else
-      SDL_Joystick* m_pSDLJoystick = nullptr;
-      SDL_Haptic* m_pSDLRumbleDevice = nullptr;
-      void RefreshSDLJoystick();
-   #endif
+   SDL_Gamepad* m_pSDLGamePad = nullptr;
+   SDL_Joystick* m_pSDLJoystick = nullptr; 
+   SDL_Haptic* m_pSDLRumbleDevice = nullptr;
+   void RefreshSDLDevices();
 #endif
 
 #ifdef ENABLE_IGAMECONTROLLER
