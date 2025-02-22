@@ -263,7 +263,11 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor");
    char crzFolder[512];
    if (!altColorPath.empty())
+   #ifdef _WIN32
+      strcpy_s(crzFolder, altColorPath.c_str());
+   #else
       strcpy(crzFolder, altColorPath.c_str());
+   #endif
    else
       msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
    pSerum = Serum_Load(crzFolder, msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);

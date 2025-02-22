@@ -782,7 +782,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
 
-   m_scoreView.Select();
+   m_scoreView.Select(m_scoreviewOutput);
 
    // Open UI if requested (this also disables static prerendering, so must be done before performing it)
    if (playMode == 1)
@@ -2399,7 +2399,7 @@ void Player::OnSegChanged(const unsigned int msgId, void *userData, void *msgDat
 {
    reinterpret_cast<Player *>(userData)->m_defaultSegSelected = false;
    reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   reinterpret_cast<Player *>(userData)->m_scoreView.Select();
+   reinterpret_cast<Player *>(userData)->m_scoreView.Select(reinterpret_cast<Player *>(userData)->m_scoreviewOutput);
 }
 
 Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
@@ -2495,7 +2495,7 @@ void Player::OnDmdChanged(const unsigned int msgId, void* userData, void* msgDat
 {
    reinterpret_cast<Player*>(userData)->m_defaultDmdSelected = false;
    reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   reinterpret_cast<Player *>(userData)->m_scoreView.Select();
+   reinterpret_cast<Player *>(userData)->m_scoreView.Select(reinterpret_cast<Player *>(userData)->m_scoreviewOutput);
 }
 
 Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)

@@ -20,7 +20,7 @@
 #define STRING_TYPEID      13
 
 // Set to 1 to log all COM Invoke
-#define LOG_INVOKES 1
+#define LOG_INVOKES 0
 
 DynamicTypeLibrary::DynamicTypeLibrary()
 {

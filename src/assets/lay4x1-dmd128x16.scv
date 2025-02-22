@@ -1,16 +1,16 @@
-# Default layout for 128x32 DMD
+# Default layout for 128x16 DMD
 
 Width: 128
-Height: 32
+Height: 16
 Fit: Contain
 
 Visuals:
 	- DMD:
-		Rect: [0,0,128,32]
+		Rect: [0,0,128,16]
 		Style: Neon Plasma
-		Size: [128, 32]
+		Size: [128, 16]
 		Glass:
 			Roughness: 0.1
 			Image:     ./Glass-Dirty-1.webp
-			Area:      [0,0,1024,256]
+			Area:      [0,0,1024,128]
 			Ambient:   [0.4,0.4,0.4]

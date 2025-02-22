@@ -131,12 +131,11 @@ void Settings::Validate(const bool addDefaults)
       Validate(Section::DMD, prefix + "Legacy",        i == 1, addDefaults);
       Validate(Section::DMD, prefix + "ScaleFX",       false, addDefaults);
       Validate(Section::DMD, prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::DMD, prefix + "UnlitDotColor", 0x00202020, 0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::DMD, prefix + "DotBrightness", 5.0f,   0.001f, 100.f, addDefaults);
-      Validate(Section::DMD, prefix + "DotSize",       0.85f,  0.001f, 1.f, addDefaults);
-      Validate(Section::DMD, prefix + "DotSharpness",  0.80f,  0.f,    1.f, addDefaults);
-      Validate(Section::DMD, prefix + "DotRounding",   0.85f,  0.f,    1.f, addDefaults);
-      Validate(Section::DMD, prefix + "BackGlow",      0.005f, 0.f,    1.f, addDefaults);
+      Validate(Section::DMD, prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, addDefaults);
+      Validate(Section::DMD, prefix + "DotBrightness", 25.0f,  0.001f, 100.f, addDefaults);
+      Validate(Section::DMD, prefix + "DotSize",       (i == 2 || i == 6) ? 0.6f : 0.75f,  0.001f, 1.f, addDefaults); // WPC & GTS3 Neon Plasma: 0.6, Stern Red LED: 0.75
+      Validate(Section::DMD, prefix + "DotSharpness",  0.90f, 0.f,    1.f, addDefaults);
+      Validate(Section::DMD, prefix + "DiffuseGlow",   0.10f, 0.f,    10.f, addDefaults);
    }
 
    //////////////////////////////////////////////////////////////////////////
@@ -148,8 +147,10 @@ void Settings::Validate(const bool addDefaults)
       int color;
       switch (i)
       {
-      case 1: color = 0x002D52FF; break; // Neon plasma
-      case 2: color = 0x00FFEFBF; break; // VFD Blueish
+      //case 1: color = 0x002D52FF; break; // Neon plasma
+      case 1: color = 0x001E96FF; break; // Neon plasma
+      //case 2: color = 0x00FFEFBF; break; // VFD Blueish
+      case 2: color = 0x00FFEF3F; break; // VFD Blueish
       case 3: color = 0x00ECFF48; break; // VFD Greenish
       case 4: color = 0x001523FF; break; // Red Led
       case 5: color = 0x0023FF15; break; // Green Led
@@ -159,9 +160,9 @@ void Settings::Validate(const bool addDefaults)
       default: assert(false);
       }
       Validate(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::Alpha, prefix + "Unlit", 0x00202020, 0x00000000, 0x00FFFFFF, addDefaults);
-      Validate(Section::Alpha, prefix + "Brightness", 2.0f, 0.001f, 100.f, addDefaults);
-      Validate(Section::Alpha, prefix + "BackGlow", 0.050f, 0.f, 1.f, addDefaults);
+      Validate(Section::Alpha, prefix + "Unlit", 0x00404040, 0x00000000, 0x00FFFFFF, addDefaults);
+      Validate(Section::Alpha, prefix + "Brightness", 5.0f, 0.001f, 100.f, addDefaults);
+      Validate(Section::Alpha, prefix + "DiffuseGlow", 1.0f, 0.f, 10.f, addDefaults);
    }
 }
 

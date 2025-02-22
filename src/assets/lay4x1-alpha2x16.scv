@@ -1,0 +1,31 @@
+# Default layout for alphanumeric display with 2 x 16 digit score displays
+# Based on Williams early WPC: elements are every 18.5 units (relative to the base 24x32 used size)
+
+Width: 301.5
+Height: 75
+Fit: Contain
+
+Visuals:
+	- SegDisplay:
+		Rect: [0,6,310,32]
+		Src: default://alpha?sub=0
+		Type: Williams
+		Style: Neon Plasma
+		XPos: [0.00, 18.5, 37, 55.5, 74, 92.5, 111, 129.5, 148, 166.5, 185, 203.5, 222, 240.5, 259, 277.5]
+		Glass:
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,32,990,100]
+			Ambient:   [0.4,0.4,0.4]
+		
+	- SegDisplay:
+		Rect: [0,38,310,32]
+		Src: default://alpha?sub=1
+		Type: Williams
+		Style: Neon Plasma
+		XPos: [0.00, 18.5, 37, 55.5, 74, 92.5, 111, 129.5, 148, 166.5, 185, 203.5, 222, 240.5, 259, 277.5]
+		Glass:
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,132,990,100]
+			Ambient:   [0.4,0.4,0.4]

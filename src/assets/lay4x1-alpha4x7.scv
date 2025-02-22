@@ -1,46 +1,59 @@
 # Default layout for alphanumeric display with 4 x 7 digit score displays
+# Based on Gottlieb System 1/80/80A displays with a blue glass filter
 
-Width: 160
-Height: 40
+Width: 320
+Height: 80
 Fit: Contain
 
 Visuals:
 	- SegDisplay:
-		Rect: [5,5,70,10]
+		Rect: [0,0,140,32]
 		Src: default://alpha?sub=0
+		Type: Gottlieb
 		Style: VFD Blue
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
-			Roughness: 0.15
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,0,560,128]
+			Ambient:   [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [85,5,70,10]
+		Rect: [180,0,140,32]
 		Src: default://alpha?sub=1
+		Type: Gottlieb
 		Style: VFD Blue
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
-			Roughness: 0.15
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
+			Image:    ./Glass-Dirty-1.webp
+			Area:     [0,0,560,128]
+			Ambient:  [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [5,25,70,10]
+		Rect: [0,32,140,32]
 		Src: default://alpha?sub=2
+		Type: Gottlieb
 		Style: VFD Blue
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
-			Roughness: 0.15
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,0,560,128]
+			Ambient:   [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [85,25,70,10]
+		Rect: [180,32,140,32]
 		Src: default://alpha?sub=3
+		Type: Gottlieb
 		Style: VFD Blue
+		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
-			Image: ./Glass-Dirty-1.webp
-			Pad: [0,0,0,0]
-			Ambient: [32,32,32]
-			Roughness: 0.15
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.1
+			Image:     ./Glass-Dirty-1.webp
+			Area:      [0,0,560,128]
+			Ambient:   [0.125,0.125,0.125]

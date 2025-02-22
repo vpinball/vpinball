@@ -334,8 +334,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotBrightness"));
       m_dmdDotProperties[profile].x = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSize");
       m_dmdDotProperties[profile].y = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotSharpness");
-      m_dmdDotProperties[profile].z = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DotRounding");
-      m_dmdDotProperties[profile].w = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "BackGlow");
+      m_dmdDotProperties[profile].w = m_table->m_settings.LoadValueFloat(Settings::DMD, prefix + "DiffuseGlow");
       m_dmdUnlitDotColor[profile] = convertColor(m_table->m_settings.LoadValueUInt(Settings::DMD, prefix + "UnlitDotColor"), 1.f);
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_dmdDotColor[profile].x = InvsRGB(m_dmdDotColor[profile].x);
@@ -355,7 +354,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
          m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "Brightness"));
       m_segUnlitColor[profile] = convertColor(
          m_table->m_settings.LoadValueUInt(Settings::Alpha, prefix + "Unlit"),
-         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "BackGlow"));
+         m_table->m_settings.LoadValueFloat(Settings::Alpha, prefix + "DiffuseGlow"));
       // Convert color as settings are sRGB color while shader needs linear RGB color
       m_segColor[profile].x = InvsRGB(m_segColor[profile].x);
       m_segColor[profile].y = InvsRGB(m_segColor[profile].y);
@@ -418,9 +417,6 @@ Renderer::~Renderer()
    delete m_pOffscreenVRLeft;
    delete m_pOffscreenVRRight;
    ReleaseAORenderTargets();
-   for (int j = 0; j < 32; j++)
-      for (int i = 0; i < 2; i++)
-         delete m_dmdBlurs[j][i];
    delete m_renderDevice;
 }
 
@@ -1138,9 +1134,6 @@ void Renderer::RenderFrame()
    } */
    m_renderableToInit.clear();
 
-   // Reset DMD blur
-   m_dmdBlurSlot = 0;
-
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
    m_ballReflectedLights.clear();
@@ -1221,27 +1214,37 @@ Texture* LoadSegSDF(Texture& tex, const string& path)
       tex.LoadFromFile(path);
       if (tex.m_pdsBuffer == nullptr)
          return nullptr;
-      tex.m_pdsBuffer->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA
+      tex.m_pdsBuffer->m_format = BaseTexture::RGBA; // needed as the image is loaded as sRGBA while it contains linear SDF data
       tex.m_alphaTestValue = (float)(-1.0 / 255.0);
    }
    return &tex;
 }
 
-void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* const vertices,
-   Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
+void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
 {
    Texture* segSDF = nullptr;
    switch (type)
    {
-   case CTLPI_GETSEG_LAYOUT_7:    segSDF = LoadSegSDF(m_segDisplaySDF[0], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg.png"); break;
-   case CTLPI_GETSEG_LAYOUT_7C:   segSDF = LoadSegSDF(m_segDisplaySDF[1], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c.png"); break;
-   case CTLPI_GETSEG_LAYOUT_7D:   segSDF = LoadSegSDF(m_segDisplaySDF[2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-d.png"); break;
-   case CTLPI_GETSEG_LAYOUT_9:    segSDF = LoadSegSDF(m_segDisplaySDF[3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg.png"); break;
-   case CTLPI_GETSEG_LAYOUT_9C:   segSDF = LoadSegSDF(m_segDisplaySDF[4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14:   segSDF = LoadSegSDF(m_segDisplaySDF[5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14D:  segSDF = LoadSegSDF(m_segDisplaySDF[6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[7], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc.png"); break;
-   case CTLPI_GETSEG_LAYOUT_16:   segSDF = LoadSegSDF(m_segDisplaySDF[8], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_7: segSDF = LoadSegSDF(m_segDisplaySDF[family][0], 
+        (family == SegmentFamily::Gottlieb) ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-gts.png"
+      : (family == SegmentFamily::Bally)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-bally.png"
+      : (family == SegmentFamily::Atari)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-atari.png"
+                                            : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-williams.png"); break;
+   case CTLPI_GETSEG_LAYOUT_7C: segSDF = LoadSegSDF(m_segDisplaySDF[family][1],
+        (family == SegmentFamily::Bally)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-bally.png"
+      : (family == SegmentFamily::Atari)    ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-atari.png"
+                                            : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
+   // TODO I did not found any reference for a dot only 7 segments display, so we use the comma one which is likely wrong
+   case CTLPI_GETSEG_LAYOUT_7D: segSDF = LoadSegSDF(m_segDisplaySDF[family][2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
+   case CTLPI_GETSEG_LAYOUT_9: segSDF = LoadSegSDF(m_segDisplaySDF[family][3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
+   case CTLPI_GETSEG_LAYOUT_9C: segSDF = LoadSegSDF(m_segDisplaySDF[family][4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14D: segSDF = LoadSegSDF(m_segDisplaySDF[family][6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[family][7],
+        (family == SegmentFamily::Gottlieb) ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-gts.png"
+                                            : g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-williams.png"); break;
+   case CTLPI_GETSEG_LAYOUT_16: segSDF = LoadSegSDF(m_segDisplaySDF[family][8], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "16seg.png"); break;
    }
    if (segSDF == nullptr)
       return;
@@ -1250,20 +1253,102 @@ void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec
    const vec4 segColor = vec4(color.x * m_segColor[profile].x, color.y * m_segColor[profile].y, color.z * m_segColor[profile].z, 0.f);
    m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
       segColor.x * fullBrightness, segColor.y * fullBrightness, segColor.z * fullBrightness, // Lit segment color
-      m_segUnlitColor[profile].w * fullBrightness); // Back glow
-   m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, 
-      m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit color (ambient)
-      static_cast<float>(colorSpace)); // Output colorspace
-   m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
-      glass != nullptr ? 1.f : 0.f, // Apply glass
-      0.f, 0.f, 0.f); // Unused yet
+      m_segUnlitColor[profile].w); // Diffuse strength
+   m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha,
+      m_segUnlitColor[profile].x, m_segUnlitColor[profile].y, m_segUnlitColor[profile].z, // Unlit segment color (ambient)
+      static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
+   m_renderDevice->m_DMDShader->SetVector(SHADER_glassTint_Roughness,
+      glassTint.x, glassTint.y, glassTint.z, // Glass tint
+      glassRougness); // Glass roughness (high roughness leads to emitted light 'glowing' on glass)
+   m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height,
+      glassAmbient.x * 2.f, glassAmbient.y * 2.f, glassAmbient.z * 2.f, // Glass ambient color (only used when there is a glass texture)
+      glassTex != nullptr ? 1.f : 0.f); // Apply glass texture or just uniform glass shading
+   if (glassTex)
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glassTex);
    float parallaxU = 0.f, parallaxV = 0.f;
-   if (glass)
+   if (!isBackdrop && (vertices != nullptr))
+   { // (fake) depth by applying some parallax mapping
+      Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
+      Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
+      Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
+      Vertex2D u0(vertices[0].tu, vertices[0].tv);
+      Vertex2D u1(vertices[1].tu, vertices[1].tv);
+      Vertex2D u2(vertices[2].tu, vertices[2].tv);
+      Vertex3Ds dv1 = v1 - v0;
+      Vertex3Ds dv2 = v2 - v0;
+      Vertex2D duv1 = u1 - u0;
+      Vertex2D duv2 = u2 - u0;
+      float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
+      Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
+      Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
+      const Matrix3D& mv = GetMVP().GetModelView();
+      tangent = mv.MultiplyVectorNoTranslate(tangent);
+      bitangent = mv.MultiplyVectorNoTranslate(bitangent);
+      Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
+      eye = mv.MultiplyVectorNoPerspective(eye);
+      eye.Normalize();
+      float tN = tangent.Length();
+      float btN = bitangent.Length();
+      float depth = CMTOVPU(0.5f); // depth between glass and display
+      parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
+      parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
+   }
+   m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, &glassArea);
+   m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
+   m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<vec4*>(segs), 4);
+   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, true);
+   m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_Seg : SHADER_TECHNIQUE_display_Seg_world);
+}
+
+void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+   const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient)
+{
+   // Legacy DMD renderer
+   #ifdef ENABLE_BGFX
+   if (m_dmdUseNewRenderer[profile])
+   #else
+   if (true)
+   #endif
    {
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glass);
-      m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness,
-         glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass ambient color
-         glassRougness); // Glass roughness (more rough leads to more display light shattering)
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW ? 1.f : 0.f);
+      #ifdef DMD_UPSCALE
+         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)(dmd->width() * 3), (float)(dmd->height() * 3), alpha, (float)(g_pplayer->m_overall_frames % 2048));
+      #else
+         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
+      #endif
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
+      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
+      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
+   }
+   // New DMD renderer
+   else
+   {
+      const float fullBrightness = brightness * m_dmdDotColor[profile].w;
+      const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
+                                                             : vec4(color.x, color.y, color.z, 0.f);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
+         dotColor.x * fullBrightness, dotColor.y * fullBrightness, dotColor.z * fullBrightness, // Dot color (applied for luminance as well as sRGB frames)
+         m_dmdDotProperties[profile].w); // Diffuse strength
+      m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha,
+         m_dmdUnlitDotColor[profile].x, m_dmdUnlitDotColor[profile].y, m_dmdUnlitDotColor[profile].z, // Unlit dot color (ambient)
+         static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassTint_Roughness,
+         glassTint.x, glassTint.y, glassTint.z, // Glass tint
+         glassRougness); // Glass roughness (high roughness leads to emitted light 'glowing' on glass)
+      m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, 
+         static_cast<float>(dmd->width()), static_cast<float>(dmd->height()), // DMD size in dots
+         0.f, 0.f); // Unused
+      m_renderDevice->m_DMDShader->SetVector(SHADER_displayProperties,
+         dmd->m_format != BaseTexture::BW ? 1.f : 0.f, // luminance or (s)RGB frame source
+         0.5f * (1.0f + (1.0f / (2.0f /*N_SAMPLES*/ + 0.5f)) * m_dmdDotProperties[profile].x / 2.0f), // Internal SDF offset to obtain 0.5 at dot border, increasing inside, decreasing outside
+         0.5f + 0.5f * (0.025f /* Antialiasing */ + m_dmdDotProperties[profile].x * (1.0f - m_dmdDotProperties[profile].y) /* Dot border darkening */), // Dot internal SDF threshold
+         0.f); // Unused
+      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height,
+         glassAmbient.x * 2.f, glassAmbient.y * 2.f, glassAmbient.z * 2.f, // Glass ambient color (only used when there is a glass texture)
+         glassTex != nullptr ? 1.f : 0.f); // Apply glass texture or just uniform glass shading
+      if (glassTex)
+         m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glassTex);
+      float parallaxU = 0.f, parallaxV = 0.f;
       if (!isBackdrop && (vertices != nullptr))
       { // (fake) depth by applying some parallax mapping
          Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
@@ -1291,155 +1376,8 @@ void Renderer::SetupAlphaSegRender(int profile, const bool isBackdrop, const vec
          parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
          parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
       }
-   }
-   m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft - parallaxU, padRight + parallaxU, padTop - parallaxV, padBottom + parallaxV);
-   m_renderDevice->m_DMDShader->SetFloat4v(SHADER_alphaSegState, reinterpret_cast<vec4*>(segs), 4);
-   m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, segSDF, SF_BILINEAR);
-   m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_AlphaSeg : SHADER_TECHNIQUE_display_AlphaSeg_world);
-}
-
-void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
-      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom)
-{
-   // Legacy DMD renderer
-   #ifdef ENABLE_BGFX
-   if (m_dmdUseNewRenderer[profile])
-   #else
-   if (true)
-   #endif
-   {
-      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, color.x * brightness, color.y * brightness, color.z * brightness, dmd->m_format != BaseTexture::BW ? 1.f : 0.f);
-      #ifdef DMD_UPSCALE
-         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)(dmd->width() * 3), (float)(dmd->height() * 3), alpha, (float)(g_pplayer->m_overall_frames % 2048));
-      #else
-         m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, (float)dmd->width(), (float)dmd->height(), alpha, (float)(g_pplayer->m_overall_frames % 2048));
-      #endif
-      m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_basic_DMD : SHADER_TECHNIQUE_basic_DMD_world);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
-   }
-   // New DMD renderer
-   else
-   {
-      // Update gaussian blurs for glows
-      int slot = -1; 
-      for (unsigned int i = 0; i < m_dmdBlurSlot; i++)
-      {
-         if (m_dmdBlurred[i] == dmd)
-         {
-            slot = i;
-            break;
-         }
-      }
-      if (slot == -1)
-      {
-         slot = m_dmdBlurSlot;
-         if (m_dmdBlurSlot < 31)
-         {
-            m_dmdBlurred[slot] = dmd;
-            m_dmdBlurSlot++;
-         }
-         const int w2 = 2 * dmd->width(), h2 = 2 * dmd->height();
-         Sampler* dmdSampler = m_renderDevice->m_texMan.LoadTexture(dmd, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
-         if (m_dmdBlurs[slot][0] == nullptr || m_dmdBlurs[slot][0]->GetWidth() != w2 || m_dmdBlurs[slot][0]->GetHeight() != h2)
-         {
-            for (int i = 0; i < 2; i++)
-            {
-               delete m_dmdBlurs[slot][i];
-               m_dmdBlurs[slot][i] = new RenderTarget(m_renderDevice, SurfaceType::RT_DEFAULT, "DMDBlur" + std::to_string(i), w2, h2, colorFormat::RGBA8, false, 1, "");
-            }
-         }
-         RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
-         m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / w2), (float)(1.0 / h2), 1.0f, 1.0f);
-         { // Copy at center, to get some extra room for light bleeding in padding
-            m_renderDevice->SetRenderTarget("DMD Copy for Blur"s, m_dmdBlurs[slot][0], false);
-            m_renderDevice->Clear(clearType::TARGET, 0x00000000);
-            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, dmdSampler);
-            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_copy);
-            static constexpr Vertex3D_TexelOnly fixed_vertices[4] =
-            {
-               {  0.5f, -0.5f, 0.f, 1.f, 1.f },
-               { -0.5f, -0.5f, 0.f, 0.f, 1.f },
-               {  0.5f,  0.5f, 0.f, 1.f, 0.f },
-               { -0.5f,  0.5f, 0.f, 0.f, 0.f }
-            };
-            m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, fixed_vertices);
-         }
-         {
-            m_renderDevice->SetRenderTarget("DMD HBlur"s, m_dmdBlurs[slot][1], false);
-            m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
-            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][0]->GetColorSampler());
-            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_horiz13x13);
-            m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-         }
-         {
-            m_renderDevice->SetRenderTarget("DMD VBlur"s, m_dmdBlurs[slot][0], false);
-            m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][1]);
-            m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_dmdBlurs[slot][1]->GetColorSampler());
-            m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_blur_vert13x13);
-            m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
-         }
-         m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt, true);
-         initial_rt->m_name += '-';
-      }
-
-      // Render DMD
-      const float fullBrightness = brightness * m_dmdDotColor[profile].w;
-      const vec4 dotColor = dmd->m_format == BaseTexture::BW ? vec4(color.x * m_dmdDotColor[profile].x, color.y * m_dmdDotColor[profile].y, color.z * m_dmdDotColor[profile].z, 0.f)
-                                                             : vec4(color.x, color.y, color.z, 0.f);
-      m_renderDevice->m_DMDShader->SetVector(SHADER_vColor_Intensity, 
-         dotColor.x * fullBrightness, dotColor.y * fullBrightness, dotColor.z * fullBrightness, // Dot color (applied for luminance as well as sRGB frames)
-         m_dmdDotProperties[profile].w); // Back glow
-      m_renderDevice->m_DMDShader->SetVector(SHADER_staticColor_Alpha, 
-         m_dmdUnlitDotColor[profile].x, m_dmdUnlitDotColor[profile].y, m_dmdUnlitDotColor[profile].z, // Unlit color (ambient)
-         static_cast<float>(colorSpace)); // Output colorspace (3D render is linear, backdrop is tonemapped but needs sRGB conversion, dedicated window is tonemapped sRGB)
-      m_renderDevice->m_DMDShader->SetVector(SHADER_vRes_Alpha_time, 
-         static_cast<float>(dmd->width()), static_cast<float>(dmd->height()), // DMD size in dots
-         m_dmdDotProperties[profile].x / 2.0f, // Dot size (radius, so divided by 2)
-         m_dmdDotProperties[profile].z * m_dmdDotProperties[profile].x / 2.0f); // Dot rounding, scaled by dot radius
-      m_renderDevice->m_DMDShader->SetVector(SHADER_w_h_height, 
-         glass != nullptr ? 1.f : 0.f, // Apply glass
-         0.f, // Unused yet
-         -(0.025f /* Antialiasing */ + m_dmdDotProperties[profile].x * (1.0f - m_dmdDotProperties[profile].y) /* Dot border darkening */), // Dot internal SDF threshold
-         dmd->m_format != BaseTexture::BW ? 1.f : 0.f); // luminance or (s)RGB frame source
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_dmd, dmd);
-      float parallaxU = 0.f, parallaxV = 0.f;
-      if (glass)
-      {
-         m_renderDevice->m_DMDShader->SetTexture(SHADER_displayGlass, glass);
-         m_renderDevice->m_DMDShader->SetVector(SHADER_glassAmbient_Roughness,
-            glassAmbient.x, glassAmbient.y, glassAmbient.z, // Glass ambient color
-            glassRougness); // Glass roughness (more rough leads to more display light shattering)
-         if (!isBackdrop && (vertices != nullptr))
-         { // (fake) depth by applying some parallax mapping
-            Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
-            Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
-            Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
-            Vertex2D u0(vertices[0].tu, vertices[0].tv);
-            Vertex2D u1(vertices[1].tu, vertices[1].tv);
-            Vertex2D u2(vertices[2].tu, vertices[2].tv);
-            Vertex3Ds dv1 = v1 - v0;
-            Vertex3Ds dv2 = v2 - v0;
-            Vertex2D duv1 = u1 - u0;
-            Vertex2D duv2 = u2 - u0;
-            float r = 1.0f / (duv1.x * duv2.y - duv1.y * duv2.x);
-            Vertex3Ds tangent = (dv1 * duv2.y - dv2 * duv1.y) * r;
-            Vertex3Ds bitangent = (dv2 * duv1.x - dv1 * duv2.x) * r;
-            const Matrix3D& mv = GetMVP().GetModelView();
-            tangent = mv.MultiplyVectorNoTranslate(tangent);
-            bitangent = mv.MultiplyVectorNoTranslate(bitangent);
-            Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
-            eye = mv.MultiplyVectorNoPerspective(eye);
-            eye.Normalize();
-            float tN = tangent.Length();
-            float btN = bitangent.Length();
-            float depth = CMTOVPU(0.5f); // depth between glass and display
-            parallaxU = (depth / tN) * tangent.Dot(eye) / tN;
-            parallaxV = (depth / btN) * bitangent.Dot(eye) / btN;
-         }
-      }
-      m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, padLeft - parallaxU, padRight + parallaxU, padTop - parallaxV, padBottom + parallaxV);
-      m_renderDevice->AddRenderTargetDependency(m_dmdBlurs[slot][0]);
-      m_renderDevice->m_DMDShader->SetTexture(SHADER_dmdGlowTex, m_dmdBlurs[slot][0]->GetColorSampler());
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, &glassArea);
+      m_renderDevice->m_DMDShader->SetVector(SHADER_glassPad, emitterPad.x - parallaxU, emitterPad.z + parallaxU, emitterPad.y - parallaxV, emitterPad.w + parallaxV);
       m_renderDevice->m_DMDShader->SetTexture(SHADER_displayTex, dmd);
       m_renderDevice->m_DMDShader->SetTechnique(isBackdrop ? SHADER_TECHNIQUE_display_DMD : SHADER_TECHNIQUE_display_DMD_world);
    }
@@ -1550,6 +1488,7 @@ void Renderer::DrawSprite(const float posx, const float posy, const float width,
    m_renderDevice->m_DMDShader->SetTechnique(tex ? SHADER_TECHNIQUE_basic_noDMD : SHADER_TECHNIQUE_basic_noDMD_notex);
    if (tex)
       m_renderDevice->m_DMDShader->SetTexture(SHADER_tex_sprite, tex);
+   m_renderDevice->m_DMDShader->SetVector(SHADER_glassArea, 0.f, 0.f, 1.f, 1.f);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
    m_renderDevice->DrawTexturedQuad(m_renderDevice->m_DMDShader, vertices);
    m_renderDevice->GetCurrentPass()->m_commands.back()->SetTransparent(true);

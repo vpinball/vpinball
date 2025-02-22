@@ -21,6 +21,7 @@ $output v_texcoord0, v_texcoord1
 	#endif
 #endif
 
+uniform vec4 glassArea;
 uniform vec4 glassPad;
 #define glassPadLeft (glassPad.x)
 #define glassPadRight (glassPad.y)
@@ -30,8 +31,8 @@ uniform vec4 glassPad;
 void main()
 {
 	vec4 pos = vec4(a_position, 1.0);
-	v_texcoord0 = a_texcoord0; // Glass
-	v_texcoord1 = a_texcoord0 * vec2(1.0 + glassPadLeft + glassPadRight, 1.0 + glassPadTop + glassPadBottom) - vec2(glassPadLeft, glassPadTop); // Dmd
+	v_texcoord0 = glassArea.xy + a_texcoord0 * glassArea.zw; // Glass
+	v_texcoord1 = a_texcoord0 * vec2(1.0 + glassPadLeft + glassPadRight, 1.0 + glassPadTop + glassPadBottom) - vec2(glassPadLeft, glassPadTop); // Display
 	#ifdef STEREO
 		gl_Layer = gl_InstanceID;
 	#endif

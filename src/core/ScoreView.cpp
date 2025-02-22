@@ -72,29 +72,32 @@ void ScoreView::Parse(const string& path, std::istream& f)
    layout.path = path;
    layout.width = 1920.f;
    layout.height = 1080.f;
+   layout.fit == ScoreView::Contain;
    std::string line;
    size_t indentSize = 0;
    unsigned int lineIndex = 0;
    size_t expectedIndent = 0;
    float fValue;
    Visual* visual = nullptr;
-   const auto parseArray = [](const string& value, int size) -> vector<float>
+   const auto parseArray = [](const string& value) -> vector<float>
    {
-      vector<float> array(size);
-      array.resize(size);
+      vector<float> array;
       size_t pos1 = value.find('[');
       if (pos1 == string::npos)
          return vector<float>();
-      for (int i = 0; i < size; i++)
+      while (true)
       {
-         size_t pos2 = value.find(i == size -1 ? ']' : ',', pos1 + 1);
-         if (pos2 == string::npos)
+         size_t pos2 = value.find_first_of("],\n", pos1 + 1);
+         if ((pos2 == string::npos) || (value[pos2] == '\n'))
             return vector<float>();
-         if (!try_parse_float(value.substr(pos1 + 1, pos2 - pos1 - 1), array[i]))
+         float v;
+         if (!try_parse_float(value.substr(pos1 + 1, pos2 - pos1 - 1), v))
             return vector<float>();
+         array.push_back(v);
+         if (value[pos2] == ']')
+            return array;
          pos1 = pos2;
       }
-      return array;
    };
    while (std::getline(f, line))
    {
@@ -118,7 +121,8 @@ void ScoreView::Parse(const string& path, std::istream& f)
       }
       if (indent < expectedIndent)
       {
-         // visual = nullptr;
+         if (indent <= 1)
+            visual = nullptr;
          expectedIndent = indent;
       }
       if (line[afterIndent] == '#')
@@ -148,6 +152,17 @@ void ScoreView::Parse(const string& path, std::istream& f)
          CHECK_FIELD((indent == 0) && try_parse_float(value, fValue) && (fValue >= 1.f));
          layout.height = fValue;
       }
+      else if (key == "Fit")
+      {
+         CHECK_FIELD(indent == 0);
+         if (value == "Contain")
+            layout.fit == ScoreView::Contain;
+         else
+         {
+            // Unsupported fit mode
+            CHECK_FIELD(false);
+         }
+      }
       if (key == "Visuals")
       {
          CHECK_FIELD(indent == 0);
@@ -157,44 +172,64 @@ void ScoreView::Parse(const string& path, std::istream& f)
       {
          CHECK_FIELD(indent == 1);
          expectedIndent = indent + 1;
-         layout.visuals.resize(layout.visuals.size() + 1);
+         layout.visuals.push_back({VisualType::DMD});
          visual = &layout.visuals.back();
-         visual->type = VisualType::DMD;
          visual->srcUri = "default://dmd";
          visual->liveStyle = 1; // Default to Neon Plasma
          visual->tint = vec3(1.f, 1.f, 1.f);
+         visual->glassTint = vec3(1.f, 1.f, 1.f);
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
+         visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->dmdSize = int2(-1, -1);
       }
       else if (key == "- SegDisplay")
       {
          CHECK_FIELD(indent == 1);
          expectedIndent = indent + 1;
-         layout.visuals.resize(layout.visuals.size() + 1);
+         layout.visuals.push_back({VisualType::SegDisplay});
          visual = &layout.visuals.back();
-         visual->type = VisualType::SegDisplay;
          visual->srcUri = "";
          visual->liveStyle = 1;
          visual->tint = vec3(1.f, 1.f, 1.f);
+         visual->glassTint = vec3(1.f, 1.f, 1.f);
          visual->glassAmbient = vec3(1.f, 1.f, 1.f);
+         visual->glassPad = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->glassArea = vec4(0.f, 0.f, 0.f, 0.f);
+         visual->nElements = -1;
+         visual->segFamilyHint = Renderer::Generic;
       }
       else if (key == "- Image")
       {
          CHECK_FIELD(indent == 1);
          expectedIndent = indent + 1;
-         layout.visuals.resize(layout.visuals.size() + 1);
+         layout.visuals.push_back({VisualType::Image});
          visual = &layout.visuals.back();
-         visual->type = VisualType::Image;
+         // Not yet supported
+         CHECK_FIELD(false);
       }
       else if (key == "Rect")
       {
          CHECK_FIELD((indent == 2) && (visual != nullptr));
-         auto rect = parseArray(value, 4);
+         auto rect = parseArray(value);
          CHECK_FIELD(rect.size() == 4);
          visual->x = rect[0];
          visual->y = rect[1];
          visual->w = rect[2];
          visual->h = rect[3];
          visual->y = layout.height - visual->y - visual->h;
+      }
+      else if (key == "Pad")
+      {
+         CHECK_FIELD((indent == 2) && (visual != nullptr)); // Display pad inside rect
+         auto rect = parseArray(value);
+         CHECK_FIELD(rect.size() == 4);
+         visual->glassPad.x = clamp(rect[0] / layout.height, 0.f, 1.f);
+         visual->glassPad.y = clamp(rect[1] / layout.width, 0.f, 1.f);
+         visual->glassPad.z = clamp(rect[2] / layout.height, 0.f, 1.f);
+         visual->glassPad.w = clamp(rect[3] / layout.width, 0.f, 1.f);
+         // Not yet supported
+         CHECK_FIELD((visual->glassPad.x == 0.f) && (visual->glassPad.y == 0.f) && (visual->glassPad.z == 0.f) && (visual->glassPad.w == 0.f));
       }
       else if (key == "Style")
       {
@@ -213,6 +248,11 @@ void ScoreView::Parse(const string& path, std::istream& f)
                visual->liveStyle = 5;
             else if (value == "Generic LED")
                visual->liveStyle = 6;
+            else
+            {
+               // Invalid style
+               CHECK_FIELD(false);
+            }
          }
          else if (visual->type == VisualType::SegDisplay)
          {
@@ -232,6 +272,11 @@ void ScoreView::Parse(const string& path, std::istream& f)
                visual->liveStyle = 6;
             else if (value == "Generic LED")
                visual->liveStyle = 7;
+            else
+            {
+               // Invalid style
+               CHECK_FIELD(false);
+            }
          }
       }
       else if (key == "Src")
@@ -239,49 +284,119 @@ void ScoreView::Parse(const string& path, std::istream& f)
          CHECK_FIELD((indent == 2) && (visual != nullptr));
          visual->srcUri = value;
       }
+      else if (key == "Size")
+      {
+         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::DMD)); // DMD size
+         const auto size = parseArray(value);
+         CHECK_FIELD(size.size() == 2);
+         visual->dmdSize.x = static_cast<int>(size[0]);
+         visual->dmdSize.y = static_cast<int>(size[1]);
+      }
+      else if (key == "Type")
+      {
+         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display hardware family hint
+         if (value == "Atari")
+            visual->segFamilyHint = Renderer::Atari;
+         else if (value == "Bally")
+            visual->segFamilyHint = Renderer::Bally;
+         else if (value == "Gottlieb")
+            visual->segFamilyHint = Renderer::Gottlieb;
+         else if (value == "Williams")
+            visual->segFamilyHint = Renderer::Williams;
+         else
+         {
+            // Invalid segment family hint
+            CHECK_FIELD(false);
+         }
+      }
+      else if (key == "XPos")
+      {
+         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay)); // Seg display sub element offsets
+         visual->xOffsets = parseArray(value);
+         CHECK_FIELD(!visual->xOffsets.empty() && (visual->nElements == -1 || visual->xOffsets.size() == visual->nElements));
+      }
+      else if (key == "NElements")
+      {
+         CHECK_FIELD((indent == 2) && (visual != nullptr) && (visual->type == VisualType::SegDisplay) && try_parse_int(value, visual->nElements)); // Number of seg display elements
+         CHECK_FIELD(visual->xOffsets.empty() || visual->xOffsets.size() == visual->nElements);
+      }
       else if (key == "Glass")
       {
          CHECK_FIELD((indent == 2) && (visual != nullptr));
          expectedIndent = 3;
          visual->style = value;
       }
-      else if (key == "Pad")
+      else if (key == "Tint")
       {
-         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass pad
-         auto rect = parseArray(value, 4);
-         CHECK_FIELD(rect.size() == 4);
-         visual->glassPadT = clamp(rect[0] / layout.height, 0.f, 1.f);
-         visual->glassPadL = clamp(rect[1] / layout.width, 0.f, 1.f);
-         visual->glassPadB = clamp(rect[2] / layout.height, 0.f, 1.f);
-         visual->glassPadR = clamp(rect[3] / layout.width, 0.f, 1.f);
-      }
-      else if (key == "Image")
-      {
-         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image
-         visual->glassPath = value;
-      }
-      else if (key == "Ambient")
-      {
-         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass ambient
-         auto rect = parseArray(value, 3);
-         CHECK_FIELD(rect.size() == 3)
-         visual->glassAmbient.x = rect[0] / 255.f;
-         visual->glassAmbient.y = rect[1] / 255.f;
-         visual->glassAmbient.z = rect[2] / 255.f;
+         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass tint
+         auto tint = parseArray(value);
+         CHECK_FIELD(tint.size() == 3);
+         visual->glassTint.x = tint[0];
+         visual->glassTint.y = tint[1];
+         visual->glassTint.z = tint[2];
       }
       else if (key == "Roughness")
       {
          CHECK_FIELD((indent == 3) && (visual != nullptr) && try_parse_float(value, fValue)); // Glass roughness
          visual->glassRoughness = fValue;
       }
+      else if (key == "Image")
+      {
+         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image path
+         visual->glassPath = value;
+      }
+      else if (key == "Area")
+      {
+         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image area
+         auto rect = parseArray(value);
+         CHECK_FIELD(rect.size() == 4);
+         visual->glassArea.x = rect[0];
+         visual->glassArea.y = rect[1];
+         visual->glassArea.z = rect[2];
+         visual->glassArea.w = rect[3];
+      }
+      else if (key == "Ambient")
+      {
+         CHECK_FIELD((indent == 3) && (visual != nullptr)); // Glass image ambient
+         auto rect = parseArray(value);
+         CHECK_FIELD(rect.size() == 3)
+         visual->glassAmbient.x = InvsRGB(rect[0]);
+         visual->glassAmbient.y = InvsRGB(rect[1]);
+         visual->glassAmbient.z = InvsRGB(rect[2]);
+      }
       //PLOGD << indent << ": " << key << " => " << value;
+   }
+   for (auto& visual : layout.visuals)
+   {
+      switch (visual.type)
+      {
+      case VisualType::DMD:
+         if (visual.dmdSize.x < 0 || visual.dmdSize.y < 0)
+         {
+            PLOGE << "DMD display need Size to be defined in ScoreView file " << path;
+            return;
+         }
+         break;
+      case VisualType::SegDisplay:
+         if (visual.nElements == -1)
+            visual.nElements = visual.xOffsets.size();
+         if (visual.nElements == 0)
+         {
+            PLOGE << "Segment display need at least of one XPos/NElements to be defined in ScoreView file " << path;                                                                      \
+            return;
+         }
+         if (visual.xOffsets.empty())
+            for (int i = 0; i < visual.nElements; i++)
+               visual.xOffsets.push_back(visual.w * static_cast<float>(i) / static_cast<float>(visual.nElements));
+         break;
+      }
    }
    // TODO avoid duplicates
    m_layouts.push_back(layout);
    #undef CHECK_FIELD
 }
 
-void ScoreView::Select()
+void ScoreView::Select(const VPX::RenderOutput& output)
 {
    m_bestLayout = nullptr;
    Player* player = g_pplayer;
@@ -290,9 +405,30 @@ void ScoreView::Select()
    if (m_layouts.empty())
       return;
 
+   // Evaluate output aspect ratio
+   int scoreW, scoreH;
+   switch (output.GetMode())
+   {
+   case VPX::RenderOutput::OM_WINDOW:
+      scoreW = output.GetWindow()->GetBackBuffer()->GetWidth();
+      scoreH = output.GetWindow()->GetBackBuffer()->GetHeight();
+      break;
+   case VPX::RenderOutput::OM_EMBEDDED:
+      scoreW = output.GetEmbeddedWindow()->GetWidth();
+      scoreH = output.GetEmbeddedWindow()->GetHeight();
+      break;
+   default:
+      return;
+   }
+   const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
+
    // Evaluate layouts against current context
+   ResURIResolver::SegDisplay segDisplay;
+   BaseTexture* dmdFrame;
    for (auto& layout : m_layouts)
    {
+      const float layoutAR = static_cast<float>(layout.width) / static_cast<float>(layout.height);
+      layout.unfittedPixels = (rtAR > layoutAR) ? (layoutAR / rtAR) : (rtAR / layoutAR);
       layout.matchedVisuals = 0;
       layout.unmatchedVisuals = 0;
       for (auto& visual : layout.visuals)
@@ -300,13 +436,15 @@ void ScoreView::Select()
          switch (visual.type)
          {
          case VisualType::DMD:
-            if (player->m_resURIResolver.GetDisplay(visual.srcUri, nullptr) == nullptr)
+            dmdFrame = player->m_resURIResolver.GetDisplay(visual.srcUri, nullptr);
+            if ((dmdFrame == nullptr) || (dmdFrame->width() * visual.dmdSize.y != visual.dmdSize.x * dmdFrame->height()))
                layout.unmatchedVisuals++;
             else
                layout.matchedVisuals++;
             break;
          case VisualType::SegDisplay:
-            if (player->m_resURIResolver.GetSegDisplay(visual.srcUri, nullptr).frame == nullptr)
+            segDisplay = player->m_resURIResolver.GetSegDisplay(visual.srcUri, nullptr);
+            if ((segDisplay.frame == nullptr) || (segDisplay.displays.size() != visual.nElements))
                layout.unmatchedVisuals++;
             else
                layout.matchedVisuals++;
@@ -320,17 +458,17 @@ void ScoreView::Select()
    // Select the best matching layout:
    // - without missing visual sources
    // - with a maximum of satisfied visuals
-   // - with displays size matching visuals (16 alphanum vs 20 alphanum, ...)
+   // - with displays size matching visuals (16 alphanum vs 20 alphanum, 128x32,...)
    // - with the best matching layout aspect ratio
    m_bestLayout = &*std::max_element(m_layouts.begin(), m_layouts.end(),
       [](const Layout& a, const Layout& b) -> bool
       {
-         if (a.unmatchedVisuals != b.unmatchedVisuals)
+         if (a.unmatchedVisuals != b.unmatchedVisuals) // The least unmatched visuals
             return a.unmatchedVisuals > b.unmatchedVisuals;
-         if (a.matchedVisuals != b.matchedVisuals)
+         if (a.matchedVisuals != b.matchedVisuals) // The maximum mactched visual
             return a.matchedVisuals < b.matchedVisuals;
-         // TODO implement display count matching
-         // TODO implement aspect ratio matching
+         if (a.unfittedPixels != b.unfittedPixels) // The one fitting the output better
+            return a.unfittedPixels < b.unfittedPixels;
          return false;
       });
 }
@@ -405,6 +543,17 @@ void ScoreView::Render(const VPX::RenderOutput& output)
    const float sx = pw / m_bestLayout->width;
    const float sy = ph / m_bestLayout->height;
 
+   renderer->m_renderDevice->SetRenderTarget("ScoreView"s, scoreRT, true, true);
+   if (scoreRT != sceneRT)
+   {
+      renderer->m_renderDevice->AddRenderTargetDependency(sceneRT, false);
+      renderer->m_renderDevice->Clear(clearType::TARGET, 0);
+   }
+   else
+   {
+      // FIXME clear rect
+   }
+
    for (auto& visual : m_bestLayout->visuals)
    {
       switch (visual.type)
@@ -420,11 +569,18 @@ void ScoreView::Render(const VPX::RenderOutput& output)
          renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         renderer->m_renderDevice->SetRenderTarget("DMDView"s, scoreRT, true, true);
-         if (scoreRT != sceneRT)
-            renderer->m_renderDevice->AddRenderTargetDependency(sceneRT, false);
+         vec4 glassArea;
+         if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
+            glassArea = vec4(0.f, 0.f, 1.f, 1.f);
+         else
+         {
+            glassArea.x = visual.glassArea.x / visual.glass->m_width;
+            glassArea.y = visual.glassArea.y / visual.glass->m_height;
+            glassArea.z = visual.glassArea.z / visual.glass->m_width;
+            glassArea.w = visual.glassArea.w / visual.glass->m_height;
+         }
          renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, frame, 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr,
-            visual.glass, visual.glassAmbient, visual.glassRoughness, visual.glassPadL, visual.glassPadR, visual.glassPadT, visual.glassPadB);
+            visual.glassPad, visual.glassTint, visual.glassRoughness, visual.glass, glassArea, visual.glassAmbient);
          const float vx1 = px  + visual.x * sx;
          const float vy1 = py  + visual.y * sy;
          const float vx2 = vx1 + visual.w * sx;
@@ -441,31 +597,51 @@ void ScoreView::Render(const VPX::RenderOutput& output)
       case VisualType::SegDisplay:
       {
          ResURIResolver::SegDisplay frame = player->m_resURIResolver.GetSegDisplay(visual.srcUri, nullptr);
-         if (frame.frame == nullptr)
+         if ((frame.frame == nullptr) || (frame.displays.size() != visual.nElements))
             continue;
          LoadGlass(visual);
          renderer->m_renderDevice->ResetRenderState();
-         renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+         renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
+         renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+         renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
+         // We use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
+         renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
          renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-         renderer->m_renderDevice->SetRenderTarget("DMDView"s, scoreRT, true, true);
-         if (scoreRT != sceneRT)
-            renderer->m_renderDevice->AddRenderTargetDependency(sceneRT, false);
-         float div = 1.f / frame.displays.size();
+         // FIXME use hardware segment style
+         vec4 glassArea;
+         if (visual.glass == nullptr || visual.glassArea.z == 0.f || visual.glassArea.w == 0.f)
+            glassArea = vec4(0.f, 0.f, 1.f, 1.f);
+         else
+         {
+            glassArea.x = visual.glassArea.x / visual.glass->m_width;
+            glassArea.y = visual.glassArea.y / visual.glass->m_height;
+            glassArea.z = visual.glassArea.z / visual.glass->m_width;
+            glassArea.w = visual.glassArea.w / visual.glass->m_height;
+         }
+         const float elementWidth = (visual.h * 24.f / 32.f); // Each segmenet element SDF is 24x32, fitted on visual height
+         const float elementXPad = (visual.h * 4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
+         const float hGlassScale = glassArea.z / visual.w;
+         vec4 segGlassArea = glassArea;
+         segGlassArea.z = elementWidth * hGlassScale;
+         const float vy1 = py + sy * visual.y;
+         const float vy2 = vy1 + sy * visual.h;
+         Vertex3D_NoTex2 vertices[4] = { 
+            { 1.f, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f },
+            { 0.f, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
+            { 1.f, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
+            { 0.f, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
          for (int i = 0; i < frame.displays.size(); i++)
          {
-            renderer->SetupAlphaSegRender(visual.liveStyle, true, visual.tint, 1.0f, frame.displays[i], &frame.frame[i * 16], 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr, 
-               visual.glass, visual.glassAmbient, visual.glassRoughness, visual.glassPadL, visual.glassPadR, visual.glassPadT, visual.glassPadB);
-            const float vx1 = px + visual.x * sx + i * visual.w * div * sx;
-            const float vy1 = py + visual.y * sy;
-            const float vx2 = vx1 + visual.w * div * sx;
-            const float vy2 = vy1 + visual.h * sy;
-            const Vertex3D_NoTex2 vertices[4] = { 
-               { vx2, vy1, 0.f, 0.f, 0.f, 1.f, 1.f, 1.f }, 
-               { vx1, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f }, 
-               { vx2, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
-               { vx1, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
+            segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
+            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, frame.displays[i], &frame.frame[i * 16], 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr, 
+               visual.glassPad, visual.glassTint, visual.glassRoughness,
+               visual.glass, segGlassArea, visual.glassAmbient);
+            const float vx1 = px + sx * (visual.x + visual.xOffsets[i]);
+            const float vx2 = vx1 + sx * visual.h * 24.f / 32.f;
+            vertices[0].x = vertices[2].x = vx2;
+            vertices[1].x = vertices[3].x = vx1;
             renderer->m_renderDevice->DrawTexturedQuad(renderer->m_renderDevice->m_DMDShader, vertices);
          }
          break;

@@ -1,5 +1,21 @@
 // license:GPLv3+
 
+// 
+// Shader for DMD, CRT and segment displays
+//
+// They all follow the same model: an emitting surface with a glass above it.
+// The difference between them is how the emitter is modeled.
+//
+// The shading is evaluated at the glass level which is defined by a tint and 
+// a roughness (no refraction, but a slight parralax is applied, at vertex shader
+// for simplicity and performance). When roughness is 0, the glass transmit what 
+// is behind it, resulting in a tinted view of the emitter. When roughness is 1,
+// the glass transmit a diffuse accumulation of light incoming from surroundings.
+// 
+// The glass is defined by a uniform color/roughness pair which can be modulated
+// by a texture.
+//
+
 $input v_texcoord0, v_texcoord1
 #ifdef CLIP
 	$input v_clipDistance
@@ -7,27 +23,33 @@ $input v_texcoord0, v_texcoord1
 
 #include "common.sh"
 
-
+// Common emitter uniforms
 SAMPLER2D(displayTex, 0); // Display texture (meaning depends on display type)
 #define displayUv v_texcoord1
 
-SAMPLER2D(displayGlass, 1); // Glass over display texture (usually dirt and scratches, eventually tinting)
-#define glassUv v_texcoord0
-
 uniform vec4 vColor_Intensity;
 #define lit               (vColor_Intensity.rgb)
-#define backGlow          (vColor_Intensity.w)
+#define diffuseStrength   (vColor_Intensity.w)
 
 uniform vec4 staticColor_Alpha;
 #define unlit             (staticColor_Alpha.rgb)
 #define displayOutputMode (staticColor_Alpha.w)
 
-uniform vec4 glassAmbient_Roughness;
-#define glassAmbient      (glassAmbient_Roughness.rgb)
-#define glassRoughness    (glassAmbient_Roughness.w)
+// Base glass properties
+uniform vec4 glassTint_Roughness;
+#define glassTint         (glassTint_Roughness.rgb)
+#define glassRoughness    (glassTint_Roughness.w)
 
+// Textured glass
+SAMPLER2D(displayGlass, 1); // Glass over display texture (usually dirt and scratches, eventually tinting)
 uniform vec4 w_h_height;
-#define hasGlass          (w_h_height.x != 0.0)
+#define glassAmbient      (w_h_height.rgb)
+#define hasGlass          (w_h_height.w != 0.0)
+#define glassUv           v_texcoord0
+
+// Common uniform for display specific properties
+uniform vec4 displayProperties;
+
 
 // Basic Reinhard implementation while waiting for full tonemapping support
 #define BURN_HIGHLIGHTS 0.25
@@ -42,23 +64,11 @@ vec3 ReinhardToneMap(vec3 color)
 
 /////////////////////////////////////////////////////////////////////////////////////////
 //
-// Alphanumeric segment display
+// Segment display
 //
 
-#ifdef ALPHASEG
+#ifdef SEG
 	uniform vec4 alphaSegState[4];
-	#define segSDF displayTex // Segment SDF for 16 segments (4 RGBA tiles, each channel being a SDF)
-
-	void shade4(vec4 state, sampler2D sdfTex, vec2 uv, inout vec3 color, inout vec4 glow)
-	{
-		vec4 sdf = texture2D(sdfTex, uv);
-		vec4 inner = smoothstep(vec4_splat(0.475), vec4_splat(0.525), sdf);
-		color += inner.x * (unlit + lit * state.x);
-		color += inner.y * (unlit + lit * state.y);
-		color += inner.z * (unlit + lit * state.z);
-		color += inner.w * (unlit + lit * state.w);
-		glow = max(glow, state * sdf);
-	}
 #endif
 
 
@@ -68,32 +78,23 @@ vec3 ReinhardToneMap(vec3 color)
 //
 
 #ifdef DMD
+	#define N_SAMPLES      2                     // Number of surrounding dots in diffuse evaluation (this has a big performance impact)
 	uniform vec4 vRes_Alpha_time;
 	#define dmdSize        (vRes_Alpha_time.xy)  // display size in dots
-	#define dotSize        (vRes_Alpha_time.z)   // dot size / 2.0 (i.e. radius), therefore 0.5 correspond to a fully covered dot
-	#define dotRounding    (vRes_Alpha_time.w)   // dot rounding * dot size / 2.0 (i.e. rounding scaled by dot radius)
-	#define dotThreshold   (w_h_height.z)        // Threshold in inner SDF
-	#define coloredDMD     (w_h_height.w != 0.0) // Linear luminance or sRGB color
-	#define dmdTex         displayTex            // DMD texture (either single channel linear luminance, or sRGB image)
-	SAMPLER2D(dmdGlowTex, 2);                    // DMD glow, computed through blurring for back and glass lighting
-
-	// from http://www.iquilezles.org/www/articles/distfunctions/distfunctions.htm
-	// Compute SDF with negative values inside the dot (to allow shading light inside dot)
-	float udRoundBox(vec2 p, float b, float r)
-	{
-		vec2 q = abs(p) - b + r;
-		return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-	}
-
-	// Apply dot tint and brightness scale
-	vec3 sampleDmd(vec3 samp)
-	{
-		if (coloredDMD) // RGB data (eventually sRGB but this is handled by the hardware sampler)
-			return samp.rgb * lit;
-		else // linear brightness data
-			return samp.r * lit;
-	}
+	#define coloredDMD     (displayProperties.x != 0.0) // Linear luminance or sRGB color
+	#define sdfOffset      (displayProperties.y)        // Offset needed for SDF=0.5 at border decreasing to 0.0: 0.5 * (1.0 + (1.0 / (float(N_SAMPLES) + 0.5)) * dotSize / 2.0)
+	#define dotThreshold   (displayProperties.z)        // Threshold inside SDF (so > 0.5): 0.5 + 0.5 * (0.025 /* Antialiasing */ + dotSize * (1.0 - dotSharpness) /* Darkening around border inside dot */);
 #endif
+
+/////////////////////////////////////////////////////////////////////////////////////////
+//
+// CRT display
+//
+
+#ifdef CRT
+
+#endif
+
 
 #if !defined(CLIP)
 	EARLY_DEPTH_STENCIL
@@ -117,60 +118,76 @@ void main()
 	vec3 T = normalize(dp2perp * duvx.x + dp1perp * duvy.x);
 	vec3 B = normalize(dp2perp * duvx.y + dp1perp * duvy.y);
 	vec3 eye = normalize(pos);
-	vec2 uv = vec2(displayUv.x / 4.0, displayUv.y);
-	uv.x -= depthAmount * dot(T, eye);
-	uv.y -= depthAmount * dot(B, eye); */
+	vec2 uv = displayUv + depthAmount * vec2(dot(T, eye), dot(B, eye)); */
 
-	// Compute display emitted light
-	vec3 lum = vec3_splat(0.0);
+	vec4 glass;
+	float roughness;
+	if (hasGlass)
+	{
+		glass = texture2D(displayGlass, glassUv);
+		glass.rgb *= glassTint;
+		roughness = mix(glass.a, 1.0, glassRoughness);
+	}
+	else
+	{
+		glass = vec4(glassTint, 0.0);
+		roughness = glassRoughness;
+	}
 
-	#ifdef ALPHASEG
-		// Accumulate segment lighting
-		vec4 glow4 = vec4_splat(0.0);
-		shade4(alphaSegState[0], segSDF, vec2(displayUv.x * 0.25       , displayUv.y), lum, glow4);
-		shade4(alphaSegState[1], segSDF, vec2(displayUv.x * 0.25 + 0.25, displayUv.y), lum, glow4);
-		shade4(alphaSegState[2], segSDF, vec2(displayUv.x * 0.25 + 0.50, displayUv.y), lum, glow4);
-		shade4(alphaSegState[3], segSDF, vec2(displayUv.x * 0.25 + 0.75, displayUv.y), lum, glow4);
-		
-		// Compute indirect glow on back and glass as the max of individual segment lights (since this is approximated from a single distance)
-		float glowLum = max(max(max(glow4.x, glow4.y), glow4.z), glow4.w);
-		vec3 glow = glowLum * glowLum * lit;
+	// Accumulate light from surrounding emitters (somewhat heavy)
+	#if defined(SEG)
+		vec4 litLum4 = vec4_splat(0.0);
+		vec4 unlitLum4 = vec4_splat(0.0);
+		for (int i = 0; i < 4; i++)
+		{
+			// SDF for 16 segments (4 RGBA tiles, each RGBA channel being the SDF for a given segment)
+			vec4 sdf = texture2D(displayTex, vec2(0.25 * (displayUv.x + float(i)), displayUv.y));
+			vec4 sharp = smoothstep(vec4_splat(0.475), vec4_splat(0.525), sdf); // Resolve SDF after texture filtering
+			vec4 diffuse = diffuseStrength * sdf * sdf; // Magic formula to simulate light dispersion at maximum glass roughness
+			vec4 light = mix(sharp, diffuse, roughness);
+			unlitLum4 += light;
+			litLum4   += light * alphaSegState[i];
+		}
+		vec3 litLum = dot(litLum4, vec4_splat(1.0)) * lit;
+		float unlitLum = dot(unlitLum4, vec4_splat(1.0));
 		
 	#elif defined(DMD)
-		// Coordinate of nearest dot center (if any)
-		vec2 nearest = (floor(displayUv * dmdSize) + vec2_splat(0.5)) / dmdSize;
-		if ((nearest.x >= 0.0) && (nearest.y >= 0.0) && (nearest.x <= 1.0) && (nearest.y <= 1.0))
-		{
-			// Compute SDF with (0,0) at dot center, (-1,-1) to (1,1) in dot corners
-			vec2 pos = fract(displayUv * dmdSize) - vec2_splat(0.5);
-			float sdf = udRoundBox(pos, dotSize, dotRounding);
-			
-			// Compute inner lighting
-			float inner = smoothstep(0.0, dotThreshold, sdf);
-			lum = inner * (unlit + sampleDmd(texNoLod(dmdTex, nearest).rgb));
-		}
-		
-		// Compute indirect glow on back and glass
-		#if BGFX_SHADER_LANGUAGE_GLSL
-			vec3 glow = sampleDmd(texNoLod(dmdGlowTex, vec2(0.25, 0.25) + 0.5 * vec2(displayUv.x, 1.0 - displayUv.y)).rgb);
-		#else
-			vec3 glow = sampleDmd(texNoLod(dmdGlowTex, vec2(0.25, 0.25) + 0.5 * displayUv).rgb);
-		#endif
+		float unlitLum = 0.0;
+		vec3 litLum = vec3_splat(0.0);
+		vec2 dmdUv = displayUv * dmdSize;
+		ivec2 dotPos = ivec2(floor(dmdUv));
+		vec2 dotRelativePos = fract(dmdUv) - vec2_splat(0.5);
+		for (int y = -N_SAMPLES; y <= N_SAMPLES; y++)
+			for (int x = -N_SAMPLES; x <= N_SAMPLES; x++)
+			{
+				ivec2 dotUv = dotPos + ivec2(x,y);
+				if (all(greaterThanEqual(dotUv, vec2_splat(0.0))) && all(lessThan(dotUv, dmdSize)))
+				{
+					// SDF is 0.5 at dot border, increasing inside, linearly decreasing to 0 outside
+					float sdf = clamp(sdfOffset - length(dotRelativePos - vec2(x,y)) * (0.5 / (float(N_SAMPLES) + 0.5)), 0.0, 1.0);
+					float sharp = smoothstep(0.5, dotThreshold, sdf); // Compute dot lighting contribution (0 outside of this dot)
+					float diffuse = diffuseStrength * sdf * sdf; // Magic formula to evaluate light dispersion at maximum glass roughness
+					float light = mix(sharp, diffuse, roughness);
+					unlitLum += light;
+					if (coloredDMD) // RGB data (eventually sRGB but this is handled by the hardware sampler)
+						litLum += light * texelFetch(displayTex, dotUv, 0).rgb * lit;
+					else // linear brightness data
+						litLum += light * texelFetch(displayTex, dotUv, 0).r * lit;
+				}
+			}
 		
 	#elif defined(CRT)
 		// TODO implement CRT shading (see Lottes public domain CRT shader)
+		float unlitLum = 0.0;
+		vec3 litLum = vec3_splat(0.0);
 		
 	#endif
 
-	// Compute back glow
-	lum += backGlow * glow;
-
-	// Compute glass shading
+	// Shading is a mix of basic shading (just tinted texture ambient if any) and transmitted (tinted emitter ambient + light)
+	vec3 lum = (unlitLum * unlit + litLum);
 	if (hasGlass)
-	{
-		vec4 glass = texture2D(displayGlass, glassUv);
-		lum = mix(lum, (glassAmbient + glow), glassRoughness * glass.a) * glass.rgb;
-	}
+		lum = mix(lum, glassAmbient, 0.5 * glass.a);
+	lum *=  glass.rgb;
 
 	// Convert to output color space
 	if (displayOutputMode == 0.0) // No tonemap, linear Color space

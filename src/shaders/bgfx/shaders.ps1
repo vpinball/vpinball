@@ -128,7 +128,7 @@ if ($gen_dmd)
 		Process-Shader "vs_dmd.sc" "dmd.h"  ("vs_dmd_world_" + $variant3.ToLower() + "_")    "vertex" @("WORLD", $variant3)
 		Process-Shader "vs_dmd.sc" "dmd.h"  ("vs_dmd_world_" + $variant3.ToLower() + "_st_") "vertex" @("WORLD", "STEREO", $variant3)
 		Process-Shader "fs_dmd.sc" "dmd.h"  ("fs_dmd_"  + $variant3.ToLower() + "_") "fragment" @("DMD", $variant3)
-		foreach ($variant2 in @("DMD", "ALPHASEG"))
+		foreach ($variant2 in @("DMD", "SEG", "CRT"))
 		{
 			Process-Shader "fs_display.sc" "dmd.h" ("fs_display_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_") "fragment" @($variant2, $variant3)
 		}	

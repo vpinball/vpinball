@@ -46,10 +46,18 @@ public:
       Reinhard,
       Reinhard_sRGB
    };
-   void SetupAlphaSegRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, const Vertex3D_NoTex2* const vertices,
-      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
+   enum SegmentFamily
+   {
+      Generic,
+      Gottlieb,
+      Williams,
+      Bally,
+      Atari,
+   };
+   void SetupSegmentRenderer(int profile, const bool isBackdrop, const vec3& color, const float brightness, const SegmentFamily family, const SegElementType type, float* segs, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2* vertices,
+      const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
    void SetupDMDRender(int profile, const bool isBackdrop, const vec3& color, const float brightness, BaseTexture* dmd, const float alpha, const ColorSpace colorSpace, Vertex3D_NoTex2 *vertices,
-      Texture* const glass, const vec3& glassAmbient, const float glassRougness, const float padLeft, const float padRight, const float padTop, const float padBottom);
+      const vec4& emitterPad, const vec3& glassTint, const float glassRougness, Texture* const glassTex, const vec4& glassArea, const vec3& glassAmbient);
    void DrawStatics();
    void DrawDynamics(bool onlyBalls);
    void DrawSprite(const float posx, const float posy, const float width, const float height, const COLORREF color, Sampler* const tex, const float intensity, const bool backdrop = false);
@@ -216,9 +224,9 @@ private:
    #endif
 
    // Segment display rendering
-   Texture m_segDisplaySDF[9];
-   vec4 m_segColor[7]; // Base seg color and brightness
-   vec4 m_segUnlitColor[7]; // unlit color and back glow
+   Texture m_segDisplaySDF[4][9];
+   vec4 m_segColor[8]; // Base seg color and brightness
+   vec4 m_segUnlitColor[8]; // unlit color and back glow
 
    // DMD rendering
    vec4 m_dmdDefaultDotTint; // Table's default Dmd tint
@@ -226,7 +234,4 @@ private:
    vec4 m_dmdDotColor[7]; // Base dot color and brightness
    vec4 m_dmdDotProperties[7]; // size, sharpness, rounding, back glow
    vec4 m_dmdUnlitDotColor[7]; // unlit color
-   unsigned int m_dmdBlurSlot = 0;
-   BaseTexture* m_dmdBlurred[32] = { nullptr };
-   RenderTarget* m_dmdBlurs[32][2] = { { nullptr, nullptr } };
 };

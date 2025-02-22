@@ -1,0 +1,73 @@
+# Default layout for alphanumeric display with 4 x 7 digit score displays
+
+Width: 280
+Height: 70
+Fit: Contain
+
+Visuals:
+	- SegDisplay:
+		Rect: [0,0,102.5,32]
+		Src: default://alpha?sub=0
+		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+		
+	- SegDisplay:
+		Rect: [178,0,102.5,32]
+		Src: default://alpha?sub=1
+		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+		
+	- SegDisplay:
+		Rect: [0,26,102.5,32]
+		Src: default://alpha?sub=2
+		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+		
+	- SegDisplay:
+		Rect: [178,26,102.5,32]
+		Src: default://alpha?sub=3
+		XPos: [0, 14.25, 28.5, 49.5, 63.75, 78]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+
+	- SegDisplay:
+		Rect: [107,50,54,24]
+		Src: default://alpha?sub=5
+		XPos: [0, 13.5]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+
+	- SegDisplay:
+		Rect: [140,50,54,24]
+		Src: default://alpha?sub=4
+		XPos: [0, 13.5]
+		Style: Blue VFD
+		Glass:
+			Tint:      [0.030,0.250,0.500]
+			Roughness: 0.15
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.4,0.4,0.4]
+		
