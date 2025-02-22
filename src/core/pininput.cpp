@@ -139,7 +139,6 @@ PinInput::PinInput()
    m_ud_axis = 2;
 
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMEPAD
    m_joylflipkey = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1;
    m_joyrflipkey = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1;
    m_joylmagnasave = SDL_GAMEPAD_BUTTON_LEFT_STICK + 1;
@@ -154,7 +153,6 @@ PinInput::PinInput()
    m_joyrighttilt = SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1;
    m_joylockbar = SDL_GAMEPAD_BUTTON_GUIDE + 1;
 #endif
-#endif
 
 #ifdef ENABLE_XINPUT
    ZeroMemory(&m_inputDeviceXIstate,sizeof(XINPUT_STATE));
@@ -166,15 +164,12 @@ PinInput::PinInput()
 PinInput::~PinInput()
 {
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMEPAD
    if (m_pSDLGamePad)
       SDL_CloseGamepad(m_pSDLGamePad);
-#else
    if (m_pSDLRumbleDevice)
       SDL_CloseHaptic(m_pSDLRumbleDevice);
    if (m_pSDLJoystick)
-      SDL_CloseJoystick(m_pSDLJoystick);
-#endif
+      SDL_CloseJoystick(m_pSDLJoystick); 
 #endif
 
    TerminateOpenPinballDevices();
@@ -264,81 +259,6 @@ void PinInput::LoadSettings(const Settings& settings)
    }
 #endif
 }
-
-#ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMEPAD
-void PinInput::RefreshSDLGamepad()
-{
-   if (m_pSDLGamePad) {
-      SDL_CloseGamepad(m_pSDLGamePad);
-      m_pSDLGamePad = nullptr;
-   }
-   m_num_joy = 0;
-   
-   int joystick_count = 0;
-   SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
-   if(joystick_count > 0) {
-      for (int idx = 0; idx < joystick_count; ++idx) {
-         if (SDL_IsGamepad(joystick_ids[idx])) {
-#if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
-            if (!lstrcmpi(SDL_GetGamepadNameForID(joystick_ids[idx]), "Remote")) continue;
-#endif
-            m_pSDLGamePad = SDL_OpenGamepad(joystick_ids[idx]);
-            if (m_pSDLGamePad) {
-               m_num_joy = 1;
-               SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
-               PLOGI.printf("Game controller found: name=%s, rumble=%s",
-                  SDL_GetGamepadName(m_pSDLGamePad),
-                  SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false) ? "true" : "false");
-               break;
-            }
-         }
-      }
-   }
-   else {
-      PLOGI.printf("No game controllers connected!");
-   }
-}
-#else
-void PinInput::RefreshSDLJoystick()
-{
-   if (m_pSDLRumbleDevice) {
-      SDL_CloseHaptic(m_pSDLRumbleDevice);
-      m_pSDLRumbleDevice = nullptr;
-   }
-   if (m_pSDLJoystick) {
-      SDL_CloseJoystick(m_pSDLJoystick);
-      m_pSDLJoystick = nullptr;
-   }
-   m_num_joy = 0;
-   int joystick_count = 0;
-   SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
-   if(joystick_count > 0) {
-      for (int idx = 0; idx < joystick_count; ++idx) {
-         m_pSDLJoystick = SDL_OpenJoystick(joystick_ids[idx]);
-         if (m_pSDLJoystick) {
-            m_num_joy = 1;
-            if (SDL_IsJoystickHaptic(m_pSDLJoystick)) {
-               m_pSDLRumbleDevice = SDL_OpenHapticFromJoystick(m_pSDLJoystick);
-               if (!SDL_InitHapticRumble(m_pSDLRumbleDevice)) {
-                  ShowError(SDL_GetError());
-                  SDL_CloseHaptic(m_pSDLRumbleDevice);
-                  m_pSDLRumbleDevice = nullptr;
-               }
-            }
-            PLOGI.printf("Joystick found: name=%s, rumble=%s",
-               SDL_GetJoystickName(m_pSDLJoystick),
-               m_pSDLRumbleDevice ? "true" : "false");
-            break;
-         }
-      }
-   }
-   else {
-      PLOGI.printf("No joysticks connected!");
-   }
-}
-#endif
-#endif
 
 #ifdef _WIN32
 //
@@ -471,6 +391,83 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
        return DIENUM_CONTINUE;
    else
        return DIENUM_STOP; //allocation for only PININ_JOYMXCNT joysticks, ignore any others
+}
+#endif
+
+#ifdef ENABLE_SDL_INPUT
+void PinInput::RefreshSDLDevices()
+{
+   // Close any previously opened devices
+   if (m_pSDLGamePad) {
+      SDL_CloseGamepad(m_pSDLGamePad);
+      m_pSDLGamePad = nullptr;
+   }
+   if (m_pSDLRumbleDevice) {
+      SDL_CloseHaptic(m_pSDLRumbleDevice);
+      m_pSDLRumbleDevice = nullptr;
+   }
+   if (m_pSDLJoystick) {
+      SDL_CloseJoystick(m_pSDLJoystick);
+      m_pSDLJoystick = nullptr;
+   }
+   m_num_joy = 0;
+
+   // Get list of all connected devices
+   int joystick_count = 0;
+   SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
+
+   if (joystick_count > 0) {
+      for (int idx = 0; idx < joystick_count; ++idx) {
+         // Log the device we found
+         PLOGI.printf("Input device found: id=%d name=%s",
+            joystick_ids[idx],
+            SDL_GetJoystickNameForID(joystick_ids[idx]));
+
+         // Process each device as either a gamepad or joystick
+         if (SDL_IsGamepad(joystick_ids[idx])) {
+            // Skip Apple Remote on iOS/tvOS devices
+            #if defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))
+            if (!lstrcmpi(SDL_GetGamepadNameForID(joystick_ids[idx]), "Remote")) continue;
+            #endif
+
+            // Try to open as gamepad
+            m_pSDLGamePad = SDL_OpenGamepad(joystick_ids[idx]);
+            if (m_pSDLGamePad) {
+               m_num_joy++;
+               SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
+               PLOGI.printf("Processing as Gamepad: %d axes, %d buttons, rumble=%s",
+                  5,  // Standard gamepad has 6 axes
+                  15, // Standard gamepad has 15 buttons
+                  SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false) ? "true" : "false");
+            }
+         } else {
+            // Try to open as standard joystick
+            m_pSDLJoystick = SDL_OpenJoystick(joystick_ids[idx]);
+            if (m_pSDLJoystick) {
+               m_num_joy++;
+
+               // Check if joystick supports force feedback
+               if (SDL_IsJoystickHaptic(m_pSDLJoystick)) {
+                  m_pSDLRumbleDevice = SDL_OpenHapticFromJoystick(m_pSDLJoystick);
+                  if (!SDL_InitHapticRumble(m_pSDLRumbleDevice)) {
+                     ShowError(SDL_GetError());
+                     SDL_CloseHaptic(m_pSDLRumbleDevice);
+                     m_pSDLRumbleDevice = nullptr;
+                  }
+               }
+               PLOGI.printf("Processing as Joystick: %d axes, %d buttons, rumble=%s",
+                  SDL_GetNumJoystickAxes(m_pSDLJoystick),
+                  SDL_GetNumJoystickButtons(m_pSDLJoystick),
+                  m_pSDLRumbleDevice ? "true" : "false");
+            }
+         }
+      }
+   }
+
+   // No devices were successfully opened
+   if (m_num_joy == 0) {
+      PLOGI.printf("No game controllers or joysticks connected!");
+   }
 }
 #endif
 
@@ -808,10 +805,9 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
          break;
       #endif
 
-      #ifdef ENABLE_SDL_GAMEPAD
       case SDL_EVENT_GAMEPAD_ADDED:
       case SDL_EVENT_GAMEPAD_REMOVED:
-         RefreshSDLGamepad();
+         RefreshSDLDevices();
          break;
       case SDL_EVENT_GAMEPAD_AXIS_MOTION:
          if (e.gaxis.axis < 6) {
@@ -819,7 +815,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             didod.dwOfs = axes[e.gaxis.axis];
             const int value = e.gaxis.value * axisMultiplier[e.gaxis.axis];
             didod.dwData = (DWORD)(value);
-            PushQueue(&didod, APP_JOYSTICK(0));
+            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
          }
          break;
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
@@ -828,13 +824,12 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             DIDEVICEOBJECTDATA didod;
             didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.gbutton.button;
             didod.dwData = e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? 0x80 : 0x00;
-            PushQueue(&didod, APP_JOYSTICK(0));
+            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
          }
          break;
-      #else
       case SDL_EVENT_JOYSTICK_ADDED:
       case SDL_EVENT_JOYSTICK_REMOVED:
-         RefreshSDLJoystick();
+         RefreshSDLDevices();
          break;
       case SDL_EVENT_JOYSTICK_AXIS_MOTION:
          if (e.jaxis.axis < 6) {
@@ -842,7 +837,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             didod.dwOfs = axes[e.jaxis.axis];
             const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
             didod.dwData = (DWORD)(value);
-            PushQueue(&didod, APP_JOYSTICK(0));
+            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
          }
          break;
       case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
@@ -851,10 +846,9 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             DIDEVICEOBJECTDATA didod;
             didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
             didod.dwData = e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN ? 0x80 : 0x00;
-            PushQueue(&didod, APP_JOYSTICK(0));
+            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
          }
          break;
-      #endif
    }
 }
 #endif
@@ -901,14 +895,11 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    case PI_SDL: //SDL
    {
 #ifdef ENABLE_SDL_INPUT
-#ifdef ENABLE_SDL_GAMEPAD
       SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
       if (m_pSDLGamePad && SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false))
          SDL_RumbleGamepad(m_pSDLGamePad, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
-#else
       if (m_pSDLRumbleDevice)
          SDL_PlayHapticRumble(m_pSDLRumbleDevice, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
-#endif
 #endif
 #ifdef __LIBVPINBALL__
       VPinballLib::RumbleData rumbleData = {
@@ -938,31 +929,24 @@ void PinInput::Init()
 {
 #endif
 
-   #if defined(ENABLE_SDL_INPUT)
-      #ifdef ENABLE_SDL_GAMEPAD
-         if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
-         {
-            PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed: " << SDL_GetError();
-            exit(1);
-         }
-         string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
-         if (!std::filesystem::exists(path))
-            std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
-         int count = SDL_AddGamepadMappingsFromFile(path.c_str());
-         if (count > 0) {
-            PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
-         }
-         else {
-            PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
-         }
-      #else
-         if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK))
-         {
-            PLOGE << "SDL_InitSubSystem(SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
-            exit(1);
-         }
-      #endif
-   #endif
+#if defined(ENABLE_SDL_INPUT)
+   if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
+   {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed: " << SDL_GetError();
+      exit(1);
+   }
+   string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
+   if (!std::filesystem::exists(path))
+      std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
+   int count = SDL_AddGamepadMappingsFromFile(path.c_str());
+   if (count > 0) {
+      PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
+   }
+   else {
+      PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
+   }
+   RefreshSDLDevices();
+#endif
 
 #ifdef _WIN32
    HRESULT hr;
