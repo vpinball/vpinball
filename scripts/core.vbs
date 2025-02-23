@@ -60,6 +60,9 @@ Dim IsPluginPinMAME : IsPluginPinMAME = False
 ' Does the controller support state exchange through a global state block
 Dim HasStateBlock : HasStateBlock = 2
 
+' If UsePdbLeds is not defined, then define and disable it to avoid constantly raising an error
+If IsEmpty(Eval("UsePdbLeds"))=true Then ExecuteGlobal("Dim UsePdbLeds:UsePdbLeds=False")
+
 Private vpmVPVer : vpmVPVer = vpmCheckVPVer()
 
 Private Function PinMAMEInterval
