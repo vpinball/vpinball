@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 99)
 
 add_library(SerumPlugin MODULE
+	plugins/serum/common.cpp
 	plugins/serum/serum.cpp
 	plugins/serum/third-party/include/libserum/serum-decode.cpp
 	plugins/serum/third-party/include/miniz/miniz.c
