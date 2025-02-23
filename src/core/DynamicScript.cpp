@@ -556,7 +556,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
       {
          V_VT(&cv) = VT_DISPATCH;
          V_DISPATCH(&cv) = new DynamicDispatch(this, GetClass(type), sv.vObject);
-         V_DISPATCH(&cv)->AddRef();
+         //V_DISPATCH(&cv)->AddRef(); // Don't add a ref, as the returned object already support reference counting and is returned refCounted for us
       }
       break;
 

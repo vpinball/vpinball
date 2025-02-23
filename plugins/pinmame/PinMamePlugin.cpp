@@ -452,22 +452,23 @@ void OnControllerGameStart(Controller*)
 
 void OnControllerGameEnd(Controller*)
 {
-   msgApi->BroadcastMsg(endpointId, onGameEndId, nullptr);
    if (hasDMD)
    {
       hasDMD = false;
       msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc);
       msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
       msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
-      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }
    if (hasAlpha)
    {
       hasAlpha = false;
       msgApi->UnsubscribeMsg(getSegSrcId, onGetSegSrc);
       msgApi->UnsubscribeMsg(getSegId, onGetSeg);
-      msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
    }
+   // Broadcast message after unsubscribing to avoid receiving unwanted requests
+   msgApi->BroadcastMsg(endpointId, onGameEndId, nullptr);
+   msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+   msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
    StopAudioStream();
 }
 

@@ -147,6 +147,8 @@ void Controller::Stop()
    if (PinmameIsRunning())
    {
       PinmameStop();
+      while (PinmameIsRunning() != 0) // Wait until the machine is stopped
+         std::this_thread::sleep_for(std::chrono::milliseconds(75));
       if (m_onGameEndHandler)
          m_onGameEndHandler(this);
    }
