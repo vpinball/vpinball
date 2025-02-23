@@ -117,16 +117,17 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
       msgApi->BroadcastMsg(endpointId, onDmdTrigger, &pSerum->triggerID);
    if (firstrot != IDENTIFY_NO_FRAME)
    { // New frame, eventually starting a new animation
+      bool newState = false;
       if (state == nullptr)
       {
          state = new ColorizationState(getDmdMsg->width, getDmdMsg->height);
-         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+         newState = true;
       }
       else if (state->m_width != getDmdMsg->width || state->m_height != getDmdMsg->height)
       {
          delete state;
          state = new ColorizationState(getDmdMsg->width, getDmdMsg->height);
-         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+         newState = true;
       }
       
       state->m_hasAnimation = firstrot != 0;
@@ -144,6 +145,8 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
          if (pSerum->flags & FLAG_RETURNED_64P_FRAME_OK)
             state->UpdateFrame64V2();
       }
+      if (newState)
+         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
    }
 }
 

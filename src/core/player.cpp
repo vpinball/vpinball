@@ -2596,6 +2596,13 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
    if (getMsg.frame == nullptr)
       return { display->dmdId, -1, nullptr };
 
+   // Requesting the DMD may have triggered colorization and display list to be modified, so the display pointer may be bad at this point
+   auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &getMsg.dmdId, sizeof(DmdSrcId)) == 0; });
+   if (pCD == m_controllerDisplays.end())
+      return { display->dmdId, -1, nullptr };
+   else
+      display = &(*pCD);
+
    // (re) Create DMD texture
    const BaseTexture::Format format = display->dmdId.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
    if (display->frame == nullptr || display->frame->width() != display->dmdId.width || display->frame->height() != display->dmdId.height || display->frame->m_format != format)
