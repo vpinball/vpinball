@@ -22,7 +22,8 @@ typedef void (*msgpi_unload_plugin)();
 class MsgPlugin
 {
 public:
-   MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const std::string& directory, const std::string& library, const unsigned int endpointId)
+   MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
+      const std::string& directory, const std::string& library, const unsigned int endpointId)
       : m_id(id)
       , m_name(name)
       , m_description(description)
@@ -31,12 +32,30 @@ public:
       , m_link(link)
       , m_library(library)
       , m_directory(directory)
-      , m_endpointId(endpointId) { }
+      , m_endpointId(endpointId)
+      , m_loadPlugin(nullptr)
+      , m_unloadPlugin(nullptr)
+      , m_isDynamicallyLinked(true) { }
+   MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
+      const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin, const unsigned int endpointId)
+      : m_id(id)
+      , m_name(name)
+      , m_description(description)
+      , m_author(author)
+      , m_version(version)
+      , m_link(link)
+      , m_library()
+      , m_directory()
+      , m_endpointId(endpointId)
+      , m_loadPlugin(loadPlugin)
+      , m_unloadPlugin(unloadPlugin)
+      , m_isDynamicallyLinked(false) { }
    ~MsgPlugin();
 
    void Load(const MsgPluginAPI* msgAPI);
    void Unload();
-   bool IsLoaded() const { return m_module != nullptr; }
+   bool IsLoaded() const { return m_isLoaded; }
+
 
    const std::string m_id; // Unique ID of the plugin, used to identify it
    const std::string m_name; // Human-readable name of the plugin
@@ -44,14 +63,17 @@ public:
    const std::string m_author; // Human-readable author name
    const std::string m_version; // Human-readable version
    const std::string m_link; // Web link to online information
+
+   const bool m_isDynamicallyLinked; // Plugins can be either dynamically linked or statically linked and directly contributed
    const std::string m_library; // Library implementing this plugin for the current platform
    const std::string m_directory; // Directory containing this plugin
 
    const uint32_t m_endpointId; // Unique 'end point' ID of the plugin, used to identify it for the lifetime of this session
 
 private:
-   msgpi_load_plugin m_loadPlugin = nullptr;
-   msgpi_unload_plugin m_unloadPlugin = nullptr;
+   msgpi_load_plugin m_loadPlugin;
+   msgpi_unload_plugin m_unloadPlugin;
+   bool m_isLoaded = false;
    void* m_module = nullptr;
 };
 
@@ -61,13 +83,12 @@ public:
    static MsgPluginManager& GetInstance();
    ~MsgPluginManager();
 
+   std::shared_ptr<MsgPlugin> RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin);
    void ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback);
    std::shared_ptr<MsgPlugin> GetPlugin(const std::string& pluginId) const;
    const MsgPluginAPI& GetMsgAPI() const { return m_api; }
    void ProcessAsyncCallbacks();
-
-   unsigned int NewEndpointId() { return m_nextEndpointId++; }
-
+   void UnloadPlugins();
    void SetSettingsHandler(const std::function<void(const char*, const char*, char*, unsigned int)>& handler) { m_settingHandler = handler; }
 
 private:

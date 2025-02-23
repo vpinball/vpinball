@@ -239,6 +239,15 @@ static std::string unquote(const std::string& str)
    return str;
 }
 
+std::shared_ptr<MsgPlugin> MsgPluginManager::RegisterPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link, const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin)
+{
+   assert(loadPlugin != nullptr);
+   assert(unloadPlugin != nullptr);
+   std::shared_ptr<MsgPlugin> plugin = std::make_shared<MsgPlugin>(id, name, description, author, version, link, loadPlugin, unloadPlugin, m_nextEndpointId++);
+   m_plugins.push_back(plugin);
+   return plugin;
+}
+
 void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std::function<void(MsgPlugin&)>& callback)
 {
    assert(std::this_thread::get_id() == m_apiThread);
@@ -320,12 +329,19 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
                unquote(ini["configuration"s].get("link"s)),
                entry.path().string(),
                libraryPath,
-               NewEndpointId());
+               m_nextEndpointId++);
             m_plugins.push_back(plugin);
             callback(*plugin);
          }
       }
    }
+}
+
+void MsgPluginManager::UnloadPlugins()
+{
+   for (auto plugin : m_plugins)
+      if (!plugin->m_library.empty() && plugin->IsLoaded())
+         plugin->Unload();
 }
 
 std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& pluginId) const
@@ -358,104 +374,119 @@ std::string GetLastErrorAsString()
 
 MsgPlugin::~MsgPlugin()
 {
-   if (IsLoaded())
+   if (!m_library.empty() && IsLoaded())
       Unload();
 }
 
 void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
 {
-   if (m_module != nullptr)
+   if (m_isLoaded)
    {
       PLOGE << "Requested to load plugin '" << m_name << "' which is already loaded";
       return;
    }
-   if (m_module == nullptr)
+   if (m_isDynamicallyLinked)
    {
-      #if defined(_WIN32) || defined(_WIN64)
-         #if _WIN32_WINNT >= 0x0600
-            SetDllDirectory(m_directory.c_str());
-         #else
-            typedef BOOL(STDAPICALLTYPE * pSDD)(LPCSTR);
-            static pSDD mSetDllDirectory = nullptr;
-            mSetDllDirectory = (pSDD)GetProcAddress(GetModuleHandle(TEXT("Kernel32.dll")), "SetDllDirectoryA"); //!! remove as soon as win xp support dropped and use static link
-            if (mSetDllDirectory)
-               mSetDllDirectory(m_directory.c_str());
+      if (m_module == nullptr)
+      {
+         #if defined(_WIN32) || defined(_WIN64)
+            #if _WIN32_WINNT >= 0x0600
+               SetDllDirectory(m_directory.c_str());
+            #else
+               typedef BOOL(STDAPICALLTYPE * pSDD)(LPCSTR);
+               static pSDD mSetDllDirectory = nullptr;
+               mSetDllDirectory = (pSDD)GetProcAddress(GetModuleHandle(TEXT("Kernel32.dll")), "SetDllDirectoryA"); //!! remove as soon as win xp support dropped and use static link
+               if (mSetDllDirectory)
+                  mSetDllDirectory(m_directory.c_str());
+            #endif
          #endif
-      #endif
-      #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-         m_module = SDL_LoadObject(m_library.c_str());
-         if (m_module == nullptr)
-         {
-            PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
-            return;
-         }
-         m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginLoad");
-         m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginUnload");
-         if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
-         {
-            SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
-            m_loadPlugin = nullptr;
-            m_unloadPlugin = nullptr;
-            m_module = nullptr;
-            PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required PluginLoad/PluginUnload functions are not correct.";
-            return;
-         }
-      #elif defined(_WIN32) || defined(_WIN64)
-         // Windows XP does not support LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR and LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
-         // This makes the plugin features buggy on Windows XP since a plugin coming with its own dependencies (dll in the plugin directory) will not load on WinXP
-         DWORD flags = 0x00000100 /* LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR */ | 0x00001000 /* LOAD_LIBRARY_SEARCH_DEFAULT_DIRS */;
-         m_module = LoadLibraryEx(m_library.c_str(), NULL, flags);
-         if (m_module == NULL)
-         {
-            PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
-            PLOGE << "Last error was: " << GetLastErrorAsString();
-            return;
-         }
-         m_loadPlugin = (msgpi_load_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginLoad");
-         m_unloadPlugin = (msgpi_unload_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginUnload");
-         if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
-         {
-            FreeLibrary(static_cast<HMODULE>(m_module));
-            m_loadPlugin = nullptr;
-            m_unloadPlugin = nullptr;
-            m_module = NULL;
-            PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
-            return;
-         }
-      #else
-         assert(false);
-      #endif
-      #if defined(_WIN32) || defined(_WIN64)
-         #if _WIN32_WINNT >= 0x0600
-            SetDllDirectory(NULL);
+         #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
+            m_module = SDL_LoadObject(m_library.c_str());
+            if (m_module == nullptr)
+            {
+               PLOGE << "Plugin " << m_id << " failed to load library " << m_library << ": " << SDL_GetError();
+               return;
+            }
+            m_loadPlugin = (msgpi_load_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginLoad");
+            m_unloadPlugin = (msgpi_unload_plugin)SDL_LoadFunction(static_cast<SDL_SharedObject*>(m_module), "PluginUnload");
+            if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
+            {
+               SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
+               m_loadPlugin = nullptr;
+               m_unloadPlugin = nullptr;
+               m_module = nullptr;
+               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required PluginLoad/PluginUnload functions are not correct.";
+               return;
+            }
+         #elif defined(_WIN32) || defined(_WIN64)
+            // Windows XP does not support LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR and LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
+            // This makes the plugin features buggy on Windows XP since a plugin coming with its own dependencies (dll in the plugin directory) will not load on WinXP
+            DWORD flags = 0x00000100 /* LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR */ | 0x00001000 /* LOAD_LIBRARY_SEARCH_DEFAULT_DIRS */;
+            m_module = LoadLibraryEx(m_library.c_str(), NULL, flags);
+            if (m_module == NULL)
+            {
+               PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
+               PLOGE << "Last error was: " << GetLastErrorAsString();
+               return;
+            }
+            m_loadPlugin = (msgpi_load_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginLoad");
+            m_unloadPlugin = (msgpi_unload_plugin)GetProcAddress(static_cast<HMODULE>(m_module), "PluginUnload");
+            if (m_loadPlugin == nullptr || m_unloadPlugin == nullptr)
+            {
+               FreeLibrary(static_cast<HMODULE>(m_module));
+               m_loadPlugin = nullptr;
+               m_unloadPlugin = nullptr;
+               m_module = NULL;
+               PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
+               return;
+            }
          #else
-            if (mSetDllDirectory)
-               mSetDllDirectory(NULL);
+            assert(false);
          #endif
-      #endif
+         #if defined(_WIN32) || defined(_WIN64)
+            #if _WIN32_WINNT >= 0x0600
+               SetDllDirectory(NULL);
+            #else
+               if (mSetDllDirectory)
+                  mSetDllDirectory(NULL);
+            #endif
+         #endif
+      }
    }
+   m_isLoaded = true;
    m_loadPlugin(m_endpointId, msgAPI);
-   PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
+   if (m_isDynamicallyLinked)
+   {
+      PLOGI << "Plugin " << m_id << " loaded (library: " << m_library << ')';
+   }
+   else
+   {
+      PLOGI << "Plugin " << m_id << " loaded (statically linked plugin)";
+   }
 }
 
 void MsgPlugin::Unload()
 {
-   if (m_module == nullptr)
+   if (!m_isLoaded)
    {
       PLOGE << "Requested to unload plugin '" << m_name << "' which is not loaded";
       return;
    }
+   m_isLoaded = false;
    m_unloadPlugin();
-   // We use module unload instead of explicit unloading to avoid crashes due to forced unloading of modules with thread that are not yet joined
-   // The only drawback is that the application keep the module (dll file) locked
-   /*
-   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
-      SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
-   #elif defined(_WIN32) || defined(_WIN64)
-      FreeLibrary(static_cast<HMODULE>(m_module));
-   #endif
-   */
-   m_module = nullptr;
-   m_loadPlugin = nullptr;
-   m_unloadPlugin = nullptr;
+   if (m_isDynamicallyLinked)
+   {
+      // We use module unload instead of explicit unloading to avoid crashes due to forced unloading of modules with thread that are not yet joined
+      // The only drawback is that the application keep the module (dll file) locked
+      /*
+      #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
+         SDL_UnloadObject(static_cast<SDL_SharedObject*>(m_module));
+      #elif defined(_WIN32) || defined(_WIN64)
+         FreeLibrary(static_cast<HMODULE>(m_module));
+      #endif
+      */
+      m_module = nullptr;
+      m_loadPlugin = nullptr;
+      m_unloadPlugin = nullptr;
+   }
 }
