@@ -66,7 +66,7 @@ typedef enum {
 static DmdLayouts dmdLayout = DmdLayouts::Undefined;
 
 // Number of segments corresponding to CTLPI_GETSEG_LAYOUT_xxx
-static constexpr int nSegments[] = { 7, 8, 8, 9, 10, 14, 15, 16, 16 };
+static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
 
 // Segment layouts, derived from PinMame, itself taking it from 'usbalphanumeric.h'
 

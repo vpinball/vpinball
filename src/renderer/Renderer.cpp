@@ -1239,7 +1239,7 @@ void Renderer::SetupSegmentRenderer(int profile, const bool isBackdrop, const ve
    case CTLPI_GETSEG_LAYOUT_7D: segSDF = LoadSegSDF(m_segDisplaySDF[family][2], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "7seg-c-williams.png"); break;
    case CTLPI_GETSEG_LAYOUT_9: segSDF = LoadSegSDF(m_segDisplaySDF[family][3], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-gts.png"); break;
    case CTLPI_GETSEG_LAYOUT_9C: segSDF = LoadSegSDF(m_segDisplaySDF[family][4], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "9seg-c-gts.png"); break;
-   case CTLPI_GETSEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg.png"); break;
+   case CTLPI_GETSEG_LAYOUT_14: segSDF = LoadSegSDF(m_segDisplaySDF[family][5], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-williams.png"); break;
    case CTLPI_GETSEG_LAYOUT_14D: segSDF = LoadSegSDF(m_segDisplaySDF[family][6], g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-d-williams.png"); break;
    case CTLPI_GETSEG_LAYOUT_14DC: segSDF = LoadSegSDF(m_segDisplaySDF[family][7],
         (family == SegmentFamily::Gottlieb) ? g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "14seg-dc-gts.png"

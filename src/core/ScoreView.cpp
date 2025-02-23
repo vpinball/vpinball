@@ -258,9 +258,9 @@ void ScoreView::Parse(const string& path, std::istream& f)
          {
             if (value == "Neon Plasma")
                visual->liveStyle = 0;
-            if (value == "Blue VFD")
+            else if (value == "Blue VFD")
                visual->liveStyle = 1;
-            if (value == "Green VFD")
+            else if (value == "Green VFD")
                visual->liveStyle = 2;
             else if (value == "Red LED")
                visual->liveStyle = 3;
