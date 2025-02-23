@@ -23,8 +23,8 @@ public:
    static VPXPluginAPIImpl& GetInstance();
 
    const VPXPluginAPI& getAPI() const { return m_api; }
-   unsigned int GetVPXEndPointId() const { return m_vpxEndpointId; }
-   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxEndpointId, msgId, data); }
+   unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
+   void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
 
    unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
    void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
@@ -36,7 +36,7 @@ private:
    VPXPluginAPIImpl();
 
    // VPX API
-   uint32_t m_vpxEndpointId;
+   std::shared_ptr<MsgPlugin> m_vpxPlugin;
    static void OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    VPXPluginAPI m_api;
 

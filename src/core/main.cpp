@@ -1250,6 +1250,8 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
 
       retval = -1;
    }
+
+   MsgPluginManager::GetInstance().UnloadPlugins();
    
    #ifdef ENABLE_SDL_VIDEO
       SDL_QuitSubSystem(SDL_INIT_VIDEO);

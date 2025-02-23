@@ -257,7 +257,7 @@ void VPXPluginAPIImpl::ControllerOnGetDMDSrc(const unsigned int msgId, void* use
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
    if (g_pplayer->m_dmdFrame && msg.count < msg.maxEntryCount && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW)
    {
-      msg.entries[msg.count].id = { me.m_vpxEndpointId, 0 };
+      msg.entries[msg.count].id = { me.m_vpxPlugin->m_endpointId, 0 };
       msg.entries[msg.count].format = g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888;
       msg.entries[msg.count].width = g_pplayer->m_dmdFrame->width();
       msg.entries[msg.count].height = g_pplayer->m_dmdFrame->height();
@@ -275,7 +275,7 @@ void VPXPluginAPIImpl::ControllerOnGetRenderDMD(const unsigned int msgId, void* 
 
    // Script DMD
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   if ((msg->dmdId.id.endpointId == me.m_vpxEndpointId) && (msg->dmdId.id.resId == 0) 
+   if ((msg->dmdId.id.endpointId == me.m_vpxPlugin->m_endpointId) && (msg->dmdId.id.resId == 0) 
       && (msg->dmdId.format == (g_pplayer->m_dmdFrame->m_format == BaseTexture::BW ? CTLPI_GETDMD_FORMAT_LUM8 : CTLPI_GETDMD_FORMAT_SRGB888))
       && (msg->dmdId.width == g_pplayer->m_dmdFrame->width()) && (msg->dmdId.height == g_pplayer->m_dmdFrame->height())
       && g_pplayer->m_dmdFrame && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
@@ -295,7 +295,7 @@ void VPXPluginAPIImpl::ControllerOnGetIdentifyDMD(const unsigned int msgId, void
 
    // Script DMD
    VPXPluginAPIImpl& me = *static_cast<VPXPluginAPIImpl*>(userData);
-   if ((msg->dmdId.endpointId == me.m_vpxEndpointId) && (msg->dmdId.resId == 0)
+   if ((msg->dmdId.endpointId == me.m_vpxPlugin->m_endpointId) && (msg->dmdId.resId == 0)
       && g_pplayer->m_dmdFrame
       && g_pplayer->m_dmdFrame->m_format == BaseTexture::BW) // RGB is not yet supported
    {
@@ -350,12 +350,15 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.GetActiveViewSetup = GetActiveViewSetup;
    m_api.SetActiveViewSetup = SetActiveViewSetup;
 
-   m_vpxEndpointId = MsgPluginManager::GetInstance().NewEndpointId();
-   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
+   m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx", "VPX", "Visual Pinball X", "", "", "https://github.com/vpinball/vpinball", 
+         [](const uint32_t pluginId, const MsgPluginAPI* api) {},
+         []() {});
+   m_vpxPlugin->Load(&MsgPluginManager::GetInstance().GetMsgAPI());
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &OnGetVPXPluginAPI, nullptr);
 
    // Logging API
    m_loggingApi.Log = PluginLog;
-   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API), &OnGetLoggingPluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(LOGPI_NAMESPACE, LOGPI_MSG_GET_API), &OnGetLoggingPluginAPI, nullptr);
 
    // Scriptable API
    m_scriptableApi.RegisterScriptClass = RegisterScriptClass;
@@ -364,14 +367,14 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_scriptableApi.SubmitTypeLibrary = SubmitTypeLibrary;
    m_scriptableApi.SetCOMObjectOverride = SetCOMObjectOverride;
    m_scriptableApi.OnError = OnScriptError;
-   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API), &OnGetScriptablePluginAPI, nullptr);
 
    // Generic controller API
    m_getRenderDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
    m_getIdentifyDmdMsgId = msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   msgApi.SubscribeMsg(m_vpxEndpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
-   msgApi.SubscribeMsg(m_vpxEndpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
-   msgApi.SubscribeMsg(m_vpxEndpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getRenderDmdMsgId, &ControllerOnGetRenderDMD, this);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, m_getIdentifyDmdMsgId, &ControllerOnGetIdentifyDMD, this);
+   msgApi.SubscribeMsg(m_vpxPlugin->m_endpointId, msgApi.GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG), &ControllerOnGetDMDSrc, this);
 }
 
 void VPXPluginAPIImpl::OnGetVPXPluginAPI(const unsigned int msgId, void* userData, void* msgData)
