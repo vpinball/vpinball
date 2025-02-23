@@ -10,6 +10,7 @@
 #include "CorePlugin.h"
 #include "PinMamePlugin.h"
 #include "libserum/serum-decode.h"
+#include "common.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
@@ -257,11 +258,15 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
 void onGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    // Setup Serum on the selected DMD
-   const char* gameId = static_cast<const char*>(msgData);
-   assert(gameId != nullptr);
+   const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
+   assert(msg != nullptr && msg->vpmPath != nullptr && msg->gameId != nullptr);
+   std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor");
    char crzFolder[512];
-   msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
-   pSerum = Serum_Load(crzFolder, gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
+   if (!altColorPath.empty())
+      strcpy(crzFolder, altColorPath.c_str());
+   else
+      msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
+   pSerum = Serum_Load(crzFolder, msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
    dmdSelected = false;
    if (pSerum)
    {

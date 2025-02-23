@@ -145,7 +145,10 @@ public:
       return m_stateBlock;
    }
 
+   const string& GetVpmPath() const { return m_vpmPath; }
+
 private:
+   string m_vpmPath;
    PinmameGame* m_pPinmameGame = nullptr; // Game selected by setting GameName property
    PinmameMechConfig* m_pPinmameMechConfig = nullptr;
    vector<PinmameLampState> m_lampStates;

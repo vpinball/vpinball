@@ -187,8 +187,8 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       return;
 
    // Find PUP interface dll and set it up
-   const char* gameId = static_cast<const char*>(eventData);
-   assert(gameId != nullptr);
+   const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(eventData);
+   assert(msg != nullptr && msg->vpmPath != nullptr && msg->gameId != nullptr);
    TCHAR path[MAX_PATH];
    HMODULE hm = NULL;
    if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("PluginLoad"), &hm) == 0)
@@ -221,7 +221,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* eventData)
       return;
    }
    pupOpen();
-   pupSetGameName(gameId, static_cast<int>(strlen(gameId)));
+   pupSetGameName(msg->gameId, static_cast<int>(strlen(msg->gameId)));
    lastFrameId = 123456;
    memset(rgbFrame, 0, sizeof(rgbFrame));
    msgApi->SubscribeMsg(endpointId, getDmdId, onGetDMD, nullptr);

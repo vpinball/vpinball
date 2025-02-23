@@ -428,7 +428,8 @@ void OnControllerGameStart(Controller*)
 {
    assert(controller->GetRunning());
    const string& gameName = controller->GetGameName();
-   msgApi->BroadcastMsg(endpointId, onGameStartId, reinterpret_cast<void*>(const_cast<char*>(gameName.c_str())));
+   PMPI_MSG_ON_GAME_START msg = { controller->GetVpmPath().c_str(), gameName.c_str() };
+   msgApi->BroadcastMsg(endpointId, onGameStartId, reinterpret_cast<void*>(&msg));
    auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_ALL);
    if (block != nullptr)
    {

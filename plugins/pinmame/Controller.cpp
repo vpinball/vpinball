@@ -9,6 +9,8 @@ Controller::Controller(PinmameConfig& config)
    // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use state blocks
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
+
+   m_vpmPath = config.vpmPath;
 }
 
 Controller::~Controller()
