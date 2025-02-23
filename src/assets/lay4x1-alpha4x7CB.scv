@@ -10,7 +10,7 @@ Visuals:
 		Rect: [0,-4,140,32]
 		Src: default://alpha?sub=0
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
@@ -21,7 +21,7 @@ Visuals:
 		Rect: [180,-4,140,32]
 		Src: default://alpha?sub=1
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
@@ -32,7 +32,7 @@ Visuals:
 		Rect: [0,24,140,32]
 		Src: default://alpha?sub=2
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
@@ -43,7 +43,7 @@ Visuals:
 		Rect: [180,24,140,32]
 		Src: default://alpha?sub=3
 		XPos: [0, 18, 36, 54, 72, 90, 108]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
@@ -54,7 +54,7 @@ Visuals:
 		Rect: [106,52,54,32]
 		Src: default://alpha?sub=4
 		XPos: [0, 22]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
@@ -65,7 +65,7 @@ Visuals:
 		Rect: [160,52,54,32]
 		Src: default://alpha?sub=5
 		XPos: [0, 22]
-		Style: VFD Blue
+		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
