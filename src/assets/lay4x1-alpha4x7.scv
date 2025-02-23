@@ -2,7 +2,7 @@
 # Based on Gottlieb System 1/80/80A displays with a blue glass filter
 
 Width: 320
-Height: 80
+Height: 64
 Fit: Contain
 
 Visuals:
@@ -10,7 +10,7 @@ Visuals:
 		Rect: [0,0,140,32]
 		Src: default://alpha?sub=0
 		Type: Gottlieb
-		Style: VFD Blue
+		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
 			Tint:      [0.030,0.250,0.500]
@@ -23,7 +23,7 @@ Visuals:
 		Rect: [180,0,140,32]
 		Src: default://alpha?sub=1
 		Type: Gottlieb
-		Style: VFD Blue
+		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
 			Tint:      [0.030,0.250,0.500]
@@ -36,7 +36,7 @@ Visuals:
 		Rect: [0,32,140,32]
 		Src: default://alpha?sub=2
 		Type: Gottlieb
-		Style: VFD Blue
+		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
 			Tint:      [0.030,0.250,0.500]
@@ -49,7 +49,7 @@ Visuals:
 		Rect: [180,32,140,32]
 		Src: default://alpha?sub=3
 		Type: Gottlieb
-		Style: VFD Blue
+		Style: Blue VFD
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Glass:
 			Tint:      [0.030,0.250,0.500]
