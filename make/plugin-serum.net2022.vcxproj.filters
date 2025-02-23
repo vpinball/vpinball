@@ -10,6 +10,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="plugins/serum/common.h">
+      <Filter>source</Filter>
+    </ClInclude>
+    <ClCompile Include="plugins/serum/common.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
     <ClCompile Include="plugins/serum/serum.cpp">
       <Filter>source</Filter>
     </ClCompile>
