@@ -306,9 +306,8 @@ void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
    pinmame_tAlphaStates* state = block->alphaDisplayStates;
    if (state == nullptr)
       return;
-
    pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(state);
-   static int nSegments[] = { 7, 8, 8, 9, 10, 14, 15, 16, 16, 16 };
+   static int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
    unsigned int nElements = 0;
    for (unsigned int display = 0; display < state->nDisplays; display++)
       nElements += state->displayDefs[display].nElements;

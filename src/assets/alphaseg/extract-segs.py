@@ -53,6 +53,8 @@ def build_sdf(svg_file, group_id, crop_right, crop_bottom, segs, out_file):
     mergedB = Image.new('L', (int(4 * scale * (img_w - crop_right)), int(scale * (img_h - crop_bottom))))
     mergedA = Image.new('L', (int(4 * scale * (img_w - crop_right)), int(scale * (img_h - crop_bottom))))
     for i, idx in enumerate(segs):
+        if idx < 0:
+            continue
         out_img = f"{group_id}-Seg{i}.png"
         if idx >= 0 and extract_single_path(svg_file, group_id, idx, out_img, crop_right, crop_bottom):
             image = Image.open(out_img).convert('L')
@@ -80,13 +82,11 @@ def build_sdf(svg_file, group_id, crop_right, crop_bottom, segs, out_file):
 # - 16 segments (split top/bottom segments)
 
 # Generic displays (made without any reference)
-build_sdf('SegDisplays.svg', '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14),     '14seg.png')
-build_sdf('SegDisplays.svg', '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15), '14seg-d.png')
 build_sdf('SegDisplays.svg', '16seg-generic',     4.5, 6.0, range(16),                                           '16seg.png')
 
 # Gottlieb System 1, 80A, 80B, 3: Futaba 7, 9, 9c (made with a dot and a comma), 14dc
 build_sdf('SegDisplays.svg', '7seg-gts-4digits',  4.5, 6.0, range(7),                                            '7seg-gts.png')
-build_sdf('SegDisplays.svg', '9seg-gts',          4.0, 6.0, range(9),                                            '9seg-gts.png')
+build_sdf('SegDisplays.svg', '9seg-gts',          4.0, 6.0, (0, 1, 2, 3, 4, 5, 6, -1, 7, 8),                     '9seg-gts.png')
 build_sdf('SegDisplays.svg', '9seg-c-gts',        4.0, 6.0, range(10),                                           '9seg-c-gts.png')
 build_sdf('SegDisplays.svg', '14seg-dc-gts',      1.5, 4.5, range(16),                                           '14seg-dc-gts.png')
 
@@ -97,6 +97,8 @@ build_sdf('SegDisplays.svg', '7seg-c-bally',      1.0, 4.0, range(8),           
 # Williams displays: Panaplex 7, 7c, 14dc
 build_sdf('SegDisplays.svg', '7seg-c-williams',   1.5, 2.5, range(7),                                            '7seg-williams.png')
 build_sdf('SegDisplays.svg', '7seg-c-williams',   1.5, 2.5, range(8),                                            '7seg-c-williams.png')
+build_sdf('SegDisplays.svg', '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, -1, 8, 9, 10, 11, 12, 13, 14), '14seg-williams.png')
+build_sdf('SegDisplays.svg', '14seg-dc-williams', 1.0, 0.0, (0, 1, 2, 3, 4, 5, 6, 15, 8, 9, 10, 11, 12, 13, 14), '14seg-d-williams.png')
 build_sdf('SegDisplays.svg', '14seg-dc-williams', 1.0, 0.0, range(16),                                           '14seg-dc-williams.png')
 
 # Atari displays: LED 7, 7c. Atari System 1 has a tighter 7seg layout than the one provided here
