@@ -3005,14 +3005,22 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 {
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
    {
-      Ball *const ball = (Ball *)m_selection.editable;
+      Ball *const ball = static_cast<Ball *>(m_selection.editable);
       transform = Matrix3D::MatrixTranslate(ball->m_hitBall.m_d.m_pos);
+      return true;
+   }
+
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBumper)
+   {
+      Bumper *const p = static_cast<Bumper *>(m_selection.editable);
+      const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(p->m_d.m_szSurface, p->m_d.m_vCenter.x, p->m_d.m_vCenter.y);
+      transform = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, height);
       return true;
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher *const p = (Flasher *)m_selection.editable;
+      Flasher *const p = static_cast<Flasher *>(m_selection.editable);
       const Matrix3D trans = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
       const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_rotX));
       const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_rotY));
@@ -3023,7 +3031,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
    {
-      Flipper *const f = (Flipper *)m_selection.editable;
+      Flipper *const f = static_cast<Flipper *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(f->m_d.m_szSurface, f->m_d.m_Center.x, f->m_d.m_Center.y);
       transform = Matrix3D::MatrixTranslate(f->m_d.m_Center.x, f->m_d.m_Center.y, height);
       return true;
@@ -3031,7 +3039,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
-      Light *const l = (Light *)m_selection.editable;
+      Light *const l = static_cast<Light *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       transform = Matrix3D::MatrixTranslate(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
@@ -3039,7 +3047,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
-      Primitive *const p = (Primitive *)m_selection.editable;
+      Primitive *const p = static_cast<Primitive *>(m_selection.editable);
       const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
       const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
       const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
@@ -3051,7 +3059,7 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
    {
-      Surface *const obj = (Surface *)m_selection.editable;
+      Surface *const obj = static_cast<Surface *>(m_selection.editable);
       Vertex2D center = obj->GetPointCenter();
       transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop));
       return true;
@@ -3107,15 +3115,22 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
    {
-      Ball *const ball = (Ball *)m_selection.editable;
+      Ball *const ball = static_cast<Ball *>(m_selection.editable);
       ball->m_hitBall.m_d.m_pos.x = posX;
       ball->m_hitBall.m_d.m_pos.y = posY;
       ball->m_hitBall.m_d.m_pos.z = posZ;
    }
 
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBumper)
+   {
+      Bumper *const f = static_cast<Bumper *>(m_selection.editable);
+      const float px = f->m_d.m_vCenter.x, py = f->m_d.m_vCenter.y;
+      f->Translate(Vertex2D(posX - px, posY - py));
+   }
+
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
    {
-      Flasher *const p = (Flasher *)m_selection.editable;
+      Flasher *const p = static_cast<Flasher *>(m_selection.editable);
       const float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
       p->TranslatePoints(Vertex2D(posX - px, posY - py));
       p->put_Height(posZ);
@@ -3126,14 +3141,14 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
    {
-      Flipper *const f = (Flipper *)m_selection.editable;
+      Flipper *const f = static_cast<Flipper *>(m_selection.editable);
       const float px = f->m_d.m_Center.x, py = f->m_d.m_Center.y;
       f->Translate(Vertex2D(posX - px, posY - py));
    }
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
    {
-      Light *const l = (Light *)m_selection.editable;
+      Light *const l = static_cast<Light *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       const float px = l->m_d.m_vCenter.x, py = l->m_d.m_vCenter.y, pz = height + l->m_d.m_height;
       l->Translate(Vertex2D(posX - px, posY - py));
@@ -3143,7 +3158,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
    {
-      Primitive *const p = (Primitive *)m_selection.editable;
+      Primitive *const p = static_cast<Primitive *>(m_selection.editable);
       p->m_d.m_vPosition.x = posX;
       p->m_d.m_vPosition.y = posY;
       p->m_d.m_vPosition.z = posZ;
@@ -3157,7 +3172,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
 
    if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
    {
-      Surface *const obj = (Surface *)m_selection.editable;
+      Surface *const obj = static_cast<Surface *>(m_selection.editable);
       Vertex2D center = obj->GetPointCenter();
       const float px = center.x, py = center.y, pz = 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop);
       obj->TranslatePoints(Vertex2D(posX - px, posY - py));

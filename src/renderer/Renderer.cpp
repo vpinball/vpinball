@@ -1126,12 +1126,11 @@ void Renderer::RenderFrame()
 
    // Reinitialize parts that have been modified
    SetupShaders();
-   /* FIXME this breaks bumper and flashers
    for (auto renderable : m_renderableToInit)
    {
       renderable->RenderRelease();
       renderable->RenderSetup(m_renderDevice);
-   } */
+   }
    m_renderableToInit.clear();
 
    // Setup ball rendering: collect all lights that can reflect on balls

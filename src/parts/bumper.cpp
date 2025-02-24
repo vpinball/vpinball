@@ -309,12 +309,20 @@ void Bumper::RenderRelease()
    m_ringMeshBuffer = nullptr;
    m_capMeshBuffer = nullptr;
    m_socketMeshBuffer = nullptr;
+   if (m_baseTexture.m_pdsBuffer)
+      m_rd->m_texMan.UnloadTexture(m_baseTexture.m_pdsBuffer);
    m_baseTexture.FreeStuff();
+   if (m_ringTexture.m_pdsBuffer)
+      m_rd->m_texMan.UnloadTexture(m_ringTexture.m_pdsBuffer);
    m_ringTexture.FreeStuff();
 
    delete[] m_ringVertices;
    m_ringVertices = nullptr;
+   if (m_capTexture.m_pdsBuffer)
+      m_rd->m_texMan.UnloadTexture(m_capTexture.m_pdsBuffer);
    m_capTexture.FreeStuff();
+   if (m_skirtTexture.m_pdsBuffer)
+      m_rd->m_texMan.UnloadTexture(m_skirtTexture.m_pdsBuffer);
    m_skirtTexture.FreeStuff();
 
    m_rd = nullptr;
