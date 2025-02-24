@@ -488,6 +488,11 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
       for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
          if (pe->GetIHitable())
             pe->GetIHitable()->PhysicSetup(this, true);
+      for (HitObject *const pho : m_vUIHitObjects)
+      {
+         pho->CalcHitBBox();
+         m_UIOctree.AddElement(pho);
+      }
       const FRect3D bbox = g_pplayer->m_ptable->GetBoundingBox();
       m_UIOctree.Initialize(FRect(bbox.left, bbox.right, bbox.top, bbox.bottom));
    }
