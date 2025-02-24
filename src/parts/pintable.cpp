@@ -345,9 +345,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
       szPath = m_vpinball->m_szMyPath + dirname;
    // else: use current directory
    szPath += szfilename;
-   #ifdef __STANDALONE__
    szPath = find_path_case_insensitive(szPath);
-   #endif
    if (!szPath.empty()) {
       std::ifstream scriptFile;
       scriptFile.open(szPath, std::ifstream::in);
@@ -355,12 +353,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
          std::stringstream buffer;
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
-         #ifdef ENABLE_DX9
-         const string ext = ".vbs"s; // C++ 11 only for DX9
-         if ((ext.size() <= szfilename.size()) && std::equal(ext.rbegin(), ext.rend(), szfilename.rbegin()))
-         #else
          if (szfilename.ends_with(".vbs"))
-         #endif
             content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
          const WCHAR * const wz = MakeWide(content);
          *pContents = SysAllocString(wz);

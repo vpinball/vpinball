@@ -17,13 +17,16 @@
 class DebugAppender : public plog::IAppender
 {
 public:
+   DebugAppender()
+   {
+      m_uiThreadId == std::this_thread::get_id();
+   }
+
    virtual void write(const plog::Record &record) PLOG_OVERRIDE
    {
-      // FIXME BGFX add multithreading support
-      #ifdef ENABLE_BGFX
-      return;
-      #endif
       if (g_pvp == nullptr || g_pplayer == nullptr)
+         return;
+      if (std::this_thread::get_id() != m_uiThreadId)
          return;
       auto table = g_pvp->GetActiveTable();
       if (table == nullptr)
@@ -40,6 +43,9 @@ public:
       table->m_pcv->AddToDebugOutput(record.getMessage());
       #endif
    }
+
+private:
+   std::thread::id m_uiThreadId;
 };
 
 Logger* Logger::m_pInstance = nullptr;

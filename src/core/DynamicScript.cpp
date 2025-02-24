@@ -76,12 +76,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
    // Add class to type library
    classDef->name.id = static_cast<unsigned int>(m_types.size());
    m_typenames[classId] = classDef->name.id;
-   #ifdef ENABLE_DX9
-   TypeDef typeDef { TypeDef::TD_CLASS }; typeDef.classDef = cd;
-   m_types.push_back(typeDef);
-   #else
    m_types.push_back(TypeDef { .category = TypeDef::TD_CLASS, .classDef = cd });
-   #endif
 
    // Register members
    for (int i = 0; i < static_cast<int>(classDef->nMembers); i++)
@@ -115,12 +110,7 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
    assert(aliasedId != UNRESOLVED_TYPEID);
    const TypeDef& typeDef = m_types[aliasedId];
    assert(typeDef.category == TypeDef::TD_NATIVE);
-   #ifdef ENABLE_DX9
-   TypeDef typeDef2 { TypeDef::TD_ALIAS }; typeDef2.aliasDef = { name, typeDef.nativeType };
-   m_types.push_back(typeDef2);
-   #else
    m_types.push_back({ .category = TypeDef::TD_ALIAS, .aliasDef = { name, typeDef.nativeType } });
-   #endif
    string classId(name);
    StrToLower(classId);
    m_typenames[classId] = typeDef.nativeType.id;
@@ -135,12 +125,7 @@ void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
       return;
    }
    arrayDef->name.id = static_cast<unsigned int>(m_types.size());
-   #ifdef ENABLE_DX9
-   TypeDef typeDef { TypeDef::TD_ARRAY }; typeDef.arrayDef = arrayDef;
-   m_types.push_back(typeDef);
-   #else
    m_types.push_back({ .category = TypeDef::TD_ARRAY, .arrayDef = arrayDef });
-   #endif
    string classId(arrayDef->name.name);
    StrToLower(classId);
    m_typenames[classId] = arrayDef->name.id;
