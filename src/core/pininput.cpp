@@ -824,7 +824,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             DIDEVICEOBJECTDATA didod;
             didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.gbutton.button;
             didod.dwData = e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? 0x80 : 0x00;
-            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
+            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
          }
          break;
       case SDL_EVENT_JOYSTICK_ADDED:
@@ -837,7 +837,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
             didod.dwOfs = axes[e.jaxis.axis];
             const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
             didod.dwData = (DWORD)(value);
-            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
+            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
          }
          break;
       case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
