@@ -1,11 +1,11 @@
-# Upgrading a table to 10.8
+# Upgrading a table to 10.8.X
 
-VPX 10.8 tries to be entirely backwards compatible. Therefore, existing tables should look exactly the same as with 10.7, except for the 3 following points:
+VPX 10.8.X tries to be entirely backwards compatible. Therefore, existing tables should look exactly the same as with 10.7, except for the 3 following points:
 - parts below the playfield used to be always invisible unless they were tagged as 'Active', now they can be visible (e.g. through kicker holes),
 - reflections used to be rendered differently, so they will likely look somewhat different than before,
 - scripts were not allowed to adjust static parts at all, now this is possible during table initialization, therefore tables that would tweak a static part (intentionally or by accident) and rely on the fact that the changes are not processed will need to be updated.
 
-Beside these eventually needed updates, 10.8 offers new features that can be leveraged by updating the table. The main ones are described below.
+Beside these eventually needed updates, 10.8.X offers new features that can be leveraged by updating the table. The main ones are described below.
 
 
 ## Table of Contents
@@ -44,7 +44,7 @@ Left: sphere mapping / Right: view dependent equirectangular mapping
 
 
 ## Playfield Transparency
-Before 10.8, the playfield did only support binary transparency, that is to say either opaque or fully transparent based on the alpha threshold value defined on the playfield image. Now, alpha blended transparency is fully supported, allowing better rendering of tranparent parts like inserts.
+Before 10.8.0, the playfield did only support binary transparency, that is to say either opaque or fully transparent based on the alpha threshold value defined on the playfield image. Now, alpha blended transparency is fully supported, allowing better rendering of tranparent parts like inserts.
 
 There is nothing special to do to be able to use it. Using the feature, the alpha mask property of images should always be set to 1. It is mainly kept for backwards compatibility.
 
@@ -54,7 +54,7 @@ If you are using a custom 'playfield_mesh'-named primitive for the playfield vis
 
 
 ## Playfield Cutouts and lower playfield
-Before 10.8, parts under the playfield needed to be created separately, using an 'Active' material. This restriction does not apply any more. Therefore, you can just create a playfield primitive with its nice beveled cutouts, name it 'playfield_mesh' in order to get good looking cutouts.
+Before 10.8.0, parts under the playfield needed to be created separately, using an 'Active' material. This restriction does not apply any more. Therefore, you can just create a playfield primitive with its nice beveled cutouts, name it 'playfield_mesh' in order to get good looking cutouts.
 
 The same applies to lower playfields. These used to need an active material and could not be marked as static. This does not apply anymore.
 
@@ -71,7 +71,7 @@ This offers the following benefits:
 - in addition, a new 'roughness' parameter was added to allow for blurry reflections.
 
 If the table uses the default playfield (i.e. it does not feature a custom 'playfield_mesh'-named primitive), VPX will handle the reflection probe automatically based on user and table settings.
-For backwards compatibility, loading a pre-10.8 table with a 'playfield_mesh' primitive, VPX will create a default playfield renderprobe and apply it to this primitive.
+For backwards compatibility, loading a pre-10.8.0 table with a 'playfield_mesh' primitive, VPX will create a default playfield renderprobe and apply it to this primitive.
 
 To define a reflection probe, in the new 'Reflection Probe manager, one can set up the reflection plane by specifying its normal and the position along this normal.
 
@@ -137,7 +137,7 @@ Custom fading of lights and flashers can also be largely simplified by using the
 
 
 ## Better Static Parts
-VPX 10.8 allows the script to update the properties of 'static' parts during initialization and preprocessing, so within the main script part and in all the 'Init' events of the table and its parts. This can for example be leveraged to adjust the visibility of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
+VPX 10.8.X allows the script to update the properties of 'static' parts during initialization and preprocessing, so within the main script part and in all the 'Init' events of the table and its parts. This can for example be leveraged to adjust the visibility of static parts depending on the display setup (e.g. VR vs cab vs desktop vs FSS) or user-selected options.
 
 For example:
 ```
@@ -157,7 +157,7 @@ End If
 
 ## Additional DMD
 
-VPX 10.8 added the ability to setup a custom DMD for any flasher object.
+VPX 10.8.0 added the ability to setup a custom DMD for any flasher object.
 This allows to have multiple DMDs, for example to add an ingame option menu, or to handle additional real DMDs (e.g. Monopoly or TSPP tables).
 
 
@@ -180,4 +180,4 @@ Left image shows an (exaggerated) ambient occlusion artefact due to depth maskin
 
 Left image shows the ramp from VPW's Last Action Hero in 10.7, while the right image shows it with the mask option disabled.
 
-<sub><sup>[Information applicable to version 10.8 Beta]</sup></sub>
+<sub><sup>[Information applicable to version 10.8.X]</sup></sub>
