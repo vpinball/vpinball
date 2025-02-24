@@ -190,7 +190,7 @@ SDL_Rect Font::MeasureFont(const string& text)
 void Font::DrawText_(VP::SurfaceGraphics* pGraphics, float x, float y, const string& text)
 {
    char previousCharacter = ' ';
-   for (int i = 0; i < text.length(); i++) {
+   for (size_t i = 0; i < text.length(); i++) {
       char character = text[i];
       DrawCharacter(pGraphics, character, previousCharacter, x, y);
       previousCharacter = character;

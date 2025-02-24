@@ -719,7 +719,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
    ClassDef * cd = type.classDef;
-   if ((dispIdMember < 0) || (dispIdMember >= cd->members.size()))
+   if ((dispIdMember < 0) || (dispIdMember >= (DISPID)cd->members.size()))
       return DISP_E_MEMBERNOTFOUND;
 
    // Search for the right overload (needed for property which are a member with overloads for getters and setters)

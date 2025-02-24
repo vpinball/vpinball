@@ -379,7 +379,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
          break;
       case VisualType::SegDisplay:
          if (visual.nElements == -1)
-            visual.nElements = visual.xOffsets.size();
+            visual.nElements = (int)visual.xOffsets.size();
          if (visual.nElements == 0)
          {
             PLOGE << "Segment display needs at least one of XPos/NElements to be defined in ScoreView file " << path;                                                                      \
@@ -632,7 +632,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             { 0.f, vy1, 0.f, 0.f, 0.f, 1.f, 0.f, 1.f },
             { 1.f, vy2, 0.f, 0.f, 0.f, 1.f, 1.f, 0.f },
             { 0.f, vy2, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f } };
-         for (int i = 0; i < frame.displays.size(); i++)
+         for (size_t i = 0; i < frame.displays.size(); i++)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
             renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, frame.displays[i], &frame.frame[i * 16], 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr, 

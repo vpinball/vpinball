@@ -99,7 +99,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
             if (subId < 0)
                return { nullptr };
             Player::ControllerSegDisplay display = g_pplayer->GetControllerSegDisplay({ 0, 0 });
-            if ((display.frame == nullptr) || (subId >= display.displays.size()))
+            if ((display.frame == nullptr) || (subId >= (int)display.displays.size()))
                return { nullptr };
             float *data = display.frame;
             for (int i = 0; i < subId; i++)
@@ -130,7 +130,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
             if (subId < 0)
                return { nullptr };
             Player::ControllerSegDisplay display = g_pplayer->GetControllerSegDisplay({ endpointId, static_cast<uint32_t>(displayId) });
-            if ((display.frame == nullptr) || (subId >= display.displays.size()))
+            if ((display.frame == nullptr) || (subId >= (int)display.displays.size()))
                return { nullptr };
             float *data = display.frame;
             for (int i = 0; i < subId; i++)
