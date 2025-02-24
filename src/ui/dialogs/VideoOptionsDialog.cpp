@@ -437,9 +437,8 @@ void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection
    m_wndAspectRatio.AddString("Free");
    for (int j = 1; j < std::size(aspectRatios); j++)
    {
-      char szT[128];
-      sprintf_s(szT, sizeof(szT), "%s: %d x %d", aspectRatios[j].x > aspectRatios[j].y ? "Landscape" : "Portrait" , max(aspectRatios[j].x, aspectRatios[j].y), min(aspectRatios[j].x, aspectRatios[j].y));
-      m_wndAspectRatio.AddString(szT);
+      const string tmp = (aspectRatios[j].x > aspectRatios[j].y ? "Landscape: "s : "Portrait: "s) + std::to_string(max(aspectRatios[j].x, aspectRatios[j].y)) + " x " + std::to_string(min(aspectRatios[j].x, aspectRatios[j].y));
+      m_wndAspectRatio.AddString(tmp.c_str());
    }
    m_wndAspectRatio.SetRedraw(true);
    UpdateFullscreenModesList();
@@ -621,9 +620,8 @@ void VideoOptionPropPage::LoadDisplaySettings()
    {
       if (display == -1 && dispConf->isPrimary)
          display = dispConf->display;
-      char displayName[256];
-      sprintf_s(displayName, sizeof(displayName), "Display %d%s: %dx%d %s", dispConf->display + 1, (dispConf->isPrimary) ? "*" : " ", dispConf->width, dispConf->height, dispConf->GPU_Name);
-      m_wndDisplay.AddString(displayName);
+      const string displayName = "Display " + std::to_string(dispConf->display + 1) + (dispConf->isPrimary ? "*: " : " : ") + std::to_string(dispConf->width) + 'x' + std::to_string(dispConf->height) + ' ' + dispConf->GPU_Name;
+      m_wndDisplay.AddString(displayName.c_str());
    }
    if (embedded == 2)
       m_wndDisplay.SetCurSel(m_wndEmbeddable ? (display + 2) : display);
@@ -643,7 +641,10 @@ void VideoOptionPropPage::LoadDisplaySettings()
    const int height = settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "Height", -1);
    SetDlgItemInt(IDC_WIDTH_EDIT, width, TRUE);
    SetDlgItemInt(IDC_HEIGHT_EDIT, height, TRUE);
+
    SelectAspectRatio(width, height);
+   if(settings.LoadValueWithDefault(m_wndSection, m_wndSettingPrefix + "AspectRatio", -1) == 0) // Free
+      m_wndAspectRatio.SetCurSel(0);
 
    UpdateDisplayHeightFromWidth();
    EndLoad();
@@ -687,7 +688,7 @@ void VideoOptionPropPage::SaveDisplaySettings()
       const bool fullscreen = m_wndFullscreen.GetCheck() == BST_CHECKED;
       if (fullscreen)
       {
-         int index = max(0, m_wndVideoModes.GetCurSel());
+         const int index = max(0, m_wndVideoModes.GetCurSel());
          if (index >= 0 && (size_t)index < m_allVideoModes.size())
          {
             const VPX::Window::VideoMode* const pvm = &m_allVideoModes[index];
@@ -699,13 +700,14 @@ void VideoOptionPropPage::SaveDisplaySettings()
       }
       else
       {
-         int arMode = m_wndAspectRatio.GetCurSel();
-         int width = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
-         int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
+         const int arMode = m_wndAspectRatio.GetCurSel();
+         const int width  = GetDlgItemInt(IDC_WIDTH_EDIT, TRUE);
+               int height = GetDlgItemInt(IDC_HEIGHT_EDIT, TRUE);
          if (arMode > 0)
             height = (int)(width * (double)aspectRatios[arMode].y / (double)aspectRatios[arMode].x);
          if (!saveAll)
          {
+            settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "AspectRatio");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Width");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "Height");
             settings.DeleteValue(m_wndSection, m_wndSettingPrefix + "ColorDepth");
@@ -713,6 +715,7 @@ void VideoOptionPropPage::SaveDisplaySettings()
          }
          if (width > 0 && height > 0)
          {
+            settings.SaveValue(m_wndSection, m_wndSettingPrefix + "AspectRatio", arMode, !saveAll);
             settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Width", width, !saveAll);
             settings.SaveValue(m_wndSection, m_wndSettingPrefix + "Height", height, !saveAll);
          }
