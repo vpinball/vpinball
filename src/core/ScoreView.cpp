@@ -72,7 +72,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
    layout.path = path;
    layout.width = 1920.f;
    layout.height = 1080.f;
-   layout.fit == ScoreView::Contain;
+   layout.fit = ScoreView::Contain;
    std::string line;
    size_t indentSize = 0;
    unsigned int lineIndex = 0;
@@ -156,7 +156,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
       {
          CHECK_FIELD(indent == 0);
          if (value == "Contain")
-            layout.fit == ScoreView::Contain;
+            layout.fit = ScoreView::Contain;
          else
          {
             // Unsupported fit mode
