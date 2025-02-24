@@ -1116,11 +1116,11 @@ void Flasher::RenderSetup(RenderDevice *device)
    vector<WORD> vtri;
    
    {
-   vector<unsigned int> vpoly(m_numVertices);
-   for (unsigned int i = 0; i < m_numVertices; i++)
-      vpoly[i] = i;
+      vector<unsigned int> vpoly(m_numVertices);
+      for (unsigned int i = 0; i < m_numVertices; i++)
+         vpoly[i] = i;
 
-   PolygonToTriangles(vvertex, vpoly, vtri, false);
+      PolygonToTriangles(vvertex, vpoly, vtri, false);
    }
 
    m_numPolys = (int)(vtri.size()/3);
@@ -1183,6 +1183,8 @@ void Flasher::RenderSetup(RenderDevice *device)
          m_vertices[i].tv = m_vertices[i].y*inv_tableheight;
       }
    }
+
+   m_dynamicVertexBufferRegenerate = true;
 }
 
 void Flasher::RenderRelease()
