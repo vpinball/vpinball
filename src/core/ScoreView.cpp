@@ -373,7 +373,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
       case VisualType::DMD:
          if (visual.dmdSize.x < 0 || visual.dmdSize.y < 0)
          {
-            PLOGE << "DMD display need Size to be defined in ScoreView file " << path;
+            PLOGE << "DMD display needs Size to be defined in ScoreView file " << path;
             return;
          }
          break;
@@ -382,7 +382,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
             visual.nElements = visual.xOffsets.size();
          if (visual.nElements == 0)
          {
-            PLOGE << "Segment display need at least of one XPos/NElements to be defined in ScoreView file " << path;                                                                      \
+            PLOGE << "Segment display needs at least one of XPos/NElements to be defined in ScoreView file " << path;                                                                      \
             return;
          }
          if (visual.xOffsets.empty())
@@ -620,8 +620,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             glassArea.z = visual.glassArea.z / visual.glass->m_width;
             glassArea.w = visual.glassArea.w / visual.glass->m_height;
          }
-         const float elementWidth = (visual.h * 24.f / 32.f); // Each segmenet element SDF is 24x32, fitted on visual height
-         const float elementXPad = (visual.h * 4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
+         const float elementWidth = visual.h * (24.f / 32.f); // Each segment element SDF is 24x32, fitted on visual height
+         const float elementXPad = visual.h * (4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
          const float hGlassScale = glassArea.z / visual.w;
          vec4 segGlassArea = glassArea;
          segGlassArea.z = elementWidth * hGlassScale;
@@ -639,7 +639,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
                visual.glassPad, visual.glassTint, visual.glassRoughness,
                visual.glass, segGlassArea, visual.glassAmbient);
             const float vx1 = px + sx * (visual.x + visual.xOffsets[i]);
-            const float vx2 = vx1 + sx * visual.h * 24.f / 32.f;
+            const float vx2 = vx1 + sx * visual.h * (24.f / 32.f);
             vertices[0].x = vertices[2].x = vx2;
             vertices[1].x = vertices[3].x = vx1;
             renderer->m_renderDevice->DrawTexturedQuad(renderer->m_renderDevice->m_DMDShader, vertices);

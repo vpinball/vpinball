@@ -721,7 +721,9 @@ public:
 private:
    RenderDevice* const m_renderDevice;
    const ShaderId m_shaderId;
+#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
    const bool m_isStereo;
+#endif
    ShaderTechniques m_technique;
    string m_shaderCodeName;
 

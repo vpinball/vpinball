@@ -174,7 +174,7 @@ const char *IEditable::GetName()
     if (elemName)
     {
         static char elementName[256];
-        WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, 256, nullptr, nullptr);
+        WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, sizeof(elementName), nullptr, nullptr);
         return elementName;
     }
     return nullptr;
@@ -200,7 +200,7 @@ void IEditable::SetName(const string& name)
     if(!isEqual && !pt->IsNameUnique(newName))
     {
        WCHAR uniqueName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
-       pt->GetUniqueName(newName, uniqueName, sizeof(uniqueName) / sizeof(uniqueName[0]));
+       pt->GetUniqueName(newName, uniqueName, std::size(uniqueName));
        namePtr = uniqueName;
     }
     STARTUNDO

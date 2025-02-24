@@ -4,14 +4,14 @@
 #include <algorithm>
 #include <filesystem>
 
-inline char cLower(char c)
+static inline char cLower(char c)
 {
    if (c >= 'A' && c <= 'Z')
       c ^= 32; //ASCII convention
    return c;
 }
 
-string string_to_lower(string str)
+static inline string string_to_lower(string str)
 {
    std::transform(str.begin(), str.end(), str.begin(), cLower);
    return str;
@@ -42,4 +42,3 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
 
    return string();
 }
-

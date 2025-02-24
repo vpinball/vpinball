@@ -21,11 +21,11 @@ public:
    // TODO may also be accessed as a collection object
    Game* GetGames(const string& name) const;
 
-   string GetGameName() const { if (m_pPinmameGame) return m_pPinmameGame->name; else return ""; }
+   string GetGameName() const { if (m_pPinmameGame) return m_pPinmameGame->name; else return string(); }
    void SetGameName(const string& name);
 
-   string GetSplashInfoLine() const { return m_splahsInfoLine; }
-   void SetSplashInfoLine(const string& text) { m_splahsInfoLine = text; }
+   string GetSplashInfoLine() const { return m_splashInfoLine; }
+   void SetSplashInfoLine(const string& text) { m_splashInfoLine = text; }
 
    bool GetHandleKeyboard() const { return PinmameGetHandleKeyboard(); }
    void SetHandleKeyboard(const bool handle) {PinmameSetHandleKeyboard(handle); }
@@ -50,7 +50,7 @@ public:
    void Stop();
 
    // Emulated machine state access
-   int GetGetMech(int mechNo) { return PinmameGetMech(mechNo); }
+   int GetGetMech(int mechNo) const { return PinmameGetMech(mechNo); }
    void SetMech(int mechNo, int newVal);
    bool GetSwitch(int nSwitchNo) const { return PinmameGetSwitch(nSwitchNo); }
    void SetSwitch(int nSwitchNo, bool state) { PinmameSetSwitch(nSwitchNo, state ? 1 : 0); }
@@ -74,7 +74,7 @@ public:
    // TODO should we bridge this ? but to what as External dmddevice.dll is handled through the plugin bus ?
    bool GetShowPinDMD() const { LOGE("ShowPinDMD is not implemented"); return false; }
    void SetShowPinDMD(bool v) const { LOGE("ShowPinDMD is not implemented"); }
-   
+
    // TODO should we bridge this ? but to what as Windows DMD is handled through the plugin bus ?
    bool GetShowWinDMD() const { LOGE("ShowWinDMD is not implemented"); return false; }
    void SetShowWinDMD(bool v) const { LOGE("ShowWinDMD is not implemented"); }
@@ -157,7 +157,7 @@ private:
    vector<PinmameSoundCommand> m_soundCommands;
    vector<PinmameGIState> m_giStates;
    vector<PinmameSolenoidState> m_solenoidStates;
-   string m_splahsInfoLine; // Info line shown during startup
+   string m_splashInfoLine; // Info line shown during startup
    bool m_hidden = true; // Show/Hide PinMame window
 
    mutable pinmame_tMachineOutputState* m_stateBlock = nullptr;

@@ -69,7 +69,7 @@ extern marker_series series;
 
 //
 
-#define RECOMPUTEBUTTONCHECK WM_USER+100
+#define RECOMPUTEBUTTONCHECK (WM_USER+100)
 
 #if (defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__))
 #ifdef _MSC_VER
@@ -1046,7 +1046,7 @@ Player::~Player()
       renderable->RenderRelease();
    for (auto hitable : m_vhitables)
       hitable->EndPlay();
-   assert(m_vballDelete.size() == 0);
+   assert(m_vballDelete.empty());
    m_vball.clear();
 
    if (m_implicitPlayfieldMesh)
@@ -2216,7 +2216,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    U64 now = usec();
    if ((m_vrDevice == nullptr) 
       && ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-         || ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastScoreViewRender) > 1e6f / m_scoreviewOutput.GetWindow()->GetRefreshRate())))
+         || ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastScoreViewRender) > 1e6 / m_scoreviewOutput.GetWindow()->GetRefreshRate())))
    {
       lastScoreViewRender = now;
       m_scoreView.Render(m_scoreviewOutput);
@@ -2357,7 +2357,7 @@ void Player::FinishFrame()
          if (hVPMWnd != nullptr && ::IsWindowVisible(hVPMWnd))
          {
             ::SetWindowPos(hVPMWnd, HWND_TOPMOST, 0, 0, 0, 0, (SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOACTIVATE)); // in some strange cases the VPinMAME window is not on top, so enforce it
-            BringWindowToTop(hVPMWnd);
+            ::BringWindowToTop(hVPMWnd);
          }
       }
    }
@@ -2438,7 +2438,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          {
             m_controllerSegDisplays.push_back({ m_defaultSegId, 0, nullptr });
             display = &m_controllerSegDisplays.back();
-            for (int i = 0; i < getSrcMsg.count; i++)
+            for (unsigned int i = 0; i < getSrcMsg.count; i++)
             {
                if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
                {
@@ -2460,7 +2460,6 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
       if (pCD == m_controllerSegDisplays.end())
       {
          // Search for the requested display
-         bool segFound = false;
          GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
          VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
          m_controllerSegDisplays.push_back({ id, 0, nullptr });

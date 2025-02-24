@@ -94,24 +94,24 @@ void Controller::Run(long hParentWnd, int nMinVersion)
    m_dmdColor = RGB(255, 88, 32);
 
    if (file.read(ini)) {
-      if (ini.has("settings")) {
-         if (ini["settings"].has("cheat"))
-            cheat = atoll(ini["settings"]["cheat"].c_str());
+      if (ini.has("settings"s)) {
+         if (ini["settings"s].has("cheat"s))
+            cheat = atoll(ini["settings"s]["cheat"s].c_str());
 
-         if (ini["settings"].has("sound"))
-            m_enableSound = atoll(ini["settings"]["sound"].c_str());
+         if (ini["settings"s].has("sound"s))
+            m_enableSound = atoll(ini["settings"s]["sound"s].c_str());
 
-         if (ini["settings"].has("dmd_red") && ini["settings"].has("dmd_green") && ini["settings"].has("dmd_blue"))
-            m_dmdColor = RGB(atoll(ini["settings"]["dmd_red"].c_str()), atoll(ini["settings"]["dmd_green"].c_str()), atoll(ini["settings"]["dmd_blue"].c_str()));
+         if (ini["settings"s].has("dmd_red"s) && ini["settings"s].has("dmd_green"s) && ini["settings"s].has("dmd_blue"s))
+            m_dmdColor = RGB(atoll(ini["settings"s]["dmd_red"s].c_str()), atoll(ini["settings"s]["dmd_green"s].c_str()), atoll(ini["settings"s]["dmd_blue"s].c_str()));
       }
    }
 
-   ini["settings"]["cheat"] = std::to_string(cheat);
-   ini["settings"]["sound"] = std::to_string(m_enableSound);
+   ini["settings"s]["cheat"s] = std::to_string(cheat);
+   ini["settings"s]["sound"s] = std::to_string(m_enableSound);
 
-   ini["settings"]["dmd_red"] = std::to_string(GetRValue(m_dmdColor));
-   ini["settings"]["dmd_green"] = std::to_string(GetGValue(m_dmdColor));
-   ini["settings"]["dmd_blue"] = std::to_string(GetBValue(m_dmdColor));
+   ini["settings"s]["dmd_red"s] = std::to_string(GetRValue(m_dmdColor));
+   ini["settings"s]["dmd_green"s] = std::to_string(GetGValue(m_dmdColor));
+   ini["settings"s]["dmd_blue"s] = std::to_string(GetBValue(m_dmdColor));
 
    file.write(ini);
 
@@ -260,7 +260,7 @@ int Controller::GetRawDmdWidth() const
    pinmame_tDisplayStates* state = m_stateBlock->displayStates;
    if (state == nullptr)
       return 0;
-   pinmame_tFrameState* frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
+   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
    for (unsigned int index = 0; index < state->nDisplays; index++)
       if (frame->width >= 128)
          return frame->width;
@@ -275,7 +275,7 @@ int Controller::GetRawDmdHeight() const
    pinmame_tDisplayStates* state = m_stateBlock->displayStates;
    if (state == nullptr)
       return 0;
-   pinmame_tFrameState* frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
+   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
    for (unsigned int index = 0; index < state->nDisplays; index++)
       if (frame->width >= 128)
          return frame->height;

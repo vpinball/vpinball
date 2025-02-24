@@ -2,8 +2,6 @@
 
 #include "libpinmame.h"
 
-#include <assert.h>
-
 #include <string>
 using std::string;
 

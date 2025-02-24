@@ -484,7 +484,9 @@ Shader::Shader(RenderDevice* renderDevice, const ShaderId id, const bool isStere
    : m_renderDevice(renderDevice)
    , m_technique(SHADER_TECHNIQUE_INVALID)
    , m_shaderId(id)
+#if defined(ENABLE_BGFX) || defined(ENABLE_OPENGL)
    , m_isStereo(isStereo)
+#endif
 {
    #if defined(ENABLE_BGFX)
    const int nEyes = m_isStereo ? 2 : 1;

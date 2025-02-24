@@ -3,13 +3,13 @@
 #include "MsgPlugin.h"
 #include "VPXPlugin.h"
 #include "ScriptablePlugin.h"
-#include <string.h>
+#include <cstring>
 
-MsgPluginAPI* msgApi = nullptr;
-VPXPluginAPI* vpxApi = nullptr;
-ScriptablePluginAPI* scriptApi = nullptr;
+static MsgPluginAPI* msgApi = nullptr;
+static VPXPluginAPI* vpxApi = nullptr;
+static ScriptablePluginAPI* scriptApi = nullptr;
 
-uint32_t endpointId;
+static uint32_t endpointId;
 
 static float property2 = 42.5f;
 

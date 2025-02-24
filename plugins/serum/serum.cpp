@@ -12,6 +12,10 @@
 #include "libserum/serum-decode.h"
 #include "common.h"
 
+#ifndef _MSC_VER
+ #define strcpy_s(A, B, C) strncpy(A, C, B)
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
 //
@@ -21,14 +25,14 @@
 // - PinMame/onGameEnd
 // - Controller/GetDMD: msgData is a request/response struct
 
-MsgPluginAPI* msgApi = nullptr;
-uint32_t endpointId;
-unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
+static MsgPluginAPI* msgApi = nullptr;
+static uint32_t endpointId;
+static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
 
-Serum_Frame_Struc* pSerum;
-CtlResId dmdId;
-unsigned int lastRawFrameId;
-bool dmdSelected = false;
+static Serum_Frame_Struc* pSerum;
+static CtlResId dmdId;
+static unsigned int lastRawFrameId;
+static bool dmdSelected = false;
 
 class ColorizationState
 {
@@ -94,7 +98,7 @@ public:
    std::chrono::high_resolution_clock::time_point m_animationNextTick;
 };
 
-ColorizationState* state = nullptr;
+static ColorizationState* state = nullptr;
 
 
 void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
@@ -105,11 +109,11 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    // Only process selected DMD
    if (!dmdSelected || getDmdMsg->dmdId.id != dmdId.id)
       return;
-   
+
    // Only process response with a new frame
    if ((getDmdMsg->frame == nullptr) || (getDmdMsg->frameId == lastRawFrameId))
       return;
-   
+
    // We received a raw frame to identify/colorize (eventually requested by us)
    const uint32_t firstrot = Serum_Colorize(getDmdMsg->frame);
    lastRawFrameId = getDmdMsg->frameId;
@@ -167,11 +171,11 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
    // Only process selected DMD
    if (getDmdMsg.dmdId.id.id != dmdId.id)
       return;
-   
+
    // Does someone requested a DMD frame to render that no one has colorized yet ?
    if ((getDmdMsg.frame != nullptr) && (getDmdMsg.dmdId.format != CTLPI_GETDMD_FORMAT_LUM8))
       return;
-   
+
    // Update to the last 'raw' frame
    GetRawDmdMsg getRawDmdMsg = { dmdId };
    msgApi->BroadcastMsg(endpointId, getIdentifyDmdId, &getRawDmdMsg);
@@ -180,7 +184,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
       return;
    if (getDmdMsg.dmdId.format != state->m_colorizedFrameFormat)
       return;
-   
+
    // Perform current animation (catching up to the current time point)
    if (state->m_hasAnimation)
    {
@@ -266,11 +270,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor");
    char crzFolder[512];
    if (!altColorPath.empty())
-   #ifdef _WIN32
-      strcpy_s(crzFolder, altColorPath.c_str());
-   #else
-      strcpy(crzFolder, altColorPath.c_str());
-   #endif
+      strcpy_s(crzFolder, sizeof(crzFolder), altColorPath.c_str());
    else
       msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
    pSerum = Serum_Load(crzFolder, msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);

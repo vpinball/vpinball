@@ -378,7 +378,7 @@ private:
 #pragma region Physics
 public:
    HitBall *CreateBall(const float x, const float y, const float z, const float vx, const float vy, const float vz, const float radius = 25.0f, const float mass = 1.0f);
-   void DestroyBall(HitBall *pball);
+   void DestroyBall(HitBall *pHitBall);
 
    PhysicsEngine* m_physics = nullptr;
 

@@ -6,6 +6,8 @@
 #include "GameSettings.h"
 #include "Roms.h"
 
+#include <cassert>
+
 class Game
 {
 public:

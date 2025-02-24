@@ -9,6 +9,7 @@
 #include "VPXPlugin.h" // Only used for optional feature (locating pinmame files along a VPX table)
 
 #include <filesystem>
+#include <cassert>
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Scriptable object definitions
@@ -68,7 +69,7 @@ PSC_ARRAY1(ByteArray, uchar, 0)
 PSC_ARRAY1(IntArray, uint, 0)
 #define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
 
-// Array of struct with fields of the same type that can be considered as a 2 dimensionnal array
+// Array of struct with fields of the same type that can be considered as a 2 dimensional array
 #define PSC_VAR_SET_StructArray(structType, nFields, variant, value) { \
       const unsigned int nDimensions = 2; \
       const std::vector<structType>& vec = (value); \
@@ -138,7 +139,7 @@ PSC_CLASS_START(Controller)
    PSC_PROP_R(Controller, int, RawDmdHeight)
    PSC_PROP_R(Controller, ByteArray, RawDmdPixels)
    PSC_PROP_R(Controller, IntArray, RawDmdColoredPixels)
-   // Overall informations
+   // Overall information
    PSC_PROP_R_ARRAY1(Controller, Game, Games, string)
    // Deprecated properties
    PSC_PROP_RW(Controller, bool, DoubleSize)
@@ -157,13 +158,13 @@ PSC_CLASS_END(Controller)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Plugin interface
 
-MsgPluginAPI* msgApi = nullptr;
-ScriptablePluginAPI* scriptApi = nullptr;
+static MsgPluginAPI* msgApi = nullptr;
+static ScriptablePluginAPI* scriptApi = nullptr;
 
-uint32_t endpointId;
-unsigned int onGameStartId, onGameEndId;
+static uint32_t endpointId;
+static unsigned int onGameStartId, onGameEndId;
 
-Controller* controller = nullptr;
+static Controller* controller = nullptr;
 
 PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
 
@@ -171,7 +172,7 @@ LPI_IMPLEMENT // Implement shared login support
 
 void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData)
 {
-   int size = vsnprintf(NULL, 0, format, args);
+   int size = vsnprintf(nullptr, 0, format, args);
    if (size > 0)
    {
       char* buffer = static_cast<char*>(malloc(size + 1));
@@ -192,10 +193,10 @@ void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Audio
 
-unsigned int onAudioUpdateId;
-AudioUpdateMsg* audioSrc = nullptr;
+static unsigned int onAudioUpdateId;
+static AudioUpdateMsg* audioSrc = nullptr;
 
-void StopAudioStream()
+static void StopAudioStream()
 {
    if (audioSrc != nullptr)
    {
@@ -237,7 +238,7 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
    if (audioSrc != nullptr)
    {
       // This callback is invoked on the emulation thread, with data only valid in the context of the call.
-      // Therefore we need to copy the data to feed them on the message thread.
+      // Therefore, we need to copy the data to feed them on the message thread.
       const int bytePerSample = (audioSrc->format == CTLPI_AUDIO_FORMAT_SAMPLE_INT16) ? 2 : 4;
       const int nChannels = (audioSrc->type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
       AudioUpdateMsg* pendingAudioUpdate = new AudioUpdateMsg(); 
@@ -259,13 +260,13 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Alphanumeric segment displays
 
-bool hasAlpha = false;
-unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
-unsigned int segFrameId = 0;
-float segLuminances[16 * 128] = { 0 };
-float segPrevLuminances[16 * 128] = { 0 };
+static bool hasAlpha = false;
+static unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
+static unsigned int segFrameId = 0;
+static float segLuminances[16 * 128] = { 0 };
+static float segPrevLuminances[16 * 128] = { 0 };
 
-void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
+static void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
 {
    if (!hasAlpha || (controller == nullptr))
       return;
@@ -292,7 +293,7 @@ void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
+static void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
 {
    if (!hasAlpha || (controller == nullptr))
       return;
@@ -307,7 +308,7 @@ void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
    if (state == nullptr)
       return;
    pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(state);
-   static int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
+   static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
    unsigned int nElements = 0;
    for (unsigned int display = 0; display < state->nDisplays; display++)
       nElements += state->displayDefs[display].nElements;
@@ -326,10 +327,10 @@ void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // DMD & Displays
 
-bool hasDMD = false;
-unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
+static bool hasDMD = false;
+static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
 
-void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
 {
    if (!hasDMD || (controller == nullptr))
       return;
@@ -357,7 +358,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    }
 }
 
-void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    if (!hasDMD || (controller == nullptr))
       return;
@@ -388,7 +389,7 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    if (!hasDMD || (controller == nullptr))
       return;
@@ -423,7 +424,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
 
-void OnControllerGameStart(Controller*)
+static void OnControllerGameStart(Controller*)
 {
    assert(controller->GetRunning());
    const string& gameName = controller->GetGameName();
@@ -450,7 +451,7 @@ void OnControllerGameStart(Controller*)
    }
 }
 
-void OnControllerGameEnd(Controller*)
+static void OnControllerGameEnd(Controller*)
 {
    if (hasDMD)
    {
@@ -472,7 +473,7 @@ void OnControllerGameEnd(Controller*)
    StopAudioStream();
 }
 
-void OnControllerDestroyed(Controller*)
+static void OnControllerDestroyed(Controller*)
 {
    StopAudioStream();
    controller = nullptr;
