@@ -1366,6 +1366,8 @@ void LiveUI::Update(const int width, const int height)
    }
    ImGui::NewFrame();
 
+   ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but need it to be disabled to allow keyboard shortcuts
+
    UpdateTouchUI();
 
    ImGuizmo::SetOrthographic(m_orthoCam);
@@ -4259,10 +4261,6 @@ void LiveUI::UpdateMainSplashModal()
             initialDragPos = ImGui::GetMousePos();
          }
       }
-   }
-   else
-   {
-      ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard; // We use it for main splash popup, but need it to be disabled to allow keyboard shortcuts
    }
 }
 
