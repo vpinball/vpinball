@@ -2378,7 +2378,11 @@ void Shader::Load()
          {
             const string name = "Texture"s.append(std::to_string(shaderUniformNames[uniformIndex].tex_unit));
             m_uniform_desc[uniformIndex].tex_handle = m_shader->GetParameterByName(NULL, name.c_str());
+            #if __cplusplus < 202002L
             if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).rfind("TEXUNIT"s, 0) == 0)
+            #else
+            if (param_desc.Semantic != nullptr && std::string(param_desc.Semantic).starts_with("TEXUNIT"s))
+            #endif
             {
                const int unit = shaderUniformNames[uniformIndex].tex_unit;
                assert(unit == atoi(param_desc.Semantic + 7));

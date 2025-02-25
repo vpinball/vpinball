@@ -353,7 +353,12 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
          std::stringstream buffer;
          buffer << scriptFile.rdbuf();
          string content = buffer.str();
+         #if __cplusplus < 202002L
+         const string ext = ".vbs"s;
+         if ((ext.size() <= szfilename.size()) && std::equal(ext.rbegin(), ext.rend(), szfilename.rbegin()))
+         #else
          if (szfilename.ends_with(".vbs"))
+         #endif
             content = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(content);
          const WCHAR * const wz = MakeWide(content);
          *pContents = SysAllocString(wz);
