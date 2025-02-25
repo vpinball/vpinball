@@ -3,26 +3,7 @@
 #pragma once
 
 #include "core/Settings.h"
-
-void BASS_ErrorMapCode(const int code, string& text);
-
-struct DSAudioDevice
-{
-   LPGUID guid;
-   string description;
-   string module;
-
-   DSAudioDevice() {
-      guid = nullptr;
-   }
-   ~DSAudioDevice() {
-      delete guid;
-   }
-};
-
-typedef vector<DSAudioDevice*> DSAudioDevices;
-
-BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list);
+#include <SDL3_mixer/SDL_mixer.h>
 
 enum SoundOutTypes : char { SNDOUT_TABLE = 0, SNDOUT_BACKGLASS = 1 };
 enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDCFG_SND3DFRONTISREAR = 2, 
@@ -50,264 +31,190 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 // SSF: 6CH still doesn't map sounds for SSF as distinctly as it could.. In this mode horizontal panning and vertical fading 
 // are enhanced for a more realistic experience.
 
-class PinDirectSoundWavCopy
+struct AudioDevice
 {
-public:
-   PinDirectSoundWavCopy(class PinSound * const pOriginal);
-
-protected:
-   void StopInternal()
-   {
-#ifndef __STANDALONE__
-      m_pDSBuffer->Stop();
-#endif
-   }
-
-public:
-   void PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
-   HRESULT Get3DBuffer();
-
-   class PinSound *m_ppsOriginal;
-   LPDIRECTSOUNDBUFFER m_pDSBuffer;
-   LPDIRECTSOUND3DBUFFER m_pDS3DBuffer;
+   int id;
+   const char name[100];
+   unsigned int channels; //number of speakers in this case
 };
 
-class PinSound : public PinDirectSoundWavCopy
+// this gets passed to all Mix_RegesterEffect callbacks
+struct MixEffectsData
+{
+   // The output device format info.  This is the format of the audio stream that comes in to be resampled (Mix_RegisterEffect). 
+   int outputFrequency;
+   SDL_AudioFormat outputFormat; 
+   int outputChannels;
+
+   // These are the data points provided by vpinball to adjust sample when resampling
+   float pitch;
+   float randompitch;
+   float front_rear_fade;
+   float pan;
+   float volume;
+   float nVolume; // remove once custom vol is in.
+   float globalTableVolume; // Holds a 0-1 based off the Global Sound Volume Setting.  
+};
+
+class PinSound 
 {
 public:
-   PinSound();
-   ~PinSound();
 
-   class PinDirectSound *GetPinDirectSound();
+   // SDL3_mixer
+   Mix_Chunk * m_pMixChunkOrg = nullptr; // The orginal unmodified loaded sound
+   Mix_Music * m_pMixMusic = nullptr; // used PlayMusic
+   Mix_Chunk * m_pMixChunk = nullptr; // we use this one when we resample for pitch changes.
 
-	void SetOutputTarget(SoundOutTypes target) {if (m_outputTarget != target) { m_outputTarget = target; ReInitialize(); } }
-	SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
-
-   void UnInitialize();
-   HRESULT ReInitialize();
-   void SetBassDevice(); //!! BASS only // FIXME move loading code to PinSound and make private
-#ifdef ONLY_USE_BASS
-   bool IsWav() const { return false; }
-   bool IsWav2() const
-   {
-      const size_t pos = m_szPath.find_last_of('.');
-      if(pos == string::npos)
-         return true;
-      return StrCompareNoCase(m_szPath.substr(pos+1).c_str(), "wav"s);
-   }
-#else
-   bool IsWav() const
-   {
-      const size_t pos = m_szPath.find_last_of('.');
-      if(pos == string::npos)
-         return true;
-      return StrCompareNoCase(m_szPath.substr(pos+1), "wav"s);
-   }
-   bool IsWav2() const { return IsWav(); }
-#endif
-   void Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart);
-   void Stop();
-
-   union
-   {
-      class PinDirectSound *m_pPinDirectSound;
-      //struct {
-         HSTREAM m_BASSstream;
-      // float m_pan;
-      //};
-   };
-
+   //SDL Audio
+   //SDL_AudioSpec m_audioSpec; // audio spec format 
+   SDL_IOStream *m_psdlIOStream = nullptr; // the audio stream loader
+   SDL_AudioStream *m_pstream = nullptr; // Vpipmame streamer
+   float m_streamVolume = 0;
+  
+   // if the Reinitilize comes back good, We should free these in pintable.cpp or were keeping two copies
+   // one here and one from pintable.  Once everything is good we only need Mix_Chunk.   S_FIX S_REMOVE
+   char *m_pdata = nullptr; // wav data set by caller directly
+   int m_cdata; // wav data length set by caller directly
+   
+    // Sounds filenames and path
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
 
+   // used by the editor?  Sound Resource Manager?
+   int m_volume;
    int m_balance;
    int m_fade;
-   int m_volume;
-   float m_freq;
 
-   char *m_pdata; // wav: copy of the buffer/sample data so we can save it out, else: the contents of the original file
-   int m_cdata;
+   // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
+   SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
 
-   // old wav code only, but also used to convert raw wavs back to BASS
+   // This is because when they import Wavs into the Windows versions it stores them in WAVEFORMATEX
+   // format.  We need Wav.  So this keeps the orginal format for exporting/inmport, etc for windows. 
+   // old wav code only, but also used to convert raw wavs for SDL
    WAVEFORMATEX m_wfx;
-
-#ifdef ONLY_USE_BASS
-   char *m_pdata_org; // save wavs in original raw format
    int m_cdata_org;
-#endif
+   char *m_pdata_org; // save wavs in original raw format
 
-private:
-   SoundOutTypes m_outputTarget;
+   PinSound() {};
+   PinSound(const Settings& settings);
+   ~PinSound();
+ 
+   // plays the table sounds.
+   void UnInitialize();
+   HRESULT ReInitialize();
+   void Play(const float volume, const float randompitch, const int pitch, 
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   void Stop(); // stop all table sounds
+
+   //Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
+   bool SetMusicFile(const string& szFileName);
+   void MusicPlay();
+   void MusicStop();
+   void MusicPause();
+   void MusicUnpause();
+   void MusicClose();
+   bool MusicActive();
+   double GetMusicPosition();
+   void SetMusicPosition(double seconds);
+   void MusicVolume(const float volume);
+   bool MusicInit(const string& szFileName, const float volume);  //player.cpp
+
+   // Plays sounds from Vpinmame and PUP.  These are streams
+   bool StreamInit(DWORD frequency, int channels, const float volume);
+   void StreamUpdate(void* buffer, DWORD length);
+   void StreamVolume(const float volume); 
+
+   // used by windows UI.  called by pintable
+   SoundOutTypes GetOutputTarget() const { return m_outputTarget; } 
+
+   // This is called by pintable just before Reinitialize().
+   void SetOutputTarget(SoundOutTypes target) { 
+      m_outputTarget = target;
+      }
+
+   // Windows Editor?
+   PinSound *LoadFile(const string& strFileName);
+
+   // static class methods
+   //
+   // Retrieves detected audio devices detected by SDL
+	static void EnumerateAudioDevices(vector<AudioDevice>& devices);
+
+   ///////////////////////////////////
+   // Canidates for removeal _S_REMOVE
+   ///////////////////////////////////
+
+   // directsound stuff?
+   void StopCopiedWav(const string& name) {};
+   void StopCopiedWavs() {};
+   void StopAndClearCopiedWavs() {};
+   void InitPinDirectSound(const Settings& settings, const HWND hwn) {};
+   void ReInitPinDirectSound(const Settings& settings, const HWND hwn) {};
+
+   // not sure remove?
+   int bass_BG_idx;
+   int bass_STD_idx;
+
+   /////////////
+   // END REMOVE
+   /////////////
+
+private:	
+
+   static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
+   static Settings m_settings; // get key/value from VPinball.ini
+   static int m_sdl_STD_idx;  // the table sound device to play sounds out of
+	static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
+   MixEffectsData m_mixEffectsData;
+   
+   // The output devices audio spec
+   static SDL_AudioSpec m_audioSpecOutput;
+  
+   // SDL_mixer
+   int m_assignedChannel; // the mixer channel this MixChunk is assigned to
+   static int m_maxSDLMixerChannels; // max channels allocated on init
+   static int m_nextAvailableChannel; // channel pool for assignment
+
+   // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
+   static SoundConfigTypes m_SoundMode3D;
+
+   // This is for BG sounds that are stored in the VPX file.  Treated differently then table sounds
+   void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
+
+   // sound file meta data extraction
+   std::string getFileExt(); // get the sound file extention
+   uint16_t getChannelCountWav(); //gets the number of channels the orginal WAV was encoded with
+
+    // Play methods for each SNDCFG
+   void Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, const int pitch, 
+            const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   void Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, const int pitch, 
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   void Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, const int pitch, 
+      const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+
+   // deep copy of MixChunk's
+   Mix_Chunk* copyMixChunk(const Mix_Chunk* original);
+   
+   // Static class methods
+   //
+   static void initSDLAudio();
+   static int getChannel(); // get an open channel assigned for the sound sample
+   
+   // we resample the orginal sound to match the pitch settings sent from the table each time.
+   void setPitch(int pitch, float randompitch);
+  
+   // Mixer effects (Mix_RegisterEffect) callbacks
+   void static SSFEffect(int chan, void *stream, int len, void *udata); 
+   void static MoveFrontToRearEffect(int chan, void *stream, int len, void *udata); 
+   void static Pan2ChannelEffect(int chan, void *stream, int len, void *udata);
+
+   // MixEffects support funcs
+   void static calcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan);
+   void static calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight);
+   float static PanSSF(float pan);
+   float static PanTo3D(float input);
+   float static FadeSSF(float front_rear_fade);
+
 };
 
-
-
-class PinDirectSound
-{
-public:
-   PinDirectSound() : m_pDS(nullptr), m_pDSListener(nullptr) {}
-   ~PinDirectSound();
-
-   void InitDirectSound(const HWND hwnd, const bool IsBackglass);
-   static float PanTo3D(float input);
-   static float PanSSF(float pan);
-   static float FadeSSF(float front_rear_fade);
-
-   LPDIRECTSOUND m_pDS;
-
-private:
-   LPDIRECTSOUND3DLISTENER m_pDSListener;
-};
-
-
-class AudioMusicPlayer
-{
-public:
-	AudioMusicPlayer() : m_pbackglassds(nullptr) {}
-	~AudioMusicPlayer()
-	{
-		if (m_pbackglassds != &m_pds) delete m_pbackglassds;
-      BASS_Stop();
-      BASS_Free();
-	}
-
-	void InitPinDirectSound(const Settings& settings, const HWND hwnd);
-
-	void ReInitPinDirectSound(const Settings& settings, const HWND hwnd)
-	{
-		if (m_pbackglassds != &m_pds) delete m_pbackglassds;
-      BASS_Stop();
-      BASS_Free();
-
-		InitPinDirectSound(settings, hwnd);
-	}
-
-	PinDirectSound* GetPinDirectSound(const SoundOutTypes outputTarget)
-	{
-		return (outputTarget == SNDOUT_BACKGLASS) ? m_pbackglassds : &m_pds;
-	}
-
-	void StopCopiedWav(const string& name)
-	{
-#ifndef __STANDALONE__
-		for (size_t i = 0; i < m_copiedwav.size(); i++)
-		{
-			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-			if (StrCompareNoCase(ppsc->m_ppsOriginal->m_szName, name))
-			{
-				ppsc->m_pDSBuffer->Stop();
-				break;
-			}
-		}
-#endif
-	}
-
-	void StopCopiedWavs()
-	{
-#ifndef __STANDALONE__
-		for (size_t i = 0; i < m_copiedwav.size(); i++)
-			m_copiedwav[i]->m_pDSBuffer->Stop();
-#endif
-	}
-
-	void StopAndClearCopiedWavs()
-	{
-#ifndef __STANDALONE__
-		for (size_t i = 0; i < m_copiedwav.size(); i++)
-		{
-			m_copiedwav[i]->m_pDSBuffer->Stop();
-			m_copiedwav[i]->m_pDSBuffer->Release();
-			delete m_copiedwav[i];
-		}
-		m_copiedwav.clear();
-#endif
-	}
-
-	void ClearStoppedCopiedWavs()
-	{
-		size_t i = 0;
-#ifndef __STANDALONE__
-		while (i < m_copiedwav.size())
-		{
-			const PinDirectSoundWavCopy * const ppsc = m_copiedwav[i];
-			DWORD status;
-			ppsc->m_pDSBuffer->GetStatus(&status);
-			if (!(status & DSBSTATUS_PLAYING)) // sound is done, we can throw it away now
-			{
-				ppsc->m_pDSBuffer->Release();
-				m_copiedwav.erase(m_copiedwav.begin() + i);
-				delete ppsc;
-			}
-			else
-				i++;
-		}
-#endif
-	}
-
-	void Play(PinSound * const pps, const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
-	{
-		const int flags = (loopcount == -1) ? DSBPLAY_LOOPING : 0;
-
-		if (!pps->IsWav())
-		{
-#ifdef ONLY_USE_BASS
-			if (pps->IsWav2())
-				pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, (!usesame) ? true : restart);
-			else
-#endif
-				pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-
-			return;
-		}
-
-#ifndef __STANDALONE__
-		ClearStoppedCopiedWavs();
-
-		if (usesame)
-		{
-			const LPDIRECTSOUNDBUFFER pdsb = pps->m_pDSBuffer;
-			for (size_t i2 = 0; i2 < m_copiedwav.size(); i2++)
-			{
-				if (m_copiedwav[i2]->m_ppsOriginal->m_pDSBuffer == pdsb)
-				{
-					m_copiedwav[i2]->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-					return;
-				}
-			}
-		}
-
-		PinDirectSoundWavCopy* ppsc = new PinDirectSoundWavCopy(pps);
-		if (ppsc->m_pDSBuffer)
-		{
-			m_copiedwav.push_back(ppsc);
-			ppsc->PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-		}
-		else // Couldn't or didn't want to create a copy - just play the original
-		{
-			delete ppsc;
-			pps->Play(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-		}
-#endif
-	}
-
-	PinSound *LoadFile(const string& strFileName);
-
-	int bass_STD_idx = -2, bass_BG_idx = -2;
-
-private:
-	PinDirectSound m_pds;
-	PinDirectSound *m_pbackglassds;
-
-	vector< PinDirectSoundWavCopy* > m_copiedwav; // copied sounds currently playing
-};
-
-#ifdef __STANDALONE__
-struct AudioDevice
-{
-	int id;
-	const char name[MAX_DEVICE_IDENTIFIER_STRING];
-	bool enabled;
-};
-
-void EnumerateAudioDevices(vector<AudioDevice>& devices);
-#endif
