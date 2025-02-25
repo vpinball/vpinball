@@ -268,8 +268,8 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          assert(false);
          break;
       case BOOL_TYPEID: VariantChangeType(&v, &cv, 0, VT_BOOL); sv.vBool = static_cast<sc_bool>(V_BOOL(&v)); break;
-      case CHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI1); sv.vByte = V_I1(&v); break;
-      case SHORT_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI2); sv.vShort = V_I2(&v); break;
+      case CHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_I1); sv.vByte = V_I1(&v); break;
+      case SHORT_TYPEID: VariantChangeType(&v, &cv, 0, VT_I2); sv.vShort = V_I2(&v); break;
       case INT_TYPEID: VariantChangeType(&v, &cv, 0, VT_I4); sv.vLong = V_I4(&v); break;
       case LONG_TYPEID: VariantChangeType(&v, &cv, 0, VT_I8); sv.vLong = static_cast<sc_int64>(V_I8(&v)); break;
       case UCHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI1); sv.vUByte = V_UI1(&v); break;
@@ -283,7 +283,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          {
          case VT_I2:
          {
-            string txt = std::to_string(V_I2(&cv));
+            const string txt = std::to_string(V_I2(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
             sv.vString = szT;
@@ -291,7 +291,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          }
          case VT_I4:
          {
-            string txt = std::to_string(V_I4(&cv));
+            const string txt = std::to_string(V_I4(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
             sv.vString = szT;
@@ -299,7 +299,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          }
          case VT_R8:
          {
-            string txt = std::to_string(V_R8(&cv));
+            const string txt = std::to_string(V_R8(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
             sv.vString = szT;
@@ -350,7 +350,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       {
       case CHAR_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -364,7 +364,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       }
       case SHORT_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -378,7 +378,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       }
       case INT_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -392,7 +392,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       }
       case UCHAR_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -406,7 +406,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       }
       case USHORT_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -420,7 +420,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       }
       case UINT_TYPEID:
       {
-         int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -458,7 +458,7 @@ void DynamicTypeLibrary::ReleaseCOMToScriptVariant(VARIANT& cv, const ScriptType
       switch (typeDef.nativeType.id)
       {
       case STRING_TYPEID:
-         delete sv.vString;
+         delete [] sv.vString;
          sv.vString = nullptr;
          break;
       }
@@ -578,7 +578,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
             for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
             {
                V_VT(&pData[i]) = VT_I1;
-               V_UI1(&pData[i]) = pSrc[i];
+               V_I1(&pData[i]) = pSrc[i];
             }
             break;
          }
@@ -588,7 +588,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
             for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
             {
                V_VT(&pData[i]) = VT_I2;
-               V_I4(&pData[i]) = pSrc[i];
+               V_I2(&pData[i]) = pSrc[i];
             }
             break;
          }
@@ -788,10 +788,10 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       {
          if (first)
          {
-            PLOGE << "Invalid member called " << classDef->name.name << "." << cd->classDef->members[i].name.name << "(...)";
+            PLOGE << "Invalid member called " << classDef->name.name << '.' << cd->classDef->members[i].name.name << "(...)";
             first = false;
          }
-         //PLOGE << "> Not matched overload: " << classDef->name.name << "." << cd->classDef->members[i].name.name << "(...)";
+         //PLOGE << "> Not matched overload: " << classDef->name.name << '.' << cd->classDef->members[i].name.name << "(...)";
       }
       return DISP_E_MEMBERNOTFOUND;
    }
@@ -805,7 +805,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
 
    #if LOG_INVOKES
       std::stringstream ss;
-      ss << "Invoke Call: " << classDef->name.name << "." << memberDef.name.name << '(';
+      ss << "Invoke Call: " << classDef->name.name << '.' << memberDef.name.name << '(';
       for (unsigned int i = 0; i < pDispParams->cArgs; i++)
          ss << ((i != 0) ? ", " : "") << ScriptVariantToString(memberDef.callArgType[i], args[i]).c_str();
       PLOGD << ss.str() << ')';
