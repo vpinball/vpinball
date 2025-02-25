@@ -135,27 +135,19 @@ public:
    }
    void SetRampUp(const float value)
    {
-       if (m_phitflipper)
-       {
-           if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-               m_d.m_rampUp = value;
-       }
-       else
-       {
-           m_d.m_rampUp = value;
-       }
+      // Discard if return value is overriden
+      if (m_phitflipper && (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+         return;
+      m_d.m_rampUp = value;
    }
 
    float GetReturn() const { return m_d.m_return; }
    void SetReturn(const float value)
    {
-       if (m_phitflipper)
-       {
-           if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-               m_d.m_return = clamp(value, 0.0f, 1.0f);
-       }
-       else
-           m_d.m_return = clamp(value, 0.0f, 1.0f);
+      // Discard if return value is overriden
+      if (m_phitflipper && (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+         return;
+      m_d.m_return = clamp(value, 0.0f, 1.0f);
    }
 
    float GetFlipperRadiusMin() const { return m_d.m_FlipperRadiusMin; }
@@ -166,7 +158,7 @@ public:
 
    FlipperData m_d;
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
 
 private:
    RenderDevice *m_rd = nullptr;
@@ -180,8 +172,8 @@ private:
 
    void UpdatePhysicsSettings();
 
-   HitFlipper *m_phitflipper;
-   float m_lastAngle;
+   HitFlipper *m_phitflipper = nullptr;
+   float m_lastAngle = 0.f;
 
 // IFlipper
 public:

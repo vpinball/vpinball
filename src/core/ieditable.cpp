@@ -98,7 +98,7 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
    return hr;
 }
 
-void IEditable::BeginPlay()
+void IEditable::BeginPlay(vector<HitTimer *> &pvht, TimerDataRoot *const tdr, IFireEvents *fe)
 {
    m_vEventCollection.clear();
    m_viEventCollection.clear();
@@ -114,6 +114,13 @@ void IEditable::BeginPlay()
       }
       if (pcol->m_stopSingleEvents)
          m_singleEvents = false;
+   }
+   
+   if (tdr != nullptr)
+   {
+      m_phittimer = new HitTimer(GetName(), tdr->m_TimerInterval, fe);
+      if (tdr->m_TimerEnabled)
+         pvht.push_back(m_phittimer);
    }
 }
 

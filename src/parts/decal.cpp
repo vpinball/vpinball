@@ -516,7 +516,7 @@ HFONT Decal::GetFont()
 }
 
 
-void Decal::BeginPlay(vector<HitTimer *> &pvht) { IEditable::BeginPlay(); }
+void Decal::BeginPlay(vector<HitTimer *> &pvht) { IEditable::BeginPlay(pvht); }
 
 void Decal::EndPlay() { IEditable::EndPlay(); }
 

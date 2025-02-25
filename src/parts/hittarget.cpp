@@ -245,13 +245,7 @@ constexpr WORD dropTargetHitPlaneIndices[num_dropTargetHitPlaneIndices] =
    6, 12, 7, 12, 6, 13, 12, 13, 14, 13, 15, 14
 };
 
-void HitTarget::BeginPlay(vector<HitTimer *> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-       pvht.push_back(m_phittimer);
-}
+void HitTarget::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
 void HitTarget::EndPlay() { IEditable::EndPlay(); }
 

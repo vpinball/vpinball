@@ -477,7 +477,7 @@ void Primitive::WriteRegDefaults()
 
 void Primitive::BeginPlay(vector<HitTimer*> &pvht)
 {
-   IEditable::BeginPlay();
+   IEditable::BeginPlay(pvht);
 }
 
 void Primitive::EndPlay()

@@ -309,18 +309,9 @@ void Trigger::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Trigger::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
+void Trigger::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
-void Trigger::EndPlay()
-{
-   IEditable::EndPlay();
-}
+void Trigger::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

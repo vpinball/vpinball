@@ -200,14 +200,7 @@ void Ball::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_radius);
 }
 
-void Ball::BeginPlay(vector<HitTimer *> &pvht)
-{
-   IEditable::BeginPlay();
-   /* FIXME Ball: implement timer
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);*/
-}
+void Ball::BeginPlay(vector<HitTimer *> &pvht) { IEditable::BeginPlay(pvht); }
 
 void Ball::EndPlay() { IEditable::EndPlay(); }
 
