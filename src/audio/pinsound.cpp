@@ -2,704 +2,935 @@
 
 #include "core/stdafx.h"
 
-float convert2decibelvolume(const float volume);
+#include <SDL3_mixer/SDL_mixer.h>
+#include <SDL3/SDL.h>
 
-void BASS_ErrorMapCode(const int code, string& text)
-{
-	switch (code)
-	{
-	case BASS_OK: text = "all is OK"; break;
-	case BASS_ERROR_MEM: text = "memory error"; break;
-	case BASS_ERROR_FILEOPEN: text = "can't open the file"; break;
-	case BASS_ERROR_DRIVER: text = "can't find a free/valid driver"; break;
-	case BASS_ERROR_BUFLOST: text = "the sample buffer was lost"; break;
-	case BASS_ERROR_HANDLE: text = "invalid handle"; break;
-	case BASS_ERROR_FORMAT: text = "unsupported sample format"; break;
-	case BASS_ERROR_POSITION: text = "invalid position"; break;
-	case BASS_ERROR_INIT: text = "BASS_Init has not been successfully called"; break;
-	case BASS_ERROR_START: text = "BASS_Start has not been successfully called"; break;
-	case BASS_ERROR_SSL: text = "SSL/HTTPS support isn't available"; break;
-	case BASS_ERROR_ALREADY: text = "already initialized/paused/whatever"; break;
-	case BASS_ERROR_NOTAUDIO: text = "file does not contain audio"; break;
-	case BASS_ERROR_NOCHAN: text = "can't get a free channel"; break;
-	case BASS_ERROR_ILLTYPE: text = "an illegal type was specified"; break;
-	case BASS_ERROR_ILLPARAM: text = "an illegal parameter was specified"; break;
-	case BASS_ERROR_NO3D: text = "no 3D support"; break;
-	case BASS_ERROR_NOEAX: text = "no EAX support"; break;
-	case BASS_ERROR_DEVICE: text = "illegal device number"; break;
-	case BASS_ERROR_NOPLAY: text = "not playing"; break;
-	case BASS_ERROR_FREQ: text = "illegal sample rate"; break;
-	case BASS_ERROR_NOTFILE: text = "the stream is not a file stream"; break;
-	case BASS_ERROR_NOHW: text = "no hardware voices available"; break;
-	case BASS_ERROR_EMPTY: text = "the MOD music has no sequence data"; break;
-	case BASS_ERROR_NONET: text = "no internet connection could be opened"; break;
-	case BASS_ERROR_CREATE: text = "couldn't create the file"; break;
-	case BASS_ERROR_NOFX: text = "effects are not available"; break;
-	case BASS_ERROR_NOTAVAIL: text = "requested data/action is not available"; break;
-	case BASS_ERROR_DECODE: text = "the channel is/isn't a 'decoding channel'"; break;
-	case BASS_ERROR_DX: text = "a sufficient DirectX version is not installed"; break;
-	case BASS_ERROR_TIMEOUT: text = "connection timedout"; break;
-	case BASS_ERROR_FILEFORM: text = "unsupported file format"; break;
-	case BASS_ERROR_SPEAKER: text = "unavailable speaker"; break;
-	case BASS_ERROR_VERSION: text = "invalid BASS version (used by add-ons)"; break;
-	case BASS_ERROR_CODEC: text = "codec is not available/supported"; break;
-	case BASS_ERROR_ENDED: text = "the channel/file has ended"; break;
-	case BASS_ERROR_BUSY: text = "the device is busy"; break;
-	case BASS_ERROR_UNSTREAMABLE: text = "unstreamable file"; break;
-	case BASS_ERROR_UNKNOWN: text = "unknown error"; break;
-	default: text = "unmapped error"; break;
-	}
-}
+// Retrieve settings from the VPinball.ini file
+Settings PinSound::m_settings = nullptr;
 
-/*void CALLBACK PanDSP(HDSP handle, DWORD channel, void *buffer, DWORD length, void *user)
-{
-   const float pan = *((float*)user);
-   if (pan == 0.f) return; // no processing neeeded for centre panning
-   float * __restrict s = (float*)buffer;
-   for (DWORD i = 0; i < length/8; ++i) {
-      if (pan < 0.f)
-         s[i*2+1] *= 1.f + pan; // pan left = reduce right
-      else
-         s[i*2  ] *= 1.f - pan; // vice versa
-   }
-}*/
+// SDL Sound Device Id for each output 
+int PinSound::m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the table sounds
+int PinSound::m_sdl_BG_idx  = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  //the BG sounds/music
 
-PinSound::PinSound() : PinDirectSoundWavCopy(this)
+// state of sound device and mixer setup
+bool PinSound::isSDLAudioInitialized = false;
+
+// The output audio spec that the device is actually set for.
+SDL_AudioSpec PinSound::m_audioSpecOutput;
+
+// SDL_mixer
+int PinSound::m_maxSDLMixerChannels = 200; // max # of chans were allocated to mixer on init
+int PinSound::m_nextAvailableChannel = 0; // new sound, gets new chan
+
+// holds the setting from VPinball.ini that says what SoundMode were in.
+SoundConfigTypes PinSound::m_SoundMode3D;
+
+/**
+ * @brief Constructor for the PinSound class. Initializes SDL audio, configures output devices,
+ *        and prepares the audio specifications based on the provided settings.
+ *
+ * This constructor checks whether SDL audio has been initialized. If not, it initializes SDL audio
+ * and configures the output audio specifications using the Mix_QuerySpec function. The output audio
+ * specifications are stored in internal member variables for further processing.
+ *
+ * @param settings The configuration settings for the audio system, passed by reference.
+ * 
+ * @note SDL audio initialization is done only once. If it has already been initialized, the constructor
+ *       will skip the initialization process and directly set up the output parameters.
+ *
+ * @note This function logs the output audio specifications (frequency, format, channels) after the SDL
+ *       audio system has been initialized.
+ */
+PinSound::PinSound(const Settings& settings)
 {
-   m_pDSBuffer = nullptr;
-   m_pDS3DBuffer = nullptr;
-   m_pdata = nullptr;
-   m_pPinDirectSound = nullptr; // m_BASSstream = 0;
-   m_outputTarget = SNDOUT_TABLE;
-   m_balance = 0;
-   m_fade = 0;
-   m_volume = 0;
+   if (!isSDLAudioInitialized) {
+
+      if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        PLOGE << "SDL Init failed: " << SDL_GetError();
+        return;
+      }
+      m_settings = settings;
+
+      PinSound::initSDLAudio();
+      isSDLAudioInitialized = true;
+
+      // Set the output devices AudioSpec 
+      Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); // the struct that gets passed to the MixEffect callbacks.
+      Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
+      
+      PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
+      << " channels: " << m_audioSpecOutput.channels;
+   }     
+   // set the MixEffects output params that are used for resampling the incoming stream to callback.
+   Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); 
 }
 
 PinSound::~PinSound()
 {
-   UnInitialize();
-
-   delete [] m_pdata;
+      UnInitialize();
 }
 
-void PinSound::UnInitialize()
+/**
+ * (Static)
+ * @brief Initializes SDL audio and sets up the sound devices for table and background sounds.
+ *
+ * This function attempts to load sound device settings from a configuration file (VPinball.ini) and 
+ * assigns the appropriate SDL audio devices for playing table and background sounds. If no matching 
+ * sound devices are found, it defaults to the standard SDL audio devices. Additionally, the function 
+ * initializes SDL audio and SDL_Mixer, configures the sound mode for 3D audio, and allocates the 
+ * necessary audio channels.
+ * 
+ * @note If no sound device names are found in the configuration file, default devices are used. 
+ *       A warning is logged in this case. SDL audio initialization is attempted, and failure is 
+ *       logged with an error message.
+ *
+ * @see SDL_Init(SDL_INIT_AUDIO), Mix_OpenAudio(), SDL_GetAudioDeviceFormat(), Mix_AllocateChannels()
+ */
+void PinSound::initSDLAudio() 
 {
-   if (IsWav())
-   {
-#ifndef __STANDALONE__
-      SAFE_PINSOUND_RELEASE(m_pDS3DBuffer);
-      SAFE_PINSOUND_RELEASE(m_pDSBuffer);
-#endif
-   }
-   else
-   {
-      if (m_BASSstream)
-      {
-         SetBassDevice();
-         BASS_StreamFree(m_BASSstream);
-         m_BASSstream = 0;
+   string soundDeviceName;
+   string soundDeviceBGName;
+   bool good = m_settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
+   bool good2 = m_settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
+
+    if (!good && !good2) // use the default SDL audio device
+    {
+      PLOGI << "Sound Device not set in VPinball.ini.  Using default";
+      m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+      m_sdl_BG_idx =  SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+    }
+    else{  // this is all because the device id's are random: https://github.com/libsdl-org/SDL/issues/12278
+      vector<AudioDevice> allAudioDevices;
+      PinSound::EnumerateAudioDevices(allAudioDevices);
+      for (size_t i = 0; i < allAudioDevices.size(); ++i) {
+         AudioDevice audioDevice = allAudioDevices.at(i);
+         if (audioDevice.name == soundDeviceName)
+         {
+            m_sdl_STD_idx = audioDevice.id;
+         }
+         if (audioDevice.name == soundDeviceBGName)
+         {
+            m_sdl_BG_idx = audioDevice.id;
+         }
       }
-   }
+
+      if(m_sdl_STD_idx == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) // we didn't find a matching name
+      {
+         PLOGE << "No sound device by that name found in VPinball.ini. " << "SoundDevice:\"" << soundDeviceName << "\" SoundDeviceBG:\"" << 
+           soundDeviceBGName << "\" Using default.";
+         m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+         m_sdl_BG_idx =  SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
+      }  
+    }
+
+      PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (SoundConfigTypes)SNDCFG_SND3D2CH);
+
+      // set the global vpinball.. name should be changed for bass to sdl...
+      g_pvp->m_ps.bass_BG_idx = m_sdl_BG_idx; // BG sounds
+      g_pvp->m_ps.bass_STD_idx = m_sdl_STD_idx; // table sounds
+
+      if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+        PLOGE << "Failed to initialize SDL: " << SDL_GetError();
+        return;         
+      }
+      
+      // change the AudioSpec param when we know what sound format out we want.  or get from device
+      if (!Mix_OpenAudio(m_sdl_STD_idx, NULL)) {
+        PLOGE << "Failed to initialize SDl_MIXER: " << SDL_GetError();
+        return;        
+      }
+
+      SDL_AudioSpec spec;
+      int sample_frames;
+      SDL_GetAudioDeviceFormat(m_sdl_STD_idx, &spec, &sample_frames);
+
+      int chans = Mix_AllocateChannels(m_maxSDLMixerChannels); // set the max channel pool
+      PLOGI << "SDL_mixer Allocated " << chans << " channels.";
 }
 
-class PinDirectSound *PinSound::GetPinDirectSound()
-{
-   if (m_pPinDirectSound)
-      return m_pPinDirectSound;
-   else
-      return g_pvp->m_ps.GetPinDirectSound(m_outputTarget);
-}
+ void PinSound::UnInitialize()
+ {
+      if(m_pMixChunkOrg != nullptr)
+      {
+         Mix_FreeChunk(m_pMixChunkOrg);
+         m_pMixChunkOrg = nullptr;
+      }
+      if(m_pMixMusic != nullptr) 
+      {
+         Mix_FreeMusic(m_pMixMusic);
+         m_pMixMusic = nullptr;
+      }
+      if (m_pstream) 
+      {
+         SDL_DestroyAudioStream(m_pstream);
+         m_pstream = nullptr;
+      }
+ }
 
-HRESULT PinSound::ReInitialize()
-{
-   UnInitialize();
+/**
+ * @brief Reinitializes the sound by uninitializing and reloading the sound file.
+ * 
+ * This function performs the following tasks:
+ * - Calls `UnInitialize()` to reset any previous state.
+ * - Attempts to load a sound from memory using `SDL_IOFromMem` and stores it in `m_psdlIOStream`.
+ * - If the sound loading fails, an error message is logged using `PLOGE`, and the function returns `E_FAIL`.
+ * - Uses `Mix_LoadWAV_IO` to load the sound file as a `Mix_Chunk` for playback.
+ * - If the sound loading fails, an error message is logged using `PLOGE`, and the function returns `E_FAIL`.
+ * - Attempts to assign an available mixer channel using the `getChannel()` method. If no channels are available, an error message is logged using `PLOGE`, and the function returns `E_FAIL`.
+ * 
+ * @return HRESULT Returns `S_OK` on successful reinitialization, or `E_FAIL` if any errors occur during the process.
+ * 
+ * @note This is the main function for loading sounds from the tables via pintable.cpp
+ */
+HRESULT PinSound::ReInitialize() {
+	UnInitialize();
+  
+   m_psdlIOStream = SDL_IOFromMem(m_pdata, static_cast<int>(m_cdata)); 
 
-   if(!IsWav())
+   if (!m_psdlIOStream) {
+        PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
+        return E_FAIL;
+    }
+
+   if(! (m_pMixChunkOrg = Mix_LoadWAV_IO(m_psdlIOStream, true)))
    {
-	   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-	   SetBassDevice();
-	   m_BASSstream = BASS_StreamCreateFile(
-		   TRUE,
-		   m_pdata,
-		   0,
-		   m_cdata,
-		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
-	   );
-
-	   if (m_BASSstream == 0)
-	   {
-		   const int code = BASS_ErrorGetCode();
-		   string bla2;
-		   BASS_ErrorMapCode(code, bla2);
-		   g_pvp->MessageBox(("BASS music/sound library cannot create stream \"" + m_szPath + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
-		   return E_FAIL;
-	   }
-	   else {
-		   BASS_ChannelGetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, &m_freq);
-	   }
-
-	   return S_OK;
-   }
-
-#ifndef __STANDALONE__
-   // else old wav code:
-
-   PinDirectSound * const pds = GetPinDirectSound();
-   if (pds->m_pDS == nullptr)
-   {
-      m_pPinDirectSound = nullptr;
-      m_pDSBuffer = nullptr;
+      PLOGE << "Failed to load sound: " << SDL_GetError();
       return E_FAIL;
    }
 
-   const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-   WAVEFORMATEX wfx = m_wfx;  // Use a copy as we might be modifying it
-   // Remark from MSDN: "If wFormatTag = WAVE_FORMAT_PCM or wFormatTag = WAVE_FORMAT_IEEE_FLOAT, set cbSize to zero"
-   // Otherwise some tables crash in dsound when using certain WAVE_FORMAT_IEEE_FLOAT samples
-   if ((wfx.wFormatTag == WAVE_FORMAT_PCM) || (wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT))
-      wfx.cbSize = 0;
-
-   DSBUFFERDESC dsbd = {};
-   dsbd.dwSize = sizeof(DSBUFFERDESC);
-   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | ((SoundMode3D != SNDCFG_SND3D2CH) ? DSBCAPS_CTRL3D : DSBCAPS_CTRLPAN);
-   dsbd.dwBufferBytes = m_cdata;
-   dsbd.lpwfxFormat = &wfx;
-
-   // If we are in a 2CH mode and the sample is a single channel and the .WAV file is in a
-   // PCM format then we double the size of our ds buffer here and below we duplicate the 
-   // mono channel so windows will play the sample on Left/Right channels and not center 
-   // channel if Windows audio is configured for SurroundSound. I don't know if non-PCM 
-   // formats were possible in the first place, but the channel duplication would definitely 
-   // not work so we try to check for that here. *njk*
-
-   if ((SoundMode3D == SNDCFG_SND3D2CH) && (m_wfx.nChannels == 1) && ((m_wfx.wFormatTag == WAVE_FORMAT_PCM) || (m_wfx.wFormatTag == WAVE_FORMAT_IEEE_FLOAT)))
+   // assign a channel to sound
+   if( (m_assignedChannel = getChannel()) == -1) // no more channels.. increase max
    {
-	   wfx.nChannels = m_wfx.nChannels * 2;
-	   wfx.nBlockAlign = m_wfx.nBlockAlign * 2;
-	   wfx.nAvgBytesPerSec = m_wfx.nAvgBytesPerSec * 2;
-	   dsbd.dwBufferBytes *= 2;
+      PLOGE << "There are no more mixer channels avaiable to be allocated.  ??";
+      return E_FAIL;
    }
 
-   // Create the static DirectSound buffer 
-   HRESULT hr;
-   if (FAILED(hr = pds->m_pDS->CreateSoundBuffer(&dsbd, &m_pDSBuffer, nullptr)))
+   /* PLOGI << "Loaded Sound File: " << m_szName << " Sound Type: " << getFileExt() << 
+      " # of Audio Channels: " << ( (getFileExt() =="wav") ? std::to_string(getChannelCountWav() ) : "Unknown" ) <<
+      " Assigned Channel: " << m_assignedChannel << " SoundOut (0=table, 1=bg): " << (int)m_outputTarget; */
+
+	return S_OK;
+}
+
+/**
+ * @brief Plays a sound with specified properties such as volume, pitch, pan, and loop count.
+ * 
+ * This function adjusts the volume and applies various sound effects and mixing parameters based on the sound mode and output target.
+ * It supports different sound configurations, including stereo, 3D surround, and background sounds, and adjusts them accordingly.
+ * 
+ * @param volume The desired volume level for the sound (from 0.0 to 1.0). The volume is clamped to a minimum threshold.
+ * @param randompitch The random variation in pitch to apply to the sound. The value should be between 0.0 and 1.0.
+ * @param pitch The base pitch of the sound (in Hertz).
+ * @param pan The pan of the sound, ranging from -1.0 (left) to 1.0 (right), where 0.0 is the center.
+ * @param front_rear_fade A fade value determining the balance between front and rear sound channels, from -1.0 (front) to 1.0 (rear).
+ * @param loopcount The number of times the sound should loop. A value of 0 means no looping.
+ * @param usesame Boolean flag indicating whether to use the same instance of the sound for playback.
+ * @param restart Boolean flag indicating whether to restart the sound from the beginning.
+ * 
+ * This function first applies a volume adjustment based on the global table sound setting. It then chooses a sound playback path depending on the configured sound mode. 
+ * The supported modes include 2-channel stereo, all-rear 3D surround sound, and various 3D configurations with 6 or 8 channels.
+ * 
+ * In case of background sounds (backglass sounds), the function adjusts the volume and plays the sound in a specific manner based on the table's configuration.
+ * 
+ * Possible sound modes are:
+ * - SNDCFG_SND3D2CH: 2-channel stereo sound.
+ * - SNDCFG_SND3DALLREAR: 3D surround sound with all rear channels.
+ * - SNDCFG_SND3DFRONTISREAR: Not yet implemented.
+ * - SNDCFG_SND3DFRONTISFRONT: Not yet implemented.
+ * - SNDCFG_SND3D6CH: 6-channel sound configuration.
+ * - SNDCFG_SND3DSSF: 8-channel sound configuration with specific pan and fade algorithms.
+ * 
+ * If the sound device does not support the required number of channels for the selected mode, an error message is logged.
+ * 
+ * @note If the output target is set to `SNDOUT_BACKGLASS`, the function processes the background sound differently.
+ * 
+ * @note Called to play the table sounds via pintable.cpp.  This is main call from the tables for playing sound.
+ */
+void PinSound::Play(const float volume, const float randompitch, const int pitch, 
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
+{
+   // Clamp volume
+   float minVol = .08f;  // some table sounds like rolling are extremely low.  Set a minimum or you cant hear it.
+   float nVolume = std::clamp(volume+minVol, 0.0f, 1.0f);
+  
+   // BG Sound is handled differently then table sounds.  These are BG sounds stored in the table (vpx file).
+   if (m_outputTarget == SNDOUT_BACKGLASS) 
    {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Error: 0x%X. Could not create sound buffer for load.", hr);
-      ShowError(bla);
-      m_pPinDirectSound = nullptr;
-      m_pDSBuffer = nullptr;
-      return hr;
+      //adjust volume against the tables global sound setting
+      nVolume =  (int) ( (fabs(nVolume) * (g_pplayer->m_MusicVolume / 100) ) * 100.0f); // fabs because some tables send negative volume??? e.g. Kiss stern.  Using mixer vol control. no float. 0-128. cap @ 100
+      PlayBGSound(nVolume, loopcount, usesame, restart);
+      return;
    }
 
-   m_pPinDirectSound = pds;
-
-   // Lock the buffer down
-   VOID*   pbData = nullptr;
-   VOID*   pbData2 = nullptr;
-   DWORD   dwLength,dwLength2;
-   if (FAILED(hr = m_pDSBuffer->Lock(0, dsbd.dwBufferBytes, &pbData, &dwLength,
-      &pbData2, &dwLength2, 0L)))
+   //adjust volume against the tables global sound setting
+   nVolume =  nVolume * ( (float)g_pplayer->m_SoundVolume / 100);
+   
+   // setup the struct for the effects processing
+   m_mixEffectsData.pitch = pitch;
+   m_mixEffectsData.randompitch = randompitch;
+   m_mixEffectsData.front_rear_fade = front_rear_fade;
+   m_mixEffectsData.pan = pan;
+   m_mixEffectsData.volume = volume;
+   m_mixEffectsData.nVolume = nVolume;
+   m_mixEffectsData.globalTableVolume = (float)g_pplayer->m_SoundVolume / 100;
+  
+   switch(PinSound::m_SoundMode3D)
    {
-      ShowError("Could not lock sound buffer for load.");
-      return hr;
+      case SNDCFG_SND3D2CH:
+         Play_SNDCFG_SND3D2CH(nVolume, randompitch, pitch, pan, front_rear_fade, loopcount, usesame, restart);
+         break;
+      case SNDCFG_SND3DALLREAR:
+         if (m_mixEffectsData.outputChannels < 4) // channel count must be at least 4.  Front and Rear
+         {
+            PLOGE << "Your sound device does not have the required number of channels to support this mode. <SND3DALLREAR> ";
+            break;
+         }
+         Play_SNDCFG_SND3DALLREAR(nVolume, randompitch, pitch, pan, front_rear_fade, loopcount, usesame, restart);
+         break;
+      case SNDCFG_SND3DFRONTISREAR:
+         PLOGI << "Sound Mode not implemented yet.";
+         break;
+      case SNDCFG_SND3DFRONTISFRONT:
+         PLOGI << "Sound Mode not implemented yet.";
+         break;
+      case SNDCFG_SND3D6CH:
+         // we just fall through to the SSF.  This mode is same but it used two different pan and fade algos.  No need to have two different ones now.
+      case SNDCFG_SND3DSSF:
+         if (m_mixEffectsData.outputChannels != 8)
+         {
+            PLOGE << "Your sound device does not have the required number of channels to support this mode. <SNDCFG_SND3DSSF> ";
+            break;
+         }
+          Play_SNDCFG_SND3DSSF(nVolume, randompitch, pitch, pan, front_rear_fade, loopcount, usesame, restart);
+         break;
+      default:
+         PLOGE << "Invalid setting for 'Sound3D' in VPinball.ini...";
+         break;
    }
-   // Convert mono sample to dual channel to prevent Windows from playing it
-   // on the center channel when in Surround Sound mode. We double the sample
-   // buffer size above, now we duplicate data when copying it into the buffer.
-   // *njk*
+}
 
-   if ((DWORD)m_cdata < dsbd.dwBufferBytes) // if buffer was resized then duplicate channel
+/**
+ * @brief Plays background sound on a specified channel with volume control and looping options.
+ * 
+ * This function manages the playback of a background sound on the assigned audio channel, ensuring that it handles situations 
+ * where the sound is already playing. It provides options for adjusting the volume, looping behavior, and whether or not 
+ * to restart the sound if it is already playing.
+ * 
+ * @param nVolume The volume level at which the sound should be played. The value should be between 0 and 128.
+ * @param loopcount The number of times the sound should loop. A value of 0 means the sound will play only once.
+ * @param usesame A boolean flag that determines if the current sound should be reused when already playing. If false, 
+ *                the sound is reloaded and restarted.
+ * @param restart A boolean flag that determines if the sound should be restarted if it is already playing. If true, 
+ *                the sound will stop and start again; if false, it will continue playing.
+ * 
+ * @note This function uses the SDL_Mixer library to handle audio playback and assumes that the sound is loaded into 
+ *       `m_pMixChunkOrg` before calling this function. It also uses the channel specified in `m_assignedChannel` to play the sound.
+ * 
+ * If the sound is already playing on the assigned channel, the function checks the `restart` and `usesame` flags:
+ *   - If `restart` is true or `usesame` is false, the function stops the current sound and restarts it.
+ *   - If neither condition is met, the sound continues playing without modification.
+ * If the sound is not playing, the function starts the sound immediately with the specified volume.
+ */
+void PinSound::PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart)
+{
+   //PLOGI << "PlayBG Sound File: " << m_szName << " BGSOUND nVolume: " << nVolume << " Table Music Volume: " << g_pplayer->m_MusicVolume;
+
+   if (Mix_Playing(m_assignedChannel)) {
+      if (restart || !usesame){ // stop and reload       
+         Mix_HaltChannel(m_assignedChannel);
+         Mix_Volume(m_assignedChannel, nVolume);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
+      }
+   } 
+   else { // not playing
+      Mix_Volume(m_assignedChannel, nVolume);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
+   }
+}
+
+/**
+ * @brief Sets the pitch of the sound, optionally with random variation.
+ *
+ * This function adjusts the pitch of the sound associated with the `PinSound` object. If a non-zero pitch or random 
+ * pitch variation is provided, the function resamples the sound to the new pitch. If the pitch remains unchanged
+ * (both pitch and randompitch are zero), the original sound is used.
+ * 
+ * The function first frees any previously allocated `Mix_Chunk` to ensure the memory is managed correctly. 
+ * If the pitch change is needed, the function calculates the new frequency (taking into account any random variation)
+ * and performs the resampling process to convert the original audio sample to the new pitch. It then converts the
+ * audio back to the original format, ensuring the sound is ready for playback at the correct pitch.
+ * 
+ * @note Since mixer doesn't support adjusting the frequency or the stream buffer length via a MixEffect
+ *       we must resample the audio each time and replace it.
+ *
+ * @param pitch The target pitch to apply to the sound. A positive or negative integer alters the frequency.
+ * @param randompitch The random variation to apply to the pitch, influencing the final frequency. A value greater than 0 introduces a random factor, while 0 means no random variation.
+ */
+void PinSound::setPitch(int pitch, float randompitch)
+{
+
+   if(m_pMixChunk != nullptr) // free the last converted sample
    {
-	   const unsigned int bps = wfx.wBitsPerSample / 8;
-	   const char * __restrict s = m_pdata;
-	         char * __restrict d = (char*)pbData;
-
-	   for (DWORD i = 0; i < dsbd.dwBufferBytes; i += wfx.nBlockAlign)
-	   {
-		   for (unsigned int j = 0; j < bps; j++)
-			   *d++ = *s++;
-
-		   s -= bps;
-
-		   for (unsigned int j = 0; j < bps; j++)
-			   *d++ = *s++;
-	   }
+      Mix_FreeChunk(m_pMixChunk);
+      m_pMixChunk = nullptr;
+   }
+   
+   // check for pitch and resample or pass the orginial mixchunk if pitch didn't change
+   if(pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the orginal
+   {
+      m_pMixChunk = copyMixChunk(m_pMixChunkOrg);
    }
    else
    {
-	   // Copy the memory to it.
-	   memcpy(pbData, m_pdata, m_cdata);
-   }
-   // Unlock the buffer, we don't need it anymore.
-   m_pDSBuffer->Unlock(pbData, m_cdata, nullptr, 0);
+      Mix_Chunk *mixChunkConvert = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
+      mixChunkConvert->allocated = 1; // you need this set or it won't get freed with Mix_FreeChunk
+      mixChunkConvert->volume = 128;
 
-   if (SoundMode3D != SNDCFG_SND3D2CH)
-      Get3DBuffer();
-#endif
+      int newFreq = 0;
 
-   return S_OK;
-}
-
-void PinSound::SetBassDevice()
-{
-   const int bass_idx = (m_outputTarget == SNDOUT_BACKGLASS) ? g_pvp->m_ps.bass_BG_idx : g_pvp->m_ps.bass_STD_idx;
-   if (bass_idx != -1 && g_pvp->m_ps.bass_STD_idx != g_pvp->m_ps.bass_BG_idx) BASS_SetDevice(bass_idx);
-}
-
-void PinSound::Play(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
-{
-   if (IsWav())
-      PlayInternal(volume, randompitch, pitch, pan, front_rear_fade, flags, restart);
-   else if (m_BASSstream)
-   {
-      SetBassDevice();
-
-      BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_VOL, sqrtf(saturate(volume*(float)(1.0/100.)))); // to match VP legacy
-
-      if (randompitch > 0.f)
+      if(randompitch > 0)
       {
-         const float freq = m_freq + (float)pitch;
          const float rndh = rand_mt_01();
          const float rndl = rand_mt_01();
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + (freq * randompitch * rndh * rndh) - (freq * randompitch * rndl * rndl * 0.5f));
+         int freq = m_mixEffectsData.outputFrequency + (m_mixEffectsData.outputFrequency * randompitch * rndh * rndh) - (m_mixEffectsData.outputFrequency * 
+           randompitch * rndl * rndl * 0.5f);
+         newFreq = freq + pitch; // add the normal pitch in if its set
+         //PLOGI << " random: new freq = " << newFreq;
       }
-      else if (pitch != 0)
-      {
-         const float freq = m_freq + (float)pitch;
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq);
-      }
-
-      const SoundConfigTypes SoundMode3D = (m_outputTarget == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-      switch (SoundMode3D)
-      {
-      case SNDCFG_SND3DALLREAR:
-      {
-         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f));
-         BASS_ChannelSet3DPosition(m_BASSstream, &v, nullptr, nullptr);
-         BASS_Apply3D();
-         break;
-      }
-      case SNDCFG_SND3DFRONTISFRONT:
-      {
-         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, PinDirectSound::PanTo3D(front_rear_fade));
-         BASS_ChannelSet3DPosition(m_BASSstream, &v, nullptr, nullptr);
-         BASS_Apply3D();
-         break;
-      }
-      case SNDCFG_SND3DFRONTISREAR:
-      {
-         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(front_rear_fade));
-         BASS_ChannelSet3DPosition(m_BASSstream, &v, nullptr, nullptr);
-         BASS_Apply3D();
-         break;
-      }
-      case SNDCFG_SND3D6CH:
-      {
-         const BASS_3DVECTOR v(PinDirectSound::PanTo3D(pan), 0.0f, -((PinDirectSound::PanTo3D(front_rear_fade) + 3.0f) / 2.0f));
-         BASS_ChannelSet3DPosition(m_BASSstream, &v, nullptr, nullptr);
-         BASS_Apply3D();
-         break;
-      }
-      case SNDCFG_SND3DSSF:
-      {
-         const BASS_3DVECTOR v(PinDirectSound::PanSSF(pan), 0.0f, PinDirectSound::FadeSSF(front_rear_fade));
-         BASS_ChannelSet3DPosition(m_BASSstream, &v, nullptr, nullptr);
-         BASS_Apply3D();
-         break;
-      }
-      case SNDCFG_SND3D2CH:
-      default:
-         BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_PAN, pan);
-         //!! When using DirectSound output on Windows, this attribute has no effect when speaker assignment is used,
-         //   except on Windows Vista and newer with the BASS_CONFIG_VISTA_SPEAKERS config option enabled, so this would only be needed on pre-Vista systems now!
-         //m_pan = pan;
-         //if(pan != 0.f)
-         //   BASS_ChannelSetDSP(m_BASSstream, PanDSP, &m_pan, 0);
-         break;
+      else{ // just pitch is set
+         newFreq = m_mixEffectsData.outputFrequency + pitch;
       }
 
-      if (flags & DSBPLAY_LOOPING)
-         BASS_ChannelFlags(m_BASSstream, BASS_SAMPLE_LOOP, BASS_SAMPLE_LOOP);
-      else
-         BASS_ChannelFlags(m_BASSstream, 0, BASS_SAMPLE_LOOP);
+      //PLOGI << "Channel: " << m_assignedChannel << " Current freq: " << m_mixEffectsData.outputFrequency << " Pitch: " << pitch << " Random pitch: " << randompitch << " Ending new freq = " << newFreq;
 
-      if (BASS_ChannelIsActive(m_BASSstream) != BASS_ACTIVE_PLAYING)
-         BASS_ChannelPlay(m_BASSstream, true);
-      else if (restart)
-         BASS_ChannelSetPosition(m_BASSstream, 0, BASS_POS_BYTE);
+      SDL_AudioSpec audioSpecConvert;
+      Mix_QuerySpec(&audioSpecConvert.freq, &audioSpecConvert.format, &audioSpecConvert.channels);
+      audioSpecConvert.freq = newFreq;
+
+      // comvert orginal sample to the new freq
+      SDL_ConvertAudioSamples(&m_audioSpecOutput, m_pMixChunkOrg->abuf, m_pMixChunkOrg->alen, &audioSpecConvert, &mixChunkConvert->abuf, (int *) &mixChunkConvert->alen);
+
+      // now convert it back to orginal output AudioSpec
+      m_pMixChunk = new Mix_Chunk();
+      m_pMixChunk->volume = 128;
+      m_pMixChunk->allocated = 1; // you need this set or it won't get freed with Mix_FreeChunk
+      SDL_ConvertAudioSamples(&audioSpecConvert, mixChunkConvert->abuf, (int ) mixChunkConvert->alen, &m_audioSpecOutput, &m_pMixChunk->abuf, (int *) &m_pMixChunk->alen);
+      
+      Mix_FreeChunk(mixChunkConvert);
    }
 }
 
-void PinSound::Stop()
+/**
+ * @brief Plays a 3D sound effect with customizable volume, pitch, pan, and loop settings.
+ * 
+ * This function is responsible for playing a sound effect on the specified channel with 3D audio configuration. It allows
+ * customization of the volume, pitch, pan, front-to-rear fade, loop count, and whether the sound should restart or 
+ * use the same configuration as the previous playback. If the sound is already playing, it can either be 
+ * restarted or kept using the same settings. The function also registers an effect for moving the sound from the
+ * front to the rear, which is applied during playback.
+ * 
+ * @param nVolume The volume of the sound (range from 0.0 to 1.0).
+ * @param randompitch A random variation to apply to the pitch.
+ * @param pitch The pitch of the sound.
+ * @param pan The pan position of the sound (left to right).
+ * @param front_rear_fade A value controlling the fade effect from front to rear.
+ * @param loopcount The number of times to loop the sound. A value of 0 means no looping.
+ * @param usesame A boolean indicating whether to reuse the same sound configuration (true) or restart it (false).
+ * @param restart A boolean that indicates if the sound should be restarted when already playing.
+ */
+void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, const int pitch, 
+   const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 {
-   if (IsWav())
-      StopInternal();
-   else
-      if (m_BASSstream)
-      {
-         SetBassDevice();
-         BASS_ChannelStop(m_BASSstream);
+     // used to set pan volumes
+     float leftVolume;
+     float rightVolume;
+  
+        /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
+        (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
+        " Pitch: "<< pitch << " Random pitch: " << randompitch  << " front_rear_fade: " << front_rear_fade <<   " loopcount: " << loopcount << " usesame: " << 
+        usesame <<  " Restart? " << restart; */
+  
+     if (Mix_Playing(m_assignedChannel)) {
+        if (restart || !usesame){ // stop and reload  
+           Mix_HaltChannel(m_assignedChannel);
+           setPitch(pitch, randompitch);
+           // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automaticly
+           Mix_RegisterEffect(m_assignedChannel, PinSound::MoveFrontToRearEffect, nullptr, &m_mixEffectsData);
+           Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+        }
+     } 
+     else { // not playing
+        setPitch(pitch, randompitch);
+        // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automaticly
+        Mix_RegisterEffect(m_assignedChannel, PinSound::MoveFrontToRearEffect, nullptr, &m_mixEffectsData);
+        Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+     } 
+}
+
+/**
+ * @brief Plays a 3D sound on a given audio channel with specified attributes.
+ * 
+ * This function manages the playback of a 3D sound by adjusting parameters such as volume, pitch, pan, 
+ * and looping behavior. It also handles restarting or stopping the sound if necessary, as well as applying
+ * effects before playing the sound on the assigned channel.
+ * 
+ * @param nVolume The desired volume level for the sound (0.0 to 1.0).
+ * @param randompitch A random pitch adjustment factor to add variation to the sound's pitch.
+ * @param pitch The base pitch of the sound.
+ * @param pan A value representing the panning of the sound (left-right balance).
+ * @param front_rear_fade A factor for adjusting the front-to-rear fade of the sound.
+ * @param loopcount The number of times the sound should loop. A value of 0 indicates no looping.
+ * @param usesame If true, prevents restarting the sound if it's already playing. If false, the sound will restart.
+ * @param restart If true, forces the sound to restart even if it's already playing.
+ * 
+ * @note This function uses SDL's Mix_Playing to check if the sound is already playing on the assigned channel.
+ *       If the sound is playing, it can either be restarted or stopped and reloaded based on the `restart` and `usesame` parameters.
+ *       It registers an effect for the panning (via `PinSound::Pan2ChannelEffect`) and plays the sound.
+ */
+void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, const int pitch, 
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
+{
+   // used to set pan volumes
+   float leftVolume;
+   float rightVolume;
+
+      /* PLOGI << std::fixed << std::setprecision(7) << "Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
+      (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
+      " Pitch: "<< pitch << " Random pitch: " << randompitch  << " front_rear_fade: " << front_rear_fade <<   " loopcount: " << loopcount << " usesame: " << 
+      usesame <<  " Restart? " << restart; */
+
+   if (Mix_Playing(m_assignedChannel)) {
+      if (restart || !usesame){ // stop and reload  
+         Mix_HaltChannel(m_assignedChannel);
+         setPitch(pitch, randompitch);
+         // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automaticly
+         Mix_RegisterEffect(m_assignedChannel, PinSound::Pan2ChannelEffect, nullptr, &m_mixEffectsData);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
       }
+   } 
+   else { // not playing
+      setPitch(pitch, randompitch);
+      // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automaticly
+      Mix_RegisterEffect(m_assignedChannel, PinSound::Pan2ChannelEffect, nullptr, &m_mixEffectsData);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+   }   
 }
 
-PinDirectSound::~PinDirectSound()
-{
-#ifndef __STANDALONE__
-   SAFE_PINSOUND_RELEASE(m_pDSListener);
-   SAFE_PINSOUND_RELEASE(m_pDS);
-#endif
-}
-
-BOOL CALLBACK DSEnumCallBack(LPGUID guid, LPCSTR desc, LPCSTR mod, LPVOID list)
-{
-   DSAudioDevice *ad = new DSAudioDevice;
-   if (guid == nullptr)
-      ad->guid = nullptr;
-   else {
-      ad->guid = new GUID;
-      memcpy(ad->guid, guid, sizeof(GUID));
-   }
-   ad->description = desc;
-   ad->module = mod;
-   (static_cast<DSAudioDevices*>(list))->push_back(ad);
-   return fTrue;
-}
-
-void PinDirectSound::InitDirectSound(const HWND hwnd, const bool IsBackglass)
-{
-#ifdef DEBUG_NO_SOUND
-   return;
-#endif
-#ifndef __STANDALONE__
-   SAFE_PINSOUND_RELEASE(m_pDSListener);
-   SAFE_PINSOUND_RELEASE(m_pDS);
-
-   DSAudioDevices DSads;
-   int DSidx = 0;
-   if (SUCCEEDED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
+/**
+ * @brief Plays a 3D sound effect with various configurable parameters.
+ *
+ * This function handles playing a sound with specified attributes, such as volume, pitch, pan, 
+ * front/rear fade, and loop count. It also supports restarting and modifying the sound playback 
+ * based on whether the sound is already playing on the assigned channel.
+ *
+ * @param nVolume The volume of the sound, where 0.0 is silent and 1.0 is full volume.
+ * @param randompitch A random pitch modifier applied to the sound (can be a value between 0.0 and 1.0).
+ * @param pitch The base pitch of the sound. Affects the pitch shift applied to the sound playback.
+ * @param pan The pan of the sound, controlling whether it’s played more towards the left or right.
+ * @param front_rear_fade A fade effect that adjusts the balance between the front and rear sound channels.
+ * @param loopcount The number of times the sound should loop. 0 means no looping.
+ * @param usesame If true, the function will not restart the sound if it's already playing. 
+ *                If false, it will stop and restart the sound playback.
+ * @param restart If true, forces the sound to stop and restart even if it’s already playing.
+ *
+ * This function first checks if the sound is already playing. If it is, and `restart` or `usesame` is false,
+ * it stops the current sound and replays it with the new settings. If the sound is not playing, it simply plays the sound.
+ *
+ * The MixEffects must be registered each time before the sound is played.  The effect is automatically unregistered once the sound finishes playing.
+ */
+void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, const int pitch, 
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
    {
-      const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, IsBackglass ? "SoundDeviceBG"s : "SoundDevice"s, DSidx);
-      if ((!hr) || ((size_t)DSidx >= DSads.size()))
-         DSidx = 0; // The default primary sound device
-   }
+      /*  PLOGI << std::fixed << std::setprecision(7) << "SSF Playing Sound: " << m_szName << " SoundOut (0=table, 1=bg): " << 
+         (int) m_outputTarget << " nVol: " << nVolume << " pan: " << pan <<
+         " Pitch: "<< pitch << " Random pitch: " << randompitch << " front_rear_fade: " << front_rear_fade << " loopcount: " << loopcount << " usesame: " << 
+         usesame <<  " Restart? " << restart; */
 
-   // Create IDirectSound using the selected sound device
-   HRESULT hr;
-   if (FAILED(hr = DirectSoundCreate((DSidx != 0) ? DSads[DSidx]->guid : nullptr, &m_pDS, nullptr)))
-   {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not create Direct Sound.", hr);
-      ShowError(bla);
-      return;// hr;
-   }
-
-   // free audio devices list
-   for (size_t i = 0; i < DSads.size(); i++)
-      delete DSads[i];
-
-   // Set coop level to DSSCL_PRIORITY
-   if (FAILED(hr = m_pDS->SetCooperativeLevel(hwnd, DSSCL_PRIORITY)))
-   {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not set Direct Sound Priority.", hr);
-      ShowError(bla);
-      return;// hr;
-   }
-
-   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-   // Get the primary buffer 
-   DSBUFFERDESC dsbd = {};
-   dsbd.dwSize = sizeof(DSBUFFERDESC);
-   dsbd.dwFlags = DSBCAPS_PRIMARYBUFFER;
-   if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
-      dsbd.dwFlags |= DSBCAPS_CTRL3D;
-   dsbd.dwBufferBytes = 0;
-   dsbd.lpwfxFormat = nullptr;
-
-   LPDIRECTSOUNDBUFFER pDSBPrimary = nullptr;
-   if (FAILED(hr = m_pDS->CreateSoundBuffer(&dsbd, &pDSBPrimary, nullptr)))
-   {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not create primary sound buffer.", hr);
-      ShowError(bla);
-      return;// hr;
-   }
-
-   // Set primary buffer format to 44kHz and 16-bit output.
-   WAVEFORMATEX wfx = {};
-   wfx.wFormatTag = WAVE_FORMAT_PCM;
-   wfx.nChannels = (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH)) ?  1 : 2;
-   wfx.nSamplesPerSec = 44100;
-   wfx.wBitsPerSample = 16;
-   wfx.nBlockAlign = wfx.wBitsPerSample / (WORD)8 * wfx.nChannels;
-   wfx.nAvgBytesPerSec = wfx.nSamplesPerSec * wfx.nBlockAlign;
-
-   if (FAILED(hr = pDSBPrimary->SetFormat(&wfx)))
-   {
-      char bla[128];
-      sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not set sound format.", hr);
-      ShowError(bla);
-      return;// hr;
-   }
-   if (!IsBackglass && (SoundMode3D != SNDCFG_SND3D2CH))
-   {
-	   // Obtain a listener interface.
-	   hr = pDSBPrimary->QueryInterface(IID_IDirectSound3DListener, (LPVOID*)&m_pDSListener);
-	   if (FAILED(hr))
-	   {
-	      char bla[128];
-	      sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not acquire 3D listener interface.", hr);
-	      ShowError(bla);
-	      return;// hr;
-	   }
-
-	   // Set the initial position of the listener to be sitting in between the front two speakers. 
-	   m_pDSListener->SetPosition(0.0f, 0.0f, 0.0f, DS3D_IMMEDIATE);
-   }
-   SAFE_PINSOUND_RELEASE(pDSBPrimary);
-#endif
-
-   //return S_OK;
-}
-
-void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND hwnd)
-{
-#ifndef __STANDALONE__
-   const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, 0);
-   const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, 0);
-#else
-   const int DSidx1 = settings.LoadValueWithDefault(Settings::Player, "SoundDevice"s, -1);
-   const int DSidx2 = settings.LoadValueWithDefault(Settings::Player, "SoundDeviceBG"s, -1);
-#endif
-   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-   //---- Initialize BASS Audio Library
-
-#ifndef __STANDALONE__
-   bass_STD_idx = -1;
-   bass_BG_idx = -1;
-
-   for (unsigned int idx = 0; idx < 2; ++idx)
-   {
-      const int DSidx = (idx == 0) ? DSidx1 : DSidx2;
-
-      // Match the Direct Sound device with the BASS device by name
-      if (DSidx != -1)
-      {
-         DSAudioDevices DSads;
-         if (!FAILED(DirectSoundEnumerate(DSEnumCallBack, &DSads)))
-         {
-            if ((size_t)DSidx < DSads.size() && DSads[DSidx]->guid != nullptr) // primary device has guid nullptr, so use BASS_idx = -1 in that case
-            {
-               BASS_DEVICEINFO dinfo;
-               for (int i = 1; BASS_GetDeviceInfo(i, &dinfo); i++) // 0 = no sound/no device
-                  if (dinfo.flags & BASS_DEVICE_ENABLED) // device must be enabled
-                     if (strcmp(dinfo.name, DSads[DSidx]->description.c_str()) == 0)
-                     {
-                        if (idx == 0)
-                           bass_STD_idx = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
-                        else
-                           bass_BG_idx = (dinfo.flags & BASS_DEVICE_DEFAULT) ? -1 : i;
-                        break;
-                     }
-            }
-            for (size_t i = 0; i < DSads.size(); i++)
-               delete DSads[i];
+      if (Mix_Playing(m_assignedChannel)) { 
+         if (restart || !usesame){ // stop and reload  
+            Mix_HaltChannel(m_assignedChannel);
+            setPitch(pitch, randompitch);
+            // register the effects.  must do this each time before PlayChannel.  When the sound is done playing its automaticlly unregisted.
+            Mix_RegisterEffect(m_assignedChannel, PinSound::SSFEffect, nullptr, &m_mixEffectsData);
+            Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
          }
+      } 
+      else { // not playing
+         setPitch(pitch, randompitch);
+         // register the pitch effect.  must do this each time before PlayChannel.  When the sound is done playing its automaticlly unregisted.
+         Mix_RegisterEffect(m_assignedChannel, PinSound::SSFEffect, nullptr, &m_mixEffectsData);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
       }
    }
-#else
-   bass_STD_idx = DSidx1;
-   bass_BG_idx = DSidx2;
-#endif
 
-   //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_FLOATDSP, fTrue);
-   BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_PAN, fTrue); // logarithmic scale, similar to DSound (although BASS still takes a 0..1 range)
-   //!! BASS_CONFIG_THREAD so far only works on Net stuff, not these ones here..  :/
-   //BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_CURVE_VOL, fTrue); // dto. // is now converted internally, as otherwise PinMAMEs altsound will also get affected! (note that pan is not used yet in PinMAME!)
-   BASS_SetConfig(/*BASS_CONFIG_THREAD |*/ BASS_CONFIG_VISTA_SPEAKERS, fTrue); // to make BASS_ChannelSetAttribute(.., BASS_ATTRIB_PAN, pan); work, needs Vista or later
+/**
+ * @brief Called to stop table sound seperate from the table doing it. I think its used to stop all sounds 
+ *        so its called in a loop. Windows UI?
+ */
+ void PinSound::Stop() 
+ {
+     Mix_FadeOutChannel(m_assignedChannel, 300); // fade out in 300ms.  Also halts channel when done
+ } 
 
-   for (unsigned int idx = 0; idx < 2; ++idx)
+/**
+ * @brief Loads a music file into the `m_pMixMusic` object.
+ * 
+ * This function attempts to load a music file from the provided file path (`szFileName`).
+ * If a music file is already loaded, it will be freed before attempting to load the new file.
+ * On successful loading, the `m_pMixMusic` pointer will point to the new music object.
+ * If loading fails, an error message will be logged and the function will return false.
+ * 
+ * @param szFileName The file path of the music file to load.
+ * 
+ * @return `true` if the music file was successfully loaded, `false` otherwise.
+ * 
+ * @note Used by WMP.
+ */
+bool PinSound::SetMusicFile(const string& szFileName)
+{
+   if(m_pMixMusic != nullptr)
+       Mix_FreeMusic(m_pMixMusic);
+   
+   if(!(m_pMixMusic = Mix_LoadMUS(szFileName.c_str())))
    {
-      int deviceIdx = (idx == 0) ? bass_STD_idx : bass_BG_idx;
-      BASS_INFO info;
-      const bool isReInit = BASS_SetDevice(deviceIdx) && BASS_GetInfo(&info);
-      PLOGI << "Initializing BASS device #" << deviceIdx << " [Reinit: " << isReInit << ']';
-      if (!BASS_Init(deviceIdx, 44100, 
-            (isReInit ? BASS_DEVICE_REINIT : 0) | ((SoundMode3D != SNDCFG_SND3D2CH) && (idx == 0) ? 0 /*| BASS_DEVICE_MONO*/ /*| BASS_DEVICE_DSOUND*/ : 0),
-            g_pvp->GetHwnd(), nullptr)) // note that sample rate is usually ignored and set depending on the input/file automatically
+      PLOGE << "Failed to load sound: " << SDL_GetError();
+      return false;
+   }
+
+   return true;
+}
+
+/**
+ * @brief Initializes and plays music from a specified file.
+ *
+ * This function attempts to load a music file from different potential locations,
+ * starting with the file path provided. It uses SDL_mixer's Mix_LoadMUS function
+ * to load the music and adjusts the volume based on the given `volume` parameter
+ * and the player's current music volume. If successful, it starts the music playback.
+ * 
+ * @param szFileName The name of the music file to load. The function will search for the file
+ * in various directories.
+ * @param volume A float representing the desired volume of the music (0.0 to 1.0). The final
+ * volume is scaled based on the player's current music volume setting.
+ * 
+ * @return True if the music was successfully loaded and started, false otherwise.
+ * 
+ * @note Loads Music file from the table script when it uses 'PlayMusic'. These are typcially
+ *       in the music folder.
+ */   
+bool PinSound::MusicInit(const string& szFileName, const float volume)
+{
+   m_outputTarget = SNDOUT_BACKGLASS;
+
+   #ifndef __STANDALONE__
+      const string& filename = szFileName;
+   #else
+      const string filename = normalize_path_separators(szFileName);
+   #endif
+
+   if(m_pMixMusic != nullptr)
+         Mix_FreeMusic(m_pMixMusic);
+
+   // need to find the path of the music dir. This does hunt to find the file.
+   for (int i = 0; i < 5; ++i)
+   {
+      string path;
+      switch (i)
       {
-         const int code = BASS_ErrorGetCode();
-         string bla;
-         BASS_ErrorMapCode(code, bla);
-         PLOGE << ("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str();
-         g_pvp->MessageBox(("BASS music/sound library initialization error " + std::to_string(code) + ": " + bla).c_str(), "Error", MB_ICONERROR);
+      case 0: path = filename; break;
+      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 2: path = g_pvp->m_currentTablePath + filename; break;
+      case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + filename; break;
+      case 4: path = PATH_MUSIC + filename; break;
       }
-      if (/*SoundMode3D == SNDCFG_SND3D2CH &&*/ bass_STD_idx == bass_BG_idx) // skip 2nd device if it's the same and 3D is disabled //!!! for now try to just use one even if 3D! and then adapt channel settings if sample is a backglass sample
-         break;
-   }
+     
+      if ((m_pMixMusic = Mix_LoadMUS(path.c_str())))
+      {
 
-   //---- Initialize DirectSound
-   m_pds.InitDirectSound(hwnd, false);
-   // If these are the same device, and we are not in 3d mode, just point the backglass device to the main one.
-   // For 3D we want two separate instances, one in basic stereo for music, and the other surround mode.
-   if (SoundMode3D == SNDCFG_SND3D2CH && DSidx1 == DSidx2)
-   {
-      m_pbackglassds = &m_pds;
+         int nVolume = (volume * 100.0) * ( (float)g_pplayer->m_MusicVolume / 100);
+         MusicVolume(nVolume);
+         MusicPlay();
+         /* PLOGI << "Loaded Music File: " << szFileName << " nVolume: " << nVolume <<
+            " to OutputTarget(0=table, 1=BG): " << static_cast<int>(m_outputTarget);  */
+         return true;
+      }
    }
-   else
+   PLOGE << "Failed to load sound: " << szFileName << " SDL Error: " << SDL_GetError();
+   return false;
+}
+
+void PinSound::MusicPlay()
+{
+   Mix_PlayMusic(m_pMixMusic, 0);
+}
+
+void PinSound::MusicPause()
+{
+   Mix_PauseMusic();
+}
+
+void PinSound::MusicUnpause()
+{
+   Mix_ResumeMusic();
+}
+
+void PinSound::MusicClose()
+{
+   MusicStop(); 
+}
+
+bool PinSound::MusicActive() {
+   return Mix_PlayingMusic();
+}
+
+void PinSound::MusicStop()
+{
+   Mix_HaltMusic();
+}
+
+double PinSound::GetMusicPosition()
+{
+   return Mix_GetMusicPosition(m_pMixMusic);
+}
+
+void PinSound::SetMusicPosition(double seconds)
+{
+   Mix_SetMusicPosition(seconds);
+}
+
+// volume range that comes in is 0-1
+void PinSound::MusicVolume(const float volume)
+{
+   int nVolume = (volume * 100.0) * ( (float)g_pplayer->m_MusicVolume / 100);
+   Mix_VolumeMusic(nVolume);
+}
+
+/**
+ * @brief Initializes an SDL audio stream for background music playback.
+ *
+ * This function sets up an audio stream with the specified frequency, channel count,
+ * and volume, then attempts to open and configure the audio device for playback. 
+ * If the stream is successfully initialized, the function resumes audio playback.
+ * If initialization fails, an error message is logged.
+ *
+ * @param frequency The audio sample rate (in Hz) to be used by the audio stream.
+ * @param channels The number of audio channels (e.g., 1 for mono, 2 for stereo).
+ * @param volume A floating-point value representing the desired volume. It is scaled 
+ *        by the current music volume setting of the player.
+ * @return bool Returns true if the audio stream was successfully initialized 
+ *         and started; false otherwise.
+ * 
+ * @note Used by VPinMAMEController and PUP. volume range 0-1 from both vpinmame and pup
+ */
+bool PinSound::StreamInit(DWORD frequency, int channels, const float volume) 
+{
+   SDL_AudioSpec audioSpec;
+   audioSpec.freq = frequency;
+   audioSpec.format =  SDL_AUDIO_S16LE;
+   audioSpec.channels = channels;
+
+   float nVolume = volume  * ( (float) g_pplayer->m_MusicVolume / 100);  
+   m_pstream = SDL_OpenAudioDeviceStream(m_sdl_BG_idx, &audioSpec, NULL, NULL);
+
+   if(m_pstream)
    {
-      m_pbackglassds = new PinDirectSound();
-      m_pbackglassds->InitDirectSound(hwnd, true);
+      SDL_SetAudioStreamGain(m_pstream, nVolume);
+      SDL_ResumeAudioStreamDevice(m_pstream); // it always stops paused
+      return true;
+   }
+   else{
+      PLOGE << "Failed to load stream: "  << SDL_GetError();
+   }
+   return false;  
+}
+
+/**
+ * @brief Updates the audio stream with new data to be played.
+ * 
+ * This function is used to feed audio data into an active audio stream in the 
+ * SDL audio system. It passes the provided audio buffer and its length to the
+ * SDL audio stream, allowing for continuous playback of audio data.
+ *
+ * @param buffer A pointer to the audio data buffer, typically containing PCM audio samples.
+ * @param length The length of the buffer in bytes, indicating how much audio data is available to process.
+ * 
+ * @note The function assumes that the stream (m_pstream) has been properly initialized
+ * and that the audio data format is compatible with the stream's configuration.
+ * 
+ * @note called by VPinMAMEController and PUP
+ */
+void PinSound::StreamUpdate(void* buffer, DWORD length) 
+{
+   SDL_PutAudioStreamData(m_pstream, buffer, length);
+}
+
+/**
+ * @brief Adjusts the volume of the audio stream.
+ *
+ * This function sets the gain of the audio stream by adjusting it based on the
+ * provided volume and the current music volume from the global player settings.
+ * It ensures the stream's volume is updated only when the volume has changed.
+ *
+ * @param volume The desired volume level (range is expected to be from 0.0 to 1.0).
+ *               This value is multiplied by the global music volume setting (in percentage)
+ *               before being applied to the audio stream.
+ *
+ * @note The function only updates the stream's volume if the provided volume differs
+ *       from the current stream volume, avoiding unnecessary updates.
+ * 
+ * @note Called by VPinMAMEController and PUP.  pup sends a value between 0 and 1.. matches
+ *       sdl stream volume scale
+ */
+void PinSound::StreamVolume(const float volume)
+{
+   //PLOGI << "STREAM VOL";
+   float nVolume = volume  * ( (float) g_pplayer->m_MusicVolume / 100);
+   if (m_streamVolume != volume)
+   {
+      SDL_SetAudioStreamGain(m_pstream, nVolume);
+      m_streamVolume = volume;
    }
 }
 
-PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
+/**
+ * @brief Loads a sound file and initializes a PinSound object with its data.
+ * 
+ * This function attempts to load a sound file specified by the given file path (`strFileName`), 
+ * reads its content into memory, and creates a `PinSound` object with the loaded data. The sound 
+ * file's name is extracted from the file path and stored, and the file's data is read into dynamically 
+ * allocated memory. The function also reinitializes the sound object, and if the initialization succeeds, 
+ * it returns a pointer to the new `PinSound` object. If any part of the loading or initialization process fails, 
+ * it returns `nullptr`.
+ * 
+ * @param strFileName The file path to the sound file to load.
+ * 
+ * @return PinSound* A pointer to the newly loaded and initialized `PinSound` object, or `nullptr` if 
+ *         loading or initialization fails.
+ * 
+ * @note Windows UI?  Load sound into Sound Resource Manager?
+ * 
+ * @note The function uses raw file handling (`fopen_s`, `fseek`, `fread_s`, and `fclose`), and expects
+ *       the sound file to be in a valid format that can be processed by `ReInitialize()`.
+ */
+PinSound *PinSound::LoadFile(const string& strFileName)
 {
    PinSound * const pps = new PinSound();
 
    pps->m_szPath = strFileName;
    pps->m_szName = TitleFromFilename(strFileName);
 
-   if (pps->IsWav()) // only use old direct sound code and wav reader if playing wav's
+   FILE *f;
+   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f)
    {
-#ifndef __STANDALONE__
-	   // Create a new wave file class
-	   CWaveSoundRead* const pWaveSoundRead = new CWaveSoundRead();
-
-	   // Load the wave file
-	   if (FAILED(pWaveSoundRead->Open(strFileName)))
-	   {
-		   ShowError("Could not open wav file.");
-		   delete pWaveSoundRead;
-		   delete pps;
-		   return nullptr;
-	   }
-
-	   const SoundConfigTypes SoundMode3D = (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-	   // Set up the direct sound buffer, and only request the flags needed
-	   // since each requires some overhead and limits if the buffer can
-	   // be hardware accelerated
-	   DSBUFFERDESC dsbd = {};
-	   dsbd.dwSize = sizeof(DSBUFFERDESC);
-	   dsbd.dwFlags = DSBCAPS_STATIC | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_CTRLPAN;
-	   if (SoundMode3D != SNDCFG_SND3D2CH)
-		   dsbd.dwFlags |= DSBCAPS_CTRL3D;
-	   dsbd.dwBufferBytes = pWaveSoundRead->m_ckIn.cksize;
-	   dsbd.lpwfxFormat = pWaveSoundRead->m_pwfx;
-	   memcpy(&pps->m_wfx, pWaveSoundRead->m_pwfx, sizeof(pps->m_wfx));
-
-	   // Create the static DirectSound buffer
-	   HRESULT hr;
-	   if (FAILED(hr = m_pds.m_pDS->CreateSoundBuffer(&dsbd, &pps->m_pDSBuffer, nullptr)))
-	   {
-		   char bla[128];
-		   sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not create static sound buffer.", hr);
-		   ShowError(bla);
-		   delete pWaveSoundRead;
-		   delete pps;
-		   return nullptr;
-	   }
-	   if (SoundMode3D != SNDCFG_SND3D2CH)
-		   pps->Get3DBuffer();
-
-	   // Remember how big the buffer is
-	   pps->m_cdata = dsbd.dwBufferBytes;
-	   pps->m_pPinDirectSound = &m_pds;
-
-	   // Fill the buffer with wav data
-
-		  // Allocate that buffer.
-		  pps->m_pdata = new char[pps->m_cdata];
-
-		  UINT cbWavSize; // Size of data
-		  if (FAILED(hr = pWaveSoundRead->Read(pps->m_cdata,
-			  (BYTE*)pps->m_pdata,
-			  &cbWavSize)))
-		  {
-			  ShowError("Could not read wav file.");
-			  delete pWaveSoundRead;
-			  delete pps;
-			  return nullptr;
-		  }
-
-		  delete pWaveSoundRead;
-
-		  // Lock the buffer down
-		  VOID* pbData = nullptr;
-		  VOID* pbData2 = nullptr;
-		  DWORD dwLength, dwLength2;
-		  if (FAILED(hr = pps->m_pDSBuffer->Lock(0, pps->m_cdata, &pbData, &dwLength,
-			  &pbData2, &dwLength2, 0L)))
-		  {
-			  ShowError("Could not lock sound buffer.");
-			  delete pps;
-			  return nullptr;
-		  }
-		  // Copy the memory to it.
-		  memcpy(pbData, pps->m_pdata, pps->m_cdata);
-		  // Unlock the buffer, we don't need it anymore.
-		  pps->m_pDSBuffer->Unlock(pbData, pps->m_cdata, nullptr, 0);
-
-         // Update the UI controls to show the sound as the file is loaded
-         //SetFileUI( hDlg, strFileName );
-         //OnEnablePlayUI( hDlg, TRUE );
-#endif
+      ShowError("Could not open sound file.");
+      return nullptr;
    }
+   fseek(f, 0, SEEK_END);
+   pps->m_cdata = (int)ftell(f);
+   fseek(f, 0, SEEK_SET);
+   pps->m_pdata = new char[pps->m_cdata];
+   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
+   fclose(f);
+
+   HRESULT res = pps->ReInitialize();
+
+   if(res == S_OK)
+      return pps;
    else
-   {
-	   FILE *f;
-	   if (fopen_s(&f, strFileName.c_str(), "rb") != 0 || !f)
-	   {
-		   ShowError("Could not open sound file.");
-		   return nullptr;
-	   }
-	   fseek(f, 0, SEEK_END);
-	   pps->m_cdata = (int)ftell(f);
-	   fseek(f, 0, SEEK_SET);
-	   pps->m_pdata = new char[pps->m_cdata];
-	   const size_t n_read = fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
-	   fclose(f);
+      return nullptr;
+}
 
-	   if (n_read == 0)
-	   {
-		   ShowError("Error reading sound file.");
-		   return nullptr;
-	   }
+Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* original) {
+   if (!original) return nullptr;
 
-	   const SoundConfigTypes SoundMode3D = (pps->GetOutputTarget() == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   // Allocate a new Mix_Chunk
+   Mix_Chunk* copy = new Mix_Chunk;
+   copy->allocated = original->allocated;
+   copy->alen = original->alen;
+   copy->volume = original->volume;
 
-	   pps->SetBassDevice();
-	   pps->m_BASSstream = BASS_StreamCreateFile(
-		   TRUE,
-		   pps->m_pdata,
-		   0,
-		   pps->m_cdata,
-		   (SoundMode3D != SNDCFG_SND3D2CH) ? (BASS_SAMPLE_3D | BASS_SAMPLE_MONO) : 0 /*| BASS_SAMPLE_LOOP*/ //!! mono really needed? doc claims so
-	   );
+   // Allocate memory for audio buffer
+   copy->abuf = new Uint8[original->alen];
+   std::memcpy(copy->abuf, original->abuf, original->alen);
+   return copy;
+}
 
-	   if (pps->m_BASSstream == 0)
-	   {
-		   delete pps;
+/**
+ * (Static)
+ * @brief Calculates the left and right channel volume ratios based on the pan value.
+ * 
+ * This function takes an input pan value (ranging from -3 to 3) and normalizes it to a 
+ * standard stereo pan range of [-1, 1]. It then computes the left and right channel 
+ * volume ratios using a linear panning formula.
+ * 
+ * @param[out] leftPanRatio  Reference to a float where the computed left channel ratio will be stored.
+ * @param[out] rightPanRatio Reference to a float where the computed right channel ratio will be stored.
+ * @param[in] adjustedVolRatio The overall volume adjustment ratio (typically in range [0, 1]).
+ * @param[in] pan The panning position, where -3 is full left, 0 is center, and 3 is full right.
+ * 
+ * @note The function ensures that the output volume ratios are clamped between 0 and 1 to prevent overflow.
+ */
+void PinSound::calcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan)
+{
+    // Normalize pan from range [-3, 3] to [-1, 1]
+    pan = pan / 3.0f;
 
-		   const int code = BASS_ErrorGetCode();
-		   string bla2;
-		   BASS_ErrorMapCode(code, bla2);
-		   g_pvp->MessageBox(("BASS music/sound library cannot load \"" + strFileName + "\" (error " + std::to_string(code) + ": " + bla2 + ')').c_str(), "Error", MB_ICONERROR);
-		   return nullptr;
-	   }
-	   else {
-		   BASS_ChannelGetAttribute(pps->m_BASSstream, BASS_ATTRIB_FREQ, &pps->m_freq);
-	   }
-   }
+    // Ensure pan is within -1 to 1 (in case of floating-point errors)
+    pan = std::clamp(pan, -1.0f, 1.0f);
 
-   return pps;
+    // Use a more standard panning formula that keeps values within range
+    float leftFactor = 0.5f * (1.0f - pan);  // Left decreases as pan increases
+    float rightFactor = 0.5f * (1.0f + pan); // Right increases as pan increases
+
+    leftPanRatio = adjustedVolRatio * leftFactor;
+    rightPanRatio = adjustedVolRatio * rightFactor;
+
+    // Ensure the values are properly clamped
+    leftPanRatio = std::clamp(leftPanRatio, 0.0f, 1.0f);
+    rightPanRatio = std::clamp(rightPanRatio, 0.0f, 1.0f);
+
+    //PLOGI << "Pan: " << pan << " AdjustedVolRatio: " << adjustedVolRatio << " Left: " << leftPanRatio << " Right: " << rightPanRatio;
+}
+
+/**
+ * (Static)
+ * @brief Calculates the fade distribution between front and rear channels based on the given fade ratio and panning ratios.
+ *
+ * This function computes the gain values for front-left, front-right, rear-left, and rear-right channels
+ * based on the provided left/right panning ratios and a fade ratio. The fade ratio determines the balance
+ * between front and rear channels, where:
+ *  - A fadeRatio of 0.0 fully favors the rear speakers.
+ *  - A fadeRatio of 2.5 fully favors the front speakers.
+ *  - A fadeRatio between 0.0 and 2.5 interpolates linearly between rear and front.
+ *
+ * @param leftPanRatio  The left channel's panning ratio (typically in the range [0.0, 1.0]).
+ * @param rightPanRatio The right channel's panning ratio (typically in the range [0.0, 1.0]).
+ * @param fadeRatio     The fade control value determining the balance between front and rear channels.
+ *                      It is clamped to the range [0.0, 2.5].
+ * @param frontLeft     Output parameter for the front-left channel gain.
+ * @param frontRight    Output parameter for the front-right channel gain.
+ * @param rearLeft      Output parameter for the rear-left channel gain.
+ * @param rearRight     Output parameter for the rear-right channel gain.
+ */
+void PinSound::calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight)
+{
+   // Clamp fadeRatio to the range [0.0, 2.5]
+   fadeRatio = std::max(0.0f, std::min(2.5f, fadeRatio));
+
+   // Calculate front and rear weights (linear fade)
+   //float rearWeight = std::max(0.0f, 2.5f - fadeRatio) / 2.5f; // 1 at fadeRatio=0, 0 at fadeRatio=2.5
+   //float frontWeight = std::min(2.5f, fadeRatio) / 2.5f;        // 0 at fadeRatio=0, 1 at fadeRatio=2.5
+   float rearWeight = (2.5f - fadeRatio) / 2.5f;
+   float frontWeight = fadeRatio / 2.5f;
+
+
+   // Apply panning ratios
+   frontLeft  = frontWeight * leftPanRatio;
+   frontRight = frontWeight * rightPanRatio;
+   rearLeft   = rearWeight * leftPanRatio;
+   rearRight  = rearWeight * rightPanRatio;
+
+   //PLOGI << "FadeRatio: " << fadeRatio << " FrontLeft: " << frontLeft << " FrontRight: " << frontRight << " RearLeft: " << rearLeft << " RearRight: " << rearRight;
 }
 
 // The existing pan value in PlaySound function takes a -1 to 1 value, however it's extremely non-linear.
@@ -707,7 +938,8 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 // linear positions, so we'll use that and reverse it.   Also multiplying by 3 since that seems to be the
 // the total distance necessary to fully pan away from one side at the center of the room.
 
-float PinDirectSound::PanTo3D(float input)
+// static
+float PinSound::PanTo3D(float input)
 {
 	// DirectSound's position command does weird things at exactly 0. 
 	if (fabsf(input) < 0.0001f)
@@ -726,8 +958,8 @@ float PinDirectSound::PanTo3D(float input)
 // It performs the same calculations but maps the resulting values to an area of the 3D 
 // sound stage that has the expected panning effect for this application. It is written 
 // in a long form to facilitate tweaking the formulas.  *njk*
-
-float PinDirectSound::PanSSF(float pan)
+//static
+float PinSound::PanSSF(float pan)
 {
 	// This math could probably be simplified but it is kept in long form
 	// to aide in fine tuning and clarity of function.
@@ -798,8 +1030,8 @@ float PinDirectSound::PanSSF(float pan)
 // an area of the 3D sound stage that has the expected fading
 // effect for this application. It is written in a long form to facilitate tweaking the 
 // values (which turned out to be more straightforward than originally coded). *njk*
-
-float PinDirectSound::FadeSSF(float front_rear_fade)
+// static
+float PinSound::FadeSSF(float front_rear_fade)
 {
 	float z;
 
@@ -871,116 +1103,456 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
 
 	if (fabsf(z) < 0.0001f)
 		z = -0.0001f;
-
-	return z;
+	
+	return fabsf(z); // I changed this to get a postive range from 0 to 2.5. not sure why before they returned negative
 }
 
-PinDirectSoundWavCopy::PinDirectSoundWavCopy(class PinSound * const pOriginal)
-{
-#ifndef __STANDALONE__
-	m_ppsOriginal = pOriginal;
+/**
+ * (Static, MixEffect Callback)
+ * @brief Applies panning effects to the front left (FL) and front right (FR) channels of an audio stream.
+ * 
+ * This function modifies an audio stream by adjusting the volume of FL and FR channels based on pan settings.
+ * 
+ * @param chan Audio channel index (unused in this function).
+ * @param stream Pointer to the audio data buffer.
+ * @param len Length of the audio buffer in bytes.
+ * @param udata User data containing the MixEffectsData structure.
+ * @note The built in Mix_SetPanning does not work on 2+ channels: https://github.com/libsdl-org/SDL_mixer/issues/665 
+ */
+void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata) {
 
-	if (this != pOriginal)
-	{
-		m_pDSBuffer = nullptr;
-		m_pDS3DBuffer = nullptr;
-		pOriginal->GetPinDirectSound()->m_pDS->DuplicateSoundBuffer(pOriginal->m_pDSBuffer, &m_pDSBuffer);
-		if (m_pDSBuffer && pOriginal->m_pDS3DBuffer != nullptr)
-			Get3DBuffer();
-	}
-#endif
-}
+   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+    // pan vols ratios for left and right
+    float leftPanRatio;
+    float rightPanRatio;
 
-void PinDirectSoundWavCopy::PlayInternal(const float volume, const float randompitch, const int pitch, const float pan, const float front_rear_fade, const int flags, const bool restart)
-{
-#ifndef __STANDALONE__
-	m_pDSBuffer->SetVolume((LONG)convert2decibelvolume(volume));
+    switch (med->outputFormat)
+    {
+       case (SDL_AUDIO_S16LE):
+          {
+             int16_t* samples = static_cast<int16_t*>(stream);
+             int total_samples = len / sizeof(int16_t);
+             int channels = med->outputChannels;
+             int frames = total_samples / channels; // Each frame divided by samples
+ 
+             //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
+             calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
 
-	// Frequency tweaks are relative to original sound.  If the copy failed for some reason, don't alter original
-	if (m_ppsOriginal != this)
-	{
-		if (randompitch > 0.f)
-		{
-			DWORD freq;
-			m_ppsOriginal->m_pDSBuffer->GetFrequency(&freq);
-			freq += pitch;
-			const float rndh = rand_mt_01();
-			const float rndl = rand_mt_01();
-			m_pDSBuffer->SetFrequency(freq + (DWORD)((float)freq * randompitch * rndh * rndh) - (DWORD)((float)freq * randompitch * rndl * rndl * 0.5f));
-		}
-		else if (pitch != 0)
-		{
-			DWORD freq;
-			m_ppsOriginal->m_pDSBuffer->GetFrequency(&freq);
-			m_pDSBuffer->SetFrequency(freq + pitch);
-		}
-	}
+             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+            for (int frame = 0; frame < frames; ++frame) {
+               int index = frame * channels;
+         
+               // Apply volume gains to Front Left and Right channels
+               samples[index] = (samples[index] * leftPanRatio);  //  FL
+               samples[index + 1] = (samples[index+1] * rightPanRatio); // FR
+            }
+            break;
+         }
+            case (SDL_AUDIO_F32LE):
+               {
+                  float* samples = static_cast<float*>(stream);
+                  int total_samples = len / sizeof(float);
+                  int channels = med->outputChannels;
+                  int frames = total_samples / channels; // Each frame has divided by channels
+      
+                  //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
+                  calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
 
-	const SoundConfigTypes SoundMode3D = (m_ppsOriginal->GetOutputTarget() == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
-
-	switch (SoundMode3D)
-	{
-	case SNDCFG_SND3DALLREAR:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(1.0f), DS3D_IMMEDIATE);
-		break;
-	case SNDCFG_SND3DFRONTISFRONT:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, PinDirectSound::PanTo3D(front_rear_fade), DS3D_IMMEDIATE);
-		break;
-	case SNDCFG_SND3DFRONTISREAR:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -PinDirectSound::PanTo3D(front_rear_fade), DS3D_IMMEDIATE);
-		break;
-	case SNDCFG_SND3D6CH:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanTo3D(pan), 0.0f, -((PinDirectSound::PanTo3D(front_rear_fade) + 3.0f) / 2.0f), DS3D_IMMEDIATE);
-		break;
-	case SNDCFG_SND3DSSF:
-		m_pDS3DBuffer->SetPosition(PinDirectSound::PanSSF(pan), 0.0f, PinDirectSound::FadeSSF(front_rear_fade), DS3D_IMMEDIATE);
-		break;
-	case SNDCFG_SND3D2CH:
-	default:
-		if (pan != 0.f)
-			m_pDSBuffer->SetPan((LONG)(pan*DSBPAN_RIGHT));
-		break;
-	}
-
-	DWORD status;
-	m_pDSBuffer->GetStatus(&status);
-	if (!(status & DSBSTATUS_PLAYING))
-		m_pDSBuffer->Play(0, 0, flags);
-	else if (restart)
-		m_pDSBuffer->SetCurrentPosition(0);
-#endif
-}
-
-HRESULT PinDirectSoundWavCopy::Get3DBuffer()
-{
-#ifndef __STANDALONE__
-	const HRESULT hr = m_pDSBuffer->QueryInterface(IID_IDirectSound3DBuffer, (void**)&m_pDS3DBuffer);
-	if (FAILED(hr))
-	{
-		char bla[128];
-		sprintf_s(bla, sizeof(bla), "Error 0x%X. Could not get interface to 3D sound buffer.", hr);
-		ShowError(bla);
-	}
-	else
-		m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
-	return hr;
-#else
-	return S_OK;
-#endif
-}
-
-#ifdef __STANDALONE__
-void EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
-{
-   audioDevices.clear();
-
-   BASS_DEVICEINFO info;
-   for (int i = 1; BASS_GetDeviceInfo(i, &info); i++) {
-      AudioDevice audioDevice = {};
-      audioDevice.id = i;
-      strncpy((char*)audioDevice.name, info.name, MAX_DEVICE_IDENTIFIER_STRING);
-      audioDevice.enabled = (info.flags & BASS_DEVICE_ENABLED);
-      audioDevices.push_back(audioDevice);
+                   // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+               for (int frame = 0; frame < frames; ++frame) {
+                  int index = frame * channels;
+            
+                  // Apply volume gains to Front Left and Right channels
+                  samples[index] = (samples[index] * leftPanRatio);  //  FL
+                  samples[index + 1] = (samples[index+1] * rightPanRatio); // FR
+               }
+                  break;  
+               }
+               default:
+                  {
+                     PLOGE << "unknown audio format..";
+                     return;
+                  }
    }
 }
-#endif
+
+/**
+ * (Static, MixEffect Callback)
+ * @brief Moves front left (FL) and front right (FR) audio channels to rear channels in multi-channel audio.  
+ *        This is used for SNDCFG_SND3DALLREAR mode. 
+ * 
+ * This function redistributes the FL and FR channels to corresponding rear channels (BL, BR) and zeroes out the original front channels.
+ * 
+ * @param chan Audio channel index (unused in this function).
+ * @param stream Pointer to the audio data buffer.
+ * @param len Length of the audio buffer in bytes.
+ * @param udata User data containing the MixEffectsData structure.
+ */
+void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udata) {
+
+   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+    // pan vols ratios for left and right
+    float leftPanRatio;
+    float rightPanRatio;
+
+    switch (med->outputFormat)
+    {
+       case (SDL_AUDIO_S16LE):
+          {
+             int16_t* samples = static_cast<int16_t*>(stream);
+             int total_samples = len / sizeof(int16_t);
+             int channels = med->outputChannels;
+             int frames = total_samples / channels; // Each frame divided by samples
+ 
+             calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
+
+             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+            for (int frame = 0; frame < frames; ++frame) {
+               int index = frame * channels;
+               
+               if(channels == 4) // 4 channels (quad) layout: FL, FR, BL, BR
+               {
+                  // Apply volume gains and copy them to rear
+                  samples[index+2] = (samples[index] * leftPanRatio); // copy FL to BL
+                  samples[index+3] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               } 
+               else if(channels == 5) //5 channels (4.1) layout: FL, FR, LFE, BL, BR
+               {
+                  // Apply volume gains and copy them to rear
+                  samples[index+3] = (samples[index] * leftPanRatio); // copy FL to BL
+                  samples[index+4] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               }
+               else if(channels == 6) // 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
+               {
+                  // Apply volume gains and copy them to rear
+                  samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
+                  samples[index+5] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               }
+               else if(channels == 7) // 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
+               {
+                  // Apply volume gains and copy them to rear
+                  samples[index+5] = (samples[index] * leftPanRatio); // copy FL to BL
+                  samples[index+6] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               }
+               else if(channels == 8) // 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
+               {
+                  // Apply volume gains and copy them to rear
+                  samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
+                  samples[index+5] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               }
+
+               // wipe front channels
+               samples[index]   =  (0);
+               samples[index+1] =  (0);
+            }
+            break;
+         }
+            case (SDL_AUDIO_F32LE):
+               {
+                  float* samples = static_cast<float*>(stream);
+                  int total_samples = len / sizeof(float);
+                  int channels = med->outputChannels;
+                  int frames = total_samples / channels; // Each frame has divided by channels
+      
+                  calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
+                  for (int frame = 0; frame < frames; ++frame) {
+                     int index = frame * channels;
+               
+                     
+                     if(channels == 4) // 4 channels (quad) layout: FL, FR, BL, BR
+                     {
+                        // Apply volume gains and copy them to rear
+                        samples[index+2] = (samples[index] * leftPanRatio); // copy FL to BL
+                        samples[index+3] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+                     } 
+                     else if(channels == 5) //5 channels (4.1) layout: FL, FR, LFE, BL, BR
+                     {
+                        // Apply volume gains and copy them to rear
+                        samples[index+3] = (samples[index] * leftPanRatio); // copy FL to BL
+                        samples[index+4] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+                     }
+                     else if(channels == 6) // 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
+                     {
+                        // Apply volume gains and copy them to rear
+                        samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
+                        samples[index+5] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+                     }
+                     else if(channels == 7) // 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
+                     {
+                        // Apply volume gains and copy them to rear
+                        samples[index+5] = (samples[index] * leftPanRatio); // copy FL to BL
+                        samples[index+6] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+                     }
+                     else if(channels == 8) // 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
+                     {
+                        // Apply volume gains and copy them to rear
+                        samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
+                        samples[index+5] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+                     }
+      
+                     // wipe front channels
+                     samples[index]   =  (0);
+                     samples[index+1] =  (0);
+                  }
+                  break;  
+               }
+               default:
+                  {
+                     PLOGE << "unknown audio format.. Channel: " << chan;
+                     return;
+                  }
+   }
+}
+
+/**
+ * (Static, MixEffect Callback)
+ * Applies spatial sound effects to table sound for a 7.1 surround sound system.
+ *
+ * This function processes an audio stream by applying panning and fading effects,
+ * moving the front left (FL) and front right (FR) channels to the back (BL, BR) 
+ * and side (SL, SR) channels while applying calculated volume adjustments. All audio
+ * comes in on the FL and FR channels, but those channels are reserved for the backglass
+ * sounds. Table sounds only get played on the back (BL, BR) and side (SL, SR) channels
+ * in this mode.
+ *
+ * @param chan   The channel index being processed (provided by SDL_mixer).
+ * @param stream Pointer to the audio stream buffer, containing raw PCM data.
+ * @param len    Length of the audio buffer in bytes.
+ * @param udata  Pointer to user-defined data, expected to be a MixEffectsData structure.
+ *
+ * The function supports the following audio formats:
+ * - SDL_AUDIO_S16LE (16-bit signed PCM)
+ * - SDL_AUDIO_F32LE (32-bit float PCM)
+ *
+ * The function performs the following operations:
+ * 1. Retrieves the audio format and channel information from the provided MixEffectsData structure.
+ * 2. Computes panning and fading values based on the user-defined parameters.
+ * 3. Copies FL/FR samples to BL/BR and SL/SR channels.
+ * 4. Applies volume scaling to back and side channels.
+ * 5. Clears the original front channel samples because table sounds on go on side and back.
+ *
+ * If an unsupported audio format is encountered, an error is logged.
+ */
+void PinSound::SSFEffect(int chan, void *stream, int len, void *udata) {
+   // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+
+   // pan vols ratios for left and right
+   float leftPanRatio;
+   float rightPanRatio;
+
+   // calc the fade
+   float sideLeft;   // rear of table -1 
+   float sideRight;
+   float rearLeft;   // front  of table + 1
+   float rearRight;
+
+   switch (med->outputFormat)
+   {
+      case (SDL_AUDIO_S16LE):
+         {
+            int16_t* samples = static_cast<int16_t*>(stream);
+            int total_samples = len / sizeof(int16_t);
+            int channels = med->outputChannels;
+            int frames = total_samples / channels; // Each frame divided by channels
+
+            calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
+            calcFade(leftPanRatio, rightPanRatio, PinSound::FadeSSF(med->front_rear_fade), rearLeft, rearRight, sideLeft, sideRight);
+
+            // cap all vol not to be over 1.  Over and you get distorition.
+            sideLeft = clamp(sideLeft, 0.f, 1.f);
+            sideRight = clamp(sideRight, 0.f, 1.f);
+            rearLeft = clamp(rearLeft, 0.f, 1.f);
+            rearRight = clamp(rearRight, 0.f, 1.f);
+
+            // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+            for (int frame = 0; frame < frames; ++frame) {
+               int index = frame * channels;
+
+               // copy the sound sample from Front to Back and Side channels.
+               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 5] = (samples[index+1]); // Copy FR to BR
+               samples[index + 6] = (samples[index]);   // Copy FL to SL 
+               samples[index + 7] = (samples[index+1]); // Copy FR to SR
+         
+               // Apply volume gains to back and side channels
+               samples[index + 4] = (samples[index+4] * rearLeft);  //  BL
+               samples[index + 5] = (samples[index+5] * rearRight); // BR
+               samples[index + 6] = (samples[index+6] * sideLeft);  // SL 
+               samples[index + 7] = (samples[index+7] * sideRight); // SR
+               
+               // wipe front channels
+               samples[index]   =  (0);
+               samples[index+1] =  (0);
+            }
+            break;
+         }
+      case (SDL_AUDIO_F32LE):
+         {
+            float* samples = static_cast<float*>(stream);
+            int total_samples = len / sizeof(float);
+            int channels = med->outputChannels;
+            int frames = total_samples / channels; // Each frame has 8 samples (one per channel)
+
+            calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
+            calcFade(leftPanRatio, rightPanRatio, PinSound::FadeSSF(med->front_rear_fade), rearLeft, rearRight, sideLeft, sideRight);
+
+            // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
+            for (int frame = 0; frame < frames; ++frame) {
+               int index = frame * channels;
+
+               // copy the sound sample from Front to Back and Side channels.
+               samples[index + 4] = (samples[index]);   // COPY FL to BL
+               samples[index + 5] = (samples[index+1]); // Copy FR to BR
+               samples[index + 6] = (samples[index]);   // Copy FL to SL 
+               samples[index + 7] = (samples[index+1]); // Copy FR to SR
+         
+               // Apply volume gains to back and side channels
+               samples[index + 4] = (samples[index+4] * rearLeft);  //  BL
+               samples[index + 5] = (samples[index+5] * rearRight); // BR
+               samples[index + 6] = (samples[index+6] * sideLeft);  // SL 
+               samples[index + 7] = (samples[index+7] * sideRight); // SR
+               
+               // wipe front channels
+               samples[index]   =  (0);
+               samples[index+1] =  (0);
+            }
+            break;
+         }
+      default:
+         {
+            PLOGE << "unknown audio format..";
+            return;
+         }
+   }
+
+   //PLOGI << " rearLeft: " << rearLeft << " rearRight: " << rearRight << " sideLeft: " << sideLeft << " sideRight: " << sideRight;
+   return;
+}
+
+/**
+ * (Static)
+ * @brief Retrieves the file extension from the stored file path.
+ * 
+ * This function extracts the file extension from the member variable `m_szPath`. 
+ * If no extension is found (i.e., no '.' is present in the path), it returns an empty string.
+ * 
+ * @return std::string The file extension without the dot (e.g., "wav", "mp3"), or an empty string if no extension is found.
+ */
+ std::string PinSound::getFileExt()
+ {
+   const size_t pos = m_szPath.find_last_of('.');
+   if(pos == string::npos)
+      return "";
+   return m_szPath.substr(pos+1);
+ }
+
+
+/**
+ * @brief Retrieves the number of audio channels from a WAV file.
+ *
+ * This function reads the WAV file header and extracts the number of audio channels
+ * present in the file. The function assumes that `m_pdata` points to valid WAV file 
+ * data in memory and that `m_cdata` specifies the size of this data.
+ *
+ * @return uint16_t The number of audio channels in the WAV file.
+ *
+ * @throws std::runtime_error If the data size is too small to contain a valid WAV header.
+ */
+uint16_t PinSound::getChannelCountWav() {
+   struct WavHeader {
+    char riff[4];              // "RIFF"
+    uint32_t fileSize;         // File size - 8 bytes
+    char wave[4];              // "WAVE"
+    char fmtChunkMarker[4];    // "fmt "
+    uint32_t fmtChunkSize;     // Size of fmt chunk
+    uint16_t audioFormat;      // Audio format (1 = PCM)
+    uint16_t numChannels;      // Number of channels
+    uint32_t sampleRate;       // Sample rate
+    uint32_t byteRate;         // Byte rate
+    uint16_t blockAlign;       // Block align
+    uint16_t bitsPerSample;    // Bits per sample
+};
+    // Check that the data is at least the size of the WavHeader
+    if (m_cdata < sizeof(WavHeader)) {
+        throw std::runtime_error("Invalid WAV data: too small to contain a valid header.");
+    }
+    const WavHeader* header = reinterpret_cast<const WavHeader*>(m_pdata);
+
+    // Return the number of channels
+    return header->numChannels;
+}
+
+/**
+ * (Static)
+ * @brief Retrieves the next available audio mixer channel.
+ *
+ * This function returns the next available SDL mixer channel for audio playback.
+ * If all channels are in use (`m_nextAvailableChannel` reaches `m_maxSDLMixerChannels`), 
+ * it dynamically increases the number of allocated mixer channels by 100.
+ *
+ * @return The next available channel index.
+ */
+int PinSound::getChannel()
+{
+   if(m_nextAvailableChannel == m_maxSDLMixerChannels) // we're out of channels. increase by 100
+      {
+         m_maxSDLMixerChannels = Mix_AllocateChannels(m_maxSDLMixerChannels + 100);
+         PLOGI << "Allocated another 100 mixer channels.  Total Avail: " <<  m_maxSDLMixerChannels;
+      }
+   return m_nextAvailableChannel++;
+}
+
+/**
+ * (Static)
+ * @brief Enumerates available audio playback devices and stores their details.
+ *
+ * This function initializes the SDL audio subsystem and retrieves a list of available
+ * audio playback devices. It populates the provided vector with information about each device,
+ * including its ID, name, and channel count.
+ *
+ * @param[out] audioDevices A vector to store the discovered audio playback devices.
+ *
+ * @note This function clears the provided vector before populating it with device information.
+ * @note SDL must be properly initialized before calling this function.
+ */ 
+void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
+{
+   if (!SDL_Init(SDL_INIT_AUDIO)) {
+      PLOGE << "SDL_Init failed: " << SDL_GetError();
+      return;
+   }
+
+   //output name of audio driver
+   const char *pdriverName;
+   if( (pdriverName = SDL_GetCurrentAudioDriver() ) != NULL)
+      PLOGI << "Current Audio Driver: " << pdriverName;
+   else
+      PLOGE << "SDL_Init failed: " << SDL_GetError();
+
+   // log default audio device
+   const char *pDefaultDevice;
+   SDL_AudioDeviceID devid;
+   int capture;
+   devid = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, NULL);
+   if ( (pDefaultDevice = SDL_GetAudioDeviceName(devid) ) != NULL)
+      PLOGI << "Default Audio Device: " << pDefaultDevice;
+   else
+   PLOGE << "SDL Failed to default device: " << SDL_GetError();
+   
+   audioDevices.clear();
+   int count;
+   SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
+   
+   for (int i = 0; i < count; ++i) {
+      AudioDevice audioDevice = {}; 
+      audioDevice.id = pAudioList[i];
+      strcpy((char*)audioDevice.name, SDL_GetAudioDeviceName(pAudioList[i]));
+      SDL_AudioSpec spec;
+      SDL_GetAudioDeviceFormat( pAudioList[i], &spec, NULL);
+      audioDevice.channels = spec.channels;
+      SDL_CloseAudioDevice(pAudioList[i]);
+      audioDevices.push_back(audioDevice);
+	}
+}
+

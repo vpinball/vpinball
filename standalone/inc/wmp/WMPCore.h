@@ -4,6 +4,7 @@
 
 #include "WMPControls.h"
 #include "WMPSettings.h"
+#include "audio/pinsound.h"
 
 class WMPCore :
    public IDispatchImpl<IWMPCore, &IID_IWMPCore, &LIBID_WMPLib>,
@@ -47,7 +48,7 @@ public:
    STDMETHOD(get_status)(BSTR *pbstrStatus);
 
 public:
-   AudioPlayer* m_pAudioPlayer;
+   PinSound* m_pPinSound;
    string m_szURL;
    WMPPlayState m_playState;
 

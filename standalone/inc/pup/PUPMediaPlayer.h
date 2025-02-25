@@ -5,8 +5,9 @@
 #endif
 
 #include "PUPManager.h"
-
+#include "audio/pinsound.h"
 #include "../common/Window.h"
+
 
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 extern "C" {
@@ -64,7 +65,7 @@ private:
    struct SwrContext* m_pAudioConversionContext;
    AVSampleFormat m_audioFormat;
 #endif
-   AudioPlayer* m_pAudioPlayer;
+   PinSound* m_pPinSound;
 #ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    std::queue<AVFrame*> m_queue;
 #endif

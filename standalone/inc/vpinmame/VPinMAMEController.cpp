@@ -6,6 +6,7 @@
 #include "mINI/ini.h"
 
 #include "../common/WindowManager.h"
+#include "audio/pinsound.h"
 
 #define PINMAME_SETTINGS_WINDOW_X      15
 #define PINMAME_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
@@ -105,8 +106,8 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioAvailable(PinmameAudioInfo* p_aud
 
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
-   pController->m_pAudioPlayer = new AudioPlayer();
-   pController->m_pAudioPlayer->StreamInit(p_audioInfo->sampleRate, p_audioInfo->channels, 1.);
+   pController->m_pPinSound = new PinSound(NULL);
+   pController->m_pPinSound->StreamInit(p_audioInfo->sampleRate, p_audioInfo->channels, 1.);
    pController->m_audioChannels = p_audioInfo->channels;
 
    return p_audioInfo->samplesPerFrame;
@@ -117,7 +118,7 @@ int PINMAMECALLBACK VPinMAMEController::OnAudioUpdated(void* p_buffer, int sampl
    VPinMAMEController* pController = (VPinMAMEController*)pUserData;
 
    if (pController->m_enableSound)
-      pController->m_pAudioPlayer->StreamUpdate(p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
+      pController->m_pPinSound->StreamUpdate(p_buffer, samples * pController->m_audioChannels * sizeof(int16_t));
 
    return samples;
 }
@@ -229,7 +230,7 @@ VPinMAMEController::VPinMAMEController()
       PLOGI.printf("PinMAME window disabled");
    }
 
-   m_pAudioPlayer = nullptr;
+   m_pPinSound = nullptr;
 
    m_hidden = true;
 
@@ -274,7 +275,7 @@ VPinMAMEController::~VPinMAMEController()
    delete m_pNVRAMBuffer;
    delete m_pPinmameGame;
    delete m_pPinmameMechConfig;
-   delete m_pAudioPlayer;
+   delete m_pPinSound;
 
    m_pGames->Release();
 }
@@ -383,8 +384,8 @@ STDMETHODIMP VPinMAMEController::Stop()
    m_pLevelDMD = nullptr;
    m_pRGB24DMD = nullptr;
 
-   delete m_pAudioPlayer;
-   m_pAudioPlayer = nullptr;
+   delete m_pPinSound;
+   m_pPinSound = nullptr;
 
    m_displays.clear();
 

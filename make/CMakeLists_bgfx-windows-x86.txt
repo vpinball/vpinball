@@ -73,8 +73,6 @@ add_executable(vpinball WIN32
 
    src/audio/mixer.cpp
    src/audio/mixer.h
-   src/audio/audioplayer.cpp
-   src/audio/audioplayer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
    src/audio/wavread.cpp
@@ -628,7 +626,6 @@ target_link_libraries(vpinball
    freeimage.lib
    dxguid.lib
    dsound.lib 
-   bass.lib
    dinput.lib
    nvapi.lib
    winmm.lib
@@ -636,6 +633,7 @@ target_link_libraries(vpinball
    setupapi.lib
    openxr_loader.lib
    SDL3.lib
+   SDL3_mixer.lib
    dinput8.lib
    bgfx.lib
    bimg.lib
@@ -665,8 +663,8 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/tables" "$<TARGET_FILE_DIR:vpinball>/tables"
    COMMAND "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_SOURCE_DIR}/docs" "$<TARGET_FILE_DIR:vpinball>/docs"
 
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/Bass.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3.dll" "$<TARGET_FILE_DIR:vpinball>"
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SDL3_mixer.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/openxr_loader.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/freeimage.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/SciLexerVP.dll" "$<TARGET_FILE_DIR:vpinball>"

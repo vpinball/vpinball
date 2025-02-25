@@ -313,7 +313,6 @@ class SCNotification final { };
 
 #include "ui/worker.h"
 
-#include "audio/audioplayer.h"
 #include "utils/fileio.h"
 #include "pinundo.h"
 #include "iselect.h"

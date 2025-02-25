@@ -983,10 +983,10 @@ public:
       if (m_listSnd) {
          PLOGI << "Available sound devices:";
          vector<AudioDevice> allAudioDevices;
-         EnumerateAudioDevices(allAudioDevices);
+         PinSound::EnumerateAudioDevices(allAudioDevices);
          for (size_t i = 0; i < allAudioDevices.size(); ++i) {
             AudioDevice audioDevice = allAudioDevices.at(i);
-            PLOGI << "id " << audioDevice.id << ": name=" << audioDevice.name << ", enabled=" << audioDevice.enabled;
+            PLOGI << "id " << audioDevice.id << ": name=" << audioDevice.name << ", channels=" << audioDevice.channels;
          }
       }
 

@@ -6,7 +6,7 @@
  */
 
 #include "core/stdafx.h"
-
+#include "audio/pinsound.h"
 #include "PUPMediaPlayer.h"
 
 #if defined(__clang__)
@@ -37,8 +37,8 @@ PUPMediaPlayer::PUPMediaPlayer()
    m_pAudioConversionContext = NULL;
    m_audioFormat = AV_SAMPLE_FMT_NONE;
 #endif
-   m_pAudioPlayer = new AudioPlayer();
-   m_pAudioPlayer->StreamInit(44100, 2, 0.0f);
+   m_pPinSound = new PinSound(nullptr);
+   m_pPinSound->StreamInit(44100, 2, 0.0f);
    m_running = false;
    m_paused = false;
 }
@@ -64,7 +64,7 @@ PUPMediaPlayer::~PUPMediaPlayer()
       swr_free(&m_pAudioConversionContext);
 #endif
 
-   delete m_pAudioPlayer;
+   delete m_pPinSound;
 }
 
 void PUPMediaPlayer::SetRenderer(SDL_Renderer* pRenderer)
@@ -174,7 +174,7 @@ void PUPMediaPlayer::Play(const string& szFilename)
    }
 
    PLOGD.printf("Playing: filename=%s", m_szFilename.c_str());
-   m_pAudioPlayer->StreamVolume(0);
+   m_pPinSound->StreamVolume(0);
 
    m_running = true;
    m_thread = std::thread(&PUPMediaPlayer::Run, this);
@@ -251,7 +251,7 @@ void PUPMediaPlayer::Run()
          if (!pRenderer)
             pRenderer = m_pRenderer;
 
-         m_pAudioPlayer->StreamVolume(m_volume / 100.0f);
+            m_pPinSound->StreamVolume(m_volume / 100.0f);
       }
 
       {
@@ -557,7 +557,7 @@ void PUPMediaPlayer::HandleAudioFrame(AVFrame* pFrame)
       }
    }
    int resampledDataSize = len2 * destChLayout.nb_channels * av_get_bytes_per_sample(destFmt);
-   m_pAudioPlayer->StreamUpdate(pBuffer, resampledDataSize);
+   m_pPinSound->StreamUpdate(pBuffer, resampledDataSize);
 
    av_free(pBuffer);
 }
