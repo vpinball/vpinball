@@ -20,6 +20,14 @@ This project was started by Randy Davis, open sourced in 2010 and continued by t
 - Support for WCG/HDR rendering (for now only via the BGFX (D3D11/12) build)
 - Support for Windows (x86), Linux (x86/Arm, incl. RaspberryPi and RK3588), macOS, iOS/tvOS, Android
 
+## Download
+
+All releases are available on the [releases page](https://github.com/vpinball/vpinball/releases).
+
+## Documentation
+
+Documentation is currently sparse. Check the [docs](docs) directory for various guides and references.
+
 ## How to build
 
-[Instructions](<make/README.md>)
+Build instructions are available in the [make directory README](make/README.md).
