@@ -27,12 +27,16 @@ The following features were introduced by the OpenGL version:
 This build was introduced with version 10.8.1. It uses the BGFX library to run VPX using the latest graphic backends like Vulkan, Metal, DirectX 11, latest OpenGL & OpenGL ES.
 
 The following features are offered by the BGFX version:
+- Virtual Reality support (via OpenXR),
+- HDR display support when using DirectX 11 (displays that support high luminance output),
 - Real stereo rendering for 3D-stereo TVs or anaglyph glasses,
 - Enhanced texture compression (gives more performance with lower quality impact),
 - Variable Refresh Rate display support,
-- Multithreaded engine that decouples rendering from gameplay allowing very low and stable input latency.
+- Multithreaded engine that decouples rendering from gameplay allowing very low and stable input latency,
+- Additional output windows, for example for DMD or score displays.
 
 ## Standalone player
-The standalone player is a preliminary build meant to allow playing VPX tables on a large set of platforms, but without the windows UI. It is targeted at devices supporting OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and sbc) with GLSL 3.0.
+The standalone player is a version meant to allow playing VPX tables on a large set of platforms, but without the windows UI.
+It is targeted at devices supporting Vulkan, OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and single-board computer) with GLSL 3.0.
 
 <sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>
