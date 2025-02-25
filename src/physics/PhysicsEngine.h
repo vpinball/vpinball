@@ -5,6 +5,7 @@
 #include "physics/kdtree.h"
 #include "physics/quadtree.h"
 #include "physics/NudgeFilter.h"
+#include <semaphore>
 
 class PhysicsEngine final
 {
@@ -19,6 +20,7 @@ public:
    void AddBall(HitBall *const ball);
    void RemoveBall(HitBall *const ball);
    void AddCollider(HitObject * collider, IEditable * editable, const bool isUI);
+   void ReinitEditable(IEditable *editable);
 
    void OnPrepareFrame();
    void OnFinishFrame();
@@ -45,7 +47,7 @@ public:
    string GetPerfInfo(bool resetMax);
 
    const vector<HitObject *>& GetHitObjects() const { return m_vho; }
-   const vector<HitObject *> &GetUIObjects() const { return m_vUIHitObjects; }
+   const vector<HitObject *>& GetUIObjects() { GetUIQuadTree(); return m_UIHitObjects; }
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
@@ -80,8 +82,21 @@ private:
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #endif
 
-   vector<HitObject *> m_vUIHitObjects;
-   HitQuadtree m_UIOctree;
+   HitQuadtree* GetUIQuadTree(); // Trigger UI quadtree creation/update
+   vector<HitObject *> m_UIHitObjects; // All UI hit object in m_UIOctree
+   HitQuadtree *m_UIOctree = nullptr; // Active UI quadtree
+   // The following fields implement asynchronous UI quadtree update
+   vector<HitObject *> m_newUIHitObjects; // All UI hit object in m_pendingUIOctree after update
+   HitQuadtree *m_pendingUIOctree = nullptr; // UI quadtree updated by the update thread
+   bool m_UIQuadTreeUpdateInProgress = false;
+   std::binary_semaphore m_uiQuadtreeUpdateWaiting { 0 };
+   std::binary_semaphore m_uiQuadtreeUpdateReady { 0 };
+   vector<IEditable *> m_vUIOutdatedEditable; // Objects requesting an update
+   vector<HitObject *> m_pendingUIHitObjects; // Hit objects pending insertion in UI quadtree, collected through AddCollider method
+   vector<HitObject *> m_outdatedUIHitObjects; // Hit objects that are pending disposal
+   vector<IEditable *> m_vUIUpdatedEditable; // Objects that have been updated by update thread
+   std::thread m_uiQuadtreeUpdateThread;
+   static void UpdateUIQuadtree(PhysicsEngine* ph);
 
 #pragma region Nudge & Tilt Plumb
    void UpdateNudge(float dtime);
