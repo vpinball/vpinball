@@ -19,7 +19,7 @@ class DebugAppender : public plog::IAppender
 public:
    DebugAppender()
    {
-      m_uiThreadId == std::this_thread::get_id();
+      m_uiThreadId = std::this_thread::get_id();
    }
 
    virtual void write(const plog::Record &record) PLOG_OVERRIDE
