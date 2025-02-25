@@ -256,9 +256,9 @@ jobs:
           export DXSDK_DIR="${GITHUB_WORKSPACE}/DXSDK"
           cp make/CMakeLists_dx9-${{ matrix.platform }}-${{ matrix.arch }}.txt CMakeLists.txt
           if [[ "${{ matrix.arch }}" == "x64" ]]; then
-            cmake -T v141_xp -G "Visual Studio 17 2022" -A x64 -B build
+            cmake -G "Visual Studio 17 2022" -A x64 -B build
           else
-            cmake -T v141_xp -G "Visual Studio 17 2022" -A Win32 -B build
+            cmake -G "Visual Studio 17 2022" -A Win32 -B build
           fi
           cmake --build build --config ${{ matrix.config }}
       - name: Stage artifacts
