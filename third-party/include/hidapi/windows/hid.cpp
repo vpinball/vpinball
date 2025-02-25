@@ -50,7 +50,7 @@ typedef LONG NTSTATUS;
 #define _wcsdup wcsdup
 #endif
 
-/*#define HIDAPI_USE_DDK*/
+#define HIDAPI_USE_DDK
 
 #include "hidapi_cfgmgr32.h"
 #include "hidapi_hidclass.h"
