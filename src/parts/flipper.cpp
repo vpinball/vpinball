@@ -85,13 +85,11 @@ static const Vertex3Ds* const vertsBaseTop = (const Vertex3Ds*)vertsBaseTopf;
 
 Flipper::Flipper()
 {
-   m_phitflipper = nullptr;
-   m_ptable = nullptr;
-   m_lastAngle = 0.f;
 }
 
 Flipper::~Flipper()
 {
+   assert(m_phitflipper == nullptr);
    delete m_meshBuffer;
 }
 
@@ -103,11 +101,11 @@ Flipper *Flipper::CopyForPlay(PinTable *live_table) const
 
 HRESULT Flipper::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
 {
+   assert(m_phitflipper == nullptr);
    m_ptable = ptable;
    SetDefaults(fromMouseClick);
    m_d.m_Center.x = x;
    m_d.m_Center.y = y;
-   m_phitflipper = nullptr;
    return forPlay ? S_OK : InitVBA(fTrue, 0, nullptr);
 }
 
@@ -182,13 +180,7 @@ void Flipper::WriteRegDefaults()
 #undef regKey
 }
 
-void Flipper::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
+void Flipper::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
 void Flipper::EndPlay() { IEditable::EndPlay(); }
 
@@ -1031,15 +1023,10 @@ STDMETHODIMP Flipper::get_EOSTorque(float *pVal)
 
 STDMETHODIMP Flipper::put_EOSTorque(float newVal)
 {
-    if (m_phitflipper)
-    {
-        if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-           m_d.m_torqueDamping = newVal;
-    }
-    else
-        m_d.m_torqueDamping = newVal;
-
-    return S_OK;
+   if (m_phitflipper && (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      return S_OK;
+   m_d.m_torqueDamping = newVal;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
@@ -1050,15 +1037,10 @@ STDMETHODIMP Flipper::get_EOSTorqueAngle(float *pVal)
 
 STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 {
-    if (m_phitflipper)
-    {
-        if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-           m_d.m_torqueDampingAngle = newVal;
-    }
-    else
-        m_d.m_torqueDampingAngle = newVal;
-
-    return S_OK;
+   if (m_phitflipper && (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      return S_OK;
+   m_d.m_torqueDampingAngle = newVal;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
@@ -1283,14 +1265,9 @@ STDMETHODIMP Flipper::get_Strength(float *pVal)
 
 STDMETHODIMP Flipper::put_Strength(float newVal)
 {
-   if (m_phitflipper)
-   {
-      if (!(m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
-         m_d.m_strength = newVal;
-   }
-   else
-      m_d.m_strength = newVal;
-
+   if (m_phitflipper && (m_d.m_OverridePhysics || (m_ptable->m_overridePhysicsFlipper && m_ptable->m_overridePhysics)))
+      return S_OK;
+   m_d.m_strength = newVal;
    return S_OK;
 }
 

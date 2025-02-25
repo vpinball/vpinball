@@ -290,13 +290,7 @@ void Gate::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Gate::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
+void Gate::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
 void Gate::EndPlay() { IEditable::EndPlay(); }
 

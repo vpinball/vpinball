@@ -333,20 +333,12 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
 
 void Surface::BeginPlay(vector<HitTimer*> &pvht)
 {
-   IEditable::BeginPlay();
-
+   IEditable::BeginPlay(pvht, &m_d.m_tdr, this);
    m_isDropped = false;
    m_disabled = false;
-
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
 }
 
-void Surface::EndPlay()
-{
-   IEditable::EndPlay();
-}
+void Surface::EndPlay() { IEditable::EndPlay(); }
 
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 

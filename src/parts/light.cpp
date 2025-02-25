@@ -260,13 +260,7 @@ void Light::RenderBlueprint(Sur *psur, const bool solid)
    RenderOutline(psur);
 }
 
-void Light::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
+void Light::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
 void Light::EndPlay()
 {

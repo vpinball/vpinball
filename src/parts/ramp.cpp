@@ -544,18 +544,9 @@ float Ramp::GetSurfaceHeight(float x, float y) const
    return vvertex[iSeg].z + (startlength / totallength) * (topHeight - bottomHeight) + bottomHeight;
 }
 
-void Ramp::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay();
-   m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, this);
-   if (m_d.m_tdr.m_TimerEnabled)
-      pvht.push_back(m_phittimer);
-}
+void Ramp::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
 
-void Ramp::EndPlay()
-{
-   IEditable::EndPlay();
-}
+void Ramp::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

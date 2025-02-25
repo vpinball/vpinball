@@ -276,7 +276,7 @@ public:
    HRESULT get_UserValue(VARIANT *pVal);
    HRESULT put_UserValue(VARIANT *newVal);
 
-   void BeginPlay();
+   void BeginPlay(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents * fe = nullptr);
    void EndPlay();
 
    HitTimer *m_phittimer = nullptr;
