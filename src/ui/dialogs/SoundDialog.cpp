@@ -244,8 +244,8 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 const float volume = dequantizeSignedPercent(pps->m_volume);
                 const float pan = dequantizeSignedPercent(pps->m_balance);
                 const float front_rear_fade = dequantizeSignedPercent(pps->m_fade);
-                pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
 
+                pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false, false);
                 GetDlgItem(IDC_STOP).EnableWindow(TRUE);
             }
             break;
@@ -640,12 +640,12 @@ SoundPositionDialog::SoundPositionDialog(PinSound * const pps) : CDialog(IDD_SOU
 	m_fade = pps->m_fade;
 	m_volume = pps->m_volume;
 	m_cOutputTarget = pps->GetOutputTarget();
-	m_pps = pps;
+	m_pPinSound = pps;
 }
 
 SoundPositionDialog::~SoundPositionDialog()
 {
-	m_pps->Stop();
+	m_pPinSound->Stop();
 }
 
 void SoundPositionDialog::OnDestroy()
@@ -795,16 +795,16 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void SoundPositionDialog::TestSound()
 {
 	// Hold the actual output target temporarily and reinitialize.  It could be reset if dialog is canceled.
-	const SoundOutTypes iOutputTargetTmp = m_pps->GetOutputTarget();
+	const SoundOutTypes iOutputTargetTmp = m_pPinSound->GetOutputTarget();
 	GetDialogValues();
-	m_pps->SetOutputTarget(m_cOutputTarget);
+	m_pPinSound->SetOutputTarget(m_cOutputTarget);
 
 	const float volume = dequantizeSignedPercent(m_volume);
 	const float pan = dequantizeSignedPercent(m_balance);
 	const float front_rear_fade = dequantizeSignedPercent(m_fade);
 
-	m_pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false);
-	m_pps->SetOutputTarget(iOutputTargetTmp);
+	m_pPinSound->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false, false);
+	m_pPinSound->SetOutputTarget(iOutputTargetTmp);
 }
 
 void SoundPositionDialog::OnOK()

@@ -6,6 +6,8 @@
 
 #include "core/Settings.h"
 #include "renderer/RenderDevice.h"
+
+#include "audio/pinsound.h"
 #ifndef __STANDALONE__
    #include <wxx_dockframe.h>
    #include "ui/dialogs/ImageDialog.h"
@@ -221,7 +223,7 @@ public:
 
    vector<IStream*> m_vstmclipboard;
 
-   AudioMusicPlayer m_ps;
+   PinSound m_ps;
 
    int m_ToolCur; // Palette button currently pressed
 
