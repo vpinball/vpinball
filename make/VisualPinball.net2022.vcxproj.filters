@@ -633,6 +633,9 @@
     <ClCompile Include="third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
     </ClCompile>
+    <ClCompile Include="third-party/include/hidapi/windows/hid.c">
+      <Filter>third-party</Filter>
+    </ClCompile>
     <ClCompile Include="third-party/include/hid-report-parser/hid_report_parser.cpp">
       <Filter>third-party</Filter>
     </ClCompile>

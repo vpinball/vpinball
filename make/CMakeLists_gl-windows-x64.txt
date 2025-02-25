@@ -502,6 +502,7 @@ add_executable(vpinball WIN32
    third-party/include/hidsdi.h
    third-party/include/hidusage.h
    third-party/include/hidapi/hidapi.h
+   third-party/include/hidapi/windows/hid.c
    third-party/include/hid-report-parser/hid_report_parser.cpp
    third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
@@ -634,7 +635,6 @@ target_link_libraries(vpinball
    dxguid.lib
    dsound.lib 
    bass.lib
-   hidapi64.lib
    dinput.lib
    nvapi.lib
    winmm.lib
@@ -695,7 +695,6 @@ add_custom_command(TARGET vpinball POST_BUILD
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/openvr_api64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/FreeImage64.dll" "$<TARGET_FILE_DIR:vpinball>"
    COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/SciLexerVP64.dll" "$<TARGET_FILE_DIR:vpinball>"
-   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/hidapi64.dll" "$<TARGET_FILE_DIR:vpinball>"
 )
 
 set(PluginPlatform "windows")
