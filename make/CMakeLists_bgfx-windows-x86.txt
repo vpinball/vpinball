@@ -25,7 +25,7 @@ add_compile_definitions(
 
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
-   third-party/include/hidapi/windows/hid.c PROPERTIES SKIP_PRECOMPILE_HEADERS ON
+   third-party/include/hidapi/windows/hid.cpp PROPERTIES SKIP_PRECOMPILE_HEADERS ON
 )
 
 add_compile_options(
@@ -500,7 +500,7 @@ add_executable(vpinball WIN32
    third-party/include/hidsdi.h
    third-party/include/hidusage.h
    third-party/include/hidapi/hidapi.h
-   third-party/include/hidapi/windows/hid.c
+   third-party/include/hidapi/windows/hid.cpp
    third-party/include/hid-report-parser/hid_report_parser.cpp
    third-party/include/hid-report-parser/hid_report_parser.h
    third-party/include/imgui/imconfig.h
