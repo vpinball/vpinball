@@ -34,6 +34,7 @@ add_compile_definitions(
 
 set_source_files_properties(
    third-party/include/miniz/miniz.c PROPERTIES LANGUAGE CXX
+   third-party/include/hidapi/windows/hid.c PROPERTIES LANGUAGE CXX
 )
 
 add_compile_options(
