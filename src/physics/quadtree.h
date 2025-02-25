@@ -28,6 +28,7 @@ public:
 
    ~HitQuadtree();
 
+   void Reset(const vector<HitObject*>& vho);
    void AddElement(HitObject *pho) { m_vho.push_back(pho); }
    void Initialize(const FRect& bounds); // FRect3D for an octree
 

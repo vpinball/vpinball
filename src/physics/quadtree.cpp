@@ -11,17 +11,30 @@
 
 HitQuadtree::~HitQuadtree()
 {
+   Reset(vector<HitObject*>());
+}
+
+void HitQuadtree::Reset(const vector<HitObject*>& vho)
+{
 #ifndef USE_EMBREE
    if (lefts_rights_tops_bottoms_zlows_zhighs != nullptr)
       _aligned_free(lefts_rights_tops_bottoms_zlows_zhighs);
+   lefts_rights_tops_bottoms_zlows_zhighs = 0;
 
    if (!m_leaf)
-      delete [] m_children;
+      delete[] m_children;
+   m_leaf = true;
+   m_children = nullptr;
+   m_unique = nullptr;
 
 #else
    rtcReleaseScene(m_scene);
    rtcReleaseDevice(m_embree_device);
+   m_embree_device = rtcNewDevice(nullptr);
+   m_scene = nullptr;
 #endif
+
+   m_vho = vho;
 }
 
 #ifdef USE_EMBREE
