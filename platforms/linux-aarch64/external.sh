@@ -387,13 +387,6 @@ cp -a pinmame/pinmame/build/libpinmame.{so,so.*} ../../../third-party/runtime-li
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
 cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include
 
-cp -a libaltsound/libaltsound/build/libaltsound.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
-cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
-
-cp -a libdof/libdof/build/libdof.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
-cp -r libdof/libdof/include/DOF ../../../third-party/include/
-cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libhidapi-hidraw.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
-
 cp -a libdmdutil/libdmdutil/build/libdmdutil.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libzedmd.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
@@ -406,6 +399,13 @@ cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libpupdmd.{so
 cp libdmdutil/libdmdutil/third-party/include/pupdmd.h ../../../third-party/include
 cp -a libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libsockpp.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp libdmdutil/libdmdutil/third-party/runtime-libs/linux/aarch64/libcargs.so ../../../third-party/runtime-libs/linux-aarch64
+
+cp -a libaltsound/libaltsound/build/libaltsound.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
+cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
+
+cp -a libdof/libdof/build/libdof.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
+cp -r libdof/libdof/include/DOF ../../../third-party/include/
+cp -a libdof/libdof/third-party/runtime-libs/linux/aarch64/libhidapi-hidraw.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 
 for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresample libswscale; do
    cp -a ffmpeg/ffmpeg/${LIB}/${LIB}.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64

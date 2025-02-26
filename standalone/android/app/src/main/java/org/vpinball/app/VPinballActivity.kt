@@ -69,12 +69,9 @@ class VPinballActivity : SDLActivity() {
             "bass",
             "pinmame",
             "altsound",
-            "zedmd",
-            "serum",
             "dmdutil",
             "dof",
             "pupdmd",
-            "sockpp",
             "vpinball",
         )
 }

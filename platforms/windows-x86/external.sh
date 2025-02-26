@@ -231,8 +231,8 @@ if [ "${OPENXR_EXPECTED_SHA}" != "${OPENXR_FOUND_SHA}" ]; then
    mkdir openxr
    cd openxr
 
-   curl -sL https://github.com/KhronosGroup/OpenXR-SDK-Source/archive/${OPENXR_SHA}.tar.gz -o OpenXR-SDK-Source-${OPENXR_SHA}.zip
-   tar xzf OpenXR-SDK-Source-${OPENXR_SHA}.zip
+   curl -sL https://github.com/KhronosGroup/OpenXR-SDK-Source/archive/${OPENXR_SHA}.tar.gz -o OpenXR-SDK-Source-${OPENXR_SHA}.tar.gz
+   tar xzf OpenXR-SDK-Source-${OPENXR_SHA}.tar.gz
    mv OpenXR-SDK-Source-${OPENXR_SHA} openxr
    cd openxr
    cmake \
