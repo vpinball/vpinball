@@ -1391,15 +1391,6 @@
     <ClInclude Include="third-party/include/BAM/BAMView.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/hidpi.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/hidsdi.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/hidusage.h">
-      <Filter>third-party\hid</Filter>
-    </ClInclude>
     <ClInclude Include="third-party/include/hidapi/hidapi.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
@@ -1594,6 +1585,15 @@
     </ClInclude>
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h">
       <Filter>third-party\Win32xx</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/winsdk/hidpi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/winsdk/hidsdi.h">
+      <Filter>third-party\hid</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/winsdk/hidusage.h">
+      <Filter>third-party\hid</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/gpuprofiler.h">
       <Filter>third-party\gpuprofiler</Filter>

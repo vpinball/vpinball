@@ -1983,9 +1983,6 @@
     <ClInclude Include="third-party/include/freeimage.h" />
     <ClInclude Include="third-party/include/glad/include/glad/gl.h" />
     <ClInclude Include="third-party/include/gpuprofiler.h" />
-    <ClInclude Include="third-party/include/hidpi.h" />
-    <ClInclude Include="third-party/include/hidsdi.h" />
-    <ClInclude Include="third-party/include/hidusage.h" />
     <ClInclude Include="third-party/include/nvapi/nvapi.h" />
     <ClInclude Include="third-party/include/nvapi/nvapi_lite_common.h" />
     <ClInclude Include="third-party/include/nvapi/nvapi_lite_d3dext.h" />
@@ -2054,6 +2051,9 @@
     <ClInclude Include="third-party/include/win32xx/include/wxx_webbrowser.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore.h" />
     <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h" />
+    <ClInclude Include="third-party/include/winsdk/hidpi.h" />
+    <ClInclude Include="third-party/include/winsdk/hidsdi.h" />
+    <ClInclude Include="third-party/include/winsdk/hidusage.h" />
     <ClInclude Include="third-party/include/openxr/openxr.h" />
     <ClInclude Include="third-party/include/openxr/openxr_loader_negotiation.h" />
     <ClInclude Include="third-party/include/openxr/openxr_platform.h" />
