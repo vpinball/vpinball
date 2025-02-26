@@ -1320,7 +1320,6 @@ HitBall *Player::CreateBall(const float x, const float y, const float z, const f
    m_pBall->m_hitBall.m_d.m_vel.x = vx;
    m_pBall->m_hitBall.m_d.m_vel.y = vy;
    m_pBall->m_hitBall.m_d.m_vel.z = vz;
-   m_pBall->m_hitBall.CalcHitBBox(); // need to update here, as only done lazily
    m_pBall->m_d.m_useTableRenderSettings = true;
    m_ptable->m_vedit.push_back(m_pBall);
    m_vhitables.push_back(m_pBall);
@@ -2112,8 +2111,6 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onPrepareFrameMsgId, nullptr);
    
-   m_physics->OnPrepareFrame();
-
    #ifdef EXT_CAPTURE
    // Trigger captures
    if (m_renderer->m_stereo3D == STEREO_VR)
@@ -2175,6 +2172,7 @@ void Player::PrepareFrame(const std::function<void()>& sync)
          if (m_liveUIOverride)
             VPinballLib::VPinball::SendEvent(VPinballLib::Event::LiveUIUpdate, nullptr);
       #endif
+      m_physics->ResetPerFrameStats();
    }
 
    // Shake screen when nudging

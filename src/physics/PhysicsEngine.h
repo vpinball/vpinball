@@ -16,13 +16,15 @@ public:
    void SetGravity(float slopeDeg, float strength);
    const Vertex3Ds& GetGravity() const { return m_gravity; } // Gravity expressed in VP units. Earth gravity 9.81 m.s^-2 is approximately 1.81751 VPU.VPT^-2 (see physconst.h)
 
-   // For the time being, beside the colliders loaded from the table in the constructor, only ball can added/removed
-   void AddBall(HitBall *const ball);
-   void RemoveBall(HitBall *const ball);
-   void AddCollider(HitObject * collider, IEditable * editable, const bool isUI);
+   // Request physics engine to reinitialize (release/setup) the given editable
+   // For the time being, this is only supported for UI picking, and satisfied asynchronously
    void ReinitEditable(IEditable *editable);
 
-   void OnPrepareFrame();
+   // Add or remove a collider, as a consequence of PhysicSetup/Release
+   // Colliders are given to the physics engine which owns them, except for balls which always owns their HitBall (therefore, being the only one using RemoveCollider)
+   void AddCollider(HitObject * collider, IEditable * editable, const bool isUI);
+   void RemoveCollider(HitObject * collider, IEditable * editable, const bool isUI);
+
    void OnFinishFrame();
 
    void StartPhysics();
@@ -42,17 +44,20 @@ public:
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
    void ResetStats() { m_phys_max = 0; m_phys_max_iterations = 0; m_count = 0; m_phys_total_iterations = 0; }
+   void ResetPerFrameStats();
    int GetPerfNIterations() const { return m_phys_iterations; }
    int GetPerfLengthMax() const { return m_phys_max; }
    string GetPerfInfo(bool resetMax);
 
-   const vector<HitObject *>& GetHitObjects() const { return m_vho; }
-   const vector<HitObject *>& GetUIObjects() { GetUIQuadTree(); return m_UIHitObjects; }
+   const vector<HitObject *> &GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
+   const vector<HitObject *>& GetUIObjects() { return GetUIQuadTree()->GetHitObjects(); }
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
    void PhysicsSimulateCycle(float dtime); // Perform continuous collision detection for the given amount of delta time
 
+   void ReleaseVHO(const vector<HitObject *> &vho, bool isUI);
+   
    Vertex3Ds m_gravity;
    
    unsigned int m_physicsMaxLoops;
@@ -73,9 +78,9 @@ private:
 
    vector<MoverObject *> m_vmover; // moving objects for physics simulation
 
-   vector<HitObject *> m_vho;
+   vector<HitObject *>* m_pendingHitObjects = nullptr; // Hit objects pending insertion in quadtree, only defined while collecting through AddCollider callback method
+
    /*HitKD*/ HitQuadtree m_hitoctree;
-   vector<HitObject *> m_vho_dynamic;
 #ifdef USE_EMBREE
    HitQuadtree m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #else
@@ -83,18 +88,16 @@ private:
 #endif
 
    HitQuadtree* GetUIQuadTree(); // Trigger UI quadtree creation/update
-   vector<HitObject *> m_UIHitObjects; // All UI hit object in m_UIOctree
-   HitQuadtree *m_UIOctree = nullptr; // Active UI quadtree
+   HitQuadtree *m_UIOctree = nullptr; // Active UI quadtree, lazily created
    // The following fields implement asynchronous UI quadtree update
-   vector<HitObject *> m_newUIHitObjects; // All UI hit object in m_pendingUIOctree after update
-   HitQuadtree *m_pendingUIOctree = nullptr; // UI quadtree updated by the update thread
+   HitQuadtree *m_pendingUIOctree = nullptr; // UI quadtree updated by the update thread, then swapped
    bool m_UIQuadTreeUpdateInProgress = false;
    std::binary_semaphore m_uiQuadtreeUpdateWaiting { 0 };
    std::binary_semaphore m_uiQuadtreeUpdateReady { 0 };
-   vector<IEditable *> m_vUIOutdatedEditable; // Objects requesting an update
-   vector<HitObject *> m_pendingUIHitObjects; // Hit objects pending insertion in UI quadtree, collected through AddCollider method
+   vector<IEditable *> m_vUIOutdatedEditable; // Objects that have requested an update which is not yet dispatched
+   vector<IEditable *> m_vUIUpdatedEditable; // Objects that are processed or have been updated by update thread
+   vector<HitObject *> m_pendingUIHitObjects; // Hit objects pending insertion in UI quadtree (collected through AddCollider method)
    vector<HitObject *> m_outdatedUIHitObjects; // Hit objects that are pending disposal
-   vector<IEditable *> m_vUIUpdatedEditable; // Objects that have been updated by update thread
    std::thread m_uiQuadtreeUpdateThread;
    static void UpdateUIQuadtree(PhysicsEngine* ph);
 

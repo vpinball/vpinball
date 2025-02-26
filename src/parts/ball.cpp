@@ -26,7 +26,6 @@ Ball::Ball() : m_id(GetNextBallID())
    m_hitBall.m_d.m_mass = 1.f;
    m_hitBall.m_pBall = this;
    m_hitBall.m_editable = this;
-   m_hitBall.CalcHitBBox(); // need to update here, as only done lazily
 }
 
 Ball::~Ball()
@@ -209,14 +208,12 @@ void Ball::EndPlay() { IEditable::EndPlay(); }
 
 void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI)
-      physics->AddBall(&m_hitBall);
+   physics->AddCollider(&m_hitBall, this, isUI);
 }
 
 void Ball::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
-   if (!isUI)
-      physics->RemoveBall(&m_hitBall);
+   physics->RemoveCollider(&m_hitBall, this, isUI);
 }
 
 #pragma endregion
