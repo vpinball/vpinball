@@ -496,9 +496,6 @@ add_executable(vpinball WIN32
    third-party/include/bass.h
    third-party/include/forsyth.h
    third-party/include/freeimage.h
-   third-party/include/hidpi.h
-   third-party/include/hidsdi.h
-   third-party/include/hidusage.h
    third-party/include/hidapi/hidapi.h
    third-party/include/hidapi/windows/hid.cpp
    third-party/include/hid-report-parser/hid_report_parser.cpp
@@ -593,6 +590,9 @@ add_executable(vpinball WIN32
    third-party/include/win32xx/include/wxx_webbrowser.h
    third-party/include/win32xx/include/wxx_wincore.h
    third-party/include/win32xx/include/wxx_wincore0.h
+   third-party/include/winsdk/hidpi.h
+   third-party/include/winsdk/hidsdi.h
+   third-party/include/winsdk/hidusage.h
 )
 
 target_include_directories(vpinball PUBLIC
