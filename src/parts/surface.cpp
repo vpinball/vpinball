@@ -362,7 +362,7 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       rgv3Dt[i].y = pv1->y;
       rgv3Dt[i].z = top;
 
-      if (m_d.m_isBottomSolid)
+      if (m_d.m_isBottomSolid || isUI)
       {
          rgv3Db[count - 1 - i].x = pv1->x;
          rgv3Db[count - 1 - i].y = pv1->y;
