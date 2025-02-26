@@ -1,0 +1,88 @@
+# plugin CMake file to be included in main project CMakelists
+
+# --- DMDUtil colorization plugin ---
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_C_STANDARD 99)
+
+add_library(DMDUtilPlugin MODULE
+   plugins/dmdutil/dmdutil.cpp
+)
+
+target_include_directories(DMDUtilPlugin PUBLIC
+   plugins/dmdutil
+   ${CMAKE_SOURCE_DIR}/third-party/include
+   src/plugins
+)
+
+if(PluginPlatform STREQUAL "windows")
+   add_compile_options(
+      $<$<CONFIG:RELEASE>:/Ob2>
+      $<$<CONFIG:RELEASE>:/O2>
+      $<$<CONFIG:RELEASE>:/Oi>
+      $<$<CONFIG:RELEASE>:/arch:SSE2>
+      $<$<CONFIG:RELEASE>:/fp:fast>
+      $<$<CONFIG:RELEASE>:/fp:except->
+      $<$<CONFIG:RELEASE>:/Ot>
+      $<$<CONFIG:RELEASE>:/GF>
+      $<$<CONFIG:RELEASE>:/GS->
+      $<$<CONFIG:RELEASE>:/Gy>
+      $<$<CONFIG:RELEASE>:/GR>
+      $<$<CONFIG:RELEASE>:/Oy>
+      $<$<CONFIG:RELEASE>:/GT>
+      $<$<CONFIG:RELEASE>:/GL>
+   )
+   set_target_properties(DMDUtilPlugin PROPERTIES
+      MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:DEBUG>:Debug>"
+   )
+   target_compile_options(DMDUtilPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:CXX>:${OPT_COMMON}>>
+      $<$<CONFIG:RELEASE>:$<$<COMPILE_LANGUAGE:C>:${OPT_COMMON}>>
+   )
+   target_link_options(DMDUtilPlugin PUBLIC
+      $<$<CONFIG:RELEASE>:/INCREMENTAL:NO>
+      $<$<CONFIG:RELEASE>:/OPT:REF>
+      $<$<CONFIG:RELEASE>:/OPT:ICF>
+      $<$<CONFIG:RELEASE>:/LTCG>
+   )
+   if (PluginArch STREQUAL "x64")
+      set_target_properties(DMDUtilPlugin PROPERTIES
+         OUTPUT_NAME "plugin-dmdutil64"
+      )
+      target_link_directories(DMDUtilPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x64)
+      target_link_libraries(DMDUtilPlugin dmdutil64.lib)
+   else()
+      set_target_properties(DMDUtilPlugin PROPERTIES
+         OUTPUT_NAME "plugin-dmdutil"
+      )
+      target_link_directories(DMDUtilPlugin PUBLIC ${CMAKE_SOURCE_DIR}/third-party/build-libs/windows-x86)
+      target_link_libraries(DMDUtilPlugin dmdutil.lib)
+   endif()
+else()
+   set_target_properties(DMDUtilPlugin PROPERTIES
+      PREFIX ""
+      OUTPUT_NAME "plugin-dmdutil"
+   )
+   target_link_directories(DMDUtilPlugin PUBLIC
+      ${CMAKE_SOURCE_DIR}/third-party/runtime-libs/${PluginPlatform}-${PluginArch}
+   )
+   target_link_libraries(DMDUtilPlugin PUBLIC dmdutil)
+endif()
+
+add_custom_command(TARGET DMDUtilPlugin POST_BUILD
+   COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/plugins/dmdutil/plugin.cfg" "${PLUGINS_DIR}/dmdutil/plugin.cfg"
+   COMMAND "${CMAKE_COMMAND}" -E copy "$<TARGET_FILE:DMDUtilPlugin>" "${PLUGINS_DIR}/dmdutil"
+   COMMAND "${CMAKE_COMMAND}" -E rm "$<TARGET_FILE:DMDUtilPlugin>"
+)
+
+if(PluginPlatform STREQUAL "windows")
+   if (PluginArch STREQUAL "x64")
+      add_custom_command(TARGET DMDUtilPlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x64/dmdutil64.dll" "${PLUGINS_DIR}/dmdutil/dmdutil64.dll"
+      )
+   elseif (PluginArch STREQUAL "x86")
+      add_custom_command(TARGET DMDUtilPlugin POST_BUILD
+         COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_SOURCE_DIR}/third-party/runtime-libs/windows-x86/dmdutil.dll" "${PLUGINS_DIR}/dmdutil/dmdutil.dll"
+      )
+   endif()
+endif()
