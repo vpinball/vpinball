@@ -861,6 +861,12 @@ public:
          std::filesystem::create_directory(PATH_USER);
 
       if (m_listRes) {
+         if (!SDL_Init(SDL_INIT_VIDEO))
+         {
+            PLOGE << "SDL_Init(SDL_INIT_VIDEO) failed: " << SDL_GetError();
+            exit(1);
+         }
+         PLOGI << "Using video driver " << SDL_GetCurrentVideoDriver();
          PLOGI << "Available fullscreen resolutions:";
          vector<VPX::Window::DisplayConfig> displays;
          VPX::Window::GetDisplays(displays);
