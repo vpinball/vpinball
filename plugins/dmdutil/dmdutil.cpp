@@ -38,18 +38,18 @@ void onUpdateDMD(void* userData)
       switch(getMsg.dmdId.format) {
          case CTLPI_GETDMD_FORMAT_LUM8:
          {
-            uint8_t* luminanceData = getMsg.frame;
-            uint8_t* rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
+            const uint8_t* const __restrict luminanceData = getMsg.frame;
+            uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
 
-            uint8_t redTint = 255;
-            uint8_t greenTint = 0;
-            uint8_t blueTint = 0;
+            constexpr uint8_t redTint = 255;
+            constexpr uint8_t greenTint = 0;
+            constexpr uint8_t blueTint = 0;
 
             for (int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
-                uint8_t lum = luminanceData[i];
-                rgb24Data[i * 3] = (lum * redTint) / 255;
-                rgb24Data[i * 3 + 1] = (lum * greenTint) / 255;
-                rgb24Data[i * 3 + 2] = (lum * blueTint) / 255;
+                const uint32_t lum = luminanceData[i];
+                rgb24Data[i * 3    ] = (uint8_t)((lum * redTint) / 255u);
+                rgb24Data[i * 3 + 1] = (uint8_t)((lum * greenTint) / 255u);
+                rgb24Data[i * 3 + 2] = (uint8_t)((lum * blueTint) / 255u);
             }
 
             pDmd->UpdateRGB24Data(rgb24Data, getMsg.dmdId.width, getMsg.dmdId.height);
@@ -63,17 +63,17 @@ void onUpdateDMD(void* userData)
 
          case CTLPI_GETDMD_FORMAT_SRGB565:
          {
-             uint16_t* rgb565Data = (uint16_t*)getMsg.frame;
-             uint8_t* rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
+             const uint16_t* const __restrict rgb565Data = (uint16_t*)getMsg.frame;
+             uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
 
              for (int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
-                 uint16_t pixel = rgb565Data[i];
+                 const uint32_t pixel = rgb565Data[i];
 
-                 uint8_t red = ((pixel >> 11) & 0x1F) * 255 / 31;
-                 uint8_t green = ((pixel >> 5) & 0x3F) * 255 / 63;
-                 uint8_t blue = (pixel & 0x1F) * 255 / 31;
+                 uint8_t red = (uint8_t)(((pixel >> 11) & 0x1Fu) * 255u / 31u);
+                 uint8_t green = (uint8_t)(((pixel >> 5) & 0x3Fu) * 255u / 63u);
+                 uint8_t blue = (uint8_t)((pixel & 0x1Fu) * 255u / 31u);
 
-                 rgb24Data[i * 3] = red;
+                 rgb24Data[i * 3    ] = red;
                  rgb24Data[i * 3 + 1] = green;
                  rgb24Data[i * 3 + 2] = blue;
              }
@@ -114,7 +114,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId;
-   
+
    msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG), onDmdSrcChanged, nullptr);
