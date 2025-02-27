@@ -4,7 +4,7 @@
 
 For a pre-compiled download of all external/third-party dependencies:
 
-Download `VPinballX-10.8.1-(revision)-(SHA1)-dev-third-party-windows-(x86/x64)-(Debug/Release).zip` from https://github.com/vpinball/vpinball/actions of a `vpinball` run,
+Download `VPinballX-10.8.1-(revision)-(SHA1)-dev-third-party-windows-(x86/x64)-(Debug/Release).zip` from [Actions](https://github.com/vpinball/vpinball/actions) of a `vpinball` run,
 and extract the content to the `third-party` folder in the top directory, overwriting all existing files.
 
 Run the `create_vs_solution.bat` from this folder here and select the Visual Studio version that will be used. This will create `.sln`/`.proj` files in the top directory.
@@ -12,7 +12,7 @@ Run the `create_vs_solution.bat` from this folder here and select the Visual Stu
 If DirectX9 rendering / compilation is wanted, install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)).
 
 
-The main build system is using [CMake](https://cmake.org/) though:
+Otherwise, using the full build system via [CMake](https://cmake.org/):
 
 ## Build tools and libraries
 
@@ -22,7 +22,8 @@ Depending on the platform you are on you will need to install additional build t
 
 * install Bash (e.g. [git-bash](https://gitforwindows.org/))
 * install [CMake](https://cmake.org/)
-* install [build tools v143 for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)) or the full Visual Studio 2022 package ([Express/Community](https://visualstudio.microsoft.com/de/vs/express/) is enough)
+* install [build tools v143 for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) or the full Visual Studio 2022 package ([Express/Community](https://visualstudio.microsoft.com/de/vs/express/) is enough)
+* install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)) for DirectX9 rendering / compilation support.
 
 ### Other platforms
 
