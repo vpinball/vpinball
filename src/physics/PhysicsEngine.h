@@ -87,6 +87,8 @@ private:
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #endif
 
+   void UpdateOctrees();
+
    HitQuadtree* GetUIQuadTree(); // Trigger UI quadtree creation/update
    HitQuadtree *m_UIOctree = nullptr; // Active UI quadtree, lazily created
    // The following fields implement asynchronous UI quadtree update

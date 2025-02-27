@@ -1905,6 +1905,7 @@ void Primitive::WaitForMeshDecompression()
    if (g_pPrimitiveDecompressThreadPool)
    {
       // This will wait for the threads to finish decompressing meshes.
+      g_pPrimitiveDecompressThreadPool->wait_until_empty();
       g_pPrimitiveDecompressThreadPool->wait_until_nothing_in_flight();
       delete g_pPrimitiveDecompressThreadPool;
       g_pPrimitiveDecompressThreadPool = nullptr;

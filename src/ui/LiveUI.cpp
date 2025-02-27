@@ -2831,8 +2831,7 @@ void LiveUI::UpdateMainUI()
                if (i == selectionIndex)
                {
                   size_t p = selectionIndex % vhoHit.size();
-                  if (vhoHit[p].m_obj->m_editable)
-                     m_selection = Selection(true, vhoHit[p].m_obj->m_editable);
+                  m_selection = Selection(true, vhoHit[p].m_obj->m_editable);
                }
             }
             // TODO add debug action to make ball active: m_player->m_pactiveballDebug = m_pHitBall;
