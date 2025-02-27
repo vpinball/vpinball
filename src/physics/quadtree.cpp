@@ -133,7 +133,7 @@ void HitQuadtree::Initialize()
    m_rootNode.CreateNextLevel(this, bounds, 0, 0);
 
    InitSseArrays();
-   
+
 #else
    if (m_scene)
        rtcReleaseScene(m_scene);
@@ -203,7 +203,7 @@ void HitQuadtree::InitSseArrays()
    if (l_r_t_b_zl_zh == nullptr)
       l_r_t_b_zl_zh = (float*)_aligned_malloc(padded * 6 * sizeof(float), 16);
 
-   for (unsigned int j = 0; j < m_vho.size(); ++j)
+   for (unsigned int j = 0; j < (unsigned int)m_vho.size(); ++j)
    {
       const FRect3D& r = m_vho[j]->m_hitBBox;
       l_r_t_b_zl_zh[j             ] = r.left;
@@ -214,7 +214,7 @@ void HitQuadtree::InitSseArrays()
       l_r_t_b_zl_zh[j + padded * 5] = r.zhigh;
    }
 
-   for (unsigned int j = m_vho.size(); j < padded; ++j)
+   for (unsigned int j = (unsigned int)m_vho.size(); j < padded; ++j)
    {
       l_r_t_b_zl_zh[j             ] =  FLT_MAX;
       l_r_t_b_zl_zh[j + padded    ] = -FLT_MAX;
@@ -430,7 +430,7 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
    const __m128 rsqr = _mm_set1_ps(pball->HitRadiusSqr());
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
-   const size_t dt = traversal_order ? 1 : -1;
+   const unsigned int dt = traversal_order ? 1 : -1;
 
    do
    {
@@ -451,7 +451,7 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
                #ifdef DEBUGPHYSICS
                   g_pplayer->m_physics->c_tested++; //!! +=4? or is this more fair?
                #endif
-               const int idx = i; 
+               const unsigned int idx = i; 
 
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
