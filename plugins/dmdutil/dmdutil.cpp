@@ -24,6 +24,10 @@ static DMDUtil::DMD* pDmd = nullptr;
 static int lastFrameID = 0;
 static DmdSrcId m_defaultDmdId = {0};
 
+static uint8_t tintR = 255;
+static uint8_t tintG = 140;
+static uint8_t tintB = 0;
+
 void onUpdateDMD(void* userData)
 {
    if (!pDmd)
@@ -41,15 +45,11 @@ void onUpdateDMD(void* userData)
             const uint8_t* const __restrict luminanceData = getMsg.frame;
             uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
 
-            constexpr uint8_t redTint = 255;
-            constexpr uint8_t greenTint = 0;
-            constexpr uint8_t blueTint = 0;
-
             for (int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
                 const uint32_t lum = luminanceData[i];
-                rgb24Data[i * 3    ] = (uint8_t)((lum * redTint) / 255u);
-                rgb24Data[i * 3 + 1] = (uint8_t)((lum * greenTint) / 255u);
-                rgb24Data[i * 3 + 2] = (uint8_t)((lum * blueTint) / 255u);
+                rgb24Data[i * 3    ] = (uint8_t)((lum * tintR) / 255u);
+                rgb24Data[i * 3 + 1] = (uint8_t)((lum * tintG) / 255u);
+                rgb24Data[i * 3 + 2] = (uint8_t)((lum * tintB) / 255u);
             }
 
             pDmd->UpdateRGB24Data(rgb24Data, getMsg.dmdId.width, getMsg.dmdId.height);
@@ -58,30 +58,12 @@ void onUpdateDMD(void* userData)
          break;
 
          case CTLPI_GETDMD_FORMAT_SRGB888:
-            pDmd->UpdateRGB24Data(getMsg.frame, getMsg.dmdId.width, getMsg.dmdId.height);
-         break;
+            pDmd->UpdateRGB24Data((const uint8_t*)getMsg.frame, getMsg.dmdId.width, getMsg.dmdId.height);
+            break;
 
          case CTLPI_GETDMD_FORMAT_SRGB565:
-         {
-             const uint16_t* const __restrict rgb565Data = (uint16_t*)getMsg.frame;
-             uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
-
-             for (int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
-                 const uint32_t pixel = rgb565Data[i];
-
-                 uint8_t red = (uint8_t)(((pixel >> 11) & 0x1Fu) * 255u / 31u);
-                 uint8_t green = (uint8_t)(((pixel >> 5) & 0x3Fu) * 255u / 63u);
-                 uint8_t blue = (uint8_t)((pixel & 0x1Fu) * 255u / 31u);
-
-                 rgb24Data[i * 3    ] = red;
-                 rgb24Data[i * 3 + 1] = green;
-                 rgb24Data[i * 3 + 2] = blue;
-             }
-
-             pDmd->UpdateRGB24Data(rgb24Data, getMsg.dmdId.width, getMsg.dmdId.height);
-             free(rgb24Data);
-         }
-         break;
+            pDmd->UpdateRGB16Data((const uint16_t*)getMsg.frame, getMsg.dmdId.width, getMsg.dmdId.height);
+            break;
       }
    }
 
@@ -92,6 +74,19 @@ void onGameStart(const unsigned int msgId, void* userData, void* msgData)
 {
    pDmd = new DMDUtil::DMD();
    pDmd->FindDisplays();
+
+   char value[256];
+   msgApi->GetSetting("DMDUtil", "LumTintR", value, sizeof(value));
+   if (value[0] != '\0')
+      tintR = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+
+   msgApi->GetSetting("DMDUtil", "LumTintG", value, sizeof(value));
+   if (value[0] != '\0')
+      tintG = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
+
+   msgApi->GetSetting("DMDUtil", "LumTintB", value, sizeof(value));
+   if (value[0] != '\0')
+      tintB = (uint8_t)(strtol(value, NULL, 10) & 0xFF);
 
    onUpdateDMD(nullptr);
 }
@@ -104,10 +99,34 @@ void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
 
 void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
+   DmdSrcId newDmdId = { 0 };
+
    GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
    msgApi->BroadcastMsg( endpointId, getDmdSrcMsgId, &getSrcMsg);
 
-   m_defaultDmdId = getSrcMsg.entries[0];
+   bool foundColor = false;
+
+   for (unsigned int i = 0; i < getSrcMsg.count; i++) {
+      if (getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8) {
+          if (getSrcMsg.entries[i].width > newDmdId.width) {
+              newDmdId = getSrcMsg.entries[i];
+              foundColor = true;
+          }
+      }
+   }
+
+   if (!foundColor) {
+      for (unsigned int i = 0; i < getSrcMsg.count; i++) {
+         if (getSrcMsg.entries[i].format == CTLPI_GETDMD_FORMAT_LUM8) {
+             if (getSrcMsg.entries[i].width > newDmdId.width)
+               newDmdId = getSrcMsg.entries[i];
+         }
+      }
+   }
+
+   delete[] getSrcMsg.entries;
+
+   m_defaultDmdId = newDmdId;
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)

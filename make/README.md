@@ -25,44 +25,206 @@ Depending on the platform you are on you will need to install additional build t
 * install [build tools v143 for Visual Studio](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022) or the full Visual Studio 2022 package ([Express/Community](https://visualstudio.microsoft.com/de/vs/express/) is enough)
 * install the Microsoft DirectX SDK from 2021 (currently at [DX SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)) for DirectX9 rendering / compilation support.
 
-### Other platforms
-
-Detailed setup instructions for Visual Pinball Standalone (macOS / Linux / Android / iOS / ...) are available in the [standalone README](../standalone/README.md#compiling).
-
 ## External dependencies
 
-Some external dependencies are required to build Visual Pinball. To fetch and build these, we have provided a script for each platform.
-
-Check the `platforms` directory for the available platforms.
+Some external dependencies are required to build Visual Pinball. To fetch and build these, we have provided a script for each platform. This script must be run from the root of project.
 
 ```bash
-./platforms/YOUR_PLATFORM/external.sh
+platforms/[platform]/external.sh
 ```
 
-## CMake
+## Building via CMake
 
-Each platform/target combination has a `CMakeLists_[target]_[platform].txt` file in the `make` directory. You copy this file to `CMakeLists.txt` at the root of the project and use CMake to generate project files for your platform.
+Each target/platform combination has a `CMakeLists_[target]_[platform].txt` file in the `make` directory. Copy this file to `CMakeLists.txt` at the root of the project.
 
-* `platform` should be the same one as you used to build the external dependencies.
 * `target` can be one of the following:
   * `bgfx` (recommended) - uses [bgfx](https://github.com/bkaradzic/bgfx) to support multiple rendering backends
   * `gl` - OpenGL
   * `dx9` - DirectX 9
-
-An example for Linux X64 with bgfx:
+* `platform` should be the same one as you used to build the external dependencies.
 
 ```bash
+cp make/CMakeLists_[target]_[platform].txt CMakeLists.txt
+```
+
+#### Supported Platforms
+
+<details open>
+<summary>windows-x64</summary>
+
+```
+platforms/windows-x64/external.sh
+cp make/CMakeLists_bgfx-windows-x64.txt CMakeLists.txt
+cmake -G "Visual Studio 17 2022" -A x64 -B build
+cmake --build build --config Release
+```
+</details>
+
+<details open>
+<summary> windows-x86</summary>
+
+```
+platforms/windows-x86/external.sh
+cp make/CMakeLists_bgfx-windows-x86.txt CMakeLists.txt
+cmake -G "Visual Studio 17 2022" -A Win32 -B build
+cmake --build build --config Release
+```
+</details>
+
+<details>
+<summary>macos-arm64</summary>
+
+```
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew install autoconf automake libtool cmake bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+platforms/macos-arm64/external.sh
+cp make/CMakeLists_bgfx-macos-arm64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(sysctl -n hw.ncpu)
+
+build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+<details>
+<summary>macos-x64</summary>
+
+```
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew install autoconf automake libtool cmake nasm bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+platforms/macos-x64/external.sh
+cp make/CMakeLists_bgfx-macos-x64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(sysctl -n hw.ncpu)
+
+build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+<details>
+<summary>linux-x64 (Ubuntu)</summary>
+
+```
+sudo apt-get update
+sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+platforms/linux-x64/external.sh
 cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
-# the -j flag is optional and specifies the number of parallel jobs to run 
-# which in this case is the number of CPU cores (nproc command on Linux).
 cmake --build build -- -j$(nproc)
-# make sure that everything runs as expected
-./build/VPinballX_BGFX -play ./build/assets/exampleTable.vpx
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
 ```
+</details>
+
+<details>
+<summary>ios-arm64 (and ios-simulator-arm64)</summary>
+
+```
+sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+brew install cmake bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+platforms/ios-arm64/external.sh
+#platforms/ios-simulator-arm64/external.sh
+cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
+cmake -DPLATFORM=ios -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build/ios-arm64
+cmake --build build/ios-arm64 -- -j$(sysctl -n hw.ncpu)
+#cmake -DPLATFORM=ios-simulator -DARCH=arm64 -DCMAKE_BUILD_TYPE=Release -B build/ios-simulator-arm64
+#cmake --build build/ios-simulator-arm64 -- -j$(sysctl -n hw.ncpu)
+
+open standalone/ios/VPinball.xcodeproj
+```
+</details>
+
+<details>
+<summary>android-arm64-v8a</summary>
+
+```
+brew install cmake bison curl
+export PATH="$(brew --prefix bison)/bin:$PATH"
+export JAVA_HOME=$(/usr/libexec/java_home -v 17.0.11)
+export ANDROID_HOME=/Users/jmillard/Library/Android/sdk
+export ANDROID_NDK=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
+export ANDROID_NDK_HOME=/Users/jmillard/Library/Android/sdk/ndk/27.0.12077973
+platforms/android-arm64-v8a/external.sh
+cp make/CMakeLists_bgfx_lib.txt CMakeLists.txt
+cmake -DPLATFORM=android -DARCH=arm64-v8a -DCMAKE_BUILD_TYPE=Release -B build/android-arm64-v8a
+cmake --build build/android-arm64-v8a -- -j$(sysctl -n hw.ncpu)
+cd standalone/android
+./gradlew assembleDebug
+```
+</details>
+
+#### Unsupported Platforms
+
+<details>
+<summary>linux-x64 (Fedora)</summary>
+
+```
+sudo dnf install @development-tools
+sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
+platforms/linux-x64/external.sh
+cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cmake -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+
+<details>
+<summary>linux-aarch64 (Fedora Asahi Remix 41 - Apple silicon)</summary>
+
+```
+sudo dnf install @development-tools
+sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
+platforms/linux-x64/external.sh
+cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cmake -DBUILD_RK3588=ON -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+<details>
+<summary>linux-aarch64 (RPI)</summary>
+
+```
+sudo apt-get update
+sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+platforms/linux-aarch64/external.sh
+cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cmake -DBUILD_RPI=ON -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+<details>
+<summary>linux-aarch64 (RK3588)</summary>
+
+```
+sudo apt-get update
+sudo apt install git pkg-config autoconf automake libtool cmake bison zlib1g-dev libdrm-dev libgbm-dev libgles2-mesa-dev libgles2-mesa libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+platforms/linux-aarch64/external.sh
+cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
+cmake -DBUILD_RK3588=ON -DCMAKE_BUILD_TYPE=Release -B build
+cmake --build build -- -j$(nproc)
+
+build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
+```
+</details>
+
+> [!NOTE]
+> Instructions for unsupported platforms are provided as-is and are not officially maintained by the team. Community contributions to improve and update them are welcome.
 
 ## Continuous Integration
 
 Inspecting the [CI workflows](../.github/workflows) is also a good way to understand how everything is built.
 
-*Note: PR's do not trigger continuous integration. We suggest you enable github actions on your fork.*
+> [!NOTE]
+> Due to the large storage requirements and build times for external dependencies, pull requests currently do not trigger continuous integration. We recommend enabling GitHub Actions on your fork.
