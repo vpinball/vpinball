@@ -579,7 +579,6 @@ add_executable(vpinball WIN32
    third-party/include/win32xx/include/wxx_ribbon.h
    third-party/include/win32xx/include/wxx_richedit.h
    third-party/include/win32xx/include/wxx_scrollview.h
-   third-party/include/win32xx/include/wxx_shared_ptr.h
    third-party/include/win32xx/include/wxx_setup.h
    third-party/include/win32xx/include/wxx_socket.h
    third-party/include/win32xx/include/wxx_statusbar.h
