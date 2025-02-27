@@ -35,6 +35,7 @@ struct BallS;
 class HitBall;
 class HitObject;
 struct ImDrawList;
+class IEditable;
 
 class MoverObject // Spinner, Gate, Flipper, Plunger and Ball
 {
@@ -90,7 +91,7 @@ struct CollisionEvent
 class HitObject
 {
 public:
-   HitObject() {}
+   HitObject(IEditable* const editable) : m_editable(editable) {}
    virtual ~HitObject() {}
 
    virtual float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const { return -1.f; } //!! shouldn't need to do this, but for whatever reason there is a pure virtual function call triggered otherwise that refuses to be debugged (all derived classes DO implement this one!)
@@ -106,11 +107,15 @@ public:
 
    virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const = 0;
 
-   IEditable* m_editable = nullptr; // editable that created this hitobject, used for by UI for selecting editables
+   // Editable that created this hitobject, used for by UI for selecting editables.
+   // An hitobject is only valid if this part is not null (so a new HitObject is not valid at creation until this is set...)
+   IEditable* m_editable = nullptr;
 
-   IFireEvents *m_obj = nullptr; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
-
+   // Collision events
+   bool  m_fe = false;  // FireEvents for m_obj?
    float m_threshold = 0.f;  // threshold for firing an event (usually (always??) normal dot ball-velocity)
+   // FIXME is there a situation where m_obj would be different m_editable ? if not, why do we keep both ?
+   IFireEvents *m_obj = nullptr; // base object pointer (mainly used as IFireEvents, but also as HitTarget or Primitive or Trigger or Kicker or Gate, see below)
 
    FRect3D m_hitBBox;  // updated by CalcHitBBox, but for balls only on-demand when creating the collision hierarchies
 
@@ -119,12 +124,13 @@ public:
    float m_friction = 0.3f;
    float m_scatter = 0.f; // in radians
 
+   // FIXME m_ObjType is used to check type conversion while it is abused and does not always correspond to m_editable type => remove it, and add parameters corresponding to the real use case (which in fact are the 'abuse ones')
    eObjType m_ObjType = eNull;
 
    bool  m_enabled = true;
 
-   bool  m_fe = false;  // FireEvents for m_obj?
-   unsigned char m_e = 0;   // currently only used to determine which HitTriangles/HitLines/HitPoints are being part of the same Primitive(1)/HitTarget(2) element m_obj, to be able to early out intersection traversal if primitive is flagged as not collidable, its 0 if no unique element
+protected:
+   HitObject() { } // Hacky constructor used by HitBall which is still mixing the defining object (Ball) and the physics object (HitBall). This will be fixed but is a remaining of the previous state where Ball did not exist as a part of the data model but only as physics object
 };
 
 //
@@ -133,13 +139,20 @@ public:
 class LineSeg : public HitObject
 {
 public:
-   LineSeg() { }
-   LineSeg(const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
-       : v1(p1), v2(p2)
+   LineSeg(IEditable*const editable) : HitObject(editable) { }
+   LineSeg(IEditable*const editable, const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
+       : HitObject(editable), v1(p1), v2(p2)
    {
       m_hitBBox.zlow = zlow; //!! abuses the hit bbox to store zlow and zhigh
       m_hitBBox.zhigh = zhigh;
-      CalcNormal();
+      CalcNormalAndLength();
+   }
+   
+   void Set(const Vertex2D& p1, const Vertex2D& p2)
+   {
+      v1 = p1;
+      v2 = p2;
+      CalcNormalAndLength();
    }
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
@@ -148,20 +161,19 @@ public:
    void CalcHitBBox() override;
 
    float HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
-   void CalcNormal(); // and also does update length!
+   void CalcNormalAndLength();
 
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
-   Vertex2D normal;
    Vertex2D v1, v2;
+   Vertex2D normal;
    float length;
 };
 
 class HitCircle : public HitObject
 {
 public:
-   HitCircle() { }
-   HitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh) : center(c), radius(r)
+   HitCircle(IEditable*const editable, const Vertex2D& c, const float r, const float zlow, const float zhigh) : HitObject(editable), center(c), radius(r)
    {
       m_hitBBox.zlow = zlow;
       m_hitBBox.zhigh = zhigh;
@@ -176,8 +188,8 @@ public:
 
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
-   Vertex2D center;
-   float radius;
+   const Vertex2D center;
+   const float radius;
 };
 
 
@@ -185,8 +197,8 @@ public:
 class HitLineZ : public HitObject
 {
 public:
-   HitLineZ() {}
-   HitLineZ(const Vertex2D& xy, const float zlow, const float zhigh) : m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) {}
+   HitLineZ(IEditable*const editable) : HitObject(editable) {}
+   HitLineZ(IEditable*const editable, const Vertex2D& xy, const float zlow, const float zhigh) : HitObject(editable), m_xy(xy), m_zlow(zlow), m_zhigh(zhigh) {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eJoint; }
@@ -204,8 +216,8 @@ public:
 class HitPoint : public HitObject
 {
 public:
-   HitPoint(const Vertex3Ds& p) : m_p(p) {}
-   HitPoint(const float x, const float y, const float z) : m_p(Vertex3Ds(x,y,z)) {}
+   HitPoint(IEditable*const editable, const Vertex3Ds& p) : HitObject(editable), m_p(p) {}
+   HitPoint(IEditable*const editable, const float x, const float y, const float z) : HitObject(editable), m_p(Vertex3Ds(x,y,z)) {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return ePoint; }
@@ -214,7 +226,7 @@ public:
 
    void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
 
-   Vertex3Ds m_p;
+   const Vertex3Ds m_p;
 };
 
 struct HitTestResult

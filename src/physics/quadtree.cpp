@@ -463,42 +463,41 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
                #ifdef DEBUGPHYSICS
                   g_pplayer->m_physics->c_tested++; //!! +=4? or is this more fair?
                #endif
-               const unsigned int idx = i; 
 
                // comparisons set bits if bounds miss. if all bits are set, there is no collision. otherwise continue comparisons
                // bits set, there is a bounding box collision
-               __m128 cmp = _mm_cmpge_ps(bright, pL[idx]);
+               __m128 cmp = _mm_cmpge_ps(bright, pL[i]);
                int mask = _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmple_ps(bleft, pR[idx]);
+               cmp = _mm_cmple_ps(bleft, pR[i]);
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmpge_ps(bbottom, pT[idx]);
+               cmp = _mm_cmpge_ps(bbottom, pT[i]);
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
-               cmp = _mm_cmple_ps(btop, pB[idx]);
+               cmp = _mm_cmple_ps(btop, pB[i]);
                mask &= _mm_movemask_ps(cmp);
                if (mask == 0) continue;
 
                #ifndef DISABLE_ZTEST
-                  cmp = _mm_cmpge_ps(bzhigh, pZl[idx]);
+                  cmp = _mm_cmpge_ps(bzhigh, pZl[i]);
                   mask &= _mm_movemask_ps(cmp);
                   if (mask == 0) continue;
 
-                  cmp = _mm_cmple_ps(bzlow, pZh[idx]);
+                  cmp = _mm_cmple_ps(bzlow, pZh[i]);
                   mask &= _mm_movemask_ps(cmp);
                   if (mask == 0) continue;
                #endif
 
                // test actual sphere against box(es)
                const __m128 zero = _mm_setzero_ps();
-               __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[idx], posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[idx] ), zero));
-               __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[idx], posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[idx] ), zero));
+               __m128 ex = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pL[i], posx), zero), _mm_max_ps(_mm_sub_ps(posx, pR[i] ), zero));
+               __m128 ey = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pT[i], posy), zero), _mm_max_ps(_mm_sub_ps(posy, pB[i] ), zero));
                #ifndef DISABLE_ZTEST
-                  __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[idx], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[idx]), zero));
+                  __m128 ez = _mm_add_ps(_mm_max_ps(_mm_sub_ps(pZl[i], posz), zero), _mm_max_ps(_mm_sub_ps(posz, pZh[i]), zero));
                #endif
                ex = _mm_mul_ps(ex, ex);
                ey = _mm_mul_ps(ey, ey);

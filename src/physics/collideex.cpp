@@ -4,6 +4,13 @@
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Bumper/BumperCollider.cs
 
+BumperHitCircle::BumperHitCircle(Bumper* const pBumper, const Vertex2D& c, const float r, const float zlow, const float zhigh)
+   : HitCircle(pBumper, c, r, zlow, zhigh)
+{
+   m_bumperanim_hitEvent = true;
+   m_bumperanim_ringAnimOffset = 0.0f;
+}
+
 void BumperHitCircle::Collide(const CollisionEvent& coll)
 {
    if (!m_enabled) return;
@@ -12,17 +19,29 @@ void BumperHitCircle::Collide(const CollisionEvent& coll)
 
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter); // reflect ball from wall
 
-   if (m_pbumper->m_d.m_hitEvent && (dot <= -m_pbumper->m_d.m_threshold)) // if velocity greater than threshold level
+   Bumper *const pBumper = static_cast<Bumper*>(m_editable);
+   if (pBumper->m_d.m_hitEvent && (dot <= -pBumper->m_d.m_threshold)) // if velocity greater than threshold level
    {
-      coll.m_ball->m_d.m_vel += coll.m_hitnormal * m_pbumper->m_d.m_force; // add a chunk of velocity to drive ball away
+      coll.m_ball->m_d.m_vel += coll.m_hitnormal * pBumper->m_d.m_force; // add a chunk of velocity to drive ball away
 
       m_bumperanim_hitEvent = true;
       m_bumperanim_hitBallPosition = coll.m_ball->m_d.m_pos;
-      m_pbumper->FireGroupEvent(DISPID_HitEvents_Hit);
+      pBumper->FireGroupEvent(DISPID_HitEvents_Hit);
    }
 }
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/LineCollider.cs
+
+LineSegSlingshot::LineSegSlingshot(Surface* const psurface, const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
+   : LineSeg(psurface, p1, p2, _zlow, _zhigh)
+   , m_psurface(psurface)
+{
+   m_iframe = false;
+   m_TimeReset = 0; // Reset
+   m_doHitEvent = false;
+   m_force = 0.f;
+   m_EventTimeReset = 0;
+}
 
 float LineSegSlingshot::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -94,9 +113,11 @@ void LineSegSlingshot::Animate()
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateCollider.cs
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Gate/GateDisplacementSystem.cs
 
-HitGate::HitGate(Gate * const pgate, const float height)
+HitGate::HitGate(Gate* const pgate, const float height)
+   : HitObject(pgate)
+   , m_lineseg { LineSeg(pgate), LineSeg(pgate) }
+   , m_pgate (pgate)
 {
-   m_pgate = pgate;
    const float halflength = pgate->m_d.m_length * 0.5f;
 
    const float radangle = ANGTORAD(pgate->m_d.m_rotation);
@@ -121,8 +142,8 @@ HitGate::HitGate(Gate * const pgate, const float height)
    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
    m_lineseg[1].v2.y = m_lineseg[0].v1.y;
 
-   m_lineseg[0].CalcNormal();
-   m_lineseg[1].CalcNormal();
+   m_lineseg[0].CalcNormalAndLength();
+   m_lineseg[1].CalcNormalAndLength();
 
    m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
    m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
@@ -295,7 +316,9 @@ void GateMoverObject::UpdateVelocities()
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerCollider.cs
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Spinner/SpinnerDisplacementSystem.cs
 
-HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
+HitSpinner::HitSpinner(Spinner* const pspinner, const float height)
+   : HitObject(pspinner)
+   , m_lineseg { LineSeg(pspinner), LineSeg(pspinner) }
 {
    m_spinnerMover.m_pspinner = pspinner;
 
@@ -322,8 +345,8 @@ HitSpinner::HitSpinner(Spinner * const pspinner, const float height)
    m_lineseg[1].v2.x = m_lineseg[0].v1.x;
    m_lineseg[1].v2.y = m_lineseg[0].v1.y;
 
-   m_lineseg[0].CalcNormal();
-   m_lineseg[1].CalcNormal();
+   m_lineseg[0].CalcNormalAndLength();
+   m_lineseg[1].CalcNormalAndLength();
 
    m_spinnerMover.m_angleMax = ANGTORAD(pspinner->m_d.m_angleMax);
    m_spinnerMover.m_angleMin = ANGTORAD(pspinner->m_d.m_angleMin);
@@ -484,12 +507,14 @@ void Hit3DPoly::Init(Vertex3Ds * const rgv, const int count)
    m_scatter = 0.f;
 }
 
-Hit3DPoly::Hit3DPoly(Vertex3Ds * const rgv, const int count)
+Hit3DPoly::Hit3DPoly(IEditable* const editable, Vertex3Ds* const rgv, const int count)
+   : HitObject(editable)
 {
     Init(rgv, count);
 }
 
-Hit3DPoly::Hit3DPoly(const float x, const float y, const float z, const float r, const int sections) // creates a circular hit poly
+Hit3DPoly::Hit3DPoly(IEditable* const editable, const float x, const float y, const float z, const float r, const int sections) // creates a circular hit poly
+   : HitObject(editable)
 {
    Vertex3Ds * const rgv3d = new Vertex3Ds[sections];
 
@@ -666,7 +691,7 @@ void Hit3DPoly::Collide(const CollisionEvent& coll)
 
       if (m_obj && m_fe && dot >= m_threshold)
       {
-          if (m_ObjType == ePrimitive)
+          if (m_ObjType == ePrimitive) // FIXME Primitive but also Ramp or Rubbers
           {
              m_obj->m_currentHitThreshold = dot;
              FireHitEvent(pball);
@@ -726,7 +751,8 @@ void Hit3DPoly::CalcHitBBox()
 // Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
 
-HitTriangle::HitTriangle(const Vertex3Ds rgv[3])
+HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
+   : HitObject(editable)
 {
    m_rgv[0] = rgv[0];
    m_rgv[1] = rgv[1];
@@ -835,7 +861,7 @@ void HitTriangle::Collide(const CollisionEvent& coll)
 
    if (m_obj && m_fe && dot >= m_threshold)
    {
-      if (m_ObjType == ePrimitive)
+      if (m_ObjType == ePrimitive) // FIXME Primitive but also Ramp or Rubbers
       {
          m_obj->m_currentHitThreshold = dot;
          FireHitEvent(pball);
@@ -968,8 +994,9 @@ void HitPlane::Collide(const CollisionEvent& coll)
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/Line3DCollider.cs
 //
 
-HitLine3D::HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2)
-   : m_v1(v1)
+HitLine3D::HitLine3D(IEditable* const editable, const Vertex3Ds& v1, const Vertex3Ds& v2)
+   : HitLineZ(editable)
+   , m_v1(v1)
    , m_v2(v2)
 {
    Vertex3Ds vLine = v2 - v1;
@@ -1042,7 +1069,7 @@ void HitLine3D::Collide(const CollisionEvent& coll)
 
    if (m_obj && m_fe && dot >= m_threshold)
    {
-       if (m_ObjType == ePrimitive)
+       if (m_ObjType == ePrimitive) // FIXME Primitive but also Ramp or Rubbers
        {
           m_obj->m_currentHitThreshold = dot;
           FireHitEvent(pball);
@@ -1070,6 +1097,12 @@ void HitLine3D::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
 
 // Ported at: VisualPinball.Engine/VPT/Trigger/TriggerHitLineSeg.cs
 //            VisualPinball.Unity/VisualPinball.Unity/VPT/Trigger/TriggerCollider.cs
+
+TriggerLineSeg::TriggerLineSeg(Trigger* const trigger, const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh)
+   : LineSeg(trigger, p1, p2, zlow, zhigh)
+   , m_ptrigger(trigger)
+{
+}
 
 float TriggerLineSeg::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
@@ -1108,6 +1141,11 @@ void TriggerLineSeg::Collide(const CollisionEvent& coll)
    }
 }
 
+
+TriggerHitCircle::TriggerHitCircle(Trigger* const trigger, const Vertex2D& c, const float r, const float zlow, const float zhigh)
+   : HitCircle(trigger, c, r, zlow, zhigh)
+{
+}
 
 float TriggerHitCircle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {

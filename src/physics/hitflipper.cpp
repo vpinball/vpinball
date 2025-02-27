@@ -27,7 +27,8 @@
 // Ported at: VisualPinball.Engine/VPT/Flipper/FlipperMover.cs
 
 FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, float angleEnd,
-   const float zlow, const float zhigh, Flipper* const pflipper) : m_hitcircleBase(center, baser, zlow, zhigh) // base section
+   const float zlow, const float zhigh, Flipper* const pflipper)
+   : m_hitcircleBase(pflipper, center, baser, zlow, zhigh) // base section
 {
    m_pflipper = pflipper;
 
@@ -116,7 +117,7 @@ FlipperMoverObject::FlipperMoverObject(const Vertex2D& center, const float baser
 
 HitFlipper::HitFlipper(const Vertex2D& center, const float baser, const float endr, const float flipr, const float angleStart, const float angleEnd,
    const float zlow, const float zhigh, Flipper* const pflipper)
-   : m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
+   : HitObject(pflipper), m_flipperMover(center, baser, endr, flipr, angleStart, angleEnd, zlow, zhigh, pflipper)
 {
    UpdatePhysicsFromFlipper();
 

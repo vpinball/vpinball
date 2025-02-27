@@ -155,7 +155,7 @@ void Plunger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       HitPlunger *const php = new HitPlunger(m_d.m_v.x - m_d.m_width, m_d.m_v.y + m_d.m_height, m_d.m_v.x + m_d.m_width, zheight, m_d.m_v.y - m_d.m_stroke, m_d.m_v.y, this);
 
-      physics->AddCollider(php, this, isUI);
+      physics->AddCollider(php, isUI);
       php->m_pplunger = this;
       m_phitplunger = php;
    }

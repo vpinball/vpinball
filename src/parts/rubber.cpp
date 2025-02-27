@@ -556,7 +556,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 1]];
       rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
-      SetupHitObject(physics, new HitTriangle(rgv3D), isUI);
+      SetupHitObject(physics, new HitTriangle(this, rgv3D), isUI);
 
       AddHitEdge(physics, addedEdges, m_ringIndices[i], m_ringIndices[i + 2], isUI);
       AddHitEdge(physics, addedEdges, m_ringIndices[i + 2], m_ringIndices[i + 1], isUI);
@@ -568,7 +568,7 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       for (size_t i = 0; i < m_vertices.size(); ++i)
       {
          Vertex3Ds v = Vertex3Ds(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
-         SetupHitObject(physics, new HitPoint(v), isUI);
+         SetupHitObject(physics, new HitPoint(this, v), isUI);
       }
 }
 
@@ -586,7 +586,7 @@ void Rubber::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set<robin_
    {
       const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);
       const Vertex3Ds v2(m_vertices[j].x, m_vertices[j].y, m_vertices[j].z);
-      SetupHitObject(physics, new HitLine3D(v1, v2), isUI);
+      SetupHitObject(physics, new HitLine3D(this, v1, v2), isUI);
    }
 }
 
@@ -616,7 +616,7 @@ void Rubber::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool i
    obj->m_obj = (IFireEvents *)this;
    obj->m_fe = m_d.m_hitEvent;
 
-   physics->AddCollider(obj, this, isUI);
+   physics->AddCollider(obj, isUI);
    
    if (!isUI)
       m_vhoCollidable.push_back(obj);	//remember hit components of primitive

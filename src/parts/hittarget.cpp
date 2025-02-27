@@ -272,7 +272,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         SetupHitObject(physics, new HitTriangle(rgv3D), m_d.m_legacy, isUI);
+         SetupHitObject(physics, new HitTriangle(this, rgv3D), m_d.m_legacy, isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], m_d.m_legacy, isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], m_d.m_legacy, isUI);
@@ -282,7 +282,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // add collision vertices
       if (!isUI)
          for (unsigned i = 0; i < m_numVertices; ++i)
-            SetupHitObject(physics, new HitPoint(m_hitUIVertices[i]), m_d.m_legacy, isUI);
+            SetupHitObject(physics, new HitPoint(this, m_hitUIVertices[i]), m_d.m_legacy, isUI);
 
       if (!m_d.m_legacy)
       {
@@ -316,7 +316,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             const Vertex3Ds rgv3D2[3] = { // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
                rgv3D[i0], rgv3D[i2], rgv3D[i1]
             };
-            SetupHitObject(physics, new HitTriangle(rgv3D2), true, isUI);
+            SetupHitObject(physics, new HitTriangle(this, rgv3D2), true, isUI);
 
             AddHitEdge(physics, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2], true, isUI);
             AddHitEdge(physics, addedEdges, i1, i2, rgv3D2[2], rgv3D2[1], true, isUI);
@@ -326,7 +326,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          // add collision vertices
          if (!isUI)
             for (unsigned i = 0; i < num_dropTargetHitPlaneVertices; ++i)
-               SetupHitObject(physics, new HitPoint(rgv3D[i]), true, isUI);
+               SetupHitObject(physics, new HitPoint(this, rgv3D[i]), true, isUI);
       }
    }
    else
@@ -343,7 +343,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         SetupHitObject(physics, new HitTriangle(rgv3D), true, isUI);
+         SetupHitObject(physics, new HitTriangle(this, rgv3D), true, isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], true, isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], true, isUI);
@@ -353,7 +353,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // add collision vertices
       if (!isUI)
          for (unsigned i = 0; i < m_numVertices; ++i)
-            SetupHitObject(physics, new HitPoint(m_hitUIVertices[i]), true, isUI);
+            SetupHitObject(physics, new HitPoint(this, m_hitUIVertices[i]), true, isUI);
    }
 }
 
@@ -368,7 +368,7 @@ void HitTarget::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< ro
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
-      SetupHitObject(physics, new HitLine3D(vi, vj), setHitObject, isUI);
+      SetupHitObject(physics, new HitLine3D(this, vi, vj), setHitObject, isUI);
 }
 
 // Ported at: VisualPinball.Engine/Physics/HitObject.cs
@@ -394,10 +394,9 @@ void HitTarget::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const boo
    obj->m_enabled = isUI ? true : m_d.m_collidable;
    obj->m_ObjType = eHitTarget;
    obj->m_obj = (IFireEvents*)this;
-   obj->m_e = 2;
    obj->m_fe = setHitObject && m_d.m_hitEvent;
 
-   physics->AddCollider(obj, this, isUI);
+   physics->AddCollider(obj, isUI);
 
    if (!isUI)
       m_vhoCollidable.push_back(obj);	//remember hit components of primitive

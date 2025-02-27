@@ -2,21 +2,12 @@
 
 #pragma once
 
-#ifdef __STANDALONE__
 class Plunger;
-#endif
 
 class PlungerMoverObject : public MoverObject
 {
 public:
-   PlungerMoverObject()
-   {
-      // clear the mech plunger reading history
-      m_mech0 = m_mech1 = m_mech2 = 0.0f;
-      m_addRetractMotion = false;
-      m_retractMotion = false;
-      m_retractWaitLoop = 0;
-   }
+   PlungerMoverObject(Plunger* const plunger);
 
    virtual void UpdateDisplacements(const float dtime) override;
    virtual void UpdateVelocities() override;
@@ -35,7 +26,7 @@ public:
    void PullBackandRetract(float speed);
 
    // our associated plunger object
-   Plunger* m_plunger;
+   Plunger* const m_plunger;
 
    // position of the on-screen plunger (left, right, bottom)
    float m_x, m_x2, m_y;

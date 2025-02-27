@@ -156,14 +156,14 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
                                                          : 1.f);
    if (isUI)
    {
-      HitCircle *const phitcircle = new HitCircle(m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
+      HitCircle *const phitcircle = new HitCircle(this, m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
       phitcircle->m_ObjType = eKicker;
       phitcircle->m_obj = (IFireEvents *)this;
-      physics->AddCollider(phitcircle, this, isUI);
+      physics->AddCollider(phitcircle, isUI);
    }
    else
    {
-      KickerHitCircle *const phitcircle = new KickerHitCircle(m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
+      KickerHitCircle *const phitcircle = new KickerHitCircle(this, m_d.m_vCenter, radius, height, height + m_d.m_hit_height); // height of kicker hit cylinder
       if (!m_d.m_legacyMode)
       {
          const float rad = phitcircle->radius * 0.8f;
@@ -183,7 +183,7 @@ void Kicker::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       phitcircle->m_obj = (IFireEvents *)this;
       phitcircle->m_pkicker = this;
       m_phitkickercircle = phitcircle;
-      physics->AddCollider(phitcircle, this, isUI);
+      physics->AddCollider(phitcircle, isUI);
    }
 }
 

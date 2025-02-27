@@ -565,7 +565,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          rgv3D[2].x = prog_vertices[i1].x;
          rgv3D[2].y = prog_vertices[i1].y;
          rgv3D[2].z = prog_vertices[i1].z;
-         SetupHitObject(physics, new HitTriangle(rgv3D), isUI);
+         SetupHitObject(physics, new HitTriangle(this, rgv3D), isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
@@ -577,7 +577,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // add collision vertices
       if (!isUI)
          for (size_t i = 0; i < prog_vertices.size(); ++i)
-            SetupHitObject(physics, new HitPoint(prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z), isUI);
+            SetupHitObject(physics, new HitPoint(this, prog_vertices[i].x, prog_vertices[i].y, prog_vertices[i].z), isUI);
    }
    else
    {
@@ -595,7 +595,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          rgv3D[0] = m_vertices[i0];
          rgv3D[1] = m_vertices[i2];
          rgv3D[2] = m_vertices[i1];
-         SetupHitObject(physics, new HitTriangle(rgv3D), isUI);
+         SetupHitObject(physics, new HitTriangle(this, rgv3D), isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
@@ -605,7 +605,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // add collision vertices
       if (!isUI)
          for (size_t i = 0; i < m_mesh.NumVertices(); ++i)
-            SetupHitObject(physics, new HitPoint(m_vertices[i]), isUI);
+            SetupHitObject(physics, new HitPoint(this, m_vertices[i]), isUI);
    }
 }
 
@@ -622,7 +622,7 @@ void Primitive::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< ro
    // create pair uniquely identifying the edge (i,j)
    const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
-      SetupHitObject(physics, new HitLine3D(vi, vj), isUI);
+      SetupHitObject(physics, new HitLine3D(this, vi, vj), isUI);
 }
 
 void Primitive::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isUI)
@@ -654,10 +654,9 @@ void Primitive::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const boo
    obj->m_threshold = m_d.m_threshold;
    obj->m_ObjType = ePrimitive;
    obj->m_obj = (IFireEvents *)this;
-   obj->m_e = 1;
    obj->m_fe = m_d.m_hitEvent;
 
-   physics->AddCollider(obj, this, isUI);
+   physics->AddCollider(obj, isUI);
    
    if (!isUI)
       m_vhoCollidable.push_back(obj); // remember hit components of primitive

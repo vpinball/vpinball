@@ -170,7 +170,7 @@ void LineSeg::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void LineSeg::CalcNormal()
+void LineSeg::CalcNormalAndLength()
 {
    const Vertex2D vT(v1.x - v2.x, v1.y - v2.y);
 
@@ -599,9 +599,9 @@ void DoHitTest(const HitBall*const pball, const HitObject *const pho, CollisionE
       || (pho->m_ObjType == eHitTarget && ((HitTarget*)pho->m_obj)->m_d.m_isDropped)) //!! why is this done here and not in corresponding HitTest()?
       return;
 
-#ifdef DEBUGPHYSICS
-   g_pplayer->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
-#endif
+   #ifdef DEBUGPHYSICS
+      g_pplayer->m_physics->c_deepTested++; //!! atomic needed if USE_EMBREE
+   #endif
 
    CollisionEvent newColl;
    const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, newColl);
