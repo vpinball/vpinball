@@ -134,7 +134,7 @@ void PhysicsEngine::ReleaseVHO(const vector<HitObject *> &vho, bool isUI)
    vector<IEditable *> editables;
    for (size_t i = 0; i < vho.size(); i++)
    {
-      if (vho[i]->m_editable && FindIndexOf(editables, vho[i]->m_editable) == -1)
+      if (FindIndexOf(editables, vho[i]->m_editable) == -1)
       {
          editables.push_back(vho[i]->m_editable);
          if (vho[i]->m_editable->GetIHitable())
@@ -154,6 +154,7 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
 
 void PhysicsEngine::AddCollider(HitObject *collider, IEditable *editable, const bool isUI)
 {
+   assert(editable != nullptr);
    collider->CalcHitBBox();
    collider->m_editable = editable;
    if (!isUI && (collider->GetType() == eBall))
@@ -181,11 +182,13 @@ void PhysicsEngine::RemoveCollider(HitObject * collider, IEditable * editable, c
 
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
 {
+   // TODO these are the only colliders that are added without an associated editable. We could enforce one here to guarantee m_editable != nullptr and simplify the code
+   
    // simple outer borders:
-   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_top),    Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), nullptr, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), nullptr, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight), nullptr, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), nullptr, false);
+   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), table, false);
+   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), table, false);
+   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight), table, false);
+   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), table, false);
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -193,7 +196,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    rgv3D[1] = Vertex3Ds(table->m_right, table->m_top, table->m_glassTopHeight);
    rgv3D[2] = Vertex3Ds(table->m_right, table->m_bottom, table->m_glassBottomHeight);
    rgv3D[3] = Vertex3Ds(table->m_left, table->m_bottom, table->m_glassBottomHeight);
-   AddCollider(new Hit3DPoly(rgv3D, 4), nullptr, false);
+   AddCollider(new Hit3DPoly(rgv3D, 4), table, false);
 
    /*
    // playfield:
@@ -207,7 +210,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    ph3dpoly->m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    ph3dpoly->m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
    ph3dpoly->m_scatter = ANGTORAD(table->m_overridePhysics ? table->m_fOverrideScatterAngle : table->m_scatter);
-   AddCollider(ph3dpoly, nullptr, false);
+   AddCollider(ph3dpoly, table, false);
    */
 
    // playfield:
@@ -505,14 +508,17 @@ void PhysicsEngine::UpdateUIQuadtree(PhysicsEngine* ph)
       if (!ph->m_UIQuadTreeUpdateInProgress)
          return;
 
-      //auto start = std::chrono::high_resolution_clock::now();
-      //std::chrono::duration<double> elapsed;
+      /* static int nCall = 0;
+      static std::chrono::duration<double> total;
+      nCall++;
+      auto start = std::chrono::high_resolution_clock::now();
+      std::chrono::duration<double> elapsed;*/
 
       // Start from the current list of hit objects (we could avoid the copy here by keeping track of the update before this one)
       vector<HitObject *>& uiHitObjects = ph->m_pendingUIOctree->BeginReset();
       uiHitObjects = ph->m_UIOctree->GetHitObjects();
-      
-      // Move outdated hit object to the end of the vector, copy them for later disposal (as they are used by the current quadtree), then remove from our list
+
+      // Move outdated hit object to the end of the vector, copy them for later disposal (as they are used by the active quadtree), then remove from our list
       for (auto ed : ph->m_vUIUpdatedEditable)
       {
          auto splitOutdated = std::partition(uiHitObjects.begin(), uiHitObjects.end(), [ed](HitObject *ho) { return ho->m_editable != ed; });
@@ -527,26 +533,16 @@ void PhysicsEngine::UpdateUIQuadtree(PhysicsEngine* ph)
       // Reset quadtree with the updated hit object list
       ph->m_pendingUIOctree->EndReset();
 
-      //elapsed = std::chrono::high_resolution_clock::now() - start;
-      //PLOGD << "UI quadtree update: " << elapsed.count() << " seconds (" << ph->m_pendingUIOctree->GetHitObjects().size() << " objects)";
+      /* elapsed = std::chrono::high_resolution_clock::now() - start; total += elapsed;
+      PLOGD << "UI quadtree update: " << (total / nCall) << " (" << ph->m_pendingUIOctree->GetHitObjects().size() << " objects)";*/
 
       ph->m_uiQuadtreeUpdateReady.release();
    }
 }
 
-HitQuadtree* PhysicsEngine::GetUIQuadTree()
+void PhysicsEngine::UpdateOctrees()
 {
-   if (m_UIOctree == nullptr)
-   {
-      assert(m_pendingUIHitObjects.empty());
-      m_UIOctree = new HitQuadtree();
-      m_pendingHitObjects = &m_UIOctree->BeginReset();
-      for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
-         if (pe->GetIHitable())
-            pe->GetIHitable()->PhysicSetup(this, true);
-      m_pendingHitObjects = nullptr; 
-      m_UIOctree->EndReset();
-   }
+   // Process pending asynchronous updates if any
    if (m_uiQuadtreeUpdateReady.try_acquire())
    {
       m_UIQuadTreeUpdateInProgress = false;
@@ -579,6 +575,21 @@ HitQuadtree* PhysicsEngine::GetUIQuadTree()
       m_uiQuadtreeUpdateWaiting.release();
       if (!m_uiQuadtreeUpdateThread.joinable())
          m_uiQuadtreeUpdateThread = std::thread(&UpdateUIQuadtree, this);
+   }
+}
+
+HitQuadtree* PhysicsEngine::GetUIQuadTree()
+{
+   if (m_UIOctree == nullptr)
+   {
+      assert(m_pendingUIHitObjects.empty());
+      m_UIOctree = new HitQuadtree();
+      m_pendingHitObjects = &m_UIOctree->BeginReset();
+      for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
+         if (pe->GetIHitable())
+            pe->GetIHitable()->PhysicSetup(this, true);
+      m_pendingHitObjects = nullptr; 
+      m_UIOctree->EndReset();
    }
    return m_UIOctree;
 }
@@ -659,6 +670,8 @@ void PhysicsEngine::UpdatePhysics()
 
    g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
+
+   UpdateOctrees();
 
    // DJRobX's crazy latency-reduction code
    U64 delta_frame = 0;
@@ -834,9 +847,9 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
    while (dtime > 0.f)
    {
       // first find hits, if any +++++++++++++++++++++ 
-#ifdef DEBUGPHYSICS
-      c_timesearch++;
-#endif
+      #ifdef DEBUGPHYSICS
+         c_timesearch++;
+      #endif
       float hittime = dtime; // begin time search from now ...  until delta ends
 
       // find earliest time where a flipper collides with its stop
@@ -851,68 +864,67 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
       m_recordContacts = true;
       m_contacts.clear();
 
-#ifdef USE_EMBREE
-      for (size_t i = 0; i < m_vball.size(); i++)
-         if (!m_vball[i]->m_d.m_lockedInKicker
-#ifdef C_DYNAMIC
-             && m_vball[i]->m_dynamic > 0
-#endif
-            ) // don't play with frozen balls
-         {
-            m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
-            m_vball[i]->m_coll.m_obj = nullptr;
-         }
+      #ifdef USE_EMBREE
+            for (size_t i = 0; i < m_vball.size(); i++)
+               if (!m_vball[i]->m_d.m_lockedInKicker
+         #ifdef C_DYNAMIC
+                   && m_vball[i]->m_dynamic > 0
+         #endif
+                  ) // don't play with frozen balls
+               {
+                  m_vball[i]->m_coll.m_hittime = hittime; // search upto current hittime
+                  m_vball[i]->m_coll.m_obj = nullptr;
+               }
 
-      if (!m_vball.empty())
-      {
-         m_hitoctree.HitTestBall(m_vball);         // find the hit objects hit times
-         m_hitoctree_dynamic.HitTestBall(m_vball); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
-      }
-#endif
+            if (!m_vball.empty())
+            {
+               m_hitoctree.HitTestBall(m_vball);         // find the hit objects hit times
+               m_hitoctree_dynamic.HitTestBall(m_vball); // dynamic objects !! should reuse the same embree scene created already in m_hitoctree.HitTestBall!
+            }
+      #endif
 
       for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
       {
          HitBall *const pball = g_pplayer->m_vball[i];
 
          if (!pball->m_d.m_lockedInKicker
-#ifdef C_DYNAMIC
+         #ifdef C_DYNAMIC
              && pball->m_dynamic > 0
-#endif
+         #endif
             ) // don't play with frozen balls
          {
-#ifndef USE_EMBREE
-            pball->m_coll.m_hittime = hittime;          // search upto current hittime
-            pball->m_coll.m_obj = nullptr;
-#endif
+            #ifndef USE_EMBREE
+               pball->m_coll.m_hittime = hittime;          // search upto current hittime
+               pball->m_coll.m_obj = nullptr;
+            #endif
+
             // always check for playfield and top glass
             if (g_pplayer->m_implicitPlayfieldMesh)
                DoHitTest(pball, &m_hitPlayfield, pball->m_coll);
-
             DoHitTest(pball, &m_hitTopGlass, pball->m_coll);
 
-#ifndef USE_EMBREE
-            if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly
-            {
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
-               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
-            }
-            else
-            {
-               m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
-               m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
-            }
-#endif
+            #ifndef USE_EMBREE
+               if (rand_mt_01() < 0.5f) // swap order of dynamic and static obj checks randomly
+               {
+                  m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
+                  m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
+               }
+               else
+               {
+                  m_hitoctree.HitTestBall(pball, pball->m_coll);         // find the static hit objects hit times
+                  m_hitoctree_dynamic.HitTestBall(pball, pball->m_coll); // dynamic objects
+               }
+            #endif
             const float htz = pball->m_coll.m_hittime; // this ball's hit time
             if (htz < 0.f) pball->m_coll.m_obj = nullptr; // no negative time allowed
 
             if (pball->m_coll.m_obj)                   // hit object
             {
-#ifdef DEBUGPHYSICS
-               ++c_hitcnts;                            // stats for display
-
-               if (/*pball->m_coll.m_hitRigid &&*/ pball->m_coll.m_hitdistance < -0.0875f) //rigid and embedded
-                  ++c_embedcnts;
-#endif
+               #ifdef DEBUGPHYSICS
+                  ++c_hitcnts;                            // stats for display
+                  if (/*pball->m_coll.m_hitRigid &&*/ pball->m_coll.m_hitdistance < -0.0875f) //rigid and embedded
+                     ++c_embedcnts;
+               #endif
                ///////////////////////////////////////////////////////////////////////////
 
                if (htz <= hittime)                     // smaller hit time??
@@ -951,17 +963,17 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
          HitBall *const pball = g_pplayer->m_vball[i];
 
          if (
-#ifdef C_DYNAMIC
+         #ifdef C_DYNAMIC
              pball->m_dynamic > 0 &&
-#endif
+         #endif
              pball->m_coll.m_obj && pball->m_coll.m_hittime <= hittime) // find balls with hit objects and minimum time
          {
             // now collision, contact and script reactions on active ball (object)+++++++++
             HitObject * const pho = pball->m_coll.m_obj; // object that ball hit in trials
             g_pplayer->m_pactiveball = pball; // For script that wants the ball doing the collision
-#ifdef DEBUGPHYSICS
-            c_collisioncnt++;
-#endif
+            #ifdef DEBUGPHYSICS
+               c_collisioncnt++;
+            #endif
             pho->Collide(pball->m_coll);                 //!!!!! 3) collision on active ball
             pball->m_coll.m_obj = nullptr;               // remove trial hit object pointer
 
@@ -975,31 +987,31 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
             }
             else
             {
-#ifdef C_DYNAMIC
-               // is this ball static? .. set static and quench
-               if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
-               {
-                  const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
-                  if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST)
+               #ifdef C_DYNAMIC
+                  // is this ball static? .. set static and quench
+                  if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH)) //rigid and close distance contacts //!! rather test isContact??
                   {
-                     if (--pball->m_dynamic <= 0)            //... ball static, cancels next gravity increment
-                     {                                       // m_dynamic is cleared in ball gravity section
-                        pball->m_dynamic = 0;
-#ifdef DEBUGPHYSICS
-                        c_staticcnt++;
-#endif
-                        pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaining velocity and set ...
+                     const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are taken from simulation
+                     if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST)
+                     {
+                        if (--pball->m_dynamic <= 0)            //... ball static, cancels next gravity increment
+                        {                                       // m_dynamic is cleared in ball gravity section
+                           pball->m_dynamic = 0;
+                           #ifdef DEBUGPHYSICS
+                              c_staticcnt++;
+                           #endif
+                           pball->m_vel.x = pball->m_vel.y = pball->m_vel.z = 0.f; //quench the remaining velocity and set ...
+                        }
                      }
                   }
-               }
-#endif
+               #endif
             }
          }
       }
 
-#ifdef DEBUGPHYSICS
-      c_contactcnt = (U32)m_contacts.size();
-#endif
+      #ifdef DEBUGPHYSICS
+         c_contactcnt = (U32)m_contacts.size();
+      #endif
 
       // Now handle contacts.
 
@@ -1020,40 +1032,40 @@ void PhysicsEngine::PhysicsSimulateCycle(float dtime) // move physics forward to
 
       m_contacts.clear();
 
-#ifdef C_BALL_SPIN_HACK
-      // hacky killing of ball spin on resting balls (very low and very high spinning)
-      for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
-      {
-         HitBall *const pball = g_pplayer->m_vball[i];
-
-         const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
-         const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
-
-         if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
+      #ifdef C_BALL_SPIN_HACK
+         // hacky killing of ball spin on resting balls (very low and very high spinning)
+         for (size_t i = 0; i < g_pplayer->m_vball.size(); i++)
          {
-            /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
-            if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
-            && pball->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST
-            ) //&& rand_mt_01() < 0.95f)
+            HitBall *const pball = g_pplayer->m_vball[i];
+
+            const unsigned int p0 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 1) % MAX_BALL_TRAIL_POS;
+            const unsigned int p1 = (pball->m_ringcounter_oldpos / (10000 / PHYSICS_STEPTIME) + 2) % MAX_BALL_TRAIL_POS;
+
+            if (/*pball->m_coll.m_hitRigid &&*/ (pball->m_coll.m_hitdistance < (float)PHYS_TOUCH) && (pball->m_oldpos[p0].x != FLT_MAX) && (pball->m_oldpos[p1].x != FLT_MAX)) // only if already initialized
             {
-            pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-            }*/
+               /*const float mag = pball->m_vel.x*pball->m_vel.x + pball->m_vel.y*pball->m_vel.y; // values below are copy pasted from above
+               if (pball->m_drsq < 8.0e-5f && mag < 1.0e-3f*m_gravity*m_gravity / GRAVITYCONST / GRAVITYCONST && fabsf(pball->m_vel.z) < 0.2f*m_gravity / GRAVITYCONST
+               && pball->m_angularmomentum.Length() < 0.9f*m_gravity / GRAVITYCONST
+               ) //&& rand_mt_01() < 0.95f)
+               {
+               pball->m_angularmomentum *= 0.05f; // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+               }*/
 
-            const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_d.m_pos;
-            const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
-            const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_d.m_pos;
-            const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
+               const Vertex3Ds diff_pos = pball->m_oldpos[p0] - pball->m_d.m_pos;
+               const float mag = diff_pos.x*diff_pos.x + diff_pos.y*diff_pos.y;
+               const Vertex3Ds diff_pos2 = pball->m_oldpos[p1] - pball->m_d.m_pos;
+               const float mag2 = diff_pos2.x*diff_pos2.x + diff_pos2.y*diff_pos2.y;
 
-            const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
+               const float threshold = (pball->m_angularmomentum.x*pball->m_angularmomentum.x + pball->m_angularmomentum.y*pball->m_angularmomentum.y) / max(mag, mag2);
 
-            if (!infNaN(threshold) && threshold > 666.f)
-            {
-               const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
-               pball->m_angularmomentum *= damp;
+               if (!infNaN(threshold) && threshold > 666.f)
+               {
+                  const float damp = clamp(1.0f - (threshold - 666.f) / 10000.f, 0.23f, 1.f); // do not kill spin completely, otherwise stuck balls will happen during regular gameplay
+                  pball->m_angularmomentum *= damp;
+               }
             }
          }
-      }
-#endif
+      #endif
 
       dtime -= hittime; //new delta .. i.e. time remaining
 

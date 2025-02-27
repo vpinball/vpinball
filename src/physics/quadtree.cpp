@@ -2,6 +2,7 @@
 
 #include "core/stdafx.h"
 #include "quadtree.h"
+#include "ThreadPool.h"
 
 #ifdef ENABLE_SSE_OPTIMIZATIONS
    #define QUADTREE_SSE_LEAFTEST
@@ -132,6 +133,12 @@ void HitQuadtree::Initialize()
    m_rootNode.m_items = static_cast<unsigned int>(m_vho.size());
    m_rootNode.CreateNextLevel(this, bounds, 0, 0);
 
+   if (m_threadPool)
+   {
+      m_threadPool->wait_until_empty();
+      m_threadPool->wait_until_nothing_in_flight();
+   }
+      
    InitSseArrays();
 
 #else
@@ -170,6 +177,8 @@ void HitQuadtree::Finalize()
 #ifndef USE_EMBREE
    m_tmp1.clear();
    m_tmp2.clear();
+   delete m_threadPool;
+   m_threadPool = nullptr;
 #endif
 }
 
@@ -181,7 +190,8 @@ void HitQuadtree::Finalize()
 #ifndef USE_EMBREE
 HitQuadtreeNode* HitQuadtree::AllocFourNodes()
 {
-   if ((m_numNodes + 3) >= (unsigned)m_nodes.size()) // space for 4 more nodes?
+   const std::lock_guard<std::mutex> lock(m_nodePoolMutex);
+   if ((m_numNodes + 3) >= m_nodes.size()) // space for 4 more nodes?
       return nullptr;
    else
    {
@@ -203,7 +213,7 @@ void HitQuadtree::InitSseArrays()
    if (l_r_t_b_zl_zh == nullptr)
       l_r_t_b_zl_zh = (float*)_aligned_malloc(padded * 6 * sizeof(float), 16);
 
-   for (unsigned int j = 0; j < (unsigned int)m_vho.size(); ++j)
+   for (size_t j = 0; j < m_vho.size(); ++j)
    {
       const FRect3D& r = m_vho[j]->m_hitBBox;
       l_r_t_b_zl_zh[j             ] = r.left;
@@ -214,7 +224,7 @@ void HitQuadtree::InitSseArrays()
       l_r_t_b_zl_zh[j + padded * 5] = r.zhigh;
    }
 
-   for (unsigned int j = (unsigned int)m_vho.size(); j < padded; ++j)
+   for (size_t j = m_vho.size(); j < padded; ++j)
    {
       l_r_t_b_zl_zh[j             ] =  FLT_MAX;
       l_r_t_b_zl_zh[j + padded    ] = -FLT_MAX;
@@ -254,56 +264,78 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
       return;
 
    m_vcenter.x = (bounds.left + bounds.right) * 0.5f;
-   m_vcenter.y = (bounds.top + bounds.bottom)*0.5f;
+   m_vcenter.y = (bounds.top + bounds.bottom) * 0.5f;
    //m_vcenter.z = (bounds.zlow + bounds.zhigh)*0.5f;
+   #ifdef QUADTREE_SSE_LEAFTEST // Without SSE optimization
+      float vcenter[4] { m_vcenter.x, m_vcenter.x, m_vcenter.y, m_vcenter.y };
+      const __m128 center = _mm_loadu_ps(vcenter);
+      const int quadrant[] { 0, 1, 128, 1, 2, 3, 128, 3, 128, 128, 128, 128, 2, 3, 128, 3 };
+   #endif
 
-   m_unique = (quadTree->m_vho[m_start]->m_e != 0) ? quadTree->m_vho[m_start]->m_obj : nullptr;
+   m_unique = quadTree->m_vho[m_start]->m_editable->GetIHitable();
 
    // sort items into appropriate child nodes
-   int remaining = 0;
-   for (unsigned int i = m_start; i < m_start + m_items; ++i)
+   HitObject **ppTmp0, **ppTmp0x, **ppTmp1, **ppTmp1x, **ppTmp2, **ppTmp2x, **ppTmp3, **ppTmp3x, **ppTmp4, **ppTmp4x, **ppEnd;
+   ppTmp0 = ppTmp0x = &quadTree->m_vho[m_start];
+   ppTmp1 = ppTmp1x = &quadTree->m_tmp1[m_start];
+   ppTmp2 = ppTmp2x = &quadTree->m_tmp2[m_start];
+   ppTmp3 = ppTmp3x = &quadTree->m_tmp1[m_start + m_items - 1];
+   ppTmp4 = ppTmp4x = &quadTree->m_tmp2[m_start + m_items - 1];
+   ppEnd = &quadTree->m_vho[m_start + m_items - 1];
+   for (HitObject** ppho = ppTmp0; ppho <= ppEnd; ppho++)
    {
-      HitObject* const pho = quadTree->m_vho[i];
-      if (((pho->m_e != 0) ? pho->m_obj : nullptr) != m_unique) // are all objects in current node unique/belong to the same primitive?
+      HitObject* const pho = *ppho;
+      if (m_unique != pho->m_editable->GetIHitable()) // are all objects in current node unique/belong to the same hitable ?
          m_unique = nullptr;
-      int oct;
-      if (pho->m_hitBBox.right < m_vcenter.x)
-         oct = 0;
-      else if (pho->m_hitBBox.left > m_vcenter.x)
-         oct = 1;
-      else
-         oct = 128;
-      if (pho->m_hitBBox.bottom < m_vcenter.y)
-         oct |= 0;
-      else if (pho->m_hitBBox.top > m_vcenter.y)
-         oct |= 2;
-      else
-         oct |= 128;
+      #ifdef QUADTREE_SSE_LEAFTEST // Without SSE optimization
+         const __m128 hb = _mm_loadu_ps(&pho->m_hitBBox.left); // L.R.T.B
+         __m128 cmp = _mm_cmpgt_ps(hb, center);
+         int oct = quadrant[_mm_movemask_ps(cmp)];
+      #else
+         int oct;
+         if (pho->m_hitBBox.left > m_vcenter.x)
+            oct = 1;
+         else if (pho->m_hitBBox.right < m_vcenter.x)
+            oct = 0;
+         else
+            oct = 128;
+         if (pho->m_hitBBox.top > m_vcenter.y)
+            oct |= 2;
+         else if (pho->m_hitBBox.bottom < m_vcenter.y)
+            oct |= 0;
+         else
+            oct |= 128;
+      #endif
       switch (oct)
       {
-      case 0: quadTree->m_tmp1[m_children[0].m_items] = pho; m_children[0].m_items++; break;
-      case 1: quadTree->m_tmp2[m_children[1].m_items] = pho; m_children[1].m_items++; break;
-      case 2: m_children[2].m_items++; quadTree->m_tmp1[m_items - m_children[2].m_items] = pho; break;
-      case 3: m_children[3].m_items++; quadTree->m_tmp2[m_items - m_children[3].m_items] = pho; break;
-      default: quadTree->m_vho[m_start + remaining] = pho; remaining++; break;
+      case 0: *ppTmp1++ = pho; break;
+      case 1: *ppTmp2++ = pho; break;
+      case 2: *ppTmp3-- = pho; break;
+      case 3: *ppTmp4-- = pho; break;
+      default: *ppTmp0++ = pho; break;
       }
    }
-   m_children[0].m_start = m_start + remaining;
+   m_items = static_cast<unsigned int>(ppTmp0 - ppTmp0x);
+   m_children[0].m_items = static_cast<unsigned int>(ppTmp1 - ppTmp1x);
+   m_children[1].m_items = static_cast<unsigned int>(ppTmp2 - ppTmp2x);
+   m_children[2].m_items = static_cast<unsigned int>(ppTmp3x - ppTmp3);
+   m_children[3].m_items = static_cast<unsigned int>(ppTmp4x - ppTmp4);
+   m_children[0].m_start = m_start + m_items;
    m_children[1].m_start = m_children[0].m_start + m_children[0].m_items;
    m_children[2].m_start = m_children[1].m_start + m_children[1].m_items;
    m_children[3].m_start = m_children[2].m_start + m_children[2].m_items;
    if (m_children[0].m_items > 0)
-      memcpy(&quadTree->m_vho[m_children[0].m_start], &quadTree->m_tmp1[0], m_children[0].m_items * sizeof(HitObject*));
+      memcpy(&quadTree->m_vho[m_children[0].m_start], ppTmp1x, m_children[0].m_items * sizeof(HitObject*));
    if (m_children[1].m_items > 0)
-      memcpy(&quadTree->m_vho[m_children[1].m_start], &quadTree->m_tmp2[0], m_children[1].m_items * sizeof(HitObject*));
+      memcpy(&quadTree->m_vho[m_children[1].m_start], ppTmp2x, m_children[1].m_items * sizeof(HitObject*));
    if (m_children[2].m_items > 0)
-      memcpy(&quadTree->m_vho[m_children[2].m_start], &quadTree->m_tmp1[m_items - m_children[2].m_items], m_children[2].m_items * sizeof(HitObject*));
+      memcpy(&quadTree->m_vho[m_children[2].m_start], ppTmp3 + 1, m_children[2].m_items * sizeof(HitObject*));
    if (m_children[3].m_items > 0)
-      memcpy(&quadTree->m_vho[m_children[3].m_start], &quadTree->m_tmp2[m_items - m_children[3].m_items], m_children[3].m_items * sizeof(HitObject*));
-   m_items = remaining;
+      memcpy(&quadTree->m_vho[m_children[3].m_start], ppTmp4 + 1, m_children[3].m_items * sizeof(HitObject*));
 
-   if (m_unique != nullptr)
-      m_ObjType = quadTree->m_vho[m_start]->m_ObjType;
+   // We only early out for Primitive and HitTarget objects
+   if ((m_unique != nullptr) && (m_unique->HitableGetItemType() != eItemPrimitive) && (m_unique->HitableGetItemType() != eItemHitTarget))
+      m_unique = nullptr;
 
    // check if at least two nodes feature objects, otherwise don't bother subdividing further
    unsigned int count_empty = m_items == 0 ? 1 : 0;
@@ -320,6 +352,7 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
       level_empty <= 8 && // If 8 levels were all just subdividing the same objects without luck, exit & Free the nodes again (but at least empty space was cut off)
       level + 1 < 128 / 3)
    {
+      bool shouldDispatch = false;
       for (int i = 0; i < 4; ++i)
       {
          FRect childBounds;
@@ -332,7 +365,19 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
          childBounds.bottom = (i & 2) ? bounds.bottom : m_vcenter.y;
          //childBounds.zhigh = bounds.zhigh;
 
-         m_children[i].CreateNextLevel(quadTree, childBounds, level + 1, level_empty);
+         HitQuadtreeNode* child = &m_children[i];
+         if (child->m_items > 1000) // Magic threshold above which we dispatch to a worker thread
+         {
+            if (shouldDispatch)
+            {
+               if (quadTree->m_threadPool == nullptr)
+                  quadTree->m_threadPool = new ThreadPool(g_pvp->GetLogicalNumberOfProcessors());
+               quadTree->m_threadPool->enqueue([child, quadTree, childBounds, level, level_empty] { child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty); });
+               continue;
+            }
+            shouldDispatch = true;
+         }
+         child->CreateNextLevel(quadTree, childBounds, level + 1, level_empty);
       }
    }
 }
@@ -355,62 +400,29 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
 // collisions
 
 #ifndef QUADTREE_SSE_LEAFTEST // Without SSE optimization
-void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBall* const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
-   const float rcHitRadiusSqr = pball->HitRadiusSqr();
-
-   for (unsigned i=0; i<m_items; i++)
-   {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->c_tested++;
-      #endif
-      HitObject* pho = quadTree->m_vho[m_start + i];
-      if ((pball != pho) // ball can not hit itself
-         && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
-         && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
-      {
-         DoHitTest(pball, pho, coll);
-      }
-   }
-
-   if (m_children != nullptr)
-   {
-      #ifdef DEBUGPHYSICS
-         g_pplayer->c_tested++;
-      #endif
-      const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
-      const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
-      if (pball->m_hitBBox.top <= m_vcenter.y) // Top
-      {
-         if (left)  m_children[0].HitTestBall(quadTree, pball, coll);
-         if (right) m_children[1].HitTestBall(quadTree, pball, coll);
-      }
-      if (pball->m_hitBBox.bottom >= m_vcenter.y) // Bottom
-      {
-         if (left)  m_children[2].HitTestBall(quadTree, pball, coll);
-         if (right) m_children[3].HitTestBall(quadTree, pball, coll);
-      }
-   }
+   m_rootNode.HitTestBall(this, pball, coll);
 }
 
 #else // with SSE optimization
-void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBall* const pball, CollisionEvent& coll) const
+void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
    const HitQuadtreeNode* stack[MAX_LEVEL];
    unsigned int stackpos = 0;
    stack[0] = nullptr; // sentinel
 
-   const HitQuadtreeNode* __restrict current = this;
+   const HitQuadtreeNode* __restrict current = &m_rootNode;
 
-   const unsigned int padded = (quadTree->m_vho.size() + 3) & 0xFFFFFFFC;
+   const unsigned int padded = (m_vho.size() + 3) & 0xFFFFFFFC;
 
-   const __m128* __restrict const pL = (__m128*)quadTree->l_r_t_b_zl_zh;
-   const __m128* __restrict const pR = (__m128*)(quadTree->l_r_t_b_zl_zh + padded);
-   const __m128* __restrict const pT = (__m128*)(quadTree->l_r_t_b_zl_zh + padded * 2);
-   const __m128* __restrict const pB = (__m128*)(quadTree->l_r_t_b_zl_zh + padded * 3);
+   const __m128* __restrict const pL = (__m128*)l_r_t_b_zl_zh;
+   const __m128* __restrict const pR = (__m128*)(l_r_t_b_zl_zh + padded);
+   const __m128* __restrict const pT = (__m128*)(l_r_t_b_zl_zh + padded * 2);
+   const __m128* __restrict const pB = (__m128*)(l_r_t_b_zl_zh + padded * 3);
    #ifndef DISABLE_ZTEST
-      const __m128* __restrict const pZl = (__m128*)(quadTree->l_r_t_b_zl_zh + padded * 4);
-      const __m128* __restrict const pZh = (__m128*)(quadTree->l_r_t_b_zl_zh + padded * 5);
+      const __m128* __restrict const pZl = (__m128*)(l_r_t_b_zl_zh + padded * 4);
+      const __m128* __restrict const pZh = (__m128*)(l_r_t_b_zl_zh + padded * 5);
    #endif
 
    // init SSE registers with ball bbox
@@ -430,13 +442,13 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
    const __m128 rsqr = _mm_set1_ps(pball->HitRadiusSqr());
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
-   const unsigned int dt = traversal_order ? 1 : -1;
+   const int dt = traversal_order ? 1 : -1;
 
    do
    {
       if (current->m_unique == nullptr
-          || (current->m_ObjType == ePrimitive && ((Primitive*)current->m_unique)->m_d.m_collidable)
-          || (current->m_ObjType == eHitTarget && ((HitTarget*)current->m_unique)->m_d.m_isDropped == false)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
+          || (current->m_unique->HitableGetItemType() == eItemPrimitive && reinterpret_cast<Primitive*>(current->m_unique)->m_d.m_collidable)
+          || (current->m_unique->HitableGetItemType() == eItemHitTarget && !reinterpret_cast<HitTarget*>(current->m_unique)->m_d.m_isDropped)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
          if (current->m_items != 0) // does node contain hitables?
          {
@@ -503,26 +515,26 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
                // now there is at least one bbox collision
                if ((mask2 & 1) != 0)
                {
-                  HitObject* const pho = quadTree->m_vho[i * 4];
+                  HitObject* const pho = m_vho[i * 4];
                   if (pball != pho) // ball can not hit itself
                      DoHitTest(pball, pho, coll);
                }
                // array boundary checks for the rest not necessary as non-valid entries were initialized to keep these maskbits 0
                if ((mask2 & 2) != 0 /*&& (i*4+1)<m_hitoct->m_num_items*/)
                {
-                  HitObject* const pho = quadTree->m_vho[i * 4 + 1];
+                  HitObject* const pho = m_vho[i * 4 + 1];
                   if (pball != pho) // ball can not hit itself
                      DoHitTest(pball, pho, coll);
                }
                if ((mask2 & 4) != 0 /*&& (i*4+2)<m_hitoct->m_num_items*/)
                {
-                  HitObject* const pho = quadTree->m_vho[i * 4 + 2];
+                  HitObject* const pho = m_vho[i * 4 + 2];
                   if (pball != pho) // ball can not hit itself
                      DoHitTest(pball, pho, coll);
                }
                if ((mask2 & 8) != 0 /*&& (i*4+3)<m_hitoct->m_num_items*/)
                {
-                  HitObject* const pho = quadTree->m_vho[i * 4 + 3];
+                  HitObject* const pho = m_vho[i * 4 + 3];
                   if (pball != pho) // ball can not hit itself
                      DoHitTest(pball, pho, coll);
                }
@@ -555,17 +567,57 @@ void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBa
 }
 #endif // SSE vs non SSE implementation
 
-void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
+void HitQuadtreeNode::HitTestBall(const HitQuadtree* const quadTree, const HitBall* const pball, CollisionEvent& coll) const
 {
    const float rcHitRadiusSqr = pball->HitRadiusSqr();
 
-   for (size_t i = 0; i < m_items; i++)
+   for (unsigned int i = m_start; i < m_start + m_items; i++)
    {
       #ifdef DEBUGPHYSICS
          g_pplayer->m_physics->c_tested++;
       #endif
-      HitObject* pho = quadTree->m_vho[m_start + i];
-         if ((pball != pho) && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox) && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
+      HitObject* pho = quadTree->m_vho[i];
+      if ((pball != pho) // ball can not hit itself
+         && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
+         && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
+      {
+         DoHitTest(pball, pho, coll);
+      }
+   }
+
+   if (m_children != nullptr)
+   {
+      #ifdef DEBUGPHYSICS
+         g_pplayer->m_physics->c_tested++;
+      #endif
+      const bool left = (pball->m_hitBBox.left <= m_vcenter.x);
+      const bool right = (pball->m_hitBBox.right >= m_vcenter.x);
+      if (pball->m_hitBBox.top <= m_vcenter.y) // Top
+      {
+         if (left)  m_children[0].HitTestBall(quadTree, pball, coll);
+         if (right) m_children[1].HitTestBall(quadTree, pball, coll);
+      }
+      if (pball->m_hitBBox.bottom >= m_vcenter.y) // Bottom
+      {
+         if (left)  m_children[2].HitTestBall(quadTree, pball, coll);
+         if (right) m_children[3].HitTestBall(quadTree, pball, coll);
+      }
+   }
+}
+
+void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const
+{
+   const float rcHitRadiusSqr = pball->HitRadiusSqr();
+
+   for (unsigned int i = m_start; i < m_start + m_items; i++)
+   {
+      #ifdef DEBUGPHYSICS
+         g_pplayer->m_physics->c_tested++;
+      #endif
+      HitObject* pho = quadTree->m_vho[i];
+      if ((pball != pho) // ball can not hit itself
+         && fRectIntersect3D(pball->m_hitBBox, pho->m_hitBBox)
+         && fRectIntersect3D(pball->m_d.m_pos, rcHitRadiusSqr, pho->m_hitBBox))
       {
          #ifdef DEBUGPHYSICS
             g_pplayer->m_physics->c_deepTested++;

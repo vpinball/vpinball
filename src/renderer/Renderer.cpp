@@ -749,6 +749,7 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
          });
       }
 
+      pool.wait_until_empty();
       pool.wait_until_nothing_in_flight();
    }
 

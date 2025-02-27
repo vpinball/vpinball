@@ -12,6 +12,7 @@
 #endif
 
 class HitQuadtree;
+class ThreadPool;
 
 class HitQuadtreeNode final
 {
@@ -32,8 +33,7 @@ private:
    unsigned int m_items = 0; // number of items
 
    // everything below/including this node shares the same original primitive/hittarget object (just for early outs if not collidable), so this is actually cast then to a Primitive* or HitTarget*
-   IFireEvents* __restrict m_unique = nullptr; 
-   eObjType m_ObjType = eNull; // only used if m_unique != nullptr, to identify which object type this is
+   Hitable* __restrict m_unique = nullptr; 
 
    HitQuadtreeNode * __restrict m_children = nullptr; // nullptr for leaf, or the 4 children otherwise
    Vertex2D m_vcenter; // center of node bounds, only defined for non leaf node
@@ -65,7 +65,7 @@ public:
    unsigned int GetNLevels() const { return m_nLevels; }
 
 #ifndef USE_EMBREE
-   void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const { m_rootNode.HitTestBall(this, pball, coll); }
+   void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
    void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const { m_rootNode.HitTestXRay(this, pball, pvhoHit, coll); }
 #else
    void HitTestBall(vector<HitBall*> ball) const;
@@ -82,12 +82,14 @@ private:
 
    // Node pool
    vector<HitQuadtreeNode> m_nodes;
-   unsigned m_numNodes = 0;
+   size_t m_numNodes;
+   std::mutex m_nodePoolMutex;
    HitQuadtreeNode* AllocFourNodes();
    
    void InitSseArrays();
    float* __restrict l_r_t_b_zl_zh = nullptr; // 4xSIMD rearranged BBox data, layout: 4xleft,4xright,4xtop,4xbottom,4xzlow,4xzhigh, 4xleft... ... ... the last entries are potentially filled with 'invalid' boxes for alignment/padding
 
+   ThreadPool* m_threadPool = nullptr;
    vector<HitObject*> m_tmp1, m_tmp2;
 
    size_t m_maxItems = 0;
