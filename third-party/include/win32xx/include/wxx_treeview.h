@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -57,8 +57,8 @@ namespace Win32xx
     class CTreeView : public CWnd
     {
     public:
-        CTreeView() {}
-        virtual ~CTreeView() override {}
+        CTreeView() = default;
+        virtual ~CTreeView() override = default;
         virtual void PreRegisterClass(WNDCLASS& wc) override;
 
         // Accessors and mutators
@@ -334,6 +334,7 @@ namespace Win32xx
     {
         assert(IsWindow());
 
+        // As per the Microsoft's recommendation for handling TVM_GETITEMRECT.
         *reinterpret_cast<HTREEITEM*>(&rc) = item;
         WPARAM wparam = static_cast<WPARAM>(isTextOnly);
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);

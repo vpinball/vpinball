@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -161,7 +161,6 @@ namespace Win32xx
         int  Send(const char* buf, int len, int flags) const;
         int  SendTo(const char* send, int len, int flags, LPCTSTR addr, UINT port) const;
         int  SendTo(const char* buf, int len, int flags, const struct sockaddr* to, int tolen) const;
-        int  StartAsync(HWND wnd, UINT message, long events);
         void StartEvents();
         void StopEvents();
 
@@ -692,31 +691,6 @@ namespace Win32xx
             TRACE("SetSockOpt failed\n");
 
         return result;
-    }
-
-    // This function redirects socket events to a window in a message. It can
-    // be used as an alternative to StartEvents. Several sockets can redirect
-    // events to the same window.
-    // Parameters:
-    //  wnd      The window to receive the socket events.
-    //  message  The message to be received when a network event occurs.
-    //  events   A bitmask that has zero or more of the following:
-    //  FD_READ     Notification of readiness for reading.
-    //  FD_WRITE    Notification of readiness for writing.
-    //  FD_OOB      Notification of the arrival of Out Of Band data.
-    //  FD_ACCEPT   Notification of incoming connections.
-    //  FD_CONNECT  Notification of completed connection or multipoint join operation.
-    //  FD_CLOSE    Notification of socket closure.
-    //  FD_QOS      Notification of socket Quality Of Service changes.
-    //  FD_ROUTING_INTERFACE_CHANGE Notification of routing interface changes for the specified destination.
-    //  FD_ADDRESS_LIST_CHANGE      Notification of local address list changes for the address family of the socket.
-    // Refer to WSAAsyncSelect in the Windows API documentation for additional information.
-    inline int CSocket::StartAsync(HWND wnd, UINT message, long events)
-    {
-        TRACE("*** Warning: CSocket::StartAsync is deprecated. ***\n");
-
-        StopEvents();   // Ensure the event thread isn't running
-        return ::WSAAsyncSelect(*this, wnd, message, events);
     }
 
     // This function starts the thread that monitors the socket for events.

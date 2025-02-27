@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -107,11 +107,11 @@ namespace Win32xx
         CTime();
         CTime(const CTime& t);
         CTime(time_t t);
-        CTime(tm& atm);
+        CTime(tm atm);
         CTime(int year, int month, int day, int hour, int min, int sec, int isDST = -1);
         CTime(WORD dosDate, WORD dosTime, int isDST = -1);
-        CTime(const SYSTEMTIME& st, int isDST = -1);
-        CTime(const FILETIME& ft,  int isDST = -1);
+        CTime(SYSTEMTIME st, int isDST = -1);
+        CTime(FILETIME ft,  int isDST = -1);
 
         // CString conversion.
         CString Format(LPCTSTR format) const;
@@ -136,7 +136,7 @@ namespace Win32xx
 
         // Assignment operators.
         CTime&  operator=(const CTime& time);
-        CTime&  operator=(const time_t& t);
+        CTime&  operator=(time_t t);
 
         // Computational operators.
         CTime&  operator+=(const CTimeSpan& ts);
@@ -192,7 +192,7 @@ namespace Win32xx
 
         // Assignment operators.
         CTimeSpan& operator=(const CTimeSpan& ts);
-        CTimeSpan& operator=(const time_t& t);
+        CTimeSpan& operator=(time_t t);
 
         // Computational operators.
         const CTimeSpan operator-() const;
@@ -228,7 +228,7 @@ namespace Win32xx
     // Calls either ::gmtime or ::gmtime_s, depending on the compiler.
     // The value of atm is updated and its pointer is returned if successful.
     // Returns nullptr on failure.
-    inline tm* GMTime(tm& atm, const time_t& t)
+    inline tm* GMTime(tm& atm, time_t t)
     {
         tm* ptm = &atm;
 
@@ -240,6 +240,9 @@ namespace Win32xx
             ptm = nullptr;
 #endif
 
+        if (ptm == nullptr)
+            throw CNotSupportedException(GetApp()->MsgTimeValid());
+
         // Note: ptm points to atm (not a local variable) or nullptr.
         return ptm;
     }
@@ -247,7 +250,7 @@ namespace Win32xx
     // Calls either ::localtime or ::localtime_s depending on the compiler.
     // The value of atm is updated and its pointer is returned if successful.
     // Returns nullptr on failure.
-    inline tm* LocalTime(tm& atm, const time_t& t)
+    inline tm* LocalTime(tm& atm, time_t t)
     {
         tm* ptm = &atm;
 
@@ -258,6 +261,9 @@ namespace Win32xx
         if (::localtime_s(&atm, &t) != 0)
             ptm = nullptr;
 #endif
+
+        if (ptm == nullptr)
+            throw CNotSupportedException(GetApp()->MsgTimeValid());
 
         // Note: ptm points to atm (not a local variable) or nullptr.
         return ptm;
@@ -320,9 +326,8 @@ namespace Win32xx
     //
 
     // Constructs an CTime object initialized to the Jan 1, 1970 00:00:00 epoch.
-    inline CTime::CTime()
+    inline CTime::CTime() : m_time(0)
     {
-        m_time = 0;
     }
 
     // Constructs a CTime object from another (valid) CTime object t.
@@ -340,7 +345,7 @@ namespace Win32xx
     }
 
     // Constructs a CTime object from the time_tm atm, or assert if atm is invalid.
-    inline CTime::CTime(tm& atm)
+    inline CTime::CTime(tm atm)
     {
         // Compute the object time_t.
         m_time = ::mktime(&atm);
@@ -381,7 +386,7 @@ namespace Win32xx
     }
 
     // Constructs a CTime object from a SYSTEMTIME structure st.
-    inline CTime::CTime(const SYSTEMTIME& st, int isDST /* = -1 */)
+    inline CTime::CTime(SYSTEMTIME st, int isDST /* = -1 */)
     {
         CTime t(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute,
                 st.wSecond, isDST);   // Asserts if invalid.
@@ -390,7 +395,7 @@ namespace Win32xx
     }
 
     // Constructs a CTime object from a (UTC) FILETIME structure ft.
-    inline CTime::CTime(const FILETIME& ft, int isDST /* = -1 */)
+    inline CTime::CTime(FILETIME ft, int isDST /* = -1 */)
     {
         // Convert ft (a UTC time) to local time.
         FILETIME localTime;
@@ -528,9 +533,8 @@ namespace Win32xx
     inline tm* CTime::GetGmtTm(tm* ptm) const
     {
         assert (ptm != nullptr);    // nullptr argument not supported.
-        if (ptm)
-            ptm = GMTime(*ptm, m_time);
 
+        ptm = GMTime(*ptm, m_time);
         return ptm;
     }
 
@@ -540,9 +544,8 @@ namespace Win32xx
     inline tm* CTime::GetLocalTm(tm* ptm) const
     {
         assert(ptm != nullptr);    // nullptr argument not supported.
-        if (ptm)
-            ptm = LocalTime(*ptm, m_time);
 
+        ptm = LocalTime(*ptm, m_time);
         return  ptm;
     }
 
@@ -632,7 +635,7 @@ namespace Win32xx
     }
 
     // Assigns the time_t value to this CTime object.
-    inline CTime& CTime::operator=(const time_t& t)
+    inline CTime& CTime::operator=(time_t t)
     {
         // Self assignment is safe.
         tm atm;
@@ -870,7 +873,7 @@ namespace Win32xx
     }
 
     // Assigns the specified value to the CTimeSpan object.
-    inline CTimeSpan& CTimeSpan::operator=(const time_t& t)
+    inline CTimeSpan& CTimeSpan::operator=(time_t t)
     {
         // Self assignment is safe.
         tm atm;

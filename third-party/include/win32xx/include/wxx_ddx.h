@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -103,17 +103,17 @@ namespace Win32xx
 
     public:
         CDataExchange();
-        virtual ~CDataExchange();
+        virtual ~CDataExchange() = default;
 
         // Dialog Data Validation (DDV) functions
         virtual void DDV_MaxChars(const CString& value, int count) const;
         virtual void DDV_MinMaxByte(BYTE value, BYTE min, BYTE max) const;
-        virtual void DDV_MinMaxDateTime(const SYSTEMTIME&, const SYSTEMTIME&, const SYSTEMTIME&) const;
-        virtual void DDV_MinMaxDouble(const double& value, double min, double max, int precision = DBL_DIG) const;
-        virtual void DDV_MinMaxFloat(const float& value, float min, float max, int precision = FLT_DIG) const;
+        virtual void DDV_MinMaxDateTime(SYSTEMTIME, SYSTEMTIME, SYSTEMTIME) const;
+        virtual void DDV_MinMaxDouble(double value, double min, double max, int precision = DBL_DIG) const;
+        virtual void DDV_MinMaxFloat(float value, float min, float max, int precision = FLT_DIG) const;
         virtual void DDV_MinMaxInt(int value, int min, int max) const;
         virtual void DDV_MinMaxLong(long value, long min, long max) const;
-        virtual void DDV_MinMaxMonth(const SYSTEMTIME&, const SYSTEMTIME&, const SYSTEMTIME&) const;
+        virtual void DDV_MinMaxMonth(SYSTEMTIME, SYSTEMTIME, SYSTEMTIME) const;
         virtual void DDV_MinMaxShort(short value, short min, short max) const;
         virtual void DDV_MinMaxSlider(ULONG value, ULONG min, ULONG max) const;
         virtual void DDV_MinMaxUInt(UINT value, UINT min, UINT max) const;
@@ -169,7 +169,7 @@ namespace Win32xx
 
 
     // Global function
-    ULONGLONG SystemTimeToULL(const SYSTEMTIME &systime);
+    ULONGLONG SystemTimeToULL(SYSTEMTIME systime);
 
 
 }   // namespace Win32xx
@@ -214,11 +214,6 @@ namespace Win32xx
     }
 
 
-    // Destructor.
-    inline CDataExchange::~CDataExchange()
-    {
-    }
-
     ////////////////////////////////////////////////////////////////
     //
     //  DDV: Dialog Data Validation Functions
@@ -261,8 +256,8 @@ namespace Win32xx
     // before setting the range; if refValue is outside these limits,
     // no setting of the range takes place and a trace message is written
     // in debug mode.
-    inline void CDataExchange::DDV_MinMaxDateTime(const SYSTEMTIME& value,
-        const  SYSTEMTIME& min, const  SYSTEMTIME& max) const
+    inline void CDataExchange::DDV_MinMaxDateTime(SYSTEMTIME value,
+        SYSTEMTIME min, SYSTEMTIME max) const
     {
         ULONGLONG zero = 0;
         ULONGLONG val = SystemTimeToULL(value);
@@ -298,7 +293,7 @@ namespace Win32xx
 
     // Ensures that minVal <= value <= maxVal when validating, otherwise
     // throws a CUserException.
-    inline void CDataExchange::DDV_MinMaxDouble(const double& value, double min,
+    inline void CDataExchange::DDV_MinMaxDouble(double value, double min,
         double max, int precision /* = DBL_DIG */) const
     {
         assert(min <= max);
@@ -322,7 +317,7 @@ namespace Win32xx
 
     // Ensures that minVal <= value <= maxVal when validating, otherwise
     // throws a CUserException.
-    inline void CDataExchange::DDV_MinMaxFloat(const float& value, float min,
+    inline void CDataExchange::DDV_MinMaxFloat(float value, float min,
         float max, int precision /* = FLT_DIG */) const
     {
         DDV_MinMaxDouble(static_cast<double>(value), static_cast<double>(min),
@@ -366,8 +361,8 @@ namespace Win32xx
     // before setting the range; if refValue is outside these limits,
     // no setting of the range takes place and a trace message is written
     // in debug mode.
-    inline void CDataExchange::DDV_MinMaxMonth(const SYSTEMTIME& value, const SYSTEMTIME& min,
-        const SYSTEMTIME& max) const
+    inline void CDataExchange::DDV_MinMaxMonth(SYSTEMTIME value, SYSTEMTIME min,
+        SYSTEMTIME max) const
     {
         ULONGLONG zero = 0;
         ULONGLONG val = SystemTimeToULL(value);
@@ -1203,7 +1198,7 @@ namespace Win32xx
 
     // Convert the SYSTEMTIME struct to an ULONGLONG integer and
     // return this value.
-    inline ULONGLONG SystemTimeToULL(const SYSTEMTIME &systime)
+    inline ULONGLONG SystemTimeToULL(SYSTEMTIME systime)
     {
         FILETIME ft;
         SystemTimeToFileTime(&systime, &ft);

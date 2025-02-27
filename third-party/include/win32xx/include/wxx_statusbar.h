@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -50,8 +50,8 @@ namespace Win32xx
     class CStatusBar : public CWnd
     {
     public:
-        CStatusBar();
-        virtual ~CStatusBar() override {}
+        CStatusBar() = default;
+        virtual ~CStatusBar() override = default;
 
         // Overridables
         virtual BOOL OnEraseBkgnd(CDC& dc) override;
@@ -89,9 +89,6 @@ namespace Win32xx
     ////////////////////////////////////////
     // Definitions for the CStatusBar class.
     //
-    inline CStatusBar::CStatusBar()
-    {
-    }
 
     // Sets the number of parts in a status window and the coordinate of the right edge of each part.
     // If an element of iPaneWidths is -1, the right edge of the corresponding part extends
@@ -233,36 +230,31 @@ namespace Win32xx
         assert(IsWindow());
         assert(part >= 0 && part <= 255);
 
-        // Fill the PartWidths vector with the current width of the StatusBar parts.
-        int partsCount = static_cast<int>(SendMessage(SB_GETPARTS, 0, 0));
-        size_t parts = static_cast<size_t>(partsCount);
-        std::vector<int> partWidths(parts, 0);
-        int* pPartWidthArray = &partWidths[0];
-        SendMessage(SB_GETPARTS, static_cast<WPARAM>(partsCount),
-            reinterpret_cast<LPARAM>(pPartWidthArray));
+        // Fill the oldWidths vector with the current width of the StatusBar parts.
+        size_t oldCount = static_cast<int>(SendMessage(SB_GETPARTS, 0, 0));
+        std::vector<int> oldWidths(oldCount, 0);
+        SendMessage(SB_GETPARTS, static_cast<WPARAM>(oldCount),
+            reinterpret_cast<LPARAM>(oldWidths.data()));
 
-        // Fill the NewPartWidths vector with the new width of the StatusBar parts.
-        int newPartsCount = std::max(part+1, partsCount);
-        size_t newParts = static_cast<size_t>(newPartsCount);
-        std::vector<int> newPartWidths(newParts, 0);
-        newPartWidths = partWidths;
-        int* pNewPartWidthArray = &newPartWidths[0];
+        // Fill the newWidths vector with the new width of the StatusBar parts.
+        size_t newCount = std::max(part+1, static_cast<int>(oldCount));
+        std::vector<int> newWidths(newCount, 0);
+        newWidths.insert(newWidths.begin(), oldWidths.begin(), oldWidths.end());
+        int* pNewWidthsArray = newWidths.data();
 
         if (part == 0)
-            pNewPartWidthArray[part] = width;
+            pNewWidthsArray[part] = width;
         else
         {
             if (width >= 0)
-                pNewPartWidthArray[part] = pNewPartWidthArray[part -1] + width;
+                pNewWidthsArray[part] = pNewWidthsArray[part -1] + width;
             else
-                pNewPartWidthArray[part] = -1;
+                pNewWidthsArray[part] = -1;
         }
 
         // Set the StatusBar parts with our new parts count and part widths.
-        BOOL result = static_cast<BOOL>(SendMessage(SB_SETPARTS, static_cast<WPARAM>(newPartsCount),
-            reinterpret_cast<LPARAM>(pNewPartWidthArray)));
-
-        return result;
+        return static_cast<BOOL>(SendMessage(SB_SETPARTS, static_cast<WPARAM>(newCount),
+            reinterpret_cast<LPARAM>(pNewWidthsArray)));
     }
 
     // Specifies whether a status window displays simple text or displays all window parts

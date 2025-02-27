@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -174,12 +174,12 @@ namespace Win32xx
                      m_initDpi(USER_DEFAULT_SCREEN_DPI),
                      m_isDpiChanging(false)
                      {}
-        virtual ~CResizer() {}
+        virtual ~CResizer() = default;
 
         virtual void AddChild(HWND wnd, Alignment corner, DWORD style);
         virtual void HandleMessage(UINT msg, WPARAM wparam, LPARAM lparam);
-        virtual void Initialize(HWND parent, const RECT& minRect,
-                                const RECT& maxRect = CRect(0, 0, 0, 0));
+        virtual void Initialize(HWND parent, RECT minRect,
+                                RECT maxRect = CRect(0, 0, 0, 0));
         virtual void OnAfterDpiChange();
         virtual void OnBeforeDpiChange();
         virtual void OnHScroll(UINT msg, WPARAM wparam, LPARAM lparam);
@@ -187,8 +187,8 @@ namespace Win32xx
         virtual void RecalcLayout();
         CRect GetMinRect() const { return m_minRect; }
         CRect GetMaxRect() const { return m_maxRect; }
-        void  SetMinRect(const RECT& minRect) { m_minRect = minRect; }
-        void  SetMaxRect(const RECT& rcMaxRect) { m_maxRect = rcMaxRect; }
+        void  SetMinRect(RECT minRect) { m_minRect = minRect; }
+        void  SetMaxRect(RECT rcMaxRect) { m_maxRect = rcMaxRect; }
 
         struct ResizeData
         {
@@ -744,9 +744,7 @@ namespace Win32xx
                         if (pDialog->PreTranslateMessage(*pMsg))
                             return 1; // Eat the message.
 
-                        // The HHOOK parameter is used in CallNextHookEx for Win95, Win98 and WinME.
-                        // The HHOOK parameter is ignored for Windows NT and above.
-                        return ::CallNextHookEx(pDialog->m_msgHook, code, wparam, lparam);
+                        return ::CallNextHookEx(0, code, wparam, lparam);
                     }
                 }
             }
@@ -793,8 +791,8 @@ namespace Win32xx
         rd.childRect = childRect;
         rd.wnd = wnd;
 
-        std::vector<ResizeData>::iterator it;
-        for (it = m_resizeData.begin(); it != m_resizeData.end(); ++ it)
+        auto it = m_resizeData.begin();
+        while (it != m_resizeData.end())
         {
             if ( it->wnd == wnd)
             {
@@ -802,6 +800,8 @@ namespace Win32xx
                 *it = rd;
                 break;
             }
+
+            ++it;
         }
 
         // Add the value.
@@ -830,17 +830,11 @@ namespace Win32xx
         switch (msg)
         {
         case WM_DPICHANGED:
-            OnAfterDpiChange();
-            break;
-
         case WM_DPICHANGED_AFTERPARENT:
             OnAfterDpiChange();
             break;
 
         case WM_DPICHANGED_BEFOREPARENT:
-            OnBeforeDpiChange();
-            break;
-
         case WM_GETDPISCALEDSIZE:
             OnBeforeDpiChange();
             break;
@@ -864,7 +858,7 @@ namespace Win32xx
     // Sets up the Resizer by specifying the parent window (usually a dialog),
     // and the minimum and maximum allowed rectangle sizes.
     // Note: parent can either be a CWnd or a window handle (HWND)
-    inline void CResizer::Initialize(HWND parent, const RECT& minRect, const RECT& maxRect)
+    inline void CResizer::Initialize(HWND parent, RECT minRect, RECT maxRect)
     {
         assert (::IsWindow(parent));
 
@@ -955,10 +949,7 @@ namespace Win32xx
                 break;
 
             case SB_THUMBPOSITION: // User has dragged the scroll box.
-                xNewPos = HIWORD(wparam);
-                break;
-
-            case SB_THUMBTRACK: // User is dragging the scroll box.
+            case SB_THUMBTRACK:    // User is dragging the scroll box.
                 xNewPos = HIWORD(wparam);
                 break;
 
@@ -1015,10 +1006,7 @@ namespace Win32xx
                 break;
 
             case SB_THUMBPOSITION: // User has dragged the scroll box.
-                yNewPos = HIWORD(wparam);
-                break;
-
-            case SB_THUMBTRACK: // User is dragging the scroll box.
+            case SB_THUMBTRACK:    // User is dragging the scroll box.
                 yNewPos = HIWORD(wparam);
                 break;
 

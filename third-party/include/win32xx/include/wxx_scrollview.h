@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -72,7 +72,7 @@ namespace Win32xx
     {
     public:
         CScrollView();
-        virtual ~CScrollView() override;
+        virtual ~CScrollView() override = default;
 
         CBrush GetScrollBkgnd() const    { return m_bkgndBrush; }
         CPoint GetScrollPosition() const { return m_currentPos; }
@@ -83,7 +83,7 @@ namespace Win32xx
         BOOL IsVScrollVisible() const    { return (GetStyle() &  WS_VSCROLL) != FALSE; }
         void SetScrollPosition(POINT pt);
         void SetScrollSizes(CSize totalSize = CSize(0,0), CSize pageSize = CSize(0,0), CSize lineSize = CSize(0,0));
-        void SetScrollBkgnd(CBrush bkgndBrush) { m_bkgndBrush = bkgndBrush; }
+        void SetScrollBkgnd(const CBrush& bkgndBrush) { m_bkgndBrush = bkgndBrush; }
 
     protected:
         virtual void    FillOutsideRect(CDC& dc, HBRUSH brush);
@@ -126,10 +126,6 @@ namespace Win32xx
     inline CScrollView::CScrollView()
     {
         m_bkgndBrush.CreateSolidBrush(RGB(255, 255, 255));
-    }
-
-    inline CScrollView::~CScrollView()
-    {
     }
 
     // Fills the area of the view that appears outside of the scrolling area.
@@ -396,7 +392,7 @@ namespace Win32xx
         //  unexpected results due to recursion.
 
         // Retrieve the future size of the window
-        LPWINDOWPOS pWinPos = (LPWINDOWPOS)lparam;
+        LPWINDOWPOS pWinPos = reinterpret_cast<LPWINDOWPOS>(lparam);
         assert(pWinPos);
         if (!pWinPos) return 0;
 

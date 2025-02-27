@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -100,13 +100,18 @@ namespace Win32xx
     // This class encapsulates the Windows API PrintDlg function.
     // The PrintDlg function displays a Print Dialog. The Print dialog
     // enables the user to specify the properties of a particular print job.
-    // NOTE: DoModal throws an exception if there is no default printer
+    // NOTE: DoModal throws an exception if there is no default printer.
+    // NOTE: Setting the PD_ENABLEPRINTHOOK displays the classic print dialog.
     class CPrintDialog : public CCommonDialog
     {
     public:
-        CPrintDialog(DWORD flags = PD_ALLPAGES | PD_USEDEVMODECOPIES | PD_NOPAGENUMS |
-                                        PD_HIDEPRINTTOFILE | PD_NOSELECTION );
-        virtual ~CPrintDialog() override;
+        CPrintDialog(DWORD flags = PD_ALLPAGES |             // The All radio button is initially selected.
+                                   PD_USEDEVMODECOPIES |     // Supports multiple copies and collation.
+                                   PD_NOPAGENUMS |           // Disables the Pages radio button and the associated edit controls.
+                                   PD_HIDEPRINTTOFILE |      // Hides the Print to File check box.
+                                   PD_NOSELECTION |          // Disables the Selection radio button.
+                                   PD_ENABLEPRINTHOOK);      // Enables the hook procedure specified in the lpfnPrintHook member.
+        virtual ~CPrintDialog() override = default;
 
         virtual INT_PTR DoModal(HWND owner = nullptr) override;
         int     GetCopies() const;
@@ -154,7 +159,7 @@ namespace Win32xx
     {
     public:
         CPageSetupDialog( DWORD flags = PSD_MARGINS );
-        virtual ~CPageSetupDialog() override {}
+        virtual ~CPageSetupDialog() override = default;
 
         virtual INT_PTR DoModal(HWND owner = nullptr) override;
         CDevMode GetDevMode() const;
@@ -167,7 +172,7 @@ namespace Win32xx
     protected:
         // Override these functions as required.
         virtual INT_PTR DialogProc(UINT, WPARAM, LPARAM) override;
-        virtual UINT    OnDrawPage(HDC, UINT, const RECT&);
+        virtual UINT    OnDrawPage(HDC, UINT, RECT);
         virtual UINT    OnPreDrawPage(WORD paper, WORD flags, const PAGESETUPDLG& psd);
 
         // Not intended to be overridden.
@@ -207,10 +212,6 @@ namespace Win32xx
             m_pd.Flags |= PD_ENABLEPRINTHOOK;
 
         SetParameters(m_pd);
-    }
-
-    inline CPrintDialog::~CPrintDialog()
-    {
     }
 
     // Returns the device context of the default or currently chosen printer.
@@ -694,7 +695,7 @@ namespace Win32xx
             {
                 assert(lparam);
                 if (lparam == 0) return 0;
-                PAGESETUPDLG psd = *((LPPAGESETUPDLG)lparam);
+                PAGESETUPDLG psd = *(reinterpret_cast<LPPAGESETUPDLG>(lparam));
                 return static_cast<INT_PTR>(pDlg->OnPreDrawPage(LOWORD(wparam), HIWORD(wparam), psd));
             }
 
@@ -707,7 +708,7 @@ namespace Win32xx
             {
                 assert(lparam);
                 if (lparam == 0) return 0;
-                RECT rc = *((LPRECT)lparam);
+                RECT rc = *(reinterpret_cast<LPRECT>(lparam));
                 return static_cast<INT_PTR>(pDlg->OnDrawPage(reinterpret_cast<HDC>(wparam), message, rc));
             }
         }
@@ -717,7 +718,7 @@ namespace Win32xx
     // Override this function to customize drawing of the sample page in the Page Setup dialog box.
     // It is called in response to the following messages: WM_PSD_FULLPAGERECT; WM_PSD_MINMARGINRECT;
     // WM_PSD_MARGINRECT; WM_PSD_GREEKTEXTRECT; WM_PSD_ENVSTAMPRECT; and WM_PSD_YAFULLPAGERECT.
-    inline UINT CPageSetupDialog::OnDrawPage(HDC, UINT, const RECT&)
+    inline UINT CPageSetupDialog::OnDrawPage(HDC, UINT, RECT)
     {
         return 0; // do the default
     }

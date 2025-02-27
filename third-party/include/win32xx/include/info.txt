@@ -5,11 +5,12 @@ The various directories may contain the following types of files:
 Extension | Description
 ----------+------------
 cbp       | A project file used by CodeBlocks
+cbproj    | A project file used by Embarcadero RAD Studio 12
 sln       | A project file used by Visual Studio 2003 and above
 vcproj    | A project file used by Visual Studio 2003, VS2005 or VS2008
 vcxproj   | A project file used by Visual Studio 2010 and above
 filters   | An additional project file used by Visual Studio 2010 and above
-dev       | A project file used by Dev-C++
+dev       | A project file used by Embarcadero Dev-C++
 cpp       | A C++ source file
 h         | A C++ header file
 rc        | A C++ resource script file
@@ -30,9 +31,8 @@ Win32++ supports the following:
 * CodeBlocks
 
 * Embarcadero Dev-C++
-* Embarcadero Rad Studio 11 Community Edition
-* MinGW GCC Compiler
-* MinGW GCC x64 Compiler
+* Embarcadero Rad Studio 12 Community Edition
+* Mingw-64 32bit and 64bit Compiler
 * Visual Studio 2015
 * Visual Studio 2015 Community
 * Visual Studio 2017

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -47,33 +47,7 @@
 
 ////////////////////////////////////////////////////////
 //
-//  Coding example for Win2000 and below.
-//
-//      CFolderDialog fd;
-//
-//      // Set the root folder to list the computer's drives (or C:).
-//      ITEMIDLIST* pidlRoot = nullptr;
-//      SHGetSpecialFolderLocation(nullptr, CSIDL_DRIVES, &pidlRoot);
-//      fd.SetRoot(pidlRoot);
-//
-//      // Set the title for the dialog.
-//      fd.SetTitle(_T("Choose a folder"));
-//
-//      // Display the dialog
-//      if (fd.DoModal() == IDOK)
-//      {
-//          // Do something with the folder found
-//          MessageBox(fd.GetFolderPath(), _T("Folder Chosen"), MB_OK);
-//      }
-//
-//      // Release the memory allocated for our pidlRoot.
-//      CoTaskMemFree(pidlRoot);
-//
-////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////
-//
-//  Coding example for WinXP and above.
+//  Coding example.
 //
 //      CFolderDialog fd;
 //
@@ -171,10 +145,10 @@ namespace Win32xx
         m_bi.lParam = reinterpret_cast<LPARAM>(this);
 
         // Set the default flags.
-        //  BIF_NEWDIALOGSTYLE    - Only return file system directories.
+        //  BIF_RETURNONLYFSDIRS  - Only return file system directories.
         //  BIF_NEWDIALOGSTYLE    - Provides a resizable dialog without an edit box.
         //  BIF_NONEWFOLDERBUTTON - Do not include the New Folder button in the browse dialog box.
-        m_flags = BIF_RETURNONLYFSDIRS |BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
+        m_flags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | BIF_NONEWFOLDERBUTTON;
     }
 
     inline CFolderDialog::~CFolderDialog()
@@ -218,8 +192,7 @@ namespace Win32xx
     // Displays the folder browser dialog.
     inline INT_PTR CFolderDialog::DoModal(HWND parent)
     {
-        if (m_fullPidl != nullptr)
-            CoTaskMemFree(m_fullPidl);
+        CoTaskMemFree(m_fullPidl);
         m_fullPidl = nullptr;
         m_bi.lpszTitle = m_title.c_str();
         m_bi.pszDisplayName = m_displayName.GetBuffer(MAX_PATH);

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -104,9 +104,8 @@ namespace Win32xx
     // Global Functions
     //
 
-    // Returns the path to the AppData folder. Returns an empty CString if
-    // the Operating System doesn't support the use of an AppData folder.
-    // The AppData folder is available in Windows 2000 and above.
+    // Returns the path to the AppData folder. Returns the MyDocuments
+    // folder on failure.
     inline CString GetAppDataPath()
     {
         CString appData;
@@ -192,14 +191,14 @@ namespace Win32xx
         int dpi = GetDeviceCaps(desktopDC, LOGPIXELSX);
 
         // Retrieve the window's dpi if we can.
-        using GETDPIFORWINDOW = UINT (WINAPI*)(HWND);
+        using PGETDPIFORWINDOW = UINT (WINAPI*)(HWND);
         HMODULE user = GetModuleHandle(_T("user32.dll"));
         if (user && ::IsWindow(wnd))
         {
-            GETDPIFORWINDOW pGetDpiForWindow = reinterpret_cast<GETDPIFORWINDOW>(
+            PGETDPIFORWINDOW pGetDpiForWindow = reinterpret_cast<PGETDPIFORWINDOW>(
                 reinterpret_cast<void*>(::GetProcAddress(user, "GetDpiForWindow")));
 
-            if (pGetDpiForWindow)
+            if (pGetDpiForWindow != nullptr)
             {
                 dpi = static_cast<int>(pGetDpiForWindow(wnd));
             }
@@ -211,7 +210,7 @@ namespace Win32xx
     // Scales the specified bitmap up by the specified scale factor.
     // Bitmap sizes can usually be multiplied by an integer value without
     // losing visual quality.
-    inline CBitmap ScaleUpBitmap(CBitmap bitmap, int scale)
+    inline CBitmap ScaleUpBitmap(const CBitmap& bitmap, int scale)
     {
         assert(bitmap.GetHandle() != nullptr);
         assert(scale != 0);
@@ -304,7 +303,7 @@ namespace Win32xx
         RemoveFromMap();
 
         // Add the (HWND, CWnd*) pair to the map
-        GetApp()->m_mapHWND.insert(std::make_pair(GetHwnd(), this));
+        GetApp()->m_mapHWND.emplace(std::make_pair(GetHwnd(), this));
     }
 
     // Attaches a CWnd object to an existing window and calls the OnAttach virtual function.
@@ -354,7 +353,7 @@ namespace Win32xx
         MONITORINFO mi{};
         mi.cbSize = sizeof(mi);
 
-        if (GetMonitorInfo(hActiveMonitor, &mi))
+        if (::GetMonitorInfo(hActiveMonitor, &mi))
         {
             desktopRect = mi.rcWork;
             if (GetParent().GetHwnd() == nullptr)
@@ -444,7 +443,7 @@ namespace Win32xx
     //  be a predefined class name or registered with RegisterClass. A failure
     //  to create a window throws an exception.
     inline HWND CWnd::CreateEx(DWORD exStyle, LPCTSTR className, LPCTSTR windowName,
-                               DWORD style, const RECT& rc, HWND parent, UINT id,
+                               DWORD style, RECT rc, HWND parent, UINT id,
                                LPVOID lparam /*= nullptr*/)
     {
         int x = rc.left;
@@ -516,9 +515,6 @@ namespace Win32xx
                 OnAttach();
             }
         }
-
-        // Clear the CWnd pointer from TLS.
-        pTLSData->pWnd = nullptr;
 
         // Post a message to trigger a call of OnInitialUpdate.
         PostMessage(UWM_WINDOWCREATED);
@@ -601,7 +597,7 @@ namespace Win32xx
     }
 
     // Scales the specified font to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
-    inline CFont CWnd::DpiScaleFont(CFont font, int pointSize) const
+    inline CFont CWnd::DpiScaleFont(const CFont& font, int pointSize) const
     {
         int dpi = GetWindowDpi(*this);
         LOGFONT logfont = font.GetLogFont();
@@ -642,7 +638,7 @@ namespace Win32xx
     }
 
     // Scales up the specified bitmap to the Dots Per Inch (DPI) scaling reported by GetWindowDpi.
-    inline CBitmap CWnd::DpiScaleUpBitmap(CBitmap bitmap) const
+    inline CBitmap CWnd::DpiScaleUpBitmap(const CBitmap& bitmap) const
     {
         int dpi = GetWindowDpi(*this);
         int scale = std::max(1, dpi / USER_DEFAULT_SCREEN_DPI);
@@ -692,10 +688,15 @@ namespace Win32xx
         assert(IsWindow());
 
         int dlgItem = static_cast<int>(dlgItemID);
+
+        // Returns text length NOT including the null character.
         int length = ::GetWindowTextLength(::GetDlgItem(*this, dlgItem));
         CString str;
-        VERIFY(::GetDlgItemText(*this, dlgItem, str.GetBuffer(length), length+1));
-        str.ReleaseBuffer();
+        if (length > 0)
+        {
+            VERIFY(::GetDlgItemText(*this, dlgItem, str.GetBuffer(length + 1), length + 1));
+            str.ReleaseBuffer();
+        }
         return str;
     }
 
@@ -1024,11 +1025,12 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_wndLock);
 
             // Erase the CWnd pointer entry from the map.
-            for (auto it = GetApp()->m_mapHWND.begin(); it != GetApp()->m_mapHWND.end(); ++it)
+            auto& map = GetApp()->m_mapHWND;
+            for (auto it = map.begin(); it != map.end(); ++it)
             {
                 if (this == it->second)
                 {
-                    GetApp()->m_mapHWND.erase(it);
+                    map.erase(it);
                     success = TRUE;
                     break;
                 }
@@ -1197,70 +1199,79 @@ namespace Win32xx
         switch (msg)
         {
         case WM_CLOSE:
-            {
-                OnClose();
-                return 0;
-            }
+        {
+            OnClose();
+            return 0;
+        }
         case WM_COMMAND:
-            {
-                // Reflect this message if it's from a control.
-                CWnd* pWnd = GetCWndPtr(reinterpret_cast<HWND>(lparam));
-                if (pWnd != nullptr)
-                    result = pWnd->OnCommand(wparam, lparam);
+        {
+            // Reflect this message if it's from a control.
+            CWnd* pWnd = GetCWndPtr(reinterpret_cast<HWND>(lparam));
+            if (pWnd != nullptr)
+                result = pWnd->OnCommand(wparam, lparam);
 
-                // Handle user commands.
-                if (result == 0)
-                    result =  OnCommand(wparam, lparam);
+            // Handle user commands.
+            if (result == 0)
+                result =  OnCommand(wparam, lparam);
 
-                if (result != 0) return 0;
-            }
-            break;  // Note: Some MDI commands require default processing.
+            if (result != 0) return 0;
+        }
+        break;  // Note: Some MDI commands require default processing.
         case WM_CREATE:
-            {
-                LPCREATESTRUCT pcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
-                if (pcs == nullptr)
-                    throw CWinException(_T("WM_CREATE failed"));
+        {
+            LPCREATESTRUCT pcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
+            if (pcs == nullptr)
+                throw CWinException(_T("WM_CREATE failed"));
 
-                return OnCreate(*pcs);
-            }
+            return OnCreate(*pcs);
+        }
         case WM_DESTROY:
             OnDestroy();
             break;  // Note: Some controls require default processing.
-        case WM_NOTIFY:
+        case WM_INITMENUPOPUP:
+        {
+            // Call OnMenuUpdate for each menu item.
+            CMenu menu = reinterpret_cast<HMENU>(wparam);
+            for (int i = 0; i < menu.GetMenuItemCount(); ++i)
             {
-                // Do notification reflection if message came from a child window.
-                // Restricting OnNotifyReflect to child windows avoids double handling.
-                LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
-                HWND from = pHeader->hwndFrom;
-                CWnd* pWndFrom = GetApp()->GetCWndFromMap(from);
-
-                if (pWndFrom != nullptr)
-                    if (::GetParent(from) == m_wnd)
-                        result = pWndFrom->OnNotifyReflect(wparam, lparam);
-
-                // Handle user notifications.
-                if (result == 0) result = OnNotify(wparam, lparam);
-                if (result != 0) return result;
-                break;
+                UINT menuItem = menu.GetMenuItemID(i);
+                OnMenuUpdate(menuItem);
             }
+            return 0;
+        }
+        case WM_NOTIFY:
+        {
+            // Do notification reflection if message came from a child window.
+            // Restricting OnNotifyReflect to child windows avoids double handling.
+            LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
+            HWND from = pHeader->hwndFrom;
+            CWnd* pWndFrom = GetApp()->GetCWndFromMap(from);
+
+            if (pWndFrom != nullptr)
+                if (::GetParent(from) == m_wnd)
+                    result = pWndFrom->OnNotifyReflect(wparam, lparam);
+
+            // Handle user notifications.
+            if (result == 0) result = OnNotify(wparam, lparam);
+            if (result != 0) return result;
+            break;
+        }
 
         case WM_PAINT:
-            {
-                // OnPaint calls OnDraw when appropriate.
-                OnPaint(msg, wparam, lparam);
-            }
-
+        {
+            // OnPaint calls OnDraw when appropriate.
+            OnPaint(msg, wparam, lparam);
             return 0;
-
+        }
         case WM_ERASEBKGND:
-            {
-                CDC dc(reinterpret_cast<HDC>(wparam));
-                BOOL preventErasure;
+        {
+            CDC dc(reinterpret_cast<HDC>(wparam));
+            BOOL preventErasure;
 
-                preventErasure = OnEraseBkgnd(dc);
-                if (preventErasure) return TRUE;
-            }
+            preventErasure = OnEraseBkgnd(dc);
+            if (preventErasure) return TRUE;
             break;
+        }
 
         // A set of messages to be reflected back to the control that generated them.
         case WM_CTLCOLORBTN:
@@ -1278,21 +1289,17 @@ namespace Win32xx
         case WM_HSCROLL:
         case WM_VSCROLL:
         case WM_PARENTNOTIFY:
-            {
-                result = MessageReflect(msg, wparam, lparam);
-                if (result != 0) return result;    // Message processed so return.
-            }
-            break;              // Do default processing when message not already processed.
-
-        case UWM_UPDATECOMMAND:
-            OnMenuUpdate(static_cast<UINT>(wparam)); // Perform menu updates.
-            break;
+        {
+            result = MessageReflect(msg, wparam, lparam);
+            if (result != 0) return result;    // Message processed so return.
+            break;    // Do default processing when message not already processed.
+        }
 
         case UWM_GETCWND:
-            {
-                assert(this == GetCWndPtr(m_wnd));
-                return reinterpret_cast<LRESULT>(this);
-            }
+        {
+            assert(this == GetCWndPtr(m_wnd));
+            return reinterpret_cast<LRESULT>(this);
+        }
 
         } // switch (msg)
 
@@ -1373,7 +1380,8 @@ namespace Win32xx
     inline BOOL CWnd::ClientToScreen(RECT& rect) const
     {
         assert(IsWindow());
-        return static_cast<BOOL>(::MapWindowPoints(*this, HWND_DESKTOP, (LPPOINT)&rect, 2));
+        return static_cast<BOOL>(::MapWindowPoints(*this, HWND_DESKTOP,
+            reinterpret_cast<LPPOINT>(&rect), 2));
     }
 
     // The Close function issues a close requests to the window. The OnClose function is called
@@ -1407,7 +1415,7 @@ namespace Win32xx
     // The DeferWindowPos function updates the specified multiple window position structure for the window.
     // The insertAfter can one of:  HWND_BOTTOM, HWND_NOTOPMOST, HWND_TOP, or HWND_TOPMOST.
     // Refer to DeferWindowPos in the Windows API documentation for more information.
-    inline HDWP CWnd::DeferWindowPos(HDWP winPosInfo, HWND insertAfter, const RECT& rect, UINT flags) const
+    inline HDWP CWnd::DeferWindowPos(HDWP winPosInfo, HWND insertAfter, RECT rect, UINT flags) const
     {
         assert(IsWindow());
         return ::DeferWindowPos(winPosInfo, *this, insertAfter, rect.left,
@@ -1464,7 +1472,7 @@ namespace Win32xx
     // The DrawAnimatedRects function draws a wire-frame rectangle and animates it to indicate the opening of
     // an icon or the minimizing or maximizing of a window.
     // Refer to DrawAnimatedRects in the Windows API documentation for more information.
-    inline BOOL CWnd::DrawAnimatedRects(UINT aniID, const RECT& from, const RECT& to) const
+    inline BOOL CWnd::DrawAnimatedRects(UINT aniID, RECT from, RECT to) const
     {
         assert(IsWindow());
         return ::DrawAnimatedRects(*this, static_cast<int>(aniID), &from, &to);
@@ -1472,7 +1480,7 @@ namespace Win32xx
 
     // The DrawCaption function draws a window caption.
     // Refer to DrawCaption in the Windows API documentation for more information.
-    inline BOOL CWnd::DrawCaption(HDC dc, const RECT& rect, UINT flags) const
+    inline BOOL CWnd::DrawCaption(HDC dc, RECT rect, UINT flags) const
     {
         assert(IsWindow());
         return ::DrawCaption(*this, dc, &rect, flags);
@@ -1857,7 +1865,7 @@ namespace Win32xx
     // The InvalidateRect function adds a rectangle to the window's update region.
     // The update region represents the portion of the window's client area that must be redrawn.
     // Refer to InvalidateRect in the Windows API documentation for more information.
-    inline BOOL CWnd::InvalidateRect(const RECT& rect, BOOL erase /*= TRUE*/) const
+    inline BOOL CWnd::InvalidateRect(RECT rect, BOOL erase /*= TRUE*/) const
     {
         assert(IsWindow());
         return ::InvalidateRect(*this, &rect, erase);
@@ -1992,7 +2000,7 @@ namespace Win32xx
     inline int CWnd::MapWindowPoints(HWND to, RECT& rect) const
     {
         assert(IsWindow());
-        return ::MapWindowPoints(*this, to, (LPPOINT)&rect, 2);
+        return ::MapWindowPoints(*this, to, reinterpret_cast<LPPOINT>(&rect), 2);
     }
 
     // The MapWindowPoints function converts (maps) a set of points from a coordinate space relative to one
@@ -2001,7 +2009,7 @@ namespace Win32xx
     inline int CWnd::MapWindowPoints(HWND to, LPPOINT pointsArray, UINT count) const
     {
         assert(IsWindow());
-        return ::MapWindowPoints(*this, to, (LPPOINT)pointsArray, count);
+        return ::MapWindowPoints(*this, to, reinterpret_cast<LPPOINT>(pointsArray), count);
     }
 
     // The MessageBox function creates, displays, and operates a message box.
@@ -2024,7 +2032,7 @@ namespace Win32xx
 
     // The MoveWindow function changes the position and dimensions of the window.
     // Refer to MoveWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::MoveWindow(const RECT& rect, BOOL repaint /* = TRUE*/) const
+    inline BOOL CWnd::MoveWindow(RECT rect, BOOL repaint /* = TRUE*/) const
     {
         assert(IsWindow());
         return ::MoveWindow(*this, rect.left, rect.top, rect.right - rect.left,
@@ -2072,7 +2080,7 @@ namespace Win32xx
 
     // The RedrawWindow function updates the specified rectangle in a window's client area.
     // Refer to RedrawWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::RedrawWindow(const RECT& updateRect, UINT flags) const
+    inline BOOL CWnd::RedrawWindow(RECT updateRect, UINT flags) const
     {
         assert(IsWindow());
         return ::RedrawWindow(*this, &updateRect, nullptr, flags);
@@ -2118,7 +2126,8 @@ namespace Win32xx
     inline BOOL CWnd::ScreenToClient(RECT& rect) const
     {
         assert(IsWindow());
-        return static_cast<BOOL>(::MapWindowPoints(HWND_DESKTOP, *this, (LPPOINT)&rect, 2));
+        return static_cast<BOOL>(::MapWindowPoints(HWND_DESKTOP, *this,
+            reinterpret_cast<LPPOINT>(&rect), 2));
     }
 
     // The ScrollWindow function scrolls the contents of the window's client area.
@@ -2126,7 +2135,7 @@ namespace Win32xx
     // pClipRect points to the clipping rectangle to scroll. Only bits inside this rectangle are scrolled.
     // If prcClip is nullptr, no clipping is performed on the scroll rectangle.
     // Refer to ScrollWindow in the Windows API documentation for more information.
-    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, const RECT& scrollRect, LPCRECT pClipRect) const
+    inline BOOL CWnd::ScrollWindow(int xAmount, int yAmount, RECT scrollRect, LPCRECT pClipRect) const
     {
         assert(IsWindow());
         return ::ScrollWindow(*this, xAmount, yAmount, &scrollRect, pClipRect);
@@ -2410,7 +2419,7 @@ namespace Win32xx
     // or top-level window.
     // The insertAfter can one of:  HWND_TOP, HWND_TOPMOST, HWND_BOTTOM, or HWND_NOTOPMOST.
     // Refer to SetWindowPos in the Windows API documentation for more information.
-    inline BOOL CWnd::SetWindowPos(HWND insertAfter, const RECT& rect, UINT flags) const
+    inline BOOL CWnd::SetWindowPos(HWND insertAfter, RECT rect, UINT flags) const
     {
         assert(IsWindow());
         return ::SetWindowPos(*this, insertAfter, rect.left, rect.top, rect.right - rect.left,
@@ -2427,9 +2436,11 @@ namespace Win32xx
         int iResult = ::SetWindowRgn(*this, rgn, redraw);
         if (rgn != nullptr)
         {
-            CRgn region(rgn);
             if (iResult != 0)
+            {
+                CRgn region(rgn);
                 region.Detach();   // The system owns the region now.
+            }
         }
 
         return iResult;
@@ -2518,7 +2529,7 @@ namespace Win32xx
     // The ValidateRect function validates the client area within a rectangle by
     // removing the rectangle from the update region of the window.
     // Refer to ValidateRect in the Windows API documentation for more information.
-    inline BOOL CWnd::ValidateRect(const RECT& rect) const
+    inline BOOL CWnd::ValidateRect(RECT rect) const
     {
         assert(IsWindow());
         return ::ValidateRect(*this, &rect);

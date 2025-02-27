@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -63,8 +63,8 @@ namespace Win32xx
     class CButton : public CWnd
     {
     public:
-        CButton() {}
-        virtual ~CButton() {}
+        CButton() = default;
+        virtual ~CButton() = default;
 
         // Accessors and mutators
         HBITMAP GetBitmap() const;
@@ -98,8 +98,8 @@ namespace Win32xx
     {
     public:
         // Construction
-        CEdit() {}
-        virtual ~CEdit() override {}
+        CEdit() = default;
+        virtual ~CEdit() override = default;
 
         // Attributes
         void   AppendText(LPCTSTR text) const;
@@ -135,13 +135,13 @@ namespace Win32xx
         void   ReplaceSel(LPCTSTR newText, BOOL canUndo) const;
         void   SetPasswordChar(TCHAR ch) const;
         BOOL   SetReadOnly(BOOL isReadOnly = TRUE) const;
-        void   SetRect(const RECT& rc) const;
-        void   SetRectNP(const RECT& rc) const;
+        void   SetRect(RECT rc) const;
+        void   SetRectNP(RECT rc) const;
         void   SetSel(DWORD selection, BOOL isScrolled = TRUE) const;
         void   SetSel(int startChar, int endChar, BOOL isScrolled = TRUE) const;
         BOOL   SetTabStops(int tabStops, LPINT pTabStopsArray) const;
         BOOL   SetTabStops() const;
-        BOOL   SetTabStops(const int& cxEachStop) const;
+        BOOL   SetTabStops(int cxEachStop) const;
 
         //Clipboard Operations
         void   Clear() const;
@@ -167,8 +167,8 @@ namespace Win32xx
     class CListBox : public CWnd
     {
     public:
-        CListBox() {}
-        virtual ~CListBox() override {}
+        CListBox() = default;
+        virtual ~CListBox() override = default;
 
         // Virtual functions
         virtual int CompareItem(LPCOMPAREITEMSTRUCT pCompareItemStruct);
@@ -194,7 +194,7 @@ namespace Win32xx
         LCID SetLocale(LCID newLocale) const;
         BOOL SetTabStops(int tabStops, LPINT pTabStopsArray) const;
         void SetTabStops() const;
-        BOOL SetTabStops(const int& cxEachStop) const;
+        BOOL SetTabStops(int cxEachStop) const;
         int  SetTopIndex(int index) const;
 
         // Single-Selection Operations
@@ -239,8 +239,8 @@ namespace Win32xx
     class CStatic : public CWnd
     {
     public:
-        CStatic() {}
-        virtual ~CStatic() override {}
+        CStatic() = default;
+        virtual ~CStatic() override = default;
 
         // Operations
         HBITMAP  GetBitmap() const;
@@ -744,7 +744,7 @@ namespace Win32xx
 
     // Sets the formatting rectangle for the multi-line edit control and redraws the window.
     // Refer to EM_SETRECT in the Windows API documentation for more information.
-    inline void CEdit::SetRect(const RECT& rc) const
+    inline void CEdit::SetRect(RECT rc) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
@@ -753,7 +753,7 @@ namespace Win32xx
 
     // Sets the formatting rectangle for the multi-line edit control but does not redraw the window.
     // Refer to EM_SETRECTNP in the Windows API documentation for more information.
-    inline void CEdit::SetRectNP(const RECT& rc) const
+    inline void CEdit::SetRectNP(RECT rc) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
@@ -806,7 +806,7 @@ namespace Win32xx
 
     // Sets tab-stop positions in the multi-line edit control.
     // Refer to EM_SETTABSTOPS in the Windows API documentation for more information.
-    inline BOOL CEdit::SetTabStops(const int& cxEachStop) const
+    inline BOOL CEdit::SetTabStops(int cxEachStop) const
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(1);
@@ -1064,7 +1064,7 @@ namespace Win32xx
         {
         case WM_COMPAREITEM:
         {
-            LPCOMPAREITEMSTRUCT pCompareItemStruct = (LPCOMPAREITEMSTRUCT)lparam;
+            LPCOMPAREITEMSTRUCT pCompareItemStruct = reinterpret_cast<LPCOMPAREITEMSTRUCT>(lparam);
             return CompareItem(pCompareItemStruct);
         }
         }
@@ -1229,7 +1229,7 @@ namespace Win32xx
         SendMessage(LB_SETTABSTOPS, 0, 0);
     }
 
-    inline BOOL CListBox::SetTabStops(const int& cxEachStop) const
+    inline BOOL CListBox::SetTabStops(int cxEachStop) const
     // Sets the tab stops to those specified in a specified array.
     // Refer to LB_SETTABSTOPS in the Windows API documentation for more information.
     {

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -144,9 +144,9 @@ namespace Win32xx
         CArchive& operator<<(const CStringA& string);
         CArchive& operator<<(const CStringW& string);
         CArchive& operator<<(const CString& string);
-        CArchive& operator<<(const POINT& pt);
-        CArchive& operator<<(const RECT& rc);
-        CArchive& operator<<(const SIZE& sz);
+        CArchive& operator<<(POINT pt);
+        CArchive& operator<<(RECT rc);
+        CArchive& operator<<(SIZE sz);
         CArchive& operator<<(const ArchiveObject& ao);
         CArchive& operator<<(const CObject& object);
         CArchive& operator<<(wchar_t ch);
@@ -487,7 +487,7 @@ namespace Win32xx
 
     // Writes the POINT pt into the archive file.
     // Throws an exception if an error occurs.
-    inline CArchive& CArchive::operator<<(const POINT& pt)
+    inline CArchive& CArchive::operator<<(POINT pt)
     {
         UINT size = sizeof(pt);
         Write(&size, sizeof(size));
@@ -497,7 +497,7 @@ namespace Win32xx
 
     // Writes the RECT rc into the archive file.
     // Throws an exception if an error occurs.
-    inline CArchive& CArchive::operator<<(const RECT& rc)
+    inline CArchive& CArchive::operator<<(RECT rc)
     {
         UINT size = sizeof(rc);
         Write(&size, sizeof(size));
@@ -507,7 +507,7 @@ namespace Win32xx
 
     // Writes the SIZE sz into the archive file.
     // Throws an exception if an error occurs.
-    inline CArchive& CArchive::operator<<(const SIZE& sz)
+    inline CArchive& CArchive::operator<<(SIZE sz)
     {
         UINT size = sizeof(sz);
         Write(&size, sizeof(size));

@@ -9,7 +9,7 @@ Win32++ supports the following compilers and development environments:
 
 * Code::Blocks
 * Embarcadero Dev-C++
-* Embarcadero Rad Studio 11 Community Edition  
+* Embarcadero Rad Studio 12 Community Edition  
 * Microsoft Visual Studio Community 2015
 * Microsoft Visual Studio Community 2019
 * Microsoft Visual Studio Community 2022
@@ -123,10 +123,10 @@ The sample applications include:
  * Picture - A simple picture rendering application.
  * PropertySheets - A demonstration of property sheets.
  * RebarDemo - Demonstrates the how to add a second ReBar to a frame application.
+ * Ribbon - Demonstrates how to use the Windows 7 ribbon with a simple window.
  * RibbonDockFrame - Demonstrates how to use a ribbon with a Docking Frame.
  * RibbonFrame - Demonstrates how to use the Windows 7 ribbon with a frame.
  * RibbonMDIFrame - Demonstrates how to use the Windows 7 ribbon with a MDI frame.
- * RibbonSimple - Demonstrates how to use the Windows 7 ribbon with a simple window.
  * RoundWindow - Demonstrates how to use Win32++ to create a round window.
  * ScintillaDemo - Demonstrates how to use a Scintilla control with Win32++.
  * Scribble - A simple drawing application.
@@ -148,9 +148,7 @@ The sample applications include:
 Getting Started
 ---------------
 Each file download includes the project files for Dev-C++, CodeBlocks and the
-various compilers from Microsoft. CodeBlocks is an IDE (Integrated Development
-Environment) that supports GNU GCC, Borland Developer Studio 2006 and Microsoft
-C++ Toolkit 2003.
+various compilers from Microsoft.
 
 You  can start with one of the sample programs, and add your code. Alternatively
 you can start with the projects and sample code provided in the "new projects"

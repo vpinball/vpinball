@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -41,7 +41,7 @@
 
 namespace Win32xx
 {
-    using THREADPROC = UINT (WINAPI*)(LPVOID);
+    using PTHREADPROC = UINT (WINAPI*)(LPVOID);
 
     ////////////////////////////////////////////////////
     // CThreadT is the class template used by CWinThread
@@ -51,7 +51,7 @@ namespace Win32xx
     {
     public:
         CThreadT();
-        CThreadT(THREADPROC pfnThreadProc, LPVOID pParam);
+        CThreadT(PTHREADPROC pThreadProc, LPVOID pParam);
         virtual ~CThreadT() override;
 
         // Operations
@@ -70,7 +70,7 @@ namespace Win32xx
         CThreadT(const CThreadT&) = delete;
         CThreadT& operator=(const CThreadT&) = delete;
 
-        THREADPROC m_pfnThreadProc;     // Thread callback function.
+        PTHREADPROC m_pThreadProc;      // Thread callback function.
         LPVOID m_pThreadParams;         // Thread parameter.
         HANDLE m_thread;                // Handle of this thread.
         UINT m_threadID;                // ID of this thread.
@@ -87,9 +87,9 @@ namespace Win32xx
     class CWorkThread : public WorkThread
     {
     public:
-        CWorkThread(THREADPROC pfnThreadProc, LPVOID pParam)
-              : WorkThread(pfnThreadProc, pParam) {}
-        virtual ~CWorkThread() override {}
+        CWorkThread(PTHREADPROC pThreadProc, LPVOID pParam)
+              : WorkThread(pThreadProc, pParam) {}
+        virtual ~CWorkThread() override = default;
 
     private:
         CWorkThread(const CWorkThread&) = delete;
@@ -126,17 +126,17 @@ namespace Win32xx
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT() : m_pfnThreadProc(0), m_pThreadParams(0), m_thread(0),
+    inline CThreadT<T>::CThreadT() : m_pThreadProc(0), m_pThreadParams(0), m_thread(0),
         m_threadID(0)
     {
     }
 
     // CThreadT constructor.
     template <class T>
-    inline CThreadT<T>::CThreadT(THREADPROC pfnThreadProc, LPVOID pParam) :m_pfnThreadProc(0),
+    inline CThreadT<T>::CThreadT(PTHREADPROC pThreadProc, LPVOID pParam) :m_pThreadProc(0),
         m_pThreadParams(0), m_thread(0), m_threadID(0)
     {
-        m_pfnThreadProc = pfnThreadProc;
+        m_pThreadProc = pThreadProc;
         m_pThreadParams = pParam;
     }
 
@@ -176,7 +176,7 @@ namespace Win32xx
         }
 
         m_thread = reinterpret_cast<HANDLE>(::_beginthreadex(pSecurityAttributes, stack_size,
-            m_pfnThreadProc, m_pThreadParams, initflag, &m_threadID));
+            m_pThreadProc, m_pThreadParams, initflag, &m_threadID));
 
         if (m_thread == nullptr)
             throw CWinException(GetApp()->MsgAppThread());

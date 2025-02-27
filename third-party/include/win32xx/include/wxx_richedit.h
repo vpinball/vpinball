@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -70,7 +70,7 @@ namespace Win32xx
         void    Clear() const;
         void    Copy() const;
         void    Cut() const;
-        BOOL    DisplayBand(const RECT& rc) const;
+        BOOL    DisplayBand(RECT rc) const;
         void    EmptyUndoBuffer() const;
         long    FindText(DWORD flags, const FINDTEXTEX& findInfo) const;
         DWORD   FindWordBreak(UINT code, DWORD start) const;
@@ -90,7 +90,7 @@ namespace Win32xx
         UINT    GetOptions() const;
         DWORD   GetParaFormat(PARAFORMAT& format) const;
         DWORD   GetParaFormat(PARAFORMAT2& format) const;
-        BOOL    GetPunctuation(UINT type, const PUNCTUATION& puncInfo) const;
+        BOOL    GetPunctuation(UINT type, PUNCTUATION& puncInfo) const;
         void    GetRect(RECT& rc) const;
         UNDONAMEID GetRedoName() const;
         void    GetSel(CHARRANGE& range) const;
@@ -119,26 +119,26 @@ namespace Win32xx
         void    RequestResize() const;
         BOOL    SetAutoURLDetect(BOOL enable = TRUE) const;
         COLORREF SetBackgroundColor(BOOL isSysColor, COLORREF color) const;
-        BOOL    SetDefaultCharFormat(CHARFORMAT& format) const;
-        BOOL    SetDefaultCharFormat(CHARFORMAT2& format) const;
+        BOOL    SetDefaultCharFormat(CHARFORMAT format) const;
+        BOOL    SetDefaultCharFormat(CHARFORMAT2 format) const;
         DWORD   SetEventMask(DWORD eventMask) const;
         void    SetModify(BOOL isModified = TRUE) const;
         BOOL    SetOLECallback(IRichEditOleCallback* pCallback) const;
         void    SetOptions(WORD options, DWORD flags) const;
-        BOOL    SetParaFormat(PARAFORMAT& pf) const;
-        BOOL    SetParaFormat(PARAFORMAT2& pf) const;
-        BOOL    SetPunctuation(UINT type, const PUNCTUATION& puncInfo) const;
+        BOOL    SetParaFormat(PARAFORMAT pf) const;
+        BOOL    SetParaFormat(PARAFORMAT2 pf) const;
+        BOOL    SetPunctuation(UINT type, PUNCTUATION puncInfo) const;
         BOOL    SetReadOnly(BOOL isReadOnly = TRUE) const;
-        void    SetRect(const RECT& rc) const;
+        void    SetRect(RECT rc) const;
         void    SetSel(long startChar, long endChar) const;
-        void    SetSel(CHARRANGE& cr) const;
-        BOOL    SetSelectionCharFormat(CHARFORMAT& cf) const;
-        BOOL    SetSelectionCharFormat(CHARFORMAT2& cf) const;
+        void    SetSel(CHARRANGE cr) const;
+        BOOL    SetSelectionCharFormat(CHARFORMAT cf) const;
+        BOOL    SetSelectionCharFormat(CHARFORMAT2 cf) const;
         BOOL    SetTargetDevice(HDC dc, long lineWidth) const;
         BOOL    SetTextMode(UINT mode) const;
         UINT    SetUndoLimit(UINT limit) const;
-        BOOL    SetWordCharFormat(CHARFORMAT& format) const;
-        BOOL    SetWordCharFormat(CHARFORMAT2& format) const;
+        BOOL    SetWordCharFormat(CHARFORMAT format) const;
+        BOOL    SetWordCharFormat(CHARFORMAT2 format) const;
         void    StopGroupTyping() const;
         long    StreamIn(int format, EDITSTREAM& stream) const;
         long    StreamOut(int format, EDITSTREAM& stream) const;
@@ -152,9 +152,7 @@ namespace Win32xx
         CRichEdit(const CRichEdit&) = delete;
         CRichEdit& operator=(const CRichEdit&) = delete;
 
-        HMODULE m_rich1;
-        HMODULE m_rich2;
-        HMODULE m_rich4_1;
+        HMODULE m_richedit;
     };
 
 }
@@ -172,33 +170,12 @@ namespace Win32xx
 
     inline CRichEdit::CRichEdit()
     {
-        // History of the Rich Edit control
-        // --------------------------------
-        // Windows 95   Includes only Rich Edit 1.0.
-        // Windows 98   Includes Rich Edit 1.0 and 2.0.
-        // Windows 2000 Includes Rich Edit 3.0 with a Rich Edit 1.0 emulator.
-        // Windows XP   Includes Rich Edit 4.1, and Rich Edit 3.0 with a Rich Edit 1.0 emulator.
-
         CString system;
         ::GetSystemDirectory(system.GetBuffer(MAX_PATH), MAX_PATH);
         system.ReleaseBuffer();
 
-        // Load RichEdit version 1.0. This registers the "RICHEDIT" class.
-        // The "RICHEDIT" class is often used in dialogs.
-        m_rich1 = ::LoadLibrary(system + _T("\\riched32.dll"));
-        if (m_rich1 == nullptr)
-            throw CNotSupportedException(GetApp()->MsgRichEditDll());
-
-        // Load RichEdit version 3.0. This registers the "RICHEDIT20A"
-        // and "RICHEDIT20W" classes. It is used when UNICODE isn't defined.
-        m_rich2 = ::LoadLibrary(system + _T("\\riched20.dll"));
-        if (m_rich2 == nullptr)
-            throw CNotSupportedException(GetApp()->MsgRichEditDll());
-
-        // Load RichEdit version 4.1. This registers the "RICHEDIT50W" class.
-        // RichEdit version 4.1 requires Unicode.
-        m_rich4_1 = ::LoadLibrary(system + _T("\\Msftedit.dll"));
-        if (m_rich4_1 == nullptr)
+        m_richedit = ::LoadLibrary(system + _T("\\Msftedit.dll"));
+        if (m_richedit == nullptr)
             throw CNotSupportedException(GetApp()->MsgRichEditDll());
     }
 
@@ -208,12 +185,8 @@ namespace Win32xx
         if (IsWindow())
             ::DestroyWindow(*this);
 
-        ::FreeLibrary(m_rich1);
-        if (m_rich2)
-            ::FreeLibrary(m_rich2);
-
-        if (m_rich4_1)
-            ::FreeLibrary(m_rich4_1);
+        if (m_richedit)
+            ::FreeLibrary(m_richedit);
     }
 
     // Set the default window styles.
@@ -225,19 +198,7 @@ namespace Win32xx
     // Set the window class
     inline void CRichEdit::PreRegisterClass(WNDCLASS& wc)
     {
-        // Use the latest version of RichEdit available.
-
-        // For RichEdit version 1.0, 2.0 and 3.0.
-        wc.lpszClassName = RICHEDIT_CLASS;
-
-        // For RichEdit version 4.1. Requires Unicode.
-#if defined UNICODE
-        if (m_rich4_1 != nullptr)
-            wc.lpszClassName = MSFTEDIT_CLASS;
-#else
-        TRACE("\n*** WARNING: Using an old version of the RichEdit control ***\n\n");
-#endif
-
+        wc.lpszClassName = _T("RICHEDIT50W");
     }
 
     // Adds text to the end of the document.
@@ -313,7 +274,7 @@ namespace Win32xx
     // Displays a portion of the contents of a rich edit control, as previously
     // formatted for a device using the EM_FORMATRANGE message.
     // Refer to EM_DISPLAYBAND in the Windows API documentation for more information.
-    inline BOOL CRichEdit::DisplayBand(const RECT& rc) const
+    inline BOOL CRichEdit::DisplayBand(RECT rc) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
@@ -514,7 +475,7 @@ namespace Win32xx
     // Retrieves the current punctuation characters for the rich edit control.
     // This is available only in Asian-language versions of the operating system.
     // Refer to EM_GETPUNCTUATION in the Windows API documentation for more information.
-    inline BOOL CRichEdit::GetPunctuation(UINT type, const PUNCTUATION& puncInfo) const
+    inline BOOL CRichEdit::GetPunctuation(UINT type, PUNCTUATION& puncInfo) const
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(type);
@@ -810,7 +771,7 @@ namespace Win32xx
 
     // Sets the current default character formatting attributes.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetDefaultCharFormat(CHARFORMAT& format) const
+    inline BOOL CRichEdit::SetDefaultCharFormat(CHARFORMAT format) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&format);
@@ -819,7 +780,7 @@ namespace Win32xx
 
     // Sets the current default character formatting attributes.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetDefaultCharFormat(CHARFORMAT2& format) const
+    inline BOOL CRichEdit::SetDefaultCharFormat(CHARFORMAT2 format) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&format);
@@ -868,7 +829,7 @@ namespace Win32xx
 
     // Sets the paragraph formatting attributes in the current selection.
     // Refer to EM_SETPARAFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetParaFormat(PARAFORMAT& format) const
+    inline BOOL CRichEdit::SetParaFormat(PARAFORMAT format) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&format);
@@ -877,7 +838,7 @@ namespace Win32xx
 
     // Sets the paragraph formatting attributes in the current selection.
     // Refer to EM_SETPARAFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetParaFormat(PARAFORMAT2& pf) const
+    inline BOOL CRichEdit::SetParaFormat(PARAFORMAT2 pf) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&pf);
@@ -887,7 +848,7 @@ namespace Win32xx
     // Sets the current punctuation characters for the rich edit control.
     // This is available only in Asian-language versions of the operating system.
     // Refer to EM_SETPUNCTUATION in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetPunctuation(UINT type, const PUNCTUATION& puncInfo) const
+    inline BOOL CRichEdit::SetPunctuation(UINT type, PUNCTUATION puncInfo) const
     {
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(type);
@@ -907,7 +868,7 @@ namespace Win32xx
     // Sets the formatting rectangle. The formatting rectangle is the limiting rectangle into
     // which the control draws the text.
     // Refer to EM_SETRECT in the Windows API documentation for more information.
-    inline void CRichEdit::SetRect(const RECT& rc) const
+    inline void CRichEdit::SetRect(RECT rc) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&rc);
@@ -929,7 +890,7 @@ namespace Win32xx
 
     // Selects a range of characters.
     // Refer to EM_EXSETSEL in the Windows API documentation for more information.
-    inline void CRichEdit::SetSel(CHARRANGE& range) const
+    inline void CRichEdit::SetSel(CHARRANGE range) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&range);
@@ -938,7 +899,7 @@ namespace Win32xx
 
     // Sets the character formatting attributes in the current selection.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetSelectionCharFormat(CHARFORMAT& format) const
+    inline BOOL CRichEdit::SetSelectionCharFormat(CHARFORMAT format) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&format);
@@ -947,7 +908,7 @@ namespace Win32xx
 
     // Sets the character formatting attributes in the current selection.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetSelectionCharFormat(CHARFORMAT2& cf) const
+    inline BOOL CRichEdit::SetSelectionCharFormat(CHARFORMAT2 cf) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&cf);
@@ -985,7 +946,7 @@ namespace Win32xx
 
     // Sets the character formatting attributes in the current word.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetWordCharFormat(CHARFORMAT& format) const
+    inline BOOL CRichEdit::SetWordCharFormat(CHARFORMAT format) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&format);
@@ -994,7 +955,7 @@ namespace Win32xx
 
     // Sets the character formatting attributes in the current word.
     // Refer to EM_SETCHARFORMAT in the Windows API documentation for more information.
-    inline BOOL CRichEdit::SetWordCharFormat(CHARFORMAT2& cf) const
+    inline BOOL CRichEdit::SetWordCharFormat(CHARFORMAT2 cf) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&cf);

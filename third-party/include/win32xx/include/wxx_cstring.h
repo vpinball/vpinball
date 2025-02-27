@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -145,16 +145,18 @@ namespace Win32xx
         //  CStringW& operator<<(CStringW& str, WCHAR ch);
 
         public:
-        CStringT();
-        CStringT(const CStringT& str);
+        CStringT() = default;
         CStringT(const T * text);
         CStringT(const T * text, int length);
         CStringT(T ch, int repeat = 1);
-        virtual ~CStringT();
+        CStringT(const CStringT& str);
+        CStringT(CStringT&& str) noexcept;
+        virtual ~CStringT() = default;
 
-        CStringT& operator=(const CStringT& str);
         CStringT& operator=(T ch);
         CStringT& operator=(const T* text);
+        CStringT& operator=(const CStringT& str);
+        CStringT& operator=(CStringT&& str) noexcept;
 
         bool     operator==(const T* text) const;
         bool     operator==(const CStringT& str) const;
@@ -234,8 +236,8 @@ namespace Win32xx
         std::vector<T> m_buf;
 
     private:
-        int     lstrlenT(const CHAR* text) const  { return ::lstrlenA(text); }
-        int     lstrlenT(const WCHAR* text) const { return ::lstrlenW(text); }
+        size_t strlenT(const CHAR* text) const  { return strlen(text); }
+        size_t strlenT(const WCHAR* text) const { return wcslen(text); }
 
         // These functions return CHAR instead of int.
         static CHAR ToLower(CHAR c) { return static_cast<CHAR>(::tolower(static_cast<unsigned char>(c)) & 0xFF); }
@@ -275,18 +277,20 @@ namespace Win32xx
 
     public:
         CString() {}
-        CString(const CString& str)            : CStringT<TCHAR>(str) {}
+        CString(const CString& str)        : CStringT<TCHAR>(str) {}
+        CString(CString&& str) noexcept    : CStringT<TCHAR>(std::move(str)) {}
         CString(const CStringA& str);
         CString(const CStringW& str);
-        CString(LPCSTR text)                   : CStringT<TCHAR>(AtoT(text)) {}
-        CString(LPCWSTR text)                  : CStringT<TCHAR>(WtoT(text))    {}
-        CString(LPCSTR text, int length)       : CStringT<TCHAR>(AtoT(text, CP_ACP, length), length) {}
-        CString(LPCWSTR text, int length)      : CStringT<TCHAR>(WtoT(text, CP_ACP, length), length) {}
+        CString(LPCSTR text)               : CStringT<TCHAR>(AtoT(text)) {}
+        CString(LPCWSTR text)              : CStringT<TCHAR>(WtoT(text)) {}
+        CString(LPCSTR text, int length)   : CStringT<TCHAR>(AtoT(text, CP_ACP, length), length) {}
+        CString(LPCWSTR text, int length)  : CStringT<TCHAR>(WtoT(text, CP_ACP, length), length) {}
         CString(CHAR ch, int repeat = 1);
         CString(WCHAR ch, int repeat = 1);
-        virtual ~CString() {}
+        virtual ~CString() = default;
 
         CString& operator=(const CString& str);
+        CString& operator=(CString&& str) noexcept;
         CString& operator=(const CStringA& str);
         CString& operator=(const CStringW& str);
         CString& operator=(CHAR ch);
@@ -315,25 +319,6 @@ namespace Win32xx
     // Definition of the CStringT class template.
     //
 
-    // Constructor.
-    template <class T>
-    inline CStringT<T>::CStringT()
-    {
-    }
-
-    // Destructor.
-    template <class T>
-    inline CStringT<T>::~CStringT()
-    {
-    }
-
-    // Constructor. Assigns from a CStringT<T>.
-    template <class T>
-    inline CStringT<T>::CStringT(const CStringT& str)
-    {
-        m_str.assign(str.m_str);
-    }
-
     // Constructor. Assigns from from a const T* character array.
     template <class T>
     inline CStringT<T>::CStringT(const T* text)
@@ -357,11 +342,39 @@ namespace Win32xx
         m_str.assign(static_cast<size_t>(repeat), ch);
     }
 
+    // Copy constructor.
+    template <class T>
+    inline CStringT<T>::CStringT(const CStringT& str)
+    {
+        m_str.assign(str.m_str);
+    }
+
+    // Move constructor.
+    template <class T>
+    inline CStringT<T>::CStringT(CStringT&& str) noexcept
+        : m_str(std::move(str.m_str)), m_buf(std::move(str.m_buf))
+    {
+    }
+
     // Assign from a const CStringT<T>.
     template <class T>
     inline CStringT<T>& CStringT<T>::operator=(const CStringT<T>& str)
     {
-        m_str.assign(str.m_str);
+        if (this != &str)
+            m_str.assign(str.m_str);
+
+        return *this;
+    }
+
+    // Move assignment.
+    template <class T>
+    inline CStringT<T>& CStringT<T>::operator=(CStringT&& str) noexcept
+    {
+        if (this != &str)
+        {
+            m_buf = std::move(str.m_buf);
+            m_str = std::move(str.m_str);
+        }
         return *this;
     }
 
@@ -755,7 +768,7 @@ namespace Win32xx
         if (format)
         {
             DWORD result = ::FormatMessageW(FORMAT_MESSAGE_FROM_STRING|FORMAT_MESSAGE_ALLOCATE_BUFFER,
-                                  format, 0, 0, (LPWSTR)&temp, 0, &args);
+                                  format, 0, 0, reinterpret_cast<LPWSTR>(&temp), 0, &args);
 
             if ( result == 0 || temp == 0 )
                 throw std::bad_alloc();
@@ -790,10 +803,9 @@ namespace Win32xx
 
         T ch = 0;
         m_buf.assign(size_t(minBufLength) + 1, ch);
-        typename std::basic_string<T>::iterator it;
+        auto it = m_str.begin();
         if (m_str.length() >= static_cast<size_t>(minBufLength))
         {
-            it = m_str.begin();
             std::advance(it, minBufLength);
         }
         else
@@ -811,12 +823,12 @@ namespace Win32xx
         assert(var);
         Empty();
 
+        // Returns text length including the null character.
         DWORD length = ::GetEnvironmentVariableA(var, nullptr, 0);
         if (length > 0)
         {
-            std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetEnvironmentVariableA(var, buffer.data(), length);
-            m_str = buffer.data();
+            ::GetEnvironmentVariableA(var, GetBuffer(length), length);
+            ReleaseBuffer();
         }
 
         return (length != 0);
@@ -829,12 +841,12 @@ namespace Win32xx
         assert(var);
         Empty();
 
+        // Returns text length including the null character.
         DWORD length = ::GetEnvironmentVariableW(var, nullptr, 0);
         if (length > 0)
         {
-            std::vector<WCHAR> buffer(static_cast<size_t>(length) +1, 0);
-            ::GetEnvironmentVariableW(var, buffer.data(), length);
-            m_str = buffer.data();
+            ::GetEnvironmentVariableW(var, GetBuffer(length), length);
+            ReleaseBuffer();
         }
 
         return (length != 0);
@@ -845,12 +857,13 @@ namespace Win32xx
     inline void CStringA::GetWindowText(HWND wnd)
     {
         Empty();
+
+        // Returns text length NOT including the null character.
         int length = ::GetWindowTextLengthA(wnd);
         if (length > 0)
         {
-            std::vector<CHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextA(wnd, buffer.data(), length +1);
-            m_str = buffer.data();
+            ::GetWindowTextA(wnd, GetBuffer(length + 1), length + 1);
+            ReleaseBuffer();
         }
     }
 
@@ -859,12 +872,13 @@ namespace Win32xx
     inline void CStringT<T>::GetWindowText(HWND wnd)
     {
         Empty();
+
+        // Returns text length NOT including the null character.
         int length = ::GetWindowTextLengthW(wnd);
         if (length > 0)
         {
-            std::vector<WCHAR> buffer(size_t(length) +1, 0 );
-            ::GetWindowTextW(wnd, buffer.data(), length +1);
-            m_str = buffer.data();
+            ::GetWindowTextW(wnd, GetBuffer(length +1), length + 1);
+            ReleaseBuffer();
         }
     }
 
@@ -1005,11 +1019,11 @@ namespace Win32xx
     // The default length of -1 copies from the buffer until a null terminator is reached.
     // If the buffer doesn't contain a null terminator, you must specify the buffer's length.
     template <class T>
-    inline void CStringT<T>::ReleaseBuffer( int newLength /*= -1*/ )
+    inline void CStringT<T>::ReleaseBuffer(int newLength /*= -1*/ )
     {
         if (newLength == -1)
         {
-            newLength = lstrlenT(m_buf.data());
+            newLength = static_cast<int>(strlenT(m_buf.data()));
         }
 
         assert(m_buf.size() > 0);
@@ -1034,7 +1048,7 @@ namespace Win32xx
 
         int count = 0;
         size_t pos = 0;
-        size_t len = lstrlenT(text);
+        size_t len = strlenT(text);
         if (len > 0)
         {
             while ((pos = m_str.find(text, pos)) != std::string::npos)
@@ -1090,8 +1104,8 @@ namespace Win32xx
 
         int count = 0;
         size_t pos = 0;
-        size_t lenOld = static_cast<size_t>(lstrlenT(oldText));
-        size_t lenNew = static_cast<size_t>(lstrlenT(newText));
+        size_t lenOld = strlenT(oldText);
+        size_t lenNew = strlenT(newText);
         if (lenOld > 0 && lenNew > 0)
         {
             while ((pos = m_str.find(oldText, pos)) != std::string::npos)
@@ -1119,7 +1133,7 @@ namespace Win32xx
         assert(text != nullptr);
         if (!text) return -1;
 
-        if (lstrlenT(text) == 1)
+        if (strlenT(text) == 1)
             return ReverseFind(text[0], end);
         else
             return static_cast<int>(m_str.rfind(text, static_cast<size_t>(end)));
@@ -1168,8 +1182,11 @@ namespace Win32xx
     {
         assert(pBstr);
 
-        if ( !::SysReAllocStringLen(pBstr, m_str.c_str(), static_cast<UINT>(m_str.length())) )
-            throw std::bad_alloc();
+        if ((pBstr) != nullptr)
+        {
+            if (!::SysReAllocStringLen(pBstr, m_str.c_str(), static_cast<UINT>(m_str.length())))
+                throw std::bad_alloc();
+        }
 
         return pBstr ? *pBstr : 0;
     }
@@ -1244,11 +1261,13 @@ namespace Win32xx
     template <>
     inline void CStringA::TrimLeft()
     {
-        std::basic_string<CHAR>::iterator it;
-        for (it = m_str.begin(); it != m_str.end(); ++it)
+        auto it = m_str.begin();
+        while (it != m_str.end())
         {
             if (!::isspace(static_cast<unsigned char>(*it)))
                 break;
+
+            ++it;
         }
 
         m_str.erase(m_str.begin(), it);
@@ -1258,11 +1277,13 @@ namespace Win32xx
     template <class T>
     inline void CStringT<T>::TrimLeft()
     {
-        std::basic_string<WCHAR>::iterator it;
-        for (it = m_str.begin(); it != m_str.end(); ++it)
+        auto it = m_str.begin();
+        while (it != m_str.end())
         {
             if (!iswspace(*it))
                 break;
+
+            ++it;
         }
 
         m_str.erase(m_str.begin(), it);
@@ -1287,11 +1308,13 @@ namespace Win32xx
     template <>
     inline void CStringA::TrimRight()
     {
-        std::basic_string<CHAR>::reverse_iterator it;
-        for (it = m_str.rbegin(); it != m_str.rend(); ++it)
+        auto it = m_str.rbegin();
+        while (it != m_str.rend())
         {
             if (!::isspace(static_cast<unsigned char>(*it)))
                 break;
+
+            ++it;
         }
 
         m_str.erase(it.base(), m_str.end());
@@ -1301,14 +1324,16 @@ namespace Win32xx
     template <class T>
     inline void CStringT<T>::TrimRight()
     {
-        std::basic_string<WCHAR>::reverse_iterator riter;
-        for (riter = m_str.rbegin(); riter != m_str.rend(); ++riter)
+        auto it = m_str.rbegin();
+        while (it != m_str.rend())
         {
-            if (!iswspace(*riter))
+            if (!iswspace(*it))
                 break;
+
+            ++it;
         }
 
-        m_str.erase(riter.base(), m_str.end());
+        m_str.erase(it.base(), m_str.end());
     }
 
     // Trims the specified character from the end of the string.
@@ -1610,10 +1635,23 @@ namespace Win32xx
         m_str.assign(WtoT(str.c_str(), CP_ACP, str.GetLength()), str.GetLength());
     }
 
-    // CString copy constructor.
+    // Assignment operator.
     inline CString& CString::operator=(const CString& str)
     {
-        m_str.assign(str.GetString());
+        if (this != &str)
+            m_str.assign(str.GetString());
+
+        return *this;
+    }
+
+    // Move Assignment.
+    inline CString& CString::operator=(CString&& str) noexcept
+    {
+        if (this != &str)
+        {
+            m_buf = std::move(str.m_buf);
+            m_str = std::move(str.m_str);
+        }
         return *this;
     }
 
@@ -1634,16 +1672,14 @@ namespace Win32xx
     // Assign CString from a CHAR character.
     inline CString& CString::operator=(CHAR ch)
     {
-        AtoT tch(&ch, CP_ACP, 1);
-        m_str.assign(1, tch.c_str()[0]);
+        m_str.assign(1, CString(&ch, 1).GetAt(0));
         return *this;
     }
 
     // Assign CString from a WCHAR character.
     inline CString& CString::operator=(WCHAR ch)
     {
-        WtoT tch(&ch, CP_ACP, 1);
-        m_str.assign(1, tch.c_str()[0]);
+        m_str.assign(1, CString(&ch, 1).GetAt(0));
         return *this;
     }
 
@@ -1699,16 +1735,14 @@ namespace Win32xx
     // Append and assign from a CHAR character.
     inline CString& CString::operator+=(CHAR ch)
     {
-        AtoT tch(&ch, CP_ACP, 1);
-        m_str.append(1, tch.c_str()[0]);
+        m_str.append(1, CString(&ch, 1).GetAt(0));
         return *this;
     }
 
     // Append and assign from a WCHAR character.
     inline CString& CString::operator+=(WCHAR ch)
     {
-        WtoT tch(&ch, CP_ACP, 1);
-        m_str.append(1, tch.c_str()[0]);
+        m_str.append(1, CString(&ch, 1).GetAt(0));
         return *this;
     }
 
@@ -1761,8 +1795,7 @@ namespace Win32xx
     inline CString operator+(const CString& string1, CHAR ch)
     {
         CString str(string1);
-        AtoT tch(&ch, CP_ACP, 1);
-        str.m_str.append(1, tch.c_str()[0]);
+        str.m_str.append(1, CString(&ch, 1).GetAt(0));
         return str;
     }
 
@@ -1770,8 +1803,7 @@ namespace Win32xx
     inline CString operator+(const CString& string1, WCHAR ch)
     {
         CString str(string1);
-        WtoT tch(&ch, CP_ACP, 1);
-        str.m_str.append(1, tch.c_str()[0]);
+        str.m_str.append(1, CString(&ch, 1).GetAt(0));
         return str;
     }
 

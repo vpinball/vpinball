@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -67,7 +67,7 @@ namespace Win32xx
     // The CImageList class that provides the functionality of image lists.
     // An image list is a collection of images of the same size, each of
     // which can be referred to by its index.
-    class CImageList
+    class CImageList final
     {
         friend class CWinApp;
 
@@ -78,13 +78,13 @@ namespace Win32xx
         CImageList(const CImageList& rhs);
         CImageList& operator=(const CImageList& rhs);
         CImageList& operator=(HIMAGELIST rhs);
-        virtual ~CImageList();
+        ~CImageList();
 
         // Initialization
-        BOOL Create(int cx, int cy, UINT flags, int initial, int grow);
-        BOOL Create(int bitmapID, int cx, int grow, COLORREF mask);
-        BOOL Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask);
-        BOOL Create(HIMAGELIST images);
+        void Create(int cx, int cy, UINT flags, int initial, int grow);
+        void Create(int bitmapID, int cx, int grow, COLORREF mask);
+        void Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask);
+        void Create(HIMAGELIST images);
         BOOL CreateDisabledImageList(HIMAGELIST normalImages);
         void CreateDragImage(HWND header, int index);
         void CreateDragImage(HWND listView, int item, CPoint& pt);
@@ -144,12 +144,11 @@ namespace Win32xx
     // Definitions for the CImageList class
     //
 
-    inline CImageList::CImageList()
+    inline CImageList::CImageList() : m_pData(std::make_shared<CIml_Data>())
     {
-        m_pData = std::make_shared<CIml_Data>();
     }
 
-    inline CImageList::CImageList(HIMAGELIST images)
+    inline CImageList::CImageList(HIMAGELIST images) : m_pData(std::make_shared<CIml_Data>())
     {
         m_pData = std::make_shared<CIml_Data>();
         Attach(images);
@@ -259,7 +258,7 @@ namespace Win32xx
                 std::shared_ptr<CIml_Data> pCImlData = GetApp()->GetCImlData(images).lock();
                 if (pCImlData)
                 {
-                    m_pData = pCImlData;
+                    m_pData = std::move(pCImlData);
                 }
                 else
                 {
@@ -309,7 +308,7 @@ namespace Win32xx
     // ILC_MASK     Use a mask. The image list contains two bitmaps, one of which is a monochrome bitmap used as a mask.
     //              If this value is not included, the image list contains only one bitmap.
     // Refer to ImageList_Create in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(int cx, int cy, UINT flags, int initial, int grow)
+    inline void CImageList::Create(int cx, int cy, UINT flags, int initial, int grow)
     {
         assert(m_pData);
 
@@ -319,8 +318,6 @@ namespace Win32xx
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(images);
-
-        return (images != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a new image list.
@@ -329,12 +326,12 @@ namespace Win32xx
     // crMask   The color used to generate a mask. Each pixel of this color in the specified bitmap is changed to black,
     //          and the corresponding bit in the mask is set to 1. If this parameter is the CLR_NONE value, no mask is generated.
     // Refer to ImageList_Create in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(int bitmapID, int cx, int grow, COLORREF mask)
+    inline void CImageList::Create(int bitmapID, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
 
         LPCTSTR bitmapName = MAKEINTRESOURCE (bitmapID);
-        return Create(bitmapName, cx, grow, mask);
+        Create(bitmapName, cx, grow, mask);
     }
 
     // Creates a new image list.
@@ -344,7 +341,7 @@ namespace Win32xx
     // crMask   The color used to generate a mask. Each pixel of this color in the specified bitmap is changed to black,
     //          and the corresponding bit in the mask is set to 1. If this parameter is the CLR_NONE value, no mask is generated.
     // Refer to ImageList_LoadBitmap in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask)
+    inline void CImageList::Create(LPCTSTR resourceName, int cx, int grow, COLORREF mask)
     {
         assert(m_pData);
 
@@ -353,13 +350,11 @@ namespace Win32xx
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(images);
-
-        return (images != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a duplicate ImageList
     // Refer to ImageList_Duplicate in the Windows API documentation for more information.
-    inline BOOL CImageList::Create(HIMAGELIST images)
+    inline void CImageList::Create(HIMAGELIST images)
     {
         assert(m_pData);
 
@@ -368,8 +363,6 @@ namespace Win32xx
             throw CResourceException(GetApp()->MsgImageList());
 
         Assign(copyImages);
-
-        return (copyImages != nullptr) ? TRUE : FALSE;
     }
 
     // Creates a transparent version of an item image within the header control.
@@ -622,11 +615,12 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_wndLock);
 
             // Find the CImageList data entry in the map.
-            auto it = GetApp()->m_mapCImlData.find(m_pData->images);
-            if (it != GetApp()->m_mapCImlData.end())
+            auto& map = GetApp()->m_mapCImlData;
+            auto it = map.find(m_pData->images);
+            if (it != map.end())
             {
                 // Erase the CImageList data entry from the map
-                GetApp()->m_mapCImlData.erase(it);
+                map.erase(it);
                 success = TRUE;
             }
         }
@@ -683,8 +677,7 @@ namespace Win32xx
         return m_pData->images;
     }
 
-    // Decrements the reference count.
-    // Destroys m_pData if the reference count is zero.
+    // Destroys m_pData if this is the only copy of the CImageList.
     inline void CImageList::Release()
     {
         if (CWinApp::SetnGetThis())

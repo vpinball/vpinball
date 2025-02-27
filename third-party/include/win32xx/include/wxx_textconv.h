@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -122,7 +122,7 @@ namespace Win32xx
         CAtoW(LPCSTR str, UINT codePage = CP_ACP, int charCount = -1);
         ~CAtoW();
         operator LPCWSTR() { return m_str? &m_wideArray[0] : nullptr; }
-        operator LPOLESTR() { return m_str? (LPOLESTR)&m_wideArray[0] : (LPOLESTR)nullptr; }
+        operator LPOLESTR() { return m_str? reinterpret_cast<LPOLESTR>(&m_wideArray[0]) : nullptr; }
         LPCWSTR c_str() { return m_str ? &m_wideArray[0] : nullptr; }
 
     private:
@@ -152,7 +152,7 @@ namespace Win32xx
     public:
         CWtoW(LPCWSTR pWStr, UINT codePage = CP_ACP, int charCount = -1);
         operator LPCWSTR() { return m_str; }
-        operator LPOLESTR() { return (LPOLESTR)m_str; }
+        operator LPOLESTR() { return const_cast<LPOLESTR>(m_str); }
         LPCWSTR c_str() const { return m_str; }
 
     private:
@@ -211,17 +211,14 @@ namespace Win32xx
 
     inline CAtoW::CAtoW(LPCSTR str, UINT codePage /*= CP_ACP*/, int charCount /*= -1*/) : m_str(str)
     {
-        if (str)
-        {
-            // Resize the vector and assign null WCHAR to each element.
-            int charSize = static_cast<int>(sizeof(CHAR));
-            int charBytes = (charCount == -1) ? -1 : charSize * charCount;
-            int length = MultiByteToWideChar(codePage, 0, str, charBytes, nullptr, 0) + 1;
-            m_wideArray.assign(static_cast<size_t>(length), L'\0');
+        // Resize the vector and assign null WCHAR to each element.
+        int charSize = static_cast<int>(sizeof(CHAR));
+        int charBytes = (charCount == -1) ? -1 : charSize * charCount;
+        int length = MultiByteToWideChar(codePage, 0, str, charBytes, nullptr, 0) + 1;
+        m_wideArray.assign(static_cast<size_t>(length), L'\0');
 
-            // Fill our vector with the converted WCHAR array.
-            MultiByteToWideChar(codePage, 0, str, charBytes, &m_wideArray[0], length);
-        }
+        // Fill our vector with the converted WCHAR array.
+        MultiByteToWideChar(codePage, 0, str, charBytes, &m_wideArray[0], length);
     }
 
     inline CAtoW::~CAtoW()

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -73,7 +73,7 @@ namespace Win32xx
     {
     public:
         CPropertyPage (UINT templateID, LPCTSTR title = nullptr);
-        virtual ~CPropertyPage() override {}
+        virtual ~CPropertyPage() override = default;
         virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
         virtual BOOL OnApply();
         virtual void OnCancel() override;
@@ -121,7 +121,7 @@ namespace Win32xx
     public:
         CPropertySheet(UINT captionID, HWND parent = nullptr);
         CPropertySheet(LPCTSTR caption = nullptr, HWND parent = nullptr);
-        virtual ~CPropertySheet() override {}
+        virtual ~CPropertySheet() override = default;
 
         // Operations
         virtual CPropertyPage* AddPage(CPropertyPage* pPage);
@@ -306,7 +306,7 @@ namespace Win32xx
     // Handles the WM_NOTIFY message and call the appropriate functions.
     inline LRESULT CPropertyPage::OnNotify(WPARAM, LPARAM lparam)
     {
-        LPPSHNOTIFY pNotify = (LPPSHNOTIFY)lparam;
+        LPPSHNOTIFY pNotify = reinterpret_cast<LPPSHNOTIFY>(lparam);
         assert(pNotify);
         if (!pNotify) return 0;
 
@@ -575,7 +575,7 @@ namespace Win32xx
     {
         m_allSheetPages.clear();
         for (const PropertyPagePtr& ptr : m_allPages)
-            m_allSheetPages.push_back(ptr->GetPSP());
+            m_allSheetPages.emplace_back(ptr->GetPSP());
 
         PROPSHEETPAGE* pPSPArray = m_allSheetPages.data(); // Array of PROPSHEETPAGE
         m_psh.ppsp = pPSPArray;
@@ -590,7 +590,7 @@ namespace Win32xx
         // wnd = nullptr, and lparam points to dialog resource.
         case PSCB_PRECREATE:
             {
-                LPDLGTEMPLATE  lpTemplate = (LPDLGTEMPLATE)lparam;
+                LPDLGTEMPLATE lpTemplate = reinterpret_cast<LPDLGTEMPLATE>(lparam);
 
                 if (!(lpTemplate->style & WS_SYSMENU))
                 {

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -131,11 +131,11 @@ namespace Win32xx
     // CMDIClient manages the MDI frame's MDI client window.
     // The MDI client window manages the arrangement of the MDI child windows.
     template <class T>
-    class CMDIClient : public T     // The template parameter T is either CWnd, or CDocker::CDockClient.
+    class CMDIClient : public T     // T is either CWnd, or CDocker::CDockClient.
     {
     public:
-        CMDIClient() {}
-        virtual ~CMDIClient() override {}
+        CMDIClient() = default;
+        virtual ~CMDIClient() override = default;
 
     protected:
         // Overridable virtual functions
@@ -151,14 +151,15 @@ namespace Win32xx
     };
 
     /////////////////////////////////////
-    // The CMDIFrameT class is the base class for all MDI frames. MDI Frames can hold
-    // one or more MDI children. The template parameter T is typically either CWnd or CDocker.
+    // The CMDIFrameT class is the base class for all MDI frames. MDI Frames
+    // can hold one or more MDI children. The template parameter T is typically
+    // either CFrame or CDockFrame.
     template <class T>
     class CMDIFrameT : public T
     {
     public:
         CMDIFrameT();
-        virtual ~CMDIFrameT() override {}
+        virtual ~CMDIFrameT() override = default;
 
         // Override these functions as required.
         virtual CMDIChild* AddMDIChild(CMDIChild* pMDIChild);
@@ -221,8 +222,8 @@ namespace Win32xx
     class CMDIFrame : public CMDIFrameT<CFrame>
     {
     public:
-        CMDIFrame() {}
-        virtual ~CMDIFrame() override {}
+        CMDIFrame() = default;
+        virtual ~CMDIFrame() override = default;
 
     private:
         CMDIFrame(const CMDIFrame&) = delete;
@@ -358,7 +359,7 @@ namespace Win32xx
         LRESULT result = T::CustomDrawMenuBar(pNMHDR);
 
         // Retrieve the pointer to the CMenuBar
-        LPNMTBCUSTOMDRAW lpNMCustomDraw = (LPNMTBCUSTOMDRAW)pNMHDR;
+        LPNMTBCUSTOMDRAW lpNMCustomDraw = reinterpret_cast<LPNMTBCUSTOMDRAW>(pNMHDR);
         CMenuBar* pMenubar = reinterpret_cast<CMenuBar*>
             (::SendMessage(pNMHDR->hwndFrom, UWM_GETCMENUBAR, 0, 0));
 
@@ -372,13 +373,11 @@ namespace Win32xx
             // An item is about to be drawn.
             case CDDS_ITEMPREPAINT:
             {
-                CRect rc = lpNMCustomDraw->nmcd.rc;
                 DWORD item = static_cast<DWORD>(lpNMCustomDraw->nmcd.dwItemSpec);
 
                 // Draw over MDI Max button.
                 if (IsMDIChildMaxed() && (item == 0))
                 {
-                    CDC drawDC(lpNMCustomDraw->nmcd.hdc);
                     CWnd* pActiveChild = GetActiveMDIChild();
                     assert(pActiveChild);
                     if (pActiveChild)
@@ -387,10 +386,13 @@ namespace Win32xx
                         if (icon == 0)
                             icon = GetApp()->LoadStandardIcon(IDI_APPLICATION);
 
+                        CRect rc = lpNMCustomDraw->nmcd.rc;
                         int cx = ::GetSystemMetrics(SM_CXSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                         int cy = ::GetSystemMetrics(SM_CYSMICON) * GetWindowDpi(*this) / GetWindowDpi(HWND_DESKTOP);
                         int y = 1 + (pMenubar->GetWindowRect().Height() - cy) / 2;
                         int x = (rc.Width() - cx) / 2;
+
+                        CDC drawDC(lpNMCustomDraw->nmcd.hdc);
                         drawDC.DrawIconEx(x, y, icon, cx, cy, 0, 0, DI_NORMAL);
                     }
                     return CDRF_SKIPDEFAULT;  // No further drawing
@@ -805,7 +807,7 @@ namespace Win32xx
             {
                 if (wparam && lparam)
                 {
-                    LPBOOL pIsMDIChildMax = (LPBOOL)lparam;
+                    LPBOOL pIsMDIChildMax = reinterpret_cast<LPBOOL>(lparam);
                     OnMDIMaximized(*pIsMDIChildMax);
                 }
                 break;

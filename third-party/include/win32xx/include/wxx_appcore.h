@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -55,6 +55,7 @@
 #include "wxx_cstring.h"
 #include "wxx_messagepump.h"
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace Win32xx
 {
@@ -197,8 +198,7 @@ namespace Win32xx
     // Constructor.
     inline CWinApp::CWinApp() : m_callback(nullptr)
     {
-        static CCriticalSection cs;
-        CThreadLock appLock(cs);
+        CThreadLock appLock(m_appLock);
 
         // This assert fails if Win32++ has already been started.
         // There should only be one instance of CWinApp running at a time.
@@ -208,21 +208,15 @@ namespace Win32xx
         {
             m_tlsData = ::TlsAlloc();
 
-            // This assert fails if all TLS indexes are already allocated by this app.
+            // An exception is thrown if all TLS indexes are already allocated by this app.
             // At least 64 TLS indexes per process are allowed.
             // Win32++ requires only one TLS index.
-            assert(m_tlsData != TLS_OUT_OF_INDEXES);
-
             if (m_tlsData != TLS_OUT_OF_INDEXES)
             {
                 SetnGetThis(this);
 
                 // Set the instance handle.
-                MEMORY_BASIC_INFORMATION mbi{};
-                static int address = 0;
-                ::VirtualQuery(&address, &mbi, sizeof(mbi));
-                assert(mbi.AllocationBase);
-                m_instance = (HINSTANCE)mbi.AllocationBase;
+                m_instance = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
                 m_resource = m_instance;
                 SetTlsData();
@@ -236,6 +230,8 @@ namespace Win32xx
                 //       for other OLE functionality.
                 VERIFY(SUCCEEDED(OleInitialize(nullptr)));
             }
+            else
+                throw CNotSupportedException(MsgTlsIndexes());
         }
     }
 
@@ -272,28 +268,28 @@ namespace Win32xx
     inline void CWinApp::AddCDCData(HDC dc, std::weak_ptr<CDC_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
-        m_mapCDCData.insert(std::make_pair(dc, pData));
+        m_mapCDCData.emplace(std::make_pair(dc, pData));
     }
 
     // Adds a HGDIOBJ and CGDI_Data* pair to the map.
     inline void CWinApp::AddCGDIData(HGDIOBJ gdi, std::weak_ptr<CGDI_Data> pData)
     {
         CThreadLock mapLock(m_gdiLock);
-        m_mapCGDIData.insert(std::make_pair(gdi, pData));
+        m_mapCGDIData.emplace(std::make_pair(gdi, pData));
     }
 
     // Adds a HIMAGELIST and CIml_Data* pair to the map.
     inline void CWinApp::AddCImlData(HIMAGELIST images, std::weak_ptr<CIml_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
-        m_mapCImlData.insert(std::make_pair(images, pData));
+        m_mapCImlData.emplace(std::make_pair(images, pData));
     }
 
     // Adds a HMENU and CMenu_Data* to the map.
     inline void CWinApp::AddCMenuData(HMENU menu, std::weak_ptr<CMenu_Data> pData)
     {
         CThreadLock mapLock(m_wndLock);
-        m_mapCMenuData.insert(std::make_pair(menu, pData));
+        m_mapCMenuData.emplace(std::make_pair(menu, pData));
     }
 
     // Retrieves a pointer to CDC_Data from the map.
@@ -370,7 +366,7 @@ namespace Win32xx
     // Note: CFrame set's itself as the main window of its thread.
     inline HWND CWinApp::GetMainWnd() const
     {
-        TLSData* pTLSData = GetApp()->GetTlsData();
+        TLSData* pTLSData = GetTlsData();
 
         // Will assert if the thread doesn't have TLSData assigned.
         // TLSData is assigned when the first window in the thread is created.
@@ -520,7 +516,7 @@ namespace Win32xx
     // Sets the main window for this thread.
     inline void CWinApp::SetMainWnd(HWND wnd) const
     {
-        TLSData* pTLSData = GetApp()->GetTlsData();
+        TLSData* pTLSData = GetTlsData();
         pTLSData->mainWnd = wnd;
     }
 
@@ -553,9 +549,8 @@ namespace Win32xx
         TLSData* pTLSData = GetTlsData();
         if (pTLSData == nullptr)
         {
-            TLSDataPtr dataPtr = std::make_unique<TLSData>();
-            VERIFY(::TlsSetValue(m_tlsData, dataPtr.get()));
-            m_allTLSData.push_back(std::move(dataPtr));
+            m_allTLSData.push_back(std::make_unique<TLSData>());
+            VERIFY(::TlsSetValue(m_tlsData, m_allTLSData.back().get()));
         }
     }
 
@@ -563,7 +558,7 @@ namespace Win32xx
     // and the default printer has changed.
     inline void CWinApp::UpdateDefaultPrinter()
     {
-        CThreadLock lock(GetApp()->m_printLock);
+        CThreadLock lock(m_printLock);
 
         if (m_devNames.Get() == nullptr)
         {
@@ -795,6 +790,14 @@ namespace Win32xx
     inline CString CWinApp::MsgDDV_StringSize() const
     { return _T("%s\n is too long.\nPlease enter no more than %ld characters."); }
 
+    // CTime messages
+    inline CString CWinApp::MsgTimeValid() const
+    { return _T("Invalid time."); }
+
+    // CWinApp messages
+    inline CString CWinApp::MsgTlsIndexes() const
+    { return _T("No availabe Thread Local Storage Indexes."); }
+
 
     /////////////////////////////////////////////////////////
     // Definitions of CString functions that require CWinApp
@@ -846,7 +849,7 @@ namespace Win32xx
         Empty();
 
         // Increase the size of our array in a loop until we load the entire string
-        // The ANSI and UNICODE versions of LoadString behave differently. 
+        // The ANSI and UNICODE versions of LoadString behave differently.
         // This less efficient technique works for both.
         while (startSize - 1 <= chars)
         {
@@ -874,7 +877,7 @@ namespace Win32xx
         // The ANSI and UNICODE versions of LoadString behave differently.
         // This technique only works for LoadStringW.
         LPCWSTR pString;
-        int charCount = ::LoadStringW(GetApp()->GetResourceHandle(), id, 
+        int charCount = ::LoadStringW(GetApp()->GetResourceHandle(), id,
             reinterpret_cast<LPWSTR>(&pString), 0);
 
         if (charCount > 0)

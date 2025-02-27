@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -71,7 +71,7 @@ namespace Win32xx
     {
     public:
         CRibbon();
-        virtual ~CRibbon();
+        virtual ~CRibbon() = default;
 
         // IUIApplication methods
         virtual STDMETHODIMP OnCreateUICommand(UINT32 nCmdID, __in UI_COMMANDTYPE typeID,
@@ -112,7 +112,7 @@ namespace Win32xx
     //
 
     // The CRibbonFrameT is the base class for frames that support the Ribbon Framework.
-    // The T parameter can be either CWnd or CDocker.
+    // The T parameter can be either CFrame, CDockFrame, CMDIFrame or CMDIDockFrame.
     template <class T>
     class CRibbonFrameT : public T, public CRibbon
     {
@@ -122,7 +122,7 @@ namespace Win32xx
         {
         public:
             CRecentFiles(PWSTR pFullPath);
-            virtual ~CRecentFiles() {}
+            virtual ~CRecentFiles() = default;
 
             // IUnknown methods.
             STDMETHODIMP_(ULONG) AddRef() override;
@@ -140,8 +140,8 @@ namespace Win32xx
 
         using RecentFilesPtr = std::unique_ptr<CRecentFiles>;
 
-        CRibbonFrameT() {}
-        virtual ~CRibbonFrameT() override {}
+        CRibbonFrameT() = default;
+        virtual ~CRibbonFrameT() override = default;
 
     protected:
         virtual CRect GetViewRect() const override;
@@ -158,13 +158,14 @@ namespace Win32xx
         std::vector<RecentFilesPtr> m_recentFiles;
     };
 
-
-    // This class provides an SDI frame with a Ribbon Framework
+    ////////////////////////////////////////////////////
+    // This class provides an SDI frame with a Ribbon
+    // Framework.
     class CRibbonFrame : public CRibbonFrameT<CFrame>
     {
     public:
-        CRibbonFrame() {}
-        virtual ~CRibbonFrame() override {}
+        CRibbonFrame() = default;
+        virtual ~CRibbonFrame() override = default;
 
     private:
         CRibbonFrame(const CRibbonFrame&) = delete;
@@ -177,8 +178,8 @@ namespace Win32xx
     class CRibbonDockFrame : public CRibbonFrameT<CDockFrame>
     {
     public:
-        CRibbonDockFrame() {}
-        virtual ~CRibbonDockFrame() override {}
+        CRibbonDockFrame() = default;
+        virtual ~CRibbonDockFrame() override = default;
 
     private:
         CRibbonDockFrame(const CRibbonDockFrame&) = delete;
@@ -191,8 +192,8 @@ namespace Win32xx
     class CRibbonMDIFrame : public CRibbonFrameT<CMDIFrame>
     {
     public:
-        CRibbonMDIFrame() {}
-        virtual ~CRibbonMDIFrame() override {}
+        CRibbonMDIFrame() = default;
+        virtual ~CRibbonMDIFrame() override = default;
 
     private:
         CRibbonMDIFrame(const CRibbonMDIFrame&) = delete;
@@ -206,8 +207,8 @@ namespace Win32xx
     class CRibbonMDIDockFrame : public CRibbonFrameT<CMDIDockFrame>
     {
     public:
-        CRibbonMDIDockFrame() {}
-        virtual ~CRibbonMDIDockFrame() override {}
+        CRibbonMDIDockFrame() = default;
+        virtual ~CRibbonMDIDockFrame() override = default;
 
     private:
         CRibbonMDIDockFrame(const CRibbonMDIDockFrame&) = delete;
@@ -230,9 +231,6 @@ namespace Win32xx
     {
     }
 
-    inline CRibbon::~CRibbon()
-    {
-    }
 
     //////////////////////////////////
     // IUnknown method implementations.
@@ -441,13 +439,11 @@ namespace Win32xx
             switch (verb)
             {
             case UI_VIEWVERB_CREATE:    // The view was newly created.
+            case UI_VIEWVERB_DESTROY:   // The view was destroyed.
                 result = S_OK;
                 break;
             case UI_VIEWVERB_SIZE:      // Ribbon size has changed.
                 T::RecalcLayout();
-                break;
-            case UI_VIEWVERB_DESTROY:   // The view was destroyed.
-                result = S_OK;
                 break;
             case UI_VIEWVERB_ERROR:
                 result = E_FAIL;
@@ -476,9 +472,9 @@ namespace Win32xx
                 WCHAR curFileName[MAX_PATH] = {0};
                 StrCopyW(curFileName, TtoW(fileName), MAX_PATH);
 
-                RecentFilesPtr recentFiles(std::make_unique<CRecentFiles>(curFileName));
-                result = SafeArrayPutElement(psa, &currentFile, static_cast<void*>(recentFiles.get()));
-                m_recentFiles.push_back(std::move(recentFiles));
+                m_recentFiles.push_back(std::make_unique<CRecentFiles>(curFileName));
+                result = SafeArrayPutElement(psa, &currentFile,
+                    static_cast<void*>(m_recentFiles.back().get()));
                 ++currentFile;
             }
 

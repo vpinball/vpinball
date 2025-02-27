@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -83,8 +83,8 @@ namespace Win32xx
     class CCommonDialog : public CDialog
     {
     public:
-        CCommonDialog() {}
-        virtual ~CCommonDialog() override {}
+        CCommonDialog() = default;
+        virtual ~CCommonDialog() override = default;
 
     protected:
         virtual void    OnCancel()  override {}  // A required override.
@@ -109,7 +109,7 @@ namespace Win32xx
     {
     public:
         CColorDialog(COLORREF initColor = 0, DWORD flags = 0);
-        virtual ~CColorDialog() override {}
+        virtual ~CColorDialog() override = default;
 
         virtual INT_PTR DoModal(HWND owner = nullptr) override;
         COLORREF  GetColor() const               { return m_cc.rgbResult; }
@@ -149,7 +149,7 @@ namespace Win32xx
                 DWORD   flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT,
                 LPCTSTR filter   = nullptr );
 
-        virtual ~CFileDialog() override {}
+        virtual ~CFileDialog() override = default;
 
         // Operations
         virtual INT_PTR DoModal(HWND owner = nullptr) override;
@@ -207,7 +207,7 @@ namespace Win32xx
     public:
         // constructor and destructor
         CFindReplaceDialog(BOOL isFindDialogOnly = TRUE);
-        virtual ~CFindReplaceDialog() override {}
+        virtual ~CFindReplaceDialog() override = default;
 
         virtual HWND Create(HWND parent = nullptr) override;
         virtual BOOL Create(BOOL isFindDialogOnly,
@@ -260,7 +260,7 @@ namespace Win32xx
         CFontDialog(const CHARFORMAT& charformat, DWORD flags = 0, HDC printer = nullptr);
         CFontDialog(DWORD flags = 0, HDC printer = nullptr);
 
-        virtual ~CFontDialog() override {}
+        virtual ~CFontDialog() override = default;
 
         virtual INT_PTR DoModal(HWND owner = nullptr) override;
         CHARFORMAT  GetCharFormat() const;

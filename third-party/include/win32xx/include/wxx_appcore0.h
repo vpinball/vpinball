@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -334,7 +334,7 @@ namespace Win32xx
         virtual CString MsgMenu() const;
         virtual CString MsgPrintFound() const;
 
-        // DDX anomaly prompting message strings
+        // DDX anomaly prompting message strings.
         virtual CString MsgDDX_Byte() const;
         virtual CString MsgDDX_Int() const;
         virtual CString MsgDDX_Long() const;
@@ -343,11 +343,17 @@ namespace Win32xx
         virtual CString MsgDDX_UINT() const;
         virtual CString MsgDDX_ULONG() const;
 
-        // DDV formats and prompts
+        // DDV formats and prompts.
         virtual CString MsgDDV_IntRange() const;
         virtual CString MsgDDV_UINTRange() const;
         virtual CString MsgDDV_RealRange() const;
         virtual CString MsgDDV_StringSize() const;
+
+        // Message string used for time.
+        virtual CString MsgTimeValid() const;
+
+        // Message used for CWinApp.
+        virtual CString MsgTlsIndexes() const;
     };
 
     // Returns a pointer to the CWinApp derived class.

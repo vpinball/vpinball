@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -51,10 +51,9 @@ namespace Win32xx
     // CMenuBar inherits from CToolBar.
     class CMenuBar : public CToolBar
     {
-
     public:
         CMenuBar();
-        virtual ~CMenuBar() override;
+        virtual ~CMenuBar() override = default;
 
         void    DrawAllMDIButtons(CDC& drawDC);
         HMENU   GetBarMenu() const {return m_topMenu;}
@@ -150,10 +149,6 @@ namespace Win32xx
     inline CMenuBar::CMenuBar() : m_msgHook(nullptr), m_popupMenu(nullptr), m_selectedMenu(nullptr),
         m_topMenu(nullptr), m_prevFocus(nullptr), m_hotItem(-1), m_isAltMode(FALSE), m_isExitAfter(FALSE),
         m_isKeyMode(FALSE), m_isMenuActive(FALSE), m_isSelectedPopup(FALSE)
-    {
-    }
-
-    inline CMenuBar::~CMenuBar()
     {
     }
 
@@ -749,8 +744,8 @@ namespace Win32xx
         LPNMHDR pHeader = reinterpret_cast<LPNMHDR>(lparam);
         switch (pHeader->code)
         {
-        case TBN_DROPDOWN:      return OnTBNDropDown((LPNMTOOLBAR) lparam);
-        case TBN_HOTITEMCHANGE: return OnTBNHotItemChange((LPNMTBHOTITEM) lparam);
+        case TBN_DROPDOWN:      return OnTBNDropDown(reinterpret_cast<LPNMTOOLBAR>(lparam));
+        case TBN_HOTITEMCHANGE: return OnTBNHotItemChange(reinterpret_cast<LPNMTBHOTITEM>(lparam));
         }
 
         return 0;
@@ -1177,7 +1172,7 @@ namespace Win32xx
         case WM_INITMENUPOPUP:      return OnInitMenuPopup(msg, wparam, lparam);
         case WM_KEYDOWN:            return OnKeyDown(msg, wparam, lparam);
         case WM_KILLFOCUS:          return OnKillFocus(msg, wparam, lparam);
-        case WM_LBUTTONDBLCLK:      return OnLButtonDown(msg, wparam, lparam);
+        case WM_LBUTTONDBLCLK:      // Intentionally blank
         case WM_LBUTTONDOWN:        return OnLButtonDown(msg, wparam, lparam);
         case WM_LBUTTONUP:          return OnLButtonUp(msg, wparam, lparam);
         case WM_MEASUREITEM:        return OnMeasureItem(msg, wparam, lparam);
@@ -1187,7 +1182,7 @@ namespace Win32xx
         case WM_SYSKEYUP:           return OnSysKeyUp(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGED:   return OnWindowPosChanged(msg, wparam, lparam);
         case WM_WINDOWPOSCHANGING:  return OnWindowPosChanging(msg, wparam, lparam);
-        case WM_UNINITMENUPOPUP:    return GetAncestor().SendMessage(msg, wparam, lparam);
+        case WM_UNINITMENUPOPUP:    // Intentionally blank
         case WM_MENURBUTTONUP:      return GetAncestor().SendMessage(msg, wparam, lparam);
 
         // Messages defined by Win32++.

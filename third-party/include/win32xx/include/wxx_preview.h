@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -130,10 +130,10 @@ namespace Win32xx
     {
     public:
         CPreviewPane();
-        virtual ~CPreviewPane() override {}
+        virtual ~CPreviewPane() override = default;
 
         void Render(CDC& dc);
-        void SetBitmap(CBitmap bitmap) { m_bitmap = bitmap; }
+        void SetBitmap(const CBitmap& bitmap) { m_bitmap = bitmap; }
 
     protected:
         virtual void OnDraw(CDC& dc) override;
@@ -157,10 +157,11 @@ namespace Win32xx
     public:
         CPrintPreview();
         CPrintPreview(T& source);
-        virtual ~CPrintPreview() override;
+        virtual ~CPrintPreview() override = default;
 
         CPreviewPane& GetPreviewPane() const { return *m_pPreviewPane; }
         void SetPreviewPane(CPreviewPane& previewPane) { m_pPreviewPane = &previewPane; }
+        void SetSource(T& source) { m_pSource = &source; }
 
         virtual void DoPrintPreview(HWND ownerWindow, int maxPage = 1);
         virtual BOOL OnCloseButton();
@@ -169,7 +170,6 @@ namespace Win32xx
         virtual BOOL OnPrintButton();
         virtual BOOL OnPrintSetup();
         virtual void PreviewPage(int page);
-        virtual void SetSource(T& source) { m_pSource = &source; }
         virtual void UpdateButtons();
 
     protected:
@@ -339,7 +339,8 @@ namespace Win32xx
 
     // Constructor.
     template <typename T>
-    inline CPrintPreview<T>::CPrintPreview() : CDialog((LPCDLGTEMPLATE)previewTemplate),
+    inline CPrintPreview<T>::CPrintPreview() :
+        CDialog(reinterpret_cast<LPCDLGTEMPLATE>(previewTemplate)),
         m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
     {
         m_pPreviewPane = &m_previewPane;
@@ -347,17 +348,11 @@ namespace Win32xx
 
     template <typename T>
     inline CPrintPreview<T>::CPrintPreview(T& source)
-        : CDialog((LPCDLGTEMPLATE)previewTemplate),
+        : CDialog(reinterpret_cast<LPCDLGTEMPLATE>(previewTemplate)),
         m_pSource(0), m_currentPage(0), m_maxPage(1), m_ownerWindow(0)
     {
         m_pPreviewPane = &m_previewPane;
         SetSource(source);
-    }
-
-    // Destructor.
-    template <typename T>
-    inline CPrintPreview<T>::~CPrintPreview()
-    {
     }
 
     // The dialog's window procdure. It handles the dialog's window messages.

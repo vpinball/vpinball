@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -52,14 +52,11 @@ namespace Win32xx
     {
     public:
         CToolBar();
-        virtual ~CToolBar() override;
+        virtual ~CToolBar() override = default;
 
         // Operations
-        virtual int  AddBitmap(UINT bitmapID);
         virtual BOOL AddButton(UINT buttonID, BOOL isEnabled = TRUE, int image = -1);
-        virtual BOOL AddReplaceBitmap(UINT bitmapID);
         virtual void Destroy() override;
-        virtual BOOL ReplaceBitmap(UINT newBitmapID);
         virtual BOOL SetButtonText(UINT buttonID, LPCTSTR text);
 
         // Wrappers for Win32 API functions
@@ -94,7 +91,7 @@ namespace Win32xx
         HWND  GetToolTips() const;
         BOOL  HasText() const;
         BOOL  HideButton(UINT buttonID, BOOL show) const;
-        int   HitTest(const POINT& pt) const;
+        int   HitTest(POINT pt) const;
         int   HitTest() const;
         BOOL  Indeterminate(UINT buttonID, BOOL isIndeterminate) const;
         BOOL  InsertButton(int index, const TBBUTTON& buttonInfo) const;
@@ -169,40 +166,6 @@ namespace Win32xx
     {
     }
 
-    inline CToolBar::~CToolBar()
-    {
-    }
-
-    // Adds one or more images to the list of button images available for a ToolBar.
-    // Note: AddBitmap supports a maximum color depth of 8 bits (256 colors)
-    //       This is an obsolete functioned retained for Win95 support.
-    //       Unless Win95 support is required, use SetImageList instead.
-    // Refer to TB_ADDBITMAP in the Windows API documentation for more information.
-    inline int CToolBar::AddBitmap(UINT bitmapID)
-    {
-        TRACE("*** Warning: CToolBar::AddBitmap is deprecated. ***\n");
-
-        assert(IsWindow());
-
-        CBitmap bitmap(bitmapID);
-        assert (bitmap.GetHandle());
-        BITMAP data = bitmap.GetBitmapData();
-        int imageWidth  = std::max(static_cast<int>(data.bmHeight), 16);
-        int images = data.bmWidth / imageWidth;
-
-        TBADDBITMAP tbab{};
-        tbab.hInst = GetApp()->GetResourceHandle();
-        tbab.nID   = static_cast<UINT_PTR>(bitmapID);
-        WPARAM wparam = static_cast<WPARAM>(images);
-        LPARAM lparam = reinterpret_cast<LPARAM>(&tbab);
-        int result = static_cast<int>(SendMessage(TB_ADDBITMAP, wparam, lparam));
-
-        if (result != -1)
-            m_oldBitmapID = bitmapID;
-
-        return result;
-    }
-
     // Adds a single button to the Toolbar. It provides a convenient alternative to AddButtons.
     // A resource ID of 0 is a separator. image is the index of the image in the ImageList.
     // The default is -1 in which case the image based on the button's position is chosen.
@@ -255,35 +218,6 @@ namespace Win32xx
         WPARAM wparam = static_cast<WPARAM>(buttonCount);
         LPARAM lparam = reinterpret_cast<LPARAM>(pButtonInfoArray);
         return static_cast<BOOL>(SendMessage(TB_ADDBUTTONS, wparam, lparam));
-    }
-
-    // Adds images to the toolbar, or replaces the existing ones.
-    // Note: AddReplaceBitmap supports a maximum color depth of 8 bits (256 colors)
-    //       This is an obsolete functioned retained for Win95 support.
-    //       Unless Win95 support is required, use SetImageList instead.
-    // Refer to AddBitmap and ReplaceBitmap for more information.
-    inline BOOL CToolBar::AddReplaceBitmap(UINT id)
-    {
-        TRACE("*** Warning: CToolBar::AddReplaceBitmap is deprecated. ***\n");
-        assert(IsWindow());
-
-        CBitmap bitmap(id);
-        assert(bitmap.GetHandle());
-        BITMAP data = bitmap.GetBitmapData();
-
-        int imageHeight = data.bmHeight;
-        int imageWidth = std::max(static_cast<int>(data.bmHeight), 16);
-
-        // Set the bitmap size first.
-        SetBitmapSize(imageWidth, imageHeight);
-
-        BOOL succeeded = FALSE;
-        if (m_oldBitmapID)
-            succeeded = ReplaceBitmap(id);
-        else
-            succeeded = AddBitmap(id);
-
-        return succeeded;
     }
 
     // Adds a new string, passed as a resource ID, to the ToolBar's internal list of strings.
@@ -650,7 +584,7 @@ namespace Win32xx
 
     // Returns the button that's positioned at the specified point.
     // Refer to TB_HITTEST in the Windows API documentation for more information.
-    inline int CToolBar::HitTest(const POINT& pt) const
+    inline int CToolBar::HitTest(POINT pt) const
     {
         assert(IsWindow());
         LPARAM lparam = reinterpret_cast<LPARAM>(&pt);
@@ -765,7 +699,7 @@ namespace Win32xx
         //  Used by ReBar controls to adjust ToolBar window size
         if ( GetParent().SendMessage(UWM_TBWINPOSCHANGING, reinterpret_cast<WPARAM>(GetHwnd()), lparam) )
         {
-            LPWINDOWPOS pWinPos = (LPWINDOWPOS)lparam;
+            LPWINDOWPOS pWinPos = reinterpret_cast<LPWINDOWPOS>(lparam);
             pWinPos->cx = GetMaxSize().cx;
             pWinPos->cy = GetMaxSize().cy;
         }
@@ -792,36 +726,6 @@ namespace Win32xx
         assert(IsWindow());
         WPARAM wparam = static_cast<WPARAM>(buttonID);
         return static_cast<BOOL>(SendMessage(TB_PRESSBUTTON, wparam, MAKELONG(press, 0)));
-    }
-
-    // Replaces an existing bitmap with a new bitmap.
-    // Note: ReplaceBitmap supports a maximum color depth of 8 bits (256 colors)
-    //       This is an obsolete functioned retained for Win95 support.
-    //       Unless Win95 support is required, use SetImageList instead.
-    // Refer to TB_REPLACEBITMAP in the Windows API documentation for more information.
-    inline BOOL CToolBar::ReplaceBitmap(UINT newBitmapID)
-    {
-        assert(IsWindow());
-
-        CBitmap Bitmap(newBitmapID);
-        assert (Bitmap.GetHandle());
-        BITMAP data = Bitmap.GetBitmapData();
-        int imageWidth  = std::max(static_cast<int>(data.bmHeight), 16);
-        int images = data.bmWidth / imageWidth;
-
-        TBREPLACEBITMAP tbrb{};
-        tbrb.hInstNew = GetApp()->GetResourceHandle();
-        tbrb.hInstOld = tbrb.hInstNew;
-        tbrb.nIDNew = static_cast<UINT_PTR>(newBitmapID);
-        tbrb.nIDOld = static_cast<UINT_PTR>(m_oldBitmapID);
-        tbrb.nButtons  = images;
-
-        LPARAM lparam = reinterpret_cast<LPARAM>(&tbrb);
-        BOOL result = static_cast<BOOL>(SendMessage(TB_REPLACEBITMAP, 0, lparam));
-        if (result)
-            m_oldBitmapID = newBitmapID;
-
-        return result;
     }
 
     // Saves or restores the toolbar state in the registry. Parameter values:
@@ -924,8 +828,6 @@ namespace Win32xx
         tbbi.dwMask = TBIF_STYLE;
         tbbi.fsStyle = style;
 
-        // Note:  TB_SETBUTTONINFO requires comctl32.dll version 4.71 or later.
-        //        i.e. Win95 with IE4 / NT with IE4   or later.
         return SetButtonInfo(buttonID, tbbi);
     }
 
@@ -965,7 +867,7 @@ namespace Win32xx
             if (stringIndex != -1)
             {
                 // Save the string its index in our map.
-                m_stringMap.insert(std::make_pair(string, stringIndex));
+                m_stringMap.emplace(std::make_pair(string, stringIndex));
 
                 succeeded = TRUE;
             }
@@ -1011,9 +913,6 @@ namespace Win32xx
     inline BOOL CToolBar::SetButtonWidth(UINT buttonID, int width) const
     {
         assert(IsWindow());
-
-        // Note:  TB_SETBUTTONINFO requires comctl32.dll version 4.71 or later
-        //        i.e. Win95 with IE4 / NT with IE4   or later
 
         TBBUTTONINFO tbbi{};
         tbbi.cbSize = sizeof(tbbi);

@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -125,7 +125,7 @@ namespace Win32xx
     {
     public:
         CSemaphore(LONG initialCount, LONG maxCount, LPCTSTR name,
-            LPSECURITY_ATTRIBUTES attributes);
+            LPSECURITY_ATTRIBUTES attributes = nullptr);
 
         HANDLE GetHandle() const { return m_semaphore; }
         operator HANDLE() const  { return m_semaphore; }

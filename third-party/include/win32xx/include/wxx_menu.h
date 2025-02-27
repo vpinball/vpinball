@@ -1,5 +1,5 @@
-// Win32++   Version 10.0.0
-// Release Date: 9th September 2024
+// Win32++   Version 10.1.0
+// Release Date: 17th Feb 2025
 //
 //      David Nash
 //      email: dnash@bigpond.net.au
@@ -7,7 +7,7 @@
 //           https://github.com/DavidNash2024/Win32xx
 //
 //
-// Copyright (c) 2005-2024  David Nash
+// Copyright (c) 2005-2025  David Nash
 //
 // Permission is hereby granted, free of charge, to
 // any person obtaining a copy of this software and
@@ -92,7 +92,7 @@ namespace Win32xx
 
     // This class provides support for menus. It provides member functions for creating,
     // tracking, updating, and destroying a menu.
-    class CMenu
+    class CMenu final
     {
     public:
         // Construction
@@ -102,7 +102,7 @@ namespace Win32xx
         CMenu(const CMenu& rhs);
         CMenu& operator=(const CMenu& rhs);
         CMenu& operator=(HMENU menu);
-        virtual ~CMenu();
+        ~CMenu();
 
         // Initialization
         void Attach(HMENU menu);
@@ -171,28 +171,15 @@ namespace Win32xx
 namespace Win32xx
 {
     ////////////////////////////////////////
-    // Global function
-    //
-
-    // Returns the correct size of the MENUITEMINFO struct.
-    // The size of the MENUIEMINFO struct varies according to the window version.
-    inline UINT GetSizeofMenuItemInfo()
-    {
-        TRACE("*** Warning: GetSizeofMenuItemInfo is deprecated. ***\n");
-        return sizeof(MENUITEMINFO);
-    }
-
-    ////////////////////////////////////////
     // Definitions of CMenu
     //
-    inline CMenu::CMenu()
+
+    inline CMenu::CMenu() : m_pData(std::make_shared<CMenu_Data>())
     {
-        m_pData = std::make_shared<CMenu_Data>();
     }
 
-    inline CMenu::CMenu(UINT id)
+    inline CMenu::CMenu(UINT id) : m_pData(std::make_shared<CMenu_Data>())
     {
-        m_pData = std::make_shared<CMenu_Data>();
         HMENU menu = ::LoadMenu(GetApp()->GetResourceHandle(), MAKEINTRESOURCE(id));
         if (menu != nullptr)
         {
@@ -200,9 +187,8 @@ namespace Win32xx
         }
     }
 
-    inline CMenu::CMenu(HMENU menu)
+    inline CMenu::CMenu(HMENU menu) : m_pData(std::make_shared<CMenu_Data>())
     {
-        m_pData = std::make_shared<CMenu_Data>();
         if (menu != nullptr)
             Attach(menu);
     }
@@ -246,7 +232,7 @@ namespace Win32xx
         GetApp()->AddCMenuData(m_pData->menu, m_pData);
     }
 
-    // Destroys m_pData if the reference count is zero.
+    // Destroys m_pData if this is the only copy of the CMenu.
     inline void CMenu::Release()
     {
         assert(m_pData);
@@ -260,7 +246,7 @@ namespace Win32xx
             {
                 if (m_pData->isManagedMenu)
                 {
-                    // Menu will already be destroyed if assigned to a destroyed window.
+                    // The menu will already be destroyed if assigned to a destroyed window.
                     if (IsMenu(m_pData->menu))
                         ::DestroyMenu(m_pData->menu);
                 }
@@ -282,11 +268,12 @@ namespace Win32xx
             CThreadLock mapLock(GetApp()->m_wndLock);
 
             // Erase the CMenu data pointer in the map.
-            auto m = GetApp()->m_mapCMenuData.find(m_pData->menu);
-            if (m != GetApp()->m_mapCMenuData.end())
+            auto& map = GetApp()->m_mapCMenuData;
+            auto m = map.find(m_pData->menu);
+            if (m != map.end())
             {
                 // Erase the CMenu data pointer from the map.
-                GetApp()->m_mapCMenuData.erase(m);
+                map.erase(m);
                 success = TRUE;
             }
         }
@@ -343,7 +330,7 @@ namespace Win32xx
                 std::shared_ptr<CMenu_Data> pCMenuData = GetApp()->GetCMenuData(menu).lock();
                 if (pCMenuData)
                 {
-                    m_pData = pCMenuData;
+                    m_pData = std::move(pCMenuData);
                 }
                 else
                 {
