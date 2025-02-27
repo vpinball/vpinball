@@ -1216,7 +1216,6 @@
 #define IDC_STATIC_ELEMENT_TYPE         839
 #define ID_APPLY                        840
 #define IDC_VR_MODE                     840
-#define IDC_NOTES_RICHEDIT              841
 #define IDC_DMD_MODE                    841
 #define IDC_BG_MODE                     842
 #define IDC_STATIC7                     842

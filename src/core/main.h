@@ -159,7 +159,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_rebar.h>			// Add CRebar
 //#include <wxx_regkey.h>			// Add CRegKey
 //#include <wxx_ribbon.h>		// Add CRibbon, CRibbonFrame
-#include <wxx_richedit.h>		// Add CRichEdit
+//#include <wxx_richedit.h>		// Add CRichEdit
 //#include <wxx_socket.h>			// Add CSocket
 //#include <wxx_statusbar.h>		// Add CStatusBar
 #include <wxx_stdcontrols.h>	// Add CButton, CEdit, CListBox
