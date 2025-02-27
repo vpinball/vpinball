@@ -1481,7 +1481,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          // set the IDM of this menu item
          // set up the menu info block
          MENUITEMINFO menuInfo = {};
-         menuInfo.cbSize = GetSizeofMenuItemInfo();
+         menuInfo.cbSize = sizeof(MENUITEMINFO);
          menuInfo.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
          menuInfo.fState = MFS_ENABLED;
          menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
@@ -1495,7 +1495,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
       // add a separator onto the end
       MENUITEMINFO menuInfo = {};
-      menuInfo.cbSize = GetSizeofMenuItemInfo();
+      menuInfo.cbSize = sizeof(MENUITEMINFO);
       menuInfo.fMask = MIIM_ID | MIIM_TYPE | MIIM_STATE;
       menuInfo.fState = MFS_ENABLED;
       menuInfo.fType = MFT_SEPARATOR;
@@ -1971,8 +1971,6 @@ LRESULT VPinball::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       ShowSubDialog(m_aboutDialog, true);
       return FinalWindowProc(uMsg, wParam, lParam);
    }
-   case UWM_UPDATECOMMAND:
-      return FinalWindowProc(uMsg, wParam, lParam);
 
    default:
       // check for the PinSim::FrontEndControls registered message
