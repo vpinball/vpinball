@@ -322,7 +322,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    if (m_d.m_shape == TriggerStar || m_d.m_shape == TriggerButton)
    {
-      TriggerHitCircle* hitcircle = new TriggerHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
+      TriggerHitCircle* hitcircle = new TriggerHitCircle(this, m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_hit_height);
       hitcircle->m_enabled = isUI ? true : m_d.m_enabled;
       hitcircle->m_ObjType = eTrigger;
       hitcircle->m_obj = (IFireEvents *)this;
@@ -331,7 +331,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          assert(m_ptriggerhitcircle == nullptr);
          m_ptriggerhitcircle = hitcircle;
       }
-      physics->AddCollider(hitcircle, this, isUI);
+      physics->AddCollider(hitcircle, isUI);
    }
    else
    {
@@ -344,18 +344,12 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          const RenderVertex &pv1 = vvertex[(i < count - 1) ? (i + 1) : 0];
          const RenderVertex &pv2 = vvertex[(i < count - 2) ? (i + 2) : (i + 2 - count)];
 
-         TriggerLineSeg *const plineseg = new TriggerLineSeg();
-         plineseg->m_ptrigger = isUI ? nullptr : this; // enable flag is checked through this reference during HitTest
+         LineSeg *const plineseg = isUI ? 
+              new LineSeg(this, pv1, pv2, height, height + max(m_d.m_hit_height - 8.0f, 0.f)) //adjust for same hit height as circular
+            : new TriggerLineSeg(this, pv1, pv2, height, height + max(m_d.m_hit_height - 8.0f, 0.f));
          plineseg->m_ObjType = eTrigger;
          plineseg->m_obj = (IFireEvents *)this;
-         plineseg->m_hitBBox.zlow = height;
-         plineseg->m_hitBBox.zhigh = height + max(m_d.m_hit_height - 8.0f, 0.f); //adjust for same hit height as circular
-         plineseg->v1.x = pv1.x;
-         plineseg->v1.y = pv1.y;
-         plineseg->v2.x = pv2.x;
-         plineseg->v2.y = pv2.y;
-         plineseg->CalcNormal();
-         physics->AddCollider(plineseg, this, isUI);
+         physics->AddCollider(plineseg, isUI);
       }
 
       Vertex3Ds *const rgv3D = new Vertex3Ds[count];
@@ -365,7 +359,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          rgv3D[i].y = vvertex[i].y;
          rgv3D[i].z = height + (float)(PHYS_SKIN * 2.0);
       }
-      Hit3DPoly *const ph3dpoly = new Hit3DPoly(rgv3D, count);
+      Hit3DPoly *const ph3dpoly = new Hit3DPoly(this, rgv3D, count);
       ph3dpoly->m_ObjType = eTrigger;
       ph3dpoly->m_obj = (IFireEvents *)this;
       if (!isUI) // Keep reference to update enable flag
@@ -373,7 +367,7 @@ void Trigger::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          assert(m_ptriggerhitpoly == nullptr);
          m_ptriggerhitpoly = ph3dpoly;
       }
-      physics->AddCollider(ph3dpoly, this, isUI);
+      physics->AddCollider(ph3dpoly, isUI);
    }
 }
 

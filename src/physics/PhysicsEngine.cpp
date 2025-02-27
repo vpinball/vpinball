@@ -3,7 +3,11 @@
 #include "core/stdafx.h"
 #include "PhysicsEngine.h"
 
-PhysicsEngine::PhysicsEngine(PinTable *const table) : m_nudgeFilterX("x"), m_nudgeFilterY("y")
+PhysicsEngine::PhysicsEngine(PinTable *const table)
+   : m_hitPlayfield(table)
+   , m_hitTopGlass(table)
+   , m_nudgeFilterX("x")
+   , m_nudgeFilterY("y")
 {
    m_physicsMaxLoops = table->m_PhysicsMaxLoops == 0xFFFFFFFFu ? 0 : table->m_PhysicsMaxLoops * (10000 / PHYSICS_STEPTIME) /*2*/;
    m_contacts.reserve(8);
@@ -152,11 +156,10 @@ void PhysicsEngine::SetGravity(float slopeDeg, float strength)
    m_gravity.z = -cosf(ANGTORAD(slopeDeg)) * strength;
 }
 
-void PhysicsEngine::AddCollider(HitObject *collider, IEditable *editable, const bool isUI)
+void PhysicsEngine::AddCollider(HitObject *collider, const bool isUI)
 {
-   assert(editable != nullptr);
+   assert(collider->m_editable != nullptr);
    collider->CalcHitBBox();
-   collider->m_editable = editable;
    if (!isUI && (collider->GetType() == eBall))
    {
       m_vmover.push_back(&static_cast<HitBall*>(collider)->m_mover); // balls are always added separately to this list!
@@ -170,7 +173,7 @@ void PhysicsEngine::AddCollider(HitObject *collider, IEditable *editable, const 
    }
 }
 
-void PhysicsEngine::RemoveCollider(HitObject * collider, IEditable * editable, const bool isUI)
+void PhysicsEngine::RemoveCollider(HitObject * collider, const bool isUI)
 {
    assert(collider->GetType() == eBall); // Ball are the only object owning its HitObject, therefore the only one allowed to call here
    if (!isUI)
@@ -185,10 +188,10 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    // TODO these are the only colliders that are added without an associated editable. We could enforce one here to guarantee m_editable != nullptr and simplify the code
    
    // simple outer borders:
-   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), table, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), table, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight), table, false);
-   AddCollider(new LineSeg(Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), table, false);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_top), Vertex2D(table->m_right, table->m_bottom), 0.f, table->m_glassTopHeight), false);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_bottom), Vertex2D(table->m_left, table->m_top), 0.f, table->m_glassBottomHeight), false);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_right, table->m_bottom), Vertex2D(table->m_left, table->m_bottom), 0.f, table->m_glassBottomHeight),  false);
+   AddCollider(new LineSeg(table, Vertex2D(table->m_left, table->m_top), Vertex2D(table->m_right, table->m_top), 0.f, table->m_glassTopHeight), false);
 
    // glass:
    Vertex3Ds * const rgv3D = new Vertex3Ds[4];
@@ -196,7 +199,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    rgv3D[1] = Vertex3Ds(table->m_right, table->m_top, table->m_glassTopHeight);
    rgv3D[2] = Vertex3Ds(table->m_right, table->m_bottom, table->m_glassBottomHeight);
    rgv3D[3] = Vertex3Ds(table->m_left, table->m_bottom, table->m_glassBottomHeight);
-   AddCollider(new Hit3DPoly(rgv3D, 4), table, false);
+   AddCollider(new Hit3DPoly(table, rgv3D, 4), false);
 
    /*
    // playfield:
@@ -205,16 +208,16 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    rgv3D[2] = Vertex3Ds(table->m_right, table->m_top, 0.f);
    rgv3D[1] = Vertex3Ds(table->m_right, table->m_bottom, 0.f);
    rgv3D[0] = Vertex3Ds(table->m_left, table->m_bottom, 0.f);
-   Hit3DPoly * const ph3dpoly = new Hit3DPoly(rgv3D, 4); //!!
+   Hit3DPoly * const ph3dpoly = new Hit3DPoly(table, rgv3D, 4); //!!
    ph3dpoly->SetFriction(table->m_overridePhysics ? table->m_fOverrideContactFriction : table->m_friction);
    ph3dpoly->m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    ph3dpoly->m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
    ph3dpoly->m_scatter = ANGTORAD(table->m_overridePhysics ? table->m_fOverrideScatterAngle : table->m_scatter);
-   AddCollider(ph3dpoly, table, false);
+   AddCollider(ph3dpoly, false);
    */
 
    // playfield:
-   m_hitPlayfield = HitPlane(Vertex3Ds(0, 0, 1), 0.f);
+   m_hitPlayfield = HitPlane(table, Vertex3Ds(0, 0, 1), 0.f);
    m_hitPlayfield.SetFriction(table->m_overridePhysics ? table->m_fOverrideContactFriction : table->m_friction);
    m_hitPlayfield.m_elasticity = table->m_overridePhysics ? table->m_fOverrideElasticity : table->m_elasticity;
    m_hitPlayfield.m_elasticityFalloff = table->m_overridePhysics ? table->m_fOverrideElasticityFalloff : table->m_elasticityFalloff;
@@ -223,7 +226,7 @@ void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
    // glass:
    Vertex3Ds glassNormal(0, table->m_bottom - table->m_top, table->m_glassBottomHeight - table->m_glassTopHeight);
    glassNormal.Normalize();
-   m_hitTopGlass = HitPlane(Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
+   m_hitTopGlass = HitPlane(table, Vertex3Ds(0, glassNormal.z, -glassNormal.y), -table->m_glassTopHeight);
    m_hitTopGlass.m_elasticity = 0.2f;
 }
 

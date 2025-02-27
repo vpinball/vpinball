@@ -199,18 +199,17 @@ void Bumper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    const float height = m_ptable->GetSurfaceHeight(m_d.m_szSurface, m_d.m_vCenter.x, m_d.m_vCenter.y);
    if (isUI)
    {
-      HitCircle *const pcircle = new HitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
-      physics->AddCollider(pcircle, this, isUI);
+      HitCircle *const pcircle = new HitCircle(this, m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
+      physics->AddCollider(pcircle, isUI);
    }
    else
    {
-      BumperHitCircle *const phitcircle = new BumperHitCircle(m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
+      BumperHitCircle *const phitcircle = new BumperHitCircle(this, m_d.m_vCenter, m_d.m_radius, height, height + m_d.m_heightScale);
       phitcircle->m_bumperanim_hitEvent = m_d.m_hitEvent;
       phitcircle->m_enabled = m_d.m_collidable;
       phitcircle->m_scatter = ANGTORAD(m_d.m_scatter);
-      phitcircle->m_pbumper = this;
       m_pbumperhitcircle = phitcircle;
-      physics->AddCollider(phitcircle, this, isUI);
+      physics->AddCollider(phitcircle, isUI);
    }
 }
 

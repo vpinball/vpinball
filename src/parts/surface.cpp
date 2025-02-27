@@ -375,12 +375,12 @@ void Surface::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       AddLine(physics, pv2, pv3, isUI);
    }
 
-   Hit3DPoly * const ph3dpolyt = new Hit3DPoly(rgv3Dt, count);
+   Hit3DPoly *const ph3dpolyt = new Hit3DPoly(this, rgv3Dt, count);
    SetupHitObject(physics, ph3dpolyt, isUI);
 
    if (m_d.m_isBottomSolid || isUI)
    {
-      Hit3DPoly * const ph3dpolyb = new Hit3DPoly(rgv3Db, count);
+      Hit3DPoly *const ph3dpolyb = new Hit3DPoly(this, rgv3Db, count);
       SetupHitObject(physics, ph3dpolyb, isUI);
    }
 }
@@ -422,7 +422,7 @@ void Surface::SetupHitObject(PhysicsEngine* physics, HitObject * const obj, cons
       obj->m_threshold = m_d.m_threshold;
    }
 
-   physics->AddCollider(obj, this, isUI);
+   physics->AddCollider(obj, isUI);
    if (!isUI)
    {
       m_vhoCollidable.push_back(obj); //remember hit components of wall
@@ -441,16 +441,15 @@ void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const Ren
    LineSeg *plineseg;
    if (!pv1.slingshot)
    {
-      plineseg = new LineSeg(pv1, pv2, bottom, top);
+      plineseg = new LineSeg(this, pv1, pv2, bottom, top);
    }
    else
    {
-      LineSegSlingshot * const plinesling = new LineSegSlingshot(pv1, pv2, bottom, top);
+      LineSegSlingshot *const plinesling = new LineSegSlingshot(this, pv1, pv2, bottom, top);
       plineseg = (LineSeg *)plinesling;
 
       plinesling->m_force = m_d.m_slingshotforce;
-      plinesling->m_psurface = this;
-
+      
       if (!isUI)
          m_vlinesling.push_back(plinesling);
    }
@@ -466,20 +465,20 @@ void Surface::AddLine(PhysicsEngine* physics, const RenderVertex &pv1, const Ren
 
    // add lower edge as a line
    if (!isUI && m_d.m_heightbottom != 0.f)
-      SetupHitObject(physics, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
+      SetupHitObject(physics, new HitLine3D(this, Vertex3Ds(pv1.x, pv1.y, bottom), Vertex3Ds(pv2.x, pv2.y, bottom)), isUI);
 
    // add upper edge as a line
    if (!isUI)
-      SetupHitObject(physics, new HitLine3D(Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
+      SetupHitObject(physics, new HitLine3D(this, Vertex3Ds(pv1.x, pv1.y, top), Vertex3Ds(pv2.x, pv2.y, top)), isUI);
 
    // create vertical joint between the two line segments
-   SetupHitObject(physics, new HitLineZ(pv1, bottom, top), isUI);
+   SetupHitObject(physics, new HitLineZ(this, pv1, bottom, top), isUI);
 
    // add upper and lower end points of line
    if (!isUI && m_d.m_heightbottom != 0.f)
-      SetupHitObject(physics, new HitPoint(Vertex3Ds(pv1.x, pv1.y, bottom)), isUI);
+      SetupHitObject(physics, new HitPoint(this, pv1.x, pv1.y, bottom), isUI);
    if (!isUI)
-      SetupHitObject(physics, new HitPoint(Vertex3Ds(pv1.x, pv1.y, top)), isUI);
+      SetupHitObject(physics, new HitPoint(this, pv1.x, pv1.y, top), isUI);
 }
 
 void Surface::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds> *const legacy_bounds)

@@ -667,7 +667,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             // add joint for left edge
             AddJoint(physics, rgv3D[0], rgv3D[2], isUI);
 
-            HitTriangle *const ph3dpoly = new HitTriangle(rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
+            HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D); //!! this is not efficient at all, use native triangle-soup directly somehow
 
             if (ph3dpoly->IsDegenerate()) // degenerate triangles happen if width is 0 at some point
             {
@@ -688,7 +688,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          // add joint for right edge
          AddJoint(physics, rgv3D[1], rgv3D[2], isUI);
 
-         HitTriangle *const ph3dpoly = new HitTriangle(rgv3D);
+         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
          if (ph3dpoly->IsDegenerate())
          {
             delete ph3dpoly;
@@ -728,7 +728,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          // left ramp triangle, order CW
          const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv1.x, pv1.y, rgheight1[i]), Vertex3Ds(pv2.x, pv2.y, rgheight1[i]), Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]) };
 
-         HitTriangle *const ph3dpoly = new HitTriangle(rgv3D);
+         HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
          if (ph3dpoly->IsDegenerate())
          {
             delete ph3dpoly;
@@ -742,7 +742,7 @@ void Ramp::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       // right ramp triangle, order CW
       const Vertex3Ds rgv3D[3] = { Vertex3Ds(pv3.x, pv3.y, rgheight1[i + 1]), Vertex3Ds(pv4.x, pv4.y, rgheight1[i + 1]), Vertex3Ds(pv1.x, pv1.y, rgheight1[i]) };
 
-      HitTriangle *const ph3dpoly = new HitTriangle(rgv3D);
+      HitTriangle *const ph3dpoly = new HitTriangle(this, rgv3D);
       if (ph3dpoly->IsDegenerate())
       {
          delete ph3dpoly;
@@ -779,12 +779,12 @@ void Ramp::CheckJoint(PhysicsEngine *physics, const HitTriangle *const ph3d1, co
 
 void Ramp::AddJoint(PhysicsEngine* physics, const Vertex3Ds& v1, const Vertex3Ds& v2, const bool isUI)
 {
-   SetupHitObject(physics, new HitLine3D(v1, v2), isUI);
+   SetupHitObject(physics, new HitLine3D(this, v1, v2), isUI);
 }
 
 void Ramp::AddJoint2D(PhysicsEngine* physics, const Vertex2D& p, const float zlow, const float zhigh, const bool isUI)
 {
-   SetupHitObject(physics, new HitLineZ(p, zlow, zhigh), isUI);
+   SetupHitObject(physics, new HitLineZ(this, p, zlow, zhigh), isUI);
 }
 
 void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Vertex2D &pv2, const bool pv3_exists, const float height1, const float height2, const float wallheight, const bool isUI)
@@ -799,7 +799,7 @@ void Ramp::AddWallLineSeg(PhysicsEngine* physics, const Vertex2D &pv1, const Ver
    }
    else
    {
-      LineSeg * const plineseg = new LineSeg(pv1, pv2, height1, height2+wallheight);
+      LineSeg * const plineseg = new LineSeg(this, pv1, pv2, height1, height2+wallheight);
 
       SetupHitObject(physics, plineseg, isUI);
 
@@ -831,7 +831,7 @@ void Ramp::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isU
    obj->m_obj = (IFireEvents*)this;
    obj->m_fe = m_d.m_hitEvent;
 
-   physics->AddCollider(obj, this, isUI);
+   physics->AddCollider(obj, isUI);
    if (!isUI)
       m_vhoCollidable.push_back(obj); //remember hit components of primitive
 }

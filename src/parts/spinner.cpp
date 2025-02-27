@@ -208,7 +208,7 @@ void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       HitSpinner *const phitspinner = new HitSpinner(this, height);
       m_phitspinner = phitspinner;
 
-      physics->AddCollider(phitspinner, this, isUI);
+      physics->AddCollider(phitspinner, isUI);
 
       if (m_d.m_showBracket)
       {
@@ -219,11 +219,11 @@ void Spinner::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             const float cs = cosf(radangle);
 
             HitCircle *phitcircle;
-            phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x + cs * halflength, m_d.m_vCenter.y + sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
-            physics->AddCollider(phitcircle, this, isUI);
+            phitcircle = new HitCircle(this, Vertex2D(m_d.m_vCenter.x + cs * halflength, m_d.m_vCenter.y + sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
+            physics->AddCollider(phitcircle, isUI);
 
-            phitcircle = new HitCircle(Vertex2D(m_d.m_vCenter.x - cs * halflength, m_d.m_vCenter.y - sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
-            physics->AddCollider(phitcircle, this, isUI);
+            phitcircle = new HitCircle(this, Vertex2D(m_d.m_vCenter.x - cs * halflength, m_d.m_vCenter.y - sn * halflength), m_d.m_length * 0.075f, height + m_d.m_height, height + h);
+            physics->AddCollider(phitcircle, isUI);
       }
    }
 }

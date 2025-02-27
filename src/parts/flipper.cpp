@@ -248,8 +248,8 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    if (isUI)
    {
       // FIXME This is very imprecise. We could use the same as physics or create more hit geometry
-      Hit3DPoly *const pcircle = new Hit3DPoly(m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
-      physics->AddCollider(pcircle, this, isUI);
+      Hit3DPoly *const pcircle = new Hit3DPoly(this, m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
+      physics->AddCollider(pcircle, isUI);
    }
    else
    {
@@ -258,7 +258,7 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       phf->m_flipperMover.m_enabled = m_d.m_enabled;
       phf->m_flipperMover.m_visible = m_d.m_visible;
       m_phitflipper = phf;
-      physics->AddCollider(phf, this, isUI);
+      physics->AddCollider(phf, isUI);
    }
 }
 

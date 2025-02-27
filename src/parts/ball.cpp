@@ -208,12 +208,12 @@ void Ball::EndPlay() { IEditable::EndPlay(); }
 
 void Ball::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   physics->AddCollider(&m_hitBall, this, isUI);
+   physics->AddCollider(&m_hitBall, isUI);
 }
 
 void Ball::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 {
-   physics->RemoveCollider(&m_hitBall, this, isUI);
+   physics->RemoveCollider(&m_hitBall, isUI);
 }
 
 #pragma endregion

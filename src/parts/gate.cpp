@@ -327,11 +327,11 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       if (!m_d.m_twoWay)
       {
-          m_plineseg = new LineSeg(rgv[0], rgv[1], height, height + (float)(2.0 * PHYS_SKIN)); //!! = ball diameter
+          m_plineseg = new LineSeg(this, rgv[0], rgv[1], height, height + (float)(2.0 * PHYS_SKIN)); //!! = ball diameter
           m_plineseg->m_elasticity = m_d.m_elasticity;
           m_plineseg->SetFriction(m_d.m_friction);
           m_plineseg->m_scatter = ANGTORAD(m_d.m_scatter);
-          physics->AddCollider(m_plineseg, this, isUI);
+          physics->AddCollider(m_plineseg, isUI);
       }
 
       m_phitgate = new HitGate(this, height);
@@ -339,16 +339,16 @@ void Gate::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       m_phitgate->m_obj = (IFireEvents *)this;
       m_phitgate->m_fe = true;
       m_phitgate->m_enabled = m_d.m_collidable;
-      physics->AddCollider(m_phitgate, this, isUI);
+      physics->AddCollider(m_phitgate, isUI);
 
       if (m_d.m_showBracket)
       {
           HitCircle *phitcircle;
-          phitcircle = new HitCircle(m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
-          physics->AddCollider(phitcircle, this, isUI);
+          phitcircle = new HitCircle(this, m_d.m_vCenter + halflength * tangent, 0.01f, height, height + h);
+          physics->AddCollider(phitcircle, isUI);
 
-          phitcircle = new HitCircle(m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
-          physics->AddCollider(phitcircle, this, isUI);
+          phitcircle = new HitCircle(this, m_d.m_vCenter - halflength * tangent, 0.01f, height, height + h);
+          physics->AddCollider(phitcircle, isUI);
       }
    }
 }

@@ -150,8 +150,8 @@ public:
 class KickerHitCircle : public HitCircle
 {
 public:
-   KickerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
-      : HitCircle(c,r,zlow,zhigh)
+   KickerHitCircle(Kicker * const kicker, const Vertex2D& c, const float r, const float zlow, const float zhigh)
+      : HitCircle(kicker, c,r,zlow,zhigh)
    {
    }
 

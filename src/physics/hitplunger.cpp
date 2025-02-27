@@ -8,9 +8,8 @@ constexpr float PlungerMoverObject::m_mass = 30.0f;
 
 HitPlunger::HitPlunger(const float x, const float y, const float x2, const float zheight,
    const float frameTop, const float frameBottom,
-   Plunger * const pPlunger)
+   Plunger * const pPlunger) : HitObject(pPlunger), m_plungerMover(pPlunger)
 {
-   m_plungerMover.m_plunger = pPlunger;
    m_plungerMover.m_x = x;
    m_plungerMover.m_x2 = x2;
    m_plungerMover.m_y = y;
@@ -73,6 +72,22 @@ void HitPlunger::CalcHitBBox()
 
 // Ported at: VisualPinball.Engine/VPT/Plunger/PlungerHit.cs
 
+PlungerMoverObject::PlungerMoverObject(Plunger* const plunger)
+   : m_plunger(plunger)
+   , m_linesegBase(plunger)
+   , m_linesegEnd(plunger)
+   , m_linesegSide { LineSeg(plunger), LineSeg(plunger) }
+   , m_jointBase { HitLineZ(plunger), HitLineZ(plunger) }
+   , m_jointEnd { HitLineZ(plunger), HitLineZ(plunger) }
+{
+   // clear the mech plunger reading history
+   m_mech0 = m_mech1 = m_mech2 = 0.0f;
+   m_addRetractMotion = false;
+   m_retractMotion = false;
+   m_retractWaitLoop = 0;
+}
+
+
 void PlungerMoverObject::SetObjects(const float len)
 {
    m_linesegBase.v1.x = m_x;
@@ -105,11 +120,11 @@ void PlungerMoverObject::SetObjects(const float len)
    m_jointEnd[1].m_xy.x = m_x2;
    m_jointEnd[1].m_xy.y = len;// + 0.0001f;
 
-   m_linesegBase.CalcNormal();
-   m_linesegEnd.CalcNormal();
+   m_linesegBase.CalcNormalAndLength();
+   m_linesegEnd.CalcNormalAndLength();
 
-   m_linesegSide[0].CalcNormal();
-   m_linesegSide[1].CalcNormal();
+   m_linesegSide[0].CalcNormalAndLength();
+   m_linesegSide[1].CalcNormalAndLength();
 }
 
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerDisplacementSystem.cs

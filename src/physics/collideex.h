@@ -4,27 +4,16 @@
 
 class Surface;
 
-#ifdef __STANDALONE__
 class Bumper;
 class Spinner;
 class Gate;
 class Trigger;
-#endif
 
 class BumperHitCircle : public HitCircle
 {
 public:
-   BumperHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh)
-      : HitCircle(c,r,zlow,zhigh)
-   {
-      m_bumperanim_hitEvent = true;
-      m_bumperanim_ringAnimOffset = 0.0f;
-      m_pbumper = nullptr;
-   }
-
+   BumperHitCircle(Bumper* const pBumper, const Vertex2D& c, const float r, const float zlow, const float zhigh);
    void Collide(const CollisionEvent& coll) override;
-
-   Bumper *m_pbumper;
 
    Vertex3Ds m_bumperanim_hitBallPosition;
    float m_bumperanim_ringAnimOffset;
@@ -34,22 +23,12 @@ public:
 class LineSegSlingshot : public LineSeg
 {
 public:
-   LineSegSlingshot(const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh)
-      : LineSeg(p1, p2, _zlow, _zhigh)
-   {
-      m_iframe = false;
-      m_TimeReset = 0; // Reset
-      m_doHitEvent = false;
-      m_force = 0.f;
-      m_EventTimeReset = 0;
-      m_psurface = nullptr;
-   }
-
+   LineSegSlingshot(Surface* const psurface, const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh);
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eLineSegSlingshot; }
    void Collide(const CollisionEvent& coll) override;
 
-   Surface *m_psurface;
+   Surface * const m_psurface;
 
    float m_force;
    unsigned int m_EventTimeReset;
@@ -66,8 +45,8 @@ public:
 class Hit3DPoly : public HitObject
 {
 public:
-   Hit3DPoly(Vertex3Ds * const rgv, const int count); // pointer is copied and content deleted in dtor
-   Hit3DPoly(const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
+   Hit3DPoly(IEditable*const editable, Vertex3Ds * const rgv, const int count); // pointer is copied and content deleted in dtor
+   Hit3DPoly(IEditable* const editable, const float x, const float y, const float z, const float r, const int sections); // creates a circular hit poly
    ~Hit3DPoly() override;
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
@@ -90,7 +69,7 @@ private:
 class HitTriangle : public HitObject
 {
 public:
-   HitTriangle(const Vertex3Ds rgv[3]); // vertices in counterclockwise order
+   HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3]); // vertices in counterclockwise order
    ~HitTriangle() override {}
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
@@ -110,9 +89,11 @@ public:
 class HitPlane : public HitObject
 {
 public:
-   HitPlane() {}
-   HitPlane(const Vertex3Ds& normal, const float d)
-      : m_normal(normal), m_d(d)
+   HitPlane(IEditable* const editable) : HitObject(editable) { }
+   HitPlane(IEditable* const editable, const Vertex3Ds& normal, const float d)
+      : HitObject(editable)
+      , m_normal(normal)
+      , m_d(d)
    {
    }
 
@@ -216,20 +197,18 @@ private:
 class TriggerLineSeg : public LineSeg
 {
 public:
+   TriggerLineSeg(Trigger* const trigger, const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh);
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eTrigger; }
    void Collide(const CollisionEvent& coll) override;
 
-   Trigger *m_ptrigger;
+   Trigger * const m_ptrigger;
 };
 
 class TriggerHitCircle : public HitCircle
 {
 public:
-   TriggerHitCircle(const Vertex2D& c, const float r, const float zlow, const float zhigh) : HitCircle(c, r, zlow, zhigh)
-   {
-   }
-
+   TriggerHitCircle(Trigger* const trigger, const Vertex2D& c, const float r, const float zlow, const float zhigh);
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return eTrigger; }
    void Collide(const CollisionEvent& coll) override;
@@ -240,7 +219,7 @@ public:
 class HitLine3D : public HitLineZ
 {
 public:
-   HitLine3D(const Vertex3Ds& v1, const Vertex3Ds& v2);
+   HitLine3D(IEditable* const editable, const Vertex3Ds& v1, const Vertex3Ds& v2);
 
    float HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const override;
    int GetType() const override { return e3DLine; }
