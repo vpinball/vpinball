@@ -404,7 +404,7 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
    m_rootNode.HitTestBall(this, pball, coll);
 }
 
-#else // with SSE optimization
+#else // With SSE optimization
 void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) const
 {
    const HitQuadtreeNode* stack[MAX_LEVEL];
@@ -446,8 +446,8 @@ void HitQuadtree::HitTestBall(const HitBall* const pball, CollisionEvent& coll) 
    do
    {
       if (current->m_unique == nullptr
-          || (current->m_unique->HitableGetItemType() == eItemPrimitive && reinterpret_cast<Primitive*>(current->m_unique)->m_d.m_collidable)
-          || (current->m_unique->HitableGetItemType() == eItemHitTarget && !reinterpret_cast<HitTarget*>(current->m_unique)->m_d.m_isDropped)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
+          || (current->m_unique->HitableGetItemType() == eItemPrimitive && static_cast<Primitive*>(current->m_unique)->m_d.m_collidable)
+          || (current->m_unique->HitableGetItemType() == eItemHitTarget && !static_cast<HitTarget*>(current->m_unique)->m_d.m_isDropped)) // early out if only one unique primitive/hittarget stored inside all of the subtree/current node that is also not collidable (at the moment)
       {
          if (current->m_items != 0) // does node contain hitables?
          {
