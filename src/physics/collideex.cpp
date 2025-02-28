@@ -115,8 +115,8 @@ void LineSegSlingshot::Animate()
 
 HitGate::HitGate(Gate* const pgate, const float height)
    : HitObject(pgate)
-   , m_lineseg { LineSeg(pgate), LineSeg(pgate) }
    , m_pgate (pgate)
+   , m_lineseg { LineSeg(pgate), LineSeg(pgate) }
 {
    const float halflength = pgate->m_d.m_length * 0.5f;
 

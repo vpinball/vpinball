@@ -138,7 +138,7 @@ void HitQuadtree::Initialize()
       m_threadPool->wait_until_empty();
       m_threadPool->wait_until_nothing_in_flight();
    }
-      
+
    InitSseArrays();
 
 #else
@@ -257,7 +257,7 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
 {
    if (level > quadTree->m_nLevels)
       quadTree->m_nLevels = level;
-   
+
    if ((m_items <= 4) //!! magic
       || (level == MAX_LEVEL - 1) // bottom of tree
       || ((m_children = quadTree->AllocFourNodes()) == nullptr)) // Ran out of nodes
@@ -266,10 +266,9 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
    m_vcenter.x = (bounds.left + bounds.right) * 0.5f;
    m_vcenter.y = (bounds.top + bounds.bottom) * 0.5f;
    //m_vcenter.z = (bounds.zlow + bounds.zhigh)*0.5f;
-   #ifdef QUADTREE_SSE_LEAFTEST // Without SSE optimization
-      float vcenter[4] { m_vcenter.x, m_vcenter.x, m_vcenter.y, m_vcenter.y };
-      const __m128 center = _mm_loadu_ps(vcenter);
-      const int quadrant[] { 0, 1, 128, 1, 2, 3, 128, 3, 128, 128, 128, 128, 2, 3, 128, 3 };
+   #ifdef QUADTREE_SSE_LEAFTEST // With SSE optimization
+      const __m128 center = _mm_set_ps(m_vcenter.y, m_vcenter.y, m_vcenter.x, m_vcenter.x);
+      static constexpr int quadrant[] { 0, 1, 128, 1, 2, 3, 128, 3, 128, 128, 128, 128, 2, 3, 128, 3 };
    #endif
 
    m_unique = quadTree->m_vho[m_start]->m_editable->GetIHitable();
@@ -287,10 +286,10 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
       HitObject* const pho = *ppho;
       if (m_unique != pho->m_editable->GetIHitable()) // are all objects in current node unique/belong to the same hitable ?
          m_unique = nullptr;
-      #ifdef QUADTREE_SSE_LEAFTEST // Without SSE optimization
+      #ifdef QUADTREE_SSE_LEAFTEST // With SSE optimization
          const __m128 hb = _mm_loadu_ps(&pho->m_hitBBox.left); // L.R.T.B
-         __m128 cmp = _mm_cmpgt_ps(hb, center);
-         int oct = quadrant[_mm_movemask_ps(cmp)];
+         const __m128 cmp = _mm_cmpgt_ps(hb, center);
+         const int oct = quadrant[_mm_movemask_ps(cmp)];
       #else
          int oct;
          if (pho->m_hitBBox.left > m_vcenter.x)
@@ -387,8 +386,8 @@ void HitQuadtreeNode::CreateNextLevel(HitQuadtree* const quadTree, const FRect& 
 // are possible and should be handled, with embedding (penetrations) some contacts persist for long periods
 // and may cause others not to be seen (masked because of their position in the object list).
 
-// A short term solution might be to rotate the object list on each collision round. Currently, its a linear array.
-// and some subscript magic might be needed, where the actually collision counts are used to cycle the starting position
+// A short term solution might be to rotate the object list on each collision round. Currently, it's a linear array.
+// and some subscript magic might be needed, where the actual collision counts are used to cycle the starting position
 // for the next search. This could become a Ball property ... i.e. my last hit object index, start at the next
 // and cycle around until the last hit object is the last to be tested ... this could be made complex due to
 // scripts removing objects ... i.e. balls ...

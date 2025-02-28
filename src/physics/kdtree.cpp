@@ -472,7 +472,7 @@ void HitKDNode::HitTestBall(const HitKD* hitoct, const HitBall* const pball, Col
    const __m128 rsqr = _mm_set1_ps(pball->HitRadiusSqr());
 
    const bool traversal_order = (rand_mt_01() < 0.5f); // swaps test order in leafs randomly
-   const unsigned int dt = traversal_order ? 1 : -1;
+   const int dt = traversal_order ? 1 : -1;
 
    do
    {

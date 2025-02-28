@@ -441,7 +441,7 @@ float HitLineZ::HitTest(const BallS &ball, const float dtime, CollisionEvent& co
       hittime = (time1*time2 < 0.f) ? max(time1, time2) : min(time1, time2); // find smallest nonnegative solution
    }
 
-   if (infNaN(hittime) || hittime < 0 || hittime > dtime)
+   if (infNaN(hittime) || hittime < 0.f || hittime > dtime)
       return -1.0f; // contact out of physics frame
 
    const float hitz = ball.m_pos.z + hittime * ball.m_vel.z; // ball z position at hit time
