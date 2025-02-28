@@ -556,7 +556,11 @@ void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       rgv3D[1] = Vertex3Ds(v->x, v->y, v->z);
       v = &m_vertices[m_ringIndices[i + 1]];
       rgv3D[2] = Vertex3Ds(v->x, v->y, v->z);
-      SetupHitObject(physics, new HitTriangle(this, rgv3D), isUI);
+      HitTriangle *ht = new HitTriangle(this, rgv3D);
+      if (ht->IsDegenerate())
+         delete ht;
+      else
+         SetupHitObject(physics, ht, isUI);
 
       AddHitEdge(physics, addedEdges, m_ringIndices[i], m_ringIndices[i + 2], isUI);
       AddHitEdge(physics, addedEdges, m_ringIndices[i + 2], m_ringIndices[i + 1], isUI);

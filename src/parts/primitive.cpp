@@ -595,7 +595,11 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
          rgv3D[0] = m_vertices[i0];
          rgv3D[1] = m_vertices[i2];
          rgv3D[2] = m_vertices[i1];
-         SetupHitObject(physics, new HitTriangle(this, rgv3D), isUI);
+         HitTriangle* ht = new HitTriangle(this, rgv3D);
+         if (ht->IsDegenerate())
+            delete ht;
+         else
+            SetupHitObject(physics, ht, isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], isUI);
