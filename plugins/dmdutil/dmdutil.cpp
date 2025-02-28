@@ -6,15 +6,13 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "MsgPlugin.h"
+#include "VPXPlugin.h"
 #include "CorePlugin.h"
-#include "PinMamePlugin.h"
 #include "DMDUtil/DMDUtil.h"
 
 static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 
-static unsigned int onGameStartId;
 static unsigned int onGameEndId;
 static unsigned int onDmdSrcChangedId;
 static unsigned int getDmdSrcMsgId;
@@ -70,7 +68,7 @@ void onUpdateDMD(void* userData)
    msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
 }
 
-void onGameStart(const unsigned int msgId, void* userData, void* msgData)
+void initDMD()
 {
    pDmd = new DMDUtil::DMD();
    pDmd->FindDisplays();
@@ -104,22 +102,24 @@ void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
    GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
    msgApi->BroadcastMsg( endpointId, getDmdSrcMsgId, &getSrcMsg);
 
-   bool foundColor = false;
+   bool foundDMD = false;
 
    for (unsigned int i = 0; i < getSrcMsg.count; i++) {
       if (getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8) {
           if (getSrcMsg.entries[i].width > newDmdId.width) {
               newDmdId = getSrcMsg.entries[i];
-              foundColor = true;
+              foundDMD = true;
           }
       }
    }
 
-   if (!foundColor) {
+   if (!foundDMD) {
       for (unsigned int i = 0; i < getSrcMsg.count; i++) {
          if (getSrcMsg.entries[i].format == CTLPI_GETDMD_FORMAT_LUM8) {
-             if (getSrcMsg.entries[i].width > newDmdId.width)
+             if (getSrcMsg.entries[i].width > newDmdId.width) {
                newDmdId = getSrcMsg.entries[i];
+               foundDMD = true;
+            }
          }
       }
    }
@@ -127,6 +127,9 @@ void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
    delete[] getSrcMsg.entries;
 
    m_defaultDmdId = newDmdId;
+
+   if (foundDMD && !pDmd)
+      initDMD();
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
@@ -134,8 +137,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    msgApi = api;
    endpointId = sessionId;
 
-   msgApi->SubscribeMsg(endpointId, onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START), onGameStart, nullptr);
-   msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END), onGameEnd, nullptr);
+   msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG), onDmdSrcChanged, nullptr);
 
    getDmdSrcMsgId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
@@ -144,11 +146,9 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 
 MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
-   msgApi->UnsubscribeMsg(onGameStartId, onGameStart);
    msgApi->UnsubscribeMsg(onGameEndId, onGameEnd);
    msgApi->UnsubscribeMsg(onDmdSrcChangedId, onDmdSrcChanged);
 
-   msgApi->ReleaseMsgID(onGameStartId);
    msgApi->ReleaseMsgID(onGameEndId);
    msgApi->ReleaseMsgID(onDmdSrcChangedId);
    msgApi->ReleaseMsgID(getDmdSrcMsgId);
