@@ -230,7 +230,7 @@ static void DrawDisplay(int x, int y, float*& lum, int srcIndex, bool large)
       case CTLPI_GETSEG_LAYOUT_14D:  img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
       case CTLPI_GETSEG_LAYOUT_14DC: img = large ? SegImg_Seg14DC_8x10 : SegImg_Seg14DC_6x10; break;
       case CTLPI_GETSEG_LAYOUT_16:   img =         SegImg_Seg16_8x10;                         break;
-      default: assert(false); break;
+      default: assert(false); return; break;
       }
       DrawChar(x, y, segDisplays[img], lum, nSegments[type]);
       x += segDisplays[img].width;

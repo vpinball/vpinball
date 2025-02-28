@@ -98,7 +98,7 @@ public:
    void ResetValue(const Section section, const string &key);
    string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
    float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
-   bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return static_cast<bool>(v); }
+   bool LoadValueBool(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return !!v; }
    int LoadValueInt(const Section section, const string &key) const { int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
    unsigned int LoadValueUInt(const Section section, const string &key) const { unsigned int v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
 

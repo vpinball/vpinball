@@ -262,14 +262,14 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
 
       if (randompitch > 0.f)
       {
-         float freq = m_freq + (float)pitch;
+         const float freq = m_freq + (float)pitch;
          const float rndh = rand_mt_01();
          const float rndl = rand_mt_01();
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq + (freq * randompitch * rndh * rndh) - (freq * randompitch * rndl * rndl * 0.5f));
       }
       else if (pitch != 0)
       {
-         float freq = m_freq + (float)pitch;
+         const float freq = m_freq + (float)pitch;
          BASS_ChannelSetAttribute(m_BASSstream, BASS_ATTRIB_FREQ, freq);
       }
 
@@ -488,7 +488,7 @@ void AudioMusicPlayer::InitPinDirectSound(const Settings& settings, const HWND h
    {
       const int DSidx = (idx == 0) ? DSidx1 : DSidx2;
 
-		// Match the Direct Sound device with the BASS device by name
+      // Match the Direct Sound device with the BASS device by name
       if (DSidx != -1)
       {
          DSAudioDevices DSads;
@@ -865,7 +865,7 @@ float PinDirectSound::FadeSSF(float front_rear_fade)
 
 	if (fabsf(z) < 0.0001f)
 		z = -0.0001f;
-	
+
 	return z;
 }
 
@@ -959,7 +959,7 @@ HRESULT PinDirectSoundWavCopy::Get3DBuffer()
 		m_pDS3DBuffer->SetMinDistance(5.0f, DS3D_IMMEDIATE);
 	return hr;
 #else
-    return S_OK;
+	return S_OK;
 #endif
 }
 

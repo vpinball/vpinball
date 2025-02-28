@@ -142,7 +142,7 @@ static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = null
       }
       if ((vendorID == 0 || deviceAttributes.VendorID == vendorID) &&
          (productID == 0 || deviceAttributes.ProductID == productID) &&
-         (versionNumber == 0 || deviceAttributes.VersionNumber == *versionNumber))
+         (versionNumber == nullptr || deviceAttributes.VersionNumber == *versionNumber))
       {
          return deviceHandle; /* matched */
       }
@@ -183,6 +183,7 @@ void ushock_output_init()
       }
 
       HidP_GetCaps(HidParsedData, &Capabilities);
+      assert(Capabilities.InputReportByteLength <= sizeof(inbuffer));
 
       if (HidParsedData) HidD_FreePreparsedData(HidParsedData); //make sure not null, otherwise crash		
 

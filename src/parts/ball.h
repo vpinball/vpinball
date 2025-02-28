@@ -20,7 +20,8 @@ public:
 
    AntiStretchHelper()
    {
-      const double a = 4.0 * M_PI / npts, d = sqrt(a);
+      constexpr double a = 4.0 * M_PI / npts;
+      const double d = sqrt(a);
       const int nTheta = (int)round(M_PI / d);
       const double dTheta = M_PI / nTheta, dPhi = a / dTheta;
       for (int pos = 0, j = 0; j < nTheta; j++)

@@ -48,7 +48,7 @@ inline float InvsRGB(const float x)
    return (x <= 0.04045f) ? (x * (float)(1.0 / 12.92)) : (powf(x * (float)(1.0 / 1.055) + (float)(0.055 / 1.055), 2.4f));
 }
 
-inline float invGammaApprox(const float c)
+constexpr inline float invGammaApprox(const float c)
 {
    return c * (c * (c * 0.305306011f + 0.682171111f) + 0.012522878f); /*pow(color,2.2f);*/ // pow does still matter on current CPUs (not GPUs though)
 }

@@ -451,32 +451,32 @@ __forceinline _Float16 ushort_as_half(const unsigned short i)
 #endif
 #endif
 
-__forceinline bool infNaN(const float a)
+constexpr __forceinline bool infNaN(const float a)
 {
    return ((float_as_int(a) & 0x7F800000) == 0x7F800000);
 }
 
-__forceinline bool inf(const float a)
+constexpr __forceinline bool inf(const float a)
 {
    return ((float_as_int(a) & 0x7FFFFFFF) == 0x7F800000);
 }
 
-__forceinline bool NaN(const float a)
+constexpr __forceinline bool NaN(const float a)
 {
    return (((float_as_int(a) & 0x7F800000) == 0x7F800000) && ((float_as_int(a) & 0x007FFFFF) != 0));
 }
 
-__forceinline bool deNorm(const float a)
+constexpr __forceinline bool deNorm(const float a)
 {
    return (((float_as_int(a) & 0x7FFFFFFF) < 0x00800000) && (a != 0.0f));
 }
 
-__forceinline bool sign(const float a)
+constexpr __forceinline bool sign(const float a)
 {
    return (float_as_int(a) & 0x80000000) == 0x80000000;
 }
 
-__forceinline float sgn(const float a)
+constexpr __forceinline float sgn(const float a)
 {
    return (a > 0.f) ? 1.f : ((a < 0.f) ? -1.f : 0.f);
 }
@@ -607,7 +607,7 @@ float radical_inverse(unsigned int a) {
     return (float)((double)reversedDigits * invBaseN);
 }
 
-__forceinline float sobol(unsigned int i, unsigned int scramble = 0)
+constexpr __forceinline float sobol(unsigned int i, unsigned int scramble = 0)
 {
    for (unsigned int v = 1u << 31; (i != 0); i >>= 1, v ^= v >> 1) if (i & 1)
       scramble ^= v;

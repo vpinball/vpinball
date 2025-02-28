@@ -134,7 +134,7 @@ void bulb_init()
    }
 
    // Compute filament temperature to visible emission power (W.st-1.cm-2), according 
-   // to the formula from "Luminous radiation from a black body and the mechanical equivalentt of light" by W.W.Coblentz and W.B.Emerson
+   // to the formula from "Luminous radiation from a black body and the mechanical equivalent of light" by W.W.Coblentz and W.B.Emerson
    for (int i=0; i <= BULB_T_MAX - 1500; i++)
    {
       const double T = 1500 + i;
@@ -474,7 +474,7 @@ int main()
       bulbs[bulb].rating_T = prevT;
       printf("\n");
    }
-    
+
    printf("Done.\n");
    return 0;
 }
