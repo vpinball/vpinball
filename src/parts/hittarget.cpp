@@ -272,7 +272,11 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         SetupHitObject(physics, new HitTriangle(this, rgv3D), m_d.m_legacy, isUI);
+         HitTriangle *ht = new HitTriangle(this, rgv3D);
+         if (ht->IsDegenerate())
+            delete ht;
+         else
+            SetupHitObject(physics, ht, m_d.m_legacy, isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], m_d.m_legacy, isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], m_d.m_legacy, isUI);
@@ -316,7 +320,11 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             const Vertex3Ds rgv3D2[3] = { // NB: HitTriangle wants CCW vertices, but for rendering we have them in CW order
                rgv3D[i0], rgv3D[i2], rgv3D[i1]
             };
-            SetupHitObject(physics, new HitTriangle(this, rgv3D2), true, isUI);
+            HitTriangle *ht = new HitTriangle(this, rgv3D2);
+            if (ht->IsDegenerate())
+               delete ht;
+            else
+               SetupHitObject(physics, ht, true, isUI);
 
             AddHitEdge(physics, addedEdges, i0, i1, rgv3D2[0], rgv3D2[2], true, isUI);
             AddHitEdge(physics, addedEdges, i1, i2, rgv3D2[2], rgv3D2[1], true, isUI);
@@ -343,7 +351,11 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
             Vertex3Ds(m_hitUIVertices[i0].x, m_hitUIVertices[i0].y, m_hitUIVertices[i0].z), Vertex3Ds(m_hitUIVertices[i2].x, m_hitUIVertices[i2].y, m_hitUIVertices[i2].z),
             Vertex3Ds(m_hitUIVertices[i1].x, m_hitUIVertices[i1].y, m_hitUIVertices[i1].z)
          };
-         SetupHitObject(physics, new HitTriangle(this, rgv3D), true, isUI);
+         HitTriangle *ht = new HitTriangle(this, rgv3D);
+         if (ht->IsDegenerate())
+            delete ht;
+         else
+            SetupHitObject(physics, ht, true, isUI);
 
          AddHitEdge(physics, addedEdges, i0, i1, rgv3D[0], rgv3D[2], true, isUI);
          AddHitEdge(physics, addedEdges, i1, i2, rgv3D[2], rgv3D[1], true, isUI);

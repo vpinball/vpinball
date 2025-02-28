@@ -764,7 +764,13 @@ HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
    const Vertex3Ds e0 = m_rgv[2] - m_rgv[0];
    const Vertex3Ds e1 = m_rgv[1] - m_rgv[0];
    m_normal = CrossProduct(e0, e1);
-   m_normal.NormalizeSafe();
+   // FIXME We have a precision issue were thin triangle can lead to wrong hit so we mark as degenerate if precision is too low. This threshold highly depends on VPX unit system.
+   //m_normal.NormalizeSafe();
+   float ls = m_normal.LengthSquared();
+   if (ls < 0.01f)
+      m_normal.SetZero();
+   else
+      m_normal /= sqrtf(ls);
 
    m_elasticity = 0.3f;
    SetFriction(0.3f);
@@ -773,6 +779,7 @@ HitTriangle::HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3])
 
 float HitTriangle::HitTest(const BallS& ball, const float dtime, CollisionEvent& coll) const
 {
+   assert(!IsDegenerate());
    if (!m_enabled) return -1.0f;
 
    const float bnv = m_normal.Dot(ball.m_vel); // speed in Normal-vector direction
