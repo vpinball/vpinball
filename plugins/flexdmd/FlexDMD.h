@@ -63,7 +63,7 @@ public:
    void SetHeight(int h) { if (m_height == h) return; m_height = h; m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height)); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
    
    RenderMode GetRenderMode() const { return m_renderMode; }
-   void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); }
+   void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
 
    const string& GetProjectFolder() const { return m_pAssetManager->GetBasePath(); }
    void SetProjectFolder(const string& folder) { m_pAssetManager->SetBasePath(folder); }
