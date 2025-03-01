@@ -492,23 +492,16 @@ Vertex2D PhysicsEngine::GetScreenNudge() const
       return {m_tableDisplacement.x, -m_tableDisplacement.y};
 }
 
-void PhysicsEngine::ReinitEditable(IEditable* editable)
-{
-   if (m_UIQuadTtree)
-      m_UIQuadTtree->Update(editable);
-}
-
-HitQuadtree* PhysicsEngine::GetUIQuadTree()
+AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()
 {
    if (m_UIQuadTtree == nullptr)
       m_UIQuadTtree = new AsyncDynamicQuadTree(this, g_pplayer->m_ptable, true);
-   return m_UIQuadTtree->GetQuadTree();
+   return m_UIQuadTtree;
 }
 
 const vector<HitObject *> PhysicsEngine::GetUIHitObjects(IEditable *editable)
 {
-   GetUIQuadTree();
-   return m_UIQuadTtree->GetHitObjects(editable);
+   return GetUIQuadTree()->GetHitObjects(editable);
 }
 
 void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)
@@ -523,8 +516,7 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
 
    if (uiCast)
    {
-      GetUIQuadTree();
-      m_UIQuadTtree->HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+      GetUIQuadTree()->HitTestXRay(&ballT, vhoHit, ballT.m_coll);
    }
    else
    {
