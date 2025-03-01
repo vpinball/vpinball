@@ -51,7 +51,7 @@ public:
    string GetPerfInfo(bool resetMax);
 
    const vector<HitObject *> &GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
-   const vector<HitObject *>& GetUIObjects() { return GetUIQuadTree()->GetHitObjects(); }
+   const vector<HitObject *> GetUIHitObjects(IEditable *editable);
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
