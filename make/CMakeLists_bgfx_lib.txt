@@ -201,6 +201,8 @@ set(VPINBALL_SOURCES
    src/parts/trigger.h
 
    src/physics/physconst.h
+   src/physics/AsyncDynamicQuadTree.h
+   src/physics/AsyncDynamicQuadTree.cpp
    src/physics/collide.cpp
    src/physics/collide.h
    src/physics/collideex.cpp

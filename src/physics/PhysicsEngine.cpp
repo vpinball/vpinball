@@ -112,23 +112,11 @@ PhysicsEngine::PhysicsEngine(PinTable *const table)
 
 PhysicsEngine::~PhysicsEngine()
 {
-   // Release async UI tree update data
-   if (m_UIQuadTreeUpdateInProgress)
-      m_uiQuadtreeUpdateReady.acquire();
-   m_UIQuadTreeUpdateInProgress = false;
-   m_uiQuadtreeUpdateWaiting.release();
-   if (m_uiQuadtreeUpdateThread.joinable())
-      m_uiQuadtreeUpdateThread.join();
-   ReleaseVHO(m_pendingUIHitObjects, true);
-   delete m_pendingUIOctree;
+   delete m_UIQuadTtree;
 
-   // Release other trees
    if (m_pendingHitObjects)
       ReleaseVHO(*m_pendingHitObjects, false);
    ReleaseVHO(m_hitoctree.GetHitObjects(), false);
-   if (m_UIOctree)
-      ReleaseVHO(m_UIOctree->GetHitObjects(), true);
-   delete m_UIOctree;
    
    // We should release objects from the dynamic tree except HitBall (but there are only HitBall...)
 }
@@ -181,6 +169,15 @@ void PhysicsEngine::RemoveCollider(HitObject * collider, const bool isUI)
       RemoveFromVectorSingle<MoverObject *>(m_vmover, &static_cast<HitBall *>(collider)->m_mover);
       m_hitoctree_dynamic.Remove(collider);
    }
+}
+
+void PhysicsEngine::CollectColliders(IEditable *editable, vector<HitObject *> *hitObjects, bool isUI)
+{
+   assert(m_pendingHitObjects == nullptr);
+   m_pendingHitObjects = hitObjects;
+   if (editable->GetIHitable())
+      editable->GetIHitable()->PhysicSetup(this, isUI);
+   m_pendingHitObjects = nullptr;
 }
 
 void PhysicsEngine::AddCabinetBoundingHitShapes(PinTable *const table)
@@ -497,104 +494,15 @@ Vertex2D PhysicsEngine::GetScreenNudge() const
 
 void PhysicsEngine::ReinitEditable(IEditable* editable)
 {
-   if (std::find(m_vUIOutdatedEditable.begin(), m_vUIOutdatedEditable.end(), editable) == m_vUIOutdatedEditable.cend())
-      m_vUIOutdatedEditable.push_back(editable);
-}
-
-void PhysicsEngine::UpdateUIQuadtree(PhysicsEngine* ph)
-{
-   assert((ph->m_pendingUIOctree == nullptr) && (ph->m_UIOctree != nullptr));
-   ph->m_pendingUIOctree = new HitQuadtree();
-   while (true)
-   {
-      ph->m_uiQuadtreeUpdateWaiting.acquire();
-      if (!ph->m_UIQuadTreeUpdateInProgress)
-         return;
-
-      /* static int nCall = 0;
-      static std::chrono::duration<double> total;
-      nCall++;
-      auto start = std::chrono::high_resolution_clock::now();
-      std::chrono::duration<double> elapsed;*/
-
-      // Start from the current list of hit objects (we could avoid the copy here by keeping track of the update before this one)
-      vector<HitObject *>& uiHitObjects = ph->m_pendingUIOctree->BeginReset();
-      uiHitObjects = ph->m_UIOctree->GetHitObjects();
-
-      // Move outdated hit object to the end of the vector, copy them for later disposal (as they are used by the active quadtree), then remove from our list
-      for (auto ed : ph->m_vUIUpdatedEditable)
-      {
-         auto splitOutdated = std::partition(uiHitObjects.begin(), uiHitObjects.end(), [ed](HitObject *ho) { return ho->m_editable != ed; });
-         ph->m_outdatedUIHitObjects.insert(ph->m_outdatedUIHitObjects.end(), splitOutdated, uiHitObjects.end());
-         uiHitObjects.erase(splitOutdated, uiHitObjects.end());
-      }
-      
-      // Add new Hit Objects corresponding to the updated IEditable
-      uiHitObjects.insert(uiHitObjects.end(), ph->m_pendingUIHitObjects.begin(), ph->m_pendingUIHitObjects.end());
-      ph->m_pendingUIHitObjects.clear();
-
-      // Reset quadtree with the updated hit object list
-      ph->m_pendingUIOctree->EndReset();
-
-      /* elapsed = std::chrono::high_resolution_clock::now() - start; total += elapsed;
-      PLOGD << "UI quadtree update: " << (total / nCall) << " (" << ph->m_pendingUIOctree->GetHitObjects().size() << " objects)";*/
-
-      ph->m_uiQuadtreeUpdateReady.release();
-   }
-}
-
-void PhysicsEngine::UpdateOctrees()
-{
-   // Process pending asynchronous updates if any
-   if (m_uiQuadtreeUpdateReady.try_acquire())
-   {
-      m_UIQuadTreeUpdateInProgress = false;
-      // Swap active octree 
-      HitQuadtree* tmp = m_UIOctree;
-      m_UIOctree = m_pendingUIOctree;
-      m_pendingUIOctree = tmp;
-      // Release hit objects of the updated parts
-      for (auto ho : m_outdatedUIHitObjects)
-         delete ho;
-      m_outdatedUIHitObjects.clear();
-   }
-   if (!m_UIQuadTreeUpdateInProgress && !m_vUIOutdatedEditable.empty())
-   {
-      m_UIQuadTreeUpdateInProgress = true;
-      // Collect new hit objects to add to quadtree
-      // WARNING: This would not work as-is for non UI quadtree as outside of UI, parts also keep HitObject ref for animation, collidable state, ...
-      assert(m_pendingUIHitObjects.empty());
-      m_pendingHitObjects = &m_pendingUIHitObjects;
-      for (IEditable *const pe : m_vUIOutdatedEditable)
-         if (pe->GetIHitable())
-         {
-            pe->GetIHitable()->PhysicRelease(this, true);
-            pe->GetIHitable()->PhysicSetup(this, true);
-         }
-      m_pendingHitObjects = nullptr;
-      m_vUIUpdatedEditable = m_vUIOutdatedEditable;
-      m_vUIOutdatedEditable.clear();
-      // Trigger async update
-      m_uiQuadtreeUpdateWaiting.release();
-      if (!m_uiQuadtreeUpdateThread.joinable())
-         m_uiQuadtreeUpdateThread = std::thread(&UpdateUIQuadtree, this);
-   }
+   if (m_UIQuadTtree)
+      m_UIQuadTtree->Update(editable);
 }
 
 HitQuadtree* PhysicsEngine::GetUIQuadTree()
 {
-   if (m_UIOctree == nullptr)
-   {
-      assert(m_pendingUIHitObjects.empty());
-      m_UIOctree = new HitQuadtree();
-      m_pendingHitObjects = &m_UIOctree->BeginReset();
-      for (IEditable *const pe : g_pplayer->m_ptable->m_vedit)
-         if (pe->GetIHitable())
-            pe->GetIHitable()->PhysicSetup(this, true);
-      m_pendingHitObjects = nullptr; 
-      m_UIOctree->EndReset();
-   }
-   return m_UIOctree;
+   if (m_UIQuadTtree == nullptr)
+      m_UIQuadTtree = new AsyncDynamicQuadTree(this, g_pplayer->m_ptable, true);
+   return m_UIQuadTtree->GetQuadTree();
 }
 
 void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)
@@ -608,7 +516,10 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    ballT.CalcHitBBox(); // need to update here, as only done lazily
 
    if (uiCast)
-      GetUIQuadTree()->HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   {
+      GetUIQuadTree();
+      m_UIQuadTtree->HitTestXRay(&ballT, vhoHit, ballT.m_coll);
+   }
    else
    {
       m_hitoctree_dynamic.HitTestXRay(&ballT, vhoHit, ballT.m_coll);
@@ -673,8 +584,6 @@ void PhysicsEngine::UpdatePhysics()
 
    g_pplayer->m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PHYSICS);
    U64 initial_time_usec = usec();
-
-   UpdateOctrees();
 
    // DJRobX's crazy latency-reduction code
    U64 delta_frame = 0;
