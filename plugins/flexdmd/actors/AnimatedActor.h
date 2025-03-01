@@ -11,6 +11,8 @@ public:
       : Actor(pFlexDMD, name) { }
    ~AnimatedActor() = default;
 
+   ActorType GetType() const override { return AT_AnimatedActor; }
+
    void Update(float delta) override;
    virtual void Seek(float posInSeconds);
    virtual void Advance(float delta);
