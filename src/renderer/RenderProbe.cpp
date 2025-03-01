@@ -14,7 +14,7 @@ RenderProbe::RenderProbe()
 
 RenderProbe::~RenderProbe()
 {
-   assert(m_prerenderRT == nullptr && m_dynamicRT == nullptr); // EndPlay must be call before destructor
+   assert(m_prerenderRT == nullptr && m_dynamicRT == nullptr); // RenderRelease must be call before destructor
 }
 
 int RenderProbe::GetSaveSize() const
@@ -290,7 +290,7 @@ void RenderProbe::GetReflectionPlaneNormal(vec3& normal) const
 
 void RenderProbe::SetReflectionMode(ReflectionMode mode) 
 {
-   assert(m_reflection_mode == mode || m_dynamicRT == nullptr); // Reflection mode may not be changed between RenderSetup/EndPlay
+   assert(m_reflection_mode == mode || m_dynamicRT == nullptr); // Reflection mode may not be changed between RenderSetup/RenderRelease
    m_reflection_mode = mode;
 }
 

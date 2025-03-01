@@ -137,9 +137,6 @@ void Plunger::UIRenderPass2(Sur * const psur)
    }
 }
 
-void Plunger::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Plunger::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

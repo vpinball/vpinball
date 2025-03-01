@@ -331,14 +331,6 @@ void Surface::RenderBlueprint(Sur *psur, const bool solid)
    psur->Polygon(vvertex);
 }
 
-void Surface::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay(pvht, &m_d.m_tdr, this);
-   m_isDropped = false;
-   m_disabled = false;
-}
-
-void Surface::EndPlay() { IEditable::EndPlay(); }
 
 // Ported at: VisualPinball.Engine/VPT/Surface/SurfaceHitGenerator.cs
 

@@ -161,7 +161,7 @@ public:
 
    FlasherData m_d;
 
-   bool m_lockedByLS;
+   bool m_lockedByLS = false;
    bool m_inPlayState;
 
    BaseTexture *m_dmdFrame = nullptr;

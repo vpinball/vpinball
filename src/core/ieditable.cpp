@@ -4,11 +4,7 @@
 
 IEditable::IEditable()
 {
-   m_phittimer = nullptr;
-
-   m_backglass = false;
    VariantInit(&m_uservalue);
-   m_singleEvents = true;
 }
 
 IEditable::~IEditable()
@@ -96,38 +92,6 @@ HRESULT IEditable::put_UserValue(VARIANT *newVal)
    STOPUNDO
 
    return hr;
-}
-
-void IEditable::BeginPlay(vector<HitTimer *> &pvht, TimerDataRoot *const tdr, IFireEvents *fe)
-{
-   m_vEventCollection.clear();
-   m_viEventCollection.clear();
-
-   m_singleEvents = true;
-   for (size_t i = 0; i < m_vCollection.size(); i++)
-   {
-      Collection * const pcol = m_vCollection[i];
-      if (pcol->m_fireEvents)
-      {
-         m_vEventCollection.push_back(pcol);
-         m_viEventCollection.push_back(m_viCollection[i]);
-      }
-      if (pcol->m_stopSingleEvents)
-         m_singleEvents = false;
-   }
-   
-   if (tdr != nullptr)
-   {
-      m_phittimer = new HitTimer(GetName(), tdr->m_TimerInterval, fe);
-      if (tdr->m_TimerEnabled)
-         pvht.push_back(m_phittimer);
-   }
-}
-
-void IEditable::EndPlay()
-{
-   delete m_phittimer;
-   m_phittimer = nullptr;
 }
 
 void IEditable::RenderBlueprint(Sur *psur, const bool solid)
@@ -243,16 +207,4 @@ void IEditable::SetName(const string& name)
     }
 #endif
     STOPUNDO
-}
-
-void IEditable::InitScript()
-{
-   if (!GetScriptable())
-      return;
-
-   if (GetScriptable()->m_wzName[0] == '\0')
-      // Just in case something screws up - not good having a null script name
-      swprintf_s(GetScriptable()->m_wzName, sizeof(GetScriptable()->m_wzName), L"%Id", reinterpret_cast<uintptr_t>(this));
-
-   GetPTable()->m_pcv->AddItem(GetScriptable(), false);
 }

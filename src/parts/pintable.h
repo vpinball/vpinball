@@ -347,9 +347,6 @@ public:
    int ShowMessageBox(const char *text) const;
    POINT GetScreenPoint() const;
 
-   HRESULT InitVBA();
-   void CloseVBA();
-
    void UIRenderPass2(Sur *const psur) override;
    void Paint(HDC hdc);
    ISelect *HitTest(const int x, const int y);

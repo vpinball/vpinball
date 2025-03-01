@@ -682,23 +682,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    m_renderer->m_render_mask = m_vrDevice ? Renderer::DISABLE_BACKDROP : Renderer::DEFAULT;
 
-   // search through all collection for elements which support group rendering
-   for (int i = 0; i < m_ptable->m_vcollection.size(); i++)
-   {
-      Collection * const pcol = m_ptable->m_vcollection.ElementAt(i);
-      for (int t = 0; t < pcol->m_visel.size(); t++)
-      {
-         // search for a primitive in the group, if found try to create a grouped render element
-         ISelect * const pisel = pcol->m_visel.ElementAt(t);
-         if (pisel != nullptr && pisel->GetItemType() == eItemPrimitive)
-         {
-            Primitive * const prim = (Primitive*)pisel;
-            prim->CreateRenderGroup(pcol);
-            break;
-         }
-      }
-   }
-
    // Start the frame.
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
@@ -707,7 +690,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
          m_vhitables.push_back(editable->GetIHitable());
    for (Hitable *hitable : m_vhitables)
    {
-      hitable->BeginPlay(m_vht);
+      hitable->TimerSetup(m_vht);
       hitable->RenderSetup(m_renderer->m_renderDevice);
       if (hitable->HitableGetItemType() == ItemTypeEnum::eItemBall)
          m_vball.push_back(&((Ball*)hitable)->m_hitBall);
@@ -1045,7 +1028,7 @@ Player::~Player()
    for (auto renderable : m_vhitables)
       renderable->RenderRelease();
    for (auto hitable : m_vhitables)
-      hitable->EndPlay();
+      hitable->TimerRelease();
    assert(m_vballDelete.empty());
    m_vball.clear();
 
@@ -1323,7 +1306,7 @@ HitBall *Player::CreateBall(const float x, const float y, const float z, const f
    m_pBall->m_d.m_useTableRenderSettings = true;
    m_ptable->m_vedit.push_back(m_pBall);
    m_vhitables.push_back(m_pBall);
-   m_pBall->BeginPlay(m_vht);
+   m_pBall->TimerSetup(m_vht);
    m_pBall->RenderSetup(m_renderer->m_renderDevice);
    m_pBall->PhysicSetup(m_physics, false);
    if (!m_pactiveballDebug)
@@ -2274,7 +2257,7 @@ void Player::FinishFrame()
    for (Ball *const pBall : m_vballDelete)
    {
       pBall->RenderRelease();
-      pBall->EndPlay();
+      pBall->TimerRelease();
       pBall->Release();
       RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable*) pBall);
       RemoveFromVectorSingle(m_vhitables, (Hitable *)pBall);

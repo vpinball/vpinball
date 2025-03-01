@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "physics/hittimer.h"
+
 class DecalData final : public BaseProperty
 {
 public:
@@ -16,6 +18,7 @@ public:
    SizingType m_sizingtype;
    COLORREF m_color;
    bool m_verticalText;
+   TimerDataRoot m_tdr; // Unused but this is the only (legacy and deprecated) part that does not
 };
 
 class Decal :

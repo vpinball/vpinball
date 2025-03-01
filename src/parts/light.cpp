@@ -260,14 +260,6 @@ void Light::RenderBlueprint(Sur *psur, const bool solid)
    RenderOutline(psur);
 }
 
-void Light::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Light::EndPlay()
-{
-   // ensure not locked just in case the player exits during a LS sequence
-   m_lockedByLS = false;
-   IEditable::EndPlay();
-}
 
 void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {

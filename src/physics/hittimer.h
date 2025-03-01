@@ -21,7 +21,7 @@ public:
    }
 
    const char* m_name;
-   IFireEvents *m_pfe;
+   IFireEvents * const m_pfe;
 
    int m_interval;
    unsigned int m_nextfire = 0;

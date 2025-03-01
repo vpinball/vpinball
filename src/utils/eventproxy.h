@@ -58,28 +58,23 @@ public:
    void FireVoidGroupEvent(const int dispid)
    {
       g_frameProfiler->EnterScriptSection(dispid);
-      T* const pT = (T*)this;
+      T* const pT = static_cast<T*>(this);
       for (size_t i = 0; i < pT->m_vEventCollection.size(); ++i)
       {
          Collection * const pcollection = pT->m_vEventCollection[i];
-
          if (pcollection!=nullptr)
          {
-#ifndef __STANDALONE__
-            CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
-#else
-            CComVariant rgvar[1] = { CComVariant(pT->m_viEventCollection[i]) };
-#endif
-            DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
-
-#ifndef __STANDALONE__
-            pcollection->FireDispID(dispid, &dispparams);
-#else
-            ((EventProxyBase*)pcollection)->FireDispID(dispid, &dispparams);
-#endif
+            #ifndef __STANDALONE__
+               CComVariant rgvar[1] = { CComVariant((long)pT->m_viEventCollection[i]) };
+               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+               pcollection->FireDispID(dispid, &dispparams);
+            #else
+               CComVariant rgvar[1] = { CComVariant(pT->m_viEventCollection[i]) };
+               DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+               ((EventProxyBase*)pcollection)->FireDispID(dispid, &dispparams);
+            #endif
          }
       }
-
       if (pT->m_singleEvents)
          FireVoidEvent(dispid);
       g_frameProfiler->ExitScriptSection();
@@ -88,7 +83,7 @@ public:
    HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override
    {
       g_frameProfiler->EnterScriptSection(dispid);
-      T* const pT = (T*)this;
+      T* const pT = static_cast<T*>(this);
       pT->Lock();
       IUnknown** pp = IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.begin();
       while (pp < IConnectionPointImpl<T, psrcid, CComDynamicUnkArray>::m_vec.end())

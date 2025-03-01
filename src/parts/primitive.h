@@ -90,8 +90,6 @@ public:
    float m_refractionThickness = 10.0f;
 
    bool m_toy;
-   bool m_skipRendering;
-   bool m_groupdRendering;
    bool m_backfacesEnabled;
    bool m_displayTexture;     // in editor
    bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
@@ -293,7 +291,6 @@ public:
 
    //STDMETHOD(get_Name)(BSTR *pVal) final {return E_FAIL;}
 
-   //virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName);
    void WriteRegDefaults() final;
 
    bool LoadMeshDialog() final;
@@ -320,7 +317,6 @@ public:
    void RenderBlueprint(Sur *psur, const bool solid) final;
    void UpdateStatusBarInfo() final;
 
-   void CreateRenderGroup(const Collection * const collection);
    void RecalculateMatrices();
    void TransformVertices();
 
@@ -342,6 +338,8 @@ private:
    Light * m_lightmap = nullptr;
 
    Matrix3D m_fullMatrix;
+   bool m_skipRendering = false;
+   bool m_groupdRendering = false;
    int m_numGroupVertices;
    int m_numGroupIndices;
    float m_currentFrame;

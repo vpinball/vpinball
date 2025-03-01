@@ -309,9 +309,6 @@ void Trigger::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Trigger::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Trigger::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

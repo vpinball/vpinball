@@ -187,10 +187,6 @@ void Bumper::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius);
 }
 
-void Bumper::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Bumper::EndPlay() { IEditable::EndPlay(); }
-
 
 #pragma region Physics
 

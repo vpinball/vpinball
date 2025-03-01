@@ -2687,15 +2687,6 @@ void PinTable::Play(const int playMode)
 #endif
 }
 
-HRESULT PinTable::InitVBA()
-{
-   return S_OK;
-}
-
-void PinTable::CloseVBA()
-{
-}
-
 HRESULT PinTable::TableSave()
 {
    return Save(m_szFileName.empty());

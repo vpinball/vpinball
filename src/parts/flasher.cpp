@@ -245,19 +245,10 @@ void Flasher::UIRenderPass2(Sur * const psur)
    }
 }
 
-
 void Flasher::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Flasher::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Flasher::EndPlay()
-{
-   IEditable::EndPlay();
-   // ensure not locked just in case the player exits during a LS sequence
-   m_lockedByLS = false;
-}
 
 void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {

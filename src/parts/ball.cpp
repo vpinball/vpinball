@@ -199,10 +199,6 @@ void Ball::RenderBlueprint(Sur *psur, const bool solid)
    psur->Ellipse(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_radius);
 }
 
-void Ball::BeginPlay(vector<HitTimer *> &pvht) { IEditable::BeginPlay(pvht); }
-
-void Ball::EndPlay() { IEditable::EndPlay(); }
-
 
 #pragma region Physics
 
