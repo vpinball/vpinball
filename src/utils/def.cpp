@@ -52,14 +52,14 @@ string f2sz(const float f)
       return "0.0"s; //!! must this be somehow localized, i.e. . vs ,
 }
 
-void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
+void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
 {
    DWORD i = 0;
    while (*wzin && (++i < wzoutMaxLen)) { *wzout++ = *wzin++; }
    *wzout = 0;
 }
 
-void WideStrCat(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen)
+void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
 {
    DWORD i = lstrlenW(wzout);
    wzout += i;
@@ -96,7 +96,7 @@ int WzSzStrCmp(const WCHAR *wz1, const char *sz2)
    return 0;
 }
 
-int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxComparisonLen)
+int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const size_t maxComparisonLen)
 {
    DWORD i = 0;
 

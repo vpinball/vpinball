@@ -453,7 +453,7 @@ HRESULT BiffReader::GetString(string &szvalue)
    return hr;
 }
 
-HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const DWORD wzvalue_maxlength)
+HRESULT BiffReader::GetWideString(WCHAR *wzvalue, const size_t wzvalue_maxlength)
 {
    ULONG read = 0;
    HRESULT hr;

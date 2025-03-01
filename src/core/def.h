@@ -578,11 +578,11 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
 float sz2f(const string& sz);
 string f2sz(const float f);
 
-void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
+void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const size_t wzoutMaxLen);
 int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);
-void WideStrCat(const WCHAR *wzin, WCHAR *wzout, const DWORD wzoutMaxLen);
+void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
 int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
-int WzSzStrNCmp(const WCHAR *wz1, const char *sz2, const DWORD maxComparisonLen);
+int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const size_t maxComparisonLen);
 
 HRESULT OpenURL(const string& szURL);
 
