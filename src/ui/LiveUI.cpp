@@ -2449,6 +2449,8 @@ void LiveUI::HideUI()
 
 void LiveUI::UpdateMainUI()
 {
+   Selection previousSelection = m_selection;
+
 #if !((defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__))
    m_menubar_height = 0.0f;
    m_toolbar_height = 0.0f;
@@ -2696,12 +2698,13 @@ void LiveUI::UpdateMainUI()
          overlayDrawList->AddCircleFilled(ImVec2(pos.x, pos.y), 3.f * m_dpi, IM_COL32(255, 255, 255, 255), 16);
       }
 
-      if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay && (overlayDrawList->VtxBuffer.Size < 40000))
+      if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay)
       {
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 128, 0, 255));
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
          for (auto pho : m_player->m_physics->GetUIHitObjects(m_selection.editable))
-            pho->DrawUI(project, overlayDrawList);
+            if (overlayDrawList->VtxBuffer.Size < 40000)
+               pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
       
@@ -3001,6 +3004,40 @@ void LiveUI::UpdateMainUI()
       m_renderer->InitLayout();
       m_camView = RH2LH * m_renderer->GetMVP().GetView() * YAxis;
       m_camProj = YAxis * m_renderer->GetMVP().GetProj(0);
+   }
+
+   if (m_selection != previousSelection)
+   {
+      if ((previousSelection.type == Selection::S_EDITABLE) && (previousSelection.editable->GetIHitable() != nullptr) && (previousSelection.editable->GetItemType() != eItemBall))
+         m_player->m_physics->SetStatic(previousSelection.editable);
+      if ((m_selection.type == Selection::S_EDITABLE) && (m_selection.editable->GetIHitable() != nullptr) && (m_selection.editable->GetItemType() != eItemBall))
+         m_player->m_physics->SetDynamic(m_selection.editable);
+   }
+   if (m_selection.type == Selection::S_EDITABLE)
+   {
+      switch (m_selection.editable->GetItemType())
+      {
+      case eItemBall: m_renderer->ReinitRenderable(static_cast<Ball *>(m_selection.editable)); break;
+      case eItemBumper: m_renderer->ReinitRenderable(static_cast<Bumper *>(m_selection.editable)); break;
+      case eItemDecal: m_renderer->ReinitRenderable(static_cast<Decal *>(m_selection.editable)); break;
+      case eItemFlasher: m_renderer->ReinitRenderable(static_cast<Flasher *>(m_selection.editable)); break;
+      case eItemFlipper: m_renderer->ReinitRenderable(static_cast<Flipper *>(m_selection.editable)); break;
+      case eItemGate: m_renderer->ReinitRenderable(static_cast<Gate *>(m_selection.editable)); break;
+      case eItemHitTarget: m_renderer->ReinitRenderable(static_cast<HitTarget *>(m_selection.editable)); break;
+      case eItemKicker: m_renderer->ReinitRenderable(static_cast<Kicker *>(m_selection.editable)); break;
+      case eItemLight: m_renderer->ReinitRenderable(static_cast<Light *>(m_selection.editable)); break;
+      case eItemPlunger: m_renderer->ReinitRenderable(static_cast<Plunger *>(m_selection.editable)); break;
+      case eItemPrimitive: m_renderer->ReinitRenderable(static_cast<Primitive *>(m_selection.editable)); break;
+      case eItemRamp: m_renderer->ReinitRenderable(static_cast<Ramp *>(m_selection.editable)); break;
+      case eItemRubber: m_renderer->ReinitRenderable(static_cast<Rubber *>(m_selection.editable)); break;
+      case eItemSpinner: m_renderer->ReinitRenderable(static_cast<Spinner *>(m_selection.editable)); break;
+      case eItemSurface: m_renderer->ReinitRenderable(static_cast<Surface *>(m_selection.editable)); break;
+      case eItemTextbox: m_renderer->ReinitRenderable(static_cast<Textbox *>(m_selection.editable)); break;
+      case eItemTrigger: m_renderer->ReinitRenderable(static_cast<Trigger *>(m_selection.editable)); break;
+      default: break;
+      }
+      if ((m_selection.editable->GetIHitable() != nullptr) && (m_selection.editable->GetItemType() != eItemBall))
+         m_player->m_physics->Update(m_selection.editable);
    }
 }
 
@@ -4551,7 +4588,6 @@ void LiveUI::MaterialProperties(bool is_live)
 
 void LiveUI::BallProperties(bool is_live, Ball *startup_obj, Ball *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
    Ball *const ball = (is_live ? live_obj : startup_obj);
    if (ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
@@ -4583,8 +4619,6 @@ void LiveUI::BallProperties(bool is_live, Ball *startup_obj, Ball *live_obj)
 
 void LiveUI::BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropMaterialCombo("Cap Material", startup_obj, is_live, PROP_ACCESS(startup_obj, live_obj, m_d.m_szCapMaterial), m_table);
@@ -4608,8 +4642,6 @@ void LiveUI::BumperProperties(bool is_live, Bumper *startup_obj, Bumper *live_ob
 
 void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    Flasher *const flasher = (is_live ? live_obj : startup_obj);
    if (flasher == nullptr)
       return;
@@ -4675,8 +4707,6 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
 
 void LiveUI::KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropMaterialCombo("Material", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szMaterial) : nullptr, live_obj ? &(live_obj->m_d.m_szMaterial) : nullptr, m_table);
@@ -4691,8 +4721,6 @@ void LiveUI::KickerProperties(bool is_live, Kicker *startup_obj, Kicker *live_ob
 
 void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_light)
 {
-   m_renderer->ReinitRenderable(live_light);
-   m_player->m_physics->ReinitEditable(live_light);
    Light *const light = (is_live ? live_light : startup_light);
    if (light && ImGui::CollapsingHeader("Visual", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
@@ -4808,8 +4836,6 @@ void LiveUI::LightProperties(bool is_live, Light *startup_light, Light *live_lig
 
 void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropSeparator("Render Options");
@@ -4860,8 +4886,6 @@ void LiveUI::PrimitiveProperties(bool is_live, Primitive *startup_obj, Primitive
 
 void LiveUI::RampProperties(bool is_live, Ramp *startup_obj, Ramp *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       // Missing type
@@ -4883,8 +4907,6 @@ void LiveUI::RampProperties(bool is_live, Ramp *startup_obj, Ramp *live_obj)
 
 void LiveUI::RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropImageCombo("Image", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImage) : nullptr, live_obj ? &(live_obj->m_d.m_szImage) : nullptr, m_table);
@@ -4909,8 +4931,6 @@ void LiveUI::RubberProperties(bool is_live, Rubber *startup_obj, Rubber *live_ob
 
 void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropCheckbox("Top Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_topBottomVisible) : nullptr, live_obj ? &(live_obj->m_d.m_topBottomVisible) : nullptr);
@@ -4937,8 +4957,6 @@ void LiveUI::SurfaceProperties(bool is_live, Surface *startup_obj, Surface *live
 
 void LiveUI::TriggerProperties(bool is_live, Trigger *startup_obj, Trigger *live_obj)
 {
-   m_renderer->ReinitRenderable(live_obj);
-   m_player->m_physics->ReinitEditable(live_obj);
    if (ImGui::CollapsingHeader("Visuals", ImGuiTreeNodeFlags_DefaultOpen) && BEGIN_PROP_TABLE)
    {
       PropCheckbox("Visible", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_visible) : nullptr, live_obj ? &(live_obj->m_d.m_visible) : nullptr);

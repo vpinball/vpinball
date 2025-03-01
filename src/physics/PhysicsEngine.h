@@ -16,9 +16,10 @@ public:
    void SetGravity(float slopeDeg, float strength);
    const Vertex3Ds& GetGravity() const { return m_gravity; } // Gravity expressed in VP units. Earth gravity 9.81 m.s^-2 is approximately 1.81751 VPU.VPT^-2 (see physconst.h)
 
-   // Request physics engine to reinitialize (release/setup) the given editable
-   // For the time being, this is only supported for UI picking, and satisfied asynchronously
-   void ReinitEditable(IEditable *editable);
+   // Only supported for UI for the time being
+   void SetDynamic(IEditable *editable) { GetUIQuadTree()->SetDynamic(editable); }
+   void Update(IEditable *editable) { GetUIQuadTree()->Update(editable); }
+   void SetStatic(IEditable *editable) { GetUIQuadTree()->SetStatic(editable); }
 
    // Add or remove a collider, as a consequence of PhysicSetup/Release
    // Colliders are given to the physics engine which owns them, except for balls which always owns their HitBall (therefore, being the only one using RemoveCollider)
@@ -88,7 +89,7 @@ private:
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #endif
 
-   HitQuadtree* GetUIQuadTree(); // Trigger UI quadtree creation/update
+   AsyncDynamicQuadTree *GetUIQuadTree(); // Trigger UI quadtree creation/update
    AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
 
 #pragma region Nudge & Tilt Plumb

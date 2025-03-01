@@ -60,7 +60,7 @@ AsyncDynamicQuadTree::~AsyncDynamicQuadTree()
 const vector<HitObject*> AsyncDynamicQuadTree::GetHitObjects(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
 
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    if (dynEdIt != m_dynamicEditables.end())
@@ -79,7 +79,7 @@ const vector<HitObject*> AsyncDynamicQuadTree::GetHitObjects(IEditable* editable
 bool AsyncDynamicQuadTree::IsStatic(IEditable* editable) const
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
    // Either part is not in the list of dynamic parts, or it is part but pending for inclusion in the static quadtree
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    return (dynEdIt == m_dynamicEditables.end()) || (*dynEdIt)->pendingStaticInclusion;
@@ -88,8 +88,9 @@ bool AsyncDynamicQuadTree::IsStatic(IEditable* editable) const
 void AsyncDynamicQuadTree::SetDynamic(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
    assert(IsStatic(editable));
+   //PLOGD << "Setting item " << editable->GetName() << " as dynamic.";
 
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    if (dynEdIt != m_dynamicEditables.end())
@@ -144,8 +145,9 @@ void AsyncDynamicQuadTree::SetDynamic(IEditable* editable)
 void AsyncDynamicQuadTree::SetStatic(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
    assert(!IsStatic(editable));
+   //PLOGD << "Setting item " << editable->GetName() << " as static.";
 
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    (*dynEdIt)->pendingStaticInclusion = true;
@@ -155,7 +157,8 @@ void AsyncDynamicQuadTree::SetStatic(IEditable* editable)
 void AsyncDynamicQuadTree::Update(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+   //PLOGD << "Updating item " << editable->GetName();
 
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    if (dynEdIt != m_dynamicEditables.end())
