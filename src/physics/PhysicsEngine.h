@@ -4,8 +4,8 @@
 
 #include "physics/kdtree.h"
 #include "physics/quadtree.h"
+#include "physics/AsyncDynamicQuadTree.h"
 #include "physics/NudgeFilter.h"
-#include <semaphore>
 
 class PhysicsEngine final
 {
@@ -24,6 +24,7 @@ public:
    // Colliders are given to the physics engine which owns them, except for balls which always owns their HitBall (therefore, being the only one using RemoveCollider)
    void AddCollider(HitObject * collider, const bool isUI);
    void RemoveCollider(HitObject * collider, const bool isUI);
+   void CollectColliders(IEditable *editable, vector<HitObject *> *hitObjects, bool isUI);
 
    void OnFinishFrame();
 
@@ -87,21 +88,8 @@ private:
    HitKD m_hitoctree_dynamic; // should be generated from scratch each time something changes
 #endif
 
-   void UpdateOctrees();
-
    HitQuadtree* GetUIQuadTree(); // Trigger UI quadtree creation/update
-   HitQuadtree *m_UIOctree = nullptr; // Active UI quadtree, lazily created
-   // The following fields implement asynchronous UI quadtree update
-   HitQuadtree *m_pendingUIOctree = nullptr; // UI quadtree updated by the update thread, then swapped
-   bool m_UIQuadTreeUpdateInProgress = false;
-   std::binary_semaphore m_uiQuadtreeUpdateWaiting { 0 };
-   std::binary_semaphore m_uiQuadtreeUpdateReady { 0 };
-   vector<IEditable *> m_vUIOutdatedEditable; // Objects that have requested an update which is not yet dispatched
-   vector<IEditable *> m_vUIUpdatedEditable; // Objects that are processed or have been updated by update thread
-   vector<HitObject *> m_pendingUIHitObjects; // Hit objects pending insertion in UI quadtree (collected through AddCollider method)
-   vector<HitObject *> m_outdatedUIHitObjects; // Hit objects that are pending disposal
-   std::thread m_uiQuadtreeUpdateThread;
-   static void UpdateUIQuadtree(PhysicsEngine* ph);
+   AsyncDynamicQuadTree* m_UIQuadTtree = nullptr;
 
 #pragma region Nudge & Tilt Plumb
    void UpdateNudge(float dtime);

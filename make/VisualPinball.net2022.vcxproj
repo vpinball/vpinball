@@ -1293,6 +1293,7 @@
     <ClCompile Include="src/utils/ushock_output.cpp" />
     <ClCompile Include="src/utils/variant.cpp" />
     <ClCompile Include="src/utils/wintimer.cpp" />
+    <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp" />
     <ClCompile Include="third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1648,6 +1649,7 @@
   <ItemGroup>
     <ClInclude Include="src\core\ResURIResolver.h" />
     <ClInclude Include="src\core\ScoreView.h" />
+    <ClInclude Include="src\physics\AsyncDynamicQuadTree.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="src/audio/mixer.h" />
