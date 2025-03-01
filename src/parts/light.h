@@ -156,7 +156,7 @@ public:
    float m_currentIntensity;
    double m_currentFilamentTemperature;
    float m_surfaceHeight;
-   bool  m_lockedByLS;
+   bool  m_lockedByLS = false;
 
 private:
    class LightCenter final : public ISelect

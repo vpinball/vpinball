@@ -290,10 +290,6 @@ void Gate::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Gate::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Gate::EndPlay() { IEditable::EndPlay(); }
-
 
 #pragma region Physics
 

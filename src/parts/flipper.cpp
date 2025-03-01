@@ -180,9 +180,6 @@ void Flipper::WriteRegDefaults()
 #undef regKey
 }
 
-void Flipper::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Flipper::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

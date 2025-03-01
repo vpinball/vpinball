@@ -141,9 +141,6 @@ void Kicker::UIRenderPass2(Sur * const psur)
    psur->Ellipse(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_radius*0.25f);
 }
 
-void Kicker::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Kicker::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

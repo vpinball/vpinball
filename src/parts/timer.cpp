@@ -92,9 +92,6 @@ void Timer::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-void Timer::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Timer::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

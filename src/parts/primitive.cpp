@@ -199,8 +199,6 @@ Primitive::Primitive()
    m_d.m_edgeFactorUI = 0.25f;
    m_d.m_collision_reductionFactor = 0.f;
    m_d.m_depthBias = 0.0f;
-   m_d.m_skipRendering = false;
-   m_d.m_groupdRendering = false;
    m_d.m_reflectionEnabled = true;
    m_numGroupIndices = 0;
    m_numGroupVertices = 0;
@@ -235,108 +233,6 @@ Primitive *Primitive::CopyForPlay(PinTable *live_table) const
    STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(Primitive, live_table)
    dst->m_mesh = m_mesh;
    return dst;
-}
-
-void Primitive::CreateRenderGroup(const Collection * const collection)
-{
-   if (!collection->m_groupElements)
-      return;
-
-   vector<Primitive*> prims;
-   vector<Primitive*> renderedPrims;
-   for (int i = 0; i < collection->m_visel.size(); i++)
-   {
-      const ISelect * const pisel = collection->m_visel.ElementAt(i);
-      if (pisel->GetItemType() != eItemPrimitive)
-         continue;
-
-      Primitive * const prim = (Primitive*)pisel;
-      // only support dynamic mesh primitives for now
-      if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
-         continue;
-
-      prims.push_back(prim);
-   }
-
-   if (prims.size() <= 1)
-      return;
-
-   // The first primitive in the group is the base primitive
-   // this element gets rendered by rendering all other group primitives
-   // the rest of the group is marked as skipped rendering
-   const Material * const groupMaterial = m_ptable->GetMaterial(prims[0]->m_d.m_szMaterial);
-   const Texture * const groupTexel = m_ptable->GetImage(prims[0]->m_d.m_szImage);
-   m_numGroupVertices = (int)prims[0]->m_mesh.NumVertices();
-   m_numGroupIndices = (int)prims[0]->m_mesh.NumIndices();
-   size_t overall_size = prims[0]->m_mesh.NumIndices();
-
-   // Now calculate the overall size of indices
-   for (size_t i = 1; i < prims.size(); i++)
-   {
-      const Material * const mat = m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      const Texture * const texel = m_ptable->GetImage(prims[i]->m_d.m_szImage);
-      if (mat == groupMaterial && texel == groupTexel)
-      {
-         overall_size += prims[i]->m_mesh.NumIndices();
-      }
-   }
-
-   // all primitives in the collection don't share the same texture and material
-   // don't group them and render them as usual
-   if (overall_size == prims[0]->m_mesh.NumIndices())
-      return;
-
-   prims[0]->m_d.m_groupdRendering = true;
-   vector<unsigned int> indices(overall_size);
-
-   // copy with a loop because memcpy seems to do some strange things with the indices
-   for (size_t k = 0; k < prims[0]->m_mesh.NumIndices(); k++)
-      indices[k] = prims[0]->m_mesh.m_indices[k];
-
-   renderedPrims.push_back(prims[0]);
-   for (size_t i = 1; i < prims.size(); i++)
-   {
-      const Material * const mat = m_ptable->GetMaterial(prims[i]->m_d.m_szMaterial);
-      const Texture * const texel = m_ptable->GetImage(prims[i]->m_d.m_szImage);
-      if (mat == groupMaterial && texel == groupTexel)
-      {
-         const Mesh &m = prims[i]->m_mesh;
-         for (size_t k = 0; k < m.NumIndices(); k++)
-            indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
-
-         m_numGroupVertices += (int)m.NumVertices();
-         m_numGroupIndices += (int)m.NumIndices();
-         prims[i]->m_d.m_skipRendering = true;
-         renderedPrims.push_back(prims[i]);
-      }
-      else
-         prims[i]->m_d.m_skipRendering = false;
-   }
-
-   VertexBuffer* vertexBuffer = new VertexBuffer(g_pplayer->m_renderer->m_renderDevice, m_numGroupVertices);
-   IndexBuffer *indexBuffer = new IndexBuffer(g_pplayer->m_renderer->m_renderDevice, indices);
-   unsigned int ofs = 0;
-   Vertex3D_NoTex2 *buf;
-   vertexBuffer->Lock(buf);
-   for (size_t i = 0; i < renderedPrims.size(); i++)
-   {
-      renderedPrims[i]->RecalculateMatrices();
-      const Mesh &m = renderedPrims[i]->m_mesh;
-      for (size_t t = 0; t < m.NumVertices(); t++)
-      {
-         Vertex3D_NoTex2 vt = m.m_vertices[t];
-         renderedPrims[i]->m_fullMatrix.MultiplyVector(vt);
-
-         const Vertex3Ds n = renderedPrims[i]->m_fullMatrix.MultiplyVectorNoTranslateNormal(vt);
-         //!! Normalize?
-         vt.nx = n.x; vt.ny = n.y; vt.nz = n.z;
-         buf[ofs] = vt;
-         ofs++;
-      }
-   }
-   vertexBuffer->Unlock();
-   delete prims[0]->m_meshBuffer;
-   prims[0]->m_meshBuffer = new MeshBuffer(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
 }
 
 HRESULT Primitive::Init(PinTable *const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay)
@@ -475,17 +371,6 @@ void Primitive::WriteRegDefaults()
 #undef strKeyName
 }
 
-void Primitive::BeginPlay(vector<HitTimer*> &pvht)
-{
-   IEditable::BeginPlay(pvht);
-}
-
-void Primitive::EndPlay()
-{
-   IEditable::EndPlay();
-   m_d.m_skipRendering = false;
-   m_d.m_groupdRendering = false;
-}
 
 #pragma region physic
 
@@ -1193,22 +1078,113 @@ void Primitive::RenderSetup(RenderDevice *device)
 {
    assert(m_rd == nullptr);
    m_rd = device;
+   delete m_meshBuffer;
 
-   if (m_d.m_groupdRendering || m_d.m_skipRendering)
+   // Check if we are part of a group, and if so if we are a child or the base
+   m_groupdRendering = false;
+   m_skipRendering = false;
+   for (auto collection : m_vCollection)
+   {
+      if (!collection->m_groupElements)
+         continue;
+
+      // The first primitive in the group is the base primitive
+      // this element gets rendered by rendering all other group primitives
+      // the rest of the group is marked as skipped rendering
+      const Material * groupMaterial = nullptr;
+      const Texture *groupTexel = nullptr;
+      size_t overall_size = 0;
+      bool partOfGroup = false;
+      vector<Primitive *> prims;
+      for (int i = 0; i < collection->m_visel.size(); i++)
+      {
+         const ISelect *const pisel = collection->m_visel.ElementAt(i);
+         if (pisel->GetItemType() != eItemPrimitive)
+            continue;
+
+         Primitive *const prim = (Primitive *)pisel;
+         // only support dynamic mesh primitives for now
+         if (!prim->m_d.m_use3DMesh || prim->m_d.m_staticRendering)
+            continue;
+
+         const Material *const mat = m_ptable->GetMaterial(prim->m_d.m_szMaterial);
+         const Texture *const texel = m_ptable->GetImage(prim->m_d.m_szImage);
+         if (groupMaterial == nullptr)
+            groupMaterial = mat;
+         if (groupTexel == nullptr)
+            groupTexel = texel;
+         if (mat == groupMaterial && texel == groupTexel)
+         {
+            prims.push_back(prim);
+            partOfGroup |= prim == this;
+            overall_size += prims[i]->m_mesh.NumIndices();
+         }
+      }
+
+      if (!partOfGroup || (prims.size() <= 1))
+         continue;
+
+      // We are part of a group, initialize as such
+      if (prims[0] != this)
+      {
+         m_skipRendering = true;
+      }
+      else
+      {
+         m_groupdRendering = true;
+
+         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size));
+         unsigned int *indices;
+         indexBuffer->Lock(indices);
+         m_numGroupVertices = 0;
+         m_numGroupIndices = 0;
+         for (size_t i = 0; i < prims.size(); i++)
+         {
+            const Mesh &m = prims[i]->m_mesh;
+            // copy with a loop because memcpy seems to do some strange things with the indices
+            for (size_t k = 0; k < m.NumIndices(); k++)
+               indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
+            m_numGroupVertices += (int)m.NumVertices();
+            m_numGroupIndices += (int)m.NumIndices();
+         }
+         indexBuffer->Unlock();
+
+         VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, m_numGroupVertices);
+         unsigned int ofs = 0;
+         Vertex3D_NoTex2 *buf;
+         vertexBuffer->Lock(buf);
+         for (size_t i = 0; i < prims.size(); i++)
+         {
+            prims[i]->RecalculateMatrices();
+            const Mesh &m = prims[i]->m_mesh;
+            for (size_t t = 0; t < m.NumVertices(); t++)
+            {
+               Vertex3D_NoTex2 vt = m.m_vertices[t];
+               prims[i]->m_fullMatrix.MultiplyVector(vt);
+
+               const Vertex3Ds n = prims[i]->m_fullMatrix.MultiplyVectorNoTranslateNormal(vt);
+               //!! Normalize?
+               vt.nx = n.x;
+               vt.ny = n.y;
+               vt.nz = n.z;
+               buf[ofs] = vt;
+               ofs++;
+            }
+         }
+         vertexBuffer->Unlock();
+         m_meshBuffer = new MeshBuffer(m_wzName + L".RenderGroup"s, vertexBuffer, indexBuffer, true);
+      }
       return;
+   }
 
-   //const char* const szT = MakeChar(m_wzName);
-   //PLOGD_IF(m_d.m_staticRendering && m_d.m_disableLightingBelow != 1.0f && m_d.m_visible) << "Primitive '" << szT << "' is set as static rendering with lighting from below not disabled. The back lighting will not be performed.";
-   //delete[] szT;
-
+   // Normal mode
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
    m_currentFrame = -1.f;
    m_d.m_isBackGlassImage = IsBackglass();
 
-   delete m_meshBuffer;
-   VertexBuffer* vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
-   IndexBuffer* indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
+   VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
+   IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
    m_meshBuffer = new MeshBuffer(m_wzName, vertexBuffer, indexBuffer, true);
 
    // Compute and upload mesh to let a chance for renderdevice to share the buffers with other static objects
@@ -1229,6 +1205,10 @@ void Primitive::RenderRelease()
 void Primitive::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+
+   if (!m_d.m_visible || m_skipRendering)
+      return;
+
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -1248,9 +1228,6 @@ void Primitive::Render(const unsigned int renderMask)
    // Do not render ourself inside our reflection probe (no self reflection)
    RenderProbe * const reflection_probe = m_d.m_reflectionStrength <= 0 ? nullptr : m_ptable->GetRenderProbe(m_d.m_szReflectionProbe);
    if (reflection_probe != nullptr && reflection_probe->IsRendering())
-      return;
-
-   if (!m_d.m_visible || m_d.m_skipRendering)
       return;
    
    if (isReflectionPass && !m_d.m_reflectionEnabled)
@@ -1288,7 +1265,7 @@ void Primitive::Render(const unsigned int renderMask)
 
    m_rd->ResetRenderState();
    
-   if (m_d.m_groupdRendering)
+   if (m_groupdRendering)
       m_fullMatrix.SetIdentity();
    else
    {
@@ -1370,7 +1347,7 @@ void Primitive::Render(const unsigned int renderMask)
       m_rd->m_basicShader->SetVector(SHADER_staticColor_Alpha, color.x * color.w, color.y * color.w, color.z * color.w, color.w);
       m_rd->m_basicShader->SetTechnique(lightmap ? (pin ? SHADER_TECHNIQUE_unshaded_with_texture_shadow : SHADER_TECHNIQUE_unshaded_without_texture_shadow)
                                                  : (pin ? SHADER_TECHNIQUE_unshaded_with_texture : SHADER_TECHNIQUE_unshaded_without_texture));
-      m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+      m_rd->DrawMesh(m_rd->m_basicShader, true, m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
    else
    {
@@ -1434,7 +1411,7 @@ void Primitive::Render(const unsigned int renderMask)
                m_rd->m_basicShader->SetTechniqueMaterial(pin ? SHADER_TECHNIQUE_basic_with_texture : SHADER_TECHNIQUE_basic_without_texture, 
                   *mat, pin ? pinAlphaTest >= 0.f && !pin->IsOpaque() : false, nMap, false, false);
                m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive && !m_d.m_staticRendering, m_d.m_vPosition, m_d.m_depthBias, 
-                  m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+                  m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
                is_reflection_only_pass = true;
             }
             if (is_reflection_only_pass)
@@ -1462,7 +1439,7 @@ void Primitive::Render(const unsigned int renderMask)
             is_reflection_only_pass // The reflection pass is an additive (so transparent) pass to be drawn after the opaque one
          || refractions // Refractions must be rendered back to front since they rely on what is behind
          || (mat->m_bOpacityActive && !m_d.m_staticRendering /* && !m_rd->GetRenderState().IsOpaque() */), // We can not use the real render state opaque state since Blood Machine and other tables use depth masks
-            m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+            m_d.m_vPosition, m_d.m_depthBias, m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
    // Draw the front of the primitive if backface enabled
@@ -1470,7 +1447,7 @@ void Primitive::Render(const unsigned int renderMask)
    {
       m_rd->SetRenderState(RenderState::CULLMODE, cullMode);
       m_rd->DrawMesh(m_rd->m_basicShader, mat->m_bOpacityActive, m_d.m_vPosition, m_d.m_depthBias, 
-         m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_d.m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
+         m_meshBuffer, RenderDevice::TRIANGLELIST, 0, m_groupdRendering ? m_numGroupIndices : (DWORD)m_mesh.NumIndices());
    }
 
    // Restore state

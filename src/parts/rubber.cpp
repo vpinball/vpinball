@@ -529,9 +529,6 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 }
 #endif
 
-void Rubber::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Rubber::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

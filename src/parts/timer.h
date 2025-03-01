@@ -5,12 +5,13 @@
 #pragma once
 
 #include "ui/resource.h"
+#include "physics/hittimer.h"
 
 class TimerDataRoot final
 {
 public:
-   int m_TimerInterval;
-   bool m_TimerEnabled;
+   int m_TimerInterval = 100;
+   bool m_TimerEnabled = false;
 };
 
 class TimerData final

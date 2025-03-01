@@ -161,11 +161,6 @@ void DispReel::UIRenderPass2(Sur * const psur)
    }
 }
 
-// Register the timer with the game call which then makes a call back when the interval has expired.
-// for this sort of object (reel driver) it is basically not really required, but its standard functionality
-void DispReel::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void DispReel::EndPlay() { IEditable::EndPlay(); }
 
 #pragma region Physics
 

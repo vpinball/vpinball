@@ -156,11 +156,6 @@ void LightSeq::RenderBlueprint(Sur *psur, const bool solid)
 {
 }
 
-// Register the timer with the game call which then makes a call back when the interval has expired.
-// for this sort of object (light seq) it is basically not really required, but its standard functionality
-void LightSeq::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void LightSeq::EndPlay() { IEditable::EndPlay(); }
 
 void LightSeq::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {

@@ -38,19 +38,23 @@ public:
 
 
 #define INITVBA(ItemType) \
-	virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) \
-		{ \
-		WCHAR wzUniqueName[128]; \
-		if (fNew && !wzName) \
-			{ \
-				{ \
-				GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
-				WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
-				} \
-			} \
-		InitScript(); \
+   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) \
+   { \
+      WCHAR wzUniqueName[128]; \
+      if (fNew && !wzName) /* setup a default unique name */ \
+      { \
+         GetPTable()->GetUniqueName(ItemType, wzUniqueName, 128); \
+         WideStrNCopy(wzUniqueName, (WCHAR *)m_wzName, std::size(m_wzName));/*lstrcpyW((WCHAR *)m_wzName, wzUniqueName);*/ \
+      } \
+      if (GetScriptable() != nullptr) \
+      { \
+         if (GetScriptable()->m_wzName[0] == '\0') \
+            /* Just in case something screws up - not good having a null script name */ \
+            swprintf_s(GetScriptable()->m_wzName, sizeof(GetScriptable()->m_wzName), L"%Id", reinterpret_cast<uintptr_t>(this)); \
+         GetPTable()->m_pcv->AddItem(GetScriptable(), false); \
+      } \
 		return S_OK; \
-		}
+	}
 
 // Explanation for AllowedViews:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).
@@ -63,7 +67,7 @@ public:
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
 	_STANDARD_DISPATCH_EDITABLE_DECLARES(ItemType)
 
-// declare and implement some methods for an IEditable which does not support scripting
+// declare and implement some methods for an IEditable which does not support scripting (only used for leagacy, deprecated Decal editable)
 #define STANDARD_NOSCRIPT_EDITABLE_DECLARES(T, ItemType, ResName, AllowedViews) \
 	_STANDARD_EDITABLE_CONSTANTS(ItemType, ResName, AllowedViews) \
 	_STANDARD_DISPATCH_INDEPENDANT_EDITABLE_DECLARES(T, ItemType) \
@@ -150,8 +154,22 @@ public:
 	STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut) {return GetPTable()->GetPredefinedValue(dispID, dwCookie, pVarOut, this);} \
 	virtual void SetDefaults(const bool fromMouseClick); \
 	/* Hitable implementation */ \
-	virtual void BeginPlay(vector<HitTimer*> &pvht); \
-	virtual void EndPlay(); \
+	virtual void TimerSetup(vector<HitTimer*> &pvht) { \
+      m_singleEvents = true; \
+      for (size_t i = 0; i < m_vCollection.size(); i++) \
+      { \
+         Collection *const pcol = m_vCollection[i]; \
+         if (pcol->m_fireEvents) \
+         { \
+            m_vEventCollection.push_back(pcol); \
+            m_viEventCollection.push_back(m_viCollection[i]); \
+         } \
+         if (pcol->m_stopSingleEvents) \
+            m_singleEvents = false; \
+      } \
+      IFireEvents * fe = GetIFireEvents(); if (fe) { m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, fe); if (m_d.m_tdr.m_TimerEnabled) pvht.push_back(m_phittimer); } \
+   } \
+	virtual void TimerRelease() { delete m_phittimer; m_phittimer = nullptr; } \
 	virtual void PhysicSetup(PhysicsEngine* physics, const bool isUI); \
 	virtual void PhysicRelease(PhysicsEngine* physics, const bool isUI); \
 	/* IRenderable implementation */ \
@@ -268,29 +286,29 @@ public:
    void Delete();
    void Uncreate();
 
-   void InitScript();
+   bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
 
    HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
    HRESULT put_TimerInterval(long newVal, int *pti);
 
+   vector<Collection *> m_vCollection;
+   vector<int> m_viCollection;
+
    HRESULT get_UserValue(VARIANT *pVal);
    HRESULT put_UserValue(VARIANT *newVal);
 
-   void BeginPlay(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents * fe = nullptr);
-   void EndPlay();
-
-   HitTimer *m_phittimer = nullptr;
-
+private:
    VARIANT m_uservalue;
 
-   vector<Collection*> m_vCollection;
-   vector<int> m_viCollection;
+#pragma region Script events
+public:
+   void TimerSetup(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents * fe = nullptr);
+   void TimerRelease();
+   HitTimer *m_phittimer = nullptr; // timer event defined when playing (between TimerSetup and TimerRelease)
 
-   // Optimizations for in-game
-   vector<Collection*> m_vEventCollection;
+   // In game filtered copy of m_vCollection/m_viCollection for slightly faster event dispatching
+   vector<Collection *> m_vEventCollection;
    vector<int> m_viEventCollection;
-
    bool m_singleEvents;
-
-   bool m_backglass; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
+#pragma endregion
 };

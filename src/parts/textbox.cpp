@@ -400,10 +400,6 @@ void Textbox::PutCenter(const Vertex2D& pv)
    m_d.m_v1 = pv;
 }
 
-void Textbox::BeginPlay(vector<HitTimer*> &pvht) { IEditable::BeginPlay(pvht, &m_d.m_tdr, this); }
-
-void Textbox::EndPlay() { IEditable::EndPlay(); }
-
 
 #pragma region Physics
 

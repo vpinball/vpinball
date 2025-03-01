@@ -143,7 +143,7 @@ public:
    }
 
    SurfaceData m_d;
-   bool m_disabled;
+   bool m_disabled = false;
 
 private:
    void SetupHitObject(class PhysicsEngine *physics, HitObject *const obj, const bool isUI);
