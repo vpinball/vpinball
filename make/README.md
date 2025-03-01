@@ -1,6 +1,6 @@
 # How to build
 
-## Quickstart Windows / Visual Studio 2015 (and newer) variant: dependencies are downloaded, no CMake needed
+## Quickstart Windows / Visual Studio 2019 (and newer) variant: dependencies are downloaded, no CMake needed
 
 For a pre-compiled download of all external/third-party dependencies:
 

@@ -59,7 +59,7 @@ set SCRIPT_PLA=""
 
 @REM CMake variables
 set OPTIONS=
-set TOOLS=-T v141_xp
+set TOOLS=-T v143
 
 @REM Print help (terminates script)
 if "%~1" == "/?" (goto :print_help)
