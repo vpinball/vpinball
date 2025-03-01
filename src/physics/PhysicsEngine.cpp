@@ -505,6 +505,12 @@ HitQuadtree* PhysicsEngine::GetUIQuadTree()
    return m_UIQuadTtree->GetQuadTree();
 }
 
+const vector<HitObject *> PhysicsEngine::GetUIHitObjects(IEditable *editable)
+{
+   GetUIQuadTree();
+   return m_UIQuadTtree->GetHitObjects(editable);
+}
+
 void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit)
 {
    // Create a ray (ball) that travels in 3D space along the given ray, and find what it intersects with.

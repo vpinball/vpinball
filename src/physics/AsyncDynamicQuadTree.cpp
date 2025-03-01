@@ -57,6 +57,25 @@ AsyncDynamicQuadTree::~AsyncDynamicQuadTree()
    delete m_quadTree;
 }
 
+const vector<HitObject*> AsyncDynamicQuadTree::GetHitObjects(IEditable* editable)
+{
+   assert(editable->GetIHitable() != nullptr);
+   assert(editable->GetIHitable()->HitableGetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
+
+   auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
+   if (dynEdIt != m_dynamicEditables.end())
+      return (*dynEdIt)->hitObjects;
+
+   auto updEdIt = std::ranges::find_if(m_updatedEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
+   if (updEdIt != m_updatedEditables.end())
+      return (*updEdIt)->hitObjects;
+
+   vector<HitObject*> result;
+   const vector<HitObject*> &  vho = m_quadTree->GetHitObjects();
+   std::copy_if(vho.begin(), vho.end(), std::back_inserter(result), [editable](HitObject* ho) { return (ho != nullptr) && (ho->m_editable == editable); });
+   return result;
+}
+
 bool AsyncDynamicQuadTree::IsStatic(IEditable* editable) const
 {
    assert(editable->GetIHitable() != nullptr);

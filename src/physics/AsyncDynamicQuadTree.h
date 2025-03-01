@@ -36,6 +36,7 @@ public:
    void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll);
 
    HitQuadtree* GetQuadTree() const { return m_quadTree; }
+   const vector<HitObject*> GetHitObjects(IEditable* editable);
 
 private:
    void UpdateAsync();

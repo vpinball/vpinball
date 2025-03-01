@@ -2696,13 +2696,12 @@ void LiveUI::UpdateMainUI()
          overlayDrawList->AddCircleFilled(ImVec2(pos.x, pos.y), 3.f * m_dpi, IM_COL32(255, 255, 255, 255), 16);
       }
 
-      if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay)
+      if (m_selection.type == Selection::S_EDITABLE && m_selectionOverlay && (overlayDrawList->VtxBuffer.Size < 40000))
       {
          ImGui::PushStyleColor(ImGuiCol_PlotLines, IM_COL32(255, 128, 0, 255));
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
-         for (auto pho : m_player->m_physics->GetUIObjects())
-            if (pho != nullptr && pho->m_editable == m_selection.editable && overlayDrawList->VtxBuffer.Size < 40000)
-               pho->DrawUI(project, overlayDrawList);
+         for (auto pho : m_player->m_physics->GetUIHitObjects(m_selection.editable))
+            pho->DrawUI(project, overlayDrawList);
          ImGui::PopStyleColor(2);
       }
       
