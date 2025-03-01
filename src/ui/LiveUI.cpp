@@ -2846,6 +2846,11 @@ void LiveUI::UpdateMainUI()
             // Cancel current operation
             m_gizmoOperation = ImGuizmo::NONE;
          }
+         else if (ImGui::IsKeyReleased(ImGuiKey_Escape) && m_selection.type != Selection::S_NONE)
+         {
+            // Cancel current selection
+            m_selection = Selection();
+         }
          else if (ImGui::IsKeyReleased(ImGuiKey_Escape) || (ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))
          {
             // Open Main modal dialog
