@@ -53,6 +53,7 @@
 //#include <richedit.h>
 //#include <atlcom.h>
 #ifndef __STANDALONE__
+#include <windowsx.h>
 #include <atlbase.h>
 #else
 extern "C" {

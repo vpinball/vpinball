@@ -603,9 +603,6 @@ target_include_directories(vpinball PUBLIC
    third-party/include
    third-party/include/win32xx/include
    third-party/include/compat/msvc
-   dialogs
-   media
-   pin
    src
 )
 

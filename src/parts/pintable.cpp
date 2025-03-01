@@ -1908,14 +1908,14 @@ bool PinTable::IsNameUnique(const WCHAR * const wzName) const
    return m_pcv->m_vcvd.GetSortedIndex(wzName) == -1;
 }
 
-void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
+void PinTable::GetUniqueName(const ItemTypeEnum type, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
 {
    WCHAR wzRoot[256] = { 0 };
    GetTypeNameForType(type, wzRoot);
    GetUniqueName(wzRoot, wzUniqueName, wzUniqueName_maxlength);
 }
 
-void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
+void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR *const wzUniqueName, const size_t wzUniqueName_maxlength) const
 {
    int suffix = 1;
    bool found = false;
@@ -1946,7 +1946,7 @@ void PinTable::GetUniqueName(const WCHAR *const wzRoot, WCHAR * const wzUniqueNa
    delete[] wzName;
 }
 
-void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const DWORD wzUniqueName_maxlength) const
+void PinTable::GetUniqueNamePasting(const int type, WCHAR * const wzUniqueName, const size_t wzUniqueName_maxlength) const
 {
    //if the original name is not yet used, use that one (so there's nothing we have to do) 
    //otherwise add/increase the suffix until we find a name that's not used yet

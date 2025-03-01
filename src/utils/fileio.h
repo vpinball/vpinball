@@ -79,7 +79,7 @@ public:
    }
    HRESULT GetString(char * const szvalue, const DWORD szvalue_maxlength);
    HRESULT GetString(string& szvalue);
-   HRESULT GetWideString(WCHAR* wzvalue, const DWORD wzvalue_maxlength);
+   HRESULT GetWideString(WCHAR* wzvalue, const size_t wzvalue_maxlength);
    HRESULT GetWideString(std::basic_string<WCHAR>& wzvalue);
    HRESULT GetFloat(float &value);
    HRESULT GetBool(BOOL &value);

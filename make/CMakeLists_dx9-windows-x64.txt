@@ -650,9 +650,6 @@ target_include_directories(vpinball PUBLIC
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader
    third-party/include
    third-party/include/win32xx/include
-   dialogs
-   media
-   pin
    src
    shader
 )
