@@ -245,11 +245,7 @@ void PinInput::LoadSettings(const Settings& settings)
       const string deviceName = "Device" + std::to_string(i) + "_Name";
       const string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
 
-#if __cplusplus >= 202002L
       if (!m_pInputDeviceSettingsInfo->contains(name))
-#else
-      if (m_pInputDeviceSettingsInfo->count(name) == 0)
-#endif
       {
          const string deviceState = "Device" + std::to_string(i) + "_State";
          const bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);

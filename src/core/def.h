@@ -342,8 +342,7 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
 
 //
 
-#if __cplusplus >= 202002L
- #ifndef __clang__
+#ifndef __clang__
   #include <bit>
   #define float_as_int(x) std::bit_cast<int>(x)
   #define float_as_uint(x) std::bit_cast<unsigned int>(x)
@@ -353,7 +352,7 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
   #define uint_as_float(x) std::bit_cast<float>(x)
   #define short_as_half(x) std::bit_cast<_Float16>(x)
   #define ushort_as_half(x) std::bit_cast<_Float16>(x)
- #else // for whatever reason apple/clang is special again
+#else // for whatever reason apple/clang is special again
   #define float_as_int(x) __builtin_bit_cast(int, x)
   #define float_as_uint(x) __builtin_bit_cast(unsigned int, x)
   #define half_as_short(x) __builtin_bit_cast(short, x)
@@ -362,93 +361,6 @@ __forceinline __m128 sseHorizontalMax(const __m128 &a)
   #define uint_as_float(x) __builtin_bit_cast(float, x)
   #define short_as_half(x) __builtin_bit_cast(_Float16, x)
   #define ushort_as_half(x) __builtin_bit_cast(_Float16, x)
- #endif
-#else
-__forceinline int float_as_int(const float x)
-{
-   union {
-      float f;
-      int i;
-   } uc;
-   uc.f = x;
-   return uc.i;
-}
-
-__forceinline unsigned int float_as_uint(const float x)
-{
-   union {
-      float f;
-      unsigned int i;
-   } uc;
-   uc.f = x;
-   return uc.i;
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-__forceinline short half_as_short(const _Float16 x)
-{
-   union
-   {
-      _Float16 f;
-      short i;
-   } uc;
-   uc.f = x;
-   return uc.i;
-}
-
-__forceinline unsigned short half_as_ushort(const _Float16 x)
-{
-   union
-   {
-      _Float16 f;
-      unsigned short i;
-   } uc;
-   uc.f = x;
-   return uc.i;
-}
-#endif
-
-__forceinline float int_as_float(const int i)
-{
-   union {
-      int i;
-      float f;
-   } iaf;
-   iaf.i = i;
-   return iaf.f;
-}
-
-__forceinline float uint_as_float(const unsigned int i)
-{
-   union {
-      unsigned int i;
-      float f;
-   } iaf;
-   iaf.i = i;
-   return iaf.f;
-}
-
-#if defined(__GNUC__) || defined(__clang__)
-__forceinline _Float16 short_as_half(const short i)
-{
-   union {
-      short i;
-      _Float16 f;
-   } iaf;
-   iaf.i = i;
-   return iaf.f;
-}
-
-__forceinline _Float16 ushort_as_half(const unsigned short i)
-{
-   union {
-      unsigned short i;
-      _Float16 f;
-   } iaf;
-   iaf.i = i;
-   return iaf.f;
-}
-#endif
 #endif
 
 constexpr __forceinline bool infNaN(const float a)

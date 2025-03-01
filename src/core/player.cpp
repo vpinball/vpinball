@@ -55,7 +55,7 @@ using namespace Concurrency::diagnostic;
 extern marker_series series;
 #endif
 
-#if __cplusplus >= 202002L && !defined(__clang__)
+#if !defined(__clang__)
 #define stable_sort std::ranges::stable_sort
 #define sort std::ranges::sort
 #else
