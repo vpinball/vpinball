@@ -263,21 +263,21 @@ Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, i
    return pFont;
 }
 
-AnimatedActor* FlexDMD::NewVideo(const string& szVideo, const string& szName)
+AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
 {
-   if (szVideo.find('|') != string::npos)
-      return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
+   if (video.find('|') != string::npos)
+      return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    else {
-      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(szVideo, nullptr);
+      AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(video, nullptr);
       AssetType assetType = pAssetSrc->GetAssetType();
       delete pAssetSrc;
 
       if (assetType == AssetType_Video)
-         return (AnimatedActor*)Video::Create(this, szVideo, szName, true);
+         return (AnimatedActor*)Video::Create(this, video, name, true);
       else if (assetType == AssetType_GIF)
-         return (AnimatedActor*)GIFImage::Create(this, m_pAssetManager, szVideo, szName);
+         return (AnimatedActor*)GIFImage::Create(this, m_pAssetManager, video, name);
       else if (assetType == AssetType_Image)
-         return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, szVideo, szName, 30, true);
+         return (AnimatedActor*)ImageSequence::Create(this, m_pAssetManager, video, name, 30, true);
    }
    return nullptr;
 }
