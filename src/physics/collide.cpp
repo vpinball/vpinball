@@ -181,7 +181,7 @@ void LineSeg::CalcNormalAndLength()
    normal.y = -vT.x * inv_length;
 }
 
-void LineSeg::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void LineSeg::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {
@@ -192,7 +192,8 @@ void LineSeg::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* dra
       const Vertex2D p3 = project(Vertex3Ds(v1.x, v1.y, m_hitBBox.zhigh));
       if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX && p3.x != FLT_MAX)
       {
-         drawList->AddQuadFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(p3.x, p3.y), fCol);
+         if (fill)
+            drawList->AddQuadFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(p3.x, p3.y), fCol);
          drawList->AddQuad(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(p3.x, p3.y), lCol);
       }
    }
@@ -359,7 +360,7 @@ void HitCircle::Collide(const CollisionEvent& coll)
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 }
 
-void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {
@@ -375,16 +376,21 @@ void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
          q2 = project(Vertex3Ds(center.x + radius * cosf((float)i * (float)(2. * M_PI / 32.)), center.y + radius * sinf((float)i * (float)(2. * M_PI / 32.)), m_hitBBox.zhigh));
          if (i > 0 && p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
          {
-            drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+            if (fill)
+               drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
             drawList->AddLine(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), lCol);
          }
          if (i > 0 && q0.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
          {
-            drawList->AddTriangleFilled(ImVec2(q0.x, q0.y), ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), fCol);
+            if (fill)
+               drawList->AddTriangleFilled(ImVec2(q0.x, q0.y), ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), fCol);
             drawList->AddLine(ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), lCol);
          }
          if (i > 0 && p1.x != FLT_MAX && p2.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
-            drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+            if (fill)
+               drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+            else
+               drawList->AddQuad(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
       }
    }
 }
@@ -485,7 +491,7 @@ void HitLineZ::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void HitLineZ::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitLineZ::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {
@@ -582,7 +588,7 @@ void HitPoint::Collide(const CollisionEvent& coll)
       FireHitEvent(coll.m_ball);
 }
 
-void HitPoint::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitPoint::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {

@@ -56,12 +56,13 @@ public:
 
    void Init(Vertex3Ds * const rgv, const int count);
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
 private:
    Vertex3Ds *m_rgv;
    Vertex3Ds m_normal;
    int m_cvertex;
+   mutable vector<WORD> m_triIndices; // Lazy cache for UI rendering
 };
 
 // Note that HitTriangle ONLY does include the plane and barycentric test, but NOT the edge and vertex test,
@@ -79,7 +80,7 @@ public:
 
    bool IsDegenerate() const { return m_normal.IsZero(); }
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    Vertex3Ds m_rgv[3];
    Vertex3Ds m_normal;
@@ -102,7 +103,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override {}  //!! TODO: this is needed if we want to put it in the quadtree, but then again impossible as infinite area
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override { } // this is not implemented, but this is not used for UI and how to render an infinite plane ?
 
 private:
    Vertex3Ds m_normal;
@@ -142,7 +143,7 @@ public:
 
    MoverObject *GetMoverObject() override { return &m_spinnerMover; }
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    LineSeg m_lineseg[2];
 
@@ -184,7 +185,7 @@ public:
 
    MoverObject *GetMoverObject() override { return &m_gateMover; }
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    GateMoverObject m_gateMover;
    bool m_twoWay;
@@ -226,7 +227,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override { } // already done in constructor
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
 private:
    Matrix3 m_matrix;

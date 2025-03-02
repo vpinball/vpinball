@@ -2704,7 +2704,7 @@ void LiveUI::UpdateMainUI()
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 128, 0, 32));
          for (auto pho : m_player->m_physics->GetUIHitObjects(m_selection.editable))
             if (overlayDrawList->VtxBuffer.Size < 40000)
-               pho->DrawUI(project, overlayDrawList);
+               pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
       
@@ -2714,7 +2714,7 @@ void LiveUI::UpdateMainUI()
          ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(255, 0, 0, 64));
          for (auto pho : m_player->m_physics->GetHitObjects())
             if (pho != nullptr && (m_physOverlay == PO_ALL || (m_physOverlay == PO_SELECTED && pho->m_editable == m_selection.editable)) && overlayDrawList->VtxBuffer.Size < 40000)
-               pho->DrawUI(project, overlayDrawList);
+               pho->DrawUI(project, overlayDrawList, true);
          ImGui::PopStyleColor(2);
       }
    }

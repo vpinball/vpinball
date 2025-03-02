@@ -96,7 +96,7 @@ public:
 
    float GetHitTime() const { return m_flipperMover.GetHitTime(); }
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    FlipperMoverObject m_flipperMover;
 

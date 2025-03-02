@@ -60,6 +60,22 @@ public:
       }
       return false;
    }
+
+   bool computeProjBounds(std::function<Vertex2D(Vertex3Ds)> project, const float x, const float y, const float z, const float radius, float &xMin, float &xMax, float &yMin, float &yMax) const
+   {
+      for (int i = 0; i < AntiStretchHelper::npts * 3; i += 3)
+      {
+         const float px = x + radius * m_stretchFitPoints[i];
+         const float py = y + radius * m_stretchFitPoints[i + 1];
+         const float pz = z + radius * m_stretchFitPoints[i + 2];
+         Vertex2D v = project(Vertex3Ds(px, py, pz));
+         xMin = min(xMin, v.x);
+         xMax = max(xMax, v.x);
+         yMin = min(yMin, v.y);
+         yMax = max(yMax, v.y);
+      }
+      return false;
+   }
 };
 
 class BallData final : public BaseProperty

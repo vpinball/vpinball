@@ -60,7 +60,6 @@ AsyncDynamicQuadTree::~AsyncDynamicQuadTree()
 const vector<HitObject*> AsyncDynamicQuadTree::GetHitObjects(IEditable* editable)
 {
    assert(editable->GetIHitable() != nullptr);
-   assert(editable->GetItemType() != eItemBall); // Balls are not supported as they manage the hit object lifecycle
 
    auto dynEdIt = std::ranges::find_if(m_dynamicEditables, [editable](std::shared_ptr<DynamicEditable> dynEd) { return dynEd->editable == editable; });
    if (dynEdIt != m_dynamicEditables.end())

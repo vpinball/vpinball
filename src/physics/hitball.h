@@ -54,7 +54,7 @@ public:
 
    void ApplySurfaceImpulse(const Vertex3Ds& rotI, const Vertex3Ds& impulse);
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override { } // FIXME implement
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    // Per frame info
    Ball *m_pBall = nullptr;  // Object model version of the ball
