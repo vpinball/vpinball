@@ -77,6 +77,12 @@ typedef struct ScriptArray
    //uint8_t pData[];
 } ScriptArray;
 
+typedef struct ScriptString
+{
+   void (MSGPIAPI *Release)(ScriptString*);
+   char* string;
+} ScriptString;
+
 // The script API being statically typed, ScriptVariant does not hold any type information
 typedef union ScriptVariant
 {
@@ -91,9 +97,9 @@ typedef union ScriptVariant
    sc_uint64        vULong;
    sc_float         vFloat;
    sc_double        vDouble;
-   const char*      vString;
-   void*            vObject; // When an object is shared by a plugin, it must implement reference counting by exposing AddRef/Release methods
+   ScriptString     vString;
    ScriptArray*     vArray;
+   void*            vObject; // When an object is shared by a plugin, it must implement reference counting by exposing AddRef/Release methods
 } ScriptVariant;
 
 #define PSC_CALL_MAX_ARG_COUNT 16
@@ -172,7 +178,7 @@ typedef struct ScriptablePluginAPI
 #define PSC_VAR_bool(variant) (variant).vBool
 #define PSC_VAR_float(variant) (variant).vFloat
 #define PSC_VAR_double(variant) (variant).vDouble
-#define PSC_VAR_string(variant) std::string((variant).vString)
+#define PSC_VAR_string(variant) std::string((variant).vString.string)
 #define PSC_VAR_enum(type, variant) static_cast<type>((variant).vInt)
 #define PSC_VAR_object(type, variant) static_cast<type *>((variant).vObject)
 
@@ -184,7 +190,7 @@ typedef struct ScriptablePluginAPI
 #define PSC_VAR_SET_float(variant, value) PSC_VAR_float(variant) = value;
 #define PSC_VAR_SET_double(variant, value) PSC_VAR_double(variant) = value;
 #define PSC_VAR_SET_enum(type, variant, value) (variant).vInt = static_cast<int>(value);
-#define PSC_VAR_SET_string(variant, value) (variant).vString = (value).c_str(); // FIXME This is awfully not clean, opening doors to access to temp memory allocated for string
+#define PSC_VAR_SET_string(variant, value) { const string& v=value; size_t n=v.size()+1; char* p = new char[n];  memcpy(p, v.c_str(), n); (variant).vString = { [](ScriptString* s) { delete[] s->string; }, p }; }
 #define PSC_VAR_SET_object(vtype, variant, value) { (variant).vObject = static_cast<void*>(value); }
 
 #define PSC_ARRAY1(name, type, lowerBound) \
