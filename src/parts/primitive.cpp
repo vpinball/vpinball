@@ -1117,7 +1117,7 @@ void Primitive::RenderSetup(RenderDevice *device)
          {
             prims.push_back(prim);
             partOfGroup |= prim == this;
-            overall_size += prims[i]->m_mesh.NumIndices();
+            overall_size += prim->m_mesh.NumIndices();
          }
       }
 
