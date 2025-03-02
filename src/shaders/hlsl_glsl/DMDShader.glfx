@@ -65,7 +65,7 @@ void main()
    float4 pos = float4(vPosition.x, vPosition.y, 1.0, 1.0);
    VS_EYE;
    VS_POSITION(pos, pos);
-   VS_VARYING(tex0, tc);
+   VS_VARYING(tex0, glassArea.xy + tc * glassArea.zw);
 }
 
 ////vs_simple_world
@@ -83,7 +83,7 @@ void main()
    float4 pos = float4(vPosition, 1.0);
    VS_EYE;
    VS_POSITION(matWorldViewProj[eye_vs] * pos, pos);
-   VS_VARYING(tex0, tc);
+   VS_VARYING(tex0, glassArea.xy + tc * glassArea.zw);
    VS_CLIP_DISTANCE(pos);
 }
 
