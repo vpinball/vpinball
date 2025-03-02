@@ -308,7 +308,7 @@ VPinballStatus VPinball::Play()
    if (!pActiveTable)
       return VPinballStatus::Failure;
 
-   pActiveTable->Play(0);
+   g_pvp->DoPlay(0);
 
    return VPinballStatus::Success;
 }

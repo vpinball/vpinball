@@ -170,7 +170,6 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
-   , m_isEditor(false) // playMode == 2) // Editor mode is not yet fully implemented
    , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::DMD, "DMD")
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
 {
@@ -716,7 +715,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    g_pStandalone->PreStartup();
 #endif
 
-   if (!m_isEditor)
+   if (!IsEditorMode())
    {
       PLOGI << "Starting script"; // For profiling
       m_progressDialog.SetProgress("Starting Game Scripts..."s);
@@ -793,7 +792,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_physics->StartPhysics();
 
    m_progressDialog.SetProgress("Starting..."s, 100);
-   m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
+   if (!IsEditorMode())
+      m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused);
 
 #ifdef __STANDALONE__
 #ifndef __LIBVPINBALL__
@@ -874,7 +874,7 @@ Player::~Player()
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
-   if (!m_isEditor)
+   if (!IsEditorMode())
    {
       m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
       if (m_detectScriptHang)
@@ -1080,7 +1080,8 @@ Player::~Player()
 
    delete m_pBCTarget;
    m_pBCTarget = nullptr;
-   delete m_ptable;
+   if (m_ptable->m_isLiveInstance)
+      delete m_ptable;
    //m_ptable = nullptr;
    #ifdef ENABLE_XR
    if (m_vrDevice)
@@ -1270,13 +1271,15 @@ void Player::ApplyPlayingState(const bool play)
       m_noTimeCorrect = true;   // Disable physics engine time correction on next physic update
       UnpauseMusic();
       PLOGI << "Unpausing Game";
-      m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
+      if (!IsEditorMode())
+         m_ptable->FireVoidEvent(DISPID_GameEvents_UnPaused); // signal the script that the game is now running again
    }
    else
    {
       PauseMusic();
       PLOGI << "Pausing Game";
-      m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
+      if (!IsEditorMode())
+         m_ptable->FireVoidEvent(DISPID_GameEvents_Paused); // signal the script that the game is now paused
    }
    UpdateCursorState();
 }
@@ -1846,7 +1849,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       span *tagSpan = new span(series, 1, _T("Sync"));
       #endif
       ProcessOSMessages();
-      if (!m_isEditor)
+      if (!IsEditorMode())
       {
          m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
@@ -2251,7 +2254,8 @@ void Player::FinishFrame()
    {
       delete m_audio;
       m_audio = nullptr;
-      m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
+      if (!IsEditorMode())
+         m_ptable->FireVoidEvent(DISPID_GameEvents_MusicDone);
    }
 
    // Pause after performing a simulation step

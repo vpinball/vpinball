@@ -8,9 +8,17 @@
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"
 #endif
+#ifdef ENABLE_SDL_VIDEO
+#include "imgui/imgui_impl_sdl3.h"
+#endif
 
 #ifdef __STANDALONE__
+#include "standalone/Standalone.h"
 #include <iostream>
+#endif
+
+#ifdef __LIBVPINBALL__
+#include "standalone/VPinballLib.h"
 #endif
 
 #include <filesystem>
@@ -1057,9 +1065,206 @@ void VPinball::ToggleToolbar()
 
 void VPinball::DoPlay(const int playMode)
 {
-   CComObject<PinTable> * const ptCur = GetActiveTable();
-   if (ptCur)
-      ptCur->Play(playMode);
+   if (g_pplayer)
+      return; // Can't play twice
+   CComObject<PinTable> *const table = GetActiveTable();
+   if (table == nullptr)
+      return;
+
+   PLOGI << "Starting Play mode [table: " << table->m_szTableName << ", play mode: " << playMode << ']';
+
+   bool initError = false;
+   if (false)
+   {
+      // Editor mode: create a player directly on the loaded table. Only user will be allowed to modify it (no scripting, animation, ...)
+      new Player(table, table, playMode);
+   }
+   else
+   {
+      // Play mode: create a player on a (shallow) copy of the table, that will be animated by the script, animations, ...
+      PinTable *live_table = table->CopyForPlay();
+      if (live_table != nullptr)
+      {
+         mixer_get_volume();
+         table->EndAutoSaveCounter();
+         new Player(table, live_table, playMode);
+      }
+   }
+
+   // If we successfully created a player, switch to Player's main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
+   if (g_pplayer == nullptr)
+      initError = true;
+   else
+   {
+      #ifdef ENABLE_SDL_VIDEO
+      auto processWindowMessages = [&initError]()
+      {
+         unsigned long long startTick = usec();
+         SDL_Event e;
+         bool isPFWnd = true;
+         static Vertex2D dragStart;
+         static int dragging = 0;
+         while (SDL_PollEvent(&e) != 0)
+         {
+            switch (e.type)
+            {
+            case SDL_EVENT_QUIT:
+               g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
+               break;
+            case SDL_EVENT_WINDOW_FOCUS_GAINED:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pplayer->OnFocusChanged(true);
+               break;
+            case SDL_EVENT_WINDOW_FOCUS_LOST:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pplayer->OnFocusChanged(false);
+               break;
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
+               break;
+            case SDL_EVENT_KEY_UP:
+            case SDL_EVENT_KEY_DOWN:
+               isPFWnd = SDL_GetWindowFromID(e.key.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               g_pplayer->ShowMouseCursor(false);
+               break;
+            case SDL_EVENT_TEXT_INPUT:
+               isPFWnd = SDL_GetWindowFromID(e.text.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               break;
+            case SDL_EVENT_MOUSE_WHEEL:
+               isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               break;
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+               isPFWnd = SDL_GetWindowFromID(e.button.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               if (!isPFWnd)
+               {
+                  if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
+                     dragging = 0;
+                  else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && dragging == 0)
+                     dragging = 1;
+               }
+               break;
+            case SDL_EVENT_MOUSE_MOTION:
+               isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == g_pplayer->m_playfieldWnd->GetCore();
+               if (isPFWnd) {
+                  // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
+                  // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
+                  e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
+                  if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
+                  {
+                     m_lastcursorx = e.motion.x;
+                     m_lastcursory = e.motion.y;
+                     g_pplayer->ShowMouseCursor(true);
+                  }
+               }
+               else if (dragging)
+               {
+                  // Handle dragging of auxiliary windows
+                  SDL_Window * sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+                  VPX::Window *windows[] = { g_pplayer->m_scoreviewOutput.GetWindow(), g_pplayer->m_backglassOutput.GetWindow() };
+                  for (int i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
+                  {
+                     if (windows[i] && sdlWnd == windows[i]->GetCore())
+                     {
+                        int x, y;
+                        windows[i]->GetPos(x, y);
+                        Vertex2D click(x + e.motion.x, y + e.motion.y);
+                        if (dragging > 1)
+                           windows[i]->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
+                        dragStart = click;
+                        dragging = 2;
+                        break;
+                     }
+                  }
+               }
+               break;
+            }
+
+            if (isPFWnd)
+               ImGui_ImplSDL3_ProcessEvent(&e);
+
+            #ifdef __STANDALONE__
+            g_pStandalone->ProcessEvent(&e);
+            #endif
+
+            #ifdef ENABLE_SDL_INPUT
+            if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
+               g_pplayer->m_pininput.HandleSDLEvent(e);
+            #endif
+
+            // Limit to 1ms of OS message processing per call
+            if ((usec() - startTick) > 1000ull)
+               break;
+         }
+
+         #ifdef __STANDALONE__
+         g_pStandalone->ProcessUpdates();
+         #endif
+      };
+
+      #elif !defined(__STANDALONE__)
+      auto processWindowMessages = [&initError]()
+      {
+         unsigned long long startTick = usec();
+         MSG msg;
+         while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
+         {
+            if (msg.message == WM_QUIT)
+            {
+               if (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT)
+                  g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
+               return;
+            }
+            try
+            {
+               bool consumed = false;
+               if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
+                  consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(msg);
+               if (!consumed)
+               {
+                  TranslateMessage(&msg);
+                  DispatchMessage(&msg);
+               }
+            }
+            catch (...) // something failed on load/init
+            {
+               initError = true;
+            }
+
+            // Limit to 1ms of OS message processing per call
+            if ((usec() - startTick) > 1000ull)
+               break;
+         }
+      };
+      #else
+      auto processWindowMessages = []() {};
+      #endif
+      g_pplayer->GameLoop(processWindowMessages);
+
+      #if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
+         // iOS has its own game loop so that it can handle OS events (screenshots, etc)
+         return;
+      #endif
+
+      delete g_pplayer;
+      g_pplayer = nullptr;
+   }
+
+   if (initError)
+   {
+      g_pvp->m_table_played_via_SelectTableOnStart = false;
+      #if defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
+         PLOGE.printf("Load failure detected. Resetting LaunchTable to default.");
+         g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
+      #endif
+   }
+
+   #ifdef __LIBVPINBALL__
+      VPinballLib::VPinball::SendEvent(VPinballLib::Event::Stopped, nullptr);
+   #endif
 }
 
 bool VPinball::LoadFile(const bool updateEditor, VPXFileFeedback* feedback)

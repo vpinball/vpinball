@@ -335,6 +335,8 @@ public:
    PinTable();
    ~PinTable() override;
 
+   PinTable *CopyForPlay();
+
    void ClearForOverwrite() final;
    void InitBuiltinTable(const size_t tableId);
    void InitTablePostLoad();
@@ -368,10 +370,6 @@ public:
 
    //void FireVoidEvent(int dispid);
    void FireKeyEvent(int dispid, int keycode);
-
-   void HandleLoadFailure();
-
-   void Play(const int playMode); // Duplicate table into a live instance, create a player to run it, suspend edit mode
 
    void ImportSound(const HWND hwndListView, const string &filename);
    void ReImportSound(const HWND hwndListView, PinSound *const pps, const string &filename);
