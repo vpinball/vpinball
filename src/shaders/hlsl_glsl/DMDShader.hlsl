@@ -61,7 +61,7 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
    // Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo
    // (background and DMD are placed at depth buffer = 0.0, that is to say behind the playfield, at max separation)
    Out.pos = float4(vPosition.xy, 1.0, 1.0);
-   Out.tex0 = tc;
+   Out.tex0 = glassArea.xy + tc * glassArea.wz;
 
    return Out;
 }
@@ -75,7 +75,7 @@ VS_OUTPUT vs_simple_world(const in float4 vPosition : POSITION0,
    VS_OUTPUT Out;
 
    Out.pos = mul(vPosition, matWorldViewProj);
-   Out.tex0 = tc;
+   Out.tex0 = glassArea.xy + tc * glassArea.wz;
 
    return Out;
 }
