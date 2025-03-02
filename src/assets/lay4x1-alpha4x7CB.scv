@@ -1,74 +1,75 @@
 # Default layout for alphanumeric display with 4 x 7 digit score displays
 # Based on Gottlieb System 1/80/80A displays with a blue glass filter
+# Score display is 1.58 taller than credit/ball display, so we use 32 for score and 20 for ball/credit
 
-Width: 320
-Height: 80
+Width: 280
+Height: 70
 Fit: Contain
 
 Visuals:
 	- SegDisplay:
-		Rect: [0,-4,140,32]
+		Rect: [-4,-2,128,32]
 		Src: default://alpha?sub=0
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [180,-4,140,32]
+		Rect: [152,-2,128,32]
 		Src: default://alpha?sub=1
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [0,24,140,32]
+		Rect: [-4,28,128,32]
 		Src: default://alpha?sub=2
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 		
 	- SegDisplay:
-		Rect: [180,24,140,32]
+		Rect: [152,28,128,32]
 		Src: default://alpha?sub=3
 		XPos: [0, 18, 36, 54, 72, 90, 108]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 
 	- SegDisplay:
-		Rect: [106,52,54,32]
+		Rect: [112.7,51.5,26.25,20]
 		Src: default://alpha?sub=4
-		XPos: [0, 22]
+		XPos: [0, 11.25]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 
 	- SegDisplay:
-		Rect: [160,52,54,32]
+		Rect: [140.2,51.5,26.25,20]
 		Src: default://alpha?sub=5
-		XPos: [0, 22]
+		XPos: [0, 11.25]
 		Style: Blue VFD
 		Glass:
 			Tint:      [0.030,0.250,0.500]
 			Roughness: 0.1
-			Image: ./Glass-Dirty-1.webp
-			Ambient: [32,32,32]
+			Image:     ./Glass-Dirty-1.webp
+			Ambient:   [0.125,0.125,0.125]
 		
