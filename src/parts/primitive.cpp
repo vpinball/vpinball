@@ -1133,17 +1133,26 @@ void Primitive::RenderSetup(RenderDevice *device)
       {
          m_groupdRendering = true;
 
-         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size));
-         unsigned int *indices;
+         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size), overall_size < 65536 ? IndexBuffer::FMT_INDEX16 : IndexBuffer::FMT_INDEX32);
+         void *indices;
          indexBuffer->Lock(indices);
          m_numGroupVertices = 0;
          m_numGroupIndices = 0;
          for (size_t i = 0; i < prims.size(); i++)
          {
             const Mesh &m = prims[i]->m_mesh;
-            // copy with a loop because memcpy seems to do some strange things with the indices
-            for (size_t k = 0; k < m.NumIndices(); k++)
-               indices[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
+            if (overall_size < 65536)
+            {
+               uint16_t *idx16 = static_cast<uint16_t *>(indices);
+               for (size_t k = 0; k < m.NumIndices(); k++)
+                  idx16[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
+            }
+            else
+            {
+               uint32_t *idx32 = static_cast<uint32_t *>(indices);
+               for (size_t k = 0; k < m.NumIndices(); k++)
+                  idx32[m_numGroupIndices + k] = m_numGroupVertices + m.m_indices[k];
+            }
             m_numGroupVertices += (int)m.NumVertices();
             m_numGroupIndices += (int)m.NumIndices();
          }
