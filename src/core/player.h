@@ -264,7 +264,7 @@ public:
    string GetPerfInfo();
 
    void SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
-   inline bool IsPlaying(const bool applyWndFocus = true) const { return applyWndFocus ? (m_playing && m_focused) : m_focused; }
+   inline bool IsPlaying(const bool applyWndFocus = true) const { return (applyWndFocus ? (m_playing && m_focused) : m_focused) && !IsEditorMode(); }
    void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
 
    U32 m_pauseTimeTarget = 0;
@@ -272,7 +272,7 @@ public:
 
    PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable *const m_ptable; // The played table, which can be modified by the script
-   const bool m_isEditor; // Wether the player was started in editor mode (no script, all modifications made by the user) or play mode
+   bool IsEditorMode() const { return !m_ptable->m_isLiveInstance; }
 
    ProgressDialog m_progressDialog;
 

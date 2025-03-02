@@ -22,9 +22,6 @@
 #endif
 #include "ThreadPool.h"
 #include "scalefx.h"
-#ifdef ENABLE_SDL_VIDEO
-#include "imgui/imgui_impl_sdl3.h"
-#endif
 #include "core/VPXPluginAPIImpl.h"
 
 #include "serial.h"
@@ -33,10 +30,6 @@ static serial Serial;
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
 #include "mINI/ini.h"
-#endif
-
-#ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
 #endif
 
 #define HASHLENGTH 16
@@ -2212,46 +2205,28 @@ void PinTable::SetDirtyDraw()
 #endif
 }
 
-void PinTable::HandleLoadFailure()
+PinTable* PinTable::CopyForPlay()
 {
-   g_pvp->m_table_played_via_SelectTableOnStart = false;
-
-#ifdef __STANDALONE__
-#if (defined(__APPLE__) && (defined(TARGET_OS_TV) && TARGET_OS_TV))
-   PLOGE.printf("Load failure detected. Resetting LaunchTable to default.");
-   g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
-#endif
-#endif
-}
-
-void PinTable::Play(const int playMode)
-{
-   // Creates Player instance with a shallow duplicate of this table
-   if (g_pplayer)
-      return; // Can't play twice
-
-   PLOGI << "Starting Play mode [table: " << m_szTableName << ", play mode: " << playMode << ']';
-
-   PinTable *src = this;
+   const PinTable *src = this;
    CComObject<PinTable> *live_table;
    CComObject<PinTable>::CreateInstance(&live_table);
    live_table->AddRef();
    live_table->m_isLiveInstance = true;
 
    CComObject<PinTable> *dst = live_table;
- #ifndef __STANDALONE__
-   const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   char *const szText = new char[cchar + 1];
-   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
-   std::string script = szText;
-   delete[] szText;
-   script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
-   SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
-#else
-   std::string script = src->m_pcv->m_script_text;
-   script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
-   dst->m_pcv->m_script_text = script;
-#endif
+   #ifndef __STANDALONE__
+      const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      char *const szText = new char[cchar + 1];
+      SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      std::string script = szText;
+      delete[] szText;
+      script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
+      SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+   #else
+      std::string script = src->m_pcv->m_script_text;
+      script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
+      dst->m_pcv->m_script_text = script;
+   #endif
 
    dst->m_settings = src->m_settings;
 
@@ -2396,9 +2371,10 @@ void PinTable::Play(const int playMode)
       pcol->m_groupElements = m_vcollection[i].m_groupElements;
       for (int j = 0; j < m_vcollection[i].m_visel.size(); ++j)
       {
-         if (dst->m_startupToLive.find(m_vcollection[i].m_visel[j].GetIEditable()) != dst->m_startupToLive.end())
+         IEditable* ed = m_vcollection[i].m_visel[j].GetIEditable();
+         if (dst->m_startupToLive.find(ed) != dst->m_startupToLive.end())
          {
-            auto edit_item = (IEditable*) dst->m_startupToLive[m_vcollection[i].m_visel[j].GetIEditable()];
+            auto edit_item = (IEditable *)dst->m_startupToLive[ed];
             edit_item->m_vCollection.push_back(pcol);
             edit_item->m_viCollection.push_back(pcol->m_visel.size());
             pcol->m_visel.push_back(edit_item->GetISelect());
@@ -2412,45 +2388,45 @@ void PinTable::Play(const int playMode)
    live_table->m_pcv->AddItem(live_table->m_psgt, true);
    live_table->m_pcv->AddItem(live_table->m_pcv->m_pdm, false);
 
-#ifdef __STANDALONE__
-   Textbox* implicitDMD = (Textbox*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, live_table, 0, 0);
-   live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
-   wcscpy(implicitDMD->m_wzName, L"ImplicitDMD");
-   implicitDMD->m_d.m_visible = false;
-   implicitDMD->m_d.m_isDMD = true;
-   implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
-   live_table->m_vedit.push_back(implicitDMD);
-   live_table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
-   char* szT = MakeChar(implicitDMD->m_wzName);
-   PLOGI << "Implicit Textbox DMD added: name=" << szT;
-   delete[] szT;
+   #ifdef __STANDALONE__
+      Textbox* implicitDMD = (Textbox*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemTextbox, live_table, 0, 0);
+      live_table->m_pcv->RemoveItem(implicitDMD->GetScriptable());
+      wcscpy(implicitDMD->m_wzName, L"ImplicitDMD");
+      implicitDMD->m_d.m_visible = false;
+      implicitDMD->m_d.m_isDMD = true;
+      implicitDMD->m_d.m_fontcolor = RGB(255, 165, 0);
+      live_table->m_vedit.push_back(implicitDMD);
+      live_table->m_pcv->AddItem(implicitDMD->GetScriptable(), false);
+      char* szT = MakeChar(implicitDMD->m_wzName);
+      PLOGI << "Implicit Textbox DMD added: name=" << szT;
+      delete[] szT;
 
-   Flasher* implicitDMD2 = (Flasher*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, live_table, 0, 0);
-   live_table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
-   wcscpy(implicitDMD2->m_wzName, L"ImplicitDMD2");
-   int dmdWidth = 128 * 4; // (658)
-   int dmdHeight = 38 * 4; // (189)
-   int x = ((live_table->m_right - live_table->m_left) - dmdWidth) / 2;
-   int y = ((live_table->m_bottom - live_table->m_top) - dmdHeight) / 2;
-   implicitDMD2->UpdatePoint(0, x, y);
-   implicitDMD2->UpdatePoint(1, x, y + dmdHeight);
-   implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
-   implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
-   implicitDMD2->m_d.m_isVisible = false;
-   implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
-   implicitDMD2->m_d.m_color = RGB(255, 255, 255);
-   implicitDMD2->m_d.m_filter = Filter_Overlay;
-   implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
-   implicitDMD2->m_d.m_alpha = 150;
-   implicitDMD2->m_d.m_intensity_scale = 1;
-   implicitDMD2->m_d.m_modulate_vs_add = 1;
-   implicitDMD2->m_d.m_addBlend = true;
-   live_table->m_vedit.push_back(implicitDMD2);
-   live_table->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
-   szT = MakeChar(implicitDMD2->m_wzName);
-   PLOGI << "Implicit Flasher DMD added: name=" << szT;
-   delete[] szT;
-#endif
+      Flasher* implicitDMD2 = (Flasher*)EditableRegistry::CreateAndInit(ItemTypeEnum::eItemFlasher, live_table, 0, 0);
+      live_table->m_pcv->RemoveItem(implicitDMD2->GetScriptable());
+      wcscpy(implicitDMD2->m_wzName, L"ImplicitDMD2");
+      int dmdWidth = 128 * 4; // (658)
+      int dmdHeight = 38 * 4; // (189)
+      int x = ((live_table->m_right - live_table->m_left) - dmdWidth) / 2;
+      int y = ((live_table->m_bottom - live_table->m_top) - dmdHeight) / 2;
+      implicitDMD2->UpdatePoint(0, x, y);
+      implicitDMD2->UpdatePoint(1, x, y + dmdHeight);
+      implicitDMD2->UpdatePoint(2, x + dmdWidth, y + dmdHeight);
+      implicitDMD2->UpdatePoint(3, x + dmdWidth, y);
+      implicitDMD2->m_d.m_isVisible = false;
+      implicitDMD2->m_d.m_renderMode = FlasherData::DMD;
+      implicitDMD2->m_d.m_color = RGB(255, 255, 255);
+      implicitDMD2->m_d.m_filter = Filter_Overlay;
+      implicitDMD2->m_d.m_imagealignment = ImageModeWrap;
+      implicitDMD2->m_d.m_alpha = 150;
+      implicitDMD2->m_d.m_intensity_scale = 1;
+      implicitDMD2->m_d.m_modulate_vs_add = 1;
+      implicitDMD2->m_d.m_addBlend = true;
+      live_table->m_vedit.push_back(implicitDMD2);
+      live_table->m_pcv->AddItem(implicitDMD2->GetScriptable(), false);
+      szT = MakeChar(implicitDMD2->m_wzName);
+      PLOGI << "Implicit Flasher DMD added: name=" << szT;
+      delete[] szT;
+   #endif
 
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
    {
@@ -2466,10 +2442,6 @@ void PinTable::Play(const int playMode)
       live_table->m_vrenderprobe.push_back(rp);
    }
       
-   mixer_get_volume();
-
-   EndAutoSaveCounter();
-
    // get the load path from the table filename
    const string szLoadDir = PathFromFilename(m_szFileName);
    // make sure the load directory is the active directory
@@ -2479,212 +2451,42 @@ void PinTable::Play(const int playMode)
 
    live_table->m_pcv->m_scriptError = false;
    live_table->m_pcv->Compile(false);
-
-   if (!live_table->m_pcv->m_scriptError)
-   {
-      // set up the texture & material hashtables for faster access
-      live_table->m_textureMap.clear();
-      for (size_t i = 0; i < live_table->m_vimage.size(); i++)
-         live_table->m_textureMap[live_table->m_vimage[i]->m_szName] = live_table->m_vimage[i];
-      live_table->m_materialMap.clear();
-      for (size_t i = 0; i < live_table->m_materials.size(); i++)
-         live_table->m_materialMap[live_table->m_materials[i]->m_szName] = live_table->m_materials[i];
-      live_table->m_lightMap.clear();
-      for (size_t i = 0; i < live_table->m_vedit.size(); i++)
-      {
-         IEditable *const pe = live_table->m_vedit[i];
-         if (pe->GetItemType() == ItemTypeEnum::eItemLight)
-            live_table->m_lightMap[pe->GetName()] = (Light *)pe;
-      }
-      live_table->m_renderprobeMap.clear();
-      for (size_t i = 0; i < live_table->m_vrenderprobe.size(); i++)
-         live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
-
-      // parse the (optional) override-physics-sets that can be set globally
-      live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
-      live_table->m_fOverrideContactFriction = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactFriction"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
-      live_table->m_fOverrideElasticity = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticity" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
-      live_table->m_fOverrideElasticityFalloff = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticityFalloff"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
-      live_table->m_fOverrideScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
-      live_table->m_fOverrideMinSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMinSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
-      live_table->m_fOverrideMaxSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
-      const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
-      c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
-
-      m_vpinball->ToggleToolbar();
-
-      // create Player and switch to its main loop (needed to avoid interference between editor's Window Msg loop and player's specific msg loop, also Player has a fairly specific msg loop)
-      PLOGI << "Creating player"; // For profiling
-      new Player(this, live_table, playMode);
-      bool initError = false;
-
-      #ifdef ENABLE_SDL_VIDEO
-      auto processWindowMessages = [&initError]()
-      {
-         unsigned long long startTick = usec();
-         SDL_Event e;
-         bool isPFWnd = true;
-         static Vertex2D dragStart;
-         static int dragging = 0;
-         while (SDL_PollEvent(&e) != 0)
-         {
-            switch (e.type)
-            {
-            case SDL_EVENT_QUIT:
-               g_pplayer->SetCloseState(Player::CloseState::CS_STOP_PLAY);
-               break;
-            case SDL_EVENT_WINDOW_FOCUS_GAINED:
-               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->OnFocusChanged(true);
-               break;
-            case SDL_EVENT_WINDOW_FOCUS_LOST:
-               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->OnFocusChanged(false);
-               break;
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-               isPFWnd = SDL_GetWindowFromID(e.window.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pvp->QuitPlayer(Player::CloseState::CS_STOP_PLAY);
-               break;
-            case SDL_EVENT_KEY_UP:
-            case SDL_EVENT_KEY_DOWN:
-               isPFWnd = SDL_GetWindowFromID(e.key.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               g_pplayer->ShowMouseCursor(false);
-               break;
-            case SDL_EVENT_TEXT_INPUT:
-               isPFWnd = SDL_GetWindowFromID(e.text.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               break;
-            case SDL_EVENT_MOUSE_WHEEL:
-               isPFWnd = SDL_GetWindowFromID(e.wheel.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               break;
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-               isPFWnd = SDL_GetWindowFromID(e.button.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               if (!isPFWnd)
-               {
-                  if (e.type == SDL_EVENT_MOUSE_BUTTON_UP)
-                     dragging = 0;
-                  else if (e.type == SDL_EVENT_MOUSE_BUTTON_DOWN && dragging == 0)
-                     dragging = 1;
-               }
-               break;
-            case SDL_EVENT_MOUSE_MOTION:
-               isPFWnd = SDL_GetWindowFromID(e.motion.windowID) == g_pplayer->m_playfieldWnd->GetCore();
-               if (isPFWnd) {
-                  // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
-                  // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-                  e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
-                  e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
-                  static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
-                  if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
-                  {
-                     m_lastcursorx = e.motion.x;
-                     m_lastcursory = e.motion.y;
-                     g_pplayer->ShowMouseCursor(true);
-                  }
-               }
-               else if (dragging)
-               {
-                  // Handle dragging of auxiliary windows
-                  SDL_Window * sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
-                  VPX::Window *windows[] = { g_pplayer->m_scoreviewOutput.GetWindow(), g_pplayer->m_backglassOutput.GetWindow() };
-                  for (int i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
-                  {
-                     if (windows[i] && sdlWnd == windows[i]->GetCore())
-                     {
-                        int x, y;
-                        windows[i]->GetPos(x, y);
-                        Vertex2D click(x + e.motion.x, y + e.motion.y);
-                        if (dragging > 1)
-                           windows[i]->SetPos(static_cast<int>(x + click.x - dragStart.x), static_cast<int>(y + click.y - dragStart.y));
-                        dragStart = click;
-                        dragging = 2;
-                        break;
-                     }
-                  }
-               }
-               break;
-            }
-
-            if (isPFWnd)
-               ImGui_ImplSDL3_ProcessEvent(&e);
-
-            #ifdef __STANDALONE__
-            g_pStandalone->ProcessEvent(&e);
-            #endif
-
-            #ifdef ENABLE_SDL_INPUT
-            if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
-               g_pplayer->m_pininput.HandleSDLEvent(e);
-            #endif
-
-            // Limit to 1ms of OS message processing per call
-            if ((usec() - startTick) > 1000ull)
-               break;
-         }
-
-         #ifdef __STANDALONE__
-         g_pStandalone->ProcessUpdates();
-         #endif
-      };
-
-      #elif !defined(__STANDALONE__)
-      auto processWindowMessages = [&initError]()
-      {
-         unsigned long long startTick = usec();
-         MSG msg;
-         while (PeekMessageA(&msg, nullptr, 0, 0, PM_REMOVE))
-         {
-            if (msg.message == WM_QUIT)
-            {
-               if (g_pplayer->GetCloseState() == Player::CS_PLAYING || g_pplayer->GetCloseState() == Player::CS_USER_INPUT)
-                  g_pplayer->SetCloseState(Player::CS_STOP_PLAY);
-               return;
-            }
-            try
-            {
-               bool consumed = false;
-               if (g_pplayer->m_debugMode && g_pplayer->m_debuggerDialog.IsWindow())
-                  consumed = !!g_pplayer->m_debuggerDialog.IsSubDialogMessage(msg);
-               if (!consumed)
-               {
-                  TranslateMessage(&msg);
-                  DispatchMessage(&msg);
-               }
-            }
-            catch (...) // something failed on load/init
-            {
-               initError = true;
-            }
-
-            // Limit to 1ms of OS message processing per call
-            if ((usec() - startTick) > 1000ull)
-               break;
-         }
-      };
-      #else
-      auto processWindowMessages = []() {};
-      #endif
-      g_pplayer->GameLoop(processWindowMessages);
-
-#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
-      // iOS has its own game loop so that it can handle OS events (screenshots, etc)
-      return;
-#endif
-
-      delete g_pplayer;
-      g_pplayer = nullptr;
-      if (initError)
-         HandleLoadFailure();
-   }
-   else
+   if (live_table->m_pcv->m_scriptError)
    {
       live_table->Release();
-      HandleLoadFailure();
+      return nullptr;
    }
 
-#ifdef __LIBVPINBALL__
-   VPinballLib::VPinball::SendEvent(VPinballLib::Event::Stopped, nullptr);
-#endif
+   // set up the texture & material hashtables for faster access
+   live_table->m_textureMap.clear();
+   for (size_t i = 0; i < live_table->m_vimage.size(); i++)
+      live_table->m_textureMap[live_table->m_vimage[i]->m_szName] = live_table->m_vimage[i];
+   live_table->m_materialMap.clear();
+   for (size_t i = 0; i < live_table->m_materials.size(); i++)
+      live_table->m_materialMap[live_table->m_materials[i]->m_szName] = live_table->m_materials[i];
+   live_table->m_lightMap.clear();
+   for (size_t i = 0; i < live_table->m_vedit.size(); i++)
+   {
+      IEditable *const pe = live_table->m_vedit[i];
+      if (pe->GetItemType() == ItemTypeEnum::eItemLight)
+         live_table->m_lightMap[pe->GetName()] = (Light *)pe;
+   }
+   live_table->m_renderprobeMap.clear();
+   for (size_t i = 0; i < live_table->m_vrenderprobe.size(); i++)
+      live_table->m_renderprobeMap[live_table->m_vrenderprobe[i]->GetName()] = live_table->m_vrenderprobe[i];
+
+   // parse the (optional) override-physics-sets that can be set globally
+   live_table->m_fOverrideGravityConstant = GRAVITYCONST * m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsGravityConstant" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_GRAVITY);
+   live_table->m_fOverrideContactFriction = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactFriction"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_CONTACTFRICTION);
+   live_table->m_fOverrideElasticity = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticity" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY);
+   live_table->m_fOverrideElasticityFalloff = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsElasticityFalloff"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_ELASTICITY_FALLOFF);
+   live_table->m_fOverrideScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsScatterAngle" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_PFSCATTERANGLE);
+   live_table->m_fOverrideMinSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMinSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MIN_SLOPE);
+   live_table->m_fOverrideMaxSlope = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_MAX_SLOPE);
+   const float fOverrideContactScatterAngle = m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsContactScatterAngle"+std::to_string(live_table->m_overridePhysics - 1), DEFAULT_TABLE_SCATTERANGLE);
+   c_hardScatter = ANGTORAD(live_table->m_overridePhysics ? fOverrideContactScatterAngle : live_table->m_defaultScatter);
+
+   return live_table;
 }
 
 HRESULT PinTable::TableSave()
@@ -6714,13 +6516,7 @@ void PinTable::SelectItem(IScriptable *piscript)
 
 void PinTable::DoCodeViewCommand(int command)
 {
-   switch (command)
-   {
-   case ID_SAVE: TableSave(); break;
-   case ID_TABLE_PLAY: Play(0); break;
-   case ID_TABLE_CAMERAMODE: Play(1); break;
-   case ID_TABLE_LIVEEDIT: Play(2); break;
-   }
+   g_pvp->ParseCommand(command, false);
 }
 
 void PinTable::SetDirtyScript(SaveDirtyState sds)
