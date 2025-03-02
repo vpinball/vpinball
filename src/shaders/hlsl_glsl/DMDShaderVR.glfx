@@ -6,6 +6,12 @@
 ////DEFINES
 #include "Helpers.fxh"
 
+uniform vec4 glassArea;
+uniform vec4 glassPad;
+#define glassPadLeft (glassPad.x)
+#define glassPadRight (glassPad.y)
+#define glassPadTop (glassPad.z)
+#define glassPadBottom (glassPad.w)
 uniform vec4 backBoxSize; //xy=backbox location relative to rear left edge of the playfield zw=size  (all values in VPin Units)
 uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
@@ -53,6 +59,8 @@ VS_OUT(vec2, tex0);
 
 void main()
 {
+   //!! misses glassArea,glassPad usage!
+
    float4 pos = float4(vPosition.x*backBoxSize.z+backBoxSize.x, 0.0, vPosition.y*backBoxSize.w+backBoxSize.y, 1.0);
    VS_EYE;
    VS_POSITION(pos, pos);

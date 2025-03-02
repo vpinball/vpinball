@@ -6,6 +6,12 @@
 ////DEFINES
 #include "Helpers.fxh"
 
+uniform vec4 glassArea;
+uniform vec4 glassPad;
+#define glassPadLeft (glassPad.x)
+#define glassPadRight (glassPad.y)
+#define glassPadTop (glassPad.z)
+#define glassPadBottom (glassPad.w)
 uniform vec4 vColor_Intensity;
 uniform vec4 vRes_Alpha_time;
 uniform float alphaTestValue;
@@ -52,6 +58,8 @@ VS_OUT(vec2, tex0);
 
 void main()
 {
+   //!! misses glassArea,glassPad usage!
+
    // Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo
    // (background and DMD are placed at depth buffer = 0.0, that is to say behind the playfield, at max separation)
    float4 pos = float4(vPosition.x, vPosition.y, 1.0, 1.0);

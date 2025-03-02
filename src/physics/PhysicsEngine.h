@@ -41,7 +41,7 @@ public:
    const Vertex3Ds& GetPlumbPos() const { return m_plumbPos; }
    float GetPlumbPoleLength() const { return m_plumbPoleLength; }
    float GetPlumbTiltThreshold() const { return m_plumbTiltThreshold; }
-   void ReadNudgeSettings(Settings &settings);
+   void ReadNudgeSettings(const Settings &settings);
 
    void RayCast(const Vertex3Ds &source, const Vertex3Ds &target, const bool uiCast, vector<HitTestResult> &vhoHit);
 
@@ -51,7 +51,7 @@ public:
    int GetPerfLengthMax() const { return m_phys_max; }
    string GetPerfInfo(bool resetMax);
 
-   const vector<HitObject *> &GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
+   const vector<HitObject *>& GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
    const vector<HitObject *> GetUIHitObjects(IEditable *editable);
 
 private:
@@ -69,7 +69,7 @@ private:
    bool m_recordContacts = false; // flag for DoHitTest()
    vector<CollisionEvent> m_contacts;
 
-   U64 m_StartTime_usec; // Time when the simulation started (creation of this object)
+   U64 m_startTime_usec; // Time when the simulation started (creation of this object)
    U64 m_curPhysicsFrameTime; // Time where the last machine simulation (physics, timers, scripts,...) stopped
    U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
    U64 m_lastFlipTime = 0;

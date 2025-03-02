@@ -471,7 +471,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
    }
 }
 
-void PhysicsEngine::ReadNudgeSettings(Settings& settings)
+void PhysicsEngine::ReadNudgeSettings(const Settings& settings)
 {
    m_enablePlumbTilt = settings.LoadValueWithDefault(Settings::Player, "TiltSensCB"s, false);
    m_plumbMassFactor = settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f) * 0.05f;
@@ -557,20 +557,20 @@ void PhysicsEngine::OnFinishFrame()
 
 void PhysicsEngine::StartPhysics()
 {
-   m_StartTime_usec = usec();
-   m_curPhysicsFrameTime = m_StartTime_usec;
+   m_startTime_usec = usec();
+   m_curPhysicsFrameTime = m_startTime_usec;
    m_nextPhysicsFrameTime = m_curPhysicsFrameTime + PHYSICS_STEPTIME;
 
 #ifdef PLAYBACK
    if (m_playback)
    {
       float physicsStepTime;
-      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_StartTime_usec);
+      ParseLog((LARGE_INTEGER*)&physicsStepTime, (LARGE_INTEGER*)&m_startTime_usec);
    }
 #endif
 
 #ifdef LOG
-   PLOGD.printf("Step Time %llu", m_StartTime_usec);
+   PLOGD.printf("Step Time %llu", m_startTime_usec);
    PLOGD.printf("End Frame");
 #endif
 }
@@ -597,9 +597,9 @@ void PhysicsEngine::UpdatePhysics()
    // TODO not sure why we would need noTimeCorrect, as pause should already have shifted the timings
    if (!g_pplayer->IsPlaying() || g_pplayer->m_noTimeCorrect)
    {
-      const U64 curPhysicsFrameTime = m_StartTime_usec + (U64) (g_pplayer->m_time_sec * 1000000.0);
+      const U64 curPhysicsFrameTime = m_startTime_usec + (U64) (g_pplayer->m_time_sec * 1000000.0);
       const U64 timeShift = initial_time_usec - curPhysicsFrameTime;
-      m_StartTime_usec += timeShift;
+      m_startTime_usec += timeShift;
       m_nextPhysicsFrameTime += timeShift;
       m_curPhysicsFrameTime += timeShift;
       g_pplayer->m_noTimeCorrect = false;
@@ -632,8 +632,8 @@ void PhysicsEngine::UpdatePhysics()
 
    while (m_nextPhysicsFrameTime < initial_time_usec) // loop here until physics (=simulated) time catches up to current real time, still staying behind real time by up to one physics emulation step
    {
-      g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_StartTime_usec) / 1000000.0); // First iteration is done before precise time
-      g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_StartTime_usec) / 1000); // Get time in milliseconds for timers
+      g_pplayer->m_time_sec = max(g_pplayer->m_time_sec, (double)(m_curPhysicsFrameTime - m_startTime_usec) / 1000000.0); // First iteration is done before precise time
+      g_pplayer->m_time_msec = (U32)((m_curPhysicsFrameTime - m_startTime_usec) / 1000); // Get time in milliseconds for timers
 
       m_phys_iterations++;
 
@@ -736,12 +736,12 @@ void PhysicsEngine::UpdatePhysics()
    assert(m_curPhysicsFrameTime < m_nextPhysicsFrameTime);
    assert(m_curPhysicsFrameTime <= initial_time_usec);
    assert(initial_time_usec <= m_nextPhysicsFrameTime);
-   assert(g_pplayer->m_time_sec <= (double)(initial_time_usec - m_StartTime_usec) / 1000000.0);
+   assert(g_pplayer->m_time_sec <= (double)(initial_time_usec - m_startTime_usec) / 1000000.0);
 
    // The physics is emulated by PHYSICS_STEPTIME, but the overall emulation time is more precise
-   g_pplayer->m_time_sec = (double)(initial_time_usec - m_StartTime_usec) / 1000000.0;
-   //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000000.0;
-   // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_StartTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
+   g_pplayer->m_time_sec = (double)(initial_time_usec - m_startTime_usec) / 1000000.0;
+   //g_pplayer->m_time_sec = (double)(max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000000.0;
+   // g_pplayer->m_time_msec = (U32)((max(initial_time_usec, m_curPhysicsFrameTime) - m_startTime_usec) / 1000); // Not needed since PHYSICS_STEPTIME happens to be 1ms
 
    g_pplayer->m_logicProfiler.ExitProfileSection();
 }

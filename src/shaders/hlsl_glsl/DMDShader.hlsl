@@ -4,6 +4,12 @@
 
 #include "Helpers.fxh"
 
+const float4 glassArea;
+const float4 glassPad;
+#define glassPadLeft (glassPad.x)
+#define glassPadRight (glassPad.y)
+#define glassPadTop (glassPad.z)
+#define glassPadBottom (glassPad.w)
 const float4 vColor_Intensity;
 const float4 vRes_Alpha_time;
 const float alphaTestValue;
@@ -49,6 +55,8 @@ VS_OUTPUT vs_main (const in float4 vPosition : POSITION0,
                    const in float2 tc        : TEXCOORD0)
 {
    VS_OUTPUT Out;
+
+   //!! misses glassArea,glassPad usage!
 
    // Set Z to 1. which in turns result in a written depth of 0. needed to avoid tonemapping of DMD and for correct fake stereo
    // (background and DMD are placed at depth buffer = 0.0, that is to say behind the playfield, at max separation)
