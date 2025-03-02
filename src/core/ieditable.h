@@ -53,8 +53,8 @@ public:
             swprintf_s(GetScriptable()->m_wzName, sizeof(GetScriptable()->m_wzName), L"%Id", reinterpret_cast<uintptr_t>(this)); \
          GetPTable()->m_pcv->AddItem(GetScriptable(), false); \
       } \
-		return S_OK; \
-	}
+      return S_OK; \
+   }
 
 // Explanation for AllowedViews:
 // Value gets and'ed with 1 (table view) or 2 (backglass view).
@@ -126,7 +126,7 @@ public:
         obj->Init(ptable, x, y, true); \
         return obj; \
     } \
-   T *CopyForPlay(PinTable *live_table) const; \
+	T *CopyForPlay(PinTable *live_table) const; \
 	HRESULT Init(PinTable * const ptable, const float x, const float y, const bool fromMouseClick, const bool forPlay = false); \
 	INITVBA(ItemType) \
 	virtual void UIRenderPass1(Sur * const psur); \
@@ -168,7 +168,7 @@ public:
             m_singleEvents = false; \
       } \
       IFireEvents * fe = GetIFireEvents(); if (fe) { m_phittimer = new HitTimer(GetName(), m_d.m_tdr.m_TimerInterval, fe); if (m_d.m_tdr.m_TimerEnabled) pvht.push_back(m_phittimer); } \
-   } \
+	} \
 	virtual void TimerRelease() { delete m_phittimer; m_phittimer = nullptr; } \
 	virtual void PhysicSetup(PhysicsEngine* physics, const bool isUI); \
 	virtual void PhysicRelease(PhysicsEngine* physics, const bool isUI); \
@@ -199,7 +199,7 @@ public:
    dst->m_d = m_d;
 
 #define STANDARD_EDITABLE_WITH_DRAGPOINT_COPY_FOR_PLAY_IMPL(type, table, points) \
-	STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
+   STANDARD_EDITABLE_COPY_FOR_PLAY_IMPL(type, table) \
    for (size_t i = 0; i < dst->points.size(); i++) \
       dst->points[i]->Release(); \
    dst->points.clear(); \
@@ -302,7 +302,7 @@ private:
 
 #pragma region Script events
 public:
-   void TimerSetup(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents * fe = nullptr);
+   void TimerSetup(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents *fe = nullptr);
    void TimerRelease();
    HitTimer *m_phittimer = nullptr; // timer event defined when playing (between TimerSetup and TimerRelease)
 

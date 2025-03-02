@@ -195,13 +195,13 @@ public:
    bool m_framePending = false;
 
    const int m_nEyes;
-   Shader* m_basicShader = nullptr;
+   Shader *m_basicShader = nullptr;
    Shader *m_DMDShader = nullptr;
    Shader *m_FBShader = nullptr;
    Shader *m_flasherShader = nullptr;
    Shader *m_lightShader = nullptr;
    Shader *m_stereoShader = nullptr;
-   Shader* m_ballShader = nullptr;
+   Shader *m_ballShader = nullptr;
 
    // performance counters
    unsigned int Perf_GetNumDrawCalls() const        { return m_frameDrawCalls; }

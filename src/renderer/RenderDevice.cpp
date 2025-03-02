@@ -1239,13 +1239,15 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 RenderDevice::~RenderDevice()
 {
    #if defined(ENABLE_BGFX)
-      // SUspend rendering before deleting anything that could be used
+      // Suspend rendering before deleting anything that could be used
       m_renderDeviceAlive = false;
       m_frameReadySem.post();
    #endif
 
    delete m_quadMeshBuffer;
+   m_quadMeshBuffer = nullptr;
    delete m_nullTexture;
+   m_nullTexture = nullptr;
 
    #if defined(ENABLE_DX9)
       m_pD3DDevice->SetStreamSource(0, nullptr, 0, 0);
@@ -1457,7 +1459,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
    {
 #ifndef __STANDALONE__
       if (m_dwm_enabled && mDwmFlush != nullptr)
-         mDwmFlush(); // Flush all commands submited by this process including the 'Present' command. This actually sync to the vertical blank
+         mDwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually sync to the vertical blank
       #if defined(ENABLE_OPENGL)
       else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();

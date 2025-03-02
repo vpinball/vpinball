@@ -146,7 +146,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             const int index = ListView_InsertItem(hListView, &lvitem);
             //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
             ListView_SetItemText(hListView, index, 1, usedByObject);
-            //Create Listview SubItem for 'Where Used By Object Property Name'...lime 'Image' or 'Side Image'
+            //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
             ListView_SetItemText(hListView, index, 2, usedByPropertyName);
             i++;
          }
@@ -350,7 +350,7 @@ void WhereUsedDialog::RefreshList()
          const int index = ListView_InsertItem(hListView, &lvitem);
          //Create Listview SubItem for 'Where Used By Object Name' like 'Wall001' or 'Light047' etc
          ListView_SetItemText(hListView, index, 1, usedByObject);
-         //Create Listview SubItem for 'Where Used By Object Property Name'...lime 'Image' or 'Side Image'
+         //Create Listview SubItem for 'Where Used By Object Property Name'...like 'Image' or 'Side Image'
          ListView_SetItemText(hListView, index, 2, usedByPropertyName);
          i++;
       }
