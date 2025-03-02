@@ -161,7 +161,7 @@ void main()
 			for (int x = -N_SAMPLES; x <= N_SAMPLES; x++)
 			{
 				ivec2 dotUv = dotPos + ivec2(x,y);
-				if (all(greaterThanEqual(dotUv, ivec2(0,0))) && all(lessThan(dotUv, dmdSize)))
+				if (all(greaterThanEqual(dotUv, ivec2(0,0))) && all(lessThan(dotUv, ivec2(dmdSize))))
 				{
 					// SDF is 0.5 at dot border, increasing inside, linearly decreasing to 0 outside
 					float sdf = clamp(sdfOffset - length(dotRelativePos - vec2(x,y)) * (0.5 / (float(N_SAMPLES) + 0.5)), 0.0, 1.0);
