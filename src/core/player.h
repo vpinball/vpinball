@@ -272,6 +272,7 @@ public:
 
    PinTable *const m_pEditorTable; // The untouched version of the table, as it is in the editor (The Player needs it to interact with the UI)
    PinTable *const m_ptable; // The played table, which can be modified by the script
+   const bool m_isEditor; // Wether the player was started in editor mode (no script, all modifications made by the user) or play mode
 
    ProgressDialog m_progressDialog;
 

@@ -170,6 +170,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 Player::Player(PinTable *const editor_table, PinTable *const live_table, const int playMode)
    : m_pEditorTable(editor_table)
    , m_ptable(live_table)
+   , m_isEditor(false) // playMode == 2) // Editor mode is not yet fully implemented
    , m_scoreviewOutput("Visual Pinball - Score"s, live_table->m_settings, Settings::DMD, "DMD")
    , m_backglassOutput("Visual Pinball - Backglass"s, live_table->m_settings, Settings::Backglass, "Backglass")
 {
@@ -715,26 +716,29 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    g_pStandalone->PreStartup();
 #endif
 
-   PLOGI << "Starting script"; // For profiling
-   m_progressDialog.SetProgress("Starting Game Scripts..."s);
-
-   m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
-
-   // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-   for (Hitable *const ph : m_vhitables)
+   if (!m_isEditor)
    {
-      if (ph->GetEventProxyBase())
+      PLOGI << "Starting script"; // For profiling
+      m_progressDialog.SetProgress("Starting Game Scripts..."s);
+
+      m_ptable->m_pcv->Start(); // Hook up to events and start cranking script
+
+      // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
+      m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
+      for (Hitable *const ph : m_vhitables)
       {
-         ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-         ItemTypeEnum type = ph->HitableGetItemType();
-         if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
-            || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
-            ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
+         if (ph->GetEventProxyBase())
+         {
+            ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+            ItemTypeEnum type = ph->HitableGetItemType();
+            if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
+               || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
+               ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
+         }
       }
+      m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */);
+      m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
    }
-   m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */); 
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();
@@ -855,11 +859,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 Player::~Player()
 {
    assert(g_pplayer == this && g_pplayer->m_closing != CS_CLOSED);
-   if (g_pplayer == nullptr || g_pplayer->m_closing == CS_CLOSED)
-   {
-      PLOGE << "Player::OnClose discarded since player is already closing (destructor called from 2 different places...)";
-      return;
-   }
 
    // note if application exit was requested, and set the new closing state to CLOSED
    bool appExitRequested = (m_closing == CS_CLOSE_APP);
@@ -875,12 +874,15 @@ Player::~Player()
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
-   m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
-   if (m_detectScriptHang)
-      g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
+   if (!m_isEditor)
+   {
+      m_ptable->FireVoidEvent(DISPID_GameEvents_Exit);
+      if (m_detectScriptHang)
+         g_pvp->PostWorkToWorkerThread(HANG_SNOOP_STOP, NULL);
 
-   // Stop script engine before destroying objects
-   m_ptable->m_pcv->CleanUpScriptEngine();
+      // Stop script engine before destroying objects
+      m_ptable->m_pcv->CleanUpScriptEngine();
+   }
 
    // Release plugin message Ids
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
@@ -1844,9 +1846,12 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       span *tagSpan = new span(series, 1, _T("Sync"));
       #endif
       ProcessOSMessages();
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
-      m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
-      FireSyncController(); // Trigger script sync event (to sync solenoids back)
+      if (!m_isEditor)
+      {
+         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
+         m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
+         FireSyncController(); // Trigger script sync event (to sync solenoids back)
+      }
       MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
       #ifdef MSVC_CONCURRENCY_VIEWER
       delete tagSpan;

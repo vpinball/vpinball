@@ -281,6 +281,8 @@ void Light::PhysicSetup(PhysicsEngine* physics, const bool isUI)
       {
          vector<RenderVertex> vvertex;
          GetRgVertex(vvertex);
+         if (vvertex.empty())
+            return;
 
          const int cvertex = (int)vvertex.size();
          Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];

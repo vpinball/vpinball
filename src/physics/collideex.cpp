@@ -217,10 +217,10 @@ void HitGate::CalcHitBBox()
    m_hitBBox = m_lineseg[0].m_hitBBox;
 }
 
-void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitGate::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
-   m_lineseg[0].DrawUI(project, drawList);
-   m_lineseg[1].DrawUI(project, drawList);
+   m_lineseg[0].DrawUI(project, drawList, fill);
+   m_lineseg[1].DrawUI(project, drawList, fill);
 }
 
 
@@ -470,10 +470,10 @@ void HitSpinner::CalcHitBBox()
    m_hitBBox = m_lineseg[0].m_hitBBox;
 }
 
-void HitSpinner::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitSpinner::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
-   m_lineseg[0].DrawUI(project, drawList);
-   m_lineseg[1].DrawUI(project, drawList);
+   m_lineseg[0].DrawUI(project, drawList, fill);
+   m_lineseg[1].DrawUI(project, drawList, fill);
 }
 
 
@@ -748,6 +748,41 @@ void Hit3DPoly::CalcHitBBox()
    }
 }
 
+void Hit3DPoly::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
+{
+   if (m_enabled)
+   {
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+      if (fill)
+      {
+         if (m_triIndices.empty())
+         {
+            vector<RenderVertex> vvertex(m_cvertex);
+            vector<unsigned int> vpoly(m_cvertex);
+            for (int i = 0; i < m_cvertex; i++)
+            {
+               vvertex[i].set(m_rgv[i]);
+               vpoly[i] = i;
+            }
+            PolygonToTriangles(vvertex, vpoly, m_triIndices, true);
+         }
+         for (size_t i = 0; i < m_triIndices.size(); i += 3)
+         {
+            const Vertex2D p0 = project(m_rgv[m_triIndices[i]]);
+            const Vertex2D p1 = project(m_rgv[m_triIndices[i + 1]]);
+            const Vertex2D p2 = project(m_rgv[m_triIndices[i + 2]]);
+            drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+         }
+      }
+      for (int i = 0; i < m_cvertex; i++)
+      {
+         const Vertex2D p0 = project(m_rgv[i]);
+         const Vertex2D p1 = project(m_rgv[(i + 1) % m_cvertex]);
+         drawList->AddLine(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), lCol);
+      }
+   }
+}
+
 // Ported at: VisualPinball.Engine/Physics/HitTriangle.cs
 //            VisualPinball.Unity/VisualPinball.Unity/Physics/Collider/TriangleCollider.cs
 
@@ -892,7 +927,7 @@ void HitTriangle::CalcHitBBox()
    m_hitBBox.zhigh  = max(m_rgv[0].z, max(m_rgv[1].z, m_rgv[2].z));
 }
 
-void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {
@@ -901,7 +936,10 @@ void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList*
       const Vertex2D p1 = project(Vertex3Ds(m_rgv[1].x, m_rgv[1].y, m_rgv[1].z));
       const Vertex2D p2 = project(Vertex3Ds(m_rgv[2].x, m_rgv[2].y, m_rgv[2].z));
       if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
-         drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+         if (fill)
+            drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+         else
+            drawList->AddTriangle(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
    }
 }
 
@@ -1090,7 +1128,7 @@ void HitLine3D::Collide(const CollisionEvent& coll)
    }
 }
 
-void HitLine3D::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const
+void HitLine3D::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
 {
    if (m_enabled)
    {

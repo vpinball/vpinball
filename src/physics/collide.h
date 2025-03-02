@@ -105,7 +105,7 @@ public:
    void SetFriction(const float friction)  { m_friction = friction; }
    void FireHitEvent(HitBall* const pball);
 
-   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const = 0;
+   virtual void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const = 0;
 
    // Editable that created this hitobject, used for by UI for selecting editables.
    // An hitobject is only valid if this part is not null (so a new HitObject is not valid at creation until this is set...)
@@ -163,7 +163,7 @@ public:
    float HitTestBasic(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
    void CalcNormalAndLength();
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    Vertex2D v1, v2;
    Vertex2D normal;
@@ -186,7 +186,7 @@ public:
 
    float HitTestBasicRadius(const BallS& ball, const float dtime, CollisionEvent& coll, const bool direction, const bool lateral, const bool rigid) const;
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    const Vertex2D center;
    const float radius;
@@ -205,7 +205,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override;
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    Vertex2D m_xy;
    float m_zlow;
@@ -224,7 +224,7 @@ public:
    void Collide(const CollisionEvent& coll) override;
    void CalcHitBBox() override;
 
-   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList) const override;
+   void DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const override;
 
    const Vertex3Ds m_p;
 };

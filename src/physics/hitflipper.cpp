@@ -1116,3 +1116,54 @@ void HitFlipper::Contact(CollisionEvent& coll, const float dtime)
       m_flipperMover.ApplyImpulse(-(dtime * fric) * crossF);
    }
 }
+
+void HitFlipper::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* drawList, bool fill) const
+{
+   if (m_enabled)
+   {
+      Vertex2D center = m_flipperMover.m_hitcircleBase.center;
+      float radius = m_flipperMover.m_hitcircleBase.radius;
+      float angle = m_flipperMover.m_angleCur;
+      const ImU32 lCol = ImGui::GetColorU32(ImGuiCol_PlotLines), fCol = ImGui::GetColorU32(ImGuiCol_PlotHistogram);
+      const Vertex2D p0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zlow));
+      const Vertex2D q0 = project(Vertex3Ds(center.x, center.y, m_hitBBox.zhigh));
+      Vertex2D p2, q2;
+      for (int i = 0; i <= 32; i++)
+      {
+         center = m_flipperMover.m_hitcircleBase.center;
+         if ((i >= 16) && (i < 32))
+         {
+            float anglerad = angle;
+            radius = m_flipperMover.m_endradius;
+            center.x += sinf(anglerad) * (m_flipperMover.m_flipperradius);
+            center.y -= cosf(anglerad) * (m_flipperMover.m_flipperradius);
+         }
+         else
+         {
+            radius = m_flipperMover.m_hitcircleBase.radius;
+         }
+         float pA = angle + static_cast<float>(i) * static_cast<float>(2. * M_PI / 32.);
+         const Vertex2D p1 = p2;
+         p2 = project(Vertex3Ds(center.x + radius * cosf(pA), center.y + radius * sinf(pA), m_hitBBox.zlow));
+         const Vertex2D q1 = q2;
+         q2 = project(Vertex3Ds(center.x + radius * cosf(pA), center.y + radius * sinf(pA), m_hitBBox.zhigh));
+         if (i > 0 && p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
+         {
+            if (fill)
+               drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+            drawList->AddLine(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), lCol);
+         }
+         if (i > 0 && q0.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+         {
+            if (fill)
+               drawList->AddTriangleFilled(ImVec2(q0.x, q0.y), ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), fCol);
+            drawList->AddLine(ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), lCol);
+         }
+         if (i > 0 && p1.x != FLT_MAX && p2.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+            if (fill)
+               drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+            else
+               drawList->AddQuad(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+      }
+   }
+}

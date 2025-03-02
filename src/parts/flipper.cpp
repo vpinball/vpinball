@@ -242,21 +242,13 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    }
    else
       m_d.m_FlipperRadius = m_d.m_FlipperRadiusMax;
-   if (isUI)
-   {
-      // FIXME This is very imprecise. We could use the same as physics or create more hit geometry
-      Hit3DPoly *const pcircle = new Hit3DPoly(this, m_d.m_Center.x, m_d.m_Center.y, height + m_d.m_height, m_d.m_FlipperRadius + m_d.m_EndRadius, 32);
-      physics->AddCollider(pcircle, isUI);
-   }
-   else
-   {
-      HitFlipper *const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f), max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
-         ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
-      phf->m_flipperMover.m_enabled = m_d.m_enabled;
-      phf->m_flipperMover.m_visible = m_d.m_visible;
+   HitFlipper *const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f), max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
+      ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
+   phf->m_flipperMover.m_enabled = m_d.m_enabled;
+   phf->m_flipperMover.m_visible = m_d.m_visible;
+   physics->AddCollider(phf, isUI);
+   if (!isUI)
       m_phitflipper = phf;
-      physics->AddCollider(phf, isUI);
-   }
 }
 
 void Flipper::PhysicRelease(PhysicsEngine* physics, const bool isUI)

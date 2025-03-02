@@ -254,7 +254,33 @@ void Flasher::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
    if (isUI)
    {
-      // FIXME implement UI picking
+      vector<RenderVertex> vvertex;
+      GetRgVertex(vvertex);
+      if (vvertex.empty())
+         return;
+
+      const int cvertex = (int)vvertex.size();
+      Vertex3Ds *const rgv3d = new Vertex3Ds[cvertex];
+
+      const float height = m_d.m_height;
+      const float movx = m_minx + (m_maxx - m_minx)*0.5f;
+      const float movy = m_miny + (m_maxy - m_miny)*0.5f;
+      const Matrix3D tempMatrix = Matrix3D::MatrixTranslate(-movx /* -m_d.m_vCenter.x */, -movy /* -m_d.m_vCenter.y */, 0.f)
+                             * (((Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ))
+                                * Matrix3D::MatrixRotateY(ANGTORAD(m_d.m_rotY)))
+                                * Matrix3D::MatrixRotateX(ANGTORAD(m_d.m_rotX)))
+                                * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, height));
+
+      for (int i = 0; i < cvertex; i++)
+      {
+         Vertex3Ds v = tempMatrix *Vertex3Ds(vvertex[i].x, vvertex[i].y, 0.f);
+         rgv3d[i].x = v.x;
+         rgv3d[i].y = v.y;
+         rgv3d[i].z = v.z;
+      }
+
+      Hit3DPoly *const ph3dp = new Hit3DPoly(this, rgv3d, cvertex);
+      physics->AddCollider(ph3dp, isUI);
    }
 }
 
