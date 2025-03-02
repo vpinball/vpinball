@@ -271,7 +271,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
             const string txt = std::to_string(V_I2(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = szT;
+            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
             break;
          }
          case VT_I4:
@@ -279,7 +279,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
             const string txt = std::to_string(V_I4(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = szT;
+            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
             break;
          }
          case VT_R8:
@@ -287,16 +287,16 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
             const string txt = std::to_string(V_R8(&cv));
             char* const szT = new char[txt.size() + 1];
             memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = szT;
+            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
             break;
          }
          case VT_BSTR:
          {
             const wstring wz(V_BSTR(&cv));
-            const int len = (int)wz.length();
+            const int len = static_cast<int>(wz.length());
             char* const szT = new char[len + 1];
             WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
-            sv.vString = szT;
+            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
             break;
          }
          default: assert(false);
@@ -398,8 +398,12 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          uint16_t* pData = reinterpret_cast<uint16_t*>(&array->lengths[1]);
          for (LONG i = lBound; i <= uBound; i++, pData++, p++)
          {
-            assert(V_VT(p) == VT_UI2);
-            *pData = V_UI2(p);
+            switch (V_VT(p))
+            {
+            case VT_UI2: *pData = V_UI2(p); break;
+            case VT_I2: *pData = V_I2(p); break;
+            default: assert(false); break;
+            }
          }
          break;
       }
@@ -443,8 +447,7 @@ void DynamicTypeLibrary::ReleaseCOMToScriptVariant(VARIANT& cv, const ScriptType
       switch (typeDef.nativeType.id)
       {
       case STRING_TYPEID:
-         delete [] sv.vString;
-         sv.vString = nullptr;
+         sv.vString.Release(&sv.vString);
          break;
       }
       break;
@@ -460,7 +463,7 @@ void DynamicTypeLibrary::ReleaseCOMToScriptVariant(VARIANT& cv, const ScriptType
    }
 }
 
-void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const ScriptVariant& sv, VARIANT& cv) const
+void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, ScriptVariant& sv, VARIANT& cv) const
 {
    assert(type.id != UNRESOLVED_TYPEID);
    const TypeDef& typeDef = m_types[type.id];
@@ -523,9 +526,10 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
       case STRING_TYPEID:
       {
          V_VT(&cv) = VT_BSTR;
-         const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString, -1, nullptr, 0);
+         const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, nullptr, 0);
          V_BSTR(&cv) = SysAllocStringLen(nullptr, len);
-         MultiByteToWideChar(CP_ACP, 0, sv.vString, -1, V_BSTR(&cv), len);
+         MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(&cv), len);
+         sv.vString.Release(&sv.vString);
          break;
       }
       default: assert(false);
@@ -541,7 +545,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, const
       {
          V_VT(&cv) = VT_DISPATCH;
          V_DISPATCH(&cv) = new DynamicDispatch(this, GetClass(type), sv.vObject);
-         //V_DISPATCH(&cv)->AddRef(); // Don't add a ref, as the returned object already support reference counting and is returned refCounted for us
+         V_DISPATCH(&cv)->AddRef(); // Don't add a ref, as the returned object already support reference counting and is returned refCounted for us
       }
       break;
 
@@ -692,7 +696,7 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
       case ULONG_TYPEID: return std::to_string(sv.vULong);
       case FLOAT_TYPEID: return std::to_string(sv.vFloat);
       case DOUBLE_TYPEID: return std::to_string(sv.vDouble);
-      case STRING_TYPEID: return "\""s.append(sv.vString).append(1,'"');
+      case STRING_TYPEID: return "\""s.append(sv.vString.string).append(1, '"');
       default: assert(false);
       }
       break;
