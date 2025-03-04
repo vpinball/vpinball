@@ -60,7 +60,36 @@ int DPIValue(int value)
 BOOL SoundDialog::OnInitDialog()
 {
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
+    const HWND toolTipHwnd = CreateWindowEx(
+      0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
     hSoundList = GetDlgItem( IDC_SOUNDLIST ).GetHwnd();
+    AddToolTip("Import a new sound from a file.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_IMPORT).GetHwnd());
+    AddToolTip("ReImport selected sound(s) using the existing file path(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORT).GetHwnd());
+    AddToolTip("ReImport selected sound (using a different file path).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_REIMPORTFROM).GetHwnd());
+    AddToolTip("Delete the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_DELETE_SOUND).GetHwnd());
+    AddToolTip("Rename the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_RENAME).GetHwnd());
+    AddToolTip("Play the selected sound to preview it.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_PLAY).GetHwnd());
+    AddToolTip("Stop playing the selected sound.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_STOP).GetHwnd());
+    AddToolTip("Export the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDEXPORT).GetHwnd());
+    AddToolTip("Toggle the sound to play through Table vs Backglass speakers for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDTOBG).GetHwnd());
+    AddToolTip("Set the volume, left/right (pan) and front/back (fade) sound position for the selected sound(s).", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_SNDPOSITION).GetHwnd());
+    AddToolTip("The 'Name' value from the list will be used when exporting instead of the file name from the 'Import Path'.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd());
+    AddToolTip("Click 'OK' to close this window.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_OK).GetHwnd());
+    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 514, 231));
+    m_resizer.AddChild(hSoundList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);
+    m_resizer.AddChild(GetDlgItem(IDC_IMPORT).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_REIMPORT).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_REIMPORTFROM).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_DELETE_SOUND).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_RENAME).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_PLAY).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STOP).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_SNDEXPORT).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_SNDTOBG).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_SNDPOSITION).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_CHECK_RENAME_ON_EXPORT).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_STATIC).GetHwnd(), CResizer::topright, 0);
+    m_resizer.AddChild(GetDlgItem(IDC_OK).GetHwnd(), CResizer::topright, 0);
 
     LoadPosition();
 
@@ -106,6 +135,7 @@ BOOL SoundDialog::OnInitDialog()
 
 INT_PTR SoundDialog::DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam )
 {
+    m_resizer.HandleMessage(uMsg, wParam, lParam);
     CCO( PinTable ) * const pt = g_pvp->GetActiveTable();
 
     switch(uMsg)
@@ -575,9 +605,11 @@ void SoundDialog::LoadPosition()
 {
    const int x = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngPosX"s, 0);
    const int y = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngPosY"s, 0);
+   const int w = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngWidth"s, 1000);
+   const int h = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "SoundMngHeight"s, 800);
    POINT p { x, y };
    if (MonitorFromPoint(p, MONITOR_DEFAULTTONULL) != NULL) // Do not apply if point is offscreen
-      SetWindowPos( nullptr, x, y, 0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE );
+      SetWindowPos( nullptr, x, y, w, h, SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOACTIVATE );
 }
 
 void SoundDialog::SavePosition()
@@ -585,6 +617,21 @@ void SoundDialog::SavePosition()
     const CRect rect = GetWindowRect();
     g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngPosX"s, (int)rect.left);
     g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngPosY"s, (int)rect.top);
+    const int w = rect.right - rect.left;
+    g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngWidth"s, w);
+    const int h = rect.bottom - rect.top;
+    g_pvp->m_settings.SaveValue(Settings::Editor, "SoundMngHeight"s, h);
+}
+
+void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
+{
+   TOOLINFO toolInfo = { 0 };
+   toolInfo.cbSize = sizeof(toolInfo);
+   toolInfo.hwnd = parentHwnd;
+   toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+   toolInfo.uId = (UINT_PTR)controlHwnd;
+   toolInfo.lpszText = (char *)text;
+   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 
