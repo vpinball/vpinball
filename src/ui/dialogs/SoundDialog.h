@@ -38,7 +38,7 @@ class SoundPositionDialog : public CDialog
 public:
 	int m_volume, m_fade, m_balance;
 	SoundOutTypes m_cOutputTarget;
-	PinSound *m_pps;
+	PinSound *m_pPinSound;
 
 	SoundPositionDialog(PinSound * const pps);
 	virtual ~SoundPositionDialog();
