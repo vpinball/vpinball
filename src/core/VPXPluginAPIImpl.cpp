@@ -237,7 +237,9 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
       PLOGE << "Failed to create object of class " << classId;
       return nullptr;
    }
-   return new DynamicDispatch(&pi.m_dynamicTypeLibrary, classDef, pScriptObject);
+   DynamicDispatch* dd = new DynamicDispatch(&pi.m_dynamicTypeLibrary, classDef, pScriptObject);
+   PSC_RELEASE(classDef, pScriptObject);
+   return dd;
 }
 
 

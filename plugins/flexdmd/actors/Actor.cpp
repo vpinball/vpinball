@@ -1,10 +1,11 @@
 #include "Actor.h"
 #include "Actions.h"
+#include "FlexDMD.h"
 
 #include <cassert>
 #include <SDL3/SDL_surface.h>
 
-Actor::Actor(FlexDMD *pFlexDMD, const string& name)
+Actor::Actor(const FlexDMD *pFlexDMD, const string& name)
    : m_pFlexDMD(pFlexDMD)
    , m_name(name)
 {
@@ -14,8 +15,27 @@ Actor::Actor(FlexDMD *pFlexDMD, const string& name)
 Actor::~Actor()
 {
    assert(m_refCount == 0);
-   assert(m_parent == nullptr);
-   delete m_pActionFactory;
+   ClearActions();
+   m_pActionFactory->Release();
+}
+
+ActionFactory* Actor::GetActionFactory() const
+{
+   m_pActionFactory->AddRef();
+   return m_pActionFactory;
+}
+
+void Actor::AddAction(Action* action)
+{
+   action->AddRef();
+   m_actions.push_back(action);
+}
+
+void Actor::ClearActions()
+{
+   for (auto action : m_actions)
+      action->Release();
+   m_actions.clear();
 }
 
 void Actor::Remove()
@@ -31,7 +51,10 @@ void Actor::Update(float secondsElapsed)
    for (auto it = m_actions.begin(); it != m_actions.end();)
    {
       if ((*it)->Update(secondsElapsed))
+      {
+         (*it)->Release();
          it = m_actions.erase(it);
+      }
       else
          ++it;
    }

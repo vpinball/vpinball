@@ -14,6 +14,7 @@ Sequence::~Sequence()
 
 void Sequence::Enqueue(Scene* scene)
 {
+   scene->AddRef();
    m_pendingScenes.push_back(scene);
    m_finished = false;
 }
@@ -22,7 +23,8 @@ void Sequence::RemoveAllScenes()
 {
    if (m_pActiveScene)
       m_pActiveScene->Remove();
-
+   for (auto scene : m_pendingScenes)
+      scene->Release();
    m_pActiveScene = nullptr;
    m_pendingScenes.clear();
    m_finished = true;
@@ -34,9 +36,9 @@ void Sequence::RemoveScene(const string& name)
       m_pActiveScene->Remove();
       m_pActiveScene = nullptr;
    }
-   m_pendingScenes.erase(std::remove_if(m_pendingScenes.begin(), m_pendingScenes.end(), [name](Group* p) {
-      return p->GetName() == name;
-   }), m_pendingScenes.end());
+   auto it = std::remove_if(m_pendingScenes.begin(), m_pendingScenes.end(), [name](Group* p) { return p->GetName() == name; });
+   std::for_each(it, m_pendingScenes.end(), [](Scene* scene) { scene->Release(); });
+   m_pendingScenes.erase(it, m_pendingScenes.end());
    m_finished = !m_pActiveScene && m_pendingScenes.empty();
 }
 

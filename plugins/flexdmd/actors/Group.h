@@ -18,7 +18,7 @@ public:
    ActorType GetType() const override { return AT_Group; }
 
    int GetChildCount() const { return static_cast<int>(m_children.size()); }
-   bool HasChild(const string &name) { return Get(name) != nullptr; }
+   bool HasChild(const string &name);
    Group *GetGroup(const string &Name);
    Frame *GetFrame(const string &Name);
    Label *GetLabel(const string &Name);
@@ -32,15 +32,14 @@ public:
    void AddActorAt(Actor *actor, int index);
    void RemoveActor(Actor *actor);
    void RemoveAll();
-   vector<Actor *> GetChildren() { return m_children; }
+   vector<Actor *> GetChildren() const;
 
    void OnStageStateChanged() override;
    void Update(float delta) override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;
 
 private:
-   Group *GetRoot();
-   Actor *Get(const string &name);
+   Actor* Get(const string &name);
 
    bool m_clip = false;
    vector<Actor *> m_children;

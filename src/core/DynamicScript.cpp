@@ -4,40 +4,51 @@
 #include "DynamicScript.h"
 
 // Core types Ids
-#define UNRESOLVED_TYPEID   0
-#define VOID_TYPEID         1
-#define BOOL_TYPEID         2
-#define CHAR_TYPEID         3
-#define SHORT_TYPEID        4
-#define INT_TYPEID          5
-#define LONG_TYPEID         6
-#define UCHAR_TYPEID        7
-#define USHORT_TYPEID       8
-#define UINT_TYPEID         9
-#define ULONG_TYPEID       10
-#define FLOAT_TYPEID       11
-#define DOUBLE_TYPEID      12
-#define STRING_TYPEID      13
+enum TypeID
+{
+   TYPEID_UNRESOLVED,
+   TYPEID_VOID,
+   TYPEID_BOOL,
+   TYPEID_INT,
+   TYPEID_UINT,
+   TYPEID_FLOAT,
+   TYPEID_DOUBLE,
+   TYPEID_STRING,
+   TYPEID_INT8,
+   TYPEID_INT16,
+   TYPEID_INT32,
+   TYPEID_INT64,
+   TYPEID_UINT8,
+   TYPEID_UINT16,
+   TYPEID_UINT32,
+   TYPEID_UINT64,
+   TYPEID_COUNT
+};
 
 // Set to 1 to log all COM Invoke
 #define LOG_INVOKES 0
 
 DynamicTypeLibrary::DynamicTypeLibrary()
 {
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { nullptr, static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "void", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "bool", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "char", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "short", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "int", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "long", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "uchar", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "ushort", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "ulong", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "float", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "double", static_cast<unsigned int>(m_types.size()) } });
-   m_types.push_back({ TypeDef::TD_NATIVE, ScriptTypeNameDef { "string", static_cast<unsigned int>(m_types.size()) } });
+   m_types.resize(TypeID::TYPEID_COUNT);
+   m_types[TypeID::TYPEID_UNRESOLVED] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { nullptr, TYPEID_UNRESOLVED } };
+   // Base native type
+   m_types[TypeID::TYPEID_VOID  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "void",   TYPEID_VOID } };
+   m_types[TypeID::TYPEID_BOOL  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "bool",   TYPEID_BOOL } };
+   m_types[TypeID::TYPEID_INT   ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int",    TYPEID_INT } };
+   m_types[TypeID::TYPEID_UINT  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint",   TYPEID_UINT } };
+   m_types[TypeID::TYPEID_FLOAT ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "float",  TYPEID_FLOAT } };
+   m_types[TypeID::TYPEID_DOUBLE] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "double", TYPEID_DOUBLE } };
+   m_types[TypeID::TYPEID_STRING] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "string", TYPEID_STRING } };
+   // Sized data type
+   m_types[TypeID::TYPEID_INT8  ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int8",   TYPEID_INT8 } };
+   m_types[TypeID::TYPEID_INT16 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int16",  TYPEID_INT16 } };
+   m_types[TypeID::TYPEID_INT32 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int32",  TYPEID_INT32 } };
+   m_types[TypeID::TYPEID_INT64 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "int64",  TYPEID_INT64 } };
+   m_types[TypeID::TYPEID_UINT8 ] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint8",  TYPEID_UINT8 } };
+   m_types[TypeID::TYPEID_UINT16] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint16", TYPEID_UINT16 } };
+   m_types[TypeID::TYPEID_UINT32] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint32", TYPEID_UINT32 } };
+   m_types[TypeID::TYPEID_UINT64] = { TypeDef::TD_NATIVE, ScriptTypeNameDef { "uint64", TYPEID_UINT64 } };
    for (const TypeDef& type : m_types)
       if (type.nativeType.name != nullptr)
          m_typenames[type.nativeType.name] = type.nativeType.id;
@@ -107,8 +118,8 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
    }
    // Aliasing is only supported for core type, and forward declaration are not supported
    const int aliasedId = ResolveClassId(aliasedTypeName);
-   assert(aliasedId != UNRESOLVED_TYPEID);
-   const TypeDef& typeDef = m_types[aliasedId];
+   assert(aliasedId != TypeID::TYPEID_UNRESOLVED);
+   const TypeDef typeDef = m_types[aliasedId];
    assert(typeDef.category == TypeDef::TD_NATIVE);
    m_types.push_back({ .category = TypeDef::TD_ALIAS, .aliasDef = { name, typeDef.nativeType } });
    string classId(name);
@@ -138,15 +149,15 @@ void DynamicTypeLibrary::ResolveAllClasses()
       switch (type.category)
       {
       case TypeDef::TD_ALIAS:
-         assert(type.aliasDef.typeDef.id != UNRESOLVED_TYPEID);
+         assert(type.aliasDef.typeDef.id != TypeID::TYPEID_UNRESOLVED);
          break;
 
       case TypeDef::TD_NATIVE:
-         assert(type.nativeType.name == nullptr || (type.nativeType.id != UNRESOLVED_TYPEID));
+         assert(type.nativeType.name == nullptr || (type.nativeType.id != TypeID::TYPEID_UNRESOLVED));
          break;
 
       case TypeDef::TD_CLASS:
-         assert(type.classDef->classDef->name.id != UNRESOLVED_TYPEID);
+         assert(type.classDef->classDef->name.id != TypeID::TYPEID_UNRESOLVED);
          for (int i = 0; i < static_cast<int>(type.classDef->classDef->nMembers); i++)
          {
             ScriptClassMemberDef& memberDef = type.classDef->classDef->members[i];
@@ -203,7 +214,7 @@ ScriptClassDef* DynamicTypeLibrary::ResolveClass(const char* name) const
 
 int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const char* memberName) const
 {
-   assert(classDef->name.id != UNRESOLVED_TYPEID);
+   assert(classDef->name.id != TypeID::TYPEID_UNRESOLVED);
    assert(classDef->name.id < m_types.size());
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
@@ -218,7 +229,7 @@ int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const ch
 
 ScriptClassDef* DynamicTypeLibrary::GetClass(const ScriptTypeNameDef& name) const
 {
-   assert(name.id != UNRESOLVED_TYPEID);
+   assert(name.id != TypeID::TYPEID_UNRESOLVED);
    assert(name.id < static_cast<int>(m_types.size()));
    const TypeDef& def = m_types[name.id];
    assert(def.category == TypeDef::TD_CLASS);
@@ -226,92 +237,84 @@ ScriptClassDef* DynamicTypeLibrary::GetClass(const ScriptTypeNameDef& name) cons
    return def.classDef->classDef;
 }
 
-void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
+bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
 {
-   assert(type.id != UNRESOLVED_TYPEID);
+   assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
-   if (V_VT(&cv) == (VT_BYREF | VT_VARIANT))
+   if (V_VT(&cv) & VT_BYREF)
    {
-      COMToScriptVariant(*V_VARIANTREF(&cv), type, sv);
-      return;
+      // FIXME this is a quick hack to keep moving forward, but it needs proper review & implementation
+      //assert(false);
+      if (V_VT(&cv) == (VT_BYREF | VT_VARIANT))
+         return COMToScriptVariant(*V_VARIANTREF(&cv), type, sv);
+      else
+         return false;
    }
    switch (typeDef.category)
    {
    case TypeDef::TD_ALIAS:
-      COMToScriptVariant(cv, typeDef.aliasDef.typeDef, sv);
+      return COMToScriptVariant(cv, typeDef.aliasDef.typeDef, sv);
       break;
 
    case TypeDef::TD_NATIVE:
    {
+      // TODO raise an error and prevent further processing
+      #define CHANGE_TYPE(type) \
+         if (VariantChangeType(&v, &cv, 0, type) != S_OK) { \
+            PLOGE << "Failed to convert from COM variant type " << V_VT(&cv); \
+            assert(false); \
+            return false; \
+         }
       VARIANT v;
       VariantInit(&v);
       switch (typeDef.nativeType.id)
       {
-      case UNRESOLVED_TYPEID:
-      case VOID_TYPEID:
+      case TypeID::TYPEID_UNRESOLVED:
+      case TypeID::TYPEID_VOID:
+         // TODO raise an error and prevent further processing
          PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forgot to call 'Register" << type.name << "SCD(...)' ?";
          assert(false);
+         return false;
          break;
-      case BOOL_TYPEID: VariantChangeType(&v, &cv, 0, VT_BOOL); sv.vBool = static_cast<sc_bool>(V_BOOL(&v)); break;
-      case CHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_I1); sv.vByte = V_I1(&v); break;
-      case SHORT_TYPEID: VariantChangeType(&v, &cv, 0, VT_I2); sv.vShort = V_I2(&v); break;
-      case INT_TYPEID: VariantChangeType(&v, &cv, 0, VT_I4); sv.vLong = V_I4(&v); break;
-      case LONG_TYPEID: VariantChangeType(&v, &cv, 0, VT_I8); sv.vLong = static_cast<sc_int64>(V_I8(&v)); break;
-      case UCHAR_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI1); sv.vUByte = V_UI1(&v); break;
-      case USHORT_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI2); sv.vUShort = V_UI2(&v); break;
-      case UINT_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI4); sv.vUInt = V_UI4(&v); break;
-      case ULONG_TYPEID: VariantChangeType(&v, &cv, 0, VT_UI8); sv.vULong = static_cast<sc_uint64>(V_UI8(&v)); break;
-      case FLOAT_TYPEID: VariantChangeType(&v, &cv, 0, VT_R4); sv.vFloat = V_R4(&v); break;
-      case DOUBLE_TYPEID: VariantChangeType(&v, &cv, 0, VT_R8); sv.vDouble = V_R8(&v); break;
-      case STRING_TYPEID:
-         switch (V_VT(&cv))
+      case TypeID::TYPEID_BOOL:   CHANGE_TYPE(VT_BOOL); sv.vBool = (V_BOOL(&v) == VARIANT_TRUE); break;
+      case TypeID::TYPEID_INT:    CHANGE_TYPE(VT_INT);  sv.vInt64 = V_INT(&v); break;
+      case TypeID::TYPEID_UINT:   CHANGE_TYPE(VT_UINT); sv.vUInt = V_UINT(&v); break;
+      case TypeID::TYPEID_FLOAT:  CHANGE_TYPE(VT_R4);   sv.vFloat = V_R4(&v); break;
+      case TypeID::TYPEID_DOUBLE: CHANGE_TYPE(VT_R8);   sv.vDouble = V_R8(&v); break;
+      case TypeID::TYPEID_INT8:   CHANGE_TYPE(VT_I1);   sv.vInt8 = V_I1(&v); break;
+      case TypeID::TYPEID_INT16:  CHANGE_TYPE(VT_I2);   sv.vInt16 = V_I2(&v); break;
+      case TypeID::TYPEID_INT32:  CHANGE_TYPE(VT_I4);   sv.vInt32 = V_I4(&v); break;
+      case TypeID::TYPEID_INT64:  CHANGE_TYPE(VT_I8);   sv.vInt64 = V_I8(&v); break;
+      case TypeID::TYPEID_UINT8:  CHANGE_TYPE(VT_UI1);  sv.vUInt8 = V_UI1(&v); break;
+      case TypeID::TYPEID_UINT16: CHANGE_TYPE(VT_UI2);  sv.vUInt16 = V_UI2(&v); break;
+      case TypeID::TYPEID_UINT32: CHANGE_TYPE(VT_UI4);  sv.vUInt32 = V_UI4(&v); break;
+      case TypeID::TYPEID_UINT64: CHANGE_TYPE(VT_UI8);  sv.vUInt64 = V_UI8(&v); break;
+      case TypeID::TYPEID_STRING: CHANGE_TYPE(VT_BSTR);
          {
-         case VT_I2:
-         {
-            const string txt = std::to_string(V_I2(&cv));
-            char* const szT = new char[txt.size() + 1];
-            memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
-            break;
-         }
-         case VT_I4:
-         {
-            const string txt = std::to_string(V_I4(&cv));
-            char* const szT = new char[txt.size() + 1];
-            memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
-            break;
-         }
-         case VT_R8:
-         {
-            const string txt = std::to_string(V_R8(&cv));
-            char* const szT = new char[txt.size() + 1];
-            memcpy(szT, txt.c_str(), txt.size() + 1);
-            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
-            break;
-         }
-         case VT_BSTR:
-         {
-            const wstring wz(V_BSTR(&cv));
-            const int len = static_cast<int>(wz.length());
-            char* const szT = new char[len + 1];
-            WideCharToMultiByteNull(CP_ACP, 0, wz.c_str(), -1, szT, len + 1, nullptr, nullptr);
-            sv.vString = { [](ScriptString* s) { delete[] s->string; }, szT };
-            break;
-         }
-         default: assert(false);
+            int sizeNeeded = WideCharToMultiByte(CP_ACP, 0, V_BSTR(&v), -1, nullptr, 0, nullptr, nullptr);
+            if (sizeNeeded <= 0) 
+            {
+               // TODO raise an error and prevent further processing
+               PLOGE << "Failed to convert COM's BSTR to char*";
+               assert(false);
+               return false;
+            }
+            char* charStr = new char[sizeNeeded];
+            WideCharToMultiByte(CP_ACP, 0, V_BSTR(&v), -1, charStr, sizeNeeded, nullptr, nullptr);
+            sv.vString = { [](ScriptString* s) { delete[] s->string; }, charStr };
          }
          break;
       }
+      #undef CHANGE_TYPE
       break;
    }
 
    case TypeDef::TD_CLASS:
    {
       assert(V_VT(&cv) == VT_DISPATCH);
-      // Shouldn't we add a reference for the duration of the call ?
-      // assert(static_cast<DynamicDispatch*>(V_DISPATCH(&cv))->m_classDef->name.id == type.id); // Can also be an inherited class
       sv.vObject = static_cast<DynamicDispatch*>(V_DISPATCH(&cv))->m_nativeObject;
+      if (sv.vObject != nullptr)
+         PSC_ADD_REF(typeDef.classDef->classDef, sv.vObject);
       break;
    }
 
@@ -321,7 +324,7 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       SAFEARRAY* psa = V_ARRAY(&cv);
       assert(typeDef.arrayDef->nDimensions == SafeArrayGetDim(psa));
 
-      assert(typeDef.arrayDef->type.id != UNRESOLVED_TYPEID);
+      assert(typeDef.arrayDef->type.id != TypeID::TYPEID_UNRESOLVED);
       const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
       assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
       assert(typeDef.arrayDef->nDimensions == 1);
@@ -331,142 +334,95 @@ void DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       VARIANT* p;
       SafeArrayAccessData(psa, (void**)&p);
       ScriptArray* array = nullptr;
+      ScriptVariant tmpSV;
+      #define COPY_ARRAY(natType, svType) { \
+            const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(natType); \
+            array = static_cast<ScriptArray*>(malloc(arraySize)); \
+            array->Release = [](ScriptArray* me) { free(me); }; \
+            array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1); \
+            natType* pData = reinterpret_cast<natType*>(&array->lengths[1]); \
+            for (LONG i = lBound; i <= uBound; i++, pData++, p++) \
+            { \
+               if (!COMToScriptVariant(*p, arrayTypeDef.nativeType, tmpSV)) \
+               { \
+                  array->Release(array); \
+                  array = nullptr; \
+                  break; \
+               } \
+               *pData = tmpSV.svType; \
+            } \
+         }
       switch (arrayTypeDef.nativeType.id)
       {
-      case CHAR_TYPEID:
+      case TypeID::TYPEID_INT:
       {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
+         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(int);
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         int8_t* pData = reinterpret_cast<int8_t*>(&array->lengths[1]);
+         int* pData = reinterpret_cast<int*>(&array->lengths[1]);
          for (LONG i = lBound; i <= uBound; i++, pData++, p++)
          {
-            assert(V_VT(p) == VT_I1);
-            *pData = V_I1(p);
-         }
-         break;
-      }
-      case SHORT_TYPEID:
-      {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
-         array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         int16_t* pData = reinterpret_cast<int16_t*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
-         {
-            assert(V_VT(p) == VT_I2);
-            *pData = V_I2(p);
-         }
-         break;
-      }
-      case INT_TYPEID:
-      {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
-         array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
-         {
-            assert(V_VT(p) == VT_I4);
-            *pData = V_I4(p);
-         }
-         break;
-      }
-      case UCHAR_TYPEID:
-      {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 1;
-         array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         uint8_t* pData = reinterpret_cast<uint8_t*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
-         {
-            assert(V_VT(p) == VT_UI1);
-            *pData = V_UI1(p);
-         }
-         break;
-      }
-      case USHORT_TYPEID:
-      {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 2;
-         array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         uint16_t* pData = reinterpret_cast<uint16_t*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
-         {
-            switch (V_VT(p))
+            if (!COMToScriptVariant(*p, arrayTypeDef.nativeType, tmpSV))
             {
-            case VT_UI2: *pData = V_UI2(p); break;
-            case VT_I2: *pData = V_I2(p); break;
-            default: assert(false); break;
+               array->Release(array);
+               array = nullptr;
+               break;
             }
+            *pData = tmpSV.vInt;
          }
-         break;
-      }
-      case UINT_TYPEID:
-      {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * 4;
-         array = static_cast<ScriptArray*>(malloc(arraySize));
-         array->Release = [](ScriptArray* me) { free(me); };
-         array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
-         uint32_t* pData = reinterpret_cast<uint32_t*>(&array->lengths[1]);
-         for (LONG i = lBound; i <= uBound; i++, pData++, p++)
-         {
-            assert(V_VT(p) == VT_UI4);
-            *pData = V_UI4(p);
-         }
-         break;
-      }
-
+      };
+      break;
+      case TypeID::TYPEID_UINT:   COPY_ARRAY(unsigned int, vUInt); break;
+      case TypeID::TYPEID_INT8:   COPY_ARRAY(int8_t, vInt8); break;
+      case TypeID::TYPEID_INT16:  COPY_ARRAY(int16_t, vInt16); break;
+      case TypeID::TYPEID_UINT8:  COPY_ARRAY(uint8_t, vUInt8); break;
+      case TypeID::TYPEID_UINT16: COPY_ARRAY(uint16_t, vUInt16); break;
       default: assert(false);
       }
+      #undef COPY_ARRAY
       SafeArrayUnaccessData(psa);
       sv.vArray = array;
+      return array != nullptr;
       break;
    }
 
    default: assert(false);
    }
+   
+   return true;
 }
 
-void DynamicTypeLibrary::ReleaseCOMToScriptVariant(VARIANT& cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
+void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, ScriptVariant& sv) const
 {
-   // TODO handle ByRef variants (update the COM variant from the script variant)
+   assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
    switch (typeDef.category)
    {
-   case TypeDef::TD_ALIAS:
-      ReleaseCOMToScriptVariant(cv, const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv);
-      break;
+   case TypeDef::TD_ALIAS: ReleaseScriptVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv); break;
 
    case TypeDef::TD_NATIVE:
-      switch (typeDef.nativeType.id)
-      {
-      case STRING_TYPEID:
+      if (typeDef.nativeType.id == TypeID::TYPEID_STRING)
          sv.vString.Release(&sv.vString);
-         break;
-      }
       break;
 
    case TypeDef::TD_CLASS:
+      if (sv.vObject != nullptr)
+         PSC_RELEASE(typeDef.classDef->classDef, sv.vObject);
       break;
 
-   case TypeDef::TD_ARRAY:
-      sv.vArray->Release(sv.vArray);
-      break;
+   case TypeDef::TD_ARRAY: sv.vArray->Release(sv.vArray); break;
 
    default: assert(false);
    }
 }
 
+// Convert incoming script variant to a COM variant, eventually clearing the script variant if requested
 void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, ScriptVariant& sv, VARIANT& cv) const
 {
-   assert(type.id != UNRESOLVED_TYPEID);
+   assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
+   VariantInit(&cv);
    switch (typeDef.category)
    {
    case TypeDef::TD_ALIAS: ScriptToCOMVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv, cv); break;
@@ -474,62 +430,61 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
    case TypeDef::TD_NATIVE:
       switch (typeDef.nativeType.id)
       {
-      case UNRESOLVED_TYPEID:
-      case VOID_TYPEID:
+      case TypeID::TYPEID_UNRESOLVED:
+      case TypeID::TYPEID_VOID:
          PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forgot to call 'Register" << type.name << "SCD(...)' ?";
          V_VT(&cv) = VT_EMPTY;
          break;
-      case BOOL_TYPEID:
+      case TypeID::TYPEID_BOOL:
          V_VT(&cv) = VT_BOOL;
          V_BOOL(&cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
          break;
-      case CHAR_TYPEID:
+      case TypeID::TYPEID_INT8:
          V_VT(&cv) = VT_I1;
-         V_I1(&cv) = sv.vByte;
+         V_I1(&cv) = sv.vInt8;
          break;
-      case SHORT_TYPEID:
+      case TypeID::TYPEID_INT16:
          V_VT(&cv) = VT_I2;
-         V_I2(&cv) = sv.vShort;
+         V_I2(&cv) = sv.vInt16;
          break;
-      case INT_TYPEID:
+      case TypeID::TYPEID_INT:
          V_VT(&cv) = VT_I4;
          V_I4(&cv) = sv.vInt;
          break;
-      case LONG_TYPEID:
+      case TypeID::TYPEID_INT64:
          V_VT(&cv) = VT_I8;
-         V_I8(&cv) = sv.vLong;
+         V_I8(&cv) = sv.vInt64;
          break;
-      case UCHAR_TYPEID:
+      case TypeID::TYPEID_UINT8:
          V_VT(&cv) = VT_UI1;
-         V_UI1(&cv) = sv.vUByte;
+         V_UI1(&cv) = sv.vUInt8;
          break;
-      case USHORT_TYPEID:
+      case TypeID::TYPEID_UINT16:
          V_VT(&cv) = VT_UI2;
-         V_UI2(&cv) = sv.vUShort;
+         V_UI2(&cv) = sv.vUInt16;
          break;
-      case UINT_TYPEID:
+      case TypeID::TYPEID_UINT:
          V_VT(&cv) = VT_UI4;
          V_UI4(&cv) = sv.vUInt;
          break;
-      case ULONG_TYPEID:
+      case TypeID::TYPEID_UINT64:
          V_VT(&cv) = VT_UI8;
-         V_UI8(&cv) = sv.vULong;
+         V_UI8(&cv) = sv.vUInt64;
          break;
-      case FLOAT_TYPEID:
+      case TypeID::TYPEID_FLOAT:
          V_VT(&cv) = VT_R4;
          V_R4(&cv) = sv.vFloat;
          break;
-      case DOUBLE_TYPEID:
+      case TypeID::TYPEID_DOUBLE:
          V_VT(&cv) = VT_R8;
          V_R8(&cv) = sv.vDouble;
          break;
-      case STRING_TYPEID:
+      case TypeID::TYPEID_STRING:
       {
          V_VT(&cv) = VT_BSTR;
          const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, nullptr, 0);
          V_BSTR(&cv) = SysAllocStringLen(nullptr, len);
          MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(&cv), len);
-         sv.vString.Release(&sv.vString);
          break;
       }
       default: assert(false);
@@ -544,8 +499,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       else
       {
          V_VT(&cv) = VT_DISPATCH;
-         V_DISPATCH(&cv) = new DynamicDispatch(this, GetClass(type), sv.vObject);
-         V_DISPATCH(&cv)->AddRef(); // Don't add a ref, as the returned object already support reference counting and is returned refCounted for us
+         V_DISPATCH(&cv) = new DynamicDispatch(this, typeDef.classDef->classDef, sv.vObject);
       }
       break;
 
@@ -556,75 +510,36 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          SAFEARRAY* psa = SafeArrayCreateVector(VT_VARIANT, typeDef.arrayDef->lowerBounds[0], sv.vArray->lengths[0]);
          VARIANT* pData;
          SafeArrayAccessData(psa, reinterpret_cast<void**>(&pData));
-         assert(typeDef.arrayDef->type.id != UNRESOLVED_TYPEID);
+         assert(typeDef.arrayDef->type.id != TypeID::TYPEID_UNRESOLVED);
          const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
          assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
+         #define COPY_ARRAY(natType, varType) { \
+               natType* pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[1]); \
+               for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++) \
+               { \
+                  VariantInit(&pData[i]); \
+                  V_VT(&pData[i]) = VT_##varType; \
+                  V_##varType(&pData[i]) = pSrc[i]; \
+               } \
+            }
          switch (arrayTypeDef.nativeType.id)
          {
-         case CHAR_TYPEID:
-         {
-            int8_t* pSrc = reinterpret_cast<int8_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_I1;
-               V_I1(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
-         case SHORT_TYPEID:
-         {
-            int16_t* pSrc = reinterpret_cast<int16_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_I2;
-               V_I2(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
-         case INT_TYPEID:
-         {
-            int32_t* pSrc = reinterpret_cast<int32_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_I4;
-               V_I4(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
-         case UCHAR_TYPEID:
-         {
-            uint8_t* pSrc = reinterpret_cast<uint8_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_UI1;
-               V_UI1(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
-         case USHORT_TYPEID:
-         {
-            uint16_t* pSrc = reinterpret_cast<uint16_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_UI2;
-               V_UI2(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
-         case UINT_TYPEID:
-         {
-            uint32_t* pSrc = reinterpret_cast<uint32_t*>(&sv.vArray->lengths[1]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               V_VT(&pData[i]) = VT_UI4;
-               V_UI4(&pData[i]) = pSrc[i];
-            }
-            break;
-         }
+         case TypeID::TYPEID_INT:    COPY_ARRAY(int,          INT); break;
+         case TypeID::TYPEID_UINT:   COPY_ARRAY(unsigned int, UINT); break;
+         case TypeID::TYPEID_FLOAT:  COPY_ARRAY(float,        R4); break;
+         case TypeID::TYPEID_DOUBLE: COPY_ARRAY(double,       R8); break;
+         case TypeID::TYPEID_INT8:   COPY_ARRAY(int8_t,       I1); break;
+         case TypeID::TYPEID_INT16:  COPY_ARRAY(int16_t,      I2); break;
+         case TypeID::TYPEID_INT32:  COPY_ARRAY(int32_t,      I4); break;
+         case TypeID::TYPEID_INT64:  COPY_ARRAY(int64_t,      I8); break;
+         case TypeID::TYPEID_UINT8:  COPY_ARRAY(uint8_t,      UI1); break;
+         case TypeID::TYPEID_UINT16: COPY_ARRAY(uint16_t,     UI2); break;
+         case TypeID::TYPEID_UINT32: COPY_ARRAY(uint32_t,     UI4); break;
+         case TypeID::TYPEID_UINT64: COPY_ARRAY(uint64_t,     UI8); break;
          default: assert(false); // not yet implemented
          }
+         #undef COPY_ARRAY
          SafeArrayUnaccessData(psa);
-         sv.vArray->Release(sv.vArray);
          V_VT(&cv) = VT_ARRAY | VT_VARIANT;
          V_ARRAY(&cv) = psa;
       }
@@ -632,32 +547,41 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       {
          SAFEARRAYBOUND bounds[2] = { { sv.vArray->lengths[0],typeDef.arrayDef->lowerBounds[0] }, { sv.vArray->lengths[1], typeDef.arrayDef->lowerBounds[1] } };
          SAFEARRAY* psa = SafeArrayCreate(VT_VARIANT, 2, bounds);
-         assert(typeDef.arrayDef->type.id != UNRESOLVED_TYPEID);
+         assert(typeDef.arrayDef->type.id != TypeID::TYPEID_UNRESOLVED);
          const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
          assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
          VARIANT varValue;
-         V_VT(&varValue) = VT_I4;
+         VariantInit(&varValue);
+         LONG ix[2];
+         #define COPY_ARRAY(natType, varType) { \
+               V_VT(&varValue) = VT_##varType; \
+               natType* pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[2]); \
+               for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++) \
+               { \
+                  for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++) \
+                  { \
+                     V_##varType(&varValue) = pSrc[ix[0] * sv.vArray->lengths[1] + ix[1]]; \
+                     SafeArrayPutElement(psa, ix, &varValue); \
+                  } \
+               } \
+            }
          switch (arrayTypeDef.nativeType.id)
          {
-         case INT_TYPEID:
-         {
-            int32_t* pSrc = reinterpret_cast<int32_t*>(&sv.vArray->lengths[2]);
-            for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++)
-            {
-               LONG ix[2];
-               ix[0] = i;
-               for (unsigned int j = 0; j < sv.vArray->lengths[1]; j++)
-               {
-                  ix[1] = j;
-                  V_I4(&varValue) = pSrc[i * sv.vArray->lengths[1] + j];
-                  SafeArrayPutElement(psa, ix, &varValue);
-               }
-            }
-            break;
-         }
+         case TypeID::TYPEID_INT:    COPY_ARRAY(int,          INT); break;
+         case TypeID::TYPEID_UINT:   COPY_ARRAY(unsigned int, UINT); break;
+         case TypeID::TYPEID_FLOAT:  COPY_ARRAY(float,        R4); break;
+         case TypeID::TYPEID_DOUBLE: COPY_ARRAY(double,       R8); break;
+         case TypeID::TYPEID_INT8:   COPY_ARRAY(int8_t,       I1); break;
+         case TypeID::TYPEID_INT16:  COPY_ARRAY(int16_t,      I2); break;
+         case TypeID::TYPEID_INT32:  COPY_ARRAY(int32_t,      I4); break;
+         case TypeID::TYPEID_INT64:  COPY_ARRAY(int64_t,      I8); break;
+         case TypeID::TYPEID_UINT8:  COPY_ARRAY(uint8_t,      UI1); break;
+         case TypeID::TYPEID_UINT16: COPY_ARRAY(uint16_t,     UI2); break;
+         case TypeID::TYPEID_UINT32: COPY_ARRAY(uint32_t,     UI4); break;
+         case TypeID::TYPEID_UINT64: COPY_ARRAY(uint64_t,     UI8); break;
          default: assert(false); // not yet implemented
          }
-         sv.vArray->Release(sv.vArray);
+         #undef COPY_ARRAY
          V_VT(&cv) = VT_ARRAY | VT_VARIANT;
          V_ARRAY(&cv) = psa;
       }
@@ -674,7 +598,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
 
 string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, const ScriptVariant& sv) const
 {
-   assert(type.id != UNRESOLVED_TYPEID);
+   assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
    switch (typeDef.category)
    {
@@ -683,25 +607,27 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    case TypeDef::TD_NATIVE:
       switch (typeDef.nativeType.id)
       {
-      case UNRESOLVED_TYPEID: return "Invalid"s;
-      case VOID_TYPEID: return "void"s;
-      case BOOL_TYPEID: return sv.vBool ? "true"s : "false"s;
-      case CHAR_TYPEID: return std::to_string(sv.vByte);
-      case SHORT_TYPEID: return std::to_string(sv.vShort);
-      case INT_TYPEID: return std::to_string(sv.vInt);
-      case LONG_TYPEID: return std::to_string(sv.vLong);
-      case UCHAR_TYPEID: return std::to_string(sv.vUByte);
-      case USHORT_TYPEID: return std::to_string(sv.vUShort);
-      case UINT_TYPEID: return std::to_string(sv.vUInt);
-      case ULONG_TYPEID: return std::to_string(sv.vULong);
-      case FLOAT_TYPEID: return std::to_string(sv.vFloat);
-      case DOUBLE_TYPEID: return std::to_string(sv.vDouble);
-      case STRING_TYPEID: return "\""s.append(sv.vString.string).append(1, '"');
+      case TypeID::TYPEID_UNRESOLVED: return "Invalid"s;
+      case TypeID::TYPEID_VOID: return "void"s;
+      case TypeID::TYPEID_BOOL: return sv.vBool ? "true"s : "false"s;
+      case TypeID::TYPEID_INT: return std::to_string(sv.vInt);
+      case TypeID::TYPEID_UINT: return std::to_string(sv.vUInt);
+      case TypeID::TYPEID_FLOAT: return std::to_string(sv.vFloat);
+      case TypeID::TYPEID_DOUBLE: return std::to_string(sv.vDouble);
+      case TypeID::TYPEID_INT8: return std::to_string(sv.vInt8);
+      case TypeID::TYPEID_INT16: return std::to_string(sv.vInt16);
+      case TypeID::TYPEID_INT32: return std::to_string(sv.vInt32);
+      case TypeID::TYPEID_INT64: return std::to_string(sv.vInt64);
+      case TypeID::TYPEID_UINT8: return std::to_string(sv.vUInt8);
+      case TypeID::TYPEID_UINT16: return std::to_string(sv.vUInt16);
+      case TypeID::TYPEID_UINT32: return std::to_string(sv.vUInt32);
+      case TypeID::TYPEID_UINT64: return std::to_string(sv.vUInt64);
+      case TypeID::TYPEID_STRING: return "\""s.append(sv.vString.string).append(1, '"');
       default: assert(false);
       }
       break;
 
-   case TypeDef::TD_CLASS: return GetClass(type)->name.name;
+   case TypeDef::TD_CLASS: return typeDef.classDef->classDef->name.name;
 
    case TypeDef::TD_ARRAY: return typeDef.arrayDef->name.name;
 
@@ -712,19 +638,21 @@ string DynamicTypeLibrary::ScriptVariantToString(const ScriptTypeNameDef& type, 
    return "<< bug >>"s;
 }
 
-HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT*) const
+HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* nativeObject, DISPID dispIdMember, REFIID, LCID, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO*, UINT* puArgErr) const
 {
-   assert(classDef->name.id != UNRESOLVED_TYPEID);
+   assert(classDef->name.id != TypeID::TYPEID_UNRESOLVED);
    assert(classDef->name.id < m_types.size());
-   //if (pDispParams->cNamedArgs != 0)
-   //   return DISP_E_NONAMEDARGS;
    if (pDispParams->cArgs > PSC_CALL_MAX_ARG_COUNT)
+   {
       return DISP_E_BADPARAMCOUNT;
+   }
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
    ClassDef * cd = type.classDef;
    if ((dispIdMember < 0) || (dispIdMember >= (DISPID)cd->members.size()))
+   {
       return DISP_E_MEMBERNOTFOUND;
+   }
 
    // Search for the right overload (needed for property which are a member with overloads for getters and setters)
    // FIXME match overload on type and arguments
@@ -747,7 +675,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       for (int i : members)
       {
          const ScriptClassMemberDef& memberDef = cd->classDef->members[i];
-         if ((memberDef.type.id != VOID_TYPEID) && (memberDef.nArgs == pDispParams->cArgs))
+         if ((memberDef.type.id != TypeID::TYPEID_VOID) && (memberDef.nArgs == pDispParams->cArgs))
          {
             memberIndex = i;
             break;
@@ -759,7 +687,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       for (int i : members)
       {
          const ScriptClassMemberDef& memberDef = cd->classDef->members[i];
-         if ((memberDef.type.id == VOID_TYPEID) && (memberDef.nArgs == pDispParams->cArgs))
+         if ((memberDef.type.id == TypeID::TYPEID_VOID) && (memberDef.nArgs == pDispParams->cArgs))
          {
             memberIndex = i;
             break;
@@ -769,6 +697,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    else if (wFlags & DISPATCH_PROPERTYPUTREF)
    {
       // TODO implement (when is this used ? Set obj1.prop = obj2 ?)
+      assert(false);
    }
    if (memberIndex == -1)
    {
@@ -785,12 +714,20 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       return DISP_E_MEMBERNOTFOUND;
    }
    const ScriptClassMemberDef& memberDef = classDef->members[memberIndex];
-   if ((memberDef.type.id != VOID_TYPEID) && (pVarResult == nullptr))
+   if ((memberDef.type.id != TypeID::TYPEID_VOID) && (pVarResult == nullptr))
       return E_POINTER;
 
+   // Convert all incoming COM arguments to ScriptVariants
    ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
    for (unsigned int i = 0; i < pDispParams->cArgs; i++)
-      COMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]);
+   {
+      if (!COMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]))
+      {
+         PLOGE << "Failed to convert a parameter in call to " << classDef->name.name << '.' << memberDef.name.name;
+         *puArgErr = pDispParams->cArgs - 1 - i;
+         return DISP_E_TYPEMISMATCH;
+      }
+   }
 
    #if LOG_INVOKES
       std::stringstream ss;
@@ -808,16 +745,29 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    catch (...)
    {
       PLOGE << "Exception occured while processing script call";
-      // As C++ does not have a 'finally' exception clause
-      for (unsigned int i = 0; i < pDispParams->cArgs; i++)
-         ReleaseCOMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]);
       return DISP_E_EXCEPTION;
    }
-   for (unsigned int i = 0; i < pDispParams->cArgs; i++)
-      ReleaseCOMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]);
 
-   if (memberDef.type.id != VOID_TYPEID)
+   // Process byref args and dispose allocated arguments
+   for (unsigned int i = 0; i < pDispParams->cArgs; i++)
+   {
+      VARIANT& cv = pDispParams->rgvarg[pDispParams->cArgs - 1 - i];
+      if (V_VT(&cv) & VT_BYREF)
+      {
+         // FIXME update reference (including native type)
+         // ScriptToCOMVariant(memberDef.callArgType[i], args[i], cv);
+         //assert(false); // Not yet implemented
+      }
+      ReleaseScriptVariant(memberDef.callArgType[i], args[i]);
+   }
+   
+   // Convert then dispose return value
+   if (memberDef.type.id != TypeID::TYPEID_VOID)
+   {
+      VariantClear(pVarResult);
       ScriptToCOMVariant(memberDef.type, retValue, *pVarResult);
+      ReleaseScriptVariant(memberDef.type, retValue);
+   }
 
    return S_OK;
 }

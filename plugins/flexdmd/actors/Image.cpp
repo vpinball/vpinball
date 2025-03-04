@@ -8,11 +8,12 @@ Image::Image(FlexDMD* pFlexDMD, const string& name) : Actor(pFlexDMD, name)
 
 Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& image, const string& name)
 {
-   AssetSrc* pSrc = pAssetManager->ResolveSrc(image, NULL);
+   AssetSrc* pSrc = pAssetManager->ResolveSrc(image, nullptr);
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
-   if (!pBitmap) {
-       free(pSrc);
-       return NULL;
+   if (!pBitmap)
+   {
+      pSrc->Release();
+      return nullptr;
    }
 
    Image* pImage = new Image(pFlexDMD, name);
@@ -24,15 +25,15 @@ Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
    pImage->SetPrefWidth(static_cast<float>(pBitmap->GetWidth()));
    pImage->SetPrefHeight(static_cast<float>(pBitmap->GetHeight()));
    pImage->Pack();
-   pImage->m_pBitmap = NULL;
+   pImage->m_pBitmap = nullptr;
 
    return pImage;
 }
 
 Image::~Image()
 {
-   delete m_pSrc;
-
+   assert(m_refCount == 0);
+   m_pSrc->Release();
    if (m_pBitmap)
       m_pBitmap->Release();
 }
@@ -41,6 +42,8 @@ Bitmap* Image::GetBitmap()
 {
    if (m_pBitmap == nullptr)
       m_pBitmap = m_pAssetManager->GetBitmap(m_pSrc);
+   if (m_pBitmap)
+      m_pBitmap->AddRef();
    return m_pBitmap;
 }
 
@@ -71,9 +74,5 @@ void Image::OnStageStateChanged()
 {
    if (m_pBitmap)
       m_pBitmap->Release();
-
-   m_pBitmap = GetOnStage() ? m_pAssetManager->GetBitmap(m_pSrc) : NULL;
-
-   if (m_pBitmap)
-      m_pBitmap->AddRef();
+   m_pBitmap = GetOnStage() ? m_pAssetManager->GetBitmap(m_pSrc) : nullptr;
 }

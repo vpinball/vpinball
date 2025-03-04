@@ -18,13 +18,13 @@
 #define PSC_VAR_SET_Rom(variant, value) PSC_VAR_SET_object(Rom, variant, value)
 PSC_CLASS_START(Rom)
    PSC_PROP_R(Rom, string, Name)
-   PSC_PROP_R(Rom, long, State)
+   PSC_PROP_R(Rom, int32, State)
    PSC_PROP_R(Rom, string, StateDescription)
-   PSC_PROP_R(Rom, long, Length)
-   PSC_PROP_R(Rom, long, ExpLength)
-   PSC_PROP_R(Rom, long, Checksum)
-   PSC_PROP_R(Rom, long, ExpChecksum)
-   PSC_PROP_R(Rom, long, Flags)
+   PSC_PROP_R(Rom, int32, Length)
+   PSC_PROP_R(Rom, int32, ExpLength)
+   PSC_PROP_R(Rom, int32, Checksum)
+   PSC_PROP_R(Rom, int32, ExpChecksum)
+   PSC_PROP_R(Rom, int32, Flags)
    //PSC_FUNCTION0(Rom, void, Audit) // not yet supported (2 functions with the same name, matched by their arguments)
    PSC_FUNCTION1(Rom, void, Audit, bool)
 PSC_CLASS_END(Rom)
@@ -39,6 +39,12 @@ PSC_CLASS_START(Settings)
    PSC_PROP_RW_ARRAY1(Settings, int, Value, string)
 PSC_CLASS_END(Settings)
 
+#include "GameSettings.h"
+#define PSC_VAR_SET_GameSettings(variant, value) PSC_VAR_SET_object(GameSettings, variant, value)
+PSC_CLASS_START(GameSettings)
+   PSC_PROP_RW_ARRAY1(GameSettings, int, Value, string)
+PSC_CLASS_END(GameSettings)
+
 #include "Game.h"
 #define PSC_VAR_SET_Game(variant, value) PSC_VAR_SET_object(Game, variant, value)
 PSC_CLASS_START(Game)
@@ -47,57 +53,79 @@ PSC_CLASS_START(Game)
    PSC_PROP_R(Game, string, Year)
    PSC_PROP_R(Game, string, Manufacturer)
    PSC_PROP_R(Game, string, CloneOf)
-   PSC_PROP_R(Game, Settings, Settings)
+   PSC_PROP_R(Game, GameSettings, Settings)
 PSC_CLASS_END(Game)
 
 #include "Games.h"
 PSC_CLASS_START(Games)
 PSC_CLASS_END(Games)
 
-#include "GameSettings.h"
-PSC_CLASS_START(GameSettings)
-PSC_CLASS_END(GameSettings)
-
 #include "ControllerSettings.h"
 PSC_CLASS_START(ControllerSettings)
 PSC_CLASS_END(ControllerSettings)
 
-PSC_ARRAY1(ByteArray, uchar, 0)
+PSC_ARRAY1(ByteArray, uint8, 0)
 #define PSC_VAR_SET_ByteArray(variant, value) PSC_VAR_SET_array1(ByteArray, variant, value)
 #define PSC_VAR_ByteArray(variant) PSC_VAR_array1(uint8_t, variant)
 
-PSC_ARRAY1(IntArray, uint, 0)
+PSC_ARRAY1(IntArray, int32, 0)
 #define PSC_VAR_SET_IntArray(variant, value) PSC_VAR_SET_array1(IntArray, variant, value)
 
-// Array of struct with fields of the same type that can be considered as a 2 dimensional array
-#define PSC_VAR_SET_StructArray(structType, nFields, variant, value) { \
+// Map a an array of struct to a 2 dimensions array of int32_t
+PSC_ARRAY2(StructArray, int32, 0, 0)
+#define PSC_VAR_SET_StructArray2(structType, fieldName1, fieldName2, variant, value) { \
       const unsigned int nDimensions = 2; \
       const std::vector<structType>& vec = (value); \
       const size_t size0 = vec.size(); \
-      const size_t subDataSize = sizeof(structType); \
-      const size_t dataSize = size0 * subDataSize; \
-      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + dataSize)); \
+      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 2 * sizeof(int32_t))); \
       array->Release = [](ScriptArray* me) { free(me); }; \
       array->lengths[0] = static_cast<unsigned int>(vec.size()); \
-      array->lengths[1] = nFields; \
-      char* pData = reinterpret_cast<char*>(&array->lengths[2]); \
-      for (size_t i = 0; i < size0; i++, pData += subDataSize) \
-         memcpy(pData, &vec[i], subDataSize); \
+      array->lengths[1] = 2; \
+      int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[2]); \
+      for (size_t i = 0; i < size0; i++, pData += 2) { \
+         pData[0] = vec[i].fieldName1; \
+         pData[1] = vec[i].fieldName2; \
+      } \
       (variant).vArray = array; \
    }
-#define PSC_PROP_R_StructArray(className, type, nFields, changeType, name) \
-   members.push_back( { { #name }, { #type }, 0, { }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { PSC_VAR_SET_##type(changeType, nFields, *pRet, static_cast<className*>(me)->Get##name()) } });
-#define PSC_PROP_R_StructArray2(className, type, nFields, changeType, name, arg1, arg2) \
-   members.push_back( { { #name }, { #type }, 2, { { #arg1 }, { #arg2 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { PSC_VAR_SET_##type(changeType, nFields, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]) )) } });
-#define PSC_PROP_R_StructArray3(className, type, nFields, changeType, name, arg1, arg2, arg3) \
-   members.push_back( { { #name }, { #type }, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { PSC_VAR_SET_##type(changeType, nFields, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]) )) } });
-#define PSC_PROP_R_StructArray4(className, type, nFields, changeType, name, arg1, arg2, arg3, arg4) \
-   members.push_back( { { #name }, { #type }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
-      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { PSC_VAR_SET_##type(changeType, nFields, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )) } });
-PSC_ARRAY2(StructArray, int, 0, 0)
+#define PSC_VAR_SET_StructArray3(structType, fieldName1, fieldName2, fieldName3, variant, value) { \
+      const unsigned int nDimensions = 3; \
+      const std::vector<structType>& vec = (value); \
+      const size_t size0 = vec.size(); \
+      ScriptArray* array = static_cast<ScriptArray*>(malloc(sizeof(ScriptArray) + nDimensions * sizeof(int) + size0 * 3 * sizeof(int32_t))); \
+      array->Release = [](ScriptArray* me) { free(me); }; \
+      array->lengths[0] = static_cast<unsigned int>(vec.size()); \
+      array->lengths[1] = 3; \
+      int32_t* pData = reinterpret_cast<int32_t*>(&array->lengths[2]); \
+      for (size_t i = 0; i < size0; i++, pData += 3) { \
+         pData[0] = vec[i].fieldName1; \
+         pData[1] = vec[i].fieldName2; \
+         pData[2] = vec[i].fieldName3; \
+      } \
+      (variant).vArray = array; \
+   }
+
+#define PSC_PROP_R_StructArray2(className, type, fieldName1, fieldName2, name) \
+   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
+      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
+         PSC_VAR_SET_StructArray2(type, fieldName1, fieldName2, *pRet, static_cast<className*>(me)->Get##name()); } });
+
+#define PSC_PROP_R_StructArray3(className, type, fieldName1, fieldName2, fieldName3, name) \
+   members.push_back( { { #name }, { "StructArray" }, 0, { }, \
+      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
+         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name()); } });
+#define PSC_PROP_R_StructArray3_2(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2) \
+   members.push_back( { { #name }, { "StructArray" }, 2, { { #arg1 }, { #arg2 } }, \
+      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
+         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]) )); } } );
+#define PSC_PROP_R_StructArray3_3(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3) \
+   members.push_back( { { #name }, { "StructArray"}, 3, { { #arg1 }, { #arg2 }, { #arg3 } }, \
+      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
+         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]) )); } } );
+#define PSC_PROP_R_StructArray3_4(className, type, fieldName1, fieldName2, fieldName3, name, arg1, arg2, arg3, arg4) \
+   members.push_back( { { #name }, { "StructArray" }, 4, { { #arg1 }, { #arg2 }, { #arg3 }, { #arg4 } }, \
+      [](void* me, int, ScriptVariant* pArgs, ScriptVariant* pRet) { \
+         PSC_VAR_SET_StructArray3(type, fieldName1, fieldName2, fieldName3, *pRet, static_cast<className*>(me)->Get##name( PSC_VAR_##arg1(pArgs[0]), PSC_VAR_##arg2(pArgs[1]), PSC_VAR_##arg3(pArgs[2]), PSC_VAR_##arg4(pArgs[3]) )); } } );
 
 
 #include "Controller.h"
@@ -109,11 +137,11 @@ PSC_CLASS_START(Controller)
    PSC_PROP_RW(Controller, bool, ShowTitle)
    PSC_PROP_RW(Controller, bool, HandleKeyboard)
    PSC_PROP_RW(Controller, bool, HandleMechanics)
-   PSC_PROP_RW_ARRAY1(Controller, long, SolMask, int)
+   PSC_PROP_RW_ARRAY1(Controller, int32, SolMask, int)
    // Run/Pause/Stop
    PSC_FUNCTION0(Controller, void, Run)
-   PSC_FUNCTION1(Controller, void, Run, long)
-   PSC_FUNCTION2(Controller, void, Run, long, int)
+   PSC_FUNCTION1(Controller, void, Run, int32)
+   PSC_FUNCTION2(Controller, void, Run, int32, int)
    PSC_PROP_W(Controller, double, TimeFence)
    PSC_PROP_R(Controller, bool, Running)
    PSC_PROP_RW(Controller, bool, Pause)
@@ -127,14 +155,15 @@ PSC_CLASS_START(Controller)
    PSC_PROP_R_ARRAY1(Controller, bool, Solenoid, int)
    PSC_PROP_R_ARRAY1(Controller, int, GIString, int)
    PSC_PROP_RW_ARRAY1(Controller, int, Dip, int)
-   PSC_PROP_R_StructArray(Controller, StructArray, 3, PinmameNVRAMState, ChangedNVRAM);
-   PSC_PROP_R_StructArray(Controller, StructArray, 2, PinmameLampState, ChangedLamps);
-   PSC_PROP_R_StructArray(Controller, StructArray, 2, PinmameGIState, ChangedGIStrings);
-   PSC_PROP_R_StructArray(Controller, StructArray, 2, PinmameSolenoidState, ChangedSolenoids);
-   PSC_PROP_R_StructArray(Controller, StructArray, 2, PinmameSoundCommand, NewSoundCommands);
-   PSC_PROP_R_StructArray2(Controller, StructArray, 3, PinmameLEDState, ChangedLEDs, int, int);
-   PSC_PROP_R_StructArray3(Controller, StructArray, 3, PinmameLEDState, ChangedLEDs, int, int, int);
-   PSC_PROP_R_StructArray4(Controller, StructArray, 3, PinmameLEDState, ChangedLEDs, int, int, int, int);
+   PSC_PROP_R_StructArray3(Controller, PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
+   PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);
+   PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);
+   PSC_PROP_R_StructArray2(Controller, PinmameGIState, giNo, state, ChangedGIStrings);
+   PSC_PROP_R_StructArray2(Controller, PinmameSolenoidState, solNo, state, ChangedSolenoids);
+   PSC_PROP_R_StructArray2(Controller, PinmameSoundCommand, sndNo, sndNo, NewSoundCommands); // 2nd field is unused
+   PSC_PROP_R_StructArray3_2(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int);
+   PSC_PROP_R_StructArray3_3(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int);
+   PSC_PROP_R_StructArray3_4(Controller, PinmameLEDState, ledNo, chgSeg, state, ChangedLEDs, int, int, int, int);
    PSC_PROP_R(Controller, int, RawDmdWidth)
    PSC_PROP_R(Controller, int, RawDmdHeight)
    PSC_PROP_R(Controller, ByteArray, RawDmdPixels)

@@ -25,6 +25,7 @@ ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackgrou
 
 ScrollingCreditsScene::~ScrollingCreditsScene()
 {
+   assert(m_refCount == 0);
    m_pContainer->Release();
 }      
 
@@ -46,6 +47,7 @@ void ScrollingCreditsScene::Update(float delta)
       for (const auto& line : m_pContainer->GetChildren()) {
          Label* label = dynamic_cast<Label*>(line);
          label->SetX((GetWidth() - line->GetWidth()) / 2.0f);
+         line->Release();
       }
    }
 }

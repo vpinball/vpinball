@@ -26,8 +26,13 @@ public:
       , m_pChild(pChild)
       , m_add(add)
    {
+      m_pChild->AddRef();
    }
-   ~AddChildAction() override = default;
+   ~AddChildAction() override
+   {
+      assert(m_refCount == 0);
+      m_pChild->Release();
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -40,7 +45,7 @@ public:
    }
 
 private:
-   Group *m_pTarget;
+   Group *m_pTarget; // Not reference counted to avoid circular reeferences
    Actor *m_pChild;
    bool m_add;
 };
@@ -58,7 +63,10 @@ public:
       , m_time(0.f)
    {
    }
-   ~BlinkAction() override = default;
+   ~BlinkAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -80,7 +88,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget;
+   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
    float m_secondsShow;
    float m_secondsHide;
    int m_repeat;
@@ -98,8 +106,13 @@ public:
       , m_pAction(pAction)
       , m_time(0.0f)
    {
+      m_pAction->AddRef();
    }
-   ~DelayedAction() override = default;
+   ~DelayedAction() override
+   {
+      assert(m_refCount == 0);
+      m_pAction->Release();
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -164,7 +177,10 @@ public:
       , m_ease(Interpolation_Linear)
    {
    }
-   ~TweenAction() override = default;
+   ~TweenAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    Interpolation GetEase() const { return m_ease; }
    void SetEase(Interpolation ease) { m_ease = ease; }
@@ -325,7 +341,6 @@ public:
    virtual void Begin() = 0;
    virtual void End() {}
 
-   Actor *GetTarget() const { return m_pTarget; }
    float GetDuration() const { return m_duration; }
 
    void AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
@@ -333,8 +348,11 @@ public:
       m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback)));
    }
 
+protected:
+   Actor *GetTarget() const { return m_pTarget; } // protected to avoid messing up with the reference count
+
 private:
-   Actor *m_pTarget;
+   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
    float m_duration;
    Interpolation m_ease;
 
@@ -351,7 +369,10 @@ public:
       , m_y(y)
    {
    }
-   ~MoveToAction() override = default;
+   ~MoveToAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    void Begin() override
    {
@@ -391,10 +412,16 @@ class ParallelAction final : public Action
 {
 public:
    ParallelAction() { }
-   ~ParallelAction() override = default;
+   ~ParallelAction() override
+   {
+      assert(m_refCount == 0);
+      for (auto action : m_actions)
+         action->Release();
+   }
 
    ParallelAction* Add(Action* action)
    {
+      action->AddRef();
       m_actions.push_back(action);
       m_runMask.push_back(false);
       return this;
@@ -403,7 +430,7 @@ public:
    bool Update(float secondsElapsed) override
    {
       bool alive = false;
-      const int a = (int)m_actions.size();
+      const size_t a = m_actions.size();
       for (int i = 0; i < a; i++)
       {
          if (m_runMask[i])
@@ -435,7 +462,10 @@ public:
       : m_pTarget(pTarget)
    {
    }
-   ~RemoveFromParentAction() override = default;
+   ~RemoveFromParentAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -444,7 +474,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget;
+   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
 };
 
 
@@ -456,8 +486,12 @@ public:
       , m_count(count)
       , m_n(0)
    {
+      m_pAction->AddRef();
    }
-   ~RepeatAction() override = default;
+   ~RepeatAction() override
+   {
+      m_pAction->Release();
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -489,7 +523,10 @@ public:
       , m_position(position)
    {
    }
-   ~SeekAction() override = default;
+   ~SeekAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -498,7 +535,7 @@ public:
    }
 
 private:
-   AnimatedActor *m_pTarget;
+   AnimatedActor *m_pTarget; // Not reference counted to avoid circular reeferences
    float m_position;
 };
 
@@ -510,17 +547,23 @@ public:
       : m_pos(0)
    {
    }
-   ~SequenceAction() override = default;
+   ~SequenceAction() override
+   {
+      assert(m_refCount == 0);
+      for (auto action : m_actions)
+         action->Release();
+   }
 
    SequenceAction *Add(Action *action)
    {
+      action->AddRef();
       m_actions.push_back(action);
       return this;
    }
 
    bool Update(float secondsElapsed) override
    {
-      const int a = (int)m_actions.size();
+      const size_t a = m_actions.size();
       if (m_pos >= a)
       {
          m_pos = 0;
@@ -552,7 +595,10 @@ public:
       , m_visible(visible)
    {
    }
-   ~ShowAction() override = default;
+   ~ShowAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -561,7 +607,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget;
+   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
    bool m_visible;
 };
 
@@ -574,7 +620,10 @@ public:
       , m_time(0.0f)
    {
    }
-   ~WaitAction() override = default;
+   ~WaitAction() override
+   {
+      assert(m_refCount == 0);
+   }
 
    bool Update(float secondsElapsed) override
    {
@@ -601,7 +650,10 @@ public:
       : m_pTarget(pTarget)
    {
    }
-   ~ActionFactory() = default;
+   ~ActionFactory()
+   {
+      assert(m_refCount == 0);
+   }
 
    PSC_IMPLEMENT_REFCOUNT()
 
@@ -620,5 +672,5 @@ public:
    MoveToAction* MoveTo(float x, float y, float duration) { return new MoveToAction(m_pTarget, x, y, duration); }
 
 private:
-   Actor *m_pTarget;
+   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
 };

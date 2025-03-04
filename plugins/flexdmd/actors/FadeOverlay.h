@@ -5,7 +5,7 @@
 class FadeOverlay final : public Actor
 {
 public:
-   FadeOverlay(FlexDMD* pFlexDMD, const string& name)
+   FadeOverlay(const FlexDMD* pFlexDMD, const string& name)
       : Actor(pFlexDMD, name) { }
    ~FadeOverlay() = default;
 

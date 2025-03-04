@@ -9,8 +9,7 @@
 
 Group::~Group()
 {
-   while (!m_children.empty())
-      m_children.back()->Remove();
+   RemoveAll();
 }
 
 void Group::OnStageStateChanged()
@@ -62,14 +61,6 @@ void Group::Draw(VP::SurfaceGraphics* pGraphics)
    }
 }
 
-Group* Group::GetRoot()
-{
-   Group* root = this;
-   while (root->GetParent() != nullptr)
-      root = root->GetParent();
-   return root;
-}
-
 Actor* Group::Get(const string& name)
 {
    if (GetName() == name)
@@ -80,13 +71,19 @@ Actor* Group::Get(const string& name)
       for (Actor* child : m_children)
       {
          if (child->GetName() == name)
+         {
+            child->AddRef();
             return child;
+         }
          if (child->GetType() == Actor::AT_Group)
          {
             Group* group = static_cast<Group*>(child);
             Actor* found = group->Get(name);
             if (found)
+            {
+               found->AddRef();
                return found;
+            }
          }
       }
    }
@@ -99,13 +96,20 @@ Actor* Group::Get(const string& name)
          for (Actor* child : m_children)
          {
             if (child->GetName() == name)
+            {
+               child->AddRef();
                return child;
+            }
          }
       }
       else if (pos == 0)
       {
          // absolute path from root '/xx/yy/zz', note that stage node is named 'Stage'
-         return GetRoot()->Get(name.substr(1));
+         Group* root = this;
+         while (root->GetParent() != nullptr)
+            root = root->GetParent();
+         Actor* found = root->Get(name.substr(1));
+         return found;
       }
       else
       {
@@ -124,11 +128,20 @@ Actor* Group::Get(const string& name)
    return NULL;
 }
 
+bool Group::HasChild(const string &name)
+{
+   Actor* child = Get(name);
+   if (child == nullptr)
+      return false;
+   child->Release();
+   return true;
+}
+
 Group* Group::GetGroup(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Group))
-      return dynamic_cast<Group*>(actor);
+      return static_cast<Group*>(actor);
    return nullptr;
 }
 
@@ -136,7 +149,7 @@ Frame* Group::GetFrame(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Frame))
-      return dynamic_cast<Frame*>(actor);
+      return static_cast<Frame*>(actor);
    return nullptr;
 }
 
@@ -144,7 +157,7 @@ Label* Group::GetLabel(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Label))
-      return dynamic_cast<Label*>(actor);
+      return static_cast<Label*>(actor);
    return nullptr;
 }
 
@@ -152,7 +165,7 @@ AnimatedActor* Group::GetVideo(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_AnimatedActor))
-      return dynamic_cast<AnimatedActor*>(actor);
+      return static_cast<AnimatedActor*>(actor);
    return nullptr;
 }
 
@@ -160,8 +173,39 @@ Image* Group::GetImage(const string& Name)
 {
    Actor* actor = Get(Name);
    if ((actor != nullptr) && (actor->GetType() == Actor::AT_Image))
-      return dynamic_cast<Image*>(actor);
+      return static_cast<Image*>(actor);
    return nullptr;
+}
+
+void Group::AddActor(Actor* actor)
+{
+   if (actor == nullptr || (actor->GetParent() == this))
+      return;
+   actor->AddRef();
+   actor->SetParent(this);
+   m_children.push_back(actor);
+   actor->SetOnStage(GetOnStage());
+}
+
+void Group::AddActorAt(Actor* actor, int index)
+{
+   if (actor == nullptr || (actor->GetParent() == this))
+      return;
+   actor->AddRef();
+   actor->Remove();
+   actor->SetParent(this);
+   m_children.insert(m_children.begin() + index, actor);
+   actor->SetOnStage(GetOnStage());
+}
+
+void Group::RemoveActor(Actor* actor)
+{
+   if (actor == nullptr || (actor->GetParent() == this))
+      return;
+   actor->SetParent(nullptr);
+   m_children.erase(std::remove_if(m_children.begin(), m_children.end(), [actor](Actor* p) { return p == actor; }), m_children.end());
+   actor->SetOnStage(false);
+   actor->Release();
 }
 
 void Group::RemoveAll()
@@ -176,35 +220,9 @@ void Group::RemoveAll()
    m_children.clear();
 }
 
-void Group::AddActor(Actor* actor)
+vector<Actor *> Group::GetChildren() const
 {
-   if (!actor)
-      return;
-   actor->AddRef();
-   actor->Remove();
-   actor->SetParent(this);
-   m_children.push_back(actor);
-   actor->SetOnStage(GetOnStage());
-}
-
-void Group::AddActorAt(Actor* actor, int index)
-{
-   if (!actor)
-      return;
-   actor->AddRef();
-   actor->Remove();
-   actor->SetParent(this);
-   m_children.insert(m_children.begin() + index, actor);
-   actor->SetOnStage(GetOnStage());
-}
-
-void Group::RemoveActor(Actor* actor)
-{
-   if (!actor)
-      return;
-
-   actor->SetParent(NULL);
-   m_children.erase(std::remove_if(m_children.begin(), m_children.end(), [actor](Actor* p) { return p == actor; }), m_children.end());
-   actor->SetOnStage(false);
-   actor->Release();
+   for (auto child : m_children)
+      child->AddRef();
+   return m_children;
 }

@@ -15,7 +15,7 @@ class ActionFactory;
 class Actor
 {
 public:
-   Actor(FlexDMD *pFlexDMD, const string& name);
+   Actor(const FlexDMD *pFlexDMD, const string& name);
    ~Actor();
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -31,9 +31,7 @@ public:
    };
    virtual ActorType GetType() const { return AT_Actor; }
 
-   // FIXME why can this be changed ?
-   void SetFlexDMD(FlexDMD *pFlexDMD) { m_pFlexDMD = pFlexDMD; }
-   FlexDMD *GetFlexDMD() const { return m_pFlexDMD; }
+   const FlexDMD *GetFlexDMD() const { return m_pFlexDMD; }
    
    void SetName(const string &szName) { m_name = szName; }
    const string &GetName() const { return m_name; }
@@ -57,9 +55,9 @@ public:
    virtual float GetPrefHeight() const { return m_prefHeight; }
    void SetPrefHeight(float prefHeight) { m_prefHeight = prefHeight; }
    
-   ActionFactory* GetActionFactory() const { return m_pActionFactory; };
-   void AddAction(Action* action) { m_actions.push_back(action); }
-   void ClearActions() { m_actions.clear(); }
+   ActionFactory* GetActionFactory() const;
+   void AddAction(Action *action);
+   void ClearActions();
 
    bool GetVisible() const { return m_visible; }
    virtual void SetVisible(bool visible) { m_visible = visible; }
@@ -84,10 +82,11 @@ public:
    virtual void Draw(VP::SurfaceGraphics *pGraphics);
    
 protected:
-   ActionFactory *m_pActionFactory;
+   ActionFactory* m_pActionFactory;
 
 private:
-   FlexDMD *m_pFlexDMD;
+   const FlexDMD *const m_pFlexDMD; // Weak pointer, to avoid circular references
+   Group *m_parent = nullptr; // Weak pointer, to avoid circular references
    string m_name;
    vector<Action*> m_actions;
    bool m_onStage = false;
@@ -95,7 +94,6 @@ private:
    float m_y = 0.f;
    float m_width = 0.f;
    float m_height = 0.f;
-   Group *m_parent = nullptr;
    bool m_fillParent = false;
    bool m_clearBackground = false;
    float m_prefWidth = 0.f;

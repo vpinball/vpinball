@@ -186,60 +186,11 @@ const std::vector<uint8_t>& FlexDMD::GetDmdPixels()
 
 void FlexDMD::SetSegments(const std::vector<uint16_t>& segments)
 {
-   int size1 = 0;
-   int size2 = 0;
-
-   switch (m_renderMode) {
-      case RenderMode_SEG_2x16Alpha:
-         size1 = 2 * 16;
-         break;
-      case RenderMode_SEG_2x20Alpha:
-         size1 = 2 * 20;
-         break;
-      case RenderMode_SEG_2x7Alpha_2x7Num:
-         size1 = 2 * 7 + 2 * 7;
-         break;
-      case RenderMode_SEG_2x7Alpha_2x7Num_4x1Num:
-         size1 = 2 * 7 + 2 * 7 + 4;
-         break;
-      case RenderMode_SEG_2x7Num_2x7Num_4x1Num:
-         size1 = 2 * 7 + 2 * 7 + 4;
-         break;
-      case RenderMode_SEG_2x7Num_2x7Num_10x1Num:
-         size1 = 2 * 7 + 2 * 7 + 4;
-         size2 = 6;
-         break;
-      case RenderMode_SEG_2x7Num_2x7Num_4x1Num_gen7:
-         size1 = 2 * 7 + 2 * 7 + 4;
-         break;
-      case RenderMode_SEG_2x7Num10_2x7Num10_4x1Num:
-         size1 = 2 * 7 + 2 * 7 + 4;
-         break;
-      case RenderMode_SEG_2x6Num_2x6Num_4x1Num:
-         size1 = 2 * 6 + 2 * 6 + 4;
-         break;
-      case RenderMode_SEG_2x6Num10_2x6Num10_4x1Num:
-         size1 = 2 * 6 + 2 * 6 + 4;
-         break;
-      case RenderMode_SEG_4x7Num10:
-         size1 = 4 * 7;
-         break;
-      case RenderMode_SEG_6x4Num_4x1Num:
-         size1 = 6 * 4 + 4;
-         break;
-      case RenderMode_SEG_2x7Num_4x1Num_1x16Alpha:
-         size1 = 2 * 7 + 4 + 1;
-         break;
-      case RenderMode_SEG_1x16Alpha_1x16Num_1x7Num:
-         size1 = 1 + 1 + 7;
-         break;
-      default:
-         break;
+   if (memcmp(m_segData, segments.data(), 38 * sizeof(uint16_t)) != 0)
+   {
+      memcpy(m_segData, segments.data(), 38 * sizeof(uint16_t));
+      m_frameId++;
    }
-   for (int i = 0; i < size1; i++)
-      m_segData1[i] = segments[i];
-   for (int i = 0; i < size2; i++)
-      m_segData2[i] = segments[size1 + i];
 }
 
 Group* FlexDMD::NewGroup(const string& name) { return new Group(this, name); }
@@ -259,7 +210,7 @@ Font* FlexDMD::NewFont(const string& font, uint32_t tint, uint32_t borderTint, i
    borderHex << std::setfill('0') << std::setw(8) << std::hex << (((borderTint & 0x0000FF) << 24) | ((borderTint & 0x00FF00) << 8) | ((borderTint & 0xFF0000) >> 8) | 0xFF);
    AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(font + "&tint=" + tintHex.str() + "&border_size=" + std::to_string(borderSize) + "&border_tint=" + borderHex.str(), nullptr);
    Font* pFont = m_pAssetManager->GetFont(pAssetSrc);
-   delete pAssetSrc;
+   pAssetSrc->Release();
    return pFont;
 }
 
@@ -270,7 +221,7 @@ AnimatedActor* FlexDMD::NewVideo(const string& name, const string& video)
    else {
       AssetSrc* pAssetSrc = m_pAssetManager->ResolveSrc(video, nullptr);
       AssetType assetType = pAssetSrc->GetAssetType();
-      delete pAssetSrc;
+      pAssetSrc->Release();
 
       if (assetType == AssetType_Video)
          return (AnimatedActor*)Video::Create(this, video, name, true);

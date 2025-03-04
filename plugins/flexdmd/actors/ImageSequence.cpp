@@ -34,18 +34,21 @@ ImageSequence* ImageSequence::Create(FlexDMD* pFlexDMD, AssetManager* pAssetMana
 
 ImageSequence::~ImageSequence()
 {
+   assert(m_refCount == 0);
+   for (auto image : m_frames)
+      image->Release();
 }
 
 void ImageSequence::OnStageStateChanged()
 {
-    for (Image* pFrame : m_frames)
-       pFrame->SetOnStage(GetOnStage());
+   for (Image* pFrame : m_frames)
+      pFrame->SetOnStage(GetOnStage());
 }
 
 void ImageSequence::Rewind() 
 {
-    AnimatedActor::Rewind();
-    m_frame = 0;
+   AnimatedActor::Rewind();
+   m_frame = 0;
 }
 
 void ImageSequence::ReadNextFrame()
