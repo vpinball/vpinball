@@ -31,8 +31,8 @@ private:
    int ResolveClassId(const char *name) const;
    ScriptClassDef *GetClass(const ScriptTypeNameDef &name) const;
 
-   void COMToScriptVariant(const VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
-   void ReleaseCOMToScriptVariant(VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
+   bool COMToScriptVariant(const VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
+   void ReleaseScriptVariant(const ScriptTypeNameDef &type, ScriptVariant &sv) const;
    void ScriptToCOMVariant(const ScriptTypeNameDef &type, ScriptVariant &sv, VARIANT &cv) const;
    string ScriptVariantToString(const ScriptTypeNameDef &type, const ScriptVariant &sv) const;
 
@@ -69,10 +69,17 @@ public:
       : m_typeLibrary(typeLibrary)
       , m_classDef(classDef)
       , m_nativeObject(nativeObject)
+      , m_refCount(1)
    {
       #ifdef DEBUG
       assert(classDef == typeLibrary->ResolveClass(classDef->name.name));
       #endif
+      PSC_ADD_REF(m_classDef, m_nativeObject);
+   }
+   
+   ~DynamicDispatch()
+   {
+      PSC_RELEASE(m_classDef, m_nativeObject);
    }
 
    // IUnknown methods
@@ -90,18 +97,15 @@ public:
 
    ULONG STDMETHODCALLTYPE AddRef() override
    {
-      ScriptVariant refCount;
-      m_classDef->members[0].Call(m_nativeObject, 0, nullptr, &refCount);
-      return refCount.vULong;
+      return ++m_refCount;
    }
 
    ULONG STDMETHODCALLTYPE Release() override
    {
-      ScriptVariant refCount;
-      m_classDef->members[1].Call(m_nativeObject, 1, nullptr, &refCount);
-      if (refCount.vLong == 0)
+      ULONG refCount = --m_refCount;
+      if (refCount == 0)
          delete this;
-      return refCount.vULong;
+      return refCount;
    }
 
    // IDispatch methods
@@ -149,7 +153,8 @@ public:
    }
 
 public:
-   const ScriptClassDef *m_classDef;
-   const DynamicTypeLibrary *m_typeLibrary;
+   ULONG m_refCount;
+   const ScriptClassDef *const m_classDef;
+   const DynamicTypeLibrary *const m_typeLibrary;
    void *const m_nativeObject;
 };

@@ -37,8 +37,10 @@ UltraDMD::UltraDMD(FlexDMD* pFlexDMD)
       m_pFlexDMD->NewFont(m_pScoreFontHighlight->GetPath(), m_pScoreFontHighlight->GetTint(), m_pScoreFontHighlight->GetBorderTint(), m_pScoreFontHighlight->GetBorderSize()));
    m_pScoreBoard->SetVisible(false);
 
-   m_pFlexDMD->GetStage()->AddActor(m_pScoreBoard);
-   m_pFlexDMD->GetStage()->AddActor(m_pQueue);
+   Group* stage = m_pFlexDMD->GetStage();
+   stage->AddActor(m_pScoreBoard);
+   stage->AddActor(m_pQueue);
+   stage->Release();
 }
 
 UltraDMD::~UltraDMD()

@@ -11,7 +11,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
    for (int i = 0; i < m_pBitmapFont->GetPageCount(); i++) {
       AssetSrc* pTextureAssetSrc = pAssetManager->ResolveSrc(m_pBitmapFont->GetPage(i)->GetFilename(), pAssetSrc);
       m_textures[i] = (SDL_Surface*)pAssetManager->Open(pTextureAssetSrc);
-      delete pTextureAssetSrc;
+      pTextureAssetSrc->Release();
    }
 
    if (pAssetSrc->GetFontBorderSize() > 0) {
@@ -137,6 +137,7 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 
 Font::~Font()
 {
+   assert(m_refCount == 0);
    if (m_pBitmapFont)
    {
       for (int i = 0; i < m_pBitmapFont->GetPageCount(); ++i) {

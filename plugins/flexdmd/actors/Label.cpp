@@ -23,6 +23,7 @@ Label::Label(FlexDMD* pFlexDMD, Font* pFont, const string& text, const string& n
 
 Label::~Label()
 {
+   assert(m_refCount == 0);
    if (m_pFont)
       m_pFont->Release();
 }

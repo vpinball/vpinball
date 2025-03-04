@@ -80,7 +80,7 @@ public:
    void LockRenderThread() { m_renderLockCount++; }
    void UnlockRenderThread() { m_renderLockCount--; }
    
-   Group* GetStage() const { return m_pStage; }
+   Group* GetStage() const { m_pStage->AddRef(); return m_pStage; }
    
    Group* NewGroup(const string& name);
    Frame* NewFrame(const string& name);
@@ -105,6 +105,7 @@ public:
 
    uint8_t* UpdateRGBFrame();
    uint8_t* UpdateLum8Frame();
+   const uint16_t* GetSegFrame() const { return m_segData; }
    unsigned int GetFrameId() const { return m_frameId; }
 
 private:
@@ -145,11 +146,10 @@ private:
    int32_t m_runtimeVersion = 1008;
    bool m_clear = false;
    int m_renderLockCount = 0;
-   uint16_t m_segData1[128] = { 0 };
-   uint16_t m_segData2[128] = { 0 };
+   uint16_t m_segData[128] = { 0 };
    int m_width = 128;
    int m_height = 32;
-   Group* m_pStage = nullptr;
+   Group* m_pStage;
    RenderMode m_renderMode = RenderMode_DMD_GRAY_4;
    uint32_t m_dmdColor = 0x00FF5820;
    AssetManager* m_pAssetManager;

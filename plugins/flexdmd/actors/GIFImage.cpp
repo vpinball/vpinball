@@ -9,7 +9,7 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
    AssetSrc* pSrc = pAssetManager->ResolveSrc(path, nullptr);
    Bitmap* pBitmap = pAssetManager->GetBitmap(pSrc);
    if (!pBitmap) {
-       free(pSrc);
+       pSrc->Release();
        return nullptr;
    }
 
@@ -31,12 +31,17 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
 
 GIFImage::~GIFImage()
 {
-   delete m_pSrc;
+   assert(m_refCount == 0);
+   m_pSrc->Release();
+   if (m_pBitmap)
+      m_pBitmap->Release();
 }
 
 void GIFImage::OnStageStateChanged()
 {
-   m_pBitmap = GetOnStage() ? m_pAssetManager->GetBitmap(m_pSrc) : NULL;
+   if (m_pBitmap)
+      m_pBitmap->Release();
+   m_pBitmap = GetOnStage() ? m_pAssetManager->GetBitmap(m_pSrc) : nullptr;
    UpdateFrame();
 }
 

@@ -13,7 +13,7 @@ public:
 
    Alignment GetAlignment() const { return m_alignment; }
    void SetAlignment(Alignment alignment) { m_alignment = alignment; }
-   Font* GetFont() const { return m_pFont; }
+   Font* GetFont() const { m_pFont->AddRef(); return m_pFont; }
    void SetFont(Font* pFont) { m_pFont->Release(); m_pFont = pFont; m_pFont->AddRef(); UpdateBounds(); }
    const string& GetText() const { return m_szText; }
    void SetText(const string& szText);

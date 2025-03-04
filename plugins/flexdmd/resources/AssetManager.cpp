@@ -245,6 +245,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
       case AssetSrcType_FlexResource:
       {
          string path = SDL_GetBasePath();
+         path = path + "plugins/flexdmd/assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
          #if SDL_PLATFORM_WINDOWS
             HMODULE hModule = nullptr;
             if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, _T("Open"), &hModule))
@@ -263,10 +264,10 @@ void* AssetManager::Open(AssetSrc* pSrc)
                   #else
                   path = fullpath;
                   #endif
+                  path = path + "assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
                }
             }
          #endif
-         path = path + "plugins/flexdmd/assets" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
          if (pSrc->GetAssetType() == AssetType_BMFont)
             pAsset = BitmapFont::Create(path);
          else if (pSrc->GetAssetType() != AssetType_GIF)
@@ -314,7 +315,10 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
    }
    auto it = m_cachedBitmaps.find(pSrc->GetId());
    if (it != m_cachedBitmaps.end())
+   {
+      it->second->AddRef();
       return it->second;
+   }
    it = m_cachedBitmaps.find(pSrc->GetIdWithoutOptions());
    if (it != m_cachedBitmaps.end()) {
       // The bitmap from which the requested one is derived is cached
@@ -359,7 +363,10 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    }
    auto it = m_cachedFonts.find(pSrc->GetId());
    if (it != m_cachedFonts.end())
+   {
+      it->second->AddRef();
       return it->second;
+   }
    Font* pFont = new Font(this, pSrc);
    pFont->AddRef();
    m_cachedFonts[pSrc->GetId()] = pFont;

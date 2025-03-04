@@ -13,6 +13,7 @@ class Game
 public:
    Game(Controller* pController, const PinmameGame& pinmameGame)
       : m_pController(pController)
+      , m_settings(new GameSettings())
    {
       m_pController->AddRef();
       memcpy(&m_pinmameGame, &pinmameGame, sizeof(PinmameGame));
@@ -21,6 +22,7 @@ public:
    {
       assert(m_refCount == 0);
       m_pController->Release();
+      m_settings->Release();
    }
 
    PSC_IMPLEMENT_REFCOUNT()
@@ -32,10 +34,11 @@ public:
    string GetCloneOf() const { return m_pinmameGame.clone_of; }
    bool GetIsSupported() const { return true; /* Not yet implemented */ }
    Roms *GetRoms() const { return nullptr; /* Not yet implemented */ }
-   GameSettings* GetSettings() const { return new GameSettings(); }
+   GameSettings* GetSettings() { m_settings->AddRef(); return m_settings; }
    int ShowInfoDlg(int nShowOptions, void *hParentWnd) const { return 0; /* Not yet implemented */ }
 
 private:
    PinmameGame m_pinmameGame;
    Controller* m_pController;
+   GameSettings* m_settings;
 };
