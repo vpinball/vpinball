@@ -220,6 +220,15 @@ void RenderFrame::SortPasses(RenderPass* finalPass, vector<RenderPass*>& sortedP
 bool RenderFrame::Execute(const bool log)
 {
    bool rendered = false;
+
+   if (!m_beginOfFrameCmds.empty())
+   {
+      rendered = true;
+      for (const auto& cmd : m_beginOfFrameCmds)
+         cmd();
+      m_beginOfFrameCmds.clear();
+   }
+
    if (!m_passes.empty())
    {
       // Save render/shader states

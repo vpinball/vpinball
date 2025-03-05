@@ -5,6 +5,8 @@
 #include "vpinball.h"
 #endif
 #include "meshes/ballMesh.h"
+#include "renderer/RenderCommand.h"
+#include "renderer/Shader.h"
 
 const AntiStretchHelper Ball::m_ash;
 unsigned int Ball::m_nextBallID = 0;
@@ -450,6 +452,19 @@ void Ball::Render(const unsigned int renderMask)
                                                      : m_d.m_decalMode ? SHADER_TECHNIQUE_RenderBall_DecalMode : SHADER_TECHNIQUE_RenderBall);
    Vertex3Ds pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
    m_rd->DrawMesh(m_rd->m_ballShader, false, pos, 0.f, g_pplayer->m_renderer->m_ballMeshBuffer, RenderDevice::TRIANGLELIST, 0, g_pplayer->m_renderer->m_ballMeshBuffer->m_ib->m_count);
+
+   // Update render command with the ball position at the render frame submission time
+   // This creates a little asynchronism between ball position and the rest of the frame, but slightly reduce latency and increase 
+   // ball movement smoothness by aligning its update to the very last moment before submitting render command to the GPU driver.
+   // The command is executed on the render thread, while the game thread is performing continuous physics. therefore the ball object
+   // may be modified while the update command is executed.
+   Shader::ShaderState* ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
+   m_rd->AddBeginOfFrameCmd([this, rot, scale, ss](){
+      float zheight = m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z;
+      Matrix3D trans = Matrix3D::MatrixTranslate(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, zheight);
+      Matrix3D m3D_full = rot * scale * trans;
+      ss->SetMatrix(SHADER_orientation, &m3D_full.m[0][0]);
+   });
 
    // draw debug points for visualizing ball rotation (this uses point rendering which is a deprecated feature, not available in OpenGL ES)
    #if defined(DEBUG_BALL_SPIN) && !defined(__OPENGLES__)
