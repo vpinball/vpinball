@@ -870,11 +870,11 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
 #ifdef DEBUG_FLIPPERS
    PLOGD << "Collision";
-   PLOGD << "  normal: " << normal.x << " " << normal.y << " " << normal.z;
-   PLOGD << "  rel.vel.: " << vrel.x << " " << vrel.y << " " << vrel.z;
-   PLOGD << "  ball vel. " << pball->m_vel.x << " " << pball->m_vel.y << " " << pball->m_vel.z;
+   PLOGD << "  normal: " << normal.x << ' ' << normal.y << ' ' << normal.z;
+   PLOGD << "  rel.vel.: " << vrel.x << ' ' << vrel.y << ' ' << vrel.z;
+   PLOGD << "  ball vel. " << pball->m_vel.x << ' ' << pball->m_vel.y << ' ' << pball->m_vel.z;
    PLOGD << "  norm.vel.: " << bnv;
-   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << " " << m_flipperMover.m_angleSpeed;
+   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << ' ' << m_flipperMover.m_angleSpeed;
 #endif
 
    if (bnv >= -C_LOWNORMVEL)          // nearly receding ... make sure of conditions
@@ -1005,8 +1005,8 @@ void HitFlipper::Collide(const CollisionEvent& coll)
 
 #ifdef DEBUG_FLIPPERS
    PLOGD << "   ---- after collision ----\n";
-   PLOGD << "  ball vel. " << pball->m_vel.x << " " << pball->m_vel.y << " " << pball->m_vel.z;
-   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << " " << m_flipperMover.m_angleSpeed;
+   PLOGD << "  ball vel. " << pball->m_vel.x << ' ' << pball->m_vel.y << ' ' << pball->m_vel.z;
+   PLOGD << "  flipper: " << m_flipperMover.m_angleCur << ' ' << m_flipperMover.m_angleSpeed;
 #endif
 }
 
@@ -1160,10 +1160,12 @@ void HitFlipper::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* 
             drawList->AddLine(ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), lCol);
          }
          if (i > 0 && p1.x != FLT_MAX && p2.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+         {
             if (fill)
                drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
             else
                drawList->AddQuad(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+         }
       }
    }
 }

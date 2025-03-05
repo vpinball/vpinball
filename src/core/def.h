@@ -662,7 +662,7 @@ inline void szUpper(char * pC)
 
 inline void StrToLower(string& str)
 {
-   std::transform(str.begin(), str.end(), str.begin(), cLower);
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
 }
 
 inline bool StrCompareNoCase(const string& strA, const string& strB)

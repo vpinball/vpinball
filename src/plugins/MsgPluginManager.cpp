@@ -200,7 +200,7 @@ void MsgPluginManager::RunOnMainThread(const double delayInS, const msgpi_timer_
    else
    {
       auto timer = TimerEntry { callback, userData, std::chrono::high_resolution_clock::now() + std::chrono::microseconds(static_cast<int64_t>(delayInS * 1000000)) };
-      pm.m_timers.insert(std::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry &a, const TimerEntry &b) { return a.time < b.time; }), timer);
+      pm.m_timers.insert(std::ranges::upper_bound(pm.m_timers.begin(), pm.m_timers.end(), timer, [](const TimerEntry &a, const TimerEntry &b) { return a.time < b.time; }), timer);
    }
 }
 

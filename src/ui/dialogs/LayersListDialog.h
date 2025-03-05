@@ -4,7 +4,7 @@
 
 #include <memory>
 
-class LayerTreeView : public CTreeView
+class LayerTreeView final : public CTreeView
 {
 public:
    LayerTreeView();

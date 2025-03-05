@@ -68,7 +68,7 @@ void Ball::MoveOffset(const float dx, const float dy)
 
 Vertex2D Ball::GetCenter() const
 {
-   return Vertex2D(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y);
+   return {m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y};
 }
 
 void Ball::PutCenter(const Vertex2D& pv)
@@ -267,7 +267,7 @@ void Ball::UpdateAnimation(const float diff_time_msec)
    // Animation is updated by physics engine through a MoverObject. No additional visual animation here
 }
 
-inline float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
+static inline float map_bulblight_to_emission(const Light* const l) // magic mapping of bulblight parameters to "real" lightsource emission
 {
    return l->m_currentIntensity * clamp(powf(l->m_d.m_falloff*0.6f, l->m_d.m_falloff_power*0.6f), 0.f, 23000.f); //!! 0.6f,0.6f = magic, also clamp 23000
 }
@@ -305,7 +305,7 @@ void Ball::Render(const unsigned int renderMask)
 
    // collect the x nearest lights that can reflect on balls
    vector<Light*>& reflectedLights = g_pplayer->m_renderer->m_ballReflectedLights;
-   std::sort(reflectedLights.begin(), reflectedLights.end(), [this](Light* const pLight1, Light* const pLight2) {
+   std::ranges::sort(reflectedLights.begin(), reflectedLights.end(), [this](Light* const pLight1, Light* const pLight2) {
       const float dist1 = Vertex3Ds(pLight1->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight1->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight1->m_d.m_meshRadius + pLight1->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       const float dist2 = Vertex3Ds(pLight2->m_d.m_vCenter.x - m_hitBall.m_d.m_pos.x, pLight2->m_d.m_vCenter.y - m_hitBall.m_d.m_pos.y, pLight2->m_d.m_meshRadius + pLight2->m_surfaceHeight - m_hitBall.m_d.m_pos.z).LengthSquared(); //!! z pos
       return dist1 < dist2;

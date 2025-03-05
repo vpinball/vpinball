@@ -6,7 +6,7 @@
 /**
  * Displays a progress bar using Win32 API to track progress of a table being saved.
  */
-class VPXSaveFileProgressBar: public VPXFileFeedback
+class VPXSaveFileProgressBar final : public VPXFileFeedback
 {
    public:
       VPXSaveFileProgressBar(HINSTANCE app, HWND statusBar, CMDIChild* mdiTable);

@@ -2186,7 +2186,7 @@ ISelect *PinTable::HitTest(const int x, const int y)
       m_allHitElements.push_back(phs.m_pselected);
    }
 
-   std::reverse(m_allHitElements.begin(), m_allHitElements.end());
+   std::ranges::reverse(m_allHitElements.begin(), m_allHitElements.end());
 
    return phs.m_pselected;
 #else

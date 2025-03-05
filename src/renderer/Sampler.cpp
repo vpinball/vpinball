@@ -37,6 +37,7 @@ Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool for
    case BaseTexture::RGBA_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; break;
    case BaseTexture::RGB_FP16: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA16F; add_alpha = true; break;
    case BaseTexture::RGB_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; add_alpha = true; break;
+   case BaseTexture::RGBA_FP32: m_bgfx_format = bgfx::TextureFormat::Enum::RGBA32F; break;
    case BaseTexture::BW: m_bgfx_format = bgfx::TextureFormat::Enum::R8; break;
    default: assert(false); // Unsupported texture format
    }

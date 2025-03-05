@@ -81,7 +81,7 @@ struct OpenPinballDeviceReport
 
 // Open Pinball Device interface.  This wraps a hidapi device handle
 // that we have open for reading from an OPD unit.
-class OpenPinDev
+class OpenPinDev final
 {
 public:
    OpenPinDev(hid_device *hDevice, BYTE reportID, size_t reportSize, const wchar_t *deviceStructVersionString) :
@@ -229,8 +229,8 @@ void PinInput::InitOpenPinballDevices()
    {
       // check for a generic Pinball Device usage (usage page 0x05 "Game
       // Controls", usage 0x02 "Pinball Device")
-      const unsigned short USAGE_PAGE_GAMECONTROLS = 0x05;
-      const unsigned short USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
+      constexpr unsigned short USAGE_PAGE_GAMECONTROLS = 0x05;
+      constexpr unsigned short USAGE_GAMECONTROLS_PINBALLDEVICE = 0x02;
       if (cur->usage_page == USAGE_PAGE_GAMECONTROLS && cur->usage == USAGE_GAMECONTROLS_PINBALLDEVICE)
       {
          // It's at least a generic Pinball Device, which is a sort

@@ -39,20 +39,20 @@ void SoundDialog::OnClose()
     CDialog::OnClose();
 }
 
-long GetSystemDPI()
+static long GetSystemDPI()
 {
 	const CClientDC clientDC(nullptr);
 	const SIZE ret = { clientDC.GetDeviceCaps(LOGPIXELSX), clientDC.GetDeviceCaps(LOGPIXELSY) };
 	return ret.cx;
 }
 
-long GetDPI()
+static long GetDPI()
 {
 	static const long dpi = GetSystemDPI();
 	return dpi;
 }
 
-int DPIValue(int value)
+static int DPIValue(int value)
 {
 	return MulDiv(value, GetDPI(), 96);
 }
@@ -633,7 +633,6 @@ void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolT
    toolInfo.lpszText = (char *)text;
    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
-
 
 SoundPositionDialog::SoundPositionDialog(PinSound * const pps) : CDialog(IDD_SOUND_POSITION_DIALOG)
 {

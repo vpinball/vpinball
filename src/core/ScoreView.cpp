@@ -64,10 +64,10 @@ static string TrimTrailing(const string& str, const std::string& whitespace)
    return string(strBegin, strEnd);
 }
 
-void ScoreView::Parse(const string& path, std::istream& f)
+void ScoreView::Parse(const string& path, std::istream& content)
 {
    #define CHECK_FIELD(check) if (!(check)) { PLOGE << "Invalid field '" << key << ": " << value << "' at line " << lineIndex << " in ScoreView file " << path; return; }
-   const string whitespace = " \t"s;
+   static const string whitespace = " \t"s;
    Layout layout { string() };
    layout.path = path;
    layout.width = 1920.f;
@@ -78,6 +78,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
    unsigned int lineIndex = 0;
    size_t expectedIndent = 0;
    float fValue;
+   {
    Visual* visual = nullptr;
    const auto parseArray = [](const string& value) -> vector<float>
    {
@@ -99,7 +100,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
          pos1 = pos2;
       }
    };
-   while (std::getline(f, line))
+   while (std::getline(content, line))
    {
       lineIndex++;
       line = TrimTrailing(line, whitespace);
@@ -366,6 +367,7 @@ void ScoreView::Parse(const string& path, std::istream& f)
       }
       //PLOGD << indent << ": " << key << " => " << value;
    }
+   }
    for (auto& visual : layout.visuals)
    {
       switch (visual.type)
@@ -535,7 +537,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
 
    // Render layout
    const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
-   const float layoutAR = static_cast<float>(m_bestLayout->width) / static_cast<float>(m_bestLayout->height);
+   const float layoutAR = m_bestLayout->width / m_bestLayout->height;
    const float pw = 2.f * (rtAR > layoutAR ? layoutAR / rtAR : 1.f) * static_cast<float>(scoreW) / static_cast<float>(scoreRT->GetWidth());
    const float ph = 2.f * (rtAR < layoutAR ? rtAR / layoutAR : 1.f) * static_cast<float>(scoreH) / static_cast<float>(scoreRT->GetHeight());
    const float px = static_cast<float>(scoreX + scoreW / 2) / static_cast<float>(scoreRT->GetWidth()) * 2.f - 1.f - pw * 0.5f;
@@ -574,10 +576,10 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            glassArea.x = visual.glassArea.x / visual.glass->m_width;
-            glassArea.y = visual.glassArea.y / visual.glass->m_height;
-            glassArea.z = visual.glassArea.z / visual.glass->m_width;
-            glassArea.w = visual.glassArea.w / visual.glass->m_height;
+            glassArea.x = visual.glassArea.x / (float)visual.glass->m_width;
+            glassArea.y = visual.glassArea.y / (float)visual.glass->m_height;
+            glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
+            glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
          }
          renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, frame, 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr,
             visual.glassPad, visual.glassTint, visual.glassRoughness, visual.glass, glassArea, visual.glassAmbient);
@@ -615,13 +617,13 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             glassArea = vec4(0.f, 0.f, 1.f, 1.f);
          else
          {
-            glassArea.x = visual.glassArea.x / visual.glass->m_width;
-            glassArea.y = visual.glassArea.y / visual.glass->m_height;
-            glassArea.z = visual.glassArea.z / visual.glass->m_width;
-            glassArea.w = visual.glassArea.w / visual.glass->m_height;
+            glassArea.x = visual.glassArea.x / (float)visual.glass->m_width;
+            glassArea.y = visual.glassArea.y / (float)visual.glass->m_height;
+            glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
+            glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
          }
          const float elementWidth = visual.h * (24.f / 32.f); // Each segment element SDF is 24x32, fitted on visual height
-         const float elementXPad = visual.h * (4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
+         //const float elementXPad = visual.h * (4.f / 32.f); // Each segment element SDF has a 4 pad around the segments for SDF range
          const float hGlassScale = glassArea.z / visual.w;
          vec4 segGlassArea = glassArea;
          segGlassArea.z = elementWidth * hGlassScale;

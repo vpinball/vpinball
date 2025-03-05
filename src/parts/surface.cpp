@@ -1208,7 +1208,7 @@ HRESULT Surface::InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version
       const float tmpy = miny /*- 1.0f*/; // put tiny gap in to avoid errors
 
       // swap list around
-      std::reverse(m_vdpoint.begin(), m_vdpoint.end());
+      std::ranges::reverse(m_vdpoint.begin(), m_vdpoint.end());
 
       CComObject<DragPoint> *pdp;
       CComObject<DragPoint>::CreateInstance(&pdp);

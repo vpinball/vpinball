@@ -13,7 +13,7 @@ inline char cLower(char c)
 
 string string_to_lower(string str)
 {
-   std::transform(str.begin(), str.end(), str.begin(), cLower);
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
    return str;
 }
 

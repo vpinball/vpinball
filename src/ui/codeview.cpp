@@ -3674,9 +3674,8 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
          const size_t line = ::SendMessage(hwndRE, SCI_LINEFROMPOSITION, pos, 0) + 1;
          const size_t column = ::SendMessage(hwndRE, SCI_GETCOLUMN, pos, 0);
 
-         char szT[256];
-         sprintf_s(szT, sizeof(szT), "Line %u, Col %u", (U32)line, (U32)column);
-         ::SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)szT);
+         const string tmp = "Line " + std::to_string(line) + ", Col "+ std::to_string(column);
+         ::SendMessage(pcv->m_hwndStatus, SB_SETTEXT, 0 | 0, (size_t)tmp.c_str());
          break;
       }
       case SCN_DOUBLECLICK:

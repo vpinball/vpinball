@@ -39,8 +39,8 @@ ShaderTechniques Shader::m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_I
 #endif
 
 #define SHADER_TECHNIQUE(name, ...) { #name, InitTechUniforms( {__VA_ARGS__}) }
-vector<ShaderUniforms> InitTechUniforms() { return vector<ShaderUniforms>(); }
-vector<ShaderUniforms> InitTechUniforms(std::initializer_list<ShaderUniforms> args) { return vector<ShaderUniforms> { args }; }
+static vector<ShaderUniforms> InitTechUniforms() { return vector<ShaderUniforms>(); }
+static vector<ShaderUniforms> InitTechUniforms(std::initializer_list<ShaderUniforms> args) { return vector<ShaderUniforms> { args }; }
 Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(RenderBall, SHADER_matProj, SHADER_matWorldViewProj, SHADER_matView, SHADER_matWorldView, SHADER_matWorldViewInverse, SHADER_ballLightEmission, SHADER_ballLightPos,
       SHADER_Roughness_WrapL_Edge_Thickness, SHADER_cBase_Alpha, SHADER_fDisableLighting_top_below, SHADER_fenvEmissionScale_TexWidth, SHADER_cAmbient_LightRange, SHADER_tex_diffuse_env,
@@ -1371,7 +1371,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
             {
                PLOGE << "Invalid uniform defined in shader " << (j == 0 ? vsName : fsName) << ": " << info.name;
             }
-            else if (std::find(m_uniforms[technique].begin(), m_uniforms[technique].end(), uniformIndex) == m_uniforms[technique].end())
+            else if (std::ranges::find(m_uniforms[technique].begin(), m_uniforms[technique].end(), uniformIndex) == m_uniforms[technique].end())
             {
                assert(info.num == shaderUniformNames[uniformIndex].count);
                m_uniforms[technique].push_back(uniformIndex);
@@ -1386,7 +1386,7 @@ void Shader::loadProgram(const bgfx::EmbeddedShader* embeddedShaders, ShaderTech
          ss << ", " << shaderUniformNames[(int)uniform].name;
       ss << "),";
       PLOGD << ss.str();
-      ss << "\n";
+      ss << '\n';
       OutputDebugString(ss.str().c_str());
       */
    }

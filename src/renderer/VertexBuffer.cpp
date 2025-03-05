@@ -6,7 +6,7 @@
 #include "Shader.h"
 
 
-class SharedVertexBuffer : public SharedBuffer<VertexFormat, VertexBuffer>
+class SharedVertexBuffer final : public SharedBuffer<VertexFormat, VertexBuffer>
 {
 public:
    SharedVertexBuffer(RenderDevice* const rd, VertexFormat fmt, bool stat);

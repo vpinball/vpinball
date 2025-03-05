@@ -2,7 +2,7 @@
 
 #pragma once
 
-class ToolbarDialog : public CDialog
+class ToolbarDialog final : public CDialog
 {
 public:
     ToolbarDialog();

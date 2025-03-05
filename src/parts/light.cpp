@@ -12,7 +12,7 @@
 
 // Light state can be either a float between 0...1, or 2 for the blinking state.
 // Some old tables would set it to 255 or 'TRUE' (-1) for the full on state, so we perform this 'clamping'
-inline float clampLightState(const float state)
+static inline float clampLightState(const float state)
 {
    if (state < 0.f) // Legacy script using 'TRUE' for on
       return 1.f;

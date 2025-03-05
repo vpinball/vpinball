@@ -2,7 +2,7 @@
 
 #pragma once
 
-class DispreelVisualsProperty: public BasePropertyDialog
+class DispreelVisualsProperty final : public BasePropertyDialog
 {
 public:
     DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel);

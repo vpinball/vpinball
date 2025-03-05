@@ -31,7 +31,7 @@ void HitKD::Insert(HitObject* ho)
 
 void HitKD::Remove(HitObject* ho)
 {
-   vector<HitObject*>::const_iterator it = std::find(m_vho.begin(), m_vho.end(), ho);
+   vector<HitObject*>::const_iterator it = std::ranges::find(m_vho.begin(), m_vho.end(), ho);
    if (it != m_vho.end())
       m_vho.erase(it);
    Initialize();

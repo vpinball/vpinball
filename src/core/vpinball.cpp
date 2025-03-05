@@ -626,7 +626,7 @@ CMenu VPinball::GetMainMenu(int id)
 }
 
 #ifndef __STANDALONE__
-class InfoDialog : public CDialog
+class InfoDialog final : public CDialog
 {
 public:
    InfoDialog(const string &message)
@@ -1163,9 +1163,9 @@ void VPinball::DoPlay(const int playMode)
                else if (dragging)
                {
                   // Handle dragging of auxiliary windows
-                  SDL_Window * sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
+                  SDL_Window *sdlWnd = SDL_GetWindowFromID(e.motion.windowID);
                   VPX::Window *windows[] = { g_pplayer->m_scoreviewOutput.GetWindow(), g_pplayer->m_backglassOutput.GetWindow() };
-                  for (int i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
+                  for (size_t i = 0; i < sizeof(windows) / sizeof(VPX::Window *); i++)
                   {
                      if (windows[i] && sdlWnd == windows[i]->GetCore())
                      {

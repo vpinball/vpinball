@@ -4,7 +4,6 @@
 
 #include "robin_hood.h"
 
-#include "core/stdafx.h"
 #include "Texture.h"
 #include "Sampler.h"
 #include "typedefs3D.h"

@@ -27,7 +27,7 @@ public:
 };
 
 // CodeViewer Preferences
-class CVPreference
+class CVPreference final
 {
 public:
    LOGFONT m_logFont;

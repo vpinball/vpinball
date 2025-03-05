@@ -58,10 +58,11 @@ public:
    void RenderFrame(class RenderDevice* rd, std::function<void(RenderTarget* vrRenderTarget)> submitFrame);
    void UpdateVisibilityMask(class RenderDevice* rd);
    bool UseDepthBuffer() const { return m_depthExtensionSupported; }
-   bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; };
+   bgfx::TextureFormat::Enum GetDepthFormat() const { return m_depthSwapchainInfo.format; }
 
-   void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; };
-   MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; };
+   void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; }
+   MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; }
+
    Matrix3D m_visibilityMaskProj[2];
 
    enum class SwapchainType : uint8_t

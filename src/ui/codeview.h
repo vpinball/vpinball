@@ -552,7 +552,7 @@ constexpr __forceinline bool IsWhitespace(const char ch)
 
 __forceinline string upperCase(string input)
 {
-   std::transform(input.begin(), input.end(), input.begin(), cUpper);
+   std::ranges::transform(input.begin(), input.end(), input.begin(), cUpper);
    return input;
 }
 

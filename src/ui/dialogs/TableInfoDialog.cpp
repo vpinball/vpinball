@@ -55,9 +55,8 @@ BOOL TableInfoDialog::OnInitDialog()
    m_descriptionEdit.SetWindowText(pt->m_szDescription.c_str());
    m_rulesEdits.SetWindowText(pt->m_szRules.c_str());
 
-   char buffer[256];
-   sprintf_s(buffer, sizeof(buffer), "%s Revision %u", !pt->m_szDateSaved.empty() ? pt->m_szDateSaved.c_str() : "N.A.", pt->m_numTimesSaved);
-   m_dateSavedEdit.SetWindowText(buffer);
+   const string tmp = (!pt->m_szDateSaved.empty() ? pt->m_szDateSaved : "N.A."s) + " Revision " + std::to_string(pt->m_numTimesSaved);
+   m_dateSavedEdit.SetWindowText(tmp.c_str());
 
    // Init list of images
    const LocalString ls(IDS_NONE);

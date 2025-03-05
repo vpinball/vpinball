@@ -67,7 +67,7 @@ public:
       m_processInputTimeStamp = 0;
       m_presentedCount = 0;
       m_processInputTimeStampOnPrepare = 0;
-      for (int i = 0; i < N_SAMPLES; i++)
+      for (unsigned int i = 0; i < N_SAMPLES; i++)
          memset(m_profileData[i], 0, sizeof(m_profileData[0]));
       for (int i = 0; i < PROFILE_COUNT; i++)
       {
@@ -78,7 +78,7 @@ public:
       m_scriptEventData.clear();
       // Clear worst frames
       m_leastWorstFrameLength = 0;
-      for (int i = 0; i < N_WORST; i++)
+      for (unsigned int i = 0; i < N_WORST; i++)
       {
          memset(m_profileWorstData[i], 0, sizeof(m_profileWorstData[0]));
          m_worstScriptEventData[i].clear();
@@ -107,7 +107,7 @@ public:
          "Render Flip:   "s,
          "Render Sleep:  "s,
       };
-      for (int i = 0; i < N_WORST; i++)
+      for (unsigned int i = 0; i < N_WORST; i++)
       {
          if (m_profileWorstData[i][PROFILE_FRAME] == 0)
             break;
@@ -157,7 +157,7 @@ public:
          if ((m_frameIndex > 100) && (frameLength >= m_leastWorstFrameLength))
          {
             unsigned int least_worst = INT_MAX;
-            for (int i = 0; i < N_WORST; i++)
+            for (unsigned int i = 0; i < N_WORST; i++)
             {
                if (m_profileWorstData[i][PROFILE_FRAME] < least_worst)
                {

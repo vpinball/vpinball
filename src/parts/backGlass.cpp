@@ -20,7 +20,7 @@
 
 // XML helpers
 
-inline char nextChar(size_t &inPos, const size_t inSize, const char* const inChars, const char* const outChars, const char* const inData) {
+static inline char nextChar(size_t &inPos, const size_t inSize, const char* const inChars, const char* const outChars, const char* const inData) {
    char c = (inPos >= inSize) ? '=' : inData[inPos];
    while (outChars[c] < 0) {
       inPos++;

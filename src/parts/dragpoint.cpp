@@ -247,7 +247,7 @@ void IHaveDragPoints::ReverseOrder()
       return;
 
    // Reverse order of points (switches winding, reverses inside/outside)
-   std::reverse(m_vdpoint.begin(), m_vdpoint.end());
+   std::ranges::reverse(m_vdpoint.begin(), m_vdpoint.end());
 
    const bool slingshotTemp = m_vdpoint[0]->m_slingshot;
 
@@ -699,7 +699,7 @@ STDMETHODIMP DragPoint::put_TextureCoordinateU(float newVal)
    return S_OK;
 }
 
-int rotateApplyCount = 0;
+static int rotateApplyCount = 0;
 INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 #ifndef __STANDALONE__
@@ -831,7 +831,7 @@ INT_PTR CALLBACK RotateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
    return FALSE;
 }
 
-int scaleApplyCount = 0;
+static int scaleApplyCount = 0;
 INT_PTR CALLBACK ScaleProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    ISelect *psel;

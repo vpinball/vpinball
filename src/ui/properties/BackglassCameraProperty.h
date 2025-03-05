@@ -2,7 +2,7 @@
 
 #pragma once
 
-class BackglassCameraProperty : public BasePropertyDialog
+class BackglassCameraProperty final : public BasePropertyDialog
 {
 public:
     BackglassCameraProperty(const VectorProtected<ISelect>* pvsel);

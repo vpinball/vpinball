@@ -9,7 +9,7 @@
 
 class DynamicDispatch;
 
-class DynamicTypeLibrary
+class DynamicTypeLibrary final
 {
 public:
    DynamicTypeLibrary();
@@ -62,12 +62,12 @@ private:
 };
 
 
-class DynamicDispatch : public IDispatch
+class DynamicDispatch final : public IDispatch
 {
 public:
    DynamicDispatch(const DynamicTypeLibrary* typeLibrary, const ScriptClassDef* classDef, void * nativeObject)
-      : m_typeLibrary(typeLibrary)
-      , m_classDef(classDef)
+      : m_classDef(classDef)
+      , m_typeLibrary(typeLibrary)
       , m_nativeObject(nativeObject)
       , m_refCount(1)
    {
@@ -76,7 +76,7 @@ public:
       #endif
       PSC_ADD_REF(m_classDef, m_nativeObject);
    }
-   
+
    ~DynamicDispatch()
    {
       PSC_RELEASE(m_classDef, m_nativeObject);
@@ -140,7 +140,7 @@ public:
          rgDispId[i] = m_typeLibrary->ResolveMemberId(m_classDef, name);
          if (rgDispId[i] < 0)
          {
-            PLOGE << m_classDef->name.name << "." << name << " was referenced while it is not declared. Did you forget to register a class member ?";
+            PLOGE << m_classDef->name.name << '.' << name << " was referenced while it is not declared. Did you forget to register a class member ?";
             return DISP_E_UNKNOWNNAME;
          }
       }

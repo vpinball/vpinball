@@ -20,7 +20,7 @@ protected:
    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
 };
 
-class NotesDialog : public CDialog
+class NotesDialog final : public CDialog
 {
 public:
    NotesDialog();

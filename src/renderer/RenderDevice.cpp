@@ -531,10 +531,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             U64 now = usec();
-            const int refreshLength = static_cast<int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate());
-            const int minimumFrameLength = static_cast<int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            const int maximumFrameLength = 5 * refreshLength;
-            const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
+            const unsigned int refreshLength = static_cast<unsigned int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate());
+            const unsigned int minimumFrameLength = static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
+            const unsigned int maximumFrameLength = 5 * refreshLength;
+            const unsigned int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
             while (now - lastFlipTick < targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;

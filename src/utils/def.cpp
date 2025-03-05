@@ -523,12 +523,12 @@ string normalize_path_separators(const string& szPath)
    string szResult = szPath;
 
    if (PATH_SEPARATOR_CHAR == '/')
-      std::replace(szResult.begin(), szResult.end(), '\\', PATH_SEPARATOR_CHAR);
+      std::ranges::replace(szResult.begin(), szResult.end(), '\\', PATH_SEPARATOR_CHAR);
    else
-      std::replace(szResult.begin(), szResult.end(), '/', PATH_SEPARATOR_CHAR);
+      std::ranges::replace(szResult.begin(), szResult.end(), '/', PATH_SEPARATOR_CHAR);
 
    auto end = std::unique(szResult.begin(), szResult.end(),
-       [](char a, char b) { return a == b && a == PATH_SEPARATOR_CHAR; });
+      [](char a, char b) { return a == b && a == PATH_SEPARATOR_CHAR; });
    szResult.erase(end, szResult.end());
 
    return szResult;

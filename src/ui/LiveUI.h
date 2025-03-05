@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include "core/stdafx.h"
-
 #include "core/pininput.h"
 
 #include "imgui/imgui.h"
@@ -33,7 +31,7 @@ public:
 
    void ToggleFPS();
    bool IsShowingFPSDetails() const { return m_show_fps > 1; }
-   void PushNotification(const string &message, const U32 lengthMs) { m_notifications.push_back(Notification(message, msec() + lengthMs)); }
+   void PushNotification(const string &message, const U32 lengthMs) { m_notifications.emplace_back(Notification(message, msec() + lengthMs)); }
 
 private:
    // Main UI frame & panels
@@ -226,7 +224,7 @@ private:
    int m_esc_mode = 0; // What to do if Esc is pressed while on splash screen (depends on why the splash was opened)
    U32 m_OpenUITime = 0; // Used to delay keyboard shortcut
    U64 m_StartTime_msec = 0; // Used for timed splash overlays
-   
+
    // Profiler display data
    int m_show_fps = 0; // 0=disabled / 1=FPS / 2=FPS+dynamic plot
    bool m_showAvgFPS = true;

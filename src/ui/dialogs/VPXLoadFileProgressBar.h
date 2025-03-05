@@ -5,7 +5,7 @@
 /**
  * Displays a progress bar using Win32 API to track progress of a table being loaded.
  */
-class VPXLoadFileProgressBar: public VPXFileFeedback
+class VPXLoadFileProgressBar final : public VPXFileFeedback
 {
    public:
       VPXLoadFileProgressBar(HINSTANCE app, HWND statusBar);

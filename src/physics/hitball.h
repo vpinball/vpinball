@@ -26,7 +26,7 @@ struct BallS
    bool m_lockedInKicker = false;
 };
 
-class HitBall : public HitObject
+class HitBall final : public HitObject
 {
 public:
    HitBall();

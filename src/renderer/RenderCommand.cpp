@@ -348,12 +348,12 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          else if (m_command == RC_DRAW_MESH)
             ss << "> Draw Mesh     ";
          ss << (m_isTransparent ? "T "s : "O "s);
-         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << " " << m_renderState.GetLog();
+         ss << std::setw(40) << Shader::GetTechniqueName(m_shaderTechnique) << std::setw(0) << ' ' << m_renderState.GetLog();
          ss << " Depth: " << std::fixed << std::setw(8) << std::setprecision(2) << m_depth;
          if (m_command == RC_DRAW_MESH)
          {
             ss << " MB:" << std::setw(4) << std::hex << m_mb->GetSortKey() << std::dec;
-            ss << " IndCount: " << std::setw(8) << m_indicesCount << " " << m_mb->m_name;
+            ss << " IndCount: " << std::setw(8) << m_indicesCount << ' ' << m_mb->m_name;
          }
          PLOGI << ss.str();
       }

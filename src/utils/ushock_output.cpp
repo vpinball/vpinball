@@ -120,7 +120,7 @@ static HANDLE connectToIthUSBHIDDevice(DWORD deviceIndex)
 #endif
 }
 
-static HANDLE hid_connect(U32 vendorID, U32 productID, U32 *versionNumber = nullptr)
+static HANDLE hid_connect(U32 vendorID, U32 productID, U32 * const versionNumber = nullptr)
 {
 #ifndef __STANDALONE__
    DWORD index = 0;
@@ -233,10 +233,10 @@ static U32 sMask = 0;
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
 // The output parameter uses any combination of HID_OUTPUT enum.
-void ushock_output_set(const U08 output, const bool On)
+void ushock_output_set(const U08 output, const bool on)
 {
    // Check if the outputs are being turned on.
-   if (On)
+   if (on)
    {
       sMask = (sMask | output);
    }
@@ -299,7 +299,7 @@ void ushock_output_update(const U32 cur_time_msec)
 
    if (hnd != INVALID_HANDLE_VALUE)
    {
-      //		printf( "outputting 0x%x\n", mask );
+      //printf( "outputting 0x%x\n", mask );
 
       static U32 last_written;
 

@@ -159,7 +159,7 @@ void RenderPass::SortCommands()
    } sortFunc;
 
    // stable sort is needed since we don't want to change the order of blended draw calls between frames
-   stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
+   std::ranges::stable_sort(m_commands.begin(), m_commands.end(), sortFunc);
 }
 
 void RenderPass::Submit(RenderCommand* command)

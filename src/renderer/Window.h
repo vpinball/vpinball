@@ -50,7 +50,7 @@ public:
    int GetAdapterId() const { return m_adapter; }
    int GetBitDepth() const { return m_bitdepth; }
    float GetHiDPIScale() const { return m_hidpiScale; } // HiDPI scale on Apple devices
-   bool IsWCGDisplay() const { return m_wcgDisplay; } // Wether this window is on a WCG enabled display
+   bool IsWCGDisplay() const { return m_wcgDisplay; } // Whether this window is on a WCG enabled display
    float GetSDRWhitePoint() const { return m_sdrWhitePoint; } // Selected SDR White Point of display in multiple of 80nits (so 3 gives 240nits for SDR white)
    float GetHDRHeadRoom() const { return m_hdrHeadRoom; } // Maximum luminance of display expressed in multiple of SDRWhitePoint (so 6 means 6 times the SDR whitepoint)
 
@@ -129,7 +129,7 @@ private:
 class RenderOutput final
 {
 public:
-   RenderOutput(const string& title, Settings& settings, const Settings::Section section, const string& settingsPrefix)
+   RenderOutput(const string& title, const Settings& settings, const Settings::Section section, const string& settingsPrefix)
       : m_settingsSection(section)
       , m_settingsPrefix(settingsPrefix)
    {

@@ -252,7 +252,7 @@ public:
     UINT_PTR m_timerid; // timer id for our key assignment
 };
 
-WNDPROC g_ButtonProc;
+static WNDPROC g_ButtonProc;
 
 LRESULT CALLBACK MyKeyButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

@@ -35,7 +35,7 @@ private:
     static int m_columnSortOrder;
 };
 
-class SoundPositionDialog : public CDialog
+class SoundPositionDialog final : public CDialog
 {
 public:
 	int m_volume, m_fade, m_balance;

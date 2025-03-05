@@ -395,7 +395,8 @@ void Bumper::UpdateSkirt(const bool doCalculation)
    constexpr float SKIRT_TILT = 5.0f;
 
    const float scalexy = m_d.m_radius;
-   m_rotx = 0.0f, m_roty = 0.0f;
+   m_rotx = 0.0f;
+   m_roty = 0.0f;
 
    if (doCalculation)
    {

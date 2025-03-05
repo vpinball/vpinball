@@ -2,7 +2,7 @@
 
 #pragma once
 
-class BumperVisualsProperty: public BasePropertyDialog
+class BumperVisualsProperty final : public BasePropertyDialog
 {
 public:
     BumperVisualsProperty(const VectorProtected<ISelect> *pvsel);

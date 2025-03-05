@@ -430,7 +430,7 @@ void Textbox::RenderSetup(RenderDevice *device)
 
    CY size;
    m_pIFontPlay->get_Size(&size);
-   size.int64 = (LONGLONG)(size.int64 / 1.5 * g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight());
+   size.int64 = (LONGLONG)(size.int64 / 1.5 * (g_pplayer->m_playfieldWnd->GetWidth() * g_pplayer->m_playfieldWnd->GetHeight()));
    m_pIFontPlay->put_Size(size);
 #else
    m_fontSize *= 1.5;

@@ -387,10 +387,12 @@ void HitCircle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList* d
             drawList->AddLine(ImVec2(q1.x, q1.y), ImVec2(q2.x, q2.y), lCol);
          }
          if (i > 0 && p1.x != FLT_MAX && p2.x != FLT_MAX && q1.x != FLT_MAX && q2.x != FLT_MAX)
+         {
             if (fill)
                drawList->AddQuadFilled(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
             else
                drawList->AddQuad(ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), ImVec2(q2.x, q2.y), ImVec2(q1.x, q1.y), fCol);
+         }
       }
    }
 }

@@ -14,7 +14,7 @@ ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackgrou
    for (const auto& line : text) {
       string txt = trim_string(line);
       if (txt.empty()) 
-         txt = " ";
+         txt = " "s;
        Label* pLabel = new Label(pFlexDMD, pFont, txt, string());
        pLabel->SetY(y);
        y += pLabel->GetHeight();

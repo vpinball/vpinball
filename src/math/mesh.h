@@ -502,7 +502,7 @@ void PolygonToTriangles(const RenderVertexCont& rgv, vector<unsigned int>& pvpol
 
    // check if the polygon is in right orientation, otherwise flip it over
    if(support_both_winding_orders && (DetermineWindingOrder(rgv) == Clockwise))
-      std::reverse(pvpoly.begin(), pvpoly.end());
+      std::ranges::reverse(pvpoly.begin(), pvpoly.end());
 
    for (size_t l = 0; l < tricount; ++l)
       //while (pvpoly->Size() > 2)
