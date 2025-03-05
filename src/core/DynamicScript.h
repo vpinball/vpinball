@@ -31,9 +31,9 @@ private:
    int ResolveClassId(const char *name) const;
    ScriptClassDef *GetClass(const ScriptTypeNameDef &name) const;
 
-   bool COMToScriptVariant(const VARIANT &cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
+   bool COMToScriptVariant(const VARIANT *cv, const ScriptTypeNameDef &type, ScriptVariant &sv) const;
    void ReleaseScriptVariant(const ScriptTypeNameDef &type, ScriptVariant &sv) const;
-   void ScriptToCOMVariant(const ScriptTypeNameDef &type, ScriptVariant &sv, VARIANT &cv) const;
+   void ScriptToCOMVariant(const ScriptTypeNameDef &type, ScriptVariant &sv, VARIANT *cv) const;
    string ScriptVariantToString(const ScriptTypeNameDef &type, const ScriptVariant &sv) const;
 
    struct ClassDef {

@@ -109,7 +109,10 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 
 void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* aliasedTypeName)
 {
-   if (m_typenames.contains(name))
+   string classId(name);
+   StrToLower(classId);
+   const auto& existingType = m_typenames.find(classId);
+   if (existingType != m_typenames.end())
    {
       // TODO Validate that both definitions are the same
       return;
@@ -120,22 +123,21 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
    const TypeDef typeDef = m_types[aliasedId];
    assert(typeDef.category == TypeDef::TD_NATIVE);
    m_types.push_back({ .category = TypeDef::TD_ALIAS, .aliasDef = { name, typeDef.nativeType } });
-   string classId(name);
-   StrToLower(classId);
    m_typenames[classId] = typeDef.nativeType.id;
 }
 
 void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
-   if (m_typenames.contains(arrayDef->name.name))
+   string classId(arrayDef->name.name);
+   StrToLower(classId);
+   const auto& existingType = m_typenames.find(classId);
+   if (existingType != m_typenames.end())
    {
       // TODO Validate that both definitions are the same
       return;
    }
    arrayDef->name.id = static_cast<unsigned int>(m_types.size());
    m_types.push_back({ .category = TypeDef::TD_ARRAY, .arrayDef = arrayDef });
-   string classId(arrayDef->name.name);
-   StrToLower(classId);
    m_typenames[classId] = arrayDef->name.id;
 }
 
@@ -234,19 +236,15 @@ ScriptClassDef* DynamicTypeLibrary::GetClass(const ScriptTypeNameDef& name) cons
    return def.classDef->classDef;
 }
 
-bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
+bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeNameDef& type, ScriptVariant& sv) const
 {
+   // Since we are copying from COM data structure to our own data layout, there is no difference between normal and 
+   // byref arguments. The difference is after call where we need to update byref COM arguments from ScripVariants
+   if (V_VT(cv) == (VT_BYREF | VT_VARIANT))
+      return COMToScriptVariant(V_VARIANTREF(cv), type, sv);
+   
    assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
-   if (V_VT(&cv) & VT_BYREF)
-   {
-      // FIXME this is a quick hack to keep moving forward, but it needs proper review & implementation
-      //assert(false);
-      if (V_VT(&cv) == (VT_BYREF | VT_VARIANT))
-         return COMToScriptVariant(*V_VARIANTREF(&cv), type, sv);
-      else
-         return false;
-   }
    switch (typeDef.category)
    {
    case TypeDef::TD_ALIAS:
@@ -255,10 +253,11 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
 
    case TypeDef::TD_NATIVE:
    {
-      // TODO raise an error and prevent further processing
+      // Note that VariantChangeType dereference byref variants
+      // TODO on failure, raise an error and prevent further processing
       #define CHANGE_TYPE(type) \
-         if (VariantChangeType(&v, &cv, 0, type) != S_OK) { \
-            PLOGE << "Failed to convert from COM variant type " << V_VT(&cv); \
+         if (VariantChangeType(&v, cv, 0, type) != S_OK) { \
+            PLOGE << "Failed to convert from COM variant type " << V_VT(cv); \
             assert(false); \
             return false; \
          }
@@ -308,8 +307,9 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
 
    case TypeDef::TD_CLASS:
    {
-      assert(V_VT(&cv) == VT_DISPATCH);
-      sv.vObject = static_cast<DynamicDispatch*>(V_DISPATCH(&cv))->m_nativeObject;
+      assert((V_VT(cv) == VT_DISPATCH) || (V_VT(cv) == (VT_BYREF | VT_DISPATCH)));
+      DynamicDispatch* dispatch = static_cast<DynamicDispatch*>((V_VT(cv) & VT_BYREF) ? *V_DISPATCHREF(cv) : V_DISPATCH(cv));
+      sv.vObject = dispatch->m_nativeObject;
       if (sv.vObject != nullptr)
          PSC_ADD_REF(typeDef.classDef->classDef, sv.vObject);
       break;
@@ -317,8 +317,8 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
 
    case TypeDef::TD_ARRAY:
    {
-      assert(V_VT(&cv) == (VT_ARRAY | VT_VARIANT));
-      SAFEARRAY* psa = V_ARRAY(&cv);
+      assert((V_VT(cv) == (VT_ARRAY | VT_VARIANT)) || (V_VT(cv) == (VT_BYREF | VT_ARRAY | VT_VARIANT)));
+      SAFEARRAY* psa = (V_VT(cv) & VT_BYREF) ? *V_ARRAYREF(cv) : V_ARRAY(cv);
       assert(typeDef.arrayDef->nDimensions == SafeArrayGetDim(psa));
 
       assert(typeDef.arrayDef->type.id != TypeID::TYPEID_UNRESOLVED);
@@ -340,7 +340,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
             natType* pData = reinterpret_cast<natType*>(&array->lengths[1]); \
             for (LONG i = lBound; i <= uBound; i++, pData++, p++) \
             { \
-               if (!COMToScriptVariant(*p, arrayTypeDef.nativeType, tmpSV)) \
+               if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV)) \
                { \
                   array->Release(array); \
                   array = nullptr; \
@@ -360,7 +360,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
          int* pData = reinterpret_cast<int*>(&array->lengths[1]);
          for (LONG i = lBound; i <= uBound; i++, pData++, p++)
          {
-            if (!COMToScriptVariant(*p, arrayTypeDef.nativeType, tmpSV))
+            if (!COMToScriptVariant(p, arrayTypeDef.nativeType, tmpSV))
             {
                array->Release(array);
                array = nullptr;
@@ -390,36 +390,11 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
    return true;
 }
 
-void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, ScriptVariant& sv) const
+void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, ScriptVariant& sv, VARIANT* cv) const
 {
    assert(type.id != TypeID::TYPEID_UNRESOLVED);
    const TypeDef& typeDef = m_types[type.id];
-   switch (typeDef.category)
-   {
-   case TypeDef::TD_ALIAS: ReleaseScriptVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv); break;
-
-   case TypeDef::TD_NATIVE:
-      if (typeDef.nativeType.id == TypeID::TYPEID_STRING)
-         sv.vString.Release(&sv.vString);
-      break;
-
-   case TypeDef::TD_CLASS:
-      if (sv.vObject != nullptr)
-         PSC_RELEASE(typeDef.classDef->classDef, sv.vObject);
-      break;
-
-   case TypeDef::TD_ARRAY: sv.vArray->Release(sv.vArray); break;
-
-   default: assert(false);
-   }
-}
-
-// Convert incoming script variant to a COM variant, eventually clearing the script variant if requested
-void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, ScriptVariant& sv, VARIANT& cv) const
-{
-   assert(type.id != TypeID::TYPEID_UNRESOLVED);
-   const TypeDef& typeDef = m_types[type.id];
-   VariantInit(&cv);
+   VariantInit(cv);
    switch (typeDef.category)
    {
    case TypeDef::TD_ALIAS: ScriptToCOMVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv, cv); break;
@@ -430,58 +405,58 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
       case TypeID::TYPEID_UNRESOLVED:
       case TypeID::TYPEID_VOID:
          PLOGE << "Class '" << type.name << "' is referenced while it is not registered in the type library. Did you forgot to call 'Register" << type.name << "SCD(...)' ?";
-         V_VT(&cv) = VT_EMPTY;
+         V_VT(cv) = VT_EMPTY;
          break;
       case TypeID::TYPEID_BOOL:
-         V_VT(&cv) = VT_BOOL;
-         V_BOOL(&cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
+         V_VT(cv) = VT_BOOL;
+         V_BOOL(cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
          break;
       case TypeID::TYPEID_INT8:
-         V_VT(&cv) = VT_I1;
-         V_I1(&cv) = sv.vInt8;
+         V_VT(cv) = VT_I1;
+         V_I1(cv) = sv.vInt8;
          break;
       case TypeID::TYPEID_INT16:
-         V_VT(&cv) = VT_I2;
-         V_I2(&cv) = sv.vInt16;
+         V_VT(cv) = VT_I2;
+         V_I2(cv) = sv.vInt16;
          break;
       case TypeID::TYPEID_INT:
-         V_VT(&cv) = VT_I4;
-         V_I4(&cv) = sv.vInt;
+         V_VT(cv) = VT_I4;
+         V_I4(cv) = sv.vInt;
          break;
       case TypeID::TYPEID_INT64:
-         V_VT(&cv) = VT_I8;
-         V_I8(&cv) = sv.vInt64;
+         V_VT(cv) = VT_I8;
+         V_I8(cv) = sv.vInt64;
          break;
       case TypeID::TYPEID_UINT8:
-         V_VT(&cv) = VT_UI1;
-         V_UI1(&cv) = sv.vUInt8;
+         V_VT(cv) = VT_UI1;
+         V_UI1(cv) = sv.vUInt8;
          break;
       case TypeID::TYPEID_UINT16:
-         V_VT(&cv) = VT_UI2;
-         V_UI2(&cv) = sv.vUInt16;
+         V_VT(cv) = VT_UI2;
+         V_UI2(cv) = sv.vUInt16;
          break;
       case TypeID::TYPEID_UINT:
-         V_VT(&cv) = VT_UI4;
-         V_UI4(&cv) = sv.vUInt;
+         V_VT(cv) = VT_UI4;
+         V_UI4(cv) = sv.vUInt;
          break;
       case TypeID::TYPEID_UINT64:
-         V_VT(&cv) = VT_UI8;
-         V_UI8(&cv) = sv.vUInt64;
+         V_VT(cv) = VT_UI8;
+         V_UI8(cv) = sv.vUInt64;
          break;
       case TypeID::TYPEID_FLOAT:
-         V_VT(&cv) = VT_R4;
-         V_R4(&cv) = sv.vFloat;
+         V_VT(cv) = VT_R4;
+         V_R4(cv) = sv.vFloat;
          break;
       case TypeID::TYPEID_DOUBLE:
-         V_VT(&cv) = VT_R8;
-         V_R8(&cv) = sv.vDouble;
+         V_VT(cv) = VT_R8;
+         V_R8(cv) = sv.vDouble;
          break;
       case TypeID::TYPEID_STRING:
       {
-         V_VT(&cv) = VT_BSTR;
+         V_VT(cv) = VT_BSTR;
          const int len = MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, nullptr, 0);
-         V_BSTR(&cv) = SysAllocStringLen(nullptr, len);
-         MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(&cv), len);
+         V_BSTR(cv) = SysAllocStringLen(nullptr, len);
+         MultiByteToWideChar(CP_ACP, 0, sv.vString.string, -1, V_BSTR(cv), len);
          break;
       }
       default: assert(false);
@@ -491,12 +466,12 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
    case TypeDef::TD_CLASS:
       if (sv.vObject == nullptr)
       {
-         V_VT(&cv) = VT_NULL;
+         V_VT(cv) = VT_NULL;
       }
       else
       {
-         V_VT(&cv) = VT_DISPATCH;
-         V_DISPATCH(&cv) = new DynamicDispatch(this, typeDef.classDef->classDef, sv.vObject);
+         V_VT(cv) = VT_DISPATCH;
+         V_DISPATCH(cv) = new DynamicDispatch(this, typeDef.classDef->classDef, sv.vObject);
       }
       break;
 
@@ -537,8 +512,8 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          }
          #undef COPY_ARRAY
          SafeArrayUnaccessData(psa);
-         V_VT(&cv) = VT_ARRAY | VT_VARIANT;
-         V_ARRAY(&cv) = psa;
+         V_VT(cv) = VT_ARRAY | VT_VARIANT;
+         V_ARRAY(cv) = psa;
       }
       else if (typeDef.arrayDef->nDimensions == 2)
       {
@@ -579,8 +554,8 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          default: assert(false); // not yet implemented
          }
          #undef COPY_ARRAY
-         V_VT(&cv) = VT_ARRAY | VT_VARIANT;
-         V_ARRAY(&cv) = psa;
+         V_VT(cv) = VT_ARRAY | VT_VARIANT;
+         V_ARRAY(cv) = psa;
       }
       else
       {
@@ -590,6 +565,30 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
    }
    default:
       break;
+   }
+}
+
+void DynamicTypeLibrary::ReleaseScriptVariant(const ScriptTypeNameDef& type, ScriptVariant& sv) const
+{
+   assert(type.id != TypeID::TYPEID_UNRESOLVED);
+   const TypeDef& typeDef = m_types[type.id];
+   switch (typeDef.category)
+   {
+   case TypeDef::TD_ALIAS: ReleaseScriptVariant(const_cast<ScriptTypeNameDef&>(typeDef.aliasDef.typeDef), sv); break;
+
+   case TypeDef::TD_NATIVE:
+      if (typeDef.nativeType.id == TypeID::TYPEID_STRING)
+         sv.vString.Release(&sv.vString);
+      break;
+
+   case TypeDef::TD_CLASS:
+      if (sv.vObject != nullptr)
+         PSC_RELEASE(typeDef.classDef->classDef, sv.vObject);
+      break;
+
+   case TypeDef::TD_ARRAY: sv.vArray->Release(sv.vArray); break;
+
+   default: assert(false);
    }
 }
 
@@ -718,7 +717,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    ScriptVariant args[PSC_CALL_MAX_ARG_COUNT];
    for (unsigned int i = 0; i < pDispParams->cArgs; i++)
    {
-      if (!COMToScriptVariant(pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]))
+      if (!COMToScriptVariant(&pDispParams->rgvarg[pDispParams->cArgs - 1 - i], memberDef.callArgType[i], args[i]))
       {
          PLOGE << "Failed to convert a parameter in call to " << classDef->name.name << '.' << memberDef.name.name;
          *puArgErr = pDispParams->cArgs - 1 - i;
@@ -745,24 +744,61 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       return DISP_E_EXCEPTION;
    }
 
-   // Process byref args and dispose allocated arguments
+   // Update byref args and dispose temporary allocations
    for (unsigned int i = 0; i < pDispParams->cArgs; i++)
    {
-      VARIANT& cv = pDispParams->rgvarg[pDispParams->cArgs - 1 - i];
-      if (V_VT(&cv) & VT_BYREF)
+      VARIANT* cv = &pDispParams->rgvarg[pDispParams->cArgs - 1 - i];
+      if (V_VT(cv) & VT_BYREF)
       {
-         // FIXME update reference (including native type)
-         // ScriptToCOMVariant(memberDef.callArgType[i], args[i], cv);
-         //assert(false); // Not yet implemented
+         if (V_VT(cv) == (VT_BYREF | VT_VARIANT))
+            cv = V_VARIANTREF(cv);
+         switch (V_VT(cv) & ~VT_BYREF)
+         {
+         case VT_BOOL:
+         case VT_INT:
+         case VT_UINT:
+         case VT_R4:
+         case VT_R8:
+         case VT_I1:
+         case VT_I2:
+         case VT_I4:
+         case VT_I8:
+         case VT_UI1:
+         case VT_UI2:
+         case VT_UI4:
+         case VT_UI8:
+         case VT_BSTR:
+         {
+            // We update the referenced value but, for the time being, this is not really needed as we do not allow byref arguments in script
+            VARIANT varValue;
+            ScriptToCOMVariant(memberDef.callArgType[i], args[i], &varValue);
+            if (VariantChangeType(cv, &varValue, 0, V_VT(cv) & ~VT_BYREF) != S_OK)
+            {
+               PLOGE << "Failed to update byref COM argument after call";
+               assert(false);
+            }
+            break;
+         }
+         case VT_DISPATCH:
+            // We should update the referenced dispatch if needed, but for the time being, we do not allow byref arguments in script, so this may not happen
+            break;
+         case VT_ARRAY | VT_VARIANT:
+            // We should update the referenced array if needed, but for the time being, we do not allow byref arguments in script, so this may not happen
+            break;
+         default:
+            PLOGE << "Failed to update byref COM argument after call (not implemented)";
+            assert(false);
+            break;
+         }
       }
       ReleaseScriptVariant(memberDef.callArgType[i], args[i]);
    }
-
-   // Convert then dispose return value
+   
+   // Convert then dispose the return value if any
    if (memberDef.type.id != TypeID::TYPEID_VOID)
    {
       VariantClear(pVarResult);
-      ScriptToCOMVariant(memberDef.type, retValue, *pVarResult);
+      ScriptToCOMVariant(memberDef.type, retValue, pVarResult);
       ReleaseScriptVariant(memberDef.type, retValue);
    }
 
