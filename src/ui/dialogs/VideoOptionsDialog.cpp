@@ -40,7 +40,8 @@ protected:
 private:
    int m_loading = 0;
    Settings* m_editedSettings = nullptr;
-   Settings& m_appSettings, m_tableSettings;
+   Settings& m_appSettings;
+   Settings& m_tableSettings;
    CButton m_appSettingBtn;
    CButton m_tableSettingBtn;
 
