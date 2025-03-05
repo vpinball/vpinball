@@ -967,7 +967,7 @@ Player::~Player()
       vector<BaseTexture *> textures = m_renderer->m_renderDevice->m_texMan.GetLoadedTextures();
       for (BaseTexture *memtex : textures)
       {
-         auto tex = std::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_szName.empty()) && (x->m_pdsBuffer == memtex); });
+         auto tex = std::ranges::find_if(m_ptable->m_vimage.begin(), m_ptable->m_vimage.end(), [&memtex](Texture *&x) { return (!x->m_szName.empty()) && (x->m_pdsBuffer == memtex); });
          if (tex != m_ptable->m_vimage.end())
          {
             tinyxml2::XMLElement *node = textureAge[(*tex)->m_szName];
@@ -1765,16 +1765,16 @@ string Player::GetPerfInfo()
         << ((m_renderer->GetNPrerenderTris() + m_renderer->m_renderDevice->m_frameDrawnTriangles + 999) / 1000) << "k overall. DayNight " << quantizeUnsignedPercent(m_renderer->m_globalEmissionScale)
         << "%\n";
    info << "Draw calls: " << m_renderer->m_renderDevice->Perf_GetNumDrawCalls() << "  (" << m_renderer->m_renderDevice->Perf_GetNumLockCalls() << " Locks)\n";
-   info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << "\n";
+   info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << '\n';
    info << "Texture changes: " << m_renderer->m_renderDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_renderDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
-   info << "Shader/Parameter changes: " << m_renderer->m_renderDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_renderDevice->Perf_GetNumParameterChanges() << "\n";
-   info << "Objects: " << (unsigned int)m_vhitables.size() << "\n";
-   info << "\n";
+   info << "Shader/Parameter changes: " << m_renderer->m_renderDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_renderDevice->Perf_GetNumParameterChanges() << '\n';
+   info << "Objects: " << (unsigned int)m_vhitables.size() << '\n';
+   info << '\n';
 
    // Physics additional information
    info << m_physics->GetPerfInfo(resetMax);
-   info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << " "
-        << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << "\n";
+   info << "Ball Velocity / Ang.Vel.: " << (m_pactiveball ? (m_pactiveball->m_d.m_vel + (float)PHYS_FACTOR * m_physics->GetGravity()).Length() : -1.f) << ' '
+        << (m_pactiveball ? (m_pactiveball->m_angularmomentum / m_pactiveball->Inertia()).Length() : -1.f) << '\n';
 
    info << "Flipper keypress to rotate: "
       << ((INT64)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) < 0 ? int_as_float(0x7FC00000) : (double)(m_pininput.m_leftkey_down_usec_rotate_to_end - m_pininput.m_leftkey_down_usec) / 1000.) << " ms ("
@@ -1787,7 +1787,7 @@ string Player::GetPerfInfo()
    #if defined(ENABLE_DX9) // No GPU profiler for OpenGL / BGFX
    if (GetProfilingMode() != PF_DISABLED && m_closing == CS_PLAYING)
    {
-      info << "\n";
+      info << '\n';
       info << "Detailed (approximate) GPU profiling:\n";
 
       m_renderer->m_gpu_profiler.WaitForDataAndUpdate();
@@ -1810,7 +1810,7 @@ string Player::GetPerfInfo()
       {
          for (GTS gts = GTS(GTS_BeginFrame + 1); gts < GTS_EndFrame; gts = GTS(gts + 1))
          {
-            info << " " << GTS_name_item[gts] << ": " << float(1000.0 * m_renderer->m_gpu_profiler.DtAvg(gts)) << " ms (" << float(100. * m_renderer->m_gpu_profiler.DtAvg(gts) / dTDrawTotal)
+            info << ' ' << GTS_name_item[gts] << ": " << float(1000.0 * m_renderer->m_gpu_profiler.DtAvg(gts)) << " ms (" << float(100. * m_renderer->m_gpu_profiler.DtAvg(gts) / dTDrawTotal)
                  << "%%)\n";
          }
       }
@@ -2051,10 +2051,10 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
       if (m_maxFramerate != m_playfieldWnd->GetRefreshRate())
       {
          const U64 now = usec();
-         const int refreshLength = static_cast<int>(1000000. / (double)m_playfieldWnd->GetRefreshRate());
-         const int minimumFrameLength = static_cast<int>(1000000. / (double)m_maxFramerate);
-         const int maximumFrameLength = 5 * refreshLength;
-         const int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
+         const unsigned int refreshLength = static_cast<unsigned int>(1000000. / (double)m_playfieldWnd->GetRefreshRate());
+         const unsigned int minimumFrameLength = static_cast<unsigned int>(1000000. / (double)m_maxFramerate);
+         const unsigned int maximumFrameLength = 5 * refreshLength;
+         const unsigned int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
          while (now - m_renderer->m_renderDevice->m_lastPresentFrameTick < targetFrameLength)
          {
             m_curFrameSyncOnFPS = true;
@@ -2399,7 +2399,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
    {
       if (m_defaultSegSelected)
       {
-         auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
+         auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
          if (pCD == m_controllerSegDisplays.end())
          {
             assert(false); // This is not supposed to happen (we identify default by storing m_defaultSefId instead of the controller display only to manage vector resize operation)
@@ -2423,7 +2423,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
 
          // Update seg display list
          m_defaultSegId = getSrcMsg.entries[0].id;
-         auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
+         auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
          if (pCD == m_controllerSegDisplays.end())
          {
             m_controllerSegDisplays.push_back({ m_defaultSegId, 0, nullptr });
@@ -2446,7 +2446,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
    }
    else
    {
-      auto pCD = std::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [id](const ControllerSegDisplay &cd) { return cd.segId.id == id.id; });
+      auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [id](const ControllerSegDisplay &cd) { return cd.segId.id == id.id; });
       if (pCD == m_controllerSegDisplays.end())
       {
          // Search for the requested display
@@ -2500,7 +2500,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
       // Use previously selected DMD
       if (m_defaultDmdSelected)
       {
-         auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
+         auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
          if (pCD == m_controllerDisplays.end())
          {
             assert(false); // This is not supposed to happen (we identify default by storing m_defaultDmdId instead ot the controller display only to manage vector resize operation)
@@ -2535,7 +2535,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
             return { { 0 }, -1, nullptr };
 
          // Update in display list
-         auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
+         auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
          if (pCD == m_controllerDisplays.end())
          {
             m_controllerDisplays.push_back({m_defaultDmdId, -1, nullptr});
@@ -2551,7 +2551,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
    else
    {
       // FIXME this only match on the frame source id, not on the other properties (size/format)
-      auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.dmdId.id.id == id.id; });
+      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.dmdId.id.id == id.id; });
       if (pCD == m_controllerDisplays.end())
       {
          // Search for the requested DMD
@@ -2586,7 +2586,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
       return { display->dmdId, -1, nullptr };
 
    // Requesting the DMD may have triggered colorization and display list to be modified, so the display pointer may be bad at this point
-   auto pCD = std::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &getMsg.dmdId, sizeof(DmdSrcId)) == 0; });
+   auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &getMsg.dmdId, sizeof(DmdSrcId)) == 0; });
    if (pCD == m_controllerDisplays.end())
       return { display->dmdId, -1, nullptr };
    else

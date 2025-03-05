@@ -52,16 +52,16 @@ public:
    string GetPerfInfo(bool resetMax);
 
    const vector<HitObject *>& GetHitObjects() const { return m_hitoctree.GetHitObjects(); }
-   const vector<HitObject *> GetUIHitObjects(IEditable *editable);
+   vector<HitObject *> GetUIHitObjects(IEditable *editable);
 
 private:
    void AddCabinetBoundingHitShapes(PinTable *const table);
    void PhysicsSimulateCycle(float dtime); // Perform continuous collision detection for the given amount of delta time
 
    void ReleaseVHO(const vector<HitObject *> &vho, bool isUI);
-   
+
    Vertex3Ds m_gravity;
-   
+
    unsigned int m_physicsMaxLoops;
 
    bool m_swap_ball_collision_handling = false; // Swaps the order of ball-ball collision handling around each physics cycle (in regard to the RLC comment block in quadtree.cpp (hopefully ;)))

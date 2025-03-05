@@ -65,8 +65,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 {
    string classId(classDef->name.name);
    StrToLower(classId);
-   const auto& existingType = m_typenames.find(classId);
-   if (existingType != m_typenames.end())
+   if (m_typenames.contains(classId))
    {
       // TODO Validate that both definitions are equal
       return;
@@ -110,8 +109,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 
 void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* aliasedTypeName)
 {
-   const auto& existingType = m_typenames.find(name);
-   if (existingType != m_typenames.end())
+   if (m_typenames.contains(name))
    {
       // TODO Validate that both definitions are the same
       return;
@@ -129,8 +127,7 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
 
 void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
-   const auto& existingType = m_typenames.find(arrayDef->name.name);
-   if (existingType != m_typenames.end())
+   if (m_typenames.contains(arrayDef->name.name))
    {
       // TODO Validate that both definitions are the same
       return;
@@ -336,7 +333,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       ScriptArray* array = nullptr;
       ScriptVariant tmpSV;
       #define COPY_ARRAY(natType, svType) { \
-            const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(natType); \
+            const size_t arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(natType); \
             array = static_cast<ScriptArray*>(malloc(arraySize)); \
             array->Release = [](ScriptArray* me) { free(me); }; \
             array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1); \
@@ -356,7 +353,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
       {
       case TypeID::TYPEID_INT:
       {
-         const int arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(int);
+         const size_t arraySize = sizeof(ScriptArray) + typeDef.arrayDef->nDimensions * sizeof(unsigned int) + (uBound - lBound + 1) * sizeof(int);
          array = static_cast<ScriptArray*>(malloc(arraySize));
          array->Release = [](ScriptArray* me) { free(me); };
          array->lengths[0] = static_cast<unsigned int>(uBound - lBound + 1);
@@ -389,7 +386,7 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT& cv, const ScriptTypeN
 
    default: assert(false);
    }
-   
+
    return true;
 }
 
@@ -514,7 +511,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          const TypeDef& arrayTypeDef = m_types[typeDef.arrayDef->type.id];
          assert(arrayTypeDef.category == TypeDef::TD_NATIVE); // Other types are not yet supported
          #define COPY_ARRAY(natType, varType) { \
-               natType* pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[1]); \
+               const natType* const pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[1]); \
                for (unsigned int i = 0; i < sv.vArray->lengths[0]; i++) \
                { \
                   VariantInit(&pData[i]); \
@@ -555,7 +552,7 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          LONG ix[2];
          #define COPY_ARRAY(natType, varType) { \
                V_VT(&varValue) = VT_##varType; \
-               natType* pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[2]); \
+               const natType* const pSrc = reinterpret_cast<natType*>(&sv.vArray->lengths[2]); \
                for (ix[0] = 0; ix[0] < static_cast<LONG>(sv.vArray->lengths[0]); ix[0]++) \
                { \
                   for (ix[1] = 0; ix[1] < static_cast<LONG>(sv.vArray->lengths[1]); ix[1]++) \
@@ -760,7 +757,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       }
       ReleaseScriptVariant(memberDef.callArgType[i], args[i]);
    }
-   
+
    // Convert then dispose return value
    if (memberDef.type.id != TypeID::TYPEID_VOID)
    {

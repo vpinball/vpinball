@@ -140,7 +140,7 @@ inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
       const XrResult result = (x);                                                                                                                                                                 \
       if (!XR_SUCCEEDED(result) && g_pplayer->m_vrDevice)                                                                                                                                    \
       {                                                                                                                                                                                      \
-         PLOGE << "ERROR: OPENXR: " << int(result) << "(" << (m_xrInstance ? GetXRErrorString(m_xrInstance, result) : "") << ") " << y;        \
+         PLOGE << "ERROR: OPENXR: " << int(result) << '(' << (m_xrInstance ? GetXRErrorString(m_xrInstance, result) : "") << ") " << (y);        \
       }                                                                                                                                                                                      \
    }
 
@@ -197,7 +197,7 @@ public:
       if (FAILED(result))                                                                                                                                                                    \
       {                                                                                                                                                                                      \
          PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;                                                                                                                \
-         PLOGE << "ERROR: D3D11: " << y;                                                                                                                                                     \
+         PLOGE << "ERROR: D3D11: " << (y);                                                                                                                                                     \
       }                                                                                                                                                                                      \
    }
 
@@ -210,7 +210,7 @@ public:
       }                                                                                                                                                                                      \
    }
 
-class XRD3D11Backend : public XRGraphicBackend
+class XRD3D11Backend final : public XRGraphicBackend
 {
 public:
    XRD3D11Backend(const XrInstance& m_xrInstance, const XrSystemId& m_systemID)
@@ -741,7 +741,7 @@ void VRDevice::SetupHMD()
    // Pick the first application supported View Configuration Type con supported by the hardware.
    for (const XrViewConfigurationType& viewConfiguration : m_applicationViewConfigurations)
    {
-      if (std::find(m_viewConfigurations.begin(), m_viewConfigurations.end(), viewConfiguration) != m_viewConfigurations.end())
+      if (std::ranges::find(m_viewConfigurations.begin(), m_viewConfigurations.end(), viewConfiguration) != m_viewConfigurations.end())
       {
          m_viewConfiguration = viewConfiguration;
          break;
@@ -774,7 +774,7 @@ void VRDevice::SetupHMD()
    // Pick the first application supported blend mode supported by the hardware.
    for (const XrEnvironmentBlendMode& environmentBlendMode : m_applicationEnvironmentBlendModes)
    {
-      if (std::find(m_environmentBlendModes.begin(), m_environmentBlendModes.end(), environmentBlendMode) != m_environmentBlendModes.end())
+      if (std::ranges::find(m_environmentBlendModes.begin(), m_environmentBlendModes.end(), environmentBlendMode) != m_environmentBlendModes.end())
       {
          m_environmentBlendMode = environmentBlendMode;
          break;

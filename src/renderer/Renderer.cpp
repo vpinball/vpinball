@@ -741,9 +741,9 @@ BaseTexture* Renderer::EnvmapPrecalc(const Texture* envTex, const unsigned int r
                }
                else if (rad_format == BaseTexture::SRGB)
                {
-                  rad_envmap[offs  ] = (int)clamp(gammaApprox(sum_r) * 255.f, 0.f, 255.f);
-                  rad_envmap[offs+1] = (int)clamp(gammaApprox(sum_g) * 255.f, 0.f, 255.f);
-                  rad_envmap[offs+2] = (int)clamp(gammaApprox(sum_b) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs  ] = (BYTE)clamp(gammaApprox(sum_r) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs+1] = (BYTE)clamp(gammaApprox(sum_g) * 255.f, 0.f, 255.f);
+                  rad_envmap[offs+2] = (BYTE)clamp(gammaApprox(sum_b) * 255.f, 0.f, 255.f);
                }
             }
          });
@@ -1207,7 +1207,7 @@ void Renderer::RenderFrame()
    PrepareVideoBuffers(m_renderDevice->GetOutputBackBuffer());
 }
 
-Texture* LoadSegSDF(Texture& tex, const string& path)
+static Texture* LoadSegSDF(Texture& tex, const string& path)
 {
    if (tex.m_pdsBuffer == nullptr)
    {

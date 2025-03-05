@@ -499,7 +499,7 @@ AsyncDynamicQuadTree *PhysicsEngine::GetUIQuadTree()
    return m_UIQuadTtree;
 }
 
-const vector<HitObject *> PhysicsEngine::GetUIHitObjects(IEditable *editable)
+vector<HitObject *> PhysicsEngine::GetUIHitObjects(IEditable *editable)
 {
    return GetUIQuadTree()->GetHitObjects(editable);
 }
@@ -525,7 +525,7 @@ void PhysicsEngine::RayCast(const Vertex3Ds &source, const Vertex3Ds &target, co
    }
 
    // Sort result by distance from viewer
-   sort(vhoHit.begin(), vhoHit.end(), [](const HitTestResult& a, const HitTestResult& b) { return a.m_time < b.m_time; });
+   std::ranges::sort(vhoHit.begin(), vhoHit.end(), [](const HitTestResult& a, const HitTestResult& b) { return a.m_time < b.m_time; });
 }
 
 
@@ -727,7 +727,7 @@ void PhysicsEngine::UpdatePhysics()
             pball->m_ringcounter_oldpos = 0;
       }
 
-      //PLOGD << "PT: " << physics_diff_time << " " << physics_to_graphic_diff_time << " " << (U32)(m_curPhysicsFrameTime/1000) << " " << (U32)(initial_time_usec/1000) << " " << cur_time_msec;
+      //PLOGD << "PT: " << physics_diff_time << ' ' << physics_to_graphic_diff_time << ' ' << (U32)(m_curPhysicsFrameTime/1000) << ' ' << (U32)(initial_time_usec/1000) << ' ' << cur_time_msec;
 
       m_curPhysicsFrameTime = m_nextPhysicsFrameTime; // new cycle, on physics frame boundary
       m_nextPhysicsFrameTime += PHYSICS_STEPTIME;     // advance physics position
@@ -1014,10 +1014,10 @@ string PhysicsEngine::GetPerfInfo(bool resetMax)
 #ifdef C_DYNAMIC
    info << " Static:" << c_staticcnt;
 #endif
-   info << " Embed:" << c_embedcnts << " TimeSearch:" << c_timesearch << "\n";
-   info << " kDObjects:" << m_hitoctree_dynamic.GetObjectCount() << " kD:" << m_hitoctree_dynamic.GetNLevels() << "\n"
-        << " QuadObjects:" << m_hitoctree.GetObjectCount() << " Quadtree:" << m_hitoctree.GetNLevels() << "\n"
-        << " Traversed:" << c_traversed << " Tested:" << c_tested << " DeepTested:" << c_deepTested << "\n";
+   info << " Embed:" << c_embedcnts << " TimeSearch:" << c_timesearch << '\n';
+   info << " kDObjects:" << m_hitoctree_dynamic.GetObjectCount() << " kD:" << m_hitoctree_dynamic.GetNLevels() << '\n'
+        << " QuadObjects:" << m_hitoctree.GetObjectCount() << " Quadtree:" << m_hitoctree.GetNLevels() << '\n'
+        << " Traversed:" << c_traversed << " Tested:" << c_tested << " DeepTested:" << c_deepTested << '\n';
    info << std::setprecision(1);
 #endif
 

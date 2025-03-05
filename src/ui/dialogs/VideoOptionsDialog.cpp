@@ -65,7 +65,7 @@ private:
    CEdit m_wndY;
 };
 
-class RenderOptPage : public VideoOptionPropPage
+class RenderOptPage final : public VideoOptionPropPage
 {
 public:
    RenderOptPage(Settings& appSettings, Settings& tableSettings);
@@ -145,7 +145,7 @@ private:
    #endif
 };
 
-class DisplayStyleOptPage : public VideoOptionPropPage
+class DisplayStyleOptPage final : public VideoOptionPropPage
 {
 public:
    DisplayStyleOptPage(Settings& appSettings, Settings& tableSettings);
@@ -185,7 +185,7 @@ private:
    CColorDialog m_colorDialog;
 };
 
-class CabinetOptPage : public VideoOptionPropPage
+class CabinetOptPage final : public VideoOptionPropPage
 {
 public:
    CabinetOptPage(Settings& appSettings, Settings& tableSettings);
@@ -214,7 +214,7 @@ private:
    CEdit m_displayInclination;
 };
 
-class PFViewOptPage : public VideoOptionPropPage
+class PFViewOptPage final : public VideoOptionPropPage
 {
 public:
    PFViewOptPage(Settings& appSettings, Settings& tableSettings);
@@ -235,7 +235,7 @@ private:
    CComboBox m_viewMode;
 };
 
-class ScoreViewOptPage : public VideoOptionPropPage
+class ScoreViewOptPage final : public VideoOptionPropPage
 {
 public:
    ScoreViewOptPage(Settings& appSettings, Settings& tableSettings);
@@ -252,7 +252,7 @@ protected:
    virtual void SaveSettings(Settings& settings, bool saveAll);
 };
 
-class AlphaViewOptPage : public VideoOptionPropPage
+class AlphaViewOptPage final : public VideoOptionPropPage
 {
 public:
    AlphaViewOptPage(Settings& appSettings, Settings& tableSettings);
@@ -273,7 +273,7 @@ private:
    CComboBox m_viewMode;
 };
 
-class BackglassViewOptPage : public VideoOptionPropPage
+class BackglassViewOptPage final : public VideoOptionPropPage
 {
 public:
    BackglassViewOptPage(Settings& appSettings, Settings& tableSettings);
@@ -385,8 +385,8 @@ void VideoOptionPropPage::SetupCombo(CComboBox& combo, int n, ...)
    va_end(arguments);
 }
 
-void VideoOptionPropPage::AddToolTip(CWnd& wnd, const char* const text) {
-   m_tooltip.AddTool(wnd, text);
+void VideoOptionPropPage::AddToolTip(CWnd& wnd, const char* const tip) {
+   m_tooltip.AddTool(wnd, tip);
 }
 
 void VideoOptionPropPage::BrowseImage(CEdit& editCtl)
@@ -435,7 +435,7 @@ void VideoOptionPropPage::InitDisplayControls(const Settings::Section wndSection
    }
    m_wndAspectRatio.SetRedraw(false);
    m_wndAspectRatio.AddString("Free");
-   for (int j = 1; j < std::size(aspectRatios); j++)
+   for (size_t j = 1; j < std::size(aspectRatios); j++)
    {
       const string tmp = (aspectRatios[j].x > aspectRatios[j].y ? "Landscape: "s : "Portrait: "s) + std::to_string(max(aspectRatios[j].x, aspectRatios[j].y)) + " x " + std::to_string(min(aspectRatios[j].x, aspectRatios[j].y));
       m_wndAspectRatio.AddString(tmp.c_str());
@@ -549,7 +549,7 @@ void VideoOptionPropPage::UpdateFullscreenModesList()
    {
       double best = DBL_MAX;
       int2 bestAR;
-      for (int j = 1; j < std::size(aspectRatios); j++)
+      for (size_t j = 1; j < std::size(aspectRatios); j++)
       {
          const double fit = abs(1. - (double)(m_allVideoModes[i].height * aspectRatios[j].x) / (double)(m_allVideoModes[i].width * aspectRatios[j].y));
          if (fit < best)
@@ -1023,7 +1023,7 @@ BOOL RenderOptPage::OnInitDialog()
       bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
       int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
       m_gfxBackend.SetRedraw(false);
-      for (size_t i = 0; i < nRendererSupported; ++i)
+      for (int i = 0; i < nRendererSupported; ++i)
          m_gfxBackend.AddString(m_bgfxRendererNames[supportedRenderers[i]].c_str());
       m_gfxBackend.SetRedraw(true);
    #else
@@ -1241,9 +1241,9 @@ void RenderOptPage::LoadSettings(Settings& settings)
       string gfxBackend = settings.LoadValueWithDefault(Settings::Player, "GfxBackend"s, m_bgfxRendererNames[bgfx::RendererType::Vulkan]);
       bgfx::RendererType::Enum supportedRenderers[bgfx::RendererType::Count];
       int nRendererSupported = bgfx::getSupportedRenderers(bgfx::RendererType::Count, supportedRenderers);
-      for (size_t i = 0; i < nRendererSupported; ++i)
+      for (int i = 0; i < nRendererSupported; ++i)
          if (gfxBackend == m_bgfxRendererNames[supportedRenderers[i]])
-            m_gfxBackend.SetCurSel(static_cast<int>(i));
+            m_gfxBackend.SetCurSel(i);
    }
    #endif
 

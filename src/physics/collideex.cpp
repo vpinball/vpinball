@@ -936,10 +936,12 @@ void HitTriangle::DrawUI(std::function<Vertex2D(Vertex3Ds)> project, ImDrawList*
       const Vertex2D p1 = project(Vertex3Ds(m_rgv[1].x, m_rgv[1].y, m_rgv[1].z));
       const Vertex2D p2 = project(Vertex3Ds(m_rgv[2].x, m_rgv[2].y, m_rgv[2].z));
       if (p0.x != FLT_MAX && p1.x != FLT_MAX && p2.x != FLT_MAX)
+      {
          if (fill)
             drawList->AddTriangleFilled(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
          else
             drawList->AddTriangle(ImVec2(p0.x, p0.y), ImVec2(p1.x, p1.y), ImVec2(p2.x, p2.y), fCol);
+      }
    }
 }
 
@@ -951,7 +953,7 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 {
    if (!m_enabled) return -1.0f;
 
-   //PLOGD << "HitPlane test - " << pball->m_pos.z << " " << pball->m_vel.z;
+   //PLOGD << "HitPlane test - " << pball->m_pos.z << ' ' << pball->m_vel.z;
 
    const float bnv = m_normal.Dot(ball.m_vel); // speed in normal direction
 
@@ -1023,8 +1025,8 @@ float HitPlane::HitTest(const BallS& ball, const float dtime, CollisionEvent& co
 void HitPlane::Collide(const CollisionEvent& coll)
 {
    //PLOGD << "Playfield COLLISION - ("
-   //      << coll.m_ball->m_d.m_pos.x << " " << coll.m_ball->m_d.m_pos.y << " " << coll.m_ball->m_d.m_pos.z << ") - ("
-   //      << coll.m_ball->m_d.m_vel.x << " " << coll.m_ball->m_d.m_vel.y << " " << coll.m_ball->m_d.m_vel.z << ")";
+   //      << coll.m_ball->m_d.m_pos.x << ' ' << coll.m_ball->m_d.m_pos.y << ' ' << coll.m_ball->m_d.m_pos.z << ") - ("
+   //      << coll.m_ball->m_d.m_vel.x << ' ' << coll.m_ball->m_d.m_vel.y << ' ' << coll.m_ball->m_d.m_vel.z << ')';
    coll.m_ball->Collide3DWall(coll.m_hitnormal, m_elasticity, m_elasticityFalloff, m_friction, m_scatter);
 
 #ifdef C_EMBEDSHOT_PLANE

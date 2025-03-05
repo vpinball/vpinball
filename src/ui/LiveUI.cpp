@@ -678,7 +678,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
       // VR headset cover full view range, so use a relative part of the full range for the DPI
       m_dpi = min(m_player->m_vrDevice->GetEyeWidth(), m_player->m_vrDevice->GetEyeHeight()) / 2000.f;
       #ifdef ENABLE_BGFX
-      ImGui_Implbgfx_SetStereoOfs(m_player->m_vrDevice->GetEyeWidth() * 0.15f);
+      ImGui_Implbgfx_SetStereoOfs((float)m_player->m_vrDevice->GetEyeWidth() * 0.15f);
       #endif
    }
    else
@@ -1262,7 +1262,7 @@ void LiveUI::UpdatePerfOverlay()
 
       m_plotFPS.SetRolling(m_showRollingFPS);
       m_plotFPSSmoothed.SetRolling(m_showRollingFPS);
-      m_plotFPSSmoothed.AddPoint(t, 1e-3f * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)); // Frame time in ms
+      m_plotFPSSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_FRAME)); // Frame time in ms
       m_plotFPS.AddPoint(t, m_plotFPS.GetLast().y * 0.95f + m_plotFPSSmoothed.GetLast().y * 0.05f);
       if (m_plotFPS.HasData() && m_plotFPSSmoothed.HasData() && ImPlot::BeginPlot("##FPS", ImVec2(-1, 150), ImPlotFlags_None))
       {
@@ -1282,7 +1282,7 @@ void LiveUI::UpdatePerfOverlay()
 
       m_plotPhysx.SetRolling(m_showRollingFPS);
       m_plotPhysxSmoothed.SetRolling(m_showRollingFPS);
-      m_plotPhysxSmoothed.AddPoint(t, 1e-3f * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS)); // Script in ms
+      m_plotPhysxSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_PHYSICS)); // Script in ms
       m_plotPhysx.AddPoint(t, m_plotPhysx.GetLast().y * 0.95f + m_plotPhysxSmoothed.GetLast().y * 0.05f);
       if (m_plotPhysx.HasData() && m_plotPhysxSmoothed.HasData() && ImPlot::BeginPlot("##Physics", ImVec2(-1, 150), ImPlotFlags_None))
       {
@@ -1302,7 +1302,7 @@ void LiveUI::UpdatePerfOverlay()
 
       m_plotScript.SetRolling(m_showRollingFPS);
       m_plotScriptSmoothed.SetRolling(m_showRollingFPS);
-      m_plotScriptSmoothed.AddPoint(t, 1e-3f * m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)); // Physics in ms
+      m_plotScriptSmoothed.AddPoint(t, 1e-3f * (float)m_player->m_logicProfiler.GetPrev(FrameProfiler::PROFILE_SCRIPT)); // Physics in ms
       m_plotScript.AddPoint(t, m_plotScript.GetLast().y * 0.95f + m_plotScriptSmoothed.GetLast().y * 0.05f);
       if (m_plotScript.HasData() && m_plotScriptSmoothed.HasData() && ImPlot::BeginPlot("##Script", ImVec2(-1, 150), ImPlotFlags_None))
       {
@@ -3153,22 +3153,25 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    if (clearRotation)
       rotX = rotY = rotZ = 0.f;
 
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE)
+   switch (m_selection.editable->GetItemType())
    {
-      Ball *const ball = static_cast<Ball *>(m_selection.editable);
+   case eItemBall:
+   {
+      Ball *const ball = static_cast<Ball *>(m_selection.editable); //!! dynamic_cast and below
       ball->m_hitBall.m_d.m_pos.x = posX;
       ball->m_hitBall.m_d.m_pos.y = posY;
       ball->m_hitBall.m_d.m_pos.z = posZ;
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBumper)
+   case eItemBumper:
    {
       Bumper *const f = static_cast<Bumper *>(m_selection.editable);
       const float px = f->m_d.m_vCenter.x, py = f->m_d.m_vCenter.y;
       f->Translate(Vertex2D(posX - px, posY - py));
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
+   case eItemFlasher:
    {
       Flasher *const p = static_cast<Flasher *>(m_selection.editable);
       const float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
@@ -3177,16 +3180,16 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       p->put_RotX(rotX);
       p->put_RotY(rotY);
       p->put_RotZ(rotZ);
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
+   case eItemFlipper:
    {
       Flipper *const f = static_cast<Flipper *>(m_selection.editable);
       const float px = f->m_d.m_Center.x, py = f->m_d.m_Center.y;
       f->Translate(Vertex2D(posX - px, posY - py));
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
+   case eItemLight:
    {
       Light *const l = static_cast<Light *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
@@ -3194,9 +3197,9 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       l->Translate(Vertex2D(posX - px, posY - py));
       l->m_d.m_height += posZ - pz;
       l->m_d.m_bulbHaloHeight += posZ - pz;
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+   case eItemPrimitive:
    {
       Primitive *const p = static_cast<Primitive *>(m_selection.editable);
       p->m_d.m_vPosition.x = posX;
@@ -3208,9 +3211,9 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       p->m_d.m_vSize.x = xscale;
       p->m_d.m_vSize.y = yscale;
       p->m_d.m_vSize.z = zscale;
+      break;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
+   case eItemSurface:
    {
       Surface *const obj = static_cast<Surface *>(m_selection.editable);
       Vertex2D center = obj->GetPointCenter();
@@ -3218,6 +3221,8 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       obj->TranslatePoints(Vertex2D(posX - px, posY - py));
       obj->m_d.m_heightbottom += posZ - pz;
       obj->m_d.m_heighttop += posZ - pz;
+      break;
+   }
    }
 }
 
@@ -3910,10 +3915,10 @@ void LiveUI::UpdatePlumbWindow()
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
       }
       ImGui::BeginDisabled(!enablePlumbTilt);
-      float plumbTiltThreshold = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * 45.f / 1000.f;
+      float plumbTiltThreshold = (float)m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltSensitivity"s, 400) * (float)(45. / 1000.);
       if (ImGui::InputFloat("Tilt threshold angle", &plumbTiltThreshold, 0.1f, 1.0f, "%.1f"))
       {
-         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, static_cast<int>(round(plumbTiltThreshold * 1000.f / 45.f)));
+         g_pvp->m_settings.SaveValue(Settings::Player, "TiltSensitivity"s, static_cast<int>(round(plumbTiltThreshold * (float)(1000. / 45.))));
          m_player->m_physics->ReadNudgeSettings(m_live_table->m_settings);
       }
       float plumbTiltMass = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "TiltInertia"s, 100.f);

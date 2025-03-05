@@ -58,11 +58,11 @@ BaseTexture *ResURIResolver::GetDisplay(const string &link, const IEditable *con
          endpointId = plugin->m_endpointId;
       if ((endpointId != 0)
          && (uri.path == "/getstate")
-         && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
+         && (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
          && (uri.query.at("src") == "display"))
       {
          int displayId;
-         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
+         if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
             try_parse_int(uri.query.at("id"), displayId);
          lambda = [endpointId, displayId](const string &, const IEditable *context) -> BaseTexture * { return g_pplayer->GetControllerDisplay({ endpointId, static_cast<uint32_t>(displayId) }).frame; };
       }
@@ -93,7 +93,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
       if (uri.path == "/alpha")
       {
          int subId = -1;
-         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
+         if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
             try_parse_int(uri.query.at("sub"), subId);
          lambda = [subId](const string &, const IEditable *context) -> SegDisplay {
             if (subId < 0)
@@ -116,14 +116,14 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
          endpointId = plugin->m_endpointId;
       if ((endpointId != 0)
          && (uri.path == "/getstate")
-         && (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
+         && (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
          && (uri.query.at("src") == "alpha"))
       {
          int displayId = -1;
-         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
+         if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
             try_parse_int(uri.query.at("id"), displayId);
          int subId = -1;
-         if (std::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
+         if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
             try_parse_int(uri.query.at("sub"), subId);
          lambda = [endpointId, displayId, subId](const string &, const IEditable *context) -> SegDisplay
          {

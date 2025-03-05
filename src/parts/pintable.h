@@ -63,7 +63,7 @@ enum EnumWhereUsedSource //The 'Where Used' button appears on both the 'Image Ma
 
 class ScriptGlobalTable;
 
-class PinTableMDI : public CMDIChild
+class PinTableMDI final : public CMDIChild
 {
 public:
    PinTableMDI(VPinball *vpinball);
@@ -732,7 +732,7 @@ public:
    vector<RenderProbe *> GetRenderProbeList(RenderProbe::ProbeType type) const
    {
       std::vector<RenderProbe *> list;
-      std::copy_if(m_vrenderprobe.begin(), m_vrenderprobe.end(), std::back_inserter(list), [type](RenderProbe *rp) { return rp->GetType() == type; });
+      std::ranges::copy_if(m_vrenderprobe.begin(), m_vrenderprobe.end(), std::back_inserter(list), [type](const RenderProbe *rp) { return rp->GetType() == type; });
       return list;
    }
 
