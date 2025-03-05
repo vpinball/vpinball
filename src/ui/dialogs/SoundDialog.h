@@ -18,6 +18,7 @@ protected:
     virtual void OnCancel();
 
 private:
+    CResizer m_resizer;
     void Import();
     void ReImport();
     void ReImportFrom();
@@ -28,6 +29,7 @@ private:
     void DeleteSound();
     void LoadPosition();
     void SavePosition();
+    void AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
     HWND hSoundList;
     static int m_columnSortOrder;
