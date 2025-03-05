@@ -134,6 +134,7 @@ public:
    void DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent = false, const float depth = 0.f);
    void DrawFullscreenTexturedQuad(Shader* shader);
    void DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, RenderTarget* dest, float kernel_size, int singleLayer = -1);
+   void AddBeginOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame.AddBeginOfFrameCmd(cmd); }
    void AddEndOfFrameCmd(const std::function<void()>& cmd) { m_renderFrame.AddEndOfFrameCmd(cmd); }
    void LogNextFrame() { m_logNextFrame = true; }
    bool IsLogNextFrame() const { return m_logNextFrame; }
