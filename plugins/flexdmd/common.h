@@ -10,6 +10,17 @@ using std::string;
 #include <vector>
 using std::vector;
 
+// Shared logging
+#include "LoggingPlugin.h"
+LPI_USE();
+#define LOGD LPI_LOGD
+#define LOGI LPI_LOGI
+#define LOGE LPI_LOGE
+
+// Scriptable API
+#include "ScriptablePlugin.h"
+PSC_USE_ERROR();
+
 typedef uint32_t ColorRGBA32;
 #define RGB(r, g, b) static_cast<ColorRGBA32>(static_cast<uint8_t>(r) | (static_cast<uint8_t>(g) << 8) | (static_cast<uint8_t>(b) << 16))
 #define GetRValue(rgba32) static_cast<uint8_t>(rgba32)

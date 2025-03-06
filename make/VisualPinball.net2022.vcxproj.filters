@@ -264,9 +264,6 @@
     <ClCompile Include="src/parts/trigger.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/AsyncDynamicQuadTree.cpp">
-      <Filter>physics</Filter>
-    </ClCompile>
     <ClCompile Include="src/physics/kdtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
@@ -708,6 +705,9 @@
     <ClCompile Include="src/core/ResURIResolver.cpp">
       <Filter>core</Filter>
     </ClCompile>
+    <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp">
+      <Filter>physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -959,9 +959,6 @@
     <ClInclude Include="src/parts/rubber.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClCompile Include="src/physics/AsyncDynamicQuadTree.h">
-      <Filter>physics</Filter>
-    </ClCompile>
     <ClInclude Include="src/physics/collide.h">
       <Filter>physics</Filter>
     </ClInclude>
@@ -1840,6 +1837,12 @@
     </ClInclude>
     <ClInclude Include="src\core\ResURIResolver.h">
       <Filter>core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\plugins\LoggingPlugin.h">
+      <Filter>plugin</Filter>
+    </ClInclude>
+    <ClInclude Include="src\physics\AsyncDynamicQuadTree.h">
+      <Filter>physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

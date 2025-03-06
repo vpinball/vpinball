@@ -34,7 +34,6 @@ ImageSequence* ImageSequence::Create(FlexDMD* pFlexDMD, AssetManager* pAssetMana
 
 ImageSequence::~ImageSequence()
 {
-   assert(m_refCount == 0);
    for (auto image : m_frames)
       image->Release();
 }

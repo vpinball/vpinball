@@ -2,7 +2,6 @@
 
 #include "MsgPlugin.h"
 #include "CorePlugin.h"
-#include "ScriptablePlugin.h"
 
 #include <functional>
 #include <cassert>
@@ -40,11 +39,11 @@ PSC_CLASS_END(Font)
 #include "actors/Actions.h"
 #define PSC_VAR_Alignment(variant) PSC_VAR_enum(Alignment, variant)
 #define PSC_VAR_SET_Alignment(variant, value) PSC_VAR_SET_enum(Alignment, variant, value)
-PSC_CLASS_ALIAS(Alignment, int)
+PSC_CLASS_ALIAS(Alignment, int32)
 
 #define PSC_VAR_Scaling(variant) PSC_VAR_enum(Scaling, variant)
 #define PSC_VAR_SET_Scaling(variant, value) PSC_VAR_SET_enum(Scaling, variant, value)
-PSC_CLASS_ALIAS(Scaling, int)
+PSC_CLASS_ALIAS(Scaling, int32)
 
 #define PSC_VAR_Actor(variant) PSC_VAR_object(Actor, variant)
 #define PSC_VAR_SET_ActionFactory(variant, value) PSC_VAR_SET_object(ActionFactory, variant, value)
@@ -171,7 +170,7 @@ PSC_CLASS_END(DelayedAction)
 
 #define PSC_VAR_Interpolation(variant) PSC_VAR_enum(Interpolation, variant)
 #define PSC_VAR_SET_Interpolation(variant, value) PSC_VAR_SET_enum(Interpolation, variant, value)
-PSC_CLASS_ALIAS(Interpolation, int)
+PSC_CLASS_ALIAS(Interpolation, int32)
 
 PSC_CLASS_START(MoveToAction)
    PSC_INHERIT_CLASS(MoveToAction, Action)
@@ -277,7 +276,7 @@ PSC_CLASS_END(UltraDMD)
 
 #define PSC_VAR_RenderMode(variant) PSC_VAR_enum(RenderMode, variant)
 #define PSC_VAR_SET_RenderMode(variant, value) PSC_VAR_SET_enum(RenderMode, variant, value)
-PSC_CLASS_ALIAS(RenderMode, int)
+PSC_CLASS_ALIAS(RenderMode, int32)
 
 PSC_ARRAY1(ByteArray, uint8, 0)
 #define PSC_VAR_SET_ByteArray(variant, value) PSC_VAR_SET_array1(ByteArray, variant, value)
@@ -551,6 +550,10 @@ static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msg
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Main plugin
+
+PSC_ERROR_IMPLEMENT(scriptApi); // Implement script error
+
+LPI_IMPLEMENT // Implement shared login support
 
 static void OnShowChanged(FlexDMD* pFlex)
 {

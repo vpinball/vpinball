@@ -149,12 +149,12 @@ PSC_CLASS_START(Controller)
    PSC_PROP_RW(Controller, bool, Hidden)
    // Emulated machine state access
    PSC_PROP_RW_ARRAY1(Controller, bool, Switch, int)
-   PSC_PROP_W_ARRAY1(Controller, int, Mech, int)
-   PSC_PROP_R_ARRAY1(Controller, int, GetMech, int)
+   PSC_PROP_W_ARRAY1(Controller, int32, Mech, int)
+   PSC_PROP_R_ARRAY1(Controller, int32, GetMech, int)
    PSC_PROP_R_ARRAY1(Controller, bool, Lamp, int)
    PSC_PROP_R_ARRAY1(Controller, bool, Solenoid, int)
-   PSC_PROP_R_ARRAY1(Controller, int, GIString, int)
-   PSC_PROP_RW_ARRAY1(Controller, int, Dip, int)
+   PSC_PROP_R_ARRAY1(Controller, int32, GIString, int)
+   PSC_PROP_RW_ARRAY1(Controller, int32, Dip, int)
    PSC_PROP_R_StructArray3(Controller, PinmameNVRAMState, nvramNo, oldStat, currStat, ChangedNVRAM);
    PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);
    PSC_PROP_R_StructArray2(Controller, PinmameLampState, lampNo, state, ChangedLamps);

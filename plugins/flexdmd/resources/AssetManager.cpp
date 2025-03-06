@@ -3,6 +3,8 @@
 
 #include <filesystem>
 
+#include "common.h"
+
 #include "DotFilter.h"
 #include "PadFilter.h"
 #include "AdditiveFilter.h"
@@ -51,7 +53,7 @@ void AssetManager::SetBasePath(const string& szBasePath)
    m_szBasePath = normalize_path_separators(szBasePath);
    if (!m_szBasePath.ends_with(PATH_SEPARATOR_CHAR))
       m_szBasePath += PATH_SEPARATOR_CHAR;
-   // PLOGI.printf("Base path set to: %s", m_szBasePath.c_str());
+   LOGI("Base path set to: %s", m_szBasePath.c_str());
 }
 
 AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
@@ -59,7 +61,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    string normalizedSrc = normalize_path_separators(src);
 
    if (normalizedSrc.find('|') != string::npos) {
-      // PLOGW.printf("'|' is not allowed inside file names as it is the separator for image sequences: %s", normalizedSrc.c_str());
+      LOGE("'|' is not allowed inside file names as it is the separator for image sequences: %s", normalizedSrc.c_str());
       return nullptr;
    }
 
@@ -143,7 +145,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    else if (ext == "fnt")
       pAssetSrc->SetAssetType(AssetType_BMFont);
    else {
-      // PLOGW.printf("Unsupported asset extension: %s", ext.c_str());
+      LOGE("Unsupported asset extension: %s", ext.c_str());
    }
 
    if (pAssetSrc->GetAssetType() == AssetType_Image) {
@@ -195,7 +197,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
             pAssetSrc->GetBitmapFilters().push_back(pFilter);
          }
          else {
-            // PLOGE.printf("Unknown bitmap parameter: %s", definition.c_str());
+            LOGE("Unknown bitmap parameter: %s", definition.c_str());
          }
       }
    }
@@ -214,12 +216,12 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
          else if (definition.starts_with("border_size=") && try_parse_int(definition.substr(12), borderSize))
             pAssetSrc->SetFontBorderSize(borderSize);
          else {
-            //PLOGE.printf("Unknown font definition: %s", definition.c_str());
+            LOGE("Unknown font definition: %s", definition.c_str());
          }
       }
    }
    else if (pAssetSrc->GetAssetType() == AssetType_Unknown) {
-      // PLOGE.printf("Failed to resolve asset: %s", normalizedSrc.c_str());
+      LOGE("Failed to resolve asset: %s", normalizedSrc.c_str());
    }
 
    return pAssetSrc;
@@ -302,7 +304,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
    }
 
    if (!pAsset) {
-      //PLOGW.printf("Asset not loaded: %s", pSrc->GetPath().c_str());
+      LOGE("Asset not loaded: %s", pSrc->GetPath().c_str());
    }
 
    return pAsset;
@@ -311,7 +313,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
 Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
 {
    if (pSrc->GetAssetType() != AssetType_Image && pSrc->GetAssetType() != AssetType_GIF) {
-      // PLOGE.printf("Asked to load a bitmap from a resource of type: %d", pSrc->GetAssetType());
+      LOGE("Asked to load a bitmap from a resource of type: %d", pSrc->GetAssetType());
    }
    auto it = m_cachedBitmaps.find(pSrc->GetId());
    if (it != m_cachedBitmaps.end())
@@ -325,7 +327,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
       Bitmap* pCachedBitmap = new Bitmap(it->second);
       pCachedBitmap->AddRef();
       m_cachedBitmaps[pSrc->GetId()] = pCachedBitmap;
-      //PLOGI.printf("Bitmap added to cache: %s", pSrc->GetId().c_str());
+      LOGI("Bitmap added to cache: %s", pSrc->GetId().c_str());
       if (pSrc->GetAssetType() == AssetType_Image) {
          for (BitmapFilter* pFilter : pSrc->GetBitmapFilters())
             pFilter->Filter(pCachedBitmap);
@@ -339,7 +341,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
           Bitmap* pCachedBitmap = new Bitmap(pData, pSrc->GetAssetType());
           pCachedBitmap->AddRef();
           m_cachedBitmaps[pSrc->GetIdWithoutOptions()] = pCachedBitmap;
-          //PLOGI.printf("Bitmap added to cache: %s", pSrc->GetIdWithoutOptions().c_str());
+          LOGI("Bitmap added to cache: %s", pSrc->GetIdWithoutOptions().c_str());
           if (pSrc->GetAssetType() == AssetType_Image) {
              if (!pSrc->GetBitmapFilters().empty()) {
                 pCachedBitmap = new Bitmap(pCachedBitmap);
@@ -347,7 +349,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
                 m_cachedBitmaps[pSrc->GetId()] = pCachedBitmap;
                 for (BitmapFilter* pFilter : pSrc->GetBitmapFilters())
                    pFilter->Filter(pCachedBitmap);
-                //PLOGI.printf("Bitmap added to cache: %s", pSrc->GetId().c_str());
+                LOGI("Bitmap added to cache: %s", pSrc->GetId().c_str());
              }
           }
           return pCachedBitmap;
@@ -359,7 +361,7 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
 Font* AssetManager::GetFont(AssetSrc* pSrc)
 {
    if (pSrc->GetAssetType() != AssetType_BMFont) {
-      //PLOGE.printf("Asked to load a font from a resource of type: %d", pSrc->GetAssetType());
+      LOGE("Asked to load a font from a resource of type: %d", pSrc->GetAssetType());
    }
    auto it = m_cachedFonts.find(pSrc->GetId());
    if (it != m_cachedFonts.end())
@@ -370,6 +372,6 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    Font* pFont = new Font(this, pSrc);
    pFont->AddRef();
    m_cachedFonts[pSrc->GetId()] = pFont;
-   //PLOGI.printf("Font added to cache: %s", pSrc->GetId().c_str());
+   LOGI("Font added to cache: %s", pSrc->GetId().c_str());
    return pFont;
 }

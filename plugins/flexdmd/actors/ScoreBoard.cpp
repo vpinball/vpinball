@@ -27,7 +27,6 @@ ScoreBoard::ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont
 
 ScoreBoard::~ScoreBoard()
 {
-   assert(m_refCount == 0);
    m_pLowerLeft->Remove();
    m_pLowerRight->Remove();
 

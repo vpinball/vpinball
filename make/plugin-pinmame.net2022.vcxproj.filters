@@ -68,10 +68,10 @@
     <ClInclude Include="plugins/pinmame/Roms.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/third-party/include/libpinmame.h">
+    <ClInclude Include="plugins/pinmame/Settings.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Settings.h">
+    <ClInclude Include="third-party/include/libpinmame.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

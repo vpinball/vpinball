@@ -200,7 +200,7 @@ void Group::AddActorAt(Actor* actor, int index)
 
 void Group::RemoveActor(Actor* actor)
 {
-   if (actor == nullptr || (actor->GetParent() == this))
+   if (actor == nullptr || (actor->GetParent() != this))
       return;
    actor->SetParent(nullptr);
    m_children.erase(std::remove_if(m_children.begin(), m_children.end(), [actor](Actor* p) { return p == actor; }), m_children.end());

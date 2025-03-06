@@ -31,7 +31,6 @@ GIFImage* GIFImage::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const
 
 GIFImage::~GIFImage()
 {
-   assert(m_refCount == 0);
    m_pSrc->Release();
    if (m_pBitmap)
       m_pBitmap->Release();
