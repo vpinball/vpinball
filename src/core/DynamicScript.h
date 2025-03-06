@@ -85,7 +85,13 @@ public:
    // IUnknown methods
    HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override
    {
-      if (riid == IID_IUnknown || riid == IID_IDispatch)
+      if (riid == IID_IUnknown)
+      {
+         *ppvObject = static_cast<IUnknown *>(this);
+         AddRef();
+         return S_OK;
+      }
+      else if (riid == IID_IDispatch)
       {
          *ppvObject = static_cast<IDispatch *>(this);
          AddRef();
@@ -142,6 +148,10 @@ public:
          {
             PLOGE << m_classDef->name.name << '.' << name << " was referenced while it is not declared. Did you forget to register a class member ?";
             return DISP_E_UNKNOWNNAME;
+         }
+         else
+         {
+            rgDispId[i]++; // Add one as DISPID 0 is reserved for default member
          }
       }
       return S_OK;

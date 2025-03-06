@@ -25,7 +25,6 @@ ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackgrou
 
 ScrollingCreditsScene::~ScrollingCreditsScene()
 {
-   assert(m_refCount == 0);
    m_pContainer->Release();
 }      
 

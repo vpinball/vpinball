@@ -91,9 +91,6 @@
     <ClCompile Include="plugins/flexdmd/resources/VPXFile.cpp">
       <Filter>source\Resources</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/flexdmd/third-party/include/pole/pole.cpp">
-      <Filter>third-party\pole</Filter>
-    </ClCompile>
     <ClCompile Include="plugins/flexdmd/actors/Video.cpp">
       <Filter>source\Actors</Filter>
     </ClCompile>
@@ -129,6 +126,9 @@
     </ClCompile>
     <ClCompile Include="plugins/flexdmd/SurfaceGraphics.cpp">
       <Filter>source\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="third-party/include/pole/pole.cpp">
+      <Filter>third-party\pole</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -206,47 +206,8 @@
     <ClInclude Include="plugins/flexdmd/resources/Font.h">
       <Filter>source\Resources</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/tweeny-3.2.0.h">
-      <Filter>third-party</Filter>
-    </ClInclude>
     <ClInclude Include="plugins/flexdmd/resources/VPXFile.h">
       <Filter>source\Resources</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/pole/pole.h">
-      <Filter>third-party\pole</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_surface.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_begin_code.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_blendmode.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_endian.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_error.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_pixels.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_platform_defines.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_properties.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_rect.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3/SDL_stdinc.h">
-      <Filter>third-party\SDL3</Filter>
-    </ClInclude>
-    <ClInclude Include="plugins/flexdmd/third-party/include/sdl3_image/SDL_image.h">
-      <Filter>third-party\SDL3_Image</Filter>
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/scenes/BackgroundScene.h">
       <Filter>source\Scenes</Filter>
@@ -292,6 +253,45 @@
     </ClInclude>
     <ClInclude Include="plugins/flexdmd/SurfaceGraphics.h">
       <Filter>source\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/pole/pole.h">
+      <Filter>third-party\pole</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_begin_code.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_blendmode.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_endian.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_error.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_pixels.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_platform_defines.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_properties.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_rect.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_stdinc.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3/SDL_surface.h">
+      <Filter>third-party\SDL3</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/sdl3_image/SDL_image.h">
+      <Filter>third-party\SDL3_Image</Filter>
+    </ClInclude>
+    <ClInclude Include="third-party/include/tweeny-3.2.0.h">
+      <Filter>third-party</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

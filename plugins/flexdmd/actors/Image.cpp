@@ -32,7 +32,6 @@ Image* Image::Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const strin
 
 Image::~Image()
 {
-   assert(m_refCount == 0);
    m_pSrc->Release();
    if (m_pBitmap)
       m_pBitmap->Release();

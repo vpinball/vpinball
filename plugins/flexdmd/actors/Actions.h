@@ -30,7 +30,6 @@ public:
    }
    ~AddChildAction() override
    {
-      assert(m_refCount == 0);
       m_pChild->Release();
    }
 
@@ -62,10 +61,6 @@ public:
       , m_n(0)
       , m_time(0.f)
    {
-   }
-   ~BlinkAction() override
-   {
-      assert(m_refCount == 0);
    }
 
    bool Update(float secondsElapsed) override
@@ -110,7 +105,6 @@ public:
    }
    ~DelayedAction() override
    {
-      assert(m_refCount == 0);
       m_pAction->Release();
    }
 
@@ -176,10 +170,6 @@ public:
       , m_duration(duration)
       , m_ease(Interpolation_Linear)
    {
-   }
-   ~TweenAction() override
-   {
-      assert(m_refCount == 0);
    }
 
    Interpolation GetEase() const { return m_ease; }
@@ -369,10 +359,6 @@ public:
       , m_y(y)
    {
    }
-   ~MoveToAction() override
-   {
-      assert(m_refCount == 0);
-   }
 
    void Begin() override
    {
@@ -414,7 +400,6 @@ public:
    ParallelAction() { }
    ~ParallelAction() override
    {
-      assert(m_refCount == 0);
       for (auto action : m_actions)
          action->Release();
    }
@@ -461,10 +446,6 @@ public:
    RemoveFromParentAction(Actor *pTarget)
       : m_pTarget(pTarget)
    {
-   }
-   ~RemoveFromParentAction() override
-   {
-      assert(m_refCount == 0);
    }
 
    bool Update(float secondsElapsed) override
@@ -523,10 +504,6 @@ public:
       , m_position(position)
    {
    }
-   ~SeekAction() override
-   {
-      assert(m_refCount == 0);
-   }
 
    bool Update(float secondsElapsed) override
    {
@@ -549,7 +526,6 @@ public:
    }
    ~SequenceAction() override
    {
-      assert(m_refCount == 0);
       for (auto action : m_actions)
          action->Release();
    }
@@ -595,10 +571,6 @@ public:
       , m_visible(visible)
    {
    }
-   ~ShowAction() override
-   {
-      assert(m_refCount == 0);
-   }
 
    bool Update(float secondsElapsed) override
    {
@@ -619,10 +591,6 @@ public:
       : m_secondsToWait(secondsToWait)
       , m_time(0.0f)
    {
-   }
-   ~WaitAction() override
-   {
-      assert(m_refCount == 0);
    }
 
    bool Update(float secondsElapsed) override

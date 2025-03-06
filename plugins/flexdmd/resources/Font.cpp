@@ -175,7 +175,7 @@ void Font::DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char pr
          DrawCharacter(pGraphics, character, previousCharacter, x, y);
       }
       else if (m_pBitmapFont->GetCharacter(' ')) {
-         //PLOGD.printf("Missing character 0x%02X replaced by ' '", character);
+         LOGD("Missing character 0x%02X replaced by ' '", character);
          m_pBitmapFont->SetCharacter(character, m_pBitmapFont->GetCharacter(' '));
          DrawCharacter(pGraphics, character, previousCharacter, x, y);
       }

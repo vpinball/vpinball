@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "actors/FadeOverlay.h"
+#include "common.h"
 
 Scene::Scene(FlexDMD* pFlexDMD, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : Group(pFlexDMD, id)
 {
@@ -179,7 +180,7 @@ float Scene::StartAnimation(AnimationType animation)
       case AnimationType_None:
          return 0.0f;
       default:
-         //PLOGE.printf("Unsupported animation in scene '%s': %d", GetName().c_str(), animation);
+         LOGE("Unsupported animation in scene '%s': %d", GetName().c_str(), animation);
          return 0.0f;
    }
 }

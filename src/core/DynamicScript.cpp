@@ -307,11 +307,27 @@ bool DynamicTypeLibrary::COMToScriptVariant(const VARIANT* cv, const ScriptTypeN
 
    case TypeDef::TD_CLASS:
    {
-      assert((V_VT(cv) == VT_DISPATCH) || (V_VT(cv) == (VT_BYREF | VT_DISPATCH)));
-      DynamicDispatch* dispatch = static_cast<DynamicDispatch*>((V_VT(cv) & VT_BYREF) ? *V_DISPATCHREF(cv) : V_DISPATCH(cv));
-      sv.vObject = dispatch->m_nativeObject;
-      if (sv.vObject != nullptr)
-         PSC_ADD_REF(typeDef.classDef->classDef, sv.vObject);
+      if ((V_VT(cv) == VT_DISPATCH) || (V_VT(cv) == (VT_BYREF | VT_DISPATCH)))
+      {
+         DynamicDispatch* dispatch = static_cast<DynamicDispatch*>((V_VT(cv) & VT_BYREF) ? *V_DISPATCHREF(cv) : V_DISPATCH(cv));
+         sv.vObject = dispatch->m_nativeObject;
+         if (sv.vObject != nullptr)
+            PSC_ADD_REF(typeDef.classDef->classDef, sv.vObject);
+      }
+      else if ((V_VT(cv) == VT_UNKNOWN) || (V_VT(cv) == (VT_BYREF | VT_UNKNOWN)))
+      {
+         DynamicDispatch* dispatch = static_cast<DynamicDispatch*>((V_VT(cv) & VT_BYREF) ? *V_UNKNOWNREF(cv) : V_UNKNOWN(cv));
+         sv.vObject = dispatch->m_nativeObject;
+         if (sv.vObject != nullptr)
+            PSC_ADD_REF(typeDef.classDef->classDef, sv.vObject);
+      }
+      else
+      {
+         // TODO raise an error and prevent further processing
+         PLOGE << "Failed to convert to object of class " << typeDef.classDef->classDef->name.name << " from variant type " << V_VT(cv);
+         //assert(false);
+         return false;
+      }
       break;
    }
 
@@ -411,6 +427,14 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          V_VT(cv) = VT_BOOL;
          V_BOOL(cv) = sv.vBool ? VARIANT_TRUE : VARIANT_FALSE;
          break;
+      case TypeID::TYPEID_INT:
+         V_VT(cv) = VT_INT;
+         V_I4(cv) = sv.vInt;
+         break;
+      case TypeID::TYPEID_UINT:
+         V_VT(cv) = VT_UINT;
+         V_UI4(cv) = sv.vUInt;
+         break;
       case TypeID::TYPEID_INT8:
          V_VT(cv) = VT_I1;
          V_I1(cv) = sv.vInt8;
@@ -419,9 +443,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          V_VT(cv) = VT_I2;
          V_I2(cv) = sv.vInt16;
          break;
-      case TypeID::TYPEID_INT:
+      case TypeID::TYPEID_INT32:
          V_VT(cv) = VT_I4;
-         V_I4(cv) = sv.vInt;
+         V_I4(cv) = sv.vInt32;
          break;
       case TypeID::TYPEID_INT64:
          V_VT(cv) = VT_I8;
@@ -435,9 +459,9 @@ void DynamicTypeLibrary::ScriptToCOMVariant(const ScriptTypeNameDef& type, Scrip
          V_VT(cv) = VT_UI2;
          V_UI2(cv) = sv.vUInt16;
          break;
-      case TypeID::TYPEID_UINT:
+      case TypeID::TYPEID_UINT32:
          V_VT(cv) = VT_UI4;
-         V_UI4(cv) = sv.vUInt;
+         V_UI4(cv) = sv.vUInt32;
          break;
       case TypeID::TYPEID_UINT64:
          V_VT(cv) = VT_UI8;
@@ -645,14 +669,27 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
    ClassDef * cd = type.classDef;
-   if ((dispIdMember < 0) || (dispIdMember >= (DISPID)cd->members.size()))
+   if ((dispIdMember < 0) || (dispIdMember > (DISPID)cd->members.size()))
    {
+      return DISP_E_MEMBERNOTFOUND;
+   }
+
+   // Default member
+   if (dispIdMember == 0)
+   {
+      if (wFlags & DISPATCH_PROPERTYGET)
+      {
+         assert(V_VT(pVarResult) == VT_EMPTY);
+         V_VT(pVarResult) = VT_DISPATCH;
+         V_DISPATCH(pVarResult) = new DynamicDispatch(this, classDef, nativeObject);
+         return S_OK;
+      }
       return DISP_E_MEMBERNOTFOUND;
    }
 
    // Search for the right overload (needed for property which are a member with overloads for getters and setters)
    // FIXME match overload on type and arguments
-   const std::vector<int>& members = cd->members[dispIdMember];
+   const std::vector<int>& members = cd->members[dispIdMember - 1];
    int memberIndex = -1;
    if (wFlags & DISPATCH_METHOD)
    {
@@ -781,6 +818,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
          }
          case VT_DISPATCH:
             // We should update the referenced dispatch if needed, but for the time being, we do not allow byref arguments in script, so this may not happen
+            assert(static_cast<DynamicDispatch*>(V_DISPATCH(cv))->m_nativeObject == args[i].vObject);
             break;
          case VT_ARRAY | VT_VARIANT:
             // We should update the referenced array if needed, but for the time being, we do not allow byref arguments in script, so this may not happen
@@ -797,7 +835,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
    // Convert then dispose the return value if any
    if (memberDef.type.id != TypeID::TYPEID_VOID)
    {
-      VariantClear(pVarResult);
+      assert(V_VT(pVarResult) == VT_EMPTY);
       ScriptToCOMVariant(memberDef.type, retValue, pVarResult);
       ReleaseScriptVariant(memberDef.type, retValue);
    }
