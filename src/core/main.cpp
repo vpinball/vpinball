@@ -6,6 +6,10 @@
 
 #include "vpversion.h"
 
+#ifdef __STANDALONE__
+#include <SDL3_ttf/SDL_ttf.h>
+#endif
+
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
@@ -241,7 +245,8 @@ static const string options[] = { // keep in sync with option_names & option_des
    ,
    "PrefPath"s,
    "listres"s,
-   "listsnd"s
+   "listsnd"s,
+   "displayid"s
 #endif
 }; // + c1..c9
 static const string option_descs[] =
@@ -272,7 +277,8 @@ static const string option_descs[] =
    ,
    "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
    "List available fullscreen resolutions"s,
-   "List available sound devices"s
+   "List available sound devices"s,
+   "Visually display your screen ID(s)"s
 #endif   
 };
 enum option_names
@@ -303,9 +309,90 @@ enum option_names
    ,
    OPTION_PREFPATH,
    OPTION_LISTRES,
-   OPTION_LISTSND
+   OPTION_LISTSND,
+   OPTION_DISPLAYID
 #endif
 };
+
+#ifdef __STANDALONE__
+void showDisplayIDs()
+{
+   TTF_Init();
+   string path = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "LiberationSans-Regular.ttf";
+   TTF_Font* pFont = TTF_OpenFont(path.c_str(), 200);
+   if (!pFont) {
+      PLOGI << "Failed to load font: " << SDL_GetError();
+      TTF_Quit();
+      return;
+   }
+
+   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+   SDL_HideCursor();
+
+   int displayCount;
+   SDL_DisplayID* pDisplays = SDL_GetDisplays(&displayCount);
+   SDL_Window* pWindows[displayCount];
+   SDL_Renderer* pRenderers[displayCount];
+
+   for (int i = 0; i < displayCount; i++) {
+      // get bounds and create windows on each display
+      SDL_Rect displayBounds;
+      SDL_GetDisplayBounds(pDisplays[i], &displayBounds);
+      PLOGI << "DisplayID: " <<  pDisplays[i] << " bounds: " << displayBounds.x << 'x' << displayBounds.y << " Res: " << displayBounds.w << 'x' << displayBounds.h;
+      pWindows[i] = SDL_CreateWindow("Display", displayBounds.w, displayBounds.h, 0);
+      if (!pWindows[i])
+         continue;
+      SDL_SetWindowPosition(pWindows[i],  displayBounds.x,  displayBounds.y);
+      while(!SDL_SyncWindow(pWindows[i])) {}
+
+      pRenderers[i] = SDL_CreateRenderer(pWindows[i], NULL);
+      if (!pRenderers[i])
+         continue;
+      SDL_RenderClear(pRenderers[i]);
+
+      // put display number on renderer
+      char dtext[50 + 1];
+      snprintf(dtext, sizeof(dtext), "%d\n(%dx%d)", pDisplays[i],  displayBounds.x,  displayBounds.y);
+      SDL_Color white = {255, 255, 255};
+      SDL_Surface* pSurface = TTF_RenderText_Solid_Wrapped(pFont, dtext, 0, white, 900);
+      if (!pSurface)
+         continue;
+      float textWidth = pSurface->w;
+      float textHeight = pSurface->h;
+      SDL_Texture* pTexture = SDL_CreateTextureFromSurface(pRenderers[i], pSurface);
+      if (pTexture) {
+         SDL_FRect rect = {(displayBounds.w - textWidth) / 2.0f, (displayBounds.h - textHeight) / 2.0f, textWidth, textHeight};
+         
+         if (displayBounds.h > displayBounds.w) {  // detect if display is rotated and rotate 90 degrees
+            SDL_FPoint center = {pSurface->w / 2.0f, pSurface->h / 2.0f};
+            SDL_RenderTextureRotated(pRenderers[i], pTexture, NULL, &rect, 90, &center, SDL_FLIP_NONE);
+         }
+         else
+            SDL_RenderTexture(pRenderers[i], pTexture, NULL, &rect);
+
+         SDL_DestroyTexture(pTexture);
+      }
+      SDL_DestroySurface(pSurface);
+
+      SDL_RenderPresent(pRenderers[i]);
+   }
+
+   SDL_Event e;
+   while (e.type != SDL_EVENT_KEY_DOWN)
+      SDL_PollEvent(&e);
+   
+   for (int i=0; i < displayCount; i++) {
+      if (pWindows[i]) {
+         if (pRenderers[i])
+            SDL_DestroyRenderer(pRenderers[i]);
+         SDL_DestroyWindow(pWindows[i]);
+      }
+   }
+  
+   TTF_Quit();
+   SDL_Quit();
+}
+#endif
 
 static bool compare_option(const char *const arg, const option_names option)
 {
@@ -329,6 +416,7 @@ private:
    string m_szPrefPath;
    bool m_listRes;
    bool m_listSnd;
+   bool m_displayId;
 #endif
    string m_szTableFileName;
    string m_szTableIniFileName;
@@ -456,6 +544,7 @@ public:
 #ifdef __STANDALONE__
       m_listRes = false;
       m_listSnd = false;
+      m_displayId = false;
       m_szPrefPath.clear();
 #endif
 
@@ -533,6 +622,7 @@ public:
                             "\n\n-"+options[OPTION_PREFPATH]+             "  "+option_descs[OPTION_PREFPATH]+
                             "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
                             "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
+                            "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
 #endif       
                             "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
@@ -673,6 +763,7 @@ public:
          const bool prefPath = compare_option(szArglist[i], OPTION_PREFPATH);
          const bool listRes = compare_option(szArglist[i], OPTION_LISTRES);
          const bool listSnd = compare_option(szArglist[i], OPTION_LISTSND);
+         const bool displayId = compare_option(szArglist[i], OPTION_DISPLAYID);
 #endif
          const bool ini = compare_option(szArglist[i], OPTION_INI);
          const bool tableIni = compare_option(szArglist[i], OPTION_TABLE_INI);
@@ -787,6 +878,9 @@ public:
 
          if (listSnd)
             m_listSnd = true;
+
+         if (displayId)
+            m_displayId = true;
 #endif
       }
 
@@ -895,6 +989,10 @@ public:
             AudioDevice audioDevice = allAudioDevices.at(i);
             PLOGI << "id " << audioDevice.id << ": name=" << audioDevice.name << ", enabled=" << audioDevice.enabled;
          }
+      }
+
+      if (m_displayId) {
+         showDisplayIDs();
       }
 
       if (m_listRes || m_listSnd)
