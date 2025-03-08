@@ -11113,7 +11113,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
             INSERT_WHERE_USED("Material"s);
          break;
       }
-      case eTrigger:
+      case eItemTrigger:
       {
          const Trigger *const pTrigger = (Trigger *)pEdit;
          if (lstrcmpi(pTrigger->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
