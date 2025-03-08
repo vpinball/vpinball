@@ -586,8 +586,8 @@ static void OnShowChanged(FlexDMD* pFlex)
          msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
          // msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
       }
-      msgApi->BroadcastMsg(endpointId, onDmdSrcChangeId, nullptr);
    }
+   msgApi->BroadcastMsg(endpointId, onDmdSrcChangeId, nullptr);
    if (hasAlpha != hadAlpha)
    {
       if (hasAlpha)
@@ -600,8 +600,8 @@ static void OnShowChanged(FlexDMD* pFlex)
          msgApi->UnsubscribeMsg(getSegSrcId, onGetSegSrc);
          msgApi->UnsubscribeMsg(getSegId, onGetSeg);
       }
-      msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
    }
+   msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
 }
 
 static void OnFlexDestroyed(FlexDMD* pFlex)
@@ -616,6 +616,9 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId;
+
+   // Setup login
+   LPISetup(endpointId, msgApi);
 
    // Contribute DMDs and segment displays when show is true
    onDmdSrcChangeId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
