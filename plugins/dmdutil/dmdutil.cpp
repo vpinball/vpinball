@@ -8,6 +8,7 @@
 
 #include "VPXPlugin.h"
 #include "CorePlugin.h"
+#include "LoggingPlugin.h"
 #include "DMDUtil/DMDUtil.h"
 
 static MsgPluginAPI* msgApi = nullptr;
@@ -25,6 +26,13 @@ static DmdSrcId m_defaultDmdId = {0};
 static uint8_t tintR = 255;
 static uint8_t tintG = 140;
 static uint8_t tintB = 0;
+
+LPI_USE();
+#define LOGD LPI_LOGD
+#define LOGI LPI_LOGI
+#define LOGE LPI_LOGE
+
+LPI_IMPLEMENT
 
 void onUpdateDMD(void* userData)
 {
@@ -128,8 +136,12 @@ void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 
    m_defaultDmdId = newDmdId;
 
-   if (foundDMD && !pDmd)
-      initDMD();
+   if (foundDMD) {
+      LOGI("DMD Source Changed: format=%08X, width=%d, height=%d", newDmdId.format, newDmdId.width, newDmdId.height);
+
+      if (!pDmd)
+         initDMD();
+   }
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* api)
