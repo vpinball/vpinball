@@ -44,7 +44,7 @@ public:
    }
 
 private:
-   Group *m_pTarget; // Not reference counted to avoid circular reeferences
+   Group *m_pTarget; // Not reference counted to avoid circular references
    Actor *m_pChild;
    bool m_add;
 };
@@ -83,7 +83,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
+   Actor *m_pTarget; // Not reference counted to avoid circular references
    float m_secondsShow;
    float m_secondsHide;
    int m_repeat;
@@ -342,7 +342,7 @@ protected:
    Actor *GetTarget() const { return m_pTarget; } // protected to avoid messing up with the reference count
 
 private:
-   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
+   Actor *m_pTarget; // Not reference counted to avoid circular references
    float m_duration;
    Interpolation m_ease;
 
@@ -362,7 +362,7 @@ public:
 
    void Begin() override
    {
-      Actor *actor = this->GetTarget();
+      Actor * const actor = this->GetTarget();
       if (GetDuration() == 0.f)
       {
          actor->SetX(m_x);
@@ -455,7 +455,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
+   Actor *m_pTarget; // Not reference counted to avoid circular references
 };
 
 
@@ -512,7 +512,7 @@ public:
    }
 
 private:
-   AnimatedActor *m_pTarget; // Not reference counted to avoid circular reeferences
+   AnimatedActor *m_pTarget; // Not reference counted to avoid circular references
    float m_position;
 };
 
@@ -579,7 +579,7 @@ public:
    }
 
 private:
-   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
+   Actor *m_pTarget; // Not reference counted to avoid circular references
    bool m_visible;
 };
 
@@ -640,5 +640,5 @@ public:
    MoveToAction* MoveTo(float x, float y, float duration) { return new MoveToAction(m_pTarget, x, y, duration); }
 
 private:
-   Actor *m_pTarget; // Not reference counted to avoid circular reeferences
+   Actor *m_pTarget; // Not reference counted to avoid circular references
 };

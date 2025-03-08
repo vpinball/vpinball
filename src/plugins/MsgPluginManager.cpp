@@ -345,7 +345,7 @@ std::shared_ptr<MsgPlugin> MsgPluginManager::GetPlugin(const std::string& plugin
          && std::equal(plugin->m_id.begin(), plugin->m_id.end(), pluginId.begin(), [](char a, char b) { 
             if (a >= 'A' && a <= 'Z') a ^= 32; //ASCII convention
             if (b >= 'A' && b <= 'Z') b ^= 32; //ASCII convention
-               return a == b; 
+            return a == b; 
             }))
          return plugin;
    return nullptr;

@@ -67,8 +67,7 @@ void PUPLabel::SetCaption(const string& szCaption)
    if (szCaption == "`u`")
       return;
 
-   string szText = szCaption;
-   szText = string_replace_all(szText, "~", "\n");
+   string szText = string_replace_all(szCaption, "~", "\n");
    szText = string_replace_all(szText, "\\r", "\n");
 
    {
@@ -118,23 +117,23 @@ void PUPLabel::SetSpecial(const string& szSpecial)
          {
             std::lock_guard<std::mutex> lock(m_mutex);
 
-            if (json["size"].exists()) {
-               m_size = std::stof(json["size"].as_str());
+            if (json["size"s].exists()) {
+               m_size = std::stof(json["size"s].as_str());
                m_dirty = true;
             }
 
-            if (json["xpos"].exists()) {
-               m_xPos = std::stof(json["xpos"].as_str());
+            if (json["xpos"s].exists()) {
+               m_xPos = std::stof(json["xpos"s].as_str());
                m_dirty = true;
             }
 
-            if (json["ypos"].exists()) {
-               m_yPos = std::stof(json["ypos"].as_str());
+            if (json["ypos"s].exists()) {
+               m_yPos = std::stof(json["ypos"s].as_str());
                m_dirty = true;
             }
 
-            if (json["fname"].exists()) {
-               string szFont = json["fname"].as_str();
+            if (json["fname"s].exists()) {
+               string szFont = json["fname"s].as_str();
                TTF_Font* pFont = PUPManager::GetInstance()->GetFont(szFont);
                if (!pFont) {
                   PLOGE.printf("Label font not found: name=%s, font=%s", m_szName.c_str(), szFont.c_str());
@@ -143,126 +142,126 @@ void PUPLabel::SetSpecial(const string& szSpecial)
                m_dirty = true;
             }
 
-            if (json["fonth"].exists()) {
-               m_size = std::stof(json["fonth"].as_str());
+            if (json["fonth"s].exists()) {
+               m_size = std::stof(json["fonth"s].as_str());
                m_dirty = true;
             }
 
-            if (json["color"].exists()) {
-               m_color = json["color"].as<int>();
+            if (json["color"s].exists()) {
+               m_color = json["color"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["xalign"].exists()) {
-               m_xAlign = (PUP_LABEL_XALIGN)json["xalign"].as<int>();
+            if (json["xalign"s].exists()) {
+               m_xAlign = (PUP_LABEL_XALIGN)json["xalign"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["yalign"].exists()) {
-               m_yAlign = (PUP_LABEL_YALIGN)json["yalign"].as<int>();
+            if (json["yalign"s].exists()) {
+               m_yAlign = (PUP_LABEL_YALIGN)json["yalign"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["pagenum"].exists()) {
-               m_pagenum = json["pagenum"].as<int>();
+            if (json["pagenum"s].exists()) {
+               m_pagenum = json["pagenum"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["stopani"].exists()) {
+            if (json["stopani"s].exists()) {
                // stop any pup animations on label/image (zoom/flash/pulse).  this is not about animated gifs
                PLOGW.printf("stopani not implemented");
                m_dirty = true;
             }
 
-            if (json["rotate"].exists()) {
+            if (json["rotate"s].exists()) {
                // in tenths.  so 900 is 90 degrees. rotate support for images too.  note images must be aligned center to rotate properly(default)
-               m_angle = std::stof(json["rotate"].as_str());
+               m_angle = std::stof(json["rotate"s].as_str());
                m_dirty = true;
             }
 
-            if (json["zoom"].exists()) {
+            if (json["zoom"s].exists()) {
                // 120 for 120% of current height, 80% etc...
                PLOGW.printf("zoom not implemented");
                m_dirty = true;
             }
 
-            if (json["alpha"].exists()) {
+            if (json["alpha"s].exists()) {
                // '0-255  255=full, 0=blank
                PLOGW.printf("alpha not implemented");
                m_dirty = true;
             }
 
-            if (json["gradstate"].exists() && json["gradcolor"].exists()) {
+            if (json["gradstate"s].exists() && json["gradcolor"s].exists()) {
                // color=gradcolor, gradstate = 0 (gradstate is percent)
                PLOGW.printf("gradstate/gradcolor not implemented");
                m_dirty = true;
             }
 
-            if (json["grayscale"].exists()) {
+            if (json["grayscale"s].exists()) {
                // only on image objects.  will show as grayscale.  1=gray filter on 0=off normal mode
                PLOGW.printf("filter not implemented");
                m_dirty = true;
             }
 
-            if (json["filter"].exists()) {
+            if (json["filter"s].exists()) {
                // fmode 1-5 (invertRGB, invert,grayscale,invertalpha,clear),blur)
                PLOGW.printf("filter not implemented");
                m_dirty = true;
             }
 
-            if (json["shadowcolor"].exists()) {
-               m_shadowColor = json["shadowcolor"].as<int>();
+            if (json["shadowcolor"s].exists()) {
+               m_shadowColor = json["shadowcolor"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["shadowtype"].exists()) {
+            if (json["shadowtype"s].exists()) {
                // ST = 1 (Shadow), ST = 2 (Border)
                PLOGW.printf("shadowtype not implemented");
                m_dirty = true;
             }
 
-            if (json["xoffset"].exists()) {
-               m_xoffset = std::stof(json["xoffset"].as_str());
+            if (json["xoffset"s].exists()) {
+               m_xoffset = std::stof(json["xoffset"s].as_str());
                m_dirty = true;
             }
 
-            if (json["yoffset"].exists()) {
-               m_yoffset = std::stof(json["yoffset"].as_str());
+            if (json["yoffset"s].exists()) {
+               m_yoffset = std::stof(json["yoffset"s].as_str());
                m_dirty = true;
             }
 
-            if (json["anigif"].exists()) {
-               m_anigif = json["anigif"].as<int>();
+            if (json["anigif"s].exists()) {
+               m_anigif = json["anigif"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["width"].exists()) {
-               m_width = std::stof(json["width"].as_str());
+            if (json["width"s].exists()) {
+               m_width = std::stof(json["width"s].as_str());
                m_dirty = true;
             }
 
-            if (json["height"].exists()) {
-               m_height = std::stof(json["height"].as_str());
+            if (json["height"s].exists()) {
+               m_height = std::stof(json["height"s].as_str());
                m_dirty = true;
             }
 
-            if (json["autow"].exists()) {
+            if (json["autow"s].exists()) {
                PLOGW.printf("autow not implemented");
                m_dirty = true;
             }
 
-            if (json["autoh"].exists()) {
+            if (json["autoh"s].exists()) {
                PLOGW.printf("autoh not implemented");
                m_dirty = true;
             }
 
-            if (json["shadowstate"].exists()) {
-               m_shadowState = json["shadowstate"].as<int>();
+            if (json["shadowstate"s].exists()) {
+               m_shadowState = json["shadowstate"s].as<int>();
                m_dirty = true;
             }
 
-            if (json["outline"].exists()) {
-               m_outline = (json["outline"].as<int>() == 1);
+            if (json["outline"s].exists()) {
+               m_outline = (json["outline"s].as<int>() == 1);
                m_dirty = true;
             }
          }
