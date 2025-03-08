@@ -708,6 +708,15 @@ public:
          *(const Sampler**)(m_state + m_shader->m_stateOffsets[alias]) = sampler;
          #endif
       }
+      const Sampler* GetTexture(const ShaderUniforms uniformName) const
+      {
+         assert(GetCurrentShader() == nullptr);
+         assert(0 <= uniformName && uniformName < SHADER_UNIFORM_COUNT);
+         assert(m_shader->m_stateOffsets[uniformName] != -1);
+         assert(shaderUniformNames[uniformName].type == SUT_Sampler);
+         assert(shaderUniformNames[uniformName].count == 1);
+         return *reinterpret_cast<const Sampler**>(m_state + m_shader->m_stateOffsets[uniformName]);
+      }
 
       Shader* m_shader;
       BYTE* const m_state;
