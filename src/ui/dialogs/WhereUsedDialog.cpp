@@ -54,7 +54,7 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       const HWND toolTipHwnd = CreateWindowEx(
          0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
 
-              //Get active pinball table (one currently selected...you can edit more than one at a time)
+      //Get active pinball table (one currently selected...you can edit more than one at a time)
       CCO(PinTable) *const pt = g_pvp->GetActiveTable();
       if (pt)
       {
@@ -317,7 +317,7 @@ void WhereUsedDialog::RefreshList()
             pt->ShowWhereMaterialsUsed(vWhereUsed); //Fill a vector with a list of all materials and the table objects that reference them
          }
          break;
-         case Default:
+         default:
          {
          }
          break;

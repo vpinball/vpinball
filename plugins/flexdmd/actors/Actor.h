@@ -54,7 +54,7 @@ public:
    void SetPrefWidth(float prefWidth) { m_prefWidth = prefWidth; }
    virtual float GetPrefHeight() const { return m_prefHeight; }
    void SetPrefHeight(float prefHeight) { m_prefHeight = prefHeight; }
-   
+
    ActionFactory* GetActionFactory() const;
    void AddAction(Action *action);
    void ClearActions();
@@ -62,7 +62,7 @@ public:
    bool GetVisible() const { return m_visible; }
    virtual void SetVisible(bool visible) { m_visible = visible; }
 
-   bool GetClearBackground() const { return m_clearBackground; };
+   bool GetClearBackground() const { return m_clearBackground; }
    void SetClearBackground(bool v) { m_clearBackground = v; }
 
    bool GetOnStage() const { return m_onStage; }
@@ -76,11 +76,11 @@ public:
    void Remove();
 
    virtual void OnStageStateChanged() { }
-   
+
    virtual void Update(float secondsElapsed);
-   
+
    virtual void Draw(VP::SurfaceGraphics *pGraphics);
-   
+
 protected:
    ActionFactory* m_pActionFactory;
 

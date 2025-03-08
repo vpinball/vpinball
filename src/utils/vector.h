@@ -10,10 +10,11 @@ private:
 
 public:
 
-   inline bool empty() { return m_rg.empty(); }
+   inline bool empty() const { return m_rg.empty(); }
    inline void clear() { m_rg.clear(); }
    inline int size() const { return (int)m_rg.size(); }
    inline int capacity() const { return (int)m_rg.capacity(); }
+   inline void reserve(const size_t i) { m_rg.reserve(i); }
    inline void resize(const size_t i) { m_rg.resize(i); }
    inline void push_back(void* const pItem) { m_rg.push_back(pItem); }
 

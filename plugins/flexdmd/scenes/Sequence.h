@@ -13,7 +13,7 @@ public:
    void RemoveAllScenes();
    void RemoveScene(const string& name);
    bool IsFinished() const;
-   Scene* GetActiveScene() const { return m_pActiveScene; };
+   Scene* GetActiveScene() const { return m_pActiveScene; }
    void Update(float delta) override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;
 

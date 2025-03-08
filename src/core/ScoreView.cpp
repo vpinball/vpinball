@@ -82,10 +82,10 @@ void ScoreView::Parse(const string& path, std::istream& content)
    Visual* visual = nullptr;
    const auto parseArray = [](const string& value) -> vector<float>
    {
-      vector<float> array;
       size_t pos1 = value.find('[');
       if (pos1 == string::npos)
          return vector<float>();
+      vector<float> array;
       while (true)
       {
          size_t pos2 = value.find_first_of("],\n", pos1 + 1);
@@ -388,8 +388,11 @@ void ScoreView::Parse(const string& path, std::istream& content)
             return;
          }
          if (visual.xOffsets.empty())
+         {
+            visual.xOffsets.reserve(visual.nElements);
             for (int i = 0; i < visual.nElements; i++)
                visual.xOffsets.push_back(visual.w * static_cast<float>(i) / static_cast<float>(visual.nElements));
+         }
          break;
       }
    }

@@ -2356,8 +2356,8 @@ void Player::FinishFrame()
 
 void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
 {
-   Player *me = reinterpret_cast<Player *>(userData);
-   AudioUpdateMsg &msg = *reinterpret_cast<AudioUpdateMsg *>(msgData);
+   Player *me = static_cast<Player *>(userData);
+   AudioUpdateMsg &msg = *static_cast<AudioUpdateMsg *>(msgData);
    const auto &entry = me->m_externalAudioPlayers.find(msg.id.id);
    if (entry == me->m_externalAudioPlayers.end())
    {
@@ -2387,9 +2387,9 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
 
 void Player::OnSegChanged(const unsigned int msgId, void *userData, void *msgData)
 {
-   reinterpret_cast<Player *>(userData)->m_defaultSegSelected = false;
-   reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   reinterpret_cast<Player *>(userData)->m_scoreView.Select(reinterpret_cast<Player *>(userData)->m_scoreviewOutput);
+   static_cast<Player *>(userData)->m_defaultSegSelected = false;
+   static_cast<Player *>(userData)->m_resURIResolver.ClearCache();
+   static_cast<Player *>(userData)->m_scoreView.Select(static_cast<Player *>(userData)->m_scoreviewOutput);
 }
 
 Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
@@ -2482,9 +2482,9 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
 
 void Player::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   reinterpret_cast<Player*>(userData)->m_defaultDmdSelected = false;
-   reinterpret_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   reinterpret_cast<Player *>(userData)->m_scoreView.Select(reinterpret_cast<Player *>(userData)->m_scoreviewOutput);
+   static_cast<Player *>(userData)->m_defaultDmdSelected = false;
+   static_cast<Player *>(userData)->m_resURIResolver.ClearCache();
+   static_cast<Player *>(userData)->m_scoreView.Select(static_cast<Player *>(userData)->m_scoreviewOutput);
 }
 
 Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
@@ -2616,7 +2616,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
          static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
          DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
-         uint16_t *frame = reinterpret_cast<uint16_t *>(getMsg.frame);
+         const uint16_t * const frame = reinterpret_cast<uint16_t *>(getMsg.frame);
          for (int ofs = 0; ofs < size; ofs++)
          {
             const uint16_t rgb565 = frame[ofs];

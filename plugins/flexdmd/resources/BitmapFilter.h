@@ -8,8 +8,7 @@ class BitmapFilter
 {
 public:
    BitmapFilter();
-   virtual ~BitmapFilter() { };
-
+   virtual ~BitmapFilter() { }
 
    virtual void Filter(Bitmap* pBitmap) = 0;
 

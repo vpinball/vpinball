@@ -623,7 +623,7 @@ public:
                             "\n-"  +options[OPTION_LISTRES]+              "  "+option_descs[OPTION_LISTRES]+
                             "\n-"  +options[OPTION_LISTSND]+              "  "+option_descs[OPTION_LISTSND]+
                             "\n-"  +options[OPTION_DISPLAYID]+            "  "+option_descs[OPTION_DISPLAYID]+
-#endif       
+#endif
                             "\n\n-c1 [customparam] .. -c9 [customparam]  Custom user parameters that can be accessed in the script via GetCustomParam(X)";
             if (!valid_param)
                 output = "Invalid Parameter "s + szArglist[i] + "\n\nValid Parameters are:\n\n" + output;

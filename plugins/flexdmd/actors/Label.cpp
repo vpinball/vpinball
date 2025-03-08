@@ -83,7 +83,7 @@ void Label::Draw(VP::SurfaceGraphics* pGraphics)
                m_pFont->DrawText_(pGraphics, roundf(GetX() + lx), roundf(GetY() + y), line);
             else
                m_pFont->DrawText_(pGraphics, floor(GetX() + lx), floor(GetY() + y), line);
-            y += m_pFont->GetBitmapFont()->GetLineHeight();
+            y += (float)m_pFont->GetBitmapFont()->GetLineHeight();
          }
       }
       else {

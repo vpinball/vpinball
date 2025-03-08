@@ -44,8 +44,8 @@ void SurfaceGraphics::FillRectangle(const SDL_Rect& rect)
       SDL_FillSurfaceRect(m_pSurface, &dstRect, SDL_MapSurfaceRGB(m_pSurface, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color)));
    else {
       SDL_Surface* pSource = SDL_CreateSurface(m_pSurface->w, m_pSurface->h, SDL_PIXELFORMAT_RGBA32);
-      SDL_FillSurfaceRect(pSource, NULL, SDL_MapSurfaceRGBA(pSource, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha));
-      SDL_BlitSurfaceScaled(pSource, NULL, m_pSurface, &dstRect, SDL_SCALEMODE_NEAREST);
+      SDL_FillSurfaceRect(pSource, nullptr, SDL_MapSurfaceRGBA(pSource, GetRValue(m_color), GetGValue(m_color), GetBValue(m_color), m_alpha));
+      SDL_BlitSurfaceScaled(pSource, nullptr, m_pSurface, &dstRect, SDL_SCALEMODE_NEAREST);
       SDL_DestroySurface(pSource);
    }
 }

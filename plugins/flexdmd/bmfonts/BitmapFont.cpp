@@ -131,7 +131,7 @@ void BitmapFont::Load(const string& fileName)
       }
    }
 
-   std::sort(m_pages.begin(), m_pages.end(), [](const Page* a, const Page* b) {
+   std::ranges::sort(m_pages.begin(), m_pages.end(), [](const Page* a, const Page* b) {
      return a->GetId() < b->GetId();
    });
 }

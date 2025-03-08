@@ -625,7 +625,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
    getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
    getSegId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
-   
+
    // Contribute our API to the script engine
    const unsigned int getScriptApiId = msgApi->GetMsgID(SCRIPTPI_NAMESPACE, SCRIPTPI_MSG_GET_API);
    msgApi->BroadcastMsg(endpointId, getScriptApiId, &scriptApi);
@@ -694,7 +694,7 @@ MSGPI_EXPORT void MSGPIAPI PluginUnload()
    // All FlexDMD must be destroyed before unloading the plugin
    assert(!hasDMD);
    assert(!hasAlpha);
-   
+
    msgApi->ReleaseMsgID(onSegSrcChangedId);
    msgApi->ReleaseMsgID(getSegSrcId);
    msgApi->ReleaseMsgID(getSegId);
@@ -702,7 +702,7 @@ MSGPI_EXPORT void MSGPIAPI PluginUnload()
    msgApi->ReleaseMsgID(getDmdSrcId);
    msgApi->ReleaseMsgID(getIdentifyDmdId);
    msgApi->ReleaseMsgID(getRenderDmdId);
-   
+
    // TODO we should unregister the script API contribution
    // scriptApi->SetCOMObjectOverride("UltraDMD.DMDObject", nullptr);
    scriptApi->SetCOMObjectOverride("FlexDMD.FlexDMD", nullptr);

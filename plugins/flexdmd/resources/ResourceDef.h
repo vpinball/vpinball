@@ -31,7 +31,7 @@ public:
       return m_szPath == other.m_szPath &&
          m_tint == other.m_tint &&
          m_borderTint == other.m_borderTint &&
-         m_borderSize == other.m_borderSize ;
+         m_borderSize == other.m_borderSize;
    }
 
    size_t hash() const 

@@ -11,7 +11,7 @@ public:
    void SetBounds(const SDL_Rect& bounds) { m_bounds = bounds; }
    void SetChannel(int channel) { m_channel = channel; }
    void SetChar(char char_) { m_char = char_; }
-   const SDL_Point& GetOffset() { return m_offset; }
+   const SDL_Point& GetOffset() const { return m_offset; }
    void SetOffset(const SDL_Point& offset) { m_offset = offset; }
    int GetTexturePage() const { return m_texturePage; }
    void SetTexturePage(int texturePage) { m_texturePage = texturePage; }

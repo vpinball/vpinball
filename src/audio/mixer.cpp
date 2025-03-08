@@ -47,7 +47,7 @@ bool mixer_init(const HWND wnd)
          return false;
       }
 
-      /*if (::mixerGetDevCaps(reinterpret_cast<UINT>(m_hMixer),
+      /*if (::mixerGetDevCaps(reinterpret_cast<UINT_PTR>(m_hMixer),
                        &sMxCaps, sizeof(MIXERCAPS))
                        != MMSYSERR_NOERROR)
                        {

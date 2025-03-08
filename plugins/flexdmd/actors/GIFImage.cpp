@@ -90,6 +90,6 @@ void GIFImage::Draw(VP::SurfaceGraphics* pGraphics)
       float y = 0;
       Layout::Align(GetAlignment(), w, h, GetWidth(), GetHeight(), x, y);
       SDL_Rect rect = { (int)(GetX() + x), (int)(GetY() + y), (int)w, (int)h };
-      pGraphics->DrawImage(m_pActiveFrameSurface, NULL, &rect);
+      pGraphics->DrawImage(m_pActiveFrameSurface, nullptr, &rect);
    }
 }

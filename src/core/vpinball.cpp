@@ -1640,7 +1640,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
 
       for (const string &tableName : m_recentTableList)
       {
-         if (tableName != newList[0]) // does this file name aready exist in the list?
+         if (tableName != newList[0]) // does this file name already exist in the list?
             newList.push_back(tableName);
       }
 

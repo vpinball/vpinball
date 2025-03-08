@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "core/stdafx.h"
 #include <variant>
 #include "plugins/ScriptablePlugin.h"
 #include "robin_hood.h"

@@ -1,7 +1,7 @@
 #include "ScrollingCreditsScene.h"
 #include "actors/Label.h"
 
-ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackground, vector<string> text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
+ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackground, const vector<string>& text, Font* pFont, AnimationType animateIn, float pauseS, AnimationType animateOut, const string& id) : BackgroundScene(pFlexDMD, pBackground, animateIn, pauseS, animateOut, id)
 {
    m_pContainer = new Group(pFlexDMD, string());
    m_pContainer->AddRef();
@@ -26,7 +26,7 @@ ScrollingCreditsScene::ScrollingCreditsScene(FlexDMD* pFlexDMD, Actor* pBackgrou
 ScrollingCreditsScene::~ScrollingCreditsScene()
 {
    m_pContainer->Release();
-}      
+}
 
 void ScrollingCreditsScene::Begin()
 {

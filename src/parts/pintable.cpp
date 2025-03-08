@@ -1000,10 +1000,10 @@ STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
       char szName[MAX_PATH];
       WideCharToMultiByteNull(CP_ACP, 0, sharedMemName, -1, szName, MAX_PATH, nullptr, nullptr);
       m_hStateSharedMem = OpenFileMapping(FILE_MAP_READ, FALSE, szName);
-      if (m_hStateSharedMem == NULL)
+      if (m_hStateSharedMem == nullptr)
          return E_FAIL;
       unsigned int *pStateMappedMem = (unsigned int *)MapViewOfFile(m_hStateSharedMem, FILE_MAP_READ, 0, 0, 4);
-      if (pStateMappedMem == NULL)
+      if (pStateMappedMem == nullptr)
       {
          CloseHandle(m_hStateSharedMem);
          m_hStateSharedMem = INVALID_HANDLE_VALUE;
@@ -1012,7 +1012,7 @@ STDMETHODIMP ScriptGlobalTable::put_PinMameStateBlock(BSTR sharedMemName)
       unsigned int size = *pStateMappedMem;
       UnmapViewOfFile(pStateMappedMem);
       pStateMappedMem = (unsigned int *)MapViewOfFile(m_hStateSharedMem, FILE_MAP_READ, 0, 0, size);
-      if (pStateMappedMem == NULL)
+      if (pStateMappedMem == nullptr)
       {
          CloseHandle(m_hStateSharedMem);
          m_hStateSharedMem = INVALID_HANDLE_VALUE;
@@ -2310,6 +2310,7 @@ PinTable* PinTable::CopyForPlay()
       dst->m_BG_image[i] = src->m_BG_image[i];
       dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, (ViewSetupID) i);
    }
+   dst->m_materials.reserve(src->m_materials.size() + dst->m_materials.size());
    for (size_t i = 0; i < src->m_materials.size(); i++)
    {
       Material *mat = new Material(src->m_materials[i]);
@@ -2319,10 +2320,13 @@ PinTable* PinTable::CopyForPlay()
    }
 
    // Don't perform deep copy for these parts that can't be modified by the script
+   dst->m_vimage.reserve(src->m_vimage.size() + dst->m_vimage.size());
    for (size_t i = 0; i < src->m_vimage.size(); i++)
       dst->m_vimage.push_back(src->m_vimage[i]);
+   dst->m_vsound.reserve(src->m_vsound.size() + dst->m_vsound.size());
    for (size_t i = 0; i < src->m_vsound.size(); i++)
       dst->m_vsound.push_back(src->m_vsound[i]);
+   dst->m_vfont.reserve(src->m_vfont.size() + dst->m_vfont.size());
    for (size_t i = 0; i < src->m_vfont.size(); i++)
       dst->m_vfont.push_back(src->m_vfont[i]);
 
@@ -2360,6 +2364,7 @@ PinTable* PinTable::CopyForPlay()
    }
 
    PLOGI << "Duplicating collections"; // For profiling
+   live_table->m_vcollection.reserve(m_vcollection.size() + live_table->m_vcollection.size());
    for (int i = 0; i < m_vcollection.size(); i++)
    {
       CComObject<Collection> *pcol;
@@ -2428,6 +2433,7 @@ PinTable* PinTable::CopyForPlay()
       delete[] szT;
    #endif
 
+   live_table->m_vrenderprobe.reserve(m_vrenderprobe.size() + live_table->m_vrenderprobe.size());
    for (size_t i = 0; i < m_vrenderprobe.size(); i++)
    {
       RenderProbe *rp = new RenderProbe();
@@ -2441,7 +2447,7 @@ PinTable* PinTable::CopyForPlay()
       rp->SetReflectionNoLightmaps(m_vrenderprobe[i]->GetReflectionNoLightmaps());
       live_table->m_vrenderprobe.push_back(rp);
    }
-      
+
    // get the load path from the table filename
    const string szLoadDir = PathFromFilename(m_szFileName);
    // make sure the load directory is the active directory
@@ -4551,6 +4557,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       if (pbr->m_version < 1080
          || m_materials.empty()) // Also loads materials for 10.8+ tables if these were saved before the new material format was added. // This is hacky and should be removed when 10.9 is out (added to avoid loosing tables edited while 10.8 was in alpha)
       {
+         m_materials.reserve(m_numMaterials + m_materials.size());
          for (int i = 0; i < m_numMaterials; i++)
          {
             Material * const pmat = new Material();
@@ -10494,13 +10501,14 @@ STDMETHODIMP PinTable::get_Option(BSTR optionName, float minValue, float maxValu
    {
       if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
          return S_FALSE;
-      int nValues = 1 + (int)maxValue - (int)minValue;
+      const int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
       LONG lbound, ubound;
       if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
          return S_FALSE;
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
+      literals.reserve(nValues);
       for (int i = 0; i < nValues; i++)
       {
          char buf[MAXTOKEN];
@@ -10531,13 +10539,14 @@ STDMETHODIMP PinTable::put_Option(BSTR optionName, float minValue, float maxValu
    {
       if (V_VT(&values) != (VT_ARRAY | VT_VARIANT) || step != 1.f || (minValue - (float)(int)minValue) != 0.f || (maxValue - (float)(int)maxValue) != 0.f)
          return S_FALSE;
-      int nValues = 1 + (int)maxValue - (int)minValue;
+      const int nValues = 1 + (int)maxValue - (int)minValue;
       SAFEARRAY *psa = V_ARRAY(&values);
       LONG lbound, ubound;
       if (SafeArrayGetLBound(psa, 1, &lbound) != S_OK || SafeArrayGetUBound(psa, 1, &ubound) != S_OK || ubound != lbound + nValues - 1)
          return S_FALSE;
       VARIANT *p;
       SafeArrayAccessData(psa, (void **)&p);
+      literals.reserve(nValues);
       for (int i = 0; i < nValues; i++)
       {
          char buf[MAXTOKEN];

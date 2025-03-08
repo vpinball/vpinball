@@ -25,12 +25,12 @@
 #endif
 
 template <typename T>
-__forceinline T min(const T x, const T y)
+constexpr __forceinline T min(const T x, const T y)
 {
    return x < y ? x : y;
 }
 template <typename T>
-__forceinline T max(const T x, const T y)
+constexpr __forceinline T max(const T x, const T y)
 {
    return x < y ? y : x;
 }
@@ -58,30 +58,30 @@ __forceinline double max<double>(const double x, const double y)
 #endif
 
 template <typename T>
-__forceinline T clamp(const T x, const T mn, const T mx)
+constexpr __forceinline T clamp(const T x, const T mn, const T mx)
 {
    return max(min(x,mx),mn);
 }
 
 template <typename T>
-__forceinline T lerp(const T x1, const T x2, const float alpha)
+constexpr __forceinline T lerp(const T x1, const T x2, const float alpha)
 {
    return (1.f - alpha) * x1 + alpha * x2;
 }
 
-__forceinline int clamp(const int x, const int mn, const int mx)
+constexpr __forceinline int clamp(const int x, const int mn, const int mx)
 {
    if (x < mn) return mn; else if (x > mx) return mx; else return x;
 }
 
 template <typename T>
-__forceinline T saturate(const T x)
+constexpr __forceinline T saturate(const T x)
 {
    return max(min(x,T(1)),T(0));
 }
 
 template <typename T>
-__forceinline T smoothstep(const T edge0, const T edge1, T x)
+constexpr __forceinline T smoothstep(const T edge0, const T edge1, T x)
 {
    if (edge0 == edge1)
       return (x >= edge0) ? T(1) : T(0);
@@ -456,7 +456,7 @@ __forceinline float rand_mt_m11() { return (float)((int64_t)tinymtu(tinymt64stat
 
 extern unsigned long long mwc64x_state;
 
-__forceinline unsigned int mwc64x(unsigned long long& s)
+constexpr __forceinline unsigned int mwc64x(unsigned long long& s)
 {
    constexpr unsigned int m = 4294883355u;
    const unsigned int c = (unsigned int)(s >> 32), x = (unsigned int)s;
@@ -505,7 +505,7 @@ __forceinline float radical_inverse(unsigned int i)
 }
 
 template <unsigned int base>
-float radical_inverse(unsigned int a) {
+constexpr float radical_inverse(unsigned int a) {
     const float invBase = (float)(1. / (double)base);
     unsigned int reversedDigits = 0;
     float invBaseN = 1.f;
@@ -626,14 +626,14 @@ inline int MultiByteToWideCharNull(
     return res;
 }
 
-inline char cLower(char c)
+constexpr inline char cLower(char c)
 {
     if (c >= 'A' && c <= 'Z')
         c ^= 32; //ASCII convention
     return c;
 }
 
-inline void szLower(char * pC)
+constexpr inline void szLower(char* pC)
 {
     while (*pC)
     {
@@ -643,14 +643,14 @@ inline void szLower(char * pC)
     }
 }
 
-inline char cUpper(char c)
+constexpr inline char cUpper(char c)
 {
     if (c >= 'a' && c <= 'z')
         c ^= 32; //ASCII convention
     return c;
 }
 
-inline void szUpper(char * pC)
+constexpr inline void szUpper(char* pC)
 {
     while (*pC)
     {
@@ -660,7 +660,7 @@ inline void szUpper(char * pC)
     }
 }
 
-inline void StrToLower(string& str)
+constexpr inline void StrToLower(string& str)
 {
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
 }

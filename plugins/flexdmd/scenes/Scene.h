@@ -12,14 +12,14 @@ public:
    ~Scene();
 
    void UpdateState();
-   virtual void Begin() { };
+   virtual void Begin() { }
    float StartAnimation(AnimationType animation);
    bool IsFinished() const;
    void SetVisible(bool visible) override { Group::SetVisible(visible); UpdateState(); }
-   void SetAnimateIn(AnimationType animateIn) { m_animateIn = animateIn; };
-   void SetPause(float pauseS) { m_pause = pauseS; };
-   float GetTime() const { return m_time; };
-   void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; };
+   void SetAnimateIn(AnimationType animateIn) { m_animateIn = animateIn; }
+   void SetPause(float pauseS) { m_pause = pauseS; }
+   float GetTime() const { return m_time; }
+   void SetAnimateOut(AnimationType animateOut) { m_animateOut = animateOut; }
    void AddTween(float from, float to, float duration, const std::function<bool (float)>& callback);
    void Update(float secondsElapsed) override;
    void OnStageStateChanged() override;

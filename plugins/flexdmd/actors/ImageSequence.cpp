@@ -11,13 +11,13 @@ ImageSequence* ImageSequence::Create(FlexDMD* pFlexDMD, AssetManager* pAssetMana
    std::stringstream ss(paths);
    string path;
    while (std::getline(ss, path, '|')) {
-      Image* pImage = Image::Create(pFlexDMD, pAssetManager, path, "");
+      Image* pImage = Image::Create(pFlexDMD, pAssetManager, path, string());
       if (pImage)
          frames.push_back(pImage);
       else {
          for (Image* pFrame : frames)
             delete pFrame;
-         return NULL;
+         return nullptr;
       }
    }
 

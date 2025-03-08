@@ -47,6 +47,7 @@ float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, cons
       if (values != nullptr)
       {
          const int nSteps = 1 + (int)(roundf((maxValue - minValue) / step));
+         literals.reserve(nSteps);
          for (int i = 0; i < nSteps; i++)
             literals.push_back(values[i]);
       }

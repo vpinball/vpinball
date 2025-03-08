@@ -128,7 +128,7 @@ class AllocTable
 class DirEntry
 {
   public:
-    DirEntry(): valid(), name(), dir(), size(), start(), prev(), next(), child() {}
+    DirEntry(): valid(), dir(), size(), start(), prev(), next(), child() {}
     bool valid;          // false if invalid (should be skipped)
     std::string name;    // the name, not in unicode anymore 
     bool dir;            // true if directory   
@@ -492,6 +492,7 @@ void AllocTable::resize( uint64 newsize )
 void AllocTable::preserve( uint64 n )
 {
   std::vector<uint64> pre;
+  pre.reserve(n);
   for( unsigned i=0; i < n; i++ )
     pre.push_back( unused() );
 }
@@ -862,8 +863,8 @@ DirEntry* DirTree::entry( const std::string& name, bool create, int64 bigBlockSi
            io->bbat->set(nblock, AllocTable::Eof);
            io->bbat->markAsDirty(nblock, bigBlockSize);
            blocks.push_back(nblock);
-           uint64 bbidx = nblock / (io->bbat->blockSize / sizeof(uint64));
-           while (bbidx >= io->header->num_bat)
+           uint64 bbidxn = nblock / (io->bbat->blockSize / sizeof(uint64));
+           while (bbidxn >= io->header->num_bat)
                io->addbbatBlock();
        }
      }
@@ -1009,7 +1010,7 @@ void DirTree::save( unsigned char* buffer )
     }
     
     // max length for name is 32 chars
-    std::string name = e->name;
+    name = e->name;
     if( name.length() > 32 )
       name.erase( 32, name.length() );
       

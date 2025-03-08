@@ -6,7 +6,7 @@ VPXFile::VPXFile(const string& path)
    , m_pStorage(new POLE::Storage(path.c_str()))
 {
    if (m_pStorage->open() && m_pStorage->result() == POLE::Storage::Ok)
-      for (const string& entry : m_pStorage->GetAllStreams("/GameStg/"))
+      for (const string& entry : m_pStorage->GetAllStreams("/GameStg/"s))
          if (entry.starts_with("/GameStg/Image"))
             ReadImage(entry, true);
 }
@@ -48,10 +48,10 @@ public:
 
    string ReadLenPrefixedString()
    {
-      uint32_t length = (int)ReadUInt32();
+      const uint32_t length = ReadUInt32();
       char* buffer = new char[length + 1];
       m_stream.read(reinterpret_cast<unsigned char*>(buffer), length);
-      buffer[length] = 0;
+      buffer[length] = '\0';
       string result(buffer);
       delete[] buffer;
       return result;
@@ -73,9 +73,9 @@ std::pair<unsigned int, uint8_t*> VPXFile::ReadImage(const string& path, bool na
    entry.path = path;
    while (!done)
    {
-      uint32_t bytesInRecordRemaining = reader.ReadUInt32();
-      POLE::uint64 fieldStart = reader.GetPos();
-      uint32_t tag = reader.ReadUInt32();
+      const uint32_t bytesInRecordRemaining = reader.ReadUInt32();
+      const POLE::uint64 fieldStart = reader.GetPos();
+      const uint32_t tag = reader.ReadUInt32();
       switch (tag)
       {
       case FID(ENDB):
@@ -102,7 +102,7 @@ std::pair<unsigned int, uint8_t*> VPXFile::ReadImage(const string& path, bool na
             done = true;
          else
          {
-            uint8_t* data = new uint8_t[size];
+            uint8_t* const data = new uint8_t[size];
             reader.Read(size, data);
             if (data[0] == 0x89 && data[1] == 0x50 && data[2] == 0x4E && data[3] == 0x47 && data[4] == 0x0D && data[5] == 0x0A && data[6] == 0x1A && data[7] == 0x0A)
             {

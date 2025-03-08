@@ -614,7 +614,7 @@ void HitKDNode::HitTestXRay(const HitKD* hitoct, const HitBall* const pball, vec
             g_pplayer->m_physics->c_deepTested++;
          #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
-         if (newtime >= 0)
+         if (newtime >= 0.f)
          {
             const HitTestResult r { pho, newtime };
             pvhoHit.push_back(r);

@@ -493,12 +493,13 @@ static void HelpSplash(const string &text, int rotation)
    string line;
    std::istringstream iss(text);
    while (std::getline(iss, line)) {
-       const char *textEnd = line.c_str();
-       if (*textEnd == '\0') {
+       if (line.empty()) {
           lines.push_back(line);
           continue;
        }
-       while (*textEnd) {
+       const char *textEnd = line.c_str();
+       while (*textEnd)
+       {
           const char *nextLineTextEnd = ImGui::FindRenderedTextEnd(textEnd, nullptr);
           ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, textEnd, nextLineTextEnd);
           if (lineSize.x > maxWidth)
@@ -1460,7 +1461,7 @@ void LiveUI::Update(const int width, const int height)
       if (m_player->m_throwBalls && ImGui::IsMouseDown(ImGuiMouseButton_Right))
       {
          const ImVec2 mousePos = ImGui::GetMousePos();
-         POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
+         const POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
          const Vertex3Ds vertex = m_renderer->Get3DPointFrom2D(width, height, point);
          for (size_t i = 0; i < m_player->m_vball.size(); i++)
          {
@@ -1489,7 +1490,7 @@ void LiveUI::Update(const int width, const int height)
          ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
          ImGui::PushStyleColor(ImGuiCol_Border, 0);
          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-         ImGui::Begin("Ball throw overlay", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
+         ImGui::Begin("Ball throw overlay", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
          ImGui::GetWindowDrawList()->AddLine(mousePos, mouseInitalPos, IM_COL32(255, 128, 0, 255));
          ImGui::End();
          ImGui::PopStyleVar();
@@ -1553,7 +1554,7 @@ void LiveUI::Update(const int width, const int height)
       {
          // Note that ball control release is handled by pininput
          const ImVec2 mousePos = ImGui::GetMousePos();
-         POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
+         const POINT point { (LONG)mousePos.x, (LONG)mousePos.y };
          m_player->m_pBCTarget = new Vertex3Ds(m_renderer->Get3DPointFrom2D(width, height, point));
          m_player->m_pBCTarget->x = clamp(m_player->m_pBCTarget->x, 0.f, m_live_table->m_right);
          m_player->m_pBCTarget->y = clamp(m_player->m_pBCTarget->y, 0.f, m_live_table->m_bottom);
@@ -2626,7 +2627,7 @@ void LiveUI::UpdateMainUI()
    ImGui::PushStyleColor(ImGuiCol_WindowBg, 0);
    ImGui::PushStyleColor(ImGuiCol_Border, 0);
    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-   ImGui::Begin("overlays", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs 
+   ImGui::Begin("overlays", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoInputs 
       | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoBringToFrontOnFocus);
    ImDrawList *const overlayDrawList = ImGui::GetWindowDrawList();
    ImGui::End();
@@ -3043,24 +3044,25 @@ void LiveUI::UpdateMainUI()
 
 bool LiveUI::GetSelectionTransform(Matrix3D& transform)
 {
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBall)
+   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE)
+   switch (m_selection.editable->GetItemType())
    {
-      Ball *const ball = static_cast<Ball *>(m_selection.editable);
+   case eItemBall:
+   {
+      const Ball *const ball = static_cast<Ball *>(m_selection.editable);
       transform = Matrix3D::MatrixTranslate(ball->m_hitBall.m_d.m_pos);
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemBumper)
+   case eItemBumper:
    {
-      Bumper *const p = static_cast<Bumper *>(m_selection.editable);
+      const Bumper *const p = static_cast<Bumper *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(p->m_d.m_szSurface, p->m_d.m_vCenter.x, p->m_d.m_vCenter.y);
       transform = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, height);
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlasher)
+   case eItemFlasher:
    {
-      Flasher *const p = static_cast<Flasher *>(m_selection.editable);
+      const Flasher *const p = static_cast<Flasher *>(m_selection.editable);
       const Matrix3D trans = Matrix3D::MatrixTranslate(p->m_d.m_vCenter.x, p->m_d.m_vCenter.y, p->m_d.m_height);
       const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(p->m_d.m_rotX));
       const Matrix3D roty = Matrix3D::MatrixRotateY(ANGTORAD(p->m_d.m_rotY));
@@ -3068,26 +3070,23 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       transform = rotz * roty * rotx * trans;
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemFlipper)
+   case eItemFlipper:
    {
-      Flipper *const f = static_cast<Flipper *>(m_selection.editable);
+      const Flipper *const f = static_cast<Flipper *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(f->m_d.m_szSurface, f->m_d.m_Center.x, f->m_d.m_Center.y);
       transform = Matrix3D::MatrixTranslate(f->m_d.m_Center.x, f->m_d.m_Center.y, height);
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemLight)
+   case eItemLight:
    {
-      Light *const l = static_cast<Light *>(m_selection.editable);
+      const Light *const l = static_cast<Light *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       transform = Matrix3D::MatrixTranslate(l->m_d.m_vCenter.x, l->m_d.m_vCenter.y, height + l->m_d.m_height);
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemPrimitive)
+   case eItemPrimitive:
    {
-      Primitive *const p = static_cast<Primitive *>(m_selection.editable);
+      const Primitive *const p = static_cast<Primitive *>(m_selection.editable);
       const Matrix3D Smatrix = Matrix3D::MatrixScale(p->m_d.m_vSize.x, p->m_d.m_vSize.y, p->m_d.m_vSize.z);
       const Matrix3D Tmatrix = Matrix3D::MatrixTranslate(p->m_d.m_vPosition.x, p->m_d.m_vPosition.y, p->m_d.m_vPosition.z);
       const Matrix3D Rmatrix = (Matrix3D::MatrixRotateZ(ANGTORAD(p->m_d.m_aRotAndTra[2]))
@@ -3096,13 +3095,13 @@ bool LiveUI::GetSelectionTransform(Matrix3D& transform)
       transform = (Smatrix * Rmatrix) * Tmatrix; // fullMatrix = Scale * Rotate * Translate
       return true;
    }
-
-   if (m_selection.type == LiveUI::Selection::SelectionType::S_EDITABLE && m_selection.editable->GetItemType() == eItemSurface)
+   case eItemSurface:
    {
-      Surface *const obj = static_cast<Surface *>(m_selection.editable);
+      const Surface *const obj = static_cast<Surface *>(m_selection.editable);
       Vertex2D center = obj->GetPointCenter();
       transform = Matrix3D::MatrixTranslate(center.x, center.y, 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop));
       return true;
+   }
    }
 
    return false;

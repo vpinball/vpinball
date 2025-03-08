@@ -9,7 +9,7 @@ class Spinner;
 class Gate;
 class Trigger;
 
-class BumperHitCircle : public HitCircle
+class BumperHitCircle final : public HitCircle
 {
 public:
    BumperHitCircle(Bumper* const pBumper, const Vertex2D& c, const float r, const float zlow, const float zhigh);
@@ -20,7 +20,7 @@ public:
    bool m_bumperanim_hitEvent;
 };
 
-class LineSegSlingshot : public LineSeg
+class LineSegSlingshot final : public LineSeg
 {
 public:
    LineSegSlingshot(Surface* const psurface, const Vertex2D& p1, const Vertex2D& p2, const float _zlow, const float _zhigh);
@@ -42,7 +42,7 @@ public:
    bool m_iframe;
 };
 
-class Hit3DPoly : public HitObject
+class Hit3DPoly final : public HitObject
 {
 public:
    Hit3DPoly(IEditable*const editable, Vertex3Ds * const rgv, const int count); // pointer is copied and content deleted in dtor
@@ -67,7 +67,7 @@ private:
 
 // Note that HitTriangle ONLY does include the plane and barycentric test, but NOT the edge and vertex test,
 // thus one has to add these separately per mesh
-class HitTriangle : public HitObject
+class HitTriangle final : public HitObject
 {
 public:
    HitTriangle(IEditable* const editable, const Vertex3Ds rgv[3]); // vertices in counterclockwise order
@@ -87,7 +87,7 @@ public:
 };
 
 
-class HitPlane : public HitObject
+class HitPlane final : public HitObject
 {
 public:
    HitPlane(IEditable* const editable) : HitObject(editable) { }
@@ -111,7 +111,7 @@ private:
 };
 
 
-class SpinnerMoverObject : public MoverObject
+class SpinnerMoverObject final : public MoverObject
 {
 public:
    void UpdateDisplacements(const float dtime) override;
@@ -130,7 +130,7 @@ public:
    bool m_visible;
 };
 
-class HitSpinner : public HitObject
+class HitSpinner final : public HitObject
 {
 public:
    HitSpinner(Spinner * const pspinner, const float height);
@@ -150,7 +150,7 @@ public:
    SpinnerMoverObject m_spinnerMover;
 };
 
-class GateMoverObject : public MoverObject
+class GateMoverObject final : public MoverObject
 {
 public:
    void UpdateDisplacements(const float dtime) override;
@@ -172,7 +172,7 @@ public:
    bool m_hitDirection; // For the direction of the little bounce-back
 };
 
-class HitGate : public HitObject
+class HitGate final : public HitObject
 {
 public:
    HitGate(Gate * const pgate, const float height);
@@ -195,7 +195,7 @@ private:
    LineSeg m_lineseg[2];
 };
 
-class TriggerLineSeg : public LineSeg
+class TriggerLineSeg final : public LineSeg
 {
 public:
    TriggerLineSeg(Trigger* const trigger, const Vertex2D& p1, const Vertex2D& p2, const float zlow, const float zhigh);
@@ -206,7 +206,7 @@ public:
    Trigger * const m_ptrigger;
 };
 
-class TriggerHitCircle : public HitCircle
+class TriggerHitCircle final : public HitCircle
 {
 public:
    TriggerHitCircle(Trigger* const trigger, const Vertex2D& c, const float r, const float zlow, const float zhigh);
@@ -217,7 +217,7 @@ public:
 
 // Arbitrary line segment in 3D space.
 // Implemented by transforming a HitLineZ to the desired orientation.
-class HitLine3D : public HitLineZ
+class HitLine3D final : public HitLineZ
 {
 public:
    HitLine3D(IEditable* const editable, const Vertex3Ds& v1, const Vertex3Ds& v2);

@@ -44,7 +44,7 @@ public:
    static int32_t GetVersion() { return 1009; }
    int32_t GetRuntimeVersion() const { return m_runtimeVersion; }
    void SetRuntimeVersion(int32_t v) { m_runtimeVersion = v; }
-   
+
    bool GetRun() const { return m_run; }
    void SetRun(bool run);
 
@@ -61,7 +61,7 @@ public:
    int GetHeight() const { return m_height; }
    void SetWidth(int w) { if (m_width == w) return; m_width = w; m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height)); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
    void SetHeight(int h) { if (m_height == h) return; m_height = h; m_pStage->SetSize(static_cast<float>(m_width), static_cast<float>(m_height)); DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
-   
+
    RenderMode GetRenderMode() const { return m_renderMode; }
    void SetRenderMode(RenderMode renderMode) { m_renderMode = renderMode; DiscardFrames(); if (m_run && m_show) OnDMDChanged(); }
 
@@ -74,25 +74,25 @@ public:
    void Render();
    const std::vector<uint32_t>& GetDmdColoredPixels();
    const std::vector<uint8_t>& GetDmdPixels();
-   
+
    void SetSegments(const std::vector<uint16_t>& segments);
 
    void LockRenderThread() { m_renderLockCount++; }
    void UnlockRenderThread() { m_renderLockCount--; }
-   
+
    Group* GetStage() const { m_pStage->AddRef(); return m_pStage; }
-   
+
    Group* NewGroup(const string& name);
    Frame* NewFrame(const string& name);
    Image* NewImage(const string& name, const string& image);
    Label* NewLabel(const string& name, Font* Font, const string& text);
    UltraDMD* NewUltraDMD();
    Font* NewFont(const string& szFont, uint32_t tint, uint32_t borderTint, int borderSize);
-   AnimatedActor* NewVideo(const string& szVideo, const string& szName);
-   
+   AnimatedActor* NewVideo(const string& name, const string& video);
+
    uint32_t GetColor() const { return m_dmdColor; }
    void SetColor(uint32_t dmdColor) { m_dmdColor = dmdColor; }
-   
+
    AssetManager* GetAssetManager() const { return m_pAssetManager; }
 
    void SetId(uint32_t id) { m_id = id; }

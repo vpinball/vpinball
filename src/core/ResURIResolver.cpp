@@ -26,7 +26,7 @@ BaseTexture *ResURIResolver::GetDisplay(const string &link, const IEditable *con
    auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
-      PLOGE << "Invalid ressource URI: " << link;
+      PLOGE << "Invalid resource URI: " << link;
    }
    else if (uri.scheme == "default")
    {
@@ -59,11 +59,11 @@ BaseTexture *ResURIResolver::GetDisplay(const string &link, const IEditable *con
       if ((endpointId != 0)
          && (uri.path == "/getstate")
          && (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
-         && (uri.query.at("src") == "display"))
+         && (uri.query.at("src"s) == "display"))
       {
          int displayId;
          if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
-            try_parse_int(uri.query.at("id"), displayId);
+            try_parse_int(uri.query.at("id"s), displayId);
          lambda = [endpointId, displayId](const string &, const IEditable *context) -> BaseTexture * { return g_pplayer->GetControllerDisplay({ endpointId, static_cast<uint32_t>(displayId) }).frame; };
       }
    }
@@ -86,7 +86,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
    auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
-      PLOGE << "Invalid ressource URI: " << link;
+      PLOGE << "Invalid resource URI: " << link;
    }
    else if (uri.scheme == "default")
    {
@@ -94,7 +94,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
       {
          int subId = -1;
          if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
-            try_parse_int(uri.query.at("sub"), subId);
+            try_parse_int(uri.query.at("sub"s), subId);
          lambda = [subId](const string &, const IEditable *context) -> SegDisplay {
             if (subId < 0)
                return { nullptr };
@@ -117,14 +117,14 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
       if ((endpointId != 0)
          && (uri.path == "/getstate")
          && (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "src"; }) != uri.query.end())
-         && (uri.query.at("src") == "alpha"))
+         && (uri.query.at("src"s) == "alpha"))
       {
          int displayId = -1;
          if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "id"; }) != uri.query.end())
-            try_parse_int(uri.query.at("id"), displayId);
+            try_parse_int(uri.query.at("id"s), displayId);
          int subId = -1;
          if (std::ranges::find_if(uri.query.begin(), uri.query.end(), [](const auto &a) { return a.first == "sub"; }) != uri.query.end())
-            try_parse_int(uri.query.at("sub"), subId);
+            try_parse_int(uri.query.at("sub"s), subId);
          lambda = [endpointId, displayId, subId](const string &, const IEditable *context) -> SegDisplay
          {
             if (subId < 0)

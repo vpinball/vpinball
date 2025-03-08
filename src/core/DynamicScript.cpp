@@ -91,13 +91,13 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
    // Register members
    for (int i = 0; i < static_cast<int>(classDef->nMembers); i++)
    {
-      ScriptClassMemberDef& memberDef = classDef->members[i];
+      const ScriptClassMemberDef& memberDef = classDef->members[i];
       string nameId(memberDef.name.name);
       StrToLower(nameId);
       const auto& memberMapEntry = cd->memberMap.find(nameId);
       if (memberMapEntry == cd->memberMap.end())
       {
-         cd->memberMap[nameId] = static_cast<unsigned int>(cd->members.size());
+         cd->memberMap[nameId] = static_cast<int>(cd->members.size());
          cd->members.push_back({ i });
       }
       else

@@ -35,7 +35,7 @@ void TableDB::Load()
          else if (!inQuotes && c == ',')
          {
             fields.push_back(ss.str());
-            ss.str("");
+            ss.str(string());
          }
          else if (!inQuotes && (c == '\r' || c == '\n'))
          {

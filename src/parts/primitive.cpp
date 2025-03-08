@@ -690,6 +690,7 @@ void Primitive::UIRenderPass2(Sur * const psur)
          if (ppi->m_hbmGDIVersion)
          {
             vector<RenderVertex> vvertex;
+            vvertex.reserve(m_mesh.NumIndices());
             for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
             {
                const Vertex3Ds * const A = &m_vertices[m_mesh.m_indices[i]];
@@ -709,8 +710,6 @@ void Primitive::UIRenderPass2(Sur * const psur)
                vvertex.push_back(rvA);
             }
             psur->PolygonImage(vvertex, ppi->m_hbmGDIVersion, m_ptable->m_left, m_ptable->m_top, m_ptable->m_right, m_ptable->m_bottom, ppi->m_width, ppi->m_height);
-
-            vvertex.clear();
          }
       }
    }

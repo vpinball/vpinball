@@ -11,8 +11,8 @@ public:
    float x;
    float y;
 
-   Vertex2D() {}
-   Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
+   constexpr Vertex2D() {}
+   constexpr Vertex2D(const float _x, const float _y) : x(_x), y(_y) {}
 
    void Set(const float a, const float b) { x = a; y = b; }
    void SetZero() { Set(0.f, 0.f); }
@@ -116,8 +116,8 @@ class Vertex3Ds
 public:
    float x, y, z;
 
-   Vertex3Ds() {}
-   Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
+   constexpr Vertex3Ds() {}
+   constexpr Vertex3Ds(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z) {}
 
    void Set(const float a, const float b, const float c) { x = a; y = b; z = c; }
    void SetZero() { Set(0.f, 0.f, 0.f); }
@@ -361,8 +361,8 @@ class alignas(16) Vertex4D final
 public:
     float x, y, z, w;
 
-    Vertex4D() {}
-    Vertex4D(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
+    constexpr Vertex4D() {}
+    constexpr Vertex4D(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
 
 #define vec4 Vertex4D
@@ -378,8 +378,8 @@ public:
         unsigned int xyzw;
     };
 
-    bool4() {}
-    bool4(const bool _x, const bool _y, const bool _z, const bool _w) : x(_x), y(_y), z(_z), w(_w) {}
+    constexpr bool4() {}
+    constexpr bool4(const bool _x, const bool _y, const bool _z, const bool _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
 
 class bool2 final
@@ -387,8 +387,8 @@ class bool2 final
 public:
     bool x, y;
 
-    bool2() {}
-    bool2(const bool _x, const bool _y) : x(_x), y(_y) {}
+    constexpr bool2() {}
+    constexpr bool2(const bool _x, const bool _y) : x(_x), y(_y) {}
 };
 
 class alignas(8) int2 final
@@ -396,8 +396,8 @@ class alignas(8) int2 final
 public:
     int x, y;
 
-    int2() {}
-    int2(const int _x, const int _y) : x(_x), y(_y) {}
+    constexpr int2() {}
+    constexpr int2(const int _x, const int _y) : x(_x), y(_y) {}
 };
 
 class short2 final
@@ -405,8 +405,8 @@ class short2 final
 public:
     short x, y;
 
-    short2() {}
-    short2(const short _x, const short _y) : x(_x), y(_y) {}
+    constexpr short2() {}
+    constexpr short2(const short _x, const short _y) : x(_x), y(_y) {}
 };
 
 namespace plog

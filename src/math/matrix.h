@@ -24,8 +24,8 @@ public:
 class Matrix3 final
 {
 public:
-   Matrix3() {}
-   Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
+   constexpr Matrix3() {}
+   constexpr Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
    {
       _11 = __11; _12 = __12; _13 = __13;
       _21 = __21; _22 = __22; _23 = __23;
@@ -262,9 +262,8 @@ public:
 class alignas(16) Matrix3D final : public D3DMATRIX
 {
 public:
-   Matrix3D() {}
-   Matrix3D(
-      const float __11, const float __12, const float __13, const float __14, const float __21, const float __22, const float __23, const float __24, const float __31, const float __32, const float __33, const float __34, const float __41, const float __42, const float __43, const float __44)
+   constexpr Matrix3D() {}
+   constexpr Matrix3D(const float __11, const float __12, const float __13, const float __14, const float __21, const float __22, const float __23, const float __24, const float __31, const float __32, const float __33, const float __34, const float __41, const float __42, const float __43, const float __44)
    {
       _11 = __11; _12 = __12; _13 = __13; _14 = __14;
       _21 = __21; _22 = __22; _23 = __23; _24 = __24;

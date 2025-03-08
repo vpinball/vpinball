@@ -7,9 +7,9 @@ class FRect3D final
 public:
    float left, right, top, bottom, zlow, zhigh;
 
-   FRect3D() {}
+   constexpr FRect3D() {}
 
-   FRect3D(const float x1, const float x2, const float y1, const float y2, const float z1, const float z2)
+   constexpr FRect3D(const float x1, const float x2, const float y1, const float y2, const float z1, const float z2)
       : left(x1), right(x2),
       top(y1), bottom(y2),
       zlow(z1), zhigh(z2)
@@ -43,9 +43,9 @@ public:
       return {0.5f*(left + right), 0.5f*(top + bottom)};
    }
 
-   FRect() {}
+   constexpr FRect() {}
 
-   FRect(const float x1, const float x2, const float y1, const float y2)
+   constexpr FRect(const float x1, const float x2, const float y1, const float y2)
       : left(x1), top(y1), right(x2), bottom(y2)
    {}
 
@@ -72,7 +72,7 @@ public:
    }
 };
 
-inline bool Intersect(const RECT &rc, const int width, const int height, const POINT &p, const bool rotated) // width & height in percent/[0..100]-range
+constexpr inline bool Intersect(const RECT &rc, const int width, const int height, const POINT &p, const bool rotated) // width & height in percent/[0..100]-range
 {
    if (!rotated)
       return (p.x >= rc.left*width / 100 && p.x <= rc.right*width / 100 && p.y >= rc.top*height / 100 && p.y <= rc.bottom*height / 100);
@@ -100,7 +100,7 @@ inline bool fRectIntersect3D(const FRect3D &rc1, const FRect3D &rc2)
 }
 #endif
 
-inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc) // could also use SSE, but kd and quadtree already have native SSE variants in there
+constexpr inline bool fRectIntersect3D(const Vertex3Ds &sphere_p, const float sphere_rsqr, const FRect3D &rc) // could also use SSE, but kd and quadtree already have native SSE variants in there
 {
    float ex = max(rc.left - sphere_p.x, 0.f) + max(sphere_p.x - rc.right, 0.f);
    float ey = max(rc.top - sphere_p.y, 0.f) + max(sphere_p.y - rc.bottom, 0.f);

@@ -10,7 +10,7 @@
 class Action
 {
 public:
-   virtual ~Action() { assert(m_refCount == 0); };
+   virtual ~Action() { assert(m_refCount == 0); }
 
    PSC_IMPLEMENT_REFCOUNT()
 
@@ -416,7 +416,7 @@ public:
    {
       bool alive = false;
       const size_t a = m_actions.size();
-      for (int i = 0; i < a; i++)
+      for (size_t i = 0; i < a; i++)
       {
          if (m_runMask[i])
          {
@@ -428,7 +428,7 @@ public:
       }
       if (!alive)
       {
-         for (int i = 0; i < a; i++)
+         for (size_t i = 0; i < a; i++)
             m_runMask[i] = true;
       }
       return false;
@@ -539,7 +539,7 @@ public:
 
    bool Update(float secondsElapsed) override
    {
-      const size_t a = m_actions.size();
+      const int a = (int)m_actions.size();
       if (m_pos >= a)
       {
          m_pos = 0;

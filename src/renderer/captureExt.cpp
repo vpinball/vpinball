@@ -363,7 +363,7 @@ void ExtCaptureManager::UpdateThread()
                   capture->m_dirty = false;
                   capture->m_updated = true;
                   const uint8_t* __restrict sptr = reinterpret_cast<uint8_t*>(srcData) + pitch * capture->m_dispTop;
-                  uint8_t* __restrict ddptr = (uint8_t*)capture->m_data;
+                  uint8_t* __restrict ddptr = static_cast<uint8_t*>(capture->m_data);
                   for (unsigned int h = 0; h < capture->m_height; ++h)
                   {
                      // Copy acquired frame, swapping red and blue channel

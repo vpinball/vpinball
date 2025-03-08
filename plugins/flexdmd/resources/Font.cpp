@@ -19,14 +19,14 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          if (!m_textures[i])
             continue;
 
-         SDL_Surface* src = SDL_ConvertSurface(m_textures[i], SDL_PIXELFORMAT_RGBA32);
+         SDL_Surface* const src = SDL_ConvertSurface(m_textures[i], SDL_PIXELFORMAT_RGBA32);
 
-         int w = src->w;
-         int h = src->h;
+         const int w = src->w;
+         const int h = src->h;
 
-         SDL_Surface* dst = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
+         SDL_Surface* const dst = SDL_CreateSurface(w, h, SDL_PIXELFORMAT_RGBA32);
 
-         ColorRGBA32 outline = SDL_MapSurfaceRGBA(dst, 
+         const ColorRGBA32 outline = SDL_MapSurfaceRGBA(dst, 
             GetRValue(pAssetSrc->GetFontBorderTint()), 
             GetGValue(pAssetSrc->GetFontBorderTint()), 
             GetBValue(pAssetSrc->GetFontBorderTint()), 
@@ -35,16 +35,12 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
          SDL_LockSurface(src);
          SDL_LockSurface(dst);
 
-         ColorRGBA32* pixels_src = (ColorRGBA32*)src->pixels;
-         ColorRGBA32* pixels_dst = (ColorRGBA32*)dst->pixels;
-
-         uint8_t r;
-         uint8_t g;
-         uint8_t b;
-         uint8_t a;
+         const ColorRGBA32* const pixels_src = (ColorRGBA32*)src->pixels;
+               ColorRGBA32* const pixels_dst = (ColorRGBA32*)dst->pixels;
 
          for (int y = 0; y < h; ++y) {
             for (int x = 0; x < w; ++x) {
+               uint8_t r, g, b, a;
                SDL_GetRGBA(pixels_src[y * w + x], SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &r, &g, &b, &a);
 
                if (a == 0)
@@ -71,19 +67,22 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
             }
          }
 
-         uint8_t tint_r = GetRValue(pAssetSrc->GetFontTint());
-         uint8_t tint_g = GetGValue(pAssetSrc->GetFontTint());
-         uint8_t tint_b = GetBValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_r = GetRValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_g = GetGValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_b = GetBValue(pAssetSrc->GetFontTint());
 
-         for (int idx = 0; idx < dst->w * dst->h; ++idx) {
+         const int n = dst->w * dst->h;
+         for (int idx = 0; idx < n; ++idx)
+         {
+            uint8_t r, g, b, a;
             SDL_GetRGBA(pixels_src[idx], SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &r, &g, &b, &a);
 
             if (a == 0)
                continue;
 
-            r = (uint8_t)SDL_min((r * tint_r) / 255, 255);
-            g = (uint8_t)SDL_min((g * tint_g) / 255, 255);
-            b = (uint8_t)SDL_min((b * tint_b) / 255, 255);
+            r = (uint8_t)min((r * tint_r) / 255u, 255u);
+            g = (uint8_t)min((g * tint_g) / 255u, 255u);
+            b = (uint8_t)min((b * tint_b) / 255u, 255u);
 
             pixels_dst[idx] = SDL_MapSurfaceRGBA(dst, r, g, b, a);
          }
@@ -112,17 +111,18 @@ Font::Font(AssetManager* pAssetManager, AssetSrc* pAssetSrc)
 
          ColorRGBA32* const pixels_dst = (ColorRGBA32*)dst->pixels;
 
-         const uint8_t tint_r = GetRValue(pAssetSrc->GetFontTint());
-         const uint8_t tint_g = GetGValue(pAssetSrc->GetFontTint());
-         const uint8_t tint_b = GetBValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_r = GetRValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_g = GetGValue(pAssetSrc->GetFontTint());
+         const uint32_t tint_b = GetBValue(pAssetSrc->GetFontTint());
 
-         for (int idx = 0; idx < dst->w * dst->h; ++idx) {
+         const int n = dst->w * dst->h;
+         for (int idx = 0; idx < n; ++idx) {
             uint8_t r,g,b,a;
             SDL_GetRGBA(pixels_dst[idx], SDL_GetPixelFormatDetails(dst->format), SDL_GetSurfacePalette(dst), &r, &g, &b, &a);
 
-            r = (uint8_t)SDL_min((r * tint_r) / 255, 255);
-            g = (uint8_t)SDL_min((g * tint_g) / 255, 255);
-            b = (uint8_t)SDL_min((b * tint_b) / 255, 255);
+            r = (uint8_t)min((r * tint_r) / 255u, 255u);
+            g = (uint8_t)min((g * tint_g) / 255u, 255u);
+            b = (uint8_t)min((b * tint_b) / 255u, 255u);
 
             pixels_dst[idx] = SDL_MapSurfaceRGBA(dst, r, g, b, a);
          }
@@ -184,7 +184,7 @@ void Font::DrawCharacter(VP::SurfaceGraphics* pGraphics, char character, char pr
 
 SDL_Rect Font::MeasureFont(const string& text)
 {
-   DrawText_(NULL, 0, 0, text);
+   DrawText_(nullptr, 0, 0, text);
    return m_pBitmapFont->MeasureFont(text);
 }
 

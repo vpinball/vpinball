@@ -98,15 +98,15 @@ Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrigh
    ColorRGBA32 baseColor = m_pFlexDMD->GetRenderMode() == RenderMode_DMD_RGB ? m_pFlexDMD->GetColor() : RGB(255, 255, 255);
 
    ColorRGBA32 tint = brightness >= 0.0f ? RGB(
-      SDL_min((GetRValue(baseColor) * brightness), 255),
-      SDL_min((GetGValue(baseColor) * brightness), 255),
-      SDL_min((GetBValue(baseColor) * brightness), 255)) : RGB(0, 0, 0);
+      min((GetRValue(baseColor) * brightness), 255.f),
+      min((GetGValue(baseColor) * brightness), 255.f),
+      min((GetBValue(baseColor) * brightness), 255.f)) : RGB(0, 0, 0);
 
    if (outlineBrightness >= 0.0f) {
       ColorRGBA32 borderTint = RGB(
-         SDL_min((GetRValue(baseColor) * outlineBrightness), 255),
-         SDL_min((GetGValue(baseColor) * outlineBrightness), 255),
-         SDL_min((GetBValue(baseColor) * outlineBrightness), 255));
+         min((GetRValue(baseColor) * outlineBrightness), 255.f),
+         min((GetGValue(baseColor) * outlineBrightness), 255.f),
+         min((GetBValue(baseColor) * outlineBrightness), 255.f));
 
       return m_pFlexDMD->NewFont(path, tint, borderTint, 1);
    }
@@ -154,7 +154,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
    }
    else {
        string path = filename;
-       std::replace(path.begin(), path.end(), ',', '|');
+       std::ranges::replace(path.begin(), path.end(), ',', '|');
        if (path.find('|') != string::npos)
           return ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), path, string(), 30, true);
        else {
@@ -198,7 +198,7 @@ int UltraDMD::CreateAnimationFromImages(int fps, bool loop, const string& imagel
 {
    int id = m_nextId;
    string szImagelist = imagelist;
-   std::replace(szImagelist.begin(), szImagelist.end(), ',', '|');
+   std::ranges::replace(szImagelist.begin(), szImagelist.end(), ',', '|');
    m_preloads[id] = new ImageSequenceDef(szImagelist, fps, loop);
    m_nextId++;
    return id;
@@ -365,7 +365,7 @@ void UltraDMD::ScrollingCredits(const string& background, const string& text, in
 
    vector<string> lines;
    string szText = text;
-   std::replace(szText.begin(), szText.end(), '|', '\n');
+   std::ranges::replace(szText.begin(), szText.end(), '|', '\n');
    std::stringstream ss(szText);
    string line;
    while (std::getline(ss, line, '\n'))

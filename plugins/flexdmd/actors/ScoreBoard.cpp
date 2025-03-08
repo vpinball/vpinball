@@ -95,11 +95,11 @@ void ScoreBoard::Update(float delta)
 {
     Group::Update(delta);
     SetBounds(0, 0, GetParent()->GetWidth(), GetParent()->GetHeight());
-    float yText = GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight() - 1;
+    float yText = GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight() - 1.f;
     // float yLine2 = 1 + m_pHighlightFont->m_pBitmapFont->m_baseHeight + (GetHeight() - 2 -  m_pTextFont->m_pBitmapFont->m_baseHeight - 2 * m_pHighlightFont->m_pBitmapFont->m_baseHeight ) / 2;
     float yLine2 = (GetHeight() - m_pTextFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
     float dec = (float)(m_pHighlightFont->GetBitmapFont()->GetBaseHeight() - m_pScoreFont->GetBitmapFont()->GetBaseHeight()) / 2.0f;
-    // float yLine2 = (1 + yText) * 0.5f;
+    // float yLine2 = (1.f + yText) * 0.5f;
     m_pScores[0]->Pack();
     m_pScores[1]->Pack();
     m_pScores[2]->Pack();

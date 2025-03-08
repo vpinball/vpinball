@@ -150,7 +150,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
 
    if (pAssetSrc->GetAssetType() == AssetType_Image) {
       for (size_t i = 1; i < parts.size(); i++) {
-         string definition = parts[i];
+         const string& definition = parts[i];
          int dotSize;
 
          if (definition.starts_with("dmd=") && try_parse_int(definition.substr(4), dotSize)) {
@@ -207,7 +207,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       int borderSize;
  
       for (size_t i = 1; i < parts.size(); i++) {
-         string definition = parts[i];
+         const string& definition = parts[i];
 
          if (definition.starts_with("tint=") && try_parse_color(definition.substr(5), tint))
             pAssetSrc->SetFontTint(tint);
@@ -234,8 +234,8 @@ void* AssetManager::Open(AssetSrc* pSrc)
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        const string path = pSrc->GetPath();
-        
+        const string& path = pSrc->GetPath();
+
         if (pSrc->GetAssetType() == AssetType_BMFont)
            pAsset = BitmapFont::Create(path);
         else if (pSrc->GetAssetType() != AssetType_GIF)

@@ -167,7 +167,7 @@ void Controller::SetMech(int mechNo, int newVal)
    case 0:
       PinmameSetMech(newVal, m_pPinmameMechConfig);
       delete m_pPinmameMechConfig;
-      m_pPinmameMechConfig = NULL;
+      m_pPinmameMechConfig = nullptr;
       break;
    case 1: m_pPinmameMechConfig->sol1 = newVal; break;
    case 2: m_pPinmameMechConfig->sol2 = newVal; break;

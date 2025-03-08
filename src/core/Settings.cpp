@@ -184,7 +184,7 @@ bool Settings::LoadFromFile(const string& path, const bool createDefault)
       {
          if (FindIndexOf(m_settingKeys, entry.first) < 0)
          {
-            PLOGI << "Registering section '" << entry.first << "' used in settings file '" << path << "'";
+            PLOGI << "Registering section '" << entry.first << "' used in settings file '" << path << '\'';
             m_settingKeys.push_back(entry.first);
          }
       }

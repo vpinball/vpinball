@@ -2,10 +2,11 @@
 
 #include <algorithm>
 
-Sequence::Sequence(FlexDMD* pFlexDMD, const string& name) : Group(pFlexDMD, name)
+Sequence::Sequence(FlexDMD* pFlexDMD, const string& name)
+   : Group(pFlexDMD, name)
+   , m_finished(false)
+   , m_pActiveScene(nullptr)
 {
-   m_finished = false;
-   m_pActiveScene = NULL;
 }
 
 Sequence::~Sequence()

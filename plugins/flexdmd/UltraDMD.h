@@ -63,7 +63,7 @@ private:
    FontDef* m_pTwoLinesFontTop;
    FontDef* m_pTwoLinesFontBottom;
    vector<FontDef*> m_singleLineFonts;
-   bool m_visible = true;
+   //bool m_visible = true;
    int m_stretchMode = 0;
    int m_nextId = 1;
    std::unordered_map<int, BaseDef*> m_preloads;
