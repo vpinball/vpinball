@@ -342,6 +342,14 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    }
    #endif
 
+   // Set up to dynamically toggle vsync
+   if (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate())
+      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS higher than display FPS, then entirely disable VSYNC
+   const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
+
+   // Always start with VSync disabled (we will enable it if needed)
+   init.resolution.reset &= ~BGFX_RESET_VSYNC;
+
    g_pplayer->m_renderProfiler->SetThreadLock();
 
    // BGFX default behavior is to set its 'API' thread (the one where bgfx API calls are allowed)
@@ -373,12 +381,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset, init.resolution.format);
    }
    
-   // Set up to dynamically toggle vsync
-   if (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate())
-      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS higher than display FPS, then disable VSYNC
-   const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-   init.resolution.reset &= ~BGFX_RESET_VSYNC;
-
    //bgfx::setDebug(BGFX_DEBUG_STATS);
 
    // Create the back buffer render target
@@ -487,8 +489,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    #endif
    {
       U64 lastFlipTick = 0;
-      bool vsync = useVSync;
+      bool vsync = false;
 
+      
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
       {
@@ -512,6 +515,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
             if (vsync != needsVSync)
+            #ifdef _MSC_VER
+               // For Windows, only use GPU sync if we can't use DWM sync (GPU sync has issues when used with multiple monitors, and leads to higher visual latency)
+               if (!rd->m_dwm_enabled || (mDwmFlush == nullptr))
+            #endif
             {
                vsync = needsVSync;
                bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
@@ -555,6 +562,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             span* tagSpan = new span(series, 1, _T("BGFX->GPU"));
             #endif
             rd->Flip();
+            #ifdef _MSC_VER
+               if (needsVSync && rd->m_dwm_enabled && mDwmFlush)
+                  rd->WaitForVSync(false); // Sync on the main display (this supposes that the playfield window is on the main display to behave correctly)
+            #endif
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
@@ -593,9 +604,12 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #endif
 
 #ifndef __STANDALONE__
-    mDwmIsCompositionEnabled = (pDICE)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
-    mDwmEnableComposition = (pDEC)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
-    mDwmFlush = (pDF)GetProcAddress(GetModuleHandle(TEXT("dwmapi.dll")), "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
+   HMODULE dwmModule = GetModuleHandle(TEXT("dwmapi.dll"));
+   if (dwmModule == 0)
+      dwmModule = LoadLibrary(TEXT("dwmapi.dll"));
+   mDwmIsCompositionEnabled = (pDICE)GetProcAddress(dwmModule, "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
+   mDwmEnableComposition = (pDEC)GetProcAddress(dwmModule, "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
+   mDwmFlush = (pDF)GetProcAddress(dwmModule, "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
 
     if (mDwmIsCompositionEnabled && mDwmEnableComposition)
     {
@@ -662,14 +676,23 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    init.callback = &bgfxCallback;
 
-   init.resolution.maxFrameLatency = maxPrerenderedFrames;
-   init.resolution.numBackBuffers = maxPrerenderedFrames;
-   // - Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?).
-   // - If synchronizing on display's VSYNC, performs flip as late as possible to increase CPU/GPU parallelism (flip is likely the blocking call when vsynced, so do just before submitting next frame).
-   //   If doing user synchronization, flip as soon as possible after submitting frame to limit latency.
-   init.resolution.reset = BGFX_RESET_MAXANISOTROPY
-                         | (syncMode == VSM_NONE ? BGFX_RESET_FLIP_AFTER_RENDER : BGFX_RESET_NONE)
-                         | (syncMode == VSM_NONE ? BGFX_RESET_NONE              : BGFX_RESET_VSYNC);
+   init.resolution.maxFrameLatency = maxPrerenderedFrames; // Maximum of Present operation queued (unrendered frame queued on GPU, waiting for an available backbuffer)
+   
+   //init.resolution.numBackBuffers = 3; // Number of backbuffers (usually 3 as 1 is locked by compositor, 1 is displayed, 1 is rendered to)
+   
+   // Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?).
+   init.resolution.reset = BGFX_RESET_MAXANISOTROPY;
+
+   // Flip (i.e Present) as soon as possible after submitting frame to limit latency.
+   init.resolution.reset |= BGFX_RESET_FLIP_AFTER_RENDER;
+
+   if (syncMode != VSM_NONE)
+      init.resolution.reset |= BGFX_RESET_VSYNC;
+   
+   // Request a fullscreen swapchain to get independent flip and avoid compositor overhead
+   if (m_outputWnd[0]->IsFullScreen())
+      init.resolution.reset |= BGFX_RESET_FULLSCREEN;
+
    init.resolution.width = wnd->GetWidth();
    init.resolution.height = wnd->GetHeight();
    switch (wnd->GetBitDepth())
