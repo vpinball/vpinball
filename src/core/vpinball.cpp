@@ -3286,25 +3286,26 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
    {
-      fscanf_s(f, "%03X", &x);
-      fscanf_s(f, "%03X", &y);
-      fscanf_s(f, "%01X", &cpu);
-      fscanf_s(f, "%01X", &bits);
-      fscanf_s(f, "%01X", &os);
-      fscanf_s(f, "%01X", &renderer);
-      fscanf_s(f, "%01X", &major);
-      fscanf_s(f, "%01X", &minor);
-      fscanf_s(f, "%01X", &rev);
-      fscanf_s(f, "%04X", &git_rev);
-      fscanf_s(f, "%08X", &tablefileChecksum_in);
-      fscanf_s(f, "%08X", &vpxChecksum_in);
-      fscanf_s(f, "%08X", &scriptsChecksum_in);
+      [[maybe_unused]] int unused;
+      unused = fscanf_s(f, "%03X", &x);
+      unused = fscanf_s(f, "%03X", &y);
+      unused = fscanf_s(f, "%01X", &cpu);
+      unused = fscanf_s(f, "%01X", &bits);
+      unused = fscanf_s(f, "%01X", &os);
+      unused = fscanf_s(f, "%01X", &renderer);
+      unused = fscanf_s(f, "%01X", &major);
+      unused = fscanf_s(f, "%01X", &minor);
+      unused = fscanf_s(f, "%01X", &rev);
+      unused = fscanf_s(f, "%04X", &git_rev);
+      unused = fscanf_s(f, "%08X", &tablefileChecksum_in);
+      unused = fscanf_s(f, "%08X", &vpxChecksum_in);
+      unused = fscanf_s(f, "%08X", &scriptsChecksum_in);
       dmd_size = x * y + 16;
       dmd_data = new BYTE[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
       {
          unsigned int v;
-         fscanf_s(f, "%02X", &v);
+         unused = fscanf_s(f, "%02X", &v);
          dmd_data[i] = v;
       }
       fclose(f);

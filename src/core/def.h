@@ -24,6 +24,12 @@
 #endif
 #endif
 
+#if __cplusplus >= 202302L  // C++23 and later
+#define CONSTEXPR constexpr
+#else
+#define CONSTEXPR
+#endif
+
 template <typename T>
 constexpr __forceinline T min(const T x, const T y)
 {
@@ -660,7 +666,7 @@ constexpr inline void szUpper(char* pC)
     }
 }
 
-constexpr inline void StrToLower(string& str)
+CONSTEXPR inline void StrToLower(string& str)
 {
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
 }
