@@ -2196,20 +2196,8 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    m_renderer->RenderFrame();
 
-   // BGFX has a single thread for all swapchains, this leads to stutters since all 'Present' operations are done on the same thread 
-   // while each operation depends on the display synchronization. To avoid this, ancilliary window are only rendered (and therefore 
-   // presented) when we are sure that present will not block. This should be replaced in favor of clean VSync synchronization on each
-   // display, using a thread per swapchain but this needs either to heavily modify BGFX or to implement all swapchain management 
-   // outside of BGFX (still modifying BGFX for semaphore syncing with rendering)...
-   static U64 lastScoreViewRender = 0;
-   U64 now = usec();
-   if ((m_vrDevice == nullptr) 
-      && ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
-         || ((m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW) && (now - lastScoreViewRender) > 1e6 / m_scoreviewOutput.GetWindow()->GetRefreshRate())))
-   {
-      lastScoreViewRender = now;
+   if ((m_vrDevice == nullptr) && (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
       m_scoreView.Render(m_scoreviewOutput);
-   }
 
    m_logicProfiler.ExitProfileSection();
    #ifdef MSVC_CONCURRENCY_VIEWER
