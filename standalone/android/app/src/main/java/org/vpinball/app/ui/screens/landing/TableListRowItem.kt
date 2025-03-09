@@ -43,8 +43,8 @@ import org.vpinball.app.R
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.data.entity.PinTable
 import org.vpinball.app.util.drawWithGradient
-import org.vpinball.app.util.hasArtwork
-import org.vpinball.app.util.loadArtwork
+import org.vpinball.app.util.hasImage
+import org.vpinball.app.util.loadImage
 
 @Composable
 fun TableListRowItem(
@@ -62,7 +62,7 @@ fun TableListRowItem(
     val contextMenuExpanded = remember { mutableStateOf(false) }
     var globalTouchOffset by remember { mutableStateOf(Offset.Zero) }
 
-    val bitmap by produceState<ImageBitmap?>(null, table) { value = withContext(Dispatchers.IO) { table.loadArtwork() } }
+    val bitmap by produceState<ImageBitmap?>(null, table) { value = withContext(Dispatchers.IO) { table.loadImage() } }
 
     val ratio = VPinballManager.getDisplaySize().width.toFloat() / VPinballManager.getDisplaySize().height.toFloat()
 
@@ -71,7 +71,7 @@ fun TableListRowItem(
             if (bitmap != null) {
                 ArtworkState.IMAGE_LOADED
             } else {
-                if (table.hasArtwork()) {
+                if (table.hasImage()) {
                     ArtworkState.LOADING_IMAGE
                 } else {
                     ArtworkState.NO_IMAGE

@@ -16,13 +16,13 @@ import org.vpinball.app.data.entity.PinTable
 import org.vpinball.app.ui.screens.common.ProgressOverlay
 import org.vpinball.app.ui.theme.LightBlack
 import org.vpinball.app.util.drawWithGradient
-import org.vpinball.app.util.loadArtwork
+import org.vpinball.app.util.loadImage
 
 @Composable
 fun LoadingScreen(table: PinTable, progress: Int, status: String?, modifier: Modifier = Modifier) {
     val hazeState = remember { HazeState() }
 
-    val bitmap = remember { table.loadArtwork() }
+    val bitmap = remember { table.loadImage() }
 
     Box(modifier = modifier.fillMaxSize().background(Color.LightBlack)) {
         if (bitmap != null) {

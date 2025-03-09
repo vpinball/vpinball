@@ -137,7 +137,7 @@ void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
    m_defaultDmdId = newDmdId;
 
    if (foundDMD) {
-      LOGI("DMD Source Changed: format=%08X, width=%d, height=%d", newDmdId.format, newDmdId.width, newDmdId.height);
+      LOGI("DMD Source Changed: format=%d, width=%d, height=%d", newDmdId.format, newDmdId.width, newDmdId.height);
 
       if (!pDmd)
          initDMD();
@@ -148,6 +148,9 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId;
+
+   // Request and setup shared login API
+   LPISetup(endpointId, msgApi);
 
    msgApi->SubscribeMsg(endpointId, onGameEndId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END), onGameEnd, nullptr);
    msgApi->SubscribeMsg(endpointId, onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG), onDmdSrcChanged, nullptr);

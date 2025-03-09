@@ -193,17 +193,17 @@ enum class VPinballEvent(val value: Int) {
     LOADING_COLLECTIONS(6),
     PLAYER_STARTING(7),
     WINDOW_CREATED(8),
-    METAL_LAYER_IOS(9),
-    PRERENDERING(10),
-    PLAYER_STARTED(11),
-    RUMBLE(12),
-    SCRIPT_ERROR(13),
-    LIVE_UI_TOGGLE(14),
-    LIVE_UI_UPDATE(15),
-    PLAYER_CLOSING(16),
-    PLAYER_CLOSED(17),
-    STOPPED(18),
-    WEB_SERVER(19);
+    PRERENDERING(9),
+    PLAYER_STARTED(10),
+    RUMBLE(11),
+    SCRIPT_ERROR(12),
+    LIVE_UI_TOGGLE(13),
+    LIVE_UI_UPDATE(14),
+    PLAYER_CLOSING(15),
+    PLAYER_CLOSED(16),
+    STOPPED(17),
+    WEB_SERVER(18),
+    CAPTURE_SCREENSHOT(19);
 
     val text: String?
         get() =
@@ -302,9 +302,11 @@ data class VPinballProgressData(val progress: Int)
 
 data class VPinballScriptErrorData(val error: VPinballScriptErrorType, val line: Int, val position: Int, val description: String)
 
+data class VPinballRumbleData(val lowFrequencyRumble: Int, val highFrequencyRumble: Int, val durationMs: Int)
+
 data class VPinballWebServerData(val url: String)
 
-data class VPinballRumbleData(val lowFrequencyRumble: Int, val highFrequencyRumble: Int, val durationMs: Int)
+data class VPinballCaptureScreenshotData(val success: Boolean)
 
 data class VPinballCustomTableOption(
     var section: VPinballSettingsSection,

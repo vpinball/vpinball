@@ -8,7 +8,7 @@ import java.io.File
 enum class Link(val url: String) {
     DOCS("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md"),
     TROUBLESHOOTING("https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting"),
-    DISCORD("https://discord.com/channels/652274650524418078/1076655472846831667"),
+    DISCORD("https://discord.com/channels/652274650524418078/1323445406524248090"),
     LICENSES("https://github.com/vpinball/vpinball/blob/master/LICENSE"),
     ZEDMDOS("https://github.com/PPUC/zedmdos"),
     VPINBALL("https://github.com/vpinball/vpinball"),
@@ -33,7 +33,7 @@ enum class Credit(val displayName: String, val authors: String? = null, val link
             "shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, " +
             "mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, " +
             "ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, " +
-            "CapitaineSheridan, Billiam, LeHaine, claytgreene",
+            "CapitaineSheridan, Billiam, LeHaine, claytgreene, superhac, Le-Syl21",
         Link.VPINBALL,
     ),
     PINMAME(

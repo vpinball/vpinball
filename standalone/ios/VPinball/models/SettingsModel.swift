@@ -111,7 +111,7 @@ class SettingsModel: ObservableObject {
 
         maxTexDimensionIndex = VPinballMaxTexDimension(rawValue: vpinballManager.loadValue(.player,
                                                                                            "MaxTexDimension",
-                                                                                           768))
+                                                                                           1024))
             .flatMap { VPinballMaxTexDimension.all.firstIndex(of: $0) } ?? 0
 
         forceAniso = vpinballManager.loadValue(.player, "ForceAnisotropicFiltering", true)

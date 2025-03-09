@@ -35,4 +35,5 @@ public class VPinballJNI {
     public native void VPinballSetDefaultViewSetup();
     public native void VPinballResetViewSetup();
     public native void VPinballSaveViewSetup();
+    public native int VPinballCaptureScreenshot(String filename);
 }

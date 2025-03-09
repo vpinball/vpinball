@@ -12,6 +12,7 @@ static jclass gJNIProgressDataClass = nullptr;
 static jclass gJNIScriptErrorDataClass = nullptr;
 static jclass gJNIRumbleDataClass = nullptr;
 static jclass gJNIWebServerDataClass = nullptr;
+static jclass gJNICaptureScreenshotDataClass = nullptr;
 static jclass gJNITableOptionsClass = nullptr;
 static jclass gJNICustomTableOptionClass = nullptr;
 static jclass gJNIViewSetupClass = nullptr;
@@ -70,7 +71,7 @@ void* VPinballJNI_OnEventCallback(VPINBALL_EVENT event, void* data)
       }
       case VPINBALL_EVENT_RUMBLE:
       {
-          if (gJNIRumbleDataClass) {
+         if (gJNIRumbleDataClass) {
             jmethodID constructorMethod = env->GetMethodID(gJNIRumbleDataClass, "<init>", "(III)V");
             if (constructorMethod) {
                VPinballRumbleData* pData = (VPinballRumbleData*)(data);
@@ -86,7 +87,7 @@ void* VPinballJNI_OnEventCallback(VPINBALL_EVENT event, void* data)
       }
       case VPINBALL_EVENT_WEB_SERVER:
       {
-          if (gJNIWebServerDataClass) {
+         if (gJNIWebServerDataClass) {
             jmethodID constructorMethod = env->GetMethodID(gJNIWebServerDataClass, "<init>", "(Ljava/lang/String;)V");
             if (constructorMethod) {
                VPinballWebServerData* pData = (VPinballWebServerData*)(data);
@@ -95,6 +96,20 @@ void* VPinballJNI_OnEventCallback(VPINBALL_EVENT event, void* data)
                   eventDataObject = env->NewObject(gJNIWebServerDataClass, constructorMethod, urlString);
                   env->DeleteLocalRef(urlString);
                }
+            }
+         }
+         break;
+      }
+      case VPINBALL_EVENT_CAPTURE_SCREENSHOT:
+      {
+         if (gJNICaptureScreenshotDataClass) {
+            jmethodID constructorMethod = env->GetMethodID(gJNICaptureScreenshotDataClass, "<init>", "(Z)V");
+            if (constructorMethod) {
+                VPinballCaptureScreenshotData* pData = (VPinballCaptureScreenshotData*)(data);
+                if (pData) {
+                    jboolean success = pData->success ? JNI_TRUE : JNI_FALSE;
+                    eventDataObject = env->NewObject(gJNICaptureScreenshotDataClass, constructorMethod, success);
+                }
             }
          }
          break;
@@ -142,6 +157,7 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballInit(JNIEnv
    gJNIScriptErrorDataClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballScriptErrorData"));
    gJNIRumbleDataClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballRumbleData"));
    gJNIWebServerDataClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballWebServerData"));
+   gJNICaptureScreenshotDataClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballCaptureScreenshotData"));
    gJNITableOptionsClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballTableOptions"));
    gJNICustomTableOptionClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballCustomTableOption"));
    gJNIViewSetupClass = (jclass)env->NewGlobalRef(env->FindClass("org/vpinball/app/jni/VPinballViewSetup"));
@@ -157,9 +173,9 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballInit(JNIEnv
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLog(JNIEnv* env, jobject obj, jint level, jstring message)
 {
-   const char* msg = env->GetStringUTFChars(message, nullptr);
-   VPinballLog(static_cast<VPINBALL_LOG_LEVEL>(level), msg);
-   env->ReleaseStringUTFChars(message, msg);
+   const char* pMessage = env->GetStringUTFChars(message, nullptr);
+   VPinballLog(static_cast<VPINBALL_LOG_LEVEL>(level), pMessage);
+   env->ReleaseStringUTFChars(message, pMessage);
 }
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetLog(JNIEnv* env, jobject obj)
@@ -169,68 +185,68 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetLog(JN
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValueInt(JNIEnv* env, jobject obj, jint section, jstring key, jint defaultValue)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   int result = VPinballLoadValueInt(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, defaultValue);
-   env->ReleaseStringUTFChars(key, k);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   int result = VPinballLoadValueInt(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, defaultValue);
+   env->ReleaseStringUTFChars(key, pKey);
    return result;
 }
 
 JNIEXPORT jfloat JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValueFloat(JNIEnv* env, jobject obj, jint section, jstring key, jfloat defaultValue)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   float result = VPinballLoadValueFloat(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, defaultValue);
-   env->ReleaseStringUTFChars(key, k);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   float result = VPinballLoadValueFloat(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, defaultValue);
+   env->ReleaseStringUTFChars(key, pKey);
    return result;
 }
 
 JNIEXPORT jstring JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoadValueString(JNIEnv* env, jobject obj, jint section, jstring key, jstring defaultValue)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   const char* def = env->GetStringUTFChars(defaultValue, nullptr);
-   const char* result = VPinballLoadValueString(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, def);
-   env->ReleaseStringUTFChars(key, k);
-   env->ReleaseStringUTFChars(defaultValue, def);
-   return env->NewStringUTF(result);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   const char* pDefaultValue = env->GetStringUTFChars(defaultValue, nullptr);
+   const char* pResult = VPinballLoadValueString(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, pDefaultValue);
+   env->ReleaseStringUTFChars(key, pKey);
+   env->ReleaseStringUTFChars(defaultValue, pDefaultValue);
+   return env->NewStringUTF(pResult);
 }
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueInt(JNIEnv* env, jobject obj, jint section, jstring key, jint value)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   VPinballSaveValueInt(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, value);
-   env->ReleaseStringUTFChars(key, k);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   VPinballSaveValueInt(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, value);
+   env->ReleaseStringUTFChars(key, pKey);
 }
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueFloat(JNIEnv* env, jobject obj, jint section, jstring key, jfloat value)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   VPinballSaveValueFloat(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, value);
-   env->ReleaseStringUTFChars(key, k);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   VPinballSaveValueFloat(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, value);
+   env->ReleaseStringUTFChars(key, pKey);
 }
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveValueString(JNIEnv* env, jobject obj, jint section, jstring key, jstring value)
 {
-   const char* k = env->GetStringUTFChars(key, nullptr);
-   const char* v = env->GetStringUTFChars(value, nullptr);
-   VPinballSaveValueString(static_cast<VPINBALL_SETTINGS_SECTION>(section), k, v);
-   env->ReleaseStringUTFChars(key, k);
-   env->ReleaseStringUTFChars(value, v);
+   const char* pKey = env->GetStringUTFChars(key, nullptr);
+   const char* pValue = env->GetStringUTFChars(value, nullptr);
+   VPinballSaveValueString(static_cast<VPINBALL_SETTINGS_SECTION>(section), pKey, pValue);
+   env->ReleaseStringUTFChars(key, pKey);
+   env->ReleaseStringUTFChars(value, pValue);
 }
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballUncompress(JNIEnv* env, jobject obj, jstring source)
 {
-   const char* src = env->GetStringUTFChars(source, nullptr);
-   VPINBALL_STATUS status = VPinballUncompress(src);
-   env->ReleaseStringUTFChars(source, src);
+   const char* pSource = env->GetStringUTFChars(source, nullptr);
+   VPINBALL_STATUS status = VPinballUncompress(pSource);
+   env->ReleaseStringUTFChars(source, pSource);
    return status;
 }
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballCompress(JNIEnv* env, jobject obj, jstring source, jstring destination)
 {
-   const char* src = env->GetStringUTFChars(source, nullptr);
-   const char* dest = env->GetStringUTFChars(destination, nullptr);
-   VPINBALL_STATUS status = VPinballCompress(src, dest);
-   env->ReleaseStringUTFChars(source, src);
-   env->ReleaseStringUTFChars(destination, dest);
+   const char* pSource = env->GetStringUTFChars(source, nullptr);
+   const char* pDestination = env->GetStringUTFChars(destination, nullptr);
+   VPINBALL_STATUS status = VPinballCompress(pSource, pDestination);
+   env->ReleaseStringUTFChars(source, pSource);
+   env->ReleaseStringUTFChars(destination, pDestination);
    return status;
 }
 
@@ -246,17 +262,17 @@ JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetIni(JN
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballLoad(JNIEnv* env, jobject obj, jstring source)
 {
-   const char* src = env->GetStringUTFChars(source, nullptr);
-   VPINBALL_STATUS status = VPinballLoad(src);
-   env->ReleaseStringUTFChars(source, src);
+   const char* pSource = env->GetStringUTFChars(source, nullptr);
+   VPINBALL_STATUS status = VPinballLoad(pSource);
+   env->ReleaseStringUTFChars(source, pSource);
    return status;
 }
 
 JNIEXPORT jint JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballExtractScript(JNIEnv* env, jobject obj, jstring source)
 {
-   const char* src = env->GetStringUTFChars(source, nullptr);
-   VPINBALL_STATUS status = VPinballExtractScript(src);
-   env->ReleaseStringUTFChars(source, src);
+   const char* pSource = env->GetStringUTFChars(source, nullptr);
+   VPINBALL_STATUS status = VPinballExtractScript(pSource);
+   env->ReleaseStringUTFChars(source, pSource);
    return status;
 }
 
@@ -400,15 +416,14 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSetCustomTa
 
    VPinballCustomTableOption customTableOption = {};
 
-   jstring idString = (jstring)env->GetObjectField(setup, env->GetFieldID(gJNICustomTableOptionClass, "id", "Ljava/lang/String;"));
-   const char* id = env->GetStringUTFChars(idString, nullptr);
-   customTableOption.id = id;
-
+   jstring id = (jstring)env->GetObjectField(setup, env->GetFieldID(gJNICustomTableOptionClass, "id", "Ljava/lang/String;"));
+   const char* pId = env->GetStringUTFChars(id, nullptr);
+   customTableOption.id = pId;
    customTableOption.value = env->GetFloatField(setup, env->GetFieldID(gJNICustomTableOptionClass, "value", "F"));
 
    VPinballSetCustomTableOption(&customTableOption);
 
-   env->ReleaseStringUTFChars(idString, id);
+   env->ReleaseStringUTFChars(id, pId);
 }
 
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetCustomTableOptions(JNIEnv* env, jobject obj)
@@ -504,6 +519,13 @@ JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballResetViewSe
 JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballSaveViewSetup(JNIEnv* env, jobject obj)
 {
    VPinballSaveViewSetup();
+}
+
+JNIEXPORT void JNICALL Java_org_vpinball_app_jni_VPinballJNI_VPinballCaptureScreenshot(JNIEnv* env, jobject obj, jstring filename)
+{
+   const char* pFilename = env->GetStringUTFChars(filename, nullptr);
+   VPinballCaptureScreenshot(pFilename);
+   env->ReleaseStringUTFChars(filename, pFilename);
 }
 
 }

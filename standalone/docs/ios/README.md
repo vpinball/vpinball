@@ -318,7 +318,7 @@ In *Settings*, go to the *Support* section:
 
 Tap *Contact Us* to send an email, or click [here](mailto:jsm174@gmail.com).
 
-Tap *Discord (Virtual Pinball Chat)* to go to the `#standalone` channel in the *Virtual Pinball Chat* Discord server, or click [here](https://discord.com/channels/652274650524418078/1076655472846831667).
+Tap *Discord (Virtual Pinball Chat)* to go to the `#vpx-standalone-mobile` channel in the *Virtual Pinball Chat* Discord server, or click [here](https://discord.com/channels/652274650524418078/1323445406524248090).
 
 **Please do not use the GitHub issue queue to request support for *Visual Pinball for iOS*!**
 

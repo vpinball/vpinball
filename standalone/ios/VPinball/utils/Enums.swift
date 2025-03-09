@@ -22,7 +22,7 @@ enum Link {
         case .troubleshooting:
             return URL(string: "https://github.com/vpinball/vpinball/blob/master/standalone/docs/ios/README.md#troubleshooting")!
         case .discord:
-            return URL(string: "https://discord.com/channels/652274650524418078/1076655472846831667")!
+            return URL(string: "https://discord.com/channels/652274650524418078/1323445406524248090")!
         case .licenses:
             return URL(string: "https://github.com/vpinball/vpinball/blob/master/LICENSE")!
         case .zedmdos:
@@ -100,7 +100,7 @@ enum Credit {
     var authors: String? {
         switch self {
         case .vpinball:
-            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam, LeHaine, claytgreene"
+            return "toxieainc, vbousquet, fuzzelhjb, jsm174, c-f-h, bcd, cupidsf, djrobx, brandrew2, francisdb, koadic76, shagendo, horseyhorsey, CraftedCart, snail_gary, Matthias, Buecher, Nicals, YellowLabrador, markmon, nkissebe, mkalkbrenner, freezy, WildCoder, randydavis99, ntleverenz, latsao, Wylted1, WizardsHat, ScaryG, Chickenzilla, ravarcade, poiuyterry, omigeot, mjrgh, manofwar32, kaicherry, droscoe, cschmidtpxc, RockfordRoe, JockeJarre, CapitaineSheridan, Billiam, LeHaine, superhac, Le-Syl21"
         case .pinmame:
             return "volkenborn, toxieainc, Steve Ellenoff, bcd, Tom Haukap, wpcmame, Matthias Buecher, jsm174, mkalkbrenner, droscoe, vbousquet, djrobx, Thomas Behrens, bontango, mjrgh, Oliver Kaegi, syllebra, gstellenberg, Randall, Perlow, JockeJarre, tomlogic, Netsplits, gnulnulf, freezy, Sunnucks, Mark, uid68989, francisdb, diego-link-eggy, Sereda, Pavel, tomlogic"
         case .libaltsound:

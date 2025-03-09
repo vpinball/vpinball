@@ -9,6 +9,8 @@ import java.io.FileOutputStream
 import org.vpinball.app.VPinballManager
 import org.vpinball.app.data.entity.PinTable
 
+private const val MAX_IMAGE_QUALITY = 75
+
 val PinTable.basePath: File
     get() = File(VPinballManager.getFilesDir(), uuid)
 
@@ -18,8 +20,8 @@ val PinTable.tableFile: File
 val PinTable.baseFilename: String
     get() = path.substringBeforeLast('.', path)
 
-val PinTable.artworkFile: File
-    get() = File(basePath, "${baseFilename}.png")
+val PinTable.imageFile: File
+    get() = File(basePath, "${baseFilename}.jpg")
 
 val PinTable.iniFile: File
     get() = File(basePath, "${baseFilename}.ini")
@@ -27,26 +29,8 @@ val PinTable.iniFile: File
 val PinTable.scriptFile: File
     get() = File(basePath, "${baseFilename}.vbs")
 
-fun PinTable.hasArtwork(): Boolean {
-    return artworkFile.exists()
-}
-
-private const val MAX_IMAGE_QUALITY = 100
-
-fun PinTable.saveArtwork(bitmap: Bitmap) {
-    FileOutputStream(artworkFile).use { outputStream -> bitmap.compress(Bitmap.CompressFormat.PNG, MAX_IMAGE_QUALITY, outputStream) }
-}
-
-fun PinTable.loadArtwork(): ImageBitmap? {
-    return if (hasArtwork()) {
-        BitmapFactory.decodeFile(artworkFile.absolutePath)?.asImageBitmap()
-    } else {
-        null
-    }
-}
-
-fun PinTable.deleteArtwork() {
-    artworkFile.delete()
+fun PinTable.hasImage(): Boolean {
+    return imageFile.exists()
 }
 
 fun PinTable.hasIni(): Boolean {
@@ -63,4 +47,20 @@ fun PinTable.hasScript(): Boolean {
 
 fun PinTable.deleteFiles() {
     basePath.deleteRecursively()
+}
+
+fun PinTable.loadImage(): ImageBitmap? {
+    return if (hasImage()) {
+        BitmapFactory.decodeFile(imageFile.absolutePath)?.asImageBitmap()
+    } else {
+        null
+    }
+}
+
+fun PinTable.updateImage(bitmap: Bitmap) {
+    FileOutputStream(imageFile).use { outputStream -> bitmap.compress(Bitmap.CompressFormat.JPEG, MAX_IMAGE_QUALITY, outputStream) }
+}
+
+fun PinTable.resetImage() {
+    imageFile.delete()
 }

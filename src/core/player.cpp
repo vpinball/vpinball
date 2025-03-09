@@ -483,6 +483,16 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       throw hr;
    }
 
+#ifdef __LIBVPINBALL__
+   VPinballLib::WindowCreatedData windowCreatedData = {};
+#if (defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS))
+   SDL_PropertiesID props = SDL_GetWindowProperties(m_playfieldWnd->GetCore());
+   windowCreatedData.pWindow = (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL);
+#endif
+   windowCreatedData.pTitle = SDL_GetWindowTitle(m_playfieldWnd->GetCore());
+   VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedData);
+#endif
+
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
    {

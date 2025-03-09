@@ -1,16 +1,23 @@
 
 import Combine
+import SwiftData
 import SwiftUI
 
 class VPinballManager {
+    enum ScreenshotMode {
+        case artwork
+        case quit
+    }
+
     static let shared = VPinballManager()
 
+    var modelContext: ModelContext?
     var sdlUIWindow: UIWindow?
     var sdlViewController: UIViewController?
-    var metalLayer: CAMetalLayer?
     var haptics = false
     var activeTable: PinTable?
     var memoryWarningSubscription: AnyCancellable?
+    var screenshotMode: ScreenshotMode?
 
     let impactGenerators: [UIImpactFeedbackGenerator.FeedbackStyle: UIImpactFeedbackGenerator] = [
         .heavy: UIImpactFeedbackGenerator(style: .heavy),
@@ -61,10 +68,6 @@ class VPinballManager {
 
                 if let window = windowCreatedData.window?.takeUnretainedValue() {
                     if let viewController = window.rootViewController {
-                        let metalLayer = CAMetalLayer()
-                        metalLayer.frame = viewController.view.layer.frame
-                        viewController.view.layer.addSublayer(metalLayer)
-
                         let overlayView = OverlayView()
                             .environmentObject(vpinballViewModel)
 
@@ -78,15 +81,10 @@ class VPinballManager {
 
                         vpinballManager.sdlUIWindow = window
                         vpinballManager.sdlViewController = viewController
-                        vpinballManager.metalLayer = metalLayer
                     }
 
                     window.isHidden = true
                     window.windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                }
-            case .metalLayerIOS:
-                if let metalLayer = vpinballManager.metalLayer {
-                    return UnsafeRawPointer(Unmanaged.passUnretained(metalLayer).toOpaque())
                 }
             case .playerStarted:
                 vpinballManager.sdlUIWindow?.isHidden = false
@@ -148,6 +146,30 @@ class VPinballManager {
                 } else {
                     DispatchQueue.main.async {
                         vpinballViewModel.webServerURL = nil
+                    }
+                }
+            case .captureScreenshot:
+                if let data = data {
+                    let captureScreenshotData = data.bindMemory(to: VPinballCaptureScreenshotData.self,
+                                                                capacity: 1).pointee
+
+                    if let table = vpinballManager.activeTable {
+                        if captureScreenshotData.success {
+                            DispatchQueue.main.async {
+                                PinTable.update(table: table)
+                            }
+                        }
+
+                        switch vpinballManager.screenshotMode {
+                        case .artwork:
+                            DispatchQueue.main.async {
+                                vpinballViewModel.artworkImage = table.uiImage
+                            }
+                        case .quit:
+                            vpinballManager.stop()
+                        default:
+                            break
+                        }
                     }
                 }
             default:
@@ -531,16 +553,15 @@ class VPinballManager {
         VPinballSaveViewSetup()
     }
 
-    func snapshot(force: Bool = false) -> UIImage? {
-        if let table = activeTable, let metalLayer = metalLayer {
-            if table.imageData == nil || force {
-                if let image = metalLayer.toUIImage() {
-                    table.imageData = image.jpegData(compressionQuality: 1.0)
-                    return image
-                }
-            }
+    func hasScreenshot() -> Bool {
+        return activeTable?.hasImage() ?? false
+    }
+
+    func captureScreenshot(mode: ScreenshotMode) {
+        if let table = activeTable {
+            screenshotMode = mode
+            VPinballCaptureScreenshot(table.imagePath)
         }
-        return nil
     }
 
     func toggleFPS() {
@@ -552,10 +573,7 @@ class VPinballManager {
     }
 
     func stop() {
-        if let _ = activeTable {
-            _ = snapshot()
-            VPinballStop()
-        }
+        VPinballStop()
     }
 
     func resetIni() {
@@ -566,7 +584,7 @@ class VPinballManager {
 
     func setIniDefaults() {
         saveValue(.standalone, "RenderingModeOverride", loadValue(.standalone, "RenderingModeOverride", 2))
-        saveValue(.player, "MaxTexDimension", loadValue(.player, "MaxTexDimension", 768))
+        saveValue(.player, "MaxTexDimension", loadValue(.player, "MaxTexDimension", 1024))
         saveValue(.player, "ScreenWidth", loadValue(.player, "ScreenWidth", 15.4))
         saveValue(.player, "ScreenHeight", loadValue(.player, "ScreenHeight", 7.1))
     }

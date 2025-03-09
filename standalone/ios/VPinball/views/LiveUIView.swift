@@ -170,20 +170,14 @@ struct LiveUIView: View {
     }
 
     func handleArtwork() {
-        if let image = vpinballManager.snapshot(force: true) {
-            vpinballViewModel.artworkImage = image
-        }
+        vpinballManager.captureScreenshot(mode: .artwork)
     }
 
     func handleQuit() {
-        vpinballViewModel.showLiveUI = false
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            vpinballManager.setPlayState(enable: true)
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                vpinballManager.stop()
-            }
+        if !vpinballManager.hasScreenshot() {
+            vpinballManager.captureScreenshot(mode: .quit)
+        } else {
+            vpinballManager.stop()
         }
     }
 }

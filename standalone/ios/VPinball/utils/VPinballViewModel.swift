@@ -36,6 +36,10 @@ class VPinballViewModel: ObservableObject {
         self.action = action
         self.table = table
 
+        if action == .stopped {
+            showLiveUI = false
+        }
+
         didSetAction = UUID()
     }
 

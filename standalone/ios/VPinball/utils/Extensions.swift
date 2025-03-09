@@ -67,65 +67,6 @@ extension UIImage {
     }
 }
 
-extension MTLTexture {
-    func bytes() -> UnsafeMutableRawPointer {
-        let width = self.width
-        let height = self.height
-        let rowBytes = self.width * 4
-        let p = malloc(width * height * 4)!
-        getBytes(p,
-                 bytesPerRow: rowBytes,
-                 from: MTLRegionMake2D(0, 0, width, height), mipmapLevel: 0)
-        return p
-    }
-
-    func toImage() -> CGImage? {
-        let p = bytes()
-        let pColorSpace = CGColorSpaceCreateDeviceRGB()
-        let rawBitmapInfo = CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-        let bitmapInfo = CGBitmapInfo(rawValue: rawBitmapInfo)
-
-        let selftureSize = width * height * 4
-        let rowBytes = width * 4
-        if let provider = CGDataProvider(dataInfo: nil,
-                                         data: p,
-                                         size: selftureSize,
-                                         releaseData: { _, p, _ in
-                                             p.deallocate()
-                                         })
-        {
-            return CGImage(width: width,
-                           height: height,
-                           bitsPerComponent: 8,
-                           bitsPerPixel: 32,
-                           bytesPerRow: rowBytes,
-                           space: pColorSpace,
-                           bitmapInfo: bitmapInfo,
-                           provider: provider,
-                           decode: nil,
-                           shouldInterpolate: true,
-                           intent: CGColorRenderingIntent.defaultIntent)
-        }
-        return nil
-    }
-}
-
-extension CAMetalLayer {
-    func toUIImage() -> UIImage? {
-        guard let drawable = nextDrawable() else {
-            return nil
-        }
-
-        let texture = drawable.texture
-
-        if let cgImage = texture.toImage() {
-            return UIImage(cgImage: cgImage)
-        }
-
-        return nil
-    }
-}
-
 extension View {
     func onTouchDownGesture(callback: (() -> Void)? = nil) -> some View {
         modifier(OnTouchDownGesture(callback: callback))

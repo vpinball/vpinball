@@ -49,7 +49,6 @@ enum class Event {
    LoadingCollections,
    PlayerStarting,
    WindowCreated,
-   MetalLayerIOS,
    Prerendering,
    PlayerStarted, 
    Rumble,
@@ -59,7 +58,8 @@ enum class Event {
    PlayerClosing,
    PlayerClosed, 
    Stopped,
-   WebServer
+   WebServer,
+   CaptureScreenshot
 };
 
 struct ProgressData {
@@ -86,6 +86,10 @@ struct ScriptErrorData {
 
 struct WebServerData {
    const char* url;
+};
+
+struct CaptureScreenshotData {
+   bool success;
 };
 
 struct TableOptions {
@@ -170,6 +174,8 @@ public:
    void SetDefaultViewSetup();
    void ResetViewSetup();
    void SaveViewSetup();
+   void CaptureScreenshot(const string& filename);
+
 private:
    VPinball();
    static void GameLoop(void* pUserData);

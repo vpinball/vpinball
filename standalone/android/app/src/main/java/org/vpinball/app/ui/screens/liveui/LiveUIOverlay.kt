@@ -1,6 +1,5 @@
 package org.vpinball.app.ui.screens.liveui
 
-import android.graphics.Bitmap
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,7 +50,6 @@ import org.vpinball.app.util.drawWithGradient
 fun LiveUIOverlay(onResume: () -> Unit, modifier: Modifier = Modifier, viewModel: VPinballViewModel = koinActivityViewModel()) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    var capturedImage by remember { mutableStateOf<Bitmap?>(null) }
     val pagerState = rememberPagerState(pageCount = { 2 })
 
     var saveOverlayTitle by remember { mutableStateOf("") }
@@ -133,15 +131,7 @@ fun LiveUIOverlay(onResume: () -> Unit, modifier: Modifier = Modifier, viewModel
 
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     IconButton(
-                        onClick = {
-                            VPinballManager.captureBitmap { bitmap ->
-                                if (bitmap != null) {
-                                    capturedImage = bitmap
-
-                                    CoroutineScope(Dispatchers.IO).launch { VPinballManager.saveBitmap(bitmap) }
-                                }
-                            }
-                        },
+                        onClick = { VPinballManager.captureScreenshot(mode = VPinballManager.ScreenshotMode.ARTWORK) },
                         modifier = Modifier.size(60.dp).clip(RoundedCornerShape(10.dp)).background(Color.Gray),
                     ) {
                         Icon(painter = painterResource(id = R.drawable.img_sf_photo_on_rectangle), contentDescription = null, tint = Color.White)
@@ -152,9 +142,9 @@ fun LiveUIOverlay(onResume: () -> Unit, modifier: Modifier = Modifier, viewModel
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     IconButton(
                         onClick = {
-                            onResume()
-                            CoroutineScope(Dispatchers.Main).launch {
-                                delay(500)
+                            if (!VPinballManager.hasScreenshot()) {
+                                VPinballManager.captureScreenshot(mode = VPinballManager.ScreenshotMode.QUIT)
+                            } else {
                                 VPinballManager.stop()
                             }
                         },
@@ -183,7 +173,7 @@ fun LiveUIOverlay(onResume: () -> Unit, modifier: Modifier = Modifier, viewModel
         }
     }
 
-    capturedImage?.let { image -> CameraOverlay(capturedImage = image, onComplete = { capturedImage = null }) }
+    viewModel.artworkImage?.let { image -> CameraOverlay(capturedImage = image, onComplete = { viewModel.artworkImage = null }) }
 
     AnimatedVisibility(visible = showSaveOverlay, modifier = Modifier.fillMaxSize()) {
         Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.5f)), contentAlignment = Alignment.Center) {

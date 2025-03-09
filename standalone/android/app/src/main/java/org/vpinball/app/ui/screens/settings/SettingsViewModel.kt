@@ -53,7 +53,7 @@ class SettingsViewModel : ViewModel() {
     var dmdServerPort by mutableIntStateOf(6789)
         private set
 
-    var zedmdWiFiAddr by mutableStateOf("192.168.4.1")
+    var zedmdWiFiAddr by mutableStateOf("zedmd-wifi.local")
         private set
 
     // Display
@@ -164,7 +164,7 @@ class SettingsViewModel : ViewModel() {
 
         dmdServerAddr = VPinballManager.loadValue(STANDALONE, "DMDServerAddr", "0.0.0.0")
         dmdServerPort = VPinballManager.loadValue(STANDALONE, "DMDServerPort", 6789)
-        zedmdWiFiAddr = VPinballManager.loadValue(STANDALONE, "ZeDMDWiFiAddr", "192.168.4.1")
+        zedmdWiFiAddr = VPinballManager.loadValue(STANDALONE, "ZeDMDWiFiAddr", "zedmd-wifi.local")
 
         // Display
 

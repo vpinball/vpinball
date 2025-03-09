@@ -547,6 +547,18 @@ void VPinball::SaveViewSetup()
    }
 }
 
+void VPinball::CaptureScreenshot(const string& filename)
+{
+   if (!g_pplayer)
+      return;
+
+   g_pplayer->m_renderer->m_renderDevice->CaptureScreenshot(filename.c_str(),
+      [](bool success) {
+         CaptureScreenshotData captureScreenshotData = { success };
+         SendEvent(Event::CaptureScreenshot, &captureScreenshotData);
+      });
+}
+
 void VPinball::GameLoop(void* pUserData)
 {
    if (!s_instance.m_gameLoop) {

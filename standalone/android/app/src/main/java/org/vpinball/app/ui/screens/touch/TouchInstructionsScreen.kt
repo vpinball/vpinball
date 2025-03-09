@@ -35,8 +35,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
@@ -68,8 +66,6 @@ fun TouchInstructionsScreen(viewModel: VPinballViewModel = koinActivityViewModel
     var showOverlay by remember { mutableStateOf(false) }
     var dontShowAgain by remember { mutableStateOf(false) }
 
-    var tableImageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
-
     val groupColors = listOf(Color.Red, Color.Green, Color.Blue, Color.Orange, Color.Purple, Color.Yellow, Color.Pink)
 
     val scaleDuration = 500
@@ -78,13 +74,10 @@ fun TouchInstructionsScreen(viewModel: VPinballViewModel = koinActivityViewModel
     val hazeState = remember { HazeState() }
 
     LaunchedEffect(Unit) {
-        while (true) {
-            VPinballManager.captureBitmap { bitmap -> tableImageBitmap = bitmap?.asImageBitmap() }
-            delay(30)
-        }
-    }
+        delay(1000)
 
-    LaunchedEffect(Unit) {
+        VPinballManager.captureScreenshot(mode = VPinballManager.ScreenshotMode.INSTRUCTIONS)
+
         delay(500)
 
         animateGroups(scaleEffects, scaleDuration, holdDuration) { groupIndex -> activeGroupIndex = groupIndex }
@@ -99,7 +92,7 @@ fun TouchInstructionsScreen(viewModel: VPinballViewModel = koinActivityViewModel
 
         val density = LocalDensity.current
 
-        tableImageBitmap?.let { bitmap ->
+        viewModel.instructionsImage?.let { bitmap ->
             Image(bitmap = bitmap, contentDescription = null, modifier = Modifier.fillMaxSize().haze(state = hazeState))
         }
 

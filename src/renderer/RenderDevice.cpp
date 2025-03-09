@@ -48,6 +48,10 @@
 #include "standalone/VPinballLib.h"
 #endif
 
+#ifdef __STANDALONE__
+#include <SDL3_image/SDL_image.h>
+#endif
+
 #if defined(ENABLE_BGFX)
 struct tBGFXCallback : public bgfx::CallbackI
 {
@@ -88,7 +92,50 @@ struct tBGFXCallback : public bgfx::CallbackI
    virtual uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
    virtual bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
    virtual void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
-   virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override { }
+   virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override
+   {
+#ifdef __STANDALONE__
+      if (!_data || _size == 0) {
+         RenderDevice::s_screenshotCallback(false);
+         return;
+      }
+
+      SDL_Surface* pSurface = SDL_CreateSurfaceFrom(_width, _height, SDL_PIXELFORMAT_BGRA32, const_cast<void*>(_data), _pitch);
+      if (!pSurface) {
+         RenderDevice::s_screenshotCallback(false);
+         return;
+      }
+
+      if (_yflip) {
+         SDL_Surface* pFlipped = SDL_CreateSurface(_width, _height, SDL_PIXELFORMAT_BGRA32);
+         if (!pFlipped) {
+            SDL_DestroySurface(pSurface);
+            RenderDevice::s_screenshotCallback(false);
+            return;
+         }
+
+         uint8_t* srcPixels = static_cast<uint8_t*>(pSurface->pixels);
+         uint8_t* dstPixels = static_cast<uint8_t*>(pFlipped->pixels);
+         for (uint32_t y = 0; y < _height; y++)
+            memcpy(dstPixels + (_height - 1 - y) * pFlipped->pitch, srcPixels + y * pSurface->pitch, _pitch);
+
+         SDL_DestroySurface(pSurface);
+         pSurface = pFlipped;
+      }
+
+      bool success = false;
+      if (extension_from_path(_filePath) == "png")
+         success = IMG_SavePNG(pSurface, _filePath);
+      else if (extension_from_path(_filePath) == "jpg" || extension_from_path(_filePath) == "jpeg")
+         success = IMG_SaveJPG(pSurface, _filePath, 75);
+
+      SDL_DestroySurface(pSurface);
+
+      RenderDevice::s_screenshotCallback(success);
+#else
+      RenderDevice::s_screenshotCallback(false);
+#endif
+   }
    virtual void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
    virtual void captureEnd() override { }
    virtual void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
@@ -279,6 +326,10 @@ marker_series series;
 #endif
 
 #if defined(ENABLE_BGFX)
+bool RenderDevice::s_screenshot = false;
+std::function<void(bool)> RenderDevice::s_screenshotCallback = [](bool) {};
+string RenderDevice::s_screenshotFilename = string();
+
 void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 {
    bgfx::Init init = initReq;
@@ -552,6 +603,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
                if (needsVSync && rd->m_dwm_enabled)
                   rd->WaitForVSync(false); // Sync on the main display (this supposes that the playfield window is on the main display to behave correctly)
             #endif
+            if (s_screenshot) {
+               bgfx::requestScreenShot(BGFX_INVALID_HANDLE, s_screenshotFilename.c_str());
+               s_screenshot = false;
+            }
             #ifdef MSVC_CONCURRENCY_VIEWER
             delete tagSpan;
             #endif
@@ -569,6 +624,19 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    delete rd->m_outputWnd[0]->GetBackBuffer();
    rd->m_outputWnd[0]->SetBackBuffer(nullptr);
    bgfx::shutdown();
+}
+
+void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(bool)> callback)
+{
+   if (s_screenshot) {
+      PLOGE.printf("Screenshot capture already in progress.");
+      callback(false);
+      return;
+   }
+
+   s_screenshotFilename = filename;
+   s_screenshotCallback = callback;
+   s_screenshot = true;
 }
 #endif
 
@@ -688,7 +756,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #elif BX_PLATFORM_OSX
    init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
    #elif BX_PLATFORM_IOS
-   init.platformData.nwh = VPinballLib::VPinball::SendEvent(VPinballLib::Event::MetalLayerIOS, nullptr);
+   init.platformData.nwh = SDL_GetRenderMetalLayer(SDL_CreateRenderer(m_outputWnd[0]->GetCore(), "Metal"));
    #elif BX_PLATFORM_ANDROID
    init.platformData.nwh = SDL_GetPointerProperty(SDL_GetWindowProperties(m_outputWnd[0]->GetCore()), SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, NULL);
    #elif BX_PLATFORM_WINDOWS
