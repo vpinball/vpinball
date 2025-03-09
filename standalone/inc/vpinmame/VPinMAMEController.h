@@ -7,6 +7,8 @@
 #include "vpinmame_i.h"
 #include "../common/DMDWindow.h"
 
+#include "audio/pinsound.h"
+
 #include <map>
 
 class VPinMAMEGames;
@@ -197,7 +199,7 @@ private:
    vector<VPinMAMEDisplay*> m_displays;
    OLE_COLOR m_dmdColor;
    int m_enableSound;
-   AudioPlayer* m_pAudioPlayer;
+   PinSound* m_pPinSound;
    int m_audioChannels;
    VPinMAMEDisplay* m_pActiveDisplay;
    VP::DMDWindow* m_pDMDWindow;
