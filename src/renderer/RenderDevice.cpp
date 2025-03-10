@@ -2,7 +2,9 @@
 
 #include "core/stdafx.h"
 
+#ifdef _MSC_VER
 #include "dwmapi.h"
+#endif
 
 #include <thread>
 
@@ -175,9 +177,7 @@ void APIENTRY GLDebugMessageCallback(GLenum source, GLenum type, GLuint id, GLen
 
 #elif defined(ENABLE_DX9)
 #include <DxErr.h>
-#if _MSC_VER >= 1900
- #pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
-#endif
+#pragma comment(lib, "legacy_stdio_definitions.lib") //dxerr.lib needs this
 constexpr D3DVERTEXELEMENT9 VertexTexelElement[] =
 {
    { 0, 0 * sizeof(float), D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0 },  // pos

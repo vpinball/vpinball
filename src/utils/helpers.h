@@ -1,6 +1,4 @@
 //---------------------------------------------------------------------------
-// Helpers.h
-//---------------------------------------------------------------------------
 // General OLE Automation helper functions.
 //---------------------------------------------------------------------------
 /*	Copyright (C) Microsoft Corporation, 1999.  All rights reserved.
@@ -49,7 +47,7 @@ private:
 //---------------------------------------------------------------------------
 // String helpers.
 //---------------------------------------------------------------------------
-// Given and ANSI String, copy it into a wide buffer.
+// Given an ANSI String, copy it into a wide buffer.
 // NOTE: Be careful about scoping when using this macro!
 //
 // How to use the below two macros:
@@ -67,27 +65,16 @@ private:
 //#define UNICODE_FROM_ANSI(pwszUnicode, pszAnsi, cb) \
 //    MultiByteToWideCharNull(CP_ACP, 0, pszAnsi, -1, pwszUnicode, cb);
 
-#if _MSC_VER != 1900 // otherwise internal compiler error
 #define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
     const char * const __psz##ptrname = pszAnsi?pszAnsi:""; \
-    const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(WCHAR)); \
+    const int __l##ptrname = lstrlen(__psz##ptrname) + 1; \
+    TempBuffer __TempBuffer##ptrname(__l##ptrname * (int)sizeof(WCHAR)); \
     MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
     const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
-#else
-#define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi) \
-    const char * __psz##ptrname = pszAnsi?pszAnsi:""; \
-    const long __l##ptrname = lstrlen(__psz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(WCHAR)); \
-    MultiByteToWideCharNull(CP_ACP, 0, __psz##ptrname, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname); \
-    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
-#endif
 
 #define MAKE_ANSIPTR_FROMWIDE(ptrname, pwszUnicode) \
     const WCHAR * const __pwsz##ptrname = pwszUnicode?pwszUnicode:L""; \
-    const long __l##ptrname = lstrlenW(__pwsz##ptrname) + 1; \
-    TempBuffer __TempBuffer##ptrname(__l##ptrname * (long)sizeof(char)); \
+    const int __l##ptrname = lstrlenW(__pwsz##ptrname) + 1; \
+    TempBuffer __TempBuffer##ptrname(__l##ptrname * (int)sizeof(char)); \
     WideCharToMultiByteNull(CP_ACP, 0, __pwsz##ptrname, -1, (LPSTR)__TempBuffer##ptrname.GetBuffer(), __l##ptrname, nullptr, nullptr); \
     const LPSTR ptrname = (LPSTR)__TempBuffer##ptrname.GetBuffer()
-
-//--- EOF -------------------------------------------------------------------
