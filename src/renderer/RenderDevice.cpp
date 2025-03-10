@@ -4,6 +4,7 @@
 
 #ifdef _MSC_VER
 #include "dwmapi.h"
+#pragma comment(lib, "Dwmapi.lib")
 #endif
 
 #include <thread>
