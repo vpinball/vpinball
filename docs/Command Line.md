@@ -29,8 +29,3 @@ VPX supports the following command line options:
 | -Ini [filename]          | Use a custom settings file instead of loading it from the default location |
 | | |
 | -c1 [customparam] .. -c9 [customparam]   | Custom user parameters that can be accessed in the script via GetCustomParam(X) |
-
-
-
-Also, to do a rough profiling of the table loading:
-  if a file 'Profile.txt' exists in the same directory as VPX, then statistics for the loaded tables will be appended
