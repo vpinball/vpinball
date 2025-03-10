@@ -6,7 +6,7 @@
 
 class RenderDevice;
 
-class BackGlass
+class BackGlass final
 {
 public:
    BackGlass(RenderDevice* const device, Texture * backgroundFallback);

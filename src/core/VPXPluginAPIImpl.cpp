@@ -326,18 +326,17 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    const auto& msgApi = MsgPluginManager::GetInstance().GetMsgAPI();
    MsgPluginManager::GetInstance().SetSettingsHandler([](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize)
       {
-         Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
+         const Settings& settings = g_pplayer ? g_pplayer->m_ptable->m_settings : g_pvp->m_settings;
          const std::string sectionName = "Plugin."s + name_space;
          Settings::Section section = settings.GetSection(sectionName);
-         std::vector<std::string> literals;
          std::string buffer;
          valueBuf[0] = '\0';
          if (settings.LoadValue(section, name, buffer))
          {
             #ifdef _MSC_VER
-            strncpy_s(valueBuf, valueBufSize, buffer.c_str(), valueBufSize);
+            strncpy_s(valueBuf, valueBufSize, buffer.c_str(), valueBufSize - 1);
             #else
-            strncpy(valueBuf, buffer.c_str(), valueBufSize);
+            strncpy(valueBuf, buffer.c_str(), valueBufSize - 1);
             #endif
          }
       });

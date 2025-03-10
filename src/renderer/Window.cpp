@@ -476,7 +476,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
                display->second.adapter = i;
                const char* displayName = SDL_GetDisplayName(display->second.adapter);
                if (displayName)
-                  strncpy_s(display->second.GPU_Name, displayName, MAX_DEVICE_IDENTIFIER_STRING - 1);
+                  strncpy_s(display->second.GPU_Name, displayName, sizeof(display->second.GPU_Name) - 1);
             }
          }
       }
@@ -512,9 +512,9 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          displayConf.width = displayBounds.w;
          displayConf.height = displayBounds.h;
          const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
-         strncpy_s(displayConf.DeviceName, devicename.c_str(), CCHDEVICENAME - 1);
+         strncpy_s(displayConf.DeviceName, devicename.c_str(), sizeof(displayConf.DeviceName) - 1);
          const char* name = SDL_GetDisplayName(displayIDs[i]);
-         strncpy_s(displayConf.GPU_Name, name ? name : "UNKNOWN", MAX_DEVICE_IDENTIFIER_STRING - 1);
+         strncpy_s(displayConf.GPU_Name, name ? name : "UNKNOWN", sizeof(displayConf.GPU_Name) - 1);
          displays.push_back(displayConf);
       }
    }
