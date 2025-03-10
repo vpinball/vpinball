@@ -24,10 +24,10 @@
 #endif
 #endif
 
-#if __cplusplus >= 202302L  // C++23 and later
-#define CONSTEXPR constexpr
-#else
+#if defined(__GNUC__) && (__GNUC__ < 12)
 #define CONSTEXPR
+#else
+#define CONSTEXPR constexpr
 #endif
 
 template <typename T>
