@@ -3295,7 +3295,12 @@ void CodeViewer::ParseVPCore()
 	while (!feof(fCore))
 	{
 		char text[MAX_LINE_LENGTH] = {};
-		fgets(text, MAX_LINE_LENGTH, fCore);
+		if (fgets(text, MAX_LINE_LENGTH, fCore) == NULL)
+		{
+			//error or EOF
+			break;
+		}
+
 		if (text[0] != '\0')
 		{
 			string wholeline(text);

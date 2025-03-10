@@ -92,7 +92,11 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       if (strcmp(lineHeader, "v") == 0)
       {
          Vertex3Ds tmp;
-         fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
+         if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
+         {
+            ShowError("Error parsing `v`");
+            goto Error;
+         }
          if (convertToLeftHanded)
             tmp.z = -tmp.z;
          m_tmpVerts.push_back(tmp);
@@ -100,7 +104,11 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       else if (strcmp(lineHeader, "vt") == 0)
       {
          Vertex2D tmp;
-         fscanf_s(f, "%f %f", &tmp.x, &tmp.y);
+         if (fscanf_s(f, "%f %f", &tmp.x, &tmp.y) != 2)
+         {
+            ShowError("Error parsing `vt`");
+            goto Error;
+         }
          if (flipTv || convertToLeftHanded)
             tmp.y = 1.f - tmp.y;
          m_tmpTexel.push_back(tmp);
@@ -108,7 +116,11 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       else if (strcmp(lineHeader, "vn") == 0)
       {
          Vertex3Ds tmp;
-         fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z);
+         if (fscanf_s(f, "%f %f %f\n", &tmp.x, &tmp.y, &tmp.z) != 3)
+         {
+            ShowError("Error parsing `vn`");
+            goto Error;
+         }
          if (convertToLeftHanded)
             tmp.z = -tmp.z;
          m_tmpNorms.push_back(tmp);
@@ -178,7 +190,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       else
       {
          // unknown line header, skip rest of line
-         fgets(lineHeader, 256, f);
+         [[maybe_unused]] char* unused = fgets(lineHeader, 256, f);
       }
    }
 

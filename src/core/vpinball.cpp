@@ -3286,28 +3286,35 @@ void VPinball::GenerateImageFromTournamentFile(const string &tablefile, const st
    FILE *f;
    if (fopen_s(&f, txtfile.c_str(), "r") == 0 && f)
    {
-      fscanf_s(f, "%03X", &x);
-      fscanf_s(f, "%03X", &y);
-      fscanf_s(f, "%01X", &cpu);
-      fscanf_s(f, "%01X", &bits);
-      fscanf_s(f, "%01X", &os);
-      fscanf_s(f, "%01X", &renderer);
-      fscanf_s(f, "%01X", &major);
-      fscanf_s(f, "%01X", &minor);
-      fscanf_s(f, "%01X", &rev);
-      fscanf_s(f, "%04X", &git_rev);
-      fscanf_s(f, "%08X", &tablefileChecksum_in);
-      fscanf_s(f, "%08X", &vpxChecksum_in);
-      fscanf_s(f, "%08X", &scriptsChecksum_in);
+      bool error = false;
+      error |= fscanf_s(f, "%03X", &x) != 1;
+      error |= fscanf_s(f, "%03X", &y) != 1;
+      error |= fscanf_s(f, "%01X", &cpu) != 1;
+      error |= fscanf_s(f, "%01X", &bits) != 1;
+      error |= fscanf_s(f, "%01X", &os) != 1;
+      error |= fscanf_s(f, "%01X", &renderer) != 1;
+      error |= fscanf_s(f, "%01X", &major) != 1;
+      error |= fscanf_s(f, "%01X", &minor) != 1;
+      error |= fscanf_s(f, "%01X", &rev) != 1;
+      error |= fscanf_s(f, "%04X", &git_rev) != 1;
+      error |= fscanf_s(f, "%08X", &tablefileChecksum_in) != 1;
+      error |= fscanf_s(f, "%08X", &vpxChecksum_in) != 1;
+      error |= fscanf_s(f, "%08X", &scriptsChecksum_in) != 1;
       dmd_size = x * y + 16;
       dmd_data = new BYTE[dmd_size];
       for (unsigned int i = 0; i < dmd_size; ++i)
       {
          unsigned int v;
-         fscanf_s(f, "%02X", &v);
+         error |= fscanf_s(f, "%02X", &v) != 1;
          dmd_data[i] = v;
       }
       fclose(f);
+
+      if (error)
+      {
+         ShowError("Error parsing Tournament file");
+         return;
+      }
    }
    else
    {
