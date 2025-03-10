@@ -2690,7 +2690,7 @@ void LiveUI::UpdateMainUI()
          if (wp <= 1e-10f) // behind camera (or degenerated)
             return Vertex2D(FLT_MAX, FLT_MAX);
          const float inv_wp = 1.0f / wp;
-         return Vertex2D((wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp);
+         return Vertex2D{(wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp};
       };
 
       if (isSelectionTransformValid)

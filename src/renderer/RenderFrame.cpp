@@ -89,10 +89,10 @@ RenderFrame::RenderFrame(RenderDevice* renderDevice)
    : m_rd(renderDevice)
 {
    #if defined(ENABLE_DX9)
-   // TODO remove legacy frame limiter for Windows XP
+   //!! TODO remove legacy frame limiter?! Then also delete DX9Flush,etc
    const int maxPrerenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
    const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-   if (EnableLegacyMaximumPreRenderedFrames || renderDevice->GetCoreDeviceEx() == nullptr || maxPrerenderedFrames > 20)
+   if (EnableLegacyMaximumPreRenderedFrames || maxPrerenderedFrames > 20)
       m_DX9Flush = new DX9Flush(renderDevice, maxPrerenderedFrames);
    #endif
 }
@@ -334,7 +334,7 @@ bool RenderFrame::Execute(const bool log)
          glFlush(); // Push command queue to the GPU without blocking (tells the GPU that the render queue is ready to be executed)
       #elif defined(ENABLE_DX9)
       CHECKD3D(m_rd->GetCoreDevice()->EndScene());
-      // (Optionally) hack to force queue flushing of the driver. Can be used to artifically limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submiting render commands
+      // (Optionally) hack to force queue flushing of the driver. Can be used to artificially limit latency on DX9 (depends on OS/GFXboard/driver if still useful nowadays). This must be done after submitting render commands
       if (m_DX9Flush)
          m_DX9Flush->Execute();
       #endif

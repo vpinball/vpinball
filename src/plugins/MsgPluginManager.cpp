@@ -384,15 +384,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
       if (m_module == nullptr)
       {
          #if defined(_WIN32) || defined(_WIN64)
-            #if _WIN32_WINNT >= 0x0600
-               SetDllDirectory(m_directory.c_str());
-            #else
-               typedef BOOL(STDAPICALLTYPE * pSDD)(LPCSTR);
-               static pSDD mSetDllDirectory = nullptr;
-               mSetDllDirectory = (pSDD)GetProcAddress(GetModuleHandle(TEXT("Kernel32.dll")), "SetDllDirectoryA"); //!! remove as soon as win xp support dropped and use static link
-               if (mSetDllDirectory)
-                  mSetDllDirectory(m_directory.c_str());
-            #endif
+            SetDllDirectory(m_directory.c_str());
          #endif
          #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
             m_module = SDL_LoadObject(m_library.c_str());
@@ -413,11 +405,9 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
                return;
             }
          #elif defined(_WIN32) || defined(_WIN64)
-            // Windows XP does not support LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR and LOAD_LIBRARY_SEARCH_DEFAULT_DIRS
-            // This makes the plugin features buggy on Windows XP since a plugin coming with its own dependencies (dll in the plugin directory) will not load on WinXP
-            DWORD flags = 0x00000100 /* LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR */ | 0x00001000 /* LOAD_LIBRARY_SEARCH_DEFAULT_DIRS */;
+            constexpr DWORD flags = LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR | LOAD_LIBRARY_SEARCH_DEFAULT_DIRS;
             m_module = LoadLibraryEx(m_library.c_str(), NULL, flags);
-            if (m_module == NULL)
+            if (m_module == nullptr)
             {
                PLOGE << "Plugin " << m_id << " failed to load library " << m_library;
                PLOGE << "Last error was: " << GetLastErrorAsString();
@@ -430,7 +420,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
                FreeLibrary(static_cast<HMODULE>(m_module));
                m_loadPlugin = nullptr;
                m_unloadPlugin = nullptr;
-               m_module = NULL;
+               m_module = nullptr;
                PLOGE << "Plugin " << m_id << " invalid library " << m_library << ": required load/unload functions are not correct.";
                return;
             }
@@ -438,12 +428,7 @@ void MsgPlugin::Load(const MsgPluginAPI* msgAPI)
             assert(false);
          #endif
          #if defined(_WIN32) || defined(_WIN64)
-            #if _WIN32_WINNT >= 0x0600
-               SetDllDirectory(NULL);
-            #else
-               if (mSetDllDirectory)
-                  mSetDllDirectory(NULL);
-            #endif
+            SetDllDirectory(NULL);
          #endif
       }
    }

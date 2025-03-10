@@ -153,30 +153,15 @@ void PaintSur::PolygonImage(const vector<RenderVertex> &rgv, HBITMAP hbm, const 
       rgpt[i].y = SCALEYf(rgv[i].y);
    }
 
-   if (GetWinVersion() >= 2600) // For everything newer than Windows XP: use the alpha in the bitmap (RGB needs to be premultiplied with alpha, too, then! see CopyTo_ConvertAlpha())
-   {
-      const HRGN hrgn = CreatePolygonRgn(rgpt.data(), (int)rgv.size(), WINDING);
-      SelectClipRgn(m_hdc, hrgn);
+   // use the alpha in the bitmap (RGB needs to be premultiplied with alpha, too, then! see CopyTo_ConvertAlpha())
+   const HRGN hrgn = CreatePolygonRgn(rgpt.data(), (int)rgv.size(), WINDING);
+   SelectClipRgn(m_hdc, hrgn);
 
-      constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-      AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, blendf);
+   constexpr BLENDFUNCTION blendf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+   AlphaBlend(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, blendf);
 
-      SelectClipRgn(m_hdc, nullptr);
-      DeleteObject(hrgn);
-   }
-   else // do XOR trick for masking (draw image, draw black polygon, draw image again, and the XOR will do an implicit mask op)
-   {
-      SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
-      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
-
-      SelectObject(m_hdc, GetStockObject(BLACK_BRUSH));
-      SelectObject(m_hdc, GetStockObject(NULL_PEN));
-
-      ::Polygon(m_hdc, rgpt.data(), (int)rgv.size());
-
-      SetStretchBltMode(m_hdc, HALFTONE); // somehow enables filtering
-      StretchBlt(m_hdc, ix, iy, ix2 - ix, iy2 - iy, dc.GetHDC(), 0, 0, bitmapwidth, bitmapheight, SRCINVERT);
-   }
+   SelectClipRgn(m_hdc, nullptr);
+   DeleteObject(hrgn);
 
    dc.SelectObject(hbmOld);
    }

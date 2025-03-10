@@ -565,7 +565,6 @@ BaseTexture* BaseTexture::ToBGRA()
    {
       const unsigned short* const __restrict src = (unsigned short*)data();
       size_t o = 0;
-      const bool isWinXP = GetWinVersion() < 2600;
       for (unsigned int j = 0; j < height(); ++j)
          for (unsigned int i = 0; i < width(); ++i, ++o)
          {
@@ -578,28 +577,16 @@ BaseTexture* BaseTexture::ToBGRA()
             int r = (int)clamp(bf * n, 0.f, 255.f);
             int g = (int)clamp(gf * n, 0.f, 255.f);
             int b = (int)clamp(rf * n, 0.f, 255.f);
-            if (!isWinXP) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            // use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
             {
-               if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
-               {
-                  r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
-               }
-               else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
-               {
-                  r = r * alpha >> 8;
-                  g = g * alpha >> 8;
-                  b = b * alpha >> 8;
-               }
+               r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
             }
-            else
+            else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
             {
-               if (alpha != 255)
-               {
-                  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
-                  r = (r * alpha + c) >> 8;
-                  g = (g * alpha + c) >> 8;
-                  b = (b * alpha + c) >> 8;
-               }
+               r = r * alpha >> 8;
+               g = g * alpha >> 8;
+               b = b * alpha >> 8;
             }
             tmp[o * 4 + 0] = r;
             tmp[o * 4 + 1] = g;
@@ -628,7 +615,6 @@ BaseTexture* BaseTexture::ToBGRA()
    {
       const BYTE* const __restrict psrc = data();
       size_t o = 0;
-      const bool isWinXP = GetWinVersion() < 2600;
       for (unsigned int j = 0; j < height(); ++j)
       {
          for (unsigned int i = 0; i < width(); ++i, ++o)
@@ -637,28 +623,16 @@ BaseTexture* BaseTexture::ToBGRA()
             int g = psrc[o * 4 + 1];
             int b = psrc[o * 4 + 2];
             const int alpha = psrc[o * 4 + 3];
-            if (!isWinXP) // For everything newer than Windows XP: use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            // use the alpha in the bitmap, thus RGB needs to be premultiplied with alpha, due to how AlphaBlend() works
+            if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
             {
-               if (alpha == 0) // adds a checkerboard where completely transparent (for the image manager display)
-               {
-                  r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
-               }
-               else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
-               {
-                  r = r * alpha >> 8;
-                  g = g * alpha >> 8;
-                  b = b * alpha >> 8;
-               }
+               r = g = b = ((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127;
             }
-            else
+            else if (alpha != 255) // premultiply alpha for win32 AlphaBlend()
             {
-               if (alpha != 255)
-               {
-                  const unsigned int c = (((((i >> 4) ^ (j >> 4)) & 1) << 7) + 127) * (255 - alpha);
-                  r = (r * alpha + c) >> 8;
-                  g = (g * alpha + c) >> 8;
-                  b = (b * alpha + c) >> 8;
-               }
+               r = r * alpha >> 8;
+               g = g * alpha >> 8;
+               b = b * alpha >> 8;
             }
             tmp[o * 4 + 0] = b;
             tmp[o * 4 + 1] = g;

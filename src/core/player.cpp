@@ -47,7 +47,7 @@
 #include "core/VPXPluginAPIImpl.h"
 
 // MSVC Concurrency Viewer support
-// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+// This requires to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
@@ -62,10 +62,6 @@ extern marker_series series;
 #define stable_sort std::stable_sort
 #define sort std::sort
 #endif
-
-#if !(_WIN32_WINNT >= 0x0500)
- #define KEYEVENTF_SCANCODE    0x0008
-#endif /* _WIN32_WINNT >= 0x0500 */
 
 //
 
@@ -1825,13 +1821,9 @@ string Player::GetPerfInfo()
 void Player::LockForegroundWindow(const bool enable)
 {
 #ifdef _MSC_VER
-#if(_WIN32_WINNT >= 0x0500)
    // TODO how do we handle this situation with multiple windows, some being full-screen, other not ?
    if (m_playfieldWnd->IsFullScreen()) // revert special tweaks of exclusive full-screen app
       ::LockSetForegroundWindow(enable ? LSFW_LOCK : LSFW_UNLOCK);
-#else
-#pragma message ( "Warning: Missing LockSetForegroundWindow()" )
-#endif
 #endif
 }
 

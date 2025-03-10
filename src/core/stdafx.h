@@ -160,10 +160,6 @@
  #include <crtdbg.h>
 #endif
 
-#if(_WIN32_WINNT < 0x0500) // for Win32++ and old compilers
- #define WM_MENURBUTTONUP                0x0122
- #define WM_UNINITMENUPOPUP              0x0125
-#endif
 #include "main.h"
 
 //{{AFX_INSERT_LOCATION}}

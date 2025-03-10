@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 
-//#include "Dwmapi.h" // use when we get rid of XP at some point, get rid of the manual dll loads in here then
+#include "dwmapi.h"
 
 #include <thread>
 
@@ -268,22 +268,8 @@ RenderDeviceState::~RenderDeviceState()
 
 ////////////////////////////////////////////////////////////////////
 
-#if defined(ENABLE_DX9)
-typedef HRESULT(WINAPI *pD3DC9Ex)(UINT SDKVersion, IDirect3D9Ex**);
-static pD3DC9Ex mDirect3DCreate9Ex = nullptr;
-#endif
-
-#define DWM_EC_DISABLECOMPOSITION         0
-#define DWM_EC_ENABLECOMPOSITION          1
-typedef HRESULT(STDAPICALLTYPE *pDICE)(BOOL* pfEnabled);
-static pDICE mDwmIsCompositionEnabled = nullptr;
-typedef HRESULT(STDAPICALLTYPE *pDF)();
-static pDF mDwmFlush = nullptr;
-typedef HRESULT(STDAPICALLTYPE *pDEC)(UINT uCompositionAction);
-static pDEC mDwmEnableComposition = nullptr;
-
 // MSVC Concurrency Viewer support
-// This requires _WIN32_WINNT >= 0x0600 and to add the MSVC Concurrency SDK to the project
+// This requires to add the MSVC Concurrency SDK to the project
 //#define MSVC_CONCURRENCY_VIEWER
 #ifdef MSVC_CONCURRENCY_VIEWER
 #include <cvmarkersobj.h>
@@ -516,7 +502,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             if (vsync != needsVSync)
             #ifdef _MSC_VER
                // For Windows, only use GPU sync if we can't use DWM sync (GPU sync has issues when used with multiple monitors, and leads to higher visual latency)
-               if (!rd->m_dwm_enabled || (mDwmFlush == nullptr))
+               if (!rd->m_dwm_enabled)
             #endif
             {
                vsync = needsVSync;
@@ -562,7 +548,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #endif
             rd->Flip();
             #ifdef _MSC_VER
-               if (needsVSync && rd->m_dwm_enabled && mDwmFlush)
+               if (needsVSync && rd->m_dwm_enabled)
                   rd->WaitForVSync(false); // Sync on the main display (this supposes that the playfield window is on the main display to behave correctly)
             #endif
             #ifdef MSVC_CONCURRENCY_VIEWER
@@ -586,11 +572,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 #endif
 
 RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
-   : m_isVR(isVR)
-   , m_nEyes(nEyes)
-   , m_texMan(*this)
-   , m_renderFrame(this)
+   : m_texMan(*this)
    , m_compressTextures(compressTextures)
+   , m_nEyes(nEyes)
+   , m_isVR(isVR)
+   , m_renderFrame(this)
 {
    m_outputWnd[0] = wnd;
 
@@ -603,28 +589,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #endif
 
 #ifndef __STANDALONE__
-   HMODULE dwmModule = GetModuleHandle(TEXT("dwmapi.dll"));
-   if (dwmModule == 0)
-      dwmModule = LoadLibrary(TEXT("dwmapi.dll"));
-   mDwmIsCompositionEnabled = (pDICE)GetProcAddress(dwmModule, "DwmIsCompositionEnabled"); //!! remove as soon as win xp support dropped and use static link
-   mDwmEnableComposition = (pDEC)GetProcAddress(dwmModule, "DwmEnableComposition"); //!! remove as soon as win xp support dropped and use static link
-   mDwmFlush = (pDF)GetProcAddress(dwmModule, "DwmFlush"); //!! remove as soon as win xp support dropped and use static link
+    BOOL dwm = 0;
+    DwmIsCompositionEnabled(&dwm);
+    m_dwm_enabled = m_dwm_was_enabled = !!dwm;
 
-    if (mDwmIsCompositionEnabled && mDwmEnableComposition)
+    if (m_dwm_was_enabled && disableDWM && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
     {
-        BOOL dwm = 0;
-        mDwmIsCompositionEnabled(&dwm);
-        m_dwm_enabled = m_dwm_was_enabled = !!dwm;
-
-        if (m_dwm_was_enabled && disableDWM && IsWindowsVistaOr7()) // windows 8 and above will not allow do disable it, but will still return S_OK
-        {
-            mDwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
-            m_dwm_enabled = false;
-        }
-    }
-    else
-    {
-        m_dwm_was_enabled = false;
+        DwmEnableComposition(DWM_EC_DISABLECOMPOSITION);
         m_dwm_enabled = false;
     }
 #else
@@ -910,34 +881,21 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    wnd->SetBackBuffer(new RenderTarget(this, SurfaceType::RT_DEFAULT, wnd->GetWidth(), wnd->GetHeight(), back_buffer_format));
 
 #elif defined(ENABLE_DX9)
-    ///////////////////////////////////
-    // DirectX 9 device initialization
+   ///////////////////////////////////
+   // DirectX 9 device initialization
 
-    m_pD3DEx = nullptr;
-    m_pD3DDeviceEx = nullptr;
+   m_pD3DEx = nullptr;
+   m_pD3DDeviceEx = nullptr;
 
-    m_useLowPrecision = false;
+   m_useLowPrecision = false;
 
-    mDirect3DCreate9Ex = (pD3DC9Ex)GetProcAddress(GetModuleHandle(TEXT("d3d9.dll")), "Direct3DCreate9Ex"); //!! remove as soon as win xp support dropped and use static link
-    if (mDirect3DCreate9Ex)
-    {
-        const HRESULT hr = mDirect3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
-        if (FAILED(hr) || (m_pD3DEx == nullptr))
-        {
-            ShowError("Could not create D3D9Ex object.");
-            throw 0;
-        }
-        m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&m_pD3D));
-    }
-    else
-    {
-        m_pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-        if (m_pD3D == nullptr)
-        {
-            ShowError("Could not create D3D9 object.");
-            throw 0;
-        }
-    }
+   const HRESULT hr = Direct3DCreate9Ex(D3D_SDK_VERSION, &m_pD3DEx);
+   if (FAILED(hr) || (m_pD3DEx == nullptr))
+   {
+      ShowError("Could not create D3D9Ex object.");
+      throw 0;
+   }
+   m_pD3DEx->QueryInterface(__uuidof(IDirect3D9), reinterpret_cast<void**>(&m_pD3D));
 
    D3DDEVTYPE devtype = D3DDEVTYPE_HAL;
    vector<VPX::Window::DisplayConfig> displays;
@@ -987,7 +945,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
     case D3DFMT_A2R10G10B10: back_buffer_format = colorFormat::RGBA10; break;
     default:
     {
-        ShowError("Invalid Output format: "s.append(std::to_string(format)));
+        ShowError("Invalid Output format: " + std::to_string(format));
         exit(-1);
     }
     }
@@ -1050,9 +1008,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    const bool softwareVP = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SoftwareVertexProcessing"s, false);
    const DWORD flags = softwareVP ? D3DCREATE_SOFTWARE_VERTEXPROCESSING : D3DCREATE_HARDWARE_VERTEXPROCESSING;
 
-   // Create the D3D device. This optionally goes to the proper fullscreen mode.
+   // Create the D3Dex device. This optionally goes to the proper fullscreen mode.
    // It also creates the default swap chain (front and back buffer).
-   if (m_pD3DEx)
    {
       D3DDISPLAYMODEEX mode;
       mode.Size = sizeof(D3DDISPLAYMODEEX);
@@ -1092,28 +1049,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // CHECKD3D(m_pD3DDeviceEx->GetDisplayModeEx(0, &mode, nullptr)); //!! what is the actual correct value for the swapchain here?
       // refreshrate = mode.RefreshRate;
    }
-   else
-   {
-      hr = m_pD3D->CreateDevice(
-         m_outputWnd[0]->GetAdapterId(),
-         devtype,
-         m_outputWnd[0]->GetCore(),
-         flags /*| D3DCREATE_PUREDEVICE*/,
-         &params,
-         &m_pD3DDevice);
-
-      if (FAILED(hr))
-         ReportError("Fatal Error: unable to create D3D device!", hr, __FILE__, __LINE__);
-
-      // Get the display mode so that we can report back the actual refresh rate.
-      // Not done anymore as the refresh rate is validated before creation
-      // D3DDISPLAYMODE mode;
-      // CHECKD3D(m_pD3DDevice->GetDisplayMode(m_outputWnd[0]->GetAdapterId(), &mode));
-      // refreshrate = mode.RefreshRate;
-   }
 
    const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-   if (!EnableLegacyMaximumPreRenderedFrames && m_pD3DEx && maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
+   if (!EnableLegacyMaximumPreRenderedFrames && maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
    {
       CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(maxPrerenderedFrames));
    }
@@ -1194,13 +1132,13 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    
    // Ensure we have a VSync source for frame pacing
    bool hasVSync = false;
-   if (m_dwm_enabled && mDwmFlush)
+   if (m_dwm_enabled)
    {
       PLOGI << "VSync source set to Windows Desktop compositor (DwmFlush)";
       hasVSync = true;
    }
    #if defined(ENABLE_DX9)
-      else if (m_pD3DDeviceEx != nullptr)
+      else
       {
          PLOGI << "VSync source set to DX9Ex WaitForBlank";
          hasVSync = true;
@@ -1222,7 +1160,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    
    if (syncMode == VideoSyncMode::VSM_FRAME_PACING && !hasVSync)
    {
-      // This may happen on some old config where D3D9ex is not available (XP/Vista/7) and DWM is disabled
+      // This may happen on some old config where DWM is disabled
       ShowError("Failed to create the synchronization device.\r\nSynchronization switched to adaptive sync.");
       PLOGE << "Failed to create the synchronization device for frame pacing. Synchronization switched to adaptive sync.";
       syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC;
@@ -1358,7 +1296,6 @@ RenderDevice::~RenderDevice()
    }
    #endif
 
-   //!! if (m_pD3DDeviceEx == m_pD3DDevice) m_pD3DDevice = nullptr; //!! needed for Caligula if m_outputWnd[0]->GetAdapterId() > 0 ?? weird!! BUT MESSES UP FULLSCREEN EXIT (=hangs)
    SAFE_RELEASE_NO_RCC(m_pD3DDeviceEx);
    #ifdef DEBUG_REFCOUNT_TRIGGER
    SAFE_RELEASE(m_pD3DDevice);
@@ -1386,7 +1323,7 @@ RenderDevice::~RenderDevice()
    _fpreset();
 
    if (m_dwm_was_enabled)
-      mDwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
+      DwmEnableComposition(DWM_EC_ENABLECOMPOSITION);
 #endif
 
    assert(m_pendingSharedIndexBuffers.empty());
@@ -1474,20 +1411,20 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
 
 void RenderDevice::WaitForVSync(const bool asynchronous)
 {
-   // - DWM is always disabled for Windows XP, it can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
+   // - DWM can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
    // - Windows XP does not offer any way to sync beside the present parameter on device creation, so this is enforced there and the vsync parameter will be ignored here
    //   (note that the present parameter does not directly sync: it schedules the flip on vsync, leading the GPU to block on another render call, since no backbuffer is available for drawing then)
    auto lambda = [this]()
    {
 #ifndef __STANDALONE__
-      if (m_dwm_enabled && mDwmFlush != nullptr)
-         mDwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually sync to the vertical blank
+      if (m_dwm_enabled)
+         DwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually sync to the vertical blank
       #if defined(ENABLE_OPENGL)
       else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();
       #elif defined(ENABLE_DX9)
       // When DWM is disabled (Windows Vista/7), exclusive fullscreen without DWM (pre-windows 10), special Windows builds with DWM stripped out (Ghost Spectre Windows 10)
-      else if (m_pD3DDeviceEx != nullptr)
+      else
          m_pD3DDeviceEx->WaitForVBlank(0);
       #endif
 #endif

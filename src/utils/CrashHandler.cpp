@@ -54,7 +54,7 @@ namespace
       {
          OSVERSIONINFOEX sysInfo = {};
          sysInfo.dwOSVersionInfoSize = sizeof(sysInfo);
-         #pragma warning(disable: 4996) // warning C4996: 'GetVersionExA': is unadvised but needed for Windows before 8.1 (we support 7 and XP)
+         #pragma warning(disable: 4996) // warning C4996: 'GetVersionExA': is unadvised but needed for Windows before 8.1 (we support 7)
          ::GetVersionEx((OSVERSIONINFO*)&sysInfo);
 
          major = sysInfo.dwMajorVersion;
