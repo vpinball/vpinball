@@ -664,12 +664,12 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   pps->m_cdata = (int)ftell(f);
 	   fseek(f, 0, SEEK_SET);
 	   pps->m_pdata = new char[pps->m_cdata];
-	   size_t n_read = fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
+	   const size_t n_read = fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
 
 	   if (n_read == 0)
 	   {
-           ShowError("Error reading file.");
+		   ShowError("Error reading sound file.");
 		   return nullptr;
 	   }
 

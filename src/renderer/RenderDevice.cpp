@@ -491,7 +491,6 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
       U64 lastFlipTick = 0;
       bool vsync = false;
 
-      
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
       {
@@ -677,9 +676,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    init.callback = &bgfxCallback;
 
    init.resolution.maxFrameLatency = maxPrerenderedFrames; // Maximum of Present operation queued (unrendered frame queued on GPU, waiting for an available backbuffer)
-   
+
    //init.resolution.numBackBuffers = 3; // Number of backbuffers (usually 3 as 1 is locked by compositor, 1 is displayed, 1 is rendered to)
-   
+
    // Enable max anisotropy texture filter setting (seems like there is no finer grained setting available in BGFX?).
    init.resolution.reset = BGFX_RESET_MAXANISOTROPY;
 
@@ -688,7 +687,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
 
    if (syncMode != VSM_NONE)
       init.resolution.reset |= BGFX_RESET_VSYNC;
-   
+
    // Request a fullscreen swapchain to get independent flip and avoid compositor overhead
    if (m_outputWnd[0]->IsFullScreen())
       init.resolution.reset |= BGFX_RESET_FULLSCREEN;

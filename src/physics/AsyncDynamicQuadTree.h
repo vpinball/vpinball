@@ -7,13 +7,13 @@
 
 // QuadTree for mostly static hit objects
 //
-// This is a QuadTree which can hit test large number of static hit objects efficiently. It also supports
+// This is a QuadTree which can hit test a large number of static hit objects efficiently. It also supports
 // dynamic parts by moving them out of the quadtree when they are switched to dynamic. When they are 
 // switched back to static, they are re-integrated into the QuadTree but, since this is a lengthy operation,
 // the QuadTree is recomputed asynchronously, keeping the part dynamic until the update is processed.
 //
 // The dynamic parts have a big impact on hit testing performace since they are brute force hit tested
-// without any advanced space partioning trick. Therefore, the number of dynamic parts should be kept low
+// without any advanced space partitioning trick. Therefore, the number of dynamic parts should be kept low
 // and/or restricted to parts with a low count of hit objects.
 //
 // Note that updating the quadtree is a fairly heavy multithreaded operation, so it should be only performed
@@ -24,7 +24,7 @@ class PhysicsEngine;
 class AsyncDynamicQuadTree final
 {
 public:
-   AsyncDynamicQuadTree(PhysicsEngine* physics, PinTable* table, bool isUI);
+   AsyncDynamicQuadTree(PhysicsEngine* const physics, PinTable* const table, bool isUI);
    ~AsyncDynamicQuadTree();
 
    bool IsStatic(IEditable* editable) const;
@@ -52,8 +52,9 @@ private:
       bool pendingStaticInclusion = false;
       IEditable* editable = nullptr;
       vector<HitObject*> hitObjects;
-      void HitTestBall(const HitBall* const pball, CollisionEvent& coll);
-      void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll);
+
+      void HitTestBall(const HitBall* const pball, CollisionEvent& coll) const;
+      void HitTestXRay(const HitBall* const pball, vector<HitTestResult>& pvhoHit, CollisionEvent& coll) const;
    };
    vector<std::shared_ptr<DynamicEditable>> m_dynamicEditables;
    vector<size_t> m_nullSlots; // null slots in static QuadTree (created when removing the parts that have been switched to dynamic)
