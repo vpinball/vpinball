@@ -664,8 +664,14 @@ PinSound *AudioMusicPlayer::LoadFile(const string& strFileName)
 	   pps->m_cdata = (int)ftell(f);
 	   fseek(f, 0, SEEK_SET);
 	   pps->m_pdata = new char[pps->m_cdata];
-	   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
+	   size_t n_read = fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
 	   fclose(f);
+
+	   if (n_read == 0)
+	   {
+           ShowError("Error reading file.");
+		   return nullptr;
+	   }
 
 	   const SoundConfigTypes SoundMode3D = (pps->GetOutputTarget() == SNDOUT_BACKGLASS) ? SNDCFG_SND3D2CH : (SoundConfigTypes)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 

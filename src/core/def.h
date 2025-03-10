@@ -24,6 +24,12 @@
 #endif
 #endif
 
+#if defined(__GNUC__) && (__GNUC__ < 12)
+#define CONSTEXPR
+#else
+#define CONSTEXPR constexpr
+#endif
+
 template <typename T>
 constexpr __forceinline T min(const T x, const T y)
 {
@@ -660,7 +666,7 @@ constexpr inline void szUpper(char* pC)
     }
 }
 
-constexpr inline void StrToLower(string& str)
+CONSTEXPR inline void StrToLower(string& str)
 {
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
 }
