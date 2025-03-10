@@ -55,7 +55,7 @@ struct tBGFXCallback : public bgfx::CallbackI
    virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
    {
       //bgfx::trace(_filePath, _line, "BGFX FATAL 0x%08x: %s\n", _code, _str);
-      PLOGE << _filePath << ":" << _line << "BGFX FATAL " << _code << ": " << _str;
+      PLOGE << _filePath << ':' << _line << "BGFX FATAL " << _code << ": " << _str;
       if (bgfx::Fatal::DebugCheck == _code)
          bx::debugBreak();
       else
@@ -331,7 +331,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
 
    // Set up to dynamically toggle vsync
    if (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate())
-      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS higher than display FPS, then entirely disable VSYNC
+      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS rate higher than display FPS, then entirely disable VSYNC
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
 
    // Always start with VSync disabled (we will enable it if needed)
@@ -1051,8 +1051,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
       // refreshrate = mode.RefreshRate;
    }
 
-   const int EnableLegacyMaximumPreRenderedFrames = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableLegacyMaximumPreRenderedFrames"s, 0);
-   if (!EnableLegacyMaximumPreRenderedFrames && maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
+   if (maxPrerenderedFrames > 0 && maxPrerenderedFrames <= 20)
    {
       CHECKD3D(m_pD3DDeviceEx->SetMaximumFrameLatency(maxPrerenderedFrames));
    }
@@ -1419,7 +1418,7 @@ void RenderDevice::WaitForVSync(const bool asynchronous)
    {
 #ifndef __STANDALONE__
       if (m_dwm_enabled)
-         DwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually sync to the vertical blank
+         DwmFlush(); // Flush all commands submitted by this process including the 'Present' command. This actually syncs to the vertical blank
       #if defined(ENABLE_OPENGL)
       else if (m_DXGIOutput != nullptr)
          m_DXGIOutput->WaitForVBlank();
@@ -1449,7 +1448,7 @@ void RenderDevice::Flip()
    // calls, we need to schedule frames at a pace adjusted to the actual render speed (to avoid filling up the queue, leading to subsequent call to wait).
    //
    // This matters and should be avoided since these blocking calls will delay the input/physics update (they catchup afterward) and that 
-   // it will break some pinmame video modes (since input events will be fast forwarded, the controller missing somes like in Lethal 
+   // it will break some PinMAME video modes (since input events will be fast forwarded, the controller misses some like in Lethal 
    // Weapon 3 fight) and make the gameplay (input lag, input-physics sync, input-controller sync) to depend on the framerate.
 
    // reset performance counters
@@ -1640,12 +1639,12 @@ void RenderDevice::SetSamplerState(int unit, SamplerFilter filter, SamplerAddres
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_BILINEAR: // Bilinar texture filtering.
+      case SF_BILINEAR: // Bilinear texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
          break;
-      case SF_TRILINEAR: // Trilinar texture filtering.
+      case SF_TRILINEAR: // Trilinear texture filtering.
          glSamplerParameteri(sampler_state, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
          glSamplerParameteri(sampler_state, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
          glSamplerParameterf(sampler_state, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
@@ -1926,7 +1925,7 @@ void RenderDevice::RenderLiveUI()
 
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* vertices, const bool isTransparent, const float depth)
 {
-   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices, isTransparent, depth);
@@ -1937,7 +1936,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_TexelOnly* ve
 
 void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* vertices, const bool isTransparent, const float depth)
 {
-   assert(shader != m_FBShader && shader != m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader != m_FBShader && shader != m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    ApplyRenderStates();
    RenderCommand* cmd = m_renderFrame.NewCommand();
    cmd->SetDrawTexturedQuad(shader, vertices, isTransparent, depth);
@@ -1948,7 +1947,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 
 void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
-   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shader are the only ones using Position/Texture vertex format
+   assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
    static const Vertex3Ds pos(0.f, 0.f, 0.f);
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
@@ -1957,9 +1956,9 @@ void RenderDevice::DrawMesh(Shader* shader, const bool isTranparentPass, const V
 {
    RenderCommand* cmd = m_renderFrame.NewCommand();
    // Legacy sorting order (only along negative z axis, which is reversed for reflections).
-   // This is completely wrong but needed to preserve backward compatibility. We should sort along the view axis (especially for reflection probes)
+   // This is completely wrong, but needed to preserve backward compatibility. We should sort along the view axis (especially for reflection probes)
    const float depth = g_pplayer->m_renderer && g_pplayer->m_renderer->IsRenderPass(Renderer::REFLECTION_PASS) ? depthBias + center.z : depthBias - center.z;
-   // We can not use the real opacity from render states since some legacy uses alpha part that write to the depth buffer (rendered during transparent pass) to mask out opaque parts
+   // We can not use the real opacity from render states since some legacy code uses the alpha part that writes to the depth buffer (rendered during transparent pass) to mask out opaque parts
    cmd->SetDrawMesh(shader, mb, type, startIndex, indexCount, isTranparentPass /* && !GetRenderState().IsOpaque() */, depth);
    cmd->m_dependency = m_nextRenderCommandDependency;
    m_nextRenderCommandDependency = nullptr;
@@ -2026,7 +2025,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    {
       m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " HBlur", tmp, false); // switch to temporary output buffer for horizontal phase of gaussian blur
-      m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
+      m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(source);
       m_FBShader->SetTexture(SHADER_tex_fb_filtered, source->GetColorSampler());
       m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / source->GetWidth()), (float)(1.0 / source->GetHeight()), 1.0f, 1.0f);
@@ -2036,7 +2035,7 @@ void RenderDevice::DrawGaussianBlur(RenderTarget* source, RenderTarget* tmp, Ren
    {
       m_FBShader->SetTextureNull(SHADER_tex_fb_filtered);
       SetRenderTarget(initial_rt->m_name + " VBlur", dest, false); // switch to output buffer for vertical phase of gaussian blur
-      m_currentPass->m_singleLayerRendering = singleLayer; // We support bluring a single layer (for anaglyph defocusing)
+      m_currentPass->m_singleLayerRendering = singleLayer; // We support blurring a single layer (for anaglyph defocusing)
       AddRenderTargetDependency(tmp);
       m_FBShader->SetTexture(SHADER_tex_fb_filtered, tmp->GetColorSampler());
       m_FBShader->SetVector(SHADER_w_h_height, (float)(1.0 / tmp->GetWidth()), (float)(1.0 / tmp->GetHeight()), 1.0f, 1.0f);

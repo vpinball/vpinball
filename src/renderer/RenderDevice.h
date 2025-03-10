@@ -55,7 +55,7 @@ void ReportError(const char *errorText, const HRESULT hr, const char *file, cons
 class Shader;
 class ModelViewProj;
 
-class RenderDeviceState
+class RenderDeviceState final
 {
 public:
    RenderDeviceState(RenderDevice* rd);
@@ -177,7 +177,7 @@ public:
    void ApplyRenderStates();
    RenderState& GetActiveRenderState() { return m_current_renderstate; }
 
-   void SetMainTextureDefaultFiltering(const SamplerFilter filter);
+   static void SetMainTextureDefaultFiltering(const SamplerFilter filter);
 
    void UploadTexture(BaseTexture* texture, const bool linearRGB);
    void SetSamplerState(int unit, SamplerFilter filter, SamplerAddressMode clamp_u, SamplerAddressMode clamp_v);

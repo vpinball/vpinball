@@ -1,5 +1,6 @@
 // touch defines, delete as soon as we can get rid of old compilers/SDKs and use new ones that have these natively
 
+#if (WINVER < 0x0602)
 //#define TEST_TOUCH_WITH_MOUSE
 
 #ifdef TEST_TOUCH_WITH_MOUSE
@@ -142,4 +143,5 @@ typedef struct tagGESTURECONFIG {
 
 typedef BOOL(WINAPI *pSetGestureConfig)(HWND hwnd, DWORD dwReserved, UINT cIDs, PGESTURECONFIG pGestureConfig, UINT cbSize);
 static pSetGestureConfig SetGestureConfig = NULL;
+#endif
 #endif

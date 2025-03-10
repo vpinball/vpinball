@@ -33,8 +33,4 @@ private:
    vector<RenderCommand*> m_commandPool;
    vector<std::function<void()>> m_beginOfFrameCmds;
    vector<std::function<void()>> m_endOfFrameCmds;
-
-   #if defined(ENABLE_DX9)
-   class DX9Flush* m_DX9Flush = nullptr;
-   #endif
 };
