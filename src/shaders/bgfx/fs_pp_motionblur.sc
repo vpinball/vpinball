@@ -82,7 +82,7 @@ void main()
 	}
 
 	// Process interpolated positions from previous (excluded as part of previous frame) to current (excluded as already processed)
-	//float weight_sum = 1.;
+	//float weight_sum = shutter_function(0.);
 	for (int i = 1; i < nSamples; i++)
 	{
 		const float mix_pos = float(i) / NSAMPLES_F;
@@ -90,7 +90,7 @@ void main()
 		const float b = dot(rayDirection,    sample_ball_pos);
 		const float c = dot(sample_ball_pos, sample_ball_pos) - ball_r2;
 		const float det = b * b - c;
-		//const float weight = mix_pos;
+		//const float weight = shutter_function(mix_pos);
 		//weight_sum += weight;
 		if (det < 0.0) {
 			// No intersection: use the selected background render

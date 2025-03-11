@@ -237,8 +237,6 @@ enum ShaderTechniques
    SHADER_TECHNIQUE(fb_wcgtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_wcgtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_wcgtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
 
    SHADER_TECHNIQUE(fb_blur_horiz7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(fb_blur_vert7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
@@ -820,7 +818,7 @@ public:
    UniformDesc m_uniform_desc[SHADER_UNIFORM_COUNT];
    ShaderState* m_boundState = nullptr; // The state currently applied to the backend (per shader for DirectX effect framework)
    ShaderTechniques m_boundTechnique = ShaderTechniques::SHADER_TECHNIQUE_INVALID; // The bound technique (per shader for DirectX)
-   ID3DXEffect* m_shader;
+   ID3DXEffect* m_shader = nullptr;
    static constexpr unsigned int TEXTURESET_STATE_CACHE_SIZE = 32;
    Sampler* m_boundTexture[TEXTURESET_STATE_CACHE_SIZE];
 

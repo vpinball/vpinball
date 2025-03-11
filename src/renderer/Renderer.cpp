@@ -32,7 +32,6 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    #endif
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
-   m_BWrendering = m_table->m_settings.LoadValueWithDefault(Settings::Player, "BWRendering"s, 0);
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());
    m_toneMapper = clamp(m_toneMapper, TM_REINHARD, TM_AGX_PUNCHY);
    m_HDRforceDisableToneMapper = m_table->m_settings.LoadValueWithDefault(Settings::Player, "HDRDisableToneMapper"s, true);
@@ -132,9 +131,9 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
    const bool useNvidiaApi = m_table->m_settings.LoadValueWithDefault(Settings::Player, "UseNVidiaAPI"s, false);
    const bool disableDWM = m_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableDWM"s, false);
    const bool compressTextures = m_table->m_settings.LoadValueWithDefault(Settings::Player, "CompressTextures"s, false);
-   int nEyes = (m_stereo3D == STEREO_VR || (m_stereo3D != STEREO_OFF && !m_stereo3DfakeStereo)) ? 2 : 1;
+   const int nEyes = (m_stereo3D == STEREO_VR || (m_stereo3D != STEREO_OFF && !m_stereo3DfakeStereo)) ? 2 : 1;
    try {
-      m_renderDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, disableDWM, compressTextures, m_BWrendering, nMSAASamples, syncMode);
+      m_renderDevice = new RenderDevice(wnd, m_stereo3D == STEREO_VR, nEyes, useNvidiaApi, disableDWM, compressTextures, nMSAASamples, syncMode);
    }
    catch (...) {
       // TODO better error handling => just let the exception up ?
@@ -172,23 +171,23 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       m_renderWidth = wnd->GetWidth();
       m_renderHeight = wnd->GetHeight();
    }
-   float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
-   int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
-   int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
+   const float AAfactor = m_table->m_settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, m_table->m_settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 2.0f : 1.0f);
+   const int renderWidthAA = (int)((float)m_renderWidth * AAfactor);
+   const int renderHeightAA = (int)((float)m_renderHeight * AAfactor);
 
    if (m_renderDevice->GetOutputBackBuffer() && (m_renderDevice->GetOutputBackBuffer()->GetColorFormat() == colorFormat::RGBA10) && (m_FXAA == Quality_SMAA || m_FXAA == Standard_DLAA))
       ShowError("SMAA or DLAA post-processing AA should not be combined with 10bit-output rendering (will result in visible artifacts)!");
 
    #if defined(ENABLE_BGFX)
-      const colorFormat renderFormat = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
+      constexpr colorFormat renderFormat = colorFormat::RGB16F;
    #elif defined(ENABLE_OPENGL)
       #ifndef __OPENGLES__
-         const colorFormat renderFormat = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGB16F));
+         constexpr colorFormat renderFormat = colorFormat::RGB16F;
       #else
-         const colorFormat renderFormat = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
+         constexpr colorFormat renderFormat = colorFormat::RGBA16F;
       #endif
    #elif defined(ENABLE_DX9)
-      const colorFormat renderFormat = ((m_BWrendering == 1) ? colorFormat::RG16F : ((m_BWrendering == 2) ? colorFormat::RED16F : colorFormat::RGBA16F));
+      constexpr colorFormat renderFormat = colorFormat::RGBA16F;
    #endif
    SurfaceType rtType = m_stereo3D == STEREO_OFF 
                      || (m_stereo3D != STEREO_VR && m_stereo3DfakeStereo)
@@ -2214,8 +2213,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
                        : m_toneMapper == TM_AGX          ? SHADER_TECHNIQUE_fb_agxtonemap
                        : m_toneMapper == TM_AGX_PUNCHY   ? SHADER_TECHNIQUE_fb_agxptonemap
                        : /*m_toneMapper == TM_WCG_SPLINE ?*/ SHADER_TECHNIQUE_fb_wcgtonemap;
-   else if (m_BWrendering != 0)
-      tonemapTechnique = m_BWrendering == 1 ? SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG : SHADER_TECHNIQUE_fb_rhtonemap_no_filterR;
    else if (m_renderDevice->m_outputWnd[0]->IsWCGBackBuffer() && m_HDRforceDisableToneMapper)
       tonemapTechnique = useAO ? useAA ? SHADER_TECHNIQUE_fb_wcgtonemap_AO : SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter
                                : useAA ? SHADER_TECHNIQUE_fb_wcgtonemap    : SHADER_TECHNIQUE_fb_wcgtonemap_no_filter;

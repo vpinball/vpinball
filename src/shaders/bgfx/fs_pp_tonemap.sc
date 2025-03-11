@@ -49,17 +49,6 @@ uniform vec2 spline2;
 #define TM_OUT_LINEAR
 #endif
 
-#ifdef GRAY
-  #define rtype float
-  #define swizzle r
-#elif defined(RG)
-  #define rtype vec2
-  #define swizzle rg
-#else
-  #define rtype vec3
-  #define swizzle rgb
-#endif
-
 #ifdef NOFILTER
   #define tex_fb tex_fb_unfiltered
   SAMPLER2DSTEREO(tex_fb_unfiltered,  0); // Framebuffer
@@ -534,7 +523,7 @@ void main()
 {
    // v_texcoord0 is pixel perfect sampling which here means between the pixels resulting from supersampling (for 2x, it's in the middle of the 2 texels)
 
-   rtype result = texStereoNoLod(tex_fb, v_texcoord0).swizzle;
+   vec3 result = texStereoNoLod(tex_fb, v_texcoord0).rgb;
 
    // moving AO before tonemap does not really change the look
    #ifdef AO
@@ -542,7 +531,7 @@ void main()
    #endif
 
    BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, v_texcoord0).swizzle; //!! offset?
+      result += texStereoNoLod(tex_bloom, v_texcoord0).rgb; //!! offset?
 
    if (isHDR2020) // scale by 1/hdr_headroom (so everything that is within the displays range is now mapped to 0..1)
       result *= sceneLum_x_invDisplayMaxLum; // scale by scene luminance to get nits, then divide by display max luminance (in nits) to get a display-matching 0..1 range before tonemapping
@@ -649,24 +638,6 @@ void main()
 
    if (!isHDR2020)
    {
-   #ifdef GRAY
-      #ifdef TM_OUT_GAMMA
-         result =         saturate(FBDither(result, v_texcoord0));
-      #else
-         result = FBGamma(saturate(FBDither(result, v_texcoord0)));
-      #endif
-      gl_FragColor = vec4(result, result, result, 1.0);
-
-   #elif defined(RG)
-      //float grey = dot(result, vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5));
-      #ifdef TM_OUT_GAMMA
-         float grey =         saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)));
-      #else
-         float grey = FBGamma(saturate(dot(FBDither(result, v_texcoord0), vec2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5))));
-      #endif
-      gl_FragColor = vec4(grey, grey, grey, 1.0);
-
-   #else
       if (isLinearFrameBuffer)
       {
           #ifdef TM_OUT_GAMMA
@@ -686,17 +657,11 @@ void main()
           #endif
       }
       gl_FragColor = vec4(FBColorGrade(result), 1.0);
-   #endif
    }
 
    // WCG HDR support for DXGI, based on https://learn.microsoft.com/en-us/windows/win32/direct3darticles/high-dynamic-range
    else
    {
-   #ifdef GRAY
-      vec3 col = vec3(result,result,result); //!!
-   #elif defined(RG)
-      vec3 col = vec3(result,result.x); //!!
-   #else
       vec3 col = result;
       BRANCH if (do_color_grade)
       {
@@ -712,7 +677,6 @@ void main()
          col = InvGamma(col);
          #endif
       }
-   #endif
 
       #ifdef TM_OUT_GAMMA
       // sRGB to linear sRGB

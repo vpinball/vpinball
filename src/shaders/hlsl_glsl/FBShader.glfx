@@ -595,36 +595,6 @@ void main()
 
 
 
-////ps_main_fb_rhtonemap_no_filterRG
-
-void main()
-{
-   FS_LAYER_TO_GLOBAL;
-   float2 result = texStereoNoLod(tex_fb_unfiltered, tex0).rg;
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).rg; //!! offset?
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
-   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, tex0), float2(0.176204+0.0108109*0.5,0.812985+0.0108109*0.5)))));
-   color = float4(rg,rg,rg,1.0);
-}
-
-////ps_main_fb_rhtonemap_no_filterR
-
-void main()
-{
-   FS_LAYER_TO_GLOBAL;
-   float result = texStereoNoLod(tex_fb_unfiltered, tex0).r;
-   BRANCH if (do_bloom)
-      result += texStereoNoLod(tex_bloom, tex0).r; //!! offset?
-   const float depth0 = texStereoNoLod(tex_depth, tex0).x;
-   BRANCH if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
-   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, tex0))));
-   color = float4(gray,gray,gray,1.0);
-}
-
 //
 // Gaussian Blur Kernels
 //
@@ -1037,8 +1007,6 @@ fb_rhtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap()
 fb_rhtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_rhtonemap_AO()
 fb_rhtonemap_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filter()
 fb_rhtonemap_AO_no_filter:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_AO_no_filter()
-fb_rhtonemap_no_filterRG:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterRG()
-fb_rhtonemap_no_filterR:P0:vs_main_no_trafo():gs_main():ps_main_fb_rhtonemap_no_filterR()
 // Filmic
 fb_fmtonemap:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_fmtonemap()
 fb_fmtonemap_AO:P0:vs_main_no_trafo_subpixel():gs_main():ps_main_fb_fmtonemap_AO()

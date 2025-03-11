@@ -572,37 +572,6 @@ float4 ps_main_fb_agxtonemap_AO_no_filter(const in VS_OUTPUT_2D IN) : COLOR
 }
 
 
-
-float4 ps_main_fb_rhtonemap_no_filterRG(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float2 result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).rg;
-   BRANCH
-   if (do_bloom)
-      result += texStereoNoLod(tex_bloom, IN.tex0).rg; //!! offset?
-   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-   BRANCH
-   if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
-   const float rg = /*FBColorGrade*/(FBGamma(saturate(dot(FBDither(result, IN.tex0), float2(0.176204 + 0.0108109 * 0.5, 0.812985 + 0.0108109 * 0.5)))));
-   return float4(rg, rg, rg, 1.0);
-}
-
-float4 ps_main_fb_rhtonemap_no_filterR(const in VS_OUTPUT_2D IN) : COLOR
-{
-   float result = texStereoNoLod(tex_fb_unfiltered, IN.tex0).r;
-   BRANCH
-   if (do_bloom)
-      result += texStereoNoLod(tex_bloom, IN.tex0).r; //!! offset?
-   const float depth0 = texStereoNoLod(tex_depth, IN.tex0).x;
-   BRANCH
-   if ((depth0 != 1.0) && (depth0 != 0.0)) //!! early out if depth too large (=BG) or too small (=DMD)
-      result = ReinhardToneMap(result);
-   const float gray = /*FBColorGrade*/(FBGamma(saturate(FBDither(result, IN.tex0))));
-   return float4(gray, gray, gray, 1.0);
-}
-
-
-
 //
 // Gaussian Blur Kernels
 //
@@ -1046,9 +1015,6 @@ technique fb_agxtonemap { pass P0 { VertexShader = compile vs_3_0 vs_main_no_tra
 technique fb_agxtonemap_AO { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo_subpixel(); PixelShader = compile ps_3_0 ps_main_fb_agxtonemap_AO(); }}
 technique fb_agxtonemap_no_filter { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_fb_agxtonemap_no_filter(); }}
 technique fb_agxtonemap_AO_no_filter { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_fb_agxtonemap_AO_no_filter(); }}
-
-technique fb_rhtonemap_no_filterRG { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_fb_rhtonemap_no_filterRG(); }}
-technique fb_rhtonemap_no_filterR { pass P0 { VertexShader = compile vs_3_0 vs_main_no_trafo(); PixelShader = compile ps_3_0 ps_main_fb_rhtonemap_no_filterR(); }}
 
 // All Bloom variants:
 

@@ -236,8 +236,6 @@ Shader::TechniqueDef Shader::shaderTechniqueNames[SHADER_TECHNIQUE_COUNT] {
    SHADER_TECHNIQUE(fb_wcgtonemap_AO, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_filtered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_wcgtonemap_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_depth),
    SHADER_TECHNIQUE(fb_wcgtonemap_AO_no_filter, SHADER_w_h_height, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_color_lut, SHADER_tex_ao, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterRG, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
-   SHADER_TECHNIQUE(fb_rhtonemap_no_filterR, SHADER_bloom_dither_colorgrade, SHADER_exposure_wcg, SHADER_spline1, SHADER_spline2, SHADER_tex_fb_unfiltered, SHADER_tex_bloom, SHADER_tex_depth),
 
    SHADER_TECHNIQUE(fb_blur_horiz7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
    SHADER_TECHNIQUE(fb_blur_vert7x7, SHADER_w_h_height, SHADER_tex_fb_filtered),
@@ -1492,8 +1490,6 @@ void Shader::Load()
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_noao_nofilter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_wcg_ao_nofilter),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_rg),
-      BGFX_EMBEDDED_SHADER_ST(fs_pp_tonemap_reinhard_noao_nofilter_gray),
       // Screen Space post-processes
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_filter),
       BGFX_EMBEDDED_SHADER_ST(fs_pp_ao_nofilter),
@@ -1668,8 +1664,6 @@ void Shader::Load()
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_AO, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_ao_filter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_noao_nofilter));
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_wcgtonemap_AO_no_filter, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_wcg_ao_nofilter));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterRG, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_rg));
-      loadProgram(embeddedShaders, SHADER_TECHNIQUE_fb_rhtonemap_no_filterR, STEREO(vs_postprocess), STEREO(fs_pp_tonemap_reinhard_noao_nofilter_gray));
 
       // Ambient Occlusion and misc post process (SSR, Bloom, mirror, ...)
       loadProgram(embeddedShaders, SHADER_TECHNIQUE_AO, STEREO(vs_postprocess), STEREO(fs_pp_ssao));

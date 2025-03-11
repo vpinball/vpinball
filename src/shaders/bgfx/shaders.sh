@@ -256,7 +256,7 @@ if [ "$gen_tonemap" = true ]; then
                 variant2_lower=$(echo "$variant2" | tr '[:upper:]' '[:lower:]')
                 for variant3 in "FILTER" "NOFILTER"; do
                     variant3_lower=$(echo "$variant3" | tr '[:upper:]' '[:lower:]')
-                    for variant4 in "GRAY" "RG" "RGB"; do
+                    for variant4 in "RGB"; do
                         variant4_lower=$(echo "$variant4" | tr '[:upper:]' '[:lower:]')
                         process_shader "fs_pp_tonemap.sc" "tonemap.h" "fs_pp_tonemap_${variant_lower}_${variant2_lower}_${variant3_lower}_${variant4_lower}${st_output[$k]}" "fragment" "${stereo[$k]}" "$variant" "$variant2" "$variant3" "$variant4"
                     done

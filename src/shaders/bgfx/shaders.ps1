@@ -272,7 +272,7 @@ if ($gen_tonemap)
 		 {
 			foreach ($variant3 in @("FILTER", "NOFILTER"))
 			{
-			   foreach ($variant4 in @("GRAY", "RG", "RGB"))
+			   foreach ($variant4 in @("RGB"))
 			   {
 				  Process-Shader "fs_pp_tonemap.sc" "tonemap.h" ("fs_pp_tonemap_"  + $variant.ToLower() + "_" + $variant2.ToLower() + "_" + $variant3.ToLower() + "_" + $variant4.ToLower() + $stOutput[$k]) "fragment" @($stereo[$k], $variant, $variant2, $variant3, $variant4)
 			   }

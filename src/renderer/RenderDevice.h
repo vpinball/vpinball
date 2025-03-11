@@ -75,7 +75,7 @@ public:
 class RenderDevice final
 {
 public:
-   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disable_dwm, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode);
+   RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disable_dwm, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode);
    ~RenderDevice();
 
    void AddWindow(VPX::Window* wnd);
@@ -291,7 +291,7 @@ private:
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
    vector<Sampler*> m_pendingTextureUploads;
 
-   static bool s_screenshot;
+   static volatile bool s_screenshot;
 
 #elif defined(ENABLE_OPENGL)
 public:

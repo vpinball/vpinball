@@ -114,8 +114,8 @@ struct tBGFXCallback : public bgfx::CallbackI
             return;
          }
 
-         uint8_t* srcPixels = static_cast<uint8_t*>(pSurface->pixels);
-         uint8_t* dstPixels = static_cast<uint8_t*>(pFlipped->pixels);
+         const uint8_t* const srcPixels = static_cast<uint8_t*>(pSurface->pixels);
+               uint8_t* const dstPixels = static_cast<uint8_t*>(pFlipped->pixels);
          for (uint32_t y = 0; y < _height; y++)
             memcpy(dstPixels + (_height - 1 - y) * pFlipped->pitch, srcPixels + y * pSurface->pitch, _pitch);
 
@@ -640,7 +640,7 @@ void RenderDevice::CaptureScreenshot(const string& filename, std::function<void(
 }
 #endif
 
-RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, const int BWrendering, int nMSAASamples, VideoSyncMode& syncMode)
+RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nEyes, const bool useNvidiaApi, const bool disableDWM, const bool compressTextures, int nMSAASamples, VideoSyncMode& syncMode)
    : m_texMan(*this)
    , m_compressTextures(compressTextures)
    , m_nEyes(nEyes)

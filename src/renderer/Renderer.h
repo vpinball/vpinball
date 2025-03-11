@@ -209,8 +209,6 @@ private:
    bool m_disableAO;
    Texture m_aoDitherTexture; // loaded from assets folder
 
-   int m_BWrendering; // 0=off, 1=Black&White from RedGreen, 2=B&W from Red only
-
    bool m_ss_refl;
    bool m_vrPreviewShrink = false;
    Vertex2D m_ScreenOffset = Vertex2D(0.f, 0.f); // for screen shake effect during nudge
