@@ -732,7 +732,6 @@ target_link_libraries(vpinball PUBLIC
    SDL3_ttf
    SDL3_mixer
    freeimage
-   bass
    pinmame
    altsound
    zedmd

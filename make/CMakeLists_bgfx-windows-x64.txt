@@ -491,7 +491,6 @@ add_executable(vpinball WIN32
    third-party/include/gpuprofiler.h
    third-party/include/serial.cpp
    third-party/include/serial.h
-   third-party/include/bass.h
    third-party/include/forsyth.h
    third-party/include/freeimage.h
    third-party/include/hidapi/hidapi.h
