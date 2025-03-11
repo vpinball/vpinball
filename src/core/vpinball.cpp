@@ -204,9 +204,7 @@ void VPinball::GetMyPath()
 #endif
 
    // store 2x
-   WCHAR wzPath[MAX_PATH];
-   MultiByteToWideCharNull(CP_ACP, 0, m_szMyPath.c_str(), -1, wzPath, MAX_PATH);
-   m_wzMyPath = wzPath;
+   m_wzMyPath = MakeWString(m_szMyPath);
 }
 
 void VPinball::GetMyPrefPath()
@@ -1678,10 +1676,7 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
          // now search for filenames with & and replace with && so that these display correctly
-         const char * const ns = replace(m_recentTableList[i].c_str(), "&", "&&");
-         char recentMenuname[MAX_PATH];
-         snprintf(recentMenuname, MAX_PATH-1, "&%i  %s", (int)i+1, ns);
-         delete[] ns;
+         const string recentMenuname = string_replace_all(m_recentTableList[i], "&"s, "&&"s);
 
          // set the IDM of this menu item
          // set up the menu info block
@@ -1690,8 +1685,8 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
          menuInfo.fMask = MIIM_ID | MIIM_STRING | MIIM_STATE;
          menuInfo.fState = MFS_ENABLED;
          menuInfo.wID = RECENT_FIRST_MENU_IDM + (UINT)i;
-         menuInfo.dwTypeData = recentMenuname;
-         menuInfo.cch = (UINT)strlen(recentMenuname);
+         menuInfo.dwTypeData = recentMenuname.c_str();
+         menuInfo.cch = (UINT)recentMenuname.length();
 
          menuFile.InsertMenuItem(count, menuInfo, TRUE);
          //or: menuFile.InsertMenu(count, MF_BYPOSITION | MF_ENABLED | MF_STRING, RECENT_FIRST_MENU_IDM + (UINT)i, recentMenuname);

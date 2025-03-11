@@ -274,61 +274,6 @@ HRESULT OpenURL(const string& szURL)
 #endif
 }
 
-char* replace(const char* const original, const char* const pattern, const char* const replacement)
-{
-  const size_t replen = strlen(replacement);
-  const size_t patlen = strlen(pattern);
-  const size_t orilen = strlen(original);
-
-  size_t patcnt = 0;
-  const char * patloc;
-
-  // find how many times the pattern occurs in the original string
-  for (const char* oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
-    patcnt++;
-
-  {
-    // allocate memory for the new string
-    size_t retlen = orilen + patcnt * (replen - patlen) + 1;
-    char * const returned = new char[retlen];
-
-    //if (returned != nullptr)
-    {
-      // copy the original string, 
-      // replacing all the instances of the pattern
-      char * retptr = returned;
-      const char* oriptr;
-      for (oriptr = original; (patloc = strstr(oriptr, pattern)); oriptr = patloc + patlen)
-      {
-        const size_t skplen = patloc - oriptr;
-        // copy the section until the occurence of the pattern
-        #ifdef _MSC_VER
-        strncpy_s(retptr, retlen, oriptr, skplen);
-        retlen -= skplen;
-        #else
-        strncpy(retptr, oriptr, skplen);
-        #endif
-        retptr += skplen;
-        // copy the replacement 
-        #ifdef _MSC_VER
-        strncpy_s(retptr, retlen, replacement, replen);
-        retlen -= replen;
-        #else
-        strncpy(retptr, replacement, replen);
-        #endif
-        retptr += replen;
-      }
-      // copy the rest of the string.
-      #ifdef _MSC_VER
-      strcpy_s(retptr, retlen, oriptr);
-      #else
-      strcpy(retptr, oriptr);
-      #endif
-    }
-    return returned;
-  }
-}
-
 // Helper function for IsOnWine
 //
 // This exists such that we only check if we're on wine once, and assign the result of this function to a static const var
@@ -605,12 +550,12 @@ float string_to_float(const string& str, float default_value)
 
 string trim_string(const string& str)
 {
-   string s = str;
+   string s;
    try {
-      s = s.substr(str.find_first_not_of(" \t\r\n"), s.find_last_not_of(" \t\r\n") - s.find_first_not_of(" \t\r\n") + 1);
+      s = str.substr(str.find_first_not_of(" \t\r\n"), str.find_last_not_of(" \t\r\n") - str.find_first_not_of(" \t\r\n") + 1);
    }
    catch (...) {
-      s.clear();
+      //s.clear();
    }
    return s;
 }

@@ -91,6 +91,8 @@ void Decal::SetDefaults(const bool fromMouseClick)
       fd.fStrikethrough = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "FontStrikeThrough"s, false) : false;
 
       OleCreateFontIndirect(&fd, IID_IFont, (void **)&m_pIFont);
+      if (hr && fromMouseClick)
+         free(fd.lpstrName);
 #endif
    }
 

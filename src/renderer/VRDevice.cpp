@@ -629,21 +629,21 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
       {
          if (separator)
-            msgFlags += ",";
+            msgFlags += ',';
          msgFlags += "INFO";
          separator = true;
       }
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
       {
          if (separator)
-            msgFlags += ",";
+            msgFlags += ',';
          msgFlags += "WARN";
          separator = true;
       }
       if (messageSeverity & XR_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
       {
          if (separator)
-            msgFlags += ",";
+            msgFlags += ',';
          msgFlags += "ERROR";
       }
       return msgFlags;
@@ -662,14 +662,14 @@ XrBool32 VRDevice::OpenXRMessageCallbackFunction(XrDebugUtilsMessageSeverityFlag
       if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT)
       {
          if (separator)
-            msgFlags += ",";
+            msgFlags += ',';
          msgFlags += "SPEC";
          separator = true;
       }
       if (messageType & XR_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT)
       {
          if (separator)
-            msgFlags += ",";
+            msgFlags += ',';
          msgFlags += "PERF";
       }
       return msgFlags;

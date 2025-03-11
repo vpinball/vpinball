@@ -39,7 +39,7 @@ class PinTable;
 class PinTableMDI;
 class VPXFileFeedback;
 
-class VPinball : public CMDIDockFrame
+class VPinball final : public CMDIDockFrame
 {
 public:
     enum TIMER_IDS
@@ -192,7 +192,7 @@ public:
       m_dockNotes = nullptr;
    }
    void CreateDocker();
-   LayersListDialog *GetLayersListDialog()
+   LayersListDialog *GetLayersListDialog() const
    {
        return m_layersListDialog;
    }
@@ -295,8 +295,8 @@ private:
 
    CDockProperty *GetDefaultPropertiesDocker();
    CDockLayers *GetDefaultLayersDocker();
-   CDockToolbar* GetDefaultToolbarDocker();
-   CDockNotes* GetDefaultNotesDocker();
+   CDockToolbar *GetDefaultToolbarDocker();
+   CDockNotes *GetDefaultNotesDocker();
 
    volatile bool m_unloadingTable;
    //CMenu m_mainMenu;

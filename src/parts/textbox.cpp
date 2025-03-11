@@ -882,7 +882,7 @@ TTF_Font* Textbox::LoadFont()
 {
    TTF_Font* pFont = nullptr;
 
-   string szFontName = string_replace_all(m_szFontName, " ", string());
+   string szFontName = string_replace_all(m_szFontName, " "s, string());
 
    vector<string> styles;
    if (m_fontBold && m_fontItalic)

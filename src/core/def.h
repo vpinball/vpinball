@@ -717,8 +717,6 @@ inline bool StrCompareNoCase(const string& strA, const string& strB)
          [](char a, char b) { return cLower(a) == cLower(b); });
 }
 
-char* replace(const char* const original, const char* const pattern, const char* const replacement);
-
 /**
  * @brief Detect whether the program is running on the Wine compatibility layer
  */

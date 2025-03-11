@@ -211,7 +211,7 @@ void LightSeq::RenderSetup(RenderDevice *device)
    if (m_pcollection == nullptr)
       return;
 
-   // get the grid demensions (from the table size)
+   // get the grid dimensions (from the table size)
    const float tablewidth = m_ptable->m_right - m_ptable->m_left;
    const float tableheight = m_ptable->m_bottom - m_ptable->m_top;
 

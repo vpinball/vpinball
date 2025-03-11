@@ -164,20 +164,20 @@ void IEditable::SetName(const string& name)
     char oldName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
     WideCharToMultiByteNull(CP_ACP, 0, GetScriptable()->m_wzName, -1, oldName, sizeof(oldName), nullptr, nullptr);
 
-    WCHAR newName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
+    WCHAR newName[sizeof(oldName)];
     const WCHAR* namePtr = newName;
-    MultiByteToWideCharNull(CP_ACP, 0, name.c_str(), -1, newName, sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0]));
+    MultiByteToWideCharNull(CP_ACP, 0, name.c_str(), -1, newName, sizeof(oldName));
     const bool isEqual = (wcscmp(newName, GetScriptable()->m_wzName) == 0);
     if(!isEqual && !pt->IsNameUnique(newName))
     {
-       WCHAR uniqueName[sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0])];
+       WCHAR uniqueName[sizeof(oldName)];
        pt->GetUniqueName(newName, uniqueName, std::size(uniqueName));
        namePtr = uniqueName;
     }
     STARTUNDO
     // first update name in the codeview before updating it in the element itself
     pt->m_pcv->ReplaceName(GetScriptable(), namePtr);
-    lstrcpynW(GetScriptable()->m_wzName, namePtr, sizeof(GetScriptable()->m_wzName)/sizeof(GetScriptable()->m_wzName[0]));
+    lstrcpynW(GetScriptable()->m_wzName, namePtr, sizeof(oldName));
 #ifndef __STANDALONE__
     g_pvp->GetLayersListDialog()->UpdateElement(this);
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
