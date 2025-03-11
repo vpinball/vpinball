@@ -21,7 +21,7 @@ uniform vec4 SSR_bumpHeight_fresnelRefl_scale_FS;
 
 SAMPLER2DSTEREO(tex_fb_filtered,  0); // Framebuffer (filtered)
 SAMPLER2DSTEREO(tex_depth,        4); // DepthBuffer
-SAMPLER2D(tex_ao_dither,    5); // AO Dither
+SAMPLER2D(tex_ao_dither,    5);       // AO Dither
 
 #define tex_fb_unfiltered tex_fb_filtered
 
@@ -120,18 +120,13 @@ void main()
 	UNROLL for(int i=1; i</*=*/samples; i++) //!! due to jitter
 	{
 		const vec2 offs = u + (float(i)+ushift)*offsMul; //!! jitter per pixel (uses blue noise tex)
-		const vec3 color = texStereoNoLod(tex_fb_filtered, offs).xyz;
-
-		/*BRANCH if(i==1) // necessary special case as compiler warns/'optimizes' sqrt below into rqsrt?!
+		const vec3 col = texStereoNoLod(tex_fb_filtered, offs).xyz;
+		if (!isnan(col.r) && !isnan(col.g) && !isnan(col.b))
 		{
-			refl += color;
-		}
-		else
-		{*/
 			const float w = sqrt(float(i-1)/samples_float); //!! fake falloff for samples more far away
-			refl += color*(1.0-w); //!! dampen large color values in addition?
+			refl += col*(1.0-w); //!! dampen large color values in addition?
 			color0w += w;
-		//}
+		}
 	}
 
 	refl += color0*color0w;
