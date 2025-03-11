@@ -160,6 +160,7 @@ IndexBuffer::IndexBuffer(RenderDevice* rd, const unsigned int numIndices, const 
    , m_isStatic(!isDynamic)
    , m_size(numIndices * (format == FMT_INDEX16 ? 2 : 4))
 {
+   assert((numIndices < 65536) || (format == IndexBuffer::FMT_INDEX32));
    for (SharedIndexBuffer* block : m_rd->m_pendingSharedIndexBuffers)
    {
       if (block->m_format == m_indexFormat && block->m_isStatic == m_isStatic)
