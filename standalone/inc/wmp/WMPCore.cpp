@@ -1,9 +1,10 @@
 #include "core/stdafx.h"
 #include "WMPCore.h"
+#include "audio/pinsound.h"
 
 WMPCore::WMPCore()
 {
-   m_pAudioPlayer = new AudioPlayer();
+   m_pPinSound = new PinSound(NULL);
 
    CComObject<WMPControls>::CreateInstance(&m_pControls);
    m_pControls->AddRef();
@@ -21,14 +22,14 @@ WMPCore::~WMPCore()
    m_pControls->Release();
    m_pSettings->Release();
 
-   delete m_pAudioPlayer;
+   delete m_pPinSound;
 }
 
 STDMETHODIMP WMPCore::close()
 {
    PLOGI.printf("player=%p, close", this);
 
-   m_pAudioPlayer->MusicClose();
+   m_pPinSound->MusicClose();
 
    m_szURL.clear();
    m_playState = wmppsUndefined;
@@ -51,7 +52,7 @@ STDMETHODIMP WMPCore::put_URL(BSTR pbstrURL)
 
    PLOGI.printf("player=%p, URL=%s", this, m_szURL.c_str());
 
-   if (m_pAudioPlayer->SetMusicFile(m_szURL))
+   if (m_pPinSound->SetMusicFile(m_szURL))
       m_playState = wmppsReady;
    else
       m_playState = wmppsUndefined;
@@ -64,7 +65,7 @@ STDMETHODIMP WMPCore::get_openState(WMPOpenState *pwmpos) { return E_NOTIMPL; }
 STDMETHODIMP WMPCore::get_playState(WMPPlayState *pwmpps)
 {
    if (m_playState != wmppsUndefined)
-      m_playState = m_pAudioPlayer->MusicActive() ? wmppsPlaying : wmppsStopped;
+      m_playState = m_pPinSound->MusicActive() ? wmppsPlaying : wmppsStopped;
 
    *pwmpps = m_playState;
 

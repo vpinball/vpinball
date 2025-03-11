@@ -77,8 +77,6 @@ set(VPINBALL_SOURCES
 
    src/audio/mixer.cpp
    src/audio/mixer.h
-   src/audio/audioplayer.cpp
-   src/audio/audioplayer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 
@@ -732,6 +730,7 @@ target_link_libraries(vpinball PUBLIC
    SDL3
    SDL3_image
    SDL3_ttf
+   SDL3_mixer
    freeimage
    bass
    pinmame

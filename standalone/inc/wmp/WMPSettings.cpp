@@ -41,7 +41,7 @@ STDMETHODIMP WMPSettings::put_volume(LONG plVolume)
 
    PLOGI.printf("player=%p, volume=%ld", this, plVolume);
 
-   m_pCore->m_pAudioPlayer->MusicVolume(plVolume/100.);
+   m_pCore->m_pPinSound->MusicVolume(plVolume/100.);
 
    return S_OK;
 }

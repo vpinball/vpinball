@@ -12,6 +12,7 @@
 #include "plugins/CorePlugin.h"
 #include "ResURIResolver.h"
 #include "ScoreView.h"
+#include "audio/pinsound.h"
 
 #define DEFAULT_PLAYER_WIDTH 1024
 #define DEFAULT_PLAYER_FS_WIDTH 1920
@@ -463,7 +464,7 @@ public:
    bool m_PlaySound;
    int m_MusicVolume;
    int m_SoundVolume;
-   AudioPlayer *m_audio = nullptr;
+   PinSound *m_audio = nullptr;
 #pragma endregion
 
    vector<CLSID*> m_controlclsidsafe; // ActiveX control types which have already been okayed as being safe
@@ -553,7 +554,7 @@ private:
 private:
    static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
    unsigned int m_onAudioUpdatedMsgId;
-   robin_hood::unordered_flat_map<uint64_t, AudioPlayer*> m_externalAudioPlayers;
+   robin_hood::unordered_flat_map<uint64_t, PinSound*> m_externalAudioPlayers;
 
 
 public:
