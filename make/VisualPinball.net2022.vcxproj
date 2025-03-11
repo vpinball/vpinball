@@ -1860,7 +1860,6 @@
     <ClInclude Include="src/utils/eventproxy.h" />
     <ClInclude Include="src/utils/fileio.h" />
     <ClInclude Include="src/utils/hash.h" />
-    <ClInclude Include="src/utils/helpers.h" />
     <ClInclude Include="src/utils/Logger.h" />
     <ClInclude Include="src/utils/lzwreader.h" />
     <ClInclude Include="src/utils/lzwwriter.h" />

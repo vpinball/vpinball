@@ -136,16 +136,15 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 {
    PCHAR*  argv;
    PCHAR   _argv;
-   int  len;
-   ULONG   argc;
+   int     argc;
    CHAR    a;
    size_t  i, j;
 
-   BOOLEAN  in_QM;
-   BOOLEAN  in_TEXT;
-   BOOLEAN  in_SPACE;
+   bool in_QM;
+   bool in_TEXT;
+   bool in_SPACE;
 
-   len = lstrlen(CmdLine);
+   const int len = lstrlen(CmdLine);
    i = ((len + 2) / 2) * sizeof(PVOID) + sizeof(PVOID);
 
    argv = (PCHAR*)malloc(i + (len + 2) * sizeof(CHAR));
@@ -153,16 +152,16 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 
    argc = 0;
    argv[argc] = _argv;
-   in_QM = FALSE;
-   in_TEXT = FALSE;
-   in_SPACE = TRUE;
+   in_QM = false;
+   in_TEXT = false;
+   in_SPACE = true;
    i = 0;
    j = 0;
 
    while ((a = CmdLine[i])) {
       if (in_QM) {
          if (a == '\"') {
-            in_QM = FALSE;
+            in_QM = false;
          }
          else {
             _argv[j] = a;
@@ -172,13 +171,13 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
       else {
          switch (a) {
          case '\"':
-            in_QM = TRUE;
-            in_TEXT = TRUE;
+            in_QM = true;
+            in_TEXT = true;
             if (in_SPACE) {
                argv[argc] = _argv + j;
                argc++;
             }
-            in_SPACE = FALSE;
+            in_SPACE = false;
             break;
          case ' ':
          case '\t':
@@ -188,18 +187,18 @@ PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
                _argv[j] = '\0';
                j++;
             }
-            in_TEXT = FALSE;
-            in_SPACE = TRUE;
+            in_TEXT = false;
+            in_SPACE = true;
             break;
          default:
-            in_TEXT = TRUE;
+            in_TEXT = true;
             if (in_SPACE) {
                argv[argc] = _argv + j;
                argc++;
             }
             _argv[j] = a;
             j++;
-            in_SPACE = FALSE;
+            in_SPACE = false;
             break;
          }
       }
@@ -1021,7 +1020,7 @@ public:
       if (GetModuleFileName(m_vpinball.theInstance, szFileName, MAXSTRING))
       {
          ITypeLib *ptl = nullptr;
-         MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName);
+         MAKE_WIDEPTR_FROMANSI(wszFileName, szFileName, lstrlen(szFileName));
          if (SUCCEEDED(LoadTypeLib(wszFileName, &ptl)))
          {
             // first try to register system-wide (if running as admin)

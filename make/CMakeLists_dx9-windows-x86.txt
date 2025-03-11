@@ -469,7 +469,6 @@ add_executable(vpinball WIN32
    src/utils/def.cpp
    src/utils/wintimer.cpp
    src/utils/wintimer.h
-   src/utils/helpers.h
    src/utils/memutil.cpp
    src/utils/memutil.h
    src/utils/StackTrace.cpp

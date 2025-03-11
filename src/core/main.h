@@ -280,8 +280,6 @@ class SCNotification final { };
 #include "standalone/inc/win32xx/win32xx.h"
 #endif
 
-#include "utils/helpers.h"
-
 #ifdef __STANDALONE__
 #include <cstdint>
 #endif

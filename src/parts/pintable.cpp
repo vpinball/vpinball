@@ -2623,7 +2623,7 @@ HRESULT PinTable::Save(const bool saveAs)
       g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, szInitialDir);
 
       {
-         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
+         MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
 
          STGOPTIONS stg;
          stg.usVersion = 1;
@@ -2648,7 +2648,7 @@ HRESULT PinTable::Save(const bool saveAs)
       char * const ptr = StrStrI(m_szFileName.c_str(), ".vpt");
       if (ptr != nullptr)
          strcpy_s(ptr, 5, ".vpx");
-      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
+      MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
 
       STGOPTIONS stg;
       stg.usVersion = 1;
@@ -2797,7 +2797,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             for (size_t i = 0; i < m_vedit.size(); i++)
             {
                const string szStmName = "GameItem" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2818,7 +2818,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             for (size_t i = 0; i < m_vsound.size(); i++)
             {
                const string szStmName = "Sound" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2834,7 +2834,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             for (size_t i = 0; i < m_vimage.size(); i++)
             {
                const string szStmName = "Image" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2850,7 +2850,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             for (size_t i = 0; i < m_vfont.size(); i++)
             {
                const string szStmName = "Font" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -2866,7 +2866,7 @@ HRESULT PinTable::SaveToStorage(IStorage *pstgRoot, VPXFileFeedback& feedback)
             for (int i = 0; i < m_vcollection.size(); i++)
             {
                const string szStmName = "Collection" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                if (SUCCEEDED(hr = pstgData->CreateStream(wszStmName, STGM_DIRECT | STGM_READWRITE | STGM_SHARE_EXCLUSIVE | STGM_CREATE, 0, 0, &pstmItem)))
                {
@@ -3656,7 +3656,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
    if (!szINIFilename.empty())
       m_settings.LoadFromFile(szINIFilename, false);
 
-   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str());
+   MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
    HRESULT hr;
    IStorage* pstgRoot;
    if (FAILED(hr = StgOpenStorage(wszCodeFile, nullptr, STGM_TRANSACTED | STGM_READ, nullptr, 0, &pstgRoot)))
@@ -3780,7 +3780,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             for (int i = 0; i < csubobj; i++)
             {
                const string szStmName = "GameItem" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3810,7 +3810,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             for (int i = 0; i < csounds; i++)
             {
                const string szStmName = "Sound" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3834,7 +3834,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                {
                   pool.enqueue([i, &feedback, loadfileversion, pstgData, this, &count, ctextures] {
                      const string szStmName = "Image" + std::to_string(i);
-                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+                     MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                      IStream* pstmItem;
                      HRESULT hr;
@@ -3864,7 +3864,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   continue;
 
                const string szStmName = "Image" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
                IStream *pstmItem;
                if (FAILED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
                {
@@ -3927,7 +3927,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             for (int i = 0; i < cfonts; i++)
             {
                const string szStmName = "Font" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))
@@ -3947,7 +3947,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             for (int i = 0; i < ccollection; i++)
             {
                const string szStmName = "Collection" + std::to_string(i);
-               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str());
+               MAKE_WIDEPTR_FROMANSI(wszStmName, szStmName.c_str(), szStmName.length());
 
                IStream* pstmItem;
                if (SUCCEEDED(hr = pstgData->OpenStream(wszStmName, nullptr, STGM_DIRECT | STGM_READ | STGM_SHARE_EXCLUSIVE, 0, &pstmItem)))

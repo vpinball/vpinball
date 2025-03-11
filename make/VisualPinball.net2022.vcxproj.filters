@@ -1331,9 +1331,6 @@
     <ClInclude Include="src/utils/hash.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/helpers.h">
-      <Filter>utils</Filter>
-    </ClInclude>
     <ClInclude Include="src/utils/ushock_output.h">
       <Filter>utils</Filter>
     </ClInclude>

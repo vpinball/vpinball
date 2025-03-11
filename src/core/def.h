@@ -584,10 +584,10 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
 float sz2f(const string& sz);
 string f2sz(const float f);
 
-void WideStrNCopy(const WCHAR *wzin, WCHAR *wzout, const size_t wzoutMaxLen);
-int WideStrCmp(const WCHAR *wz1, const WCHAR *wz2);
+void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
+int WideStrCmp(const WCHAR* wz1, const WCHAR* wz2);
 void WideStrCat(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
-int WzSzStrCmp(const WCHAR *wz1, const char *sz2);
+int WzSzStrCmp(const WCHAR* wz1, const char* sz2);
 int WzSzStrNCmp(const WCHAR* wz1, const char* sz2, const size_t maxComparisonLen);
 
 HRESULT OpenURL(const string& szURL);
@@ -631,6 +631,45 @@ inline int MultiByteToWideCharNull(
         lpWideCharStr[cchWideChar-1] = L'\0';
     return res;
 }
+
+
+//---------------------------------------------------------------------------
+// Allocates a temporary buffer that will disappear when it goes out of scope
+// NOTE: Be careful of that-- make sure you use the string in the same or
+// nested scope in which you created this buffer.  People should not use this
+// class directly; use the macro(s) below.
+//---------------------------------------------------------------------------
+class TempBuffer final
+{
+public:
+   TempBuffer(const size_t cb)
+   {
+      m_alloc = (cb > 256);
+      if (m_alloc)
+         m_pbBuf = new char[cb];
+      else
+         m_pbBuf = m_szBufT;
+   }
+   ~TempBuffer()
+   {
+      if (m_alloc) delete[] m_pbBuf;
+   }
+   char *GetBuffer() const
+   {
+      return m_pbBuf;
+   }
+
+private:
+   char *m_pbBuf;
+   char  m_szBufT[256];  // We'll use this temp buffer for small cases.
+   bool  m_alloc;
+};
+// NOTE: Be careful about scoping when using this macro!
+#define MAKE_WIDEPTR_FROMANSI(ptrname, pszAnsi, pszAnsiLength) \
+    TempBuffer __TempBuffer##ptrname(((pszAnsiLength) + 1) * (int)sizeof(WCHAR)); \
+    MultiByteToWideCharNull(CP_ACP, 0, pszAnsi, -1, (LPWSTR)__TempBuffer##ptrname.GetBuffer(), (int)(pszAnsiLength) + 1); \
+    const LPWSTR ptrname = (LPWSTR)__TempBuffer##ptrname.GetBuffer()
+
 
 constexpr inline char cLower(char c)
 {
