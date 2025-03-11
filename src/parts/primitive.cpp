@@ -1132,7 +1132,7 @@ void Primitive::RenderSetup(RenderDevice *device)
       {
          m_groupdRendering = true;
 
-         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size), overall_size < 65536 ? IndexBuffer::FMT_INDEX16 : IndexBuffer::FMT_INDEX32);
+         IndexBuffer *indexBuffer = new IndexBuffer(m_rd, static_cast<unsigned int>(overall_size), false, overall_size < 65536 ? IndexBuffer::FMT_INDEX16 : IndexBuffer::FMT_INDEX32);
          void *indices;
          indexBuffer->Lock(indices);
          m_numGroupVertices = 0;
