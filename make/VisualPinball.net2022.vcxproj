@@ -1122,7 +1122,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src/audio/mixer.cpp" />
-    <ClCompile Include="src/audio/audioplayer.cpp" />
     <ClCompile Include="src/audio/pinsound.cpp" />
     <ClCompile Include="src/audio/wavread.cpp" />
     <ClCompile Include="src/core/stdafx.cpp">
@@ -1653,7 +1652,6 @@
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="src/audio/mixer.h" />
-    <ClInclude Include="src/audio/audioplayer.h" />
     <ClInclude Include="src/audio/pinsound.h" />
     <ClInclude Include="src/audio/wavread.h" />
     <ClInclude Include="src/core/def.h" />

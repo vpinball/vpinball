@@ -135,9 +135,6 @@
     <ClCompile Include="src/audio/mixer.cpp">
       <Filter>audio</Filter>
     </ClCompile>
-    <ClCompile Include="src/audio/audioplayer.cpp">
-      <Filter>audio</Filter>
-    </ClCompile>
     <ClCompile Include="src/audio/pinsound.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -712,9 +709,6 @@
   <ItemGroup>
     <ClInclude Include="vpinball.h">
       <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="src/audio/audioplayer.h">
-      <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/pinsound.h">
       <Filter>audio</Filter>
@@ -1366,9 +1360,6 @@
     </ClInclude>
     <ClInclude Include="src/utils/wintimer.h">
       <Filter>utils</Filter>
-    </ClInclude>
-    <ClInclude Include="third-party/include/bass.h">
-      <Filter>third-party</Filter>
     </ClInclude>
     <ClInclude Include="third-party/include/freeimage.h">
       <Filter>third-party</Filter>

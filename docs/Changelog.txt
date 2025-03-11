@@ -43,6 +43,10 @@ FIXES:
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
 
+- SDL2 code was updated and modernized to SDL3
+
+- the BASS sound engine was replaced/unified with SDL3(_mixer)
+
 - DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)
