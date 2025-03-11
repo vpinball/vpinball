@@ -49,10 +49,10 @@ import org.vpinball.app.data.entity.PinTable
 import org.vpinball.app.jni.VPinballLogLevel
 import org.vpinball.app.ui.screens.common.RoundedCard
 import org.vpinball.app.ui.theme.VpxRed
-import org.vpinball.app.util.deleteArtwork
+import org.vpinball.app.util.resetImage
 import org.vpinball.app.util.resetIni
 import org.vpinball.app.util.resizeWithAspectFit
-import org.vpinball.app.util.saveArtwork
+import org.vpinball.app.util.updateImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -94,7 +94,7 @@ fun TablesList(
                                 newWidth = VPinballManager.getDisplaySize().width,
                                 newHeight = VPinballManager.getDisplaySize().height,
                             )
-                        currentTable!!.saveArtwork(resizedBitmap)
+                        currentTable!!.updateImage(resizedBitmap)
                         onChangeArtwork(currentTable!!)
                     } catch (e: Exception) {
                         VPinballManager.log(VPinballLogLevel.ERROR, "Unable to change artwork: ${e.message}")
@@ -274,7 +274,7 @@ fun TablesList(
                     TextButton(
                         onClick = {
                             showChangeArtworkSheet = false
-                            currentTable!!.deleteArtwork()
+                            currentTable!!.resetImage()
                             onChangeArtwork(currentTable!!)
                         },
                         modifier = Modifier.fillMaxWidth(),

@@ -9,9 +9,6 @@ class PinTable {
     var name: String
     var path: String
 
-    @Attribute(.externalStorage)
-    var imageData: Data?
-
     var createdAt: Date = Date()
     var lastUpdate: Date = Date()
 
@@ -42,7 +39,7 @@ class PinTable {
     }
 
     @Transient var uiImage: UIImage? {
-        return imageData != nil ? UIImage(data: imageData!) : nil
+        return hasImage() ? UIImage(contentsOfFile: imagePath) : nil
     }
 
     @Transient var baseURL: URL {
@@ -79,6 +76,14 @@ class PinTable {
         return iniURL.path
     }
 
+    @Transient var imageURL: URL {
+        return fullURL.deletingPathExtension().appendingPathExtension("jpg")
+    }
+
+    @Transient var imagePath: String {
+        return imageURL.path
+    }
+
     func exists() -> Bool {
         return FileManager.default.fileExists(atPath: fullPath)
     }
@@ -91,13 +96,49 @@ class PinTable {
         return FileManager.default.fileExists(atPath: iniPath)
     }
 
-    func update(context: ModelContext) {
-        lastUpdate = Date()
-        try? context.save()
+    func hasImage() -> Bool {
+        return FileManager.default.fileExists(atPath: imagePath)
     }
 }
 
 extension PinTable {
+    static func create(table: PinTable) {
+        if let modelContext = VPinballManager.shared.modelContext {
+            modelContext.insert(table)
+            try? modelContext.save()
+        }
+    }
+
+    static func delete(table: PinTable) {
+        try? FileManager.default.removeItem(at: table.baseURL)
+        if let modelContext = VPinballManager.shared.modelContext {
+            modelContext.delete(table)
+            try? modelContext.save()
+        }
+    }
+
+    static func updateName(table: PinTable, name: String) {
+        table.name = name
+        update(table: table)
+    }
+
+    static func updateImage(table: PinTable, data: Data) {
+        try? data.write(to: table.imageURL)
+        update(table: table)
+    }
+
+    static func resetImage(table: PinTable) {
+        try? FileManager.default.removeItem(at: table.imageURL)
+        update(table: table)
+    }
+
+    static func update(table: PinTable) {
+        if let modelContext = VPinballManager.shared.modelContext {
+            table.lastUpdate = Date()
+            try? modelContext.save()
+        }
+    }
+
     static func predicate(
         searchText: String
     ) -> Predicate<PinTable> {

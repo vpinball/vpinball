@@ -1,6 +1,5 @@
 package org.vpinball.app
 
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.RelativeLayout
@@ -18,7 +17,6 @@ import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.libsdl.app.SDLActivity
 import org.vpinball.app.ui.VPinballContent
 import org.vpinball.app.util.FileUtils
-import org.vpinball.app.util.captureBitmap
 
 class VPinballActivity : SDLActivity() {
     val viewModel: VPinballViewModel by viewModel<VPinballViewModel>()
@@ -55,23 +53,6 @@ class VPinballActivity : SDLActivity() {
         }
     }
 
-    fun captureBitmap(callback: (Bitmap?) -> Unit) {
-        mSurface.captureBitmap(callback)
-    }
-
     override fun getLibraries(): Array<String> =
-        arrayOf(
-            "SDL3",
-            "SDL3_image",
-            "SDL3_ttf",
-            "SDL3_mixer",
-            "freeimage",
-            "bass",
-            "pinmame",
-            "altsound",
-            "dmdutil",
-            "dof",
-            "pupdmd",
-            "vpinball",
-        )
+        arrayOf("SDL3", "SDL3_image", "SDL3_ttf", "SDL3_mixer", "freeimage", "bass", "pinmame", "altsound", "dmdutil", "dof", "pupdmd", "vpinball")
 }

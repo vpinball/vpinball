@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlin.time.Duration.Companion.milliseconds
@@ -33,6 +34,9 @@ class VPinballViewModel(private val repository: PinTableRepository) : ViewModel(
 
     var status = mutableStateOf("")
         private set
+
+    var artworkImage by mutableStateOf<ImageBitmap?>(null)
+    var instructionsImage by mutableStateOf<ImageBitmap?>(null)
 
     init {
         viewModelScope.launch {

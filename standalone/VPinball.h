@@ -52,7 +52,6 @@ typedef enum {
    VPINBALL_EVENT_LOADING_COLLECTIONS,
    VPINBALL_EVENT_PLAYER_STARTING,
    VPINBALL_EVENT_WINDOW_CREATED,
-   VPINBALL_EVENT_METAL_LAYER_IOS,
    VPINBALL_EVENT_PRERENDERING,
    VPINBALL_EVENT_PLAYER_STARTED,
    VPINBALL_EVENT_RUMBLE,
@@ -62,7 +61,8 @@ typedef enum {
    VPINBALL_EVENT_PLAYER_CLOSING,
    VPINBALL_EVENT_PLAYER_CLOSED,
    VPINBALL_EVENT_STOPPED,
-   VPINBALL_EVENT_WEB_SERVER
+   VPINBALL_EVENT_WEB_SERVER,
+   VPINBALL_EVENT_CAPTURE_SCREENSHOT
 } VPINBALL_EVENT;
 
 typedef struct {
@@ -90,6 +90,10 @@ typedef struct {
 typedef struct {
    const char* pUrl;
 } VPinballWebServerData;
+
+typedef struct {
+   int success;
+} VPinballCaptureScreenshotData;
 
 typedef struct {
    float globalEmissionScale;
@@ -174,3 +178,4 @@ VPINBALLAPI void VPinballSetViewSetup(VPinballViewSetup* pViewSetup);
 VPINBALLAPI void VPinballSetDefaultViewSetup();
 VPINBALLAPI void VPinballResetViewSetup();
 VPINBALLAPI void VPinballSaveViewSetup();
+VPINBALLAPI void VPinballCaptureScreenshot(const char* pFilename);

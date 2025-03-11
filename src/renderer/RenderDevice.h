@@ -280,11 +280,18 @@ public:
    bx::Semaphore m_frameReadySem; // Semaphore to signal when a frame is ready to be submitted
    std::mutex m_frameMutex; // Mutex to lock acces to retained render frame between logic thread and render thread
 
+   void CaptureScreenshot(const string& filename, std::function<void(bool)> callback);
+
+   static string s_screenshotFilename;
+   static std::function<void(bool)> s_screenshotCallback;
+
 private:
    bool m_renderDeviceAlive;
    std::thread m_renderThread;
    static void RenderThread(RenderDevice* rd, const bgfx::Init& init);
    vector<Sampler*> m_pendingTextureUploads;
+
+   static bool s_screenshot;
 
 #elif defined(ENABLE_OPENGL)
 public:

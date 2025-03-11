@@ -282,3 +282,8 @@ VPINBALLAPI void VPinballSaveViewSetup()
    return s_vpinstance.SaveViewSetup();
 }
 
+VPINBALLAPI void VPinballCaptureScreenshot(const char* pFilename)
+{
+   return s_vpinstance.CaptureScreenshot(pFilename);
+}
+

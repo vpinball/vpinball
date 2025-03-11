@@ -320,7 +320,6 @@ enum VPinballEvent: CInt {
     case loadingCollections
     case playerStarting
     case windowCreated
-    case metalLayerIOS
     case prerendering
     case playerStarted
     case rumble
@@ -331,6 +330,7 @@ enum VPinballEvent: CInt {
     case playerClosed
     case stopped
     case webServer
+    case captureScreenshot
 
     var name: String? {
         switch self {
@@ -472,6 +472,7 @@ struct VPinballProgressData {
 
 struct VPinballWindowCreatedData {
     var window: Unmanaged<UIWindow>?
+    var title: UnsafePointer<CChar>?
 }
 
 struct VPinballScriptErrorData {
@@ -489,6 +490,10 @@ struct VPinballRumbleData {
 
 struct VPinballWebServerData {
     var url: UnsafePointer<CChar>?
+}
+
+struct VPinballCaptureScreenshotData {
+    var success: CBool
 }
 
 struct VPinballTableOptions {
@@ -645,3 +650,6 @@ func VPinballSaveViewSetup()
 
 @_silgen_name("VPinballToggleFPS")
 func VPinballToggleFPS()
+
+@_silgen_name("VPinballCaptureScreenshot")
+func VPinballCaptureScreenshot(_ filename: UnsafePointer<CChar>)

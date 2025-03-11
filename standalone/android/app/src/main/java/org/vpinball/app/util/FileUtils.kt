@@ -14,6 +14,8 @@ import java.io.InputStream
 object FileUtils {
     private const val TAG = "FileUtils"
 
+    private const val MAX_BUF_SIZE = 8192
+
     @Throws(IOException::class)
     fun copyAssets(assetManager: AssetManager, srcDir: String, dstDir: File?) {
         val files = assetManager.list(srcDir) ?: emptyArray()
@@ -37,8 +39,6 @@ object FileUtils {
             }
         }
     }
-
-    private const val MAX_BUF_SIZE = 8192
 
     @Throws(IOException::class)
     fun copyFile(inputStream: InputStream, dstFile: File, onProgress: (progress: Int) -> Unit = {}) {

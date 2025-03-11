@@ -1,7 +1,7 @@
 package org.vpinball.app
 
 import android.content.Context
-import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.os.VibrationEffect
@@ -9,6 +9,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import android.util.Size
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 import java.util.UUID
@@ -16,9 +17,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.vpinball.app.data.entity.PinTable
+import org.vpinball.app.jni.VPinballCaptureScreenshotData
 import org.vpinball.app.jni.VPinballCustomTableOption
 import org.vpinball.app.jni.VPinballEvent
 import org.vpinball.app.jni.VPinballGfxBackend
@@ -36,11 +37,18 @@ import org.vpinball.app.jni.VPinballViewSetup
 import org.vpinball.app.jni.VPinballWebServerData
 import org.vpinball.app.util.FileUtils
 import org.vpinball.app.util.basePath
-import org.vpinball.app.util.hasArtwork
-import org.vpinball.app.util.saveArtwork
+import org.vpinball.app.util.hasImage
+import org.vpinball.app.util.imageFile
+import org.vpinball.app.util.loadImage
 import org.vpinball.app.util.tableFile
 
 object VPinballManager {
+    enum class ScreenshotMode(val value: Int) {
+        INSTRUCTIONS(0),
+        ARTWORK(1),
+        QUIT(2),
+    }
+
     private const val TAG = "VPinballManager"
 
     private var vpinballJNI: VPinballJNI = VPinballJNI()
@@ -53,8 +61,8 @@ object VPinballManager {
 
     private var activeTable: PinTable? = null
     private var haptics = false
-
     private var error: String? = null
+    private var screenshotMode: ScreenshotMode? = null
 
     fun initialize(activity: VPinballActivity) {
         this.activity = activity
@@ -135,10 +143,6 @@ object VPinballManager {
                 VPinballEvent.LIVE_UI_UPDATE -> {}
                 VPinballEvent.PLAYER_CLOSING -> {
                     log(VPinballLogLevel.INFO, "event=${event.name}")
-                    if (error == null) {
-                        runBlocking { delay(500) }
-                        captureAndSaveBitmap()
-                    }
                 }
                 VPinballEvent.PLAYER_CLOSED -> {
                     log(VPinballLogLevel.INFO, "event=${event.name}")
@@ -158,6 +162,20 @@ object VPinballManager {
                     val webServerData = data as? VPinballWebServerData
                     log(VPinballLogLevel.INFO, "event=${event.name}, data=${webServerData}")
                     webServerData?.let { CoroutineScope(Dispatchers.Main).launch { viewModel.webServerURL = webServerData.url } }
+                }
+                VPinballEvent.CAPTURE_SCREENSHOT -> {
+                    val captureScreenshotData = data as? VPinballCaptureScreenshotData
+                    log(VPinballLogLevel.INFO, "event=${event.name}, data=$captureScreenshotData")
+
+                    when (screenshotMode) {
+                        ScreenshotMode.INSTRUCTIONS ->
+                            viewModel.instructionsImage = BitmapFactory.decodeFile(File(cacheDir, "haze-bg.jpg").absolutePath)?.asImageBitmap()
+
+                        ScreenshotMode.ARTWORK -> viewModel.artworkImage = activeTable?.loadImage()
+
+                        ScreenshotMode.QUIT -> stop()
+                        else -> {}
+                    }
                 }
                 else -> {
                     log(VPinballLogLevel.WARN, "event=${event}")
@@ -197,27 +215,6 @@ object VPinballManager {
                 }
             vibrator.vibrate(VibrationEffect.createOneShot(15, amplitude))
         }
-    }
-
-    fun captureBitmap(callback: (Bitmap?) -> Unit) {
-        activity.captureBitmap { bitmap -> callback(bitmap) }
-    }
-
-    private fun captureAndSaveBitmap() {
-        activeTable?.let { table ->
-            if (table.hasArtwork()) {
-                return
-            }
-            captureBitmap { bitmap ->
-                if (bitmap != null) {
-                    saveBitmap(bitmap)
-                }
-            }
-        }
-    }
-
-    fun saveBitmap(bitmap: Bitmap) {
-        activeTable?.saveArtwork(bitmap)
     }
 
     private fun setIniDefaults() {
@@ -335,6 +332,22 @@ object VPinballManager {
 
     fun saveViewSetup() {
         vpinballJNI.VPinballSaveViewSetup()
+    }
+
+    fun hasScreenshot(): Boolean {
+        return activeTable?.hasImage() ?: false
+    }
+
+    fun captureScreenshot(mode: ScreenshotMode) {
+        activeTable?.let { table ->
+            screenshotMode = mode
+            val path =
+                when (mode) {
+                    ScreenshotMode.INSTRUCTIONS -> File(cacheDir, "haze-bg.jpg").absolutePath
+                    else -> table.imageFile.absolutePath
+                }
+            vpinballJNI.VPinballCaptureScreenshot(path)
+        }
     }
 
     //

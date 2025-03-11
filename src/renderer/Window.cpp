@@ -235,11 +235,6 @@ Window::Window(const string &title, const Settings::Section section, const strin
       m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
       m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
 
-#ifdef __LIBVPINBALL__
-      VPinballLib::WindowCreatedData windowCreatedData = { (void*)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_UIKIT_WINDOW_POINTER, NULL), title.c_str() };
-      VPinballLib::VPinball::SendEvent(VPinballLib::Event::WindowCreated, &windowCreatedData);
-#endif
-
       const SDL_DisplayMode* mode;
 
       if (m_fullscreen)
