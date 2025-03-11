@@ -394,5 +394,3 @@ for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresampl
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
-
-cp bass/libs/x86_64/libbass.so ../../../third-party/runtime-libs/linux-x64

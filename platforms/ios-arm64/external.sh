@@ -421,5 +421,3 @@ for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresampl
    mkdir -p ../../../third-party/include/${LIB}
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
-
-cp bass/libbass.dylib ../../../third-party/runtime-libs/ios-arm64

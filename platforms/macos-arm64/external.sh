@@ -411,4 +411,3 @@ for LIB in libavcodec libavdevice libavfilter libavformat libavutil libswresampl
    cp ffmpeg/ffmpeg/${LIB}/*.h ../../../third-party/include/${LIB}
 done
 
-cp bass/libbass.dylib ../../../third-party/runtime-libs/macos-arm64
