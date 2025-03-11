@@ -155,12 +155,12 @@ void PinSound::UnInitialize()
       Mix_FreeChunk(m_pMixChunkOrg);
       m_pMixChunkOrg = nullptr;
    }
-   if(m_pMixMusic != nullptr) 
+   if(m_pMixMusic != nullptr)
    {
       Mix_FreeMusic(m_pMixMusic);
       m_pMixMusic = nullptr;
    }
-   if (m_pstream) 
+   if (m_pstream)
    {
       SDL_DestroyAudioStream(m_pstream);
       m_pstream = nullptr;
@@ -253,7 +253,7 @@ void PinSound::Play(const float volume, const float randompitch, const int pitch
    // Clamp volume
    constexpr float minVol = .08f;  // some table sounds like rolling are extremely low.  Set a minimum or you cant hear it.
    float nVolume = clamp(volume+minVol, 0.0f, 1.0f);
-  
+
    // BG Sound is handled differently then table sounds.  These are BG sounds stored in the table (vpx file).
    if (m_outputTarget == SNDOUT_BACKGLASS)
    {
@@ -342,7 +342,7 @@ void PinSound::PlayBGSound(float nVolume, const int loopcount, const bool usesam
          Mix_Volume(m_assignedChannel, (int)nVolume);
          Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
       }
-   } 
+   }
    else { // not playing
       Mix_Volume(m_assignedChannel, (int)nVolume);
       Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
@@ -1148,7 +1148,7 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
          float* const samples = static_cast<float*>(stream);
          const int total_samples = len / (int)sizeof(float);
          const int channels = med->outputChannels;
-      
+
          //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
          calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
 
@@ -1194,7 +1194,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          int16_t* const samples = static_cast<int16_t*>(stream);
          const int total_samples = len / (int)sizeof(int16_t);
          const int channels = med->outputChannels;
- 
+
          calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
 
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
@@ -1358,13 +1358,13 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
                samples[index + 5] = (samples[index+1]); // Copy FR to BR
                samples[index + 6] = (samples[index]);   // Copy FL to SL
                samples[index + 7] = (samples[index+1]); // Copy FR to SR
-         
+
                // Apply volume gains to back and side channels
                samples[index + 4] = (samples[index+4] * rearLeft);  // BL
                samples[index + 5] = (samples[index+5] * rearRight); // BR
                samples[index + 6] = (samples[index+6] * sideLeft);  // SL
                samples[index + 7] = (samples[index+7] * sideRight); // SR
-               
+
                // wipe front channels
                samples[index]   = 0;
                samples[index+1] = 0;
@@ -1387,13 +1387,13 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
                samples[index + 5] = (samples[index+1]); // Copy FR to BR
                samples[index + 6] = (samples[index]);   // Copy FL to SL
                samples[index + 7] = (samples[index+1]); // Copy FR to SR
-         
+
                // Apply volume gains to back and side channels
                samples[index + 4] = (samples[index+4] * rearLeft);  // BL
                samples[index + 5] = (samples[index+5] * rearRight); // BR
                samples[index + 6] = (samples[index+6] * sideLeft);  // SL
                samples[index + 7] = (samples[index+7] * sideRight); // SR
-               
+
                // wipe front channels
                samples[index]   = 0;
                samples[index+1] = 0;
@@ -1518,7 +1518,7 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
       PLOGI << "Default Audio Device: " << pDefaultDevice;
    else
       PLOGE << "SDL Failed to default device: " << SDL_GetError();
-   
+
    audioDevices.clear();
    int count;
    SDL_AudioDeviceID* pAudioList = SDL_GetAudioPlaybackDevices(&count);
@@ -1526,7 +1526,11 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
    for (int i = 0; i < count; ++i) {
       AudioDevice audioDevice = {};
       audioDevice.id = pAudioList[i];
+      #ifdef __STANDALONE__
+      strcpy(audioDevice.name, SDL_GetAudioDeviceName(pAudioList[i]));
+      #else
       strcpy_s(audioDevice.name, SDL_GetAudioDeviceName(pAudioList[i]));
+      #endif
       SDL_AudioSpec spec;
       SDL_GetAudioDeviceFormat( pAudioList[i], &spec, nullptr);
       audioDevice.channels = spec.channels;
