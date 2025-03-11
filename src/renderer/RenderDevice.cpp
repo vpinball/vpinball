@@ -326,7 +326,7 @@ marker_series series;
 #endif
 
 #if defined(ENABLE_BGFX)
-bool RenderDevice::s_screenshot = false;
+volatile bool RenderDevice::s_screenshot = false;
 std::function<void(bool)> RenderDevice::s_screenshotCallback = [](bool) {};
 string RenderDevice::s_screenshotFilename = string();
 
