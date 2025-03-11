@@ -15,7 +15,7 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 // 2CH:  Standard stereo output
 //
 // ALLREAR: All table effects shifted to rear channels.   This can replace the need to use two sound cards to move table audio
-// inside the cab.  Default backglass audio and VPinMame audio plays from front speakers.
+// inside the cab.  Default backglass audio and VPinMAME audio plays from front speakers.
 //
 // FRONTISFRONT: Recommended mapping for a dedicated sound card attached to the playfield.   Front channel maps to the front
 // of the cab.   We "flip" the rear to the standard 2 channels, so older versions of VP still play sounds on the front most
@@ -23,10 +23,10 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 //
 // FRONTISREAR: Table effects are mapped such that the front of the cab is the rear surround channels.   If you were to play
 // VPX in a home theater system with the TV in front of you, this would produce an appropriate result with the ball coming 
-// from the rear channels as it get closer to you.  
+// from the rear channels as it gets closer to you.  
 //
 // 6CH: Rear of playfield shifted to the sides, and front of playfield shifted to the far rear.   Leaves front channels open
-// for default backglass and VPinMame. 
+// for default backglass and VPinMAME. 
 //
 // SSF: 6CH still doesn't map sounds for SSF as distinctly as it could.. In this mode horizontal panning and vertical fading 
 // are enhanced for a more realistic experience.
@@ -34,11 +34,11 @@ enum SoundConfigTypes : int { SNDCFG_SND3D2CH = 0, SNDCFG_SND3DALLREAR = 1, SNDC
 struct AudioDevice
 {
    int id;
-   const char name[100];
+   char name[100];
    unsigned int channels; //number of speakers in this case
 };
 
-// this gets passed to all Mix_RegesterEffect callbacks
+// this gets passed to all Mix_RegisterEffect callbacks
 struct MixEffectsData
 {
    // The output device format info.  This is the format of the audio stream that comes in to be resampled (Mix_RegisterEffect). 
@@ -46,7 +46,7 @@ struct MixEffectsData
    SDL_AudioFormat outputFormat; 
    int outputChannels;
 
-   // These are the data points provided by vpinball to adjust sample when resampling
+   // These are the data points provided by VPinball to adjust the sample when resampling
    float pitch;
    float randompitch;
    float front_rear_fade;
@@ -61,22 +61,22 @@ class PinSound
 public:
 
    // SDL3_mixer
-   Mix_Chunk * m_pMixChunkOrg = nullptr; // The orginal unmodified loaded sound
-   Mix_Music * m_pMixMusic = nullptr; // used PlayMusic
-   Mix_Chunk * m_pMixChunk = nullptr; // we use this one when we resample for pitch changes.
+   Mix_Chunk * m_pMixChunkOrg = nullptr; // the orginal unmodified loaded sound
+   Mix_Music * m_pMixMusic = nullptr; // used by PlayMusic
+   Mix_Chunk * m_pMixChunk = nullptr; // we use this one when we resample for pitch changes
 
    //SDL Audio
    //SDL_AudioSpec m_audioSpec; // audio spec format 
    SDL_IOStream *m_psdlIOStream = nullptr; // the audio stream loader
-   SDL_AudioStream *m_pstream = nullptr; // Vpipmame streamer
+   SDL_AudioStream *m_pstream = nullptr; // VPinMAME streamer
    float m_streamVolume = 0;
   
-   // if the Reinitilize comes back good, We should free these in pintable.cpp or were keeping two copies
+   // if the Reinitialize comes back good, We should free these in pintable.cpp or we're keeping two copies
    // one here and one from pintable.  Once everything is good we only need Mix_Chunk.   S_FIX S_REMOVE
    char *m_pdata = nullptr; // wav data set by caller directly
    int m_cdata; // wav data length set by caller directly
    
-    // Sounds filenames and path
+   // Sound filename and path
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
 
@@ -88,8 +88,8 @@ public:
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
    SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
 
-   // This is because when they import Wavs into the Windows versions it stores them in WAVEFORMATEX
-   // format.  We need Wav.  So this keeps the orginal format for exporting/inmport, etc for windows. 
+   // This is because when VP imports Wavs into the Windows versions it stores them in WAVEFORMATEX
+   // format.  We need Wav.  So this keeps the orginal format for exporting/import, etc for windows. 
    // old wav code only, but also used to convert raw wavs for SDL
    WAVEFORMATEX m_wfx;
    int m_cdata_org;
@@ -119,7 +119,7 @@ public:
    void MusicVolume(const float volume);
    bool MusicInit(const string& szFileName, const float volume);  //player.cpp
 
-   // Plays sounds from Vpinmame and PUP.  These are streams
+   // Plays sounds from VPinMAME and PUP.  These are streams
    bool StreamInit(DWORD frequency, int channels, const float volume);
    void StreamUpdate(void* buffer, DWORD length);
    void StreamVolume(const float volume); 
@@ -138,10 +138,10 @@ public:
    // static class methods
    //
    // Retrieves detected audio devices detected by SDL
-	static void EnumerateAudioDevices(vector<AudioDevice>& devices);
+   static void EnumerateAudioDevices(vector<AudioDevice>& devices);
 
    ///////////////////////////////////
-   // Canidates for removeal _S_REMOVE
+   // Canidates for removal _S_REMOVE
    ///////////////////////////////////
 
    // directsound stuff?
@@ -164,7 +164,7 @@ private:
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
    static Settings m_settings; // get key/value from VPinball.ini
    static int m_sdl_STD_idx;  // the table sound device to play sounds out of
-	static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
+   static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
    MixEffectsData m_mixEffectsData;
    
    // The output devices audio spec
@@ -178,7 +178,7 @@ private:
    // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
    static SoundConfigTypes m_SoundMode3D;
 
-   // This is for BG sounds that are stored in the VPX file.  Treated differently then table sounds
+   // This is for BG sounds that are stored in the VPX file.  Treated differently than table sounds
    void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
 
    // sound file meta data extraction
@@ -217,4 +217,3 @@ private:
    float static FadeSSF(float front_rear_fade);
 
 };
-

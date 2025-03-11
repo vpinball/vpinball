@@ -379,7 +379,7 @@ public:
    void RemoveSound(PinSound *const pps);
    HRESULT SaveSoundToStream(const PinSound *const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
-   bool isWav(const std::string szPath);
+   bool isWav(const string &szPath);
    bool ExportImage(const Texture *const ppi, const char *const filename);
    Texture* ImportImage(const string &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);

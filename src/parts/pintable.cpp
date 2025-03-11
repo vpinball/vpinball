@@ -3056,12 +3056,8 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
    delete[] tmp;
-   
 
-
-  
-   if (isWav(pps->m_szPath)) 
-   if (FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
+   if (isWav(pps->m_szPath) && FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
        delete pps;
        return hr;
@@ -3074,14 +3070,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
 
    // Since vpinball was orginally only for windows they used microsoft library import which stores/converts them
-   // to the waveformatex.  This only effects wav files.  So ogg files will have their orginal header.  For Wavs
+   // to the waveformatex.  This only affects wav files.  So ogg files will have their original header.  For Wavs
    // we put the regular wav header back on for SDL to process the file
       DWORD waveFileSize;
       char *waveFilePointer;
 
       if (isWav(pps->m_szPath))
       {
-   
          struct WAVEHEADER
          {
             DWORD   dwRiff;    // "RIFF"
@@ -3090,7 +3085,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
             DWORD   dwFmt;     // "fmt "
             DWORD   dwFmtSize; // Wave Format Size
          };
-         //  Static RIFF header
+         // Static RIFF header
          static constexpr BYTE WaveHeader[] =
          {
             'R','I','F','F',0x00,0x00,0x00,0x00,'W','A','V','E','f','m','t',' ',0x00,0x00,0x00,0x00
@@ -3124,7 +3119,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    else
       pps->m_pdata = new char[pps->m_cdata];
 
-    if (FAILED(hr = pstm->Read(isWav(pps->m_szPath) ? waveFilePointer : pps->m_pdata, pps->m_cdata, &read)))
+   if (FAILED(hr = pstm->Read(isWav(pps->m_szPath) ? waveFilePointer : pps->m_pdata, pps->m_cdata, &read)))
    {
       delete pps;
       return hr;
@@ -3201,13 +3196,13 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    return S_OK;
 }
 
- bool PinTable::isWav(const std::string szPath)
- {
+bool PinTable::isWav(const std::string& szPath)
+{
    const size_t pos = szPath.find_last_of('.');
    if(pos == string::npos)
       return true;
-   return StrCompareNoCase(szPath.substr(pos+1).c_str(), "wav"s);
- }
+   return StrCompareNoCase(szPath.substr(pos+1), "wav"s);
+}
 
 HRESULT PinTable::WriteInfoValue(IStorage* pstg, const WCHAR * const wzName, const string& szValue, HCRYPTHASH hcrypthash)
 {

@@ -251,7 +251,7 @@ void PUPMediaPlayer::Run()
          if (!pRenderer)
             pRenderer = m_pRenderer;
 
-            m_pPinSound->StreamVolume(m_volume / 100.0f);
+         m_pPinSound->StreamVolume(m_volume / 100.0f);
       }
 
       {
