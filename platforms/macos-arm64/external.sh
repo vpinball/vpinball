@@ -357,31 +357,6 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
-# bass
-#
-
-BASS_EXPECTED_SHA="bass24"
-BASS_FOUND_SHA="$([ -f bass/cache.txt ] && cat bass/cache.txt || echo "")"
-
-if [ "${BASS_EXPECTED_SHA}" != "${BASS_FOUND_SHA}" ]; then
-   echo "Fetching bass. Expected: ${BASS_EXPECTED_SHA}, Found: ${BASS_FOUND_SHA}"
-
-   rm -rf bass
-   mkdir bass
-   cd bass
-
-   curl -sL https://www.un4seen.com/files/bass24-osx.zip -o bass.zip
-   unzip bass.zip
-   lipo libbass.dylib -extract arm64 -output libbass-arm64.dylib
-   codesign --force --sign - libbass-arm64.dylib
-   rm libbass.dylib
-   mv libbass-arm64.dylib libbass.dylib
-   echo "$BASS_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
 # copy libraries
 #
 
@@ -424,6 +399,7 @@ cp libdmdutil/libdmdutil/third-party/runtime-libs/macos/arm64/libcargs.dylib ../
 
 cp -a libaltsound/libaltsound/build/libaltsound.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
+cp libaltsound/libaltsound/third-party/runtime-libs/macos/arm64/libbass.dylib ../../../third-party/runtime-libs/macos-arm64
 
 cp -a libdof/libdof/build/libdof.{dylib,*.dylib} ../../../third-party/runtime-libs/macos-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/

@@ -416,28 +416,6 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
-# bass
-#
-
-BASS_EXPECTED_SHA="bass24"
-BASS_FOUND_SHA="$([ -f bass/cache.txt ] && cat bass/cache.txt || echo "")"
-
-if [ "${BASS_EXPECTED_SHA}" != "${BASS_FOUND_SHA}" ]; then
-   echo "Fetching bass. Expected: ${BASS_EXPECTED_SHA}, Found: ${BASS_FOUND_SHA}"
-
-   rm -rf bass
-   mkdir bass
-   cd bass
-
-   curl -sL https://www.un4seen.com/files/bass24-android.zip -o bass.zip
-   unzip bass.zip
-   
-   echo "$BASS_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
 # copy libraries
 #
 
@@ -482,6 +460,7 @@ cp libdmdutil/libdmdutil/third-party/runtime-libs/android/arm64-v8a/libsockpp.so
 
 cp libaltsound/libaltsound/build/libaltsound.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
+cp libaltsound/libaltsound/third-party/runtime-libs/android/arm64-v8a/libbass.so ../../../third-party/runtime-libs/android-arm64-v8a
 
 cp libdof/libdof/build/libdof.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdof/libdof/include/DOF ../../../third-party/include/

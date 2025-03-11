@@ -370,31 +370,6 @@ if [ "${FFMPEG_EXPECTED_SHA}" != "${FFMPEG_FOUND_SHA}" ]; then
 fi
 
 #
-# bass
-#
-
-BASS_EXPECTED_SHA="bass24"
-BASS_FOUND_SHA="$([ -f bass/cache.txt ] && cat bass/cache.txt || echo "")"
-
-if [ "${BASS_EXPECTED_SHA}" != "${BASS_FOUND_SHA}" ]; then
-   echo "Fetching bass. Expected: ${BASS_EXPECTED_SHA}, Found: ${BASS_FOUND_SHA}"
-
-   rm -rf bass
-   mkdir bass
-   cd bass
-
-   curl -sL https://www.un4seen.com/files/bass24-ios.zip -o bass.zip
-   unzip bass.zip
-   lipo bass.xcframework/ios-arm64_i386_x86_64-simulator/bass.framework/bass -extract arm64 -output libbass.dylib
-   install_name_tool -id @rpath/libbass.dylib libbass.dylib
-   codesign --force --sign - libbass.dylib
-   
-   echo "$BASS_EXPECTED_SHA" > cache.txt
-
-   cd ..
-fi
-
-#
 # copy libraries
 #
 
@@ -441,6 +416,7 @@ cp libdmdutil/libdmdutil/third-party/build-libs/ios-simulator/arm64/libsockpp.a 
 
 cp libaltsound/libaltsound/build/libaltsound.a ../../../third-party/build-libs/ios-simulator-arm64
 cp -r libaltsound/libaltsound/src/altsound.h ../../../third-party/include/
+cp libaltsound/libaltsound/third-party/runtime-libs/ios-simulator/arm64/libbass.dylib ../../../third-party/runtime-libs/ios-simulator-arm64
 
 cp libdof/libdof/build/libdof.a ../../../third-party/build-libs/ios-simulator-arm64
 cp -r libdof/libdof/include/DOF ../../../third-party/include/
