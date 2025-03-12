@@ -184,7 +184,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       EndMusic();
 
       g_pplayer->m_audio = new PinSound();
-      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+      const float MusicVolume = clamp(static_cast<float>(g_pplayer->m_MusicVolume) * m_pt->m_TableMusicVolume * volume / 100.f, 0.f, 1.f);
 
       if (!g_pplayer->m_audio->MusicInit(MakeString(str), MusicVolume))
       {
@@ -209,7 +209,7 @@ STDMETHODIMP ScriptGlobalTable::put_MusicVolume(float volume)
 {
    if (g_pplayer && g_pplayer->m_PlayMusic && g_pplayer->m_audio)
    {
-      const float MusicVolume = max(min((float)g_pplayer->m_MusicVolume*m_pt->m_TableMusicVolume*volume, 100.0f), 0.0f) * (float)(1.0/100.0);
+      const float MusicVolume = clamp(m_pt->m_TableMusicVolume * volume, 0.f, 1.f);
       g_pplayer->m_audio->MusicVolume(MusicVolume);
    }
    return S_OK;

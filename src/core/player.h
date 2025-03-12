@@ -459,6 +459,7 @@ private:
 public:
    void PauseMusic();
    void UnpauseMusic();
+   void UpdateVolume();
 
    bool m_PlayMusic;
    bool m_PlaySound;

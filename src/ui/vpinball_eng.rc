@@ -935,15 +935,15 @@ BEGIN
     LTEXT           "back is side, backbox is front)",IDC_STATIC,23,120,101,8,NOT WS_GROUP
     CONTROL         "7.1 Surround Sound Feedback (enhanced)",IDC_RADIO_SND3DSSF,
                     "Button",BS_AUTORADIOBUTTON,12,133,150,10
-    CONTROL         "P&lay Sound Effects",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,11,85,10
-    LTEXT           "&Sound Effects Volume",IDC_STATIC_SOUND,179,29,87,8
+    CONTROL         "Enable Playfield Sounds",IDC_PLAY_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,11,100,10
+    LTEXT           "&Playfield Volume",IDC_STATIC_SOUND,179,29,87,8
     CONTROL         "Slider1",IDC_SOUND_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,174,39,110,18
-    CONTROL         "&Play Music",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,73,50,10
-    LTEXT           "&Music Volume",IDC_STATIC_MUSIC,179,91,45,8
+    CONTROL         "Enable Backglass Sounds",IDC_PLAY_MUSIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,73,100,10
+    LTEXT           "&Backglass Volume",IDC_STATIC_MUSIC,179,91,87,8
     CONTROL         "Slider1",IDC_MUSIC_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,174,102,110,18
-    LTEXT           "General output Sound Device",IDC_STATIC_SOUNDDEVICE,289,11,170,10
+    LTEXT           "Playfield Sound Device",IDC_STATIC_SOUNDDEVICE,289,11,170,10
     LISTBOX         IDC_SoundList,289,24,170,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Backglass specific Sound Device",IDC_STATIC_SOUNDDEVICE2,288,73,170,10
+    LTEXT           "Backglass Sound Device",IDC_STATIC_SOUNDDEVICE2,288,73,170,10
     LISTBOX         IDC_SoundListBG,288,86,171,40,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Save Overrides",IDC_SAVE_OVERRIDES,273,141,60,14
     PUSHBUTTON      "Save Changes",IDC_SAVE_ALL,336,141,60,14

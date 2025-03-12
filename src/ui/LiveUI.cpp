@@ -1686,8 +1686,9 @@ void LiveUI::UpdateTweakPage()
       if (!m_player || !m_player->m_renderer->m_HDRforceDisableToneMapper || !m_player->m_playfieldWnd->IsWCGBackBuffer())
          m_tweakPageOptions.push_back(BS_Tonemapper);
       m_tweakPageOptions.push_back(BS_Difficulty);
-      m_tweakPageOptions.push_back(BS_MusicVolume);
-      m_tweakPageOptions.push_back(BS_SoundVolume);
+      m_tweakPageOptions.push_back(BS_Volume);
+      m_tweakPageOptions.push_back(BS_BackglassVolume);
+      m_tweakPageOptions.push_back(BS_PlayfieldVolume);
       break;
    }
    default: // Plugin options
@@ -1796,41 +1797,38 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
 
       // Table customization
       case BS_DayNight:
-      {
          m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
          m_renderer->MarkShaderDirty();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
-      }
       case BS_Difficulty:
-      {
          table->m_globalDifficulty = clamp(table->m_globalDifficulty + incSpeed * 0.05f, 0.f, 1.f);
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
-      }
-      case BS_MusicVolume:
-      {
-         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + (int) step, 0, 100);
+      case BS_Volume:
+         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
+         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
+         m_player->UpdateVolume();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
-      }
-      case BS_SoundVolume:
-      {
-         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + (int) step, 0, 100);
+      case BS_BackglassVolume:
+         m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
+         m_player->UpdateVolume();
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
-      }
+      case BS_PlayfieldVolume:
+         m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
+         m_player->UpdateVolume();
+         m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+         break;
       case BS_Exposure:
-      {
          m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
          m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          break;
-      }
       case BS_Tonemapper:
-      {
          if (keyEvent == 1)
          {
-            int tm = m_renderer->m_toneMapper + (int)step;
+            int tm = m_renderer->m_toneMapper + static_cast<int>(step);
             #ifdef ENABLE_BGFX
             if (tm < 0)
                tm = ToneMapper::TM_AGX_PUNCHY;
@@ -1842,11 +1840,10 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             if (tm > ToneMapper::TM_NEUTRAL)
                tm = ToneMapper::TM_REINHARD;
             #endif
-            m_renderer->m_toneMapper = (ToneMapper)tm;
+            m_renderer->m_toneMapper = static_cast<ToneMapper>(tm);
             m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
          }
          break;
-      }
 
       default:
          if (activeTweakSetting >= BS_Custom)
@@ -1956,16 +1953,16 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
                m_table->m_settings.DeleteValue(Settings::TableOverride, "Difficulty"s);
             m_tweakState[BS_Difficulty] = 0;
             // Music/sound volume
-            if (m_tweakState[BS_MusicVolume] == 1)
+            if (m_tweakState[BS_BackglassVolume] == 1)
                m_table->m_settings.SaveValue(Settings::Player, "MusicVolume"s, m_player->m_MusicVolume);
-            else if (m_tweakState[BS_MusicVolume] == 2)
+            else if (m_tweakState[BS_BackglassVolume] == 2)
                m_table->m_settings.DeleteValue(Settings::Player, "MusicVolume"s);
-            m_tweakState[BS_MusicVolume] = 0;
-            if (m_tweakState[BS_SoundVolume] == 1)
+            m_tweakState[BS_BackglassVolume] = 0;
+            if (m_tweakState[BS_PlayfieldVolume] == 1)
                m_table->m_settings.SaveValue(Settings::Player, "SoundVolume"s, m_player->m_SoundVolume);
-            else if (m_tweakState[BS_SoundVolume] == 2)
+            else if (m_tweakState[BS_PlayfieldVolume] == 2)
                m_table->m_settings.DeleteValue(Settings::Player, "SoundVolume"s);
-            m_tweakState[BS_SoundVolume] = 0;
+            m_tweakState[BS_PlayfieldVolume] = 0;
          }
          // Custom table/plugin options
          if (m_tweakPages[m_activeTweakPageIndex] >= TP_TableOption)
@@ -2240,7 +2237,8 @@ void LiveUI::UpdateTweakModeUI()
       for (int setting : m_tweakPageOptions)
       {
          const bool highlight = (setting == activeTweakSetting)
-                             || (activeTweakSetting == BS_XYZScale && (setting == BS_XScale || setting == BS_YScale || setting == BS_ZScale));
+                             || (activeTweakSetting == BS_XYZScale && (setting == BS_XScale || setting == BS_YScale || setting == BS_ZScale))
+                             || (activeTweakSetting == BS_Volume && (setting == BS_BackglassVolume || setting == BS_PlayfieldVolume));
          if (highlight)
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          if (setting >= BS_Custom)
@@ -2323,8 +2321,9 @@ void LiveUI::UpdateTweakModeUI()
                                                                  : m_renderer->m_toneMapper == TM_AGX_PUNCHY ? "AgX Punchy"
                                                                  : m_renderer->m_toneMapper == TM_WCG_SPLINE ? "WCG Display" : "Invalid",""); // Should not happen as this tonemapper is not exposed to user
             break;
-         case BS_MusicVolume: CM_ROW(setting, "Music Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
-         case BS_SoundVolume: CM_ROW(setting, "Sound Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
+         case BS_Volume: break;
+         case BS_BackglassVolume: CM_ROW(setting, "Backglass Volume: ", "%d", m_player->m_MusicVolume, "%"); break;
+         case BS_PlayfieldVolume: CM_ROW(setting, "Playfield Volume: ", "%d", m_player->m_SoundVolume, "%"); break;
 
          }
          if (highlight)
@@ -3483,31 +3482,33 @@ void LiveUI::UpdateAudioOptionsModal()
    if (ImGui::BeginPopupModal(ID_AUDIO_SETTINGS, &p_open, ImGuiWindowFlags_AlwaysAutoResize))
    {
       bool fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
-      if (ImGui::Checkbox("Enable music", &fsound))
+      if (ImGui::Checkbox("Enable Backglass Sounds", &fsound))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PlayMusic"s, fsound);
          m_player->m_PlayMusic = fsound;
       }
 
       int volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "MusicVolume"s, 100);
-      if (ImGui::SliderInt("Music Volume", &volume, 0, 100))
+      if (ImGui::SliderInt("Backglass Volume", &volume, 0, 100))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "MusicVolume"s, volume);
          m_player->m_MusicVolume = volume;
+         m_player->UpdateVolume();
       }
 
       fsound = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
-      if (ImGui::Checkbox("Enable sound", &fsound))
+      if (ImGui::Checkbox("Enable Playfield Sounds", &fsound))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PlaySound"s, fsound);
          m_player->m_PlaySound = fsound;
       }
 
       volume = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
-      if (ImGui::SliderInt("Sound Volume", &volume, 0, 100))
+      if (ImGui::SliderInt("Playfield Volume", &volume, 0, 100))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "SoundVolume"s, volume);
          m_player->m_SoundVolume = volume;
+         m_player->UpdateVolume();
       }
 
       ImGui::EndPopup();

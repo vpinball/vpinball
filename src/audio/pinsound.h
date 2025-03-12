@@ -100,6 +100,7 @@ public:
 
    void UnInitialize();
    HRESULT ReInitialize(); // also uninits the sound
+   void UpdateVolume();
 
    // plays the sound
    void Play(const float volume, const float randompitch, const int pitch, 
@@ -137,18 +138,6 @@ public:
    //
    // Retrieves detected audio devices detected by SDL
    static void EnumerateAudioDevices(vector<AudioDevice>& devices);
-
-   ///////////////////////////////////
-   // Candidates for removal _S_REMOVE
-   ///////////////////////////////////
-
-   // not sure remove?
-   int bass_BG_idx;
-   int bass_STD_idx;
-
-   /////////////
-   // END REMOVE
-   /////////////
 
 private:
 
