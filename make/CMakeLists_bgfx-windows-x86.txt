@@ -75,8 +75,6 @@ add_executable(vpinball WIN32
    src/audio/mixer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
-   src/audio/wavread.cpp
-   src/audio/wavread.h
 
    src/core/dispid.h
    src/core/DynamicScript.cpp
@@ -624,7 +622,6 @@ target_link_libraries(vpinball
    comctl32.lib
    freeimage.lib
    dxguid.lib
-   dsound.lib 
    dinput.lib
    nvapi.lib
    winmm.lib

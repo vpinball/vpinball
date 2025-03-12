@@ -323,10 +323,6 @@ class SCNotification final { };
 #include "utils/lzwreader.h"
 #include "utils/lzwwriter.h"
 
-#ifndef __STANDALONE__
-#include "audio/wavread.h"
-#endif
-
 #include "audio/pinsound.h"
 #include "parts/pinbinary.h"
 

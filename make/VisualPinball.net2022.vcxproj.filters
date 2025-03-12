@@ -138,9 +138,6 @@
     <ClCompile Include="src/audio/pinsound.cpp">
       <Filter>audio</Filter>
     </ClCompile>
-    <ClCompile Include="src/audio/wavread.cpp">
-      <Filter>audio</Filter>
-    </ClCompile>
     <ClCompile Include="src/core/editablereg.cpp">
       <Filter>core</Filter>
     </ClCompile>
@@ -711,9 +708,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/pinsound.h">
-      <Filter>audio</Filter>
-    </ClInclude>
-    <ClInclude Include="src/audio/wavread.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/mixer.h">
