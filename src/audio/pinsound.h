@@ -98,7 +98,7 @@ public:
    PinSound() {};
    PinSound(const Settings& settings);
    ~PinSound();
- 
+
    // plays the table sounds.
    void UnInitialize();
    HRESULT ReInitialize();
@@ -187,9 +187,9 @@ private:
 
     // Play methods for each SNDCFG
    void Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, const int pitch, 
-            const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+      const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, const int pitch, 
-               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+      const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, const int pitch, 
       const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
 
@@ -205,8 +205,8 @@ private:
    void setPitch(int pitch, float randompitch);
 
    // Mixer effects (Mix_RegisterEffect) callbacks
-   void static SSFEffect(int chan, void *stream, int len, void *udata); 
-   void static MoveFrontToRearEffect(int chan, void *stream, int len, void *udata); 
+   void static SSFEffect(int chan, void *stream, int len, void *udata);
+   void static MoveFrontToRearEffect(int chan, void *stream, int len, void *udata);
    void static Pan2ChannelEffect(int chan, void *stream, int len, void *udata);
 
    // MixEffects support funcs

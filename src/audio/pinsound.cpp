@@ -128,6 +128,7 @@ void PinSound::initSDLAudio()
       g_pvp->m_ps.bass_BG_idx = m_sdl_BG_idx; // BG sounds
       g_pvp->m_ps.bass_STD_idx = m_sdl_STD_idx; // table sounds
 
+      if (!SDL_WasInit(SDL_INIT_AUDIO))
       if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
         PLOGE << "Failed to initialize SDL Audio: " << SDL_GetError();
         return;
@@ -833,7 +834,12 @@ PinSound *PinSound::LoadFile(const string& strFileName)
    pps->m_cdata = (int)ftell(f);
    fseek(f, 0, SEEK_SET);
    pps->m_pdata = new char[pps->m_cdata];
-   fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f);
+   if (fread_s(pps->m_pdata, pps->m_cdata, 1, pps->m_cdata, f) < 1)
+   {
+      fclose(f);
+      ShowError("Could not read from sound file.");
+      return nullptr;
+   }
    fclose(f);
 
    HRESULT res = pps->ReInitialize();
@@ -1451,6 +1457,7 @@ int PinSound::getChannel()
  */ 
 void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
 {
+   if (!SDL_WasInit(SDL_INIT_AUDIO))
    if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
       PLOGE << "SDL Init Audio failed: " << SDL_GetError();
       return;
