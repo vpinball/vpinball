@@ -624,15 +624,15 @@ string string_to_lower(string str)
    return str;
 }
 
-string string_replace_all(const string& szStr, const string& szFrom, const string& szTo)
+string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs)
 {
-   size_t startPos = szStr.find(szFrom);
+   size_t startPos = szStr.find(szFrom, offs);
    if (startPos == std::string::npos)
       return szStr;
 
    string szNewStr = szStr;
    szNewStr.replace(startPos, szFrom.length(), szTo);
-   return string_replace_all(szNewStr, szFrom, szTo);
+   return string_replace_all(szNewStr, szFrom, szTo, startPos+szTo.length());
 }
 
 string create_hex_dump(const UINT8* buffer, size_t size)
