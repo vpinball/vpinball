@@ -514,7 +514,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       #endif
       if (pkyb)
       {
-         HRESULT hr = pkyb->Acquire();				// try to acquire keyboard input
+         HRESULT hr = pkyb->Acquire(); // try to acquire keyboard input
          if (hr == S_OK || hr == S_FALSE)
          {
             DWORD dwElements = INPUT_BUFFER_SIZE;
@@ -562,7 +562,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
       // mouse
       if (m_pMouse && m_enableMouseInPlayer)
       {
-         HRESULT hr = m_pMouse->Acquire();	// try to acquire mouse input
+         HRESULT hr = m_pMouse->Acquire(); // try to acquire mouse input
          if (hr == S_OK || hr == S_FALSE)
          {
             DIMOUSESTATE2 mouseState;
@@ -631,7 +631,7 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
             // Bail out here if the device is disabled
             if (!inputDeviceState) continue;
 
-            HRESULT hr = pjoy->Acquire();		// try to acquire joystick input
+            HRESULT hr = pjoy->Acquire(); // try to acquire joystick input
             if (hr == S_OK || hr == S_FALSE)
             {
                DWORD dwElements = INPUT_BUFFER_SIZE;
@@ -926,12 +926,12 @@ void PinInput::Init()
 #endif
 
 #if defined(ENABLE_SDL_INPUT)
-   if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC))
+   if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK))
    {
-      PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC) failed: " << SDL_GetError();
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
       exit(1);
    }
-   string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
+   const string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
    if (!std::filesystem::exists(path))
       std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
    int count = SDL_AddGamepadMappingsFromFile(path.c_str());
@@ -1079,7 +1079,7 @@ void PinInput::UnInit()
    m_head = m_tail = 0;
 
 #if defined(ENABLE_SDL_INPUT)
-   SDL_QuitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
+   SDL_QuitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK);
 #endif
 
 #ifdef _WIN32

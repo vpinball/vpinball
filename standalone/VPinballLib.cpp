@@ -48,7 +48,6 @@ void VPinball::Init(std::function<void*(Event, void*)> callback)
 #endif
 
    SDL_InitSubSystem(SDL_INIT_VIDEO);
-   SDL_InitSubSystem(SDL_INIT_JOYSTICK);
    TTF_Init();
 
    g_pvp = new ::VPinball();
@@ -221,7 +220,7 @@ VPinballStatus VPinball::Compress(const string& source, const string& destinatio
 
    auto add_to_zip = [this, &zip_archive, &sourcePathLength, &processedFiles, totalFiles](const std::filesystem::path& path) {
       if (std::filesystem::is_directory(path)) {
-         string dir_in_zip = path.string().substr(sourcePathLength + 1) + "/";
+         string dir_in_zip = path.string().substr(sourcePathLength + 1) + '/';
          if (!mz_zip_writer_add_mem(&zip_archive, dir_in_zip.c_str(), nullptr, 0, MZ_NO_COMPRESSION))
             return false;
       }
@@ -257,7 +256,7 @@ void VPinball::UpdateWebServer()
    if (m_pWebServer->IsRunning())
       m_pWebServer->Stop();
 
-   if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer", false))
+   if (g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "WebServer"s, false))
       m_pWebServer->Start();
 }
 

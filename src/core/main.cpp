@@ -1311,13 +1311,7 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
          }
          PLOGI << "Using video driver " << SDL_GetCurrentVideoDriver();
       #endif
-      #ifdef ENABLE_SDL_INPUT
-         if (!SDL_InitSubSystem(SDL_INIT_JOYSTICK))
-         {
-            PLOGE << "SDL_InitSubSystem(SDL_INIT_JOYSTICK) failed: " << SDL_GetError();
-            exit(1);
-         }
-      #endif
+
       #ifdef __STANDALONE__
          TTF_Init();
       #endif
@@ -1353,13 +1347,11 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
    }
 
    MsgPluginManager::GetInstance().UnloadPlugins();
-   
+
    #ifdef ENABLE_SDL_VIDEO
       SDL_QuitSubSystem(SDL_INIT_VIDEO);
    #endif
-   #ifdef ENABLE_SDL_INPUT
-      SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
-   #endif
+
    #ifdef __STANDALONE__
       TTF_Quit();
    #endif
@@ -1370,6 +1362,10 @@ extern "C" int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, 
       PLOGI << "Restoring NVIDIA Threaded Optimization";
       SetNVIDIAThreadOptimization(s_OriginalNVidiaThreadOptimization);
    }
+   #endif
+
+   #if defined(ENABLE_SDL_VIDEO) || defined(ENABLE_SDL_INPUT)
+      SDL_Quit();
    #endif
 
    PLOGI << "Closing VPX...\n\n";
