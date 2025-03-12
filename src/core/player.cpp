@@ -2354,7 +2354,7 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       if (msg.buffer != nullptr)
       {
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         PinSound* m_pPinSound = new PinSound(NULL);
+         PinSound* const m_pPinSound = new PinSound(me->m_ptable->m_settings); //!!??
          m_pPinSound->StreamInit(static_cast<DWORD>(msg.sampleRate), nChannels, 1.f);
          m_pPinSound->StreamUpdate(msg.buffer, msg.bufferSize);
          me->m_externalAudioPlayers[msg.id.id] = m_pPinSound;

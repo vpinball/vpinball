@@ -67,7 +67,6 @@ public:
 
    //SDL Audio
    //SDL_AudioSpec m_audioSpec; // audio spec format 
-   SDL_IOStream *m_psdlIOStream = nullptr; // the audio stream loader
    SDL_AudioStream *m_pstream = nullptr; // VPinMAME streamer
    float m_streamVolume = 0;
 
@@ -88,25 +87,26 @@ public:
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
    SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
 
-   // This is because when VP imports Wavs into the Windows versions it stores them in WAVEFORMATEX
-   // format.  We need Wav.  So this keeps the original format for exporting/import, etc for windows. 
+   // This is because when VP imports WAVs into the Windows versions it stores them in WAVEFORMATEX
+   // format.  We need WAV.  So this keeps the original format for exporting/import, etc for windows. 
    // old wav code only, but also used to convert raw wavs for SDL
    WAVEFORMATEX m_wfx;
    int m_cdata_org;
-   char *m_pdata_org; // save wavs in original raw format
+   char *m_pdata_org; // save WAV in original raw format
 
    PinSound() {};
    PinSound(const Settings& settings);
    ~PinSound();
 
-   // plays the table sounds.
    void UnInitialize();
-   HRESULT ReInitialize();
+   HRESULT ReInitialize(); // also uninits the sound
+
+   // plays the sound
    void Play(const float volume, const float randompitch, const int pitch, 
                const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
-   void Stop(); // stop all table sounds
+   void Stop(); // stop sound
 
-   //Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
+   // Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
    bool SetMusicFile(const string& szFileName);
    void MusicPlay();
    void MusicStop();
@@ -128,9 +128,7 @@ public:
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; } 
 
    // This is called by pintable just before Reinitialize().
-   void SetOutputTarget(SoundOutTypes target) { 
-      m_outputTarget = target;
-      }
+   void SetOutputTarget(SoundOutTypes target) { m_outputTarget = target; }
 
    // Windows Editor?
    PinSound *LoadFile(const string& strFileName);
@@ -143,13 +141,6 @@ public:
    ///////////////////////////////////
    // Candidates for removal _S_REMOVE
    ///////////////////////////////////
-
-   // directsound stuff?
-   void StopCopiedWav(const string& name) {};
-   void StopCopiedWavs() {};
-   void StopAndClearCopiedWavs() {};
-   void InitPinDirectSound(const Settings& settings, const HWND hwn) {};
-   void ReInitPinDirectSound(const Settings& settings, const HWND hwn) {};
 
    // not sure remove?
    int bass_BG_idx;
@@ -171,9 +162,8 @@ private:
    static SDL_AudioSpec m_audioSpecOutput;
 
    // SDL_mixer
-   int m_assignedChannel; // the mixer channel this MixChunk is assigned to
-   static int m_maxSDLMixerChannels; // max channels allocated on init
-   static int m_nextAvailableChannel; // channel pool for assignment
+   int m_assignedChannel = -1; // the mixer channel this MixChunk is assigned to
+   static vector<bool> m_channelInUse; // channel pool for assignment
 
    // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
    static SoundConfigTypes m_SoundMode3D;
@@ -182,8 +172,8 @@ private:
    void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
 
    // sound file meta data extraction
-   std::string getFileExt(); // get the sound file extension
-   uint16_t getChannelCountWav(); //gets the number of channels the orginal WAV was encoded with
+   std::string getFileExt() const; // get the sound file extension
+   uint16_t getChannelCountWav() const; //gets the number of channels the original WAV was encoded with
 
     // Play methods for each SNDCFG
    void Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, const int pitch, 

@@ -95,7 +95,8 @@ public:
    void ToggleScriptEditor();
    void ToggleBackglassView();
    bool ParseCommand(const size_t code, const bool notify);
-   void ReInitSound();
+
+   void ReInitAllSounds();
 
    CComObject<PinTable> *GetActiveTable();
    bool LoadFile(const bool updateEditor, VPXFileFeedback* feedback = nullptr);

@@ -226,6 +226,6 @@ void AudioOptionsDialog::SaveSettings(const bool saveAll)
       sd = SendDlgItemMessage(IDC_SoundListBG, LB_GETITEMDATA, soundindex, 0);
       settings.SaveValue(Settings::Player, "SoundDeviceBG"s, (int)sd, !saveAll);
    }
-   
-   g_pvp->ReInitSound();
+
+   g_pvp->ReInitAllSounds();
 }

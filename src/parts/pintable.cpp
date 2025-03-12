@@ -1513,10 +1513,8 @@ PinTable::~PinTable()
       m_vedit[i]->Release();
 
    // Stop all sounds
-   // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
       m_vsound[i]->Stop();
-   m_vpinball->m_ps.StopAndClearCopiedWavs();
 
    if (!m_isLiveInstance)
    { // Sounds, Fonts and images are owned by the editor's table, live table instances just use shallow copy, so don't release them
@@ -3069,7 +3067,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   // Since vpinball was orginally only for windows they used microsoft library import which stores/converts them
+   // Since vpinball was originally only for windows they used microsoft library import which stores/converts them
    // to the waveformatex.  This only affects wav files.  So ogg files will have their original header.  For Wavs
    // we put the regular wav header back on for SDL to process the file
       DWORD waveFileSize;
@@ -7251,7 +7249,6 @@ HRESULT PinTable::StopSound(BSTR Sound)
    WideCharToMultiByteNull(CP_ACP, 0, Sound, -1, szName, MAXSTRING, nullptr, nullptr);
    const string name(szName);
 
-   // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
       if (StrCompareNoCase(m_vsound[i]->m_szName, name))
       {
@@ -7259,18 +7256,13 @@ HRESULT PinTable::StopSound(BSTR Sound)
          break;
       }
 
-   m_vpinball->m_ps.StopCopiedWav(name);
-
    return S_OK;
 }
 
 void PinTable::StopAllSounds()
 {
-   // In case we were playing any of the main buffers
    for (size_t i = 0; i < m_vsound.size(); i++)
       m_vsound[i]->Stop();
-
-   m_vpinball->m_ps.StopCopiedWavs();
 }
 
 

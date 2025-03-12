@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 
 #include <SDL3_mixer/SDL_mixer.h>
-#include <SDL3/SDL.h>
 
 // Retrieve settings from the VPinball.ini file
 Settings PinSound::m_settings = nullptr;
@@ -18,9 +17,7 @@ bool PinSound::isSDLAudioInitialized = false;
 // The output audio spec that the device is actually set for.
 SDL_AudioSpec PinSound::m_audioSpecOutput;
 
-// SDL_mixer
-int PinSound::m_maxSDLMixerChannels = 200; // max # of chans that were allocated to mixer on init
-int PinSound::m_nextAvailableChannel = 0; // new sound, gets new chan
+vector<bool> PinSound::m_channelInUse; // channel pool for assignment
 
 // holds the setting from VPinball.ini that says what SoundMode we're in.
 SoundConfigTypes PinSound::m_SoundMode3D;
@@ -56,6 +53,7 @@ PinSound::PinSound(const Settings& settings)
       PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
       << " channels: " << m_audioSpecOutput.channels;
    }
+
    // set the MixEffects output params that are used for resampling the incoming stream to callback.
    Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); 
 }
@@ -102,7 +100,7 @@ void PinSound::initSDLAudio()
       vector<AudioDevice> allAudioDevices;
       PinSound::EnumerateAudioDevices(allAudioDevices);
       for (size_t i = 0; i < allAudioDevices.size(); ++i) {
-         AudioDevice audioDevice = allAudioDevices.at(i);
+         const AudioDevice& audioDevice = allAudioDevices[i];
          if (audioDevice.name == soundDeviceName)
          {
             m_sdl_STD_idx = audioDevice.id;
@@ -113,7 +111,7 @@ void PinSound::initSDLAudio()
          }
       }
 
-      if(m_sdl_STD_idx == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) // we didn't find a matching name
+      if (m_sdl_STD_idx == SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK) // we didn't find a matching name
       {
          PLOGE << "No sound device by that name found in VPinball.ini. " << "SoundDevice:\"" << soundDeviceName << "\" SoundDeviceBG:\"" << 
            soundDeviceBGName << "\" Using default.";
@@ -122,7 +120,7 @@ void PinSound::initSDLAudio()
       }
     }
 
-      PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (SoundConfigTypes)SNDCFG_SND3D2CH);
+      PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
       // set the global vpinball.. name should be changed for bass to sdl...
       g_pvp->m_ps.bass_BG_idx = m_sdl_BG_idx; // BG sounds
@@ -144,12 +142,19 @@ void PinSound::initSDLAudio()
       int sample_frames;
       SDL_GetAudioDeviceFormat(m_sdl_STD_idx, &spec, &sample_frames);
 
-      int chans = Mix_AllocateChannels(m_maxSDLMixerChannels); // set the max channel pool
-      PLOGI << "SDL Mixer allocated " << chans << " channels.";
+      const int maxSDLMixerChannels = Mix_AllocateChannels(100); // set the max channel pool
+      m_channelInUse.resize(maxSDLMixerChannels, false);
+      PLOGI << "SDL Mixer allocated " << maxSDLMixerChannels << " channels.";
 }
 
 void PinSound::UnInitialize()
 {
+   if (m_assignedChannel != -1)
+   {
+      Mix_HaltChannel(m_assignedChannel);
+      m_channelInUse[m_assignedChannel] = false;
+   }
+
    if(m_pMixChunkOrg != nullptr)
    {
       Mix_FreeChunk(m_pMixChunkOrg);
@@ -191,23 +196,23 @@ HRESULT PinSound::ReInitialize()
 {
    UnInitialize();
 
-   m_psdlIOStream = SDL_IOFromMem(m_pdata, static_cast<int>(m_cdata)); 
+   SDL_IOStream* const psdlIOStream = SDL_IOFromMem(m_pdata, static_cast<int>(m_cdata)); 
 
-   if (!m_psdlIOStream) {
-        PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
-        return E_FAIL;
-    }
+   if (!psdlIOStream) {
+      PLOGE << "SDL_IOFromMem error: " << SDL_GetError();
+      return E_FAIL;
+   }
 
-   if(! (m_pMixChunkOrg = Mix_LoadWAV_IO(m_psdlIOStream, true)))
+   if(! (m_pMixChunkOrg = Mix_LoadWAV_IO(psdlIOStream, true)))
    {
-      PLOGE << "Failed to load sound: " << SDL_GetError();
+      PLOGE << "Failed to load sound via Mix_LoadWAV_IO: " << SDL_GetError();
       return E_FAIL;
    }
 
    // assign a channel to sound
-   if( (m_assignedChannel = getChannel()) == -1) // no more channels.. increase max
+   if( (m_assignedChannel = getChannel()) == -1) // no more channels
    {
-      PLOGE << "There are no more mixer channels available to be allocated.  ??";
+      PLOGE << "There are no more SDL mixer channels available to be allocated.";
       return E_FAIL;
    }
 
@@ -341,6 +346,9 @@ void PinSound::PlayBGSound(float nVolume, const int loopcount, const bool usesam
 {
    //PLOGI << "PlayBGSound File: " << m_szName << " BGSOUND nVolume: " << nVolume << " Table Music Volume: " << g_pplayer->m_MusicVolume;
 
+   if (m_assignedChannel == -1)
+      return;
+
    if (Mix_Playing(m_assignedChannel)) {
       if (restart || !usesame){ // stop and reload
          Mix_HaltChannel(m_assignedChannel);
@@ -444,8 +452,11 @@ void PinSound::setPitch(int pitch, float randompitch)
  * @param restart A boolean that indicates if the sound should be restarted when already playing.
  */
 void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, const int pitch, 
-   const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
+               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 {
+   if (m_assignedChannel == -1)
+      return;
+
    // used to set pan volumes
    float leftVolume;
    float rightVolume;
@@ -495,6 +506,9 @@ void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, 
 void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, const int pitch, 
                const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 {
+   if (m_assignedChannel == -1)
+      return;
+
    // used to set pan volumes
    float leftVolume;
    float rightVolume;
@@ -551,6 +565,9 @@ void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, cons
          " Pitch: "<< pitch << " Random pitch: " << randompitch << " front_rear_fade: " << front_rear_fade << " loopcount: " << loopcount << " usesame: " << 
          usesame <<  " Restart? " << restart; */
 
+   if (m_assignedChannel == -1)
+      return;
+
    if (Mix_Playing(m_assignedChannel)) { 
       if (restart || !usesame){ // stop and reload  
          Mix_HaltChannel(m_assignedChannel);
@@ -569,12 +586,12 @@ void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, cons
 }
 
 /**
- * @brief Called to stop table sound separate from the table doing it. I think its used to stop all sounds 
- *        so its called in a loop. Windows UI?
+ * @brief Called to stop/quickly-fade-out a table sound.
  */
 void PinSound::Stop() 
 {
-   Mix_FadeOutChannel(m_assignedChannel, 300); // fade out in 300ms.  Also halts channel when done
+   if (m_assignedChannel != -1)
+      Mix_FadeOutChannel(m_assignedChannel, 300); // fade out in 300ms.  Also halts channel when done
 }
 
 /**
@@ -734,8 +751,8 @@ bool PinSound::StreamInit(DWORD frequency, int channels, const float volume)
    audioSpec.format =  SDL_AUDIO_S16LE;
    audioSpec.channels = channels;
 
-   float nVolume = volume  * ( (float) g_pplayer->m_MusicVolume / 100.f);
-   m_pstream = SDL_OpenAudioDeviceStream(m_sdl_BG_idx, &audioSpec, NULL, NULL);
+   float nVolume = volume * ( (float) g_pplayer->m_MusicVolume / 100.f);
+   m_pstream = SDL_OpenAudioDeviceStream(m_sdl_BG_idx, &audioSpec, nullptr, nullptr);
 
    if(m_pstream)
    {
@@ -1377,7 +1394,7 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
  * 
  * @return std::string The file extension without the dot (e.g., "wav", "mp3"), or an empty string if no extension is found.
  */
-std::string PinSound::getFileExt()
+std::string PinSound::getFileExt() const
 {
    const size_t pos = m_szPath.find_last_of('.');
    if(pos == string::npos)
@@ -1397,7 +1414,7 @@ std::string PinSound::getFileExt()
  *
  * @throws std::runtime_error If the data size is too small to contain a valid WAV header.
  */
-uint16_t PinSound::getChannelCountWav()
+uint16_t PinSound::getChannelCountWav() const
 {
    struct WavHeader {
     char riff[4];              // "RIFF"
@@ -1427,19 +1444,29 @@ uint16_t PinSound::getChannelCountWav()
  * @brief Retrieves the next available audio mixer channel.
  *
  * This function returns the next available SDL mixer channel for audio playback.
- * If all channels are in use (`m_nextAvailableChannel` reaches `m_maxSDLMixerChannels`), 
+ * If all channels are in use, 
  * it dynamically increases the number of allocated mixer channels by 100.
  *
  * @return The next available channel index.
  */
 int PinSound::getChannel()
 {
-   if(m_nextAvailableChannel == m_maxSDLMixerChannels) // we're out of channels. increase by 100
-   {
-      m_maxSDLMixerChannels = Mix_AllocateChannels(m_maxSDLMixerChannels + 100);
-      PLOGI << "Allocated another 100 mixer channels.  Total Avail: " <<  m_maxSDLMixerChannels;
-   }
-   return m_nextAvailableChannel++;
+   for (size_t i = 0; i < m_channelInUse.size(); ++i)
+      if (!m_channelInUse[i])
+      {
+         m_channelInUse[i] = true;
+         return (int)i;
+      }
+
+   // we're out of channels. increase by 100
+   const int oldMaxSDLMixerChannels = (int)m_channelInUse.size();
+   const int maxSDLMixerChannels = Mix_AllocateChannels(oldMaxSDLMixerChannels + 100);
+   if (maxSDLMixerChannels <= oldMaxSDLMixerChannels)
+      return -1;
+   m_channelInUse.resize(maxSDLMixerChannels, false);
+   PLOGI << "Allocated another 100 mixer channels.  Total Avail: " << maxSDLMixerChannels;
+
+   return oldMaxSDLMixerChannels;
 }
 
 /**

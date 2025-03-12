@@ -1036,15 +1036,12 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
    return false;
 }
 
-void VPinball::ReInitSound()
+void VPinball::ReInitAllSounds()
 {
-   for (size_t i = 0; i < m_vtable.size(); i++)
-   {
-      const PinTable * const ptT = m_vtable[i];
-      for (size_t j = 0; j < ptT->m_vsound.size(); j++)
-         ptT->m_vsound[j]->UnInitialize();
-   }
-   m_ps.ReInitPinDirectSound(m_settings, GetHwnd());
+   // FIXME Is this still needed nowadays??
+
+   // Used to be needed to adapt to changed sound/output settings
+
    for (size_t i = 0; i < m_vtable.size(); i++)
    {
       const PinTable * const ptT = m_vtable[i];
@@ -2043,12 +2040,10 @@ void VPinball::OnInitialUpdate()
    InitRegValues();                    // get default values from registry
 
 #ifndef __STANDALONE__
-   SendMessage(WM_SIZE, 0, 0);	        // Make our window relay itself out
+   SendMessage(WM_SIZE, 0, 0);         // Make our window relay itself out
 #endif
 
-   m_ps.InitPinDirectSound(m_settings, GetHwnd());
-
-   m_backglassView = false;            // we are viewing Pinfield and not the backglass at first
+   m_backglassView = false;            // we are viewing the Playfield and not the backglass at first
 
    UpdateRecentFileList(string());     // update the recent loaded file list
 
