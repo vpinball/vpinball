@@ -325,7 +325,11 @@ void showDisplayIDs()
       return;
    }
 
-   SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS);
+   if (!SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS))
+   {
+      PLOGE << "SDL_InitSubSystem(SDL_INIT_VIDEO | SDL_INIT_EVENTS) failed: " << SDL_GetError();
+      exit(1);
+   }
    SDL_HideCursor();
 
    int displayCount;
@@ -379,7 +383,7 @@ void showDisplayIDs()
    SDL_Event e;
    while (e.type != SDL_EVENT_KEY_DOWN)
       SDL_PollEvent(&e);
-   
+
    for (int i=0; i < displayCount; i++) {
       if (pWindows[i]) {
          if (pRenderers[i])
@@ -387,7 +391,7 @@ void showDisplayIDs()
          SDL_DestroyWindow(pWindows[i]);
       }
    }
-  
+
    TTF_Quit();
    SDL_Quit();
 }
