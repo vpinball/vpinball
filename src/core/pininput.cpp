@@ -1079,7 +1079,7 @@ void PinInput::UnInit()
    m_head = m_tail = 0;
 
 #if defined(ENABLE_SDL_INPUT)
-   SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
+   SDL_QuitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC);
 #endif
 
 #ifdef _WIN32
