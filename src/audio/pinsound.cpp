@@ -1229,7 +1229,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          float* const samples = static_cast<float*>(stream);
          const int total_samples = len / (int)sizeof(float);
 
-         calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
+         calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
 
          for (int index = 0; index < total_samples; index += channels) {
             if(channels >= 4 && channels <= 8)
