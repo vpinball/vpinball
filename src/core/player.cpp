@@ -2344,6 +2344,16 @@ void Player::FinishFrame()
 #endif
 }
 
+void Player::UpdateVolume()
+{
+   if (m_audio)
+      m_audio->UpdateVolume();
+   for (auto sound : m_ptable->m_vsound)
+      sound->UpdateVolume();
+   for (auto players : m_externalAudioPlayers)
+      players.second->UpdateVolume();
+}
+
 void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgData)
 {
    Player *me = static_cast<Player *>(userData);
@@ -2354,10 +2364,10 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
       if (msg.buffer != nullptr)
       {
          const int nChannels = (msg.type == CTLPI_AUDIO_SRC_BACKGLASS_MONO) ? 1 : 2;
-         PinSound* const m_pPinSound = new PinSound(me->m_ptable->m_settings); //!!??
-         m_pPinSound->StreamInit(static_cast<DWORD>(msg.sampleRate), nChannels, 1.f);
-         m_pPinSound->StreamUpdate(msg.buffer, msg.bufferSize);
-         me->m_externalAudioPlayers[msg.id.id] = m_pPinSound;
+         PinSound* const pPinSound = new PinSound(me->m_ptable->m_settings); //!!??
+         pPinSound->StreamInit(static_cast<DWORD>(msg.sampleRate), nChannels, 1.f);
+         pPinSound->StreamUpdate(msg.buffer, msg.bufferSize);
+         me->m_externalAudioPlayers[msg.id.id] = pPinSound;
       }
    }
    else
