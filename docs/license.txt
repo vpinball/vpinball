@@ -72,14 +72,6 @@ Software distributed under the License is distributed on an "AS IS" basis, WITHO
 
 ===============================================================================
 
-It also uses BASS.DLL for loading and playing sound effects and music.
-From the website https://www.un4seen.com/bass.html :
-BASS is free for non-commercial use.
-If you are a non-commercial entity (eg. an individual) and you are not making any money from your product (through sales, advertising, etc),
-then you can use BASS in it for free. Otherwise, one of the following licences will be required (see website for current prices).
-
-===============================================================================
-
 License for OpenVR (https://github.com/ValveSoftware/openvr) used in the GL/VR version of VPX:
 Copyright (c) 2015, Valve Corporation
 All rights reserved.

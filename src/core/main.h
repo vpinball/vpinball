@@ -20,7 +20,6 @@
 
 #ifdef __STANDALONE__
 #define __null 0
-#define ONLY_USE_BASS
 #endif
 
 #include <windows.h>

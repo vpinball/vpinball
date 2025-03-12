@@ -106,12 +106,6 @@ To make a successful port, we would need tackle several tasks:
 > - Linux (Ubuntu 22.04) uses OpenGL 4.6.
 > - Android, iOS, tvOS, Raspberry PI, and RK3588 use OpenGLES 3.0.
 
-> ***Sound***
-> - Visual Pinball uses DirectSound for playing `.wav` files and [BASS](http://www.un4seen.com/) for playing all other audio files.
->
-> **Solution**
-> - Use the `ONLY_USE_BASS` preprocessor definition which uses BASS for all audio files including `.wav` files.
-
 > ***Input***
 > - Visual Pinball uses XInput and either DirectInput 8 or SDL2 for getting keyboard and joystick info.
 >
