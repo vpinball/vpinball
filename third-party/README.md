@@ -1,25 +1,65 @@
 # Third party libraries
 
+## Third party libraries processed by external.sh build step
 
-## BAM
+The version used for these libraries is defined by the SHA of the head commit in the coresponding platform build script.
+
+### BX/BGFX/BIMG
+
+- Upstream: https://github.com/bkaradzic/bgfx https://github.com/bkaradzic/bimg https://github.com/bkaradzic/bx
+- License: BSD-2-Clause license
+
+### FFmpeg
+
+- Upstream: https://github.com/FFmpeg/FFmpeg
+- License: GPL-2.0, GPL-3.0, LGPL-3.0
+
+### FreeImage
+
+- Upstream: https://freeimage.sourceforge.io/
+- License: FreeImage Public License or GPL
+
+### LibAltSound
+
+- Upstream: 
+- License: 
+
+### LibDMDUtil
+
+- Upstream: 
+- License: 
+
+### LibDOF
+
+- Upstream: 
+- License: 
+
+### OpenXR
+
+- Upstream: 
+- License: 
+
+### PinMame
+
+- Upstream: 
+- License: 
+
+### SDL / SDL Image / SDL Mixer / SDL TTF
+
+- Upstream: 
+- License: 
+
+
+
+## Other third party libraries
+
+### BAM
 
 - Upstream: closed source except part shared inside VPX => not a third party ?
 - Version: ?
 - License: ?
 
-## Bass
-
-- Upstream: ?
-- Version: ?
-- License: ?
-
-## BX/BGFX/BIMG
-
-- Upstream: https://github.com/bkaradzic/bgfx https://github.com/bkaradzic/bimg https://github.com/bkaradzic/bx
-- Version: head on 2024/02/20
-- License: BSD-2-Clause license
-
-## Fonts
+### Fonts
 
 Droid Sans
 - Upstream: https://www.fontsquirrel.com/fonts/droid-sans
@@ -34,187 +74,175 @@ Liberation Sans
 - Upstream: https://www.fontsquirrel.com/fonts/liberation-sans
 - License: SIL Open Font License (OFL)
 
-## FFmpeg
-
-- Upstream: https://github.com/FFmpeg/FFmpeg
-- Version: ?
-- License: GPL-2.0, GPL-3.0, LGPL-3.0
-
-## Forsyth
+### Forsyth
 
 - Upstream: ?
 - Version: ?
 - License: ?
 
-## FreeImage
-
-- Upstream: https://freeimage.sourceforge.io/
-- Version: ?
-- License: FreeImage Public License or GPL
-
-## glad
+### glad
 
 - Upstream: https://glad.dav1d.de/
 - Version: ?
 - License: CC0-1.0 and Apache-2.0
 
-## GPUProfiler
+### GPUProfiler
 
 - Upstream: Derived from https://www.reedbeta.com/blog/gpu-profiling-101/ blog post
 - Version: ?
 - License: Original code is BSD, adapted by VPX team
 
-## Haze
+### Haze
 
 - Upstream: https://github.com/chrisbanes/haze
 - Version: 1.1.1
 - License: Apache-2.0 license
 
-## HID
+### HID
 
 - Upstream: ?
 - Version: ?
 - License: ?
 
-## imgui
+### imgui
 
 - Upstream: https://github.com/ocornut/imgui
 - Version: 1.90.0
 - License: MIT
 
-## imgui_markdown
+### imgui_markdown
 
 - Upstream: https://github.com/juliettef/imgui_markdown
 - Version: head at 61a181bdb83f450f852f7cf5d1282d8cda1c0f57
 - License: ZLib
 
-## ImGuizmo
+### ImGuizmo
 
 - Upstream: https://github.com/CedricGuillemet/ImGuizmo
 - Version: ?
 - License: MIT
 
-## implot
+### implot
 
 - Upstream: https://github.com/epezent/implot
 - Version: head at ? (0.17 dev cycle)
 - License: MIT
 
-## mINI
+### mINI
 
 - Upstream: https://github.com/metayeti/mINI
 - Version: ?
 - License: MIT
 
-## miniD3D9
+### miniD3D9
 
 - Upstream: ?
 - Version: ?
 - License: ?
 
-## miniz
+### miniz
 
 - Upstream: https://github.com/richgel999/miniz
 - Version: ?
 - License: MIT
 
-## NVAPI
+### NVAPI
 
 - Upstream: https://github.com/NVIDIA/nvapi
 - Version: ?
 - License: Custom
 
-## OpenVR
+### OpenVR
 
 - Upstream: ?
 - Version: ?
 - License: ?
 
-## PLog
+### PLog
 
 - Upstream: https://github.com/SergiusTheBest/plog
 - Version: ?
 - License: MIT
 
-## PrismJS
+### PrismJS
 
 - Upstream: https://github.com/PrismJS/prism
 - Version: 1.29.0
 - License: MIT
 
-## Progmesh
+### Progmesh
 
 - Upstream: https://github.com/andandandand/progressive-mesh-reduction-with-edge-collapse
 - Version: ?
 - License: custom permissive
 
-## robin hood
+### robin hood
 
 - Upstream: https://github.com/martinus/robin-hood-hashing
 - Version: ?
 - License: MIT
 
-## RSJparser
+### RSJparser
 
 - Upstream: https://github.com/subh83/RSJp-cpp
 - Version: ?
 - License: GPL-3
 
-## ScaleFX
+### ScaleFX
 
 - Upstream: Custom implementation derived from shaders => not a third party ?
 - Version: ?
 - License: ?
 
-## Scintilla
+### Scintilla
 
 - Upstream: https://www.scintilla.org/
 - Version: ?
 - License: Custom permissive license
 
-## Serial
+### Serial
 
 - Upstream: unclear if this is a lib or core code
 - Version: ?
 - License: ?
 
-## sse2neon
+### sse2neon
 
 - Upstream: https://github.com/DLTcollab/sse2neon
 - Version: ?
 - License: MIT
 
-## stb_image
+### stb_image
 
 - Upstream: https://github.com/nothings/stb
 - Version: 2.28
 - License: MIT or Public Domain
 
-## ThreadPool
+### ThreadPool
 
 - Upstream: https://github.com/log4cplus/ThreadPool
 - Version: ?
 - License: Custom permissive license
 
-## tinyxml2
+### tinyxml2
 
 - Upstream: https://github.com/leethomason/tinyxml2
 - Version: ?
 - License: ZLib
 
-## simple-uri-parser
+### simple-uri-parser
 
 - Upstream: https://github.com/jholloc/simple-uri-parser
 - Version: ?
 - License: MIT
 
-## win32xx
+### win32xx
 
 - Upstream: https://sourceforge.net/projects/win32-framework/
 - Version: 9.4
 - License: custom permissive (see copyright.txt)
 
-## WinSDK
+### WinSDK
 
 - Upstream: ?
 - Version: ?
