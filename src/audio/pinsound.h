@@ -56,12 +56,12 @@ struct MixEffectsData
    float globalTableVolume; // Holds a 0-1 based off the Global Sound Volume Setting.  
 };
 
-class PinSound 
+class PinSound final
 {
 public:
 
    // SDL3_mixer
-   Mix_Chunk * m_pMixChunkOrg = nullptr; // the orginal unmodified loaded sound
+   Mix_Chunk * m_pMixChunkOrg = nullptr; // the original unmodified loaded sound
    Mix_Music * m_pMixMusic = nullptr; // used by PlayMusic
    Mix_Chunk * m_pMixChunk = nullptr; // we use this one when we resample for pitch changes
 
@@ -70,12 +70,12 @@ public:
    SDL_IOStream *m_psdlIOStream = nullptr; // the audio stream loader
    SDL_AudioStream *m_pstream = nullptr; // VPinMAME streamer
    float m_streamVolume = 0;
-  
+
    // if the Reinitialize comes back good, We should free these in pintable.cpp or we're keeping two copies
    // one here and one from pintable.  Once everything is good we only need Mix_Chunk.   S_FIX S_REMOVE
    char *m_pdata = nullptr; // wav data set by caller directly
    int m_cdata; // wav data length set by caller directly
-   
+
    // Sound filename and path
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
@@ -89,7 +89,7 @@ public:
    SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
 
    // This is because when VP imports Wavs into the Windows versions it stores them in WAVEFORMATEX
-   // format.  We need Wav.  So this keeps the orginal format for exporting/import, etc for windows. 
+   // format.  We need Wav.  So this keeps the original format for exporting/import, etc for windows. 
    // old wav code only, but also used to convert raw wavs for SDL
    WAVEFORMATEX m_wfx;
    int m_cdata_org;
@@ -141,7 +141,7 @@ public:
    static void EnumerateAudioDevices(vector<AudioDevice>& devices);
 
    ///////////////////////////////////
-   // Canidates for removal _S_REMOVE
+   // Candidates for removal _S_REMOVE
    ///////////////////////////////////
 
    // directsound stuff?
@@ -159,17 +159,17 @@ public:
    // END REMOVE
    /////////////
 
-private:	
+private:
 
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
    static Settings m_settings; // get key/value from VPinball.ini
    static int m_sdl_STD_idx;  // the table sound device to play sounds out of
    static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
    MixEffectsData m_mixEffectsData;
-   
+
    // The output devices audio spec
    static SDL_AudioSpec m_audioSpecOutput;
-  
+
    // SDL_mixer
    int m_assignedChannel; // the mixer channel this MixChunk is assigned to
    static int m_maxSDLMixerChannels; // max channels allocated on init
@@ -182,7 +182,7 @@ private:
    void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
 
    // sound file meta data extraction
-   std::string getFileExt(); // get the sound file extention
+   std::string getFileExt(); // get the sound file extension
    uint16_t getChannelCountWav(); //gets the number of channels the orginal WAV was encoded with
 
     // Play methods for each SNDCFG
@@ -194,16 +194,16 @@ private:
       const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
 
    // deep copy of MixChunk's
-   Mix_Chunk* copyMixChunk(const Mix_Chunk* original);
-   
+   Mix_Chunk* copyMixChunk(const Mix_Chunk* const original);
+
    // Static class methods
    //
    static void initSDLAudio();
    static int getChannel(); // get an open channel assigned for the sound sample
-   
-   // we resample the orginal sound to match the pitch settings sent from the table each time.
+
+   // we resample the original sound to match the pitch settings sent from the table each time.
    void setPitch(int pitch, float randompitch);
-  
+
    // Mixer effects (Mix_RegisterEffect) callbacks
    void static SSFEffect(int chan, void *stream, int len, void *udata); 
    void static MoveFrontToRearEffect(int chan, void *stream, int len, void *udata); 
@@ -215,5 +215,4 @@ private:
    float static PanSSF(float pan);
    float static PanTo3D(float input);
    float static FadeSSF(float front_rear_fade);
-
 };

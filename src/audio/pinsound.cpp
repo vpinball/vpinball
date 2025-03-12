@@ -44,11 +44,6 @@ SoundConfigTypes PinSound::m_SoundMode3D;
 PinSound::PinSound(const Settings& settings)
 {
    if (!isSDLAudioInitialized) {
-
-      if (!SDL_Init(SDL_INIT_AUDIO)) {
-        PLOGE << "SDL Init Audio failed: " << SDL_GetError();
-        return;
-      }
       m_settings = settings;
 
       PinSound::initSDLAudio();
@@ -57,10 +52,10 @@ PinSound::PinSound(const Settings& settings)
       // Set the output devices AudioSpec
       Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); // the struct that gets passed to the MixEffect callbacks.
       Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
-      
+
       PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
       << " channels: " << m_audioSpecOutput.channels;
-   }     
+   }
    // set the MixEffects output params that are used for resampling the incoming stream to callback.
    Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); 
 }
@@ -68,6 +63,10 @@ PinSound::PinSound(const Settings& settings)
 PinSound::~PinSound()
 {
    UnInitialize();
+
+   // do not de-init as many PinSound's potentially 'share' it
+   //SDL_QuitSubSystem(SDL_INIT_AUDIO);
+   //isSDLAudioInitialized = false;
 }
 
 /**
@@ -84,7 +83,7 @@ PinSound::~PinSound()
  *       A warning is logged in this case. SDL audio initialization is attempted, and failure is 
  *       logged with an error message.
  *
- * @see SDL_Init(SDL_INIT_AUDIO), Mix_OpenAudio(), SDL_GetAudioDeviceFormat(), Mix_AllocateChannels()
+ * @see SDL_InitSubSystem(SDL_INIT_AUDIO), Mix_OpenAudio(), SDL_GetAudioDeviceFormat(), Mix_AllocateChannels()
  */
 void PinSound::initSDLAudio() 
 {
@@ -99,7 +98,7 @@ void PinSound::initSDLAudio()
       m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
       m_sdl_BG_idx =  SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
     }
-    else{  // this is all because the device id's are random: https://github.com/libsdl-org/SDL/issues/12278
+    else { // this is all because the device id's are random: https://github.com/libsdl-org/SDL/issues/12278
       vector<AudioDevice> allAudioDevices;
       PinSound::EnumerateAudioDevices(allAudioDevices);
       for (size_t i = 0; i < allAudioDevices.size(); ++i) {
@@ -120,7 +119,7 @@ void PinSound::initSDLAudio()
            soundDeviceBGName << "\" Using default.";
          m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
          m_sdl_BG_idx  = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;
-      }  
+      }
     }
 
       PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (SoundConfigTypes)SNDCFG_SND3D2CH);
@@ -129,7 +128,7 @@ void PinSound::initSDLAudio()
       g_pvp->m_ps.bass_BG_idx = m_sdl_BG_idx; // BG sounds
       g_pvp->m_ps.bass_STD_idx = m_sdl_STD_idx; // table sounds
 
-      if (!SDL_Init(SDL_INIT_AUDIO)) {
+      if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
         PLOGE << "Failed to initialize SDL Audio: " << SDL_GetError();
         return;
       }
@@ -154,6 +153,11 @@ void PinSound::UnInitialize()
    {
       Mix_FreeChunk(m_pMixChunkOrg);
       m_pMixChunkOrg = nullptr;
+   }
+   if(m_pMixChunk != nullptr) // free the last converted sample
+   {
+      Mix_FreeChunk(m_pMixChunk);
+      m_pMixChunk = nullptr;
    }
    if(m_pMixMusic != nullptr)
    {
@@ -375,14 +379,14 @@ void PinSound::setPitch(int pitch, float randompitch)
       m_pMixChunk = nullptr;
    }
 
-   // check for pitch and resample or pass the orginial mixchunk if pitch didn't change
-   if(pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the orginal
+   // check for pitch and resample or pass the original mixchunk if pitch didn't change
+   if(pitch == 0 && randompitch == 0) // If the pitch isn't changed pass the original
    {
       m_pMixChunk = copyMixChunk(m_pMixChunkOrg);
    }
    else
    {
-      Mix_Chunk *mixChunkConvert = (Mix_Chunk *)malloc(sizeof(Mix_Chunk));
+      Mix_Chunk* const mixChunkConvert = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
       mixChunkConvert->allocated = 1; // you need this set or it won't get freed with Mix_FreeChunk
       mixChunkConvert->volume = 128;
 
@@ -408,10 +412,10 @@ void PinSound::setPitch(int pitch, float randompitch)
       audioSpecConvert.freq = newFreq;
 
       // convert original sample to the new freq
-      SDL_ConvertAudioSamples(&m_audioSpecOutput, m_pMixChunkOrg->abuf, m_pMixChunkOrg->alen, &audioSpecConvert, &mixChunkConvert->abuf, (int *) &mixChunkConvert->alen);
+      SDL_ConvertAudioSamples(&m_audioSpecOutput, m_pMixChunkOrg->abuf, (int) m_pMixChunkOrg->alen, &audioSpecConvert, &mixChunkConvert->abuf, (int *) &mixChunkConvert->alen);
 
       // now convert it back to the original output AudioSpec
-      m_pMixChunk = new Mix_Chunk();
+      m_pMixChunk = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
       m_pMixChunk->volume = 128;
       m_pMixChunk->allocated = 1; // you need this set, or it won't get freed with Mix_FreeChunk
       SDL_ConvertAudioSamples(&audioSpecConvert, mixChunkConvert->abuf, (int) mixChunkConvert->alen, &m_audioSpecOutput, &m_pMixChunk->abuf, (int *) &m_pMixChunk->alen);
@@ -840,17 +844,18 @@ PinSound *PinSound::LoadFile(const string& strFileName)
       return nullptr;
 }
 
-Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* original) {
-   if (!original) return nullptr;
+Mix_Chunk* PinSound::copyMixChunk(const Mix_Chunk* const original)
+{
+   if (!original || original->abuf == nullptr) return nullptr;
 
    // Allocate a new Mix_Chunk
-   Mix_Chunk* copy = new Mix_Chunk;
-   copy->allocated = original->allocated;
+   Mix_Chunk* const copy = (Mix_Chunk*)SDL_malloc(sizeof(Mix_Chunk)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
    copy->alen = original->alen;
    copy->volume = original->volume;
 
    // Allocate memory for audio buffer
-   copy->abuf = new Uint8[original->alen];
+   copy->allocated = 1;
+   copy->abuf = (Uint8*)SDL_malloc(original->alen*sizeof(Uint8)); // need to use SDL_malloc as SDL_free will be used when freeing the chunk
    std::memcpy(copy->abuf, original->abuf, original->alen);
    return copy;
 }
@@ -1123,18 +1128,17 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
    // pan vols ratios for left and right
    float leftPanRatio;
    float rightPanRatio;
+   //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
+   calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
+   const int channels = med->outputChannels;
 
    switch (med->outputFormat)
    {
-      case (SDL_AUDIO_S16LE):
+      case SDL_AUDIO_S16LE:
       {
          int16_t* const samples = static_cast<int16_t*>(stream);
          const int total_samples = len / (int)sizeof(int16_t);
-         const int channels = med->outputChannels;
  
-         //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
-         calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
-
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
             // Apply volume gains to Front Left and Right channels
@@ -1143,14 +1147,10 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
          }
          break;
       }
-      case (SDL_AUDIO_F32LE):
+      case SDL_AUDIO_F32LE:
       {
          float* const samples = static_cast<float*>(stream);
          const int total_samples = len / (int)sizeof(float);
-         const int channels = med->outputChannels;
-
-         //calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
-         calcPan(leftPanRatio, rightPanRatio, med->nVolume, med->pan*3.0f);
 
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
@@ -1186,48 +1186,30 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
    // pan vols ratios for left and right
    float leftPanRatio;
    float rightPanRatio;
+   const int channels = med->outputChannels;
+   const int offs = channels-2;
 
+   // 4 channels (quad) layout: FL, FR, BL, BR
+   // 5 channels (4.1)  layout: FL, FR, LFE, BL, BR
+   // 6 channels (5.1)  layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
+   // 7 channels (6.1)  layout: FL, FR, FC, LFE, BC, SL, SR
+   // 8 channels (7.1)  layout: FL, FR, FC, LFE, BL, BR, SL, SR
    switch (med->outputFormat)
    {
-      case (SDL_AUDIO_S16LE):
+      case SDL_AUDIO_S16LE:
       {
          int16_t* const samples = static_cast<int16_t*>(stream);
          const int total_samples = len / (int)sizeof(int16_t);
-         const int channels = med->outputChannels;
 
          calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanTo3D(med->pan));
 
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
-            if(channels == 4) // 4 channels (quad) layout: FL, FR, BL, BR
+            if(channels >= 4 && channels <= 8)
             {
                // Apply volume gains and copy them to rear
-               samples[index+2] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+3] = (samples[index + 1] * rightPanRatio); // copy FR to BR
-            } 
-            else if(channels == 5) //5 channels (4.1) layout: FL, FR, LFE, BL, BR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+3] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+4] = (samples[index + 1] * rightPanRatio); // copy FR to BR
-            }
-            else if(channels == 6) // 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+5] = (samples[index + 1] * rightPanRatio); // copy FR to BR
-            }
-            else if(channels == 7) // 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+5] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+6] = (samples[index + 1] * rightPanRatio); // copy FR to BR
-            }
-            else if(channels == 8) // 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+6] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+7] = (samples[index + 1] * rightPanRatio); // copy FR to BR
+               samples[index+  offs] = (int16_t)((float)samples[index]   * leftPanRatio);  // copy FL to BL
+               samples[index+1+offs] = (int16_t)((float)samples[index+1] * rightPanRatio); // copy FR to BR
             }
 
             // wipe front channels
@@ -1236,49 +1218,24 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
          }
          break;
       }
-      case (SDL_AUDIO_F32LE):
+      case SDL_AUDIO_F32LE:
       {
          float* const samples = static_cast<float*>(stream);
          const int total_samples = len / (int)sizeof(float);
-         const int channels = med->outputChannels;
 
          calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
 
          for (int index = 0; index < total_samples; index += channels) {
-            if(channels == 4) // 4 channels (quad) layout: FL, FR, BL, BR
+            if(channels >= 4 && channels <= 8)
             {
                // Apply volume gains and copy them to rear
-               samples[index+2] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+3] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
-            } 
-            else if(channels == 5) //5 channels (4.1) layout: FL, FR, LFE, BL, BR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+3] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+4] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
-            }
-            else if(channels == 6) // 6 channels (5.1) layout: FL, FR, FC, LFE, BL, BR (last two can also be SL, SR)
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+4] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+5] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
-            }
-            else if(channels == 7) // 7 channels (6.1) layout: FL, FR, FC, LFE, BC, SL, SR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+5] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+6] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
-            }
-            else if(channels == 8) // 8 channels (7.1) layout: FL, FR, FC, LFE, BL, BR, SL, SR
-            {
-               // Apply volume gains and copy them to rear
-               samples[index+6] = (samples[index] * leftPanRatio); // copy FL to BL
-               samples[index+7] = (samples[index + 1] * rightPanRatio); // COPY FR to BR
+               samples[index+  offs] = samples[index]   * leftPanRatio;  // copy FL to BL
+               samples[index+1+offs] = samples[index+1] * rightPanRatio; // copy FR to BR
             }
 
             // wipe front channels
-            samples[index]   = 0;
-            samples[index+1] = 0;
+            samples[index]   = 0.f;
+            samples[index+1] = 0.f;
          }
          break;
       }
@@ -1333,17 +1290,16 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
    float sideRight;
    float rearLeft;   // front of table + 1
    float rearRight;
+   calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
+   calcFade(leftPanRatio, rightPanRatio, PinSound::FadeSSF(med->front_rear_fade), rearLeft, rearRight, sideLeft, sideRight);
+   const int channels = med->outputChannels;
 
    switch (med->outputFormat)
    {
-      case (SDL_AUDIO_S16LE):
+      case SDL_AUDIO_S16LE:
          {
             int16_t* const samples = static_cast<int16_t*>(stream);
             const int total_samples = len / (int)sizeof(int16_t);
-            const int channels = med->outputChannels;
-
-            calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
-            calcFade(leftPanRatio, rightPanRatio, PinSound::FadeSSF(med->front_rear_fade), rearLeft, rearRight, sideLeft, sideRight);
 
             // cap all vol not to be over 1.  Over 1, and you get distortion.
             sideLeft = clamp(sideLeft, 0.f, 1.f);
@@ -1360,10 +1316,10 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
                samples[index + 7] = (samples[index+1]); // Copy FR to SR
 
                // Apply volume gains to back and side channels
-               samples[index + 4] = (samples[index+4] * rearLeft);  // BL
-               samples[index + 5] = (samples[index+5] * rearRight); // BR
-               samples[index + 6] = (samples[index+6] * sideLeft);  // SL
-               samples[index + 7] = (samples[index+7] * sideRight); // SR
+               samples[index + 4] = (int16_t)((float)samples[index+4] * rearLeft);  // BL
+               samples[index + 5] = (int16_t)((float)samples[index+5] * rearRight); // BR
+               samples[index + 6] = (int16_t)((float)samples[index+6] * sideLeft);  // SL
+               samples[index + 7] = (int16_t)((float)samples[index+7] * sideRight); // SR
 
                // wipe front channels
                samples[index]   = 0;
@@ -1371,14 +1327,10 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
             }
             break;
          }
-      case (SDL_AUDIO_F32LE):
+      case SDL_AUDIO_F32LE:
          {
             float* const samples = static_cast<float*>(stream);
             const int total_samples = len / (int)sizeof(float);
-            const int channels = med->outputChannels;
-
-            calcPan(leftPanRatio, rightPanRatio, med->nVolume, PinSound::PanSSF(med->pan));
-            calcFade(leftPanRatio, rightPanRatio, PinSound::FadeSSF(med->front_rear_fade), rearLeft, rearRight, sideLeft, sideRight);
 
             // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
             for (int index = 0; index < total_samples; index += channels) {
@@ -1499,7 +1451,7 @@ int PinSound::getChannel()
  */ 
 void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
 {
-   if (!SDL_Init(SDL_INIT_AUDIO)) {
+   if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
       PLOGE << "SDL Init Audio failed: " << SDL_GetError();
       return;
    }
