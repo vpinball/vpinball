@@ -8,9 +8,16 @@
 
 PUPCustomPos* PUPCustomPos::CreateFromCSV(const string& line)
 {
-   vector<string> parts = parse_csv_line(line);
-   if (parts.size() != 5)
+   if (line.empty())
       return nullptr;
+   vector<string> parts = parse_csv_line(line);
+   if (parts.size() < 5){
+      PLOGE << "Expected 5 parts for CustomPos, got " << parts.size() << ": " << line;
+      return nullptr;
+   }
+   if (parts.size() > 5){
+      PLOGW << "Ignoring trailing parts for CustomPos. Expected 5 parts, got " << parts.size() << ": " << line;
+   }
 
    PUPCustomPos* pCustomPos = new PUPCustomPos();
 
