@@ -43,7 +43,7 @@ SoundConfigTypes PinSound::m_SoundMode3D;
 PinSound::PinSound(const Settings& settings)
 {
    {
-   const std::lock_guard<std::mutex> lg(m_SDLAudioInitMutex)
+   const std::lock_guard<std::mutex> lg(m_SDLAudioInitMutex);
 
    if (!isSDLAudioInitialized) {
       m_settings = settings;
@@ -1477,7 +1477,7 @@ uint16_t PinSound::getChannelCountWav() const
  */
 int PinSound::getChannel()
 {
-   const std::lock_guard<std::mutex> lg(m_channelUpdateMutex)
+   const std::lock_guard<std::mutex> lg(m_channelUpdateMutex);
 
    for (size_t i = 0; i < m_channelInUse.size(); ++i)
       if (!m_channelInUse[i])
