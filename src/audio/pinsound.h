@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <mutex>
 #include "core/Settings.h"
 #include <SDL3_mixer/SDL_mixer.h>
 
@@ -104,7 +105,7 @@ public:
 
    // plays the sound
    void Play(const float volume, const float randompitch, const int pitch, 
-               const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+             const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void Stop(); // stop sound
 
    // Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
@@ -115,7 +116,7 @@ public:
    void MusicUnpause();
    void MusicClose();
    bool MusicActive();
-   double GetMusicPosition();
+   double GetMusicPosition() const;
    void SetMusicPosition(double seconds);
    void MusicVolume(const float volume);
    bool MusicInit(const string& szFileName, const float volume);  //player.cpp
@@ -141,10 +142,13 @@ public:
 
 private:
 
+   static std::mutex m_SDLAudioInitMutex;
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
+
    static Settings m_settings; // get key/value from VPinball.ini
    static int m_sdl_STD_idx;  // the table sound device to play sounds out of
    static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
+
    MixEffectsData m_mixEffectsData;
 
    // The output devices audio spec
@@ -152,6 +156,8 @@ private:
 
    // SDL_mixer
    int m_assignedChannel = -1; // the mixer channel this MixChunk is assigned to
+
+   static std::mutex m_channelUpdateMutex;
    static vector<bool> m_channelInUse; // channel pool for assignment
 
    // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.

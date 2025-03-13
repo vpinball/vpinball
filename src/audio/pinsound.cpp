@@ -12,11 +12,13 @@ int PinSound::m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the table s
 int PinSound::m_sdl_BG_idx  = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the BG sounds/music
 
 // state of sound device and mixer setup
+std::mutex PinSound::m_SDLAudioInitMutex;
 bool PinSound::isSDLAudioInitialized = false;
 
 // The output audio spec that the device is actually set for.
 SDL_AudioSpec PinSound::m_audioSpecOutput;
 
+std::mutex PinSound::m_channelUpdateMutex;
 vector<bool> PinSound::m_channelInUse; // channel pool for assignment
 
 // holds the setting from VPinball.ini that says what SoundMode we're in.
@@ -40,6 +42,9 @@ SoundConfigTypes PinSound::m_SoundMode3D;
  */
 PinSound::PinSound(const Settings& settings)
 {
+   {
+   const std::lock_guard<std::mutex> lg(m_SDLAudioInitMutex)
+
    if (!isSDLAudioInitialized) {
       m_settings = settings;
 
@@ -52,6 +57,7 @@ PinSound::PinSound(const Settings& settings)
 
       PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
       << " channels: " << m_audioSpecOutput.channels;
+   }
    }
 
    // set the MixEffects output params that are used for resampling the incoming stream to callback.
@@ -83,7 +89,7 @@ PinSound::~PinSound()
  *
  * @see SDL_InitSubSystem(SDL_INIT_AUDIO), Mix_OpenAudio(), SDL_GetAudioDeviceFormat(), Mix_AllocateChannels()
  */
-void PinSound::initSDLAudio() 
+void PinSound::initSDLAudio()
 {
    string soundDeviceName;
    string soundDeviceBGName;
@@ -120,27 +126,27 @@ void PinSound::initSDLAudio()
       }
     }
 
-      PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
-      if (!SDL_WasInit(SDL_INIT_AUDIO))
+   if (!SDL_WasInit(SDL_INIT_AUDIO))
       if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
-        PLOGE << "Failed to initialize SDL Audio: " << SDL_GetError();
-        return;
+         PLOGE << "Failed to initialize SDL Audio: " << SDL_GetError();
+         return;
       }
 
-      // change the AudioSpec param when we know what sound format output we want.  or get from device
-      if (!Mix_OpenAudio(m_sdl_STD_idx, nullptr)) {
-        PLOGE << "Failed to initialize SDL Mixer: " << SDL_GetError();
-        return;
-      }
+   // change the AudioSpec param when we know what sound format output we want.  or get from device
+   if (!Mix_OpenAudio(m_sdl_STD_idx, nullptr)) {
+      PLOGE << "Failed to initialize SDL Mixer: " << SDL_GetError();
+      return;
+   }
 
-      SDL_AudioSpec spec;
-      int sample_frames;
-      SDL_GetAudioDeviceFormat(m_sdl_STD_idx, &spec, &sample_frames);
+   SDL_AudioSpec spec;
+   int sample_frames;
+   SDL_GetAudioDeviceFormat(m_sdl_STD_idx, &spec, &sample_frames);
 
-      const int maxSDLMixerChannels = Mix_AllocateChannels(100); // set the max channel pool
-      m_channelInUse.resize(maxSDLMixerChannels, false);
-      PLOGI << "SDL Mixer allocated " << maxSDLMixerChannels << " channels.";
+   const int maxSDLMixerChannels = Mix_AllocateChannels(100); // set the max channel pool
+   m_channelInUse.resize(maxSDLMixerChannels, false);
+   PLOGI << "SDL Mixer allocated " << maxSDLMixerChannels << " channels.";
 }
 
 void PinSound::UnInitialize()
@@ -149,6 +155,7 @@ void PinSound::UnInitialize()
    {
       Mix_HaltChannel(m_assignedChannel);
       m_channelInUse[m_assignedChannel] = false;
+      m_assignedChannel = -1;
    }
 
    if(m_pMixChunkOrg != nullptr)
@@ -730,7 +737,7 @@ void PinSound::MusicStop()
    Mix_HaltMusic();
 }
 
-double PinSound::GetMusicPosition()
+double PinSound::GetMusicPosition() const
 {
    return Mix_GetMusicPosition(m_pMixMusic);
 }
@@ -802,7 +809,7 @@ bool PinSound::StreamInit(DWORD frequency, int channels, const float volume)
  * 
  * @note called by VPinMAMEController and PUP
  */
-void PinSound::StreamUpdate(void* buffer, DWORD length) 
+void PinSound::StreamUpdate(void* buffer, DWORD length)
 {
    SDL_PutAudioStreamData(m_pstream, buffer, length);
 }
@@ -1166,7 +1173,7 @@ float PinSound::FadeSSF(float front_rear_fade)
  */
 void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
 {
-   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+   MixEffectsData * const med = static_cast<MixEffectsData *> (udata);
    // pan vols ratios for left and right
    float leftPanRatio;
    float rightPanRatio;
@@ -1180,7 +1187,7 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
       {
          int16_t* const samples = static_cast<int16_t*>(stream);
          const int total_samples = len / (int)sizeof(int16_t);
- 
+
          // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
          for (int index = 0; index < total_samples; index += channels) {
             // Apply volume gains to Front Left and Right channels
@@ -1224,7 +1231,7 @@ void PinSound::Pan2ChannelEffect(int chan, void *stream, int len, void *udata)
  */
 void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udata)
 {
-   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+   MixEffectsData * const med = static_cast<MixEffectsData *> (udata);
    // pan vols ratios for left and right
    float leftPanRatio;
    float rightPanRatio;
@@ -1321,7 +1328,7 @@ void PinSound::MoveFrontToRearEffect(int chan, void *stream, int len, void *udat
 void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
 {
    // 8 channels (7.1): FL, FR, FC, LFE, BL, BR, SL, SR
-   MixEffectsData *med = static_cast<MixEffectsData *> (udata);
+   MixEffectsData * const med = static_cast<MixEffectsData *> (udata);
 
    // pan vols ratios for left and right
    float leftPanRatio;
@@ -1470,6 +1477,8 @@ uint16_t PinSound::getChannelCountWav() const
  */
 int PinSound::getChannel()
 {
+   const std::lock_guard<std::mutex> lg(m_channelUpdateMutex)
+
    for (size_t i = 0; i < m_channelInUse.size(); ++i)
       if (!m_channelInUse[i])
       {
