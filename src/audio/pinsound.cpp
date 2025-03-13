@@ -153,6 +153,8 @@ void PinSound::UnInitialize()
 {
    if (m_assignedChannel != -1)
    {
+      const std::lock_guard<std::mutex> lg(m_channelUpdateMutex);
+
       Mix_HaltChannel(m_assignedChannel);
       m_channelInUse[m_assignedChannel] = false;
       m_assignedChannel = -1;
