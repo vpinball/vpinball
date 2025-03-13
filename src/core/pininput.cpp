@@ -46,8 +46,6 @@ PinInput::PinInput()
  , m_lastclick_ballcontrol_usec(0)
  , m_num_joy(0)
  , uShockType(0)
- , m_mixerKeyDown(false)
- , m_mixerKeyUp(false)
  , m_linearPlunger(false)
  , m_plunger_retract(false)
  , m_joycustom1key(0)
@@ -1068,9 +1066,6 @@ void PinInput::Init()
 
    // initialize Open Pinball Device HIDs
    InitOpenPinballDevices();
-
-   m_mixerKeyDown = false;
-   m_mixerKeyUp = false;
 }
 
 
@@ -1198,10 +1193,6 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
          m_leftkey_down_usec = usec();
          m_leftkey_down_frame = g_pplayer->m_overall_frames;
       }
-
-      // Mixer volume only
-      m_mixerKeyDown = (keycode == g_pplayer->m_rgKeys[eVolumeDown] && dispid == DISPID_GameEvents_KeyDown);
-      m_mixerKeyUp   = (keycode == g_pplayer->m_rgKeys[eVolumeUp]   && dispid == DISPID_GameEvents_KeyDown);
 
       g_pplayer->m_ptable->FireKeyEvent(dispid, keycode);
    }
@@ -1897,6 +1888,27 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                      g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[i]);
          }
          return;
+      }
+   }
+
+   // Global Backglass/Playfield sound volume
+   if ((m_head == m_tail) && (curr_time_msec - m_nextKeyPressedTime) > 75)
+   {
+      static unsigned int lastVoumeNotifId = 0;
+      m_nextKeyPressedTime = curr_time_msec;
+      if (m_keyPressedState[eVolumeDown])
+      {
+         g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume - 1, 0, 100);
+         g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume - 1, 0, 100);
+         g_pplayer->UpdateVolume();
+         lastVoumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + "%", 500, lastVoumeNotifId);
+      }
+      else if (m_keyPressedState[eVolumeUp])
+      {
+         g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume + 1, 0, 100);
+         g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume + 1, 0, 100);
+         g_pplayer->UpdateVolume();
+         lastVoumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + "%", 500, lastVoumeNotifId);
       }
    }
 

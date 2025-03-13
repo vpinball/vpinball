@@ -989,6 +989,23 @@ void LiveUI::OpenLiveUI()
    }
 }
 
+unsigned int LiveUI::PushNotification(const string &message, const U32 lengthMs, const unsigned int reuseId)
+{
+   auto notif = std::ranges::find_if(m_notifications, [reuseId](const Notification &n) { return n.id == reuseId; });
+   if (notif != m_notifications.end())
+   {
+      notif->message = message;
+      notif->disappearTick = msec() + lengthMs;
+      return reuseId;
+   }
+   else
+   {
+      m_notifications.push_back( { m_nextNotificationIs++, message, msec() + lengthMs} );
+      return m_nextNotificationIs - 1;
+   }
+}
+
+
 void LiveUI::ToggleFPS()
 {
    m_show_fps = (m_show_fps + 1) % 3;

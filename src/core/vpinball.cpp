@@ -1080,7 +1080,6 @@ void VPinball::DoPlay(const int playMode)
       PinTable *live_table = table->CopyForPlay();
       if (live_table != nullptr)
       {
-         mixer_get_volume();
          table->EndAutoSaveCounter();
          new Player(table, live_table, playMode);
       }

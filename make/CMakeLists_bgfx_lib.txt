@@ -75,8 +75,6 @@ set(VPINBALL_SOURCES
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
-   src/audio/mixer.cpp
-   src/audio/mixer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 
