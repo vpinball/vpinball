@@ -68,6 +68,8 @@ PinSound::~PinSound()
 {
    UnInitialize();
 
+   delete [] m_pdata;
+
    // do not de-init as many PinSound's potentially 'share' it
    //SDL_QuitSubSystem(SDL_INIT_AUDIO);
    //isSDLAudioInitialized = false;

@@ -69,21 +69,21 @@ public:
    //SDL Audio
    //SDL_AudioSpec m_audioSpec; // audio spec format 
    SDL_AudioStream *m_pstream = nullptr; // VPinMAME streamer
-   float m_streamVolume = 0;
+   float m_streamVolume = 0.f;
 
-   // if the Reinitialize comes back good, We should free these in pintable.cpp or we're keeping two copies
+   // if the Reinitialize comes back good, we should free these in pintable.cpp or we're keeping two copies
    // one here and one from pintable.  Once everything is good we only need Mix_Chunk.   S_FIX S_REMOVE
    char *m_pdata = nullptr; // wav data set by caller directly
-   int m_cdata; // wav data length set by caller directly
+   int m_cdata = 0;         // wav data length set by caller directly
 
    // Sound filename and path
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
 
-   // used by the editor?  Sound Resource Manager?
-   int m_volume;
-   int m_balance;
-   int m_fade;
+   // can be set in the Sound Resource Manager, only used so far by PlaySound() in pintable.cpp/VBS-script
+   int m_volume = 0;
+   int m_balance = 0;
+   int m_fade = 0;
 
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
    SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
@@ -93,7 +93,7 @@ public:
    // old wav code only, but also used to convert raw wavs for SDL
    WAVEFORMATEX m_wfx;
    int m_cdata_org;
-   char *m_pdata_org; // save WAV in original raw format
+   char *m_pdata_org = nullptr; // for saving WAVs in the original raw format, points into m_pdata, so do not delete it!
 
    PinSound() {};
    PinSound(const Settings& settings);
