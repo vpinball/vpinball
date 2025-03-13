@@ -78,8 +78,6 @@ add_executable(vpinball WIN32
    src/core/pininput_OpenPinDev.cpp
    src/core/vpversion.h
 
-   src/audio/mixer.cpp
-   src/audio/mixer.h
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 

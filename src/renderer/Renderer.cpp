@@ -1781,9 +1781,6 @@ void Renderer::RenderDynamics()
 
    for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
       m_table->m_vrenderprobe[i]->ApplyAreaOfInterest();
-
-   if (!g_pplayer->m_liveUI->IsTweakMode())
-      mixer_draw(); // Draw the mixer volume
 }
 
 

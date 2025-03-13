@@ -119,10 +119,6 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
       break;
 
    // FIXME the following events are not handled by the SDL implementation
-   case MM_MIXM_CONTROL_CHANGE: // not implemented for SDL, still the mixer API is fairly buggy (no mapping to the right mixer, fails on some conf)
-      mixer_get_volume();
-      break;
-
    case WM_POINTERDOWN: // not implemented for SDL (SDL2 does not support touch devices under windows)
    case WM_POINTERUP:
    {
@@ -432,11 +428,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
     }
 #endif
 
-   #ifdef ENABLE_SDL_VIDEO // SDL Windowing
-   mixer_init(nullptr); // FIXME rewrite mixer with support for SDL
-   #else // Win32 Windowing
-   mixer_init(m_playfieldWnd->GetCore());
-   #endif
+   // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_init();
 
    // General player initialization
@@ -1017,7 +1009,7 @@ Player::~Player()
    }
    m_externalAudioPlayers.clear();
 
-   mixer_shutdown();
+   // FIXME remove or at least move legacy ushock to a plugin
    ushock_output_shutdown();
 
 #ifdef EXT_CAPTURE

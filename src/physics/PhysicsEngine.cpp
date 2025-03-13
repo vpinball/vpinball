@@ -693,8 +693,7 @@ void PhysicsEngine::UpdatePhysics()
       g_pplayer->m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
       #endif
 
-      // FIXME remove ? move HID to a plugin, remove mixer or at least outside of physics loop
-      mixer_update();
+      // FIXME remove or at least move legacy ushock to a plugin
       ushock_output_update(/*sim_msec*/cur_time_msec);
 
       #ifdef ACCURATETIMERS

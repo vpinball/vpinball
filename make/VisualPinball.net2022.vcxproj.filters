@@ -132,9 +132,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src/audio/mixer.cpp">
-      <Filter>audio</Filter>
-    </ClCompile>
     <ClCompile Include="src/audio/pinsound.cpp">
       <Filter>audio</Filter>
     </ClCompile>
@@ -708,9 +705,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/audio/pinsound.h">
-      <Filter>audio</Filter>
-    </ClInclude>
-    <ClInclude Include="src/audio/mixer.h">
       <Filter>audio</Filter>
     </ClInclude>
     <ClInclude Include="src/core/def.h">

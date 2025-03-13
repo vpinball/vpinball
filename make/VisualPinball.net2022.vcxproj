@@ -1121,7 +1121,6 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src/audio/mixer.cpp" />
     <ClCompile Include="src/audio/pinsound.cpp" />
     <ClCompile Include="src/core/stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
@@ -1650,7 +1649,6 @@
     <ClInclude Include="src\physics\AsyncDynamicQuadTree.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
-    <ClInclude Include="src/audio/mixer.h" />
     <ClInclude Include="src/audio/pinsound.h" />
     <ClInclude Include="src/core/def.h" />
     <ClInclude Include="src/core/dispid.h" />

@@ -31,7 +31,7 @@ public:
 
    void ToggleFPS();
    bool IsShowingFPSDetails() const { return m_show_fps > 1; }
-   void PushNotification(const string &message, const U32 lengthMs) { m_notifications.emplace_back(Notification(message, msec() + lengthMs)); }
+   unsigned int PushNotification(const string &message, const U32 lengthMs, const unsigned int reuseId = 0);
 
 private:
    // Main UI frame & panels
@@ -191,12 +191,12 @@ private:
    // Notifications
    struct Notification
    {
+      unsigned int id;
       string message;
       U32 disappearTick;
-      Notification() {}
-      Notification(const string& msg, const U32 tick)  : message(msg), disappearTick(tick) {}
    };
    vector<Notification> m_notifications;
+   unsigned int m_nextNotificationIs = 1;
 
    // Rendering
    RenderDevice* const m_rd;

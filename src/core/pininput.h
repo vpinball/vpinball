@@ -138,9 +138,6 @@ public:
    int m_num_joy;
    int uShockType;
 
-   bool m_mixerKeyDown;
-   bool m_mixerKeyUp;
-
    bool m_linearPlunger;
    bool m_plunger_retract; // enable 1s retract phase for button/key plunger
 
