@@ -2969,22 +2969,23 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
       return hr;
    //
 
-   if (isWav(pps->m_szPath)) // only use old code if playing wav's
-   if (FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ)))
+   const bool wav = isWav(pps->m_szPath);
+
+   if (wav && FAILED(hr = pstm->Write(&pps->m_wfx, sizeof(pps->m_wfx), &writ))) // only write for WAVs
       return hr;
 
 
-   if (FAILED(hr = pstm->Write(isWav(pps->m_szPath) ? &pps->m_cdata_org : &pps->m_cdata, sizeof(int), &writ)))
+   if (FAILED(hr = pstm->Write(wav ? &pps->m_cdata_org : &pps->m_cdata, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(isWav(pps->m_szPath) ? pps->m_pdata_org : pps->m_pdata, pps->m_cdata, &writ)))
+   if (FAILED(hr = pstm->Write(wav ? pps->m_pdata_org : pps->m_pdata, pps->m_cdata, &writ)))
       return hr;
 
    SoundOutTypes outputTarget = pps->GetOutputTarget();
    if (FAILED(hr = pstm->Write(&outputTarget, sizeof(bool), &writ)))
       return hr;
 
-   // Begin NEW_SOUND_VERSION data
+   // Begin NEW_SOUND_FORMAT_VERSION data
 
    if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
       return hr;
@@ -3055,7 +3056,9 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    }
    delete[] tmp;
 
-   if (isWav(pps->m_szPath) && FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
+   const bool wav = isWav(pps->m_szPath);
+
+   if (wav && FAILED(hr = pstm->Read(&pps->m_wfx, sizeof(pps->m_wfx), &read)))
    {
        delete pps;
        return hr;
@@ -3067,14 +3070,11 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   // Since vpinball was originally only for windows they used microsoft library import which stores/converts them
-   // to the waveformatex.  This only affects wav files.  So ogg files will have their original header.  For Wavs
-   // we put the regular wav header back on for SDL to process the file
-      DWORD waveFileSize;
-      char *waveFilePointer;
-
-      if (isWav(pps->m_szPath))
-      {
+   // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
+   // to the waveformatex.  OGG files will still have their original header.  For WAVs
+   // we put the regular WAV header back on for SDL to process the file
+   if (wav)
+   {
          struct WAVEHEADER
          {
             DWORD   dwRiff;    // "RIFF"
@@ -3090,6 +3090,9 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
          };
          // Static wave DATA tag
          static constexpr BYTE WaveData[] = { 'd','a','t','a' };
+
+      DWORD waveFileSize;
+      char *waveFilePointer;
 
          waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + pps->m_cdata;
          pps->m_pdata = new char[waveFileSize];
@@ -3113,24 +3116,21 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
          waveFilePointer += sizeof(WaveData);
          *(reinterpret_cast<DWORD *>(waveFilePointer)) = pps->m_cdata;
          waveFilePointer += sizeof(DWORD);
+
+      pps->m_pdata_org = waveFilePointer;
+      pps->m_cdata_org = pps->m_cdata;
+      pps->m_cdata = waveFileSize;
    }
    else
       pps->m_pdata = new char[pps->m_cdata];
 
-   if (FAILED(hr = pstm->Read(isWav(pps->m_szPath) ? waveFilePointer : pps->m_pdata, pps->m_cdata, &read)))
+   if (FAILED(hr = pstm->Read(wav ? pps->m_pdata_org : pps->m_pdata, wav ? pps->m_cdata_org : pps->m_cdata, &read)))
    {
       delete pps;
       return hr;
    }
 
-   if (isWav(pps->m_szPath))
-   {
-      pps->m_pdata_org = waveFilePointer;
-      pps->m_cdata_org = pps->m_cdata;
-      pps->m_cdata = waveFileSize;
-   }
-
-   // this reads in the settings that are used by the Windows UI in the Sound Manager.
+   // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
       SoundOutTypes outputTarget;
@@ -4673,8 +4673,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
 
 bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
 {
-#ifndef __STANDALONE__
-   if(isWav(pps->m_szPath))
+   if(extension_from_path(pps->m_szPath) == extension_from_path(szfilename))
    {
       FILE* f;
       if ((fopen_s(&f, szfilename, "wb") == 0) && f)
@@ -4684,48 +4683,13 @@ bool PinTable::ExportSound(PinSound * const pps, const char * const szfilename)
          return true;
       }
 
+#ifndef __STANDALONE__
       m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
-      return false;
-   }
-
-   // standard/old .wav export pipeline:
-
-   MMIOINFO mmio = {};
-
-   const HMMIO hmmio = mmioOpen((LPSTR)szfilename, &mmio, MMIO_ALLOCBUF | MMIO_CREATE | MMIO_EXCLUSIVE | MMIO_READWRITE);
-
-   if (hmmio != nullptr)
-   {
-      MMCKINFO pck = {};
-
-      pck.ckid = mmioStringToFOURCC("RIFF", MMIO_TOUPPER);
-      pck.cksize = pps->m_cdata + 36;
-      pck.fccType = mmioStringToFOURCC("WAVE", MMIO_TOUPPER);
-
-      MMRESULT result = mmioCreateChunk(hmmio, &pck, MMIO_CREATERIFF); //RIFF header
-      mmioWrite(hmmio, "fmt ", 4);                                     //fmt
-
-      // Create the format chunk.
-      pck.cksize = sizeof(WAVEFORMATEX);
-      result = mmioCreateChunk(hmmio, &pck, 4);//0
-      // Write the wave format data.
-      int i = 16;
-      mmioWrite(hmmio, (char *)&i, 4);
-      mmioWrite(hmmio, (char*)&pps->m_wfx, (LONG)sizeof(pps->m_wfx) - 2); //END OF CORRECTION
-
-      mmioWrite(hmmio, "data", 4);                       //data chunk
-      i = pps->m_cdata; mmioWrite(hmmio, (char *)&i, 4); // data size bytes
-
-      const LONG wcch = mmioWrite(hmmio, pps->m_pdata, pps->m_cdata);
-      result = mmioClose(hmmio, 0);
-
-      if (wcch != pps->m_cdata) 
-         m_mdiTable->MessageBox("Sound file incomplete!", "Visual Pinball", MB_ICONERROR);
-      else
-         return true;
    }
    else
-      m_mdiTable->MessageBox("Can not Open/Create Sound file!", "Visual Pinball", MB_ICONERROR);
+      m_mdiTable->MessageBox("File extension does not match, will not convert sound to other format!", "Visual Pinball", MB_ICONERROR);
+#else
+   }
 #endif
 
    return false;
@@ -7296,12 +7260,12 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    volume += dequantizeSignedPercent(pps->m_volume);
    pan += dequantizeSignedPercent(pps->m_balance);
    front_rear_fade += dequantizeSignedPercent(pps->m_fade);
-   
+
    if (m_tblMirrorEnabled)
       pan = -pan;
-   
+
    pps->Play(volume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
-   
+
    return S_OK;
 }
 

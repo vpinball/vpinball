@@ -5,7 +5,7 @@
 #include <SDL3_mixer/SDL_mixer.h>
 
 // Retrieve settings from the VPinball.ini file
-Settings PinSound::m_settings = nullptr;
+Settings PinSound::m_settings;
 
 // SDL Sound Device Id for each output 
 int PinSound::m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the table sounds
@@ -223,8 +223,8 @@ HRESULT PinSound::ReInitialize()
       return E_FAIL;
    }
 
-   /* PLOGI << "Loaded Sound File: " << m_szName << " Sound Type: " << getFileExt() << 
-      " # of Audio Channels: " << ( (getFileExt() =="wav") ? std::to_string(getChannelCountWav() ) : "Unknown" ) <<
+   /* PLOGI << "Loaded Sound File: " << m_szName << " Sound Type: " << extension_from_path(m_szPath) << 
+      " # of Audio Channels: " << ( (extension_from_path(m_szPath) == "wav") ? std::to_string(getChannelCountWav() ) : "Unknown" ) <<
       " Assigned Channel: " << m_assignedChannel << " SoundOut (0=table, 1=bg): " << (int)m_outputTarget; */
 
    return S_OK;
@@ -1416,24 +1416,6 @@ void PinSound::SSFEffect(int chan, void *stream, int len, void *udata)
 }
 
 /**
- * (Static)
- * @brief Retrieves the file extension from the stored file path.
- * 
- * This function extracts the file extension from the member variable `m_szPath`. 
- * If no extension is found (i.e., no '.' is present in the path), it returns an empty string.
- * 
- * @return std::string The file extension without the dot (e.g., "wav", "mp3"), or an empty string if no extension is found.
- */
-std::string PinSound::getFileExt() const
-{
-   const size_t pos = m_szPath.find_last_of('.');
-   if(pos == string::npos)
-      return string();
-   return m_szPath.substr(pos+1);
-}
-
-
-/**
  * @brief Retrieves the number of audio channels from a WAV file.
  *
  * This function reads the WAV file header and extracts the number of audio channels
@@ -1524,7 +1506,7 @@ void PinSound::EnumerateAudioDevices(vector<AudioDevice>& audioDevices)
 
    //output name of audio driver
    const char *pdriverName;
-   if( (pdriverName = SDL_GetCurrentAudioDriver() ) != NULL)
+   if( (pdriverName = SDL_GetCurrentAudioDriver() ) != nullptr)
       PLOGI << "Current Audio Driver: " << pdriverName;
    else
       PLOGE << "SDL Get Audio Driver failed: " << SDL_GetError();

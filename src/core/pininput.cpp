@@ -691,7 +691,7 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
       m_num_joy = 0;
    }
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
-      const DWORD now = timeGetTime();
+      const DWORD now = msec();
       if (m_rumbleOffTime <= now || m_rumbleOffTime - now > 65535) {
          m_rumbleRunning = false;
          XINPUT_VIBRATION vibration = {};
@@ -875,7 +875,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
    case PI_XINPUT:
 #ifdef ENABLE_XINPUT
       if (m_inputDeviceXI >= 0) {
-         m_rumbleOffTime = ms_duration + timeGetTime();
+         m_rumbleOffTime = ms_duration + msec();
          m_rumbleRunning = true;
          XINPUT_VIBRATION vibration = {};
          // On both PS4 and X360:

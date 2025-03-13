@@ -146,8 +146,8 @@ private:
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
 
    static Settings m_settings; // get key/value from VPinball.ini
-   static int m_sdl_STD_idx;  // the table sound device to play sounds out of
-   static int m_sdl_BG_idx;  //the BG sounds/music device to play sounds out of
+   static int m_sdl_STD_idx;   // the table sound device to play sounds out of
+   static int m_sdl_BG_idx;    //the BG sounds/music device to play sounds out of
 
    MixEffectsData m_mixEffectsData;
 
@@ -167,7 +167,6 @@ private:
    void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
 
    // sound file meta data extraction
-   std::string getFileExt() const; // get the sound file extension
    uint16_t getChannelCountWav() const; //gets the number of channels the original WAV was encoded with
 
     // Play methods for each SNDCFG
@@ -190,14 +189,14 @@ private:
    void setPitch(int pitch, float randompitch);
 
    // Mixer effects (Mix_RegisterEffect) callbacks
-   void static SSFEffect(int chan, void *stream, int len, void *udata);
-   void static MoveFrontToRearEffect(int chan, void *stream, int len, void *udata);
-   void static Pan2ChannelEffect(int chan, void *stream, int len, void *udata);
+   static void SSFEffect(int chan, void* stream, int len, void* udata);
+   static void MoveFrontToRearEffect(int chan, void* stream, int len, void* udata);
+   static void Pan2ChannelEffect(int chan, void* stream, int len, void* udata);
 
    // MixEffects support funcs
-   void static calcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan);
-   void static calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight);
-   float static PanSSF(float pan);
-   float static PanTo3D(float input);
-   float static FadeSSF(float front_rear_fade);
+   static void calcPan(float& leftPanRatio, float& rightPanRatio, float adjustedVolRatio, float pan);
+   static void calcFade(float leftPanRatio, float rightPanRatio, float fadeRatio, float& frontLeft, float& frontRight, float& rearLeft, float& rearRight);
+   static float PanSSF(float pan);
+   static float PanTo3D(float input);
+   static float FadeSSF(float front_rear_fade);
 };
