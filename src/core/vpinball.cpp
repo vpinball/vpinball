@@ -1672,8 +1672,8 @@ void VPinball::UpdateRecentFileList(const string& szfilename)
       // add in the list of recently accessed files
       for (size_t i = 0; i < m_recentTableList.size(); i++)
       {
-         // now search for filenames with & and replace with && so that these display correctly
-         const string recentMenuname = string_replace_all(m_recentTableList[i], "&"s, "&&"s);
+         // now search for filenames with & and replace with && so that these display correctly, and add shortcut 1..X in front
+         const string recentMenuname = '&' + std::to_string(i+1) + "  " + string_replace_all(m_recentTableList[i], "&"s, "&&"s);
 
          // set the IDM of this menu item
          // set up the menu info block
