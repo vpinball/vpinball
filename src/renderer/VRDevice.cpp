@@ -269,22 +269,22 @@ public:
 
    void CreateImageViews(VRDevice::SwapchainInfo& swapchain) override
    {
+      // TODO BGFX_TEXTURE_BLIT_DST was added since we are blitting the depth instead of directly using it. Remove asap
+      uint64_t flags = BGFX_TEXTURE_RT;
+      swapchain.format = bgfx::TextureFormat::Enum::Count;
+      switch (swapchain.backendFormat)
+      { // Convert from values returned from GetSupportedColorSwapchainFormats / GetSupportedDepthSwapchainFormats
+      case DXGI_FORMAT_R8G8B8A8_UNORM: swapchain.format = bgfx::TextureFormat::RGBA8; break;
+      case DXGI_FORMAT_B8G8R8A8_UNORM: swapchain.format = bgfx::TextureFormat::BGRA8; break;
+      case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::RGBA8; flags |= BGFX_TEXTURE_SRGB; break;
+      case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::BGRA8; flags |= BGFX_TEXTURE_SRGB; break;
+      case DXGI_FORMAT_D32_FLOAT: swapchain.format = bgfx::TextureFormat::D32F; flags |= BGFX_TEXTURE_BLIT_DST; break;
+      case DXGI_FORMAT_D16_UNORM: swapchain.format = bgfx::TextureFormat::D16; flags |= BGFX_TEXTURE_BLIT_DST; break;
+      default: assert(false); break; // Unsupported format
+      };
       for (size_t i = 0; i < swapchainImagesMap[swapchain.swapchain].second.size(); i++)
       {
-         bgfx::TextureHandle handle;
-         swapchain.format = bgfx::TextureFormat::Enum::Count;
-         switch (swapchain.backendFormat)
-         { // Convert from values returned from GetSupportedColorSwapchainFormats / GetSupportedDepthSwapchainFormats
-         case DXGI_FORMAT_R8G8B8A8_UNORM: swapchain.format = bgfx::TextureFormat::RGBA8; break;
-         case DXGI_FORMAT_B8G8R8A8_UNORM: swapchain.format = bgfx::TextureFormat::BGRA8; break;
-         case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: swapchain.format = bgfx::TextureFormat::RGBA8S; break;
-         case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: assert(false); break; // Not supported by BGFX
-         case DXGI_FORMAT_D32_FLOAT: swapchain.format = bgfx::TextureFormat::D32F; break;
-         case DXGI_FORMAT_D16_UNORM: swapchain.format = bgfx::TextureFormat::D16; break;
-         default: assert(false); break; // Unsupported format
-         };
-         // TODO BGFX_TEXTURE_BLIT_DST was added since we are blitting the depth instead of directly using it. Remove asap
-         handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, BGFX_TEXTURE_RT | BGFX_TEXTURE_BLIT_DST);
+         const bgfx::TextureHandle handle = bgfx::createTexture2D(swapchain.width, swapchain.height, false, swapchain.arraySize, swapchain.format, flags);
          bgfx::frame(); // TODO This is needed for BGFX to actually create the texture, but this is somewhat hacky and suboptimal
          uintptr_t nativePtr = bgfx::overrideInternal(handle, reinterpret_cast<uintptr_t>(GetSwapchainImage(swapchain.swapchain, (uint32_t)i)));
          assert(nativePtr); // Override failed
@@ -730,7 +730,32 @@ void VRDevice::SetupHMD()
       return;
 
    // Get the System's properties for some general information about the hardware and the vendor.
+   XrSystemColorSpacePropertiesFB colorSpaceProperties { XR_TYPE_SYSTEM_COLOR_SPACE_PROPERTIES_FB };
+   if (m_colorSpaceExtensionSupported)
+      m_systemProperties.next = &colorSpaceProperties;
    OPENXR_CHECK(xrGetSystemProperties(m_xrInstance, m_systemID, &m_systemProperties), "Failed to get SystemProperties.");
+   if (m_colorSpaceExtensionSupported)
+   {
+      PLOGI << "Native XR device colorspace: " << colorSpaceProperties.colorSpace;
+
+      // Set color space to get the same rendering on all HMD and usual desktop play
+      PFN_xrEnumerateColorSpacesFB xrEnumerateColorSpacesFB;
+      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrEnumerateColorSpacesFB", (PFN_xrVoidFunction*)&xrEnumerateColorSpacesFB), "Failed to get xrEnumerateColorSpacesFB.");
+      PFN_xrSetColorSpaceFB xrSetColorSpaceFB;
+      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrSetColorSpaceFB", (PFN_xrVoidFunction*)&xrSetColorSpaceFB), "Failed to get xrSetColorSpaceFB.");
+      uint32_t colorSpaceCount;
+      xrEnumerateColorSpacesFB(m_session, 0, &colorSpaceCount, nullptr);
+      XrColorSpaceFB* colorSpaces = new XrColorSpaceFB[colorSpaceCount];
+      xrEnumerateColorSpacesFB(m_session, colorSpaceCount, &colorSpaceCount, colorSpaces);
+      for (uint32_t i = 0; i < colorSpaceCount; i++)
+      {
+         if (colorSpaces[i] == XR_COLOR_SPACE_REC709_FB)
+         {
+            xrSetColorSpaceFB(m_session, XR_COLOR_SPACE_REC709_FB);
+            break;
+         }
+      }
+   }
 
    // Gets the View Configuration Types. The first call gets the count of the array that will be returned. The next call fills out the array.
    uint32_t viewConfigurationCount = 0;
@@ -872,14 +897,6 @@ void VRDevice::CreateSession()
    referenceSpaceCI.referenceSpaceType = XR_REFERENCE_SPACE_TYPE_LOCAL;
    referenceSpaceCI.poseInReferenceSpace = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 0.0f } };
    OPENXR_CHECK(xrCreateReferenceSpace(m_session, &referenceSpaceCI, &m_localSpace), "Failed to create ReferenceSpace.");
-
-   // Set color space to get the same rendering on all HMD and usual desktop play
-   if (m_colorSpaceExtensionSupported)
-   {
-      PFN_xrSetColorSpaceFB xrSetColorSpaceFB;
-      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrSetColorSpaceFB", (PFN_xrVoidFunction*)&xrSetColorSpaceFB), "Failed to get xrSetColorSpaceFB.");
-      xrSetColorSpaceFB(m_session, XR_COLOR_SPACE_REC709_FB);
-   }
 
    // Get the supported swapchain formats as an array of int64_t and ordered by runtime preference.
    uint32_t formatCount = 0;
