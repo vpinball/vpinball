@@ -804,6 +804,14 @@ void VRDevice::SetupHMD()
       m_eyeWidth = static_cast<int>(m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
       m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
+   // Limit to a resolution, under the maximum texture size supported by the GPU
+   const bgfx::Caps* caps = bgfx::getCaps();
+   if ((m_eyeWidth >= caps->limits.maxTextureSize) || (m_eyeHeight >= caps->limits.maxTextureSize))
+   {
+      PLOGI << "Requested resolution exceed the GPU capability, defaulting to headset recommended resolution";
+      m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
+      m_eyeHeight = m_viewConfigurationViews[0].recommendedImageRectHeight;
+   }
    PLOGI << "Headset recommended resolution: " << m_viewConfigurationViews[0].recommendedImageRectWidth << 'x' << m_viewConfigurationViews[0].recommendedImageRectHeight;
    PLOGI << "Headset maximum resolution: " << m_viewConfigurationViews[0].maxImageRectWidth << 'x' << m_viewConfigurationViews[0].maxImageRectHeight;
    PLOGI << "Selected resolution: " << m_eyeWidth << 'x' << m_eyeHeight;
