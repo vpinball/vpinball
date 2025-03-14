@@ -2996,7 +2996,7 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
    const int frontRearFade = pps->GetFrontRearFade();
    if (FAILED(hr = pstm->Write(&frontRearFade, sizeof(int), &writ)))
       return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
+   if (FAILED(hr = pstm->Write(&volume, sizeof(int), &writ)))
       return hr;
 
    return S_OK;
