@@ -81,7 +81,7 @@ public:
    string m_szPath; // full filename, incl. path
 
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
-   SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
+   SoundOutTypes m_outputTarget = SoundOutTypes::SNDOUT_BACKGLASS; //Is it table sound device or BG sound device. 
 
    // This is because when VP imports WAVs into the Windows versions it stores them in WAVEFORMATEX
    // format.  We need WAV.  So this keeps the original format for exporting/import, etc for windows. 
@@ -122,7 +122,7 @@ public:
    void StreamVolume(const float volume);
 
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
-   void SetOutputTarget(SoundOutTypes target) { m_outputTarget = target; }
+   void SetOutputTarget(SoundOutTypes target) { assert(SoundOutTypes::SNDOUT_TABLE <= target&& target <= SoundOutTypes::SNDOUT_BACKGLASS); m_outputTarget = target; }
 
    // -100..100
    int GetVolume() const { return m_volume; }
@@ -161,7 +161,6 @@ private:
    static std::mutex m_SDLAudioInitMutex;
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
 
-   static Settings m_settings; // get key/value from VPinball.ini
    static int m_sdl_STD_idx; // the table sound device to play sounds out of
    static int m_sdl_BG_idx; // the BG sounds/music device to play sounds out of
 
@@ -194,7 +193,7 @@ private:
 
    // Static class methods
 
-   static void initSDLAudio();
+   static void initSDLAudio(const Settings& settings);
    static int getChannel(); // get an open channel assigned for the sound sample
 
    // Mixer effects (Mix_RegisterEffect) callbacks

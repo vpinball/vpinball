@@ -2975,10 +2975,10 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
       return hr;
 
 
-   if (FAILED(hr = pstm->Write(wav ? &pps->m_cdata_org : &pps->m_cdata, sizeof(int), &writ)))
+   if (FAILED(hr = pstm->Write(&pps->m_cdata_org, sizeof(int), &writ)))
       return hr;
 
-   if (FAILED(hr = pstm->Write(wav ? pps->m_pdata_org : pps->m_pdata, pps->m_cdata, &writ)))
+   if (FAILED(hr = pstm->Write(pps->m_pdata_org, pps->m_cdata_org, &writ)))
       return hr;
 
    const SoundOutTypes outputTarget = pps->GetOutputTarget();
@@ -3067,11 +3067,12 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
        return hr;
    }
 
-   if (FAILED(hr = pstm->Read(&pps->m_cdata, sizeof(int), &read)))
+   if (FAILED(hr = pstm->Read(&pps->m_cdata_org, sizeof(int), &read)))
    {
        delete pps;
        return hr;
    }
+   pps->m_cdata = pps->m_cdata_org;
 
    // Since vpinball was originally only for windows, the microsoft library import was used, which stores/converts WAVs
    // to the waveformatex.  OGG files will still have their original header.  For WAVs
@@ -3097,7 +3098,7 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
       DWORD waveFileSize;
       char *waveFilePointer;
 
-         waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + pps->m_cdata;
+         waveFileSize = sizeof(WAVEHEADER) + sizeof(WAVEFORMATEX) + pps->m_wfx.cbSize + sizeof(WaveData) + sizeof(DWORD) + pps->m_cdata_org;
          pps->m_pdata = new char[waveFileSize];
          waveFilePointer = pps->m_pdata;
          WAVEHEADER * const waveHeader = reinterpret_cast<WAVEHEADER *>(pps->m_pdata);
@@ -3117,17 +3118,16 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
          // Data header
          memcpy(waveFilePointer, WaveData, sizeof(WaveData));
          waveFilePointer += sizeof(WaveData);
-         *(reinterpret_cast<DWORD *>(waveFilePointer)) = pps->m_cdata;
+         *(reinterpret_cast<DWORD *>(waveFilePointer)) = pps->m_cdata_org;
          waveFilePointer += sizeof(DWORD);
 
       pps->m_pdata_org = waveFilePointer;
-      pps->m_cdata_org = pps->m_cdata;
       pps->m_cdata = waveFileSize;
    }
    else
-      pps->m_pdata = new char[pps->m_cdata];
+      pps->m_pdata = pps->m_pdata_org = new char[pps->m_cdata];
 
-   if (FAILED(hr = pstm->Read(wav ? pps->m_pdata_org : pps->m_pdata, wav ? pps->m_cdata_org : pps->m_cdata, &read)))
+   if (FAILED(hr = pstm->Read(pps->m_pdata_org, pps->m_cdata_org, &read)))
    {
       delete pps;
       return hr;
@@ -3136,12 +3136,14 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
    // this reads in the settings that are used by the Windows UI in the Sound Manager and when PlaySound() is used.
    if (LoadFileVersion >= NEW_SOUND_FORMAT_VERSION)
    {
-      SoundOutTypes outputTarget;
+      SoundOutTypes outputTarget = SoundOutTypes::SNDOUT_TABLE;
       if (FAILED(hr = pstm->Read(&outputTarget, sizeof(char), &read)))
       {
 		   delete pps;
 		   return hr;
       }
+      if (outputTarget < 0 || outputTarget > SoundOutTypes::SNDOUT_BACKGLASS)
+         outputTarget = SoundOutTypes::SNDOUT_TABLE;
       pps->SetOutputTarget(outputTarget);
       int volume;
       if (FAILED(hr = pstm->Read(&volume, sizeof(int), &read)))
@@ -4788,11 +4790,13 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
    case SNDOUT_BACKGLASS:
 	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Backglass");
 	   break;
-   default:
-	   assert(false);
    case SNDOUT_TABLE:
 	   ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Table");
 	   break;
+   default:
+      assert(false);
+      ListView_SetItemText(hwndListView, index, 2, (LPSTR) "Table");
+      break;
    }
    char textBuf[40];
    sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetPan()));
