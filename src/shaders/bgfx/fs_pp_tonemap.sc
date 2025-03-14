@@ -670,7 +670,7 @@ void main()
          #endif
          
          // Perform color grading by using the tonemapped value rescaled to initial luminance range
-         const vec3 satCol = saturate(col / sceneLum_x_invDisplayMaxLum);
+         const vec3 satCol = clamp(col / sceneLum_x_invDisplayMaxLum, vec3_splat(0.0001), vec3_splat(1.0)); // 0 would lead to NaNs after division
          col *= FBColorGrade(satCol) / satCol;
 
          #ifdef TM_OUT_LINEAR
