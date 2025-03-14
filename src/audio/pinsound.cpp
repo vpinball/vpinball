@@ -4,9 +4,6 @@
 
 #include <SDL3_mixer/SDL_mixer.h>
 
-// Retrieve settings from the VPinball.ini file
-Settings PinSound::m_settings;
-
 // SDL Sound Device Id for each output 
 int PinSound::m_sdl_STD_idx = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the table sounds
 int PinSound::m_sdl_BG_idx  = SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK;  // the BG sounds/music
@@ -43,21 +40,19 @@ SoundConfigTypes PinSound::m_SoundMode3D;
 PinSound::PinSound(const Settings& settings)
 {
    {
-   const std::lock_guard<std::mutex> lg(m_SDLAudioInitMutex);
+      const std::lock_guard<std::mutex> lg(m_SDLAudioInitMutex);
 
-   if (!isSDLAudioInitialized) {
-      m_settings = settings;
+      if (!isSDLAudioInitialized) {
+         PinSound::initSDLAudio(settings);
+         isSDLAudioInitialized = true;
 
-      PinSound::initSDLAudio();
-      isSDLAudioInitialized = true;
+         // Set the output devices AudioSpec
+         Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); // the struct that gets passed to the MixEffect callbacks.
+         Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
 
-      // Set the output devices AudioSpec
-      Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); // the struct that gets passed to the MixEffect callbacks.
-      Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
-
-      PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
-      << " channels: " << m_audioSpecOutput.channels;
-   }
+         PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
+         << " channels: " << m_audioSpecOutput.channels;
+      }
    }
 
    // set the MixEffects output params that are used for resampling the incoming stream to callback.
@@ -91,12 +86,12 @@ PinSound::~PinSound()
  *
  * @see SDL_InitSubSystem(SDL_INIT_AUDIO), Mix_OpenAudio(), SDL_GetAudioDeviceFormat(), Mix_AllocateChannels()
  */
-void PinSound::initSDLAudio()
+void PinSound::initSDLAudio(const Settings& settings)
 {
    string soundDeviceName;
    string soundDeviceBGName;
-   const bool good = m_settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
-   const bool good2 = m_settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
+   const bool good = settings.LoadValue(Settings::Player, "SoundDevice"s, soundDeviceName);
+   const bool good2 = settings.LoadValue(Settings::Player, "SoundDeviceBG"s, soundDeviceBGName);
 
     if (!good && !good2) // use the default SDL audio device
     {
@@ -128,7 +123,7 @@ void PinSound::initSDLAudio()
       }
     }
 
-   PinSound::m_SoundMode3D = (SoundConfigTypes) m_settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   PinSound::m_SoundMode3D = (SoundConfigTypes) settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
 
    if (!SDL_WasInit(SDL_INIT_AUDIO))
       if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {
