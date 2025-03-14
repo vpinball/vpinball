@@ -2981,17 +2981,20 @@ HRESULT PinTable::SaveSoundToStream(const PinSound * const pps, IStream *pstm)
    if (FAILED(hr = pstm->Write(wav ? pps->m_pdata_org : pps->m_pdata, pps->m_cdata, &writ)))
       return hr;
 
-   SoundOutTypes outputTarget = pps->GetOutputTarget();
+   const SoundOutTypes outputTarget = pps->GetOutputTarget();
    if (FAILED(hr = pstm->Write(&outputTarget, sizeof(bool), &writ)))
       return hr;
 
    // Begin NEW_SOUND_FORMAT_VERSION data
 
-   if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
+   const int volume = pps->GetVolume();
+   if (FAILED(hr = pstm->Write(&volume, sizeof(int), &writ)))
       return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_balance, sizeof(int), &writ)))
+   const int pan = pps->GetPan();
+   if (FAILED(hr = pstm->Write(&pan, sizeof(int), &writ)))
       return hr;
-   if (FAILED(hr = pstm->Write(&pps->m_fade, sizeof(int), &writ)))
+   const int frontRearFade = pps->GetFrontRearFade();
+   if (FAILED(hr = pstm->Write(&frontRearFade, sizeof(int), &writ)))
       return hr;
    if (FAILED(hr = pstm->Write(&pps->m_volume, sizeof(int), &writ)))
       return hr;
@@ -3140,26 +3143,33 @@ HRESULT PinTable::LoadSoundFromStream(IStream *pstm, const int LoadFileVersion)
 		   return hr;
       }
       pps->SetOutputTarget(outputTarget);
-      if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
+      int volume;
+      if (FAILED(hr = pstm->Read(&volume, sizeof(int), &read)))
       {
 		   delete pps;
 		   return hr;
       }
-      if (FAILED(hr = pstm->Read(&pps->m_balance, sizeof(int), &read)))
+      pps->SetVolume(volume);
+      int pan;
+      if (FAILED(hr = pstm->Read(&pan, sizeof(int), &read)))
       {
 		   delete pps;
 		   return hr;
       }
-      if (FAILED(hr = pstm->Read(&pps->m_fade, sizeof(int), &read)))
+      pps->SetPan(pan);
+      int frontRearFade;
+      if (FAILED(hr = pstm->Read(&frontRearFade, sizeof(int), &read)))
       {
 		   delete pps;
 		   return hr;
       }
-      if (FAILED(hr = pstm->Read(&pps->m_volume, sizeof(int), &read)))
+      pps->SetFrontRearFade(frontRearFade);
+      if (FAILED(hr = pstm->Read(&volume, sizeof(int), &read)))
       {
 		   delete pps;
 		   return hr;
       }
+      pps->SetVolume(volume);
    }
    else
    {
@@ -4705,9 +4715,9 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
 
    //!! meh to all of this: manually copy old sound manager params to temp vars
 
-   const int balance = pps->m_balance;
-   const int fade = pps->m_fade;
-   const int volume = pps->m_volume;
+   const int pan = pps->GetPan();
+   const int frontRearFade = pps->GetFrontRearFade();
+   const int volume = pps->GetVolume();
    const SoundOutTypes outputTarget = pps->GetOutputTarget();
    const string szName = pps->m_szName;
 
@@ -4724,9 +4734,9 @@ void PinTable::ReImportSound(const HWND hwndListView, PinSound * const pps, cons
    delete ppsNew;
 
    // recopy old settings over to new sound file
-   pps->m_balance = balance;
-   pps->m_fade = fade;
-   pps->m_volume = volume;
+   pps->SetPan(pan);
+   pps->SetFrontRearFade(frontRearFade);
+   pps->SetVolume(volume);
    pps->SetOutputTarget(outputTarget);
    pps->m_szName = szName;
 #endif
@@ -4785,11 +4795,11 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 	   break;
    }
    char textBuf[40];
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_balance));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetPan()));
    ListView_SetItemText(hwndListView, index, 3, textBuf);
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_fade));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetFrontRearFade()));
    ListView_SetItemText(hwndListView, index, 4, textBuf);
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->m_volume));
+   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetVolume()));
    ListView_SetItemText(hwndListView, index, 5, textBuf);
 
    return index;
@@ -7255,14 +7265,6 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
    }
 
    PinSound * const pps = m_vsound[i];
-
-   // if these are set then its cumulatively added to the values the table script is generating.  A bias.
-   volume += dequantizeSignedPercent(pps->m_volume);
-   pan += dequantizeSignedPercent(pps->m_balance);
-   front_rear_fade += dequantizeSignedPercent(pps->m_fade);
-
-   if (m_tblMirrorEnabled)
-      pan = -pan;
 
    pps->Play(volume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
 

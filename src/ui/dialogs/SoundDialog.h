@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SoundDialog : public CDialog
+class SoundDialog final : public CDialog
 {
 public:
     SoundDialog();
@@ -38,9 +38,8 @@ private:
 class SoundPositionDialog final : public CDialog
 {
 public:
-	int m_volume, m_fade, m_balance;
+	int m_volume, m_fade, m_balance; // from the CSliders
 	SoundOutTypes m_cOutputTarget;
-	PinSound *m_pPinSound;
 
 	SoundPositionDialog(PinSound * const pps);
 	virtual ~SoundPositionDialog();
@@ -59,12 +58,16 @@ protected:
 	virtual void OnCancel();
 
 private:
+	PinSound *m_pPinSound;
+
 	CSlider m_Volume;
 	CSlider m_Fader;
 	CSlider m_Balance;
+
 	void GetDialogValues();
 	void ReadValuesFromSliders();
 	void TestSound();
+
 	//int SliderToValue(const int Slider);
 	//int ValueToSlider(const int Value);
 };

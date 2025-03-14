@@ -539,9 +539,6 @@ public:
 
    void FVerifySaveToClose();
 
-   //void Play2(const LPDIRECTSOUNDBUFFER &pdsb, const int &decibelvolume, float randompitch, int pitch, PinSound * pps, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
-   //void Play(PinSoundCopy * ppsc, const int &decibelvolume, float randompitch, const LPDIRECTSOUNDBUFFER &pdsb, int pitch, PinDirectSound * pDS, float pan, float front_rear_fade, const int &flags, const VARIANT_BOOL &restart);
-
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
 

@@ -241,11 +241,8 @@ BOOL SoundDialog::OnCommand( WPARAM wParam, LPARAM lParam )
                 ListView_GetItem( hSoundList, &lvitem );
 
                 PinSound * const pps = (PinSound *)lvitem.lParam;
-                const float volume = dequantizeSignedPercent(pps->m_volume);
-                const float pan = dequantizeSignedPercent(pps->m_balance);
-                const float front_rear_fade = dequantizeSignedPercent(pps->m_fade);
+                pps->Play(1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
 
-                pps->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false, false);
                 GetDlgItem(IDC_STOP).EnableWindow(TRUE);
             }
             break;
@@ -554,9 +551,9 @@ void SoundDialog::SoundPosition()
 				ListView_GetItem(hSoundList, &lvitem);
 				pps = (PinSound *)lvitem.lParam;
 				pps->SetOutputTarget(spd.m_cOutputTarget);
-				pps->m_balance = spd.m_balance;
-				pps->m_fade = spd.m_fade;
-				pps->m_volume = spd.m_volume;
+				pps->SetPan(spd.m_balance);
+				pps->SetFrontRearFade(spd.m_fade);
+				pps->SetVolume(spd.m_volume);
 
 				pt->SetNonUndoableDirty(eSaveDirty);
 
@@ -634,13 +631,14 @@ void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolT
    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
-SoundPositionDialog::SoundPositionDialog(PinSound * const pps) : CDialog(IDD_SOUND_POSITION_DIALOG)
+SoundPositionDialog::SoundPositionDialog(PinSound * const pps)
+   : CDialog(IDD_SOUND_POSITION_DIALOG)
+   , m_volume(pps->GetVolume())
+   , m_fade(pps->GetFrontRearFade())
+   , m_balance(pps->GetPan())
+   , m_cOutputTarget(pps->GetOutputTarget())
+   , m_pPinSound(pps)
 {
-	m_balance = pps->m_balance;
-	m_fade = pps->m_fade;
-	m_volume = pps->m_volume;
-	m_cOutputTarget = pps->GetOutputTarget();
-	m_pPinSound = pps;
 }
 
 SoundPositionDialog::~SoundPositionDialog()
@@ -758,11 +756,7 @@ void SoundPositionDialog::SetTextValue(int ctl, int val)
 
 void SoundPositionDialog::GetDialogValues()
 {
-	m_cOutputTarget = SNDOUT_TABLE;
-	if (IsDlgButtonChecked(IDC_SPT_BACKGLASS))
-	{
-		m_cOutputTarget = SNDOUT_BACKGLASS;
-	}
+	m_cOutputTarget = IsDlgButtonChecked(IDC_SPT_BACKGLASS) ? SNDOUT_BACKGLASS : SNDOUT_TABLE;
 }
 
 void SoundPositionDialog::ReadValuesFromSliders()
@@ -794,17 +788,25 @@ BOOL SoundPositionDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
 void SoundPositionDialog::TestSound()
 {
-	// Hold the actual output target temporarily and reinitialize.  It could be reset if dialog is canceled.
+	// Hold the actual settings temporarily and reinitialize, as it could be reset if dialog is canceled.
 	const SoundOutTypes iOutputTargetTmp = m_pPinSound->GetOutputTarget();
+	const int iVolume = m_pPinSound->GetVolume();
+	const int iPan = m_pPinSound->GetPan();
+	const int iFrontRearFade = m_pPinSound->GetFrontRearFade();
+
 	GetDialogValues();
+
 	m_pPinSound->SetOutputTarget(m_cOutputTarget);
+	m_pPinSound->SetVolume(m_volume);
+	m_pPinSound->SetPan(m_balance);
+	m_pPinSound->SetFrontRearFade(m_fade);
 
-	const float volume = dequantizeSignedPercent(m_volume);
-	const float pan = dequantizeSignedPercent(m_balance);
-	const float front_rear_fade = dequantizeSignedPercent(m_fade);
+	m_pPinSound->Play(1.0f, 0.0f, 0, 0.f, 0.f, 0, false, false);
 
-	m_pPinSound->Play((1.0f + volume) * 100.0f, 0.0f, 0, pan, front_rear_fade, 0, false, false);
 	m_pPinSound->SetOutputTarget(iOutputTargetTmp);
+	m_pPinSound->SetVolume(iVolume);
+	m_pPinSound->SetPan(iPan);
+	m_pPinSound->SetFrontRearFade(iFrontRearFade);
 }
 
 void SoundPositionDialog::OnOK()

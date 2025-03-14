@@ -297,9 +297,17 @@ void PinSound::UpdateVolume()
  * 
  * @note Called to play the table sounds via pintable.cpp.  This is the main call from the tables for playing sound.
  */
-void PinSound::Play(const float volume, const float randompitch, const int pitch, 
-                    const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
+void PinSound::Play(float volume, const float randompitch, const int pitch, 
+                    float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart)
 {
+   // cumulatively add the settings from the table/sound-manager to the incoming values
+   volume += dequantizeSignedPercent(m_volume);
+   pan += dequantizeSignedPercent(m_pan);
+   front_rear_fade += dequantizeSignedPercent(m_frontRearFade);
+
+   if (g_pplayer && g_pplayer->m_ptable->m_tblMirrorEnabled)
+      pan = -pan;
+
    // Clamp volume
    constexpr float minVol = .08f;  // some table sounds like rolling are extremely low.  Set a minimum or you cant hear it.
    float nVolume = clamp(volume+minVol, 0.0f, 1.0f);

@@ -40,6 +40,9 @@ FIXES:
 
 - fix 0-scaled rubber crash (like it can happen if invalid UI-inputs like 'Scale' are mapped to 0)
 
+- export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
+- fix wrong/too-loud volume for the test play in the sound manager
+
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
 

@@ -80,11 +80,6 @@ public:
    string m_szName; // only filename, no ext
    string m_szPath; // full filename, incl. path
 
-   // can be set in the Sound Resource Manager, only used so far by PlaySound() in pintable.cpp/VBS-script
-   int m_volume = 0;
-   int m_balance = 0;
-   int m_fade = 0;
-
    // What type of sound? table or BG?  Used to route sound to the right device or channel. set by pintable
    SoundOutTypes m_outputTarget; //Is it table sound device or BG sound device. 
 
@@ -104,8 +99,8 @@ public:
    void UpdateVolume();
 
    // plays the sound
-   void Play(const float volume, const float randompitch, const int pitch, 
-             const float pan, const float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
+   void Play(float volume, const float randompitch, const int pitch, 
+             float pan, float front_rear_fade, const int loopcount, const bool usesame, const bool restart);
    void Stop(); // stop sound
 
    // Music Playing from AudioPlayer (used by WMPCore, PlayMusic)
@@ -119,49 +114,63 @@ public:
    double GetMusicPosition() const;
    void SetMusicPosition(double seconds);
    void MusicVolume(const float volume);
-   bool MusicInit(const string& szFileName, const float volume);  //player.cpp
+   bool MusicInit(const string& szFileName, const float volume); // player.cpp
 
    // Plays sounds from VPinMAME and PUP.  These are streams
    bool StreamInit(DWORD frequency, int channels, const float volume);
    void StreamUpdate(void* buffer, DWORD length);
-   void StreamVolume(const float volume); 
+   void StreamVolume(const float volume);
 
-   // used by windows UI.  called by pintable
-   SoundOutTypes GetOutputTarget() const { return m_outputTarget; } 
-
-   // This is called by pintable just before Reinitialize().
+   SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
    void SetOutputTarget(SoundOutTypes target) { m_outputTarget = target; }
+
+   // -100..100
+   int GetVolume() const { return m_volume; }
+   void SetVolume(const int volume) { m_volume = volume; }
+
+   // -100..100
+   int GetPan() const { return m_pan; }
+   void SetPan(const int pan) { m_pan = pan; }
+
+   // -100..100
+   int GetFrontRearFade() const { return m_frontRearFade; }
+   void SetFrontRearFade(const int front_rear_fade) { m_frontRearFade = front_rear_fade; }
 
    // Windows Editor?
    PinSound *LoadFile(const string& strFileName);
 
-   // static class methods
-   //
+   // Static class methods
+
    // Retrieves detected audio devices detected by SDL
    static void EnumerateAudioDevices(vector<AudioDevice>& devices);
 
 private:
+   MixEffectsData m_mixEffectsData;
+
+   // SDL_mixer
+   int m_assignedChannel = -1; // the mixer channel this MixChunk is assigned to
+
+   // at the moment, can only be set in the Sound Resource Manager, stored with the table
+   int m_volume = 0;
+   int m_pan = 0;
+   int m_frontRearFade = 0;
+
+   // The output devices audio spec
+   static SDL_AudioSpec m_audioSpecOutput;
 
    static std::mutex m_SDLAudioInitMutex;
    static bool isSDLAudioInitialized; // tracks the state of one time setup of sounds devices and mixer
 
    static Settings m_settings; // get key/value from VPinball.ini
-   static int m_sdl_STD_idx;   // the table sound device to play sounds out of
-   static int m_sdl_BG_idx;    //the BG sounds/music device to play sounds out of
-
-   MixEffectsData m_mixEffectsData;
-
-   // The output devices audio spec
-   static SDL_AudioSpec m_audioSpecOutput;
-
-   // SDL_mixer
-   int m_assignedChannel = -1; // the mixer channel this MixChunk is assigned to
+   static int m_sdl_STD_idx; // the table sound device to play sounds out of
+   static int m_sdl_BG_idx; // the BG sounds/music device to play sounds out of
 
    static std::mutex m_channelUpdateMutex;
    static vector<bool> m_channelInUse; // channel pool for assignment
 
    // What 3Dsound Mode are we in from VPinball.ini "Sound3D" key.
    static SoundConfigTypes m_SoundMode3D;
+
 
    // This is for BG sounds that are stored in the VPX file.  Treated differently than table sounds
    void PlayBGSound(float nVolume, const int loopcount, const bool usesame, const bool restart);
@@ -180,13 +189,13 @@ private:
    // deep copy of MixChunk's
    Mix_Chunk* copyMixChunk(const Mix_Chunk* const original);
 
-   // Static class methods
-   //
-   static void initSDLAudio();
-   static int getChannel(); // get an open channel assigned for the sound sample
-
    // we resample the original sound to match the pitch settings sent from the table each time.
    void setPitch(int pitch, float randompitch);
+
+   // Static class methods
+
+   static void initSDLAudio();
+   static int getChannel(); // get an open channel assigned for the sound sample
 
    // Mixer effects (Mix_RegisterEffect) callbacks
    static void SSFEffect(int chan, void* stream, int len, void* udata);
