@@ -119,8 +119,8 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_I,         //DIK_I               0x17
    ImGuiKey_O,         //DIK_O               0x18
    ImGuiKey_P,         //DIK_P               0x19
-   ImGuiKey_LeftBracket, //DIK_LBRACKET        0x1A
-   ImGuiKey_RightBracket, //DIK_RBRACKET        0x1B
+   ImGuiKey_LeftBracket, //DIK_LBRACKET      0x1A
+   ImGuiKey_RightBracket, //DIK_RBRACKET     0x1B
    ImGuiKey_Enter,     //DIK_RETURN          0x1C    /* Enter on main keyboard */
    ImGuiKey_LeftCtrl,  //DIK_LCONTROL        0x1D
    ImGuiKey_A,         //DIK_A               0x1E
@@ -134,7 +134,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_L,         //DIK_L               0x26
    ImGuiKey_Semicolon, //DIK_SEMICOLON       0x27
    ImGuiKey_Apostrophe,//DIK_APOSTROPHE      0x28
-   ImGuiKey_GraveAccent, //DIK_GRAVE           0x29    /* accent grave */
+   ImGuiKey_GraveAccent, //DIK_GRAVE         0x29    /* accent grave */
    ImGuiKey_LeftShift, //DIK_LSHIFT          0x2A
    ImGuiKey_Backslash, //DIK_BACKSLASH       0x2B
    ImGuiKey_Z,         //DIK_Z               0x2C
@@ -148,7 +148,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_Period,    //DIK_PERIOD          0x34    /* . on main keyboard */
    ImGuiKey_Slash,     //DIK_SLASH           0x35    /* / on main keyboard */
    ImGuiKey_RightShift,//DIK_RSHIFT          0x36
-   ImGuiKey_KeypadMultiply, //DIK_MULTIPLY        0x37    /* * on numeric keypad */
+   ImGuiKey_KeypadMultiply, //DIK_MULTIPLY   0x37    /* * on numeric keypad */
    ImGuiKey_Menu,      //DIK_LMENU           0x38    /* left Alt */
    ImGuiKey_Space,     //DIK_SPACE           0x39
    ImGuiKey_CapsLock,  //DIK_CAPITAL         0x3A
@@ -167,7 +167,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_Keypad7,   //DIK_NUMPAD7         0x47
    ImGuiKey_Keypad8,   //DIK_NUMPAD8         0x48
    ImGuiKey_Keypad9,   //DIK_NUMPAD9         0x49
-   ImGuiKey_KeypadSubtract, //DIK_SUBTRACT        0x4A    /* - on numeric keypad */
+   ImGuiKey_KeypadSubtract, //DIK_SUBTRACT   0x4A    /* - on numeric keypad */
    ImGuiKey_Keypad4,   //DIK_NUMPAD4         0x4B
    ImGuiKey_Keypad5,   //DIK_NUMPAD5         0x4C
    ImGuiKey_Keypad6,   //DIK_NUMPAD6         0x4D
@@ -176,7 +176,7 @@ static constexpr ImGuiKey dikToImGuiKeys[] = {
    ImGuiKey_Keypad2,   //DIK_NUMPAD2         0x50
    ImGuiKey_Keypad3,   //DIK_NUMPAD3         0x51
    ImGuiKey_Keypad0,   //DIK_NUMPAD0         0x52
-   ImGuiKey_KeypadDecimal, //DIK_DECIMAL         0x53    /* . on numeric keypad */
+   ImGuiKey_KeypadDecimal, //DIK_DECIMAL     0x53    /* . on numeric keypad */
    ImGuiKey_None,      //0x54
    ImGuiKey_None,      //0x55
    ImGuiKey_None,      //DIK_OEM_102         0x56    /* < > | on UK/Germany keyboards */
@@ -665,7 +665,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_camDistance = m_live_table->m_bottom * 0.7f;
    const vec3 eye(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, -m_camDistance);
    const vec3 at(m_live_table->m_right * 0.5f, m_live_table->m_bottom * 0.5f, 0.f);
-   const vec3 up(0.f, -1.f, 0.f);
+   constexpr vec3 up{0.f, -1.f, 0.f};
    m_camView = Matrix3D::MatrixLookAtRH(eye, at, up);
    ImGuizmo::AllowAxisFlip(false);
 
@@ -1615,7 +1615,7 @@ void LiveUI::OpenTweakMode()
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
    m_tweakPages.push_back(TP_TableOption);
-   for (int j = 0; j < g_pvp->m_settings.GetNPluginSections(); j++)
+   for (int j = 0; j < Settings::GetNPluginSections(); j++)
    {
       int nOptions = 0;
       int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
@@ -2967,7 +2967,7 @@ void LiveUI::UpdateMainUI()
             view.Invert();
             const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
-            const vec3 newUp(0.f, -1.f, 0.f);
+            constexpr vec3 newUp{0.f, -1.f, 0.f};
             const vec3 newDir(0.f, 0.f, ImGui::GetIO().KeyCtrl ? 1.f : -1.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
@@ -2981,7 +2981,7 @@ void LiveUI::UpdateMainUI()
             view.Invert();
             const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
-            const vec3 newUp(0.f, 0.f, -1.f);
+            constexpr vec3 newUp{0.f, 0.f, -1.f};
             const vec3 newDir(0.f, ImGui::GetIO().KeyCtrl ? -1.f : 1.f, 0.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
@@ -2995,7 +2995,7 @@ void LiveUI::UpdateMainUI()
             view.Invert();
             const vec3 /*up = view.GetOrthoNormalUp(),*/ dir = view.GetOrthoNormalDir(), pos = view.GetOrthoNormalPos();
             const vec3 camTarget = pos - dir * m_camDistance;
-            const vec3 newUp(0.f, 0.f, -1.f);
+            constexpr vec3 newUp{0.f, 0.f, -1.f};
             const vec3 newDir(ImGui::GetIO().KeyCtrl ? 1.f : -1.f, 0.f, 0.f);
             const vec3 newEye = camTarget + newDir * m_camDistance;
             m_camView = Matrix3D::MatrixLookAtRH(newEye, camTarget, newUp);
@@ -3382,10 +3382,10 @@ void LiveUI::UpdateOutlinerUI()
                }
                std::vector<std::string> keys;
                keys.reserve(layers.size());
-               for (auto &it : layers)
+               for (const auto &it : layers)
                   keys.push_back(it.first);
                sort(keys.begin(), keys.end());
-               for (auto &it : keys)
+               for (const auto &it : keys)
                {
                   if (it.empty()) // Skip editables without a layer (like live implicit playfield,...)
                      continue;

@@ -184,7 +184,7 @@ STDMETHODIMP ScriptGlobalTable::PlayMusic(BSTR str, float volume)
       EndMusic();
 
       g_pplayer->m_audio = new PinSound();
-      const float MusicVolume = clamp(static_cast<float>(g_pplayer->m_MusicVolume) * m_pt->m_TableMusicVolume * volume / 100.f, 0.f, 1.f);
+      const float MusicVolume = clamp(dequantizeSignedPercent(g_pplayer->m_MusicVolume) * m_pt->m_TableMusicVolume * volume, 0.f, 1.f);
 
       if (!g_pplayer->m_audio->MusicInit(MakeString(str), MusicVolume))
       {

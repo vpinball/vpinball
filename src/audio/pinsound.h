@@ -48,8 +48,8 @@ struct MixEffectsData
    int outputChannels;
 
    // These are the data points provided by VPinball to adjust the sample when resampling
-   float pitch;
-   float randompitch;
+   //float pitch;
+   //float randompitch;
    float front_rear_fade;
    float pan;
    float volume;
