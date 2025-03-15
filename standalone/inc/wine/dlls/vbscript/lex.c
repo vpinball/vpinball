@@ -246,6 +246,10 @@ static int parse_date_literal(parser_ctx_t *ctx, DATE *ret)
     return tDate;
 }
 
+#ifdef __GNUC__
+#pragma GCC push_options
+#pragma GCC optimize ("no-fast-math")
+#endif
 static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
 {
     BOOL use_int = TRUE;
@@ -328,6 +332,10 @@ static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
         return tInt;
     }
 
+    // the following may be compiled to 'r = d * std::exp(exp * 2.3025850929940456840179914546844);' which leads to wrong results for some doubles that could perfectly match ints
+    #ifdef __clang__
+    #pragma float_control(precise, on)
+    #endif
     r = exp>=0 ? d*pow(10, exp) : d/pow(10, -exp);
     if(isinf(r)) {
         FIXME("Invalid numeric literal\n");
@@ -337,6 +345,9 @@ static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
     *(double*)ret = r;
     return tDouble;
 }
+#ifdef __GNUC__
+#pragma GCC pop_options
+#endif
 
 static int hex_to_int(WCHAR c)
 {
