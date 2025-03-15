@@ -483,7 +483,11 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             delete tagSpanFF;
             #endif
             if (!rd->m_framePending)
+            {
+               // Block rendering until we will acquire swapchain again
+               rd->m_framePending = true;
                return;
+            }
 
             // Submit frame to BGFX (which contains all rendering commands, for VR headset but also other windows like preview,...)
             {
