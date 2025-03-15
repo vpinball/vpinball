@@ -411,6 +411,7 @@ VRDevice::VRDevice()
       m_depthExtensionSupported = EnableExtensionIfSupported(XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME); // Should be supported but not yet implemented
       m_colorSpaceExtensionSupported = EnableExtensionIfSupported(XR_FB_COLOR_SPACE_EXTENSION_NAME);
       m_visibilityMaskExtensionSupported = EnableExtensionIfSupported(XR_KHR_VISIBILITY_MASK_EXTENSION_NAME);
+      m_win32PerfCounterExtensionSupported = EnableExtensionIfSupported(XR_KHR_WIN32_CONVERT_PERFORMANCE_COUNTER_TIME_EXTENSION_NAME);
       #ifdef DEBUG
          m_debugUtilsExtensionSupported = EnableExtensionIfSupported(XR_EXT_DEBUG_UTILS_EXTENSION_NAME);
       #endif
@@ -1179,6 +1180,22 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    // Variables for rendering and layer composition.
    RenderLayerInfo renderLayerInfo;
    renderLayerInfo.predictedDisplayTime = frameState.predictedDisplayTime;
+
+   // TODO Test visual time warp for the ball to reduce latency (that is to say, display ball at the position it will have at the predicted display time, without physics interaction)
+   #ifdef _MSC_VER
+   if (false && m_win32PerfCounterExtensionSupported)
+   {
+      PFN_xrConvertTimeToWin32PerformanceCounterKHR xrConvertTimeToWin32PerformanceCounterKHR;
+      OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&xrConvertTimeToWin32PerformanceCounterKHR), "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
+      LARGE_INTEGER now, displayTime;
+      xrConvertTimeToWin32PerformanceCounterKHR(m_xrInstance, frameState.predictedDisplayTime, &displayTime);
+      QueryPerformanceCounter(&now);
+      LARGE_INTEGER TimerFreq;
+      QueryPerformanceFrequency(&TimerFreq);
+      double delayMicroseconds = ((displayTime.QuadPart - now.QuadPart) * 1e6) / TimerFreq.QuadPart;
+      //PLOGD << "Delay " << delayMicroseconds;
+   }
+   #endif
 
    // Check that the session is active and that we should render.
    const bool sessionActive = (m_sessionState == XR_SESSION_STATE_SYNCHRONIZED || m_sessionState == XR_SESSION_STATE_VISIBLE || m_sessionState == XR_SESSION_STATE_FOCUSED);
