@@ -79,6 +79,11 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
             m_decalImage = new Texture(tex);
       }
    }
+   m_vrApplyColorKey = m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
+   m_vrColorKey = convertColor(m_table->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)), 1.f);
+   m_vrColorKey.x = InvsRGB(m_vrColorKey.x);
+   m_vrColorKey.y = InvsRGB(m_vrColorKey.y);
+   m_vrColorKey.z = InvsRGB(m_vrColorKey.z);
 
    // Global emission scale
    m_globalEmissionScale = m_table->m_globalEmissionScale;
@@ -2598,6 +2603,34 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
                verts[1].x = verts[3].x = 1.f;
                m_renderDevice->m_FBShader->SetInt(SHADER_layer, 1);
                m_renderDevice->DrawTexturedQuad(m_renderDevice->m_FBShader, verts);
+            }
+
+            if (m_vrApplyColorKey)
+            {
+               // Apply a color mask for color keying. For the time being, this is the only way we have to support mixed reality
+               // as HMD does not expose passthrough layers to PCVR (at least Meta Quest 3, used for development).
+               // Therefore we leverage VirtualDesktop color keying feature. This needs to be performed as a post process to avoid
+               // blending the color key with the rendered scene (alpha blending which would be kept, as it is not fullfilling the
+               // color key after blending).
+               m_renderDevice->SetRenderTarget("VR ColorKeying"s, m_renderDevice->GetOutputBackBuffer(), true, true);
+               m_renderDevice->AddRenderTargetDependency(previewRT);
+               Matrix3D matWorldViewProj[2];
+               matWorldViewProj[0].SetIdentity();
+               matWorldViewProj[1].SetIdentity();
+               m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], 2);
+               m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &m_vrColorKey);
+               m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
+               Vertex3D_NoTex2 ckVerts[4] =
+               {
+                  { -1.0f,  1.0f, 1.0f },
+                  {  1.0f,  1.0f, 1.0f },
+                  { -1.0f, -1.0f, 1.0f },
+                  {  1.0f, -1.0f, 1.0f }
+               };
+               m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
+               m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_LESSEQUAL);
+               m_renderDevice->DrawTexturedQuad(m_renderDevice->m_basicShader, ckVerts);
+               m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, 1.f, 1.f, 1.f, 1.f);
             }
 
          #elif defined(ENABLE_VR)
