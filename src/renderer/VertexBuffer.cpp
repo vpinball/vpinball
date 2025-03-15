@@ -172,6 +172,7 @@ VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, con
    , m_isStatic(!isDynamic)
    , m_size(vertexCount * (fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly)))
 {
+   assert(m_count > 0);
    // Disabled since OpenGL ES does not support glDrawElementsBaseVertex, but now that we remap the indices when creating the index buffer it should be good
    for (SharedVertexBuffer* block : m_rd->m_pendingSharedVertexBuffers)
    {
