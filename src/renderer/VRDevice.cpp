@@ -1093,48 +1093,57 @@ void VRDevice::UpdateVisibilityMask(RenderDevice* rd)
          vertexCount += visibilityMask.vertexCountOutput;
          maxVertexCount = max(maxVertexCount, visibilityMask.vertexCountOutput);
       }
-      IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
-      VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
-      XrVector2f* const vert2d = new XrVector2f[maxVertexCount];
-      uint32_t* indices;
-      indexBuffer->Lock(indices);
-      Vertex3D_NoTex2* vertices;
-      vertexBuffer->Lock(vertices);
-      uint32_t vertexOffset = 0;
-      for (size_t view = 0; view < m_viewConfigurationViews.size(); view++)
+      if ((indexCount > 0) && (vertexCount > 0))
       {
-         XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
-         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
-         visibilityMask.indexCapacityInput = visibilityMask.indexCountOutput;
-         visibilityMask.vertexCapacityInput = visibilityMask.vertexCountOutput;
-         visibilityMask.vertices = vert2d;
-         visibilityMask.indices = indices;
-         xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
-         for (uint32_t i = 0; i < visibilityMask.vertexCountOutput; i++)
+         IndexBuffer* indexBuffer = new IndexBuffer(rd, indexCount, false, IndexBuffer::FMT_INDEX32);
+         VertexBuffer* vertexBuffer = new VertexBuffer(rd, vertexCount);
+         XrVector2f* const vert2d = new XrVector2f[maxVertexCount];
+         uint32_t* indices;
+         indexBuffer->Lock(indices);
+         Vertex3D_NoTex2* vertices;
+         vertexBuffer->Lock(vertices);
+         uint32_t vertexOffset = 0;
+         for (size_t view = 0; view < m_viewConfigurationViews.size(); view++)
          {
-            vertices->x = vert2d[i].x;
-            vertices->y = vert2d[i].y;
-            vertices->z = -1.f;
-            vertices->nx = static_cast<float>(view);
-            vertices->ny = 0.f;
-            vertices->nz = 0.f;
-            vertices->tu = 0.f;
-            vertices->tv = 0.f;
-            vertices++;
+            XrVisibilityMaskKHR visibilityMask { XR_TYPE_VISIBILITY_MASK_KHR };
+            xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+            visibilityMask.indexCapacityInput = visibilityMask.indexCountOutput;
+            visibilityMask.vertexCapacityInput = visibilityMask.vertexCountOutput;
+            visibilityMask.vertices = vert2d;
+            visibilityMask.indices = indices;
+            xrGetVisibilityMaskKHR(m_session, m_viewConfiguration, (uint32_t)view, XR_VISIBILITY_MASK_TYPE_HIDDEN_TRIANGLE_MESH_KHR, &visibilityMask);
+            for (uint32_t i = 0; i < visibilityMask.vertexCountOutput; i++)
+            {
+               vertices->x = vert2d[i].x;
+               vertices->y = vert2d[i].y;
+               vertices->z = -1.f;
+               vertices->nx = static_cast<float>(view);
+               vertices->ny = 0.f;
+               vertices->nz = 0.f;
+               vertices->tu = 0.f;
+               vertices->tv = 0.f;
+               vertices++;
+            }
+            for (uint32_t i = 0; i < visibilityMask.indexCountOutput; i++)
+            {
+               (*indices) += vertexOffset;
+               indices++;
+            }
+            vertexOffset += visibilityMask.vertexCountOutput;
          }
-         for (uint32_t i = 0; i < visibilityMask.indexCountOutput; i++)
-         {
-            (*indices) += vertexOffset;
-            indices++;
-         }
-         vertexOffset += visibilityMask.vertexCountOutput;
+         indexBuffer->Unlock();
+         vertexBuffer->Unlock();
+         delete[] vert2d;
+         m_visibilityMask = new MeshBuffer(L"VisibilityMask", vertexBuffer, indexBuffer, true);
+         m_visibilityMaskDirty = false;
+         PLOGI << "Headset visibility mask acquired";
       }
-      indexBuffer->Unlock();
-      vertexBuffer->Unlock();
-      delete[] vert2d;
-      m_visibilityMask = new MeshBuffer(L"VisibilityMask", vertexBuffer, indexBuffer, true);
-      m_visibilityMaskDirty = false;
-      PLOGI << "Headset visibility mask acquired";
+      else
+      {
+         m_visibilityMask = nullptr; 
+         m_visibilityMaskDirty = false;
+         PLOGI << "Headset visibility mask defined to none (empty mask returned by headset)";
+      }
    }
 }
 
