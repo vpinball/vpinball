@@ -466,6 +466,19 @@ BOOL VROptionsDialog::OnInitDialog()
    SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
    SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
+   on = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
+   SendDlgItemMessage(IDC_ENABLE_PASSTHROUGH_COLOR, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
+
+   AttachItem(IDC_COLOR_BUTTON1, m_colorKey);
+   m_colorKey.SetColor(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)));
+
+   #ifdef ENABLE_XR
+      ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
+   #else
+      ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
+      ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
+   #endif
+
    int key;
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
@@ -557,6 +570,12 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
    switch (uMsg)
    {
+   case WM_DRAWITEM:
+      switch (wParam)
+      {
+      case IDC_COLOR_BUTTON1: m_colorKey.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
+      }
+      break;
    case WM_TIMER:
    {
       KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
@@ -639,6 +658,22 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             StartTimer(IDC_TABLEDOWN_TEXT);
          break;
       }
+      case IDC_COLOR_BUTTON1:
+      {
+         CHOOSECOLOR cc = m_colorDialog.GetParameters();
+         cc.Flags = CC_FULLOPEN | CC_RGBINIT;
+         m_colorDialog.SetParameters(cc);
+         if (g_pvp->GetActiveTable())
+            m_colorDialog.SetCustomColors(g_pvp->GetActiveTable()->m_rgcolorcustom);
+         m_colorDialog.SetColor(m_colorKey.GetColor());
+         if (m_colorDialog.DoModal(GetHwnd()) == IDOK)
+         {
+            if (g_pvp->GetActiveTable())
+               memcpy(g_pvp->GetActiveTable()->m_rgcolorcustom, m_colorDialog.GetCustomColors(), sizeof(g_pvp->GetActiveTable()->m_rgcolorcustom));
+            m_colorKey.SetColor(m_colorDialog.GetColor());
+         }
+      }
+      break;
       default:
          return FALSE;
    }
@@ -694,6 +729,11 @@ void VROptionsDialog::OnOK()
 
    selected = IsDlgButtonChecked(IDC_CAP_PUP)!= 0;
    g_pvp->m_settings.SaveValue(Settings::Player, "CapturePUP"s, selected);
+
+   selected = IsDlgButtonChecked(IDC_ENABLE_PASSTHROUGH_COLOR) != 0;
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "UsePassthroughColor"s, selected);
+
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PassthroughColor"s, static_cast<unsigned int>(m_colorKey.GetColor()));
 
    SetValue(IDC_JOYTABLERECENTER, Settings::Player, "JoyTableRecenterKey"s);
    SetValue(IDC_JOYTABLEUP, Settings::Player, "JoyTableUpKey"s);

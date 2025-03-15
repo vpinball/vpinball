@@ -781,6 +781,7 @@
 #define IDC_EDGE_FACTOR_UI              454
 #define IDC_SHRINK                      454
 #define IDC_REFLECT_ON_BALLS            455
+#define IDC_ENABLE_PASSTHROUGH_COLOR    455
 #define IDC_NUDGE_STRENGTH              456
 #define IDC_SHADOWS                     456
 #define IDC_COLOR_FULL                  457
