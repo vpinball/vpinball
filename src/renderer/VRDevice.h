@@ -14,8 +14,8 @@ public:
    VRDevice();
    ~VRDevice();
 
-   int GetEyeWidth() const { return m_eyeWidth; }
-   int GetEyeHeight() const { return m_eyeHeight; }
+   unsigned int GetEyeWidth() const { return m_eyeWidth; }
+   unsigned int GetEyeHeight() const { return m_eyeHeight; }
    void UpdateVRPosition(ModelViewProj& mvp);
 
    void TableUp();
@@ -24,8 +24,8 @@ public:
    void SaveVRSettings(Settings& settings) const;
 
 private:
-   int m_eyeWidth = 1080;
-   int m_eyeHeight = 1020;
+   unsigned int m_eyeWidth = 1080;
+   unsigned int m_eyeHeight = 1020;
    float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
    Matrix3D m_vrMatView;
    Matrix3D m_vrMatProj[2];

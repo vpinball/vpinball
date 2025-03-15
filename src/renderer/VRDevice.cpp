@@ -832,7 +832,7 @@ void VRDevice::SetupHMD()
    }
    // Limit to a resolution, under the maximum texture size supported by the GPU
    const bgfx::Caps* caps = bgfx::getCaps();
-   if ((m_eyeWidth >= caps->limits.maxTextureSize) || (m_eyeHeight >= caps->limits.maxTextureSize))
+   if ((static_cast<uint32_t>(m_eyeWidth) >= caps->limits.maxTextureSize) || (static_cast<uint32_t>(m_eyeHeight) >= caps->limits.maxTextureSize))
    {
       PLOGI << "Requested resolution exceed the GPU capability, defaulting to headset recommended resolution";
       m_eyeWidth = m_viewConfigurationViews[0].recommendedImageRectWidth;
