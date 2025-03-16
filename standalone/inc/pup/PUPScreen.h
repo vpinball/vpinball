@@ -114,6 +114,7 @@ public:
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
+   void SetCustomPos(const string& string);
    void SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
    void SetMedia(PUPPlaylist* pPlaylist, const std::string& szPlayFile, float volume, int priority, bool skipSamePriority);
    void StopMedia();
