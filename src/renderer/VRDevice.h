@@ -63,6 +63,8 @@ public:
    void DiscardVisibilityMask() { delete m_visibilityMask; m_visibilityMask = nullptr; }
    MeshBuffer* GetVisibilityMask() const { return m_visibilityMask; }
 
+   float GetPredictedDisplayDelayInS() const { return m_predictedDisplayDelayInS; }
+
    Matrix3D m_visibilityMaskProj[2];
 
    enum class SwapchainType : uint8_t
@@ -126,6 +128,7 @@ private:
    bool m_colorSpaceExtensionSupported = false;
 
    bool m_win32PerfCounterExtensionSupported = false;
+   float m_predictedDisplayDelayInS = 0.f;
 
    bool m_debugUtilsExtensionSupported = false;
    XrDebugUtilsMessengerEXT m_debugUtilsMessenger = XR_NULL_HANDLE;
