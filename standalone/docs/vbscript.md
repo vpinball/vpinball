@@ -78,7 +78,8 @@ x = data
 #### Issue: Coercion issue in For loop when right bound is a string
 
 ```
-'This code loops 16 times on Windows but over 5,000,000 (!) times in Wine's implementation.
+'This code loops 16 times on Windows but on Linunx it leads to a very large numerical value.
+'This results in the loop iterating an extremely high number of times.
 Dim i, num
 num = "16"
 For i = 0 To num
