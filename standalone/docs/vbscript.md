@@ -75,7 +75,7 @@ Dim x
 x = data
 ```
 
-#### Issue: Coercion issue in For loop when right bound is a string (Bug 55052)
+#### Issue: Coercion issue in For loop when right bound is a string
 
 ```
 'This code loops 16 times on Windows but over 5,000,000 (!) times in Wine's implementation.
@@ -88,6 +88,8 @@ Next
 ' workaround
 For i = 0 To CInt(num)
 ```
+
+See [here](https://bugs.winehq.org/show_bug.cgi?id=55052) for more information.
 
 #### Issue: Else..End If on same line with no colon
 
@@ -114,6 +116,8 @@ If Keycode = StartGameKey Then
   pupevent 800
 End If
 ```
+
+See [here](https://bugs.winehq.org/show_bug.cgi?id=55037) for more information.
 
 #### Issue: Execute fails when object does not exist
 
