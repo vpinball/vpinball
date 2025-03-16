@@ -241,7 +241,21 @@ public:
       static const char* d3d11DllName = "d3d11.dll";
       m_d3d11Dll = bx::dlopen(d3d11DllName);
       PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
-      D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
+      #ifdef DEBUG
+      {
+         // Try to create the device with the debug layer and fallback to default DX11 if DX SDK is not installed.
+         HRESULT result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, D3D11_CREATE_DEVICE_DEBUG, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
+         if (result == DXGI_ERROR_SDK_COMPONENT_MISSING)
+            result = D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext);
+         if (FAILED(result))
+         {
+            PLOGE << "ERROR: D3D11: " << std::hex << "0x" << result << std::dec;
+            PLOGE << "ERROR: D3D11: Failed to create D3D11 Device.";
+         }
+      }
+      #else
+         D3D11_CHECK(D3D11CreateDevice(adapter, D3D_DRIVER_TYPE_UNKNOWN, 0, 0, &graphicsRequirements.minFeatureLevel, 1, D3D11_SDK_VERSION, &m_device, nullptr, &m_immediateContext), "Failed to create D3D11 Device.");
+      #endif
       D3D11_SAFE_RELEASE(factory);
    }
 
