@@ -462,14 +462,9 @@ void Ball::Render(const unsigned int renderMask)
    Shader::ShaderState* ss = m_rd->GetCurrentPass()->m_commands.back()->GetShaderState();
    m_rd->AddBeginOfFrameCmd([this, rot, scale, ss](){
       vec3 pos(m_hitBall.m_d.m_pos.x, m_hitBall.m_d.m_pos.y, m_hitBall.m_d.m_lockedInKicker ? (m_hitBall.m_d.m_pos.z - m_hitBall.m_d.m_radius) : m_hitBall.m_d.m_pos.z);
-      #ifdef ENABLE_XR
-      if (g_pplayer->m_vrDevice)
-      {
-         float delay = g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
-         pos += delay * m_hitBall.m_d.m_vel;
-         //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
-      }
-      #endif
+      float delay = m_rd->GetPredictedDisplayDelayInS();
+      pos += delay * m_hitBall.m_d.m_vel;
+      //PLOGD << "Ball position advanced to display predicted time by " << delay << "s > " << m_hitBall.m_d.m_vel;
       Matrix3D trans = Matrix3D::MatrixTranslate(pos.x, pos.y, pos.z);
       Matrix3D m3D_full = rot * scale * trans;
       ss->SetMatrix(SHADER_orientation, &m3D_full.m[0][0]);

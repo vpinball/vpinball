@@ -23,6 +23,10 @@ public:
    void RecenterTable();
    void SaveVRSettings(Settings& settings) const;
 
+#ifndef ENABLE_XR
+   float GetPredictedDisplayDelayInS() const { return 0.f; } // Unsupported as OpenVR is planned for deprecation and removal
+#endif
+
 private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
