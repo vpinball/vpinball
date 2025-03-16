@@ -93,8 +93,21 @@ void ISelect::EditMenu(CMenu &menu)
 void ISelect::DoCommand(int icmd, int x, int y)
 {
 #ifndef __STANDALONE__
-   IEditable * const piedit = GetIEditable();
+   // Commands that are handled by the table element
+   if (  ((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020) // Assign to collection
+      || ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1)) // Assign to layer
+      || (icmd == ID_EDIT_DRAWINGORDER_HIT)
+      || (icmd == ID_EDIT_DRAWINGORDER_SELECT)
+      || (icmd == ID_ASSIGN_TO_CURRENT_LAYER)
+      || (icmd == IDC_COPY)
+      || (icmd == IDC_PASTE)
+      || (icmd == IDC_PASTEAT))
+   {
+      GetPTable()->DoCommand(icmd, x, y);
+      return;
+   }
 
+   IEditable * const piedit = GetIEditable();
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
    {
       const int ksshift = GetKeyState(VK_SHIFT);
@@ -119,34 +132,8 @@ void ISelect::DoCommand(int icmd, int x, int y)
       currentTable->AddMultiSel(pisel, add, true, true);
       return;
    }
-   if (((icmd & 0x000FFFFF) >= 0x40000) && ((icmd & 0x000FFFFF) < 0x40020))
-   {
-      /*add to collection*/
-      //const int ksshift = GetKeyState(VK_SHIFT);
-      //const int ksctrl = GetKeyState(VK_CONTROL);
-
-      PinTable * const currentTable = GetPTable();
-      const int i = icmd & 0x000000FF;
-      currentTable->UpdateCollection(i);
-   }
-   if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1))
-   {
-      /*add to layer*/
-      m_vpinball->GetLayersListDialog()->AssignToLayerByIndex(icmd - ID_ASSIGN_TO_LAYER1);
-   }
    switch (icmd)
    {
-   case ID_EDIT_DRAWINGORDER_HIT:
-       m_vpinball->ShowDrawingOrderDialog(false);
-      break;
-   case ID_EDIT_DRAWINGORDER_SELECT:
-       m_vpinball->ShowDrawingOrderDialog(true);
-      break;
-   case ID_ASSIGN_TO_CURRENT_LAYER:
-   {
-       m_vpinball->GetLayersListDialog()->OnAssignButton();
-       break;
-   }
    case ID_DRAWINFRONT:
    {
       PinTable * const ptable = GetPTable();
@@ -171,25 +158,6 @@ void ISelect::DoCommand(int icmd, int x, int y)
       m_locked = !m_locked;
       STOPUNDOSELECT
       break;
-
-   case IDC_COPY:
-   {
-      GetPTable()->Copy(x,y);
-      break;
-   }
-   case IDC_PASTE:
-   {
-      GetPTable()->Paste(false, x, y);
-      break;
-   }
-   case IDC_PASTEAT:
-   {
-      GetPTable()->Paste(true, x, y);
-      break;
-   }
-   /*default:
-      psel->DoCommand(command, x, y);
-      break;*/
    }
 #endif
 }
@@ -314,20 +282,64 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #endif
 }
 
+static void SetPartGroup(ISelect* me, string layerName)
+{
+   if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
+   {
+      auto partGroup = std::ranges::find_if(me->GetPTable()->m_vedit,
+         [layerName](IEditable *editable)
+         {
+            if (editable->GetItemType() != ItemTypeEnum::eItemPartGroup)
+               return false;
+            string name(editable->GetName());
+            return name == layerName;
+         });
+      if (partGroup == me->GetPTable()->m_vedit.end())
+      {
+         PartGroup *const partGroup = static_cast<PartGroup *>(EditableRegistry::Create(eItemPartGroup));
+         partGroup->Init(me->GetPTable(), 0, 0, false);
+         const int len = (int)layerName.length() + 1;
+         MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, partGroup->GetScriptable()->m_wzName, len);
+         me->GetPTable()->m_vedit.push_back(partGroup);
+         me->GetIEditable()->SetPartGroup(partGroup);
+      }
+      else
+      {
+         me->GetIEditable()->SetPartGroup(static_cast<PartGroup *>(*partGroup));
+      }
+   }
+}
+
 bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
        case FID(LOCK): pbr->GetBool(m_locked); break;
-       case FID(LAYR):
+       case FID(LVIS): pbr->GetBool(m_isVisible); break;
+       case FID(LAYR): // Old layer style (limited number of unnamed layers)
        {
-          int tmp;
-          pbr->GetInt(tmp);
-          m_oldLayerIndex = (unsigned char)tmp;
+          int layerIndex;
+          pbr->GetInt(layerIndex);
+          SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
+          m_oldLayerIndex = (unsigned char)layerIndex; // FIXME remove
           break;
        }
-       case FID(LANR): pbr->GetString(m_layerName); break;
-       case FID(LVIS): pbr->GetBool(m_isVisible); break;
+       case FID(LANR): // 10.7 layers (limited number of named layers)
+       {
+          string layerName;
+          pbr->GetString(layerName);
+          m_layerName = layerName; // FIXME remove
+          std::ranges::replace(layerName, ' ', '_');
+          SetPartGroup(this, "Layer_" + layerName);
+          break;
+       }
+       case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
+       {
+          string partGroupName;
+          pbr->GetString(partGroupName);
+          SetPartGroup(this, partGroupName);
+          break;
+       }
    }
    return true;
 }
@@ -337,9 +349,11 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteBool(FID(LOCK), m_locked);
-   bw.WriteInt(FID(LAYR), m_oldLayerIndex);
-   bw.WriteString(FID(LANR), m_layerName);
    bw.WriteBool(FID(LVIS), m_isVisible);
+   bw.WriteInt(FID(LAYR), m_oldLayerIndex); // FIXME remove
+   bw.WriteString(FID(LANR), m_layerName); // FIXME remove
+   if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
+      bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
 
    return S_OK;
 }

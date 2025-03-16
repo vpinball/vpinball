@@ -197,10 +197,9 @@ public:
       m_dockNotes = nullptr;
    }
    void CreateDocker();
-   LayersListDialog *GetLayersListDialog() const
-   {
-       return m_layersListDialog;
-   }
+   #ifndef __STANDALONE__
+   LayersListDialog* GetLayersListDialog() { return GetLayersDocker()->GetContainLayers()->GetLayersDialog(); }
+   #endif
    bool IsClosing() const { return m_closing; }
 
    ULONG m_cref;
@@ -299,7 +298,6 @@ protected:
 private:
 
    CDockProperty *GetDefaultPropertiesDocker();
-   CDockLayers *GetDefaultLayersDocker();
    CDockToolbar *GetDefaultToolbarDocker();
    CDockNotes *GetDefaultNotesDocker();
 
@@ -332,7 +330,6 @@ private:
    PropertyDialog *m_propertyDialog = nullptr;
    CDockToolbar *m_dockToolbar = nullptr;
    CDockProperty *m_dockProperties = nullptr;
-   LayersListDialog *m_layersListDialog = nullptr;
    CDockLayers *m_dockLayers = nullptr;
    NotesDialog *m_notesDialog = nullptr;
    CDockNotes* m_dockNotes = nullptr;

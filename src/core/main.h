@@ -373,6 +373,8 @@ class SCNotification final { };
 #include "parts/ramp.h"
 #include "parts/flasher.h"
 #include "parts/rubber.h"
+#include "parts/PartGroup.h"
+
 #include "utils/ushock_output.h"
 
 #include "physics/kdtree.h"

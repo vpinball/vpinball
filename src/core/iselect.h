@@ -30,6 +30,7 @@ enum ItemTypeEnum : unsigned int
    eItemHitTarget,
    //eItemLightSeqCenter,
    eItemBall,
+   eItemPartGroup,
    eItemTypeCount,
    eItemInvalid = 0xffffffff // Force enum to be 32 bits
 };
@@ -147,14 +148,15 @@ public:
 
    int m_menuid; // context menu to use
 
+   // TODO remove, as now part of more general PartGroup (layers being top level part groups) and moved to IEditable
    string m_layerName;
+   // TODO also remove m_oldLayerIndex and directly process at load time in one step
+   unsigned char m_oldLayerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
 
    bool m_dragging;
    bool m_markedForUndo;
    bool m_locked; // Can not be dragged in the editor
    bool m_isVisible;
-
-   unsigned char m_oldLayerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
 
 protected:
    VPinball *m_vpinball;

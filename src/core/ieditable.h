@@ -219,8 +219,6 @@ public:
       } \
    }
 
-class EventProxyBase;
-class ObjLoader;
 // IEditable is the subclass for anything class which is a self-contained table element.
 // It knows how to draw itself, interact with event and properties,
 // And talk to the player
@@ -246,7 +244,7 @@ public:
 
    virtual void RenderBlueprint(Sur *psur, const bool solid);
 
-   virtual void ExportMesh(ObjLoader& loader) {}
+   virtual void ExportMesh(class ObjLoader& loader) {}
 
    virtual ULONG STDMETHODCALLTYPE AddRef() = 0;
    virtual ULONG STDMETHODCALLTYPE Release() = 0;
@@ -288,6 +286,9 @@ public:
 
    bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
 
+   void SetPartGroup(class PartGroup *partGroup);
+   class PartGroup* GetPartGroup() const { return m_partGroup; } 
+
    HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
    HRESULT put_TimerInterval(long newVal, int *pti);
 
@@ -299,6 +300,8 @@ public:
 
 private:
    VARIANT m_uservalue;
+
+   class PartGroup* m_partGroup = nullptr; // Parenting to group (or top level layers) for base transform and visibility
 
 #pragma region Script events
 public:

@@ -502,25 +502,16 @@ CDockNotes* VPinball::GetNotesDocker()
    return m_dockNotes;
 }
 
-CDockLayers *VPinball::GetDefaultLayersDocker()
-{
-#ifndef __STANDALONE__
-   constexpr int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
-   m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
-
-   assert(m_dockLayers->GetContainer());
-   m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
-   m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
-#endif
-
-   return m_dockLayers;
-}
-
 CDockLayers *VPinball::GetLayersDocker()
 {
 #ifndef __STANDALONE__
    if (m_dockLayers == nullptr || !m_dockLayers->IsWindow())
-      return GetDefaultLayersDocker();
+   {
+      constexpr int dockStyle = DS_DOCKED_BOTTOM | DS_CLIENTEDGE | DS_NO_CLOSE;
+      m_dockLayers = (CDockLayers *)m_dockProperties->AddDockedChild(new CDockLayers, dockStyle, 380, IDD_LAYERS);
+      assert(m_dockLayers->GetContainer());
+      m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+   }
 #endif
    return m_dockLayers;
 }
@@ -532,10 +523,9 @@ void VPinball::CreateDocker()
    {
       GetPropertiesDocker();
       GetToolbarDocker();
-      GetLayersDocker();
    }
    m_dockProperties->GetContainer()->SetHideSingleTab(TRUE);
-   m_dockLayers->GetContainer()->SetHideSingleTab(TRUE);
+   GetLayersDocker()->GetContainer()->SetHideSingleTab(TRUE);
    m_dockToolbar->GetContainer()->SetHideSingleTab(TRUE);
 #endif
 }
@@ -720,7 +710,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
          }
          ptCur->ClearMultiSel(nullptr);
          SetPropSel(ptCur->m_vmultisel);
-         GetLayersListDialog()->CollapseLayers();
+         GetLayersListDialog()->ResetView();
          ToggleToolbar();
          SetEnableMenuItems();
          ptCur->SetDirtyDraw();
@@ -1403,8 +1393,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor, V
       if (updateEditor)
       {
 #ifndef __STANDALONE__
-         GetLayersListDialog()->CollapseLayers();
-         GetLayersListDialog()->ExpandLayers();
+         GetLayersListDialog()->ResetView();
          ToggleToolbar();
          if (m_dockNotes != nullptr)
             m_dockNotes->Enable();
@@ -1729,8 +1718,8 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
          consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
       if (!consumed && m_propertyDialog)
          consumed = m_propertyDialog->PreTranslateMessage(pmsg);
-      if (!consumed && m_layersListDialog)
-         consumed = m_layersListDialog->PreTranslateMessage(pmsg);
+      if (!consumed && m_dockLayers)
+         consumed = GetLayersListDialog()->PreTranslateMessage(pmsg);
       if (!consumed && m_notesDialog && activeHwnd == m_notesDialog->GetHwnd())
          consumed = m_notesDialog->PreTranslateMessage(pmsg);
    }
@@ -2267,7 +2256,7 @@ LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    if (m_dockLayers != nullptr)
-      m_dockLayers->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+      GetLayersListDialog()->Update();
    if (m_dockNotes != nullptr)
       m_dockNotes->Refresh();
    return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);
@@ -2280,10 +2269,7 @@ LRESULT VPinball::OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
    if (GetAllMDIChildren().size() == 1)
-   {
-      GetLayersListDialog()->ClearList();
       GetLayersListDialog()->SetActiveTable(nullptr);
-   }
    return CMDIFrameT::OnMDIDestroyed(msg, wparam, lparam);
 #else
    return 0L;
@@ -2316,10 +2302,7 @@ Win32xx::DockPtr VPinball::NewDockerFromID(int id)
    case IDD_LAYERS:
    {
       if (m_dockLayers == nullptr)
-      {
          m_dockLayers = new CDockLayers();
-         m_layersListDialog = m_dockLayers->GetContainLayers()->GetLayersDialog();
-      }
       return DockPtr(m_dockLayers);
    }
 //   case IDD_NOTES_DIALOG:
@@ -2967,8 +2950,7 @@ void VPinball::OpenNewTable(size_t tableId)
 
    AddMDITable(mdiTable);
    mdiTable->GetTable()->AddMultiSel(mdiTable->GetTable(), false, true, false);
-   GetLayersListDialog()->CollapseLayers();
-   GetLayersListDialog()->ExpandLayers();
+   GetLayersListDialog()->ResetView();
    ToggleToolbar();
    if (m_dockNotes != nullptr)
       m_dockNotes->Enable();

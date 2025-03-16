@@ -1341,6 +1341,11 @@
 #define IDC_STATIC29                    954
 #define IDD_DMDSTYLE_OPT                955
 #define IDD_ALPHASEGSTYLE_OPT           956
+#define IDS_TB_PARTGROUP                957
+#define ID_INSERT_PARTGROUP             958
+#define IDC_PARTGROUP                   959
+#define IDR_PARTGROUP                   960
+#define IDB_TRISTATE_ICONS16            961
 #define IDC_LAYBACK_EDIT                1040
 #define IDC_3D_STEREO_SEPARATION_EDIT   1041
 #define IDC_3D_STEREO_ZPD_EDIT          1042
@@ -1538,7 +1543,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        681
 #define _APS_NEXT_COMMAND_VALUE         4030
-#define _APS_NEXT_CONTROL_VALUE         957
+#define _APS_NEXT_CONTROL_VALUE         962
 #define _APS_NEXT_SYMED_VALUE           191
 #endif
 #endif

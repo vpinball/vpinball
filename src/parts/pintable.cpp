@@ -1572,18 +1572,6 @@ void PinTable::FVerifySaveToClose()
 #endif
 }
 
-void PinTable::DeleteFromLayer(IEditable *obj)
-{
-   for (int i = 0; i < MAX_LAYERS; i++)
-   {
-      if (FindIndexOf(m_layer[i], obj) != -1)
-      {
-         RemoveFromVectorSingle(m_layer[i], obj);
-         break;
-      }
-   }
-}
-
 void PinTable::UpdatePropertyImageList()
 { 
 #ifndef __STANDALONE__
@@ -2335,26 +2323,27 @@ PinTable* PinTable::CopyForPlay()
       IEditable *edit_dst = nullptr;
       switch (src->m_vedit[i]->GetItemType())
       {
-      case eItemBall:      edit_dst = ((Ball *)     src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemBumper:    edit_dst = ((Bumper *)   src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemDecal:     edit_dst = ((Decal *)    src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemDispReel:  edit_dst = ((DispReel *) src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemFlasher:   edit_dst = ((Flasher *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemFlipper:   edit_dst = ((Flipper *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemGate:      edit_dst = ((Gate *)     src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemHitTarget: edit_dst = ((HitTarget *)src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemKicker:    edit_dst = ((Kicker *)   src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemLight:     edit_dst = ((Light *)    src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemLightSeq:  edit_dst = ((LightSeq *) src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemPlunger:   edit_dst = ((Plunger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemPrimitive: edit_dst = ((Primitive *)src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemRamp:      edit_dst = ((Ramp *)     src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemRubber:    edit_dst = ((Rubber *)   src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemSpinner:   edit_dst = ((Spinner *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemSurface:   edit_dst = ((Surface *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTextbox:   edit_dst = ((Textbox *)  src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTimer:     edit_dst = ((Timer *)    src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTrigger:   edit_dst = ((Trigger *)  src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemBall:      edit_dst = static_cast<Ball*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemBumper:    edit_dst = static_cast<Bumper*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemDecal:     edit_dst = static_cast<Decal*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemDispReel:  edit_dst = static_cast<DispReel*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemFlasher:   edit_dst = static_cast<Flasher*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemFlipper:   edit_dst = static_cast<Flipper*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemGate:      edit_dst = static_cast<Gate*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemHitTarget: edit_dst = static_cast<HitTarget*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemKicker:    edit_dst = static_cast<Kicker*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemLight:     edit_dst = static_cast<Light*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemPartGroup: edit_dst = static_cast<PartGroup*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemPlunger:   edit_dst = static_cast<Plunger*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemPrimitive: edit_dst = static_cast<Primitive*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemRamp:      edit_dst = static_cast<Ramp*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemRubber:    edit_dst = static_cast<Rubber*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemSpinner:   edit_dst = static_cast<Spinner*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemSurface:   edit_dst = static_cast<Surface*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTextbox:   edit_dst = static_cast<Textbox*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTimer:     edit_dst = static_cast<Timer*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+      case eItemTrigger:   edit_dst = static_cast<Trigger*>(src->m_vedit[i])->CopyForPlay(live_table); break;
       default: assert(false); // Unexpected table part
       }
       live_table->m_vedit.push_back(edit_dst);
@@ -4112,8 +4101,43 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             }
          }
 
+         if (loadfileversion < 1081)
+         {
+            // Since 10.8.1, layers have been replaced by groups with properties, remove temporary groups created during loading
+            auto removeLegacyLayers = std::partition(m_vedit.begin(), m_vedit.end(),
+               [&](IEditable *editable)
+               {
+                  if (editable->GetItemType() != eItemPartGroup)
+                     return true;
+                  string name(editable->GetName());
+                  if (!name.starts_with("Layer_"))
+                     return true;
+                  auto v = std::ranges::find_if(m_vedit, [editable](const IEditable *e) { return e->GetPartGroup() == editable; });
+                  return v != m_vedit.end();
+               });
+            std::for_each(removeLegacyLayers, m_vedit.end(), [](IEditable *e) { e->Release(); });
+            m_vedit.erase(removeLegacyLayers, m_vedit.end());
+
+            // Rename layers that have been automatically converted to group if there aren't any name conflict
+            std::ranges::for_each(m_vedit, [&](IEditable *editable)
+               {
+                  if (editable->GetItemType() != eItemPartGroup)
+                     return;
+                  string name(editable->GetName());
+                  if (!name.starts_with("Layer_"))
+                     return;
+                  string shortName = name.substr(6);
+                  auto v = std::ranges::find_if(m_vedit, [shortName](IEditable *e) { return strcmp(e->GetName(), shortName.c_str()) == 0; });
+                  if (v == m_vedit.end())
+                  {
+                     const int len = (int)shortName.length() + 1;
+                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, len);
+                  }
+               });
+         }
+         
          // Since 10.8.1, Flashers are allowed on 2D backdrop, with advanced rendering capabilities.
-         /* This code woudl replace DMD textbox by flahser. It is deactivated since it would break scripting (but does anyone scripted this ?)
+         /* This code woudl replace DMD textbox by flasher. It is deactivated since it would break scripting (but does anyone scripted this ?)
          for (size_t i = 0; i < m_vedit.size(); ++i)
          {
             if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
@@ -4177,30 +4201,6 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
    feedback.Done();
 
    pstgRoot->Release();
-
-#ifndef __STANDALONE__
-   m_vpinball->GetLayersListDialog()->ClearList();
-#endif
-   // copy all elements into their layers
-   for (int i = 0; i < MAX_LAYERS; i++)
-   {
-      m_layer[i].clear();
-
-      for (size_t t = 0; t < m_vedit.size(); t++)
-      {
-         IEditable * const piedit = m_vedit[t];
-         ISelect * const psel = piedit->GetISelect();
-         if (psel->m_oldLayerIndex == i)
-         {
-             m_layer[i].push_back(piedit);
-             if (psel->m_layerName.empty())
-                 psel->m_layerName = "Layer_" + std::to_string(i+1);
-#ifndef __STANDALONE__
-             m_vpinball->GetLayersListDialog()->AddLayer(psel->m_layerName, piedit);
-#endif
-         }
-      }
-   }
 
    return hr;
 }
@@ -5313,15 +5313,36 @@ void PinTable::FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelec
 #ifndef __STANDALONE__
    const LocalString ls16(IDS_ASSIGN_TO_LAYER2);
    mainMenu.AppendMenu(MF_POPUP | MF_STRING, (size_t)layerSubMenu.GetHandle(), ls16.m_szbuffer);
-   const vector<string> layerNames = g_pvp->GetLayersListDialog()->GetAllLayerNames();
    int i = 0;
-   for (const auto &name : layerNames)
+   for (IEditable *edit : m_vedit)
    {
-      layerSubMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER1 + i, name.c_str());
-      i++;
-      if (i == NUM_ASSIGN_LAYERS)
-        break;
+      if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
+      {
+         layerSubMenu.AppendMenu(MF_STRING, ID_ASSIGN_TO_LAYER1 + i, edit->GetName());
+         i++;
+         if (i == NUM_ASSIGN_LAYERS)
+            break;
+      }
    }
+#endif
+}
+
+void PinTable::AssignSelectionToPartGroup(PartGroup* group)
+{
+#ifndef __STANDALONE__
+   STARTUNDO
+   for (int t = 0; t < m_vmultisel.size(); t++)
+   {
+      ISelect *const psel = m_vmultisel.ElementAt(t);
+      IEditable *const pedit = psel->GetIEditable();
+      pedit->SetPartGroup(group);
+      if (psel->m_isVisible && !group->m_isVisible)
+         psel->m_isVisible = false;
+      else if (!psel->m_isVisible && group->m_isVisible)
+         psel->m_isVisible = true;
+   }
+   STOPUNDO
+   g_pvp->GetLayersListDialog()->Update();
 #endif
 }
 
@@ -5494,8 +5515,19 @@ void PinTable::DoCommand(int icmd, int x, int y)
 
    if ((icmd >= ID_ASSIGN_TO_LAYER1) && (icmd <= ID_ASSIGN_TO_LAYER1+NUM_ASSIGN_LAYERS-1))
    {
-      /*add to layer*/
-      m_vpinball->GetLayersListDialog()->AssignToLayerByIndex(icmd - ID_ASSIGN_TO_LAYER1);
+      int i = 0;
+      for (IEditable *edit : m_vedit)
+      {
+         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
+         {
+            i++;
+            if (icmd == (ID_ASSIGN_TO_LAYER1 + i))
+               AssignSelectionToPartGroup(static_cast<PartGroup *>(edit));
+            if (i == NUM_ASSIGN_LAYERS)
+               break;
+         }
+      }
+      return;
    }
 
    if ((icmd & 0x0000FFFF) == ID_SELECT_ELEMENT)
@@ -5519,7 +5551,7 @@ void PinTable::DoCommand(int icmd, int x, int y)
            }
            break;
        }
-       case ID_ASSIGN_TO_CURRENT_LAYER: m_vpinball->GetLayersListDialog()->OnAssignButton(); break;
+       case ID_ASSIGN_TO_CURRENT_LAYER: m_vpinball->GetLayersListDialog()->AssignToSelectedGroup(); break;
        case ID_EDIT_DRAWINGORDER_HIT: m_vpinball->ShowDrawingOrderDialog(false); break;
        case ID_EDIT_DRAWINGORDER_SELECT: m_vpinball->ShowDrawingOrderDialog(true); break;
        case ID_LOCK: LockElements(); break;
@@ -6543,6 +6575,7 @@ void PinTable::Undo()
 #ifndef __STANDALONE__
    if (m_searchSelectDlg.IsWindow())
       m_searchSelectDlg.Update();
+   m_vpinball->GetLayersListDialog()->Update();
 #endif
 }
 
@@ -6664,8 +6697,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          peditNew->InitPostLoad();
          peditNew->m_backglass = m_vpinball->m_backglassView;
 
-         peditNew->GetISelect()->m_layerName = m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName();
-         m_vpinball->GetLayersListDialog()->AddLayer(m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName(), peditNew);
+         peditNew->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
 
          m_vedit.push_back(peditNew);
          
@@ -6673,6 +6705,7 @@ void PinTable::Paste(const bool atLocation, const int x, const int y)
          cpasted++;
       }
    }
+   m_vpinball->GetLayersListDialog()->Update();
 
    // Center view on newly created objects, if they are off the screen
    if ((cpasted > 0) && atLocation)
@@ -6864,7 +6897,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
         m_vpinball->SetStatusBarElementInfo(info);
         m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
         // Update the layer dialog
-        m_vpinball->GetLayersListDialog()->UpdateLayerInfo();
+        m_vpinball->GetLayersListDialog()->Update();
 #endif
     }
 }
@@ -6916,15 +6949,9 @@ void PinTable::OnDelete()
    }
 
    for (size_t i = 0; i < m_vseldelete.size(); i++)
-   {
-      ISelect* pisel = m_vseldelete[i];
-      if (pisel != nullptr)
-      {
-         if(pisel->GetItemType()!=eItemDragPoint)
-            m_vpinball->GetLayersListDialog()->DeleteElement(m_vseldelete[i]->GetIEditable());
+      if (m_vseldelete[i] != nullptr)
          m_vseldelete[i]->Delete();
-      }
-   }
+   m_vpinball->GetLayersListDialog()->Update();
    // update properties to show the properties of the table
    m_vpinball->SetPropSel(m_vmultisel);
    if (m_searchSelectDlg.IsWindow())
@@ -7001,11 +7028,12 @@ void PinTable::UseTool(int x, int y, int tool)
    {
       pie->m_backglass = m_vpinball->m_backglassView;
       m_vedit.push_back(pie);
-      pie->GetISelect()->m_layerName = m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName();
+      pie->SetPartGroup(m_vpinball->GetLayersListDialog()->GetSelectedPartGroup());
+      m_vpinball->GetLayersListDialog()->Update();
 
       if (m_searchSelectDlg.IsWindow())
          m_searchSelectDlg.Update();
-      m_vpinball->GetLayersListDialog()->AddLayer(m_vpinball->GetLayersListDialog()->GetCurrentSelectedLayerName(), pie);
+
       BeginUndo();
       m_undo.MarkForCreate(pie);
       EndUndo();
@@ -10799,8 +10827,7 @@ LRESULT PinTableMDI::OnMDIActivate(UINT msg, WPARAM wparam, LPARAM lparam)
       g_pvp->m_ptableActive = m_table;
       if (g_pvp->GetLayersDocker() != nullptr)
       {
-         g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->SetActiveTable(m_table);
-         g_pvp->GetLayersDocker()->GetContainLayers()->GetLayersDialog()->UpdateLayerList();
+         g_pvp->GetLayersListDialog()->SetActiveTable(m_table);
          g_pvp->SetPropSel(m_table->m_vmultisel);
       }
       m_vpinball->m_currentTablePath = PathFromFilename(m_table->m_szFileName);

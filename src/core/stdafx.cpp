@@ -24,3 +24,4 @@
 #include "parts/timer.h"
 #include "parts/trigger.h"
 #include "parts/ball.h"
+#include "parts/PartGroup.h"

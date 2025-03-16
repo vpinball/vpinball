@@ -1290,6 +1290,7 @@
     <ClCompile Include="src/utils/ushock_output.cpp" />
     <ClCompile Include="src/utils/variant.cpp" />
     <ClCompile Include="src/utils/wintimer.cpp" />
+    <ClCompile Include="src\parts\PartGroup.cpp" />
     <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp" />
     <ClCompile Include="third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -1653,6 +1654,7 @@
     <ClInclude Include="src\input\SDLInputHandler.h" />
     <ClInclude Include="src\input\Win32InputKeyboardHandler.h" />
     <ClInclude Include="src\input\XInputJoystickHandler.h" />
+    <ClInclude Include="src\parts\PartGroup.h" />
     <ClInclude Include="src\physics\AsyncDynamicQuadTree.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />

@@ -71,6 +71,7 @@ public:
       DefaultPropsTimer,
       DefaultPropsTrigger,
       DefaultCamera,
+      DefaultPropsPartGroup,
 
       // Plugin pages
       Plugin00
