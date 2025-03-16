@@ -75,6 +75,20 @@ Dim x
 x = data
 ```
 
+#### Issue: Coercion issue in For loop when right bound is a string (Bug 55052)
+
+```
+'This code loops 16 times on Windows but over 5,000,000 (!) times in Wine's implementation.
+Dim i, num
+num = "16"
+For i = 0 To num
+    WScript.Echo i
+Next
+
+' workaround
+For i = 0 To CInt(num)
+```
+
 #### Issue: Else..End If on same line with no colon
 
 ```
@@ -85,6 +99,20 @@ else keygrad1 = 0 end if
 else 
    keygrad1 = 0 
 end if
+```
+
+#### Issue: A colon on a new line after Then fails to compile
+
+```
+' does not work
+If Keycode = StartGameKey Then
+  :pupevent 800
+End If
+
+' workaround
+If Keycode = StartGameKey Then
+  pupevent 800
+End If
 ```
 
 #### Issue: Execute fails when object does not exist
