@@ -289,7 +289,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       m_tableVelOld = m_tableVel;
 
       // Acquire from sensor input
-      Vertex2D sensor = g_pplayer->GetRawAccelerometer();
+      Vertex2D sensor = g_pplayer->m_pininput.GetNudge();
 
       // Simulate hardware nudge by getting the cabinet velocity and applying it to the table spring model
       if (g_pplayer->IsAccelInputAsVelocity())

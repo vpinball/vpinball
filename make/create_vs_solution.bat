@@ -73,6 +73,15 @@ if "%vsv%" == "2019" (
 
 
 REM ***************************************************************************************************
+copy /V /Y "plugin-remote-control.net2022.vcxproj" "../plugin-remote-control.vcxproj"
+copy /V /Y "plugin-remote-control.net2022.vcxproj.filters" "../plugin-remote-control.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../plugin-remote-control.vcxproj" /out:"../plugin-remote-control.vcxproj"
+)
+
+
+REM ***************************************************************************************************
 copy /V /Y "plugin-serum.net2022.vcxproj" "../plugin-serum.vcxproj"
 copy /V /Y "plugin-serum.net2022.vcxproj.filters" "../plugin-serum.vcxproj.filters"
 

@@ -739,6 +739,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_onUpdatePhysicsMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
 
    m_scoreView.Select(m_scoreviewOutput);
 
@@ -870,6 +871,7 @@ Player::~Player()
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onGameStartMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(onGameEndMsgId);
    VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onPrepareFrameMsgId);
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onUpdatePhysicsMsgId);
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
@@ -1391,11 +1393,6 @@ void Player::ApplyDeferredTimerChanges()
 
 #pragma region Physics
 
-const Vertex2D& Player::GetRawAccelerometer() const
-{
-   return m_pininput.GetNudge();
-}
-
 #ifdef UNUSED_TILT
 int Player::NudgeGetTilt()
 {
@@ -1613,7 +1610,8 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       ProcessOSMessages();
       if (!IsEditorMode())
       {
-         m_pininput.ProcessInput(); // Gather input, trigger events, syncing input with controller
+         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
+         m_pininput.ProcessInput(); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }

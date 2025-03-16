@@ -35,7 +35,9 @@
 #define VPXPI_EVT_ON_GAME_START         "OnGameStart"         // Broadcasted during player creation, before script initialization
 #define VPXPI_EVT_ON_GAME_END           "OnGameEnd"           // Broadcasted during player shutdown
 #define VPXPI_EVT_ON_PREPARE_FRAME      "OnPrepareFrame"      // Broadcasted when player starts preparing a new frame
+#define VPXPI_EVT_ON_UPDATE_PHYSICS     "OnUpdatePhysics"     // Broadcasted when player update physics (happens often, so must be used with care)
 #define VPXPI_EVT_ON_SETTINGS_CHANGED   "OnSettingsChanged"   // Broadcasted when settings have been changed
+#define VPXPI_EVT_ON_ACTION_CHANGED     "OnActionChanged"     // Broadcasted when an action state change, event data is an VPXActionEvent whose isPressed field can be modified by plugins
 
 
 // Core VPX settings pages
@@ -84,6 +86,44 @@ typedef struct VPXViewSetupDef
    float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
 } VPXViewSetupDef;
 
+enum VPXAction
+{
+   VPXACTION_LeftFlipperKey,
+   VPXACTION_RightFlipperKey,
+   VPXACTION_StagedLeftFlipperKey,
+   VPXACTION_StagedRightFlipperKey,
+   VPXACTION_LeftTiltKey,
+   VPXACTION_RightTiltKey,
+   VPXACTION_CenterTiltKey,
+   VPXACTION_PlungerKey,
+   VPXACTION_FrameCount,
+   VPXACTION_DBGBalls,
+   VPXACTION_Debugger,
+   VPXACTION_AddCreditKey,
+   VPXACTION_AddCreditKey2,
+   VPXACTION_StartGameKey,
+   VPXACTION_MechanicalTilt,
+   VPXACTION_RightMagnaSave,
+   VPXACTION_LeftMagnaSave,
+   VPXACTION_ExitGame,
+   VPXACTION_VolumeUp,
+   VPXACTION_VolumeDown,
+   VPXACTION_LockbarKey,
+   VPXACTION_Enable3D,
+   VPXACTION_TableRecenter,
+   VPXACTION_TableUp,
+   VPXACTION_TableDown,
+   VPXACTION_Escape,
+   VPXACTION_Pause,
+   VPXACTION_Tweak,
+};
+
+typedef struct VPXActionEvent
+{
+   VPXAction action;
+   int isPressed;
+} VPXActionEvent;
+
 typedef struct VPXPluginAPI
 {
    // General information API
@@ -92,12 +132,15 @@ typedef struct VPXPluginAPI
    // User Interface
    enum OptionUnit { NONE, PERCENT };
    float (MSGPIAPI *GetOption)(const char* pageId, const char* optionId, const unsigned int showMask, const char* optionName, const float minValue, const float maxValue, const float step, const float defaultValue, const enum OptionUnit unit, const char** values);
-   void* (MSGPIAPI *PushNotification)(const char* msg, const unsigned int lengthMs);
-   void (MSGPIAPI *UpdateNotification)(const void* handle, const char* msg, const unsigned int lengthMs);
+   unsigned int (MSGPIAPI *PushNotification)(const char* msg, const int lengthMs);
+   void (MSGPIAPI *UpdateNotification)(const unsigned int handle, const char* msg, const int lengthMs);
 
    // View management
    void (MSGPIAPI *DisableStaticPrerendering)(const int /* bool */ disable);
    void (MSGPIAPI *GetActiveViewSetup)(VPXViewSetupDef* view);
    void (MSGPIAPI *SetActiveViewSetup)(VPXViewSetupDef* view);
 
+   // Input management
+   void(MSGPIAPI* GetInputState)(uint64_t* keyState, float* nudgeX, float* nudgeY, float* plunger);
+   void(MSGPIAPI* SetInputState)(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
 } VPXPluginAPI;

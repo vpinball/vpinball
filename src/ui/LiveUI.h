@@ -30,7 +30,7 @@ public:
 
    void ToggleFPS();
    bool IsShowingFPSDetails() const { return m_show_fps > 1; }
-   unsigned int PushNotification(const string &message, const U32 lengthMs, const unsigned int reuseId = 0);
+   unsigned int PushNotification(const string &message, const int lengthMs, const unsigned int reuseId = 0);
 
 private:
    // Main UI frame & panels

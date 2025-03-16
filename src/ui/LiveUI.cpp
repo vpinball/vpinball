@@ -986,7 +986,7 @@ void LiveUI::OpenLiveUI()
    }
 }
 
-unsigned int LiveUI::PushNotification(const string &message, const U32 lengthMs, const unsigned int reuseId)
+unsigned int LiveUI::PushNotification(const string &message, const int lengthMs, const unsigned int reuseId)
 {
    auto notif = std::ranges::find_if(m_notifications, [reuseId](const Notification &n) { return n.id == reuseId; });
    if (notif != m_notifications.end())
@@ -4080,7 +4080,7 @@ void LiveUI::UpdatePlumbWindow()
             const ImVec2 &pos = ImGui::GetWindowPos();
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(0.f, halfSize.y), pos + ImVec2(fullSize.x, halfSize.y), IM_COL32_WHITE);
             ImGui::GetWindowDrawList()->AddLine(pos + ImVec2(halfSize.x, 0.f), pos + ImVec2(halfSize.y, fullSize.y), IM_COL32_WHITE);
-            const Vertex2D &acc = m_player->GetRawAccelerometer(); // Range: -1..1
+            const Vertex2D &acc = m_player->m_pininput.GetNudge(); // Range: -1..1
             ImVec2 accPos = pos + halfSize + ImVec2(acc.x, acc.y) * halfSize * 2.f + ImVec2(0.5f, 0.5f);
             ImGui::GetWindowDrawList()->AddCircleFilled(accPos, 5.f * m_dpi, IM_COL32(255, 0, 0, 255));
             ImGui::EndChild();
@@ -4281,6 +4281,30 @@ void LiveUI::UpdateMainSplashModal()
       int keyShortcut = 0;
       if (enableKeyboardShortcuts && (ImGui::IsKeyReleased(ImGuiKey_Escape) || ((ImGui::IsKeyReleased(dikToImGuiKeys[m_player->m_rgKeys[eEscape]]) && !m_disable_esc))))
          keyShortcut = m_esc_mode == 0 ? 1 : m_esc_mode;
+
+      // Map action to ImgUI navigation
+      if (m_player)
+      {
+         static PinInput::InputState prevState { 0 };
+         const PinInput::InputState& state = m_player->m_pininput.GetInputState();
+         if (state.IsKeyPressed(eLeftFlipperKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, true);
+         else if (state.IsKeyReleased(eLeftFlipperKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_UpArrow, false);
+         if (state.IsKeyPressed(eRightFlipperKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, true);
+         else if (state.IsKeyReleased(eRightFlipperKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_DownArrow, false);
+         if (state.IsKeyPressed(eStartGameKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, true);
+         else if (state.IsKeyReleased(eStartGameKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_Enter, false);
+         if (state.IsKeyPressed(ePlungerKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_Space, true);
+         else if (state.IsKeyReleased(ePlungerKey, prevState))
+            ImGui::GetIO().AddKeyEvent(ImGuiKey_Space, false);
+         prevState = state;
+      }
 
       ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
       if (ImGui::Button("Resume Game", size) || (keyShortcut == 1))

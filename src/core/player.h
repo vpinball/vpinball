@@ -189,6 +189,7 @@ private:
    U64 m_startFrameTick; // System time in us when render frame was started (beginning of frame animation then collect,...)
    unsigned int m_onGameStartMsgId;
    unsigned int m_onPrepareFrameMsgId;
+   unsigned int m_onUpdatePhysicsMsgId;
 
    void MultithreadedGameLoop(const std::function<void()>& sync);
    void FramePacingGameLoop(const std::function<void()>& sync);
@@ -212,7 +213,6 @@ private:
 
 #pragma region Nudge
 public:
-   const Vertex2D& GetRawAccelerometer() const;
    bool IsAccelInputAsVelocity() const { return m_accelInputIsVelocity; }
    
    #ifdef UNUSED_TILT
