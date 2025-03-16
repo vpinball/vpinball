@@ -2206,6 +2206,9 @@
     <ProjectReference Include="plugin-pinup-events.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af779}</Project>
     </ProjectReference>
+    <ProjectReference Include="plugin-remote-control.vcxproj">
+      <Project>{57516b53-6e7e-4618-93b3-4f5222f28807}</Project>
+    </ProjectReference>
     <ProjectReference Include="plugin-serum.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af778}</Project>
     </ProjectReference>

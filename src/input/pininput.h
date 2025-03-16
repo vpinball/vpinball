@@ -165,15 +165,6 @@ public:
    void ReInit() { UnInit(); Init(); }
    void UnInit();
 
-   #ifdef _WIN32
-      void SetFocusWindow(HWND focusWnd);
-      class DirectInputJoystickHandler* GetDirectInputJoystickHandler() const;
-   #endif
-
-   #if defined(ENABLE_SDL_INPUT)
-      void HandleSDLEvent(SDL_Event& e);
-   #endif
-
    enum InputAPI
    {
       PI_DIRECTINPUT, PI_XINPUT, PI_SDL
@@ -222,11 +213,16 @@ public:
    void FireActionEvent(EnumAssignKeys action, bool isPressed);
    static void FireGenericKeyEvent(const int dispid, int keycode);
 
-   bool HasMechPlunger() const;
    bool HasMechPlungerSpeed() const;
    float GetPlungerSpeed() const;
+   void SetPlungerSpeed(const float speed);
+
+   bool HasMechPlunger() const;
    float GetPlungerPos() const;
+   void SetPlungerPos(const float pos);
+
    const Vertex2D& GetNudge() const;
+   void SetNudge(const Vertex2D& nudge);
 
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
@@ -265,7 +261,8 @@ public:
          return (actionState & mask) == 0 && (prev.actionState & mask) != 0;
       }
    };
-   const InputState& GetInputState() const { return m_inputState; }
+   const InputState& GetInputState() const;
+   void SetInputState(const InputState& state);
 
    uint64_t m_leftkey_down_usec = 0;
    unsigned int m_leftkey_down_frame = 0;
@@ -308,6 +305,8 @@ private:
    int m_joycustom3 = 0;
    int m_joycustom4 = 0;
    
+   const unsigned int m_onActionEventMsgId;
+
    struct ActionMapping
    {
       EnumAssignKeys action = EnumAssignKeys::eCKeys;
@@ -371,13 +370,24 @@ private:
 
    int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
-   class SDLInputHandler* m_sdlHandler = nullptr;
-   class DirectInputJoystickHandler* m_joystickDIHandler = nullptr;
+#if defined(ENABLE_SDL_INPUT)
+public:
+   void HandleSDLEvent(SDL_Event& e);
 
-   #ifdef _WIN32
-      HWND m_focusHWnd = nullptr;
-      STICKYKEYS m_startupStickyKeys { 0 };
-   #endif
+private:
+   class SDLInputHandler* m_sdlHandler = nullptr;
+#endif
+
+#ifdef _WIN32
+public:
+   void SetFocusWindow(HWND focusWnd);
+   class DirectInputJoystickHandler* GetDirectInputJoystickHandler() const;
+   
+private:
+   HWND m_focusHWnd = nullptr;
+   STICKYKEYS m_startupStickyKeys { 0 };
+   class DirectInputJoystickHandler* m_joystickDIHandler = nullptr;
+#endif
 };
 
 #define VK_TO_DIK_SIZE 105

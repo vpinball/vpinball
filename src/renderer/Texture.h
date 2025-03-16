@@ -347,14 +347,14 @@ inline void float2half(unsigned short* const __restrict dst, const float* const 
        const __m128 merged[2] = { _mm_or_ps(merge1[0], merge2[0]), _mm_or_ps(merge1[1], merge2[1]) };
 
        const __m128i shifted[2] = { _mm_slli_epi32(_mm_castps_si128(merged[0]), 3), _mm_slli_epi32(_mm_castps_si128(merged[1]), 3) };
-       __m128i final[2] = { _mm_or_si128(shifted[0], _mm_castps_si128(justsign[0])), _mm_or_si128(shifted[1], _mm_castps_si128(justsign[1])) };
+       __m128i result[2] = { _mm_or_si128(shifted[0], _mm_castps_si128(justsign[0])), _mm_or_si128(shifted[1], _mm_castps_si128(justsign[1])) };
 
-       final[0] = _mm_shufflelo_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
-       final[1] = _mm_shufflelo_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
-       final[0] = _mm_shufflehi_epi16(final[0], _MM_SHUFFLE(3, 1, 3, 1));
-       final[1] = _mm_shufflehi_epi16(final[1], _MM_SHUFFLE(3, 1, 3, 1));
-       const __m128 finalc = _mm_shuffle_ps(_mm_castsi128_ps(final[0]), _mm_castsi128_ps(final[1]), _MM_SHUFFLE(2, 0, 2, 0));
-       _mm_store_ps((float*)(dst+o), finalc);
+       result[0] = _mm_shufflelo_epi16(result[0], _MM_SHUFFLE(3, 1, 3, 1));
+       result[1] = _mm_shufflelo_epi16(result[1], _MM_SHUFFLE(3, 1, 3, 1));
+       result[0] = _mm_shufflehi_epi16(result[0], _MM_SHUFFLE(3, 1, 3, 1));
+       result[1] = _mm_shufflehi_epi16(result[1], _MM_SHUFFLE(3, 1, 3, 1));
+       const __m128 resultc = _mm_shuffle_ps(_mm_castsi128_ps(result[0]), _mm_castsi128_ps(result[1]), _MM_SHUFFLE(2, 0, 2, 0));
+       _mm_store_ps((float*)(dst+o), resultc);
     }
     // leftover writes below
 #else

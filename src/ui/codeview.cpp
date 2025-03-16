@@ -1789,40 +1789,45 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
    ft.lpstrText = pfr->lpstrFindWhat;
 
    LONG cszReplaced = 0;
-next:
-   const size_t cpMatch = SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
-   if ((SSIZE_T)cpMatch < 0)
+   bool replace = true;
+   while (replace)
    {
-      if (cszReplaced == 0)
+      replace = false;
+      const size_t cpMatch = SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
+      if ((SSIZE_T)cpMatch < 0)
       {
-         const LocalString ls(IDS_FINDFAILED);
-         const LocalString ls2(IDS_FINDFAILED2);
-         const string szT = string(ls.m_szbuffer) + ft.lpstrText + ls2.m_szbuffer;
-         MessageBeep(MB_ICONEXCLAMATION);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
+         if (cszReplaced == 0)
+         {
+            const LocalString ls(IDS_FINDFAILED);
+            const LocalString ls2(IDS_FINDFAILED2);
+            const string szT = string(ls.m_szbuffer) + ft.lpstrText + ls2.m_szbuffer;
+            MessageBeep(MB_ICONEXCLAMATION);
+            SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
+         }
+         else
+         {
+            const LocalString ls(IDS_REPLACEALL);
+            const LocalString ls2(IDS_REPLACEALL2);
+            char szT[MAX_PATH];
+            wsprintfA(szT, "%s %ld %s", ls.m_szbuffer, cszReplaced, ls2.m_szbuffer);
+            MessageBeep(MB_ICONEXCLAMATION);
+            SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
+         }
       }
       else
       {
-         const LocalString ls(IDS_REPLACEALL);
-         const LocalString ls2(IDS_REPLACEALL2);
-         char szT[MAX_PATH];
-         wsprintfA(szT, "%s %ld %s", ls.m_szbuffer, cszReplaced, ls2.m_szbuffer);
-         MessageBeep(MB_ICONEXCLAMATION);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
+         ft.chrg.cpMin = ft.chrgText.cpMin;
+         ft.chrg.cpMax = ft.chrgText.cpMax;
+         SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
+         if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
+         {
+            SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
+            ft.chrg.cpMin = (LONG)(cpMatch + lstrlen(pfr->lpstrReplaceWith));
+            ft.chrg.cpMax = (LONG)len;	// search through end of the text
+            cszReplaced++;
+            replace = true;
+         }
       }
-      return;
-   }
-
-   ft.chrg.cpMin = ft.chrgText.cpMin;
-   ft.chrg.cpMax = ft.chrgText.cpMax;
-   SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
-   if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
-   {
-      SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
-      ft.chrg.cpMin = (LONG)(cpMatch + lstrlen(pfr->lpstrReplaceWith));
-      ft.chrg.cpMax = (LONG)len;	// search through end of the text
-      cszReplaced++;
-      goto next;
    }
 #endif
 }

@@ -57,18 +57,16 @@ float VPXPluginAPIImpl::GetOption(const char* pageId, const char* optionId, cons
    }
 }
 
-void* VPXPluginAPIImpl::PushNotification(const char* msg, const unsigned int lengthMs)
+unsigned int VPXPluginAPIImpl::PushNotification(const char* msg, const int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
-   g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
-   // FIXME implement
-   return nullptr;
+   return g_pplayer->m_liveUI->PushNotification(msg, lengthMs);
 }
 
-void VPXPluginAPIImpl::UpdateNotification(const void* handle, const char* msg, const unsigned int lengthMs)
+void VPXPluginAPIImpl::UpdateNotification(const unsigned int handle, const char* msg, const int lengthMs)
 {
    assert(g_pplayer); // Only allowed in game
-   // FIXME implement
+   g_pplayer->m_liveUI->PushNotification(msg, lengthMs, handle);
 }
 
 
@@ -114,6 +112,28 @@ void VPXPluginAPIImpl::SetActiveViewSetup(VPXViewSetupDef* view)
    viewSetup.mViewY = view->viewY;
    viewSetup.mViewZ = view->viewZ;
    g_pplayer->m_renderer->InitLayout();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Input API
+
+void VPXPluginAPIImpl::GetInputState(uint64_t* keyState, float* nudgeX, float* nudgeY, float* plunger)
+{
+   const Vertex2D& nudge = g_pplayer->m_pininput.GetNudge();
+   *nudgeX = nudge.x;
+   *nudgeY = nudge.y;
+   *plunger = g_pplayer->m_pininput.GetPlungerPos();
+   *keyState = g_pplayer->m_pininput.GetInputState().actionState;
+}
+
+void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger)
+{
+   PinInput::InputState state;
+   state.actionState = keyState;
+   g_pplayer->m_pininput.SetInputState(state);
+   g_pplayer->m_pininput.SetNudge(Vertex2D(nudgeX, nudgeY));
+   g_pplayer->m_pininput.SetPlungerPos(plunger);
 }
 
 
@@ -348,6 +368,9 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
    m_api.DisableStaticPrerendering = DisableStaticPrerendering;
    m_api.GetActiveViewSetup = GetActiveViewSetup;
    m_api.SetActiveViewSetup = SetActiveViewSetup;
+
+   m_api.GetInputState = GetInputState;
+   m_api.SetInputState = SetInputState;
 
    m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx", "VPX", "Visual Pinball X", "", "", "https://github.com/vpinball/vpinball", 
          [](const uint32_t pluginId, const MsgPluginAPI* api) {},

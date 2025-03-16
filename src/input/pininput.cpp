@@ -1,6 +1,7 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+#include "core/VPXPluginAPIImpl.h"
 #include "renderer/VRDevice.h"
 
 #ifdef ENABLE_SDL_VIDEO
@@ -32,8 +33,9 @@
 
 
 PinInput::PinInput()
+   : m_onActionEventMsgId(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
    #ifdef ENABLE_SDL_INPUT
-      : m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
+      , m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
    #endif
 {
 #ifdef _WIN32
@@ -46,6 +48,7 @@ PinInput::PinInput()
 PinInput::~PinInput()
 {
    UnInit();
+   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onActionEventMsgId);
 }
 
 #ifdef _WIN32
@@ -177,12 +180,15 @@ void PinInput::UnInit()
    m_actionMappings.clear();
    m_analogActionMappings.clear();
    m_inputHandlers.clear();
-   m_sdlHandler = nullptr;
-   m_joystickDIHandler = nullptr;
+
+   #if defined(ENABLE_SDL_INPUT)
+      m_sdlHandler = nullptr;
+   #endif
 
    #ifdef _WIN32
       // restore the state of the sticky keys
       SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_startupStickyKeys, SPIF_SENDCHANGE);
+      m_joystickDIHandler = nullptr;
    #endif
 }
 
@@ -237,20 +243,6 @@ void PinInput::MapAnalogActionToJoystick(AnalogAction output, uint64_t joystickI
    mapping.revert = revert;
    mapping.output = output;
    m_analogActionMappings.push_back(mapping);
-}
-
-bool PinInput::HasMechPlunger() const
-{
-   const auto& it = std::ranges::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
-      [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerPos); });
-   return it != m_analogActionMappings.end();
-}
-
-bool PinInput::HasMechPlungerSpeed() const
-{
-   const auto& it = std::ranges::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
-      [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerSpeed); });
-   return it != m_analogActionMappings.end();
 }
 
 
@@ -319,6 +311,20 @@ DirectInputJoystickHandler* PinInput::GetDirectInputJoystickHandler() const
 }
 #endif
 
+const PinInput::InputState& PinInput::GetInputState() const
+{
+   return m_inputState;
+}
+ 
+void PinInput::SetInputState(const InputState& state)
+{
+   uint64_t changes = state.actionState ^ m_inputState.actionState;
+   uint64_t mask = 1ull;
+   for (int i = 0; i < eCKeys; i++, mask <<= 1)
+      if (changes & mask)
+         FireActionEvent(static_cast<EnumAssignKeys>(i), (state.actionState & mask) != 0);
+   m_inputState = state;
+}
 
 const Vertex2D& PinInput::GetNudge() const
 {
@@ -355,6 +361,20 @@ const Vertex2D& PinInput::GetNudge() const
    return m_accelerometer;
 }
 
+void PinInput::SetNudge(const Vertex2D& nudge)
+{
+   m_accelerometer = nudge;
+   m_accelerometerDirty = false;
+}
+
+
+bool PinInput::HasMechPlunger() const
+{
+   const auto& it = std::ranges::find_if(
+      m_analogActionMappings.begin(), m_analogActionMappings.end(), [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerPos); });
+   return it != m_analogActionMappings.end();
+}
+
 float PinInput::GetPlungerPos() const
 {
    if (m_plungerPosDirty)
@@ -371,6 +391,27 @@ float PinInput::GetPlungerPos() const
    return m_plungerPos;
 }
 
+void PinInput::SetPlungerPos(float pos)
+{
+   constexpr uint64_t extPlungerId = static_cast<uint64_t>(0xF00000000);
+   m_plungerPosDirty = true;
+   for (auto& aam : m_analogActionMappings)
+      if (aam.output == AnalogAction::AM_PlungerPos && aam.joystickId == extPlungerId)
+      {
+         aam.value = pos;
+         return;
+      }
+   MapAnalogActionToJoystick(AnalogAction::AM_PlungerPos, extPlungerId, 0, false, false);
+   SetPlungerPos(pos);
+}
+
+bool PinInput::HasMechPlungerSpeed() const
+{
+   const auto& it = std::ranges::find_if(
+      m_analogActionMappings.begin(), m_analogActionMappings.end(), [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerSpeed); });
+   return it != m_analogActionMappings.end();
+}
+
 float PinInput::GetPlungerSpeed() const
 {
    if (m_plungerSpeedDirty)
@@ -385,6 +426,20 @@ float PinInput::GetPlungerSpeed() const
       //PLOGD << "Plunger speed: " << m_plungerSpeed / static_cast<float>(JOYRANGEMX);
    }
    return m_plungerSpeed;
+}
+
+void PinInput::SetPlungerSpeed(float speed)
+{
+   constexpr uint64_t extPlungerId = static_cast<uint64_t>(0xF00000000);
+   m_plungerPosDirty = true;
+   for (auto& aam : m_analogActionMappings)
+      if (aam.output == AnalogAction::AM_PlungerSpeed && aam.joystickId == extPlungerId)
+      {
+         aam.value = speed;
+         return;
+      }
+   MapAnalogActionToJoystick(AnalogAction::AM_PlungerSpeed, extPlungerId, 1, false, false);
+   SetPlungerPos(speed);
 }
 
 void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration)
@@ -420,6 +475,12 @@ void PinInput::FireGenericKeyEvent(const int dispid, int keycode)
 
 void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
 {
+   // Allow plugins to react to action event, filter, ...
+
+   VPXActionEvent event { static_cast<VPXAction>(action), isPressed };
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onActionEventMsgId, &event);
+   isPressed = event.isPressed;
+
    // Update input state
  
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
@@ -432,7 +493,9 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       else if (action == eRightMagnaSave) action = eLeftMagnaSave;
    }
 
-   if (isPressed)
+   if (isPressed == m_inputState.IsKeyDown(action))
+      return; // Action has been discarded by a plugin
+   else if (isPressed)
       m_inputState.SetPressed(action);
    else
       m_inputState.SetReleased(action);
@@ -586,7 +649,7 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       m_leftkey_down_frame = g_pplayer->m_overall_frames;
    }
 
-   if (!g_pplayer->m_liveUI->IsTweakMode())
+   if (!g_pplayer->m_liveUI->IsTweakMode() && !g_pplayer->m_liveUI->HasKeyboardCapture())
       g_pplayer->m_ptable->FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[action]);
 
    if (((action == eEscape) && !m_disable_esc) || (action == eExitGame))
@@ -904,13 +967,13 @@ void PinInput::ProcessEvent(const InputEvent& event)
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
    }
-   else if (event.type == InputEvent::Type::Keyboard && !g_pplayer->m_liveUI->HasKeyboardCapture())
+   else if (event.type == InputEvent::Type::Keyboard)
    {
       const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.keycode == event.keycode); });
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
-      else
+      else if (!g_pplayer->m_liveUI->HasKeyboardCapture())
          FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, event.keycode);
    }
    else if (event.type == InputEvent::Type::Action)
