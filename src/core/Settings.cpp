@@ -12,7 +12,7 @@ static const string regKey[Settings::Plugin00] = { "Controller"s, "Editor"s, "St
       "DefaultProps\\Gate"s, "DefaultProps\\HitTarget"s, "DefaultProps\\Kicker"s, "DefaultProps\\Light"s, "DefaultProps\\LightSequence"s,
       "DefaultProps\\Plunger"s, "DefaultProps\\Primitive"s, "DefaultProps\\Ramp"s, "DefaultProps\\Rubber"s, "DefaultProps\\Spinner"s,
       "DefaultProps\\Wall"s, "DefaultProps\\Target"s, "DefaultProps\\TextBox"s, "DefaultProps\\Timer"s, "DefaultProps\\Trigger"s,
-      "Defaults\\Camera"s
+      "Defaults\\Camera"s, "Defaults\\PartGroup"s
    };
 vector<string> Settings::m_settingKeys = vector<string>(regKey, regKey + Settings::Section::Plugin00);
 vector<Settings::OptionDef> Settings::m_pluginOptions;

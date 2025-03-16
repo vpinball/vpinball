@@ -1093,6 +1093,7 @@ public:
       EditableRegistry::RegisterEditable<Timer>();
       EditableRegistry::RegisterEditable<Trigger>();
       EditableRegistry::RegisterEditable<HitTarget>();
+      EditableRegistry::RegisterEditable<PartGroup>();
 
       m_vpinball.AddRef();
       m_vpinball.Create(nullptr);

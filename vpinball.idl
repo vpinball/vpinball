@@ -2494,6 +2494,42 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
                 [id(DISPID_AnimateEvents_Animate)]  void Animate();
         }
 
+        //////////////////////////////
+        ////// PartGroup
+        ///////////////////////////////
+        [
+                object,
+                uuid(ea3e9259-58ff-47b8-bd8c-94fa3d79eb4b),
+                dual,
+                helpstring("IPartGroup Interface"),
+                pointer_default(unique)
+        ]
+        interface IPartGroup : IDispatch
+        {
+                [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+                [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+                [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+                [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+                [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+                [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+                [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+                [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+        };
+
+        [
+        uuid(db72df34-273f-4f04-88d0-c9bbf4199e3e),
+        ]
+        dispinterface IPartGroupEvents
+        {
+        properties:
+        methods:
+                [id(DISPID_GameEvents_Init)]  void Init();
+                [id(DISPID_TimerEvents_Timer)]  void Timer();
+        }
+
+        //////////////////////////////
+        ////// LightSeq
+        ///////////////////////////////
         [
                 object,
                 uuid(4F9B83A5-F165-4411-83FD-48EEEAAD43A4),
@@ -2713,6 +2749,16 @@ typedef [uuid(D09B9F0E-C1AE-40dd-84D6-B1F74053AA8E)]
         [
                 uuid(D4D4E043-594F-49f0-B561-4AA9942DCF18),
                 helpstring("Collection Class")
+        ]
+        coclass PartGroup
+        {
+                [default] interface IPartGroup;
+                [default, source]  dispinterface IPartGroupEvents;
+        };
+
+        [
+                uuid(1273536E-A692-4763-9D0B-DC0B142540E2),
+                helpstring("Collection PartGroup")
         ]
         coclass Collection
         {

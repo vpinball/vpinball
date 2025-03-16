@@ -2,17 +2,24 @@
 
 #include "core/stdafx.h"
 #include "LayersListDialog.h"
-#include <WindowsX.h>
 
 LayersListDialog::LayersListDialog()
    : CDialog(IDD_LAYERS)
-   , m_collapsed(true)
-   , m_isCaseSensitive(false)
+   , m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL)))
 {
-   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
 }
 
 LayersListDialog::~LayersListDialog() { }
+
+PartGroup* LayersListDialog::GetSelectedPartGroup() const
+{
+   IEditable* selection = m_layerTreeView.GetSelection();
+   if (selection == nullptr)
+      return nullptr;
+   if (selection->GetItemType() == eItemPartGroup)
+      return static_cast<PartGroup*>(selection);
+   return selection->GetPartGroup();
+}
 
 LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -22,164 +29,6 @@ LRESULT LayersListDialog::OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam
 
    return FinalWindowProc(msg, wparam, lparam);
 }
-
-bool LayersListDialog::AddLayer(const string& name, IEditable* piedit)
-{
-   bool success = false;
-
-    if (!m_layerTreeView.ContainsLayer(name))
-      success = m_layerTreeView.AddLayer(name);
-   else
-      m_layerTreeView.SetActiveLayer(name);
-   if (piedit != nullptr)
-      success = m_layerTreeView.AddElement(piedit->GetName(), piedit);
-
-   if (success)
-      m_layerTreeView.InvalidateRect();
-   return success;
-}
-
-void LayersListDialog::DeleteLayer()
-{
-   if (m_layerTreeView.GetLayerCount() == 1)
-   {
-      ShowError("Can't delete all layers!");
-      return;
-   }
-
-   if (m_activeTable == nullptr)
-      return;
-
-   const HTREEITEM layerToDelete = m_layerTreeView.GetCurrentLayerItem();
-   const vector<HTREEITEM> allSubItems = m_layerTreeView.GetSubItems(layerToDelete);
-
-   if (!allSubItems.empty())
-   {
-      const int ans = MessageBox("Are you sure you want to delete the complete layer?", "Confirm delete", MB_YESNO | MB_DEFBUTTON2);
-      if (ans != IDYES)
-         return;
-   }
-
-   HTREEITEM hFillLayer = m_layerTreeView.GetChild(m_layerTreeView.GetRootItem());
-   if (hFillLayer == m_layerTreeView.GetCurrentLayerItem())
-   {
-      hFillLayer = m_layerTreeView.GetNextItem(hFillLayer, TVGN_NEXT);
-   }
-   const string fillLayerName{m_layerTreeView.GetItemText(hFillLayer)};
-   m_layerTreeView.SetActiveLayer(fillLayerName);
-   for (const HTREEITEM item : allSubItems)
-   {
-      TVITEM tvItem = {};
-      tvItem.mask = TVIF_PARAM | TVIF_HANDLE;
-      tvItem.hItem = item;
-      if (m_layerTreeView.GetItem(tvItem))
-      {
-         IEditable* const pedit = (IEditable*)tvItem.lParam;
-         if (pedit)
-         {
-            ISelect* const psel = pedit->GetISelect();
-            if (psel != nullptr)
-               psel->m_layerName = fillLayerName;
-            m_layerTreeView.AddElement(pedit->GetName(), pedit);
-         }
-      }
-   }
-   for (const HTREEITEM item : allSubItems)
-      m_layerTreeView.DeleteItem(item);
-   m_layerTreeView.DeleteItem(layerToDelete);
-}
-
-void LayersListDialog::ClearList() { m_layerTreeView.DeleteAll(); }
-
-void LayersListDialog::UpdateLayerList(const string& name)
-{
-   if (m_activeTable == nullptr)
-      return;
-
-   vector<HTREEITEM> visItemList;
-   {
-   HTREEITEM item = m_layerTreeView.GetNextVisible(m_layerTreeView.GetRootItem());
-   while (item)
-   {
-      TVITEM itemInfo;
-      itemInfo.hItem = item;
-      itemInfo.mask = TVIF_STATE;
-      if (m_layerTreeView.GetItem(itemInfo))
-      {
-         if ((itemInfo.state & TVIS_EXPANDED) == TVIS_EXPANDED)
-            visItemList.push_back(item);
-      }
-      item = m_layerTreeView.GetNextVisible(item);
-   }
-   }
-
-   ClearList();
-   const bool checkName = !name.empty();
-   const string sName { lowerCase(name) }; //transform the name to lower
-
-   for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
-   {
-      ISelect* const psel = m_activeTable->m_vedit[t]->GetISelect();
-      if (psel != nullptr)
-      {
-         if (!checkName)
-            AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-         else if (!GetCaseSensitiveFilter())
-         {
-            //filter obj name and filter to lower
-            const string objName { lowerCase(m_activeTable->m_vedit[t]->GetName()) };
-            if (objName.find(sName) != string::npos)
-               AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-         }
-         else
-         {
-            //filter std
-            if (string(m_activeTable->m_vedit[t]->GetName()).find(name) != string::npos)
-               AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
-         }
-      }
-   }
-   if (!name.empty())
-      ExpandAll();
-   else
-   {
-      ExpandLayers();
-      for (const auto& item : visItemList)
-      {
-         m_layerTreeView.Expand(item, TVE_EXPAND);
-      }
-   }
-}
-
-void LayersListDialog::UpdateElement(IEditable* const pedit)
-{
-   if (pedit == nullptr)
-      return;
-
-   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
-   if (item == nullptr)
-      return;
-
-   m_layerTreeView.SetItemText(item, pedit->GetName());
-}
-
-void LayersListDialog::DeleteElement(IEditable* const pedit)
-{
-   if (pedit == nullptr)
-      return;
-
-   const HTREEITEM parent = m_layerTreeView.GetLayerByElement(pedit);
-   const HTREEITEM item = m_layerTreeView.GetItemByElement(pedit);
-   if (item == nullptr || parent == nullptr)
-      return;
-   m_layerTreeView.DeleteItem(item);
-   if (m_layerTreeView.GetSubItemsCount(parent) == 0)
-      m_layerTreeView.DeleteItem(parent);
-   if (m_layerTreeView.GetLayerCount() == 1)
-      m_layerTreeView.SetActiveLayer(m_layerTreeView.GetLayerName(m_layerTreeView.GetFirstLayer()));
-}
-
-string LayersListDialog::GetCurrentSelectedLayerName() const { return m_layerTreeView.GetCurrentLayerName(); }
 
 void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd)
 {
@@ -194,10 +43,7 @@ void LayersListDialog::AddToolTip(const char* const text, HWND parentHwnd, HWND 
 
 BOOL LayersListDialog::OnInitDialog()
 {
-   const HWND toolTipHwnd = CreateWindowEx(
-      0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
-   m_layerFilterEditBox.SetDialog(this);
-   m_isCaseSensitive = BST_UNCHECKED;
+   const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
 
    AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
    AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
@@ -260,134 +106,79 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    switch (id)
    {
    case IDC_SYNC:
-   {
-      UpdateLayerInfo();
+      Update();
       return TRUE;
-   }
+
    case IDC_ADD_LAYER_BUTTON:
-   {
-      if (!AddLayer("New Layer 0", nullptr))
+      if (m_activeTable)
       {
-         int i = 0;
-         while (!AddLayer("New Layer " + std::to_string(i), nullptr))
-         {
-            if (i > 10000) // something went wrong, so exit here and warn
-            {
-               ShowError("Cannot add to Layer");
-               return TRUE;
-            }
-            i++;
-         }
+         IEditable* const partGroup = EditableRegistry::CreateAndInit(eItemPartGroup, m_activeTable, 0, 0);
+         m_activeTable->m_vedit.push_back(partGroup);
+         partGroup->SetPartGroup(GetSelectedPartGroup());
+         m_activeTable->BeginUndo();
+         m_activeTable->m_undo.MarkForCreate(partGroup);
+         m_activeTable->EndUndo();
+         Update();
       }
       return TRUE;
-   }
+
    case IDC_DELETE_LAYER_BUTTON:
-   {
-      DeleteLayer();
+      if (m_activeTable && GetSelectedPartGroup())
+      {
+         PartGroup* oldParent = GetSelectedPartGroup();
+         PartGroup* newParent = oldParent->GetPartGroup();
+         if (newParent == nullptr)
+         {
+            auto existing = std::ranges::find_if(m_activeTable->m_vedit, [oldParent](const IEditable* e)
+               { return (e->GetItemType() == eItemPartGroup) && (oldParent != e); });
+            if (existing == m_activeTable->m_vedit.end())
+               return FALSE;
+            newParent = static_cast<PartGroup*>(*existing);
+         }
+         m_activeTable->BeginUndo();
+         std::ranges::for_each(m_activeTable->m_vedit,
+            [oldParent, newParent](IEditable* e)
+            {
+               if (e->GetPartGroup() == oldParent)
+                  e->SetPartGroup(newParent);
+            });
+         oldParent->Delete();
+         m_activeTable->EndUndo();
+         Update();
+      }
       return TRUE;
-   }
+
    case IDC_ASSIGN_BUTTON:
-   {
-      OnAssignButton();
+      AssignToSelectedGroup();
       return TRUE;
-   }
+
    case IDC_EXPAND_COLLAPSE_BUTTON:
-   {
-      CollapseLayers();
+      ResetView();
       return TRUE;
-   }
+
+   case IDC_LAYER_FILTER_EDIT:
    case IDC_LAYER_FILTER_CASE_BUTTON:
-      SetCaseSensitiveFilter(!GetCaseSensitiveFilter());
-      Button_SetCheck(m_layerFilterCaseButton, GetCaseSensitiveFilter() ? BST_CHECKED : BST_UNCHECKED);
-      UpdateLayerList(GetWindowText().c_str());
+      m_layerTreeView.SetFilter(m_layerFilterEditBox.GetWindowText().c_str(), m_layerFilterCaseButton.GetCheck() == BST_UNCHECKED);
       return TRUE;
+
    default: break;
    }
    return FALSE;
 }
 
-void LayersListDialog::OnAssignButton()
-{
-   const string layerName{m_layerTreeView.GetCurrentLayerName()};
-   if (layerName.empty())
-   {
-      ShowError("Please select a layer!");
-      return;
-   }
-
-   if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
-      return;
-
-   const bool layerIsVisible = !m_layerTreeView.IsItemChecked(m_layerTreeView.GetCurrentLayerItem());
-   bool visibilityChanged = false;
-   for (int t = 0; t < m_activeTable->m_vmultisel.size(); t++)
-   {
-      ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
-      IEditable* const pedit = psel->GetIEditable();
-      psel->m_layerName = layerName;
-      const HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
-      m_layerTreeView.AddElement(pedit->GetName(), pedit);
-      m_layerTreeView.DeleteItem(oldItem);
-      if (psel->m_isVisible && !layerIsVisible)
-      {
-         psel->m_isVisible = false;
-         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), false);
-         visibilityChanged = true;
-      }
-      else if (!psel->m_isVisible && layerIsVisible)
-      {
-         psel->m_isVisible = true;
-         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), true);
-         visibilityChanged = true;
-      }
-   }
-   if (visibilityChanged)
-   {
-      m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentLayerItem(), layerIsVisible);
-      m_activeTable->SetDirtyDraw();
-   }
-}
-
-void LayersListDialog::AssignToLayerByIndex(size_t index)
+void LayersListDialog::AssignToSelectedGroup()
 {
    if (m_activeTable == nullptr || m_activeTable->MultiSelIsEmpty())
       return;
-   const vector<string> layerList = GetAllLayerNames();
 
-   if (index >= layerList.size())
+   PartGroup* group = GetSelectedPartGroup();
+   if (group == nullptr)
+   {
+      ShowError("Please select a group!");
       return;
-
-   vector<HTREEITEM> children = m_layerTreeView.GetAllLayerItems();
-   const bool layerIsVisible = !m_layerTreeView.IsItemChecked(children[index]);
-   bool visibilityChanged = false;
-   for (int t = 0; t < m_activeTable->m_vmultisel.size(); t++)
-   {
-      ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(t);
-      IEditable* const pedit = psel->GetIEditable();
-      psel->m_layerName = layerList[index];
-      
-      const HTREEITEM oldItem = m_layerTreeView.GetItemByElement(pedit);
-      m_layerTreeView.AddElementToLayer(children[index], pedit->GetName(), pedit);
-      m_layerTreeView.DeleteItem(oldItem);
-
-      if (psel->m_isVisible && !layerIsVisible)
-      {
-         psel->m_isVisible = false;
-         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), false);
-         visibilityChanged = true;
-      }
-      else if (!psel->m_isVisible && layerIsVisible)
-      {
-         psel->m_isVisible = true;
-         m_layerTreeView.SetItemCheck(m_layerTreeView.GetCurrentElement(), true);
-         visibilityChanged = true;
-      }
    }
-   if (visibilityChanged) 
-   {
-      m_layerTreeView.SetItemCheck(children[index], layerIsVisible);
-      m_activeTable->SetDirtyDraw();
-   }
+
+   m_activeTable->AssignSelectionToPartGroup(group);
 }
 
 bool LayersListDialog::PreTranslateMessage(MSG* msg)
@@ -411,37 +202,28 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    return !!IsDialogMessage(*msg);
 }
 
-vector<string> LayersListDialog::GetAllLayerNames() const
-{ 
-    return m_layerTreeView.GetAllLayerNames();
-}
-
-// If SYNC checkbox is checked, the layer list will be updated
-void LayersListDialog::UpdateLayerInfo()
+void LayersListDialog::SetActiveTable(PinTable* ptable)
 {
-    // If active table is not set, return
-    if (m_activeTable == nullptr)
-        return;
-
-    // If Radio button IDC_SYNC is unchecked, return
-    if (IsDlgButtonChecked(IDC_SYNC) == BST_UNCHECKED)
-        return;
-
-    // Get the selected element
-    ISelect* const psel = m_activeTable->m_vmultisel.ElementAt(0);
-    if (psel != nullptr)
-    {
-        // Get the layer name of the selected element and Set the active layer
-        m_layerTreeView.SetActiveLayer(psel->m_layerName);
-        // Find the selected element name and find it in the layer, selecting it
-        const HTREEITEM item = m_layerTreeView.GetItemByElement(psel->GetIEditable());
-        m_layerTreeView.SelectItem(item);
-    }
-    else
-    {
-        m_layerTreeView.SetActiveLayer(string());
-    }
+   m_activeTable = ptable;
+   m_layerTreeView.SetActiveTable(ptable);
+   if (IsDlgButtonChecked(IDC_SYNC) == BST_CHECKED)
+   {
+      ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+      m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+   }
 }
+
+void LayersListDialog::Update()
+{
+   m_layerTreeView.Update();
+   if (IsDlgButtonChecked(IDC_SYNC) == BST_CHECKED)
+   {
+      ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+      m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+   }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
 
 CContainLayers::CContainLayers()
 {
@@ -462,10 +244,202 @@ void CDockLayers::OnClose()
    // nothing to do only to prevent closing the window
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////
+
 LayerTreeView::LayerTreeView()
+   : m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL)))
 {
-   m_dragging = false;
-   m_accel = LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL));
+}
+
+void LayerTreeView::SetActiveTable(PinTable* ptable)
+{
+   m_activeTable = ptable;
+   Update();
+}
+
+void LayerTreeView::Select(IEditable* editable)
+{
+   auto existing = std::ranges::find_if(m_content, [editable](const TreeEntry& te) { return te.editable == editable; });
+   if (existing != m_content.end())
+      SelectItem(existing->item);
+}
+
+IEditable* LayerTreeView::GetSelection() const
+{
+   HTREEITEM item = CTreeView::GetSelection();
+   auto existing = std::ranges::find_if(m_content, [item](const TreeEntry& te) { return te.item == item; });
+   return existing == m_content.end() ? nullptr : existing->editable;
+}
+
+void LayerTreeView::SetFilter(const string& filter, bool isCaseSensitive)
+{
+   if ((m_filter != filter) || (m_isCaseSensitiveFilter != isCaseSensitive))
+   {
+      m_filter = filter;
+      m_isCaseSensitiveFilter = isCaseSensitive;
+      Update();
+   }
+}
+
+void LayerTreeView::Update()
+{
+   if (m_activeTable == nullptr)
+   {
+      DeleteAllItems();
+      m_hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
+      TreeView_SetItemState(GetHwnd(), m_hRootItem, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
+      return;
+   }
+   
+   // Build new content list (in the end, a tree is a hierarchically displayed list)
+   std::stringstream ss;
+   vector<PartGroup*> itemPath;
+   vector<TreeEntry> newContent;
+   const string filter = m_isCaseSensitiveFilter ? lowerCase(m_filter) : m_filter;
+   for (const auto& editable : m_activeTable->m_vedit)
+   {
+      string name = editable->GetName();
+      if (!filter.empty() && editable->GetItemType() != eItemPartGroup)
+      {
+         if (!m_isCaseSensitiveFilter)
+         {
+            const string objName { lowerCase(name) };
+            if (objName.find(filter) == string::npos)
+               continue;
+         }
+         else
+         {
+            if (name.find(filter) == string::npos)
+               continue;
+         }
+      }
+      itemPath.clear();
+      PartGroup* parent = editable->GetPartGroup();
+      while (parent != nullptr)
+      {
+         itemPath.insert(itemPath.begin(), parent);
+         parent = parent->GetPartGroup();
+      }
+      ss.str("");
+      for (const auto& group : itemPath)
+         ss << group->GetName() << "/";
+      ss << name;
+      newContent.push_back({ ss.str(), editable, nullptr, false, false });
+      StrToLower(newContent.back().path);
+   }
+   std::ranges::sort(newContent,
+      [](const TreeEntry& a, const TreeEntry& b)
+      {
+         // Put PartGroup at beginning of content list, then sort alphabetically
+         bool aPG = a.editable->GetItemType() == eItemPartGroup;
+         bool bPG = b.editable->GetItemType() == eItemPartGroup;
+         return (aPG && !bPG) ? true
+              : (!aPG && bPG) ? false
+              : a.path < b.path;
+      });
+
+   // Identify differences and update Win32 control
+   SetRedraw(FALSE);
+   auto oldContentIt = m_content.begin();
+   IEditable* prevSelection = GetSelection();
+   int globalVisibility = -1;
+   for (auto& node : newContent)
+   {
+      while ((oldContentIt < m_content.end()) && (oldContentIt->pendingDelete))
+         oldContentIt++;
+      if ((oldContentIt < m_content.end()) && (oldContentIt->path == node.path) && (oldContentIt->editable == node.editable))
+      {
+         // Reuse existing element
+         node.item = oldContentIt->item;
+         oldContentIt++;
+      }
+      else
+      {
+         // Insert the new element at the right place
+         if (node.editable->GetPartGroup() == nullptr)
+         {
+            node.item = AddItem(m_hRootItem, node.editable->GetName(), node.editable, 1);
+         }
+         else
+         {
+            const auto& parent = std::ranges::find_if(newContent, [node](const auto& node2) { return node.editable->GetPartGroup() == node2.editable; });
+            node.item = AddItem(parent->item, node.editable->GetName(), node.editable, 2);
+         }
+         // If new elements was already part of the tree but at another place, persists its state
+         auto existing = std::find_if(oldContentIt, m_content.end(), [node](const TreeEntry& te) { return te.editable == node.editable; });
+         if (existing != m_content.end())
+         {
+            // Persist collapsed/expnded state
+            TVITEM tvi = {};
+            tvi.mask = TVIF_STATE;
+            tvi.hItem = existing->item;
+            tvi.stateMask = TVIS_EXPANDED;
+            if ((node.editable->GetItemType() == eItemPartGroup) && GetItem(tvi) && ((tvi.state & TVIS_EXPANDED) != 0))
+               node.pendingExpand = true;
+
+            // Mark for deletion, with all its children
+            existing->pendingDelete = true;
+            if (existing->editable->GetItemType() == eItemPartGroup)
+               std::ranges::for_each(m_content, [existing](TreeEntry& te) {
+                     PartGroup* pg = te.editable->GetPartGroup();
+                     while (pg != nullptr && pg != existing->editable)
+                        pg = pg->GetPartGroup();
+                     if (pg == existing->editable)
+                        te.pendingDelete = true;
+                  });
+         }
+      }
+
+      // Update visibility checkboxes
+      int state;
+      if (node.editable->GetItemType() == eItemPartGroup)
+      {
+         bool show = false, hide = false;
+         for (auto e : m_activeTable->m_vedit)
+            if (e->GetPartGroup() == node.editable && e->GetISelect())
+            {
+               show |= e->GetISelect()->m_isVisible;
+               hide |= !e->GetISelect()->m_isVisible;
+            }
+         state = (show && !hide) ? 1 : (!show && hide) ? 2 : 3;
+      }
+      else
+      {
+         const ISelect* const select = node.editable->GetISelect();
+         state = (select && select->m_isVisible) ? 1 : (select && !select->m_isVisible) ? 2 : 3;
+      }
+      TreeView_SetItemState(GetHwnd(), node.item, INDEXTOSTATEIMAGEMASK(state), TVIS_STATEIMAGEMASK);
+      globalVisibility = globalVisibility == 3 ? 3 : globalVisibility == -1 ? state : (globalVisibility != state) ? 3 : globalVisibility;
+   }
+   TreeView_SetItemState(GetHwnd(), m_hRootItem, INDEXTOSTATEIMAGEMASK(globalVisibility), TVIS_STATEIMAGEMASK);
+   while (oldContentIt < m_content.end())
+   {
+      oldContentIt->pendingDelete = true;
+      oldContentIt++;
+   }
+   
+   // Remove old items
+   std::ranges::for_each(m_content, [&](TreeEntry& te)
+      {
+         if (te.pendingDelete)
+            DeleteItem(te.item);
+      });
+   m_content = newContent;
+   
+   // Sort tree (somewhat overkill, but since we don't bother inserting items at the right place...)
+   SortChildren(m_hRootItem, false);
+   std::ranges::for_each(m_content, [&](TreeEntry& te)
+      {
+         if (te.pendingExpand)
+            Expand(te.item, TVE_EXPAND);
+         if (te.editable->GetItemType() == eItemPartGroup)
+            SortChildren(te.item, false);
+      });
+
+   // Persist selection
+   Select(prevSelection);
+
+   SetRedraw(TRUE);
 }
 
 HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image)
@@ -485,265 +459,17 @@ HTREEITEM LayerTreeView::AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* con
    return item;
 }
 
-bool LayerTreeView::AddLayer(const string& name)
+void LayerTreeView::ResetView()
 {
-   hCurrentLayerItem = AddItem(hRootItem, name.c_str(), nullptr, 1);
-   return hCurrentLayerItem != nullptr;
-}
-
-bool LayerTreeView::AddElement(const string& name, IEditable* const pedit) { return AddElementToLayer(hCurrentLayerItem, name, pedit); }
-
-bool LayerTreeView::ContainsLayer(const string& name) const
-{
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      const string itemName(GetItemText(item));
-      if (itemName == name)
-         return true;
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   return false;
-}
-
-string LayerTreeView::GetCurrentLayerName() const { return string(GetItemText(hCurrentLayerItem)); }
-
-HTREEITEM LayerTreeView::GetLayerByElement(const IEditable* const pedit)
-{
-   for (const HTREEITEM child : GetAllLayerItems())
-   {
-      HTREEITEM subItem = GetChild(child);
-      while (subItem)
-      {
-         char text[MAX_PATH];
-         TVITEM tvItem = {};
-         tvItem.mask = TVIF_PARAM | TVIF_TEXT;
-         tvItem.cchTextMax = MAX_PATH;
-         tvItem.pszText = text;
-         tvItem.hItem = subItem;
-         if (GetItem(tvItem))
-         {
-            if (pedit == (IEditable*)tvItem.lParam)
-               return child;
-         }
-         subItem = GetNextItem(subItem, TVGN_NEXT);
-      }
-   }
-   return nullptr;
-}
-
-HTREEITEM LayerTreeView::GetLayerByItem(HTREEITEM hChildItem)
-{
-   for (const HTREEITEM child : GetAllLayerItems())
-   {
-      if (hChildItem == child)
-         return child;
-
-      HTREEITEM subItem = GetChild(child);
-      while (subItem)
-      {
-         if (hChildItem == subItem)
-            return child;
-         subItem = GetNextItem(subItem, TVGN_NEXT);
-      }
-   }
-
-   return nullptr;
-}
-
-HTREEITEM LayerTreeView::GetItemByElement(const IEditable* const pedit)
-{
-   vector<HTREEITEM> children = GetAllLayerItems();
-
-   for (const HTREEITEM child : children)
-   {
-      HTREEITEM subItem = GetChild(child);
-      while (subItem)
-      {
-         char text[MAX_PATH];
-         TVITEM tvItem = {};
-         tvItem.mask = TVIF_PARAM | TVIF_TEXT;
-         tvItem.cchTextMax = MAX_PATH;
-         tvItem.pszText = text;
-         tvItem.hItem = subItem;
-         if (GetItem(tvItem))
-         {
-            if (pedit == (IEditable*)tvItem.lParam)
-               return subItem;
-         }
-         subItem = GetNextItem(subItem, TVGN_NEXT);
-      }
-   }
-   return nullptr;
-}
-
-int LayerTreeView::GetItemCount() const
-{
-   vector<HTREEITEM> children = GetAllLayerItems();
-
-   int count = (int)children.size();
-   for (const HTREEITEM child : children)
-   {
-      HTREEITEM subItem = GetChild(child);
-      while (subItem)
-      {
-         count++;
-         subItem = GetNextItem(subItem, TVGN_NEXT);
-      }
-   }
-   return count;
-}
-
-int LayerTreeView::GetLayerCount() const
-{
-   HTREEITEM item = GetChild(hRootItem);
-   int count = 0;
-   while (item)
-   {
-      count++;
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   return count;
-}
-
-vector<HTREEITEM> LayerTreeView::GetAllLayerItems() const 
-{
-   vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   return children;
-}
-
-vector<HTREEITEM> LayerTreeView::GetSubItems(HTREEITEM hParent)
-{
-   vector<HTREEITEM> allSubItems;
-   HTREEITEM item = GetChild(hParent);
-   while (item)
-   {
-      allSubItems.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   return allSubItems;
-}
-
-int LayerTreeView::GetSubItemsCount(HTREEITEM hParent) const
-{
-   int count = 0;
-   HTREEITEM item = GetChild(hParent);
-   while (item)
-   {
-      count++;
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   return count;
-}
-
-bool LayerTreeView::IsItemChecked(HTREEITEM hItem) const
-{
-   TVITEM tvItem;
-   tvItem.mask = TVIF_HANDLE | TVIF_STATE;
-   tvItem.stateMask = TVIS_STATEIMAGEMASK;
-   tvItem.hItem = hItem;
-   GetItem(tvItem);
-   return ((tvItem.state >> 12) - 1) == 0;
-}
-
-void LayerTreeView::SetItemCheck(HTREEITEM item, bool checked) 
-{ 
-    if (checked)
-    {
-        TreeView_SetCheckState(GetHwnd(), item, 1);
-    }
-    else
-    {
-        TreeView_SetCheckState(GetHwnd(), item, 0);
-    }
-}
-
-void LayerTreeView::SetAllItemStates(const bool checked)
-{
-   TVITEM tvItem = {};
-   tvItem.mask = TVIF_PARAM;
-
-   vector<HTREEITEM> children = GetAllLayerItems();
-   for (const HTREEITEM child : children)
-   {
-      TreeView_SetCheckState(GetHwnd(), child, checked);
-      HTREEITEM subItem = GetChild(child);
-      while (subItem)
-      {
-         tvItem.hItem = subItem;
-         if (GetItem(tvItem))
-         {
-            IEditable* const pedit = (IEditable*)tvItem.lParam;
-            if (pedit != nullptr)
-            {
-               ISelect* const psel = pedit->GetISelect();
-               if (psel != nullptr)
-                  psel->m_isVisible = checked;
-            }
-         }
-
-         TreeView_SetCheckState(GetHwnd(), subItem, checked);
-         subItem = GetNextItem(subItem, TVGN_NEXT);
-      }
-   }
-}
-
-void LayerTreeView::DeleteAll()
-{
-   DeleteAllItems();
-   hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
-   TreeView_SetCheckState(GetHwnd(), hRootItem, 1);
-}
-
-void LayerTreeView::ExpandAll()
-{
-   Expand(hRootItem, TVE_EXPAND);
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      Expand(item, TVE_EXPAND);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-}
-
-void LayerTreeView::CollapseAll()
-{
-   Expand(hRootItem, TVE_COLLAPSE);
-   HTREEITEM item = GetChild(hRootItem);
+   SetRedraw(FALSE);
+   HTREEITEM item = GetChild(m_hRootItem);
    while (item)
    {
       Expand(item, TVE_COLLAPSE);
       item = GetNextItem(item, TVGN_NEXT);
    }
-}
-
-void LayerTreeView::ExpandLayers() { Expand(hRootItem, TVE_EXPAND); }
-
-void LayerTreeView::CollapseLayer()
-{
-   CollapseAll();
-   ExpandLayers();
-}
-
-void LayerTreeView::SetActiveLayer(const string& name)
-{
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      const string layerName{GetItemText(item)};
-      if (layerName == name)
-      {
-         hCurrentLayerItem = item;
-         return;
-      }
-      item = GetNextItem(item, TVGN_NEXT);
-   }
+   Expand(m_hRootItem, TVE_EXPAND);
+   SetRedraw(TRUE);
 }
 
 bool LayerTreeView::PreTranslateMessage(MSG* msg)
@@ -758,45 +484,29 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    if (keyPressed != VK_F2)
    {
       // only pre-translate mouse and keyboard input events
-      if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST)) && TranslateAccelerator(GetHwnd(), m_accel, msg))
+      if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
+         && TranslateAccelerator(GetHwnd(), m_accel, msg))
          return true;
    }
 
    return !!IsDialogMessage(*msg);
 }
 
-vector<string> LayerTreeView::GetAllLayerNames() const
-{
-   vector<HTREEITEM> children;
-   HTREEITEM item = GetChild(hRootItem);
-   while (item)
-   {
-      children.push_back(item);
-      item = GetNextItem(item, TVGN_NEXT);
-   }
-   vector<string> layerList;
-   layerList.reserve(children.size());
-   for (const auto& layer : children) 
-   { 
-      layerList.push_back(GetItemText(layer).c_str());
-   }
-   return layerList;
-}
-
 void LayerTreeView::OnAttach()
 {
    m_normalImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0);
-   const CBitmap bm(IDB_LAYER_ICONS16);
-   m_normalImages.Add(bm, RGB(255, 255, 255));
-   SetImageList(m_normalImages, LVSIL_NORMAL);
+   m_normalImages.Add(CBitmap(IDB_LAYER_ICONS16), RGB(255, 255, 255));
+   SetImageList(m_normalImages, TVSIL_NORMAL);
 
    DWORD style = GetStyle();
    style |= TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_CHECKBOXES;
    SetStyle(style);
 
-   DeleteAllItems();
-   hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
-   Expand(hRootItem, TVE_EXPAND);
+   m_stateImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 1, 0);
+   m_stateImages.Add(CBitmap(IDB_TRISTATE_ICONS16), RGB(255, 255, 255));
+   SetImageList(m_stateImages, TVSIL_STATE);
+
+   SetActiveTable(nullptr);
 }
 
 void LayerTreeView::PreCreate(CREATESTRUCT& cs)
@@ -815,14 +525,14 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
    {
    case WM_KEYUP:
       if (wparam == VK_F2)
-      {
-         const HTREEITEM item = GetSelection();
-         EditLabel(item);
-      }
+         EditLabel(CTreeView::GetSelection());
       break;
-   case WM_MOUSEACTIVATE: SetFocus(); break;
+      
+   case WM_MOUSEACTIVATE:
+      SetFocus();
+      break;
+      
    case WM_MOUSEMOVE:
-   {
       if (m_dragging)
       {
          const POINTS Pos = MAKEPOINTS(lparam);
@@ -834,61 +544,44 @@ LRESULT LayerTreeView::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
          const HTREEITEM hitTarget = HitTest(tvht);
          if (hitTarget) // if there is a hit
             SelectDropTarget(hitTarget);
-
          ImageList_DragShowNolock(TRUE);
       }
       break;
-   }
+
    case WM_LBUTTONUP:
-   {
       if (m_dragging)
       {
          ImageList_DragLeave(GetHwnd());
          ImageList_EndDrag();
          HTREEITEM hSelectedDrop = GetDropHiLightItem();
-         SelectItem(hSelectedDrop);
          SelectDropTarget(nullptr);
-
-         vector<HTREEITEM> layers = GetAllLayerItems();
-
-         for (const auto& dragItem : m_DragItems)
+         auto dropTarget = std::ranges::find_if(m_content, [hSelectedDrop](const TreeEntry& te) { return te.item == hSelectedDrop; });
+         if ((hSelectedDrop == m_hRootItem) || (dropTarget != m_content.end()))
          {
-            TVITEM tvItem = {};
-            tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
-            tvItem.hItem = dragItem->m_hDragItem;
-            if (GetItem(tvItem))
+            SelectItem(hSelectedDrop);
+            PartGroup* group = (hSelectedDrop == m_hRootItem) ? nullptr 
+                             : (dropTarget->editable->GetItemType() == eItemPartGroup) ? static_cast<PartGroup*>(dropTarget->editable)
+                             : dropTarget->editable->GetPartGroup();
+            m_activeTable->BeginUndo();
+            for (const auto& dragItem : m_DragItems)
             {
-               IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != nullptr)
-               {
-                  ISelect* const psel = pedit->GetISelect();
-                  const HTREEITEM hLayerItem = GetLayerByItem(hSelectedDrop);
-                  if (psel != nullptr)
-                     psel->m_layerName = GetLayerName(hLayerItem);
-                  const HTREEITEM oldItem = GetItemByElement(pedit);
-                  DeleteItem(oldItem);
-                  AddElementToLayer(hLayerItem, pedit->GetName(), pedit);
-                  vector<HTREEITEM> subItem = GetSubItems(dragItem->m_hDragLayer);
-                  if (subItem.empty())
-                  {
-                     if (dragItem->m_hDragLayer == hCurrentLayerItem)
-                        hCurrentLayerItem = hLayerItem;
-
-                     DeleteItem(dragItem->m_hDragLayer);
-                  }
-               }
+               auto existing = std::ranges::find_if(m_content, [dragItem](const TreeEntry& te) { return te.item == dragItem; });
+               if (existing == m_content.end())
+                  continue; // Item destroyed while dragging. Can this even happen ?
+               if (group == nullptr && existing->editable->GetItemType() != eItemPartGroup)
+                  continue;
+               existing->editable->SetPartGroup(group);
+               Select(existing->editable);
             }
+            m_activeTable->EndUndo();
+            Update();
          }
          m_DragItems.clear();
          ReleaseCapture();
-         while(ShowCursor(FALSE)>=0) ;
-         while(ShowCursor(TRUE)<0) ;
          m_dragging = false;
       }
       break;
    }
-   }
-
    return WndProcDefault(msg, wparam, lparam);
 }
 
@@ -897,66 +590,46 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
    if (m_activeTable == nullptr)
       return FALSE;
 
-   const LPNMHDR lpnmh = (LPNMHDR)lparam;
+   const LPNMHDR lpnmh = reinterpret_cast<LPNMHDR>(lparam);
 
    switch (lpnmh->code)
    {
    case TVN_BEGINDRAG:
    {
-      const LPNMTREEVIEW lpnmtv = (LPNMTREEVIEW)lparam;
+      const LPNMTREEVIEW lpnmtv = reinterpret_cast<LPNMTREEVIEW>(lpnmh);
       HIMAGELIST hImg = TreeView_CreateDragImage(GetHwnd(), lpnmtv->itemNew.hItem);
       ImageList_BeginDrag(hImg, 0, 0, 0);
       ImageList_DragEnter(GetHwnd(), lpnmtv->ptDrag.x, lpnmtv->ptDrag.y);
-
-      const std::shared_ptr<DragItem> dragItem = std::make_shared<DragItem>();
-      dragItem->m_hDragItem = lpnmtv->itemNew.hItem;
-      dragItem->m_hDragLayer = GetLayerByItem(dragItem->m_hDragItem);
-      m_DragItems.push_back(dragItem);
-
-      while(ShowCursor(TRUE)<0) ;
-      while(ShowCursor(FALSE)>=0) ;
+      m_DragItems.push_back(lpnmtv->itemNew.hItem);
       SetCapture();
       m_dragging = true;
       return TRUE;
    }
-   case TVN_SELCHANGED: return OnTVNSelChanged((LPNMTREEVIEW)lparam);
-   case NM_CLICK: return OnNMClick(lpnmh);
-   case NM_DBLCLK: return OnNMDBClick(lpnmh);
+   case TVN_SELCHANGED:
+   {
+      // TODO allow edition of group properties
+      // (LPNMTREEVIEW)lpnmh  => using handle: pNMTV->itemNew.hItem
+      return FALSE;
+   }
    case TVN_ENDLABELEDIT:
    {
-      const LPNMTVDISPINFO pinfo = (LPNMTVDISPINFO)lparam;
-
+      const LPNMTVDISPINFO pinfo = reinterpret_cast<LPNMTVDISPINFO>(lpnmh);
       if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
-      {
          return FALSE;
-      }
-
-      TVITEM tvItem;
-      tvItem.mask = TVIF_CHILDREN | TVIF_PARAM;
-      tvItem.hItem = pinfo->item.hItem;
-      if (!GetItem(tvItem))
-         return FALSE;
-
-      if (tvItem.cChildren == 1) //!! <= ?
+      auto existing = std::ranges::find_if(m_content, [pinfo](const TreeEntry& te) { return te.item == pinfo->item.hItem; });
+      if (existing != m_content.end())
       {
-         const string oldName(GetItemText(pinfo->item.hItem));
-         const string newName(pinfo->item.pszText);
-
-         for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
-         {
-            ISelect* const psel = m_activeTable->m_vedit[t]->GetISelect();
-            if (psel != nullptr && psel->m_layerName == oldName)
-               psel->m_layerName = newName;
-         }
-      }
-      else
-      {
-         IEditable* const pedit = (IEditable*)tvItem.lParam;
-         if (pedit)
-            pedit->SetName(pinfo->item.pszText);
+         existing->editable->SetName(pinfo->item.pszText);
+         Update();
       }
       return TRUE;
    }
+      
+   case NM_CLICK:
+      return OnNMClick(lpnmh);
+      
+   case NM_DBLCLK:
+      return OnNMDBClick(lpnmh);
    }
 
    return FALSE;
@@ -970,181 +643,88 @@ LRESULT LayerTreeView::OnNMClick(LPNMHDR lpnmh)
    ht.pt.y = GET_Y_LPARAM(dwpos);
    ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
    HitTest(ht);
-
    if (ht.flags & TVHT_ONITEMSTATEICON)
    {
-      if (ht.hItem == hRootItem)
-         SetAllItemStates(IsItemChecked(hRootItem));
+      if (ht.hItem == m_hRootItem)
+      {
+         bool visible = std::ranges::find_if(m_content, [](const TreeEntry& te) { return !te.editable->GetISelect()->m_isVisible; }) != m_content.end();
+         std::ranges::for_each(m_content, [visible](const TreeEntry& te) { te.editable->GetISelect()->m_isVisible = visible; });
+      }
       else
       {
-         TVITEM tvItem = {};
-         tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
-         tvItem.hItem = ht.hItem;
-         if (GetItem(tvItem))
+         auto selectedItem = std::ranges::find_if(m_content, [ht](const TreeEntry& te) { return te.item == ht.hItem; });
+         if (selectedItem != m_content.end())
          {
-            if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
+            auto selected = selectedItem->editable;
+            if (selected->GetItemType() != eItemPartGroup)
+               selected->GetISelect()->m_isVisible = !selected->GetISelect()->m_isVisible;
+            else
             {
-               const bool checked = IsItemChecked(tvItem.hItem);
-               HTREEITEM subItem = GetChild(tvItem.hItem);
-               while (subItem)
-               {
-                  tvItem.hItem = subItem;
-                  if (GetItem(tvItem))
+               bool visible = std::ranges::find_if(m_content, 
+                  [&, selected](const TreeEntry& te)
                   {
-                     IEditable* const pedit = (IEditable*)tvItem.lParam;
-                     if (pedit != nullptr)
-                     {
-                        ISelect* const psel = pedit->GetISelect();
-                        if (psel != nullptr)
-                           psel->m_isVisible = checked;
-                     }
-                  }
-
-                  TreeView_SetCheckState(GetHwnd(), subItem, checked);
-                  subItem = GetNextItem(subItem, TVGN_NEXT);
-               }
-            }
-            else // element checkbox was clicked
-            {
-               IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != nullptr)
-               {
-                  ISelect* const psel = pedit->GetISelect();
-                  if (psel != nullptr)
-                     psel->m_isVisible = IsItemChecked(tvItem.hItem);
-               }
+                     PartGroup* pg = te.editable->GetPartGroup();
+                     while (pg != nullptr && pg != selected)
+                        pg = pg->GetPartGroup();
+                     if (pg == selected)
+                        return !te.editable->GetISelect()->m_isVisible; 
+                     return false;
+                  }) != m_content.end();
+               std::ranges::for_each(m_content,
+                  [&, selected, visible](const TreeEntry& te)
+                  {
+                     PartGroup* pg = te.editable->GetPartGroup();
+                     while (pg != nullptr && pg != selected)
+                        pg = pg->GetPartGroup();
+                     if (pg == selected)
+                        te.editable->GetISelect()->m_isVisible = visible;
+                  });
             }
          }
       }
-
       if (m_activeTable != nullptr)
       {
          m_activeTable->SetDirty(eSaveDirty);
          m_activeTable->SetDirtyDraw();
       }
+      Update();
+      return TRUE;
    }
-   return 0;
+   return FALSE;
 }
 
 LRESULT LayerTreeView::OnNMDBClick(LPNMHDR lpnmh)
 {
+   if (m_activeTable == nullptr)
+      return FALSE;
+
    const DWORD dwpos = GetMessagePos();
    TVHITTESTINFO ht = {};
    ht.pt.x = GET_X_LPARAM(dwpos);
    ht.pt.y = GET_Y_LPARAM(dwpos);
    ::MapWindowPoints(HWND_DESKTOP, lpnmh->hwndFrom, &ht.pt, 1);
    HitTest(ht);
+   if (ht.flags & TVHT_ONITEMSTATEICON)
+      return FALSE;
 
-   if (m_activeTable == nullptr)
-      return TRUE;
+   auto selectedItem = std::ranges::find_if(m_content, [ht](const TreeEntry& te) { return te.item == ht.hItem; });
+   if (selectedItem == m_content.end())
+      return FALSE;
+   auto selected = selectedItem->editable;
 
    m_activeTable->ClearMultiSel();
-
-   TVITEM tvItem = {};
-   tvItem.mask = TVIF_PARAM | TVIF_CHILDREN;
-   tvItem.hItem = ht.hItem;
-   if (GetItem(tvItem))
-   {
-      if (tvItem.cChildren == 1) //!! <= ? // layer checkbox was clicked
-      {
-         HTREEITEM subItem = GetChild(tvItem.hItem);
-         while (subItem)
-         {
-            tvItem.hItem = subItem;
-            if (GetItem(tvItem))
-            {
-               IEditable* const pedit = (IEditable*)tvItem.lParam;
-               if (pedit != nullptr)
-               {
-                  ISelect* const psel = pedit->GetISelect();
-                  if (psel != nullptr)
-                     m_activeTable->AddMultiSel(psel, true, false, false);
-               }
-            }
-
-            subItem = GetNextItem(subItem, TVGN_NEXT);
-         }
-      }
-      else // element checkbox was clicked
-      {
-         IEditable* const pedit = (IEditable*)tvItem.lParam;
-         if (pedit != nullptr)
-         {
-            ISelect* const psel = pedit->GetISelect();
-            if (psel != nullptr)
-               m_activeTable->AddMultiSel(psel, false, false, false);
-            m_activeTable->RefreshProperties();
-         }
-      }
-   }
-   m_activeTable->SetDirty(eSaveDirty);
+   if (selected->GetItemType() == eItemPartGroup)
+      std::ranges::for_each(m_content,[&, selected](const TreeEntry& te)
+         { 
+            PartGroup* pg = te.editable->GetPartGroup();
+            while (pg != nullptr && pg != selected)
+               pg = pg->GetPartGroup();
+            if (pg == selected)
+               m_activeTable->AddMultiSel(te.editable->GetISelect(), true, false, false);
+         });
+   else
+      m_activeTable->AddMultiSel(selected->GetISelect(), true, false, false);
+   m_activeTable->RefreshProperties();
    m_activeTable->SetDirtyDraw();
-   return 0;
-}
-
-LRESULT LayerTreeView::OnTVNSelChanged(LPNMTREEVIEW pNMTV)
-{
-   TVITEM tvItem = {};
-   tvItem.mask = TVIF_CHILDREN | TVIF_HANDLE | TVIF_PARAM;
-   tvItem.hItem = pNMTV->itemNew.hItem;
-   if (GetItem(tvItem))
-   {
-      if (tvItem.hItem != hRootItem)
-      {
-         if (GetSubItemsCount(tvItem.hItem)>0)
-            hCurrentLayerItem = tvItem.hItem;
-         else
-         {
-            hCurrentElementItem = tvItem.hItem;
-            hCurrentLayerItem = GetLayerByItem(tvItem.hItem);
-         }
-      }
-   }
-   return 0;
-}
-
-bool LayerTreeView::AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit)
-{
-   hCurrentElementItem = AddItem(hLayerItem, name.c_str(), pedit, 2);
-   ISelect* const psel = pedit->GetISelect();
-   if (psel != nullptr)
-   {
-      SetItemCheck(hCurrentElementItem, psel->m_isVisible);
-      if (psel->m_isVisible)
-         SetItemCheck(hLayerItem, true);
-   }
-   return hCurrentElementItem != nullptr;
-}
-
-LRESULT FilterEditBox::WndProc(UINT msg, WPARAM wparam, LPARAM lparam)
-{
-   switch (msg)
-   {
-   case WM_KEYUP:
-      if ((wparam == VK_RETURN) || (wparam == VK_TAB))
-      {
-         if (m_layerDialog)
-            m_layerDialog->UpdateLayerList(GetWindowText().c_str());
-         return FALSE;
-      }
-   }
-   return WndProcDefault(msg, wparam, lparam);
-}
-
-BOOL FilterEditBox::OnCommand(WPARAM wParam, LPARAM lParam)
-{
-   UNREFERENCED_PARAMETER(lParam);
-   //const int dispID = LOWORD(wParam);
-
-   switch (HIWORD(wParam))
-   {
-   case EN_KILLFOCUS:
-   case CBN_KILLFOCUS:
-   {
-      if (m_layerDialog)
-         m_layerDialog->UpdateLayerList(GetWindowText().c_str());
-      return TRUE;
-   }
-   }
-   return FALSE;
+   return TRUE;
 }

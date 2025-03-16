@@ -458,6 +458,7 @@ public:
    void OnRightButtonDown(int x, int y);
    void FillCollectionContextMenu(CMenu &mainMenu, CMenu &colSubMenu, ISelect *psel);
    void FillLayerContextMenu(CMenu &mainMenu, CMenu &layerSubMenu, ISelect *psel);
+   void AssignSelectionToPartGroup(PartGroup *group);
    void OnRightButtonUp(int x, int y);
    void DoMouseMove(int x, int y);
    void OnLeftDoubleClick(int x, int y);
@@ -548,7 +549,6 @@ public:
    HRESULT StopSound(BSTR Sound);
    void StopAllSounds();
 
-   void DeleteFromLayer(IEditable *obj);
    void UpdateCollection(const int index);
    void MoveCollectionUp(CComObject<Collection> *pcol);
    void MoveCollectionDown(CComObject<Collection> *pcol);
@@ -711,7 +711,6 @@ public:
    string m_envImage;
 
    vector<IEditable *> m_vedit;
-   vector<IEditable *> m_layer[MAX_LAYERS];
    vector<ISelect *> m_allHitElements;
 
    vector<Texture *> m_vimage;

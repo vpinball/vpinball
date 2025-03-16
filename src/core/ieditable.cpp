@@ -42,6 +42,18 @@ void IEditable::Uncreate()
       GetPTable()->m_pcv->RemoveItem(GetScriptable());
 }
 
+void IEditable::SetPartGroup(PartGroup* partGroup)
+{
+   if (m_partGroup != partGroup)
+   {
+      if (partGroup)
+         partGroup->AddRef();
+      if (m_partGroup)
+         m_partGroup->Release();
+      m_partGroup = partGroup;
+   }
+}
+
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
    STARTUNDO
@@ -179,8 +191,8 @@ void IEditable::SetName(const string& name)
     pt->m_pcv->ReplaceName(GetScriptable(), namePtr);
     lstrcpynW(GetScriptable()->m_wzName, namePtr, sizeof(oldName));
 #ifndef __STANDALONE__
-    g_pvp->GetLayersListDialog()->UpdateElement(this);
     g_pvp->SetPropSel(GetPTable()->m_vmultisel);
+    g_pvp->GetLayersListDialog()->Update();
 
     if (GetItemType() == eItemSurface && g_pvp->MessageBox("Replace the name also in all table elements that use this surface?", "Replace", MB_ICONQUESTION | MB_YESNO) == IDYES)
     for (size_t i = 0; i < pt->m_vedit.size(); i++)

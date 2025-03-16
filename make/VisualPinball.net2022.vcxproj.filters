@@ -702,6 +702,9 @@
     <ClCompile Include="src/input/OpenPinDevHandler.cpp">
       <Filter>input</Filter>
     </ClCompile>
+    <ClCompile Include="src\parts\PartGroup.cpp">
+      <Filter>parts</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -1840,6 +1843,9 @@
     </ClInclude>
     <ClInclude Include="src\input\OpenPinDevHandler.h">
       <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\parts\PartGroup.h">
+      <Filter>parts</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

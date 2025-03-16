@@ -169,6 +169,8 @@ add_executable(vpinball
    src/parts/light.h
    src/parts/lightseq.cpp
    src/parts/lightseq.h
+   src/parts/PartGroup.cpp
+   src/parts/PartGroup.h
    src/parts/pintable.cpp
    src/parts/pintable.h
    src/parts/plunger.cpp
