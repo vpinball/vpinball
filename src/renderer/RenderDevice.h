@@ -248,6 +248,8 @@ private:
    Sampler* m_SMAAsearchTexture = nullptr;
    Sampler* m_SMAAareaTexture = nullptr;
 
+   int m_visualLatencyCorrection = -1;
+
 #if defined(ENABLE_BGFX)
 public:
    bgfx::ProgramHandle m_program = BGFX_INVALID_HANDLE; // Bound program for next draw submission

@@ -600,6 +600,7 @@
 #define IDC_THROW_BALLS_MASS_EDIT       378
 #define IDI_RAMP                        378
 #define IDC_SIZE_WIDTH2                 378
+#define IDC_LATENCY_CORRECTION          378
 #define IDC_FILTERAMOUNT_EDIT           379
 #define IDD_PROPKICKER_STATE            379
 #define IDC_SPECULAR_EDIT               379

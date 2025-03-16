@@ -397,13 +397,13 @@ BEGIN
     CONTROL         "Global application settings",IDC_APPLICATION_SETTINGS,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,12,15,131,10
     CONTROL         "Specific table overrides",IDC_TABLE_OVERRIDE,"Button",BS_AUTORADIOBUTTON,12,26,131,10
-    GROUPBOX        "Video Synchronization",IDC_STATIC,5,47,142,52
-    LTEXT           "Synchronization mode",IDC_STATIC,11,59,80,10
-    COMBOBOX        IDC_VIDEO_SYNC_MODE,85,57,58,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Maximum Framerate",IDC_STATIC,11,72,87,10
-    EDITTEXT        IDC_MAX_FPS,123,70,20,12,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,11,85,100,8
-    EDITTEXT        IDC_MAX_PRE_FRAMES,123,83,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Video Synchronization",IDC_STATIC,5,42,142,65
+    LTEXT           "Synchronization mode",IDC_STATIC,11,54,80,10
+    COMBOBOX        IDC_VIDEO_SYNC_MODE,85,52,58,100,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Maximum Framerate",IDC_STATIC,11,67,87,10
+    EDITTEXT        IDC_MAX_FPS,123,65,20,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Maximum pre-rendered Frames",IDC_STATIC,11,80,100,8
+    EDITTEXT        IDC_MAX_PRE_FRAMES,123,78,20,12,ES_RIGHT | ES_AUTOHSCROLL
     GROUPBOX        "3D Stereo Output",IDC_STATIC,5,112,142,130
     COMBOBOX        IDC_3D_STEREO,9,124,133,60,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Fake Stereo (Performance)",IDC_FAKE_STEREO,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,138,134,10
@@ -492,6 +492,8 @@ BEGIN
     PUSHBUTTON      "Reset to Defaults",IDC_DEFAULTS,349,211,72,14
     PUSHBUTTON      "Set for Low End PC",IDC_DEFAULTS_LOW,349,228,72,14
     PUSHBUTTON      "Set for High End PC",IDC_DEFAULTS_HIGH,423,228,71,14
+    LTEXT           "Ball latency correction (ms)",IDC_STATIC,11,93,100,8
+    EDITTEXT        IDC_LATENCY_CORRECTION,123,91,20,12,ES_RIGHT | ES_AUTOHSCROLL
 END
 
 IDD_CABINET_OPT DIALOGEX 0, 0, 302, 237
@@ -2259,8 +2261,8 @@ BEGIN
     PUSHBUTTON      "&Import",IDC_IMPORT,469,143,50,14
     PUSHBUTTON      "&Export",IDC_EXPORT,469,159,50,14
     PUSHBUTTON      "&Rename",IDC_RENAME,469,175,50,14
-    PUSHBUTTON      "&Delete",IDC_DELETE_MATERIAL,469,191,50,14 
-    PUSHBUTTON      "Where Used", IDC_SHOW_WHERE_USED, 469, 207, 50, 14
+    PUSHBUTTON      "&Delete",IDC_DELETE_MATERIAL,469,191,50,14
+    PUSHBUTTON      "Where Used",IDC_SHOW_WHERE_USED,469,207,50,14
     GROUPBOX        "Glossy Layer",IDC_STATIC_GLOSSY_LAYER,214,65,192,43
     GROUPBOX        "Clearcoat Layer",IDC_STATIC_CLEARCOAR_LAYER,214,142,191,40
     LTEXT           "Edge Brightness\n(0..1)",IDC_STATIC_EDGE_BRIGHTNESS,220,196,56,20
@@ -2657,15 +2659,16 @@ BEGIN
     EDITTEXT        IDC_INFOTEXT_EDIT,0,7,512,212,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
 END
 
-IDD_WHEREUSEDDIALOG DIALOGEX 0, 0, 339, 288 
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME CAPTION "Show Where Used"
+IDD_WHEREUSEDDIALOG DIALOGEX 0, 0, 339, 288
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Show Where Used"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "&OK",IDC_OK,279,46,50,14
     DEFPUSHBUTTON   "Edit Object",IDC_EDIT_OBJECT,279,6,50,14
-    PUSHBUTTON      "Refresh List",IDC_REFRESH_LIST,280,26,50,14 
-    CONTROL         "",201, "SysListView32", LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP, 0, 30, 268,253 
-    LTEXT           "This list shows the table objects that are using a resource (images etc).  To edit an object select a row and then either press <enter>, double-click or click the 'Edit Object' button.  That table object will then appear in the table 'Properties' editor.",IDC_WHERE_DESCR, 9, 2, 258, 25
+    PUSHBUTTON      "Refresh List",IDC_REFRESH_LIST,280,26,50,14
+    CONTROL         "",201,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SORTASCENDING | WS_BORDER | WS_TABSTOP,0,30,268,253
+    LTEXT           "This list shows the table objects that are using a resource (images etc).  To edit an object select a row and then either press <enter>, double-click or click the 'Edit Object' button.  That table object will then appear in the table 'Properties' editor.",IDC_WHERE_DESCR,9,2,258,25
 END
 
 IDD_INPUT_DEVICES DIALOGEX 0, 0, 241, 176
@@ -3107,18 +3110,18 @@ BEGIN
         BOTTOMMARGIN, 240
     END
 
+    IDD_WHEREUSEDDIALOG, DIALOG
+    BEGIN
+        RIGHTMARGIN, 338
+        BOTTOMMARGIN, 285
+    END
+
     IDD_INPUT_DEVICES, DIALOG
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 234
         TOPMARGIN, 7
         BOTTOMMARGIN, 169
-    END
-
-    IDD_WHEREUSEDDIALOG, DIALOG
-    BEGIN
-        RIGHTMARGIN, 338
-        BOTTOMMARGIN, 285
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -4175,7 +4178,7 @@ BEGIN
     IDS_TB_WALL             "Wall"
     IDS_TB_FLIPPER          "Flipper"
     IDS_TB_PLAY             "Play"
-    IDS_WHERE_USED_SRC_OBJECT  "Resource" 
+    IDS_WHERE_USED_SRC_OBJECT "Resource"
     IDS_WHERE_USED_OBJECT_NAME "Used By Object"
     IDS_WHERE_USED_PROPERTY "Used By Property Name"
 END

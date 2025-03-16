@@ -681,6 +681,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    // 0 means disable limiting of draw-ahead queue
    int maxPrerenderedFrames = isVR ? 0 : g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);
 
+   // Visual latency reduction
+   m_visualLatencyCorrection = g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "VisualLatencyCorrection"s, -1);
+
 #if defined(ENABLE_BGFX)
    ///////////////////////////////////
    // BGFX device initialization
@@ -1483,17 +1486,16 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
 
 float RenderDevice::GetPredictedDisplayDelayInS() const
 {
+   // OpenXR perform frame pacing with display time prediction
    if (g_pplayer->m_vrDevice)
       return g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
 
    // Suppose a constant delay of at least 1 frame (in most situation, this will be at least 2 or 3 times higher)
-   // TODO We are using a very basic constant offset here, that could be improved:
-   // - let the user enter the actual delay (f.e. measured through PresentMon console application) in the UI
-   // - or directly import PresentMonData library (MIT licensed) to use the measured live average delay (and also give user some feedback)
-   // - or even go for some dynamic frame pacing (like VR does, to also account for the variance around the average)
-   const float delayInS = 1.f / g_pplayer->GetTargetRefreshRate();
+   if (m_visualLatencyCorrection < 0)
+      return 1.f / g_pplayer->GetTargetRefreshRate();
 
-   return delayInS;
+   // User has measured his setup latency
+   return m_visualLatencyCorrection * 1e-3f;
 }
 
 void RenderDevice::WaitForVSync(const bool asynchronous)
