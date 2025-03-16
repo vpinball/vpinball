@@ -1481,6 +1481,21 @@ void RenderDevice::UnbindSampler(Sampler* sampler)
       m_ballShader->UnbindSampler(sampler);
 }
 
+float RenderDevice::GetPredictedDisplayDelayInS() const
+{
+   if (g_pplayer->m_vrDevice)
+      return g_pplayer->m_vrDevice->GetPredictedDisplayDelayInS();
+
+   // Suppose a constant delay of at least 1 frame (in most situation, this will be at least 2 or 3 times higher)
+   // TODO We are using a very basic constant offset here, that could be improved:
+   // - let the user enter the actual delay (f.e. measured through PresentMon console application) in the UI
+   // - or directly import PresentMonData library (MIT licensed) to use the measured live average delay (and also give user some feedback)
+   // - or even go for some dynamic frame pacing (like VR does, to also account for the variance around the average)
+   const float delayInS = 1.f / g_pplayer->GetTargetRefreshRate();
+
+   return delayInS;
+}
+
 void RenderDevice::WaitForVSync(const bool asynchronous)
 {
    // - DWM can be either on or off for Windows Vista/7, it is always enabled for Windows 8+ except on stripped down versions of Windows like Ghost Spectre
