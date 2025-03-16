@@ -713,7 +713,7 @@ bool VPinball::ParseCommand(const size_t code, const bool notify)
             if (IDYES == MessageBox("This will lock the table to prevent unexpected modifications.\n\nAre you sure you want to lock the table ?", "Table locking", MB_YESNO | MB_ICONINFORMATION))
             {
                ptCur->ToggleLock();
-               string msg = ptCur->AuditTable();
+               string msg = ptCur->AuditTable(true);
                InfoDialog info(msg);
                info.DoModal();
             }
@@ -1412,7 +1412,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor, V
 
          SetFocus();
 
-         const string& audit = ppt->AuditTable();
+         const string& audit = ppt->AuditTable(true);
          if (audit.find(". Error:"s) != std::string::npos)
          {
             InfoDialog info("This table contains error(s) that need to be fixed to ensure correct play.\r\n\r\n" + audit);

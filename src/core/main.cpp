@@ -239,7 +239,8 @@ static const string options[] = { // keep in sync with option_names & option_des
    "TableIni"s,
    "TournamentFile"s,
    "v"s,
-   "exit"s // (ab)used by frontend, not handled by us
+   "exit"s, // (ab)used by frontend, not handled by us
+   "Audit"s
 #ifdef __STANDALONE__
    ,
    "PrefPath"s,
@@ -271,7 +272,8 @@ static const string option_descs[] =
    "[filename]  Use a custom table settings file. This option is only available in conjunction with a command which specifies a table filename like Play, Edit,..."s,
    "[table filename] [tournament filename]  Load a table and tournament file and convert to .png"s,
    "Displays the version"s,
-   string()
+   string(),
+   "[table filename] Audit the table"s
 #ifdef __STANDALONE__
    ,
    "[path]  Use a custom preferences path instead of $HOME/.vpinball"s,
@@ -303,7 +305,8 @@ enum option_names
    OPTION_TABLE_INI,
    OPTION_TOURNAMENT,
    OPTION_VERSION,
-   OPTION_FRONTEND_EXIT
+   OPTION_FRONTEND_EXIT,
+   OPTION_AUDIT
 #ifdef __STANDALONE__
    ,
    OPTION_PREFPATH,
@@ -412,6 +415,7 @@ private:
    bool m_file;
    bool m_loadFileResult;
    bool m_extractScript;
+   bool m_audit;
    bool m_tournament;
    bool m_bgles;
    float m_fgles;
@@ -541,6 +545,7 @@ public:
       m_run = true;
       m_loadFileResult = true;
       m_extractScript = false;
+      m_audit = false;
       m_tournament = false;
       m_fgles = 0.f;
       m_bgles = false;
@@ -616,6 +621,7 @@ public:
                             "\n-"  +options[OPTION_PLAY]+                 "  "+option_descs[OPTION_PLAY]+
                             "\n-"  +options[OPTION_POVEDIT]+              "  "+option_descs[OPTION_POVEDIT]+
                             "\n-"  +options[OPTION_POV]+                  "  "+option_descs[OPTION_POV]+
+                            "\n-"  +options[OPTION_AUDIT]+                "  "+option_descs[OPTION_AUDIT]+
                             "\n-"  +options[OPTION_EXTRACTVBS]+           "  "+option_descs[OPTION_EXTRACTVBS]+
                             "\n-"  +options[OPTION_INI]+                  "  "+option_descs[OPTION_INI]+
                             "\n-"  +options[OPTION_TABLE_INI]+            "  "+option_descs[OPTION_TABLE_INI]+
@@ -762,6 +768,7 @@ public:
          const bool povEdit = compare_option(szArglist[i], OPTION_POVEDIT);
          const bool extractpov = compare_option(szArglist[i], OPTION_POV);
          const bool extractscript = compare_option(szArglist[i], OPTION_EXTRACTVBS);
+         const bool audit = compare_option(szArglist[i], OPTION_AUDIT);
 #ifdef __STANDALONE__
          const bool prefPath = compare_option(szArglist[i], OPTION_PREFPATH);
          const bool listRes = compare_option(szArglist[i], OPTION_LISTRES);
@@ -778,7 +785,7 @@ public:
 #ifndef __STANDALONE__
          if (ini || tableIni || editfile || playfile || povEdit || extractpov || extractscript || tournament)
 #else
-         if (prefPath || ini || tableIni || editfile || playfile || launchfile || povEdit || extractpov || extractscript || tournament)
+         if (prefPath || ini || tableIni || editfile || playfile || launchfile || povEdit || extractpov || extractscript || tournament || audit)
 #endif
          {
             if (i + 1 >= nArgs)
@@ -839,11 +846,11 @@ public:
                m_szIniFileName = path;
             else if (tableIni)
                m_szTableIniFileName = path;
-            else // editfile || playfile || povEdit || extractpov || extractscript || tournament
+            else // editfile || playfile || povEdit || extractpov || extractscript || audit || tournament
             {
                allowLoadOnStart = false; // Don't face the user with a load dialog since the file is provided on the command line
                m_file = true;
-               if (m_play || m_extractPov || m_extractScript || m_vpinball.m_povEdit || m_tournament)
+               if (m_play || m_extractPov || m_extractScript || m_audit || m_vpinball.m_povEdit || m_tournament)
                {
 #ifndef __STANDALONE__
                   ::MessageBox(NULL, ("Only one of " + options[OPTION_EDIT] + ", " + options[OPTION_PLAY] + ", " + options[OPTION_POVEDIT] + ", " + options[OPTION_POV] + ", " + options[OPTION_EXTRACTVBS] + ", " + options[OPTION_TOURNAMENT] + " can be used.").c_str(),
@@ -858,7 +865,8 @@ public:
                      << options[OPTION_POVEDIT] << ", "
                      << options[OPTION_POV] << ", "
                      << options[OPTION_EXTRACTVBS] << ", "
-                     << options[OPTION_TOURNAMENT] << " can be used."
+                     << options[OPTION_TOURNAMENT] << ", "
+                     << options[OPTION_AUDIT] << " can be used."
                      << "\n\n";
 #endif
                   exit(1);
@@ -869,6 +877,7 @@ public:
 #endif
                m_extractPov = extractpov;
                m_extractScript = extractscript;
+               m_audit = audit;
                m_vpinball.m_povEdit = povEdit;
                m_tournament = tournament;
                m_szTableFileName = path;
@@ -1114,6 +1123,12 @@ public:
             if(ReplaceExtensionFromFilename(szScriptFilename, "vbs"s))
                m_vpinball.m_ptableActive->m_pcv->SaveToFile(szScriptFilename);
             m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+         }
+         if (m_audit && m_loadFileResult)
+         {
+            string audit = m_vpinball.m_ptableActive->AuditTable(false);
+            m_vpinball.QuitPlayer(Player::CloseState::CS_CLOSE_APP);
+            PLOGW << audit;
          }
          if (m_extractPov && m_loadFileResult)
          {
