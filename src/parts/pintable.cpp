@@ -4503,21 +4503,21 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
             switch (tableAdaptiveVSync)
             {
             case 0:
-                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
-                break;
+               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0.f);
+               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
+               break;
             case 1:
-                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
-                break;
+               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
+               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
+               break;
             case 2:
-                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
-                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-                break;
+               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
+               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+               break;
             default:
-                m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
-                m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
-                break;
+               m_settings.SaveValue(Settings::Player, "MaxFramerate"s, tableAdaptiveVSync);
+               m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
+               break;
             }
          }
       }
@@ -6315,15 +6315,15 @@ void PinTable::ImportBackdropPOV(const string &filename)
                      switch (tableAdaptiveVSync)
                      {
                      case 0:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0.f);
                         m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_NONE);
                         break;
                      case 1:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
                         m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_VSYNC);
                         break;
                      case 2:
-                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, 0);
+                        m_settings.SaveValue(Settings::Player, "MaxFramerate"s, -1.f);
                         m_settings.SaveValue(Settings::Player, "SyncMode"s, VideoSyncMode::VSM_ADAPTIVE_VSYNC);
                         break;
                      default:

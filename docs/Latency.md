@@ -49,6 +49,9 @@ To optimize this value, one will likely want to run the BGFX variant, using a wi
 In addition, one should research which configuration and resolution of the used TV/monitor setup will result in its lowest latency.
 E.g. some TVs feature a specialized 'Game Mode', some monitors need to run at a certain Hz/resolution config, or certain postprocessing has to be disabled, in order to minimize its latency.
 
+VPX offers to compensate the visual latency of balls by rendering them at their predicted position (where they will be when the image will be displayed instead of where they are when the frame is prepared).
+To enable this feature, set the latency correction in the rendering options to either -1 (apply an default correction based on your display refresh rate) or your personal setup latency, measured in milliseconds.
+
 
 ## Overall scheme
 

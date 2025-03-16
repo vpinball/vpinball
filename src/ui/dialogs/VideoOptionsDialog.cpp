@@ -91,6 +91,7 @@ private:
    CComboBox m_syncMode;
    CEdit m_maxFPS;
    CEdit m_maxFrameLatency;
+   CEdit m_latencyCorrection;
 
    CComboBox m_stereoMode;
    CButton m_stereoFake;
@@ -896,6 +897,9 @@ BOOL RenderOptPage::OnInitDialog()
    AddToolTip(m_maxFPS , "Limit the FPS to the given value (energy saving/less heat, framerate stability), 0 will disable it");
    AttachItem(IDC_MAX_PRE_FRAMES, m_maxFrameLatency);
    AddToolTip(m_maxFrameLatency, "Leave at 0 if you have enabled 'Low Latency' or 'Anti Lag' settings in the graphics driver.\r\nOtherwise experiment with 1 or 2 for a chance of lag reduction at the price of a bit of framerate.");
+   AttachItem(IDC_LATENCY_CORRECTION, m_latencyCorrection);
+   AddToolTip(m_latencyCorrection, "Leave at -1 to get default latency correction based on display frequency.\r\nIf you measured your setup latency using tools like Intel's PresentMon, enter the average latency in ms.");
+   
    #if defined(ENABLE_BGFX)
       SetupCombo(m_syncMode, 2, "No Sync", "Vertical Sync");
    #else
@@ -1102,24 +1106,24 @@ void RenderOptPage::LoadSettings(Settings& settings)
       
    }
 
-   int maxFPS = settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1);
-   if(maxFPS > 0 && maxFPS <= 24) // at least 24 fps
-      maxFPS = 24;
+   float maxFPS = settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1.f);
+   if (maxFPS > 0.f && maxFPS <= 24.f) // at least 24 fps
+      maxFPS = 24.f;
    VideoSyncMode syncMode = (VideoSyncMode)settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
-   if (maxFPS < 0 && syncMode == VideoSyncMode::VSM_INVALID)
+   if (maxFPS < 0.f && syncMode == VideoSyncMode::VSM_INVALID)
    {
       const int vsync = settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
       switch (vsync)
       {
-      case -1: maxFPS = 0; syncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-      case 0: maxFPS = 0; syncMode = VideoSyncMode::VSM_NONE; break;
-      case 1: maxFPS = 0; syncMode = VideoSyncMode::VSM_VSYNC; break;
-      case 2: maxFPS = 0; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      case -1: maxFPS = 0.f; syncMode = VideoSyncMode::VSM_FRAME_PACING; break;
+      case 0: maxFPS = 0.f; syncMode = VideoSyncMode::VSM_NONE; break;
+      case 1: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_VSYNC; break;
+      case 2: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
       default: maxFPS = vsync; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
       }
    }
-   if (maxFPS < 0)
-      maxFPS = 0;
+   if (maxFPS < 0.f)
+      maxFPS = -1.f;
    SetDlgItemInt(IDC_MAX_FPS, maxFPS, TRUE);
    #if defined(ENABLE_BGFX)
    syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
@@ -1132,6 +1136,8 @@ void RenderOptPage::LoadSettings(Settings& settings)
    #if defined(ENABLE_OPENGL)
    m_maxFrameLatency.EnableWindow(false); // OpenGL does not support this option
    #endif
+   const int latencyCorrectionMs = settings.LoadValueWithDefault(Settings::Player, "VisualLatencyCorrection"s, -1);
+   SetDlgItemInt(IDC_LATENCY_CORRECTION, latencyCorrectionMs, TRUE);
 
    const float AAfactor = settings.LoadValueWithDefault(Settings::Player, "AAFactor"s, settings.LoadValueWithDefault(Settings::Player, "USEAA"s, false) ? 1.5f : 1.0f);
    m_supersampling.SetCurSel(getBestMatchingAAfactorIndex(AAfactor));
@@ -1255,10 +1261,11 @@ void RenderOptPage::SaveSettings(Settings& settings, bool saveAll)
 {
    BOOL nothing = 0;
    
-   settings.SaveValue(Settings::Player, "MaxFramerate"s, (int)GetDlgItemInt(IDC_MAX_FPS, nothing, TRUE), !saveAll);
+   settings.SaveValue(Settings::Player, "MaxFramerate"s, GetDlgItemText(IDC_MAX_FPS).GetString(), !saveAll);
    int syncMode = m_syncMode.GetCurSel();
    settings.SaveValue(Settings::Player, "SyncMode"s, syncMode < 0 ? VideoSyncMode::VSM_FRAME_PACING : syncMode, !saveAll);
    settings.SaveValue(Settings::Player, "MaxPrerenderedFrames"s, (int)GetDlgItemInt(IDC_MAX_PRE_FRAMES, nothing, TRUE), !saveAll);
+   settings.SaveValue(Settings::Player, "VisualLatencyCorrection"s, (int)GetDlgItemInt(IDC_LATENCY_CORRECTION, nothing, TRUE), !saveAll);
 
    int fxaa = m_postprocAA.GetCurSel();
    settings.SaveValue(Settings::Player, "FXAA"s, fxaa == -1 ? Standard_FXAA : fxaa, !saveAll);
@@ -1401,8 +1408,10 @@ void RenderOptPage::ResetVideoPreferences(int profile)
       m_ballDecal.SetWindowText("");
    }
 
-   SetDlgItemInt(IDC_MAX_FPS, 0, TRUE);
+   m_syncMode.SetCurSel(0); // No sync
+   SetDlgItemInt(IDC_MAX_FPS, -1, TRUE); // Sync to display framerate
    SetDlgItemInt(IDC_MAX_PRE_FRAMES, 0, TRUE);
+   SetDlgItemInt(IDC_LATENCY_CORRECTION, -1, TRUE); // Use default latency correction
 
    m_maxAO.SetCurSel(profile == 2 ? 2 : 1);
    m_maxReflection.SetCurSel(profile == 1 ? RenderProbe::REFL_STATIC_N_BALLS : RenderProbe::REFL_DYNAMIC);
@@ -1456,6 +1465,7 @@ BOOL RenderOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_3D_STEREO_OFS:
    case IDC_MAX_FPS:
    case IDC_MAX_PRE_FRAMES:
+   case IDC_LATENCY_CORRECTION:
    case IDC_TM_HDR_SCALE:
    case IDC_DN_LATITUDE:
    case IDC_DN_LONGITUDE:
