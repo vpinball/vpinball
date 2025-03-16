@@ -1181,9 +1181,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
    RenderLayerInfo renderLayerInfo;
    renderLayerInfo.predictedDisplayTime = frameState.predictedDisplayTime;
 
-   // TODO Test visual time warp for the ball to reduce latency (that is to say, display ball at the position it will have at the predicted display time, without physics interaction)
    #ifdef _MSC_VER
-   if (false && m_win32PerfCounterExtensionSupported)
+   if (m_win32PerfCounterExtensionSupported)
    {
       PFN_xrConvertTimeToWin32PerformanceCounterKHR xrConvertTimeToWin32PerformanceCounterKHR;
       OPENXR_CHECK(xrGetInstanceProcAddr(m_xrInstance, "xrConvertTimeToWin32PerformanceCounterKHR", (PFN_xrVoidFunction*)&xrConvertTimeToWin32PerformanceCounterKHR), "Failed to get xrConvertTimeToWin32PerformanceCounterKHR.");
@@ -1192,8 +1191,8 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
       QueryPerformanceCounter(&now);
       LARGE_INTEGER TimerFreq;
       QueryPerformanceFrequency(&TimerFreq);
-      double delayMicroseconds = ((displayTime.QuadPart - now.QuadPart) * 1e6) / TimerFreq.QuadPart;
-      //PLOGD << "Delay " << delayMicroseconds;
+      m_predictedDisplayDelayInS = static_cast<float>(displayTime.QuadPart - now.QuadPart) / static_cast<float>(TimerFreq.QuadPart);
+      //PLOGD << "Delay " << m_predictedDisplayDelayInS;
    }
    #endif
 
