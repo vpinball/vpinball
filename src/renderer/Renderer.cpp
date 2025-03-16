@@ -2620,7 +2620,7 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
                m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], 2);
                m_renderDevice->m_basicShader->SetVector(SHADER_staticColor_Alpha, &m_vrColorKey);
                m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_unshaded_without_texture);
-               Vertex3D_NoTex2 ckVerts[4] =
+               static constexpr Vertex3D_NoTex2 ckVerts[4] =
                {
                   { -1.0f,  1.0f, 1.0f },
                   {  1.0f,  1.0f, 1.0f },

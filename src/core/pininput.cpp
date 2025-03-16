@@ -1894,21 +1894,21 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    // Global Backglass/Playfield sound volume
    if ((m_head == m_tail) && (curr_time_msec - m_nextKeyPressedTime) > 75)
    {
-      static unsigned int lastVoumeNotifId = 0;
+      static unsigned int lastVolumeNotifId = 0;
       m_nextKeyPressedTime = curr_time_msec;
       if (m_keyPressedState[eVolumeDown])
       {
          g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume - 1, 0, 100);
          g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume - 1, 0, 100);
          g_pplayer->UpdateVolume();
-         lastVoumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + "%", 500, lastVoumeNotifId);
+         lastVolumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + '%', 500, lastVolumeNotifId);
       }
       else if (m_keyPressedState[eVolumeUp])
       {
          g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume + 1, 0, 100);
          g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume + 1, 0, 100);
          g_pplayer->UpdateVolume();
-         lastVoumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + "%", 500, lastVoumeNotifId);
+         lastVolumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + '%', 500, lastVolumeNotifId);
       }
    }
 
