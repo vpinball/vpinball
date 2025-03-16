@@ -572,7 +572,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          }
 
          // If the user asked to sync on another frame rate than the refresh rate, then perform manual synchronization
-         if (!noSync && (g_pplayer->GetTargetRefreshRate() != rd->m_outputWnd[0]->GetRefreshRate()))
+         if (!noSync && (!needsVSync || (g_pplayer->GetTargetRefreshRate() != rd->m_outputWnd[0]->GetRefreshRate())))
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
             #ifdef MSVC_CONCURRENCY_VIEWER
