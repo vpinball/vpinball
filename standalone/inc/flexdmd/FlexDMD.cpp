@@ -187,6 +187,11 @@ STDMETHODIMP FlexDMD::get_Width(unsigned short *pRetVal)
 STDMETHODIMP FlexDMD::put_Width(unsigned short pRetVal)
 {
    m_width = pRetVal;
+   if (m_width > 256) {
+      // LibDMDUtil is limited 256 * 64
+      PLOGW.printf("FlexDMD width was set to %d but we only support up to 256 pixels", m_width);
+      m_width = 256;
+   }
 
    return S_OK;
 }
@@ -201,6 +206,11 @@ STDMETHODIMP FlexDMD::get_Height(unsigned short *pRetVal)
 STDMETHODIMP FlexDMD::put_Height(unsigned short pRetVal)
 {
    m_height = pRetVal;
+   if (m_height > 64) {
+      // LibDMDUtil is limited 256 * 64
+      PLOGW.printf("FlexDMD height was set to %d but we only support up to 64 pixels", m_width);
+      m_height = 64;
+   }
 
    return S_OK;
 }
