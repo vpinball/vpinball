@@ -1150,7 +1150,7 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       else if (keycode == DIK_LEFT)   keycode = DIK_RIGHT;
       else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
    }
-   #if defined(ENABLE_VR) || defined(ENABLE_XR)
+   #if defined(ENABLE_VR)
       if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
          g_pplayer->m_vrDevice->RecenterTable();
       else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)

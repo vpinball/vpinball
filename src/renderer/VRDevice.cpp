@@ -591,11 +591,7 @@ VRDevice::VRDevice()
       }
    #endif
 
-   m_slope = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
-   m_orientation = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-   m_tablex = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
-   m_tabley = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
-   m_tablez = g_pvp->GetActiveTable()->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
+   LoadVRSettings(g_pvp->GetActiveTable()->m_settings);
 }
 
 VRDevice::~VRDevice()
@@ -1235,9 +1231,9 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 
       if (rendered)
       {
-         constexpr float vpuScale = (float)(0.0254 * 1.0625 / 50.);
-         constexpr float zNear = 0.2f; // 20cm in front of player
-         const float zFar = max(5.f, m_sceneSize * vpuScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
+         constexpr float vpuScale = static_cast<float>(0.0254 * 1.0625 / 50.);
+         const float zNear = m_scale * 0.2f; // 20cm in front of player
+         const float zFar = m_scale * max(5.f, m_sceneSize * vpuScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
          XrPosef medianPose = views[0].pose;
@@ -1248,8 +1244,10 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          medianPose.orientation.y = (medianPose.orientation.y + views[1].pose.orientation.y) * 0.5f;
          medianPose.orientation.z = (medianPose.orientation.z + views[1].pose.orientation.z) * 0.5f;
          medianPose.orientation.w = (medianPose.orientation.w + views[1].pose.orientation.w) * 0.5f;
-         const float length = medianPose.orientation.x * medianPose.orientation.x + medianPose.orientation.y * medianPose.orientation.y + medianPose.orientation.z * medianPose.orientation.z
-            + medianPose.orientation.w * medianPose.orientation.w;
+         const float length = medianPose.orientation.x * medianPose.orientation.x
+                            + medianPose.orientation.y * medianPose.orientation.y
+                            + medianPose.orientation.z * medianPose.orientation.z
+                            + medianPose.orientation.w * medianPose.orientation.w;
          medianPose.orientation.x /= length;
          medianPose.orientation.y /= length;
          medianPose.orientation.z /= length;
@@ -1366,6 +1364,22 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
 #endif
 
 #ifdef ENABLE_VR
+void VRDevice::TableUp()
+{
+   m_tablePos.z += 1.0f;
+   if (m_tablePos.z > 250.0f)
+      m_tablePos.z = 250.0f;
+   m_tableWorldDirty = true;
+}
+
+void VRDevice::TableDown()
+{
+   m_tablePos.z -= 1.0f;
+   if (m_tablePos.z < 0.0f)
+      m_tablePos.z = 0.0f;
+   m_tableWorldDirty = true;
+}
+
 bool VRDevice::IsVRinstalled()
 {
    #ifdef OPEN_VR_TEST
@@ -1451,13 +1465,15 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
          m_tableWorldDirty = false;
          // Move table in front of player, adjust coord from RH to LH system (in VPU coordinates)
          Matrix3D trans = Matrix3D::MatrixTranslate(
-            -CMTOVPU(m_tablex) - (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f,
-             CMTOVPU(m_tabley) + (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top) + CMTOVPU(30.f),
-            -CMTOVPU(m_tablez));
+            -CMTOVPU(m_tablePos.x      ) / m_scale - (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f,
+             CMTOVPU(m_tablePos.y + 5.f) / m_scale + (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top),
+            -CMTOVPU(m_tablePos.z      ) / m_scale);
+         Matrix3D scale = Matrix3D::MatrixScale(m_scale);
          Matrix3D coords = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
-         Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_slope - 90.f));
+         Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_slope));
          Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(m_orientation));
-         m_tableWorld = coords * trans * rotz * rotx;
+         Matrix3D rotx2 = Matrix3D::MatrixRotateX(ANGTORAD(-90.f));
+         m_tableWorld = coords * trans * rotx * rotz * rotx2 * scale;
       }
 
       mvp.SetView(m_tableWorld * m_vrMatView);
@@ -1509,7 +1525,7 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
          const float inv_transScale = 1.0f / (100.0f * m_scale);
          m_tableWorld = Matrix3D::MatrixRotateX(ANGTORAD(-m_slope)) // Tilt playfield
             * Matrix3D::MatrixRotateZ(ANGTORAD(180.f + m_orientation)) // Rotate table around VR height axis
-            * Matrix3D::MatrixTranslate(-m_tablex * inv_transScale, m_tabley * inv_transScale, m_tablez * inv_transScale);
+            * Matrix3D::MatrixTranslate(-m_tablePos.x * inv_transScale, m_tablePos.y * inv_transScale, m_tablePos.z * inv_transScale);
       }
 
       mvp.SetView(m_tableWorld * matView);
@@ -1518,29 +1534,12 @@ void VRDevice::UpdateVRPosition(ModelViewProj& mvp)
    #endif
 }
 
-void VRDevice::TableUp()
-{
-   m_tablez += 1.0f;
-   if (m_tablez > 250.0f)
-      m_tablez = 250.0f;
-   m_tableWorldDirty = true;
-}
-
-void VRDevice::TableDown()
-{
-   m_tablez -= 1.0f;
-   if (m_tablez < 0.0f)
-      m_tablez = 0.0f;
-   m_tableWorldDirty = true;
-}
-
 void VRDevice::RecenterTable()
 {
    #ifdef ENABLE_XR
-      // TODO allow scaling of the table ? or just keep everything real world size ?
       m_orientation = RADTOANG(atan2f(m_vrMatView.m[0][2], m_vrMatView.m[0][0]));
-      m_tablex = VPUTOCM(m_vrMatView.m[3][0]); // Head X offset
-      m_tabley = VPUTOCM(m_vrMatView.m[3][2]); // Head Y offset
+      m_tablePos.x = VPUTOCM(m_vrMatView.m[3][0]); // Head X offset
+      m_tablePos.y = VPUTOCM(m_vrMatView.m[3][2]); // Head Y offset
    #elif defined(ENABLE_VR)
       float headX = 0.f, headY = 0.f;
       const float w = m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f;
@@ -1555,9 +1554,21 @@ void VRDevice::RecenterTable()
       }
       const float c = cosf(ANGTORAD(m_orientation));
       const float s = sinf(ANGTORAD(m_orientation));
-      m_tablex = 100.0f * (headX - c * w + s * h);
-      m_tabley = 100.0f * (headY + s * w + c * h);
+      m_tablePos.x = 100.0f * (headX - c * w + s * h);
+      m_tablePos.y = 100.0f * (headY + s * w + c * h);
    #endif
+   m_tableWorldDirty = true;
+}
+
+void VRDevice::LoadVRSettings(Settings& settings)
+{
+#if defined(ENABLE_VR) || defined(ENABLE_XR)
+   m_slope       = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+   m_orientation = settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
+   m_tablePos.x  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
+   m_tablePos.y  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
+   m_tablePos.z  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
+#endif
    m_tableWorldDirty = true;
 }
 
@@ -1566,8 +1577,8 @@ void VRDevice::SaveVRSettings(Settings& settings) const
 #if defined(ENABLE_VR) || defined(ENABLE_XR)
    settings.SaveValue(Settings::PlayerVR, "Slope"s, m_slope);
    settings.SaveValue(Settings::PlayerVR, "Orientation"s, m_orientation);
-   settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablex);
-   settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tabley);
-   settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablez);
+   settings.SaveValue(Settings::PlayerVR, "TableX"s, m_tablePos.x);
+   settings.SaveValue(Settings::PlayerVR, "TableY"s, m_tablePos.y);
+   settings.SaveValue(Settings::PlayerVR, "TableZ"s, m_tablePos.z);
 #endif
 }

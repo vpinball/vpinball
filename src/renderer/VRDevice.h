@@ -18,10 +18,17 @@ public:
    unsigned int GetEyeHeight() const { return m_eyeHeight; }
    void UpdateVRPosition(ModelViewProj& mvp);
 
-   void TableUp();
-   void TableDown();
    void RecenterTable();
+   void LoadVRSettings(Settings& settings);
    void SaveVRSettings(Settings& settings) const;
+   float GetSceneScale() const { return m_scale; }
+   float GetSceneSlope() const { return m_slope; } // Scene floor slope (to compensate the fact that the scene axis are aligned to the playfield which is inclined)
+   float GetSceneOrientation() const { return m_orientation; }
+   const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }
+   void SetSceneScale(float scale) { m_scale = scale; m_tableWorldDirty = true; }
+   void SetSceneSlope(float slope) { m_slope = slope; m_tableWorldDirty = true; }
+   void SetSceneOrientation(float orientation) { m_orientation = orientation; m_tableWorldDirty = true; }
+   void SetSceneOffset(const Vertex3Ds& pos) { m_tablePos = pos; m_tableWorldDirty = true; }
 
 #ifndef ENABLE_XR
    float GetPredictedDisplayDelayInS() const { return 0.f; } // Unsupported as OpenVR is planned for deprecation and removal
@@ -30,11 +37,16 @@ public:
 private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
-   float m_slope, m_orientation, m_tablex, m_tabley, m_tablez;
+   
+   float m_scale = 1.0f;
+   float m_slope = 0.0f;
+   float m_orientation = 0.0f;
+   Vertex3Ds m_tablePos;
+   bool m_tableWorldDirty = true;
+   Matrix3D m_tableWorld;
+   
    Matrix3D m_vrMatView;
    Matrix3D m_vrMatProj[2];
-   Matrix3D m_tableWorld;
-   bool m_tableWorldDirty = true;
 
 #ifdef ENABLE_VR
 public:
@@ -42,9 +54,10 @@ public:
    static bool IsVRturnedOn();
    bool IsVRReady() const;
    void SubmitFrame(Sampler* leftEye, Sampler* rightEye);
+   void TableUp();
+   void TableDown();
 
 private:
-   float m_scale = 1.0f;
    static vr::IVRSystem* m_pHMD;
    vr::TrackedDevicePose_t m_hmdPosition;
    vr::TrackedDevicePose_t* m_rTrackedDevicePose = nullptr;

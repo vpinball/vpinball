@@ -53,12 +53,14 @@ private:
       TweakOption(TweakType _type, float _min, float _max, float _step, float _def, const string& _name, const string& _unit, std::initializer_list<string> _options): 
          type(_type), min(_min), max(_max), step(_step), def(_def), name(_name), unit(_unit), options(_options) { }
    };
-   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_TableOption, TP_Plugin00 };
+   enum TweakPage { TP_Info, TP_Rules, TP_PointOfView, TP_VRPosition, TP_TableOption, TP_Plugin00 };
    enum BackdropSetting
    {
       BS_Page,
       // Point of View
       BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
+      // VR position
+      BS_VROrientation, BS_VRScale, BS_VRSlope, BS_VRX, BS_VRY, BS_VRZ, BS_AR_VR,
       // Table tweaks & Custom table defined options (must be the last of this enum)
       BS_Volume, BS_BackglassVolume, BS_PlayfieldVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Exposure, BS_Custom
    };
