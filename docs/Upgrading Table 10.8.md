@@ -44,7 +44,7 @@ Left: sphere mapping / Right: view dependent equirectangular mapping
 
 
 ## Playfield Transparency
-Before 10.8.0, the playfield did only support binary transparency, that is to say either opaque or fully transparent based on the alpha threshold value defined on the playfield image. Now, alpha blended transparency is fully supported, allowing better rendering of tranparent parts like inserts.
+Before 10.8.0, the playfield did only support binary transparency, that is to say either opaque or fully transparent based on the alpha threshold value defined on the playfield image. Now, alpha blended transparency is fully supported, allowing better rendering of transparent parts like inserts.
 
 There is nothing special to do to be able to use it. Using the feature, the alpha mask property of images should always be set to 1. It is mainly kept for backwards compatibility.
 

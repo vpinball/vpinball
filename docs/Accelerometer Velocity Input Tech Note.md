@@ -24,7 +24,7 @@ any accelerometers that you can directly connect to a PC.  Instead,
 the accelerometer itself is connected to some kind of intermediary
 device, typically a microcontroller (such as an Arduino, KL25Z, 
 or Raspberry Pi Pico), which in turn connects to the PC via USB.
-VP's access to the accelerometer is by way of the USB interace,
+VP's access to the accelerometer is by way of the USB interface,
 specifically the USB HID joystick interface.  VP can be configured
 to accept two axes of accelerometer input, representing the X and Y
 axes in the horizontal plane of the virtual playfield, via any pair

@@ -35,10 +35,10 @@ But it also suffers from some well-known and documented drawbacks:
 - darkening of the scene is expected since each eye will only receive its share of the luminance that would be received without the color filters,
 - biased colors are expected since each eye perceives a subset of the original color spectrum (which are then combined back by the brain, but not always leading to the original color spectrum),
 - incorrectly perceived colors may occur, since the brain has to merge 2 images with different color spectrum, and may balance them differently depending on the viewer,
-- some eye strain is also expected as the consequence of requesting the brain to merge these 2 different images, and because accomodation (focal length) and convergence (eye focus) do not perfectly match.
+- some eye strain is also expected as the consequence of requesting the brain to merge these 2 different images, and because accommodation (focal length) and convergence (eye focus) do not perfectly match.
 
 Still, for the application of playing virtual pinball, especially using a virtual cabinet, this technique is well suited since our use case has:
-- consistency between displayed scene depth and display position, making the convergence vs accomodation problem limited,
+- consistency between displayed scene depth and display position, making the convergence vs accommodation problem limited,
 - limited depth budget needs: nearest from farthest points have a limited distance, making image merging easier for the viewer,
 - a mostly static scene, making the merging less demanding and eye-straining.
 

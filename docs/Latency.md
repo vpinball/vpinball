@@ -1,6 +1,6 @@
 # Latency
 
-One very impacting thing when emulating/simulating pinball machines is latency. Therefore, VPX has been optimized for very low latency, but each setup is different and the following informations are here to help to understand, measure and adjust settings accordingly.
+One very important thing when emulating/simulating pinball machines is latency. Therefore, VPX has been optimized for very low latency, but each setup is different and the following information is here to help to understand, measure and adjust settings accordingly.
 
 Latency is the delay between a stimulus and its consequence. For VPX, there are 3 types of latency to consider:
 - **Input latency**: the delay between when an input event happens and when it is taken into account by VPX.
@@ -11,7 +11,7 @@ To make things worse, the overall latency will feature some 'random' variance, d
 This makes it even harder for the human brain to adapt to this kind of delay, as it can vary so much. Thus, minimizing the average turnaround latency is key to also bringing down
 this unpredictable variance.
 
-Each of the mentioned latencies present different challenges which are described below. The informations given here are mostly relevant to the BGFX variant as it leverages the BGFX multithreading capabilities for better latency results, whereas the OpenGL and DX9 variants have higher latencies due to their single threaded nature.
+Each of the mentioned latencies present different challenges which are described below. The information given here is mostly relevant to the BGFX variant as it leverages the BGFX multithreading capabilities for better latency results, whereas the OpenGL and DX9 variants have higher latencies due to their single threaded nature.
 
 
 ## Input latency
@@ -27,7 +27,7 @@ For example in Williams' WPC Fliptronic, when the user presses a flipper button,
 
 To be as close as possible to this behavior, the PinMAME controller emulation and the physics simulation are run continuously, targeting a maximum of 0.5ms of sync difference between them.
 
-An optimized emulation of the flipper solenoids nicknamed 'FastFlips' is also implemented in most modern table recreations. It lowers the latency even below this value by immediatly performing what the emulated CPU controller will trigger later-on. It is really needed when running DX9/OpenGL variants where input is (mostly) sampled at the framerate (usually every 16.6ms when running on a 60Hz display).
+An optimized emulation of the flipper solenoids nicknamed 'FastFlips' is also implemented in most modern table recreations. It lowers the latency even below this value by immediately performing what the emulated CPU controller will trigger later-on. It is really needed when running DX9/OpenGL variants where input is (mostly) sampled at the framerate (usually every 16.6ms when running on a 60Hz display).
 
 
 ## Visual latency
