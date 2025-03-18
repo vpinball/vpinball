@@ -5,7 +5,7 @@ VPX comes in 2 flavors: either a DirectX 9 build or an OpenGL build. The main di
 A preliminary standalone player is also available that runs on a lot of platforms: Linux, Mac, iPhone, Android, RaspBerry,...
 
 ## DirectX 9
-This is the original flavor of VPX which has been developped during the last 20+ years.
+This is the original flavor of VPX which has been developed during the last 20+ years.
 
 It runs on all Windows builds starting from Windows XP and is the reference build.
 
@@ -36,7 +36,7 @@ The following features are offered by the BGFX version:
 - Additional output windows, for example for DMD or score displays.
 
 ## Standalone player
-The standalone player is a version meant to allow playing VPX tables on a large set of platforms, but without the windows UI.
+The standalone player is a version meant to allow playing VPX tables on a large set of platforms, but without the Windows UI.
 It is targeted at devices supporting Vulkan, OpenGL 4.1 (desktop) or OpenGL ES 3.0 (mobile and single-board computer) with GLSL 3.0.
 
 <sub><sup>[Information applicable to version 10.8.1 Beta]</sup></sub>

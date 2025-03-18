@@ -1,8 +1,8 @@
 'JP's VPX7 Rev3 Physics
 'Only 2 changes are needed in the script for the physics: the flippers and the rolling sound with the ball speed limit. The rest of the changes are done by setting the right material for each object.
 'I Included here also my versions of the PlaySoundAt and PlaySoundAtBall which include volume and pitch changes to the sounds according to the ball speed to give some variations on the sounds, based on the ball speed and some random too.
-' The ball rolling sub should be called from a reatime timer, this is a fast timer, with an interval about 10 is good.
-' The ball rolling sub also includes a ball shadow, made of flashers, and grouped topgether in a collection, called aBallShadow. Take a look at any of my VP7 tables.
+' The ball rolling sub should be called from a realtime timer, this is a fast timer, with an interval about 10 is good.
+' The ball rolling sub also includes a ball shadow, made of flashers, and grouped together in a collection, called aBallShadow. Take a look at any of my VP7 tables.
 
 '*******************
 '  Flipper Subs

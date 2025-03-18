@@ -259,7 +259,7 @@ cvpmMech (create as many as needed)
 cvpmCaptiveBall (create as many as needed)
   (Public)  .InitCaptive  - Initialise captive balls
   (Public)  .CreateEvents - Create events for captive ball
-  (Public)  .ForceTrans   - Amount of force tranferred to captive ball (0-1)
+  (Public)  .ForceTrans   - Amount of force transferred to captive ball (0-1)
   (Public)  .MinForce     - Minimum force applied to the ball
   (Public)  .NailedBalls  - Number of "nailed" balls infront of captive ball
   (Public)  .RestSwitch   - Switch activated when ball is in rest position
