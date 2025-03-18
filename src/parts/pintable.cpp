@@ -7722,7 +7722,7 @@ PinBinary *PinTable::GetImageLinkBinary(const int id)
    return nullptr;
 }
 
-string PinTable::AuditTable() const
+string PinTable::AuditTable(bool log) const
 {
    // Perform a simple table audit (disable lighting vs static, script reference of static parts, png vs webp, hdr vs exr,...)
    std::stringstream ss;
@@ -7815,6 +7815,7 @@ string PinTable::AuditTable() const
 
       wordPos++;
    }
+
    #ifndef __STANDALONE__
       delete[] szText;
    #endif
@@ -7842,7 +7843,7 @@ string PinTable::AuditTable() const
       Textbox *textbox = type == eItemTextbox ? (Textbox *)part : nullptr;
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
-      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1) 
+      if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1)
          ss << ". Warning: Primitive '" << prim->GetName() << "' seems to be referenced from the script while it is marked as static (most properties of a static object may not be modified at runtime).\r\n";
 
       if (type == eItemTextbox && (textbox->m_d.m_isDMD || StrStrI(textbox->m_d.m_sztext.c_str(), "DMD") != nullptr))
@@ -7881,7 +7882,7 @@ string PinTable::AuditTable() const
          ss << ". Warning: Part '" << part->GetName() << "' uses a timer with a very short period of " << tdr->m_TimerInterval << "ms, below a 60FPS framerate. This will likely cause stutters and the table will not support 'frame pacing'.\r\n";
 
       if (type == eItemPrimitive && prim->m_d.m_visible
-         && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering 
+         && prim->m_d.m_disableLightingBelow != 1.f && !prim->m_d.m_staticRendering
          && (!GetMaterial(prim->m_d.m_szMaterial)->m_bOpacityActive || GetMaterial(prim->m_d.m_szMaterial)->m_fOpacity == 1.f)
          && (GetImage(prim->m_d.m_szImage) == nullptr || GetImage(prim->m_d.m_szImage)->m_pdsBuffer->IsOpaque()))
          ss << ". Warning: Primitive '" << prim->GetName() << "' uses translucency (lighting from below) while it is fully opaque. Translucency will be discarded.\r\n";
@@ -7893,9 +7894,9 @@ string PinTable::AuditTable() const
 
       // Disabled as this is now enforced in the rendering
       // Enabling translucency (light from below) won't work with static parts: otherwise the rendering will be different in VR/Headtracked vs desktop modes. It also needs a non opaque alpha.
-      //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering) 
+      //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering)
       //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
-      //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering()) 
+      //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering())
       //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
    }
 
@@ -7950,7 +7951,8 @@ string PinTable::AuditTable() const
    ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
 
    string msg = "Table audit:\r\n" + ss.str();
-   PLOGI << msg;
+   if (log)
+      PLOGI << msg;
    return msg;
 }
 

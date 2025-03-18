@@ -394,7 +394,7 @@ public:
    void ShowWhereMaterialsUsed(vector<WhereUsedInfo> &);
    void ShowWhereMaterialUsed(vector<WhereUsedInfo> &, Material *const ppi);
 
-   string AuditTable() const;
+   string AuditTable(bool log) const;
 
    void ListCustomInfo(HWND hwndListView);
    int AddListItem(HWND hwndListView, const string &szName, const string &szValue1, LPARAM lparam);
