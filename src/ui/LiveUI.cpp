@@ -1955,9 +1955,9 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_table->m_settings, m_live_table->m_BG_current_set);
             if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
             { // Player position is saved as an override (not saved if equal to app settings)
-               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f), true);
-               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f), true);
-               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s), true);
+               m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s), true);
             }
             // The saved value are the new base value, so all fields are marked as untouched
             for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
@@ -2366,9 +2366,9 @@ void LiveUI::UpdateTweakModeUI()
          case BS_YScale: CM_ROW(setting, isWindow ? "Table YZ Scale" : "Table Y Scale", "%.1f", 100.f * viewSetup.mSceneScaleY / realToVirtual, "%"); break;
          case BS_ZScale: CM_ROW(setting, "Table Z Scale", "%.1f", 100.f * viewSetup.mSceneScaleZ / realToVirtual, "%"); CM_SKIP_LINE; break;
          case BS_LookAt:  if (isLegacy) { CM_ROW(setting, "Inclination", "%.1f", viewSetup.mLookAt, "deg"); } else { CM_ROW(setting, "Look at", "%.1f", viewSetup.mLookAt, "%"); } break;
-         case BS_XOffset: CM_ROW(setting, isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) : VPUTOCM(viewSetup.mViewX), "cm"); break;
-         case BS_YOffset: CM_ROW(setting, isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) : VPUTOCM(viewSetup.mViewY), "cm"); break;
-         case BS_ZOffset: CM_ROW(setting, isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
+         case BS_XOffset: CM_ROW(setting, isLegacy ? "X Offset" : isWindow ? "Player X" : "Camera X", "%.1f", isWindow ? table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s) : VPUTOCM(viewSetup.mViewX), "cm"); break;
+         case BS_YOffset: CM_ROW(setting, isLegacy ? "Y Offset" : isWindow ? "Player Y" : "Camera Y", "%.1f", isWindow ? table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s) : VPUTOCM(viewSetup.mViewY), "cm"); break;
+         case BS_ZOffset: CM_ROW(setting, isLegacy ? "Z Offset" : isWindow ? "Player Z" : "Camera Z", "%.1f", isWindow ? table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s) : VPUTOCM(viewSetup.mViewZ), "cm"); CM_SKIP_LINE; break;
          case BS_FOV: CM_ROW(setting, "Field Of View (overall scale)", "%.1f", viewSetup.mFOV, "deg"); break;
          case BS_Layback: CM_ROW(setting, "Layback", "%.1f", viewSetup.mLayback, ""); CM_SKIP_LINE; break;
          case BS_ViewHOfs: CM_ROW(setting, "Horizontal Offset", "%.1f", viewSetup.mViewHOfs, isWindow ? "cm" : ""); break;
