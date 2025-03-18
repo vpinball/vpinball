@@ -368,9 +368,8 @@ BOOL VROptionsDialog::OnInitDialog()
 
    #ifdef ENABLE_XR
       ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
-      SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, BST_UNCHECKED, 0);
-      ::EnableWindow(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), FALSE);
+      SetDlgItemText(IDC_SCALE_TO_CM, "Scale to match lockbar width");
    #else
       ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
@@ -639,11 +638,13 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ResetVideoPreferences();
          break;
       }
-      #ifndef ENABLE_XR
       case IDC_SCALE_TO_CM:
       {
-         const bool newScaleValue = IsDlgButtonChecked(IDC_SCALE_TO_CM)> 0;
-         if (oldScaleValue != newScaleValue) {
+         const bool isScaleToLockbarWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)> 0;
+         #ifdef ENABLE_XR
+            ::EnableWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), isScaleToLockbarWidth ? FALSE : TRUE);         
+         #else
+         if (oldScaleValue != isScaleToLockbarWidth) {
             CString tmpStr = GetDlgItemText(IDC_VR_SCALE);
             tmpStr.Replace(',', '.');
             if (oldScaleValue)
@@ -652,12 +653,14 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
                scaleRelative = (float)atof(tmpStr.c_str());
 
             char tmp[256];
-            sprintf_s(tmp, sizeof(tmp), newScaleValue ? "%0.1f" : "%0.3f", newScaleValue ? scaleAbsolute : scaleRelative);
+            sprintf_s(tmp, sizeof(tmp), isScaleToLockbarWidth ? "%0.1f" : "%0.3f", isScaleToLockbarWidth ? scaleAbsolute : scaleRelative);
             SetDlgItemText(IDC_VR_SCALE, tmp);
-            oldScaleValue = newScaleValue;
+            oldScaleValue = isScaleToLockbarWidth;
          }
+         #endif
          break;
       }
+      #ifndef ENABLE_XR
       case IDC_BTTABLERECENTER:
       {
          if (HIWORD(wParam) == BN_CLICKED)
