@@ -366,6 +366,16 @@ BOOL VROptionsDialog::OnInitDialog()
 
    char tmp[256];
 
+   #ifdef ENABLE_XR
+      ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
+      SendDlgItemMessage(IDC_SCALE_TO_CM, BM_SETCHECK, BST_UNCHECKED, 0);
+      ::EnableWindow(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), FALSE);
+      ::EnableWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), FALSE);
+   #else
+      ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
+      ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
+   #endif
+
    const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
    HWND hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
    SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
@@ -472,13 +482,6 @@ BOOL VROptionsDialog::OnInitDialog()
    AttachItem(IDC_COLOR_BUTTON1, m_colorKey);
    m_colorKey.SetColor(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)));
 
-   #ifdef ENABLE_XR
-      ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
-   #else
-      ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
-   #endif
-
    int key;
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
@@ -540,6 +543,9 @@ BOOL VROptionsDialog::OnInitDialog()
       }
       ::SendMessage(hwnd, CB_SETCURSEL, selected, 0);
       ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+      #ifdef ENABLE_XR
+         ::EnableWindow(hwnd, FALSE);
+      #endif
    }
 
    //
@@ -554,14 +560,23 @@ BOOL VROptionsDialog::OnInitDialog()
    g_ButtonProc2 = (WNDPROC)::GetWindowLongPtr(hwndButton, GWLP_WNDPROC);
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+   #ifdef ENABLE_XR
+      ::EnableWindow(hwndButton, FALSE);
+   #endif
 
    hwndButton = GetDlgItem(IDC_BTTABLEUP).GetHwnd();
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+   #ifdef ENABLE_XR
+      ::EnableWindow(hwndButton, FALSE);
+   #endif
 
    hwndButton = GetDlgItem(IDC_BTTABLEDOWN).GetHwnd();
    ::SetWindowLongPtr(hwndButton, GWLP_WNDPROC, (size_t)MyKeyButtonProc2);
    ::SetWindowLongPtr(hwndButton, GWLP_USERDATA, (size_t)pksw);
+   #ifdef ENABLE_XR
+      ::EnableWindow(hwndButton, FALSE);
+   #endif
 
    return TRUE;
 }
@@ -576,6 +591,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       case IDC_COLOR_BUTTON1: m_colorKey.DrawItem(reinterpret_cast<LPDRAWITEMSTRUCT>(lParam)); return TRUE;
       }
       break;
+   #ifndef ENABLE_XR
    case WM_TIMER:
    {
       KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
@@ -606,6 +622,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       }
       break;
    }
+   #endif
    }
 
    return DialogProcDefault(uMsg, wParam, lParam);
@@ -622,6 +639,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
          ResetVideoPreferences();
          break;
       }
+      #ifndef ENABLE_XR
       case IDC_SCALE_TO_CM:
       {
          const bool newScaleValue = IsDlgButtonChecked(IDC_SCALE_TO_CM)> 0;
@@ -658,6 +676,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             StartTimer(IDC_TABLEDOWN_TEXT);
          break;
       }
+      #endif
       case IDC_COLOR_BUTTON1:
       {
          CHOOSECOLOR cc = m_colorDialog.GetParameters();

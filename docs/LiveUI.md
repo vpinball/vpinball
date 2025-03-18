@@ -29,7 +29,7 @@ You can:
 - **Pan** the view by pressing the third mouse button (mousewheel) while having the [Shift] key pressed,
 - **Zoom** using the mousewheel.
 
-Lots of [keyboard shortcuts](#Keyboard-shortcuts) are also availables to navigate around.
+Lots of [keyboard shortcuts](#Keyboard-shortcuts) are also available to navigate around.
 
 ## Outliner
 The outliner tab, located on the left, allows to select the datablocks that define the table, in order to locate and edit them, with visual feedback.

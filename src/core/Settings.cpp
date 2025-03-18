@@ -542,7 +542,7 @@ bool Settings::SaveValue(const Section section, const string &key, const unsigne
 
 bool Settings::SaveValue(const Section section, const string &key, const float val, const bool overrideMode)
 {
-   char buf[16];
+   char buf[64];
    sprintf_s(buf, sizeof(buf), "%f", val);
    return SaveValue(section, key, DT_SZ, buf, lstrlen(buf), overrideMode);
 }

@@ -28,7 +28,7 @@ The perspective projection (green) is displayed on the screen (blue).
 When VPX is used to emulate a pinball table on a TV screen inside a cabinet, the player is located on the side of the screen instead of being in front.
 The rendering is also expected to be somewhat different since it is supposed to mislead the viewer into believing there is actually a real playfield 'inside' the screen, eventually using headtracking and/or 3D stereo rendering to increase this perception.
 
-The window projection mode is a new (as of VPX 10.8) mode which tries to simulate this bevhavior.
+The window projection mode is a new (as of VPX 10.8) mode which tries to simulate this behavior.
 
 ![Window](img/ViewSetup-WindowDef.svg)
 <sub>The window projection (green) is displayed on the screen (blue). The projection is parallel to the screen.</sub>

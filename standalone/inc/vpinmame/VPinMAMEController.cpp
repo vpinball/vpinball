@@ -187,7 +187,7 @@ VPinMAMEController::VPinMAMEController()
    m_szIniPath = find_directory_case_insensitive(m_szPath, "ini");
    if (m_szIniPath.empty()) {
       m_szIniPath = m_szPath + "ini" + PATH_SEPARATOR_CHAR;
-      std::filesystem::create_directory(m_szIniPath);
+      std::filesystem::create_directories(m_szIniPath);
    }
 
    PLOGI.printf("PinMAME ini path set to: %s", m_szIniPath.c_str());

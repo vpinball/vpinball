@@ -7728,13 +7728,13 @@ string PinTable::AuditTable(bool log) const
    std::stringstream ss;
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
-#ifndef __STANDALONE__
-   const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
-   char * const szText = new char[cchar + 1];
-   SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
-#else
-   const char * const szText = (char*)m_pcv->m_script_text.c_str();
-#endif
+   #ifndef __STANDALONE__
+      const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      char * const szText = new char[cchar + 1];
+      SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
+   #else
+      const char * const szText = (char*)m_pcv->m_script_text.c_str();
+   #endif
    const char *wordStart = nullptr;
    const char *wordPos = szText;
    string inClass;
@@ -7815,9 +7815,10 @@ string PinTable::AuditTable(bool log) const
 
       wordPos++;
    }
-#ifndef __STANDALONE__
-   delete[] szText;
-#endif
+
+   #ifndef __STANDALONE__
+      delete[] szText;
+   #endif
 
    if (FindIndexOf(identifiers, "execute"s) != -1)
       ss << ". Warning: Scripts seems to use the 'Execute' command. This command triggers computer security checks and will likely cause stutters during play.\r\n";

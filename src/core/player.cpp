@@ -991,9 +991,11 @@ Player::~Player()
       myfile.close();
    }
 
+   #ifdef ENABLE_VR
    // Save adjusted VR settings
    if (m_renderer->m_stereo3D == STEREO_VR)
       m_vrDevice->SaveVRSettings(g_pvp->m_settings);
+   #endif
 
    m_ptable->StopAllSounds();
 
