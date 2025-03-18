@@ -13,9 +13,9 @@ ViewSetup::ViewSetup()
 void ViewSetup::SetWindowModeFromSettings(const PinTable* const table)
 {
    float realToVirtual = GetRealToVirtualScale(table);
-   vec3 playerPos(CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f)),
-                  CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f)),
-                  CMTOVPU(table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f)));
+   vec3 playerPos(CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s)),
+                  CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s)),
+                  CMTOVPU(table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s)));
    float inclination = table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f);
    float screenBotZ = GetWindowBottomZOFfset(table);
    float screenTopZ = GetWindowTopZOFfset(table);

@@ -102,6 +102,12 @@ void Settings::Validate(const Section section, const string &key, const float de
 void Settings::Validate(const bool addDefaults)
 {
    //////////////////////////////////////////////////////////////////////////
+   // Cabinet section
+   Validate(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, addDefaults);
+   Validate(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, addDefaults);
+   Validate(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, addDefaults);
+
+   //////////////////////////////////////////////////////////////////////////
    // ScoreView section
 
    /* Validate(Section::DMD, "DMDOutput"s, 0, 0, 100, addDefaults);

@@ -210,10 +210,11 @@ private:
    CEdit m_playerZ;
    CButton m_bamHeadtracking; // TODO move to plugin
 
-   CComboBox m_display;
-   CEdit m_displayWidth;
-   CEdit m_displayHeight;
-   CEdit m_displayInclination;
+   CEdit m_lockbarWidth;
+
+   CEdit m_playfieldScreenWidth;
+   CEdit m_playfieldScreenHeight;
+   CEdit m_playfieldScreenInclination;
 };
 
 class PFViewOptPage final : public VideoOptionPropPage
@@ -1621,14 +1622,14 @@ BOOL CabinetOptPage::OnInitDialog()
    AttachItem(IDC_HEADTRACKING, m_bamHeadtracking);
    AddToolTip(m_bamHeadtracking, "Enables BAM Headtracking. See https://www.ravarcade.pl for details.");
 
-   AttachItem(IDC_DISPLAY_ID, m_display);
-   AttachItem(IDC_SCREEN_WIDTH, m_displayWidth);
-   AddToolTip(m_displayWidth, "Physical width of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
-   AttachItem(IDC_SCREEN_HEIGHT, m_displayHeight);
-   AddToolTip(m_displayHeight, "Physical height of the display area of the screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
-   AttachItem(IDC_SCREEN_INCLINATION, m_displayInclination);
+   AttachItem(IDC_SCREEN_WIDTH, m_playfieldScreenWidth);
+   AddToolTip(m_playfieldScreenWidth, "Physical width of the display area of the playfield screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
+   AttachItem(IDC_SCREEN_HEIGHT, m_playfieldScreenHeight);
+   AddToolTip(m_playfieldScreenHeight, "Physical height of the display area of the playfield screen in centimeters, in landscape orientation (width > height).\r\n\r\nThis is needed to get the correct size when using 'Window' mode for the camera.");
+   AttachItem(IDC_SCREEN_INCLINATION, m_playfieldScreenInclination);
 
-   m_display.EnableWindow(false); // FIXME Not yet implemented: screen informations apply to playfield display only
+   AttachItem(IDC_LOCKBAR_WIDTH, m_lockbarWidth);
+   AddToolTip(m_lockbarWidth, "Physical width of the lockbar in centimeters.\r\n\r\nThis is needed for Virtual Reality automatic scaling mode.");
 
    LoadSettings(GetEditedSettings());
    return TRUE;
@@ -1639,13 +1640,13 @@ void CabinetOptPage::LoadSettings(Settings& settings)
    BeginLoad();
 
    char tmp[256];
-   const float screenPlayerX = settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f);
+   const float screenPlayerX = settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s);
    sprintf_s(tmp, sizeof(tmp), "%.1f", screenPlayerX);
    m_playerX.SetWindowText(tmp);
-   const float screenPlayerY = settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f);
+   const float screenPlayerY = settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s);
    sprintf_s(tmp, sizeof(tmp), "%.1f", screenPlayerY);
    m_playerY.SetWindowText(tmp);
-   const float screenPlayerZ = settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f);
+   const float screenPlayerZ = settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s);
    sprintf_s(tmp, sizeof(tmp), "%.1f", screenPlayerZ);
    m_playerZ.SetWindowText(tmp);
    const bool bamHeadtracking = settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false);
@@ -1653,14 +1654,18 @@ void CabinetOptPage::LoadSettings(Settings& settings)
 
    const float screenWidth = settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%.1f", screenWidth);
-   m_displayWidth.SetWindowText(tmp);
+   m_playfieldScreenWidth.SetWindowText(tmp);
    const float screenHeight = settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%.1f", screenHeight);
-   m_displayHeight.SetWindowText(tmp);
+   m_playfieldScreenHeight.SetWindowText(tmp);
    const float screenInclination = settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f);
    sprintf_s(tmp, sizeof(tmp), "%.3f", screenInclination);
-   m_displayInclination.SetWindowText(tmp);
+   m_playfieldScreenInclination.SetWindowText(tmp);
 
+   const float lockbarWidth = settings.LoadValueWithDefault(Settings::PlayerVR, "LockbarWidth"s, 0.0f);
+   sprintf_s(tmp, sizeof(tmp), "%.1f", lockbarWidth);
+   m_lockbarWidth.SetWindowText(tmp);
+   
    EndLoad();
 }
 
@@ -1674,6 +1679,8 @@ void CabinetOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "ScreenWidth"s, GetDlgItemText(IDC_SCREEN_WIDTH).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenHeight"s, GetDlgItemText(IDC_SCREEN_HEIGHT).GetString(), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenInclination"s, GetDlgItemText(IDC_SCREEN_INCLINATION).GetString(), !saveAll);
+
+   settings.SaveValue(Settings::PlayerVR, "LockbarWidth"s, GetDlgItemText(IDC_LOCKBAR_WIDTH).GetString(), !saveAll);
 }
 
 BOOL CabinetOptPage::OnApply()
@@ -1692,6 +1699,7 @@ BOOL CabinetOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_SCREEN_WIDTH:
    case IDC_SCREEN_HEIGHT:
    case IDC_SCREEN_INCLINATION:
+   case IDC_LOCKBAR_WIDTH:
       if (HIWORD(wParam) == EN_CHANGE)
          PropChanged();
       break;

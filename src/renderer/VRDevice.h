@@ -19,13 +19,16 @@ public:
    void UpdateVRPosition(ModelViewProj& mvp);
 
    void RecenterTable();
-   void LoadVRSettings(Settings& settings);
    void SaveVRSettings(Settings& settings) const;
+   bool IsSceneScaledToLockbarWidth() const { return m_scaleToLockbarWidth; }
    float GetSceneScale() const { return m_scale; }
+   float GetLockbarWidth() const { return m_lockbarWidth; }
    float GetSceneSlope() const { return m_slope; } // Scene floor slope (to compensate the fact that the scene axis are aligned to the playfield which is inclined)
    float GetSceneOrientation() const { return m_orientation; }
    const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }
+   void SetSceneScaledToLockbarWidth(bool scaleToLockbarWidth) { m_scaleToLockbarWidth = scaleToLockbarWidth; m_tableWorldDirty = true; }
    void SetSceneScale(float scale) { m_scale = scale; m_tableWorldDirty = true; }
+   void SetLockbarWidth(float width) { m_lockbarWidth = width; m_tableWorldDirty = true; }
    void SetSceneSlope(float slope) { m_slope = slope; m_tableWorldDirty = true; }
    void SetSceneOrientation(float orientation) { m_orientation = orientation; m_tableWorldDirty = true; }
    void SetSceneOffset(const Vertex3Ds& pos) { m_tablePos = pos; m_tableWorldDirty = true; }
@@ -38,7 +41,9 @@ private:
    unsigned int m_eyeWidth = 1080;
    unsigned int m_eyeHeight = 1020;
    
+   bool m_scaleToLockbarWidth = false;
    float m_scale = 1.0f;
+   float m_lockbarWidth = 0.0f;
    float m_slope = 0.0f;
    float m_orientation = 0.0f;
    Vertex3Ds m_tablePos;
@@ -129,7 +134,7 @@ private:
    std::vector<XrEnvironmentBlendMode> m_environmentBlendModes = {};
    XrEnvironmentBlendMode m_environmentBlendMode = XR_ENVIRONMENT_BLEND_MODE_MAX_ENUM;
 
-   XrSpace m_localSpace = XR_NULL_HANDLE;
+   XrSpace m_referenceSpace = XR_NULL_HANDLE;
    struct RenderLayerInfo
    {
       XrTime predictedDisplayTime = 0;
@@ -138,7 +143,6 @@ private:
       std::vector<XrCompositionLayerProjectionView> layerProjectionViews;
       std::vector<XrCompositionLayerDepthInfoKHR> depthInfoViews;
    };
-   static Matrix3D XRPoseToMatrix3D(const XrPosef& pose);
 
    bool m_depthExtensionSupported = false;
 
@@ -158,6 +162,7 @@ private:
 
    class XRGraphicBackend* m_backend = nullptr;
 
+   bool m_recenterTable = false;
    float m_sceneSize = 0.f;
 #endif
 };

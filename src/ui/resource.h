@@ -813,6 +813,7 @@
 #define IDC_SCREEN_PLAYERZ              469
 #define DISPID_SpringDiam               470
 #define IDC_BALL_TRAIL_STRENGTH         470
+#define IDC_LOCKBAR_WIDTH               471
 #define DISPID_TipShape                 471
 #define DISPID_SpringGauge              472
 #define DISPID_SpringLoops              473

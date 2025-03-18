@@ -1614,8 +1614,11 @@ void LiveUI::OpenTweakMode()
       m_tweakPages.push_back(TP_Rules);
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
+   #ifdef ENABLE_XR
+   // Legacy OpenVR does not support dynamic repositionning through LiveUI (especially overall scale, this would need to be rewriten but not done as this is planned for deprecation)
    else
       m_tweakPages.push_back(TP_VRPosition);
+   #endif
    m_tweakPages.push_back(TP_TableOption);
    for (int j = 0; j < Settings::GetNPluginSections(); j++)
    {
@@ -1655,11 +1658,10 @@ void LiveUI::UpdateTweakPage()
       m_tweakPageOptions.push_back(BS_VRX);
       m_tweakPageOptions.push_back(BS_VRY);
       m_tweakPageOptions.push_back(BS_VRZ);
+      m_tweakPageOptions.push_back(BS_VRScaleMode);
       m_tweakPageOptions.push_back(BS_VRScale);
       m_tweakPageOptions.push_back(BS_VRSlope);
-      #ifdef ENABLE_XR
-         m_tweakPageOptions.push_back(BS_AR_VR);
-      #endif
+      m_tweakPageOptions.push_back(BS_AR_VR);
       break;
    case TP_PointOfView:
       switch (m_live_table->mViewSetups[m_live_table->m_BG_current_set].mMode)
@@ -1806,19 +1808,19 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_ZScale: viewSetup.mSceneScaleZ += 0.005f * incSpeed; break;
       case BS_XOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerX"s, 0.0f) + 0.5f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerX"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX"s) + 0.5f * incSpeed);
          else
             viewSetup.mViewX += 10.f * incSpeed;
          break;
       case BS_YOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerY"s, 0.0f) + 0.5f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerY"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY"s) + 0.5f * incSpeed);
          else
             viewSetup.mViewY += 10.f * incSpeed;
          break;
       case BS_ZOffset:
          if (isWindow)
-            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenPlayerZ"s, 70.0f) + 0.5f * incSpeed);
+            table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s) + 0.5f * incSpeed);
          else
             viewSetup.mViewZ += (viewSetup.mMode == VLM_LEGACY ? 100.f : 10.f) * incSpeed;
          break;
@@ -1826,7 +1828,13 @@ void LiveUI::OnTweakModeEvent(const int keyEvent, const int keycode)
       case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 10.f * incSpeed; break;
 
       // VR Position
-      case BS_VRScale: m_player->m_vrDevice->SetSceneScale(clamp(m_player->m_vrDevice->GetSceneScale() + 0.05f * incSpeed, 0.1f, 2.f)); break;
+      case BS_VRScaleMode: if (keyEvent == 1) m_player->m_vrDevice->SetSceneScaledToLockbarWidth(!m_player->m_vrDevice->IsSceneScaledToLockbarWidth()); break;
+      case BS_VRScale: 
+         if (m_player->m_vrDevice->IsSceneScaledToLockbarWidth())
+            m_player->m_vrDevice->SetLockbarWidth(clamp(m_player->m_vrDevice->GetLockbarWidth() + 1.f * incSpeed, 5.f, 200.f));
+         else
+            m_player->m_vrDevice->SetSceneScale(clamp(m_player->m_vrDevice->GetSceneScale() + 0.05f * incSpeed, 0.1f, 2.f));
+         break;
       case BS_VRSlope: m_player->m_vrDevice->SetSceneSlope(m_player->m_vrDevice->GetSceneSlope() + 1.f * incSpeed); break;
       case BS_VROrientation: m_player->m_vrDevice->SetSceneOrientation(m_player->m_vrDevice->GetSceneOrientation() + 1.f * incSpeed); break;
       case BS_VRX: { Vertex3Ds pos = m_player->m_vrDevice->GetSceneOffset(); pos.x += 1.f * incSpeed; m_player->m_vrDevice->SetSceneOffset(pos); break; }
@@ -2373,7 +2381,17 @@ void LiveUI::UpdateTweakModeUI()
          case BS_VRX: CM_ROW(setting, "Scene Offset X", "%.1f", m_player->m_vrDevice->GetSceneOffset().x, "cm"); break;
          case BS_VRY: CM_ROW(setting, "Scene Offset Y", "%.1f", m_player->m_vrDevice->GetSceneOffset().y, "cm"); break;
          case BS_VRZ: CM_ROW(setting, "Scene Offset Z", "%.1f", m_player->m_vrDevice->GetSceneOffset().z, "cm"); break;
-         case BS_VRScale: CM_ROW(setting, "Scene Scale", "%.1f", m_player->m_vrDevice->GetSceneScale() * 100.f, "%"); break;
+         case BS_VRScaleMode: CM_ROW(setting, "Scene Scale Mode", "%s", m_player->m_vrDevice->IsSceneScaledToLockbarWidth() ? "To lockbar" : "Relative", ""); break;
+         case BS_VRScale: 
+            if (m_player->m_vrDevice->IsSceneScaledToLockbarWidth())
+            {
+               CM_ROW(setting, "Lockbar width", "%.1f", m_player->m_vrDevice->GetLockbarWidth(), "cm");
+            }
+            else
+            {
+               CM_ROW(setting, "Scene Scale", "%.1f", m_player->m_vrDevice->GetSceneScale() * 100.f, "%");
+            }
+            break;
          case BS_VRSlope: CM_ROW(setting, "Floor Slope", "%.1f", m_player->m_vrDevice->GetSceneSlope(), "°"); break;
          case BS_AR_VR: CM_ROW(setting, "Color Keyed Passthrough:", "%s", m_renderer->m_vrApplyColorKey ? "Enabled" : "Disabled", ""); break;
 
