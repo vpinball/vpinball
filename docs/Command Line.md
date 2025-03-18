@@ -24,6 +24,8 @@ VPX supports the following command line options:
 | -PovEdit [filename]      | Load and run file in camera mode, then export new pov on exit |
 | -Pov [filename]          | Load, export pov and close |
 | | |
+| -Audit [filename]        | Audit the table |
+| | |
 | -ExtractVBS [filename]   | Load, export table script and close |
 | | |
 | -Ini [filename]          | Use a custom settings file instead of loading it from the default location |
