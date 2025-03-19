@@ -722,6 +722,7 @@ public:
    const vector<Material *> &GetMaterialList() const { return m_materials; }
 
    vector<PinSound *> m_vsound;
+   ankerl::unordered_dense::set<std::string> m_soundsMissing;
 
    vector<PinFont *> m_vfont;
 
