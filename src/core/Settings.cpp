@@ -102,7 +102,44 @@ void Settings::Validate(const Section section, const string &key, const float de
 void Settings::Validate(const bool addDefaults)
 {
    //////////////////////////////////////////////////////////////////////////
+   // Input section
+
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, addDefaults);
+   #if !defined(__APPLE__) && !defined(__ANDROID__)
+      Validate(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F11, 0x00, 0xFFFF, addDefaults);
+   #else
+      Validate(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F1, 0x00, 0xFFFF, addDefaults);
+   #endif
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eDBGBalls], DIK_O, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eDebugger], DIK_D, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey], DIK_5, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eStartGameKey], DIK_1, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eExitGame], DIK_Q, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eEnable3D], DIK_F10, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, addDefaults);
+   Validate(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, addDefaults);
+
+   //////////////////////////////////////////////////////////////////////////
    // Cabinet section
+
    Validate(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, addDefaults);
    Validate(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, addDefaults);
    Validate(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, addDefaults);

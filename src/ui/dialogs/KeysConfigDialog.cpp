@@ -508,9 +508,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     for (unsigned int i = 0; i < eCKeys; ++i)
       if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
       {
-         const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
-         if (!hr || key > 0xdd)
-            key = regkey_defdik[i];
+         key = static_cast<EnumAssignKeys>(g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
          const HWND hwndControl = GetDlgItem(regkey_idc[i]).GetHwnd();
          ::SetWindowText(hwndControl, rgszKeyName[key]);
          ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);

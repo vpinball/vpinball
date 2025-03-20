@@ -481,13 +481,10 @@ BOOL VROptionsDialog::OnInitDialog()
    AttachItem(IDC_COLOR_BUTTON1, m_colorKey);
    m_colorKey.SetColor(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PassthroughColor"s, static_cast<int>(0xFFBB4700)));
 
-   int key;
    for (unsigned int i = eTableRecenter; i <= eTableDown; ++i)
       if (regkey_idc[i] != -1)
       {
-         const bool hr = g_pvp->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
-         if (!hr || key > 0xdd)
-            key = regkey_defdik[i];
+         const int key = static_cast<EnumAssignKeys>(g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
          const HWND hwndControl = GetDlgItem(regkey_idc[i]);
          ::SetWindowText(hwndControl, rgszKeyName[key]);
          ::SetWindowLongPtr(hwndControl, GWLP_USERDATA, key);

@@ -78,6 +78,103 @@
 #define USE_DINPUT_FOR_KEYBOARD // can lead to less input lag maybe on some systems if disabled, but can miss input if key is only pressed very very quickly and/or FPS are low
 #endif
 
+
+// NOTE that the following four definitions need to be in sync in their order!
+enum EnumAssignKeys
+{
+   eLeftFlipperKey,
+   eRightFlipperKey,
+   eStagedLeftFlipperKey,
+   eStagedRightFlipperKey,
+   eLeftTiltKey,
+   eRightTiltKey,
+   eCenterTiltKey,
+   ePlungerKey,
+   eFrameCount,
+   eDBGBalls,
+   eDebugger,
+   eAddCreditKey,
+   eAddCreditKey2,
+   eStartGameKey,
+   eMechanicalTilt,
+   eRightMagnaSave,
+   eLeftMagnaSave,
+   eExitGame,
+   eVolumeUp,
+   eVolumeDown,
+   eLockbarKey,
+   eEnable3D,
+   eTableRecenter,
+   eTableUp,
+   eTableDown,
+   eEscape,
+   ePause,
+   eTweak,
+   eCKeys
+};
+
+static const string regkey_string[eCKeys] = {
+   "LFlipKey"s,
+   "RFlipKey"s,
+   "StagedLFlipKey"s,
+   "StagedRFlipKey"s,
+   "LTiltKey"s,
+   "RTiltKey"s,
+   "CTiltKey"s,
+   "PlungerKey"s,
+   "FrameCount"s,
+   "DebugBalls"s,
+   "Debugger"s,
+   "AddCreditKey"s,
+   "AddCreditKey2"s,
+   "StartGameKey"s,
+   "MechTilt"s,
+   "RMagnaSave"s,
+   "LMagnaSave"s,
+   "ExitGameKey"s,
+   "VolumeUp"s,
+   "VolumeDown"s,
+   "LockbarKey"s,
+   "Enable3DKey"s,
+   "TableRecenterKey"s,
+   "TableUpKey"s,
+   "TableDownKey"s,
+   "EscapeKey"s,
+   "PauseKey"s,
+   "TweakKey"s
+};
+
+static constexpr int regkey_idc[eCKeys] = {
+   IDC_LEFTFLIPPER,
+   IDC_RIGHTFLIPPER,
+   IDC_STAGEDLEFTFLIPPER,
+   IDC_STAGEDRIGHTFLIPPER,
+   IDC_LEFTTILT,
+   IDC_RIGHTTILT,
+   IDC_CENTERTILT,
+   IDC_PLUNGER_TEXT,
+   IDC_FRAMECOUNT,
+   IDC_DEBUGBALL,
+   IDC_DEBUGGER,
+   IDC_ADDCREDIT,
+   IDC_ADDCREDITKEY2,
+   IDC_STARTGAME,
+   IDC_MECHTILT,
+   IDC_RMAGSAVE,
+   IDC_LMAGSAVE,
+   IDC_EXITGAME,
+   IDC_VOLUMEUP,
+   IDC_VOLUMEDN,
+   IDC_LOCKBAR,
+   -1, //!! missing in key dialog! (Enable/disable 3D stereo)
+   IDC_TABLEREC_TEXT,
+   IDC_TABLEUP_TEXT,
+   IDC_TABLEDOWN_TEXT,
+   -1, // Escape
+   IDC_PAUSE,
+   IDC_TWEAK
+};
+
 // Open Pinball Device context (defined in the OPD implementation module)
 class OpenPinDevContext;
 

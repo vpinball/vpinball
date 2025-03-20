@@ -442,13 +442,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
 
    for(unsigned int i = 0; i < eCKeys; ++i)
-   {
-      int key;
-      const bool hr = m_ptable->m_settings.LoadValue(Settings::Player, regkey_string[i], key);
-      if (!hr || key > 0xdd)
-          key = regkey_defdik[i];
-      m_rgKeys[i] = (EnumAssignKeys)key;
-   }
+      m_rgKeys[i] = static_cast<EnumAssignKeys>(m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
 
    m_PlayMusic = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
    m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
