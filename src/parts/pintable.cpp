@@ -5132,28 +5132,23 @@ void PinTable::SetMyScrollInfo()
 #endif
 }
 
-void PinTable::FireKeyEvent(int dispid, int keycode)
+void PinTable::FireActionEvent(EnumAssignKeys key, bool isPressed)
+{
+   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[key]);
+}
+
+void PinTable::FireGenericKeyEvent(int dispid, int keycode)
 {
    CComVariant rgvar[1] = { CComVariant(keycode) };
-
-   DISPPARAMS dispparams = {
-      rgvar,
-      nullptr,
-      1,
-      0
-   };
-
-#ifdef LOG
-   if (g_pplayer)
-   {
-      if (dispid == DISPID_GameEvents_KeyDown)
-         PLOGD.printf("Key Down %d", keycode);
-      else
-         PLOGD.printf("Key Up %d", keycode);
-   }
-#endif
-
+   DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
    FireDispID(dispid, &dispparams);
+}
+
+void PinTable::FireOptionEvent(int event)
+{
+   CComVariant rgvar[1] = { CComVariant(event) };
+   DISPPARAMS dispparams = { rgvar, nullptr, 1, 0 };
+   FireDispID(DISPID_GameEvents_OptionEvent, &dispparams);
 }
 
 void PinTable::DoLeftButtonDown(int x, int y, bool zoomIn)

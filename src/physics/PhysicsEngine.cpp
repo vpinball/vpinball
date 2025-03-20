@@ -399,8 +399,8 @@ void PhysicsEngine::UpdateNudge(float dtime)
       {
          m_plumbTiltHigh = tilted;
          // this triggers front nudge instead of mechanical (so using the accelerometer to simulate keyboard nudge which would be a surprising use case)
-         g_pplayer->m_pininput.FireKeyEvent(m_plumbTiltHigh ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eCenterTiltKey]);
-         //g_pplayer->m_pininput.FireKeyEvent(m_plumbTiltHigh ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eMechanicalTilt]);
+         g_pplayer->m_pininput.FireActionEvent(eCenterTiltKey, m_plumbTiltHigh);
+         //g_pplayer->m_pininput.FireActionEvent(eMechanicalTilt, m_plumbTiltHigh);
       }
 
       #else
@@ -452,7 +452,7 @@ void PhysicsEngine::UpdateNudge(float dtime)
       if (m_plumbTiltHigh != tilted)
       {
          m_plumbTiltHigh = tilted;
-         g_pplayer->m_pininput.FireKeyEvent(m_plumbTiltHigh ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eMechanicalTilt]);
+         g_pplayer->m_pininput.FireActionEvent(eMechanicalTilt, m_plumbTiltHigh);
       }
       #endif
 
@@ -690,7 +690,7 @@ void PhysicsEngine::UpdatePhysics()
 
       #if !defined(ENABLE_BGFX)
       // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
-      g_pplayer->m_pininput.ProcessKeys(/*sim_msec,*/ cur_time_msec);
+      g_pplayer->m_pininput.ProcessKeys(cur_time_msec, true);
       #endif
 
       // FIXME remove or at least move legacy ushock to a plugin

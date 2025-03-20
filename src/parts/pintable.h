@@ -14,6 +14,8 @@
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
 
+#include "core/pininput.h"
+
 #ifdef __STANDALONE__
 #include <iostream>
 #include <unordered_map>
@@ -368,8 +370,9 @@ public:
    void ExportBackdropPOV();
    void ImportVPP(const string &filename);
 
-   //void FireVoidEvent(int dispid);
-   void FireKeyEvent(int dispid, int keycode);
+   void FireOptionEvent(int event);
+   void FireActionEvent(EnumAssignKeys key, bool isPressed);
+   void FireGenericKeyEvent(int dispid, int keycode);
 
    void ImportSound(const HWND hwndListView, const string &filename);
    void ReImportSound(const HWND hwndListView, PinSound *const pps, const string &filename);

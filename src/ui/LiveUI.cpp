@@ -1640,7 +1640,7 @@ void LiveUI::OpenTweakMode()
 void LiveUI::CloseTweakMode()
 {
    if (m_tweakMode)
-      m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 3 /* tweak mode closed event */);
+      m_live_table->FireOptionEvent(3); // Tweak mode closed event
    m_tweakMode = false;
 }
 
@@ -1886,31 +1886,31 @@ void LiveUI::HandleTweakInput()
          case BS_DayNight:
             m_renderer->m_globalEmissionScale = clamp(m_renderer->m_globalEmissionScale + incSpeed * 0.05f, 0.f, 1.f);
             m_renderer->MarkShaderDirty();
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Difficulty:
             table->m_globalDifficulty = clamp(table->m_globalDifficulty + incSpeed * 0.05f, 0.f, 1.f);
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Volume:
             m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
             m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
             m_player->UpdateVolume();
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_BackglassVolume:
             m_player->m_MusicVolume = clamp(m_player->m_MusicVolume + static_cast<int>(step), 0, 100);
             m_player->UpdateVolume();
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_PlayfieldVolume:
             m_player->m_SoundVolume = clamp(m_player->m_SoundVolume + static_cast<int>(step), 0, 100);
             m_player->UpdateVolume();
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Exposure:
             m_renderer->m_exposure = clamp(m_renderer->m_exposure + incSpeed * 0.05f, 0.f, 2.0f);
-            m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+            m_live_table->FireOptionEvent(1); // Table option changed event
             break;
          case BS_Tonemapper:
             if (keyEvent == 1)
@@ -1928,7 +1928,7 @@ void LiveUI::HandleTweakInput()
                   tm = ToneMapper::TM_REINHARD;
                #endif
                m_renderer->m_toneMapper = static_cast<ToneMapper>(tm);
-               m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+               m_live_table->FireOptionEvent(1); // Table option changed event
             }
             break;
 
@@ -1963,7 +1963,7 @@ void LiveUI::HandleTweakInput()
                         value = clamp(value + (float)nSteps * opt.step * step, opt.minValue, opt.maxValue);
                      table->m_settings.SaveValue(opt.section, opt.id, value);
                      if (opt.section == Settings::TableOption)
-                        m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1 /* table option changed event */);
+                        m_live_table->FireOptionEvent(1); // Table option changed event
                      else
                         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                   }
@@ -2240,7 +2240,7 @@ void LiveUI::HandleTweakInput()
                if (m_tweakPages[m_activeTweakPageIndex] > TP_TableOption)
                   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                else
-                  m_live_table->FireKeyEvent(DISPID_GameEvents_OptionEvent, 2 /* custom option resetted event */);
+                  m_live_table->FireOptionEvent(2); // custom option resetted event
             }
          }
          else if (keycode == eAddCreditKey) // Undo tweaks of page

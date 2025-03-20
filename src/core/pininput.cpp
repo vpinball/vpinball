@@ -250,10 +250,8 @@ void PinInput::LoadSettings(const Settings& settings)
 #endif
 }
 
-#ifdef _WIN32
-//
-// DirectInput:
-//
+
+#ifdef _WIN32 // DirectInput
 
 // Callback function for enumerating objects (axes, buttons, POVs) on a 
 // joystick. This function enables user interface elements for objects
@@ -317,7 +315,6 @@ BOOL CALLBACK PinInput::EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE* pdid
 
    return DIENUM_CONTINUE;
 }
-
 
 // Callback for enumerating joysticks (gamepads)
 BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
@@ -383,6 +380,7 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
        return DIENUM_STOP; //allocation for only PININ_JOYMXCNT joysticks, ignore any others
 }
 #endif
+
 
 #ifdef ENABLE_SDL_INPUT
 void PinInput::RefreshSDLDevices()
@@ -461,41 +459,26 @@ void PinInput::RefreshSDLDevices()
 }
 #endif
 
-void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/)
+
+void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data)
 {
-   if ((!data) ||
-       (((m_head + 1) % MAX_KEYQUEUE_SIZE) == m_tail)) // queue full?
+   if ((!data) || (((m_head + 1) % MAX_KEYQUEUE_SIZE) == m_tail)) // queue full?
        return;
-
    m_diq[m_head] = *data;
-   //m_diq[m_head].dwTimeStamp = curr_time_msec; //rewrite time from game start
    m_diq[m_head].dwSequence = app_data;
-
    m_head = (m_head + 1) % MAX_KEYQUEUE_SIZE; // advance head of queue
 }
 
-const DIDEVICEOBJECTDATA *PinInput::GetTail(/*const U32 curr_sim_msec*/)
+const DIDEVICEOBJECTDATA *PinInput::GetTail()
 {
    if (m_head == m_tail)
       return nullptr; // queue empty?
-
    const DIDEVICEOBJECTDATA * const ptr = &m_diq[m_tail];
-
-   // If we've simulated to or beyond the timestamp of when this control was received, then process the control into the system
-   //if ( curr_sim_msec >= ptr->dwTimeStamp ) //!! time stamp disabled to save a bit of lag
-   {
-      m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE; // advance tail of queue
-
-      return ptr;
-   }
-   //else return nullptr;
+   m_tail = (m_tail + 1) % MAX_KEYQUEUE_SIZE; // advance tail of queue
+   return ptr;
 }
 
-//
-// End of Direct Input specific code
-//
-
-void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
+void PinInput::GetInputDeviceData()
 {
    DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE]; // Receives buffered data 
 
@@ -518,7 +501,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
             {
                if (m_focusHWnd == GetForegroundWindow())
                   for (DWORD i = 0; i < dwElements; i++)
-                     PushQueue(&didod[i], APP_KEYBOARD/*, curr_time_msec*/);
+                     PushQueue(&didod[i], APP_KEYBOARD);
             }
          }
       }
@@ -546,7 +529,7 @@ void PinInput::GetInputDeviceData(/*const U32 curr_time_msec*/)
             didod[i2].dwData = keyDown ? 0x80 : 0;
             //didod[i2].dwTimeStamp = curr_time_msec;
             didod[i2].dwSequence = APP_KEYBOARD;
-            PushQueue(&didod[i2], APP_KEYBOARD/*, curr_time_msec*/);
+            PushQueue(&didod[i2], APP_KEYBOARD);
             ++i2;
          }
       #endif
@@ -635,7 +618,7 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
                {
                   if (m_focusHWnd == GetForegroundWindow())
                      for (DWORD i = 0; i < dwElements; i++)
-                        PushQueue(&didod[i], APP_JOYSTICK(k)/*, curr_time_msec*/);
+                        PushQueue(&didod[i], APP_JOYSTICK(k));
                }
             }
          }
@@ -1128,63 +1111,224 @@ void PinInput::UnInit()
    TerminateOpenPinballDevices();
 }
 
-void PinInput::FireKeyEvent(const int dispid, int keycode)
+void PinInput::FireGenericKeyEvent(const int dispid, int keycode)
 {
-   // Check if we are mirrored.
+   // Check if we are mirrored & Swap left & right input.
    if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
-      // Swap left & right input.
-      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey]) keycode = g_pplayer->m_rgKeys[eRightFlipperKey];
-      else if (keycode == g_pplayer->m_rgKeys[eRightFlipperKey]) keycode = g_pplayer->m_rgKeys[eLeftFlipperKey];
-      else if (keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey]) keycode = g_pplayer->m_rgKeys[eStagedRightFlipperKey];
-      else if (keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey]) keycode = g_pplayer->m_rgKeys[eStagedLeftFlipperKey];
-      else if (keycode == g_pplayer->m_rgKeys[eLeftMagnaSave]) keycode = g_pplayer->m_rgKeys[eRightMagnaSave];
-      else if (keycode == g_pplayer->m_rgKeys[eRightMagnaSave]) keycode = g_pplayer->m_rgKeys[eLeftMagnaSave];
-      else if (keycode == DIK_LSHIFT) keycode = DIK_RSHIFT;
+      if (keycode == DIK_LSHIFT) keycode = DIK_RSHIFT;
       else if (keycode == DIK_RSHIFT) keycode = DIK_LSHIFT;
-      else if (keycode == DIK_LEFT)   keycode = DIK_RIGHT;
-      else if (keycode == DIK_RIGHT)  keycode = DIK_LEFT;
+      else if (keycode == DIK_LEFT) keycode = DIK_RIGHT;
+      else if (keycode == DIK_RIGHT) keycode = DIK_LEFT;
    }
-   #if defined(ENABLE_VR)
-      if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableRecenter] && dispid == DISPID_GameEvents_KeyUp)
-         g_pplayer->m_vrDevice->RecenterTable();
-      else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableUp] && dispid == DISPID_GameEvents_KeyUp)
-         g_pplayer->m_vrDevice->TableUp();
-      else if (g_pplayer->m_vrDevice && keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
-         g_pplayer->m_vrDevice->TableDown();
-   #endif
+   g_pplayer->m_ptable->FireGenericKeyEvent(dispid, keycode);
+}
 
-   for (int i = 0; i < eCKeys; i++) {
-      if (keycode == g_pplayer->m_rgKeys[i]) {
-         if (dispid == DISPID_GameEvents_KeyDown)
-            m_inputState.SetPressed(static_cast<EnumAssignKeys>(i));
-         else if (dispid == DISPID_GameEvents_KeyUp)
-            m_inputState.SetReleased(static_cast<EnumAssignKeys>(i));
-      }
-   }
-
-   if (!g_pplayer->m_liveUI->IsTweakMode())
+void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
+{
+   // Update input state
+ 
+   if (g_pplayer->m_ptable->m_tblMirrorEnabled)
    {
+      if (action == eLeftFlipperKey) action = eRightFlipperKey;
+      else if (action == eRightFlipperKey) action = eLeftFlipperKey;
+      else if (action == eStagedLeftFlipperKey) action = eStagedRightFlipperKey;
+      else if (action == eStagedRightFlipperKey) action = eStagedLeftFlipperKey;
+      else if (action == eLeftMagnaSave) action = eRightMagnaSave;
+      else if (action == eRightMagnaSave) action = eLeftMagnaSave;
+   }
+
+   if (isPressed)
+      m_inputState.SetPressed(action);
+   else
+      m_inputState.SetReleased(action);
+
+   // Process action
+
+   switch (action)
+   {
+   case eDBGBalls:
+      if (isPressed)
+         g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
+      break;
+
+   case eFrameCount:
+      if (isPressed)
+         g_pplayer->m_liveUI->ToggleFPS();
+      break;
+
+   case ePause:
+      if (isPressed)
+         g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
+      break;
+
+   case eTweak:
+      if (isPressed)
+      {
+         if (g_pplayer->m_liveUI->IsTweakMode())
+            g_pplayer->m_liveUI->HideUI();
+         else
+            g_pplayer->m_liveUI->OpenTweakMode();
+      }
+      break;
+
+   case eDebugger:
+      if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
+      {
+         if (isPressed)
+         {
+            m_first_stamp = g_pplayer->m_last_frame_time_msec;
+            m_exit_stamp = g_pplayer->m_last_frame_time_msec;
+         }
+         else
+         {
+            m_exit_stamp = 0;
+            g_pplayer->m_showDebugger = true;
+         }
+      }
+      break;
+
+   case eLeftFlipperKey:
       // Left flipper releases ball control
-      if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
+      if (isPressed)
       {
          delete g_pplayer->m_pBCTarget;
          g_pplayer->m_pBCTarget = nullptr;
       }
+      break;
 
-      if ((keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eRightFlipperKey]
-          || keycode == g_pplayer->m_rgKeys[eStagedLeftFlipperKey] || keycode == g_pplayer->m_rgKeys[eStagedRightFlipperKey])
-         && dispid == DISPID_GameEvents_KeyDown)
+   case eStartGameKey:
+      if (m_inputState.IsKeyDown(eLockbarKey) && isPressed && g_pvp->m_ptableActive->TournamentModePossible())
+         g_pvp->GenerateTournamentFile();
+      break;
+
+   case eEnable3D:
+      if (isPressed)
       {
-         g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
-         // Debug only, for testing parts of the flipper input lag
-         m_leftkey_down_usec = usec();
-         m_leftkey_down_frame = g_pplayer->m_overall_frames;
+         if (IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
+         {
+            // Select next glasses or toggle stereo on/off
+            int glassesIndex = g_pplayer->m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
+            if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex != 0)
+            {
+               g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
+               g_pplayer->m_renderer->m_stereo3Denabled = true;
+            }
+            else
+            {
+               const int dir = (m_inputState.IsKeyDown(eLeftFlipperKey) || m_inputState.IsKeyDown(eRightFlipperKey)) ? -1 : 1;
+               // Loop back with shift pressed
+               if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+               {
+                  g_pplayer->m_renderer->m_stereo3Denabled = true;
+                  glassesIndex = 9;
+               }
+               else if (g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
+               {
+                  g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
+                  g_pplayer->m_renderer->m_stereo3Denabled = false;
+               }
+               // Loop forward
+               else if (!g_pplayer->m_renderer->m_stereo3Denabled)
+               {
+                  g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
+                  g_pplayer->m_renderer->m_stereo3Denabled = true;
+               }
+               else if (glassesIndex >= 9 && dir == 1)
+               {
+                  g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
+                  glassesIndex = 0;
+                  g_pplayer->m_renderer->m_stereo3Denabled = false;
+               }
+               else
+               {
+                  glassesIndex += dir;
+               }
+               g_pplayer->m_renderer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
+               if (g_pplayer->m_renderer->m_stereo3Denabled)
+               {
+                  string name;
+                  static const string defaultNames[]
+                     = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
+                  if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name))
+                     name = defaultNames[glassesIndex];
+                  g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex + 1)).append(" '"s).append(name).append("' activated"s), 2000);
+               }
+            }
+         }
+         else if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D))
+         {
+            // Toggle stereo on/off
+            g_pplayer->m_renderer->m_stereo3Denabled = !g_pplayer->m_renderer->m_stereo3Denabled;
+         }
+         else if (g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
+         {
+            g_pplayer->m_renderer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
+            g_pplayer->m_liveUI->PushNotification(g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
+                  : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_LEFT                                   ? "Preview switched to left eye"s
+                  : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_RIGHT                                  ? "Preview switched to right eye"s
+                                                                                                           : "Preview switched to both eyes"s,
+               2000);
+         }
+         g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_renderer->m_stereo3Denabled);
+         g_pplayer->m_renderer->InitLayout();
+         g_pplayer->m_renderer->UpdateStereoShaderState();
       }
+      break;
 
-      g_pplayer->m_ptable->FireKeyEvent(dispid, keycode);
+   #if defined(ENABLE_VR)
+   case eTableRecenter:
+      if (g_pplayer->m_vrDevice && !isPressed)
+         g_pplayer->m_vrDevice->RecenterTable();
+      break;
+
+   case eTableUp:
+      if (g_pplayer->m_vrDevice && !isPressed)
+         g_pplayer->m_vrDevice->TableUp();
+      break;
+
+   case eTableDown:
+      if (g_pplayer->m_vrDevice && !isPressed)
+         g_pplayer->m_vrDevice->TableDown();
+      break;
+   #endif
+   }
+
+   if ((action == eLeftFlipperKey || action == eRightFlipperKey || action == eStagedLeftFlipperKey || action == eStagedRightFlipperKey) && isPressed)
+   {
+      g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
+      // Debug only, for testing parts of the flipper input lag
+      m_leftkey_down_usec = usec();
+      m_leftkey_down_frame = g_pplayer->m_overall_frames;
+   }
+
+   if (!g_pplayer->m_liveUI->IsTweakMode())
+      g_pplayer->m_ptable->FireActionEvent(action, isPressed);
+
+   if (((action == eEscape) && !m_disable_esc) || (action == eExitGame))
+   {
+      // Check if we have started a game yet, and do not trigger if the UI is already opened (keyboard is handled in it)
+      if (!g_pplayer->m_liveUI->IsOpened() && (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
+      {
+         if (isPressed)
+         { //on key down only
+            m_first_stamp = g_pplayer->m_last_frame_time_msec;
+            m_exit_stamp = g_pplayer->m_last_frame_time_msec;
+         }
+         else
+         {  //on key up only
+            // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
+            g_pplayer->SetCloseState(Player::CS_USER_INPUT);
+            m_exit_stamp = 0;
+            #ifdef __STANDALONE__
+               if (action == eExitGame)
+                  g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
+            #endif
+         }
+      }
    }
 }
+
 
 // Returns true if the table has started at least 1 player.
 int PinInput::Started()
@@ -1220,7 +1364,7 @@ void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       // Release start.
       m_firedautostart = curr_time_msec;
       m_as_down = false;
-      FireKeyEvent(DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey]);
+      FireActionEvent(eStartGameKey, false);
 
       PLOGD << "Autostart: Release.";
    }
@@ -1234,12 +1378,13 @@ void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       m_firedautostart = curr_time_msec;
       m_as_down = true;
       m_as_didonce = true;
-      FireKeyEvent(DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey]);
+      FireActionEvent(eStartGameKey, true);
 
       PLOGD << "Autostart: Press.\n";
    }
 }
 
+// FIXME Remove as this is also implemented in LiveUI
 void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
 {
    // Don't allow button exit until after game has been running for 1 second.
@@ -1254,244 +1399,241 @@ void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
    }
 }
 
-void PinInput::Joy(const unsigned int n, const int updown, const bool start)
+void PinInput::Joy(const unsigned int n, const bool isPressed, const bool start)
 {
-   if (m_joylflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-   if (m_joyrflipkey == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
-   if (m_joystagedlflipkey == n)FireKeyEvent(updown, g_pplayer->m_rgKeys[eStagedLeftFlipperKey]);
-   if (m_joystagedrflipkey == n)FireKeyEvent(updown, g_pplayer->m_rgKeys[eStagedRightFlipperKey]);
-   if (m_joyplungerkey == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
-   if (m_joyaddcreditkey == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
-   if (m_joyaddcreditkey2 == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey2]);
-   if (m_joylmagnasave == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftMagnaSave]);
-   if (m_joyrmagnasave == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightMagnaSave]);
-   if (m_joytablerecenter == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableRecenter]);
-   if (m_joytableup == n)       FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableUp]);
-   if (m_joytabledown == n)     FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableDown]);
-   if (m_joystartgamekey == n)
+   if (m_joylflipkey == n)      FireActionEvent(eLeftFlipperKey, isPressed);
+   if (m_joyrflipkey == n)      FireActionEvent(eRightFlipperKey, isPressed);
+   if (m_joystagedlflipkey == n)FireActionEvent(eStagedLeftFlipperKey, isPressed);
+   if (m_joystagedrflipkey == n)FireActionEvent(eStagedRightFlipperKey, isPressed);
+   if (m_joyplungerkey == n)    FireActionEvent(ePlungerKey, isPressed);
+   if (m_joyaddcreditkey == n)  FireActionEvent(eAddCreditKey, isPressed);
+   if (m_joyaddcreditkey2 == n) FireActionEvent(eAddCreditKey2, isPressed);
+   if (m_joylmagnasave == n)    FireActionEvent(eLeftMagnaSave, isPressed);
+   if (m_joyrmagnasave == n)    FireActionEvent(eRightMagnaSave, isPressed);
+   if (m_joytablerecenter == n) FireActionEvent(eTableRecenter, isPressed);
+   if (m_joytableup == n)       FireActionEvent(eTableUp, isPressed);
+   if (m_joytabledown == n)     FireActionEvent(eTableDown, isPressed);
+   if (m_joyvolumeup == n)      FireActionEvent(eVolumeUp, isPressed);
+   if (m_joyvolumedown == n)    FireActionEvent(eVolumeDown, isPressed);
+   if (m_joylefttilt == n)      FireActionEvent(eLeftTiltKey, isPressed);
+   if (m_joycentertilt == n)    FireActionEvent(eCenterTiltKey, isPressed);
+   if (m_joyrighttilt == n)     FireActionEvent(eRightTiltKey, isPressed);
+   if (m_joymechtilt == n)      FireActionEvent(eMechanicalTilt, isPressed);
+   if (m_joydebugballs == n)    FireActionEvent(eDBGBalls, isPressed);
+   if (m_joydebugger == n)      FireActionEvent(eDebugger, isPressed);
+   if (m_joylockbar == n)       FireActionEvent(eLockbarKey, isPressed);
+   if (m_joypause == n)         FireActionEvent(ePause, isPressed);
+   if (m_joytweak == n)         FireActionEvent(eTweak, isPressed);
+   
+   // TODO define 'actions' (logical keys) for these joystick bindings
+   if (m_joycustom1 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom1key);
+   if (m_joycustom2 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom2key);
+   if (m_joycustom3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom3key);
+   if (m_joycustom4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom4key);
+   if (m_joypmbuyin == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_2);
+   if (m_joypmcoin3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_5);
+   if (m_joypmcoin4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_6);
+   if (m_joypmcoindoor == n) FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_END);
+   if (m_joypmcancel == n)   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_7);
+   if (m_joypmdown == n)     FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_8);
+   if (m_joypmup == n)       FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_9);
+   if (m_joypmenter == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_0);
+
+   // TODO move these handling to the general action handling
+   if ((m_joystartgamekey == n) && start)
    {
-      if (start)
-      {
-         m_pressed_start = true;
-         FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
-      }
+      m_pressed_start = true;
+      FireActionEvent(eStartGameKey, isPressed);
    }
-   if (m_joyexitgamekey == n)
-   {
-      if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-   }
-   if (m_joyframecount == n)
-   {
-      if (DISPID_GameEvents_KeyDown == updown)
-         g_pplayer->m_liveUI->ToggleFPS();
-   }
-   if (m_joyvolumeup == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
-   if (m_joyvolumedown == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
-   if (m_joylefttilt == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftTiltKey]);
-   if (m_joycentertilt == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eCenterTiltKey]);
-   if (m_joyrighttilt == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightTiltKey]);
-   if (m_joymechtilt == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eMechanicalTilt]);
-   if (m_joydebugballs == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eDBGBalls]);
-   if (m_joydebugger == n)   FireKeyEvent(updown, g_pplayer->m_rgKeys[eDebugger]);
-   if (m_joylockbar == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eLockbarKey]);
-   if (m_joypause == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[ePause]);
-   if (m_joytweak == n)      FireKeyEvent(updown, g_pplayer->m_rgKeys[eTweak]);
-   if (m_joycustom1 == n)    FireKeyEvent(updown, m_joycustom1key);
-   if (m_joycustom2 == n)    FireKeyEvent(updown, m_joycustom2key);
-   if (m_joycustom3 == n)    FireKeyEvent(updown, m_joycustom3key);
-   if (m_joycustom4 == n)    FireKeyEvent(updown, m_joycustom4key);
-   if (m_joypmbuyin == n)    FireKeyEvent(updown, DIK_2);
-   if (m_joypmcoin3 == n)    FireKeyEvent(updown, DIK_5);
-   if (m_joypmcoin4 == n)    FireKeyEvent(updown, DIK_6);
-   if (m_joypmcoindoor == n) FireKeyEvent(updown, DIK_END);
-   if (m_joypmcancel == n)   FireKeyEvent(updown, DIK_7);
-   if (m_joypmdown == n)     FireKeyEvent(updown, DIK_8);
-   if (m_joypmup == n)       FireKeyEvent(updown, DIK_9);
-   if (m_joypmenter == n)    FireKeyEvent(updown, DIK_0);
+
+   if ((m_joyexitgamekey == n) && isPressed)
+      g_pplayer->SetCloseState(Player::CS_USER_INPUT);
+
+   if ((m_joyframecount == n) && isPressed)
+      g_pplayer->m_liveUI->ToggleFPS();
 }
 
 void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
 {
-    const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
+   const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
 
-    //input->
-
-    if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
-    {
-        const int updown = (input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-        const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
-        if (input->dwOfs == DIJOFS_BUTTON0)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // plunge
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 1
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
-            else
-                Joy(1, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON1)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // right
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 2
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey2]);
-            else
-                Joy(2, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON2)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightMagnaSave]); // right2
-            else
-                Joy(3, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON3)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume down
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
-            else
-                Joy(4, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON4)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume up
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
-            else
-                Joy(5, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON5)
-        {
-            if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume up
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeUp]);
-            else
-                Joy(6, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON6)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
+   // TODO replace these hardcoded mapping by a generic structure
+   // TODO move action handling to FireActionEvent to be shared and identical between joystick/keyboard
+   if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
+   {
+      const bool isPressed = (input->dwData & 0x80) != 0;
+      const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
+      if (input->dwOfs == DIJOFS_BUTTON0)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // plunge
+            FireActionEvent(ePlungerKey, isPressed);
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 1
+            FireActionEvent(eAddCreditKey, isPressed);
+         else
+            Joy(1, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON1)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // right
+            FireActionEvent(eRightFlipperKey, isPressed);
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 2
+            FireActionEvent(eAddCreditKey2, isPressed);
+         else
+            Joy(2, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON2)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
+            FireActionEvent(eRightMagnaSave, isPressed); // right2
+         else
+            Joy(3, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON3)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume down
+            FireActionEvent(eVolumeDown, isPressed);
+         else
+            Joy(4, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON4)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume up
+            FireActionEvent(eVolumeUp, isPressed);
+         else
+            Joy(5, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON5)
+      {
+         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume up
+            FireActionEvent(eVolumeUp, isPressed);
+         else
+            Joy(6, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON6)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
+         {
+            if (isPressed)
+               g_pplayer->SetCloseState(Player::CS_USER_INPUT);
+         }
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
+            FireActionEvent(eVolumeDown, isPressed);
+         else
+            Joy(7, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON7)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons && !m_disable_esc) // exit
+         { // Check if we have started a game yet.
+            if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
             {
-               if (DISPID_GameEvents_KeyDown == updown)
-                  g_pplayer->SetCloseState(Player::CS_USER_INPUT);
+               if (isPressed)
+               {
+                  m_first_stamp = curr_time_msec;
+                  m_exit_stamp = curr_time_msec;
+                  FireActionEvent(eExitGame, isPressed);
+               }
+               else
+               {
+                  FireActionEvent(eExitGame, isPressed);
+                  m_exit_stamp = 0;
+               }
             }
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eVolumeDown]);
-            else
-                Joy(7, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON7)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons && !m_disable_esc) // exit
-            {   // Check if we have started a game yet.
-                if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
-                {
-                    if (DISPID_GameEvents_KeyDown == updown)
-                    {
-                        m_first_stamp = curr_time_msec;
-                        m_exit_stamp = curr_time_msec;
-                        FireKeyEvent(DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eExitGame]);
-                    }
-                    else
-                    {
-                        FireKeyEvent(DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eExitGame]);
-                        m_exit_stamp = 0;
-                    }
-                }
-            }
-            else
-                Joy(8, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON8)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
+         }
+         else
+            Joy(8, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON8)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
+         {
+            if (start)
             {
-                if (start)
-                {
-                    m_pressed_start = true;
-                    FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
-                }
+               m_pressed_start = true;
+               FireActionEvent(eStartGameKey, isPressed);
             }
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // left
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            else
-                Joy(9, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON9)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftFlipperKey]);
-            else
-                Joy(10, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON10)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left 2
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eLeftMagnaSave]);
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // right
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eRightFlipperKey]);
-            else
-                Joy(11, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON11)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 1
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey]);
-            else
-                Joy(12, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON12)
-        {
-            if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 2
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[eAddCreditKey2]);
-            else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // start
-            { // Check if we can allow the start (table is done initializing).
-                if (start)
-                {
-                    m_pressed_start = true;
-                    FireKeyEvent(updown, g_pplayer->m_rgKeys[eStartGameKey]);
-                }
-            }
-            else
-                Joy(13, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON13)
-        {
-            if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // plunge
-                FireKeyEvent(updown, g_pplayer->m_rgKeys[ePlungerKey]);
-            else
-                Joy(14, updown, start);
-        }
-        else if (input->dwOfs == DIJOFS_BUTTON14)
-        {
-            if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // exit
+         }
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // left
+            FireActionEvent(eLeftFlipperKey, isPressed);
+         else
+            Joy(9, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON9)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left
+            FireActionEvent(eLeftFlipperKey, isPressed);
+         else
+            Joy(10, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON10)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left 2
+            FireActionEvent(eLeftMagnaSave, isPressed);
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // right
+            FireActionEvent(eRightFlipperKey, isPressed);
+         else
+            Joy(11, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON11)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 1
+            FireActionEvent(eAddCreditKey, isPressed);
+         else
+            Joy(12, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON12)
+      {
+         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 2
+            FireActionEvent(eAddCreditKey2, isPressed);
+         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // start
+         { // Check if we can allow the start (table is done initializing).
+            if (start)
             {
-                if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
-                {
-                    if (DISPID_GameEvents_KeyDown == updown)
-                    {
-                        m_first_stamp = curr_time_msec;
-                        m_exit_stamp = curr_time_msec;
-                        FireKeyEvent(DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eExitGame]);
-                    }
-                    else
-                    {
-                        FireKeyEvent(DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eExitGame]);
-                        m_exit_stamp = 0;
-                    }
-                }
+               m_pressed_start = true;
+               FireActionEvent(eStartGameKey, isPressed);
             }
-            else
-                Joy(15, updown, start);
-        }
-        else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
-        {
-            Joy(16 + input->dwOfs-DIJOFS_BUTTON15, updown, start);
-        }
-        else
-            FireKeyEvent(updown, input->dwOfs | 0x01000000); // unknown button events
-    }
-    else //end joy buttons
-    {
+         }
+         else
+            Joy(13, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON13)
+      {
+         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // plunge
+            FireActionEvent(ePlungerKey, isPressed);
+         else
+            Joy(14, isPressed, start);
+      }
+      else if (input->dwOfs == DIJOFS_BUTTON14)
+      {
+         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // exit
+         {
+            if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
+            {
+               if (isPressed)
+               {
+                  m_first_stamp = curr_time_msec;
+                  m_exit_stamp = curr_time_msec;
+                  FireActionEvent(eExitGame, isPressed);
+               }
+               else
+               {
+                  FireActionEvent(eExitGame, isPressed);
+                  m_exit_stamp = 0;
+               }
+            }
+         }
+         else
+            Joy(15, isPressed, start);
+      }
+      else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
+      {
+         Joy(16 + input->dwOfs - DIJOFS_BUTTON15, isPressed, start);
+      }
+      else
+         FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs | 0x01000000); // unknown button events
+   }
+   else //end joy buttons
+   {
         // Axis Deadzone
         int deadu = (int)input->dwData;
         if (((deadu <= 0) && (deadu >= -m_deadz)) || ((deadu >= 0) && (deadu <= m_deadz)))
@@ -1755,30 +1897,30 @@ void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int 
 }
 
 
-void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // last one is negative if only key events should be fired
+void PinInput::ProcessKeys(int curr_time_msec, bool handleStartExit)
 {
    if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
    g_pplayer->m_logicProfiler.OnProcessInput();
 
-   if (curr_time_msec >= 0)
-   {
-      // Check if autostart is enabled.
-      if (g_pplayer->m_ptable->m_tblAutoStartEnabled)
-         // Update autostart.
-         Autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
-
-      ButtonExit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
-   }
-   else
-      curr_time_msec = -curr_time_msec; // due to special encoding to not do the stuff above
-
-   // Check if we've been initialized.
-   if (m_firedautostart == 0)
-      m_firedautostart = curr_time_msec;
-
-   GetInputDeviceData(/*curr_time_msec*/);
+   GetInputDeviceData();
 
    ReadOpenPinballDevices(curr_time_msec);
+
+   // Handle automatic start and exit on long press
+   if (handleStartExit)
+   {
+      if (g_pplayer->m_ptable->m_tblAutoStartEnabled)
+         Autostart(g_pplayer->m_ptable->m_tblAutoStart, g_pplayer->m_ptable->m_tblAutoStartRetry, curr_time_msec);
+      ButtonExit(g_pplayer->m_ptable->m_tblExitConfirm, curr_time_msec);
+   }
+   if (m_firedautostart == 0) // Check if we've been initialized.
+      m_firedautostart = curr_time_msec;
+
+   // Wipe key state if we're not the foreground window as we miss key-up events
+   #ifdef _WIN32
+   if (m_focusHWnd != GetForegroundWindow())
+      ZeroMemory(&m_inputState, sizeof(m_inputState));
+   #endif
 
    // Global Backglass/Playfield sound volume
    if ((m_head == m_tail) && (curr_time_msec - m_nextKeyPressedTime) > 75)
@@ -1801,194 +1943,50 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       }
    }
 
-   // Wipe key state if we're not the foreground window as we miss key-up events
-   #ifdef _WIN32
-   if (m_focusHWnd != GetForegroundWindow())
-      ZeroMemory(&m_inputState, sizeof(m_inputState));
-   #endif
-
    const DIDEVICEOBJECTDATA * __restrict input;
-   while ((input = GetTail(/*curr_sim_msec*/)))
+   while ((input = GetTail()))
    {
       if (input->dwSequence == APP_MOUSE && g_pplayer && !g_pplayer->m_liveUI->HasMouseCapture())
       {
          if (!g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
          {
-            for(int i = 1; i <= 3; ++i)
+            for (int i = 1; i <= 3; ++i)
             {
                 const int mouseButton = (i == 1) ? m_LeftMouseButtonID : ((i == 2) ? m_RightMouseButtonID : m_MiddleMouseButtonID);
                 if (input->dwOfs == i)
                 {
+                   const bool isDown = (input->dwData & 0x80) != 0;
                    if (m_joylflipkey == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftFlipperKey]);
+                      FireActionEvent(eLeftFlipperKey, isDown);
                    else if (m_joyrflipkey == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightFlipperKey]);
+                      FireActionEvent(eRightFlipperKey, isDown);
                    else if (m_joyplungerkey == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[ePlungerKey]);
+                      FireActionEvent(ePlungerKey, isDown);
                    else if (m_joylefttilt == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eLeftTiltKey]);
+                      FireActionEvent(eLeftTiltKey, isDown);
                    else if (m_joyrighttilt == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eRightTiltKey]);
+                      FireActionEvent(eRightTiltKey, isDown);
                    else if (m_joycentertilt == mouseButton)
-                      FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, (DWORD)g_pplayer->m_rgKeys[eCenterTiltKey]);
+                      FireActionEvent(eCenterTiltKey, isDown);
                 }
             }
          }
       }
-      else if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
+      else if ((input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
+         || (input->dwSequence == APP_TOUCH && g_pplayer)) // Desktop touch support push action key strokes
       {
-         // Normal game keys:
-         if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
+         bool handled = false;
+         for (int i = 0; i < eCKeys; i++)
          {
-            if ((input->dwData & 0x80) != 0)
-               g_pplayer->m_liveUI->ToggleFPS();
-         }
-         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[ePause])
-         {
-            if ((input->dwData & 0x80) != 0)
-               g_pplayer->SetPlayState(!g_pplayer->IsPlaying());
-         }
-         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eTweak])
-         {
-            if ((input->dwData & 0x80) != 0)
+            if (input->dwOfs == static_cast<DWORD>(g_pplayer->m_rgKeys[i]))
             {
-               if (g_pplayer->m_liveUI->IsTweakMode())
-                  g_pplayer->m_liveUI->HideUI();
-               else
-                  g_pplayer->m_liveUI->OpenTweakMode();
+               FireActionEvent(static_cast<EnumAssignKeys>(i), (input->dwData & 0x80) != 0);
+               handled = true;
+               break;
             }
          }
-         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEnable3D])
-         {
-            if ((input->dwData & 0x80) != 0)
-            {
-               if (IsAnaglyphStereoMode(g_pplayer->m_renderer->m_stereo3D))
-               {
-                  // Select next glasses or toggle stereo on/off
-                  int glassesIndex = g_pplayer->m_renderer->m_stereo3D - STEREO_ANAGLYPH_1;
-                  if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex != 0)
-                  {
-                     g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-                     g_pplayer->m_renderer->m_stereo3Denabled = true;
-                  }
-                  else
-                  {
-                     const int dir = (m_inputState.IsKeyDown(eLeftFlipperKey) || m_inputState.IsKeyDown(eRightFlipperKey)) ? -1 : 1;
-                     // Loop back with shift pressed
-                     if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
-                     {
-                        g_pplayer->m_renderer->m_stereo3Denabled = true;
-                        glassesIndex = 9;
-                     }
-                     else if (g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
-                     {
-                        g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
-                        g_pplayer->m_renderer->m_stereo3Denabled = false;
-                     }
-                     // Loop forward
-                     else if (!g_pplayer->m_renderer->m_stereo3Denabled)
-                     {
-                        g_pplayer->m_liveUI->PushNotification("Stereo enabled"s, 2000);
-                        g_pplayer->m_renderer->m_stereo3Denabled = true;
-                     }
-                     else if (glassesIndex >= 9 && dir == 1)
-                     {
-                        g_pplayer->m_liveUI->PushNotification("Stereo disabled"s, 2000);
-                        glassesIndex = 0;
-                        g_pplayer->m_renderer->m_stereo3Denabled = false;
-                     }
-                     else
-                     {
-                        glassesIndex += dir;
-                     }
-                     g_pplayer->m_renderer->m_stereo3D = (StereoMode)(STEREO_ANAGLYPH_1 + glassesIndex);
-                     if (g_pplayer->m_renderer->m_stereo3Denabled)
-                     {
-                        string name;
-                        static const string defaultNames[] = { "Red/Cyan"s, "Green/Magenta"s, "Blue/Amber"s, "Cyan/Red"s, "Magenta/Green"s, "Amber/Blue"s, "Custom 1"s, "Custom 2"s, "Custom 3"s, "Custom 4"s };
-                        if (!g_pvp->m_settings.LoadValue(Settings::Player, "Anaglyph"s.append(std::to_string(glassesIndex + 1)).append("Name"s), name))
-                           name = defaultNames[glassesIndex];
-                        g_pplayer->m_liveUI->PushNotification("Profile #"s.append(std::to_string(glassesIndex + 1)).append(" '"s).append(name).append("' activated"s), 2000);
-                     }
-                  }
-               }
-               else if (Is3DTVStereoMode(g_pplayer->m_renderer->m_stereo3D))
-               {
-                  // Toggle stereo on/off
-                  g_pplayer->m_renderer->m_stereo3Denabled = !g_pplayer->m_renderer->m_stereo3Denabled;
-               }
-               else if (g_pplayer->m_renderer->m_stereo3D == STEREO_VR)
-               {
-                  g_pplayer->m_renderer->m_vrPreview = (VRPreviewMode)((g_pplayer->m_renderer->m_vrPreview + 1) % (VRPREVIEW_BOTH + 1));
-                  g_pplayer->m_liveUI->PushNotification(g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_DISABLED ? "Preview disabled"s // Will only display in headset
-                                                      : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_LEFT     ? "Preview switched to left eye"s
-                                                      : g_pplayer->m_renderer->m_vrPreview == VRPREVIEW_RIGHT    ? "Preview switched to right eye"s
-                                                                                                     : "Preview switched to both eyes"s, 2000);
-               }
-               g_pvp->m_settings.SaveValue(Settings::Player, "Stereo3DEnabled"s, g_pplayer->m_renderer->m_stereo3Denabled);
-               g_pplayer->m_renderer->InitLayout();
-               g_pplayer->m_renderer->UpdateStereoShaderState();
-            }
-         }
-         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDBGBalls])
-         {
-            if ((input->dwData & 0x80) != 0)
-               g_pplayer->m_debugBalls = !g_pplayer->m_debugBalls;
-         }
-         else if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eDebugger])
-         {
-             if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
-             {
-                 if ((input->dwData & 0x80) != 0)
-                 { //on key down only
-                     m_first_stamp = curr_time_msec;
-                     m_exit_stamp = curr_time_msec;
-                 }
-                 else
-                 { //on key up only
-                     m_exit_stamp = 0;
-                     g_pplayer->m_showDebugger = true;
-                 }
-             }
-         }
-         else if (((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape]) && !m_disable_esc) || (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame]))
-         {
-            // Check if we have started a game yet, and do not trigger if the UI is already opened (keyboard is handled in it)
-            if (!g_pplayer->m_liveUI->IsOpened() && (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled))
-            {
-               if ((input->dwData & 0x80) != 0)
-               { //on key down only
-                  m_first_stamp = curr_time_msec;
-                  m_exit_stamp = curr_time_msec;
-               }
-               else
-               {  //on key up only
-                  // Open UI on key up since a long press should not trigger the UI (direct exit from the app)
-                  g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-                  m_exit_stamp = 0;
-#ifdef __STANDALONE__
-                  if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eExitGame])
-                     g_pplayer->SetCloseState(Player::CS_CLOSE_APP);
-#endif
-               }
-            }
-         }
-         else if ((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eStartGameKey]) && m_inputState.IsKeyDown(eLockbarKey))
-         {
-            if (((input->dwData & 0x80) != 0) && g_pvp->m_ptableActive->TournamentModePossible())
-               g_pvp->GenerateTournamentFile();
-         }
-         else
-            FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
-      }
-      else if (input->dwSequence == APP_TOUCH && g_pplayer)
-      {
-          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eEscape] && !m_disable_esc) {
-             if ((input->dwData & 0x80) == 0)
-                g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-          }
-          else
-             FireKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
+         if (!handled)
+            FireGenericKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
       }
       else if (input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX)
           ProcessJoystick(input, curr_time_msec);
