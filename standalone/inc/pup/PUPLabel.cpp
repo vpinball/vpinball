@@ -85,6 +85,10 @@ void PUPLabel::SetCaption(const string& szCaption)
                if (!szPath.empty()) {
                   m_szPath = szPath;
                   m_type = (szExt == "gif") ? PUP_LABEL_TYPE_GIF : PUP_LABEL_TYPE_IMAGE;
+               } else {
+                  PLOGW.printf("Image not found: screen=%d, label=%s, path=%s", m_pScreen->GetScreenNum(), m_szName.c_str(), szText.c_str());
+                  // we need to set a path otherwise the caption will be used as text
+                  m_szPath = szText;
                }
             }
          }

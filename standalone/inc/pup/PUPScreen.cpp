@@ -353,6 +353,13 @@ void PUPScreen::SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayF
    LoadRenderable(&m_background, pPlaylist->GetPlayFilePath(szPlayFile));
 }
 
+void PUPScreen::SetCustomPos(const string& szCustomPos)
+{
+   std::lock_guard<std::mutex> lock(m_renderMutex);
+   delete m_pCustomPos;
+   m_pCustomPos = PUPCustomPos::CreateFromCSV(szCustomPos);
+}
+
 void PUPScreen::SetOverlay(PUPPlaylist* pPlaylist, const std::string& szPlayFile)
 {
    std::lock_guard<std::mutex> lock(m_renderMutex);
