@@ -1234,9 +1234,7 @@ void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       m_as_down = false;
       FireKeyEvent(DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[eStartGameKey]);
 
-#ifdef _DEBUG
-      OutputDebugString("Autostart: Release.\n");
-#endif
+      PLOGD << "Autostart: Release.";
    }
 
    // Logic to do "autostart"
@@ -1250,9 +1248,7 @@ void PinInput::Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_
       m_as_didonce = true;
       FireKeyEvent(DISPID_GameEvents_KeyDown, g_pplayer->m_rgKeys[eStartGameKey]);
 
-#ifdef _DEBUG
-      OutputDebugString("Autostart: Press.\n");
-#endif
+      PLOGD << "Autostart: Press.\n";
    }
 }
 

@@ -2226,7 +2226,8 @@ void Player::FinishFrame()
 #ifndef ACCURATETIMERS
    ApplyDeferredTimerChanges();
    FireTimers(m_time_msec);
-#else
+#elif !defined(ENABLE_BGFX)
+   // Not applied for BGFX as physics & input sync is managed more cleanly in the main (multithreaded) loop
    if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
       m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
 #endif
