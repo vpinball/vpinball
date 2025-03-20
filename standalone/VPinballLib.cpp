@@ -594,7 +594,7 @@ void VPinball::ProcessSetTableOptions(const TableOptions& options)
    g_pplayer->m_SoundVolume = options.soundVolume;
 
    g_pplayer->m_renderer->MarkShaderDirty();
-   pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+   pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessSetDefaultTableOptions()
@@ -608,7 +608,7 @@ void VPinball::ProcessSetDefaultTableOptions()
    // TODO undo Day/Night, difficulty, ...
 
    g_pplayer->m_renderer->MarkShaderDirty();
-   pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+   pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessResetTableOptions()
@@ -628,7 +628,7 @@ void VPinball::ProcessResetTableOptions()
    g_pplayer->m_SoundVolume = pTable->m_settings.LoadValueWithDefault(Settings::Player, "SoundVolume"s, 100);
 
    g_pplayer->m_renderer->MarkShaderDirty();
-   pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+   pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessSetCustomTableOption(const CustomTableOption& customTableOption)
@@ -639,7 +639,7 @@ void VPinball::ProcessSetCustomTableOption(const CustomTableOption& customTableO
    PinTable* pLiveTable = g_pplayer->m_ptable;
    pLiveTable->m_settings.SaveValue((Settings::Section)customTableOption.section, customTableOption.id, customTableOption.value);
    if (customTableOption.section == SettingsSection::TableOption)
-      pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+      pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessSetDefaultCustomTableOptions()
@@ -653,7 +653,7 @@ void VPinball::ProcessSetDefaultCustomTableOptions()
    // TODO
 
    g_pplayer->m_renderer->MarkShaderDirty();
-   pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+   pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessResetCustomTableOptions()
@@ -670,7 +670,7 @@ void VPinball::ProcessResetCustomTableOptions()
    }
 
    g_pplayer->m_renderer->MarkShaderDirty();
-   pLiveTable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 1);
+   pLiveTable->FireOptionEvent(1);
 }
 
 void VPinball::ProcessSetViewSetup(const ViewSetup& viewSetup)

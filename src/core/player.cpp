@@ -146,7 +146,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                   DIDEVICEOBJECTDATA didod;
                   didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
                   didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-                  g_pplayer->m_pininput.PushQueue(&didod, APP_TOUCH /*, curr_time_msec*/);
+                  g_pplayer->m_pininput.PushQueue(&didod, APP_TOUCH);
                }
          }
       }
@@ -727,7 +727,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
                ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
          }
       }
-      m_ptable->FireKeyEvent(DISPID_GameEvents_OptionEvent, 0 /* custom option init event */);
+      m_ptable->FireOptionEvent(0); // Custom option init event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Paused);
    }
 
@@ -1839,7 +1839,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       ProcessOSMessages();
       if (!IsEditorMode())
       {
-         m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // Trigger key events to sync with controller
+         m_pininput.ProcessKeys((int)(m_startFrameTick / 1000), true); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }
@@ -2217,14 +2217,14 @@ void Player::FinishFrame()
    // Update FPS counter
    m_fps = (float) (1e6 / m_logicProfiler.GetSlidingAvg(FrameProfiler::PROFILE_FRAME));
 
-#ifndef ACCURATETIMERS
-   ApplyDeferredTimerChanges();
-   FireTimers(m_time_msec);
-#elif !defined(ENABLE_BGFX)
-   // Not applied for BGFX as physics & input sync is managed more cleanly in the main (multithreaded) loop
-   if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
-      m_pininput.ProcessKeys(/*sim_msec,*/ -(int)(m_startFrameTick / 1000)); // trigger key events mainly for VPM<->VP roundtrip
-#endif
+   #ifndef ACCURATETIMERS
+      ApplyDeferredTimerChanges();
+      FireTimers(m_time_msec);
+   #elif !defined(ENABLE_BGFX)
+      // Not applied for BGFX as physics & input sync is managed more cleanly in the main (multithreaded) loop
+      if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
+         m_pininput.ProcessKeys((int)(m_startFrameTick / 1000), false); // trigger key events mainly for VPM<->VP roundtrip
+   #endif
 
    // Detect & fire end of music events
    if (IsPlaying() && m_audio && !m_audio->MusicActive())
@@ -2676,11 +2676,11 @@ float Player::ParseLog(LARGE_INTEGER *pli1, LARGE_INTEGER *pli2)
          sscanf_s(szLine, "%s %s %d",szWord, (unsigned)_countof(szWord), szSubWord, (unsigned)_countof(szSubWord), &index);
          if (!strcmp(szSubWord, "Down"))
          {
-            m_ptable->FireKeyEvent(DISPID_GameEvents_KeyDown, index);
+            m_ptable->FireGenericKeyEvent(DISPID_GameEvents_KeyDown, index);
          }
          else // Release
          {
-            m_ptable->FireKeyEvent(DISPID_GameEvents_KeyUp, index);
+            m_ptable->FireGenericKeyEvent(DISPID_GameEvents_KeyUp, index);
          }
       }
       else if (!strcmp(szWord, "Physics"))

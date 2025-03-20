@@ -1120,12 +1120,12 @@ void RenderOptPage::LoadSettings(Settings& settings)
       case 0: maxFPS = 0.f; syncMode = VideoSyncMode::VSM_NONE; break;
       case 1: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_VSYNC; break;
       case 2: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      default: maxFPS = vsync; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
+      default: maxFPS = static_cast<float>(vsync); syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
       }
    }
    if (maxFPS < 0.f)
       maxFPS = -1.f;
-   SetDlgItemInt(IDC_MAX_FPS, maxFPS, TRUE);
+   SetDlgItemInt(IDC_MAX_FPS, static_cast<int>(maxFPS), TRUE);
    #if defined(ENABLE_BGFX)
    syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
    #else

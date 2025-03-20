@@ -456,8 +456,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       for (int buttonNum = 1, bit = 1; buttonNum <= 32; ++buttonNum, bit <<= 1)
       {
          // check for a state change
-         DISPID const isDown = (cr.genericButtons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID const wasDown = (m_openPinDev_generic_buttons & bit) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const bool isDown = (cr.genericButtons & bit) != 0;
+         const bool wasDown = (m_openPinDev_generic_buttons & bit) != 0;
          if (isDown != wasDown)
             Joy(buttonNum, isDown, start);
       }
@@ -471,16 +471,16 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       static const struct KeyMap
       {
          uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
-         int rgKeyIndex; // g_pplayer->m_rgKeys[] index, or -1 if a direct VPM key is used instead
+         EnumAssignKeys rgKeyIndex; // g_pplayer->m_rgKeys[] index, or -1 if a direct VPM key is used instead
          BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an m_rgKeys assignment is used instead
       } keyMap[] = {
          { 0x00000001, eStartGameKey },             // Start (start game)
          { 0x00000002, eExitGame },                 // Exit (end game)
          { 0x00000004, eAddCreditKey },             // Coin 1 (left coin chute)
          { 0x00000008, eAddCreditKey2 },            // Coin 2 (middle coin chute)
-         { 0x00000010, -1, DIK_5 },                 // Coin 3 (right coin chute)
-         { 0x00000020, -1, DIK_6 },                 // Coin 4 (fourth coin chute/dollar bill acceptor)
-         { 0x00000040, -1, DIK_2 },                 // Extra Ball/Buy-In
+         { 0x00000010, eCKeys, DIK_5 },             // Coin 3 (right coin chute)
+         { 0x00000020, eCKeys, DIK_6 },             // Coin 4 (fourth coin chute/dollar bill acceptor)
+         { 0x00000040, eCKeys, DIK_2 },             // Extra Ball/Buy-In
          { 0x00000080, ePlungerKey },               // Launch Ball
          { 0x00000100, eLockbarKey },               // Fire button (lock bar top button)
          { 0x00000200, eLeftFlipperKey },           // Left flipper button primary switch
@@ -490,12 +490,12 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          { 0x00002000, eLeftMagnaSave },            // Left MagnaSave button
          { 0x00004000, eRightMagnaSave },           // Right MagnaSave button
          { 0x00008000, eMechanicalTilt },           // Tilt bob
-         { 0x00010000, -1, DIK_HOME },              // Slam tilt switch
-         { 0x00020000, -1, DIK_END },               // Coin door position switch
-         { 0x00040000, -1, DIK_7 },                 // Service panel Cancel
-         { 0x00080000, -1, DIK_8 },                 // Service panel Down
-         { 0x00100000, -1, DIK_9 },                 // Service panel Up
-         { 0x00200000, -1, DIK_0 },                 // Service panel Enter
+         { 0x00010000, eCKeys, DIK_HOME },          // Slam tilt switch
+         { 0x00020000, eCKeys, DIK_END },           // Coin door position switch
+         { 0x00040000, eCKeys, DIK_7 },             // Service panel Cancel
+         { 0x00080000, eCKeys, DIK_8 },             // Service panel Down
+         { 0x00100000, eCKeys, DIK_9 },             // Service panel Up
+         { 0x00200000, eCKeys, DIK_0 },             // Service panel Enter
          { 0x00400000, eLeftTiltKey },              // Left Nudge
          { 0x00800000, eCenterTiltKey },            // Forward Nudge
          { 0x01000000, eRightTiltKey },             // Right Nudge
@@ -510,10 +510,15 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          // check for a state change
          uint32_t const mask = m->mask;
 
-         DISPID const isDown = (cr.pinballButtons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
-         DISPID const wasDown = (m_openPinDev_pinball_buttons & mask) != 0 ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp;
+         const bool isDown = (cr.pinballButtons & mask) != 0;
+         const bool wasDown = (m_openPinDev_pinball_buttons & mask) != 0;
          if (isDown != wasDown)
-            FireKeyEvent(isDown, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
+         {
+            if (m->rgKeyIndex != EnumAssignKeys::eCKeys)
+               FireActionEvent(m->rgKeyIndex, isDown);
+            else
+               FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
+         }
       }
 
       // remember the new button state

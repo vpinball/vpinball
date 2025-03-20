@@ -79,7 +79,7 @@
 #endif
 
 
-// NOTE that the following four definitions need to be in sync in their order!
+// NOTE that the following 3 definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
    eLeftFlipperKey,
@@ -198,13 +198,13 @@ public:
    };
    InputAPI GetInputAPI() const { return m_inputApi; }
 
-   // implicitly sync'd with visuals as each keystroke is applied to the sim
-   void FireKeyEvent(const int dispid, int keycode);
+   void FireActionEvent(EnumAssignKeys key, bool isPressed);
+   void FireGenericKeyEvent(const int dispid, int keycode);
 
-   void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
-   const DIDEVICEOBJECTDATA *GetTail(/*const U32 curr_sim_msec*/);
+   void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data);
+   const DIDEVICEOBJECTDATA *GetTail();
 
-   void ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec);
+   void ProcessKeys(int curr_time_msec, bool handleStartExit);
 
    void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
 
@@ -213,39 +213,37 @@ public:
 
    int GetNextKey();
 
-   void GetInputDeviceData(/*const U32 curr_time_msec*/);
-
    struct InputState
    {
       uint64_t keyState;
 
       void SetPressed(EnumAssignKeys key)
       {
-         uint64_t mask = 1u << static_cast<int>(key);
+         uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          keyState |= mask;
       }
 
       void SetReleased(EnumAssignKeys key)
       {
-         uint64_t mask = 1u << static_cast<int>(key);
+         uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          keyState &= ~mask;
       }
 
       bool IsKeyPressed(EnumAssignKeys key, const InputState &prev) const
       {
-         uint64_t mask = 1u << static_cast<int>(key);
+         uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (keyState & mask) != 0 && (prev.keyState & mask) == 0;
       }
 
       bool IsKeyDown(EnumAssignKeys key) const
       {
-         uint64_t mask = 1u << static_cast<int>(key);
+         uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (keyState & mask) != 0;
       }
 
       bool IsKeyReleased(EnumAssignKeys key, const InputState &prev) const
       {
-         uint64_t mask = 1u << static_cast<int>(key);
+         uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
          return (keyState & mask) == 0 && (prev.keyState & mask) != 0;
       }
    };
@@ -281,12 +279,13 @@ private:
    void Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
    void ButtonExit(const U32 msecs, const U32 curr_time_msec);
 
-   void Joy(const unsigned int n, const int updown, const bool start);
+   void Joy(const unsigned int n, const bool isPressed, const bool start);
 
    void InitOpenPinballDevices();
    void ReadOpenPinballDevices(const U32 cur_time_msec);
    void TerminateOpenPinballDevices();
 
+   void GetInputDeviceData();
    void HandleInputDI(DIDEVICEOBJECTDATA *didod);
    void HandleInputXI(DIDEVICEOBJECTDATA *didod);
    void HandleInputIGC(DIDEVICEOBJECTDATA *didod);

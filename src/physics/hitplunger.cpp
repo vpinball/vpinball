@@ -338,15 +338,8 @@ void PlungerMoverObject::UpdateVelocities()
       // mechanical plunger and we're operating as an auto plunger.
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
-      if (--m_autoFireTimer == 0)
-      {
-         if (g_pplayer != 0)
-         {
-            g_pplayer->m_ptable->FireKeyEvent(
-               DISPID_GameEvents_KeyUp,
-               g_pplayer->m_rgKeys[ePlungerKey]);
-         }
-      }
+      if ((--m_autoFireTimer == 0) && (g_pplayer != nullptr))
+         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, false);
    }
    else if (autoPlunger && dmech > ReleaseThreshold)
    {
@@ -383,12 +376,8 @@ void PlungerMoverObject::UpdateVelocities()
       // will allow the script to set ROM switch levels or
       // perform any other tasks it normally does when the
       // actual Launch Ball button is pressed.
-      if (g_pplayer != 0)
-      {
-         g_pplayer->m_ptable->FireKeyEvent(
-            DISPID_GameEvents_KeyDown,
-            g_pplayer->m_rgKeys[ePlungerKey]);
-      }
+      if (g_pplayer)
+         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, true);
 
       // start the timer to send the corresponding KeyUp in 100ms
       m_autoFireTimer = 101;
