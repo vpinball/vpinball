@@ -107,7 +107,6 @@ public:
    void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data/*, const U32 curr_time_msec*/);
    const DIDEVICEOBJECTDATA *GetTail(/*const U32 curr_sim_msec*/);
 
-   void ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input);
    void ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec);
 
    void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
@@ -118,6 +117,42 @@ public:
    int GetNextKey();
 
    void GetInputDeviceData(/*const U32 curr_time_msec*/);
+
+   struct InputState
+   {
+      uint64_t keyState;
+
+      void SetPressed(EnumAssignKeys key)
+      {
+         uint64_t mask = 1u << static_cast<int>(key);
+         keyState |= mask;
+      }
+
+      void SetReleased(EnumAssignKeys key)
+      {
+         uint64_t mask = 1u << static_cast<int>(key);
+         keyState &= ~mask;
+      }
+
+      bool IsKeyPressed(EnumAssignKeys key, const InputState &prev) const
+      {
+         uint64_t mask = 1u << static_cast<int>(key);
+         return (keyState & mask) != 0 && (prev.keyState & mask) == 0;
+      }
+
+      bool IsKeyDown(EnumAssignKeys key) const
+      {
+         uint64_t mask = 1u << static_cast<int>(key);
+         return (keyState & mask) != 0;
+      }
+
+      bool IsKeyReleased(EnumAssignKeys key, const InputState &prev) const
+      {
+         uint64_t mask = 1u << static_cast<int>(key);
+         return (keyState & mask) == 0 && (prev.keyState & mask) != 0;
+      }
+   };
+   const InputState& GetInputState() const { return m_inputState; }
 
    #ifdef _WIN32
    #ifdef USE_DINPUT8
@@ -246,11 +281,8 @@ private:
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;
 
-   bool m_cameraModeAltKey;
-   bool m_enableCameraModeFlyAround;
+   InputState m_inputState { 0 };
 
-   int m_cameraMode;
-   bool m_keyPressedState[28]; // =EnumAssignKeys::eCKeys
    DWORD m_nextKeyPressedTime;
 
    InputAPI m_inputApi;
