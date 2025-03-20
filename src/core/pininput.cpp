@@ -105,9 +105,6 @@ PinInput::PinInput()
  , m_lr_axis_reverse(false)
  , m_ud_axis_reverse(false)
  , m_enableMouseInPlayer(true)
- , m_cameraModeAltKey(false)
- , m_enableCameraModeFlyAround(false)
- , m_cameraMode(0)
  , m_nextKeyPressedTime(0)
  , m_inputApi(PI_DIRECTINPUT)
  , m_rumbleMode(0)
@@ -119,7 +116,7 @@ PinInput::PinInput()
 {
    ZeroMemory(m_oldMouseButtonState, sizeof(m_oldMouseButtonState));
    ZeroMemory(m_diq, sizeof(m_diq));
-   ZeroMemory(m_keyPressedState, sizeof(m_keyPressedState));
+   ZeroMemory(&m_inputState, sizeof(m_inputState));
 
 #ifdef _WIN32
    for (int k = 0; k < PININ_JOYMXCNT; ++k)
@@ -228,7 +225,6 @@ void PinInput::LoadSettings(const Settings& settings)
    m_joytableup = settings.LoadValueWithDefault(Settings::Player, "JoyTableUpKey"s, m_joytableup);
    m_joytabledown = settings.LoadValueWithDefault(Settings::Player, "JoyTableDownKey"s, m_joytabledown);
    m_enableMouseInPlayer = settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
-   m_enableCameraModeFlyAround = settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
    m_deadz = m_deadz*JOYRANGEMX / 100;
 
@@ -994,8 +990,7 @@ void PinInput::Init()
    SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &newStickyKeys, SPIF_SENDCHANGE);
 #endif
 
-   for (int i = 0; i < eCKeys; i++)
-      m_keyPressedState[i] = false;
+   ZeroMemory(&m_inputState, sizeof(m_inputState));
    m_nextKeyPressedTime = 0;
    uShockType = 0;
 
@@ -1162,20 +1157,13 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
    for (int i = 0; i < eCKeys; i++) {
       if (keycode == g_pplayer->m_rgKeys[i]) {
          if (dispid == DISPID_GameEvents_KeyDown)
-            m_keyPressedState[i] = true;
+            m_inputState.SetPressed(static_cast<EnumAssignKeys>(i));
          else if (dispid == DISPID_GameEvents_KeyUp)
-            m_keyPressedState[i] = false;
+            m_inputState.SetReleased(static_cast<EnumAssignKeys>(i));
       }
    }
 
-   if (g_pplayer->m_liveUI->IsTweakMode())
-   {
-      if (dispid == DISPID_GameEvents_KeyDown)
-         g_pplayer->m_liveUI->OnTweakModeEvent(1, keycode);
-      if (dispid == DISPID_GameEvents_KeyUp)
-         g_pplayer->m_liveUI->OnTweakModeEvent(2, keycode);
-   }
-   else
+   if (!g_pplayer->m_liveUI->IsTweakMode())
    {
       // Left flipper releases ball control
       if (keycode == g_pplayer->m_rgKeys[eLeftFlipperKey] && dispid == DISPID_GameEvents_KeyDown)
@@ -1264,52 +1252,6 @@ void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
    {
       g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
    }
-}
-
-void PinInput::ProcessCameraKeys(const DIDEVICEOBJECTDATA * __restrict input)
-{
-    switch(input->dwOfs)
-    {
-    case DIK_UP:
-    case DIK_DOWN:
-        {
-            const bool up = (input->dwOfs == DIK_UP);
-            if ((input->dwData & 0x80) != 0)
-            {
-                if (!m_cameraModeAltKey)
-                    g_pplayer->m_renderer->m_cam.y += up ? 10.0f : -10.0f;
-                else
-                    g_pplayer->m_renderer->m_cam.z += up ? 10.0f : -10.0f;
-
-                m_cameraMode = up ? 1 : 2;
-            }
-            else
-                m_cameraMode = 0;
-        }
-        break;
-    case DIK_RIGHT:
-    case DIK_LEFT:
-        {
-            const bool right = (input->dwOfs == DIK_RIGHT);
-            if ((input->dwData & 0x80) != 0)
-            {
-                if (!m_cameraModeAltKey)
-                    g_pplayer->m_renderer->m_cam.x += right ? -10.0f : 10.0f;
-                else
-                    g_pplayer->m_renderer->m_inc += right ? -0.01f : 0.01f;
-
-                m_cameraMode = right ? 3 : 4;
-            }
-            else
-                m_cameraMode = 0;
-        }
-        break;
-    case DIK_LALT:
-        m_cameraModeAltKey = ((input->dwData & 0x80) != 0);
-        break;
-    default:
-        break;
-    }
 }
 
 void PinInput::Joy(const unsigned int n, const int updown, const bool start)
@@ -1838,68 +1780,19 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
 
    ReadOpenPinballDevices(curr_time_msec);
 
-   // Camera/Light tweaking mode (F6) incl. fly-around parameters
-   if (g_pplayer->m_liveUI->IsTweakMode())
-   {
-      if (m_head == m_tail) // key queue empty, so just continue using the old pressed key
-      {
-         if ((curr_time_msec - m_nextKeyPressedTime) > 10) // reduce update rate
-         {
-            m_nextKeyPressedTime = curr_time_msec;
-
-            // Flying
-            if (m_cameraMode == 1)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_renderer->m_cam.y += 10.0f;
-			      else
-			         g_pplayer->m_renderer->m_cam.z += 10.0f;
-            }
-            else if (m_cameraMode == 2)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_renderer->m_cam.y -= 10.0f;
-			      else
-			         g_pplayer->m_renderer->m_cam.z -= 10.0f;
-            }
-            else if (m_cameraMode == 3)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_renderer->m_cam.x -= 10.0f;
-			      else
-			         g_pplayer->m_renderer->m_inc -= 0.01f;
-            }
-            else if (m_cameraMode == 4)
-            {
-			      if (!m_cameraModeAltKey)
-			         g_pplayer->m_renderer->m_cam.x += 10.0f;
-			      else
-			         g_pplayer->m_renderer->m_inc += 0.01f;
-            }
-
-            // Table tweaks, continuous actions
-            if (g_pplayer->m_liveUI->IsTweakMode())
-               for (int i = 0; i < eCKeys; i++)
-                  if (m_keyPressedState[i])
-                     g_pplayer->m_liveUI->OnTweakModeEvent(0, g_pplayer->m_rgKeys[i]);
-         }
-         return;
-      }
-   }
-
    // Global Backglass/Playfield sound volume
    if ((m_head == m_tail) && (curr_time_msec - m_nextKeyPressedTime) > 75)
    {
       static unsigned int lastVolumeNotifId = 0;
       m_nextKeyPressedTime = curr_time_msec;
-      if (m_keyPressedState[eVolumeDown])
+      if (m_inputState.IsKeyDown(eVolumeDown))
       {
          g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume - 1, 0, 100);
          g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume - 1, 0, 100);
          g_pplayer->UpdateVolume();
          lastVolumeNotifId = g_pplayer->m_liveUI->PushNotification("Volume: " + std::to_string(g_pplayer->m_MusicVolume) + '%', 500, lastVolumeNotifId);
       }
-      else if (m_keyPressedState[eVolumeUp])
+      else if (m_inputState.IsKeyDown(eVolumeUp))
       {
          g_pplayer->m_MusicVolume = clamp(g_pplayer->m_MusicVolume + 1, 0, 100);
          g_pplayer->m_SoundVolume = clamp(g_pplayer->m_SoundVolume + 1, 0, 100);
@@ -1911,12 +1804,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
    // Wipe key state if we're not the foreground window as we miss key-up events
    #ifdef _WIN32
    if (m_focusHWnd != GetForegroundWindow())
-   {
-      for (int i = 0; i < eCKeys; i++)
-      {
-         m_keyPressedState[i] = false;
-      }
-   }
+      ZeroMemory(&m_inputState, sizeof(m_inputState));
    #endif
 
    const DIDEVICEOBJECTDATA * __restrict input;
@@ -1949,10 +1837,6 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
       }
       else if (input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
       {
-         // Camera mode fly around:
-         if (g_pplayer && g_pplayer->m_liveUI->IsTweakMode() && m_enableCameraModeFlyAround)
-            ProcessCameraKeys(input);
-
          // Normal game keys:
          if (input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eFrameCount])
          {
@@ -1989,7 +1873,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                   }
                   else
                   {
-                     const int dir = (m_keyPressedState[eLeftFlipperKey] || m_keyPressedState[eRightFlipperKey]) ? -1 : 1;
+                     const int dir = (m_inputState.IsKeyDown(eLeftFlipperKey) || m_inputState.IsKeyDown(eRightFlipperKey)) ? -1 : 1;
                      // Loop back with shift pressed
                      if (!g_pplayer->m_renderer->m_stereo3Denabled && glassesIndex <= 0 && dir == -1)
                      {
@@ -2089,7 +1973,7 @@ void PinInput::ProcessKeys(/*const U32 curr_sim_msec,*/ int curr_time_msec) // l
                }
             }
          }
-         else if ((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eStartGameKey]) && m_keyPressedState[eLockbarKey])
+         else if ((input->dwOfs == (DWORD)g_pplayer->m_rgKeys[eStartGameKey]) && m_inputState.IsKeyDown(eLockbarKey))
          {
             if (((input->dwData & 0x80) != 0) && g_pvp->m_ptableActive->TournamentModePossible())
                g_pvp->GenerateTournamentFile();

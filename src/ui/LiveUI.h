@@ -25,7 +25,6 @@ public:
 
    void OpenTweakMode();
    bool IsTweakMode() const { return m_tweakMode; }
-   void OnTweakModeEvent(const int keyEvent, const int keycode);
 
    void HideUI();
 
@@ -72,6 +71,7 @@ private:
    vector<BackdropSetting> m_tweakPageOptions;
    bool m_tweakMode = false;
    float m_tweakScroll = 0.f;
+   void HandleTweakInput();
    void UpdateTweakPage();
    void UpdateTweakModeUI();
 
