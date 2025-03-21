@@ -33,223 +33,89 @@
 // end
 
 
+// Input type IDs
+enum
+{
+   APP_KEYBOARD,
+   APP_MOUSE,
+   APP_ACTION, // for touchscreen, directly mapped to corresponding binary action
+   APP_JOYSTICK0, // First joystick, with a maximum of PININ_JOYMXCNT joysticks
+};
+
 #define INPUT_BUFFER_SIZE MAX_KEYQUEUE_SIZE
 #define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
 
+
 PinInput::PinInput()
- : m_leftkey_down_usec(0)
- , m_leftkey_down_frame(0)
- , m_leftkey_down_usec_rotate_to_end(0)
- , m_leftkey_down_frame_rotate_to_end(0)
- , m_leftkey_down_usec_EOS(0)
- , m_leftkey_down_frame_EOS(0)
- , m_lastclick_ballcontrol_usec(0)
- , m_num_joy(0)
- , uShockType(0)
- , m_linearPlunger(false)
- , m_plunger_retract(false)
- , m_joycustom1key(0)
- , m_joycustom2key(0)
- , m_joycustom3key(0)
- , m_joycustom4key(0)
- , m_firedautostart(0)
- , m_exit_stamp(0)
- , m_pressed_start(false)
- , m_as_down(false)
- , m_as_didonce(false)
- , m_tilt_updown(false)
- , m_head(0)
- , m_tail(0)
- , m_joylflipkey(0)
- , m_joyrflipkey(0)
- , m_joystagedlflipkey(0)
- , m_joystagedrflipkey(0)
- , m_joylmagnasave(0)
- , m_joyrmagnasave(0)
- , m_joyplungerkey(0)
- , m_joystartgamekey(0)
- , m_joyexitgamekey(0)
- , m_joyaddcreditkey(0) 
- , m_joyaddcreditkey2(0)
- , m_joyframecount(0)
- , m_joyvolumeup(0)
- , m_joyvolumedown(0)
- , m_joylefttilt(0)
- , m_joycentertilt(0)
- , m_joyrighttilt(0)
- , m_joypmbuyin(0) 
- , m_joypmcoin3(0)
- , m_joypmcoin4(0)
- , m_joypmcoindoor(0)
- , m_joypmcancel(0)
- , m_joypmdown(0)
- , m_joypmup(0)
- , m_joypmenter(0)
- , m_joydebugballs(0)
- , m_joydebugger(0)
- , m_joylockbar(0)
- , m_joymechtilt(0) 
- , m_joycustom1(0)
- , m_joycustom2(0)
- , m_joycustom3(0)
- , m_joycustom4(0) 
- , m_joytablerecenter(0)
- , m_joytableup(0)
- , m_joytabledown(0)
- , m_joypause(0)
- , m_joytweak(0) 
- , m_deadz(0)
- , m_override_default_buttons(false)
- , m_plunger_reverse(false)
- , m_disable_esc(false)
- , m_lr_axis_reverse(false)
- , m_ud_axis_reverse(false)
- , m_enableMouseInPlayer(true)
- , m_nextKeyPressedTime(0)
- , m_inputApi(PI_DIRECTINPUT)
- , m_rumbleMode(0)
-#ifdef ENABLE_XINPUT
- , m_inputDeviceXI(0)
- , m_rumbleOffTime(0)
- , m_rumbleRunning(false)
-#endif
+   : m_first_stamp(msec())
+   #ifdef ENABLE_SDL_INPUT
+      , m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
+   #endif
 {
-   ZeroMemory(m_oldMouseButtonState, sizeof(m_oldMouseButtonState));
-   ZeroMemory(m_diq, sizeof(m_diq));
-   ZeroMemory(&m_inputState, sizeof(m_inputState));
-
-#ifdef _WIN32
-   for (int k = 0; k < PININ_JOYMXCNT; ++k)
-   {
-      m_pJoystick[k] = nullptr;
-      m_attachedDeviceInfo[k] = nullptr;
-   }
-
-   m_pInputDeviceSettingsInfo = std::make_unique<std::map<string, bool>>();
-#endif
-
-   m_plunger_axis = 3;
-   m_plunger_speed_axis = 0;
-   m_lr_axis = 1;
-   m_ud_axis = 2;
-
-#ifdef ENABLE_SDL_INPUT
-   m_joylflipkey = SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1;
-   m_joyrflipkey = SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1;
-   m_joylmagnasave = SDL_GAMEPAD_BUTTON_LEFT_STICK + 1;
-   m_joyrmagnasave = SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1;
-   m_joyplungerkey = SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1;
-   m_joyaddcreditkey = SDL_GAMEPAD_BUTTON_SOUTH + 1;
-   m_joystartgamekey = SDL_GAMEPAD_BUTTON_EAST + 1;
-   m_joypmcancel = SDL_GAMEPAD_BUTTON_NORTH + 1;
-   m_joyframecount = SDL_GAMEPAD_BUTTON_WEST + 1;
-   m_joycentertilt = SDL_GAMEPAD_BUTTON_DPAD_UP + 1;
-   m_joylefttilt = SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1;
-   m_joyrighttilt = SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1;
-   m_joylockbar = SDL_GAMEPAD_BUTTON_GUIDE + 1;
-#endif
-
-#ifdef ENABLE_XINPUT
-   ZeroMemory(&m_inputDeviceXIstate,sizeof(XINPUT_STATE));
-#endif
-
-   m_first_stamp = msec();
 }
 
 PinInput::~PinInput()
 {
-#ifdef ENABLE_SDL_INPUT
-   if (m_pSDLGamePad)
-      SDL_CloseGamepad(m_pSDLGamePad);
-   if (m_pSDLRumbleDevice)
-      SDL_CloseHaptic(m_pSDLRumbleDevice);
-   if (m_pSDLJoystick)
-      SDL_CloseJoystick(m_pSDLJoystick); 
-#endif
-
+   #ifdef ENABLE_SDL_INPUT
+      if (m_pSDLGamePad)
+         SDL_CloseGamepad(m_pSDLGamePad);
+      if (m_pSDLRumbleDevice)
+         SDL_CloseHaptic(m_pSDLRumbleDevice);
+      if (m_pSDLJoystick)
+         SDL_CloseJoystick(m_pSDLJoystick); 
+   #endif
    TerminateOpenPinballDevices();
 }
 
-void PinInput::LoadSettings(const Settings& settings)
+void PinInput::UnmapAllJoy()
 {
-   m_lr_axis = settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, m_lr_axis);
-   m_ud_axis = settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, m_ud_axis);
-   m_lr_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, m_lr_axis_reverse);
-   m_ud_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, m_ud_axis_reverse);
-   m_plunger_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, m_plunger_axis);
-   m_plunger_speed_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, m_plunger_speed_axis);
-   m_plunger_reverse = settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, m_plunger_reverse);
-   m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
-   m_override_default_buttons = settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, m_override_default_buttons);
-   m_disable_esc = settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
-   m_joylflipkey = settings.LoadValueWithDefault(Settings::Player, "JoyLFlipKey"s, m_joylflipkey);
-   m_joyrflipkey = settings.LoadValueWithDefault(Settings::Player, "JoyRFlipKey"s, m_joyrflipkey);
-   m_joystagedlflipkey = settings.LoadValueWithDefault(Settings::Player, "JoyStagedLFlipKey"s, m_joystagedlflipkey);
-   m_joystagedrflipkey = settings.LoadValueWithDefault(Settings::Player, "JoyStagedRFlipKey"s, m_joystagedrflipkey);
-   m_joyplungerkey = settings.LoadValueWithDefault(Settings::Player, "JoyPlungerKey"s, m_joyplungerkey);
-   m_joyaddcreditkey = settings.LoadValueWithDefault(Settings::Player, "JoyAddCreditKey"s, m_joyaddcreditkey);
-   m_joyaddcreditkey2 = settings.LoadValueWithDefault(Settings::Player, "JoyAddCredit2Key"s, m_joyaddcreditkey2);
-   m_joylmagnasave = settings.LoadValueWithDefault(Settings::Player, "JoyLMagnaSave"s, m_joylmagnasave);
-   m_joyrmagnasave = settings.LoadValueWithDefault(Settings::Player, "JoyRMagnaSave"s, m_joyrmagnasave);
-   m_joystartgamekey = settings.LoadValueWithDefault(Settings::Player, "JoyStartGameKey"s, m_joystartgamekey);
-   m_joyframecount = settings.LoadValueWithDefault(Settings::Player, "JoyFrameCount"s, m_joyframecount);
-   m_joyexitgamekey = settings.LoadValueWithDefault(Settings::Player, "JoyExitGameKey"s, m_joyexitgamekey);
-   m_joyvolumeup = settings.LoadValueWithDefault(Settings::Player, "JoyVolumeUp"s, m_joyvolumeup);
-   m_joyvolumedown = settings.LoadValueWithDefault(Settings::Player, "JoyVolumeDown"s, m_joyvolumedown);
-   m_joylefttilt = settings.LoadValueWithDefault(Settings::Player, "JoyLTiltKey"s, m_joylefttilt);
-   m_joycentertilt = settings.LoadValueWithDefault(Settings::Player, "JoyCTiltKey"s, m_joycentertilt);
-   m_joyrighttilt = settings.LoadValueWithDefault(Settings::Player, "JoyRTiltKey"s, m_joyrighttilt);
-   m_joypmbuyin = settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, m_joypmbuyin);
-   m_joypmcoin3 = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, m_joypmcoin3);
-   m_joypmcoin4 = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin4"s, m_joypmcoin4);
-   m_joypmcoindoor = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoinDoor"s, m_joypmcoindoor);
-   m_joypmcancel = settings.LoadValueWithDefault(Settings::Player, "JoyPMCancel"s, m_joypmcancel);
-   m_joypmdown = settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, m_joypmdown);
-   m_joypmup = settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, m_joypmup);
-   m_joypmenter = settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, m_joypmenter);
-   m_joycustom1 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, m_joycustom1);
-   m_joycustom1key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, m_joycustom1key);
-   m_joycustom2 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, m_joycustom2);
-   m_joycustom2key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, m_joycustom2key);
-   m_joycustom3 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3"s, m_joycustom3);
-   m_joycustom3key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key);
-   m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
-   m_joycustom4key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key);
-   m_joymechtilt = settings.LoadValueWithDefault(Settings::Player, "JoyMechTiltKey"s, m_joymechtilt);
-   m_joydebugballs = settings.LoadValueWithDefault(Settings::Player, "JoyDebugKey"s, m_joydebugballs);
-   m_joydebugger = settings.LoadValueWithDefault(Settings::Player, "JoyDebuggerKey"s, m_joydebugger);
-   m_joylockbar = settings.LoadValueWithDefault(Settings::Player, "JoyLockbarKey"s, m_joylockbar);
-   m_joypause = settings.LoadValueWithDefault(Settings::Player, "JoyPauseKey"s, m_joypause);
-   m_joytweak = settings.LoadValueWithDefault(Settings::Player, "JoyTweakKey"s, m_joytweak);
-   m_joytablerecenter = settings.LoadValueWithDefault(Settings::Player, "JoyTableRecenterKey"s, m_joytablerecenter);
-   m_joytableup = settings.LoadValueWithDefault(Settings::Player, "JoyTableUpKey"s, m_joytableup);
-   m_joytabledown = settings.LoadValueWithDefault(Settings::Player, "JoyTableDownKey"s, m_joytabledown);
-   m_enableMouseInPlayer = settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
-   m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0);
-   m_deadz = m_deadz*JOYRANGEMX / 100;
-
-#ifdef _WIN32
-   // Load input device settings
-   static const string kDefaultName("None"s);
-
-   m_pInputDeviceSettingsInfo->clear();
-
-   for (int i = 0; i < PININ_JOYMXCNT; i++)
-   {
-      const string deviceName = "Device" + std::to_string(i) + "_Name";
-      const string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
-
-      if (!m_pInputDeviceSettingsInfo->contains(name))
-      {
-         const string deviceState = "Device" + std::to_string(i) + "_State";
-         const bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
-
-         m_pInputDeviceSettingsInfo->insert(std::pair(name, state));
-      }
-   }
-#endif
+   std::erase_if(m_actionMappings, [](ActionMapping am) {
+      return (am.type == ActionMapping::AM_Joystick); });
+   m_analogActionMappings.clear();
 }
 
+void PinInput::UnmapAction(EnumAssignKeys action, bool fromKeyboard, bool fromJoystick)
+{
+   std::erase_if(m_actionMappings, [action, fromKeyboard, fromJoystick](ActionMapping am) {
+      return (am.action == action)
+         && ((fromKeyboard && (am.type == ActionMapping::AM_Keyboard)) || (fromJoystick && (am.type == ActionMapping::AM_Joystick)));
+      });
+}
+
+void PinInput::MapActionToKeyboard(EnumAssignKeys action, int keycode, bool replace)
+{
+   if (replace)
+      UnmapAction(action, true, false);
+   ActionMapping mapping;
+   mapping.action = action;
+   mapping.type = ActionMapping::AM_Keyboard;
+   mapping.keycode = keycode;
+   m_actionMappings.push_back(mapping);
+}
+
+void PinInput::MapActionToJoystick(EnumAssignKeys action, int joystickId, int buttonId, bool replace)
+{
+   if (replace)
+      UnmapAction(action, false, true);
+   ActionMapping mapping;
+   mapping.action = action;
+   mapping.type = ActionMapping::AM_Joystick;
+   mapping.joystickId = joystickId;
+   mapping.buttonId = buttonId;
+   m_actionMappings.push_back(mapping);
+}
+
+void PinInput::MapAnalogActionToJoystick(AnalogActionMapping::AMOutput output, int joystickId, int axisId, bool revert, bool replace)
+{
+   if (replace)
+      std::erase_if(m_analogActionMappings, [output](AnalogActionMapping am) { return (am.output == output); });
+   AnalogActionMapping mapping;
+   mapping.joystickId = joystickId;
+   mapping.axisId = axisId;
+   mapping.revert = revert;
+   mapping.output = output;
+   m_analogActionMappings.push_back(mapping);
+}
 
 #ifdef _WIN32 // DirectInput
 
@@ -336,25 +202,27 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
       return DIENUM_CONTINUE;                             // try for another joystick
    }
 
+   int joystickType = USHOCKTYPE_GENERIC;
    hr = ppinput->m_pJoystick[ppinput->m_num_joy]->GetProperty(DIPROP_PRODUCTNAME, &dstr.diph);
    if (hr == S_OK)
    {
       if (!WzSzStrCmp(dstr.wsz, "PinballWizard"))
-         ppinput->uShockType = USHOCKTYPE_PBWIZARD; // set type 1 = PinballWizard
+         joystickType = USHOCKTYPE_PBWIZARD;
       else if (!WzSzStrCmp(dstr.wsz, "UltraCade Pinball"))
-         ppinput->uShockType = USHOCKTYPE_ULTRACADE; // set type 2 = UltraCade Pinball
+         joystickType = USHOCKTYPE_ULTRACADE;
       else if (!WzSzStrCmp(dstr.wsz, "Microsoft SideWinder Freestyle Pro (USB)"))
-         ppinput->uShockType = USHOCKTYPE_SIDEWINDER; // set type 3 = Microsoft SideWinder Freestyle Pro
+         joystickType = USHOCKTYPE_SIDEWINDER;
       else if (!WzSzStrCmp(dstr.wsz, "VirtuaPin Controller"))
-         ppinput->uShockType = USHOCKTYPE_VIRTUAPIN; // set type 4 = VirtuaPin Controller
+         joystickType = USHOCKTYPE_VIRTUAPIN;
       else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
       {
-         ppinput->uShockType = USHOCKTYPE_GENERIC;  // set type = Generic
-         ppinput->m_linearPlunger = true;           // use linear plunger calibration
+         joystickType = USHOCKTYPE_GENERIC;
+         // FIXME rewrite as linear plunger is ill designed (declared here, for all inputs and not for one, used in player)
+         ppinput->m_linearPlunger = true; // use linear plunger calibration
       }
-      else
-         ppinput->uShockType = USHOCKTYPE_GENERIC;  // Generic Gamepad
+      PLOGI << "Joystick detected: " << dstr.wsz << ", using input mode #" << joystickType;
    }
+   ppinput->uShockType = joystickType;
    hr = ppinput->m_pJoystick[ppinput->m_num_joy]->SetDataFormat(&c_dfDIJoystick);
 
    // joystick input foreground or background focus
@@ -373,6 +241,8 @@ BOOL CALLBACK PinInput::EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID
    // interface elements for objects that are found, and sets the min/max
    // values property for discovered axes.
    hr = ppinput->m_pJoystick[ppinput->m_num_joy]->EnumObjects(EnumObjectsCallbackDI, (VOID*)pvRef, DIDFT_ALL);
+
+   ppinput->SetupJoyMapping(ppinput->m_num_joy, joystickType);
 
    if (++(ppinput->m_num_joy) < PININ_JOYMXCNT)
        return DIENUM_CONTINUE;
@@ -399,6 +269,7 @@ void PinInput::RefreshSDLDevices()
       m_pSDLJoystick = nullptr;
    }
    m_num_joy = 0;
+   UnmapAllJoy();
 
    // Get list of all connected devices
    int joystick_count = 0;
@@ -421,6 +292,7 @@ void PinInput::RefreshSDLDevices()
             // Try to open as gamepad
             m_pSDLGamePad = SDL_OpenGamepad(joystick_ids[idx]);
             if (m_pSDLGamePad) {
+               SetupJoyMapping(m_num_joy, USHOCKTYPE_GENERIC);
                m_num_joy++;
                SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
                PLOGI.printf("Processing as Gamepad: %d axes, %d buttons, rumble=%s",
@@ -432,6 +304,7 @@ void PinInput::RefreshSDLDevices()
             // Try to open as standard joystick
             m_pSDLJoystick = SDL_OpenJoystick(joystick_ids[idx]);
             if (m_pSDLJoystick) {
+               SetupJoyMapping(m_num_joy, USHOCKTYPE_GENERIC);
                m_num_joy++;
 
                // Check if joystick supports force feedback
@@ -459,6 +332,37 @@ void PinInput::RefreshSDLDevices()
 }
 #endif
 
+void PinInput::PushActionEvent(EnumAssignKeys action, bool isPressed)
+{
+   DIDEVICEOBJECTDATA didod;
+   didod.dwOfs = action;
+   didod.dwData = isPressed ? 0x80 : 0x00;
+   PushQueue(&didod, APP_ACTION);
+}
+
+void PinInput::PushKeyboardEvent(int keycode, bool isPressed)
+{
+   DIDEVICEOBJECTDATA didod;
+   didod.dwOfs = keycode;
+   didod.dwData = isPressed ? 0x80 : 0x00;
+   PushQueue(&didod, APP_KEYBOARD);
+}
+
+void PinInput::PushJoystickButtonEvent(int joystickId, int buttonId, bool isPressed)
+{
+   DIDEVICEOBJECTDATA didod;
+   didod.dwOfs = DIJOFS_BUTTON0 + static_cast<DWORD>(buttonId);
+   didod.dwData = isPressed ? 0x80 : 0x00;
+   PushQueue(&didod, APP_JOYSTICK0 + joystickId);
+}
+
+void PinInput::PushJoystickAxisEvent(int joystickId, int axisId, int value)
+{
+   DIDEVICEOBJECTDATA didod;
+   didod.dwOfs = axisId;
+   didod.dwData = value;
+   PushQueue(&didod, APP_JOYSTICK0 + joystickId);
+}
 
 void PinInput::PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data)
 {
@@ -480,8 +384,6 @@ const DIDEVICEOBJECTDATA *PinInput::GetTail()
 
 void PinInput::GetInputDeviceData()
 {
-   DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE]; // Receives buffered data 
-
    #if defined(_WIN32) && defined(USE_DINPUT_FOR_KEYBOARD)
       // keyboard
       #ifdef USE_DINPUT8
@@ -495,13 +397,12 @@ void PinInput::GetInputDeviceData()
          if (hr == S_OK || hr == S_FALSE)
          {
             DWORD dwElements = INPUT_BUFFER_SIZE;
+            DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE];
             hr = pkyb->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
-
-            if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+            if ((m_focusHWnd == GetForegroundWindow()) && (hr == S_OK || hr == DI_BUFFEROVERFLOW))
             {
-               if (m_focusHWnd == GetForegroundWindow())
-                  for (DWORD i = 0; i < dwElements; i++)
-                     PushQueue(&didod[i], APP_KEYBOARD);
+               for (DWORD i = 0; i < dwElements; i++)
+                  PushKeyboardEvent(didod[i].dwOfs, (didod[i].dwData & 0x80) != 0);
             }
          }
       }
@@ -510,7 +411,6 @@ void PinInput::GetInputDeviceData()
       static bool oldKeyStates[eCKeys] = { false };
 
       #ifdef _WIN32
-         unsigned int i2 = 0;
          for (unsigned int i = 0; i < eCKeys; ++i)
          {
             const unsigned int rgk = (unsigned int)g_pplayer->m_rgKeys[i];
@@ -525,12 +425,7 @@ void PinInput::GetInputDeviceData()
                continue;
             oldKeyStates[i] = keyDown;
 
-            didod[i2].dwOfs = rgk;
-            didod[i2].dwData = keyDown ? 0x80 : 0;
-            //didod[i2].dwTimeStamp = curr_time_msec;
-            didod[i2].dwSequence = APP_KEYBOARD;
-            PushQueue(&didod[i2], APP_KEYBOARD);
-            ++i2;
+            PushActionEvent(static_cast<EnumAssignKeys>(i), keyDown);
          }
       #endif
    #endif
@@ -546,20 +441,16 @@ void PinInput::GetInputDeviceData()
             hr = m_pMouse->GetDeviceState(sizeof(DIMOUSESTATE2), &mouseState);
             if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
             {
-               if (!g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
+               for (DWORD i = 0; i < 3; i++)
                {
-                  for (DWORD i = 0; i < 3; i++)
+                  if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
                   {
-                     if (m_oldMouseButtonState[i] != mouseState.rgbButtons[i])
-                     {
-                        didod[i].dwData = mouseState.rgbButtons[i];
-                        didod[i].dwOfs = i + 1;
-                        didod[i].dwSequence = APP_MOUSE;
-                        PushQueue(&didod[i], APP_MOUSE);
-                        m_oldMouseButtonState[i] = mouseState.rgbButtons[i];
-                     }
+                     DIDEVICEOBJECTDATA didod;
+                     didod.dwData = mouseState.rgbButtons[i];
+                     didod.dwOfs = i + 1;
+                     PushQueue(&didod, APP_MOUSE);
+                     m_oldMouseButtonState[i] = mouseState.rgbButtons[i];
                   }
-
                }
             }
          }
@@ -568,22 +459,17 @@ void PinInput::GetInputDeviceData()
 
    // same for joysticks 
    switch (m_inputApi) {
-   case PI_XINPUT:
-      HandleInputXI(didod); break;
-   case PI_SDL:
-      HandleInputSDL(didod); break;
-   case PI_GAMECONTROLLER:
-      HandleInputIGC(didod); break;
-   case PI_DIRECTINPUT:
-   default:
-      HandleInputDI(didod);
-      break;
+   case PI_XINPUT:      HandleInputXI(); break;
+   case PI_SDL:         HandleInputSDL(); break;
+   case PI_DIRECTINPUT: HandleInputDI(); break;
    }
 }
 
-void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputDI()
 {
    #ifdef _WIN32
+      DIDEVICEOBJECTDATA didod[INPUT_BUFFER_SIZE];
+
       for (int k = 0; k < m_num_joy; ++k)
       {
          #ifdef USE_DINPUT8
@@ -599,8 +485,8 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
             // Therefore we can't simply use the joystick index here; that's why we saved the device setting into a map and the device info
             // into a new array.
             bool inputDeviceState = true;
-            const auto deviceIt = m_pInputDeviceSettingsInfo->find(m_attachedDeviceInfo[k]->tszInstanceName);
-            if (deviceIt != m_pInputDeviceSettingsInfo->end())
+            const auto deviceIt = m_inputDeviceSettingsInfo.find(m_attachedDeviceInfo[k]->tszInstanceName);
+            if (deviceIt != m_inputDeviceSettingsInfo.end())
             {
                inputDeviceState = deviceIt->second;
             }
@@ -613,12 +499,27 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
             {
                DWORD dwElements = INPUT_BUFFER_SIZE;
                hr = pjoy->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
-
-               if (hr == S_OK || hr == DI_BUFFEROVERFLOW)
+               if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
                {
-                  if (m_focusHWnd == GetForegroundWindow())
-                     for (DWORD i = 0; i < dwElements; i++)
-                        PushQueue(&didod[i], APP_JOYSTICK(k));
+                  for (DWORD i = 0; i < dwElements; i++)
+                  {
+                     if ((didod[i].dwOfs >= DIJOFS_BUTTON0) && (didod[i].dwOfs <= DIJOFS_BUTTON31))
+                        PushJoystickButtonEvent(k, didod[i].dwOfs - DIJOFS_BUTTON0, (didod[i].dwData & 0x80) != 0);
+                     else
+                     {
+                        switch (didod[i].dwOfs)
+                        {
+                        case DIJOFS_X: PushJoystickAxisEvent(k, 1, didod[i].dwData); break;
+                        case DIJOFS_Y: PushJoystickAxisEvent(k, 2, didod[i].dwData); break;
+                        case DIJOFS_Z: PushJoystickAxisEvent(k, 3, didod[i].dwData); break;
+                        case DIJOFS_RX: PushJoystickAxisEvent(k, 4, didod[i].dwData); break;
+                        case DIJOFS_RY: PushJoystickAxisEvent(k, 5, didod[i].dwData); break;
+                        case DIJOFS_RZ: PushJoystickAxisEvent(k, 6, didod[i].dwData); break;
+                        case DIJOFS_SLIDER(0): PushJoystickAxisEvent(k, 7, didod[i].dwData); break;
+                        case DIJOFS_SLIDER(1): PushJoystickAxisEvent(k, 8, didod[i].dwData); break;
+                        }
+                     }
+                  }
                }
             }
          }
@@ -626,7 +527,7 @@ void PinInput::HandleInputDI(DIDEVICEOBJECTDATA *didod)
    #endif
 }
 
-void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
+void PinInput::HandleInputXI()
 {
 #ifdef ENABLE_XINPUT
    typedef struct {
@@ -650,22 +551,35 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
       {0, 0} };
    XINPUT_STATE state = {};
    unsigned int xie = ERROR_DEVICE_NOT_CONNECTED;
-   if (m_inputDeviceXI != -2 && (m_inputDeviceXI == -1 || (xie = XInputGetState(m_inputDeviceXI, &state)) != ERROR_SUCCESS)) {
-      m_inputDeviceXI = -1;
-      m_num_joy = 0;
-      for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
+   if (m_inputDeviceXI != -2)
+   {
+      if (m_inputDeviceXI != -1)
       {
-         ZeroMemory(&state, sizeof(XINPUT_STATE));
-         if ((xie = XInputGetState(i, &state)) == ERROR_SUCCESS) {
-            m_inputDeviceXI = i;
-            m_num_joy = 1;
-            break;
+         xie = XInputGetState(m_inputDeviceXI, &state);
+         if (xie != ERROR_SUCCESS)
+            m_inputDeviceXI = -1;
+      }
+      if (m_inputDeviceXI == -1)
+      {
+         m_num_joy = 0;
+         for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
+         {
+            ZeroMemory(&state, sizeof(XINPUT_STATE));
+            if ((xie = XInputGetState(i, &state)) == ERROR_SUCCESS)
+            {
+               m_inputDeviceXI = i;
+               m_num_joy = 1;
+               UnmapAllJoy();
+               SetupJoyMapping(0, USHOCKTYPE_GENERIC);
+               break;
+            }
          }
       }
-   }
-   if (xie == ERROR_DEVICE_NOT_CONNECTED) { // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
-      m_inputDeviceXI = -2;
-      m_num_joy = 0;
+      if (xie == ERROR_DEVICE_NOT_CONNECTED)
+      { // XInputGetState can cause quite some overhead, especially if no devices connected! Thus disable the polling if nothing connected
+         m_inputDeviceXI = -2;
+         m_num_joy = 0;
+      }
    }
    if (m_rumbleRunning && m_inputDeviceXI >= 0) {
       const DWORD now = msec();
@@ -676,58 +590,23 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
       }
    }
    int i = 0;
-   int j = 0;
    while (mappingTable[i].xi != 0) {
-      if ((m_inputDeviceXIstate.Gamepad.wButtons & mappingTable[i].xi) != (state.Gamepad.wButtons & mappingTable[i].xi)) {
-         didod[j].dwOfs = mappingTable[i].di;
-         didod[j].dwData = (state.Gamepad.wButtons & mappingTable[i].xi) > 0 ? 0x80 : 0x00;
-         PushQueue(&didod[j], APP_JOYSTICK(0));
-         j++;
-      }
+      if ((m_inputDeviceXIstate.Gamepad.wButtons & mappingTable[i].xi) != (state.Gamepad.wButtons & mappingTable[i].xi))
+         PushJoystickButtonEvent(0, mappingTable[i].di - DIJOFS_BUTTON0, (state.Gamepad.wButtons & mappingTable[i].xi) > 0);
       i++;
    }
-   if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger) {
-      didod[j].dwOfs = DIJOFS_Z;
-      const int value = (int)state.Gamepad.bLeftTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
-   if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger) {
-      didod[j].dwOfs = DIJOFS_RZ;
-      const int value = (int)state.Gamepad.bRightTrigger * 512;  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
-   if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX) {
-      didod[j].dwOfs = DIJOFS_X;
-      const int value = (int)state.Gamepad.sThumbLX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
-   if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY) {
-      didod[j].dwOfs = DIJOFS_Y;
-      const int value = (int)state.Gamepad.sThumbLY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
-   if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX) {
-      didod[j].dwOfs = DIJOFS_RX;
-      const int value = (int)state.Gamepad.sThumbRX * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
-   if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY) {
-      didod[j].dwOfs = DIJOFS_RY;
-      const int value = (int)state.Gamepad.sThumbRY * -2;        // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
-      didod[j].dwData = (DWORD)(value);
-      PushQueue(&didod[j], APP_JOYSTICK(0));
-      j++;
-   }
+   if (m_inputDeviceXIstate.Gamepad.sThumbLX != state.Gamepad.sThumbLX)
+      PushJoystickAxisEvent(0, 1, state.Gamepad.sThumbLX * -2); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   if (m_inputDeviceXIstate.Gamepad.sThumbLY != state.Gamepad.sThumbLY)
+      PushJoystickAxisEvent(0, 2, state.Gamepad.sThumbLY * -2); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   if (m_inputDeviceXIstate.Gamepad.bLeftTrigger != state.Gamepad.bLeftTrigger)
+      PushJoystickAxisEvent(0, 3, state.Gamepad.bLeftTrigger * 512); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   if (m_inputDeviceXIstate.Gamepad.sThumbRX != state.Gamepad.sThumbRX)
+      PushJoystickAxisEvent(0, 4, state.Gamepad.sThumbRX * -2); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   if (m_inputDeviceXIstate.Gamepad.sThumbRY != state.Gamepad.sThumbRY)
+      PushJoystickAxisEvent(0, 5, state.Gamepad.sThumbRY * -2); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   if (m_inputDeviceXIstate.Gamepad.bRightTrigger != state.Gamepad.bRightTrigger)
+      PushJoystickAxisEvent(0, 6, state.Gamepad.bRightTrigger * 512); // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
    memcpy(&m_inputDeviceXIstate, &state, sizeof(XINPUT_STATE));
 #endif
 }
@@ -736,21 +615,16 @@ void PinInput::HandleInputXI(DIDEVICEOBJECTDATA *didod)
 void PinInput::HandleSDLEvent(SDL_Event &e)
 {
    assert(m_inputApi == PI_SDL);
-   static constexpr DWORD axes[] = { DIJOFS_X, DIJOFS_Y, DIJOFS_RX, DIJOFS_RY, DIJOFS_Z, DIJOFS_RZ };
-   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 };  // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
+   static constexpr DWORD axes[] = { 1, 2, 3, 4, 5, 6 };
+   static constexpr int axisMultiplier[] = { 2, 2, 2, 2, 256, 256 }; // NOTE - this is a hard-coded assumption that JOYRANGE is -65536..+65536
    switch (e.type) 
    {
       case SDL_EVENT_KEY_DOWN:
       case SDL_EVENT_KEY_UP:
          if (e.key.repeat == 0) {
             const unsigned int dik = get_dik_from_sdlk(e.key.key);
-            if (dik != ~0u) {
-               DIDEVICEOBJECTDATA didod;
-               didod.dwOfs = dik;
-               didod.dwData = e.type == SDL_EVENT_KEY_DOWN ? 0x80 : 0;
-               //didod.dwTimeStamp = curr_time_msec;
-               PushQueue(&didod, APP_KEYBOARD/*, curr_time_msec*/);
-            }
+            if (dik != ~0u)
+               PushKeyboardEvent(dik, e.type == SDL_EVENT_KEY_DOWN);
          }
          break;
 
@@ -768,10 +642,7 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
                      fmodf(g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].mViewportRotation, 360.0f) != 0.f))
                {
                   g_pplayer->m_touchregion_pressed[i] = (e.type == SDL_EVENT_FINGER_DOWN);
-                  DIDEVICEOBJECTDATA didod;
-                  didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-                  didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-                  PushQueue(&didod, APP_TOUCH /*, curr_time_msec*/);
+                  PushActionEvent(touchActionMap[i], g_pplayer->m_touchregion_pressed[i]);
                }
             }
          }
@@ -783,50 +654,32 @@ void PinInput::HandleSDLEvent(SDL_Event &e)
          RefreshSDLDevices();
          break;
       case SDL_EVENT_GAMEPAD_AXIS_MOTION:
-         if (e.gaxis.axis < 6) {
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = axes[e.gaxis.axis];
-            const int value = e.gaxis.value * axisMultiplier[e.gaxis.axis];
-            didod.dwData = (DWORD)(value);
-            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
-         }
+         if (e.gaxis.axis < 6)
+            PushJoystickAxisEvent(0, axes[e.gaxis.axis], e.gaxis.value * axisMultiplier[e.gaxis.axis]); // Index 0 for gamepad
          break;
       case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
       case SDL_EVENT_GAMEPAD_BUTTON_UP:
-         if (e.gbutton.button < 32) {
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.gbutton.button;
-            didod.dwData = e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN ? 0x80 : 0x00;
-            PushQueue(&didod, APP_JOYSTICK(0)); // Index 0 for gamepad
-         }
+         if (e.gbutton.button < 32)
+            PushJoystickButtonEvent(0, e.gbutton.button, e.type == SDL_EVENT_GAMEPAD_BUTTON_DOWN); // Index 0 for GamePad
          break;
       case SDL_EVENT_JOYSTICK_ADDED:
       case SDL_EVENT_JOYSTICK_REMOVED:
          RefreshSDLDevices();
          break;
       case SDL_EVENT_JOYSTICK_AXIS_MOTION:
-         if (e.jaxis.axis < 6) {
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = axes[e.jaxis.axis];
-            const int value = e.jaxis.value * axisMultiplier[e.jaxis.axis];
-            didod.dwData = (DWORD)(value);
-            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
-         }
+         if (e.jaxis.axis < 6)
+            PushJoystickAxisEvent(1, axes[e.gaxis.axis], e.gaxis.value * axisMultiplier[e.gaxis.axis]); // Index 1 for Joystick
          break;
       case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
       case SDL_EVENT_JOYSTICK_BUTTON_UP:
-         if (e.jbutton.button < 32) {
-            DIDEVICEOBJECTDATA didod;
-            didod.dwOfs = DIJOFS_BUTTON0 + (DWORD)e.jbutton.button;
-            didod.dwData = e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN ? 0x80 : 0x00;
-            PushQueue(&didod, APP_JOYSTICK(1)); // Index 1 for joystick
-         }
+         if (e.jbutton.button < 32)
+            PushJoystickButtonEvent(1, e.gbutton.button, e.type == SDL_EVENT_JOYSTICK_BUTTON_DOWN); // Index 1 for Joystick
          break;
    }
 }
 #endif
 
-void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA* didod)
+void PinInput::HandleInputSDL()
 {
    // When SDL Video is used, SDL events are processed during the main application message loop, so we do not do it again here
 #if defined(ENABLE_SDL_INPUT) && !defined(ENABLE_SDL_VIDEO)
@@ -835,12 +688,6 @@ void PinInput::HandleInputSDL(DIDEVICEOBJECTDATA* didod)
    SDL_Event e;
    while (SDL_PollEvent(&e) != 0)
       HandleSDLEvent(e);
-#endif
-}
-
-void PinInput::HandleInputIGC(DIDEVICEOBJECTDATA *didod)
-{
-#ifdef ENABLE_IGAMECONTROLLER
 #endif
 }
 
@@ -865,7 +712,7 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
       }
 #endif
       break;
-   case PI_SDL: //SDL
+   case PI_SDL:
    {
 #ifdef ENABLE_SDL_INPUT
       SDL_PropertiesID props = SDL_GetGamepadProperties(m_pSDLGamePad);
@@ -884,23 +731,85 @@ void PinInput::PlayRumble(const float lowFrequencySpeed, const float highFrequen
 #endif
    }
       break;
-   case PI_GAMECONTROLLER: //IGameController
-#ifdef ENABLE_IGAMECONTROLLER
-#endif
-      break;
    default:
       break;
    }
 }
 
 #ifdef _WIN32
-void PinInput::Init(HWND focusWnd)
+void PinInput::SetFocusWindow(HWND focusWnd)
 {
    m_focusHWnd = focusWnd;
-#else
+}
+#endif
+
 void PinInput::Init()
 {
-#endif
+   UnmapAll();
+
+   const Settings& settings = g_pvp->m_settings;
+   m_override_default_buttons = settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, m_override_default_buttons);
+   m_disable_esc = settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
+   m_enableMouseInPlayer = settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
+   m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0) * JOYRANGEMX / 100;
+
+   m_lr_axis = settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, m_lr_axis);
+   m_ud_axis = settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, m_ud_axis);
+   m_lr_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, m_lr_axis_reverse);
+   m_ud_axis_reverse = settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, m_ud_axis_reverse);
+   m_plunger_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, m_plunger_axis);
+   m_plunger_speed_axis = settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, m_plunger_speed_axis);
+   m_plunger_reverse = settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, m_plunger_reverse);
+   m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
+   
+   m_joypmbuyin = settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, m_joypmbuyin);
+   m_joypmcoin3 = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, m_joypmcoin3);
+   m_joypmcoin4 = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin4"s, m_joypmcoin4);
+   m_joypmcoindoor = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoinDoor"s, m_joypmcoindoor);
+   m_joypmcancel = settings.LoadValueWithDefault(Settings::Player, "JoyPMCancel"s, m_joypmcancel);
+   m_joypmdown = settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, m_joypmdown);
+   m_joypmup = settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, m_joypmup);
+   m_joypmenter = settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, m_joypmenter);
+   
+   m_joycustom1 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, m_joycustom1);
+   m_joycustom1key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, m_joycustom1key);
+   m_joycustom2 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, m_joycustom2);
+   m_joycustom2key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, m_joycustom2key);
+   m_joycustom3 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3"s, m_joycustom3);
+   m_joycustom3key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key);
+   m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
+   m_joycustom4key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key);
+   
+   m_joylflipkey = settings.LoadValueInt(Settings::Player, "JoyLFlipKey"s);
+   m_joyrflipkey = settings.LoadValueInt(Settings::Player, "JoyRFlipKey"s);
+   m_joyplungerkey = settings.LoadValueInt(Settings::Player, "JoyPlungerKey"s);
+   m_joylefttilt = settings.LoadValueInt(Settings::Player, "JoyLTiltKey"s);
+   m_joycentertilt = settings.LoadValueInt(Settings::Player, "JoyCTiltKey"s);
+   m_joyrighttilt = settings.LoadValueInt(Settings::Player, "JoyRTiltKey"s);
+   
+   #ifdef _WIN32
+      // Load input device settings
+      static const string kDefaultName("None"s);
+
+      m_inputDeviceSettingsInfo.clear();
+
+      for (int i = 0; i < PININ_JOYMXCNT; i++)
+      {
+         const string deviceName = "Device" + std::to_string(i) + "_Name";
+         const string name = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceName, kDefaultName);
+
+         if (!m_inputDeviceSettingsInfo.contains(name))
+         {
+            const string deviceState = "Device" + std::to_string(i) + "_State";
+            const bool state = settings.LoadValueWithDefault(Settings::ControllerDevices, deviceState, true);
+
+            m_inputDeviceSettingsInfo.insert(std::pair(name, state));
+         }
+      }
+   #endif
+
+   for (unsigned int i = 0; i < eCKeys; ++i)
+      MapActionToKeyboard(static_cast<EnumAssignKeys>(i), g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]), true);
 
 #if defined(ENABLE_SDL_INPUT)
    if (!SDL_InitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK))
@@ -977,35 +886,31 @@ void PinInput::Init()
    m_nextKeyPressedTime = 0;
    uShockType = 0;
 
-#if defined(ENABLE_SDL_INPUT)
-   m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL);
-#else
-   m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_DIRECTINPUT);
-#endif
+   #if defined(ENABLE_SDL_INPUT)
+      m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_SDL);
+   #else
+      m_inputApi = (InputAPI)g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "InputApi"s, PI_DIRECTINPUT);
+   #endif
 
    switch (m_inputApi) {
    case PI_XINPUT:
-#ifdef ENABLE_XINPUT
-      m_inputDeviceXI = -1;
-      uShockType = USHOCKTYPE_GENERIC;
-      m_rumbleRunning = false;
-#else
-      m_inputApi = PI_DIRECTINPUT;
-#endif
+      #ifdef ENABLE_XINPUT
+         m_inputDeviceXI = -1;
+         uShockType = USHOCKTYPE_GENERIC;
+         m_rumbleRunning = false;
+      #else
+         m_inputApi = PI_DIRECTINPUT;
+      #endif
       break;
+
    case PI_SDL:
-#ifdef ENABLE_SDL_INPUT
-      uShockType = USHOCKTYPE_GENERIC;
-#else
-      m_inputApi = PI_DIRECTINPUT;
-#endif
+      #ifdef ENABLE_SDL_INPUT
+         uShockType = USHOCKTYPE_GENERIC;
+      #else
+         m_inputApi = PI_DIRECTINPUT;
+      #endif
       break;
-   case PI_GAMECONTROLLER:
-#ifdef ENABLE_IGAMECONTROLLER
-#else
-      m_inputApi = PI_DIRECTINPUT;
-#endif
-      break;
+
    default:
       m_inputApi = PI_DIRECTINPUT;
       break;
@@ -1039,7 +944,6 @@ void PinInput::Init()
              m_attachedDeviceInfo[i] = deviceInfo;
          }
       }
-
    #endif
 
    // initialize Open Pinball Device HIDs
@@ -1050,6 +954,8 @@ void PinInput::Init()
 void PinInput::UnInit()
 {
    m_head = m_tail = 0;
+   
+   UnmapAll();
 
 #if defined(ENABLE_SDL_INPUT)
    SDL_QuitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK);
@@ -1099,7 +1005,7 @@ void PinInput::UnInit()
       }
    }
 
-   m_pInputDeviceSettingsInfo->clear();
+   m_inputDeviceSettingsInfo.clear();
 
    // Release any DirectInput objects.
    SAFE_RELEASE(m_pDI);
@@ -1294,16 +1200,18 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
    #endif
    }
 
-   if ((action == eLeftFlipperKey || action == eRightFlipperKey || action == eStagedLeftFlipperKey || action == eStagedRightFlipperKey) && isPressed)
-   {
-      g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
-      // Debug only, for testing parts of the flipper input lag
-      m_leftkey_down_usec = usec();
-      m_leftkey_down_frame = g_pplayer->m_overall_frames;
-   }
-
    if (!g_pplayer->m_liveUI->IsTweakMode())
-      g_pplayer->m_ptable->FireActionEvent(action, isPressed);
+   {
+      if ((action == eLeftFlipperKey || action == eRightFlipperKey || action == eStagedLeftFlipperKey || action == eStagedRightFlipperKey) && isPressed)
+      {
+         g_pplayer->m_pininput.PlayRumble(0.f, 0.2f, 150);
+         // Debug only, for testing parts of the flipper input lag
+         m_leftkey_down_usec = usec();
+         m_leftkey_down_frame = g_pplayer->m_overall_frames;
+      }
+
+      g_pplayer->m_ptable->FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[action]);
+   }
 
    if (((action == eEscape) && !m_disable_esc) || (action == eExitGame))
    {
@@ -1399,503 +1307,193 @@ void PinInput::ButtonExit(const U32 msecs, const U32 curr_time_msec)
    }
 }
 
-void PinInput::Joy(const unsigned int n, const bool isPressed, const bool start)
+// Setup an hardware device button and analog input mapping
+// For the time being, an action may only be bound to one button as we do not handle combination of multiple sources
+// For analog input, multiple source are supported, averaging for nudge and suming for plunger (assuming there is only one non 0)
+void PinInput::SetupJoyMapping(int joystickId, int inputLayout)
 {
-   if (m_joylflipkey == n)      FireActionEvent(eLeftFlipperKey, isPressed);
-   if (m_joyrflipkey == n)      FireActionEvent(eRightFlipperKey, isPressed);
-   if (m_joystagedlflipkey == n)FireActionEvent(eStagedLeftFlipperKey, isPressed);
-   if (m_joystagedrflipkey == n)FireActionEvent(eStagedRightFlipperKey, isPressed);
-   if (m_joyplungerkey == n)    FireActionEvent(ePlungerKey, isPressed);
-   if (m_joyaddcreditkey == n)  FireActionEvent(eAddCreditKey, isPressed);
-   if (m_joyaddcreditkey2 == n) FireActionEvent(eAddCreditKey2, isPressed);
-   if (m_joylmagnasave == n)    FireActionEvent(eLeftMagnaSave, isPressed);
-   if (m_joyrmagnasave == n)    FireActionEvent(eRightMagnaSave, isPressed);
-   if (m_joytablerecenter == n) FireActionEvent(eTableRecenter, isPressed);
-   if (m_joytableup == n)       FireActionEvent(eTableUp, isPressed);
-   if (m_joytabledown == n)     FireActionEvent(eTableDown, isPressed);
-   if (m_joyvolumeup == n)      FireActionEvent(eVolumeUp, isPressed);
-   if (m_joyvolumedown == n)    FireActionEvent(eVolumeDown, isPressed);
-   if (m_joylefttilt == n)      FireActionEvent(eLeftTiltKey, isPressed);
-   if (m_joycentertilt == n)    FireActionEvent(eCenterTiltKey, isPressed);
-   if (m_joyrighttilt == n)     FireActionEvent(eRightTiltKey, isPressed);
-   if (m_joymechtilt == n)      FireActionEvent(eMechanicalTilt, isPressed);
-   if (m_joydebugballs == n)    FireActionEvent(eDBGBalls, isPressed);
-   if (m_joydebugger == n)      FireActionEvent(eDebugger, isPressed);
-   if (m_joylockbar == n)       FireActionEvent(eLockbarKey, isPressed);
-   if (m_joypause == n)         FireActionEvent(ePause, isPressed);
-   if (m_joytweak == n)         FireActionEvent(eTweak, isPressed);
-   
-   // TODO define 'actions' (logical keys) for these joystick bindings
-   if (m_joycustom1 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom1key);
-   if (m_joycustom2 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom2key);
-   if (m_joycustom3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom3key);
-   if (m_joycustom4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom4key);
-   if (m_joypmbuyin == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_2);
-   if (m_joypmcoin3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_5);
-   if (m_joypmcoin4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_6);
-   if (m_joypmcoindoor == n) FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_END);
-   if (m_joypmcancel == n)   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_7);
-   if (m_joypmdown == n)     FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_8);
-   if (m_joypmup == n)       FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_9);
-   if (m_joypmenter == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_0);
+   int lr_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, 1);
+   int ud_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, 2);
+   bool lr_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, false);
+   bool ud_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, false);
+   int plunger_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, 3);
+   int plunger_speed_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, 0);
+   bool plunger_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, false);
 
-   // TODO move these handling to the general action handling
-   if ((m_joystartgamekey == n) && start)
+   switch (inputLayout)
    {
-      m_pressed_start = true;
-      FireActionEvent(eStartGameKey, isPressed);
+   case USHOCKTYPE_PBWIZARD:
+      SetupJoyMapping(joystickId, USHOCKTYPE_GENERIC);
+      MapActionToJoystick(ePlungerKey, joystickId, DIJOFS_BUTTON0, true);
+      MapActionToJoystick(eRightFlipperKey, joystickId, DIJOFS_BUTTON1, true);
+      MapActionToJoystick(eRightMagnaSave, joystickId, DIJOFS_BUTTON2, true);
+      MapActionToJoystick(eVolumeDown, joystickId, DIJOFS_BUTTON3, true);
+      MapActionToJoystick(eVolumeUp, joystickId, DIJOFS_BUTTON4, true);
+      // Button 5 is not mapped
+      MapActionToJoystick(eEscape, joystickId, DIJOFS_BUTTON6, true);
+      MapActionToJoystick(eExitGame, joystickId, DIJOFS_BUTTON7, true);
+      MapActionToJoystick(eStartGameKey, joystickId, DIJOFS_BUTTON8, true);
+      MapActionToJoystick(eLeftFlipperKey, joystickId, DIJOFS_BUTTON9, true);
+      MapActionToJoystick(eLeftMagnaSave, joystickId, DIJOFS_BUTTON10, true);
+      MapActionToJoystick(eAddCreditKey, joystickId, DIJOFS_BUTTON11, true);
+      MapActionToJoystick(eAddCreditKey2, joystickId, DIJOFS_BUTTON12, true);
+
+      if (lr_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, 1, true, false);
+      if (ud_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, 2, false, false);
+      if (plunger_axis != 0)
+      { // This can be overriden and assigned to Rz instead of Z axis
+         if (m_override_default_buttons && (plunger_axis == 6))
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 6, false, false);
+         else
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 3, true, false);
+      }
+      break;
+
+   case USHOCKTYPE_ULTRACADE:
+      SetupJoyMapping(joystickId, USHOCKTYPE_GENERIC);
+      MapActionToJoystick(eAddCreditKey, joystickId, DIJOFS_BUTTON11, true);
+      MapActionToJoystick(eAddCreditKey2, joystickId, DIJOFS_BUTTON12, true);
+      MapActionToJoystick(eRightMagnaSave, joystickId, DIJOFS_BUTTON2, true);
+      // Button 3 is not mapped
+      // Button 4 is not mapped
+      MapActionToJoystick(eVolumeUp, joystickId, DIJOFS_BUTTON5, true);
+      MapActionToJoystick(eVolumeDown, joystickId, DIJOFS_BUTTON6, true);
+      // Button 7 is not mapped
+      MapActionToJoystick(eLeftFlipperKey, joystickId, DIJOFS_BUTTON8, true);
+      // Button 9 is not mapped
+      MapActionToJoystick(eRightFlipperKey, joystickId, DIJOFS_BUTTON10, true);
+      // Button 11 is not mapped
+      MapActionToJoystick(eStartGameKey, joystickId, DIJOFS_BUTTON12, true);
+      MapActionToJoystick(ePlungerKey, joystickId, DIJOFS_BUTTON13, true);
+      MapActionToJoystick(eExitGame, joystickId, DIJOFS_BUTTON14, true);
+
+      if (lr_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, 2, true, false);
+      if (ud_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, 1, true, false);
+      if (plunger_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 3, false, false);
+      break;
+
+   case USHOCKTYPE_SIDEWINDER:
+      SetupJoyMapping(joystickId, USHOCKTYPE_GENERIC);
+
+      if (lr_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, 1, lr_axis_reverse, false);
+      if (ud_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, 2, ud_axis_reverse, false);
+      if (plunger_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 7, !plunger_reverse, false);
+      break;
+
+   case USHOCKTYPE_VIRTUAPIN:
+      SetupJoyMapping(joystickId, USHOCKTYPE_GENERIC);
+      MapActionToJoystick(ePlungerKey, joystickId, DIJOFS_BUTTON0, true);
+      MapActionToJoystick(eRightFlipperKey, joystickId, DIJOFS_BUTTON1, true);
+      MapActionToJoystick(eRightMagnaSave, joystickId, DIJOFS_BUTTON2, true);
+      MapActionToJoystick(eVolumeDown, joystickId, DIJOFS_BUTTON3, true);
+      MapActionToJoystick(eVolumeUp, joystickId, DIJOFS_BUTTON4, true);
+      // Button 5 is not mapped
+      MapActionToJoystick(eEscape, joystickId, DIJOFS_BUTTON6, true);
+      MapActionToJoystick(eExitGame, joystickId, DIJOFS_BUTTON7, true);
+      MapActionToJoystick(eStartGameKey, joystickId, DIJOFS_BUTTON8, true);
+      MapActionToJoystick(eLeftFlipperKey, joystickId, DIJOFS_BUTTON9, true);
+      MapActionToJoystick(eLeftMagnaSave, joystickId, DIJOFS_BUTTON10, true);
+      MapActionToJoystick(eAddCreditKey, joystickId, DIJOFS_BUTTON11, true);
+      MapActionToJoystick(eAddCreditKey2, joystickId, DIJOFS_BUTTON12, true);
+
+      if (lr_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, 1, true, false);
+      if (ud_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, 2, false, false);
+      if (plunger_axis != 0)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 3, true, false);
+      break;
+
+   case USHOCKTYPE_OPENPINDEV:
+      SetupJoyMapping(joystickId, USHOCKTYPE_GENERIC);
+
+      // FIXME remove OpenPinDev hack
+      // OpenPinDev has an ugly hack that it uses the generic axis mapping to identify itself by using a custom hardware code...
+      // So for backward compatibility, we define virtual axis only used by this device
+      m_analogActionMappings.clear();
+      if (lr_axis == 9)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, 10, lr_axis_reverse, false);
+      if (ud_axis == 9)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, 11, ud_axis_reverse, false);
+      if (plunger_axis == 9)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, 12, plunger_reverse, false);
+      if (plunger_speed_axis == 9)
+         MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerSpeed, joystickId, 13, false, false);
+      break;
+
+   case USHOCKTYPE_GENERIC:
+   default:
+      {
+         const Settings& settings = g_pvp->m_settings;
+         MapActionToJoystick(eLeftFlipperKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyLFlipKey"s), true);
+         MapActionToJoystick(eRightFlipperKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyRFlipKey"s), true);
+         MapActionToJoystick(eStagedLeftFlipperKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyStagedLFlipKey"s), true);
+         MapActionToJoystick(eStagedRightFlipperKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyStagedRFlipKey"s), true);
+         MapActionToJoystick(eLeftTiltKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyLTiltKey"s), true);
+         MapActionToJoystick(eRightTiltKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyRTiltKey"s), true);
+         MapActionToJoystick(eCenterTiltKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyCTiltKey"s), true);
+         MapActionToJoystick(ePlungerKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyPlungerKey"s), true);
+         MapActionToJoystick(eFrameCount, joystickId, settings.LoadValueInt(Settings::Player, "JoyFrameCount"s), true);
+         MapActionToJoystick(eDBGBalls, joystickId, settings.LoadValueInt(Settings::Player, "JoyDebugKey"s), true);
+         MapActionToJoystick(eDebugger, joystickId, settings.LoadValueInt(Settings::Player, "JoyDebuggerKey"s), true);
+         MapActionToJoystick(eAddCreditKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyAddCreditKey"s), true);
+         MapActionToJoystick(eAddCreditKey2, joystickId, settings.LoadValueInt(Settings::Player, "JoyAddCredit2Key"s), true);
+         MapActionToJoystick(eStartGameKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyStartGameKey"s), true);
+         MapActionToJoystick(eMechanicalTilt, joystickId, settings.LoadValueInt(Settings::Player, "JoyMechTiltKey"s), true);
+         MapActionToJoystick(eRightMagnaSave, joystickId, settings.LoadValueInt(Settings::Player, "JoyRMagnaSave"s), true);
+         MapActionToJoystick(eLeftMagnaSave, joystickId, settings.LoadValueInt(Settings::Player, "JoyLMagnaSave"s), true);
+         MapActionToJoystick(eExitGame, joystickId, settings.LoadValueInt(Settings::Player, "JoyExitGameKey"s), true);
+         MapActionToJoystick(eVolumeUp, joystickId, settings.LoadValueInt(Settings::Player, "JoyVolumeUp"s), true);
+         MapActionToJoystick(eVolumeDown, joystickId, settings.LoadValueInt(Settings::Player, "JoyVolumeDown"s), true);
+         MapActionToJoystick(eLockbarKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyLockbarKey"s), true);
+         // eEnable3D (no joystick mapping)
+         MapActionToJoystick(eTableRecenter, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableRecenterKey"s), true);
+         MapActionToJoystick(eTableUp, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableUpKey"s), true);
+         MapActionToJoystick(eTableDown, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableDownKey"s), true);
+         // eEscape (no joystick mapping)
+         MapActionToJoystick(ePause, joystickId, settings.LoadValueInt(Settings::Player, "JoyPauseKey"s), true);
+         MapActionToJoystick(eTweak, joystickId, settings.LoadValueInt(Settings::Player, "JoyTweakKey"s), true);
+       
+         // TODO map to corresponding GenericKey (or define actions for these keys)
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, 0), true); 2
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, 0), true); 5
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin4"s, 0), true); 6
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoinDoor"s, 0), true); END
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCancel"s, 0), true); 7
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, 0), true); 8
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, 0), true); 9
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, 0), true); 0
+       
+         // TODO map to corresponding GenericKey
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom3"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, 0), true);
+
+         if (lr_axis != 0)
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeX, joystickId, lr_axis, lr_axis_reverse, false);
+         if (ud_axis != 0)
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_NudgeY, joystickId, ud_axis, ud_axis_reverse, false);
+         if (plunger_axis != 0)
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerPos, joystickId, plunger_axis, plunger_reverse, false);
+         if (plunger_speed_axis != 0)
+            MapAnalogActionToJoystick(AnalogActionMapping::AM_PlungerSpeed, joystickId, plunger_speed_axis, false, false);
+      }
+      break;
    }
-
-   if ((m_joyexitgamekey == n) && isPressed)
-      g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-
-   if ((m_joyframecount == n) && isPressed)
-      g_pplayer->m_liveUI->ToggleFPS();
 }
-
-void PinInput::ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec)
-{
-   const int joyk = input->dwSequence - APP_JOYSTICKMN; // joystick index
-
-   // TODO replace these hardcoded mapping by a generic structure
-   // TODO move action handling to FireActionEvent to be shared and identical between joystick/keyboard
-   if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
-   {
-      const bool isPressed = (input->dwData & 0x80) != 0;
-      const bool start = ((curr_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
-      if (input->dwOfs == DIJOFS_BUTTON0)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // plunge
-            FireActionEvent(ePlungerKey, isPressed);
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 1
-            FireActionEvent(eAddCreditKey, isPressed);
-         else
-            Joy(1, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON1)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // right
-            FireActionEvent(eRightFlipperKey, isPressed);
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // coin 2
-            FireActionEvent(eAddCreditKey2, isPressed);
-         else
-            Joy(2, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON2)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_ULTRACADE) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
-            FireActionEvent(eRightMagnaSave, isPressed); // right2
-         else
-            Joy(3, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON3)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume down
-            FireActionEvent(eVolumeDown, isPressed);
-         else
-            Joy(4, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON4)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // volume up
-            FireActionEvent(eVolumeUp, isPressed);
-         else
-            Joy(5, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON5)
-      {
-         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume up
-            FireActionEvent(eVolumeUp, isPressed);
-         else
-            Joy(6, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON6)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // pause menu
-         {
-            if (isPressed)
-               g_pplayer->SetCloseState(Player::CS_USER_INPUT);
-         }
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // volume down
-            FireActionEvent(eVolumeDown, isPressed);
-         else
-            Joy(7, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON7)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons && !m_disable_esc) // exit
-         { // Check if we have started a game yet.
-            if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled)
-            {
-               if (isPressed)
-               {
-                  m_first_stamp = curr_time_msec;
-                  m_exit_stamp = curr_time_msec;
-                  FireActionEvent(eExitGame, isPressed);
-               }
-               else
-               {
-                  FireActionEvent(eExitGame, isPressed);
-                  m_exit_stamp = 0;
-               }
-            }
-         }
-         else
-            Joy(8, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON8)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons)
-         {
-            if (start)
-            {
-               m_pressed_start = true;
-               FireActionEvent(eStartGameKey, isPressed);
-            }
-         }
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // left
-            FireActionEvent(eLeftFlipperKey, isPressed);
-         else
-            Joy(9, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON9)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left
-            FireActionEvent(eLeftFlipperKey, isPressed);
-         else
-            Joy(10, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON10)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // left 2
-            FireActionEvent(eLeftMagnaSave, isPressed);
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // right
-            FireActionEvent(eRightFlipperKey, isPressed);
-         else
-            Joy(11, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON11)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 1
-            FireActionEvent(eAddCreditKey, isPressed);
-         else
-            Joy(12, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON12)
-      {
-         if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && !m_override_default_buttons) // coin 2
-            FireActionEvent(eAddCreditKey2, isPressed);
-         else if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // start
-         { // Check if we can allow the start (table is done initializing).
-            if (start)
-            {
-               m_pressed_start = true;
-               FireActionEvent(eStartGameKey, isPressed);
-            }
-         }
-         else
-            Joy(13, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON13)
-      {
-         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // plunge
-            FireActionEvent(ePlungerKey, isPressed);
-         else
-            Joy(14, isPressed, start);
-      }
-      else if (input->dwOfs == DIJOFS_BUTTON14)
-      {
-         if ((uShockType == USHOCKTYPE_ULTRACADE) && !m_override_default_buttons) // exit
-         {
-            if (Started() || !g_pplayer->m_ptable->m_tblAutoStartEnabled) // Check if we have started a game yet.
-            {
-               if (isPressed)
-               {
-                  m_first_stamp = curr_time_msec;
-                  m_exit_stamp = curr_time_msec;
-                  FireActionEvent(eExitGame, isPressed);
-               }
-               else
-               {
-                  FireActionEvent(eExitGame, isPressed);
-                  m_exit_stamp = 0;
-               }
-            }
-         }
-         else
-            Joy(15, isPressed, start);
-      }
-      else if (input->dwOfs >= DIJOFS_BUTTON15 && input->dwOfs <= DIJOFS_BUTTON31)
-      {
-         Joy(16 + input->dwOfs - DIJOFS_BUTTON15, isPressed, start);
-      }
-      else
-         FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs | 0x01000000); // unknown button events
-   }
-   else //end joy buttons
-   {
-        // Axis Deadzone
-        int deadu = (int)input->dwData;
-        if (((deadu <= 0) && (deadu >= -m_deadz)) || ((deadu >= 0) && (deadu <= m_deadz)))
-            deadu = 0;
-        if ((deadu < 0) && (deadu < -m_deadz))
-            deadu += m_deadz;
-        if ((deadu > 0) && (deadu>m_deadz))
-            deadu -= m_deadz;
-
-        switch (input->dwOfs)	// Axis, Sliders and POV
-        {   // with selectable axes added to menu, giving priority in this order... X Axis (the Left/Right Axis), Y Axis
-            case DIJOFS_X:
-            {
-                if (g_pplayer) //joyk  rotLeftManual
-                {
-                    if ((m_lr_axis == 1) || (m_ud_axis == 1) || (uShockType != USHOCKTYPE_GENERIC))
-                    { // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
-                        // or non Generic controllers are being used...
-                        // Axis Deadzone
-                        if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_lr_axis != 0))
-                            g_pplayer->SetNudgeX(-deadu, joyk); //rotate to match Pinball Wizard
-                        if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_lr_axis != 0))
-                            g_pplayer->SetNudgeY(-deadu, joyk); //rotate to match joystick
-                        if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_lr_axis != 0))
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? deadu : -deadu, joyk);
-                        if ((m_lr_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                            // giving L/R Axis priority over U/D Axis in case both are assigned to same axis
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if ((m_ud_axis == 1) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 1)
-                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 1)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_Y:
-            {
-                if (g_pplayer)
-                {
-                    if ((m_lr_axis == 2) || (m_ud_axis == 2) || (uShockType != USHOCKTYPE_GENERIC))
-                    { // Check if L/R Axis or U/D Axis is selected (in the case of the Generic controller),
-                        // or non Generic controllers are being used...
-                        // Axis Deadzone
-                        if (((uShockType == USHOCKTYPE_PBWIZARD) || (uShockType == USHOCKTYPE_VIRTUAPIN)) && (m_ud_axis != 0))
-                            g_pplayer->SetNudgeY(deadu, joyk); //rotate to match Pinball Wizard
-                        if ((uShockType == USHOCKTYPE_ULTRACADE) && (m_ud_axis != 0))
-                            g_pplayer->SetNudgeX(-deadu, joyk); //rotate to match joystick
-                        if ((uShockType == USHOCKTYPE_SIDEWINDER) && (m_ud_axis != 0))
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                        if ((m_lr_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if ((m_ud_axis == 2) && (uShockType == USHOCKTYPE_GENERIC))
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 2)
-                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis and (uShockType == USHOCKTYPE_GENERIC)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 2)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_Z:
-            {
-                if (g_pplayer)
-                {
-                    if (uShockType == USHOCKTYPE_ULTRACADE)
-                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
-                    if (((m_plunger_axis != 6) && (m_plunger_axis != 0)) || !m_override_default_buttons)
-                    {                                          // with the ability to use rZ for plunger, checks to see if
-                        if (uShockType == USHOCKTYPE_PBWIZARD) // the override is used and if so, if Plunger is set to Rz or
-                        {                                      // disabled. If override isn't used, uses default assignment
-                            g_pplayer->MechPlungerIn(-(int)input->dwData, joyk); // of the Z axis.
-                        }
-                    }
-                    if ((uShockType == USHOCKTYPE_VIRTUAPIN) && (m_plunger_axis != 0))
-                        g_pplayer->MechPlungerIn(-(int)input->dwData, joyk);
-                    if (((m_lr_axis == 3) || (m_ud_axis == 3)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 3)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 3)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 3)
-                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 3)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_RX:
-            {
-                if (g_pplayer)
-                {
-                    if (((m_lr_axis == 4) || (m_ud_axis == 4)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 4)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 4)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 4)
-                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 4)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_RY:
-            {
-                if (g_pplayer)
-                {
-                    if (((m_lr_axis == 5) || (m_ud_axis == 5)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 5)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 5)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 5)
-                    {   // if X or Y ARE NOT chosen for this axis and Plunger IS chosen for this axis...
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 5)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_RZ:
-            {
-                if (g_pplayer)
-                {
-                    if ((uShockType == USHOCKTYPE_PBWIZARD) && m_override_default_buttons && (m_plunger_axis == 6))
-                        g_pplayer->MechPlungerIn((int)input->dwData, joyk);
-                    if (((m_lr_axis == 6) || (m_ud_axis == 6)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 6)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 6)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 6)
-                    {
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 6)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_SLIDER(0):
-            {
-                if (g_pplayer)
-                {
-                    if (uShockType == USHOCKTYPE_SIDEWINDER)
-                        g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    if (((m_lr_axis == 7) || (m_ud_axis == 7)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 7)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 7)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 7)
-                    {
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 7)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_SLIDER(1):
-            {
-                if (g_pplayer)
-                {
-                    if (((m_lr_axis == 8) || (m_ud_axis == 8)) && (uShockType == USHOCKTYPE_GENERIC))
-                    {   // For the sake of priority, Check if L/R Axis or U/D Axis IS selected, and a Generic Gamepad IS being used...
-                        // Axis Deadzone
-                        if (m_lr_axis == 8)
-                            g_pplayer->SetNudgeX(!m_lr_axis_reverse ? -deadu : deadu, joyk);
-                        else if (m_ud_axis == 8)
-                            g_pplayer->SetNudgeY(!m_ud_axis_reverse ? deadu : -deadu, joyk);
-                    }
-                    else if (m_plunger_axis == 8)
-                    {
-                        if (uShockType == USHOCKTYPE_GENERIC)
-                            g_pplayer->MechPlungerIn(!m_plunger_reverse ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                    else if (m_plunger_speed_axis == 8)
-                    {
-                       // not nudge X/Y or plunger
-                       if (uShockType == USHOCKTYPE_GENERIC)
-                          g_pplayer->MechPlungerSpeedIn((m_plunger_reverse == 0) ? -(int)input->dwData : (int)input->dwData, joyk);
-                    }
-                }
-                break;
-            }
-
-            case DIJOFS_POV(0):
-            default:
-                break;
-        }
-    }
-}
-
 
 void PinInput::ProcessKeys(int curr_time_msec, bool handleStartExit)
 {
@@ -1906,6 +1504,12 @@ void PinInput::ProcessKeys(int curr_time_msec, bool handleStartExit)
 
    ReadOpenPinballDevices(curr_time_msec);
 
+   // Wipe key state if we're not the foreground window as we miss key-up events
+   #ifdef _WIN32
+   if (m_focusHWnd != GetForegroundWindow())
+      ZeroMemory(&m_inputState, sizeof(m_inputState));
+   #endif
+
    // Handle automatic start and exit on long press
    if (handleStartExit)
    {
@@ -1915,12 +1519,6 @@ void PinInput::ProcessKeys(int curr_time_msec, bool handleStartExit)
    }
    if (m_firedautostart == 0) // Check if we've been initialized.
       m_firedautostart = curr_time_msec;
-
-   // Wipe key state if we're not the foreground window as we miss key-up events
-   #ifdef _WIN32
-   if (m_focusHWnd != GetForegroundWindow())
-      ZeroMemory(&m_inputState, sizeof(m_inputState));
-   #endif
 
    // Global Backglass/Playfield sound volume
    if ((m_head == m_tail) && (curr_time_msec - m_nextKeyPressedTime) > 75)
@@ -1946,50 +1544,101 @@ void PinInput::ProcessKeys(int curr_time_msec, bool handleStartExit)
    const DIDEVICEOBJECTDATA * __restrict input;
    while ((input = GetTail()))
    {
-      if (input->dwSequence == APP_MOUSE && g_pplayer && !g_pplayer->m_liveUI->HasMouseCapture())
+      if (input->dwSequence == APP_MOUSE && !g_pplayer->m_liveUI->HasMouseCapture() && !g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
       {
-         if (!g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
+         for (int i = 1; i <= 3; ++i)
          {
-            for (int i = 1; i <= 3; ++i)
+            const int mouseButton = (i == 1) ? m_LeftMouseButtonID : ((i == 2) ? m_RightMouseButtonID : m_MiddleMouseButtonID);
+            if (input->dwOfs == i)
             {
-                const int mouseButton = (i == 1) ? m_LeftMouseButtonID : ((i == 2) ? m_RightMouseButtonID : m_MiddleMouseButtonID);
-                if (input->dwOfs == i)
-                {
-                   const bool isDown = (input->dwData & 0x80) != 0;
-                   if (m_joylflipkey == mouseButton)
-                      FireActionEvent(eLeftFlipperKey, isDown);
-                   else if (m_joyrflipkey == mouseButton)
-                      FireActionEvent(eRightFlipperKey, isDown);
-                   else if (m_joyplungerkey == mouseButton)
-                      FireActionEvent(ePlungerKey, isDown);
-                   else if (m_joylefttilt == mouseButton)
-                      FireActionEvent(eLeftTiltKey, isDown);
-                   else if (m_joyrighttilt == mouseButton)
-                      FireActionEvent(eRightTiltKey, isDown);
-                   else if (m_joycentertilt == mouseButton)
-                      FireActionEvent(eCenterTiltKey, isDown);
-                }
+               const bool isDown = (input->dwData & 0x80) != 0;
+               if (m_joylflipkey == mouseButton)
+                  FireActionEvent(eLeftFlipperKey, isDown);
+               else if (m_joyrflipkey == mouseButton)
+                  FireActionEvent(eRightFlipperKey, isDown);
+               else if (m_joyplungerkey == mouseButton)
+                  FireActionEvent(ePlungerKey, isDown);
+               else if (m_joylefttilt == mouseButton)
+                  FireActionEvent(eLeftTiltKey, isDown);
+               else if (m_joyrighttilt == mouseButton)
+                  FireActionEvent(eRightTiltKey, isDown);
+               else if (m_joycentertilt == mouseButton)
+                  FireActionEvent(eCenterTiltKey, isDown);
             }
          }
       }
-      else if ((input->dwSequence == APP_KEYBOARD && (g_pplayer == nullptr || !g_pplayer->m_liveUI->HasKeyboardCapture()))
-         || (input->dwSequence == APP_TOUCH && g_pplayer)) // Desktop touch support push action key strokes
+      else if (input->dwSequence == APP_KEYBOARD && !g_pplayer->m_liveUI->HasKeyboardCapture())
       {
-         bool handled = false;
-         for (int i = 0; i < eCKeys; i++)
-         {
-            if (input->dwOfs == static_cast<DWORD>(g_pplayer->m_rgKeys[i]))
-            {
-               FireActionEvent(static_cast<EnumAssignKeys>(i), (input->dwData & 0x80) != 0);
-               handled = true;
-               break;
-            }
-         }
-         if (!handled)
+         const auto keycode = static_cast<int>(input->dwOfs);
+         const auto it = std::find_if(m_actionMappings.begin(), m_actionMappings.end(), [keycode](const ActionMapping& mapping) { 
+            return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.keycode == keycode); });
+         if (it != m_actionMappings.end())
+            FireActionEvent(it->action, (input->dwData & 0x80) != 0);
+         else
             FireGenericKeyEvent((input->dwData & 0x80) ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, input->dwOfs);
       }
-      else if (input->dwSequence >= APP_JOYSTICKMN && input->dwSequence <= APP_JOYSTICKMX)
-          ProcessJoystick(input, curr_time_msec);
+      else if (input->dwSequence == APP_ACTION)
+      {
+         const auto action = static_cast<EnumAssignKeys>(input->dwOfs);
+         const bool isPressed = input->dwData != 0;
+         FireActionEvent(action, isPressed);
+      }
+      else if (input->dwSequence >= APP_JOYSTICK0 && input->dwSequence <= APP_JOYSTICK0 + PININ_JOYMXCNT)
+      {
+         const int joystickId = input->dwSequence - APP_JOYSTICK0;
+         if (input->dwOfs >= DIJOFS_BUTTON0 && input->dwOfs <= DIJOFS_BUTTON31)
+         {
+            const auto buttonId = static_cast<int>(input->dwOfs);
+            const bool isPressed = (input->dwData & 0x80) != 0;
+            const auto it = std::find_if(m_actionMappings.begin(), m_actionMappings.end(), [buttonId, joystickId](const ActionMapping& mapping) {
+               return (mapping.type == ActionMapping::AM_Joystick) && (mapping.joystickId == buttonId) && (mapping.joystickId == joystickId); });
+            if (it != m_actionMappings.end())
+               FireActionEvent(it->action, isPressed);
+            else
+            {
+               const int n = input->dwOfs - DIJOFS_BUTTON0 + 1;
+               if (m_joycustom1 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom1key);
+               if (m_joycustom2 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom2key);
+               if (m_joycustom3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom3key);
+               if (m_joycustom4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m_joycustom4key);
+               if (m_joypmbuyin == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_2);
+               if (m_joypmcoin3 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_5);
+               if (m_joypmcoin4 == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_6);
+               if (m_joypmcoindoor == n) FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_END);
+               if (m_joypmcancel == n)   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_7);
+               if (m_joypmdown == n)     FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_8);
+               if (m_joypmup == n)       FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_9);
+               if (m_joypmenter == n)    FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_0);
+            }
+         }
+         else
+         {
+            const int axis = input->dwOfs;
+            const auto it = std::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
+               [joystickId, axis](const AnalogActionMapping& mapping) { return (mapping.joystickId == joystickId) && (mapping.axisId == axis); });
+            if (it != m_analogActionMappings.end())
+            {
+               const int rawValue = it->revert ? -static_cast<int>(input->dwData) : static_cast<int>(input->dwData);
+               int value = rawValue;
+               if (m_deadz > 0)
+               {
+                  if (((value <= 0) && (value >= -m_deadz)) || ((value >= 0) && (value <= m_deadz)))
+                     value = 0;
+                  else if (value < 0)
+                     value = static_cast<int>(static_cast<float>(value + m_deadz) * static_cast<float>(JOYRANGEMX) / static_cast<float>(JOYRANGEMX - m_deadz));
+                  else if (value > 0)
+                     value = static_cast<int>(static_cast<float>(value - m_deadz) * static_cast<float>(JOYRANGEMX) / static_cast<float>(JOYRANGEMX - m_deadz));
+               }
+               switch (it->output)
+               {
+               case AnalogActionMapping::AM_NudgeX: g_pplayer->SetNudgeX(value, joystickId); break;
+               case AnalogActionMapping::AM_NudgeY: g_pplayer->SetNudgeY(value, joystickId); break;
+               case AnalogActionMapping::AM_PlungerPos: g_pplayer->MechPlungerIn(rawValue, joystickId); break;
+               case AnalogActionMapping::AM_PlungerSpeed: g_pplayer->MechPlungerSpeedIn(rawValue, joystickId); break;
+               }
+            }
+         }
+      }
    }
 }
 

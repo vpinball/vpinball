@@ -547,7 +547,8 @@ BOOL VROptionsDialog::OnInitDialog()
    //
 
    KeyWindowStruct* const pksw = new KeyWindowStruct();
-   pksw->pi.Init(GetHwnd());
+   pksw->pi.SetFocusWindow(GetHwnd());
+   pksw->pi.Init();
    pksw->m_timerid = 0;
    ::SetWindowLongPtr(GetHwnd(), GWLP_USERDATA, (size_t)pksw);
 

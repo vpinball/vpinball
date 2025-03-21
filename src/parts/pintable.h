@@ -371,7 +371,6 @@ public:
    void ImportVPP(const string &filename);
 
    void FireOptionEvent(int event);
-   void FireActionEvent(EnumAssignKeys key, bool isPressed);
    void FireGenericKeyEvent(int dispid, int keycode);
 
    void ImportSound(const HWND hwndListView, const string &filename);

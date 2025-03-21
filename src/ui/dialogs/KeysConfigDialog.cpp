@@ -428,26 +428,26 @@ BOOL KeysConfigDialog::OnInitDialog()
         int item,selected;
         switch (i)
         {
-            case 0: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyLFlipKey"s, selected); item = IDC_JOYLFLIPCOMBO; break;
-            case 1: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyRFlipKey"s, selected); item = IDC_JOYRFLIPCOMBO; break;
-            case 31:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyStagedLFlipKey"s, selected); item = IDC_JOYSTAGEDLFLIPCOMBO; break;
-            case 32:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyStagedRFlipKey"s, selected); item = IDC_JOYSTAGEDRFLIPCOMBO; break;
-            case 2: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPlungerKey"s, selected); item = IDC_JOYPLUNGERCOMBO; break;
-            case 3: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyAddCreditKey"s, selected); item = IDC_JOYADDCREDITCOMBO; break;
-            case 4: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyAddCredit2Key"s, selected); item = IDC_JOYADDCREDIT2COMBO; break;
-            case 5: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyLMagnaSave"s, selected); item = IDC_JOYLMAGNACOMBO; break;
-            case 6: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyRMagnaSave"s, selected); item = IDC_JOYRMAGNACOMBO; break;
-            case 7: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyStartGameKey"s, selected); item = IDC_JOYSTARTCOMBO; break;
-            case 8: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyExitGameKey"s, selected); item = IDC_JOYEXITCOMBO; break;
-            case 9: hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyFrameCount"s, selected); item = IDC_JOYFPSCOMBO; break;
-            case 10:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyVolumeUp"s, selected); item = IDC_JOYVOLUPCOMBO; break;
-            case 11:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyVolumeDown"s, selected); item = IDC_JOYVOLDNCOMBO; break;
-            case 12:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyLTiltKey"s, selected); item = IDC_JOYLTILTCOMBO; break;
-            case 13:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCTiltKey"s, selected); item = IDC_JOYCTILTCOMBO; break;
-            case 14:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyRTiltKey"s, selected); item = IDC_JOYRTILTCOMBO; break;
-            case 15:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyMechTiltKey"s, selected); item = IDC_JOYMECHTILTCOMBO; break;
-            case 16:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyDebugKey"s, selected); item = IDC_JOYDEBUGCOMBO; break;
-            case 17:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyDebuggerKey"s, selected); item = IDC_JOYDEBUGGERCOMBO; break;
+            case 0: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyLFlipKey"s); item = IDC_JOYLFLIPCOMBO; break;
+            case 1: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyRFlipKey"s); item = IDC_JOYRFLIPCOMBO; break;
+            case 31:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyStagedLFlipKey"s); item = IDC_JOYSTAGEDLFLIPCOMBO; break;
+            case 32:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyStagedRFlipKey"s); item = IDC_JOYSTAGEDRFLIPCOMBO; break;
+            case 2: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyPlungerKey"s); item = IDC_JOYPLUNGERCOMBO; break;
+            case 3: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyAddCreditKey"s); item = IDC_JOYADDCREDITCOMBO; break;
+            case 4: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyAddCredit2Key"s); item = IDC_JOYADDCREDIT2COMBO; break;
+            case 5: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyLMagnaSave"s); item = IDC_JOYLMAGNACOMBO; break;
+            case 6: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyRMagnaSave"s); item = IDC_JOYRMAGNACOMBO; break;
+            case 7: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyStartGameKey"s); item = IDC_JOYSTARTCOMBO; break;
+            case 8: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyExitGameKey"s); item = IDC_JOYEXITCOMBO; break;
+            case 9: hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyFrameCount"s); item = IDC_JOYFPSCOMBO; break;
+            case 10:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyVolumeUp"s); item = IDC_JOYVOLUPCOMBO; break;
+            case 11:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyVolumeDown"s); item = IDC_JOYVOLDNCOMBO; break;
+            case 12:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyLTiltKey"s); item = IDC_JOYLTILTCOMBO; break;
+            case 13:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyCTiltKey"s); item = IDC_JOYCTILTCOMBO; break;
+            case 14:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyRTiltKey"s); item = IDC_JOYRTILTCOMBO; break;
+            case 15:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyMechTiltKey"s); item = IDC_JOYMECHTILTCOMBO; break;
+            case 16:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyDebugKey"s); item = IDC_JOYDEBUGCOMBO; break;
+            case 17:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyDebuggerKey"s); item = IDC_JOYDEBUGGERCOMBO; break;
             case 18:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom1"s, selected); item = IDC_JOYCUSTOM1COMBO; break;
             case 19:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom2"s, selected); item = IDC_JOYCUSTOM2COMBO; break;
             case 20:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyCustom3"s, selected); item = IDC_JOYCUSTOM3COMBO; break;
@@ -460,9 +460,9 @@ BOOL KeysConfigDialog::OnInitDialog()
             case 27:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPMDown"s, selected); item = IDC_JOYPMDOWN; break;
             case 28:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPMUp"s, selected); item = IDC_JOYPMUP; break;
             case 29:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPMEnter"s, selected); item = IDC_JOYPMENTER; break;
-            case 30:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyLockbarKey"s, selected); item = IDC_JOYLOCKBARCOMBO; break;
-            case 33:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyPauseKey"s, selected); item = IDC_JOYPAUSECOMBO; break;
-            case 34:hr = g_pvp->m_settings.LoadValue(Settings::Player, "JoyTweakKey"s, selected); item = IDC_JOYTWEAKCOMBO; break;
+            case 30:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyLockbarKey"s); item = IDC_JOYLOCKBARCOMBO; break;
+            case 33:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyPauseKey"s); item = IDC_JOYPAUSECOMBO; break;
+            case 34:hr = g_pvp->m_settings.LoadValueInt(Settings::Player, "JoyTweakKey"s); item = IDC_JOYTWEAKCOMBO; break;
         }
 
         if (!hr)
@@ -522,7 +522,8 @@ BOOL KeysConfigDialog::OnInitDialog()
     //
 
     KeyWindowStruct * const pksw = new KeyWindowStruct();
-    pksw->pi.Init(GetHwnd());
+    pksw->pi.SetFocusWindow(GetHwnd());
+    pksw->pi.Init();
     pksw->m_timerid = 0;
     ::SetWindowLongPtr(GetHwnd(), GWLP_USERDATA, (size_t)pksw);
 
@@ -577,20 +578,6 @@ BOOL KeysConfigDialog::OnInitDialog()
 #else
     if (inputApi == 2) inputApiIndex = 0;
     if (inputApi > 2) inputApiIndex--;
-#endif
-#ifdef ENABLE_IGAMECONTROLLER
-    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"IGameController");//3
-    inputApiCount++;
-#else
-    if (inputApi == 3) inputApiIndex = 0;
-    if (inputApi > 3) inputApiIndex--;
-#endif
-#ifdef ENABLE_VRCONTROLLER
-    ::SendMessage(hwndInputApi, CB_ADDSTRING, 0, (LPARAM)"VR Controller");//4
-    inputApiCount++;
-#else
-    if (inputApi == 4) inputApiIndex = 0;
-    if (inputApi > 4) inputApiIndex--;
 #endif
     ::SendMessage(hwndInputApi, CB_SETCURSEL, inputApiIndex, 0);
 
@@ -895,12 +882,6 @@ void KeysConfigDialog::OnOK()
 #endif
 #ifndef ENABLE_SDL_INPUT
     if (inputApi >= 2) inputApi++;
-#endif
-#ifndef ENABLE_IGAMECONTROLLER
-    if (inputApi >= 3) inputApi++;
-#endif
-#ifndef ENABLE_VRCONTROLLER
-    if (inputApi >= 4) inputApi++;
 #endif
     g_pvp->m_settings.SaveValue(Settings::Player, "InputApi"s, inputApi);
 

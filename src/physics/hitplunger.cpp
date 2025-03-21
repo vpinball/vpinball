@@ -339,7 +339,7 @@ void PlungerMoverObject::UpdateVelocities()
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
       if ((--m_autoFireTimer == 0) && (g_pplayer != nullptr))
-         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, false);
+         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, false);
    }
    else if (autoPlunger && dmech > ReleaseThreshold)
    {
@@ -377,7 +377,7 @@ void PlungerMoverObject::UpdateVelocities()
       // perform any other tasks it normally does when the
       // actual Launch Ball button is pressed.
       if (g_pplayer)
-         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, true);
+         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, true);
 
       // start the timer to send the corresponding KeyUp in 100ms
       m_autoFireTimer = 101;
