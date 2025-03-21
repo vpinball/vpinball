@@ -718,7 +718,11 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    //init.type = bgfx::RendererType::Direct3D11; // Present with VSYNC & outputs on multiple displays will sequentially sync on each display causing massive framerate drop
    //init.type = bgfx::RendererType::Direct3D12; // Flasher & Ball rendering fails on a call to CreateGraphicsPipelineState, rendering artefacts
 
+   #ifndef __LIBVPINBALL__
    m_useLowPrecision = init.type == bgfx::RendererType::OpenGLES;
+   #else
+   m_useLowPrecision = true;
+   #endif
 
    init.callback = &bgfxCallback;
 
