@@ -142,11 +142,7 @@ LRESULT CALLBACK PlayerWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
                      g_pplayer->m_ptable->mViewSetups[g_pplayer->m_ptable->m_BG_current_set].GetRotation(g_pplayer->m_playfieldWnd->GetWidth(), g_pplayer->m_playfieldWnd->GetHeight()) != 0.f))
                {
                   g_pplayer->m_touchregion_pressed[i] = (uMsg == WM_POINTERDOWN);
-
-                  DIDEVICEOBJECTDATA didod;
-                  didod.dwOfs = g_pplayer->m_rgKeys[touchkeymap[i]];
-                  didod.dwData = g_pplayer->m_touchregion_pressed[i] ? 0x80 : 0;
-                  g_pplayer->m_pininput.PushQueue(&didod, APP_TOUCH);
+                  g_pplayer->m_pininput.PushActionEvent(touchActionMap[i], g_pplayer->m_touchregion_pressed[i]);
                }
          }
       }
@@ -442,7 +438,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_progressDialog.SetProgress("Initializing Visuals..."s, 10);
 
    for(unsigned int i = 0; i < eCKeys; ++i)
-      m_rgKeys[i] = static_cast<EnumAssignKeys>(m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]));
+      m_rgKeys[i] = m_ptable->m_settings.LoadValueInt(Settings::Player, regkey_string[i]);
 
    m_PlayMusic = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlayMusic"s, true);
    m_PlaySound = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlaySound"s, true);
@@ -500,12 +496,10 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    PLOGI << "Initializing inputs & implicit objects"; // For profiling
 
-   m_pininput.LoadSettings(m_ptable->m_settings);
    #ifdef _WIN32
-      m_pininput.Init(m_playfieldWnd->GetNativeHWND());
-   #else
-      m_pininput.Init();
+      m_pininput.SetFocusWindow(m_playfieldWnd->GetNativeHWND());
    #endif
+   m_pininput.Init();
 
 #ifndef __STANDALONE__
    const unsigned int lflip = get_vk(m_rgKeys[eLeftFlipperKey]);
@@ -1427,8 +1421,6 @@ void Player::ReadAccelerometerCalibration()
    m_accelerometerMax.y = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
    m_accelerometerGain.x = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150));
    m_accelerometerGain.y = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150));
-
-   m_pininput.LoadSettings(m_ptable->m_settings);
 }
 
 void Player::SetNudgeX(const int x, const int joyidx)
@@ -1712,15 +1704,14 @@ float PlungerMoverObject::MechPlungerSpeed() const
 
 void Player::MechPlungerIn(const int z, const int joyidx)
 {
-   m_curPlunger[joyidx] = -z; //axis reversal
+   m_curPlunger[joyidx] = z;
 
    if (++m_movedPlunger == 0xffffffff) m_movedPlunger = 3; //restart at 3
 }
 
 void Player::MechPlungerSpeedIn(const int z, const int joyidx)
 {
-   // record it
-   m_curPlungerSpeed[joyidx] = -z;
+   m_curPlungerSpeed[joyidx] = z;
 
    // flag that an external speed setting has been applied
    m_fExtPlungerSpeed = fTrue;

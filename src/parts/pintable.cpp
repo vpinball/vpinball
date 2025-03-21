@@ -124,7 +124,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
 	if (g_pplayer)
-		g_pplayer->ReadAccelerometerCalibration();
+      g_pplayer->m_pininput.ReInit();
 
 	return S_OK;
 }
@@ -5130,11 +5130,6 @@ void PinTable::SetMyScrollInfo()
 
    SetScrollInfo(SB_VERT, si, fTrue);
 #endif
-}
-
-void PinTable::FireActionEvent(EnumAssignKeys key, bool isPressed)
-{
-   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[key]);
 }
 
 void PinTable::FireGenericKeyEvent(int dispid, int keycode)

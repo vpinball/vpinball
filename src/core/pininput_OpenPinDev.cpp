@@ -309,7 +309,12 @@ void PinInput::InitOpenPinballDevices()
 
                   // stop as soon as we find a match
                   if (found)
+                  {
+                     PLOGI << "OpenPinballDevice found and registered.";
+                     SetupJoyMapping(0, USHOCKTYPE_OPENPINDEV);
+                     uShockType = USHOCKTYPE_GENERIC;
                      break;
+                  }
                }
             }
          }
@@ -400,46 +405,43 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // for joystick input, so we must rescale to VP's joystick scale.
    constexpr int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
 
-   // Process the analog axis inputs.  Each VP functional axis has a
-   // Keys dialog mapping to a joystick or OpenPinDev axis.  Axes 1-8
-   // are the generic joystick axes (X, Y, Z, RX, RY, RZ, Slider1,
-   // Slider2, respectively).  Axis 9 is the OpenPinDev device, and
-   // maps to the OpenPinDev input that corresponds to the same VP
-   // functional axis.  For example, m_lr_axis is the VP functional
-   // axis for Nudge X, so if m_lr_axis == 9, it maps to the Open Pin
-   // Dev Nudge X axis.
-   //
-   // For passing the input to the player, we can simply pretend that
-   // we're joystick #0.  A function assigned to OpenPinDev can't also
-   // be assigned to a joystick axis, so there won't be any conflicting
-   // input from an actual joystick to the same function, hence we can
-   // take on the role of the joystick.  We should probably do a little
-   // variable renaming in a few places to clarify that the "joystick"
-   // number is more like a "device number", which can be a joystick if
-   // joysticks are assigned or a PinDev if PinDevs are assigned.
-   if (m_lr_axis == 9)
+   // Process the analog axis inputs.
+   // 
+   // The UI was hacked to have a custom axis #9 corresponding to OpenPinDev (instead of an axis)
+   // This allows to detect the axis associated with the OpenPinDev device when the mapping is
+   // done (but this is somewhat wrong as this approach is not consistent and not scalable to all
+   // existing hardware => this needs to be removed).
+   // 
+   // We simply push the value of the singleton device as if it was joystick #0, using virtual
+   // custom axis.
+   // FIXME Reimplement as this is wrong:
+   // . this virtual axis does not follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware
+   // . there could be a conflict if there is actually a joystick using slot #0 (joystick events are blindly 
+   // . player needs to know the number of devices to integrate for nudge/plunger (actually this also needs to be refactored to move the integration out of player)
+   // . this also limits to a single OpenPinDev board unlike existing applications that can average multiple accelerometers
+   // collected even if not used) => we should store our device slot (and inc num_joy)
+   // The work around was an hardcoded pushing to the implementation (which was done before, so a bug was 
+   // introduced when refactoring, but it was already wrong as the nuùm_joy was not inc'ed therefore breaking
+   // the player integration implemenytation) but this is not good either as it breaks the design of a single collect / process.
    {
       // Nudge X input - use velocity or acceleration input, according to the user preferences
       int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
-      g_pplayer->SetNudgeX(m_lr_axis_reverse == 0 ? -val : val, 0);
+      PushJoystickAxisEvent(0, 10, -val); // Axis 9 is OpenPinDev NudgeX (speed or acceleration)
    }
-   if (m_ud_axis == 9)
    {
       // Nudge Y input - use velocity or acceleration input, according to the user preferences
       int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
-      g_pplayer->SetNudgeY(m_ud_axis_reverse == 0 ? -val : val, 0);
+      PushJoystickAxisEvent(0, 11, -val); // Axis 10 is OpenPinDev NudgeY (speed or acceleration)
    }
-   if (m_plunger_axis == 9)
    {
       // Plunger position input
       const int val = cr.plungerPos * scaleFactor;
-      g_pplayer->MechPlungerIn(m_plunger_reverse == 0 ? -val : val, 0);
+      PushJoystickAxisEvent(0, 12, -val); // Axis 11 is OpenPinDev PlungerPos
    }
-   if (m_plunger_speed_axis == 9)
    {
       // Plunger speed input
       int const val = cr.plungerSpeed * scaleFactor;
-      g_pplayer->MechPlungerSpeedIn(m_plunger_reverse == 0 ? -val : val, 0);
+      PushJoystickAxisEvent(0, 13, -val); // Axis 12 is OpenPinDev PlungerSpeed
    }
 
    // Special logic for the Start button, to handle auto-start timers,
@@ -459,7 +461,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          const bool isDown = (cr.genericButtons & bit) != 0;
          const bool wasDown = (m_openPinDev_generic_buttons & bit) != 0;
          if (isDown != wasDown)
-            Joy(buttonNum, isDown, start);
+            PushJoystickButtonEvent(0, buttonNum, isDown);
       }
 
       // remember the new button state
@@ -471,8 +473,8 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
       static const struct KeyMap
       {
          uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
-         EnumAssignKeys rgKeyIndex; // g_pplayer->m_rgKeys[] index, or -1 if a direct VPM key is used instead
-         BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an m_rgKeys assignment is used instead
+         EnumAssignKeys mappedAction; // mapped action, or EnumAssignKeys::eCKeys if a direct VPM key is used instead
+         BYTE vpmKey; // DIK_xxx key ID of VPM key, or 0 if an action assignment is used instead
       } keyMap[] = {
          { 0x00000001, eStartGameKey },             // Start (start game)
          { 0x00000002, eExitGame },                 // Exit (end game)
@@ -514,10 +516,10 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          const bool wasDown = (m_openPinDev_pinball_buttons & mask) != 0;
          if (isDown != wasDown)
          {
-            if (m->rgKeyIndex != EnumAssignKeys::eCKeys)
-               FireActionEvent(m->rgKeyIndex, isDown);
+            if (m->mappedAction != EnumAssignKeys::eCKeys)
+               FireActionEvent(m->mappedAction, isDown);
             else
-               FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->rgKeyIndex != -1 ? g_pplayer->m_rgKeys[m->rgKeyIndex] : m->vpmKey);
+               FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->vpmKey);
          }
       }
 

@@ -11,14 +11,9 @@
 #pragma comment(lib, "XInput.lib")
 #endif
 
-#ifdef ENABLE_SDL_INPUT //!! test
+#ifdef ENABLE_SDL_INPUT
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_gamepad.h>
-#endif
-
-#ifdef ENABLE_IGAMECONTROLLER //!! not implemented yet
-#include "windows.gaming.input.h"
-#pragma comment(lib, "runtimeobject.lib")
 #endif
 
 #define MAX_KEYQUEUE_SIZE 32
@@ -27,27 +22,16 @@
 #error Note that MAX_KEYQUEUE_SIZE must be power of 2
 #endif
 
+// FIXME this is a very hacky way to handle custom (and legacy) input hardware => rewrite
 #define USHOCKTYPE_PBWIZARD   1
 #define USHOCKTYPE_ULTRACADE  2
 #define USHOCKTYPE_SIDEWINDER 3
 #define USHOCKTYPE_VIRTUAPIN  4
-#define USHOCKTYPE_GENERIC    5
+#define USHOCKTYPE_OPENPINDEV 5 // Only used for joy mapping setup
+#define USHOCKTYPE_GENERIC    6
 
-// Input type ID - keyboard
-#define APP_KEYBOARD   0
-
-// Input type ID - mouse
-#define APP_MOUSE      1
-
-// Input type ID - touchscreen
-#define APP_TOUCH      2
-
-// Input type ID - joystick 1 through 8
-// handle multiple joysticks, APP_JOYSTICKMN..APP_JOYSTICKMX
-#define APP_JOYSTICKMN 3
+// Maximum number of joysticks
 #define PININ_JOYMXCNT 8
-#define APP_JOYSTICK(n) (APP_JOYSTICKMN + (n))
-#define APP_JOYSTICKMX  (APP_JOYSTICK(PININ_JOYMXCNT - 1))
 
 
 // Joystick axis normalized input range.  This is the range for joystick
@@ -69,9 +53,10 @@
 // the SDL and XInput code (at least) if JOYRANGE ever changed.  If
 // anyone ever changes the range, be sure to test all of the input APIs
 // to make sure all of those hidden assumptions are fixed up.
-#define JOYRANGEMN (-65536)
+// These values must be symetrical
 #define JOYRANGEMX (+65536)
-#define JOYRANGE ((JOYRANGEMX) - (JOYRANGEMN) + 1)
+#define JOYRANGEMN (-JOYRANGEMX)
+#define JOYRANGE   (2 * JOYRANGEMX + 1)
 
 
 #ifdef _WIN32
@@ -182,31 +167,42 @@ class PinInput
 {
 public:
    PinInput();
-   void LoadSettings(const Settings& settings);
    ~PinInput();
 
-   #ifdef _WIN32
-   void Init(HWND focusWnd);
-   #else
    void Init();
-   #endif
+   void ReInit() { UnInit(); Init(); }
    void UnInit();
+
+   #ifdef _WIN32
+      void SetFocusWindow(HWND focusWnd);
+      #ifdef USE_DINPUT8
+         LPDIRECTINPUTDEVICE8 GetJoystick(int index);
+      #else
+         LPDIRECTINPUTDEVICE GetJoystick(int index);
+      #endif
+   #endif
+
+   #if defined(ENABLE_SDL_INPUT)
+      void HandleSDLEvent(SDL_Event& e);
+   #endif
 
    enum InputAPI
    {
-      PI_DIRECTINPUT, PI_XINPUT, PI_SDL, PI_GAMECONTROLLER
+      PI_DIRECTINPUT, PI_XINPUT, PI_SDL
    };
    InputAPI GetInputAPI() const { return m_inputApi; }
 
-   void FireActionEvent(EnumAssignKeys key, bool isPressed);
-   void FireGenericKeyEvent(const int dispid, int keycode);
+   // Enqueue events for processing
+   void PushActionEvent(EnumAssignKeys action, bool isPressed);
+   void PushKeyboardEvent(int keycode, bool isPressed);
+   void PushJoystickButtonEvent(int joystickId, int buttonId, bool isPressed);
+   void PushJoystickAxisEvent(int joystickId, int axisId, int value);
 
-   void PushQueue(DIDEVICEOBJECTDATA * const data, const unsigned int app_data);
-   const DIDEVICEOBJECTDATA *GetTail();
-
+   // Process enqueued events
    void ProcessKeys(int curr_time_msec, bool handleStartExit);
 
-   void ProcessJoystick(const DIDEVICEOBJECTDATA * __restrict input, int curr_time_msec);
+   void FireActionEvent(EnumAssignKeys key, bool isPressed);
+   void FireGenericKeyEvent(const int dispid, int keycode);
 
    // Speed: 0..1
    void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration);
@@ -215,112 +211,96 @@ public:
 
    struct InputState
    {
-      uint64_t keyState;
+      uint64_t actionState;
 
       void SetPressed(EnumAssignKeys key)
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
-         keyState |= mask;
+         actionState |= mask;
       }
 
       void SetReleased(EnumAssignKeys key)
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
-         keyState &= ~mask;
+         actionState &= ~mask;
       }
 
       bool IsKeyPressed(EnumAssignKeys key, const InputState &prev) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
-         return (keyState & mask) != 0 && (prev.keyState & mask) == 0;
+         return (actionState & mask) != 0 && (prev.actionState & mask) == 0;
       }
 
       bool IsKeyDown(EnumAssignKeys key) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
-         return (keyState & mask) != 0;
+         return (actionState & mask) != 0;
       }
 
       bool IsKeyReleased(EnumAssignKeys key, const InputState &prev) const
       {
          uint64_t mask = static_cast<uint64_t>(1) << static_cast<int>(key);
-         return (keyState & mask) == 0 && (prev.keyState & mask) != 0;
+         return (actionState & mask) == 0 && (prev.actionState & mask) != 0;
       }
    };
    const InputState& GetInputState() const { return m_inputState; }
 
-   #ifdef _WIN32
-   #ifdef USE_DINPUT8
-   LPDIRECTINPUTDEVICE8 GetJoystick(int index);
-   #else
-   LPDIRECTINPUTDEVICE GetJoystick(int index);
-   #endif
-   #endif
+   uint64_t m_leftkey_down_usec = 0;
+   unsigned int m_leftkey_down_frame = 0;
+   uint64_t m_leftkey_down_usec_rotate_to_end = 0;
+   unsigned int m_leftkey_down_frame_rotate_to_end = 0;
+   uint64_t m_leftkey_down_usec_EOS = 0;
+   unsigned int m_leftkey_down_frame_EOS = 0;
 
-   uint64_t m_leftkey_down_usec;
-   unsigned int m_leftkey_down_frame;
-   uint64_t m_leftkey_down_usec_rotate_to_end;
-   unsigned int m_leftkey_down_frame_rotate_to_end;
-   uint64_t m_leftkey_down_usec_EOS;
-   unsigned int m_leftkey_down_frame_EOS;
-   uint64_t m_lastclick_ballcontrol_usec;
+   int m_num_joy = 0;
+   int uShockType = 0;
 
-   int m_num_joy;
-   int uShockType;
+   bool m_linearPlunger = false;
+   bool m_plunger_retract = false; // enable 1s retract phase for button/key plunger
 
-   bool m_linearPlunger;
-   bool m_plunger_retract; // enable 1s retract phase for button/key plunger
-
-   int m_joycustom1key, m_joycustom2key, m_joycustom3key, m_joycustom4key;
+   int m_joycustom1key = 0, m_joycustom2key = 0, m_joycustom3key = 0, m_joycustom4key = 0;
 
 private:
    int Started();
-
    void Autostart(const U32 msecs, const U32 retry_msecs, const U32 curr_time_msec);
    void ButtonExit(const U32 msecs, const U32 curr_time_msec);
-
-   void Joy(const unsigned int n, const bool isPressed, const bool start);
 
    void InitOpenPinballDevices();
    void ReadOpenPinballDevices(const U32 cur_time_msec);
    void TerminateOpenPinballDevices();
 
    void GetInputDeviceData();
-   void HandleInputDI(DIDEVICEOBJECTDATA *didod);
-   void HandleInputXI(DIDEVICEOBJECTDATA *didod);
-   void HandleInputIGC(DIDEVICEOBJECTDATA *didod);
-   void HandleInputSDL(DIDEVICEOBJECTDATA *didod);
+   void HandleInputDI();
+   void HandleInputXI();
+   void HandleInputSDL();
 
-#if defined(ENABLE_SDL_INPUT)
-public:
-   void HandleSDLEvent(SDL_Event& e);
-private:
-#endif
+   void PushQueue(DIDEVICEOBJECTDATA* const data, const unsigned int app_data);
+   const DIDEVICEOBJECTDATA* GetTail();
 
 #ifdef _WIN32
    HWND m_focusHWnd = nullptr;
-   STICKYKEYS m_startupStickyKeys;
+   STICKYKEYS m_startupStickyKeys { 0 };
    static BOOL CALLBACK EnumObjectsCallbackDI(const DIDEVICEOBJECTINSTANCE *pdidoi, VOID *pContext);
    static BOOL CALLBACK EnumJoystickCallbackDI(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef);
    #ifdef USE_DINPUT8
       LPDIRECTINPUT8 m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT];
+      LPDIRECTINPUTDEVICE8 m_pJoystick[PININ_JOYMXCNT] { nullptr };
       LPDIRECTINPUTDEVICE8 m_pMouse = nullptr;
       #ifdef USE_DINPUT_FOR_KEYBOARD
          LPDIRECTINPUTDEVICE8 m_pKeyboard = nullptr;
       #endif
    #else
       LPDIRECTINPUT m_pDI = nullptr;
-      LPDIRECTINPUTDEVICE m_pJoystick[PININ_JOYMXCNT];
+      LPDIRECTINPUTDEVICE m_pJoystick[PININ_JOYMXCNT] { nullptr };
       LPDIRECTINPUTDEVICE m_pMouse = nullptr;
       #ifdef USE_DINPUT_FOR_KEYBOARD
          LPDIRECTINPUTDEVICE m_pKeyboard = nullptr;
       #endif
    #endif
 
-   LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT];
+   LPDIDEVICEINSTANCE m_attachedDeviceInfo[PININ_JOYMXCNT] { nullptr };
 
-   std::unique_ptr<std::map<string, bool>> m_pInputDeviceSettingsInfo;
+   std::map<string, bool> m_inputDeviceSettingsInfo;
 #endif
 
    // Open Pinball Device context.  This is an opaque object managed
@@ -333,24 +313,24 @@ private:
    uint32_t m_openPinDev_pinball_buttons = 0;
    bool m_openPinDev_flipper_l = false, m_openPinDev_flipper_r = false;
 
-   BYTE m_oldMouseButtonState[3];
+   BYTE m_oldMouseButtonState[3] { 0 };
 
-   U32 m_firedautostart;
+   U32 m_firedautostart = 0;
 
-   U32 m_first_stamp;
-   U32 m_exit_stamp;
+   U32 m_first_stamp = 0;
+   U32 m_exit_stamp = 0;
 
-   bool m_pressed_start;
+   bool m_pressed_start = false;
 
-   bool m_as_down;
-   bool m_as_didonce;
+   bool m_as_down = false;
+   bool m_as_didonce = false;
 
-   bool m_tilt_updown;
+   bool m_tilt_updown = false;
 
-   DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE]; // circular queue of direct input events
+   DIDEVICEOBJECTDATA m_diq[MAX_KEYQUEUE_SIZE] { 0 }; // circular queue of direct input events
 
-   int m_head; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
-   int m_tail; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
+   int m_head = 0; // head==tail means empty, (head+1)%MAX_KEYQUEUE_SIZE == tail means full
+   int m_tail = 0; // These are integer indices into keyq and should be in domain of 0..MAX_KEYQUEUE_SIZE-1
 
    // Axis assignments - these map to the drop-list index in the axis
    // selection combos in the Keys dialog:
@@ -366,33 +346,104 @@ private:
    //   8 = Slider 2
    //   9 = Open Pinball Device (selects input mapping to the same function as assigned axis)
    //
-   int m_plunger_axis, m_plunger_speed_axis, m_lr_axis, m_ud_axis;
-   int m_joylflipkey, m_joyrflipkey, m_joystagedlflipkey, m_joystagedrflipkey, m_joylmagnasave, m_joyrmagnasave, m_joyplungerkey, m_joystartgamekey, m_joyexitgamekey, m_joyaddcreditkey;
-   int m_joyaddcreditkey2, m_joyframecount, m_joyvolumeup, m_joyvolumedown, m_joylefttilt, m_joycentertilt, m_joyrighttilt, m_joypmbuyin;
-   int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;
-   int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
-   int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
-   int m_deadz;
+   int m_lr_axis = 1;
+   int m_ud_axis = 2;
+   int m_plunger_axis = 3;
+   int m_plunger_speed_axis = 0;
+   int m_deadz = 0;
 
-   bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
-   bool m_enableMouseInPlayer;
+   int m_joylflipkey = 0;
+   int m_joyrflipkey = 0;
+   int m_joyplungerkey = 0;
+   int m_joylefttilt = 0;
+   int m_joycentertilt = 0;
+   int m_joyrighttilt = 0;
+   int m_joypmbuyin = 0;
+   int m_joypmcoin3 = 0;
+   int m_joypmcoin4 = 0;
+   int m_joypmcoindoor = 0;
+   int m_joypmcancel = 0;
+   int m_joypmdown = 0;
+   int m_joypmup = 0;
+   int m_joypmenter = 0;
+   int m_joycustom1 = 0;
+   int m_joycustom2 = 0;
+   int m_joycustom3 = 0;
+   int m_joycustom4 = 0;
+   
+   struct ActionMapping
+   {
+      EnumAssignKeys action = EnumAssignKeys::eCKeys;
+
+      enum AMType
+      {
+         AM_Keyboard, AM_Joystick
+      } type;
+
+      // Keyboard input
+      int keycode;
+      
+      // Joystick and gamepads
+      int joystickId;
+      int buttonId;
+   };
+   vector<ActionMapping> m_actionMappings;
+
+   struct AnalogActionMapping
+   {
+      enum AMOutput
+      {
+         AM_NudgeX,
+         AM_NudgeY,
+         AM_PlungerPos,
+         AM_PlungerSpeed,
+      } output;
+
+      // Joystick and gamepads
+      int joystickId = 0;
+      // Axis assignments - these map to the drop-list index in the axis selection combos in the Keys dialog:
+      //   0 = Disabled
+      //   1 = X
+      //   2 = Y
+      //   3 = Z
+      //   4 = rX
+      //   5 = rY
+      //   6 = rZ
+      //   7 = Slider 1
+      //   8 = Slider 2
+      //   9 = Open Pinball Device (selects input mapping to the same function as assigned axis)
+      int axisId = 0;
+      bool revert = false;
+   };
+   vector<AnalogActionMapping> m_analogActionMappings;
+
+   void SetupJoyMapping(int joystickId, int inputLayout);
+   void UnmapAll() { m_actionMappings.clear(); m_analogActionMappings.clear(); }
+   void UnmapAllJoy();
+   void UnmapAction(EnumAssignKeys action, bool fromKeyboard, bool fromJoystick);
+   void MapActionToKeyboard(EnumAssignKeys action, int keycode, bool replace);
+   void MapActionToJoystick(EnumAssignKeys action, int joystickId, int buttonId, bool replace);
+   void MapAnalogActionToJoystick(AnalogActionMapping::AMOutput output, int joystickId, int axisId, bool revert, bool replace);
+
+   bool m_override_default_buttons = false, m_plunger_reverse = false, m_disable_esc = false, m_lr_axis_reverse = false, m_ud_axis_reverse = false;
+   bool m_enableMouseInPlayer = true;
 
    InputState m_inputState { 0 };
 
-   DWORD m_nextKeyPressedTime;
+   DWORD m_nextKeyPressedTime = 0;
 
-   InputAPI m_inputApi;
-   int m_rumbleMode; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
+   InputAPI m_inputApi = PI_DIRECTINPUT;
+   int m_rumbleMode = 0; // 0=Off, 1=Table only, 2=Generic only, 3=Table with generic as fallback
 
    static constexpr int m_LeftMouseButtonID = 25;
    static constexpr int m_RightMouseButtonID = 26;
    static constexpr int m_MiddleMouseButtonID = 27;
 
 #ifdef ENABLE_XINPUT
-   int m_inputDeviceXI;
-   XINPUT_STATE m_inputDeviceXIstate;
-   DWORD m_rumbleOffTime;
-   bool m_rumbleRunning;
+   int m_inputDeviceXI = 0;
+   XINPUT_STATE m_inputDeviceXIstate { 0 };
+   DWORD m_rumbleOffTime = 0;
+   bool m_rumbleRunning = false;
 #endif
 
 #ifdef ENABLE_SDL_INPUT
@@ -400,9 +451,6 @@ private:
    SDL_Joystick* m_pSDLJoystick = nullptr; 
    SDL_Haptic* m_pSDLRumbleDevice = nullptr;
    void RefreshSDLDevices();
-#endif
-
-#ifdef ENABLE_IGAMECONTROLLER
 #endif
 };
 
