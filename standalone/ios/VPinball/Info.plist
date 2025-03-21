@@ -2,10 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>LSMinimumSystemVersion</key>
-	<string>15.0</string>
-	<key>GCSupportsGameMode</key>
-	<true/>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -36,10 +32,10 @@
 			<string>ExtendedGamepad</string>
 		</dict>
 	</array>
-	<key>GCSupportsControllerUserInteraction</key>
-	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSMinimumSystemVersion</key>
+	<string>15.0</string>
 	<key>UIFileSharingEnabled</key>
 	<true/>
 	<key>UILaunchScreen</key>
@@ -88,7 +84,5 @@
 			</dict>
 		</dict>
 	</array>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>Visual Pinball would like to use Bluetooth controllers for input.</string>
 </dict>
 </plist>
