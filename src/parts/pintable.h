@@ -7,6 +7,7 @@
 #include "robin_hood.h"
 
 #include <atomic>
+#include <unordered_set>
 #include "utils/hash.h"
 #ifndef __STANDALONE__
 #include "ui/dialogs/SearchSelectDialog.h"
@@ -721,6 +722,7 @@ public:
    const vector<Material *> &GetMaterialList() const { return m_materials; }
 
    vector<PinSound *> m_vsound;
+   std::unordered_set<std::string> m_ussoundsMissing;
 
    vector<PinFont *> m_vfont;
 

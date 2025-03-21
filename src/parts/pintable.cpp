@@ -7222,12 +7222,23 @@ HRESULT PinTable::StopSound(BSTR Sound)
    WideCharToMultiByteNull(CP_ACP, 0, Sound, -1, szName, MAXSTRING, nullptr, nullptr);
    const string name(szName);
 
-   for (size_t i = 0; i < m_vsound.size(); i++)
+   size_t i;
+   for (i = 0; i < m_vsound.size(); i++)
       if (StrCompareNoCase(m_vsound[i]->m_szName, name))
-      {
-         m_vsound[i]->Stop();
          break;
+
+   if (i == m_vsound.size()) // did not find it
+   {
+      if (!name.empty() && !m_ussoundsMissing.contains(name))
+      {
+         PLOGW << "Request to stop \"" << name << "\", but sound not found.";
+         m_ussoundsMissing.insert(name);
       }
+      return S_OK;
+   }
+
+   PinSound * const pps = m_vsound[i];
+   pps->Stop();
 
    return S_OK;
 }
@@ -7255,16 +7266,15 @@ STDMETHODIMP PinTable::PlaySound(BSTR bstr, int loopcount, float volume, float p
 
    if (i == m_vsound.size()) // did not find it
    {
-      if (!name.empty() && m_pcv && g_pplayer && g_pplayer->m_hwndDebugOutput)
+      if (!name.empty() && !m_ussoundsMissing.contains(name))
       {
-         const string logmsg = "Request to play \"" + name + "\", but sound not found.";
-         m_pcv->AddToDebugOutput(logmsg.c_str());
+         PLOGW << "Request to play \"" << name << "\", but sound not found.";
+         m_ussoundsMissing.insert(name);
       }
       return S_OK;
    }
 
    PinSound * const pps = m_vsound[i];
-
    pps->Play(volume, randompitch, pitch, pan, front_rear_fade, loopcount, VBTOb(usesame), VBTOb(restart));
 
    return S_OK;
