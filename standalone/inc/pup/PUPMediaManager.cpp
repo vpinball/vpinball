@@ -87,11 +87,11 @@ void PUPMediaManager::Stop(PUPPlaylist* pPlaylist, const string& szPlayFile)
 {
    string szPath = pPlaylist->GetPlayFilePath(szPlayFile);
    if (!szPath.empty() && szPath == m_pMainPlayer->szPath) {
-      PLOGD.printf("Main player path match: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
+      PLOGD.printf("Main player stopping playback: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
       m_pMainPlayer->player.Stop();
    }
    else {
-      PLOGW.printf("Main player no path match: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
+      PLOGD.printf("Main player playback stop requested but currently not playing: screen={%s}, path=%s", m_pScreen->ToString(false).c_str(), szPath.c_str());
    }
 }
 

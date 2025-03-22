@@ -19,6 +19,7 @@ PUPManager::PUPManager()
 {
    m_init = false;
    m_isRunning = false;
+   m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
 }
 
 PUPManager::~PUPManager()
@@ -32,15 +33,21 @@ void PUPManager::LoadConfig(const string& szRomName)
       return;
    }
 
-   m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
    if (m_szRootPath.empty())
+   {
+      PLOGI.printf("No pupvideos folder found, not initializing PUP");
       return;
+   }
 
    m_szPath = find_directory_case_insensitive(m_szRootPath, szRomName);
    if (m_szPath.empty())
       return;
 
    PLOGI.printf("PUP path: %s", m_szPath.c_str());
+
+   // Load playlists
+
+   LoadPlaylists();
 
    // Load screens
 
@@ -54,7 +61,7 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            AddScreen(PUPScreen::CreateFromCSV(line));
+            AddScreen(PUPScreen::CreateFromCSV(line, s_playlists));
          }
       }
       else {
@@ -70,7 +77,8 @@ void PUPManager::LoadConfig(const string& szRomName)
    for (auto& [key, pScreen] : m_screenMap) {
       PUPCustomPos* pCustomPos = pScreen->GetCustomPos();
       if (pCustomPos) {
-         PUPScreen* pParentScreen = GetScreen(pCustomPos->GetSourceScreen());
+         std::map<int, PUPScreen*>::iterator it = m_screenMap.find(pCustomPos->GetSourceScreen());
+         PUPScreen* pParentScreen = it != m_screenMap.end() ? it->second : nullptr;
          if (pParentScreen && pScreen != pParentScreen)
             pParentScreen->AddChild(pScreen);
       }
@@ -104,11 +112,35 @@ void PUPManager::LoadConfig(const string& szRomName)
    return;
 }
 
+void PUPManager::LoadPlaylists()
+{
+   string szPlaylistsPath = find_path_case_insensitive(GetPath() + "playlists.pup");
+   std::ifstream playlistsFile;
+   playlistsFile.open(szPlaylistsPath, std::ifstream::in);
+   if (playlistsFile.is_open()) {
+      robin_hood::unordered_set<std::string> lowerPlaylistNames;
+      string line;
+      int i = 0;
+      while (std::getline(playlistsFile, line)) {
+         if (++i == 1)
+            continue;
+         if (PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line))
+         {
+            std::string folderNameLower = lowerCase(pPlaylist->GetFolder());
+            if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end())
+            {
+               s_playlists.push_back(pPlaylist);
+               lowerPlaylistNames.insert(folderNameLower);
+            } else {
+               PLOGW.printf("Duplicate playlist: playlist=%s", pPlaylist->ToString().c_str());
+            }
+         }
+      }
+   }
+}
+
 const string& PUPManager::GetRootPath()
 {
-   if (!m_init) {
-      PLOGW.printf("Getting root path before initialization");
-   }
    return m_szRootPath;
 }
 
@@ -130,6 +162,11 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    PLOGI.printf("Screen added: screen={%s}", pScreen->ToString().c_str());
 
    return true;
+}
+
+bool PUPManager::AddDefaultScreen(LONG lScreenNum)
+{
+   return AddScreen(PUPScreen::CreateDefault(lScreenNum, s_playlists));
 }
 
 bool PUPManager::HasScreen(int screenNum)
