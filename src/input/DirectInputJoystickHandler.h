@@ -2,6 +2,27 @@
 
 #include "pininput.h"
 
+// from dinput.h, modernized to please clang
+#undef DIJOFS_X
+#undef DIJOFS_Y
+#undef DIJOFS_Z
+#undef DIJOFS_RX
+#undef DIJOFS_RY
+#undef DIJOFS_RZ
+#undef DIJOFS_SLIDER
+#undef DIJOFS_POV
+#undef DIJOFS_BUTTON
+#define DIJOFS_X offsetof(DIJOYSTATE, lX)
+#define DIJOFS_Y offsetof(DIJOYSTATE, lY)
+#define DIJOFS_Z offsetof(DIJOYSTATE, lZ)
+#define DIJOFS_RX offsetof(DIJOYSTATE, lRx)
+#define DIJOFS_RY offsetof(DIJOYSTATE, lRy)
+#define DIJOFS_RZ offsetof(DIJOYSTATE, lRz)
+#define DIJOFS_SLIDER(n) (offsetof(DIJOYSTATE, rglSlider) + (n) * sizeof(LONG))
+#define DIJOFS_POV(n) (offsetof(DIJOYSTATE, rgdwPOV) + (n) * sizeof(DWORD))
+#define DIJOFS_BUTTON(n) (offsetof(DIJOYSTATE, rgbButtons) + (n))
+// end
+
 class DirectInputJoystickHandler : public InputHandler
 {
 public:
@@ -35,7 +56,7 @@ public:
 
    static inline uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x100000000) | static_cast<uint64_t>(index); }
 
-   int GetNJoysticks() const { return m_joysticks.size(); }
+   int GetNJoysticks() const { return static_cast<int>(m_joysticks.size()); }
    #ifdef USE_DINPUT8
       LPDIRECTINPUTDEVICE8 GetJoystick(int index) { return m_joysticks[index]; }
    #else

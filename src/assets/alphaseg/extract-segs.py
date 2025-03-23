@@ -15,7 +15,7 @@ scale = 4
 render = False
 
 def extract_single_path(svg_file, group_id, path_index, out_img, crop_right, crop_bottom):
-    parser = etree.XMLParser(remove_blank_text=False)
+    parser = etree.XMLParser(remove_blank_text=False, resolve_entities=False)
     tree = etree.parse(svg_file, parser)
     root = tree.getroot()
     namespace = { 'svg': 'http://www.w3.org/2000/svg', 'inkscape' : 'http://www.inkscape.org/namespaces/inkscape' }
