@@ -13,6 +13,9 @@
     <Filter Include="core">
       <UniqueIdentifier>{fc16eece-2096-4e44-bad4-378fa9352bef}</UniqueIdentifier>
     </Filter>
+    <Filter Include="input">
+      <UniqueIdentifier>{250fa71e-34b0-4d55-9f0a-483bf091847f}</UniqueIdentifier>
+    </Filter>
     <Filter Include="math">
       <UniqueIdentifier>{f3961dac-131c-4ac3-3988-412398766646}</UniqueIdentifier>
     </Filter>
@@ -36,6 +39,9 @@
     </Filter>
     <Filter Include="shaders\bgfx">
       <UniqueIdentifier>{67a3c1e3-f7b5-45a4-ba1a-453f61d1e6d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{e528ec17-3a14-4355-aff0-2359664399c9}</UniqueIdentifier>
     </Filter>
     <Filter Include="ui">
       <UniqueIdentifier>{28f6598a-1408-3fc7-a6ce-93c682c026da}</UniqueIdentifier>
@@ -124,9 +130,6 @@
     <Filter Include="third-party\openxr">
       <UniqueIdentifier>{49343BB8-F179-4DA3-8FDF-5119D31F3386}</UniqueIdentifier>
     </Filter>
-    <Filter Include="scripts">
-      <UniqueIdentifier>{e528ec17-3a14-4355-aff0-2359664399c9}</UniqueIdentifier>
-    </Filter>
     <Filter Include="third-party\simple-uri-parser">
       <UniqueIdentifier>{d2ad50dc-81bf-4ece-9513-85e36260bc19}</UniqueIdentifier>
     </Filter>
@@ -148,12 +151,6 @@
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/main.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/pininput.cpp">
-      <Filter>core</Filter>
-    </ClCompile>
-    <ClCompile Include="src/core/pininput_OpenPinDev.cpp">
       <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="src/core/pinundo.cpp">
@@ -699,6 +696,12 @@
     <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
+    <ClCompile Include="src/core/pininput.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
+    <ClCompile Include="src/core/pininput_OpenPinDev.cpp">
+      <Filter>input</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -729,9 +732,6 @@
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/core/main.h">
-      <Filter>core</Filter>
-    </ClInclude>
-    <ClInclude Include="src/core/pininput.h">
       <Filter>core</Filter>
     </ClInclude>
     <ClInclude Include="src/core/stdafx.h">
@@ -1814,11 +1814,32 @@
     <ClInclude Include="src\core\ResURIResolver.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src\plugins\LoggingPlugin.h">
-      <Filter>plugin</Filter>
-    </ClInclude>
     <ClInclude Include="src\physics\AsyncDynamicQuadTree.h">
       <Filter>physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\DirectInputJoystickHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\DirectInputKeyboardHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\DirectInputMouseHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\SDLInputHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\Win32InputKeyboardHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\XInputJoystickHandler.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src/core/pininput.h">
+      <Filter>input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\input\OpenPinDevHandler.h">
+      <Filter>input</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
