@@ -4,37 +4,12 @@
 #include "renderer/VRDevice.h"
 
 #ifdef ENABLE_SDL_VIDEO
-#include "imgui/imgui_impl_sdl3.h"
+   #include "imgui/imgui_impl_sdl3.h"
 #endif
 
 #ifdef __LIBVPINBALL__
-#include "standalone/VPinballLib.h"
+   #include "standalone/VPinballLib.h"
 #endif
-
-// from dinput.h, modernized to please clang
-#undef DIJOFS_X
-#undef DIJOFS_Y
-#undef DIJOFS_Z
-#undef DIJOFS_RX
-#undef DIJOFS_RY
-#undef DIJOFS_RZ
-#undef DIJOFS_SLIDER
-#undef DIJOFS_POV
-#undef DIJOFS_BUTTON
-#define DIJOFS_X            offsetof(DIJOYSTATE, lX)
-#define DIJOFS_Y            offsetof(DIJOYSTATE, lY)
-#define DIJOFS_Z            offsetof(DIJOYSTATE, lZ)
-#define DIJOFS_RX           offsetof(DIJOYSTATE, lRx)
-#define DIJOFS_RY           offsetof(DIJOYSTATE, lRy)
-#define DIJOFS_RZ           offsetof(DIJOYSTATE, lRz)
-#define DIJOFS_SLIDER(n)   (offsetof(DIJOYSTATE, rglSlider) + (n) * sizeof(LONG))
-#define DIJOFS_POV(n)      (offsetof(DIJOYSTATE, rgdwPOV) + (n) * sizeof(DWORD))
-#define DIJOFS_BUTTON(n)   (offsetof(DIJOYSTATE, rgbButtons) + (n))
-// end
-
-
-#define BALLCONTROL_DOUBLECLICK_THRESHOLD_USEC (500 * 1000)
-
 
 #ifdef _WIN32
    #include "input/Win32InputKeyboardHandler.h"
