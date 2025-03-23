@@ -14,7 +14,7 @@
 #include "renderer/RenderProbe.h"
 #include "renderer/ViewSetup.h"
 
-#include "core/pininput.h"
+#include "input/pininput.h"
 
 #ifdef __STANDALONE__
 #include <iostream>

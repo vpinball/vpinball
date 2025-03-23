@@ -696,10 +696,10 @@
     <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/pininput.cpp">
+    <ClCompile Include="src/input/pininput.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/pininput_OpenPinDev.cpp">
+    <ClCompile Include="src/input/OpenPinDevHandler.cpp">
       <Filter>input</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1835,7 +1835,7 @@
     <ClInclude Include="src\input\XInputJoystickHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/pininput.h">
+    <ClInclude Include="src/input/pininput.h">
       <Filter>input</Filter>
     </ClInclude>
     <ClInclude Include="src\input\OpenPinDevHandler.h">

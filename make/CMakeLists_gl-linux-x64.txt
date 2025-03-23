@@ -54,8 +54,6 @@ add_executable(vpinball
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
-   src/core/pininput.cpp
-   src/core/pininput_OpenPinDev.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -73,7 +71,6 @@ add_executable(vpinball
    src/core/ieditable.h
    src/core/iselect.cpp
    src/core/iselect.h
-   src/core/pininput.h
    src/core/pinundo.cpp
    src/core/pinundo.h
    src/core/main.cpp
@@ -93,7 +90,10 @@ add_executable(vpinball
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
 
+   src/input/pininput.h
+   src/input/pininput.cpp
    src/input/OpenPinDevHandler.h
+   src/input/OpenPinDevHandler.cpp
    src/input/SDLInputHandler.h
 
    src/math/bbox.h

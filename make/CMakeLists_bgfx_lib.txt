@@ -70,7 +70,6 @@ set(VPINBALL_SOURCES
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
-   src/core/pininput.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -88,7 +87,6 @@ set(VPINBALL_SOURCES
    src/core/ieditable.h
    src/core/iselect.cpp
    src/core/iselect.h
-   src/core/pininput.h
    src/core/pinundo.cpp
    src/core/pinundo.h
    src/core/main.cpp
@@ -108,7 +106,8 @@ set(VPINBALL_SOURCES
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
 
-   src/input/OpenPinDevHandler.h
+   src/input/pininput.h
+   src/input/pininput.cpp
    src/input/SDLInputHandler.h
 
    src/math/bbox.h
