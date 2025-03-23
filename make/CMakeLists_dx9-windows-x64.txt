@@ -108,8 +108,6 @@ add_executable(vpinball WIN32
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/parts/pinbinary.cpp
-   src/core/pininput.cpp
-   src/core/pininput_OpenPinDev.cpp
    src/core/vpversion.h
 
    src/audio/pinsound.cpp
@@ -126,7 +124,6 @@ add_executable(vpinball WIN32
    src/core/ieditable.h
    src/core/iselect.cpp
    src/core/iselect.h
-   src/core/pininput.h
    src/core/pinundo.cpp
    src/core/pinundo.h
    src/core/main.cpp
@@ -146,10 +143,14 @@ add_executable(vpinball WIN32
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
 
+   src/input/pininput.h
+   src/input/pininput.cpp
    src/input/DirectInputJoystickHandler.h
    src/input/DirectInputKeyboardHandler.h
    src/input/DirectInputMouseHandler.h
    src/input/OpenPinDevHandler.h
+   src/input/OpenPinDevHandler.cpp
+   src/input/SDLInputHandler.h
    src/input/Win32InputKeyboardHandler.h
    src/input/XInputJoystickHandler.h
 

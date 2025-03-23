@@ -1130,8 +1130,8 @@
     <ClCompile Include="src/core/ieditable.cpp" />
     <ClCompile Include="src/core/editablereg.cpp" />
     <ClCompile Include="src/core/iselect.cpp" />
-    <ClCompile Include="src/core/pininput.cpp" />
-    <ClCompile Include="src/core/pininput_OpenPinDev.cpp" />
+    <ClCompile Include="src/input/pininput.cpp" />
+    <ClCompile Include="src/input/OpenPinDevHandler.cpp" />
     <ClCompile Include="src/core/pinundo.cpp" />
     <ClCompile Include="src/core/main.cpp" />
     <ClCompile Include="src/core/vpinball.cpp" />
@@ -1665,7 +1665,7 @@
     <ClInclude Include="src/core/ieditable.h" />
     <ClInclude Include="src/core/iselect.h" />
     <ClInclude Include="src/core/main.h" />
-    <ClInclude Include="src/core/pininput.h" />
+    <ClInclude Include="src/input/pininput.h" />
     <ClInclude Include="src/core/pinundo.h" />
     <ClInclude Include="src/core/stdafx.h" />
     <ClInclude Include="src/core/vpinball_h.h" />

@@ -8,7 +8,7 @@
 #include "physics/PhysicsEngine.h"
 #include "ui/Debugger.h"
 #include "ui/LiveUI.h"
-#include "pininput.h"
+#include "input/pininput.h"
 #include "plugins/CorePlugin.h"
 #include "ResURIResolver.h"
 #include "ScoreView.h"

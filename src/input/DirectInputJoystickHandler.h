@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/pininput.h"
+#include "pininput.h"
 
 class DirectInputJoystickHandler : public InputHandler
 {
