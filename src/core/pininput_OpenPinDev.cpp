@@ -9,6 +9,7 @@
 // no support for the sort of low-level HID access we need.
 
 #include "core/stdafx.h"
+#include "input/OpenPinDevHandler.h"
 #include <list>
 #include <hidapi/hidapi.h>
 #include <hid-report-parser/hid_report_parser.h>
@@ -200,20 +201,19 @@ protected:
 // Open Pinball Device context object
 class OpenPinDevContext
 {
-   friend class PinInput;
+   friend class OpenPinDevHandler;
 
    // list of active devices
    std::list<std::unique_ptr<OpenPinDev>> m_openPinDevs;
 };
 
-
 // Initialize the Open Pinball Device interface.  Searches for active
 // devices and adds them to our internal list.
-void PinInput::InitOpenPinballDevices()
+OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
+   : m_pininput(pininput)
+   , m_OpenPinDevContext(new OpenPinDevContext())
 {
-   // discard any prior context object and create a new one
-   delete m_OpenPinDevContext;
-   m_OpenPinDevContext = new OpenPinDevContext();
+   PLOGI << "OpenPinDev input handler registered";
 
    // Get a list of available HID devices.  (Passing VID/PID 0/0 
    // to hid_enumerate() gives us all available HIDs.)
@@ -311,8 +311,7 @@ void PinInput::InitOpenPinballDevices()
                   if (found)
                   {
                      PLOGI << "OpenPinballDevice found and registered.";
-                     SetupJoyMapping(0, USHOCKTYPE_OPENPINDEV);
-                     uShockType = USHOCKTYPE_GENERIC;
+                     m_pininput.SetupJoyMapping(GetJoyId(0), PinInput::InputLayout::OpenPinDev);
                      break;
                   }
                }
@@ -327,7 +326,7 @@ void PinInput::InitOpenPinballDevices()
 
 // Terminate the Open Pinball Device subsystem.  Closes all open
 // devices and discards associated memory structures.
-void PinInput::TerminateOpenPinballDevices()
+OpenPinDevHandler ::~OpenPinDevHandler()
 {
    // discard the context object
    delete m_OpenPinDevContext;
@@ -335,7 +334,7 @@ void PinInput::TerminateOpenPinballDevices()
 }
 
 // Read input from the Open Pinball Device inputs
-void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
+void OpenPinDevHandler::Update()
 {
    // Combined report.  In keeping with Visual Pinball's treatment of
    // multiple gamepads, we merge the input across devices if there are
@@ -403,7 +402,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // Axis scaling factor.  All Open Pinball Device analog axes are
    // INT16's (-32768..+32767).  The VP functional axes are designed
    // for joystick input, so we must rescale to VP's joystick scale.
-   constexpr int scaleFactor = (JOYRANGEMX - JOYRANGEMN) / 65536;
+   constexpr int scaleFactor = (2 * JOYRANGEMX) / 65536;
 
    // Process the analog axis inputs.
    // 
@@ -412,41 +411,29 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
    // done (but this is somewhat wrong as this approach is not consistent and not scalable to all
    // existing hardware => this needs to be removed).
    // 
-   // We simply push the value of the singleton device as if it was joystick #0, using virtual
-   // custom axis.
-   // FIXME Reimplement as this is wrong:
-   // . this virtual axis does not follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware
-   // . there could be a conflict if there is actually a joystick using slot #0 (joystick events are blindly 
-   // . player needs to know the number of devices to integrate for nudge/plunger (actually this also needs to be refactored to move the integration out of player)
-   // . this also limits to a single OpenPinDev board unlike existing applications that can average multiple accelerometers
-   // collected even if not used) => we should store our device slot (and inc num_joy)
-   // The work around was an hardcoded pushing to the implementation (which was done before, so a bug was 
-   // introduced when refactoring, but it was already wrong as the nuùm_joy was not inc'ed therefore breaking
-   // the player integration implemenytation) but this is not good either as it breaks the design of a single collect / process.
+   // We simply push the value of the singleton device using virtual custom axis 10..13.
+   // TODO This should be reimplement in favor of the general handling. as virtual axis does not 
+   // follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware.
    {
       // Nudge X input - use velocity or acceleration input, according to the user preferences
       int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vxNudge : cr.axNudge) * scaleFactor;
-      PushJoystickAxisEvent(0, 10, -val); // Axis 9 is OpenPinDev NudgeX (speed or acceleration)
+      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 10, -val);
    }
    {
       // Nudge Y input - use velocity or acceleration input, according to the user preferences
       int const val = (g_pplayer->IsAccelInputAsVelocity() ? cr.vyNudge : cr.ayNudge) * scaleFactor;
-      PushJoystickAxisEvent(0, 11, -val); // Axis 10 is OpenPinDev NudgeY (speed or acceleration)
+      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 11, -val);
    }
    {
       // Plunger position input
       const int val = cr.plungerPos * scaleFactor;
-      PushJoystickAxisEvent(0, 12, -val); // Axis 11 is OpenPinDev PlungerPos
+      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 12, -val);
    }
    {
       // Plunger speed input
       int const val = cr.plungerSpeed * scaleFactor;
-      PushJoystickAxisEvent(0, 13, -val); // Axis 12 is OpenPinDev PlungerSpeed
+      m_pininput.PushJoystickAxisEvent(GetJoyId(0), 13, -val);
    }
-
-   // Special logic for the Start button, to handle auto-start timers,
-   // per the regular joystick button input processor
-   const bool start = ((cur_time_msec - m_firedautostart) > g_pplayer->m_ptable->m_tblAutoStart) || m_pressed_start || Started();
 
    // Check for button state changes to the generic buttons, which map
    // to the like-numbered joystick buttons.  Fire a joystick button
@@ -461,7 +448,7 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          const bool isDown = (cr.genericButtons & bit) != 0;
          const bool wasDown = (m_openPinDev_generic_buttons & bit) != 0;
          if (isDown != wasDown)
-            PushJoystickButtonEvent(0, buttonNum, isDown);
+            m_pininput.PushJoystickButtonEvent(GetJoyId(0), buttonNum, isDown);
       }
 
       // remember the new button state
@@ -517,9 +504,9 @@ void PinInput::ReadOpenPinballDevices(const U32 cur_time_msec)
          if (isDown != wasDown)
          {
             if (m->mappedAction != EnumAssignKeys::eCKeys)
-               FireActionEvent(m->mappedAction, isDown);
+               m_pininput.FireActionEvent(m->mappedAction, isDown);
             else
-               FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->vpmKey);
+               m_pininput.FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->vpmKey);
          }
       }
 

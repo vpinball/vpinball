@@ -246,6 +246,21 @@ static char rgszKeyName[][10] = {
    "Apps Menu", //DIK_APPS            0xDD    /* AppMenu key */
 };
 
+static int GetNextKey()
+{
+   for (unsigned int i = 0; i < 0xFF; ++i)
+   {
+      const SHORT keyState = GetAsyncKeyState(i);
+      if (keyState & 1)
+      {
+         const unsigned int dik = get_dik(i);
+         if (dik != ~0u)
+            return dik;
+      }
+   }
+   return 0;
+}
+
 class KeyWindowStruct
 {
 public:
@@ -592,7 +607,7 @@ INT_PTR VROptionsDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    case WM_TIMER:
    {
       KeyWindowStruct* const pksw = (KeyWindowStruct*)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
-      const int key = pksw->pi.GetNextKey();
+      const int key = GetNextKey();
       if (key != 0)
       {
          if (key < 0xDD) // Key mapping
@@ -795,21 +810,21 @@ void VROptionsDialog::StartTimer(int nID)
    if (pksw->m_timerid == NULL) //add
    { //add
       // corrects input error with space bar
-      const int key = pksw->pi.GetNextKey();
+      const int key = GetNextKey();
       if (key == 0x39)
       {
-         pksw->pi.GetNextKey(); // Clear the current buffer out
+         GetNextKey(); // Clear the current buffer out
          return;
       }
 
-      pksw->pi.GetNextKey(); // Clear the current buffer out
+      GetNextKey(); // Clear the current buffer out
 
       pksw->m_timerid = ::SetTimer(GetHwnd(), 100, 50, nullptr);
       pksw->hwndKeyControl = hwndKeyWindow;
       ::SetWindowText(pksw->hwndKeyControl, "????");
-      while (pksw->pi.GetNextKey() != NULL) //clear entire keyboard buffer contents
+      while (GetNextKey() != NULL) //clear entire keyboard buffer contents
       {
-         pksw->pi.GetNextKey();
+         GetNextKey();
       }
    }
 }

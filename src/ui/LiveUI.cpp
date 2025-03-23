@@ -3993,7 +3993,7 @@ void LiveUI::UpdatePlumbWindow()
       if (ImGui::Checkbox("Acc. Enabled", &accEnabled))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWEnabled"s, accEnabled);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       ImGui::BeginDisabled(!accEnabled);
       int accMax[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) };
@@ -4001,20 +4001,20 @@ void LiveUI::UpdatePlumbWindow()
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxX"s, accMax[0]);
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelMaxY"s, accMax[1]);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       int accGain[] = { m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150), m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150) };
       if (ImGui::InputInt2("Acc. Gain", accGain))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainX"s, accGain[0]);
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWAccelGainY"s, accGain[1]);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       int accSensitivity = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500);
       if (ImGui::InputInt("Acc. Sensitivity", &accSensitivity))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "NudgeSensitivity"s, accSensitivity);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       bool accOrientationEnabled = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false); // TODO Legacy stuff => remove and only keep rotation
       int accOrientation = accOrientationEnabled ? m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 500) : 0;
@@ -4022,19 +4022,19 @@ void LiveUI::UpdatePlumbWindow()
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationCB"s, accOrientation != 0);
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWRotationValue"s, accOrientation);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       bool accFaceUp = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true);
       if (ImGui::Checkbox("Acc. Face Up", &accFaceUp))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "PBWNormalMount"s, accFaceUp);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       bool accFilter = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
       if (ImGui::Checkbox("Acc. Filter", &accFilter))
       {
          g_pvp->m_settings.SaveValue(Settings::Player, "EnableNudgeFilter"s, accFilter);
-         m_player->ReadAccelerometerCalibration();
+         m_player->m_pininput.ReInit();
       }
       ImGui::EndDisabled();
 

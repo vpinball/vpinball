@@ -3,6 +3,7 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "InputDeviceDialog.h"
+#include "input/DirectInputJoystickHandler.h"
 
 //-------------------------------
 // DeviceTreeView implementation
@@ -310,12 +311,13 @@ void InputDeviceDialog::LoadAndReconcileInputDevicePrefs()
    // Build the list of currently-attached devices
    m_attachedDeviceInfo.clear();
 
-   for (int i = 0; i < PININ_JOYMXCNT; i++)
+   DirectInputJoystickHandler* diJoy = pinInput->GetDirectInputJoystickHandler();
+   for (int i = 0; i < diJoy->GetNJoysticks(); i++)
    {
       #ifdef USE_DINPUT8
-      LPDIRECTINPUTDEVICE8 joystick = pinInput->GetJoystick(i);
+         LPDIRECTINPUTDEVICE8 joystick = diJoy->GetJoystick(i);
       #else
-      LPDIRECTINPUTDEVICE joystick = pinInput->GetJoystick(i);
+         LPDIRECTINPUTDEVICE joystick = diJoy->GetJoystick(i);
       #endif
 
       if (joystick != nullptr)

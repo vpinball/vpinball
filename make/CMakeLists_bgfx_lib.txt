@@ -71,7 +71,6 @@ set(VPINBALL_SOURCES
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
    src/core/pininput.cpp
-   src/core/pininput_OpenPinDev_stub.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -108,6 +107,9 @@ set(VPINBALL_SOURCES
    src/core/TableDB.h
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
+
+   src/input/OpenPinDevHandler.h
+   src/input/SDLInputHandler.h
 
    src/math/bbox.h
    src/math/math.cpp

@@ -685,7 +685,6 @@ public:
    U32 m_tblAutoStart; // msecs before trying an autostart if doing once-only method .. 0 is automethod
    U32 m_tblAutoStartRetry; // msecs before retrying to autostart.
    float m_tblVolmod; // volume modulation for doing audio balancing
-   U32 m_tblExitConfirm; // msecs for exit (or esc if not disabled) button to be pressed to exit completely
    float m_difficulty; // table difficulty Level
    float m_globalDifficulty; // global difficulty, that is to say table difficulty eventually overriden from settings
 

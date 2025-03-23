@@ -204,17 +204,8 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    }
 #endif
 
-   for (int i = 0; i < PININ_JOYMXCNT; ++i)
-   {
-      m_curAccel[i] = int2(0, 0);
-      m_curPlunger[i] = 0;
-      m_curPlungerSpeed[i] = 0;
-   }
-
    m_plungerSpeedScale = 1.0f;
    m_curMechPlungerPos = 0;
-   m_curMechPlungerSpeed = 0;
-   m_fExtPlungerSpeed = false;
 
    m_plungerSpeedScale = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedScale"s, 100.0f) / 100.0f;
    if (m_plungerSpeedScale <= 0.0f)
@@ -540,8 +531,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_renderer->m_renderDevice->SetDefaultRenderState();
    m_renderer->InitLayout();
 
-   m_accelerometer = Vertex2D(0.f, 0.f);
-
    Ball::ResetBallIDCounter();
 
    // Add a playfield primitive if it is missing
@@ -727,8 +716,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Initialize stereo rendering
    m_renderer->UpdateStereoShaderState();
-
-   ReadAccelerometerCalibration();
 
 #ifdef PLAYBACK
    if (m_playback)
@@ -1405,70 +1392,9 @@ void Player::ApplyDeferredTimerChanges()
 
 #pragma region Physics
 
-void Player::ReadAccelerometerCalibration()
-{
-   m_accelerometerEnabled = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true); // true if electronic accelerometer enabled
-   m_accelerometerFaceUp = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
-
-   m_accelerometerAngle = 0.0f; // 0 degrees rotated counterclockwise (GUI is lefthand coordinates)
-   const bool accel = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationCB"s, false);
-   if (accel)
-      m_accelerometerAngle = (float)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWRotationValue"s, 0);
-
-   m_accelerometerSensitivity = clamp((float)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "NudgeSensitivity"s, 500) * (float)(1.0/1000.0), 0.f, 1.f);
-
-   m_accelerometerMax.x = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxX"s, 100) * JOYRANGEMX / 100;
-   m_accelerometerMax.y = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) * JOYRANGEMX / 100;
-   m_accelerometerGain.x = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150));
-   m_accelerometerGain.y = dequantizeUnsignedPercentNoClamp(m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150));
-}
-
-void Player::SetNudgeX(const int x, const int joyidx)
-{
-   m_accelerometerDirty |= m_accelerometerEnabled;
-   m_curAccel[joyidx].x = clamp(x, -m_accelerometerMax.x, m_accelerometerMax.x);
-}
-
-void Player::SetNudgeY(const int y, const int joyidx)
-{
-   m_accelerometerDirty |= m_accelerometerEnabled;
-   m_curAccel[joyidx].y = clamp(y, -m_accelerometerMax.y, m_accelerometerMax.y);
-}
-
 const Vertex2D& Player::GetRawAccelerometer() const
 {
-   if (m_accelerometerDirty)
-   {
-      m_accelerometerDirty = false;
-      m_accelerometer = Vertex2D(0.f, 0.f); 
-      if (m_accelerometerEnabled)
-      {
-         // accumulate over joysticks, these acceleration values are used in update ball velocity calculations
-         // and are required to be acceleration values (not velocity or displacement)
-
-         // rotate to match hardware mounting orientation, including left or right coordinates
-         const float a = ANGTORAD(m_accelerometerAngle);
-         const float cna = cosf(a);
-         const float sna = sinf(a);
-
-         for (int j = 0; j < m_pininput.m_num_joy; ++j)
-         {
-            // Scale to normalized float range, -1.0f..+1.0f
-            // NOTE! The normalization factor assumes that the input axis is
-            // symmetrical across its positive and negative extent, which is
-            // to say, JOYRANGMX == -JOYRANGEMN (thus the assertion).
-            static_assert(JOYRANGEMN == -JOYRANGEMX);
-            float dx = ((float)m_curAccel[j].x)*(float)(1.0 / JOYRANGEMX);
-            const float dy = ((float)m_curAccel[j].y)*(float)(1.0 / JOYRANGEMX);
-            if (m_ptable->m_tblMirrorEnabled)
-               dx = -dx;
-            m_accelerometer.x += m_accelerometerGain.x * (dx * cna + dy * sna) * (1.0f - m_accelerometerSensitivity); // calc Green's transform component for X
-            const float nugY   = m_accelerometerGain.y * (dy * cna - dx * sna) * (1.0f - m_accelerometerSensitivity); // calc Green's transform component for Y
-            m_accelerometer.y += m_accelerometerFaceUp ? nugY : -nugY; // add as left or right hand coordinate system
-         }
-      }
-   }
-   return m_accelerometer;
+   return m_pininput.GetNudge();
 }
 
 #ifdef UNUSED_TILT
@@ -1524,17 +1450,9 @@ static constexpr float IIR_b[IIR_Order + 1] = {
    -1.0546654f,
    0.1873795f };
 
-void Player::MechPlungerUpdate()   // called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on USHOCKTYPE_GENERIC,USHOCKTYPE_ULTRACADE,USHOCKTYPE_PBWIZARD,USHOCKTYPE_VIRTUAPIN,USHOCKTYPE_SIDEWINDER being used
+// called on every integral physics frame, only really triggered if before MechPlungerIn() was called, which again relies on an hardware device being used
+void Player::MechPlungerUpdate()
 {
-   // if we're receiving speed inputs, take a current snapshot
-   if (m_fExtPlungerSpeed)
-   {
-      // compute the sum over joysticks
-      m_curMechPlungerSpeed = 0;
-      for (int i = 0; i < PININ_JOYMXCNT; ++i)
-         m_curMechPlungerSpeed += m_curPlungerSpeed[i];
-   }
-
    static int init = IIR_Order; // first time call
    static float x[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
    static float y[IIR_Order + 1] = { 0, 0, 0, 0, 0 };
@@ -1543,7 +1461,8 @@ void Player::MechPlungerUpdate()   // called on every integral physics frame, on
    // (this applet is set to 8000Hz sample rate, therefore, multiply ...
    // our values by 80 to shift sample clock of 100hz to 8000hz)
 
-   if (m_movedPlunger < 3)
+   m_plungerUpdateCount++;
+   if (m_plungerUpdateCount <= 3)
    {
       init = IIR_Order;
       m_curMechPlungerPos = 0;
@@ -1551,9 +1470,7 @@ void Player::MechPlungerUpdate()   // called on every integral physics frame, on
    }
 
    // get the sum of current plunger inputs across joysticks
-   float curPos = 0;
-   for (int i = 0; i < PININ_JOYMXCNT; ++i)
-      curPos += (float)m_curPlunger[i];
+   float curPos = m_pininput.GetPlungerPos();
 
    if (!m_ptable->m_plungerFilter)
    {
@@ -1579,142 +1496,9 @@ void Player::MechPlungerUpdate()   // called on every integral physics frame, on
    m_curMechPlungerPos = y[0];
 }
 
-int Player::GetMechPlungerSpeed() const 
+float Player::GetMechPlungerSpeed() const 
 { 
-    return m_curMechPlungerSpeed; 
-}
-
-// MechPlunger NOTE: Normalized position is from 0.0 to +1.0f
-// +1.0 is fully retracted, 0.0 is all the way forward.
-//
-// The traditional normalization formula requires the user to calibrate the plunger in the
-// system joystick control panel (on Windows, JOY.CPL, "Set up USB Game Controllers").  The
-// user must adjust the calibration such that the calibrated zero point on the calibrated
-// axis matches the physical rest position of the mechanical plunger, the positive maximum
-// axis value matches the full retraction position, and the negative maximum matches the
-// fully-pushed-forward position (with the plunger pressed in as far as possible against 
-// the barrel spring).   This results in a system-level scaling from HID units to joystick
-// units where the HID-to-joystick-units scaling factor is about 5X the value on the negative
-// side of the axis vs the positive side, because the total PHYSICAL travel distance on the 
-// retraction side is about 5X wider than the forward travel distance.  Our goal here is to
-// translate things back to the actual PHYSICAL position of the input before all of these
-// unit conversions, where it's linear across the whole range.  That means that we have to
-// undo the asymmetrical Windows calibration by applying the inverse asymmetrical scaling
-// here.  So: we use a "dual-piecewise" mapping, where we use one scaling factor on the
-// positive side and a different scaling factor on the negative side.
-// 
-// There's a much better and simpler way to do this, which is to tell the user NOT to run 
-// that stupid Windows JOY.CPL calibration in the first place, which allows the Windows 
-// joystick input processing to pass through the native device reports without any extra 
-// scaling.  That eliminates the asymmetrical positive/negative scaling in the Windows
-// processing, which lets us see the linear units that the device reports natively.  We
-// don't have to undo the screwy asymmetrical scaling in the Windows input because Windows
-// never applies it in the first place.  We can thus normalize the input with a simple
-// linear scaling across the whole axis.  This produces much more stable tracking to
-// the physical plunger position because there's no point of instability around the park
-// position where the scaling factor abruptly changes by a factor of 5.  The only snag is
-// that we have to be working with a plunger input device that's programmed to report its
-// position across HID on a fully linear scale like this.  We call these devices "linear
-// plunger" devices to distinguish them from the older ones that natively report on the
-// asymmetrical scale and thus required the Windows JOY.CPL calibration to work at all.
-// PinInput.cpp has the logic to recognize which plungers have the linear scaling and
-// which ones use the asymmetrical split axis scaling, and set the m_linearPlunger flag
-// accordingly.
-float PlungerMoverObject::MechPlunger() const
-{
-   if (g_pplayer->m_pininput.m_linearPlunger)
-   {
-      // Linear plunger device - the joystick must be calibrated such that the park
-      // position reads as 0 and the fully retracted position reads as JOYRANGEMX.  The
-      // scaling factor between physical units and joystick units must be the same on the
-      // positive and negative sides.  (The maximum forward position is not calibrated.)
-      const float m = (1.0f - m_restPos)*(float)(1.0 / JOYRANGEMX), b = m_restPos;
-      return m * g_pplayer->m_curMechPlungerPos + b;
-   }
-   else
-   {
-      // Standard plunger device - the joystick must be calibrated such that the park
-      // position reads as 0, the fully retracted position reads as JOYRANGEMN, and the
-      // full forward position reads as JOYRANGMN.
-      const float range = (float)JOYRANGEMX * (1.0f - m_restPos) - (float)JOYRANGEMN *m_restPos; // final range limit
-      const float tmp = (g_pplayer->m_curMechPlungerPos < 0) ? g_pplayer->m_curMechPlungerPos * m_restPos : g_pplayer->m_curMechPlungerPos * (1.0f - m_restPos);
-      return tmp / range + m_restPos;              //scale and offset
-   }
-}
-
-// Mechanical plunger speed, from I/O controller speed input, if configured.
-// This takes input from the Plunger Speed axis, separate from the Plunger
-// Position axis, allowing the controller to report instantaneous speeds
-// along with position.  I/O controllers can usually measure the physical
-// plunger's speed accurately thanks to their high-speed access to the raw
-// sensor data.  It's impossible for the host to accurately compute the
-// speed from position reports alone (via a first derivative of sequential
-// position reports), because USB HID reports don't provide sufficient time
-// resolution - physical plungers simply move too fast, so taking the first
-// derivative results in pretty much random garbage a lot of the time.  The
-// I/O controller can typically take readings at a high enough sampling
-// rate to accurate track the speed, so we use its speed reports if they're
-// available in preference to our internal speed calculations, which are
-// unreliable at best.
-float PlungerMoverObject::MechPlungerSpeed() const
-{
-   // Get the current speed reading
-   float v = (float)g_pplayer->GetMechPlungerSpeed();
-
-   // normalized the joystick input to -1..+1
-   v *= (1.0f / (JOYRANGEMX - JOYRANGEMN));
-
-   // The joystick report is device-defined speed units.  We
-   // need to convert these to local speed units.  Since the
-   // report units are device-specific, the conversion factor
-   // is also device-specific, so the most general way to
-   // handle it is as a user-adjustable setting.  This also
-   // has the benefit that it allows the user to fine-tune the
-   // feel to their liking.
-   //
-   // For reference, Pinscape Pico uses units where 1.0 (after
-   // normalization) is the plunger travel length per
-   // centisecond (10ms).  After scaling to the simulated
-   // plunger length, that happens to equal VP9's native speed
-   // units, so the scaling factor should be set to about 100%
-   // when a Pinscape Pico is in use.
-   v *= g_pplayer->m_plungerSpeedScale;
-
-   // Scale to the virtual plunger we're operating.  The device
-   // units are inherently relative to the length of the actual
-   // mechanical plunger, so after conversion to simulation
-   // units, they should maintain that proportionality to the
-   // simulated plunger length.
-   v *= m_frameLen;
-
-   // Now apply the "mechanical strength" scaling.  This lets
-   // the game set the relative strength of the plunger to be
-   // higher or lower than "standard" (which is an arbitrary
-   // reference point).  The strength is relative to the mass.
-   // (The mass is actually a fixed constant, so including it
-   // doesn't have any practical effect other than changing
-   // the scale of the user-adjustable unit conversion factor
-   // above, but we'll include it for consistency with other
-   // places in the code where the mech strength is used.)
-   v *= m_plunger->m_d.m_mechStrength / m_mass;
-
-   // Return the result
-   return v;
-}
-
-void Player::MechPlungerIn(const int z, const int joyidx)
-{
-   m_curPlunger[joyidx] = z;
-
-   if (++m_movedPlunger == 0xffffffff) m_movedPlunger = 3; //restart at 3
-}
-
-void Player::MechPlungerSpeedIn(const int z, const int joyidx)
-{
-   m_curPlungerSpeed[joyidx] = z;
-
-   // flag that an external speed setting has been applied
-   m_fExtPlungerSpeed = fTrue;
+    return m_pininput.GetPlungerSpeed();
 }
 
 //++++++++++++++++++++++++++++++++++++++++
@@ -1830,7 +1614,7 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       ProcessOSMessages();
       if (!IsEditorMode())
       {
-         m_pininput.ProcessKeys((int)(m_startFrameTick / 1000), true); // Trigger key events to sync with controller
+         m_pininput.ProcessInput(); // Gather input, trigger events, syncing input with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }
@@ -2214,7 +1998,7 @@ void Player::FinishFrame()
    #elif !defined(ENABLE_BGFX)
       // Not applied for BGFX as physics & input sync is managed more cleanly in the main (multithreaded) loop
       if (m_videoSyncMode != VideoSyncMode::VSM_FRAME_PACING)
-         m_pininput.ProcessKeys((int)(m_startFrameTick / 1000), false); // trigger key events mainly for VPM<->VP roundtrip
+         m_pininput.ProcessInput(); // trigger input events mainly for VPM<->VP roundtrip
    #endif
 
    // Detect & fire end of music events

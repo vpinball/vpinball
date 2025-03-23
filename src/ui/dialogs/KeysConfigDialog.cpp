@@ -243,6 +243,20 @@ static char rgszKeyName[][10] = {
     "Apps Menu", //DIK_APPS            0xDD    /* AppMenu key */
 };
 
+static int GetNextKey()
+{
+   for (unsigned int i = 0; i < 0xFF; ++i)
+   {
+      const SHORT keyState = GetAsyncKeyState(i);
+      if (keyState & 1)
+      {
+         const unsigned int dik = get_dik(i);
+         if (dik != ~0u)
+            return dik;
+      }
+   }
+   return 0;
+}
 
 class KeyWindowStruct
 {
@@ -604,7 +618,7 @@ INT_PTR KeysConfigDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
         case WM_TIMER:
         {
             KeyWindowStruct * const pksw = (KeyWindowStruct *)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
-            const int key = pksw->pi.GetNextKey();
+            const int key = GetNextKey();
             if (key != 0)
             {
                 if (key < 0xDD)	// Key mapping
@@ -668,11 +682,14 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    }
    case IDC_DEVICES_BUTTON:
    {
-      CRect pos = GetWindowRect();
       KeyWindowStruct *const pksw = (KeyWindowStruct *)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
-      InputDeviceDialog *const deviceConfigDlg = new InputDeviceDialog(&pos, &pksw->pi);
-      deviceConfigDlg->DoModal();
-      delete deviceConfigDlg;
+      if (pksw->pi.GetDirectInputJoystickHandler() != nullptr)
+      {
+         CRect pos = GetWindowRect();
+         InputDeviceDialog *const deviceConfigDlg = new InputDeviceDialog(&pos, &pksw->pi);
+         deviceConfigDlg->DoModal();
+         delete deviceConfigDlg;
+      }
       break;
    }
    }
@@ -715,7 +732,10 @@ BOOL KeysConfigDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
     if (LOWORD(wParam) == IDC_COMBO_INPUT_API) {
        const size_t inputApi = SendDlgItemMessage(IDC_COMBO_INPUT_API, CB_GETCURSEL, 0, 0);
-       GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApi > 0);
+       GetDlgItem(IDC_COMBO_RUMBLE).EnableWindow(inputApi > 0); // No rumble for DirectInput
+       GetDlgItem(IDC_DEVICES_BUTTON).EnableWindow(inputApi == 0); // Manage device is only available for DirectInput
+       KeyWindowStruct *const pksw = (KeyWindowStruct *)::GetWindowLongPtr(GetHwnd(), GWLP_USERDATA);
+       pksw->pi.ReInit(); // Reinit on API change to have access to the underlying controllers
     }
 
     return TRUE;
@@ -925,21 +945,21 @@ void KeysConfigDialog::StartTimer(int nID)
     if (pksw->m_timerid == NULL) //add
     { //add
         // corrects input error with space bar
-        const int key = pksw->pi.GetNextKey();
+        const int key = GetNextKey();
         if (key == 0x39)
         {
-            pksw->pi.GetNextKey(); // Clear the current buffer out
+            GetNextKey(); // Clear the current buffer out
             return;
         }
 
-        pksw->pi.GetNextKey(); // Clear the current buffer out
+        GetNextKey(); // Clear the current buffer out
 
         pksw->m_timerid = ::SetTimer(GetHwnd(), 100, 50, nullptr);
         pksw->hwndKeyControl = hwndKeyWindow;
         ::SetWindowText(pksw->hwndKeyControl, "????");
-        while (pksw->pi.GetNextKey() != NULL) //clear entire keyboard buffer contents
+        while (GetNextKey() != NULL) //clear entire keyboard buffer contents
         {
-            pksw->pi.GetNextKey();
+            GetNextKey();
         }
     }
 }

@@ -96,6 +96,9 @@ add_executable(vpinball
    src/core/VPXPluginAPIImpl.h
    src/core/VPXPluginAPIImpl.cpp
 
+   src/input/OpenPinDevHandler.h
+   src/input/SDLInputHandler.h
+
    src/math/bbox.h
    src/math/math.cpp
    src/math/math.h
