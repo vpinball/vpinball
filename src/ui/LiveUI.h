@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "core/pininput.h"
+#include "input/pininput.h"
 
 #include "imgui/imgui.h"
 #include "imguizmo/ImGuizmo.h"

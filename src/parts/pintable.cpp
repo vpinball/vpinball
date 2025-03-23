@@ -124,7 +124,7 @@ STDMETHODIMP ScriptGlobalTable::NudgeSetCalibration(int XMax, int YMax, int XGai
 		g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
 	if (g_pplayer)
-		g_pplayer->ReadAccelerometerCalibration();
+      g_pplayer->m_pininput.ReInit();
 
 	return S_OK;
 }
@@ -1480,7 +1480,6 @@ PinTable::PinTable()
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
    m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0/1000.0);
-   m_tblExitConfirm = m_settings.LoadValueWithDefault(Settings::Player, "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
 
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
    m_3DZPD = 0.5f;
@@ -5130,11 +5129,6 @@ void PinTable::SetMyScrollInfo()
 
    SetScrollInfo(SB_VERT, si, fTrue);
 #endif
-}
-
-void PinTable::FireActionEvent(EnumAssignKeys key, bool isPressed)
-{
-   FireGenericKeyEvent(isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, g_pplayer->m_rgKeys[key]);
 }
 
 void PinTable::FireGenericKeyEvent(int dispid, int keycode)

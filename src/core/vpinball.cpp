@@ -1185,8 +1185,7 @@ void VPinball::DoPlay(const int playMode)
             #endif
 
             #ifdef ENABLE_SDL_INPUT
-            if (g_pplayer->m_pininput.GetInputAPI() == PinInput::PI_SDL)
-               g_pplayer->m_pininput.HandleSDLEvent(e);
+            g_pplayer->m_pininput.HandleSDLEvent(e);
             #endif
 
             // Limit to 1ms of OS message processing per call

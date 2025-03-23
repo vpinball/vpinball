@@ -127,6 +127,124 @@ void PlungerMoverObject::SetObjects(const float len)
    m_linesegSide[1].CalcNormalAndLength();
 }
 
+
+// MechPlunger NOTE: Normalized position is from 0.0 to +1.0f
+// +1.0 is fully retracted, 0.0 is all the way forward.
+//
+// The traditional normalization formula requires the user to calibrate the plunger in the
+// system joystick control panel (on Windows, JOY.CPL, "Set up USB Game Controllers").  The
+// user must adjust the calibration such that the calibrated zero point on the calibrated
+// axis matches the physical rest position of the mechanical plunger, the positive maximum
+// axis value matches the full retraction position, and the negative maximum matches the
+// fully-pushed-forward position (with the plunger pressed in as far as possible against 
+// the barrel spring).   This results in a system-level scaling from HID units to joystick
+// units where the HID-to-joystick-units scaling factor is about 5X the value on the negative
+// side of the axis vs the positive side, because the total PHYSICAL travel distance on the 
+// retraction side is about 5X wider than the forward travel distance.  Our goal here is to
+// translate things back to the actual PHYSICAL position of the input before all of these
+// unit conversions, where it's linear across the whole range.  That means that we have to
+// undo the asymmetrical Windows calibration by applying the inverse asymmetrical scaling
+// here.  So: we use a "dual-piecewise" mapping, where we use one scaling factor on the
+// positive side and a different scaling factor on the negative side.
+// 
+// There's a much better and simpler way to do this, which is to tell the user NOT to run 
+// that stupid Windows JOY.CPL calibration in the first place, which allows the Windows 
+// joystick input processing to pass through the native device reports without any extra 
+// scaling.  That eliminates the asymmetrical positive/negative scaling in the Windows
+// processing, which lets us see the linear units that the device reports natively.  We
+// don't have to undo the screwy asymmetrical scaling in the Windows input because Windows
+// never applies it in the first place.  We can thus normalize the input with a simple
+// linear scaling across the whole axis.  This produces much more stable tracking to
+// the physical plunger position because there's no point of instability around the park
+// position where the scaling factor abruptly changes by a factor of 5.  The only snag is
+// that we have to be working with a plunger input device that's programmed to report its
+// position across HID on a fully linear scale like this.  We call these devices "linear
+// plunger" devices to distinguish them from the older ones that natively report on the
+// asymmetrical scale and thus required the Windows JOY.CPL calibration to work at all.
+// PinInput.cpp has the logic to recognize which plungers have the linear scaling and
+// which ones use the asymmetrical split axis scaling, and set the m_linearPlunger flag
+// accordingly.
+float PlungerMoverObject::MechPlunger() const
+{
+   const float pos = g_pplayer->m_curMechPlungerPos / static_cast<float>(JOYRANGEMX);
+   if (g_pplayer->m_pininput.m_linearPlunger)
+   {
+      // Linear plunger device - the joystick must be calibrated such that the park
+      // position reads as 0 and the fully retracted position reads as JOYRANGEMX.  The
+      // scaling factor between physical units and joystick units must be the same on the
+      // positive and negative sides.  (The maximum forward position is not calibrated.)
+      return lerp(m_restPos, 1.f, pos);
+   }
+   else
+   {
+      // Standard plunger device - the joystick must be calibrated such that the park
+      // position reads as 0, the fully retracted position reads as -JOYRANGEMX, and the
+      // full forward position reads as -JOYRANGEMX.
+      // FIXME this looks fully wrong to me...
+      return m_restPos + ((pos < 0) ? pos * m_restPos : pos * (1.0f - m_restPos));
+   }
+}
+
+// Mechanical plunger speed, from I/O controller speed input, if configured.
+// This takes input from the Plunger Speed axis, separate from the Plunger
+// Position axis, allowing the controller to report instantaneous speeds
+// along with position.  I/O controllers can usually measure the physical
+// plunger's speed accurately thanks to their high-speed access to the raw
+// sensor data.  It's impossible for the host to accurately compute the
+// speed from position reports alone (via a first derivative of sequential
+// position reports), because USB HID reports don't provide sufficient time
+// resolution - physical plungers simply move too fast, so taking the first
+// derivative results in pretty much random garbage a lot of the time.  The
+// I/O controller can typically take readings at a high enough sampling
+// rate to accurate track the speed, so we use its speed reports if they're
+// available in preference to our internal speed calculations, which are
+// unreliable at best.
+float PlungerMoverObject::MechPlungerSpeed() const
+{
+   // Get the current speed reading
+   float v = g_pplayer->GetMechPlungerSpeed();
+
+   // normalized the joystick input to -1..+1
+   v *= 1.0f / (2.f * JOYRANGEMX);
+
+   // The joystick report is device-defined speed units.  We
+   // need to convert these to local speed units.  Since the
+   // report units are device-specific, the conversion factor
+   // is also device-specific, so the most general way to
+   // handle it is as a user-adjustable setting.  This also
+   // has the benefit that it allows the user to fine-tune the
+   // feel to their liking.
+   //
+   // For reference, Pinscape Pico uses units where 1.0 (after
+   // normalization) is the plunger travel length per
+   // centisecond (10ms).  After scaling to the simulated
+   // plunger length, that happens to equal VP9's native speed
+   // units, so the scaling factor should be set to about 100%
+   // when a Pinscape Pico is in use.
+   v *= g_pplayer->m_plungerSpeedScale;
+
+   // Scale to the virtual plunger we're operating.  The device
+   // units are inherently relative to the length of the actual
+   // mechanical plunger, so after conversion to simulation
+   // units, they should maintain that proportionality to the
+   // simulated plunger length.
+   v *= m_frameLen;
+
+   // Now apply the "mechanical strength" scaling.  This lets
+   // the game set the relative strength of the plunger to be
+   // higher or lower than "standard" (which is an arbitrary
+   // reference point).  The strength is relative to the mass.
+   // (The mass is actually a fixed constant, so including it
+   // doesn't have any practical effect other than changing
+   // the scale of the user-adjustable unit conversion factor
+   // above, but we'll include it for consistency with other
+   // places in the code where the mech strength is used.)
+   v *= m_plunger->m_d.m_mechStrength / m_mass;
+
+   // Return the result
+   return v;
+}
+
 // Ported at: VisualPinball.Unity/VisualPinball.Unity/VPT/Plunger/PlungerDisplacementSystem.cs
 
 void PlungerMoverObject::UpdateDisplacements(const float dtime)
@@ -339,7 +457,7 @@ void PlungerMoverObject::UpdateVelocities()
       // When the timer reaches zero, we'll send the corresponding
       // KeyUp event and cancel the timer.
       if ((--m_autoFireTimer == 0) && (g_pplayer != nullptr))
-         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, false);
+         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, false);
    }
    else if (autoPlunger && dmech > ReleaseThreshold)
    {
@@ -377,7 +495,7 @@ void PlungerMoverObject::UpdateVelocities()
       // perform any other tasks it normally does when the
       // actual Launch Ball button is pressed.
       if (g_pplayer)
-         g_pplayer->m_ptable->FireActionEvent(ePlungerKey, true);
+         g_pplayer->m_pininput.FireActionEvent(ePlungerKey, true);
 
       // start the timer to send the corresponding KeyUp in 100ms
       m_autoFireTimer = 101;
@@ -452,7 +570,7 @@ void PlungerMoverObject::UpdateVelocities()
       }
 
    }
-   else if (isMech && !autoPlunger && g_pplayer->m_fExtPlungerSpeed)
+   else if (isMech && !autoPlunger && g_pplayer->m_pininput.HasMechPlungerSpeed())
    {
       // Mechanical plunger mode, and we're receiving speed readings
       // from the I/O controller along with the position reports.
@@ -466,7 +584,7 @@ void PlungerMoverObject::UpdateVelocities()
       // position in one physics frame.
       m_speed = (mech - pos) * m_frameLen;
    }
-   else if (dmech > ReleaseThreshold && !g_pplayer->m_fExtPlungerSpeed)
+   else if (dmech > ReleaseThreshold && !g_pplayer->m_pininput.HasMechPlungerSpeed())
    {
       // Normal mode, fast forward motion detected, external
       // device is NOT providing speed input data.  Consider this
@@ -750,7 +868,7 @@ float HitPlunger::HitTest(const BallS& ball, const float dtime, CollisionEvent& 
    // temporarily taken control of the plunger, disconnecting it from
    // the external physical controls.
    const float impulseSpeed = 
-       (m_plungerMover.m_fireTimer == 0 && g_pplayer->m_fExtPlungerSpeed && m_plungerMover.m_plunger->m_d.m_mechPlunger) ? 
+       (m_plungerMover.m_fireTimer == 0 && g_pplayer->m_pininput.HasMechPlungerSpeed() && m_plungerMover.m_plunger->m_d.m_mechPlunger) ? 
        m_plungerMover.MechPlungerSpeed() :
        m_plungerMover.m_speed;
 

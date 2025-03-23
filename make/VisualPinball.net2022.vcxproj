@@ -1130,8 +1130,8 @@
     <ClCompile Include="src/core/ieditable.cpp" />
     <ClCompile Include="src/core/editablereg.cpp" />
     <ClCompile Include="src/core/iselect.cpp" />
-    <ClCompile Include="src/core/pininput.cpp" />
-    <ClCompile Include="src/core/pininput_OpenPinDev.cpp" />
+    <ClCompile Include="src/input/pininput.cpp" />
+    <ClCompile Include="src/input/OpenPinDevHandler.cpp" />
     <ClCompile Include="src/core/pinundo.cpp" />
     <ClCompile Include="src/core/main.cpp" />
     <ClCompile Include="src/core/vpinball.cpp" />
@@ -1646,6 +1646,13 @@
   <ItemGroup>
     <ClInclude Include="src\core\ResURIResolver.h" />
     <ClInclude Include="src\core\ScoreView.h" />
+    <ClInclude Include="src\input\DirectInputJoystickHandler.h" />
+    <ClInclude Include="src\input\DirectInputKeyboardHandler.h" />
+    <ClInclude Include="src\input\DirectInputMouseHandler.h" />
+    <ClInclude Include="src\input\OpenPinDevHandler.h" />
+    <ClInclude Include="src\input\SDLInputHandler.h" />
+    <ClInclude Include="src\input\Win32InputKeyboardHandler.h" />
+    <ClInclude Include="src\input\XInputJoystickHandler.h" />
     <ClInclude Include="src\physics\AsyncDynamicQuadTree.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
     <ClInclude Include="vpinball.h" />
@@ -1658,7 +1665,7 @@
     <ClInclude Include="src/core/ieditable.h" />
     <ClInclude Include="src/core/iselect.h" />
     <ClInclude Include="src/core/main.h" />
-    <ClInclude Include="src/core/pininput.h" />
+    <ClInclude Include="src/input/pininput.h" />
     <ClInclude Include="src/core/pinundo.h" />
     <ClInclude Include="src/core/stdafx.h" />
     <ClInclude Include="src/core/vpinball_h.h" />

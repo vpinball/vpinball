@@ -690,7 +690,7 @@ void PhysicsEngine::UpdatePhysics()
 
       #if !defined(ENABLE_BGFX)
       // FIXME remove ? To be done correctly, we should process OS messages and sync back controller
-      g_pplayer->m_pininput.ProcessKeys(cur_time_msec, true);
+      g_pplayer->m_pininput.ProcessInput();
       #endif
 
       // FIXME remove or at least move legacy ushock to a plugin
