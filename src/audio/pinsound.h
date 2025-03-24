@@ -90,7 +90,7 @@ public:
    int m_cdata_org;
    char *m_pdata_org = nullptr; // for saving WAVs in the original raw format, points into m_pdata, so do not delete it!
 
-   PinSound() {};
+   PinSound() {}
    PinSound(const Settings& settings);
    ~PinSound();
 

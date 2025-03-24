@@ -699,6 +699,10 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
       case 4: path = PATH_MUSIC + filename; break;
       }
 
+      #ifdef __STANDALONE__
+      path = find_path_case_insensitive(path);
+      #endif
+
       if ((m_pMixMusic = Mix_LoadMUS(path.c_str())))
       {
          const float nVolume = volume;
