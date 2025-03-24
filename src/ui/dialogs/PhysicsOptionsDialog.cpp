@@ -371,7 +371,7 @@ bool PhysicsOptionsDialog::LoadSetting()
         std::ifstream myFile(szFileName[0]);
         buffer << myFile.rdbuf();
         myFile.close();
-        auto xml = buffer.str();
+        const string xml = buffer.str();
         if (xmlDoc.Parse(xml.c_str()))
         {
             ShowError("Error parsing VPP XML file");

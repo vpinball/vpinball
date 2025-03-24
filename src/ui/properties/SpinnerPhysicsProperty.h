@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SpinnerPhysicsProperty: public BasePropertyDialog
+class SpinnerPhysicsProperty final : public BasePropertyDialog
 {
 public:
     SpinnerPhysicsProperty(const VectorProtected<ISelect> *pvsel);

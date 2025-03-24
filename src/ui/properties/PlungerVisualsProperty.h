@@ -2,7 +2,7 @@
 
 #pragma once
 
-class PlungerVisualsProperty: public BasePropertyDialog
+class PlungerVisualsProperty final : public BasePropertyDialog
 {
 public:
     PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel);

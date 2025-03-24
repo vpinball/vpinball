@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SpinnerVisualsProperty: public BasePropertyDialog
+class SpinnerVisualsProperty final : public BasePropertyDialog
 {
 public:
     SpinnerVisualsProperty(const VectorProtected<ISelect> *pvsel);

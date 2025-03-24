@@ -155,7 +155,7 @@ public:
    virtual void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) { }
 };
 
-class PinInput
+class PinInput final
 {
 public:
    PinInput();
@@ -219,9 +219,9 @@ public:
 
    void ProcessInput(); // Gather and process events
 
-   void FireActionEvent(EnumAssignKeys key, bool isPressed);
-   void FireGenericKeyEvent(const int dispid, int keycode);
-   
+   void FireActionEvent(EnumAssignKeys action, bool isPressed);
+   static void FireGenericKeyEvent(const int dispid, int keycode);
+
    bool HasMechPlunger() const;
    bool HasMechPlungerSpeed() const;
    float GetPlungerSpeed() const;
@@ -350,7 +350,7 @@ private:
    };
    vector<AnalogActionMapping> m_analogActionMappings;
 
-   mutable Vertex2D m_accelerometer; // Lazyly accumulated nudge from mapped analog inputs
+   mutable Vertex2D m_accelerometer; // Lazily accumulated nudge from mapped analog inputs
    mutable bool m_accelerometerDirty = true;
    Vertex2D m_accelerometerMax; // Accelerometer max value X/Y axis (in -JOYRANGEMX..JOYRANGEMX range)
    bool m_accelerometerEnabled = false; // true if electronic accelerometer enabled
@@ -359,9 +359,9 @@ private:
    float m_accelerometerSensitivity = 1.f;
    Vertex2D m_accelerometerGain; // Accelerometer gain X/Y axis
 
-   mutable float m_plungerPos = 0.f; // Lazyly accumulated plunger position from mapped analog inputs
+   mutable float m_plungerPos = 0.f; // Lazily accumulated plunger position from mapped analog inputs
    mutable bool m_plungerPosDirty = true;
-   mutable float m_plungerSpeed = 0.f; // Lazyly accumulated plunger speed from mapped analog inputs
+   mutable float m_plungerSpeed = 0.f; // Lazily accumulated plunger speed from mapped analog inputs
    mutable bool m_plungerSpeedDirty = true;
 
    bool m_override_default_buttons = false;

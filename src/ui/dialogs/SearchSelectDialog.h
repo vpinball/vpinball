@@ -2,7 +2,7 @@
 
 #pragma once
 
-class SearchSelectDialog : public CDialog
+class SearchSelectDialog final : public CDialog
 {
 public:
    SearchSelectDialog();

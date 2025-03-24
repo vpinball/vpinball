@@ -2,7 +2,7 @@
 
 #pragma once
 
-class DragpointVisualsProperty: public BasePropertyDialog
+class DragpointVisualsProperty final : public BasePropertyDialog
 {
 public:
     DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel);

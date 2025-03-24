@@ -2,7 +2,7 @@
 
 #include "pininput.h"
 
-class SDLInputHandler : public InputHandler
+class SDLInputHandler final : public InputHandler
 {
 public:
    explicit SDLInputHandler(PinInput& pininput)
@@ -17,7 +17,7 @@ public:
       const string path = g_pvp->m_szMyPrefPath + "gamecontrollerdb.txt";
       if (!std::filesystem::exists(path))
          std::filesystem::copy(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "Default_gamecontrollerdb.txt", path);
-      int count = SDL_AddGamepadMappingsFromFile(path.c_str());
+      const int count = SDL_AddGamepadMappingsFromFile(path.c_str());
       if (count > 0)
       {
          PLOGI.printf("Game controller mappings added: count=%d, path=%s", count, path.c_str());
@@ -29,17 +29,17 @@ public:
       RefreshSDLDevice();
    }
 
-   ~SDLInputHandler() final
+   ~SDLInputHandler() override
    {
       ReleaseSDLDevice();
       SDL_QuitSubSystem(SDL_INIT_GAMEPAD | SDL_INIT_HAPTIC | SDL_INIT_JOYSTICK);
    }
 
-   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) final
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
    {
       for (auto& gamepad : m_gamePads)
       {
-         SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
+         const SDL_PropertiesID props = SDL_GetGamepadProperties(gamepad);
          if (gamepad && SDL_GetBooleanProperty(props, SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false))
             SDL_RumbleGamepad(gamepad, (Uint16)(saturate(lowFrequencySpeed) * 65535.f), (Uint16)(saturate(highFrequencySpeed) * 65535.f), ms_duration);
       }
@@ -47,7 +47,7 @@ public:
          SDL_PlayHapticRumble(haptic, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
    }
       
-   void Update() final
+   void Update() override
    {
       // When SDL Video is used, SDL events are processed during the main application message loop, so we do not do it again here
       #if defined(ENABLE_SDL_INPUT) && !defined(ENABLE_SDL_VIDEO)
@@ -57,7 +57,7 @@ public:
       #endif
    }
 
-   static inline uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return static_cast<uint64_t>(0x200000000) | static_cast<uint64_t>(sdlId); }
+   static constexpr uint64_t GetJoyId(const SDL_JoystickID& sdlId) {return static_cast<uint64_t>(0x200000000) | static_cast<uint64_t>(sdlId); }
 
    void HandleSDLEvent(SDL_Event& e)
    {
@@ -137,7 +137,7 @@ private:
 
       // Get list of all connected devices
       int joystick_count = 0;
-      SDL_JoystickID* joystick_ids = SDL_GetJoysticks(&joystick_count);
+      SDL_JoystickID* const joystick_ids = SDL_GetJoysticks(&joystick_count);
       if (joystick_count > 0)
       {
          for (int idx = 0; idx < joystick_count; ++idx)
@@ -155,12 +155,12 @@ private:
                #endif
 
                // Try to open as gamepad
-               SDL_Gamepad* gamePad = SDL_OpenGamepad(joystick_ids[idx]);
+               SDL_Gamepad* const gamePad = SDL_OpenGamepad(joystick_ids[idx]);
                if (gamePad)
                {
                   m_gamePads.push_back(gamePad);
                   m_pininput.SetupJoyMapping(GetJoyId(joystick_ids[idx]), PinInput::InputLayout::Generic);
-                  SDL_PropertiesID props = SDL_GetGamepadProperties(gamePad);
+                  const SDL_PropertiesID props = SDL_GetGamepadProperties(gamePad);
                   PLOGI.printf("Processing as Gamepad: %d axes, %d buttons, rumble=%s",
                      6, // Standard gamepad has 6 axes
                      15, // Standard gamepad has 15 buttons

@@ -2,7 +2,7 @@
 
 #pragma once
 
-class KeysConfigDialog :public CDialog
+class KeysConfigDialog final : public CDialog
 {
 public:
     KeysConfigDialog();

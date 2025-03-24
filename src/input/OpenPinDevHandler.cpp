@@ -114,7 +114,7 @@ public:
       hid_close(hDevice);
    }
 
-   // get a reference to the curent report
+   // get a reference to the current report
    const OpenPinballDeviceReport &CurrentReport() const { return r; }
 
    // read a report into the internal report struct; returns true if a new report
@@ -264,7 +264,7 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
 
                // scan the collections
                bool found = false;
-               for (auto &col : report.collections)
+               for (const auto &col : report.collections)
                {
                   // check for the generic USB "Pinball Device CA" type (Application Collection, usage page 5, usage 2)
                   if (col.type == hidrp::COLLECTION_TYPE_APPLICATION
@@ -272,7 +272,7 @@ OpenPinDevHandler::OpenPinDevHandler(PinInput &pininput)
                   {
                      // got it - scan the input fields in this collection
                      auto InputIndex = static_cast<int>(hidrp::ReportType::input);
-                     for (auto &f : col.fields[InputIndex])
+                     for (const auto &f : col.fields[InputIndex])
                      {
                         // Check for an opaque byte array, usage 0x00 (undefined/vendor-specific),
                         // with an associated usage string that matches the OPD signature string.
@@ -378,7 +378,7 @@ void OpenPinDevHandler::Update()
       // If the user has configured the same button number on more than
       // one device, they probably actually want the buttons to perform
       // the same logical function, so ORing them yields the right result.
-      auto &r = p->CurrentReport();
+      const auto &r = p->CurrentReport();
       if (r.axNudge != 0)
          cr.axNudge = r.axNudge;
       if (r.ayNudge != 0)
@@ -412,7 +412,7 @@ void OpenPinDevHandler::Update()
    // existing hardware => this needs to be removed).
    // 
    // We simply push the value of the singleton device using virtual custom axis 10..13.
-   // TODO This should be reimplement in favor of the general handling. as virtual axis does not 
+   // TODO This should be reimplemented in favor of the general handling. as virtual axis does not 
    // follow the overall scheme and makes the definition inconsistent, and won't scale with other hardware.
    {
       // Nudge X input - use velocity or acceleration input, according to the user preferences
@@ -457,7 +457,7 @@ void OpenPinDevHandler::Update()
    if (cr.pinballButtons != m_openPinDev_pinball_buttons)
    {
       // mapping from Open Pinball Device mask bits to VP/VPM keys
-      static const struct KeyMap
+      static constexpr struct KeyMap
       {
          uint32_t mask; // bit for the key in OpenPinballDeviceReportStruct::pinballButtons
          EnumAssignKeys mappedAction; // mapped action, or EnumAssignKeys::eCKeys if a direct VPM key is used instead

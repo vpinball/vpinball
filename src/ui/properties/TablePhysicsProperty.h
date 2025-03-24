@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TablePhysicsProperty: public BasePropertyDialog
+class TablePhysicsProperty final : public BasePropertyDialog
 {
 public:
     TablePhysicsProperty(const VectorProtected<ISelect> *pvsel);

@@ -4,7 +4,7 @@
 
 #include "core/TableDB.h"
 
-class DimensionDialog : public CDialog
+class DimensionDialog final : public CDialog
 {
 public:
    DimensionDialog();

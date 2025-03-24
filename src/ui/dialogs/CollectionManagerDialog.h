@@ -2,14 +2,14 @@
 
 #pragma once
 
-class CollectionDialogStruct
+class CollectionDialogStruct final
 {
 public:
     Collection *pcol;
     PinTable *ppt;
 };
 
-class CollectionManagerDialog : public CDialog
+class CollectionManagerDialog final : public CDialog
 {
 public:
     CollectionManagerDialog();

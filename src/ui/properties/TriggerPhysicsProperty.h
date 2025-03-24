@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TriggerPhysicsProperty: public BasePropertyDialog
+class TriggerPhysicsProperty final : public BasePropertyDialog
 {
 public:
     TriggerPhysicsProperty(const VectorProtected<ISelect> *pvsel);

@@ -2,7 +2,7 @@
 
 #pragma once
 
-class WallPhysicsProperty: public BasePropertyDialog
+class WallPhysicsProperty final : public BasePropertyDialog
 {
 public:
     WallPhysicsProperty(const VectorProtected<ISelect> *pvsel);

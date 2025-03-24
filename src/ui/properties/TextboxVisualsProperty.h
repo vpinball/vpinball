@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TextboxVisualsProperty : public BasePropertyDialog
+class TextboxVisualsProperty final : public BasePropertyDialog
 {
 public:
     TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel);

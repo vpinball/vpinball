@@ -2,7 +2,7 @@
 
 #pragma once
 
-class RampPhysicsProperty: public BasePropertyDialog
+class RampPhysicsProperty final : public BasePropertyDialog
 {
 public:
     RampPhysicsProperty(const VectorProtected<ISelect> *pvsel);

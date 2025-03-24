@@ -2,7 +2,7 @@
 
 #pragma once
 
-class PrimitivePhysicsProperty: public BasePropertyDialog
+class PrimitivePhysicsProperty final : public BasePropertyDialog
 {
 public:
     PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel);

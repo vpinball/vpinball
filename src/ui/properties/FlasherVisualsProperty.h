@@ -2,7 +2,7 @@
 
 #pragma once
 
-class FlasherVisualsProperty: public BasePropertyDialog
+class FlasherVisualsProperty final : public BasePropertyDialog
 {
 public:
     FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel);

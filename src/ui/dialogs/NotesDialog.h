@@ -9,7 +9,7 @@
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include "ui/properties/PropertyDialog.h"
 
-class NotesEdit : public CEdit
+class NotesEdit final : public CEdit
 {
 
 public:
@@ -56,7 +56,7 @@ private:
    NotesEdit m_notesEdit;
 };
 
-class CContainNotes : public CDockContainer
+class CContainNotes final : public CDockContainer
 {
 public:
    CContainNotes();
@@ -70,7 +70,7 @@ private:
    NotesDialog m_notesDialog;
 };
 
-class CDockNotes : public CDocker
+class CDockNotes final : public CDocker
 {
 public:
    CDockNotes();

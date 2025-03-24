@@ -2,7 +2,7 @@
 
 #pragma once
 
-class VROptionsDialog : public CDialog
+class VROptionsDialog final : public CDialog
 {
 public:
    VROptionsDialog();

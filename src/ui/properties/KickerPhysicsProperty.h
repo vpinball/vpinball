@@ -2,7 +2,7 @@
 
 #pragma once
 
-class KickerPhysicsProperty: public BasePropertyDialog
+class KickerPhysicsProperty final : public BasePropertyDialog
 {
 public:
     KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel);

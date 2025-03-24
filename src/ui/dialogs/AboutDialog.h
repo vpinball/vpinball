@@ -2,7 +2,7 @@
 
 #pragma once
 
-class AboutDialog : public CDialog
+class AboutDialog final : public CDialog
 {
 public:
    AboutDialog();

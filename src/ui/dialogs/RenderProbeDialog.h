@@ -4,7 +4,7 @@
 
 class RenderProbe;
 
-class RenderProbeDialog : public CDialog
+class RenderProbeDialog final : public CDialog
 {
 public:
    RenderProbeDialog();

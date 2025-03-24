@@ -6,6 +6,7 @@
 
 class EditBox;
 class ComboBox;
+
 class BasePropertyDialog: public CDialog
 {
 public:

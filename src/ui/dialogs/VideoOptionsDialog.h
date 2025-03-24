@@ -4,7 +4,7 @@
 
 #include <wxx_propertysheet.h>  // Add CPropertyPage, CPropertySheet
 
-class VideoOptionProperties : public CPropertySheet
+class VideoOptionProperties final : public CPropertySheet
 {
 public:
    VideoOptionProperties(HWND hParent /* = nullptr*/);

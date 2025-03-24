@@ -84,7 +84,7 @@ INT_PTR RenderProbeDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          NMLVDISPINFO *pinfo = (NMLVDISPINFO *)lParam;
          if (pinfo->item.pszText == nullptr || pinfo->item.pszText[0] == '\0')
             return FALSE;
-         auto new_name = string(pinfo->item.pszText);
+         const string new_name(pinfo->item.pszText);
          LVITEM lvitem;
          lvitem.mask = LVIF_PARAM;
          lvitem.iItem = pinfo->item.iItem;

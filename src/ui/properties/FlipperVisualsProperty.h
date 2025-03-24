@@ -2,7 +2,7 @@
 
 #pragma once
 
-class FlipperVisualsProperty: public BasePropertyDialog
+class FlipperVisualsProperty final : public BasePropertyDialog
 {
 public:
     FlipperVisualsProperty(const VectorProtected<ISelect> *pvsel);

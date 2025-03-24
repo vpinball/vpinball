@@ -23,7 +23,7 @@
 #define DIJOFS_BUTTON(n) (offsetof(DIJOYSTATE, rgbButtons) + (n))
 // end
 
-class DirectInputJoystickHandler : public InputHandler
+class DirectInputJoystickHandler final : public InputHandler
 {
 public:
    DirectInputJoystickHandler(PinInput& pininput, HWND focusWnd)
@@ -42,7 +42,7 @@ public:
       #endif
    }
 
-   ~DirectInputJoystickHandler() final
+   ~DirectInputJoystickHandler() override
    {
       for (auto joystick : m_joysticks)
       {
@@ -54,18 +54,17 @@ public:
       SAFE_RELEASE(m_pDI);
    }
 
-   static inline uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x100000000) | static_cast<uint64_t>(index); }
+   static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x100000000) | static_cast<uint64_t>(index); }
 
    int GetNJoysticks() const { return static_cast<int>(m_joysticks.size()); }
    #ifdef USE_DINPUT8
-      LPDIRECTINPUTDEVICE8 GetJoystick(int index) { return m_joysticks[index]; }
+      LPDIRECTINPUTDEVICE8 GetJoystick(int index) const { return m_joysticks[index]; }
    #else
-      LPDIRECTINPUTDEVICE GetJoystick(int index) { return m_joysticks[index]; }
+      LPDIRECTINPUTDEVICE GetJoystick(int index) const { return m_joysticks[index]; }
    #endif
 
-   void Update() final
+   void Update() override
    {
-      DIDEVICEOBJECTDATA didod[64];
       int index = 0;
       for (auto joystick : m_joysticks)
       {
@@ -73,6 +72,7 @@ public:
          if (hr == S_OK || hr == S_FALSE)
          {
             DWORD dwElements = 64;
+            DIDEVICEOBJECTDATA didod[64];
             hr = joystick->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), didod, &dwElements, 0);
             if ((hr == S_OK || hr == DI_BUFFEROVERFLOW) && (m_focusHWnd == GetForegroundWindow()))
             {

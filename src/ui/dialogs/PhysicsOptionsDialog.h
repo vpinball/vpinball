@@ -2,7 +2,7 @@
 
 #pragma once
 
-class PhysicsOptionsDialog : public CDialog
+class PhysicsOptionsDialog final : public CDialog
 {
 public:
     PhysicsOptionsDialog();

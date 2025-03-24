@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TriggerVisualsProperty: public BasePropertyDialog
+class TriggerVisualsProperty final : public BasePropertyDialog
 {
 public:
     TriggerVisualsProperty(const VectorProtected<ISelect> *pvsel);

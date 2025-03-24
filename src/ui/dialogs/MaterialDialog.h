@@ -9,7 +9,7 @@
 #include "ui/properties/PropertyDialog.h"
 #include <WindowsX.h>
 
-class MaterialDialog : public CDialog
+class MaterialDialog final : public CDialog
 {
 public:
    MaterialDialog();

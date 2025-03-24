@@ -2,9 +2,8 @@
 
 #pragma once
 
-class RampVisualsProperty: public BasePropertyDialog
+class RampVisualsProperty final : public BasePropertyDialog
 {
-
 public:
     RampVisualsProperty(const VectorProtected<ISelect> *pvsel);
     virtual ~RampVisualsProperty() { }

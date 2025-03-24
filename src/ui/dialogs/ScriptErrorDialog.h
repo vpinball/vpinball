@@ -6,7 +6,7 @@
 #include <string>
 
 // Dialog box shown when a runtime script error occurs
-class ScriptErrorDialog : public CDialog
+class ScriptErrorDialog final : public CDialog
 {
 public:
 	ScriptErrorDialog(const wstring &message);

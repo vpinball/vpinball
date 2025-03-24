@@ -37,7 +37,7 @@ PinInput::PinInput()
    #endif
 {
 #ifdef _WIN32
-   // Cache the inital state of sticky keys
+   // Cache the initial state of sticky keys
    m_startupStickyKeys.cbSize = sizeof(STICKYKEYS);
    SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &m_startupStickyKeys, 0);
 #endif
@@ -72,7 +72,7 @@ void PinInput::Init()
    m_plungerPosDirty = true;
    m_plungerSpeedDirty = true;
    m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
-   
+
    m_accelerometerDirty = true;
    m_accelerometerEnabled = settings.LoadValueWithDefault(Settings::Player, "PBWEnabled"s, true); // true if electronic accelerometer enabled
    m_accelerometerFaceUp = settings.LoadValueWithDefault(Settings::Player, "PBWNormalMount"s, true); // true is normal mounting (left hand coordinates)
@@ -94,7 +94,7 @@ void PinInput::Init()
    m_joypmdown = settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, m_joypmdown);
    m_joypmup = settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, m_joypmup);
    m_joypmenter = settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, m_joypmenter);
-   
+
    m_joycustom1 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, m_joycustom1);
    m_joycustom1key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, m_joycustom1key);
    m_joycustom2 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, m_joycustom2);
@@ -103,7 +103,7 @@ void PinInput::Init()
    m_joycustom3key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key);
    m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
    m_joycustom4key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key);
-   
+
    for (unsigned int i = 0; i < eCKeys; ++i)
       MapActionToKeyboard(static_cast<EnumAssignKeys>(i), g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]), true);
 
@@ -156,7 +156,7 @@ void PinInput::Init()
          m_joystickDIHandler = static_cast<DirectInputJoystickHandler*>(m_inputHandlers.back().get());
          m_rumbleMode = 0;
       }
-      
+
       if (settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true))
          m_inputHandlers.push_back(std::make_unique<DirectInputMouseHandler>(*this, m_focusHWnd));
 
@@ -185,30 +185,6 @@ void PinInput::UnInit()
       SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &m_startupStickyKeys, SPIF_SENDCHANGE);
    #endif
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void PinInput::UnmapJoy(uint64_t joyId)
@@ -265,14 +241,14 @@ void PinInput::MapAnalogActionToJoystick(AnalogAction output, uint64_t joystickI
 
 bool PinInput::HasMechPlunger() const
 {
-   const auto it = std::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
+   const auto& it = std::ranges::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
       [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerPos); });
    return it != m_analogActionMappings.end();
 }
 
 bool PinInput::HasMechPlungerSpeed() const
 {
-   const auto it = std::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
+   const auto& it = std::ranges::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
       [](const AnalogActionMapping& mapping) { return (mapping.output == AnalogAction::AM_PlungerSpeed); });
    return it != m_analogActionMappings.end();
 }
@@ -650,14 +626,14 @@ void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
       return;
    }
 
-   U32 now = msec();
+   const U32 now = msec();
    if (m_autoStartTimestamp == 0)
    {
       m_autoStartTimestamp = now;
       return;
    }
 
-   U32 elapsed = now - m_autoStartTimestamp;
+   const U32 elapsed = now - m_autoStartTimestamp;
    if (m_autoStartPressed // Start button is down.
       && (elapsed > 100)) // Start button has been down for at least 0.10 seconds.
    {
@@ -682,16 +658,16 @@ void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
 
 // Setup an hardware device button and analog input mapping
 // For the time being, an action may only be bound to one button as we do not handle combination of multiple sources
-// For analog input, multiple source are supported, averaging for nudge and suming for plunger (assuming there is only one non 0)
+// For analog input, multiple source are supported, averaging for nudge and summing for plunger (assuming there is only one non 0)
 void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
 {
-   int lr_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, 1);
-   int ud_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, 2);
-   bool lr_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, false);
-   bool ud_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, false);
-   int plunger_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, 3);
-   int plunger_speed_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, 0);
-   bool plunger_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, false);
+   const int lr_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxis"s, 1);
+   const int ud_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxis"s, 2);
+   const bool lr_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "LRAxisFlip"s, false);
+   const bool ud_axis_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "UDAxisFlip"s, false);
+   const int plunger_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerAxis"s, 3);
+   const int plunger_speed_axis = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "PlungerSpeedAxis"s, 0);
+   const bool plunger_reverse = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ReversePlungerAxis"s, false);
 
    switch (inputLayout)
    {
@@ -834,7 +810,7 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
          // eEscape (no joystick mapping)
          MapActionToJoystick(ePause, joystickId, settings.LoadValueInt(Settings::Player, "JoyPauseKey"s), true);
          MapActionToJoystick(eTweak, joystickId, settings.LoadValueInt(Settings::Player, "JoyTweakKey"s), true);
-       
+
          // TODO map to corresponding GenericKey (or define actions for these keys)
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, 0), true); 2
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, 0), true); 5
@@ -844,7 +820,7 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, 0), true); 8
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, 0), true); 9
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, 0), true); 0
-       
+
          // TODO map to corresponding GenericKey
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, 0), true);
          // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, 0), true);
@@ -873,7 +849,7 @@ void PinInput::ProcessInput()
    if (!g_pplayer || !g_pplayer->m_ptable) return; // only if player is running
    g_pplayer->m_logicProfiler.OnProcessInput();
 
-   U32 now = msec();
+   const U32 now = msec();
 
    // Gather input from all handlers
    for (const auto& handler : m_inputHandlers)
@@ -923,14 +899,14 @@ void PinInput::ProcessEvent(const InputEvent& event)
 {
    if (event.type == InputEvent::Type::Mouse && !g_pplayer->m_liveUI->HasMouseCapture() && !g_pplayer->m_throwBalls && !g_pplayer->m_ballControl)
    {
-      const auto it = std::find_if(m_actionMappings.begin(), m_actionMappings.end(),
+      const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Mouse) && (mapping.buttonId == event.buttonId); });
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
    }
    else if (event.type == InputEvent::Type::Keyboard && !g_pplayer->m_liveUI->HasKeyboardCapture())
    {
-      const auto it = std::find_if(m_actionMappings.begin(), m_actionMappings.end(),
+      const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Keyboard) && (mapping.keycode == event.keycode); });
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
@@ -943,7 +919,7 @@ void PinInput::ProcessEvent(const InputEvent& event)
    }
    else if (event.type == InputEvent::Type::JoyButton)
    {
-      const auto it = std::find_if(m_actionMappings.begin(), m_actionMappings.end(),
+      const auto& it = std::ranges::find_if(m_actionMappings.begin(), m_actionMappings.end(),
          [&event](const ActionMapping& mapping) { return (mapping.type == ActionMapping::AM_Joystick) && (mapping.joystickId == event.joystickId) && (mapping.buttonId == event.buttonId); });
       if (it != m_actionMappings.end())
          FireActionEvent(it->action, event.isPressed);
@@ -977,7 +953,7 @@ void PinInput::ProcessEvent(const InputEvent& event)
    }
    else if (event.type == InputEvent::Type::JoyAxis)
    {
-      const auto it = std::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
+      const auto& it = std::ranges::find_if(m_analogActionMappings.begin(), m_analogActionMappings.end(),
          [&event](const AnalogActionMapping& mapping) { return (mapping.joystickId == event.joystickId) && (mapping.axisId == event.axisId); });
       if (it != m_analogActionMappings.end())
       {

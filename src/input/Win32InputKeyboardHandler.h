@@ -2,7 +2,7 @@
 
 #include "pininput.h"
 
-class Win32InputKeyboardHandler : public InputHandler
+class Win32InputKeyboardHandler final : public InputHandler
 {
 public:
    Win32InputKeyboardHandler(PinInput& pininput, HWND focusWnd)
@@ -11,9 +11,9 @@ public:
    {
       PLOGI << "Win32 Keyboard handler registered";
    }
-   ~Win32InputKeyboardHandler() final = default;
+   ~Win32InputKeyboardHandler() override = default;
 
-   void Update() final
+   void Update() override
    {
       if (m_focusHWnd != GetForegroundWindow())
          return;

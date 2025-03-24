@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TableAudioProperty: public BasePropertyDialog
+class TableAudioProperty final : public BasePropertyDialog
 {
 public:
     TableAudioProperty(const VectorProtected<ISelect> *pvsel);

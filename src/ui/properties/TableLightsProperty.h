@@ -2,7 +2,7 @@
 
 #pragma once
 
-class TableLightsProperty: public BasePropertyDialog
+class TableLightsProperty final : public BasePropertyDialog
 {
 public:
     TableLightsProperty(const VectorProtected<ISelect> *pvsel);

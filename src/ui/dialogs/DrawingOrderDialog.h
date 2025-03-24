@@ -2,7 +2,7 @@
 
 #pragma once
 
-class DrawingOrderDialog : public CDialog
+class DrawingOrderDialog final : public CDialog
 {
 public:
    DrawingOrderDialog(bool select);

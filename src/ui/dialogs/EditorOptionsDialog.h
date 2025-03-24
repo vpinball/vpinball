@@ -9,7 +9,7 @@
 #include "ui/properties/PropertyDialog.h"
 #include <WindowsX.h>
 
-class EditorOptionsDialog : public CDialog
+class EditorOptionsDialog final : public CDialog
 {
 public:
     EditorOptionsDialog();

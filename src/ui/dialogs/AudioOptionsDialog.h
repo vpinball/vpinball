@@ -2,7 +2,7 @@
 
 #pragma once
 
-class AudioOptionsDialog : public CDialog
+class AudioOptionsDialog final : public CDialog
 {
 public:
    AudioOptionsDialog();

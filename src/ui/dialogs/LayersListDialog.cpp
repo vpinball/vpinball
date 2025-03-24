@@ -115,9 +115,7 @@ void LayersListDialog::UpdateLayerList(const string& name)
 
    ClearList();
    const bool checkName = !name.empty();
-   string sName{name};
-   if (checkName) //transform the name to lower
-      StrToLower(sName);
+   const string sName { lowerCase(name) }; //transform the name to lower
 
    for (size_t t = 0; t < m_activeTable->m_vedit.size(); t++)
    {
@@ -129,9 +127,8 @@ void LayersListDialog::UpdateLayerList(const string& name)
          else if (!GetCaseSensitiveFilter())
          {
             //filter obj name and filter to lower
-            string objName{m_activeTable->m_vedit[t]->GetName()};
-            StrToLower(objName);
-            if (string(objName).find(sName) != string::npos)
+            const string objName { lowerCase(m_activeTable->m_vedit[t]->GetName()) };
+            if (objName.find(sName) != string::npos)
                AddLayer(psel->m_layerName, m_activeTable->m_vedit[t]);
          }
          else

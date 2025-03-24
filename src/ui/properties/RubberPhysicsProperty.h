@@ -2,7 +2,7 @@
 
 #pragma once
 
-class RubberPhysicsProperty: public BasePropertyDialog
+class RubberPhysicsProperty final : public BasePropertyDialog
 {
 public:
     RubberPhysicsProperty(const VectorProtected<ISelect> *pvsel);

@@ -2,7 +2,7 @@
 
 #pragma once
 
-class FlipperPhysicsProperty: public BasePropertyDialog
+class FlipperPhysicsProperty final : public BasePropertyDialog
 {
 public:
     FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel);

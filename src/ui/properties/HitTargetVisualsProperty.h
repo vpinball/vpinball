@@ -2,7 +2,7 @@
 
 #pragma once
 
-class HitTargetVisualsProperty: public BasePropertyDialog
+class HitTargetVisualsProperty final : public BasePropertyDialog
 {
 public:
     HitTargetVisualsProperty(const VectorProtected<ISelect> *pvsel);

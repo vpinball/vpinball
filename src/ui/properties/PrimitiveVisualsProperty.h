@@ -2,7 +2,7 @@
 
 #pragma once
 
-class PrimitiveVisualsProperty: public BasePropertyDialog
+class PrimitiveVisualsProperty final : public BasePropertyDialog
 {
 public:
     PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel);

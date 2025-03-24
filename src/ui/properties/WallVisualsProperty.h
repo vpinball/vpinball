@@ -2,7 +2,7 @@
 
 #pragma once
 
-class WallVisualsProperty: public BasePropertyDialog
+class WallVisualsProperty final : public BasePropertyDialog
 {
 public:
     WallVisualsProperty(const VectorProtected<ISelect> *pvsel);

@@ -2,7 +2,7 @@
 
 #pragma once
 
-class DeviceTreeView : public CTreeView
+class DeviceTreeView final : public CTreeView
 {
 public:
    DeviceTreeView();
@@ -51,7 +51,7 @@ struct InputDeviceInfo
    bool state;
 };
 
-class InputDeviceDialog : public CDialog
+class InputDeviceDialog final : public CDialog
 {
 public:
    InputDeviceDialog(CRect* sourcePos, PinInput* const pi);

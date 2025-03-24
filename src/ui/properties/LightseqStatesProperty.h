@@ -2,7 +2,7 @@
 
 #pragma once
 
-class LightseqStatesProperty: public BasePropertyDialog
+class LightseqStatesProperty final : public BasePropertyDialog
 {
 public:
     LightseqStatesProperty(const VectorProtected<ISelect> *pvsel);

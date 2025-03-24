@@ -2,7 +2,7 @@
 
 #include "pininput.h"
 
-class DirectInputMouseHandler : public InputHandler
+class DirectInputMouseHandler final : public InputHandler
 {
 public:
    DirectInputMouseHandler(PinInput& pininput, HWND focusWnd)
@@ -24,7 +24,7 @@ public:
       }
    }
 
-   ~DirectInputMouseHandler() final
+   ~DirectInputMouseHandler() override
    {
       // We unacquire the device one last time just in case the app tried to exit while the device is still acquired.
       if (m_pMouse)
@@ -33,7 +33,7 @@ public:
       SAFE_RELEASE(m_pDI);
    }
 
-   void Update() final
+   void Update() override
    {
       if (m_pMouse == nullptr || m_focusHWnd != GetForegroundWindow())
          return;
