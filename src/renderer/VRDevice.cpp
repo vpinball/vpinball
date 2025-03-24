@@ -128,7 +128,7 @@ extern marker_series series;
    #include <openxr/openxr_platform.h>
 
 
-inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
+static inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
 {
    static char string[XR_MAX_RESULT_STRING_SIZE];
    xrResultToString(xrInstance, result, string);
@@ -137,7 +137,7 @@ inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
 
 #define OPENXR_CHECK(x, y)                                                                                                                                                                   \
    {                                                                                                                                                                                         \
-      const XrResult result = (x);                                                                                                                                                                 \
+      const XrResult result = (x);                                                                                                                                                           \
       if (!XR_SUCCEEDED(result) && g_pplayer->m_vrDevice)                                                                                                                                    \
       {                                                                                                                                                                                      \
          PLOGE << "ERROR: OPENXR: " << int(result) << '(' << (m_xrInstance ? GetXRErrorString(m_xrInstance, result) : "") << ") " << (y);        \
@@ -146,7 +146,7 @@ inline const char* GetXRErrorString(XrInstance xrInstance, XrResult result)
 
 inline static float XrRcpSqrt(const float x)
 {
-   const float SMALLEST_NON_DENORMAL = 1.1754943508222875e-038f; // ( 1U << 23 )
+   constexpr float SMALLEST_NON_DENORMAL = FLT_MIN; // ( 1U << 23 )
    const float rcp = (x >= SMALLEST_NON_DENORMAL) ? 1.0f / sqrtf(x) : 1.0f;
    return rcp;
 }
@@ -270,7 +270,7 @@ public:
       OPENXR_CHECK(xrGetD3D11GraphicsRequirementsKHR(m_xrInstance, m_systemID, &graphicsRequirements), "Failed to get Graphics Requirements for D3D11.");
 
       static const char* dxgiDllName = "dxgi.dll";
-      void* m_dxgiDll = bx::dlopen(dxgiDllName);
+      m_dxgiDll = bx::dlopen(dxgiDllName);
       typedef HRESULT(WINAPI * PFN_CREATE_DXGI_FACTORY)(REFIID _riid, void** _factory);
       PFN_CREATE_DXGI_FACTORY CreateDXGIFactory = (PFN_CREATE_DXGI_FACTORY)bx::dlsym(m_dxgiDll, "CreateDXGIFactory1");
 
@@ -286,7 +286,7 @@ public:
          adapter = nullptr; // If we don't get a match, reset adapter to nullptr to force a throw.
       }
       OPENXR_CHECK(adapter != nullptr ? XR_SUCCESS : XR_ERROR_VALIDATION_FAILURE, "Failed to find matching graphics adapter from xrGetD3D11GraphicsRequirementsKHR.");
-      
+
       static const char* d3d11DllName = "d3d11.dll";
       m_d3d11Dll = bx::dlopen(d3d11DllName);
       PFN_D3D11_CREATE_DEVICE D3D11CreateDevice = (PFN_D3D11_CREATE_DEVICE)bx::dlsym(m_d3d11Dll, "D3D11CreateDevice");
@@ -675,7 +675,7 @@ VRDevice::~VRDevice()
 
       // Destroy the XrInstance.
       OPENXR_CHECK(xrDestroyInstance(m_xrInstance), "Failed to destroy Instance.");
-   
+
    #elif defined(ENABLE_VR)
       if (m_pHMD)
       {
@@ -883,8 +883,8 @@ void VRDevice::SetupHMD()
    }
    else
    {
-      m_eyeWidth = static_cast<int>(m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
-      m_eyeHeight = static_cast<int>(m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
+      m_eyeWidth = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectWidth * resFactor);
+      m_eyeHeight = static_cast<unsigned int>((float)m_viewConfigurationViews[0].maxImageRectHeight * resFactor);
    }
    // Limit to a resolution, under the maximum texture size supported by the GPU
    const bgfx::Caps* caps = bgfx::getCaps();
@@ -929,7 +929,7 @@ void VRDevice::CreateSession()
       editable->GetBoundingVertices(bounds, nullptr);
       if (prim)
          prim->m_d.m_visible = prevVisibility;
-      for (auto& v : bounds)
+      for (const auto& v : bounds)
       {
          sceneMin.x = min(sceneMin.x, v.x);
          sceneMin.y = min(sceneMin.y, v.y);
@@ -1298,7 +1298,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          //   . m_vrMatProj[eye] = inv(m_vrMatView) * sceneScale * m_tableWorld * VPUToWorldScale * view[eye] * projection[eye]
          // TODO Note that this is not the way it should be done: shading should use each eye view matrix, leading to slightly different shading per eye
          constexpr float vpuToWorldScale = static_cast<float>(0.0254 * 1.0625 / 50.); // VPU to meters
-         const float zNear = 0.2f; // 20cm in front of player
+         constexpr float zNear = 0.2f; // 20cm in front of player
          const float zFar = max(5.f, m_sceneSize * vpuToWorldScale); // This could be fairly optimized for better accuracy (as well as use an optimized depth buffer for rendering)
 
          // Compute the eye median pose in VPU coordinates to be used as the view point for shading
@@ -1308,7 +1308,7 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
          XrVector3f_Scale(&medianPoseInVPU.position , & medianPoseInVPU.position, 1.f / vpuToWorldScale); // Convert position from meters to VPU
          Matrix3D medianViewInVPU;
          XrPosef_ToMatrix3D(&medianViewInVPU, &medianPoseInVPU);
-         
+
          if (m_recenterTable)
          {
             m_recenterTable = false;
