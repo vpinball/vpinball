@@ -224,8 +224,8 @@ void MsgPluginManager::ProcessAsyncCallbacks()
       }
    }
    // Release lock before calling callbacks to avoid deadlock
-   for (auto it = timers.begin(); it < timers.end(); ++it)
-      it->callback(it->userData);
+   for (const auto& it : timers)
+      it.callback(it.userData);
 }
 
 

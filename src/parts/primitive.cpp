@@ -1086,7 +1086,7 @@ void Primitive::RenderSetup(RenderDevice *device)
    // Check if we are part of a group, and if so if we are a child or the base
    m_groupdRendering = false;
    m_skipRendering = false;
-   for (auto collection : m_vCollection)
+   for (const auto collection : m_vCollection)
    {
       if (!collection->m_groupElements)
          continue;

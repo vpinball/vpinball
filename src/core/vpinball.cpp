@@ -3112,7 +3112,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
 
    vbsFiles.push_back("core.vbs"s);
 
-   for(auto& i3 : vbsFiles)
+   for(const auto& i3 : vbsFiles)
       for(size_t i2 = 0; i2 < std::size(defaultFileNameSearch); ++i2)
          if(fopen_s(&f, GetTextFileFromDirectory(defaultFileNameSearch[i2] + i3, defaultPathSearch[i2]).c_str(), "rb") == 0 && f)
          {

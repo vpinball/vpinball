@@ -246,7 +246,7 @@ void AsyncDynamicQuadTree::UpdateQuadtreeThread()
       /* static int nCall = 0;
       static std::chrono::duration<double> total;
       nCall++;
-      auto start = std::chrono::high_resolution_clock::now();
+      const auto start = std::chrono::high_resolution_clock::now();
       std::chrono::duration<double> elapsed;*/
 
       // Fill in with pending hit objects, reusing free slots if possible

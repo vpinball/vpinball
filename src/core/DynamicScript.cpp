@@ -63,8 +63,7 @@ DynamicTypeLibrary::~DynamicTypeLibrary()
 
 void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 {
-   string classId(classDef->name.name);
-   StrToLower(classId);
+   const string classId(lowerCase(classDef->name.name));
    if (m_typenames.contains(classId))
    {
       // TODO Validate that both definitions are equal
@@ -92,8 +91,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
    for (int i = 0; i < static_cast<int>(classDef->nMembers); i++)
    {
       const ScriptClassMemberDef& memberDef = classDef->members[i];
-      string nameId(memberDef.name.name);
-      StrToLower(nameId);
+      const string nameId(lowerCase(memberDef.name.name));
       const auto& memberMapEntry = cd->memberMap.find(nameId);
       if (memberMapEntry == cd->memberMap.end())
       {
@@ -109,8 +107,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
 
 void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* aliasedTypeName)
 {
-   string classId(name);
-   StrToLower(classId);
+   const string classId(lowerCase(name));
    const auto& existingType = m_typenames.find(classId);
    if (existingType != m_typenames.end())
    {
@@ -128,8 +125,7 @@ void DynamicTypeLibrary::RegisterScriptTypeAlias(const char* name, const char* a
 
 void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
 {
-   string classId(arrayDef->name.name);
-   StrToLower(classId);
+   const string classId(lowerCase(arrayDef->name.name));
    const auto& existingType = m_typenames.find(classId);
    if (existingType != m_typenames.end())
    {
@@ -143,7 +139,7 @@ void DynamicTypeLibrary::RegisterScriptArray(ScriptArrayDef* arrayDef)
 
 void DynamicTypeLibrary::ResolveAllClasses()
 {
-   for (auto type : m_types)
+   for (const auto& type : m_types)
    {
       switch (type.category)
       {
@@ -192,8 +188,7 @@ void DynamicTypeLibrary::ResolveAllClasses()
 
 int DynamicTypeLibrary::ResolveClassId(const char* name) const
 {
-   string classId(name);
-   StrToLower(classId);
+   const string classId(lowerCase(name));
    const auto& existingType = m_typenames.find(classId);
    if (existingType == m_typenames.end())
       return -1;
@@ -218,8 +213,7 @@ int DynamicTypeLibrary::ResolveMemberId(const ScriptClassDef* classDef, const ch
    TypeDef type = m_types[classDef->name.id];
    assert(type.category == TypeDef::TD_CLASS);
    ClassDef* cd = type.classDef;
-   string nameId(memberName);
-   StrToLower(nameId);
+   const string nameId(lowerCase(memberName));
    const auto& member = cd->memberMap.find(nameId);
    if (member != cd->memberMap.end())
       return member->second;

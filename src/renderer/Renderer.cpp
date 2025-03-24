@@ -23,13 +23,13 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D)
-   : m_table(table)
-   , m_stereo3D(stereo3D)
+   : m_stereo3D(stereo3D)
    #if defined(ENABLE_DX9) // DirectX 9 does not support stereo rendering
    , m_stereo3DfakeStereo(true)
    #else
    , m_stereo3DfakeStereo(stereo3D == STEREO_VR ? false : table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DFake"s, false))
    #endif
+   , m_table(table)
 {
    m_stereo3Denabled = m_table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DEnabled"s, (m_stereo3D != STEREO_OFF));
    m_toneMapper = (ToneMapper)m_table->m_settings.LoadValueWithDefault(Settings::TableOverride, "ToneMapper"s, m_table->GetToneMapper());

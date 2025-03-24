@@ -421,10 +421,10 @@ void PhysicsEngine::UpdateNudge(float dtime)
       Vertex3Ds gravity(0.f, 0.f, -9.81f);
       Vertex3Ds plumbAcc = gravity;
       plumbAcc += m_plumbMassFactor * nudge; // This is absolutely not physically correct
-      plumbAcc -= plumbAcc.Dot(poleAxis) * poleAxis; // Keep acceleration ortogonal to pole
+      plumbAcc -= plumbAcc.Dot(poleAxis) * poleAxis; // Keep acceleration orthogonal to pole
       m_plumbVel *= 0.999f;
       m_plumbVel += plumbAcc * (float)PHYSICS_STEPTIME_S;
-      m_plumbVel -= m_plumbVel.Dot(poleAxis) * poleAxis; // Keep velocity ortogonal to pole
+      m_plumbVel -= m_plumbVel.Dot(poleAxis) * poleAxis; // Keep velocity orthogonal to pole
       m_plumbPos += m_plumbVel * (float)PHYSICS_STEPTIME_S;
       m_plumbPos *= m_plumbPoleLength / m_plumbPos.Length(); // Keep plumb at end of pole
 

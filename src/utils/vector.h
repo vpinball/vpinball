@@ -20,7 +20,7 @@ public:
 
    inline int find(const void * const pvItem) const
    {
-      const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
+      const auto i = std::ranges::find(m_rg.begin(), m_rg.end(), pvItem);
       if (i != m_rg.end())
          return (int)(i - m_rg.begin());
       else
@@ -43,7 +43,7 @@ public:
 
    inline void find_erase(const void * const pvItem)
    {
-      const auto i = std::find(m_rg.begin(), m_rg.end(), pvItem);
+      const auto i = std::ranges::find(m_rg.begin(), m_rg.end(), pvItem);
       if (i != m_rg.end())
          m_rg.erase(i);
       else

@@ -8,7 +8,7 @@
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 
-class LiveUI
+class LiveUI final
 {
 public:
    LiveUI(RenderDevice* const rd);

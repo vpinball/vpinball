@@ -436,7 +436,7 @@ void ScoreView::Select(const VPX::RenderOutput& output)
       layout.unfittedPixels = (rtAR > layoutAR) ? (layoutAR / rtAR) : (rtAR / layoutAR);
       layout.matchedVisuals = 0;
       layout.unmatchedVisuals = 0;
-      for (auto& visual : layout.visuals)
+      for (const auto& visual : layout.visuals)
       {
          switch (visual.type)
          {

@@ -175,8 +175,7 @@ void VPXPluginAPIImpl::SetCOMObjectOverride(const char* className, const ScriptC
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
    // FIXME remove when classDef is unregistered
    // FIXME check that classDef has been registered in the type library ?
-   string classId(className);
-   StrToLower(classId);
+   const string classId(lowerCase(className));
    if (classDef == nullptr)
       pi.m_scriptCOMObjectOverrides.erase(classId);
    else
@@ -195,8 +194,7 @@ string VPXPluginAPIImpl::ApplyScriptCOMObjectOverrides(string& script) const
    while (std::regex_search(searchStart, script.cend(), res, re))
    {
       result << res.prefix().str();
-      string className = res[1].str();
-      StrToLower(className);
+      const string className = lowerCase(res[1].str());
       const auto& overrideEntry = m_scriptCOMObjectOverrides.find(className);
       if (overrideEntry != m_scriptCOMObjectOverrides.end())
       {
@@ -217,8 +215,7 @@ IDispatch* VPXPluginAPIImpl::CreateCOMPluginObject(const string& classId)
 {
    // FIXME we are not separating type library per plugin, therefore collision may occur
    VPXPluginAPIImpl& pi = VPXPluginAPIImpl::GetInstance();
-   string className(classId);
-   StrToLower(className);
+   const string className(lowerCase(classId));
    const auto& overrideEntry = m_scriptCOMObjectOverrides.find(className);
    if (overrideEntry == m_scriptCOMObjectOverrides.end())
    {

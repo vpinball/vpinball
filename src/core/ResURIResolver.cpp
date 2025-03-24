@@ -21,9 +21,9 @@ BaseTexture *ResURIResolver::GetDisplay(const string &link, const IEditable *con
       return cache->second(link, context);
    if (link.empty())
       return nullptr;
-   
+
    texCacheLambda lambda = nullptr;
-   auto uri = uri::parse_uri(link);
+   const auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
       PLOGE << "Invalid resource URI: " << link;
@@ -83,7 +83,7 @@ ResURIResolver::SegDisplay ResURIResolver::GetSegDisplay(const string &link, con
       return { nullptr };
 
    segCacheLambda lambda = nullptr;
-   auto uri = uri::parse_uri(link);
+   const auto uri = uri::parse_uri(link);
    if (uri.error != uri::Error::None)
    {
       PLOGE << "Invalid resource URI: " << link;

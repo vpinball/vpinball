@@ -678,13 +678,13 @@ namespace {
 			return ERR_INVALID_REPORT_SIZE;
 
 		if (_have_report_ids) {
-			for (auto& it : _mapping) {
-				if (it.first == report_id)
+			for (auto& it2 : _mapping) {
+				if (it2.first == report_id)
 					continue;
 				// Resetting those relative fields that don't belong to this
 				// report_id because they won't be updated by this report and
-				// and "no change" means zero value in case of a relative field.
-				for (ReportFieldMapping& fm : it.second.fields) {
+				// "no change" means zero value in case of a relative field.
+				for (ReportFieldMapping& fm : it2.second.fields) {
 					if (fm.relative)
 						ReportFieldMapping::ResetFields(fm);
 				}
@@ -1233,8 +1233,8 @@ namespace {
 	}
 
 	void SelectiveInputReportParser::DescriptorMapper::RecursiveAddChildren(Collection* c, uint8_t collection_type, uint16_t usage_page, uint16_t usage) {
-		for (Collection* c : c->collections)
-			RecursiveAdd(c, collection_type, usage_page, usage);
+		for (Collection* c2 : c->collections)
+			RecursiveAdd(c2, collection_type, usage_page, usage);
 	}
 
 	bool SelectiveInputReportParser::DescriptorMapper::CollectionMatch(Collection* c, uint8_t collection_type, uint16_t usage_page, uint16_t usage) {

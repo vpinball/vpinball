@@ -292,7 +292,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
    // Compute frustum Z bounds (near/far plane), taking in account base view but also reflected point of view to avoid depth clipping in reflection probes
    float zNear, zFar;
    table->ComputeNearFarPlane(bounds, matView, 1.f, zNear, zFar);
-   for (auto probe : table->m_vrenderprobe)
+   for (const auto probe : table->m_vrenderprobe)
    {
       if (probe->GetType() == RenderProbe::PLANE_REFLECTION)
       {

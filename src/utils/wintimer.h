@@ -522,7 +522,7 @@ private:
    string EventDataToLog(const robin_hood::unordered_map<DISPID, EventTick>& eventData, const char* profileTimers, const size_t profileTimersLen) const
    {
       std::stringstream ss;
-      for (auto v : eventData)
+      for (const auto& v : eventData)
       {
          string name;
          switch (v.first)

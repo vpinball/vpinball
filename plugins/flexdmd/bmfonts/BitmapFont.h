@@ -13,7 +13,7 @@ class BitmapFont final
 public:
    BitmapFont();
    ~BitmapFont();
-   
+
    static constexpr int NoMaxWidth = -1;
 
    static BitmapFont* Create(const string& fileName);
@@ -22,10 +22,10 @@ public:
    int GetKerning(char previous, char current);
    int GetLineHeight() const { return m_lineHeight; }
    int GetBaseHeight() const { return m_baseHeight; }
-   Page* GetPage(int index) const { return m_pages[index]; }   
+   Page* GetPage(int index) const { return m_pages[index]; }
    int GetPageCount() const { return static_cast<int>(m_pages.size()); }
    const std::unordered_map<char, Character*>& GetCharacters() const { return m_characters; }
-   Character* GetCharacter(char key) const { auto it = m_characters.find(key); return it != m_characters.end() ? it->second : nullptr; }
+   Character* GetCharacter(char key) const { const auto it = m_characters.find(key); return it != m_characters.end() ? it->second : nullptr; }
    void SetCharacter(char key, Character* character) { m_characters[key] = character; }
 
    SDL_Rect MeasureFont(const string& text, double maxWidth = NoMaxWidth);

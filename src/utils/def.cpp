@@ -417,9 +417,9 @@ string find_path_case_insensitive(const string& szPath)
 
    std::filesystem::path parentPath = path.parent_path();
    if (!parentPath.empty() && std::filesystem::is_directory(parentPath)) {
-      const string lowerFilename = string_to_lower(path.filename().string());
+      const string lowerFilename = lowerCase(path.filename().string());
       for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
-         if (string_to_lower(entry.path().filename().string()) == lowerFilename)
+         if (lowerCase(entry.path().filename().string()) == lowerFilename)
          {
             PLOGW.printf("exact path not found, but a case-insensitive match was found: path=%s, match=%s", szPath.c_str(), entry.path().c_str());
             return entry.path().string();
@@ -440,12 +440,12 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
    if (std::filesystem::exists(fullPath) && std::filesystem::is_directory(fullPath))
       return fullPath.string() + PATH_SEPARATOR_CHAR;
 
-   string szDirLower = string_to_lower(szDirName);
+   string szDirLower = lowerCase(szDirName);
    for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
       if (!std::filesystem::is_directory(entry.status()))
          continue;
 
-      if (string_to_lower(entry.path().filename().string()) == szDirLower) {
+      if (lowerCase(entry.path().filename().string()) == szDirLower) {
          string szMatch = entry.path().string() + PATH_SEPARATOR_CHAR;
          PLOGW.printf("case-insensitive match was found: szParentPath=%s, szDirName=%s, match=%s",
             szParentPath.c_str(), szDirName.c_str(), szMatch.c_str());
@@ -458,7 +458,7 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
 
 string extension_from_path(const string& path)
 {
-   const string lowerPath = string_to_lower(path);
+   const string lowerPath = lowerCase(path);
    const size_t pos = path.find_last_of('.');
    return pos != string::npos ? lowerPath.substr(pos + 1) : string();
 }
@@ -481,7 +481,7 @@ string normalize_path_separators(const string& szPath)
 
 bool path_has_extension(const string& path, const string& ext)
 {
-   return extension_from_path(path) == string_to_lower(ext);
+   return extension_from_path(path) == lowerCase(ext);
 }
 
 bool try_parse_int(const string& str, int& value)
@@ -604,7 +604,7 @@ string color_to_hex(OLE_COLOR color)
 
 bool string_contains_case_insensitive(const string& str1, const string& str2)
 {
-   return string_to_lower(str1).find(string_to_lower(str2)) != string::npos;
+   return lowerCase(str1).find(lowerCase(str2)) != string::npos;
 }
 
 bool string_compare_case_insensitive(const string& str1, const string& str2)
@@ -616,12 +616,6 @@ bool string_starts_with_case_insensitive(const std::string& str, const std::stri
 {
    if(prefix.size() > str.size()) return false;
    return string_compare_case_insensitive(str.substr(0, prefix.size()), prefix);
-}
-
-string string_to_lower(string str)
-{
-   StrToLower(str);
-   return str;
 }
 
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs)

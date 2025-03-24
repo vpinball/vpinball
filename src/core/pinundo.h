@@ -9,7 +9,7 @@
 class IEditable;
 class PinTable;
 
-class UndoRecord
+class UndoRecord final
 {
 public:
    UndoRecord();
@@ -27,7 +27,7 @@ private:
    vector<IEditable*> m_vieMark;
 };
 
-class PinUndo
+class PinUndo final
 {
 public:
    PinUndo();

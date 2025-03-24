@@ -1938,7 +1938,7 @@ void LiveUI::HandleTweakInput()
                const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
                if (activeTweakSetting < BS_Custom + (int)customOptions.size())
                {
-                  auto opt = customOptions[activeTweakSetting - BS_Custom];
+                  const auto& opt = customOptions[activeTweakSetting - BS_Custom];
                   float nTotalSteps = (opt.maxValue - opt.minValue) / opt.step;
                   int nMsecPerStep = nTotalSteps < 20.f ? 500 : max(5, 250 - (int)(msec() - startOfPress) / 10); // discrete vs continuous sliding
                   int nSteps = (msec() - m_lastTweakKeyDown) / nMsecPerStep;
@@ -2066,7 +2066,7 @@ void LiveUI::HandleTweakInput()
                int nOptions = (int)customOptions.size();
                for (int i = 0; i < nOptions; i++)
                {
-                  auto opt = customOptions[i];
+                  const auto& opt = customOptions[i];
                   if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
                      || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                   {
@@ -2226,7 +2226,7 @@ void LiveUI::HandleTweakInput()
                int nOptions = (int)customOptions.size();
                for (int i = 0; i < nOptions; i++)
                {
-                  auto opt = customOptions[i];
+                  const auto& opt = customOptions[i];
                   if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
                      || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                   {
@@ -2941,7 +2941,7 @@ void LiveUI::UpdateMainUI()
          bool noPrims = !(m_selectionFilter & SelectionFilter::SF_Primitives);
          bool noLights = !(m_selectionFilter & SelectionFilter::SF_Lights);
          bool noFlashers = !(m_selectionFilter & SelectionFilter::SF_Flashers);
-         for (auto hr : vhoUnfilteredHit)
+         for (const auto& hr : vhoUnfilteredHit)
          {
             if (noPF && hr.m_obj->m_editable && hr.m_obj->m_editable->GetItemType() == ItemTypeEnum::eItemPrimitive && ((Primitive*)hr.m_obj->m_editable)->IsPlayfield())
                continue;
@@ -3361,10 +3361,8 @@ bool LiveUI::IsOutlinerFiltered(const string& name)
 {
    if (m_outlinerFilter.empty())
       return true;
-   string name_lcase = name;
-   StrToLower(name_lcase);
-   string filter_lcase = m_outlinerFilter;
-   StrToLower(filter_lcase);
+   const string name_lcase = lowerCase(name);
+   const string filter_lcase = lowerCase(m_outlinerFilter);
    return name_lcase.find(filter_lcase) != std::string::npos;
 }
 

@@ -11,7 +11,7 @@
 
 class Renderable;
 
-class Renderer
+class Renderer final
 {
 public:
    Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncMode, const StereoMode stereo3D);

@@ -47,7 +47,7 @@ struct SamplerBinding
    SamplerAddressMode clamp_v;
 };
 
-class Sampler
+class Sampler final
 {
 public:
    Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);

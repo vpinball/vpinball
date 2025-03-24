@@ -18,7 +18,7 @@ struct EditableInfo
    CreateAndInitFuncType createAndInitFunc;
 };
 
-class EditableRegistry
+class EditableRegistry final
 {
 public:
    template <class T>

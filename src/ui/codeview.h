@@ -82,7 +82,7 @@ public:
    virtual void DoCodeViewCommand(int command) = 0;
 };
 
-class CodeViewDispatch
+class CodeViewDispatch final
 {
 public:
    CodeViewDispatch() {}
@@ -548,18 +548,6 @@ private:
 constexpr __forceinline bool IsWhitespace(const char ch)
 {
    return (ch == ' ' || ch == 9/*tab*/);
-}
-
-__forceinline string upperCase(string input)
-{
-   std::ranges::transform(input.begin(), input.end(), input.begin(), cUpper);
-   return input;
-}
-
-__forceinline string lowerCase(string input)
-{
-   StrToLower(input);
-   return input;
 }
 
 inline void RemovePadding(string &line)

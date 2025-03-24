@@ -142,7 +142,7 @@ void onUpdateDMD(void* userData)
 {
    if (dmdDevicePupDll == nullptr)
       return;
-   auto now = std::chrono::high_resolution_clock::now();
+   const auto now = std::chrono::high_resolution_clock::now();
    if (now - lastFrameTick >= std::chrono::milliseconds(16))
    {
       GetRawDmdMsg getDmdMsg = { dmdId };

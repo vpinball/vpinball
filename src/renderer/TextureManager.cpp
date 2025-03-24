@@ -67,7 +67,7 @@ vector<BaseTexture*> TextureManager::GetLoadedTextures() const
 
 bool TextureManager::IsLinearRGB(BaseTexture* memtex) const
 {
-   auto it = m_map.find(memtex);
+   const auto it = m_map.find(memtex);
    return it == m_map.end() ? false : it->second.forceLinearRGB;
 }
 

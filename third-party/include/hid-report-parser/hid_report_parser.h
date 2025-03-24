@@ -1228,7 +1228,7 @@ namespace hidrp {
 	//
 	// Some applications may need all or most of the building blocks emitted by
 	// the parser. In certain situations you need only some specific pieces (for
-	// example the the most essential controls of a mouse: 2-3 buttons and the
+	// example the most essential controls of a mouse: 2-3 buttons and the
 	// X/Y movement) so you can save memory by ignoring the rest of the descriptor.
 	//
 	// This parser doesn't perform dynamic memory allocation - it works with a
@@ -1745,7 +1745,7 @@ namespace hidrp {
 		// the convenience methods below.
 
 		BoolFields& SetTarget(IBoolTarget* t) { target = t; return *this; }
-		BoolFields& SetFlags(uint16_t mask_, uint16_t flags_) { mask = mask_; flags = flags_; return *this; };
+		BoolFields& SetFlags(uint16_t mask_, uint16_t flags_) { mask = mask_; flags = flags_; return *this; }
 
 		BoolFields& AddUsages(UsageRange&& r) { usages.push_back(std::move(r)); return *this; }
 		BoolFields& AddUsages(std::initializer_list<UsageRange> a) { usages.insert(usages.end(), a); return *this; }
@@ -1928,7 +1928,7 @@ namespace hidrp {
 		}
 
 	private:
-		bool AppendUsageIndex(std::vector<UsageIndexRange>& ranges, size_t desc_usage_index, size_t values_usage_index) {
+		static bool AppendUsageIndex(std::vector<UsageIndexRange>& ranges, size_t desc_usage_index, size_t values_usage_index) {
 			// The logic that tries map descriptor fields onto the application's
 			// variables (the FindFieldUsagesInCollection method) works by
 			// iterating through the usages found in the descriptor and trying
@@ -1987,7 +1987,7 @@ namespace hidrp {
 		int MapFields(const void* descriptor, size_t descriptor_size);
 
 	private:
-		void ResizeVectors(Collection* c);
+		static void ResizeVectors(Collection* c);
 
 		int Field(const DescriptorParser::FieldParams& fp) override;
 		int Padding(ReportType rt, uint8_t report_id, uint32_t bit_size) override;
@@ -2273,7 +2273,7 @@ namespace hidrp {
 			return 0;
 		}
 
-		int EndCollection(uint32_t depth) {
+		int EndCollection(uint32_t depth) override {
 			if (_collapse_collections && depth > 1)
 				return 0;
 			_collection_stack.pop_back();

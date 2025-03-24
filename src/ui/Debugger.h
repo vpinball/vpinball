@@ -2,7 +2,7 @@
 
 #pragma once
 
-class DebuggerDialog : public CDialog
+class DebuggerDialog final : public CDialog
 {
 public:
     DebuggerDialog();

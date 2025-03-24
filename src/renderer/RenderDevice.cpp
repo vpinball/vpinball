@@ -56,7 +56,7 @@
 struct tBGFXCallback : public bgfx::CallbackI
 {
    ~tBGFXCallback() override { }
-   virtual void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
+   void fatal(const char* _filePath, uint16_t _line, bgfx::Fatal::Enum _code, const char* _str) override
    {
       //bgfx::trace(_filePath, _line, "BGFX FATAL 0x%08x: %s\n", _code, _str);
       PLOGE << _filePath << ':' << _line << "BGFX FATAL " << _code << ": " << _str;
@@ -65,7 +65,7 @@ struct tBGFXCallback : public bgfx::CallbackI
       else
          abort();
    }
-   virtual void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override
+   void traceVargs(const char* _filePath, uint16_t _line, const char* _format, va_list _argList) override
    {
       char temp[2048];
       char* out = temp;
@@ -86,13 +86,13 @@ struct tBGFXCallback : public bgfx::CallbackI
          out[total - 1] = '\0';
       PLOGI << out;
    }
-   virtual void profilerBegin(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
-   virtual void profilerBeginLiteral(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
-   virtual void profilerEnd() override { }
-   virtual uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
-   virtual bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
-   virtual void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
-   virtual void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override
+   void profilerBegin(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+   void profilerBeginLiteral(const char* /*_name*/, uint32_t /*_abgr*/, const char* /*_filePath*/, uint16_t /*_line*/) override { }
+   void profilerEnd() override { }
+   uint32_t cacheReadSize(uint64_t /*_id*/) override { return 0; }
+   bool cacheRead(uint64_t /*_id*/, void* /*_data*/, uint32_t /*_size*/) override { return false; }
+   void cacheWrite(uint64_t /*_id*/, const void* /*_data*/, uint32_t /*_size*/) override { }
+   void screenShot(const char* _filePath, uint32_t _width, uint32_t _height, uint32_t _pitch, const void* _data, uint32_t _size, bool _yflip) override
    {
 #ifdef __STANDALONE__
       if (!_data || _size == 0) {
@@ -136,9 +136,9 @@ struct tBGFXCallback : public bgfx::CallbackI
       RenderDevice::s_screenshotCallback(false);
 #endif
    }
-   virtual void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
-   virtual void captureEnd() override { }
-   virtual void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
+   void captureBegin(uint32_t /*_width*/, uint32_t /*_height*/, uint32_t /*_pitch*/, bgfx::TextureFormat::Enum /*_format*/, bool /*_yflip*/) override { }
+   void captureEnd() override { }
+   void captureFrame(const void* /*_data*/, uint32_t /*_size*/) override { }
 } bgfxCallback;
 
 #elif defined(ENABLE_OPENGL)
@@ -2041,7 +2041,7 @@ void RenderDevice::DrawTexturedQuad(Shader* shader, const Vertex3D_NoTex2* verti
 void RenderDevice::DrawFullscreenTexturedQuad(Shader* shader)
 {
    assert(shader == m_FBShader || shader == m_stereoShader); // FrameBuffer/Stereo shaders are the only ones using Position/Texture vertex format
-   static const Vertex3Ds pos(0.f, 0.f, 0.f);
+   static constexpr Vertex3Ds pos { 0.f, 0.f, 0.f };
    DrawMesh(shader, false, pos, 0.f, m_quadMeshBuffer, TRIANGLESTRIP, 0, 4);
 }
 

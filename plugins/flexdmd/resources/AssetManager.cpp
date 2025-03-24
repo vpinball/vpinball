@@ -37,13 +37,13 @@ AssetManager::~AssetManager()
 
 void AssetManager::ClearAll()
 {
-   for (auto it = m_cachedBitmaps.begin(); it != m_cachedBitmaps.end(); ++it)
-      it->second->Release();
+   for (const auto& it : m_cachedBitmaps)
+      it.second->Release();
 
    m_cachedBitmaps.clear();
 
-   for (auto it = m_cachedFonts.begin(); it != m_cachedFonts.end(); ++it)
-      it->second->Release();
+   for (const auto& it : m_cachedFonts)
+      it.second->Release();
 
    m_cachedFonts.clear();
 }
@@ -315,16 +315,16 @@ Bitmap* AssetManager::GetBitmap(AssetSrc* pSrc)
    if (pSrc->GetAssetType() != AssetType_Image && pSrc->GetAssetType() != AssetType_GIF) {
       LOGE("Asked to load a bitmap from a resource of type: %d", pSrc->GetAssetType());
    }
-   auto it = m_cachedBitmaps.find(pSrc->GetId());
+   const auto it = m_cachedBitmaps.find(pSrc->GetId());
    if (it != m_cachedBitmaps.end())
    {
       it->second->AddRef();
       return it->second;
    }
-   it = m_cachedBitmaps.find(pSrc->GetIdWithoutOptions());
-   if (it != m_cachedBitmaps.end()) {
+   const auto itwo = m_cachedBitmaps.find(pSrc->GetIdWithoutOptions());
+   if (itwo != m_cachedBitmaps.end()) {
       // The bitmap from which the requested one is derived is cached
-      Bitmap* pCachedBitmap = new Bitmap(it->second);
+      Bitmap* pCachedBitmap = new Bitmap(itwo->second);
       pCachedBitmap->AddRef();
       m_cachedBitmaps[pSrc->GetId()] = pCachedBitmap;
       LOGI("Bitmap added to cache: %s", pSrc->GetId().c_str());
@@ -363,7 +363,7 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    if (pSrc->GetAssetType() != AssetType_BMFont) {
       LOGE("Asked to load a font from a resource of type: %d", pSrc->GetAssetType());
    }
-   auto it = m_cachedFonts.find(pSrc->GetId());
+   const auto it = m_cachedFonts.find(pSrc->GetId());
    if (it != m_cachedFonts.end())
    {
       it->second->AddRef();

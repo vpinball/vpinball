@@ -6155,8 +6155,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
 #endif
    }
 
-   string ext = ExtensionFromFilename(file);
-   StrToLower(ext);
+   const string ext = lowerCase(ExtensionFromFilename(file));
 
    static const string vsPrefix[3] = { "ViewDT"s, "ViewCab"s, "ViewFSS"s };
    static const char *vsFields[15] = { "Mode", "ScaleX", "ScaleY", "ScaleZ", "PlayerX", "PlayerY", "PlayerZ", "LookAt", "Rotation", "FOV", "Layback", "HOfs", "VOfs", "WindowTop", "WindowBot" };
@@ -6186,7 +6185,7 @@ void PinTable::ImportBackdropPOV(const string &filename)
          std::ifstream myFile(file);
          buffer << myFile.rdbuf();
          myFile.close();
-         auto xml = buffer.str();
+         const string xml = buffer.str();
          if (xmlDoc.Parse(xml.c_str()))
          {
             ShowError("Error parsing POV XML file");
@@ -7823,13 +7822,13 @@ string PinTable::AuditTable(bool log) const
 
    // Search for inconsistencies in the table parts
    bool hasPulseTimer = false, hasPinMameTimer = false;
-   for (auto part : m_vedit)
+   for (const auto part : m_vedit)
    {
       auto type = part->GetItemType();
-      Primitive *prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
-      Light *light = type == eItemLight ? (Light *)part : nullptr;
-      Surface *surf = type == eItemSurface ? (Surface *)part : nullptr;
-      Textbox *textbox = type == eItemTextbox ? (Textbox *)part : nullptr;
+      Primitive *const prim = type == eItemPrimitive ? (Primitive *)part : nullptr;
+      Light *const light = type == eItemLight ? (Light *)part : nullptr;
+      Surface *const surf = type == eItemSurface ? (Surface *)part : nullptr;
+      Textbox *const textbox = type == eItemTextbox ? (Textbox *)part : nullptr;
 
       // Referencing a static object from script (ok if it is for reading properties, not for writing)
       if (type == eItemPrimitive && prim->m_d.m_staticRendering && FindIndexOf(identifiers, string(prim->GetName())) != -1)
@@ -7839,8 +7838,7 @@ string PinTable::AuditTable(bool log) const
          ss << ". Warning: legacy Textbox '" << textbox->GetName() << "' is used for DMD rendering. It should be replaced by a flasher to get better rendering.\r\n";
 
       if (type == eItemTimer) {
-         string name = ((Timer *)part)->GetName();
-         StrToLower(name);
+         const string name = lowerCase(((Timer *)part)->GetName());
          hasPulseTimer |= name == "pulsetimer";
          hasPinMameTimer |= name == "pinmametimer";
       }
@@ -7900,7 +7898,7 @@ string PinTable::AuditTable(bool log) const
    if (!hasPulseTimer && (FindIndexOf(identifiers, "vpmTimer"s) != -1))
       ss << ". Warning: script uses 'vpmTimer' but table is missing a Timer object named 'PulseTimer'. vpmTimer will not work as expected.\r\n";
 
-   for (auto image : m_vimage)
+   for (const auto image : m_vimage)
    {
       if (image->m_ppb == nullptr)
          ss << ". Warning: Image '" << image->m_szName << "' uses legacy encoding causing waste of memory / file size. It should be converted to WEBP file format.\r\n";
@@ -7911,7 +7909,7 @@ string PinTable::AuditTable(bool log) const
 
    // Also output a log of the table file content to allow easier size optimization
    unsigned long long totalSize = 0, totalGpuSize = 0;
-   for (auto sound : m_vsound)
+   for (const auto sound : m_vsound)
    {
       //ss << "  . Sound: '" << sound->m_szName << "', size: " << (sound->m_cdata / 1024) << "KiB\r\n";
       totalSize += sound->m_cdata;
@@ -7919,7 +7917,7 @@ string PinTable::AuditTable(bool log) const
    ss << ". Total sound size: " << (totalSize / (1024 * 1024)) << "MiB\r\n";
 
    totalSize = 0;
-   for (auto image : m_vimage)
+   for (const auto image : m_vimage)
    {
       unsigned int imageSize = image->m_ppb != nullptr ? image->m_ppb->m_cdata : image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
       unsigned int gpuSize = image->m_pdsBuffer->height() * image->m_pdsBuffer->pitch();
@@ -7930,7 +7928,7 @@ string PinTable::AuditTable(bool log) const
    ss << ". Total image size: " << (totalSize / (1024 * 1024)) << "MiB in VPX file, at least " << (totalGpuSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
 
    int nPrimTris = 0, primMemSize = 0;
-   for (auto part : m_vedit)
+   for (const auto part : m_vedit)
       if (part->GetItemType() == eItemPrimitive && ((Primitive *)part)->m_d.m_use3DMesh /* && ((Primitive *)part)->m_d.m_visible */ )
       {
          primMemSize += (((Primitive *)part)->m_mesh.NumIndices() > 65536 ? 4 : 2) * (int) ((Primitive *)part)->m_mesh.NumIndices();
@@ -9774,7 +9772,7 @@ void PinTable::ImportVPP(const string& filename)
       std::ifstream myFile(filename);
       buffer << myFile.rdbuf();
       myFile.close();
-      auto xml = buffer.str();
+      const string xml = buffer.str();
 
       if (xmlDoc.Parse(xml.c_str()))
       {

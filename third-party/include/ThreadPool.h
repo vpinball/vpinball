@@ -260,7 +260,7 @@ inline void ThreadPool::start_worker(
                         while (this->workers.size() > pool_size
                              && !this->workers.back().joinable())
                             this->workers.pop_back();
-                        // if this is was last worker, notify the destructor
+                        // if this is last worker, notify the destructor
                         if (this->workers.empty())
                             this->condition_consumers.notify_all();
                         return;

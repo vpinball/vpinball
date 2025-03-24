@@ -710,6 +710,23 @@ CONSTEXPR inline void StrToLower(string& str)
    std::ranges::transform(str.begin(), str.end(), str.begin(), cLower);
 }
 
+CONSTEXPR inline void StrToUpper(string& str)
+{
+   std::ranges::transform(str.begin(), str.end(), str.begin(), cUpper);
+}
+
+CONSTEXPR inline string lowerCase(string input)
+{
+   StrToLower(input);
+   return input;
+}
+
+CONSTEXPR inline string upperCase(string input)
+{
+   StrToUpper(input);
+   return input;
+}
+
 inline bool StrCompareNoCase(const string& strA, const string& strB)
 {
    return strA.length() == strB.length()
@@ -748,7 +765,6 @@ string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
 bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
-string string_to_lower(string str);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string create_hex_dump(const UINT8* buffer, size_t size);
 vector<unsigned char> base64_decode(const string &encoded_string);

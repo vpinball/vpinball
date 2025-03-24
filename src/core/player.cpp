@@ -623,7 +623,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
             std::ifstream myFile(path);
             buffer << myFile.rdbuf();
             myFile.close();
-            auto xml = buffer.str();
+            const string xml = buffer.str();
             tinyxml2::XMLDocument xmlDoc;
             if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
             {
@@ -888,7 +888,7 @@ Player::~Player()
          std::stringstream buffer;
          buffer << myFile.rdbuf();
          myFile.close();
-         auto xml = buffer.str();
+         const string xml = buffer.str();
          if (xmlDoc.Parse(xml.c_str()) == tinyxml2::XML_SUCCESS)
          {
             vector<tinyxml2::XMLElement *> toRemove;
@@ -2112,7 +2112,7 @@ void Player::UpdateVolume()
       m_audio->UpdateVolume();
    for (auto sound : m_ptable->m_vsound)
       sound->UpdateVolume();
-   for (auto players : m_externalAudioPlayers)
+   for (const auto& players : m_externalAudioPlayers)
       players.second->UpdateVolume();
 }
 

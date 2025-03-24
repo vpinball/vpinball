@@ -204,7 +204,7 @@ public:
       dst->points[i]->Release(); \
    dst->points.clear(); \
    CComObject<DragPoint> *pdp; \
-   for (auto dpt : m_vdpoint) \
+   for (const auto dpt : m_vdpoint) \
    { \
       CComObject<DragPoint>::CreateInstance(&pdp); \
       if (pdp) \

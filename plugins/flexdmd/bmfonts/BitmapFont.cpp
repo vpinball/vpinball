@@ -24,13 +24,13 @@ BitmapFont::~BitmapFont()
 
    m_characters.clear();
 
-   for (auto it = m_kernings.begin(); it != m_kernings.end(); ++it)
-      delete it->second;
+   for (auto& it : m_kernings)
+      delete it.second;
 
    m_kernings.clear();
 
-   for (auto it = m_pages.begin(); it != m_pages.end(); ++it)
-      delete *it;
+   for (auto it : m_pages)
+      delete it;
 
    m_pages.clear();
 }
@@ -51,7 +51,7 @@ int BitmapFont::GetKerning(char previous, char current)
     key.SetFirstCharacter(previous);
     key.SetSecondCharacter(current);
 
-    auto it = m_kernings.find(key.GetHash());
+    const auto it = m_kernings.find(key.GetHash());
     if (it != m_kernings.end())
        result = it->second->GetAmount();
 
@@ -164,7 +164,7 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
          }
       }
       else {
-         auto it = m_characters.find(character);
+         const auto it = m_characters.find(character);
          if (it != m_characters.end()) {
             Character* data = it->second;
             int width = data->GetXAdvance() + GetKerning(previousCharacter, character);
@@ -199,7 +199,7 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
 
 string BitmapFont::GetNamedString(const std::unordered_map<string, string>& parts, const string& name)
 {
-   auto it = parts.find(name);
+   const auto it = parts.find(name);
    return (it != parts.end()) ? it->second : string();
 }
 
