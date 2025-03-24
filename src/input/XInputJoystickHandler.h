@@ -2,7 +2,7 @@
 
 #include "pininput.h"
 
-class XInputJoystickHandler : public InputHandler
+class XInputJoystickHandler final : public InputHandler
 {
 public:
    XInputJoystickHandler(PinInput& pininput, HWND focusWnd)
@@ -10,10 +10,9 @@ public:
       , m_focusHWnd(focusWnd)
    {
       PLOGI << "XInput joystick handler registered";
-      XINPUT_STATE state = {};
       for (DWORD i = 0; i < XUSER_MAX_COUNT; i++)
       {
-         ZeroMemory(&state, sizeof(XINPUT_STATE));
+         XINPUT_STATE state = {};
          DWORD hr = XInputGetState(i, &state);
          if (hr == ERROR_SUCCESS)
          {
@@ -25,15 +24,15 @@ public:
       }
    }
 
-   ~XInputJoystickHandler() final
+   ~XInputJoystickHandler() override
    {
       for (const Device& joy : m_devices)
          m_pininput.UnmapJoy(GetJoyId(joy.id));
    }
 
-   static inline uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x300000000) | static_cast<uint64_t>(index); }
+   static constexpr uint64_t GetJoyId(const int index) { return static_cast<uint64_t>(0x300000000) | static_cast<uint64_t>(index); }
 
-   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) final
+   void PlayRumble(const float lowFrequencySpeed, const float highFrequencySpeed, const int ms_duration) override
    {
       m_rumbleOffTime = ms_duration + msec();
       m_rumbleRunning = true;
@@ -48,8 +47,11 @@ public:
          XInputSetState(joy.id, &vibration);
    }
 
-   void Update() final
+   void Update() override
    {
+      if (m_focusHWnd != GetForegroundWindow())
+         return;
+
       using mappingElement = struct
       {
          WORD xi;
@@ -83,10 +85,9 @@ public:
          }
       }
 
-      XINPUT_STATE state = {};
       for (Device joy : m_devices)
       {
-         ZeroMemory(&state, sizeof(XINPUT_STATE));
+         XINPUT_STATE state = {};
          DWORD hr = XInputGetState(joy.id, &state);
          if (hr == ERROR_SUCCESS)
          {
