@@ -1510,9 +1510,9 @@ string Player::GetPerfInfo()
 {
    // Make it more or less readable by updating only once per second
    static string txt;
-   static U32 lastUpdate = -1;
+   static U32 lastUpdate = 0;
    U32 now = msec();
-   if (lastUpdate != -1 && now - lastUpdate < 1000)
+   if (lastUpdate != 0 && now - lastUpdate < 1000)
       return txt;
 
    lastUpdate = now;

@@ -161,9 +161,13 @@ void PlungerMoverObject::SetObjects(const float len)
 // position across HID on a fully linear scale like this.  We call these devices "linear
 // plunger" devices to distinguish them from the older ones that natively report on the
 // asymmetrical scale and thus required the Windows JOY.CPL calibration to work at all.
-// PinInput.cpp has the logic to recognize which plungers have the linear scaling and
-// which ones use the asymmetrical split axis scaling, and set the m_linearPlunger flag
-// accordingly.
+// 
+// DirectInputJoystickHandler.h has the logic to recognize which plungers have the linear 
+// scaling and which ones use the asymmetrical split axis scaling, and set the m_linearPlunger 
+// flag accordingly. For other input method and platform, the non linear method is always used.
+// 
+// TODO add linear plunger to user option or add detection on other platforms as it breaks
+// Pinscape device with plunger speed support.
 float PlungerMoverObject::MechPlunger() const
 {
    const float pos = g_pplayer->m_curMechPlungerPos / static_cast<float>(JOYRANGEMX);
@@ -180,7 +184,6 @@ float PlungerMoverObject::MechPlunger() const
       // Standard plunger device - the joystick must be calibrated such that the park
       // position reads as 0, the fully retracted position reads as -JOYRANGEMX, and the
       // full forward position reads as -JOYRANGEMX.
-      // FIXME this looks fully wrong to me...
       return m_restPos + ((pos < 0) ? pos * m_restPos : pos * (1.0f - m_restPos));
    }
 }
