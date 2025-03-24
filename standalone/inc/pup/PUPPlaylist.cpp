@@ -68,7 +68,7 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
          string szFilename = entry.path().filename();
          if (!szFilename.empty() && szFilename[0] != '.') {
             m_files.push_back(szFilename);
-            m_fileMap[string_to_lower(szFilename)] = szFilename;
+            m_fileMap[lowerCase(szFilename)] = szFilename;
          }
       }
    }
@@ -127,7 +127,7 @@ const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 {
    static string emptyString = "";
 
-   std::map<string, string>::iterator it = m_fileMap.find(string_to_lower(szFilename));
+   std::map<string, string>::iterator it = m_fileMap.find(lowerCase(szFilename));
    return it != m_fileMap.end() ? it->second : emptyString;
 }
 
@@ -147,7 +147,7 @@ string PUPPlaylist::GetPlayFilePath(const string& szFilename)
    static string emptyString = "";
 
    if (!szFilename.empty()) {
-      std::map<string, string>::const_iterator it = m_fileMap.find(string_to_lower(szFilename));
+      std::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
          return m_szBasePath + it->second;
       else

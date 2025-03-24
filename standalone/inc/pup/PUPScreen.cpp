@@ -257,12 +257,12 @@ void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
       return;
    }
 
-   m_playlistMap[string_to_lower(pPlaylist->GetFolder())] = pPlaylist;
+   m_playlistMap[lowerCase(pPlaylist->GetFolder())] = pPlaylist;
 }
 
 PUPPlaylist* PUPScreen::GetPlaylist(const string& szFolder)
 {
-   std::map<string, PUPPlaylist*>::iterator it = m_playlistMap.find(string_to_lower(szFolder));
+   std::map<string, PUPPlaylist*>::iterator it = m_playlistMap.find(lowerCase(szFolder));
    return it != m_playlistMap.end() ? it->second : nullptr;
 }
 
@@ -289,13 +289,13 @@ void PUPScreen::AddLabel(PUPLabel* pLabel)
    }
 
    pLabel->SetScreen(this);
-   m_labelMap[string_to_lower(pLabel->GetName())] = pLabel;
+   m_labelMap[lowerCase(pLabel->GetName())] = pLabel;
    m_labels.push_back(pLabel);
 }
 
 PUPLabel* PUPScreen::GetLabel(const string& szLabelName)
 {
-   auto it = m_labelMap.find(string_to_lower(szLabelName));
+   auto it = m_labelMap.find(lowerCase(szLabelName));
    return it != m_labelMap.end() ? it->second : nullptr;
 }
 

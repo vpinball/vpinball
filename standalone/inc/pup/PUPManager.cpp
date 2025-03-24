@@ -157,18 +157,18 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
    const string szFamilyName = string(TTF_GetFontFamilyName(pFont));
 
-   const string szNormalizedFamilyName = string_to_lower(string_replace_all(szFamilyName, "  ", " "));
+   const string szNormalizedFamilyName = lowerCase(string_replace_all(szFamilyName, "  ", " "));
    m_fontMap[szNormalizedFamilyName] = pFont;
 
    string szStyleName = string(TTF_GetFontStyleName(pFont));
    if (szStyleName != "Regular")
    {
       const string szFullName = szFamilyName + ' ' + szStyleName;
-      const string szNormalizedFullName = string_to_lower(string_replace_all(szFullName, "  ", " "));
+      const string szNormalizedFullName = lowerCase(string_replace_all(szFullName, "  ", " "));
       m_fontMap[szNormalizedFullName] = pFont;
    }
 
-   const string szNormalizedFilename = string_to_lower(szFilename.substr(0, szFilename.length() - 4));
+   const string szNormalizedFilename = lowerCase(szFilename.substr(0, szFilename.length() - 4));
    m_fontFilenameMap[szNormalizedFilename] = pFont;
 
    PLOGI.printf("Font added: familyName=%s, styleName=%s, filename=%s", szFamilyName.c_str(), szStyleName.c_str(), szFilename.c_str());
@@ -178,12 +178,12 @@ bool PUPManager::AddFont(TTF_Font* pFont, const string& szFilename)
 
 TTF_Font* PUPManager::GetFont(const string& szFont)
 {
-   string szNormalizedFamilyName = string_to_lower(string_replace_all(szFont, "  ", " "));
+   string szNormalizedFamilyName = lowerCase(string_replace_all(szFont, "  ", " "));
 
    std::map<string, TTF_Font*>::iterator it = m_fontMap.find(szNormalizedFamilyName);
    if (it != m_fontMap.end())
       return it->second;
-   it = m_fontFilenameMap.find(string_to_lower(szFont));
+   it = m_fontFilenameMap.find(lowerCase(szFont));
    if (it != m_fontFilenameMap.end())
       return it->second;
 
