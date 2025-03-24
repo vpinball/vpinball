@@ -6198,6 +6198,12 @@ VarBoolFromStr_CheckLocalised:
     *pBoolOut = VARIANT_FALSE;
   else if (!wcscmp(strIn, L"#TRUE#"))
     *pBoolOut = VARIANT_TRUE;
+#ifdef __STANDALONE__
+  else if (!wcsicmp(strIn, L"FALSE"))
+    *pBoolOut = VARIANT_FALSE;
+  else if (!wcsicmp(strIn, L"TRUE"))
+    *pBoolOut = VARIANT_TRUE;
+#endif
   else
   {
     double d;
