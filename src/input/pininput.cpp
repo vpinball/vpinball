@@ -68,6 +68,9 @@ void PinInput::Init()
    m_disable_esc = settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0) * JOYRANGEMX / 100;
 
+   m_linearPlunger = false;
+   m_plungerPosDirty = true;
+   m_plungerSpeedDirty = true;
    m_plunger_retract = settings.LoadValueWithDefault(Settings::Player, "PlungerRetract"s, m_plunger_retract);
    
    m_accelerometerDirty = true;
@@ -82,9 +85,6 @@ void PinInput::Init()
    m_accelerometerMax.y = static_cast<float>(settings.LoadValueWithDefault(Settings::Player, "PBWAccelMaxY"s, 100) * JOYRANGEMX) / 100.f;
    m_accelerometerGain.x = dequantizeUnsignedPercentNoClamp(settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainX"s, 150));
    m_accelerometerGain.y = dequantizeUnsignedPercentNoClamp(settings.LoadValueWithDefault(Settings::Player, "PBWAccelGainY"s, 150));
-
-   m_plungerPosDirty = true;
-   m_plungerSpeedDirty = true;
 
    m_joypmbuyin = settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, m_joypmbuyin);
    m_joypmcoin3 = settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, m_joypmcoin3);

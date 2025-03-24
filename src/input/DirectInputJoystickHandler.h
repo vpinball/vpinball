@@ -140,7 +140,7 @@ private:
    // Callback for enumerating joysticks (gamepads)
    static BOOL CALLBACK EnumJoystickCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
    {
-      DirectInputJoystickHandler* const ppinput = (DirectInputJoystickHandler*)pvRef;
+      DirectInputJoystickHandler* const me = (DirectInputJoystickHandler*)pvRef;
 
       DIPROPSTRING dstr;
       dstr.diph.dwSize = sizeof(DIPROPSTRING);
@@ -154,7 +154,7 @@ private:
       #else
          LPDIRECTINPUTDEVICE joystick;
       #endif
-      hr = ppinput->m_pDI->CreateDevice(lpddi->guidInstance, &joystick, nullptr);
+      hr = me->m_pDI->CreateDevice(lpddi->guidInstance, &joystick, nullptr);
       if (FAILED(hr))
          return DIENUM_CONTINUE;
 
@@ -198,15 +198,15 @@ private:
          else if (!WzSzStrCmp(dstr.wsz, "Pinscape Controller") || !WzSzStrCmp(dstr.wsz, "PinscapePico"))
          {
             joystickType = PinInput::InputLayout::Generic;
-            // FIXME rewrite as linear plunger is ill designed (declared here, for all inputs and not for one, used in player)
-            // FIXME ppinput->m_linearPlunger = true; // use linear plunger calibration
+            me->m_pininput.m_linearPlunger = true;
+            PLOGI << "Pinscape device detected, 'linear' plunger acquisition enabled";
          }
-         PLOGI << "Joystick detected: " << dstr.wsz << ", using input mode #" << static_cast<int>(joystickType);
+         PLOGI << "Joystick detected: " << dstr.wsz << ", using input layout #" << static_cast<int>(joystickType);
       }
       hr = joystick->SetDataFormat(&c_dfDIJoystick);
 
       // joystick input foreground or background focus
-      hr = joystick->SetCooperativeLevel(ppinput->m_focusHWnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
+      hr = joystick->SetCooperativeLevel(me->m_focusHWnd, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 
       DIPROPDWORD dipdw;
       dipdw.diph.dwSize = sizeof(DIPROPDWORD);
@@ -219,8 +219,8 @@ private:
       // Enumerate the joystick objects. The callback function enabled user interface elements for objects that are found, and sets the min/max values property for discovered axes.
       hr = joystick->EnumObjects(EnumObjectsCallback, (VOID*)joystick, DIDFT_ALL);
 
-      ppinput->m_pininput.SetupJoyMapping(GetJoyId(static_cast<int>(ppinput->m_joysticks.size())), joystickType);
-      ppinput->m_joysticks.push_back(joystick);
+      me->m_pininput.SetupJoyMapping(GetJoyId(static_cast<int>(me->m_joysticks.size())), joystickType);
+      me->m_joysticks.push_back(joystick);
 
       return DIENUM_CONTINUE;
    }

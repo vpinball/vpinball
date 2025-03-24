@@ -994,37 +994,14 @@ STDMETHODIMP Plunger::MotionDevice(int *pVal)
 return S_OK;
 }
 
-// Returns the (visual) position of the plunger as a value between 0 and 25
-// FIXME why do we compute a visual position instead of simply returning the physics position ?
+// Returns the position of the plunger as a value between 0 and 25
+// Note that g_pplayer->m_curMechPlungerPos is 0 at park position, which usually correspond to something like 4 or 5 here,
+// leading to value from 5 to 25 when pulling the plunger, with value below 5 being when the plunger pass the park position.
 STDMETHODIMP Plunger::Position(float *pVal)
 {
-   // See PlungerMoverObject::MechPlunger for more information
-   // TODO this duplication is not really clean and consistent, merge them
-   if (g_pplayer->m_pininput.HasMechPlunger())
-   {
-      float plungerPos = g_pplayer->m_curMechPlungerPos / static_cast<float>(JOYRANGEMX);
-      if (g_pplayer->m_pininput.m_linearPlunger)
-      {
-         // Use a single linear scaling function.  Constrain the line to the physical
-         // plunger calibration, which we define as follows: the rest position is at 0,
-         // the fully retracted position is at JOYRANGEMX.  The fully compressed position
-         // is *not* part of the calibration, since that would over-constrain the
-         // calibration.  Instead, assume that the response on the negative (compression)
-         // side is a linear extension of the positive (retraction) side.
-         *pVal = 25.f * max(0.f, lerp(m_d.m_parkPosition, 1.f, plungerPos));
-      }
-      else
-      {
-         *pVal = 25.f * lerp(m_d.m_parkPosition, 1.f, max(0.f, plungerPos));
-      }
-   }
-   else
-   {
-      const PlungerMoverObject& pa = m_phitplunger->m_plungerMover;
-      const float frame = (pa.m_pos - pa.m_frameStart) / (pa.m_frameEnd - pa.m_frameStart);
-
-      *pVal = 25.f - saturate(frame)*25.f; //!! somehow if m_mechPlunger is enabled this will only deliver a value 25 - 0..20??
-   }
+   const PlungerMoverObject &pa = m_phitplunger->m_plungerMover;
+   const float frame = (pa.m_frameEnd - pa.m_pos) / (pa.m_frameEnd - pa.m_frameStart);
+   *pVal = 25.f * saturate(frame);
    return S_OK;
 }
 
