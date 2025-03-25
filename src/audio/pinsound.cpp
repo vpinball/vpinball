@@ -692,12 +692,19 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
       string path;
       switch (i)
       {
-      case 0: path = filename; break;
-      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR + filename; break;
-      case 2: path = g_pvp->m_currentTablePath + filename; break;
-      case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR + filename; break;
-      case 4: path = PATH_MUSIC + filename; break;
+      case 0: break;
+      #ifdef __STANDALONE__
+      case 1: path = find_directory_case_insensitive(g_pvp->m_szMyPath, "music"s) + PATH_SEPARATOR_CHAR; break;
+      case 2: path = g_pvp->m_currentTablePath; break;
+      case 3: path = find_directory_case_insensitive(g_pvp->m_currentTablePath, "music"s) + PATH_SEPARATOR_CHAR; break;
+      #else
+      case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR; break;
+      case 2: path = g_pvp->m_currentTablePath; break;
+      case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR; break;
+      #endif
+      case 4: path = PATH_MUSIC; break;
       }
+      path += filename;
 
       #ifdef __STANDALONE__
       path = find_path_case_insensitive(path);
