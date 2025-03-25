@@ -6,15 +6,15 @@ class DragpointVisualsProperty final : public BasePropertyDialog
 {
 public:
     DragpointVisualsProperty(int id, const VectorProtected<ISelect> *pvsel);
-    virtual ~DragpointVisualsProperty() { }
+    ~DragpointVisualsProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
     EditBox m_posXEdit;

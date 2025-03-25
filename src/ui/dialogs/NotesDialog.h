@@ -2,29 +2,25 @@
 
 #pragma once
 
-#include <dlgs.h>
-#include <cderr.h>
-#include <WindowsX.h>
 #include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
-#include "ui/properties/PropertyDialog.h"
 
 class NotesEdit final : public CEdit
 {
-
 public:
    NotesEdit() = default;
-   ~NotesEdit() = default;
+   ~NotesEdit() override = default;
 
 protected:
-   virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+   LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 };
 
 class NotesDialog final : public CDialog
 {
 public:
    NotesDialog();
-   ~NotesDialog() = default;
+   ~NotesDialog() override = default;
+
    bool PreTranslateMessage(MSG* msg);
    CString GetText() const
    {
@@ -46,12 +42,11 @@ public:
    }
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
-
    CResizer  m_resizer;
    NotesEdit m_notesEdit;
 };
@@ -60,7 +55,7 @@ class CContainNotes final : public CDockContainer
 {
 public:
    CContainNotes();
-   ~CContainNotes() = default;
+   ~CContainNotes() override = default;
    NotesDialog* GetNotesDialog()
    {
       return &m_notesDialog;
@@ -74,7 +69,7 @@ class CDockNotes final : public CDocker
 {
 public:
    CDockNotes();
-   ~CDockNotes() = default;
+   ~CDockNotes() override = default;
 
    CContainNotes* GetContainNotes()
    {
@@ -97,8 +92,9 @@ public:
    {
       GetContainNotes()->GetNotesDialog()->Disable();
    }
+
 protected:
-   virtual void OnClose();
+   void OnClose() override;
 
 private:
    CContainNotes m_notesContainer;

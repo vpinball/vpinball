@@ -6,14 +6,14 @@ class PrimitiveVisualsProperty final : public BasePropertyDialog
 {
 public:
     PrimitiveVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PrimitiveVisualsProperty() { }
+    ~PrimitiveVisualsProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
     void AddToolTip(const char *const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
     void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);

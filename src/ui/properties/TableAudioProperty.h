@@ -6,14 +6,14 @@ class TableAudioProperty final : public BasePropertyDialog
 {
 public:
     TableAudioProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~TableAudioProperty() { }
+    ~TableAudioProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
     EditBox     m_soundEffectVolEdit;

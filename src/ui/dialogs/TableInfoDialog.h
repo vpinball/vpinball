@@ -8,12 +8,12 @@ public:
    TableInfoDialog();
 
 protected:
-   virtual void OnClose();
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
-   virtual void OnCancel();
+   void OnClose() override;
+   BOOL OnInitDialog() override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   void OnOK() override;
+   void OnCancel() override;
 
 private:
    void VPGetDialogItemText(const CEdit &edit, string &psztext);

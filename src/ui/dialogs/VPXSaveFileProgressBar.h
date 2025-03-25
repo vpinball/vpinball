@@ -2,7 +2,6 @@
 
 #include "parts/VPXFileFeedback.h"
 
-
 /**
  * Displays a progress bar using Win32 API to track progress of a table being saved.
  */

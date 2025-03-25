@@ -6,16 +6,16 @@ class SoundDialog final : public CDialog
 {
 public:
     SoundDialog();
-    virtual ~SoundDialog();
+    ~SoundDialog() override;
 
 protected:
-    virtual void OnDestroy();
-    virtual void OnClose();
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam );
-    virtual BOOL OnCommand( WPARAM wParam, LPARAM lParam );
-    virtual void OnOK();
-    virtual void OnCancel();
+    void OnDestroy() override;
+    void OnClose() override;
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc( UINT uMsg, WPARAM wParam, LPARAM lParam ) override;
+    BOOL OnCommand( WPARAM wParam, LPARAM lParam ) override;
+    void OnOK() override;
+    void OnCancel() override;
 
 private:
     CResizer m_resizer;
@@ -38,36 +38,37 @@ private:
 class SoundPositionDialog final : public CDialog
 {
 public:
-	int m_volume, m_fade, m_balance; // from the CSliders
-	SoundOutTypes m_cOutputTarget;
+   int m_volume, m_fade, m_balance; // from the CSliders
+   SoundOutTypes m_cOutputTarget;
 
-	SoundPositionDialog(PinSound * const pps);
-	virtual ~SoundPositionDialog();
+   SoundPositionDialog(PinSound * const pps);
+   ~SoundPositionDialog() override;
 
 protected:
-	virtual void OnDestroy();
-	virtual void OnClose();
-	virtual BOOL OnInitDialog();
-	void SetSliderValues();
-	virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-	void ReadTextValue(int item, int &oValue);
-	void SetTextValues();
-	void SetTextValue(int ctl, int val);
-	virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-	virtual void OnOK();
-	virtual void OnCancel();
+   void OnDestroy() override;
+   void OnClose() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   void OnOK() override;
+   void OnCancel() override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+
+   void SetSliderValues();
+   void ReadTextValue(int item, int &oValue);
+   void SetTextValues();
+   void SetTextValue(int ctl, int val);
 
 private:
-	PinSound *m_pPinSound;
+   PinSound *m_pPinSound;
 
-	CSlider m_Volume;
-	CSlider m_Fader;
-	CSlider m_Balance;
+   CSlider m_Volume;
+   CSlider m_Fader;
+   CSlider m_Balance;
 
-	void GetDialogValues();
-	void ReadValuesFromSliders();
-	void TestSound();
+   void GetDialogValues();
+   void ReadValuesFromSliders();
+   void TestSound();
 
-	//int SliderToValue(const int Slider);
-	//int ValueToSlider(const int Value);
+   //int SliderToValue(const int Slider);
+   //int ValueToSlider(const int Value);
 };

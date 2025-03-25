@@ -8,8 +8,9 @@ class LayerTreeView final : public CTreeView
 {
 public:
    LayerTreeView();
-   ~LayerTreeView() { }
-   virtual HTREEITEM       AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
+   ~LayerTreeView() override { }
+
+   HTREEITEM               AddItem(HTREEITEM hParent, LPCTSTR text, IEditable* const pedit, int image);
    bool                    AddLayer(const string& name);
    bool                    AddElement(const string& name, IEditable* const pedit);
    bool                    AddElementToLayer(const HTREEITEM hLayerItem, const string& name, IEditable* const pedit);
@@ -29,31 +30,30 @@ public:
    void                    SetAllItemStates(const bool checked);
    void                    DeleteAll();
    void                    ExpandAll();
-   void                    CollapsAll();
+   void                    CollapseAll();
    void                    ExpandLayers();
    void                    CollapseLayer();
    void                    SetActiveLayer(const string& name);
-   HTREEITEM               GetRootItem() { return hRootItem; }
-   HTREEITEM               GetCurrentLayerItem() { return hCurrentLayerItem; }
-   HTREEITEM               GetFirstLayer() { return GetChild(hRootItem); }
-   string                  GetLayerName(HTREEITEM item) { return string{GetItemText(item)}; }
+   HTREEITEM               GetRootItem() const { return hRootItem; }
+   HTREEITEM               GetCurrentLayerItem() const { return hCurrentLayerItem; }
+   HTREEITEM               GetFirstLayer() const { return GetChild(hRootItem); }
+   string                  GetLayerName(HTREEITEM item) const { return string{GetItemText(item)}; }
    bool                    PreTranslateMessage(MSG* msg);
    void                    SetActiveTable(PinTable* ptable) { m_activeTable = ptable; }
-   vector<string>          GetAllLayerNames();
+   vector<string>          GetAllLayerNames() const;
 
 
 protected:
-   virtual void OnAttach();
-   virtual void PreCreate(CREATESTRUCT& cs);
-   virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+   void OnAttach() override;
+   void PreCreate(CREATESTRUCT& cs) override;
+   LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam) override;
 
-   virtual LRESULT OnNotifyReflect(WPARAM wparam, LPARAM lparam);
-   virtual LRESULT OnNMClick(LPNMHDR lpnmh);
-   virtual LRESULT OnNMDBClick(LPNMHDR lpnmh);
-   virtual LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
+   LRESULT OnNMClick(LPNMHDR lpnmh);
+   LRESULT OnNMDBClick(LPNMHDR lpnmh);
+   LRESULT OnTVNSelChanged(LPNMTREEVIEW pNMTV);
 
 private:
-
    HTREEITEM   hRootItem;
    HTREEITEM   hCurrentLayerItem;
    HTREEITEM   hCurrentElementItem;
@@ -70,27 +70,29 @@ private:
 };
 
 class LayersListDialog;
-class FilterEditBox : public CEdit
+
+class FilterEditBox final : public CEdit
 {
 public:
    FilterEditBox() : m_layerDialog(nullptr) {}
-   virtual ~FilterEditBox() {}
+   ~FilterEditBox() override { }
    void SetDialog(LayersListDialog* dialog) { m_layerDialog = dialog; }
 
 protected:
-   virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual BOOL    OnCommand(WPARAM wParam, LPARAM lParam);
+   LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   BOOL    OnCommand(WPARAM wParam, LPARAM lParam) override;
 
 private:
    LayersListDialog* m_layerDialog;   
 };
 
-class LayersListDialog : public CDialog
+class LayersListDialog final : public CDialog
 {
 public:
    LayersListDialog();
-   virtual ~LayersListDialog();
-   virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
+   ~LayersListDialog() override;
+
+   LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
    bool AddLayer(const string& name, IEditable* piedit);
    void DeleteLayer();
    void ClearList();
@@ -103,7 +105,7 @@ public:
    void AssignToLayerByIndex(size_t index);
    bool PreTranslateMessage(MSG* msg);
    void SetActiveTable(PinTable* ptable) { m_activeTable = ptable; m_layerTreeView.SetActiveTable(ptable); }
-   vector<string> GetAllLayerNames();
+   vector<string> GetAllLayerNames() const;
 
    void UpdateLayerInfo();
 
@@ -115,7 +117,7 @@ public:
 
    void CollapseAll()
    {
-      m_layerTreeView.CollapsAll();
+      m_layerTreeView.CollapseAll();
       m_collapsed = true;
    }
 
@@ -138,15 +140,14 @@ public:
        m_isCaseSensitive = enable;
    }
    
-   HWND GetLayerTreeHwnd() { return m_layerTreeView.GetHwnd(); }
+   HWND GetLayerTreeHwnd() const { return m_layerTreeView.GetHwnd(); }
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+   BOOL OnInitDialog() override;
+   INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
 
 private:
-
    CResizer        m_resizer;
    LayerTreeView   m_layerTreeView;
    CButton         m_assignButton;
@@ -161,13 +162,11 @@ private:
    HACCEL          m_accel;
 };
 
-class CContainLayers : public CDockContainer
+class CContainLayers final : public CDockContainer
 {
 public:
    CContainLayers();
-   ~CContainLayers()
-   {
-   }
+   ~CContainLayers() override {}
 
    LayersListDialog* GetLayersDialog()
    {
@@ -178,14 +177,12 @@ private:
    LayersListDialog m_layersDialog;
 };
 
-class CDockLayers : public CDocker
+class CDockLayers final : public CDocker
 {
 public:
    CDockLayers();
-   virtual ~CDockLayers()
-   {
-   }
-   virtual void OnClose();
+   ~CDockLayers() override {}
+   void OnClose() override;
 
    CContainLayers* GetContainLayers()
    {

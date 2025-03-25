@@ -6,14 +6,14 @@ class FlasherVisualsProperty final : public BasePropertyDialog
 {
 public:
     FlasherVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~FlasherVisualsProperty() { }
+    ~FlasherVisualsProperty() override{ }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
     void UpdateLightmapComboBox(const PinTable *table, const CComboBox &combo, const string &selectName);
 

@@ -15,12 +15,12 @@ public:
     CollectionManagerDialog();
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual void OnOK();
-    virtual void OnClose();
-    virtual void OnCancel();
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    void OnOK() override;
+    void OnClose() override;
+    void OnCancel() override;
 
 private:
     void EditCollection();

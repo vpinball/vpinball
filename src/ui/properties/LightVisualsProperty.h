@@ -6,15 +6,16 @@ class LightVisualsProperty final : public BasePropertyDialog
 {
 public:
     LightVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~LightVisualsProperty() { }
+    ~LightVisualsProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
+
     void UpdateLightType(const int mode);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
     ComboBox    m_typeCombo;

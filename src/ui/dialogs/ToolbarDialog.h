@@ -6,17 +6,17 @@ class ToolbarDialog final : public CDialog
 {
 public:
     ToolbarDialog();
-    virtual ~ToolbarDialog();
-    virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
+    ~ToolbarDialog() override;
+    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
     void EnableButtons();
     bool PreTranslateMessage(MSG* msg);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual void OnDestroy();
-    virtual INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam);
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    void OnDestroy() override;
+    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
 
 private:
     HWND m_hwnd;
@@ -51,13 +51,11 @@ private:
     CButton m_rubberButton;
 };
 
-class CContainToolbar: public CDockContainer
+class CContainToolbar final : public CDockContainer
 {
 public:
     CContainToolbar();
-    ~CContainToolbar()
-    {
-    }
+    ~CContainToolbar() override {}
 
     ToolbarDialog *GetToolbarDialog()
     {
@@ -68,14 +66,13 @@ private:
     ToolbarDialog m_toolbar;
 };
 
-class CDockToolbar: public CDocker
+class CDockToolbar final : public CDocker
 {
 public:
     CDockToolbar();
-    virtual ~CDockToolbar()
-    {
-    }
-    virtual void OnClose();
+    ~CDockToolbar() override {}
+
+    void OnClose() override;
 
     CContainToolbar *GetContainToolbar()
     {

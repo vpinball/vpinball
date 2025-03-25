@@ -411,7 +411,7 @@ bool LayersListDialog::PreTranslateMessage(MSG* msg)
    return !!IsDialogMessage(*msg);
 }
 
-vector<string> LayersListDialog::GetAllLayerNames() 
+vector<string> LayersListDialog::GetAllLayerNames() const
 { 
     return m_layerTreeView.GetAllLayerNames();
 }
@@ -712,7 +712,7 @@ void LayerTreeView::ExpandAll()
    }
 }
 
-void LayerTreeView::CollapsAll()
+void LayerTreeView::CollapseAll()
 {
    Expand(hRootItem, TVE_COLLAPSE);
    HTREEITEM item = GetChild(hRootItem);
@@ -727,7 +727,7 @@ void LayerTreeView::ExpandLayers() { Expand(hRootItem, TVE_EXPAND); }
 
 void LayerTreeView::CollapseLayer()
 {
-   CollapsAll();
+   CollapseAll();
    ExpandLayers();
 }
 
@@ -765,7 +765,7 @@ bool LayerTreeView::PreTranslateMessage(MSG* msg)
    return !!IsDialogMessage(*msg);
 }
 
-vector<string> LayerTreeView::GetAllLayerNames()
+vector<string> LayerTreeView::GetAllLayerNames() const
 {
    vector<HTREEITEM> children;
    HTREEITEM item = GetChild(hRootItem);

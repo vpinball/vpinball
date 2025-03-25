@@ -12,7 +12,7 @@ typedef struct _tagSORTDATA
     HWND hwndList;
     int subItemIndex;
     int sortUpDown;
-}SORTDATA;
+} SORTDATA;
 
 extern SORTDATA SortData;
 extern int CALLBACK MyCompProc( LPARAM lSortParam1, LPARAM lSortParam2, LPARAM lSortOption );

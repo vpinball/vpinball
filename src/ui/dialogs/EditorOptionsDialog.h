@@ -2,12 +2,8 @@
 
 #pragma once
 
-#include <dlgs.h>
-#include <cderr.h>
-#include <wxx_appcore.h>		// Add CCriticalSection, CObject, CWinThread, CWinApp
 #include <wxx_commondlg.h>		// Add CCommonDialog, CColorDialog, CFileDialog, CFindReplace, CFontDialog 
 #include "ui/properties/PropertyDialog.h"
-#include <WindowsX.h>
 
 class EditorOptionsDialog final : public CDialog
 {
@@ -15,11 +11,11 @@ public:
     EditorOptionsDialog();
 
 protected:
-    virtual void OnClose();
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual void OnOK();
+    void OnClose() override;
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+    void OnOK() override;
 
 private:
     void AddToolTip(const char * const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);

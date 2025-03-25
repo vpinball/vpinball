@@ -12,7 +12,7 @@ class Sur
 {
 public:
 
-   inline Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height)
+   Sur(const HDC hdc, const float zoom, const float offx, const float offy, const int width, const int height)
    {
       m_hdc = hdc;
       m_zoom = zoom;
@@ -41,7 +41,7 @@ public:
    virtual void SetBorderColor(const int rgb, const bool dashed, const int width) = 0;
    virtual void SetLineColor(const int rgb, const bool dashed, const int width) = 0;
 
-   inline Vertex2D ScreenToSurface(const int screenx, const int screeny) const
+   Vertex2D ScreenToSurface(const int screenx, const int screeny) const
    {
       const float inv_zoom = 1.0f / m_zoom;
       return {

@@ -6,14 +6,14 @@ class PrimitivePhysicsProperty final : public BasePropertyDialog
 {
 public:
     PrimitivePhysicsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~PrimitivePhysicsProperty() { }
+    ~PrimitivePhysicsProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 private:
     HWND      m_hToyCheck;

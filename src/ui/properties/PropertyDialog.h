@@ -12,18 +12,6 @@ class BasePropertyDialog: public CDialog
 public:
     BasePropertyDialog(const int id, const VectorProtected<ISelect> *pvsel) : CDialog(id), m_pvsel(pvsel)
     {
-        m_baseHitThresholdEdit = nullptr;
-        m_baseElasticityEdit = nullptr;
-        m_baseFrictionEdit = nullptr;
-        m_baseScatterAngleEdit = nullptr;
-        m_basePhysicsMaterialCombo = nullptr;
-        m_baseMaterialCombo = nullptr;
-        m_baseImageCombo = nullptr;
-        m_hCollidableCheck = 0;
-        m_hHitEventCheck = 0;
-        m_hOverwritePhysicsCheck = 0;
-        m_hReflectionEnabledCheck = 0;
-        m_hVisibleCheck = 0;
     }
 
     virtual void UpdateProperties(const int dispid) = 0;
@@ -71,60 +59,59 @@ public:
 protected:
     INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
-    EditBox   *m_baseHitThresholdEdit;
-    EditBox   *m_baseElasticityEdit;
-    EditBox   *m_baseFrictionEdit;
-    EditBox   *m_baseScatterAngleEdit;
-    ComboBox  *m_basePhysicsMaterialCombo;
-    ComboBox  *m_baseMaterialCombo;
-    ComboBox  *m_baseImageCombo;
-    HWND      m_hHitEventCheck;
-    HWND      m_hCollidableCheck;
-    HWND      m_hOverwritePhysicsCheck;
-    HWND      m_hReflectionEnabledCheck;
-    HWND      m_hVisibleCheck;
-    HWND      m_lastChangedEdit=0;
+    EditBox   *m_baseHitThresholdEdit = nullptr;
+    EditBox   *m_baseElasticityEdit = nullptr;
+    EditBox   *m_baseFrictionEdit = nullptr;
+    EditBox   *m_baseScatterAngleEdit = nullptr;
+    ComboBox  *m_basePhysicsMaterialCombo = nullptr;
+    ComboBox  *m_baseMaterialCombo = nullptr;
+    ComboBox  *m_baseImageCombo = nullptr;
+    HWND      m_hHitEventCheck = NULL;
+    HWND      m_hCollidableCheck = NULL;
+    HWND      m_hOverwritePhysicsCheck = NULL;
+    HWND      m_hReflectionEnabledCheck = NULL;
+    HWND      m_hVisibleCheck = NULL;
+    HWND      m_lastChangedEdit = NULL;
 
     CResizer  m_resizer;
 };
 
-class EditBox : public CEdit
+class EditBox final : public CEdit
 {
 public:
     EditBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
-    virtual ~EditBox() {}
+    ~EditBox() override {}
 
-    void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
-
-    virtual void AttachItem(int id)
+    void SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
+    void AttachItem(int id)
     {
         m_id = id;
         m_basePropertyDialog->AttachItem(id, *this);
     }
 
 protected:
-    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
 private:
     BasePropertyDialog* m_basePropertyDialog;
     int m_id;
 };
 
-class ComboBox : public CComboBox
+class ComboBox final : public CComboBox
 {
 public:
     ComboBox() : m_basePropertyDialog(nullptr), m_id(-1) {}
-    virtual ~ComboBox() {}
+    ~ComboBox() override { }
 
-    void    SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
-    virtual void AttachItem(int id)
+    void SetDialog(BasePropertyDialog* dialog) { m_basePropertyDialog = dialog; }
+    void AttachItem(int id)
     {
         m_id = id;
         m_basePropertyDialog->AttachItem(id, *this);
     }
 
 protected:
-    virtual LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam);
+    LRESULT WndProc(UINT msg, WPARAM wparam, LPARAM lparam) override;
 
 private:
     BasePropertyDialog* m_basePropertyDialog;
@@ -134,7 +121,7 @@ private:
 
 #pragma region TimerProperty
 
-class TimerProperty: public BasePropertyDialog
+class TimerProperty final : public BasePropertyDialog
 {
 public:
     TimerProperty(const VectorProtected<ISelect> *pvsel);
@@ -154,11 +141,11 @@ private:
 
 #pragma region ColorButton
 
-class ColorButton: public CButton
+class ColorButton final : public CButton
 {
 public:
     ColorButton() : m_color(0) {}
-    ~ColorButton() {}
+    ~ColorButton() override { }
     
     void SetColor(const COLORREF color)
     {
@@ -172,7 +159,7 @@ public:
         return m_color;
     }
 
-    virtual void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
+    void DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
     {
         // get the device context and attach the button handle to it
         TRIVERTEX vertex[2];
@@ -233,7 +220,7 @@ private:
 
 #pragma region PropertyDialog
 
-class PropertyTab : public CTab
+class PropertyTab final : public CTab
 {
 public:
    PropertyTab() : m_activePage(0), m_activeTabText("")
@@ -252,7 +239,7 @@ public:
 
 #define PROPERTY_TABS 5
 
-class PropertyDialog : public CDialog
+class PropertyDialog final : public CDialog
 {
 public:
     PropertyDialog();
@@ -334,7 +321,7 @@ public:
     }
 
     BOOL IsSubDialogMessage(MSG &msg) const;
-    virtual LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
+    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
 protected:
     BOOL OnInitDialog() override;
@@ -420,11 +407,11 @@ private:
 
 #pragma region Docking
 
-class CContainProperties: public CDockContainer
+class CContainProperties final : public CDockContainer
 {
 public:
     CContainProperties();
-    ~CContainProperties() {}
+    ~CContainProperties() override {}
 
     PropertyDialog *GetPropertyDialog()
     {
@@ -435,13 +422,13 @@ private:
     PropertyDialog m_propertyDialog;
 };
 
-class CDockProperty: public CDocker
+class CDockProperty final : public CDocker
 {
 public:
     CDockProperty();
-    virtual ~CDockProperty() {}
+    ~CDockProperty() override {}
 
-    virtual void OnClose();
+    void OnClose() override;
 
     CContainProperties *GetContainProperties()
     {

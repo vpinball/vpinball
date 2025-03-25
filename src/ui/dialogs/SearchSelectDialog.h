@@ -9,11 +9,11 @@ public:
    void Update();
 
 protected:
-   virtual void OnClose();
-   virtual BOOL OnInitDialog();
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual void OnOK();
-   virtual void OnCancel();
+   void OnClose() override;
+   BOOL OnInitDialog() override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   void OnOK() override;
+   void OnCancel() override;
 
 private:
    bool IsValidString(const string &name);
@@ -27,6 +27,7 @@ private:
    HWND m_hElementList;
    CResizer m_resizer;
    CCO(PinTable) *m_curTable;
+
    static int m_lastSortColumn;
    static bool m_columnSortOrder;
    static bool m_switchSortOrder;

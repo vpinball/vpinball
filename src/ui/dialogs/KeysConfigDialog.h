@@ -8,11 +8,11 @@ public:
     KeysConfigDialog();
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual void OnOK();
-    virtual void OnDestroy();
+    BOOL OnInitDialog() override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    void OnOK() override;
+    void OnDestroy() override;
 
 private:
     void AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);

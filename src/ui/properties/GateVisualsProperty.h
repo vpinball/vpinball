@@ -6,14 +6,14 @@ class GateVisualsProperty final : public BasePropertyDialog
 {
 public:
     GateVisualsProperty(const VectorProtected<ISelect> *pvsel);
-    virtual ~GateVisualsProperty() { }
+    ~GateVisualsProperty() override { }
 
-    void UpdateVisuals(const int dispid=-1);
-    void UpdateProperties(const int dispid);
-    virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void UpdateVisuals(const int dispid=-1) override;
+    void UpdateProperties(const int dispid) override;
+    INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
 
 protected:
-    virtual BOOL OnInitDialog();
+    BOOL OnInitDialog() override;
 
 private:
     ComboBox  m_typeCombo;
