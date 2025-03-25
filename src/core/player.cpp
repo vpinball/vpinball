@@ -283,8 +283,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Creating main window"; // For profiling
    {
       #if defined(_MSC_VER) && !defined(__STANDALONE__)
-         WNDCLASS wc;
-         ZeroMemory(&wc, sizeof(wc));
+         WNDCLASS wc = {};
          wc.hInstance = g_pvp->theInstance;
          #ifndef ENABLE_SDL_VIDEO
          wc.lpfnWndProc = PlayerWindowProc;

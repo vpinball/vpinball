@@ -31,7 +31,7 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
       /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
    };
 
-   const string prefKey = "Anaglyph"s.append(std::to_string(glassesSet + 1));
+   const string prefKey = "Anaglyph" + std::to_string(glassesSet + 1);
    vec3 leftLum, rightLum;
    m_filter = (Filter)table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "Filter", 2);
    m_sRGBDisplay = table->m_settings.LoadValueWithDefault(Settings::Player, prefKey + "sRGB", true);

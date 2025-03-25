@@ -889,21 +889,21 @@ void CodeViewer::InitPreferences()
 	m_lPrefsList = new vector<CVPreference*>();
 
 #ifndef __STANDALONE__
-	m_prefEverythingElse = new CVPreference(RGB(0,0,0), true, "EverythingElse",  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
+	m_prefEverythingElse = new CVPreference(RGB(0,0,0), true, "EverythingElse"s,  STYLE_DEFAULT, 0 , IDC_CVP_BUT_COL_EVERYTHINGELSE, IDC_CVP_BUT_FONT_EVERYTHINGELSE);
 	m_lPrefsList->push_back(m_prefEverythingElse);
-	prefDefault = new CVPreference(RGB(0,0,0), true, "Default", SCE_B_DEFAULT, 0 , 0, 0);
+	prefDefault = new CVPreference(RGB(0,0,0), true, "Default"s, SCE_B_DEFAULT, 0 , 0, 0);
 	m_lPrefsList->push_back(prefDefault);
-	prefVBS = new CVPreference(RGB(0,0,160), true, "ShowVBS", SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
+	prefVBS = new CVPreference(RGB(0,0,160), true, "ShowVBS"s, SCE_B_KEYWORD, IDC_CVP_CHECKBOX_VBS, IDC_CVP_BUT_COL_VBS, IDC_CVP_BUT_FONT_VBS);
 	m_lPrefsList->push_back(prefVBS);
-	prefComps = new CVPreference(RGB(120,120,0), true, "ShowComponents", SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
+	prefComps = new CVPreference(RGB(120,120,0), true, "ShowComponents"s, SCE_B_KEYWORD3, IDC_CVP_CHKB_COMP, IDC_CVP_BUT_COL_COMPS, IDC_CVP_BUT_FONT_COMPS);
 	m_lPrefsList->push_back(prefComps);
-	prefSubs = new CVPreference(RGB(120,0,120), true, "ShowSubs", SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
+	prefSubs = new CVPreference(RGB(120,0,120), true, "ShowSubs"s, SCE_B_KEYWORD2, IDC_CVP_CHKB_SUBS, IDC_CVP_BUT_COL_SUBS, IDC_CVP_BUT_FONT_SUBS);
 	m_lPrefsList->push_back(prefSubs);
-	prefComments = new CVPreference(RGB(0,120,0), true, "ShowRemarks", SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
+	prefComments = new CVPreference(RGB(0,120,0), true, "ShowRemarks"s, SCE_B_COMMENT, IDC_CVP_CHKB_COMMENTS, IDC_CVP_BUT_COL_COMMENTS, IDC_CVP_BUT_FONT_COMMENTS);
 	m_lPrefsList->push_back(prefComments);
-	prefLiterals = new CVPreference(RGB(0,120,160), true, "ShowLiterals", SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
+	prefLiterals = new CVPreference(RGB(0,120,160), true, "ShowLiterals"s, SCE_B_STRING, IDC_CVP_CHKB_LITERALS, IDC_CVP_BUT_COL_LITERALS, IDC_CVP_BUT_FONT_LITERALS);
 	m_lPrefsList->push_back(prefLiterals);
-	prefVPcore = new CVPreference(RGB(200,50,60), true, "ShowVPcore", SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
+	prefVPcore = new CVPreference(RGB(200,50,60), true, "ShowVPcore"s, SCE_B_KEYWORD4, IDC_CVP_CHKB_VPCORE, IDC_CVP_BUT_COL_VPCORE, IDC_CVP_BUT_FONT_VPCORE);
 	m_lPrefsList->push_back(prefVPcore);
 #endif
 

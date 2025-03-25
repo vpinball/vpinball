@@ -437,12 +437,10 @@ static void HelpMarker(const char *desc)
 
 template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& list, const std::function<string(T)>& map)
 {
-   std::vector<T> sorted;
-   sorted.reserve(list.size());
-   sorted.insert(sorted.begin(), list.begin(), list.end());
+   std::vector<T> sorted(list.begin(), list.end());
    sort(sorted.begin(), sorted.end(), [map](const T &a, const T &b) -> bool 
       {
-         string str1 = map(a), str2 = map(b);
+         const string str1 = map(a), str2 = map(b);
          for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
          {
             const auto cl1 = cLower(*c1);
@@ -458,7 +456,7 @@ template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& l
 }
 
 
-static void HelpTextCentered(const std::string& text)
+static void HelpTextCentered(const string& text)
 {
    const ImVec2 win_size = ImGui::GetWindowSize();
    const ImVec2 text_size = ImGui::CalcTextSize(text.c_str());
@@ -524,8 +522,8 @@ static void HelpSplash(const string &text, int rotation)
        }
    }
 
-   text_size.x += (padding / 2.f);
-   text_size.y = ((float)lines.size() * ImGui::GetTextLineHeightWithSpacing()) + (padding / 2.f);
+   text_size.x += padding / 2.f;
+   text_size.y = (float)lines.size() * ImGui::GetTextLineHeightWithSpacing() + (padding / 2.f);
 
    constexpr ImGuiWindowFlags window_flags
       = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
@@ -537,7 +535,7 @@ static void HelpSplash(const string &text, int rotation)
    for (const string& curline : lines)
    {
       const ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, curline.c_str());
-      ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2.f));
+      ImGui::SetCursorPosX((text_size.x - lineSize.x) / 2.f);
       ImGui::Text("%s", curline.c_str());
    }
    ImGui::End();
@@ -649,7 +647,6 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;
    m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
-   memset(m_tweakState, 0, sizeof(m_tweakState));
 
    m_selection.type = Selection::SelectionType::S_NONE;
    m_useEditorCam = false;
@@ -765,7 +762,7 @@ LiveUI::~LiveUI()
 
 void LiveUI::MarkdownFormatCallback(const ImGui::MarkdownFormatInfo &markdownFormatInfo, bool start)
 {
-   LiveUI *ui = (LiveUI *)(markdownFormatInfo.config->userData);
+   LiveUI *const ui = (LiveUI *)(markdownFormatInfo.config->userData);
    switch (markdownFormatInfo.type)
    {
    case ImGui::MarkdownFormatType::EMPHASIS:
@@ -836,11 +833,11 @@ void LiveUI::MarkdownLinkCallback(ImGui::MarkdownLinkCallbackData data)
 
 ImGui::MarkdownImageData LiveUI::MarkdownImageCallback(ImGui::MarkdownLinkCallbackData data)
 {
-   LiveUI *ui = (LiveUI *)data.userData;
+   LiveUI *const ui = (LiveUI *)data.userData;
    Texture *const ppi = ui->m_live_table->GetImage(std::string(data.link, data.linkLength));
    if (ppi == nullptr)
       return ImGui::MarkdownImageData {};
-   Sampler *sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
+   Sampler *const sampler = ui->m_renderer->m_renderDevice->m_texMan.LoadTexture(ppi->m_pdsBuffer, SamplerFilter::SF_BILINEAR, SamplerAddressMode::SA_CLAMP, SamplerAddressMode::SA_CLAMP, false);
    if (sampler == nullptr)
       return ImGui::MarkdownImageData {};
    #if defined(ENABLE_BGFX)
@@ -878,7 +875,7 @@ void LiveUI::Render()
       return;
 
    // Rendering must happen on a render target matching the dimension we used to prepare the UI frame
-   ImGuiIO &io = ImGui::GetIO();
+   const ImGuiIO &io = ImGui::GetIO();
    assert( ((m_rotate == 0 || m_rotate == 2) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.x && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.y)
         || ((m_rotate == 1 || m_rotate == 3) && RenderTarget::GetCurrentRenderTarget()->GetWidth() == (int)io.DisplaySize.y && RenderTarget::GetCurrentRenderTarget()->GetHeight() == (int)io.DisplaySize.x));
 
@@ -1042,7 +1039,7 @@ void LiveUI::UpdatePerfOverlay()
    // Frame sequence graph
    if (m_show_fps == 2)
    {
-      ImGuiWindow *window = ImGui::GetCurrentWindow();
+      ImGuiWindow *const window = ImGui::GetCurrentWindow();
       static const string infoLabels[] = {
          "Misc"s,
          "Script"s,
@@ -1073,7 +1070,7 @@ void LiveUI::UpdatePerfOverlay()
          "(Wait for GPU and display sync to finish current frame)"s,
          "(Sleep to synchronise on user selected FPS)"s,
       };
-      FrameProfiler::ProfileSection sections[] = {
+      static constexpr FrameProfiler::ProfileSection sections[] = {
          FrameProfiler::PROFILE_PREPARE_FRAME,
          FrameProfiler::PROFILE_RENDER_WAIT,
          FrameProfiler::PROFILE_RENDER_SUBMIT,
@@ -1081,7 +1078,7 @@ void LiveUI::UpdatePerfOverlay()
          FrameProfiler::PROFILE_RENDER_SLEEP,
          FrameProfiler::PROFILE_RENDER_SUBMIT, // For BGFX, since BGFX performs CPU->GPU submit after flip
       };
-      constexpr ImU32 cols[] = {
+      static constexpr ImU32 cols[] = {
          IM_COL32(128, 255, 128, 255), // Prepare
          IM_COL32(255,   0,   0, 255), // Wait for Render Frame
          IM_COL32(  0, 128, 255, 255), // Submit (VPX->BGFX)
@@ -1453,7 +1450,7 @@ void LiveUI::Update(const int width, const int height)
           ImGui::SetNextWindowBgAlpha(0.666f);
           ImGui::SetNextWindowPos(ImVec2((io.DisplaySize.x - text_size.x) / 2, notifY));
           ImGui::SetNextWindowSize(text_size);
-          ImGui::Begin("Notification"s.append(std::to_string(i)).c_str(), nullptr, window_flags);
+          ImGui::Begin(("Notification" + std::to_string(i)).c_str(), nullptr, window_flags);
           for (const string& lline : lines) {
              ImVec2 lineSize = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, lline.c_str());
              ImGui::SetCursorPosX(((text_size.x - lineSize.x) / 2));
@@ -1615,7 +1612,7 @@ void LiveUI::OpenTweakMode()
    if (m_renderer->m_stereo3D != STEREO_VR)
       m_tweakPages.push_back(TP_PointOfView);
    #ifdef ENABLE_XR
-   // Legacy OpenVR does not support dynamic repositionning through LiveUI (especially overall scale, this would need to be rewriten but not done as this is planned for deprecation)
+   // Legacy OpenVR does not support dynamic repositioning through LiveUI (especially overall scale, this would need to be rewritten but not done as this is planned for deprecation)
    else
       m_tweakPages.push_back(TP_VRPosition);
    #endif
@@ -1623,7 +1620,7 @@ void LiveUI::OpenTweakMode()
    for (int j = 0; j < Settings::GetNPluginSections(); j++)
    {
       int nOptions = 0;
-      int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      const int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
          if ((m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + j) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             nOptions++;
@@ -1710,7 +1707,7 @@ void LiveUI::UpdateTweakPage()
       break;
    case TP_TableOption:
    {
-      int nCustomOptions = (int)m_live_table->m_settings.GetTableSettings().size();
+      const int nCustomOptions = (int)m_live_table->m_settings.GetTableSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
          m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       m_tweakPageOptions.push_back(BS_DayNight);
@@ -1725,7 +1722,7 @@ void LiveUI::UpdateTweakPage()
    }
    default: // Plugin options
    {
-      int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      const int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
          if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
@@ -1991,7 +1988,7 @@ void LiveUI::HandleTweakInput()
             string message;
             if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
             {
-               message = "Point of view";
+               message = "Point of view"s;
                m_live_table->mViewSetups[m_live_table->m_BG_current_set].SaveToTableOverrideSettings(m_table->m_settings, m_live_table->m_BG_current_set);
                if (m_live_table->m_BG_current_set == BG_FULLSCREEN)
                { // Player position is saved as an override (not saved if equal to app settings)
@@ -2000,8 +1997,8 @@ void LiveUI::HandleTweakInput()
                   m_table->m_settings.SaveValue(Settings::Player, "ScreenPlayerZ"s, m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s), true);
                }
                // The saved value are the new base value, so all fields are marked as untouched
-               for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
-                  m_tweakState[i] = 0;
+               for (int i2 = BS_ViewMode; i2 < BS_WndBottomZOfs; i2++)
+                  m_tweakState[i2] = 0;
             }
             else if (m_tweakPages[m_activeTweakPageIndex] == TP_VRPosition)
             {
@@ -2062,19 +2059,19 @@ void LiveUI::HandleTweakInput()
             if (m_tweakPages[m_activeTweakPageIndex] >= TP_TableOption)
             {
                const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
-               message = m_tweakPages[m_activeTweakPageIndex] > TP_TableOption ? "Plugin options" : "Table options";
-               int nOptions = (int)customOptions.size();
-               for (int i = 0; i < nOptions; i++)
+               message = m_tweakPages[m_activeTweakPageIndex] > TP_TableOption ? "Plugin options"s : "Table options"s;
+               const int nOptions = (int)customOptions.size();
+               for (int i2 = 0; i2 < nOptions; i2++)
                {
-                  const auto& opt = customOptions[i];
+                  const auto& opt = customOptions[i2];
                   if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
                      || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                   {
-                     if (m_tweakState[BS_Custom + i] == 2)
+                     if (m_tweakState[BS_Custom + i2] == 2)
                         m_table->m_settings.DeleteValue(opt.section, opt.id);
                      else
                         m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.name, opt.defaultValue));
-                     m_tweakState[BS_Custom + i] = 0;
+                     m_tweakState[BS_Custom + i2] = 0;
                   }
                }
             }
@@ -2085,7 +2082,7 @@ void LiveUI::HandleTweakInput()
             else
             {
                m_table->m_settings.SaveToFile(iniFileName);
-               PushNotification(message + " exported to "s.append(iniFileName), 5000);
+               PushNotification(message + " exported to " + iniFileName, 5000);
             }
             if (g_pvp->m_povEdit && m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
                g_pvp->QuitPlayer(Player::CloseState::CS_CLOSE_APP);
@@ -2223,18 +2220,18 @@ void LiveUI::HandleTweakInput()
                else
                   PushNotification("Table options reset to default values"s, 5000);
                const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
-               int nOptions = (int)customOptions.size();
-               for (int i = 0; i < nOptions; i++)
+               const int nOptions = (int)customOptions.size();
+               for (int i2 = 0; i2 < nOptions; i2++)
                {
-                  const auto& opt = customOptions[i];
+                  const auto& opt = customOptions[i2];
                   if ((opt.section == Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
                      || (opt.section > Settings::TableOption && m_tweakPages[m_activeTweakPageIndex] == static_cast<int>(TP_Plugin00) + static_cast<int>(opt.section) - static_cast<int>(Settings::Plugin00)))
                   {
-                     if (m_tweakState[BS_Custom + i] == 2)
+                     if (m_tweakState[BS_Custom + i2] == 2)
                         m_table->m_settings.DeleteValue(opt.section, opt.id);
                      else
                         m_table->m_settings.SaveValue(opt.section, opt.id, m_live_table->m_settings.LoadValueWithDefault(opt.section, opt.id, opt.defaultValue));
-                     m_tweakState[BS_Custom + i] = 0;
+                     m_tweakState[BS_Custom + i2] = 0;
                   }
                }
                if (m_tweakPages[m_activeTweakPageIndex] > TP_TableOption)
@@ -3557,7 +3554,7 @@ void LiveUI::UpdatePropertyUI()
             ImGui::NewLine();
             switch (m_selection.type)
             {
-            case Selection::SelectionType::S_NONE: TableProperties(is_live); break; // Use header tab for live since table is displayed when there si no selection
+            case Selection::SelectionType::S_NONE: TableProperties(is_live); break; // Use header tab for live since table is displayed when there is no selection
             case Selection::SelectionType::S_CAMERA: CameraProperties(is_live); break;
             case Selection::SelectionType::S_MATERIAL: MaterialProperties(is_live); break;
             case Selection::SelectionType::S_RENDERPROBE: RenderProbeProperties(is_live); break;
@@ -3758,7 +3755,7 @@ void LiveUI::UpdateVideoOptionsModal()
                const char *glasses_items[] = { name[0].c_str(),name[1].c_str(),name[2].c_str(),name[3].c_str(),name[4].c_str(),name[5].c_str(),name[6].c_str(),name[7].c_str(),name[8].c_str(),name[9].c_str(), };
                if (ImGui::Combo("Glasses", &glassesIndex, glasses_items, IM_ARRAYSIZE(glasses_items)))
                   modeChanged = true;
-               const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
+               const string prefKey = "Anaglyph" + std::to_string(glassesIndex + 1);
 
                if (ImGui::InputText("Name", &name[glassesIndex]))
                   g_pvp->m_settings.SaveValue(Settings::Player, prefKey + "Name", name[glassesIndex]);
@@ -3837,7 +3834,7 @@ void LiveUI::UpdateAnaglyphCalibrationModal()
    if (ImGui::BeginPopupModal(ID_ANAGLYPH_CALIBRATION, nullptr, (ImGuiWindowFlags_)((int)ImGuiWindowFlags_NoTitleBar | (int)ImGuiNextWindowDataFlags_HasBgAlpha)))
    {
       m_renderer->UpdateStereoShaderState();
-      const string prefKey = "Anaglyph"s.append(std::to_string(glassesIndex + 1));
+      const string prefKey = "Anaglyph" + std::to_string(glassesIndex + 1);
       static int calibrationStep = -1;
       static float calibrationBrightness = 0.5f;
       static const string fields[] = { "LeftRed"s, "LeftGreen"s, "LeftBlue"s, "RightRed"s, "RightGreen"s, "RightBlue"s, };
@@ -4255,7 +4252,7 @@ void LiveUI::UpdateMainSplashModal()
          info << "By " << m_table->m_szAuthor << ", ";
       if (!m_table->m_szVersion.empty())
          info << "Version: " << m_table->m_szVersion;
-      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A.") << " Revision " << m_table->m_numTimesSaved << ")\n";
+      info << " (" << (!m_table->m_szDateSaved.empty() ? m_table->m_szDateSaved : "N.A."s) << " Revision " << m_table->m_numTimesSaved << ")\n";
 
       constexpr ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
       ImGui::SetNextWindowBgAlpha(0.5f);
@@ -4800,7 +4797,7 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
       }
       else if (flasher->m_d.m_renderMode == FlasherData::DMD)
       {
-         static const string renderStyles[] = { "Legacy VPX", "Neon Plasma", "Red LED", "Green LED", "Yellow LED", "Generic Plasma", "Generic LED" };
+         static const string renderStyles[] = { "Legacy VPX"s, "Neon Plasma"s, "Red LED"s, "Green LED"s, "Yellow LED"s, "Generic Plasma"s, "Generic LED"s };
          PropCombo("Render Style", m_table, is_live, startup_obj ? &(startup_obj->m_d.m_renderStyle) : nullptr, live_obj ? &(live_obj->m_d.m_renderStyle) : nullptr, std::size(renderStyles), renderStyles);
          // Missing source
          PropImageCombo("Glass", startup_obj, is_live, startup_obj ? &(startup_obj->m_d.m_szImageA) : nullptr, live_obj ? &(live_obj->m_d.m_szImageA) : nullptr, m_table);
@@ -4813,7 +4810,7 @@ void LiveUI::FlasherProperties(bool is_live, Flasher *startup_obj, Flasher *live
       }
       else if (flasher->m_d.m_renderMode == FlasherData::DISPLAY)
       {
-         static const string renderStyles[] = { "Pixelated", "Smoothed" };
+         static const string renderStyles[] = { "Pixelated"s, "Smoothed"s };
          PropCombo("Render Mode", m_table, is_live, startup_obj ? &(startup_obj->m_d.m_renderStyle) : nullptr, live_obj ? &(live_obj->m_d.m_renderStyle) : nullptr, std::size(renderStyles), renderStyles);
          // Missing source
       }
@@ -5317,7 +5314,7 @@ void LiveUI::PropVec3(const char *label, IEditable *undo_obj, bool is_live, Vert
       v->Set(col[0], col[1], col[2]);
       if (chg_callback)
       {
-         vec3 v1(prev_v.x, prev_v.y, prev_v.z), v2(v->x, v->y, v->z);
+         vec3 v1{prev_v.x, prev_v.y, prev_v.z}, v2{v->x, v->y, v->z};
          chg_callback(is_live, v1, v2);
       }
       if (!is_live)

@@ -30,7 +30,7 @@ public:
 class CVPreference final
 {
 public:
-   LOGFONT m_logFont;
+   LOGFONT m_logFont = {};
    int m_pointSize;
    COLORREF m_rgb;
    int m_sciKeywordID;

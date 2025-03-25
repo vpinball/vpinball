@@ -233,12 +233,12 @@ void LightSeq::RenderSetup(RenderDevice *device)
       return;
    }
    else*/
-      ZeroMemory((void *)m_pgridData, (size_t)((m_lightSeqGridHeight*m_lightSeqGridWidth)*sizeof(short)));
+      memset((void *)m_pgridData, 0, m_lightSeqGridHeight*m_lightSeqGridWidth * sizeof(short));
 
    // get the number of elements (objects) in the collection (referenced by m_visel)
    size = m_pcollection->m_visel.size();
 
-   // go though the collection and get the cordinates of all the lights
+   // go though the collection and get the coordinates of all the lights
    for (int i = 0; i < size; ++i)
    {
       // get the type of object

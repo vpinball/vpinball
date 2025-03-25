@@ -114,7 +114,7 @@ void PinInput::Init()
    MapActionToMouse(eRightTiltKey, settings.LoadValueInt(Settings::Player, "JoyCTiltKey"s), true);
    MapActionToMouse(eCenterTiltKey, settings.LoadValueInt(Settings::Player, "JoyRTiltKey"s), true);
 
-   ZeroMemory(&m_inputState, sizeof(m_inputState));
+   memset(&m_inputState, 0, sizeof(m_inputState));
    m_nextKeyPressedTime = 0;
    m_rumbleMode = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "RumbleMode"s, 3);
 
@@ -656,7 +656,7 @@ void PinInput::Autostart(const U32 initialDelayMs, const U32 retryDelayMs)
    }
 }
 
-// Setup an hardware device button and analog input mapping
+// Setup a hardware device button and analog input mapping
 // For the time being, an action may only be bound to one button as we do not handle combination of multiple sources
 // For analog input, multiple source are supported, averaging for nudge and summing for plunger (assuming there is only one non 0)
 void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
@@ -858,7 +858,7 @@ void PinInput::ProcessInput()
    // Wipe key state if we're not the foreground window as we miss key-up events
    #ifdef _WIN32
    if (m_focusHWnd != GetForegroundWindow())
-      ZeroMemory(&m_inputState, sizeof(m_inputState));
+      memset(&m_inputState, 0, sizeof(m_inputState));
    #endif
 
    // Handle automatic start

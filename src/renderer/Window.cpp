@@ -506,7 +506,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
          displayConf.left = displayBounds.x;
          displayConf.width = displayBounds.w;
          displayConf.height = displayBounds.h;
-         const string devicename = "\\\\.\\DISPLAY"s.append(std::to_string(i));
+         const string devicename = "\\\\.\\DISPLAY" + std::to_string(i);
          strncpy_s(displayConf.DeviceName, devicename.c_str(), sizeof(displayConf.DeviceName) - 1);
          const char* name = SDL_GetDisplayName(displayIDs[i]);
          strncpy_s(displayConf.GPU_Name, name ? name : "UNKNOWN", sizeof(displayConf.GPU_Name) - 1);

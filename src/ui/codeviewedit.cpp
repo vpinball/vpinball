@@ -28,7 +28,6 @@ CVPreference::CVPreference(const COLORREF crTextColor, const bool bDisplay, cons
      m_szRegName(szRegistryName),
      m_highlight(bDisplay)
 {
-	memset(&m_logFont, 0, sizeof(LOGFONT));
 }
 
 void CVPreference::SetCheckBox(const HWND hwndDlg)
