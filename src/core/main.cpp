@@ -6,10 +6,6 @@
 
 #include "vpversion.h"
 
-#ifdef __STANDALONE__
-#include <SDL3_ttf/SDL_ttf.h>
-#endif
-
 #include "plugins/VPXPlugin.h"
 #include "core/VPXPluginAPIImpl.h"
 
@@ -37,6 +33,7 @@
 
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
+#include <filesystem>
 #endif
 
 #ifdef CRASH_HANDLER

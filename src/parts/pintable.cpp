@@ -7937,9 +7937,11 @@ string PinTable::AuditTable(bool log) const
       }
    ss << ". Total number of faces used in primitives: " << nPrimTris << ", needing " << (primMemSize / (1024 * 1024)) << "MiB in GPU memory when played\r\n";
 
-   string msg = "Table audit:\r\n" + ss.str();
+   const string msg = "Table audit:\r\n" + ss.str();
    if (log)
+   {
       PLOGI << msg;
+   }
    return msg;
 }
 
