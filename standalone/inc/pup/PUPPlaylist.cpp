@@ -2,6 +2,8 @@
 
 #include "PUPPlaylist.h"
 
+#include <filesystem>
+
 /*
    playlists.pup: ScreenNum,Folder,Des,AlphaSort,RestSeconds,Volume,Priority
    PuP Pack Editor: Folder (Playlist),Description,Randomize,RestSeconds,Volume,Priority

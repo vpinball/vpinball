@@ -13,6 +13,8 @@
 
 #include "RSJparser/RSJparser.tcc"
 
+#include <filesystem>
+
 PUPLabel::PUPLabel(const string& szName, const string& szFont, float size, LONG color, float angle, PUP_LABEL_XALIGN xAlign, PUP_LABEL_YALIGN yAlign, float xPos, float yPos, int pagenum, bool visible)
 {
    m_szName = szName;

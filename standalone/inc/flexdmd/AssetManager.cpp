@@ -8,6 +8,8 @@
 #include "filters/AdditiveFilter.h"
 #include "filters/RegionFilter.h"
 
+#include <filesystem>
+
 AssetManager::AssetManager()
 {
    m_szBasePath = g_pvp->m_currentTablePath;

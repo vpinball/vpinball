@@ -8,6 +8,8 @@
 #include "../common/WindowManager.h"
 #include "audio/pinsound.h"
 
+#include <filesystem>
+
 #define PINMAME_SETTINGS_WINDOW_X      15
 #define PINMAME_SETTINGS_WINDOW_Y      30 + 218 + 5 + 75 + 5
 #define PINMAME_SETTINGS_WINDOW_WIDTH  290

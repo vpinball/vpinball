@@ -5,6 +5,8 @@
 #include "PUPCustomPos.h"
 #include "PUPWindow.h"
 
+#include <filesystem>
+
 PUPManager* PUPManager::m_pInstance = NULL;
 
 PUPManager* PUPManager::GetInstance()
