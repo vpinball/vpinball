@@ -12,6 +12,8 @@
 #include "common.h"
 #include "serum-decode.h"
 
+using namespace std::string_literals;
+
 #ifndef _MSC_VER
  #define strcpy_s(A, B, C) strncpy(A, C, B)
 #endif

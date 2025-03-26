@@ -3,18 +3,18 @@
 ///////////////////////////////////////////////////////////////////////////////
 // Remote Control plugin
 //
-// This plugin allow to use one instance of VPX running on a computer as a 
+// This plugin allows to use one instance of VPX running on a computer as a 
 // controller for another instance of VPX running on another computer, on the
 // same local area network. The use case is to allow to play in VR on a cabinet,
 // while the cabinet computer is not powerful enough to feed the VR headset.
 
 #include "MsgPlugin.h"
 #include "VPXPlugin.h"
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <chrono>
 #include <thread>
 #include <semaphore>
