@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "pininput.h"
 
 class SDLInputHandler final : public InputHandler
@@ -46,7 +48,7 @@ public:
       for (auto& haptic : m_haptics)
          SDL_PlayHapticRumble(haptic, saturate(max(lowFrequencySpeed, highFrequencySpeed)), ms_duration); //!! meh
    }
-      
+
    void Update() override
    {
       // When SDL Video is used, SDL events are processed during the main application message loop, so we do not do it again here

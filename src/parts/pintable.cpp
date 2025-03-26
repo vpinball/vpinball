@@ -1459,7 +1459,7 @@ PinTable::PinTable()
    m_sdsNonUndoableDirty = eSaveClean;
    m_sdsCurrentDirtyState = eSaveClean;
 
-   ZeroMemory(&m_protectionData, sizeof(m_protectionData)); //!!
+   memset(&m_protectionData, 0, sizeof(m_protectionData)); //!!
 
    m_globalEmissionScale = 1.0f;
 
@@ -3630,7 +3630,7 @@ HRESULT PinTable::SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool save
       m_pcv->SaveToStream(pstm, hcrypthash);
    }
 
-   bw.WriteInt(FID(TLCK), m_locked);
+   bw.WriteInt(FID(TLCK), m_tablelocked);
    bw.WriteTag(FID(ENDB));
 
    return S_OK;
@@ -4677,7 +4677,7 @@ bool PinTable::LoadToken(const int id, BiffReader * const pbr)
       ::GlobalFree(hMem);
       break;
    }
-   case FID(TLCK): pbr->GetInt(m_locked); break;
+   case FID(TLCK): pbr->GetInt(m_tablelocked); break;
    }
    return true;
 }

@@ -26,8 +26,8 @@ public:
    unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
    void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
 
-   static unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
-   static void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
+   static unsigned int GetMsgID(const char* name_space, const char* name) { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
+   static void ReleaseMsgID(const unsigned int msgId) { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
 
    string ApplyScriptCOMObjectOverrides(string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
