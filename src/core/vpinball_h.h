@@ -31,10 +31,12 @@
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
       #include "ui/dialogs/VROptionsDialog.h"
    #endif
-#endif
 
-#ifdef __STANDALONE__
+   #define OVERRIDE
+#else
    #include "standalone/inc/webserver/WebServer.h"
+
+   #define OVERRIDE override
 #endif
 
 class PinTable;
@@ -58,7 +60,7 @@ public:
     };
 
    VPinball();
-   ~VPinball() override;
+   ~VPinball() OVERRIDE;
 
    void ShowSubDialog(CDialog& dlg, const bool show);
 
@@ -282,14 +284,14 @@ protected:
    void PreCreate(CREATESTRUCT& cs) override;
    void PreRegisterClass(WNDCLASS& wc) override;
    void OnClose() override;
-   void OnDestroy() override;
+   void OnDestroy() OVERRIDE;
    int  OnCreate(CREATESTRUCT& cs) override;
-   LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
    void OnInitialUpdate() override;
    BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
    LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) override;
-   LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
+   LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) OVERRIDE;
 #ifndef __STANDALONE__
    DockPtr NewDockerFromID(int id) override;
 #endif

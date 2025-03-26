@@ -69,7 +69,11 @@ class PinTableMDI final : public CMDIChild
 {
 public:
    PinTableMDI(VPinball *vpinball);
-   ~PinTableMDI() override;
+   ~PinTableMDI()
+   #ifndef __STANDALONE__
+   override
+   #endif
+   ;
    CComObject<PinTable> *GetTable() { return m_table; }
    bool CanClose() const;
 
