@@ -4,6 +4,7 @@
 #include "miniz/miniz.h"
 
 #include <ifaddrs.h>
+#include <filesystem>
 
 #ifdef __LIBVPINBALL__
 #include "standalone/VPinballLib.h"
