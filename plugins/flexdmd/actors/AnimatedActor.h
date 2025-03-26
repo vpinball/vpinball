@@ -9,7 +9,7 @@ class AnimatedActor : public Actor
 public:
    AnimatedActor(FlexDMD* pFlexDMD, const string& name)
       : Actor(pFlexDMD, name) { }
-   ~AnimatedActor() = default;
+   ~AnimatedActor() override = default;
 
    ActorType GetType() const override { return AT_AnimatedActor; }
 

@@ -26,8 +26,8 @@ public:
    unsigned int GetVPXEndPointId() const { return m_vpxPlugin->m_endpointId; }
    void BroadcastVPXMsg(const unsigned int msgId, void* data) const { MsgPluginManager::GetInstance().GetMsgAPI().BroadcastMsg(m_vpxPlugin->m_endpointId, msgId, data); }
 
-   unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
-   void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
+   static unsigned int GetMsgID(const char* name_space, const char* name) const { return MsgPluginManager::GetInstance().GetMsgAPI().GetMsgID(name_space, name); }
+   static void ReleaseMsgID(const unsigned int msgId) const { MsgPluginManager::GetInstance().GetMsgAPI().ReleaseMsgID(msgId); }
 
    string ApplyScriptCOMObjectOverrides(string& script) const;
    IDispatch* CreateCOMPluginObject(const string& classId);
@@ -57,6 +57,7 @@ private:
    // Plugin logging API
    static void OnGetLoggingPluginAPI(const unsigned int msgId, void* userData, void* msgData);
    static void PluginLog(unsigned int level, const char* message);
+
    LoggingPluginAPI m_loggingApi;
 
    // Scriptable plugin API
@@ -67,6 +68,7 @@ private:
    static void SubmitTypeLibrary();
    static void OnScriptError(unsigned int type, const char* message);
    static void SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
+
    robin_hood::unordered_map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;
    ScriptablePluginAPI m_scriptableApi;
@@ -74,6 +76,7 @@ private:
    // Contribute VPX API through plugin API
    unsigned int m_getRenderDmdMsgId;
    unsigned int m_getIdentifyDmdMsgId;
+
    static void ControllerOnGetDMDSrc(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetRenderDMD(const unsigned int msgId, void* userData, void* msgData);
    static void ControllerOnGetIdentifyDMD(const unsigned int msgId, void* userData, void* msgData);

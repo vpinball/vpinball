@@ -3,7 +3,7 @@
 #pragma once
 
 ///////////////////////////////////////////////////////////////////////////////
-// PinMame plugin
+// PinMAME plugin
 //
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 // This interface is part of a work in progress and will evolve likely a lot
@@ -11,7 +11,7 @@
 // that you're plugin will be broken by the upcoming updates.
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
-// This file defines the identifiers and messages used by the PinMame controller
+// This file defines the identifiers and messages used by the PinMAME controller
 // plugin
 
 #define PMPI_NAMESPACE               "PinMAME"

@@ -13,7 +13,7 @@ class UndoRecord final
 {
 public:
    UndoRecord();
-   virtual ~UndoRecord();
+   ~UndoRecord();
 
    void MarkForUndo(IEditable *const pie, const bool saveForUndo);
    void MarkForCreate(IEditable *const pie);
@@ -31,7 +31,7 @@ class PinUndo final
 {
 public:
    PinUndo();
-   virtual ~PinUndo();
+   ~PinUndo();
 
    void BeginUndo();
    void MarkForUndo(IEditable * const pie, const bool saveForUndo = false);

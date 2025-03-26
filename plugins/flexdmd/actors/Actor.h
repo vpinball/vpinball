@@ -16,7 +16,7 @@ class Actor
 {
 public:
    Actor(const FlexDMD *pFlexDMD, const string& name);
-   ~Actor();
+   virtual ~Actor();
 
    PSC_IMPLEMENT_REFCOUNT()
 

@@ -13,7 +13,7 @@ class Group : public Actor
 {
 public:
    Group(FlexDMD *pFlexDMD, const string &name) : Actor(pFlexDMD, name) {}
-   ~Group();
+   ~Group() override;
 
    ActorType GetType() const override { return AT_Group; }
 

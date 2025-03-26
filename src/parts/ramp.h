@@ -51,7 +51,7 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
 #endif
    Ramp();
    virtual ~Ramp();
@@ -113,7 +113,7 @@ public:
    void WriteRegDefaults() final;
 
    float GetSurfaceHeight(float x, float y) const;
-   bool isHabitrail() const;
+   bool IsHabitrail() const;
 
    RampData m_d;
 
@@ -170,7 +170,7 @@ private:
    void SetupHitObject(class PhysicsEngine* physics, HitObject *obj, const bool isUI);
 
    void GenerateVertexBuffer();
-   void CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvBuf);
+   void CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvBuf) const;
    void GenerateWireMesh(Vertex3D_NoTex2 **meshBuf, Vertex3D_NoTex2 **meshBuf2);
    void GenerateRampMesh(Vertex3D_NoTex2 **meshBuf);
 

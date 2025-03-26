@@ -7,7 +7,7 @@
 class ImageSequence final : public AnimatedActor
 {
 public:
-   ~ImageSequence();
+   ~ImageSequence() override;
 
    static ImageSequence* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& paths, const string& name, int fps, bool loop);
 

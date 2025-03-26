@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
-class Rom
+class Rom final
 {
 public:
    Rom() = default;
@@ -12,9 +12,9 @@ public:
    PSC_IMPLEMENT_REFCOUNT()
 
    // FIXME implement
-   string GetName() const { PSC_NOT_IMPLEMENTED("GetName is not implemented"); return ""; }
+   string GetName() const { PSC_NOT_IMPLEMENTED("GetName is not implemented"); return string(); }
    long GetState() const { PSC_NOT_IMPLEMENTED("GetState is not implemented"); return 0; }
-   string GetStateDescription() const { PSC_NOT_IMPLEMENTED("GetStateDescription is not implemented"); return ""; }
+   string GetStateDescription() const { PSC_NOT_IMPLEMENTED("GetStateDescription is not implemented"); return string(); }
    void Audit(bool fStrict = false) { PSC_NOT_IMPLEMENTED("Audit is not implemented"); }
    long GetLength() const { PSC_NOT_IMPLEMENTED("GetLength is not implemented"); return 0; }
    long GetExpLength() const { PSC_NOT_IMPLEMENTED("GetExpLength is not implemented"); return 0; }

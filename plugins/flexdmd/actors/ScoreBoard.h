@@ -7,7 +7,7 @@ class ScoreBoard final : public Group
 {
 public:
    ScoreBoard(FlexDMD* pFlexDMD, Font* pScoreFont, Font* pHighlightFont, Font* pTextFont);
-   ~ScoreBoard();
+   ~ScoreBoard() override;
 
    Label* GetLowerLeft() const { return m_pLowerLeft; }
    Label* GetLowerRight() const { return m_pLowerRight; }

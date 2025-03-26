@@ -20,14 +20,14 @@ ScoreView::~ScoreView()
 
 void ScoreView::Load(const string& path)
 {
-   if (!std::filesystem::exists(path))
+   const std::filesystem::path p(path);
+   if (!std::filesystem::exists(p))
       return;
    std::error_code ec;
-   if (std::filesystem::is_directory(path, ec))
+   if (std::filesystem::is_directory(p, ec))
    {
-      for (const auto& entry : std::filesystem::directory_iterator(path))
+      for (const auto& entry : std::filesystem::directory_iterator(p))
       {
-         string ext = entry.path().extension().string();
          if (!entry.is_directory() && entry.path().extension().string() == ".scv")
          {
             std::ifstream ifs(entry.path());
@@ -488,9 +488,9 @@ void ScoreView::LoadGlass(Visual& visual)
          visual.glass = texImage->second;
       else
       {
-         std::filesystem::path path1 = std::filesystem::path(m_bestLayout->path).remove_filename();
-         std::filesystem::path path2 = visual.glassPath;
-         std::filesystem::path fullPath = path1 / path2;
+         const std::filesystem::path path1 = std::filesystem::path(m_bestLayout->path).remove_filename();
+         const std::filesystem::path path2 = visual.glassPath;
+         const std::filesystem::path fullPath = path1 / path2;
          Texture* tex = new Texture();
          if (std::filesystem::exists(fullPath))
          {

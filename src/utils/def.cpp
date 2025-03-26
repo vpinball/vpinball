@@ -11,6 +11,8 @@
 #include "standalone/PoleStorage.h"
 #endif
 
+#include <filesystem>
+
 unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
@@ -354,21 +356,24 @@ bool IsWindowsVistaOr7()
 
 void copy_folder(const string& srcPath, const string& dstPath)
 {
-   if (!std::filesystem::exists(srcPath) || !std::filesystem::is_directory(srcPath)) {
+   const std::filesystem::path src(srcPath);
+   const std::filesystem::path dst(dstPath);
+   if (!std::filesystem::exists(src) || !std::filesystem::is_directory(src))
+   {
       PLOGE.printf("source path does not exist or is not a directory: %s", srcPath.c_str());
       return;
    }
 
-   if (!std::filesystem::exists(dstPath)) {
-      if (!std::filesystem::create_directory(dstPath)) {
+   if (!std::filesystem::exists(dst)) {
+      if (!std::filesystem::create_directory(dst)) {
          PLOGE.printf("failed to create destination path: %s", dstPath.c_str());
          return;
       }
    }
 
-   for (const auto& entry : std::filesystem::directory_iterator(srcPath)) {
+   for (const auto& entry : std::filesystem::directory_iterator(src)) {
       const string& sourceFilePath = entry.path().string();
-      const string& destinationFilePath = (std::filesystem::path(dstPath) / entry.path()).string();
+      const string& destinationFilePath = (dst / entry.path()).string();
 
       if (std::filesystem::is_directory(entry.status()))
          copy_folder(sourceFilePath, destinationFilePath);
@@ -389,18 +394,19 @@ void copy_folder(const string& srcPath, const string& dstPath)
 
 vector<string> find_files_by_extension(const string& directoryPath, const string& extension)
 {
+   const std::filesystem::path d(directoryPath);
    vector<string> files;
 
-   if (!std::filesystem::exists(directoryPath) || !std::filesystem::is_directory(directoryPath)) {
+   if (!std::filesystem::exists(d) || !std::filesystem::is_directory(d)) {
       PLOGE.printf("source path does not exist or is not a directory: %s", directoryPath.c_str());
       return files;
    }
 
-   for (const auto& entry : std::filesystem::recursive_directory_iterator(directoryPath)) {
+   for (const auto& entry : std::filesystem::recursive_directory_iterator(d)) {
       if (entry.is_regular_file()) {
          const string& filePath = entry.path().string();
          if (path_has_extension(filePath, extension)) {
-            string subDirName = filePath.substr(directoryPath.length());
+            const string subDirName = filePath.substr(directoryPath.length());
             files.push_back(subDirName);
          }
       }
@@ -432,15 +438,15 @@ string find_path_case_insensitive(const string& szPath)
 
 string find_directory_case_insensitive(const std::string& szParentPath, const std::string& szDirName)
 {
-   std::filesystem::path parentPath(szParentPath);
+   const std::filesystem::path parentPath(szParentPath);
    if (!std::filesystem::exists(parentPath) || !std::filesystem::is_directory(parentPath))
       return string();
 
-   std::filesystem::path fullPath = parentPath / szDirName;
+   const std::filesystem::path fullPath = parentPath / szDirName;
    if (std::filesystem::exists(fullPath) && std::filesystem::is_directory(fullPath))
       return fullPath.string() + PATH_SEPARATOR_CHAR;
 
-   string szDirLower = lowerCase(szDirName);
+   const string szDirLower = lowerCase(szDirName);
    for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
       if (!std::filesystem::is_directory(entry.status()))
          continue;

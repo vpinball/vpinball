@@ -9,10 +9,10 @@ class PlungerMoverObject : public MoverObject
 public:
    PlungerMoverObject(Plunger* const plunger);
 
-   virtual void UpdateDisplacements(const float dtime) override;
-   virtual void UpdateVelocities() override;
+   void UpdateDisplacements(const float dtime) override;
+   void UpdateVelocities() override;
 
-   virtual bool AddToList() const override { return true; }
+   bool AddToList() const override { return true; }
 
    void SetObjects(const float len);
 
@@ -240,7 +240,7 @@ public:
    bool  m_retractMotion;
 };
 
-class HitPlunger : public HitObject
+class HitPlunger final : public HitObject
 {
 public:
    HitPlunger(const float x, const float y, const float x2,

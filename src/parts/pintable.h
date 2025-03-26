@@ -69,7 +69,7 @@ class PinTableMDI final : public CMDIChild
 {
 public:
    PinTableMDI(VPinball *vpinball);
-   virtual ~PinTableMDI();
+   ~PinTableMDI() override;
    CComObject<PinTable> *GetTable() { return m_table; }
    bool CanClose() const;
 
@@ -416,34 +416,34 @@ public:
    virtual void DoCommand(int icmd, int x, int y) override;
    bool FMutilSelLocked();
 
-   virtual void SelectItem(IScriptable *piscript) override;
-   virtual void DoCodeViewCommand(int command) override;
-   virtual void SetDirtyScript(SaveDirtyState sds) override;
-   virtual void ExportMesh(ObjLoader &loader) override;
+   void SelectItem(IScriptable *piscript) override;
+   void DoCodeViewCommand(int command) override;
+   void SetDirtyScript(SaveDirtyState sds) override;
+   void ExportMesh(ObjLoader &loader) override;
 
    // Multi-object manipulation
-   virtual Vertex2D GetCenter() const override;
-   virtual void PutCenter(const Vertex2D &pv) override;
-   virtual void FlipY(const Vertex2D &pvCenter) override;
-   virtual void FlipX(const Vertex2D &pvCenter) override;
-   virtual void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   virtual void Translate(const Vertex2D &pvOffset) override;
+   Vertex2D GetCenter() const override;
+   void PutCenter(const Vertex2D &pv) override;
+   void FlipY(const Vertex2D &pvCenter) override;
+   void FlipX(const Vertex2D &pvCenter) override;
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
+   void Translate(const Vertex2D &pvOffset) override;
 
    // IEditable (mostly bogus for now)
-   virtual void UIRenderPass1(Sur *const psur) override;
-   virtual ItemTypeEnum GetItemType() const override { return eItemTable; }
-   virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) override;
-   virtual HRESULT InitPostLoad() override;
-   virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) override;
-   virtual ISelect *GetISelect() override { return (ISelect *)this; }
-   virtual const ISelect *GetISelect() const override { return (const ISelect *)this; }
-   virtual void SetDefaults(const bool fromMouseClick) override;
-   virtual IScriptable *GetScriptable() override { return (IScriptable *)this; }
-   virtual void SetDefaultPhysics(const bool fromMouseClick) override;
+   void UIRenderPass1(Sur *const psur) override;
+   ItemTypeEnum GetItemType() const override { return eItemTable; }
+   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) override;
+   HRESULT InitPostLoad() override;
+   HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) override;
+   ISelect *GetISelect() override { return (ISelect *)this; }
+   const ISelect *GetISelect() const override { return (const ISelect *)this; }
+   void SetDefaults(const bool fromMouseClick) override;
+   IScriptable *GetScriptable() override { return (IScriptable *)this; }
+   void SetDefaultPhysics(const bool fromMouseClick) override;
 
-   virtual PinTable *GetPTable() override { return this; }
-   virtual const PinTable *GetPTable() const override { return this; }
+   PinTable *GetPTable() override { return this; }
+   const PinTable *GetPTable() const override { return this; }
    const char *GetElementName(IEditable *pedit) const;
 
    IEditable *GetElementByName(const char *const name);
@@ -488,16 +488,16 @@ public:
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   virtual IEditable *GetIEditable() override { return (IEditable *)this; }
-   virtual const IEditable *GetIEditable() const override { return (const IEditable *)this; }
-   virtual void Delete() override { } // Can't delete table itself
-   virtual void Uncreate() override { }
-   virtual bool LoadToken(const int id, BiffReader *const pbr) override;
+   IEditable *GetIEditable() override { return (IEditable *)this; }
+   const IEditable *GetIEditable() const override { return (const IEditable *)this; }
+   void Delete() override { } // Can't delete table itself
+   void Uncreate() override { }
+   bool LoadToken(const int id, BiffReader *const pbr) override;
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
-   virtual IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   virtual const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
-   virtual IFireEvents *GetIFireEvents() override { return (IFireEvents *)this; }
+   IDispatch *GetDispatch() override { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   IFireEvents *GetIFireEvents() override { return (IFireEvents *)this; }
 
    void SetZoom(float zoom);
    void SetMyScrollInfo();
@@ -517,9 +517,9 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
-   virtual void OnLButtonDown(int x, int y) override;
-   virtual void OnLButtonUp(int x, int y) override;
-   virtual void OnMouseMove(int x, int y) override;
+   void OnLButtonDown(int x, int y) override;
+   void OnLButtonUp(int x, int y) override;
+   void OnMouseMove(int x, int y) override;
    void OnMouseMove(const short x, const short y);
 
    void SetDefaultView();
@@ -594,8 +594,8 @@ public:
    string m_szTitle;
 
    // Flag that disables all table edition. Lock toggles are counted to identify version changes in a table (for example to guarantee untouched table for tournament)
-   bool IsLocked() const { return (m_locked & 1) != 0; }
-   void ToggleLock() { BeginUndo(); MarkForUndo(); m_locked++; EndUndo(); SetDirtyDraw(); }
+   bool IsLocked() const { return (m_tablelocked & 1) != 0; }
+   void ToggleLock() { BeginUndo(); MarkForUndo(); m_tablelocked++; EndUndo(); SetDirtyDraw(); }
 
    bool TournamentModePossible() const { return IsLocked() && !FDirty() && m_pcv->external_script_name.empty(); }
 
@@ -871,7 +871,7 @@ public:
    void SetExposure(const float exposure) { m_exposure = exposure; }
 
 private:
-   unsigned int m_locked = 0;
+   unsigned int m_tablelocked = 0;
 
    PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;

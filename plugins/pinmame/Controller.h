@@ -4,7 +4,7 @@
 
 class Game;
 
-class Controller
+class Controller final
 {
 public:
    Controller(PinmameConfig& config);

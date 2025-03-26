@@ -75,7 +75,7 @@ enum ProfilingMode
 ////////////////////////////////////////////////////////////////////////////////
 // Startup progress dialog
 
-class ProgressDialog : public CDialog
+class ProgressDialog final : public CDialog
 {
 public:
    ProgressDialog() : CDialog(IDD_PROGRESS) { }
@@ -96,7 +96,7 @@ public:
    }
 
 protected:
-   BOOL OnInitDialog() final
+   BOOL OnInitDialog() override
    {
       #ifndef __STANDALONE__
       AttachItem(IDC_PROGRESS2, m_progressBar);
@@ -134,7 +134,7 @@ public:
    string GetPerfInfo();
 
    void SetPlayState(const bool isPlaying, const U32 delayBeforePauseMs = 0); // Allow to play/pause during UI interaction or to perform timed simulation steps (still needs the player window to be focused).
-   inline bool IsPlaying(const bool applyWndFocus = true) const { return (applyWndFocus ? (m_playing && m_focused) : m_focused) && !IsEditorMode(); }
+   bool IsPlaying(const bool applyWndFocus = true) const { return (applyWndFocus ? (m_playing && m_focused) : m_focused) && !IsEditorMode(); }
    void OnFocusChanged(const bool isGameFocused); // On focus lost, pause player and show mouse cursor
 
    U32 m_pauseTimeTarget = 0;

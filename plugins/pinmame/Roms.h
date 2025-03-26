@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
-class Roms
+class Roms final
 {
 public:
    Roms();

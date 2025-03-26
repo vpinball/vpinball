@@ -33,7 +33,7 @@ typedef enum
    RenderMode_SEG_1x16Alpha_1x16Num_1x7Num = 16
 } RenderMode;
 
-class FlexDMD
+class FlexDMD final
 {
 public:
    FlexDMD();

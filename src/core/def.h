@@ -743,7 +743,6 @@ bool IsWindows10_1803orAbove();
 
 #include "renderer/typedefs3D.h"
 
-#include <filesystem>
 #include <fstream>
 
 void copy_folder(const string& srcPath, const string& dstPath);

@@ -21,7 +21,7 @@ bool HasPUPCapture();
 #include <dxgi1_2.h>
 #include <dxgi1_5.h>
 
-class DXGIRegistry
+class DXGIRegistry final
 {
 public:
    struct Output
@@ -165,7 +165,7 @@ extern DXGIRegistry g_DXGIRegistry;
 
 
 
-class ExtCaptureManager
+class ExtCaptureManager final
 {
 public:
    enum CaptureState

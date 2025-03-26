@@ -1,8 +1,7 @@
 #pragma once
 
-
 /**
- * A abstraction that adds some functionalities to the VPX file read/write process.
+ * An abstraction that adds some functionalities to the VPX file read/write process.
  *
  * It must be overriden to provide any feature. This implementation does not
  * do anything and should be used when no additional feature is needed on table

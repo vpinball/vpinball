@@ -6,7 +6,7 @@
 class GIFImage final : public AnimatedActor 
 {
 public:
-   ~GIFImage();
+   ~GIFImage() override;
 
    static GIFImage* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& path, const string& name);
 

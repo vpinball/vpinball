@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
-class ControllerSettings
+class ControllerSettings final
 {
 public:
    ControllerSettings();

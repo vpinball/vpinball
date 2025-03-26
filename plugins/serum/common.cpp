@@ -19,15 +19,15 @@ string string_to_lower(string str)
 
 string find_directory_case_insensitive(const string& szParentPath, const string& szDirName)
 {
-   std::filesystem::path parentPath(szParentPath);
+   const std::filesystem::path parentPath(szParentPath);
    if (!std::filesystem::exists(parentPath) || !std::filesystem::is_directory(parentPath))
       return string();
 
-   std::filesystem::path fullPath = parentPath / szDirName;
+   const std::filesystem::path fullPath = parentPath / szDirName;
    if (std::filesystem::exists(fullPath) && std::filesystem::is_directory(fullPath))
       return fullPath.string() + PATH_SEPARATOR_CHAR;
 
-   string szDirLower = string_to_lower(szDirName);
+   const string szDirLower = string_to_lower(szDirName);
    for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
       if (!std::filesystem::is_directory(entry.status()))
          continue;

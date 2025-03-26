@@ -7,7 +7,7 @@ class Sequence final : public Group
 {
 public:
    Sequence(FlexDMD* pFlexDMD, const string& name);
-   ~Sequence();
+   ~Sequence() override;
 
    void Enqueue(Scene* scene);
    void RemoveAllScenes();

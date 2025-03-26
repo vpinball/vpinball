@@ -173,7 +173,7 @@ void Ramp::UIRenderPass2(Sur * const psur)
    const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
-   if (isHabitrail())
+   if (IsHabitrail())
    {
       psur->Polyline(middlePoints, cvertex);
       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
@@ -242,7 +242,7 @@ void Ramp::RenderBlueprint(Sur *psur, const bool solid)
    const Vertex2D * const rgvLocal = GetRampVertex(cvertex, nullptr, &pfCross, nullptr, &middlePoints, HIT_SHAPE_DETAIL_LEVEL, false);
    psur->Polygon(rgvLocal, cvertex * 2);
 
-   if (isHabitrail())
+   if (IsHabitrail())
    {
       psur->Polyline(middlePoints, cvertex - 1);
       if (m_d.m_type == RampType4Wire || m_d.m_type == RampType3WireRight)
@@ -481,7 +481,7 @@ Vertex2D *Ramp::GetRampVertex(int &pcvertex, float ** const ppheight, bool ** co
       }
       // only change the width if we want to create vertices for rendering or for the editor
       // the collision engine uses flat type ramps
-      if (isHabitrail() && m_d.m_type != RampType1Wire)
+      if (IsHabitrail() && m_d.m_type != RampType1Wire)
       {
          widthcur = m_d.m_wireDistanceX;
          if (inc_width)
@@ -884,7 +884,7 @@ void Ramp::Render(const unsigned int renderMask)
 
    m_rd->ResetRenderState();
 
-   if (isHabitrail())
+   if (IsHabitrail())
    {
       if (!m_meshBuffer || m_dynamicVertexBufferRegenerate)
          PrepareHabitrail();
@@ -980,7 +980,7 @@ void Ramp::UpdateBounds()
 
 // Ported at: VisualPinball.Engine/VPT/Ramp/RampHitGenerator.cs
 
-bool Ramp::isHabitrail() const
+bool Ramp::IsHabitrail() const
 {
    return m_d.m_type == RampType4Wire
        || m_d.m_type == RampType1Wire
@@ -989,7 +989,7 @@ bool Ramp::isHabitrail() const
        || m_d.m_type == RampType3WireRight;
 }
 
-void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf)
+void Ramp::CreateWire(const int numRings, const int numSegments, const Vertex2D * const midPoints, Vertex3D_NoTex2 * const rgvbuf) const
 {
    Vertex3Ds prevB;
    for (int i = 0, index = 0; i < numRings; i++)
@@ -1971,7 +1971,7 @@ void Ramp::ExportMesh(ObjLoader& loader)
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
       loader.WriteObjectName(name);
-      if (!isHabitrail())
+      if (!IsHabitrail())
       {
          Vertex3D_NoTex2 *rampMesh = nullptr;
          GenerateRampMesh(&rampMesh);

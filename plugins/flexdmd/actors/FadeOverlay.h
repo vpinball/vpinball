@@ -7,7 +7,7 @@ class FadeOverlay final : public Actor
 public:
    FadeOverlay(const FlexDMD* pFlexDMD, const string& name)
       : Actor(pFlexDMD, name) { }
-   ~FadeOverlay() = default;
+   ~FadeOverlay() override = default;
 
    float GetAlpha() const { return m_alpha; }
    void SetAlpha(float alpha) { m_alpha = alpha; }

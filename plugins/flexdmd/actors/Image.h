@@ -10,7 +10,7 @@ class Bitmap;
 class Image final : public Actor
 {
 public:
-   ~Image();
+   ~Image() override;
 
    static Image* Create(FlexDMD* pFlexDMD, AssetManager* pAssetManager, const string& image, const string& name);
 

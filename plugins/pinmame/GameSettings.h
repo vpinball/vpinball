@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
-class GameSettings
+class GameSettings final
 {
 public:
    GameSettings();

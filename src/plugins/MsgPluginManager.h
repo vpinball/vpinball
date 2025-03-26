@@ -19,7 +19,7 @@
 typedef void (*msgpi_load_plugin)(const uint32_t pluginId, const MsgPluginAPI* api);
 typedef void (*msgpi_unload_plugin)();
 
-class MsgPlugin
+class MsgPlugin final
 {
 public:
    MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
@@ -77,7 +77,7 @@ private:
    void* m_module = nullptr;
 };
 
-class MsgPluginManager
+class MsgPluginManager final
 {
 public:
    static MsgPluginManager& GetInstance();

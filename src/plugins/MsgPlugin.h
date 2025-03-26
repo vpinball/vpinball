@@ -17,7 +17,7 @@
 // that you're plugin will be broken by the upcoming updates.
 // WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
 //
-// This file defines a generic plugin API to allow sharing plugins accross virtual
+// This file defines a generic plugin API to allow sharing plugins across virtual
 // pinball application. It is minimalistic and only defines the core collaboration
 // mechanism. Then each application/plugin should define its API & messages.
 //
@@ -40,7 +40,7 @@
 //
 // Plugins are instantiated on a thread selected by the host which may or may not be 
 // the main application thread. Therefore, unless plugin is designed for a single host 
-// which explicitely allows it, plugins are not allowed to perform any operation limited
+// which explicitly allows it, plugins are not allowed to perform any operation limited
 // to the main application thread like most OS/UI methods.
 // 
 // A basic setting mechanism is also provided to allow easier integration.
@@ -98,7 +98,7 @@ typedef void (*msgpi_timer_callback)(void* userData);
 
 typedef struct MsgPluginAPI
 {
-   // Messageing
+   // Messaging
    unsigned int (MSGPIAPI *GetMsgID)(const char* name_space, const char* name);
    void (MSGPIAPI *SubscribeMsg)(const uint32_t endpointId, const unsigned int msgId, const msgpi_msg_callback callback, void* userData);
    void (MSGPIAPI *UnsubscribeMsg)(const unsigned int msgId, const msgpi_msg_callback callback);

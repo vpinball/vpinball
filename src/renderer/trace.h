@@ -13,7 +13,7 @@
 
 #define TRACE_FUNCTION()  ScopedTracer(WIDEN(__FUNCTION__))
 
-class ScopedTracer
+class ScopedTracer final
 {
 public:
    ScopedTracer(const WCHAR *name)

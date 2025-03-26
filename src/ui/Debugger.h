@@ -19,7 +19,6 @@ private:
     void LoadPosition();
     void SavePosition();
 
-private:
     CButton m_playButton;
     CButton m_pauseButton;
     CButton m_stepButton;

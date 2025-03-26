@@ -118,7 +118,7 @@ public:
       DISABLE_BACKDROP = 1 << 5,  // Disable backdrop, used for VR and cabinet rendering (background is just black for these)
    };
    unsigned int m_render_mask = DEFAULT; // Active pass render bit mask
-   inline bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
+   bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
 
    ToneMapper m_toneMapper = TM_AGX;
    bool m_HDRforceDisableToneMapper = true;

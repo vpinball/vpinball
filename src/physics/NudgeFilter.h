@@ -8,7 +8,7 @@
 # define IF_DEBUG_NUDGE(code)
 #endif
 
-class NudgeFilter
+class NudgeFilter final
 {
 public:
    NudgeFilter(const char * axis);

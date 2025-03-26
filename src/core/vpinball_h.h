@@ -56,9 +56,9 @@ public:
         PASTE = 1,
         PASTE_AT = 2
     };
-    
+
    VPinball();
-   virtual ~VPinball();
+   ~VPinball() override;
 
    void ShowSubDialog(CDialog& dlg, const bool show);
 
@@ -279,19 +279,19 @@ public:
 #endif
 
 protected:
-   virtual void PreCreate(CREATESTRUCT& cs);
-   virtual void PreRegisterClass(WNDCLASS& wc);
-   virtual void OnClose();
-   virtual void OnDestroy();
-   virtual int  OnCreate(CREATESTRUCT& cs);
-   virtual LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual void OnInitialUpdate();
-   virtual BOOL OnCommand(WPARAM wparam, LPARAM lparam);
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam);
-   virtual LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam);
+   void PreCreate(CREATESTRUCT& cs) override;
+   void PreRegisterClass(WNDCLASS& wc) override;
+   void OnClose() override;
+   void OnDestroy() override;
+   int  OnCreate(CREATESTRUCT& cs) override;
+   LRESULT OnPaint(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   void OnInitialUpdate() override;
+   BOOL OnCommand(WPARAM wparam, LPARAM lparam) override;
+   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   LRESULT OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam) override;
+   LRESULT OnMDIDestroyed(UINT msg, WPARAM wparam, LPARAM lparam) override;
 #ifndef __STANDALONE__
-   virtual DockPtr NewDockerFromID(int id);
+   DockPtr NewDockerFromID(int id) override;
 #endif
 
 private:

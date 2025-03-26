@@ -2,7 +2,7 @@
 
 #pragma once
 
-class HitTimer
+class HitTimer final
 {
 public:
    HitTimer(const char* name, int interval, IFireEvents* handler)

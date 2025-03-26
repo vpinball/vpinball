@@ -8,7 +8,7 @@
 
 #include <cassert>
 
-class Game
+class Game final
 {
 public:
    Game(Controller* pController, const PinmameGame& pinmameGame)

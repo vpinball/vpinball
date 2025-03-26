@@ -78,7 +78,7 @@ public:
    ~Texture();
 
    // ILoadable callback
-   bool LoadToken(const int id, BiffReader * const pbr);
+   bool LoadToken(const int id, BiffReader * const pbr) override;
 
    HRESULT SaveToStream(IStream *pstream, const PinTable *pt);
    HRESULT LoadFromStream(IStream *pstream, int version, PinTable *pt, bool resize_on_low_mem);

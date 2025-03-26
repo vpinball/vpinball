@@ -42,7 +42,6 @@ private:
    vec3 InvGamma(const vec3& rgb) const;
    vec3 LinearRGBtoXYZ(const vec3& linearRGB) const;
 
-private:
    // User settings
    bool m_sRGBDisplay = true;
    float m_brightness = 1.f;

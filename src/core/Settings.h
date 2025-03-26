@@ -156,7 +156,7 @@ private:
       robin_hood::unordered_map<Section, robin_hood::unordered_flat_set<string>> m_validatedKeys;
    #endif
 
-   // Shared accross all settings
+   // Shared across all settings
    static vector<OptionDef> m_pluginOptions;
    static vector<string> m_settingKeys;
 };

@@ -3,7 +3,7 @@
 #include "common.h"
 #include "ScriptablePlugin.h"
 
-class Games
+class Games final
 {
 public:
    Games();

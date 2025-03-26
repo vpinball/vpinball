@@ -49,7 +49,7 @@ public:
    int GetSaveSize() const;
    HRESULT SaveData(IStream* pstm, HCRYPTHASH hcrypthash, const bool saveForUndo);
    HRESULT LoadData(IStream* pstm, PinTable* ppt, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   bool LoadToken(const int id, BiffReader* const pbr);
+   bool LoadToken(const int id, BiffReader* const pbr) override;
 
    // Rendering
    void RenderSetup(class Renderer* renderer);
@@ -78,7 +78,7 @@ private:
    vec4 m_reflection_plane = vec4(0.f, 0.f, 1.f, 0.f); // Plane equation: xyz is the normal, w is the projected distance
    vec4 m_reflection_clip_bounds;
    ReflectionMode m_reflection_mode = REFL_DYNAMIC;
-   bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having having reflections of playfield lightmaps onto the playfield itself
+   bool m_disableLightReflection = false; // Disable rendering of lightmaps in reflection render probes, needed to avoid having reflections of playfield lightmaps onto the playfield itself
 
    // Properties used for rendering (not saved)
    Renderer* m_renderer = nullptr;
@@ -89,6 +89,6 @@ private:
    RenderTarget* m_blurRT = nullptr;
    RenderTarget* m_prerenderRT = nullptr;
    RenderTarget* m_dynamicRT = nullptr;
-   RenderPass* m_finalPass = nullptr; // Pass after rougness has been applied
+   RenderPass* m_finalPass = nullptr; // Pass after roughness has been applied
    RenderPass* m_copyPass = nullptr; // Pass that performs the screen space copy
 };

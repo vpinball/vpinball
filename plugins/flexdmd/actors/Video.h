@@ -5,7 +5,7 @@
 class Video final : public AnimatedActor 
 {
 public:
-   ~Video();
+   ~Video() override;
 
    static Video* Create(FlexDMD* pFlexDMD, const string& path, const string& name, bool loop);
 

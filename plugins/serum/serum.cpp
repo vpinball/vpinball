@@ -267,7 +267,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    // Setup Serum on the selected DMD
    const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
    assert(msg != nullptr && msg->vpmPath != nullptr && msg->gameId != nullptr);
-   std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor");
+   std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor"s);
    char crzFolder[512];
    if (!altColorPath.empty())
       strcpy_s(crzFolder, sizeof(crzFolder), altColorPath.c_str());

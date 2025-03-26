@@ -587,7 +587,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
          VPXTableInfo tableInfo;
          vpxApi->GetTableInfo(&tableInfo);
          std::filesystem::path tablePath = tableInfo.path;
-         pinmamePath = find_directory_case_insensitive(tablePath.parent_path().string(), "pinmame");
+         pinmamePath = find_directory_case_insensitive(tablePath.parent_path().string(), "pinmame"s);
       }
       if (pinmamePath.empty())
       {
@@ -601,7 +601,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
       {
          // FIXME implement a last resort or just ask the user to define its path setup in the settings ?
          #if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-            //pinmamePath = find_directory_case_insensitive(g_pvp->m_szMyPath, "pinmame");
+            //pinmamePath = find_directory_case_insensitive(g_pvp->m_szMyPath, "pinmame"s);
          #else
             //pinmamePath = string(getenv("HOME")) + PATH_SEPARATOR_CHAR + ".pinmame" + PATH_SEPARATOR_CHAR;
          #endif

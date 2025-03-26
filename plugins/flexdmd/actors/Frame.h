@@ -7,7 +7,7 @@ class Frame final : public Actor
 public:
    Frame(FlexDMD* pFlexDMD, const string& name)
       : Actor(pFlexDMD, name) { }
-   ~Frame() = default;
+   ~Frame() override = default;
 
    ActorType GetType() const override { return AT_Frame; }
 
