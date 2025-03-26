@@ -32,11 +32,11 @@
       #include "ui/dialogs/VROptionsDialog.h"
    #endif
 
-   #define OVERRIDE
+   #define OVERRIDE override
 #else
    #include "standalone/inc/webserver/WebServer.h"
 
-   #define OVERRIDE override
+   #define OVERRIDE
 #endif
 
 class PinTable;
