@@ -1257,15 +1257,15 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 		errorStream << L"Compile error";
 
 #ifndef __STANDALONE__
-	errorStream << std::endl;
-	errorStream << L"-------------" << std::endl;
+	errorStream << '\n';
+	errorStream << L"-------------" << '\n';
 #else
 	errorStream << L": ";
 #endif
 	errorStream << L"Line: " << nLine << L", Character: " << nChar;
 
 #ifndef __STANDALONE__
-	errorStream << std::endl;
+	errorStream << '\n';
 #else
 	errorStream << L", ";
 #endif
@@ -1273,8 +1273,8 @@ STDMETHODIMP CodeViewer::OnScriptError(IActiveScriptError *pscripterror)
 	errorStream << (exception.bstrDescription ? exception.bstrDescription : L"Description unavailable");
 
 #ifndef __STANDALONE__
-	errorStream << std::endl;
-	errorStream << std::endl;
+	errorStream << '\n';
+	errorStream << '\n';
 #endif
 
 	SysFreeString(bstr);

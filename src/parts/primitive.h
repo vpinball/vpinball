@@ -361,7 +361,7 @@ private:
       const Vertex3Ds &vj, const bool isUI);
 
    void CalculateBuiltinOriginal();
-   void WaitForMeshDecompression();
+   static void WaitForMeshDecompression();
 
    PropertyPane *m_propVisual;
    PropertyPane *m_propPosition;
@@ -394,7 +394,7 @@ private:
    // 1 to 4				: 4				: Top Vertices (no special order, will be sorted via Indices)
    // 5					: 1				: Middle Point Bottom
    // 6 to 9				: 4				: Bottom Vertices
-   // 10 to 13		 		: 4				: Top Sides (with normals to the side)
+   // 10 to 13				: 4				: Top Sides (with normals to the side)
    // 14 to 17				: 4				: bottom Sides (With Normals to the side)
    // These Vertices will always be complete. even if the user does not want to draw them (sides disabled or top/bottom disabled).
    // maybe they are not updated anymore, but they will be there.

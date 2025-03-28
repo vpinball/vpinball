@@ -507,7 +507,7 @@ void Bumper::ExportMesh(ObjLoader& loader)
 
 // Ported at: VisualPinball.Engine/VPT/Bumper/BumperMeshGenerator.cs
 
-void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
+void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf) const
 {
    const float scalexy = m_d.m_radius;
    for (unsigned int i = 0; i < bumperBaseNumVertices; i++)
@@ -527,7 +527,7 @@ void Bumper::GenerateBaseMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
+void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf) const
 {
    const float scalexy = m_d.m_radius;
 
@@ -548,7 +548,7 @@ void Bumper::GenerateSocketMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
+void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf) const
 {
    const float scalexy = m_d.m_radius;
 
@@ -569,7 +569,7 @@ void Bumper::GenerateRingMesh(Vertex3D_NoTex2 *buf)
    }
 }
 
-void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf)
+void Bumper::GenerateCapMesh(Vertex3D_NoTex2 *buf) const
 {
    const float scalexy = m_d.m_radius*2.0f;
 

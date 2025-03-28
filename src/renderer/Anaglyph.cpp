@@ -18,17 +18,17 @@ void Anaglyph::LoadSetupFromRegistry(const int glassesSet)
    m_rightEyeContrast = table->m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DRightContrast"s, 1.0f);
 
    // Default (partial) calibration
-   static const vec3 defaultColors[] = {
-      /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-      /* GM */ vec3(0.06f, 0.96f, 0.09f), vec3(0.61f, 0.16f, 0.66f),
-      /* BA */ vec3(0.05f, 0.16f, 0.96f), vec3(0.61f, 0.66f, 0.09f),
-      /* CR */ vec3(0.06f, 0.92f, 0.28f), vec3(0.95f, 0.19f, 0.07f),
-      /* MG */ vec3(0.61f, 0.16f, 0.66f), vec3(0.06f, 0.96f, 0.09f),
-      /* AB */ vec3(0.61f, 0.66f, 0.09f), vec3(0.05f, 0.16f, 0.96f),
-      /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-      /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-      /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
-      /* RC */ vec3(0.95f, 0.19f, 0.07f), vec3(0.06f, 0.92f, 0.28f),
+   static constexpr vec3 defaultColors[] = {
+      /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
+      /* GM */ vec3{0.06f, 0.96f, 0.09f}, vec3{0.61f, 0.16f, 0.66f},
+      /* BA */ vec3{0.05f, 0.16f, 0.96f}, vec3{0.61f, 0.66f, 0.09f},
+      /* CR */ vec3{0.06f, 0.92f, 0.28f}, vec3{0.95f, 0.19f, 0.07f},
+      /* MG */ vec3{0.61f, 0.16f, 0.66f}, vec3{0.06f, 0.96f, 0.09f},
+      /* AB */ vec3{0.61f, 0.66f, 0.09f}, vec3{0.05f, 0.16f, 0.96f},
+      /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
+      /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
+      /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f},
+      /* RC */ vec3{0.95f, 0.19f, 0.07f}, vec3{0.06f, 0.92f, 0.28f}
    };
 
    const string prefKey = "Anaglyph" + std::to_string(glassesSet + 1);
@@ -93,12 +93,12 @@ vec3 Anaglyph::InvGamma(const vec3& rgb) const
       return vec3(powf(rgb.x, m_displayGamma), powf(rgb.y, m_displayGamma), powf(rgb.z, m_displayGamma));
 }
 
-vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB) const
+vec3 Anaglyph::LinearRGBtoXYZ(const vec3& linearRGB)
 {
-   vec3 xyz;
-   xyz.x = 0.4124564f * linearRGB.x + 0.3575761f * linearRGB.y + 0.1804375f * linearRGB.z;
-   xyz.y = 0.2126729f * linearRGB.x + 0.7151522f * linearRGB.y + 0.0721750f * linearRGB.z;
-   xyz.z = 0.0193339f * linearRGB.x + 0.1191920f * linearRGB.y + 0.9503041f * linearRGB.z;
+   vec3 xyz{
+      0.4124564f * linearRGB.x + 0.3575761f * linearRGB.y + 0.1804375f * linearRGB.z,
+      0.2126729f * linearRGB.x + 0.7151522f * linearRGB.y + 0.0721750f * linearRGB.z,
+      0.0193339f * linearRGB.x + 0.1191920f * linearRGB.y + 0.9503041f * linearRGB.z};
    return xyz;
 }
 
@@ -420,11 +420,11 @@ void Anaglyph::Update()
       break;
    }
    }
-      
+
    // Common parameters for all anaglyph composition filters
    const Matrix3D matLeftContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_reversedColorPair ? m_rightEyeContrast : m_leftEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
    const Matrix3D matRightContrast = Matrix3D::MatrixTranslate(-0.5f, -0.5f, -0.5f) * Matrix3D::MatrixScale(m_reversedColorPair ? m_leftEyeContrast : m_rightEyeContrast) * Matrix3D::MatrixTranslate(0.5f, 0.5f, 0.5f);
-   const Matrix3D matGrayscale = Matrix3D(0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f);
+   static constexpr Matrix3D matGrayscale{0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.212655f, 0.715158f, 0.072187f, 0.f, /**/ 0.f, 0.f, 0.f, 1.f};
    const Matrix3D matSaturation = Matrix3D::MatrixScale(1.f - m_saturation) * matGrayscale + Matrix3D::MatrixScale(m_saturation);
    const Matrix3D matBrightness = Matrix3D::MatrixScale(m_brightness); 
    m_rgb2AnaglyphLeft = matBrightness * matLeftContrast * m_rgb2AnaglyphLeft * matSaturation;

@@ -30,7 +30,7 @@ class HitBall final : public HitObject
 {
 public:
    HitBall();
-   ~HitBall();
+   ~HitBall() override;
 
    void UpdateDisplacements(const float dtime);
    void UpdateVelocities();

@@ -15,8 +15,8 @@ public:
 
 protected:
    VideoOptionPropPage(UINT templateID, LPCTSTR title, Settings& appSettings, Settings& tableSettings);
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
 
    Settings& GetEditedSettings() const { return *m_editedSettings; }
    bool IsTableSettings() const { return m_editedSettings == &m_appSettings; }
@@ -70,18 +70,18 @@ class RenderOptPage final : public VideoOptionPropPage
 {
 public:
    RenderOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~RenderOptPage() override { }
+   ~RenderOptPage() override { }
 
    RenderOptPage(const RenderOptPage&) = delete;
    RenderOptPage& operator=(const RenderOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
    void ResetVideoPreferences(int profile);
@@ -151,19 +151,19 @@ class DisplayStyleOptPage final : public VideoOptionPropPage
 {
 public:
    DisplayStyleOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~DisplayStyleOptPage() override { }
+   ~DisplayStyleOptPage() override { }
 
    DisplayStyleOptPage(const DisplayStyleOptPage&) = delete;
    DisplayStyleOptPage& operator=(const DisplayStyleOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
    void LoadProfile(const int n);
    void ResetProfile(const int n);
@@ -191,18 +191,18 @@ class CabinetOptPage final : public VideoOptionPropPage
 {
 public:
    CabinetOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~CabinetOptPage() override { }
+   ~CabinetOptPage() override { }
 
    CabinetOptPage(const RenderOptPage&) = delete;
    CabinetOptPage& operator=(const CabinetOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
    CEdit m_playerX;
@@ -221,18 +221,18 @@ class PFViewOptPage final : public VideoOptionPropPage
 {
 public:
    PFViewOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~PFViewOptPage() override { }
+   ~PFViewOptPage() override { }
 
    PFViewOptPage(const PFViewOptPage&) = delete;
    PFViewOptPage& operator=(const PFViewOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
    CComboBox m_viewMode;
@@ -242,35 +242,35 @@ class ScoreViewOptPage final : public VideoOptionPropPage
 {
 public:
    ScoreViewOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~ScoreViewOptPage() override { }
+   ~ScoreViewOptPage() override { }
 
    ScoreViewOptPage(const ScoreViewOptPage&) = delete;
    ScoreViewOptPage& operator=(const ScoreViewOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 };
 
 class AlphaViewOptPage final : public VideoOptionPropPage
 {
 public:
    AlphaViewOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~AlphaViewOptPage() override { }
+   ~AlphaViewOptPage() override { }
 
    AlphaViewOptPage(const AlphaViewOptPage&) = delete;
    AlphaViewOptPage& operator=(const AlphaViewOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
    CComboBox m_viewMode;
@@ -286,12 +286,12 @@ public:
    BackglassViewOptPage& operator=(const BackglassViewOptPage&) = delete;
 
 protected:
-   virtual BOOL OnInitDialog();
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-   virtual BOOL OnApply() override;
+   BOOL OnInitDialog() override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   BOOL OnApply() override;
 
-   virtual void LoadSettings(Settings& settings);
-   virtual void SaveSettings(Settings& settings, bool saveAll);
+   void LoadSettings(Settings& settings) override;
+   void SaveSettings(Settings& settings, bool saveAll) override;
 
 private:
    CComboBox m_viewMode;
@@ -734,7 +734,7 @@ void VideoOptionPropPage::SelectAspectRatio(int width, int height)
 {
    double best = DBL_MAX;
    int bestAR;
-   for (int j = 1; j < std::size(aspectRatios); j++)
+   for (int j = 1; j < (int)std::size(aspectRatios); j++)
    {
       const double fit = abs(1. - (double)(height * aspectRatios[j].x) / (double)(width * aspectRatios[j].y));
       if (fit < best)

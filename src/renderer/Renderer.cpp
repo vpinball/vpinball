@@ -1198,7 +1198,7 @@ void Renderer::RenderFrame()
    }
    else
    {
-      RenderStaticPrepass(); // Update staticly prerendered parts if needed
+      RenderStaticPrepass(); // Update statically prerendered parts if needed
       m_renderDevice->SetRenderTarget("Render Scene"s, GetMSAABackBufferTexture());
       m_renderDevice->AddRenderTargetDependency(m_staticPrepassRT);
       m_renderDevice->BlitRenderTarget(m_staticPrepassRT, GetMSAABackBufferTexture());
@@ -1540,7 +1540,7 @@ void Renderer::RenderStaticPrepass()
    if (IsUsingStaticPrepass())
    {
       PLOGI << "Performing prerendering of static parts."; // For profiling
-      m_renderDevice->SetMainTextureDefaultFiltering(SF_BILINEAR);
+      RenderDevice::SetMainTextureDefaultFiltering(SF_BILINEAR);
    }
 
    //#define STATIC_PRERENDER_ITERATIONS_KOROBOV 7.0 // for the (commented out) lattice-based QMC oversampling, 'magic factor', depending on the the number of iterations!
@@ -1629,7 +1629,7 @@ void Renderer::RenderStaticPrepass()
 
    // if rendering static/with heavy oversampling, re-enable the aniso/trilinear filter now for the normal rendering
    const bool forceAniso = m_table->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   m_renderDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    // Now finalize static buffer with static AO
    if (GetAOMode() == 1)

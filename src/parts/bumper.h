@@ -148,10 +148,10 @@ public:
 
 private:
    void UpdateSkirt(const bool doCalculation);
-   void GenerateBaseMesh(Vertex3D_NoTex2 *buf);
-   void GenerateSocketMesh(Vertex3D_NoTex2 *buf);
-   void GenerateRingMesh(Vertex3D_NoTex2 *buf);
-   void GenerateCapMesh(Vertex3D_NoTex2 *buf);
+   void GenerateBaseMesh(Vertex3D_NoTex2 *buf) const;
+   void GenerateSocketMesh(Vertex3D_NoTex2 *buf) const;
+   void GenerateRingMesh(Vertex3D_NoTex2 *buf) const;
+   void GenerateCapMesh(Vertex3D_NoTex2 *buf) const;
 
    PinTable *m_ptable;
 

@@ -672,7 +672,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
    // Setup anisotropic filtering
    const bool forceAniso = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "ForceAnisotropicFiltering"s, true);
-   m_renderer->m_renderDevice->SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
+   RenderDevice::SetMainTextureDefaultFiltering(forceAniso ? SF_ANISOTROPIC : SF_TRILINEAR);
 
    #if defined(EXT_CAPTURE)
    if (m_renderer->m_stereo3D == STEREO_VR)
@@ -726,20 +726,20 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_getDmdSrcMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   m_getDmdMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
+   m_getDmdSrcMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
+   m_getDmdMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
+   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
-   m_getSegSrcMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
-   m_getSegMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
-   m_onSegChangedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
+   m_getSegSrcMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
+   m_getSegMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
+   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
-   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
+   m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
-   m_onGameStartMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
-   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_onUpdatePhysicsMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
+   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_onUpdatePhysicsMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
 
    m_scoreView.Select(m_scoreviewOutput);
 
@@ -843,7 +843,7 @@ Player::~Player()
 #endif
 
    // Signal plugins early since most fields will become invalid
-   const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
+   const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
 
    // signal the script that the game is now exited to allow any cleanup
@@ -859,19 +859,19 @@ Player::~Player()
 
    // Release plugin message Ids
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onSegChangedMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getSegSrcMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getSegMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onSegChangedMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_getSegSrcMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_getSegMsgId);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdChanged);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onDmdChangedMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdSrcMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_getDmdMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_getDmdSrcMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_getDmdMsgId);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onAudioUpdatedMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onGameStartMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(onGameEndMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onPrepareFrameMsgId);
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onUpdatePhysicsMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onAudioUpdatedMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(onGameEndMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onPrepareFrameMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onUpdatePhysicsMsgId);
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
@@ -2191,7 +2191,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
             {
                if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
                {
-                  display->displays.push_back(vector<SegElementType>(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]));
+                  display->displays.emplace_back(vector<SegElementType>(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]));
                   display->nElements += getSrcMsg.entries[i].nElements;
                }
             }
@@ -2217,7 +2217,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          {
             if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
             {
-               display->displays.push_back(vector<SegElementType>(getSrcMsg.entries[i].elementType[0], getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]));
+               display->displays.emplace_back(vector<SegElementType>(getSrcMsg.entries[i].elementType[0], getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]));
                display->nElements += getSrcMsg.entries[i].nElements;
             }
          }

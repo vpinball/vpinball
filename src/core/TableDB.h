@@ -8,7 +8,7 @@ public:
    TableDB();
 
    void Load();
-   int GetBestSizeMatch(float width, float height, float topGlassHeight, float bottomGlassHeight = -1.f);
+   int GetBestSizeMatch(float width, float height, float topGlassHeight, float bottomGlassHeight = -1.f) const;
 
    struct Entry
    {

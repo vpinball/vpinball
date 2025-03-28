@@ -291,7 +291,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
 
    // Compute frustum Z bounds (near/far plane), taking in account base view but also reflected point of view to avoid depth clipping in reflection probes
    float zNear, zFar;
-   table->ComputeNearFarPlane(bounds, matView, 1.f, zNear, zFar);
+   PinTable::ComputeNearFarPlane(bounds, matView, 1.f, zNear, zFar);
    for (const auto probe : table->m_vrenderprobe)
    {
       if (probe->GetType() == RenderProbe::PLANE_REFLECTION)
@@ -303,7 +303,7 @@ void ViewSetup::ComputeMVP(const PinTable* const table, const float aspect, cons
          const Matrix3D reflect = Matrix3D::MatrixPlaneReflection(pn, plane.w);
          const Matrix3D probeView = reflect * matView;
          float zNearProbe, zFarProbe;
-         table->ComputeNearFarPlane(bounds, probeView, 1.f, zNearProbe, zFarProbe);
+         PinTable::ComputeNearFarPlane(bounds, probeView, 1.f, zNearProbe, zFarProbe);
          zNear = min(zNear, zNearProbe);
          zFar = max(zFar, zFarProbe);
       }

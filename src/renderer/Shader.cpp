@@ -441,7 +441,7 @@ Shader::ShaderUniform Shader::shaderUniformNames[SHADER_UNIFORM_COUNT] {
 #undef SHADER_UNIFORM
 #undef SHADER_SAMPLER
 
-ShaderUniforms Shader::getUniformByName(const string& name)
+ShaderUniforms Shader::getUniformByName(const string& name) const
 {
    for (int i = 0; i < SHADER_UNIFORM_COUNT; ++i)
       if (name == shaderUniformNames[i].name)
@@ -466,7 +466,7 @@ const string Shader::shaderAttributeNames[SHADER_ATTRIBUTE_COUNT]
 };
 #undef SHADER_ATTRIBUTE
 
-ShaderAttributes Shader::getAttributeByName(const string& name)
+ShaderAttributes Shader::getAttributeByName(const string& name) const
 {
    for (int i = 0; i < SHADER_ATTRIBUTE_COUNT; ++i)
       if (name == shaderAttributeNames[i])

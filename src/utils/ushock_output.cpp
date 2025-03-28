@@ -232,17 +232,17 @@ static U32 sMask = 0;
 
 // This is the main interface to turn output on and off.
 // Once set, the value will remain set until another set call is made.
-// The output parameter uses any combination of HID_OUTPUT enum.
-void ushock_output_set(const U08 output, const bool on)
+// The output_mask parameter uses any combination of HID_OUTPUT enum.
+void ushock_output_set(const U08 output_mask, const bool on)
 {
    // Check if the outputs are being turned on.
    if (on)
    {
-      sMask = (sMask | output);
+      sMask |= output_mask;
    }
    else
    {
-      sMask = (sMask & ~output);
+      sMask &= ~output_mask;
    }
 }
 

@@ -40,7 +40,7 @@ private:
    void Update();
    vec3 Gamma(const vec3& rgb) const;
    vec3 InvGamma(const vec3& rgb) const;
-   vec3 LinearRGBtoXYZ(const vec3& linearRGB) const;
+   static vec3 LinearRGBtoXYZ(const vec3& linearRGB);
 
    // User settings
    bool m_sRGBDisplay = true;

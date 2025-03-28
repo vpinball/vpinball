@@ -604,7 +604,7 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
    assert(type == DT_SZ || type == DT_DWORD);
    if (key.empty() || (type != DT_SZ && type != DT_DWORD))
       return false;
-   const string copy = type == DT_SZ ? std::string((char*)pvalue) : std::to_string(*(DWORD *)pvalue);
+   const string copy = type == DT_SZ ? std::string((const char*)pvalue) : std::to_string(*(const DWORD *)pvalue);
    if (m_parent && overrideMode)
    {
       string value;

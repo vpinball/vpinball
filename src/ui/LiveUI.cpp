@@ -1620,9 +1620,9 @@ void LiveUI::OpenTweakMode()
    for (int j = 0; j < Settings::GetNPluginSections(); j++)
    {
       int nOptions = 0;
-      const int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      const int nCustomOptions = (int)Settings::GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
-         if ((m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + j) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
+         if ((Settings::GetPluginSettings()[i].section == Settings::Plugin00 + j) && (Settings::GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             nOptions++;
       if (nOptions > 0)
          m_tweakPages.push_back((TweakPage)(TP_Plugin00 + j));
@@ -1722,9 +1722,9 @@ void LiveUI::UpdateTweakPage()
    }
    default: // Plugin options
    {
-      const int nCustomOptions = (int)m_live_table->m_settings.GetPluginSettings().size();
+      const int nCustomOptions = (int)Settings::GetPluginSettings().size();
       for (int i = 0; i < nCustomOptions; i++)
-         if (m_live_table->m_settings.GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00) && (m_live_table->m_settings.GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
+         if (Settings::GetPluginSettings()[i].section == Settings::Plugin00 + (m_tweakPages[m_activeTweakPageIndex] - TP_Plugin00) && (Settings::GetPluginSettings()[i].showMask & VPX_OPT_SHOW_TWEAK))
             m_tweakPageOptions.push_back((BackdropSetting)(BS_Custom + i));
       break;
    }
@@ -1932,7 +1932,7 @@ void LiveUI::HandleTweakInput()
          default:
             if (activeTweakSetting >= BS_Custom)
             {
-               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
+               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : Settings::GetPluginSettings();
                if (activeTweakSetting < BS_Custom + (int)customOptions.size())
                {
                   const auto& opt = customOptions[activeTweakSetting - BS_Custom];
@@ -1962,7 +1962,7 @@ void LiveUI::HandleTweakInput()
                      if (opt.section == Settings::TableOption)
                         m_live_table->FireOptionEvent(1); // Table option changed event
                      else
-                        VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
+                        VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                   }
                   else
                      modified = false;
@@ -2058,7 +2058,7 @@ void LiveUI::HandleTweakInput()
             // Custom table/plugin options
             if (m_tweakPages[m_activeTweakPageIndex] >= TP_TableOption)
             {
-               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
+               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : Settings::GetPluginSettings();
                message = m_tweakPages[m_activeTweakPageIndex] > TP_TableOption ? "Plugin options"s : "Table options"s;
                const int nOptions = (int)customOptions.size();
                for (int i2 = 0; i2 < nOptions; i2++)
@@ -2116,8 +2116,8 @@ void LiveUI::HandleTweakInput()
             }
             else if (m_tweakPages[m_activeTweakPageIndex] == TP_PointOfView)
             {
-               for (int i = BS_ViewMode; i < BS_WndBottomZOfs; i++)
-                  m_tweakState[i] = 2;
+               for (int i2 = BS_ViewMode; i2 < BS_WndBottomZOfs; i2++)
+                  m_tweakState[i2] = 2;
                ViewSetupID id = table->m_BG_current_set;
                ViewSetup &viewSetup = table->mViewSetups[id];
                viewSetup.mViewportRotation = 0.f;
@@ -2219,7 +2219,7 @@ void LiveUI::HandleTweakInput()
                   PushNotification("Plugin options reset to default values"s, 5000);
                else
                   PushNotification("Table options reset to default values"s, 5000);
-               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
+               const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : Settings::GetPluginSettings();
                const int nOptions = (int)customOptions.size();
                for (int i2 = 0; i2 < nOptions; i2++)
                {
@@ -2235,7 +2235,7 @@ void LiveUI::HandleTweakInput()
                   }
                }
                if (m_tweakPages[m_activeTweakPageIndex] > TP_TableOption)
-                  VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
+                  VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_SETTINGS_CHANGED), nullptr);
                else
                   m_live_table->FireOptionEvent(2); // custom option resetted event
             }
@@ -2353,7 +2353,7 @@ void LiveUI::UpdateTweakModeUI()
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
          if (setting >= BS_Custom)
          {
-            const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : m_live_table->m_settings.GetPluginSettings();
+            const vector<Settings::OptionDef> &customOptions = m_tweakPages[m_activeTweakPageIndex] == TP_TableOption ? m_live_table->m_settings.GetTableSettings() : Settings::GetPluginSettings();
             if (setting - BS_Custom >= (int)customOptions.size())
                continue;
             const Settings::OptionDef &opt = customOptions[setting - BS_Custom];

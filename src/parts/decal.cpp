@@ -810,7 +810,7 @@ void Decal::Render(const unsigned int renderMask)
    else
    {
       m_rd->SetRenderStateDepthBias(0.0f);
-      const vec4 staticColor(1.0f, 1.0f, 1.0f, 1.0f);
+      static constexpr vec4 staticColor { 1.0f, 1.0f, 1.0f, 1.0f };
       m_rd->m_basicShader->SetVector(SHADER_cBase_Alpha, &staticColor);
    }
 

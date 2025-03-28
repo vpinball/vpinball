@@ -22,7 +22,7 @@ void TableDB::Load()
       std::vector<std::string> fields;
       while (dbFile.good())
       {
-         char c = dbFile.get();
+         char c = (char)dbFile.get();
          if (!inQuotes && c == '"')
             inQuotes = true;
          else if (inQuotes && c == '"')
@@ -97,7 +97,7 @@ void TableDB::Load()
 // Find the nearest match in the database, based on given size, search being mainly weighted on the playfield size
 // since it is always well defined by table author, then top glass height (sometime right, but has been there for a 
 // long time), then bottom glass height if given (added in 10.8)
-int TableDB::GetBestSizeMatch(float width, float height, float topGlassHeight, float bottomGlassHeight)
+int TableDB::GetBestSizeMatch(float width, float height, float topGlassHeight, float bottomGlassHeight) const
 {
    int selection = -1;
    float bestErr = FLT_MAX;

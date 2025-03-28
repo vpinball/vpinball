@@ -398,7 +398,6 @@ void Flasher::UpdatePoint(int index, float x, float y)
      CComObject<DragPoint> *pdp = m_vdpoint[index];
      pdp->m_v.x = x;
      pdp->m_v.y = y;
-
 }
 
 HRESULT Flasher::SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo)
@@ -1236,7 +1235,7 @@ void Flasher::Render(const unsigned int renderMask)
    // Don't render if LightSequence in play and state is off
    if (m_lockedByLS && !m_inPlayState)
       return;
-   
+
    // Update lightmap before checking anything that uses alpha
    float alpha = (float) m_d.m_alpha;
    if (m_lightmap)

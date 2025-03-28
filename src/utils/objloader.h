@@ -42,7 +42,7 @@ public:
    {
       fprintf_s(m_fHandle, "usemtl %s\n", texelName.c_str());
    }
-   bool LoadMaterial(const string& filename, Material* const mat);
+   static bool LoadMaterial(const string& filename, Material* const mat);
    void WriteMaterial(const string& texelName, const string& texelFilename, const Material* const mat);
 
    const vector<Vertex3D_NoTex2>& GetVertices() const

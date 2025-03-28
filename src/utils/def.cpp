@@ -651,7 +651,7 @@ string create_hex_dump(const UINT8* buffer, size_t size)
          ss << ch;
       }
 
-      ss << std::endl;
+      ss << '\n';
    }
 
    return ss.str();

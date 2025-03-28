@@ -1095,7 +1095,7 @@ void Primitive::RenderSetup(RenderDevice *device)
       // this element gets rendered by rendering all other group primitives
       // the rest of the group is marked as skipped rendering
       const Material * groupMaterial = nullptr;
-      const Texture *groupTexel = nullptr;
+      const Texture * groupTexel = nullptr;
       size_t overall_size = 0;
       bool partOfGroup = false;
       vector<Primitive *> prims;
@@ -1252,7 +1252,7 @@ void Primitive::Render(const unsigned int renderMask)
    if (m_lockedByLS && !m_inPlayState)
       return;
    
-   // only render if we have dynamic reflections to render above the staticly prerendered primitive
+   // only render if we have dynamic reflections to render above the statically prerendered primitive
    RenderTarget *const reflections = reflection_probe ? reflection_probe->Render(renderMask) : nullptr;
    if (isDynamicOnly && m_d.m_staticRendering && (reflections == nullptr))
       return; 
@@ -1971,8 +1971,7 @@ INT_PTR CALLBACK Primitive::ObjImportProc(HWND hwndDlg, UINT uMsg, WPARAM wParam
                if (ReplaceExtensionFromFilename(szMatName, "mtl"s))
                {
                   Material * const mat = new Material();
-                  ObjLoader loader;
-                  if (loader.LoadMaterial(szMatName, mat))
+                  if (ObjLoader::LoadMaterial(szMatName, mat))
                   {
                      CComObject<PinTable> * const pActiveTable = g_pvp->GetActiveTable();
                      if (pActiveTable)

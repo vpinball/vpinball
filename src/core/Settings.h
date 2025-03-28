@@ -134,7 +134,7 @@ public:
    };
    void RegisterSetting(const Section section, const string &id, const unsigned int showMask, const string &name, float minValue, float maxValue, float step, float defaultValue, OptionUnit unit, const vector<string> &literals);
    const vector<OptionDef>& GetTableSettings() const { return m_tableOptions; }
-   const vector<OptionDef>& GetPluginSettings() const { return m_pluginOptions; }
+   static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
 
 private:
    enum DataType

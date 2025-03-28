@@ -33,7 +33,7 @@
 
 
 PinInput::PinInput()
-   : m_onActionEventMsgId(VPXPluginAPIImpl::GetInstance().GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
+   : m_onActionEventMsgId(VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_ACTION_CHANGED))
    #ifdef ENABLE_SDL_INPUT
       , m_joypmcancel(SDL_GAMEPAD_BUTTON_NORTH + 1)
    #endif
@@ -48,7 +48,7 @@ PinInput::PinInput()
 PinInput::~PinInput()
 {
    UnInit();
-   VPXPluginAPIImpl::GetInstance().ReleaseMsgID(m_onActionEventMsgId);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onActionEventMsgId);
 }
 
 #ifdef _WIN32

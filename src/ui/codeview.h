@@ -113,7 +113,7 @@ class CodeViewer :
 {
 public:
    CodeViewer() : m_haccel(nullptr), m_pProcessDebugManager(nullptr), m_parentLevel(0), m_lastErrorWidgetVisible(false), m_suppressErrorDialogs(false) {}
-   virtual ~CodeViewer();
+   ~CodeViewer() override;
 
    void Init(IScriptableHost *psh);
    void SetVisible(const bool visible);

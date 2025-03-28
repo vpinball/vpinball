@@ -506,7 +506,7 @@ void OpenPinDevHandler::Update()
             if (m->mappedAction != EnumAssignKeys::eCKeys)
                m_pininput.FireActionEvent(m->mappedAction, isDown);
             else
-               m_pininput.FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->vpmKey);
+               PinInput::FireGenericKeyEvent(isDown ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, m->vpmKey);
          }
       }
 

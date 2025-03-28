@@ -762,9 +762,9 @@ private:
    static TechniqueDef shaderTechniqueNames[SHADER_TECHNIQUE_COUNT];
    static const string shaderAttributeNames[SHADER_ATTRIBUTE_COUNT];
    static ShaderUniform shaderUniformNames[SHADER_UNIFORM_COUNT];
-   ShaderUniforms getUniformByName(const string& name);
-   ShaderAttributes getAttributeByName(const string& name);
-   ShaderTechniques getTechniqueByName(const string& name);
+   ShaderUniforms getUniformByName(const string& name) const;
+   ShaderAttributes getAttributeByName(const string& name) const;
+   static ShaderTechniques getTechniqueByName(const string& name);
 
    vector<ShaderUniforms> m_uniforms[SHADER_TECHNIQUE_COUNT]; // Uniforms used by each technique
 

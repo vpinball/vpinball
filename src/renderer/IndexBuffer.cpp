@@ -4,7 +4,7 @@
 #include "IndexBuffer.h"
 #include "RenderDevice.h"
 
-class SharedIndexBuffer : public SharedBuffer<IndexBuffer::Format, IndexBuffer>
+class SharedIndexBuffer final : public SharedBuffer<IndexBuffer::Format, IndexBuffer>
 {
 public:
    SharedIndexBuffer(IndexBuffer::Format fmt, bool stat) : SharedBuffer(fmt, fmt == IndexBuffer::Format::FMT_INDEX16 ? 2 : 4, stat) {}

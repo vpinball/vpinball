@@ -358,7 +358,7 @@ public:
    void UIRenderPass2(Sur *const psur) override;
    void Paint(HDC hdc);
    ISelect *HitTest(const int x, const int y);
-   void SetDirtyDraw();
+   void SetDirtyDraw() override;
 
    void Render3DProjection(Sur *const psur);
 
@@ -385,7 +385,7 @@ public:
    void RemoveSound(PinSound *const pps);
    HRESULT SaveSoundToStream(const PinSound *const pps, IStream *pstm);
    HRESULT LoadSoundFromStream(IStream *pstm, const int LoadFileVersion);
-   bool isWav(const string &szPath);
+   static bool isWav(const string &szPath);
    bool ExportImage(const Texture *const ppi, const char *const filename);
    Texture* ImportImage(const string &filename, const string &imageName);
    void RemoveImage(Texture *const ppi);
@@ -448,9 +448,9 @@ public:
 
    PinTable *GetPTable() override { return this; }
    const PinTable *GetPTable() const override { return this; }
-   const char *GetElementName(IEditable *pedit) const;
+   static const char *GetElementName(IEditable *pedit);
 
-   IEditable *GetElementByName(const char *const name);
+   IEditable *GetElementByName(const char *const name) const;
    void OnDelete();
 
    void DoLeftButtonDown(int x, int y, bool zoomIn);
@@ -484,8 +484,8 @@ public:
    HRESULT SaveToStorage(IStorage *pstg, VPXFileFeedback& feedback);
    HRESULT SaveInfo(IStorage *pstg, HCRYPTHASH hcrypthash);
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
-   HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
-   HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, string &output, HCRYPTHASH hcrypthash);
+   static HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
+   static HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, string &output, HCRYPTHASH hcrypthash);
    HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) override;
    HRESULT LoadGameFromFilename(const string &szFileName);
    HRESULT LoadGameFromFilename(const string &szFileName, VPXFileFeedback& feedback);
@@ -506,8 +506,8 @@ public:
    void SetZoom(float zoom);
    void SetMyScrollInfo();
 
-   void BeginUndo();
-   void EndUndo();
+   void BeginUndo() override;
+   void EndUndo() override;
    void Undo();
 
    void Uncreate(IEditable *pie);
@@ -561,7 +561,7 @@ public:
 
    FRect3D GetBoundingBox() const;
    void ComputeNearFarPlane(const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const;
-   void ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const;
+   static void ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar);
 
    bool RenderSolid() const { return m_renderSolid; }
 

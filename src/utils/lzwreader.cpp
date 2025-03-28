@@ -89,7 +89,7 @@ LZWReader::~LZWReader()
 //IMPORT int bad_code_count;
 
 
-int code_mask[13] = {
+static constexpr unsigned int code_mask[13] = {
    0,
    0x0001, 0x0003,
    0x0007, 0x000F,

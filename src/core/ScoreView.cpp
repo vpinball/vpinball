@@ -73,11 +73,6 @@ void ScoreView::Parse(const string& path, std::istream& content)
    layout.width = 1920.f;
    layout.height = 1080.f;
    layout.fit = ScoreView::Contain;
-   std::string line;
-   size_t indentSize = 0;
-   unsigned int lineIndex = 0;
-   size_t expectedIndent = 0;
-   float fValue;
    {
    Visual* visual = nullptr;
    const auto parseArray = [](const string& value) -> vector<float>
@@ -100,6 +95,11 @@ void ScoreView::Parse(const string& path, std::istream& content)
          pos1 = pos2;
       }
    };
+   std::string line;
+   size_t indentSize = 0;
+   unsigned int lineIndex = 0;
+   size_t expectedIndent = 0;
+   float fValue;
    while (std::getline(content, line))
    {
       lineIndex++;

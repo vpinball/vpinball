@@ -58,7 +58,7 @@ BOOL DrawingOrderDialog::OnInitDialog()
       IEditable * const pedit = m_drawingOrderSelect ? selection[i]->GetIEditable() : pt->m_allHitElements[i]->GetIEditable();
       if (pedit)
       {
-         const char * const szTemp = pt->GetElementName(pedit);
+         const char * const szTemp = PinTable::GetElementName(pedit);
          if (szTemp)
          {
             char textBuf[256];

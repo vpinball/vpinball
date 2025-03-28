@@ -23,8 +23,8 @@ namespace StackTrace
 	int GetSymbolInfo(Address address, char* symbol, int maxSymbolLen);
 	// Retrieves whole callstack (using given context), optionally with 4 first function
 	// arguments, in readable form.
-	// @pre	context != 0
-	void GetCallStack(void* context, bool includeArguments, char* callStackStr, int maxBufferLen);
+	// @pre	vcontext != 0
+	void GetCallStack(void* vcontext, bool includeArguments, char* callStackStr, int maxBufferLen);
 }
 
 }

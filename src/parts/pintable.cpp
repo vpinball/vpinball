@@ -374,7 +374,7 @@ STDMETHODIMP ScriptGlobalTable::get_Setting(BSTR Section, BSTR SettingName, BSTR
    const int sectionLen = (int)lstrlenW(Section);
    char *const sectionSz = new char[sectionLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, Section, -1, sectionSz, sectionLen + 1, nullptr, nullptr);
-   Settings::Section sectionId = g_pvp->m_settings.GetSection(sectionSz);
+   Settings::Section sectionId = Settings::GetSection(sectionSz);
    const int settingLen = (int)lstrlenW(SettingName);
    char *const settingSz = new char[settingLen + 1];
    WideCharToMultiByteNull(CP_ACP, 0, SettingName, -1, settingSz, settingLen + 1, nullptr, nullptr);
@@ -5010,7 +5010,7 @@ FRect3D PinTable::GetBoundingBox() const
    return bbox;
 }
 
-void PinTable::ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar) const
+void PinTable::ComputeNearFarPlane(const vector<Vertex3Ds> &bounds, const Matrix3D &matWorldView, const float scale, float &zNear, float &zFar)
 {
    zNear = FLT_MAX;
    zFar = -FLT_MAX;
@@ -5442,7 +5442,7 @@ void PinTable::DoContextMenu(int x, int y, const int menuid, ISelect *psel)
 #endif
 }
 
-const char *PinTable::GetElementName(IEditable *pedit) const
+const char *PinTable::GetElementName(IEditable *pedit)
 {
    WCHAR *elemName = nullptr;
    if (pedit)
@@ -5463,7 +5463,7 @@ const char *PinTable::GetElementName(IEditable *pedit) const
    return nullptr;
 }
 
-IEditable *PinTable::GetElementByName(const char * const name)
+IEditable *PinTable::GetElementByName(const char * const name) const
 {
    for (size_t i = 0; i < m_vedit.size(); i++)
    {
@@ -7884,7 +7884,7 @@ string PinTable::AuditTable(bool log) const
       //if (type == eItemPrimitive && prim->m_d.m_disableLightingBelow != 1.f && prim->m_d.m_staticRendering)
       //   ss << ". Warning: Primitive '" << prim->GetName() << "' has translucency enabled but is also marked as static. Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
       //if (type == eItemSurface && surf->m_d.m_disableLightingBelow != 1.f && surf->StaticRendering())
-      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be staticly rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
+      //   ss << ". Warning: Wall '" << surf->GetName() << "' has translucency enabled but will be statically rendered (not droppable with opaque materials). Translucency will not be applied on desktop, and it will look different between VR/headtracked and desktop.\r\n";
    }
 
    if ((FindIndexOf(identifiers, "loadvpm"s) != -1) || (FindIndexOf(identifiers, "loadvpmalt"s) != -1))
@@ -10849,14 +10849,14 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       {
       case eItemDispReel:
       {
-         const DispReel *const pReel = (DispReel *)pEdit;
+         const DispReel *const pReel = (const DispReel *)pEdit;
          if (lstrcmpi(pReel->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPrimitive:
       {
-         const Primitive *const pPrim = (Primitive *)pEdit;
+         const Primitive *const pPrim = (const Primitive *)pEdit;
          const bool image = (lstrcmpi(pPrim->m_d.m_szImage.c_str(), searchObjectName) == 0);
          if (image || (lstrcmpi(pPrim->m_d.m_szNormalMap.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(image ? "Image"s : "Normal Map"s);
@@ -10864,14 +10864,14 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       }
       case eItemRamp:
       {
-         const Ramp *const pRamp = (Ramp *)pEdit;
+         const Ramp *const pRamp = (const Ramp *)pEdit;
          if (lstrcmpi(pRamp->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSurface:
       {
-         const Surface *const pSurf = (Surface *)pEdit;
+         const Surface *const pSurf = (const Surface *)pEdit;
          const bool image = (lstrcmpi(pSurf->m_d.m_szImage.c_str(), searchObjectName) == 0);
          if (image || (lstrcmpi(pSurf->m_d.m_szSideImage.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(image ? "Image"s : "Side Image"s);
@@ -10879,7 +10879,7 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       }
       case eItemDecal:
       {
-         const Decal *const pDecal = (Decal *)pEdit;
+         const Decal *const pDecal = (const Decal *)pEdit;
          if (lstrcmpi(pDecal->m_d.m_szImage.c_str(), searchObjectName) == 0)
          {
             whereUsed.searchObjectName = searchObjectName;
@@ -10892,7 +10892,7 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       }
       case eItemFlasher:
       {
-         const Flasher *const pFlash = (Flasher *)pEdit;
+         const Flasher *const pFlash = (const Flasher *)pEdit;
          const bool imageA = (lstrcmpi(pFlash->m_d.m_szImageA.c_str(), searchObjectName) == 0);
          if (imageA || (lstrcmpi(pFlash->m_d.m_szImageB.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(imageA ? "ImageA"s : "ImageB"s);
@@ -10900,42 +10900,42 @@ void PinTable::ShowWhereImageUsed(vector<WhereUsedInfo> &vWhereUsed, Texture *co
       }
       case eItemFlipper:
       {
-         const Flipper *const pFlip = (Flipper *)pEdit;
+         const Flipper *const pFlip = (const Flipper *)pEdit;
          if (lstrcmpi(pFlip->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemHitTarget:
       {
-         const HitTarget *const pHit = (HitTarget *)pEdit;
+         const HitTarget *const pHit = (const HitTarget *)pEdit;
          if (lstrcmpi(pHit->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemLight:
       {
-         const Light *const pLight = (Light *)pEdit;
+         const Light *const pLight = (const Light *)pEdit;
          if (lstrcmpi(pLight->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemPlunger:
       {
-         const Plunger *const pPlung = (Plunger *)pEdit;
+         const Plunger *const pPlung = (const Plunger *)pEdit;
          if (lstrcmpi(pPlung->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemRubber:
       {
-         const Rubber *const pRub = (Rubber *)pEdit;
+         const Rubber *const pRub = (const Rubber *)pEdit;
          if (lstrcmpi(pRub->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
       }
       case eItemSpinner:
       {
-         const Spinner *const pSpin = (Spinner *)pEdit;
+         const Spinner *const pSpin = (const Spinner *)pEdit;
          if (lstrcmpi(pSpin->m_d.m_szImage.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Image"s);
          break;
@@ -10971,7 +10971,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       {
       case eItemBumper:
       {
-         const Bumper *const pBumper = (Bumper *)pEdit;
+         const Bumper *const pBumper = (const Bumper *)pEdit;
          const bool capmat   = (lstrcmpi(pBumper->m_d.m_szCapMaterial.c_str(),   searchObjectName) == 0);
          const bool basemat  = (lstrcmpi(pBumper->m_d.m_szBaseMaterial.c_str(),  searchObjectName) == 0);
          const bool skirtmat = (lstrcmpi(pBumper->m_d.m_szSkirtMaterial.c_str(), searchObjectName) == 0);
@@ -10981,7 +10981,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemPrimitive:
       {
-         const Primitive *const pPrim = (Primitive *)pEdit;
+         const Primitive *const pPrim = (const Primitive *)pEdit;
          const bool mat = (lstrcmpi(pPrim->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pPrim->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
@@ -10989,7 +10989,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemRamp:
       {
-         const Ramp *const pRamp = (Ramp *)pEdit;
+         const Ramp *const pRamp = (const Ramp *)pEdit;
          const bool mat = (lstrcmpi(pRamp->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pRamp->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
@@ -10997,7 +10997,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemSurface: //'Wall' table objects are surfaces
       {
-         const Surface *const pSurf = (Surface *)pEdit;
+         const Surface *const pSurf = (const Surface *)pEdit;
          const bool topmat   = (lstrcmpi(pSurf->m_d.m_szTopMaterial.c_str(),       searchObjectName) == 0);
          const bool sidemat  = (lstrcmpi(pSurf->m_d.m_szSideMaterial.c_str(),      searchObjectName) == 0);
          const bool slingmat = (lstrcmpi(pSurf->m_d.m_szSlingShotMaterial.c_str(), searchObjectName) == 0);
@@ -11007,7 +11007,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemDecal:
       {
-         const Decal *const pDecal = (Decal *)pEdit;
+         const Decal *const pDecal = (const Decal *)pEdit;
          if (lstrcmpi(pDecal->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
          {
             whereUsed.searchObjectName = searchObjectName;
@@ -11020,7 +11020,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemFlipper:
       {
-         const Flipper *const pFlip = (Flipper *)pEdit;
+         const Flipper *const pFlip = (const Flipper *)pEdit;
          const bool mat = (lstrcmpi(pFlip->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pFlip->m_d.m_szRubberMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Rubber Material"s);
@@ -11028,7 +11028,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemHitTarget:
       {
-         const HitTarget *const pHit = (HitTarget *)pEdit;
+         const HitTarget *const pHit = (const HitTarget *)pEdit;
          const bool mat = (lstrcmpi(pHit->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pHit->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
@@ -11036,14 +11036,14 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemPlunger:
       {
-         const Plunger *const pPlung = (Plunger *)pEdit;
+         const Plunger *const pPlung = (const Plunger *)pEdit;
          if (lstrcmpi(pPlung->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemRubber:
       {
-         const Rubber *const pRub = (Rubber *)pEdit;
+         const Rubber *const pRub = (const Rubber *)pEdit;
          const bool mat = (lstrcmpi(pRub->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pRub->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
@@ -11051,7 +11051,7 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemSpinner:
       {
-         const Spinner *const pSpin = (Spinner *)pEdit;
+         const Spinner *const pSpin = (const Spinner *)pEdit;
          const bool mat = (lstrcmpi(pSpin->m_d.m_szMaterial.c_str(), searchObjectName) == 0);
          if (mat || (lstrcmpi(pSpin->m_d.m_szPhysicsMaterial.c_str(), searchObjectName) == 0))
             INSERT_WHERE_USED(mat ? "Material"s : "Physics Material"s);
@@ -11059,14 +11059,14 @@ void PinTable::ShowWhereMaterialUsed(vector<WhereUsedInfo> &vWhereUsed, Material
       }
       case eItemKicker:
       {
-         const Kicker *const pKicker = (Kicker *)pEdit;
+         const Kicker *const pKicker = (const Kicker *)pEdit;
          if (lstrcmpi(pKicker->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Material"s);
          break;
       }
       case eItemTrigger:
       {
-         const Trigger *const pTrigger = (Trigger *)pEdit;
+         const Trigger *const pTrigger = (const Trigger *)pEdit;
          if (lstrcmpi(pTrigger->m_d.m_szMaterial.c_str(), searchObjectName) == 0)
             INSERT_WHERE_USED("Material"s);
          break;

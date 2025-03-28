@@ -486,7 +486,7 @@ void Gate::ExportMesh(ObjLoader& loader)
    delete[] buf;
 }
 
-void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
+void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf) const
 {
    Matrix3D rotMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation));
    Matrix3D vertMatrix = rotMatrix * Matrix3D::MatrixScale(m_d.m_length) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
@@ -494,7 +494,7 @@ void Gate::GenerateBracketMesh(Vertex3D_NoTex2 *buf)
    rotMatrix.TransformNormals(gateBracket, buf, gateBracketNumVertices);
 }
 
-void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf)
+void Gate::GenerateWireMesh(Vertex3D_NoTex2 *buf) const
 {
    const Matrix3D world = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotation)) * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
    world.TransformVertices(m_vertices, buf, m_numVertices);

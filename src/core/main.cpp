@@ -129,7 +129,7 @@ BEGIN_OBJECT_MAP(ObjectMap)
 END_OBJECT_MAP()
 
 
-PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
+static PCHAR* CommandLineToArgvA(PCHAR CmdLine, int* _argc)
 {
    PCHAR*  argv;
    PCHAR   _argv;
@@ -438,7 +438,7 @@ public:
        g_pvp = &m_vpinball;
    }
 
-   virtual ~VPApp() 
+   ~VPApp() override
    {
 #ifndef __STANDALONE__
       _Module.Term();

@@ -167,7 +167,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
          }
 
          if (convertToLeftHanded)
-            std::reverse(faceVerts.begin(), faceVerts.end());
+            std::ranges::reverse(faceVerts.begin(), faceVerts.end());
 
          // triangulate the face (assumes convex face)
          MyPoly tmpFace;

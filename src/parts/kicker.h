@@ -91,7 +91,7 @@ public:
    vector<Vertex3Ds> m_hitMesh;
 
 private:
-   void GenerateMesh(Vertex3D_NoTex2 *const buf);
+   void GenerateMesh(Vertex3D_NoTex2 *const buf) const;
 
    PinTable *m_ptable = nullptr;
 

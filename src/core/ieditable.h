@@ -254,7 +254,7 @@ public:
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
-   void SetDirtyDraw();
+   virtual void SetDirtyDraw();
 
    virtual Hitable *GetIHitable() { return nullptr; }
    virtual const Hitable *GetIHitable() const { return nullptr; }
@@ -276,15 +276,15 @@ public:
 
    virtual void WriteRegDefaults() {}
 
-   void BeginUndo();
-   void EndUndo();
+   virtual void BeginUndo();
+   virtual void EndUndo();
    void MarkForUndo();
    void MarkForDelete();
    void Undelete();
    const char *GetName();
    void SetName(const string& name);
-   void Delete();
-   void Uncreate();
+   virtual void Delete();
+   virtual void Uncreate();
 
    bool m_backglass = false; // if the light/decal (+dispreel/textbox is always true) is on the table (false) or a backglass view
 
@@ -302,8 +302,6 @@ private:
 
 #pragma region Script events
 public:
-   void TimerSetup(vector<HitTimer *> &pvht, TimerDataRoot *const tdr = nullptr, IFireEvents *fe = nullptr);
-   void TimerRelease();
    HitTimer *m_phittimer = nullptr; // timer event defined when playing (between TimerSetup and TimerRelease)
 
    // In game filtered copy of m_vCollection/m_viCollection for slightly faster event dispatching
