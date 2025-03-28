@@ -122,7 +122,7 @@ public:
    void StreamVolume(const float volume);
 
    SoundOutTypes GetOutputTarget() const { return m_outputTarget; }
-   void SetOutputTarget(SoundOutTypes target) { assert(SoundOutTypes::SNDOUT_TABLE <= target&& target <= SoundOutTypes::SNDOUT_BACKGLASS); m_outputTarget = target; }
+   void SetOutputTarget(SoundOutTypes target) { assert(SoundOutTypes::SNDOUT_TABLE <= target && target <= SoundOutTypes::SNDOUT_BACKGLASS); m_outputTarget = target; }
 
    // -100..100
    int GetVolume() const { return m_volume; }

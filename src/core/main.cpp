@@ -18,7 +18,7 @@
 #include "ui/resource.h"
 #include <initguid.h>
 
-#define  SET_CRT_DEBUG_FIELD(a)   _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
+#define SET_CRT_DEBUG_FIELD(a) _CrtSetDbgFlag((a) | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))
 
 #ifndef __STANDALONE__
 #include "vpinball_i.c"
@@ -34,6 +34,14 @@
 #ifdef __STANDALONE__
 #include <SDL3_ttf/SDL_ttf.h>
 #include <filesystem>
+#endif
+
+#ifndef OVERRIDE
+#ifndef __STANDALONE__
+   #define OVERRIDE override
+#else
+   #define OVERRIDE
+#endif
 #endif
 
 #ifdef CRASH_HANDLER
