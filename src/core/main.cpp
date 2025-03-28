@@ -1,6 +1,6 @@
 // license:GPLv3+
 
-// Implementation of (Win)Main
+// Implementation of WinMain (Windows with UI) or main (Standalone)
 
 #include "core/stdafx.h"
 
@@ -446,7 +446,7 @@ public:
        g_pvp = &m_vpinball;
    }
 
-   ~VPApp() OVERRIDE;
+   ~VPApp() OVERRIDE
    {
 #ifndef __STANDALONE__
       _Module.Term();
@@ -702,13 +702,13 @@ public:
 
          if (compare_option(szArglist[i], OPTION_DISABLETRUEFULLSCREEN))
          {
-             m_vpinball.m_disEnableTrueFullscreen = 0;
-             continue;
+            m_vpinball.m_disEnableTrueFullscreen = 0;
+            continue;
          }
          if (compare_option(szArglist[i], OPTION_ENABLETRUEFULLSCREEN))
          {
-             m_vpinball.m_disEnableTrueFullscreen = 1;
-             continue;
+            m_vpinball.m_disEnableTrueFullscreen = 1;
+            continue;
          }
 
          //
@@ -717,24 +717,24 @@ public:
          int customIdx = 1;
          for (char t = '1'; t <= '9'; ++t)
          {
-             if (lstrcmpi(szArglist[i], ("-c"s+t).c_str()) == 0 || lstrcmpi(szArglist[i], ("/c"s+t).c_str()) == 0)
-             {
-                 useCustomParams = true;
-                 break;
-             }
-             customIdx++;
+            if (lstrcmpi(szArglist[i], ("-c"s+t).c_str()) == 0 || lstrcmpi(szArglist[i], ("/c"s+t).c_str()) == 0)
+            {
+               useCustomParams = true;
+               break;
+            }
+            customIdx++;
          }
 
          if (useCustomParams && (i+1<nArgs))
          {
-             const size_t len = strlen(szArglist[i + 1]);
-             m_vpinball.m_customParameters[customIdx - 1] = new WCHAR[len + 1];
+            const size_t len = strlen(szArglist[i + 1]);
+            m_vpinball.m_customParameters[customIdx - 1] = new WCHAR[len + 1];
 
-             MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, m_vpinball.m_customParameters[customIdx - 1], (int)len + 1);
+            MultiByteToWideCharNull(CP_ACP, 0, szArglist[i + 1], -1, m_vpinball.m_customParameters[customIdx - 1], (int)len + 1);
 
-             ++i; // two params processed
+            ++i; // two params processed
 
-             continue;
+            continue;
          }
 
          //
@@ -742,19 +742,19 @@ public:
          const bool minimized = compare_option(szArglist[i], OPTION_MINIMIZED);
          if (minimized)
          {
-             m_vpinball.m_open_minimized = true;
-             m_vpinball.m_disable_pause_menu = true;
+            m_vpinball.m_open_minimized = true;
+            m_vpinball.m_disable_pause_menu = true;
          }
 
          const bool ext_minimized = compare_option(szArglist[i], OPTION_EXTMINIMIZED);
          if (ext_minimized)
-             m_vpinball.m_open_minimized = true;
+            m_vpinball.m_open_minimized = true;
 
          const bool gles = compare_option(szArglist[i], OPTION_GLES);
 
          const bool primaryDisplay = compare_option(szArglist[i], OPTION_PRIMARY);
          if (primaryDisplay)
-             m_vpinball.m_primaryDisplay = true;
+            m_vpinball.m_primaryDisplay = true;
 
          // global emission scale parameter handling
          if (gles && (i + 1 < nArgs))
@@ -916,10 +916,10 @@ public:
          }
          catch(...) {
             std::cout
-                << "Visual Pinball Error"
-                << "\n\n"
-                << "Could not create preferences path: " << m_szPrefPath
-                << "\n\n";
+               << "Visual Pinball Error"
+               << "\n\n"
+               << "Could not create preferences path: " << m_szPrefPath
+               << "\n\n";
             exit(1);
          }
       }
