@@ -41,7 +41,7 @@ LPI_USE();
 
 // Linux
 #else
-   #define sprintf_s sprintf
+   #define sprintf_s snprintf
    typedef int SOCKET;
    #include <sys/types.h>
    #include <sys/socket.h>
@@ -65,7 +65,7 @@ protected:
          int iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
          if (iResult != 0)
          {
-            sprintf_s(_message, "WSAStartup() failed with error: %d\n", iResult);
+            sprintf_s(_message, sizeof(_message), "WSAStartup() failed with error: %d\n", iResult);
             return false;
          }
       #endif
@@ -163,7 +163,7 @@ public:
       _sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
       if (_sock == SOCKET_ERROR)
       {
-         sprintf_s(_message, "socket() failed");
+         sprintf_s(_message, sizeof(_message), "socket() failed");
          return;
       }
 
@@ -191,7 +191,7 @@ public:
       _sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
       if (_sock == INVALID_SOCKET)
       {
-         sprintf_s(_message, "socket() failed");
+         sprintf_s(_message, sizeof(_message), "socket() failed");
          return;
       }
 
@@ -204,7 +204,7 @@ public:
       // Bind
       if (bind(_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
       {
-         sprintf_s(_message, "bind() failed");
+         sprintf_s(_message, sizeof(_message), "bind() failed");
          return;
       }
 
