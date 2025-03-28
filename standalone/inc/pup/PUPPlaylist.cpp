@@ -86,13 +86,13 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 7) {
-      PLOGD.printf("Invalid playlist: %s", line.c_str());
+      PLOGW.printf("Invalid playlist: %s", line.c_str());
       return nullptr;
    }
 
    string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), parts[1]);
    if (szFolderPath.empty()) {
-      PLOGD.printf("Playlist folder not found: %s", parts[1].c_str());
+      PLOGW.printf("Playlist folder not found: %s", parts[1].c_str());
       return nullptr;
    }
 
@@ -108,8 +108,8 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
    }
 
    if (!hasFiles) {
-      PLOGD.printf("Playlist folder is empty");
-      return nullptr;
+      // TODO add to a pup pack audit, we log as info as not a big deal.
+      PLOGI.printf("Playlist folder %s is empty",szFolderPath.c_str());
    }
 
    string szFolder = std::filesystem::path(szFolderPath).parent_path().filename().string();

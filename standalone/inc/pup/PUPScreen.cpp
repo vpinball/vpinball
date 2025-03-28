@@ -57,7 +57,7 @@ const char* PUP_PINDISPLAY_REQUEST_TYPE_TO_STRING(PUP_PINDISPLAY_REQUEST_TYPE va
      CustomPos = CustomPos
 */
 
-PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos)
+PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreenDes, const string& szBackgroundPlaylist, const string& szBackgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists)
 {
    m_pManager = PUPManager::GetInstance();
 
@@ -79,7 +79,12 @@ PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreen
    m_pPageTimer->SetElapsedListener(std::bind(&PUPScreen::PageTimerElapsed, this, std::placeholders::_1));
    m_pParent = nullptr;
 
-   LoadPlaylists();
+   for (const PUPPlaylist* pPlaylist : playlists) {
+      // make a copy of the playlist
+      PUPPlaylist *pPlaylistCopy = new PUPPlaylist(*pPlaylist);
+      AddPlaylist(pPlaylistCopy);
+   }
+
    LoadTriggers();
 
    QueueTrigger('D', 0, 1);
@@ -120,7 +125,7 @@ PUPScreen::~PUPScreen()
       pChildren->clear();
 }
 
-PUPScreen* PUPScreen::CreateFromCSV(const string& line)
+PUPScreen* PUPScreen::CreateFromCSV(const string& line, const std::vector<PUPPlaylist*>& playlists)
 {
    vector<string> parts = parse_csv_line(line);
    if (parts.size() != 8) {
@@ -156,10 +161,10 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line)
       parts[3], // background PlayFile
       parts[4] == "1", // transparent
       string_to_float(parts[6], 100.0f), // volume
-      PUPCustomPos::CreateFromCSV(parts[7]));
+      PUPCustomPos::CreateFromCSV(parts[7]), playlists);
 }
 
-PUPScreen* PUPScreen::CreateDefault(int screenNum)
+PUPScreen* PUPScreen::CreateDefault(int screenNum, const std::vector<PUPPlaylist*>& playlists)
 {
    if (PUPManager::GetInstance()->HasScreen(screenNum)) {
       PLOGW.printf("Screen already exists: screenNum=%d", screenNum);
@@ -169,33 +174,17 @@ PUPScreen* PUPScreen::CreateDefault(int screenNum)
    PUPScreen* pScreen = nullptr;
    switch(screenNum) {
       case PUP_SCREEN_TOPPER:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_DMD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_BACKGLASS:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_PLAYFIELD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr, playlists);
       default:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr, playlists);
    }
    return pScreen;
-}
-
-void PUPScreen::LoadPlaylists()
-{
-   string szPlaylistsPath = find_path_case_insensitive(m_pManager->GetPath() + "playlists.pup");
-   std::ifstream playlistsFile;
-   playlistsFile.open(szPlaylistsPath, std::ifstream::in);
-   if (playlistsFile.is_open()) {
-      string line;
-      int i = 0;
-      while (std::getline(playlistsFile, line)) {
-         if (++i == 1)
-            continue;
-         AddPlaylist(PUPPlaylist::CreateFromCSV(line));
-      }
-   }
 }
 
 void PUPScreen::LoadTriggers()
@@ -251,11 +240,6 @@ void PUPScreen::AddPlaylist(PUPPlaylist* pPlaylist)
 {
    if (!pPlaylist)
       return;
-
-   if (GetPlaylist(pPlaylist->GetFolder())) {
-      delete pPlaylist;
-      return;
-   }
 
    m_playlistMap[lowerCase(pPlaylist->GetFolder())] = pPlaylist;
 }

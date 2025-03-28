@@ -80,8 +80,8 @@ class PUPScreen
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSV(const string& line);
-   static PUPScreen* CreateDefault(int screenNum);
+   static PUPScreen* CreateFromCSV(const string& line, const std::vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateDefault(int screenNum, const std::vector<PUPPlaylist*>& playlists);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
@@ -130,9 +130,8 @@ public:
    string ToString(bool full = true) const;
 
 private:
-   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos);
+   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists);
 
-   void LoadPlaylists();
    void LoadTriggers();
    void ProcessQueue();
    void ProcessPinDisplayRequest(PUPPinDisplayRequest* pRequest);

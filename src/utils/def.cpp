@@ -427,7 +427,7 @@ string find_path_case_insensitive(const string& szPath)
       for (const auto& entry : std::filesystem::directory_iterator(parentPath)) {
          if (lowerCase(entry.path().filename().string()) == lowerFilename)
          {
-            PLOGW.printf("exact path not found, but a case-insensitive match was found: path=%s, match=%s", szPath.c_str(), entry.path().c_str());
+            PLOGI.printf("exact path not found, but a case-insensitive match was found: path=%s, match=%s", szPath.c_str(), entry.path().c_str());
             return entry.path().string();
          }
       }
@@ -453,7 +453,7 @@ string find_directory_case_insensitive(const std::string& szParentPath, const st
 
       if (lowerCase(entry.path().filename().string()) == szDirLower) {
          string szMatch = entry.path().string() + PATH_SEPARATOR_CHAR;
-         PLOGW.printf("case-insensitive match was found: szParentPath=%s, szDirName=%s, match=%s",
+         PLOGI.printf("case-insensitive match was found: szParentPath=%s, szDirName=%s, match=%s",
             szParentPath.c_str(), szDirName.c_str(), szMatch.c_str());
          return szMatch;
       }
