@@ -438,7 +438,7 @@ public:
        g_pvp = &m_vpinball;
    }
 
-   ~VPApp() override
+   ~VPApp() OVERRIDE;
    {
 #ifndef __STANDALONE__
       _Module.Term();
