@@ -25,11 +25,11 @@ class Matrix3 final
 {
 public:
    constexpr Matrix3() {}
-   constexpr Matrix3(const float __11, const float __12, const float __13, const float __21, const float __22, const float __23, const float __31, const float __32, const float __33)
+   constexpr Matrix3(const float m11, const float m12, const float m13, const float m21, const float m22, const float m23, const float m31, const float m32, const float m33)
    {
-      _11 = __11; _12 = __12; _13 = __13;
-      _21 = __21; _22 = __22; _23 = __23;
-      _31 = __31; _32 = __32; _33 = __33;
+      _11 = m11; _12 = m12; _13 = m13;
+      _21 = m21; _22 = m22; _23 = m23;
+      _31 = m31; _32 = m32; _33 = m33;
    }
 
 // Ported at: VisualPinball.Engine/Math/Matrix2D.cs
@@ -263,12 +263,12 @@ class alignas(16) Matrix3D final : public D3DMATRIX
 {
 public:
    constexpr Matrix3D() {}
-   constexpr Matrix3D(const float __11, const float __12, const float __13, const float __14, const float __21, const float __22, const float __23, const float __24, const float __31, const float __32, const float __33, const float __34, const float __41, const float __42, const float __43, const float __44)
+   constexpr Matrix3D(const float m11, const float m12, const float m13, const float m14, const float m21, const float m22, const float m23, const float m24, const float m31, const float m32, const float m33, const float m34, const float m41, const float m42, const float m43, const float m44)
    {
-      _11 = __11; _12 = __12; _13 = __13; _14 = __14;
-      _21 = __21; _22 = __22; _23 = __23; _24 = __24;
-      _31 = __31; _32 = __32; _33 = __33; _34 = __34;
-      _41 = __41; _42 = __42; _43 = __43; _44 = __44;
+      _11 = m11; _12 = m12; _13 = m13; _14 = m14;
+      _21 = m21; _22 = m22; _23 = m23; _24 = m24;
+      _31 = m31; _32 = m32; _33 = m33; _34 = m34;
+      _41 = m41; _42 = m42; _43 = m43; _44 = m44;
    }
    string ToString() const
    {
