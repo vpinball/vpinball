@@ -177,7 +177,7 @@ public:
    };
    enum class InputLayout
    {
-      Generic, PBWizard, UltraCade, Sidewinder, VirtuaPin, OpenPinDev
+      Generic, PBWizard, UltraCade, Sidewinder, VirtuaPin, OpenPinDev, Gamepad
    };
    void SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout);
    void UnmapJoy(uint64_t joyId);
@@ -304,6 +304,8 @@ private:
    int m_joycustom2 = 0;
    int m_joycustom3 = 0;
    int m_joycustom4 = 0;
+   int m_joyescape = 0;
+   int m_joyenable3d = 0;
    
    const unsigned int m_onActionEventMsgId;
 
