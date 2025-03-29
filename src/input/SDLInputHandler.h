@@ -28,7 +28,6 @@ public:
       {
          PLOGI.printf("No game controller mappings added: path=%s", path.c_str());
       }
-      RefreshSDLDevice();
    }
 
    ~SDLInputHandler() override
@@ -161,7 +160,7 @@ private:
                if (gamePad)
                {
                   m_gamePads.push_back(gamePad);
-                  m_pininput.SetupJoyMapping(GetJoyId(joystick_ids[idx]), PinInput::InputLayout::Generic);
+                  m_pininput.SetupJoyMapping(GetJoyId(joystick_ids[idx]), PinInput::InputLayout::Gamepad);
                   const SDL_PropertiesID props = SDL_GetGamepadProperties(gamePad);
                   PLOGI.printf("Processing as Gamepad: %d axes, %d buttons, rumble=%s",
                      6, // Standard gamepad has 6 axes
