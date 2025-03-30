@@ -265,10 +265,10 @@ public:
    constexpr Matrix3D() {}
    constexpr Matrix3D(const float m11, const float m12, const float m13, const float m14, const float m21, const float m22, const float m23, const float m24, const float m31, const float m32, const float m33, const float m34, const float m41, const float m42, const float m43, const float m44)
    {
-      _11 = m11; _12 = m12; _13 = m13; _14 = m14;
-      _21 = m21; _22 = m22; _23 = m23; _24 = m24;
-      _31 = m31; _32 = m32; _33 = m33; _34 = m34;
-      _41 = m41; _42 = m42; _43 = m43; _44 = m44;
+      m[0][0] = m11; m[0][1] = m12; m[0][2] = m13; m[0][3] = m14;
+      m[1][0] = m21; m[1][1] = m22; m[1][2] = m23; m[1][3] = m24;
+      m[2][0] = m31; m[2][1] = m32; m[2][2] = m33; m[2][3] = m34;
+      m[3][0] = m41; m[3][1] = m42; m[3][2] = m43; m[3][3] = m44;
    }
    string ToString() const
    {
