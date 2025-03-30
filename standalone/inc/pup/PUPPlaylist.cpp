@@ -117,7 +117,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
    PUPPlaylist* pPlaylist = new PUPPlaylist(
       szFolder,
       parts[2],
-      (string_to_int(parts[3], 0) == 0),
+      (string_to_int(parts[3], 0) == 1),
       string_to_int(parts[4], 0),
       string_to_int(parts[5], 0),
       string_to_int(parts[6], 0));

@@ -63,7 +63,7 @@ void PUPManager::LoadConfig(const string& szRomName)
          while (std::getline(screensFile, line)) {
             if (++i == 1)
                continue;
-            AddScreen(PUPScreen::CreateFromCSV(line, s_playlists));
+            AddScreen(PUPScreen::CreateFromCSV(line, m_playlists));
          }
       }
       else {
@@ -126,14 +126,13 @@ void PUPManager::LoadPlaylists()
       while (std::getline(playlistsFile, line)) {
          if (++i == 1)
             continue;
-         if (PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line))
-         {
-            std::string folderNameLower = lowerCase(pPlaylist->GetFolder());
-            if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end())
-            {
-               s_playlists.push_back(pPlaylist);
+         if (PUPPlaylist* pPlaylist = PUPPlaylist::CreateFromCSV(line)) {
+            string folderNameLower = lowerCase(pPlaylist->GetFolder());
+            if (lowerPlaylistNames.find(folderNameLower) == lowerPlaylistNames.end()) {
+               m_playlists.push_back(pPlaylist);
                lowerPlaylistNames.insert(folderNameLower);
-            } else {
+            }
+            else {
                PLOGW.printf("Duplicate playlist: playlist=%s", pPlaylist->ToString().c_str());
             }
          }
@@ -166,9 +165,9 @@ bool PUPManager::AddScreen(PUPScreen* pScreen)
    return true;
 }
 
-bool PUPManager::AddDefaultScreen(LONG lScreenNum)
+bool PUPManager::AddScreen(LONG lScreenNum)
 {
-   return AddScreen(PUPScreen::CreateDefault(lScreenNum, s_playlists));
+   return AddScreen(PUPScreen::CreateDefault(lScreenNum, m_playlists));
 }
 
 bool PUPManager::HasScreen(int screenNum)

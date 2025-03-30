@@ -89,22 +89,19 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       return nullptr;
 
    bool active = (string_to_int(parts[1], 0) == 1);
-   if (!active)
-   {
+   if (!active) {
       PLOGD.printf("Inactive trigger: %s", line.c_str());
       return nullptr;
    }
 
-   if (string_compare_case_insensitive(triggerPlayAction, "CustomFunc"))
-   {
+   if (string_compare_case_insensitive(triggerPlayAction, "CustomFunc")) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       PLOGW.printf("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
    }
 
    // Sometimes an empty playlist but with description is used as a comment/separator.
-   if (triggerPlaylist.empty())
-   {
+   if (triggerPlaylist.empty()) {
       // TODO A PuP Pack Audit should mark these as comment triggers if the trigger is active
       return nullptr;
    }

@@ -27,7 +27,7 @@ STDMETHODIMP PUPPinDisplay::Init(LONG ScreenNum, BSTR RootDir)
       PLOGW.printf("Screen already exists: screenNum=%d", ScreenNum);
       return S_OK;
    }
-   m_pManager->AddDefaultScreen(ScreenNum);
+   m_pManager->AddScreen(ScreenNum);
 
    return S_OK;
 }

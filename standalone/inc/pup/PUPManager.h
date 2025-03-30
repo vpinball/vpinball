@@ -65,7 +65,7 @@ public:
    const string& GetRootPath();
    const string& GetPath() { return m_szPath; }
    bool AddScreen(PUPScreen* pScreen);
-   bool AddDefaultScreen(LONG lScreenNum);
+   bool AddScreen(LONG lScreenNum);
    bool HasScreen(int screenNum);
    PUPScreen* GetScreen(int screenNum);
    bool AddFont(TTF_Font* pFont, const string& szFilename);
@@ -95,5 +95,5 @@ private:
    std::condition_variable m_queueCondVar;
    bool m_isRunning;
    std::thread m_thread;
-   std::vector<PUPPlaylist*> s_playlists;
+   vector<PUPPlaylist*> m_playlists;
 };
