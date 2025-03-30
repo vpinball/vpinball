@@ -739,7 +739,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
    m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
-   m_onUpdatePhysicsMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_UPDATE_PHYSICS);
 
    m_scoreView.Select(m_scoreviewOutput);
 
@@ -871,7 +870,6 @@ Player::~Player()
    VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(onGameEndMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onPrepareFrameMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onUpdatePhysicsMsgId);
 
    // Save list of used textures to avoid stuttering in next play
    if ((m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "CacheMode"s, 1) > 0) && FileExists(m_ptable->m_szFileName))
@@ -1610,7 +1608,6 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       ProcessOSMessages();
       if (!IsEditorMode())
       {
-         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onUpdatePhysicsMsgId, nullptr);
          m_pininput.ProcessInput(); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
          FireSyncController(); // Trigger script sync event (to sync solenoids back)

@@ -74,6 +74,8 @@ private:
    U64 m_nextPhysicsFrameTime; // Time at which the next physics update should be
    U64 m_lastFlipTime = 0;
 
+   unsigned int m_onUpdatePhysicsMsgId;
+
    vector<HitFlipper *> m_vFlippers;
    HitPlane m_hitPlayfield; // HitPlanes cannot be part of octree (infinite size)
    HitPlane m_hitTopGlass;
