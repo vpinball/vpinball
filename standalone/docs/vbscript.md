@@ -15,6 +15,7 @@ Many newer tables already know about these issues and work with no updates.
 4. [Loop and Type Conversion Issues](#loop-and-type-conversion-issues)
 5. [Execution Issues](#execution-issues)
 6. [Object and Shell Issues](#object-and-shell-issues)
+7. [RegExp is not implemented](#regexp-is-not-implemented)
 
 ---
 
@@ -260,6 +261,26 @@ Public Sub Update()    ' tracks in-ball-velocity
 
 >[!NOTE] 
 VBScript uses reference counters for objects. In this case, using `gBOT` may reduce a ball's reference count to zero, leading to its destruction and causing subsequent code to crash when accessing a destroyed object.
+
+
+## RegExp is not implemented
+
+### 13. Creating a RegExp will crash Visual Pinball
+
+**Issue:**
+```vbscript
+pattern = "current_player\.([a-zA-Z0-9_]+)"
+Set regex = New RegExp
+regex.Pattern = pattern
+regex.IgnoreCase = True
+regex.Global = True
+replacement = "GetPlayerState(""$1"")"
+outputString = regex.Replace(inputString, replacement)
+```
+
+**Workaround:**
+
+Use `InStr`, `Replace` and other string functions to search/replace parts of a string.
 
 ---
 
