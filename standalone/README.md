@@ -78,6 +78,7 @@ To make a successful port, we would need tackle several tasks:
 >   - [Bug 56931](https://bugs.winehq.org/show_bug.cgi?id=56931) - vbscript: Const used before declaration fails (explicit)
 >   - [Bug 57511](https://bugs.winehq.org/show_bug.cgi?id=57511) - vbscript: For loop where loop var is not defined throws error without context
 >   - ~~[Bug 57563](https://bugs.winehq.org/show_bug.cgi?id=57563) - vbscript: mid() throws when passed VT_EMPTY instead of returning empty string~~
+>   - [Bug 58051](https://bugs.winehq.org/show_bug.cgi?id=58051) - vbscript: Dictionary direct Keys/Items access causes parse error
 
 > - Add support for `Scripting.FileSystemObject` and `Scripting.Dictionary` leveraging Wine's `scrrun` code.
 > - Add support for `E_NOTIMPL` commands to Wine's VBScript engine:
