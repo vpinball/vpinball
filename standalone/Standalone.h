@@ -12,12 +12,12 @@ public:
    ~Standalone();
 
    static Standalone* GetInstance();
+   PUPManager* GetPUPManager() { return m_pPUPManager; }
 
    void PreStartup();
    void PostStartup();
-   void ProcessEvent(const SDL_Event* pEvent);
-   void ProcessUpdates();
    void Render();
+   void Shutdown();
 
 private:
    Standalone();
