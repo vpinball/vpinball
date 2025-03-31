@@ -14,18 +14,11 @@ FormDMD::FormDMD()
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, "B2SWindows"s, true)) {
-      PLOGI.printf("B2S DMD window disabled");
-      return;
-   }
-
-   m_pWindow = new FormWindow(this, "B2SDMD",
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDX"s, B2S_SETTINGS_DMDX),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDY"s, B2S_SETTINGS_DMDY),
+   m_pWindow = new FormWindow(this, "B2SDMD", B2S_DMD_ZORDER,
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWndX"s, B2S_SETTINGS_DMDX),
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWndY"s, B2S_SETTINGS_DMDY),
       pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDWidth"s, B2S_SETTINGS_DMDWIDTH),
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT),
-      B2S_DMD_ZORDER,
-      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDRotation"s, 0));
+      pSettings->LoadValueWithDefault(Settings::Standalone, "B2SDMDHeight"s, B2S_SETTINGS_DMDHEIGHT));
 }
 
 FormDMD::~FormDMD()

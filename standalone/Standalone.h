@@ -15,8 +15,6 @@ public:
 
    void PreStartup();
    void PostStartup();
-   void ProcessEvent(const SDL_Event* pEvent);
-   void ProcessUpdates();
    void Render();
 
 private:

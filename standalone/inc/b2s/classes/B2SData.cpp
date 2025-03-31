@@ -81,8 +81,6 @@ B2SData::B2SData()
    // 16 segments
    m_led16Seg.push_back({ { 22, 5 }, { 26, 2 }, { 88, 2 }, { 92, 5 }, { 85, 11 }, { 29, 11 } });
 
-   m_valid = false;
-
    m_pB2SSettings = B2SSettings::GetInstance();
 }
 
@@ -179,8 +177,6 @@ void B2SData::ClearAll(bool donotclearnames)
    //For Each r As KeyValuePair(Of Integer, Generic.Dictionary(Of Integer, Image)) In RotatingImages : r.Value.Clear() : Next
    m_rotatingImages.clear();
    m_rotatingPictureBox.clear();
-
-   m_valid = false;
 }
 
 std::map<int, vector<B2SBaseBox*>>* B2SData::GetUsedRomLampIDs()
@@ -205,22 +201,22 @@ std::map<int, vector<B2SBaseBox*>>* B2SData::GetUsedRomMechIDs()
 
 bool B2SData::IsLampsData() const
 {
-   return m_valid && (IsUseRomLamps() || IsUseAnimationLamps()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLampsOff();
+   return (IsUseRomLamps() || IsUseAnimationLamps()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLampsOff();
 }
 
 bool B2SData::IsSolenoidsData() const
 {
-   return m_valid && (IsUseRomSolenoids() || IsUseAnimationSolenoids()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsSolenoidsOff();
+   return (IsUseRomSolenoids() || IsUseAnimationSolenoids()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsSolenoidsOff();
 }
 
 bool B2SData::IsGIStringsData() const
 {
-   return m_valid && (IsUseRomGIStrings() || IsUseAnimationGIStrings()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsGIStringsOff();
+   return (IsUseRomGIStrings() || IsUseAnimationGIStrings()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsGIStringsOff();
 }
 
 bool B2SData::IsLEDsData() const
 {
-   return m_valid && (IsUseLEDs() || IsUseLEDDisplays() || IsUseReels()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLEDsOff();
+   return (IsUseLEDs() || IsUseLEDDisplays() || IsUseReels()) && !m_pB2SSettings->IsAllOff() && !m_pB2SSettings->IsLEDsOff();
 }
 
 bool B2SData::IsUseRomLamps() const
