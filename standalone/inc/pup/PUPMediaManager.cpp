@@ -5,6 +5,9 @@
 
 PUPMediaManager::PUPMediaManager(PUPScreen* pScreen)
 {
+   m_player1.player.SetScreen(pScreen);
+   m_player2.player.SetScreen(pScreen);
+
    m_pMainPlayer = &m_player1;
    m_pBackgroundPlayer = nullptr;
    m_pScreen = pScreen;
@@ -34,12 +37,6 @@ void PUPMediaManager::Play(PUPPlaylist* pPlaylist, const string& szPlayFile, flo
    m_pMainPlayer->szPath = szPath;
    m_pMainPlayer->volume = volume;
    m_pMainPlayer->priority = priority;
-}
-
-void PUPMediaManager::SetRenderer(SDL_Renderer* pRenderer)
-{
-   m_player1.player.SetRenderer(pRenderer);
-   m_player2.player.SetRenderer(pRenderer);
 }
 
 void PUPMediaManager::SetBG(bool isBackground)

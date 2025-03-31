@@ -55,8 +55,8 @@ Standalone::Standalone()
    sigIntHandler.sa_flags = 0;
    sigaction(SIGINT, &sigIntHandler, nullptr);
 
-   m_pPUPManager = PUPManager::GetInstance();
-   m_pWindowManager = VP::WindowManager::GetInstance();
+   m_pPUPManager = nullptr;
+   m_pWindowManager = nullptr;
 }
 
 Standalone::~Standalone()
@@ -66,6 +66,9 @@ Standalone::~Standalone()
 void Standalone::PreStartup()
 {
    PLOGI.printf("Performing pre-startup standalone actions");
+
+   m_pPUPManager = new PUPManager();
+   m_pWindowManager = VP::WindowManager::GetInstance();
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -82,10 +85,10 @@ void Standalone::PreStartup()
    pConfig->SetDMDServer(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServer"s, false));
    pConfig->SetDMDServerAddr(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerAddr"s, "localhost"s).c_str());
    pConfig->SetDMDServerPort(pSettings->LoadValueWithDefault(Settings::Standalone, "DMDServerPort"s, 6789));
-   pConfig->SetPUPCapture(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, false));
+   pConfig->SetPUPCapture(pSettings->LoadValueWithDefault(Settings::Standalone, "PUPCapture"s, true));
 
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, false)) {
-      if (pSettings->LoadValueWithDefault(Settings::Standalone, "DOFPlugin"s, true))
+   if (pSettings->LoadValueWithDefault(Settings::Standalone, "B2SPlugins"s, true)) {
+      if (pSettings->LoadValueWithDefault(Settings::Standalone, "DOFPlugin"s, false))
          PluginHost::GetInstance()->RegisterPlugin(new DOFPlugin());
       if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPPlugin"s, true))
          PluginHost::GetInstance()->RegisterPlugin(new PUPPlugin());
@@ -100,18 +103,19 @@ void Standalone::PostStartup()
    m_pWindowManager->Start();
 }
 
-void Standalone::ProcessEvent(const SDL_Event* pEvent)
-{
-   m_pWindowManager->ProcessEvent(pEvent);
-}
-
-void Standalone::ProcessUpdates()
-{
-   m_pWindowManager->ProcessUpdates();
-}
-
 void Standalone::Render()
 {
-   if (m_pWindowManager->m_renderMode == VP::WindowManager::RenderMode::Default)
-      m_pWindowManager->Render();
+   m_pWindowManager->Render();
+}
+
+void Standalone::Shutdown()
+{
+   PLOGI.printf("Performing shutdown standalone actions");
+
+   m_pWindowManager->Stop();
+
+   PluginHost::GetInstance()->UnregisterAllPlugins();
+
+   delete m_pPUPManager;
+   m_pPUPManager = nullptr;
 }

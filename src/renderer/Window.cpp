@@ -23,7 +23,6 @@ Window::Window(const int width, const int height)
    , m_settingsPrefix("Headset"s)
    , m_isVR(true)
 {
-   m_hidpiScale = 1.f;
    m_width = width;
    m_height = height;
    m_display = -1;
@@ -277,19 +276,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
          PLOGI << "SDL display mode for window '" << m_settingsPrefix << "': " << mode->w << 'x' << mode->h << ' ' << mode->refresh_rate << "Hz " << SDL_GetPixelFormatName(mode->format);
       }
 
-      #if defined(__APPLE__)
-         // FIXME remove when porting to SDL3: horrible hack to handle the (strange) way Apple apply DPI: user DPI is applied as other OS but HiDPI of Retina display is applied internally
-         // FIXME this only solves the window size, not its position which is in HiDPI units while it should be in pixel units
-         // JSM174 SDL_GLContext sdl_context = SDL_GL_CreateContext(m_nwnd);
-         // JSM174 SDL_GL_MakeCurrent(m_nwnd, sdl_context);
-         int drawableWidth, drawableHeight;
-         SDL_GetWindowSizeInPixels(m_nwnd, &drawableWidth, &drawableHeight); // Size in pixels
-         // JSM174 SDL_GL_DestroyContext(sdl_context);
-         m_hidpiScale = (float)drawableWidth / (float)m_width;
-         PLOGI << "SDL HiDPI defined to " << m_hidpiScale;
-         m_width = drawableWidth;
-         m_height = drawableHeight;
-      #endif
+      SDL_GetWindowSizeInPixels(m_nwnd, &m_drawableWidth, &m_drawableHeight);
 
       #ifdef __STANDALONE__
          const string iconPath = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpinball.png";
@@ -337,6 +324,43 @@ Window::Window(const string &title, const Settings::Section section, const strin
       PLOGE << "Failed to get display refresh rate, defaulting to 60Hz";
       m_refreshrate = 60;
    }
+}
+
+Window::Window(const string &title, const Settings::Section section, const string &settingsPrefix, int x, int y, int w, int h)
+   : m_settingsSection(section)
+   , m_settingsPrefix(settingsPrefix)
+   , m_isVR(false)
+{
+   const Settings* settings = &(g_pvp->m_settings);
+   m_fullscreen = settings->LoadValueWithDefault(m_settingsSection, m_settingsPrefix + "FullScreen", IsWindows10_1803orAbove());
+
+#ifdef ENABLE_SDL_VIDEO
+   Uint32 wnd_flags = 0;
+   wnd_flags |= SDL_WINDOW_UTILITY | SDL_WINDOW_BORDERLESS | SDL_WINDOW_HIDDEN | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+
+   if (m_fullscreen)
+      wnd_flags |= SDL_WINDOW_FULLSCREEN;
+
+   SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
+   SDL_PropertiesID props = SDL_CreateProperties();
+   SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, title.c_str());
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, x);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, y);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, w);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, h);
+   SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, wnd_flags);
+   m_nwnd = SDL_CreateWindowWithProperties(props);
+   SDL_DestroyProperties(props);
+
+   m_wcgDisplay = SDL_GetBooleanProperty(props, SDL_PROP_WINDOW_HDR_ENABLED_BOOLEAN, false);
+   m_sdrWhitePoint = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_SDR_WHITE_LEVEL_FLOAT, 1.0f);
+   m_hdrHeadRoom = SDL_GetFloatProperty(props, SDL_PROP_WINDOW_HDR_HEADROOM_FLOAT, 1.0f);
+
+   m_width = w;
+   m_height = h;
+
+   SDL_GetWindowSizeInPixels(m_nwnd, &m_drawableWidth, &m_drawableHeight);
+#endif
 }
 
 Window::~Window()

@@ -7,6 +7,7 @@
 #else
 #include <dirent.h>
 #include <sys/stat.h>
+#include "standalone/Standalone.h"
 #include "standalone/PoleStorage.h"
 #endif
 
@@ -841,7 +842,7 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
          hres = (new Server())->QueryInterface(IID__Server, (void**)obj);
    }
    else if (!wcsicmp(progid, L"PinUpPlayer.PinDisplay")) {
-      hres = (new PUPPinDisplay())->QueryInterface(IID_IPinDisplay, (void**)obj);
+      hres = (new PUPPinDisplay(g_pStandalone->GetPUPManager()))->QueryInterface(IID_IPinDisplay, (void**)obj);
    }
    else if (!wcsicmp(progid, L"PUPDMDControl.DMD")) {
    }
