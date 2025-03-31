@@ -110,9 +110,9 @@ HRESULT Collection::FireDispID(const DISPID dispid, DISPPARAMS * const pdisppara
 	static WCHAR wzName[MAXSTRING];
 	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
 	int r;
-#ifdef __STANDALONE__
+	#ifdef __STANDALONE__
 	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
-#endif
+	#endif
 	while(min <= max) {
 		i = (min + max) / 2;
 		if (idsNamesList[i].dispId == dispid) {
@@ -15362,6 +15362,175 @@ HRESULT DispReel::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams
 	return DISP_E_MEMBERNOTFOUND;
 }
 
+STDMETHODIMP PartGroup::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
+	static struct {
+		const WCHAR *name;
+		DISPID dispId;
+	} namesIdsList[] = {
+			{ NULL },
+			{ L"Name", DISPID_Name },
+			{ L"TimerEnabled", DISPID_Timer_Enabled },
+			{ L"TimerInterval", DISPID_Timer_Interval },
+			{ L"UserValue", DISPID_UserValue }
+	};
+
+	size_t min = 1, max = ARRAY_SIZE(namesIdsList) - 1, i;
+	int r;
+	while(min <= max) {
+		i = (min + max) / 2;
+		r = wcsicmp(namesIdsList[i].name, *rgszNames);
+		if(!r) {
+			*rgDispId = namesIdsList[i].dispId;
+			return S_OK;
+		}
+		if(r < 0)
+		   min = i+1;
+		else
+		   max = i-1;
+	}
+	return DISP_E_MEMBERNOTFOUND;
+}
+
+STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr) {
+	int index = pDispParams->cArgs;
+	VARIANT res;
+	HRESULT hres = DISP_E_UNKNOWNNAME;
+
+	V_VT(&res) = VT_EMPTY;
+
+	switch(dispIdMember) {
+		case DISPID_VALUE: {
+			if (wFlags == (DISPATCH_METHOD | DISPATCH_PROPERTYGET)) {
+				V_VT(&res) = VT_DISPATCH;
+				V_DISPATCH(&res) = this;
+				hres = S_OK;
+			}
+			break;
+		}
+		case DISPID_Timer_Enabled: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 2509: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+				V_VT(&res) = VT_BOOL;
+				hres = get_TimerEnabled(&V_BOOL(&res));
+			}
+			else if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 2510: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
+				hres = put_TimerEnabled(V_BOOL(&var0));
+				VariantClear(&var0);
+			}
+			break;
+		}
+		case DISPID_Timer_Interval: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 2511: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+				V_VT(&res) = VT_I4;
+				hres = get_TimerInterval((LONG*)&V_I4(&res));
+			}
+			else if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 2512: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
+				hres = put_TimerInterval(V_I4(&var0));
+				VariantClear(&var0);
+			}
+			break;
+		}
+		case DISPID_Name: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 2513: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+				V_VT(&res) = VT_BSTR;
+				hres = get_Name(&V_BSTR(&res));
+			}
+			else if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 2514: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
+				hres = put_Name(V_BSTR(&var0));
+				VariantClear(&var0);
+			}
+			break;
+		}
+		case DISPID_UserValue: {
+			if (wFlags & DISPATCH_PROPERTYGET) {
+				// line 2515: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+				hres = get_UserValue(&res);
+			}
+			else if (wFlags & DISPATCH_PROPERTYPUT) {
+				// line 2516: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+				VARIANT var0;
+				V_VT(&var0) = VT_EMPTY;
+				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
+				hres = put_UserValue(&var0);
+				VariantClear(&var0);
+			}
+			break;
+		}
+		default:
+		break;
+	}
+	if (hres == S_OK) {
+		if (pVarResult)
+			*pVarResult = res;
+		else
+			VariantClear(&res);
+	}
+	else if (hres != S_FALSE) {
+		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
+	}
+	return hres;
+}
+
+STDMETHODIMP PartGroup::GetDocumentation(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile) {
+	if (index == MEMBERID_NIL) {
+		*pBstrName = SysAllocString(L"PartGroup");
+		return S_OK;
+	}
+	return E_NOTIMPL;
+}
+
+HRESULT PartGroup::FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) {
+	static struct {
+		DISPID dispId;
+		const WCHAR *name;
+	} idsNamesList[] = {
+			{ NULL },
+			{ DISPID_GameEvents_Init, L"_Init" },
+			{ DISPID_TimerEvents_Timer, L"_Timer" }
+	};
+
+	static WCHAR wzName[MAXSTRING];
+	size_t min = 1, max = ARRAY_SIZE(idsNamesList) - 1, i;
+	int r;
+	#ifdef __STANDALONE__
+	if (!g_pplayer->m_ptable->m_pcv->m_pScript) return DISP_E_MEMBERNOTFOUND;
+	#endif
+	while(min <= max) {
+		i = (min + max) / 2;
+		if (idsNamesList[i].dispId == dispid) {
+			wcscpy(wzName, m_wzName);
+			wcscat(wzName, idsNamesList[i].name);
+			LPOLESTR fnNames = (LPOLESTR)wzName;
+			DISPID tDispid;
+			CComPtr<IDispatch> disp;
+			g_pplayer->m_ptable->m_pcv->m_pScript->GetScriptDispatch(nullptr, &disp);
+			if (SUCCEEDED(disp->GetIDsOfNames(IID_NULL, &fnNames, 1, 0, &tDispid))) {
+				return disp->Invoke(tDispid, IID_NULL, LOCALE_USER_DEFAULT, DISPATCH_METHOD, pdispparams, nullptr, nullptr, nullptr);
+			}
+			return DISP_E_MEMBERNOTFOUND;
+		}
+		else if (idsNamesList[i].dispId < dispid)
+		   min = i+1;
+		else
+		   max = i-1;
+	}
+	return DISP_E_MEMBERNOTFOUND;
+}
+
 STDMETHODIMP LightSeq::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid, DISPID* rgDispId) {
 	static struct {
 		const WCHAR *name;
@@ -15415,12 +15584,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Name: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2506: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
+				// line 2542: [propget, id(DISPID_Name), helpstring("property Name")] HRESULT Name([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Name(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2507: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
+				// line 2543: [propput, id(DISPID_Name), helpstring("property Name")] HRESULT Name([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -15431,12 +15600,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Collection: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2508: [propget, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([out, retval] BSTR *pVal);
+				// line 2544: [propget, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([out, retval] BSTR *pVal);
 				V_VT(&res) = VT_BSTR;
 				hres = get_Collection(&V_BSTR(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2509: [propput, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([in] BSTR newVal);
+				// line 2545: [propput, id(DISPID_Collection), helpstring("property Collection")] HRESULT Collection([in] BSTR newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
@@ -15447,12 +15616,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 9: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2510: [propget, id(9), helpstring("property CenterX")] HRESULT CenterX([out, retval] float *pVal);
+				// line 2546: [propget, id(9), helpstring("property CenterX")] HRESULT CenterX([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_CenterX(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2511: [propput, id(9), helpstring("property CenterX")] HRESULT CenterX([in] float newVal);
+				// line 2547: [propput, id(9), helpstring("property CenterX")] HRESULT CenterX([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15463,12 +15632,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 10: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2512: [propget, id(10), helpstring("property CenterY")] HRESULT CenterY([out, retval] float *pVal);
+				// line 2548: [propget, id(10), helpstring("property CenterY")] HRESULT CenterY([out, retval] float *pVal);
 				V_VT(&res) = VT_R4;
 				hres = get_CenterY(&V_R4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2513: [propput, id(10), helpstring("property CenterY")] HRESULT CenterY([in] float newVal);
+				// line 2549: [propput, id(10), helpstring("property CenterY")] HRESULT CenterY([in] float newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_R4);
@@ -15479,12 +15648,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 15: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2514: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
+				// line 2550: [propget, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_UpdateInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2515: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
+				// line 2551: [propput, id(15), helpstring("property UpdateInterval")] HRESULT UpdateInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15495,12 +15664,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Enabled: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2516: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
+				// line 2552: [propget, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([out, retval] VARIANT_BOOL *pVal);
 				V_VT(&res) = VT_BOOL;
 				hres = get_TimerEnabled(&V_BOOL(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2517: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
+				// line 2553: [propput, id(DISPID_Timer_Enabled), helpstring("property TimerEnabled")] HRESULT TimerEnabled([in] VARIANT_BOOL newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BOOL);
@@ -15511,12 +15680,12 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_Timer_Interval: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2518: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
+				// line 2554: [propget, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([out, retval] long *pVal);
 				V_VT(&res) = VT_I4;
 				hres = get_TimerInterval((LONG*)&V_I4(&res));
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2519: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
+				// line 2555: [propput, id(DISPID_Timer_Interval), helpstring("property TimerInterval")] HRESULT TimerInterval([in] long newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15527,11 +15696,11 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case DISPID_UserValue: {
 			if (wFlags & DISPATCH_PROPERTYGET) {
-				// line 2520: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
+				// line 2556: [propget, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([out, retval] VARIANT* pVal);
 				hres = get_UserValue(&res);
 			}
 			else if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 2521: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
+				// line 2557: [propput, id(DISPID_UserValue), helpstring("property User")] HRESULT UserValue([in] VARIANT* newVal);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantCopyInd(&var0, &pDispParams->rgvarg[--index]);
@@ -15542,7 +15711,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 32: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2522: [id(32), helpstring("method Play")] HRESULT Play([in] SequencerState Animation, [defaultvalue(0)] long TailLength, [defaultvalue(1)] long Repeat, [defaultvalue(0)] long Pause);
+				// line 2558: [id(32), helpstring("method Play")] HRESULT Play([in] SequencerState Animation, [defaultvalue(0)] long TailLength, [defaultvalue(1)] long Repeat, [defaultvalue(0)] long Pause);
 				VARIANT var0;
 				V_VT(&var0) = VT_EMPTY;
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_I4);
@@ -15568,7 +15737,7 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		}
 		case 33: {
 			if (wFlags & DISPATCH_METHOD) {
-				// line 2523: [id(33), helpstring("method StopPlay")] HRESULT StopPlay();
+				// line 2559: [id(33), helpstring("method StopPlay")] HRESULT StopPlay();
 				hres = StopPlay();
 			}
 			break;

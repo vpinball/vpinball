@@ -370,6 +370,22 @@ interface IDispReelEvents;
 #endif /* __cplusplus */
 #endif
 
+#ifndef __IPartGroup_FWD_DEFINED__
+#define __IPartGroup_FWD_DEFINED__
+typedef interface IPartGroup IPartGroup;
+#ifdef __cplusplus
+interface IPartGroup;
+#endif /* __cplusplus */
+#endif
+
+#ifndef __IPartGroupEvents_FWD_DEFINED__
+#define __IPartGroupEvents_FWD_DEFINED__
+typedef interface IPartGroupEvents IPartGroupEvents;
+#ifdef __cplusplus
+interface IPartGroupEvents;
+#endif /* __cplusplus */
+#endif
+
 #ifndef __ILightSeq_FWD_DEFINED__
 #define __ILightSeq_FWD_DEFINED__
 typedef interface ILightSeq ILightSeq;
@@ -538,6 +554,15 @@ typedef class Ball Ball;
 typedef struct Ball Ball;
 #endif /* defined __cplusplus */
 #endif /* defined __Ball_FWD_DEFINED__ */
+
+#ifndef __PartGroup_FWD_DEFINED__
+#define __PartGroup_FWD_DEFINED__
+#ifdef __cplusplus
+typedef class PartGroup PartGroup;
+#else
+typedef struct PartGroup PartGroup;
+#endif /* defined __cplusplus */
+#endif /* defined __PartGroup_FWD_DEFINED__ */
 
 #ifndef __Collection_FWD_DEFINED__
 #define __Collection_FWD_DEFINED__
@@ -4213,7 +4238,7 @@ static inline HRESULT ITableGlobal_get_PlatformBits(ITableGlobal* This,BSTR *pVa
 static inline HRESULT ITableGlobal_put_ShowCursor(ITableGlobal* This,VARIANT_BOOL show) {
     return This->lpVtbl->put_ShowCursor(This,show);
 }
-static inline HRESULT ITableGlobal_get_GetPlayerHWnd(ITableGlobal* This,LONG *pVal) {
+static inline HRESULT ITableGlobal_get_GetPlayerHWnd(ITableGlobal* This,SIZE_T *pVal) {
     return This->lpVtbl->get_GetPlayerHWnd(This,pVal);
 }
 static inline HRESULT ITableGlobal_StopSound(ITableGlobal* This,BSTR Sound) {
@@ -20502,6 +20527,318 @@ static inline HRESULT IDispReelEvents_Invoke(IDispReelEvents* This,DISPID dispId
 #endif  /* __IDispReelEvents_DISPINTERFACE_DEFINED__ */
 
 /*****************************************************************************
+ * IPartGroup interface
+ */
+#ifndef __IPartGroup_INTERFACE_DEFINED__
+#define __IPartGroup_INTERFACE_DEFINED__
+
+DEFINE_GUID(IID_IPartGroup, 0xea3e9259, 0x58ff, 0x47b8, 0xbd,0x8c, 0x94,0xfa,0x3d,0x79,0xeb,0x4b);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("ea3e9259-58ff-47b8-bd8c-94fa3d79eb4b")
+IPartGroup : public IDispatch
+{
+    virtual HRESULT STDMETHODCALLTYPE get_TimerEnabled(
+        VARIANT_BOOL *pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_TimerEnabled(
+        VARIANT_BOOL newVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_TimerInterval(
+        LONG *pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_TimerInterval(
+        LONG newVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_Name(
+        BSTR *pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_Name(
+        BSTR newVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_UserValue(
+        VARIANT *pVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE put_UserValue(
+        VARIANT *newVal) = 0;
+
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IPartGroup, 0xea3e9259, 0x58ff, 0x47b8, 0xbd,0x8c, 0x94,0xfa,0x3d,0x79,0xeb,0x4b)
+#endif
+#else
+typedef struct IPartGroupVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IPartGroup *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IPartGroup *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IPartGroup *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        IPartGroup *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        IPartGroup *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        IPartGroup *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        IPartGroup *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    /*** IPartGroup methods ***/
+    HRESULT (STDMETHODCALLTYPE *get_TimerEnabled)(
+        IPartGroup *This,
+        VARIANT_BOOL *pVal);
+
+    HRESULT (STDMETHODCALLTYPE *put_TimerEnabled)(
+        IPartGroup *This,
+        VARIANT_BOOL newVal);
+
+    HRESULT (STDMETHODCALLTYPE *get_TimerInterval)(
+        IPartGroup *This,
+        LONG *pVal);
+
+    HRESULT (STDMETHODCALLTYPE *put_TimerInterval)(
+        IPartGroup *This,
+        LONG newVal);
+
+    HRESULT (STDMETHODCALLTYPE *get_Name)(
+        IPartGroup *This,
+        BSTR *pVal);
+
+    HRESULT (STDMETHODCALLTYPE *put_Name)(
+        IPartGroup *This,
+        BSTR newVal);
+
+    HRESULT (STDMETHODCALLTYPE *get_UserValue)(
+        IPartGroup *This,
+        VARIANT *pVal);
+
+    HRESULT (STDMETHODCALLTYPE *put_UserValue)(
+        IPartGroup *This,
+        VARIANT *newVal);
+
+    END_INTERFACE
+} IPartGroupVtbl;
+
+interface IPartGroup {
+    CONST_VTBL IPartGroupVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define IPartGroup_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IPartGroup_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IPartGroup_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define IPartGroup_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define IPartGroup_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define IPartGroup_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define IPartGroup_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+/*** IPartGroup methods ***/
+#define IPartGroup_get_TimerEnabled(This,pVal) (This)->lpVtbl->get_TimerEnabled(This,pVal)
+#define IPartGroup_put_TimerEnabled(This,newVal) (This)->lpVtbl->put_TimerEnabled(This,newVal)
+#define IPartGroup_get_TimerInterval(This,pVal) (This)->lpVtbl->get_TimerInterval(This,pVal)
+#define IPartGroup_put_TimerInterval(This,newVal) (This)->lpVtbl->put_TimerInterval(This,newVal)
+#define IPartGroup_get_Name(This,pVal) (This)->lpVtbl->get_Name(This,pVal)
+#define IPartGroup_put_Name(This,newVal) (This)->lpVtbl->put_Name(This,newVal)
+#define IPartGroup_get_UserValue(This,pVal) (This)->lpVtbl->get_UserValue(This,pVal)
+#define IPartGroup_put_UserValue(This,newVal) (This)->lpVtbl->put_UserValue(This,newVal)
+#else
+/*** IUnknown methods ***/
+static inline HRESULT IPartGroup_QueryInterface(IPartGroup* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static inline ULONG IPartGroup_AddRef(IPartGroup* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static inline ULONG IPartGroup_Release(IPartGroup* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static inline HRESULT IPartGroup_GetTypeInfoCount(IPartGroup* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static inline HRESULT IPartGroup_GetTypeInfo(IPartGroup* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static inline HRESULT IPartGroup_GetIDsOfNames(IPartGroup* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static inline HRESULT IPartGroup_Invoke(IPartGroup* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+/*** IPartGroup methods ***/
+static inline HRESULT IPartGroup_get_TimerEnabled(IPartGroup* This,VARIANT_BOOL *pVal) {
+    return This->lpVtbl->get_TimerEnabled(This,pVal);
+}
+static inline HRESULT IPartGroup_put_TimerEnabled(IPartGroup* This,VARIANT_BOOL newVal) {
+    return This->lpVtbl->put_TimerEnabled(This,newVal);
+}
+static inline HRESULT IPartGroup_get_TimerInterval(IPartGroup* This,LONG *pVal) {
+    return This->lpVtbl->get_TimerInterval(This,pVal);
+}
+static inline HRESULT IPartGroup_put_TimerInterval(IPartGroup* This,LONG newVal) {
+    return This->lpVtbl->put_TimerInterval(This,newVal);
+}
+static inline HRESULT IPartGroup_get_Name(IPartGroup* This,BSTR *pVal) {
+    return This->lpVtbl->get_Name(This,pVal);
+}
+static inline HRESULT IPartGroup_put_Name(IPartGroup* This,BSTR newVal) {
+    return This->lpVtbl->put_Name(This,newVal);
+}
+static inline HRESULT IPartGroup_get_UserValue(IPartGroup* This,VARIANT *pVal) {
+    return This->lpVtbl->get_UserValue(This,pVal);
+}
+static inline HRESULT IPartGroup_put_UserValue(IPartGroup* This,VARIANT *newVal) {
+    return This->lpVtbl->put_UserValue(This,newVal);
+}
+#endif
+#endif
+
+#endif
+
+
+#endif  /* __IPartGroup_INTERFACE_DEFINED__ */
+
+/*****************************************************************************
+ * IPartGroupEvents dispinterface
+ */
+#ifndef __IPartGroupEvents_DISPINTERFACE_DEFINED__
+#define __IPartGroupEvents_DISPINTERFACE_DEFINED__
+
+DEFINE_GUID(DIID_IPartGroupEvents, 0xdb72df34, 0x273f, 0x4f04, 0x88,0xd0, 0xc9,0xbb,0xf4,0x19,0x9e,0x3e);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("db72df34-273f-4f04-88d0-c9bbf4199e3e")
+IPartGroupEvents : public IDispatch
+{
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(IPartGroupEvents, 0xdb72df34, 0x273f, 0x4f04, 0x88,0xd0, 0xc9,0xbb,0xf4,0x19,0x9e,0x3e)
+#endif
+#else
+typedef struct IPartGroupEventsVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        IPartGroupEvents *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        IPartGroupEvents *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        IPartGroupEvents *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        IPartGroupEvents *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        IPartGroupEvents *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        IPartGroupEvents *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        IPartGroupEvents *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    END_INTERFACE
+} IPartGroupEventsVtbl;
+
+interface IPartGroupEvents {
+    CONST_VTBL IPartGroupEventsVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define IPartGroupEvents_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define IPartGroupEvents_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define IPartGroupEvents_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define IPartGroupEvents_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define IPartGroupEvents_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define IPartGroupEvents_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define IPartGroupEvents_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+#else
+/*** IUnknown methods ***/
+static inline HRESULT IPartGroupEvents_QueryInterface(IPartGroupEvents* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static inline ULONG IPartGroupEvents_AddRef(IPartGroupEvents* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static inline ULONG IPartGroupEvents_Release(IPartGroupEvents* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static inline HRESULT IPartGroupEvents_GetTypeInfoCount(IPartGroupEvents* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static inline HRESULT IPartGroupEvents_GetTypeInfo(IPartGroupEvents* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static inline HRESULT IPartGroupEvents_GetIDsOfNames(IPartGroupEvents* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static inline HRESULT IPartGroupEvents_Invoke(IPartGroupEvents* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+#endif
+#endif
+
+#endif
+
+#endif  /* __IPartGroupEvents_DISPINTERFACE_DEFINED__ */
+
+/*****************************************************************************
  * ILightSeq interface
  */
 #ifndef __ILightSeq_INTERFACE_DEFINED__
@@ -21150,15 +21487,28 @@ __CRT_UUID_DECL(Ball, 0xd4966068, 0xdedb, 0x4eb9, 0x9a,0xb8, 0x45,0x74,0xcc,0xaa
 #endif
 
 /*****************************************************************************
+ * PartGroup coclass
+ */
+
+DEFINE_GUID(CLSID_PartGroup, 0xd4d4e043, 0x594f, 0x49f0, 0xb5,0x61, 0x4a,0xa9,0x94,0x2d,0xcf,0x18);
+
+#ifdef __cplusplus
+class DECLSPEC_UUID("d4d4e043-594f-49f0-b561-4aa9942dcf18") PartGroup;
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(PartGroup, 0xd4d4e043, 0x594f, 0x49f0, 0xb5,0x61, 0x4a,0xa9,0x94,0x2d,0xcf,0x18)
+#endif
+#endif
+
+/*****************************************************************************
  * Collection coclass
  */
 
-DEFINE_GUID(CLSID_Collection, 0xd4d4e043, 0x594f, 0x49f0, 0xb5,0x61, 0x4a,0xa9,0x94,0x2d,0xcf,0x18);
+DEFINE_GUID(CLSID_Collection, 0x1273536e, 0xa692, 0x4763, 0x9d,0x0b, 0xdc,0x0b,0x14,0x25,0x40,0xe2);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("d4d4e043-594f-49f0-b561-4aa9942dcf18") Collection;
+class DECLSPEC_UUID("1273536e-a692-4763-9d0b-dc0b142540e2") Collection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Collection, 0xd4d4e043, 0x594f, 0x49f0, 0xb5,0x61, 0x4a,0xa9,0x94,0x2d,0xcf,0x18)
+__CRT_UUID_DECL(Collection, 0x1273536e, 0xa692, 0x4763, 0x9d,0x0b, 0xdc,0x0b,0x14,0x25,0x40,0xe2)
 #endif
 #endif
 
