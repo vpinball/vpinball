@@ -945,6 +945,8 @@ public class IDLParserToCpp {
 			"../../../vpinball.idl",
 			"vpinball_standalone_i_proxy.cpp",
 			Arrays.asList(
+				new IDLInterface("IPartGroup", "PartGroup"),
+				new IDLInterface("IPartGroupEvents", "PartGroup"),
 				new IDLInterface("ICollection", "Collection"),
 				new IDLInterface("ICollectionEvents", "Collection"),
 				new IDLInterface("ITable", "PinTable", "Table"),

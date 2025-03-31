@@ -63,7 +63,7 @@ public:
 
    BEGIN_COM_MAP(PartGroup)
       COM_INTERFACE_ENTRY(IDispatch)
-      COM_INTERFACE_ENTRY(PartGroup)
+      COM_INTERFACE_ENTRY(IPartGroup)
       COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
       COM_INTERFACE_ENTRY(IProvideClassInfo)
       COM_INTERFACE_ENTRY(IProvideClassInfo2)
