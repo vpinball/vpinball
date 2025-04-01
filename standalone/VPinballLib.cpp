@@ -37,6 +37,7 @@ VPinball::VPinball()
    EditableRegistry::RegisterEditable<Timer>();
    EditableRegistry::RegisterEditable<Trigger>();
    EditableRegistry::RegisterEditable<HitTarget>();
+   EditableRegistry::RegisterEditable<PartGroup>();
 }
 
 void VPinball::Init(std::function<void*(Event, void*)> callback)
