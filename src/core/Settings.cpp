@@ -137,6 +137,63 @@ void Settings::Validate(const bool addDefaults)
    Validate(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, addDefaults);
    Validate(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, addDefaults);
 
+#ifdef ENABLE_SDL_INPUT
+   Validate(Settings::Player, "JoyLFlipKey"s, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRFlipKey"s, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyCTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_UP + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyPlungerKey"s, SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyFrameCount"s, SDL_GAMEPAD_BUTTON_WEST + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyAddCreditKey"s, SDL_GAMEPAD_BUTTON_SOUTH + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStartGameKey"s, SDL_GAMEPAD_BUTTON_EAST + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRMagnaSave"s, SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLMagnaSave"s, SDL_GAMEPAD_BUTTON_LEFT_STICK + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLockbarKey"s, SDL_GAMEPAD_BUTTON_GUIDE + 1, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, addDefaults);
+#else
+   Validate(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, addDefaults);
+   Validate(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, addDefaults);
+#endif
+
+
    //////////////////////////////////////////////////////////////////////////
    // Cabinet section
 

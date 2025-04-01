@@ -106,8 +106,6 @@ void PinInput::Init()
    m_joycustom3key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, m_joycustom3key);
    m_joycustom4 = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, m_joycustom4);
    m_joycustom4key = settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, m_joycustom4key);
-   m_joyescape = settings.LoadValueWithDefault(Settings::Player, "JoyEscapeKey"s, m_joyescape);
-   m_joyenable3d = settings.LoadValueWithDefault(Settings::Player, "JoyEnable3DKey"s, m_joyenable3d);
 
    for (unsigned int i = 0; i < eCKeys; ++i)
       MapActionToKeyboard(static_cast<EnumAssignKeys>(i), g_pvp->m_settings.LoadValueInt(Settings::Player, regkey_string[i]), true);
@@ -843,30 +841,6 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
          MapAnalogActionToJoystick(AnalogAction::AM_PlungerSpeed, joystickId, 13, false, false);
       break;
 
-   case InputLayout::Gamepad:
-      {
-         // Default config for gamepads. modify mapping in gamecontrollerdb.txt
-         MapActionToJoystick(eLeftFlipperKey, joystickId, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1, true);
-         MapActionToJoystick(eRightFlipperKey, joystickId, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1, true);
-         MapActionToJoystick(eLeftTiltKey, joystickId, SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1, true);
-         MapActionToJoystick(eRightTiltKey, joystickId, SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1, true);
-         MapActionToJoystick(eCenterTiltKey, joystickId, SDL_GAMEPAD_BUTTON_DPAD_UP + 1, true);
-         MapActionToJoystick(ePlungerKey, joystickId, SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1, true);
-         MapActionToJoystick(eFrameCount, joystickId, SDL_GAMEPAD_BUTTON_WEST + 1, true);
-         MapActionToJoystick(eAddCreditKey, joystickId, SDL_GAMEPAD_BUTTON_SOUTH + 1, true);
-         MapActionToJoystick(eStartGameKey, joystickId, SDL_GAMEPAD_BUTTON_EAST + 1, true);
-         MapActionToJoystick(eRightMagnaSave, joystickId, SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1, true);
-         MapActionToJoystick(eLeftMagnaSave, joystickId, SDL_GAMEPAD_BUTTON_LEFT_STICK + 1, true);
-         MapActionToJoystick(eLockbarKey, joystickId, SDL_GAMEPAD_BUTTON_GUIDE + 1, true);
-         MapActionToJoystick(ePause, joystickId, SDL_GAMEPAD_BUTTON_START + 1, true);
-         MapActionToJoystick(eTweak, joystickId, SDL_GAMEPAD_BUTTON_BACK + 1, true);
-         
-         // Aaxis config
-         MapAnalogActionToJoystick(AnalogAction::AM_NudgeX, joystickId, 1, false, false); // Stick gauche X
-         MapAnalogActionToJoystick(AnalogAction::AM_NudgeY, joystickId, 2, false, false); // Stick gauche Y
-         break;
-      }
-
    case InputLayout::Generic:
    default:
       {
@@ -892,13 +866,33 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
          MapActionToJoystick(eVolumeUp, joystickId, settings.LoadValueInt(Settings::Player, "JoyVolumeUp"s), true);
          MapActionToJoystick(eVolumeDown, joystickId, settings.LoadValueInt(Settings::Player, "JoyVolumeDown"s), true);
          MapActionToJoystick(eLockbarKey, joystickId, settings.LoadValueInt(Settings::Player, "JoyLockbarKey"s), true);
+         // eEnable3D (no joystick mapping)
          MapActionToJoystick(eTableRecenter, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableRecenterKey"s), true);
          MapActionToJoystick(eTableUp, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableUpKey"s), true);
          MapActionToJoystick(eTableDown, joystickId, settings.LoadValueInt(Settings::Player, "JoyTableDownKey"s), true);
+         // eEscape (no joystick mapping)
          MapActionToJoystick(ePause, joystickId, settings.LoadValueInt(Settings::Player, "JoyPauseKey"s), true);
          MapActionToJoystick(eTweak, joystickId, settings.LoadValueInt(Settings::Player, "JoyTweakKey"s), true);
-	 MapActionToJoystick(eEscape, joystickId, settings.LoadValueInt(Settings::Player, "JoyEscapeKey"s), true);
-         MapActionToJoystick(eEnable3D, joystickId, settings.LoadValueInt(Settings::Player, "JoyEnable3DKey"s), true);
+
+         // TODO map to corresponding GenericKey (or define actions for these keys)
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMBuyIn"s, 0), true); 2
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin3"s, 0), true); 5
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoin4"s, 0), true); 6
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCoinDoor"s, 0), true); END
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMCancel"s, 0), true); 7
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMDown"s, 0), true); 8
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMUp"s, 0), true); 9
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyPMEnter"s, 0), true); 0
+
+         // TODO map to corresponding GenericKey
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom1Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom2"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom2Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom3"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom3Key"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom4"s, 0), true);
+         // MapActionToJoystick(, joystickId, settings.LoadValueWithDefault(Settings::Player, "JoyCustom4Key"s, 0), true);
 
          if (lr_axis != 0)
             MapAnalogActionToJoystick(AnalogAction::AM_NudgeX, joystickId, lr_axis, lr_axis_reverse, false);
@@ -1018,10 +1012,6 @@ void PinInput::ProcessEvent(const InputEvent& event)
             FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_9);
          else if (m_joypmenter == event.buttonId)
             FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_0);
-	 else if (m_joyescape == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_ESCAPE);
-         else if (m_joyenable3d == event.buttonId)
-            FireGenericKeyEvent(event.isPressed ? DISPID_GameEvents_KeyDown : DISPID_GameEvents_KeyUp, DIK_F10);
       }
    }
    else if (event.type == InputEvent::Type::JoyAxis)
