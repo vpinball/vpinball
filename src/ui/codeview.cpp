@@ -573,9 +573,7 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
       }
       ti->Release();
    }
-#endif
-
-#ifndef __STANDALONE__
+#else
    const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
    SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 #endif

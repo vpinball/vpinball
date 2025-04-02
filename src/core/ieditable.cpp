@@ -47,12 +47,41 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
    if (m_partGroup != partGroup)
    {
       if (partGroup)
+      {
+         assert(std::ranges::find(GetPTable()->m_vedit, partGroup) != GetPTable()->m_vedit.end());
          partGroup->AddRef();
+      }
       if (m_partGroup)
          m_partGroup->Release();
       m_partGroup = partGroup;
    }
 }
+
+string IEditable::GetPathString(const bool isDirOnly) const
+{
+   vector<PartGroup*> itemPath;
+   PartGroup* parent = GetPartGroup();
+   while (parent != nullptr)
+   {
+      itemPath.insert(itemPath.begin(), parent);
+      parent = parent->GetPartGroup();
+   }
+   std::stringstream ss;
+   for (const auto& group : itemPath)
+      ss << group->GetName() << "/";
+   if (!isDirOnly)
+      ss << GetName();
+   return ss.str();
+}
+
+bool IEditable::IsChild(const PartGroup* group) const
+{
+   PartGroup* parent = GetPartGroup();
+   while ((parent != group) && (parent != nullptr))
+      parent = parent->GetPartGroup();
+   return parent == group;
+}
+
 
 HRESULT IEditable::put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte)
 {
@@ -144,13 +173,13 @@ void IEditable::Undelete()
    }
 }
 
-const char *IEditable::GetName()
+const char *IEditable::GetName() const
 {
     WCHAR *elemName = nullptr;
     if (GetItemType() == eItemDecal)
         return "Decal";
 
-    IScriptable *const pscript = GetScriptable();
+    IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
     if (pscript)
         elemName = pscript->m_wzName;
 

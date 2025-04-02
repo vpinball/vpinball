@@ -2298,57 +2298,69 @@ PinTable* PinTable::CopyForPlay()
       dst->mViewSetups[i].ApplyTableOverrideSettings(m_settings, (ViewSetupID) i);
    }
    dst->m_materials.reserve(src->m_materials.size() + dst->m_materials.size());
-   for (size_t i = 0; i < src->m_materials.size(); i++)
+   for (Material* srcMat : src->m_materials)
    {
-      Material *mat = new Material(src->m_materials[i]);
+      Material *mat = new Material(srcMat);
       dst->m_materials.push_back(mat);
-      dst->m_startupToLive[src->m_materials[i]] = mat;
-      dst->m_liveToStartup[mat] = src->m_materials[i];
+      dst->m_startupToLive[srcMat] = mat;
+      dst->m_liveToStartup[mat] = srcMat;
    }
 
    // Don't perform deep copy for these parts that can't be modified by the script
    dst->m_vimage.reserve(src->m_vimage.size() + dst->m_vimage.size());
-   for (size_t i = 0; i < src->m_vimage.size(); i++)
-      dst->m_vimage.push_back(src->m_vimage[i]);
+   for (Texture* texture : src->m_vimage)
+      dst->m_vimage.push_back(texture);
    dst->m_vsound.reserve(src->m_vsound.size() + dst->m_vsound.size());
-   for (size_t i = 0; i < src->m_vsound.size(); i++)
-      dst->m_vsound.push_back(src->m_vsound[i]);
+   for (PinSound* sound : src->m_vsound)
+      dst->m_vsound.push_back(sound);
    dst->m_vfont.reserve(src->m_vfont.size() + dst->m_vfont.size());
-   for (size_t i = 0; i < src->m_vfont.size(); i++)
-      dst->m_vfont.push_back(src->m_vfont[i]);
+   for (PinFont* font : src->m_vfont)
+      dst->m_vfont.push_back(font);
 
    PLOGI << "Duplicating parts for live instance"; // For profiling
-   for (size_t i = 0; i < src->m_vedit.size(); i++)
-   {
-      IEditable *edit_dst = nullptr;
-      switch (src->m_vedit[i]->GetItemType())
+   for (IEditable* editable : src->m_vedit)
+      if (editable->GetItemType() == eItemPartGroup)
       {
-      case eItemBall:      edit_dst = static_cast<Ball*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemBumper:    edit_dst = static_cast<Bumper*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemDecal:     edit_dst = static_cast<Decal*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemDispReel:  edit_dst = static_cast<DispReel*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemFlasher:   edit_dst = static_cast<Flasher*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemFlipper:   edit_dst = static_cast<Flipper*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemGate:      edit_dst = static_cast<Gate*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemHitTarget: edit_dst = static_cast<HitTarget*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemKicker:    edit_dst = static_cast<Kicker*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemLight:     edit_dst = static_cast<Light*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemPartGroup: edit_dst = static_cast<PartGroup*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemPlunger:   edit_dst = static_cast<Plunger*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemPrimitive: edit_dst = static_cast<Primitive*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemRamp:      edit_dst = static_cast<Ramp*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemRubber:    edit_dst = static_cast<Rubber*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemSpinner:   edit_dst = static_cast<Spinner*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemSurface:   edit_dst = static_cast<Surface*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTextbox:   edit_dst = static_cast<Textbox*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTimer:     edit_dst = static_cast<Timer*>(src->m_vedit[i])->CopyForPlay(live_table); break;
-      case eItemTrigger:   edit_dst = static_cast<Trigger*>(src->m_vedit[i])->CopyForPlay(live_table); break;
+         PartGroup *edit_dst = static_cast<PartGroup *>(editable)->CopyForPlay(live_table);
+         if (editable->GetPartGroup())
+            edit_dst->SetPartGroup(static_cast<PartGroup*>(dst->m_startupToLive[editable->GetPartGroup()]));
+         live_table->m_vedit.push_back(edit_dst);
+         dst->m_startupToLive[editable] = edit_dst;
+         dst->m_liveToStartup[edit_dst] = editable;
+      }
+   for (IEditable* editable : src->m_vedit)
+   {
+      IEditable* edit_dst = nullptr;
+      switch (editable->GetItemType())
+      {
+      case eItemPartGroup: continue;
+      case eItemBall:      edit_dst = static_cast<Ball*>(editable)->CopyForPlay(live_table); break;
+      case eItemBumper:    edit_dst = static_cast<Bumper*>(editable)->CopyForPlay(live_table); break;
+      case eItemDecal:     edit_dst = static_cast<Decal*>(editable)->CopyForPlay(live_table); break;
+      case eItemDispReel:  edit_dst = static_cast<DispReel*>(editable)->CopyForPlay(live_table); break;
+      case eItemFlasher:   edit_dst = static_cast<Flasher*>(editable)->CopyForPlay(live_table); break;
+      case eItemFlipper:   edit_dst = static_cast<Flipper*>(editable)->CopyForPlay(live_table); break;
+      case eItemGate:      edit_dst = static_cast<Gate*>(editable)->CopyForPlay(live_table); break;
+      case eItemHitTarget: edit_dst = static_cast<HitTarget*>(editable)->CopyForPlay(live_table); break;
+      case eItemKicker:    edit_dst = static_cast<Kicker*>(editable)->CopyForPlay(live_table); break;
+      case eItemLight:     edit_dst = static_cast<Light*>(editable)->CopyForPlay(live_table); break;
+      case eItemLightSeq:  edit_dst = static_cast<LightSeq*>(editable)->CopyForPlay(live_table); break;
+      case eItemPlunger:   edit_dst = static_cast<Plunger*>(editable)->CopyForPlay(live_table); break;
+      case eItemPrimitive: edit_dst = static_cast<Primitive*>(editable)->CopyForPlay(live_table); break;
+      case eItemRamp:      edit_dst = static_cast<Ramp*>(editable)->CopyForPlay(live_table); break;
+      case eItemRubber:    edit_dst = static_cast<Rubber*>(editable)->CopyForPlay(live_table); break;
+      case eItemSpinner:   edit_dst = static_cast<Spinner*>(editable)->CopyForPlay(live_table); break;
+      case eItemSurface:   edit_dst = static_cast<Surface*>(editable)->CopyForPlay(live_table); break;
+      case eItemTextbox:   edit_dst = static_cast<Textbox*>(editable)->CopyForPlay(live_table); break;
+      case eItemTimer:     edit_dst = static_cast<Timer*>(editable)->CopyForPlay(live_table); break;
+      case eItemTrigger:   edit_dst = static_cast<Trigger*>(editable)->CopyForPlay(live_table); break;
       default: assert(false); // Unexpected table part
       }
+      if (editable->GetPartGroup())
+         edit_dst->SetPartGroup(static_cast<PartGroup *>(dst->m_startupToLive[static_cast<IEditable*>(editable->GetPartGroup())]));
       live_table->m_vedit.push_back(edit_dst);
-      dst->m_startupToLive[src->m_vedit[i]] = edit_dst;
-      dst->m_liveToStartup[edit_dst] = src->m_vedit[i];
+      dst->m_startupToLive[editable] = edit_dst;
+      dst->m_liveToStartup[edit_dst] = editable;
    }
 
    PLOGI << "Duplicating collections"; // For profiling
@@ -4130,8 +4142,22 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   auto v = std::ranges::find_if(m_vedit, [shortName](IEditable *e) { return strcmp(e->GetName(), shortName.c_str()) == 0; });
                   if (v == m_vedit.end())
                   {
-                     const int len = (int)shortName.length() + 1;
-                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, len);
+                     char elementName[256];
+                     bool inUse = false;
+                     for (int i = 0; i < m_vcollection.size(); i++)
+                     {
+                        WideCharToMultiByteNull(CP_ACP, 0, m_vcollection.ElementAt(i)->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
+                        if (strcmp(elementName, shortName.c_str()) == 0)
+                        {
+                           inUse = true;
+                           break;
+                        }
+                     }
+                     if (!inUse)
+                     {
+                        const int len = (int)shortName.length() + 1;
+                        MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, len);
+                     }
                   }
                });
          }
@@ -6886,7 +6912,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
     piSelect = m_vmultisel.ElementAt(0);
     if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
     {
-        string info = "Layer: " + piSelect->m_layerName;
+        string info = "Layer: " + piSelect->GetIEditable()->GetPathString(false);
         if (piSelect->GetItemType() == eItemPrimitive)
         {
             const Primitive *const prim = (Primitive *)piSelect;

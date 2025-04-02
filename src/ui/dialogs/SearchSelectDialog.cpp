@@ -262,12 +262,7 @@ void SearchSelectDialog::AddSearchItemToList(IEditable * const piedit, int idx)
    constexpr char usedStringYes[] = "X";
    constexpr char usedStringNo[] = " ";
 
-   string layerBuf;
-
-   const IScriptable * const piscript = piedit->GetScriptable();
-   if (piscript)
-       layerBuf = piscript->GetISelect()->m_layerName;
-
+   const string layerBuf = piedit->GetPathString(false);
    ListView_SetItemText(m_hElementList, idx, 2, (LPSTR)layerBuf.c_str());
 
    string textBuf;
