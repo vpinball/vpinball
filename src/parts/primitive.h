@@ -53,32 +53,32 @@ public:
 class PrimitiveData final : public BaseProperty
 {
 public:
-   int m_Sides;
-   Vertex3Ds m_vPosition;
-   Vertex3Ds m_vSize;
-   float m_aRotAndTra[9];
+   int m_Sides = 4;
+   Vertex3Ds m_vPosition { 0.f, 0.f, 0.f };
+   Vertex3Ds m_vSize { 1.f, 1.f, 1.f };
+   float m_aRotAndTra[9] { 0.f };
    string m_szNormalMap;
    string m_meshFileName;
 
-   COLORREF m_SideColor;
+   COLORREF m_SideColor = RGB(150, 150, 150);
    TimerDataRoot m_tdr;
 
-   float m_elasticityFalloff;
-   float m_depthBias;      // for determining depth sorting
+   float m_elasticityFalloff = 0.43f;
+   float m_depthBias = 0.0f; // for determining depth sorting
 
-   float m_edgeFactorUI;   // for drawing the mesh in the editorUI
-   float m_collision_reductionFactor; // 0=none..1=pow(num_vertices,0.75)
+   float m_edgeFactorUI = 0.25f; // for drawing the mesh in the editorUI
+   float m_collision_reductionFactor = 0.f; // 0=none..1=pow(num_vertices,0.75)
 
-   float m_disableLightingTop;   // was bool, now 0..1
-   float m_disableLightingBelow; // 0..1
+   float m_disableLightingTop = 0.f;   // was bool, now 0..1
+   float m_disableLightingBelow = 1.f; // 0..1
 
-   bool m_use3DMesh;
-   bool m_drawTexturesInside;
-   bool m_staticRendering;
+   bool m_use3DMesh = false;
+   bool m_drawTexturesInside = false;
+   bool m_staticRendering = false;
 
    bool m_useDepthMask = true;
    bool m_addBlend = false;
-   COLORREF m_color;
+   COLORREF m_color = RGB(255, 255, 255);
    float m_alpha = 1.0f;
 
    string m_szLightmap;
@@ -89,14 +89,10 @@ public:
    string m_szRefractionProbe;
    float m_refractionThickness = 10.0f;
 
-   bool m_toy;
-   bool m_backfacesEnabled;
-   bool m_displayTexture;     // in editor
-   bool m_objectSpaceNormalMap; // matches the +X,+Y,+Z object space export/baking of Blender
-
-   // These fields are only valid during play
-   bool m_useAsPlayfield;
-   bool m_isBackGlassImage;
+   bool m_toy = false;
+   bool m_backfacesEnabled = false;
+   bool m_displayTexture = false;     // in editor
+   bool m_objectSpaceNormalMap = false; // matches the +X,+Y,+Z object space export/baking of Blender
 };
 
 class Primitive :
@@ -328,31 +324,34 @@ public:
 
    PrimitiveData m_d;
 
-   bool m_lockedByLS;
-   bool m_inPlayState;
+   bool m_lockedByLS = false;
+   bool m_inPlayState = false;
 
 private:
    RenderDevice *m_rd = nullptr;
 
-   PinTable *m_ptable;
+   PinTable *m_ptable = nullptr;
    Light * m_lightmap = nullptr;
+
+   bool m_useAsPlayfield = false;
+   bool m_isBackGlassImage;
 
    Matrix3D m_fullMatrix;
    bool m_skipRendering = false;
    bool m_groupdRendering = false;
-   int m_numGroupVertices;
-   int m_numGroupIndices;
-   float m_currentFrame;
-   float m_speed;
-   bool m_doAnimation;
-   bool m_endless;
+   int m_numGroupVertices = 0;
+   int m_numGroupIndices = 0;
+   float m_currentFrame = -1.f;
+   float m_speed = 0.f;
+   bool m_doAnimation = false;
+   bool m_endless = false;
 
-   int m_numIndices;         // only used during loading
-   int m_numVertices;        // only used during loading
+   int m_numIndices = 0;         // only used during loading
+   int m_numVertices = 0;        // only used during loading
 #ifdef COMPRESS_MESHES
-   int m_compressedIndices;  // only used during loading
-   int m_compressedVertices; // only used during loading
-   int m_compressedAnimationVertices; // only used during loading
+   int m_compressedIndices = 0;  // only used during loading
+   int m_compressedVertices = 0; // only used during loading
+   int m_compressedAnimationVertices = 0; // only used during loading
 #endif
 
    bool BrowseFor3DMeshFile();
@@ -363,8 +362,8 @@ private:
    void CalculateBuiltinOriginal();
    static void WaitForMeshDecompression();
 
-   PropertyPane *m_propVisual;
-   PropertyPane *m_propPosition;
+   PropertyPane *m_propVisual = nullptr;
+   PropertyPane *m_propPosition = nullptr;
 
    vector<HitObject*> m_vhoCollidable; // Objects to that may be collide selectable
 
@@ -413,6 +412,6 @@ private:
    vector<Vertex3Ds> m_vertices;
    vector<float> m_normals; // only z component actually
 
-   MeshBuffer *m_meshBuffer;
-   bool m_vertexBufferRegenerate;
+   MeshBuffer *m_meshBuffer = nullptr;
+   bool m_vertexBufferRegenerate = true;
 };

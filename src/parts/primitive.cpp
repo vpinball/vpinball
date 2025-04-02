@@ -192,34 +192,6 @@ void Mesh::UpdateBounds()
 
 Primitive::Primitive()
 {
-   m_meshBuffer = nullptr;
-   m_vertexBufferRegenerate = true;
-   m_d.m_use3DMesh = false;
-   m_d.m_staticRendering = false;
-   m_d.m_edgeFactorUI = 0.25f;
-   m_d.m_collision_reductionFactor = 0.f;
-   m_d.m_depthBias = 0.0f;
-   m_d.m_reflectionEnabled = true;
-   m_numGroupIndices = 0;
-   m_numGroupVertices = 0;
-   m_currentFrame = -1.f;
-   m_lockedByLS = false;
-
-   m_speed = 0.0f;
-   m_ptable = nullptr;
-   m_inPlayState = false;
-   m_endless = false;
-   m_doAnimation = false;
-   m_compressedVertices = false;
-   m_compressedIndices = false;
-   m_compressedAnimationVertices = false;
-
-   m_numIndices = 0;
-   m_numVertices = 0;
-   m_propPosition = nullptr;
-   m_propVisual = nullptr;
-   m_d.m_overwritePhysics = true;
-   m_d.m_useAsPlayfield = false;
 }
 
 Primitive::~Primitive()
@@ -249,7 +221,6 @@ void Primitive::SetDefaults(const bool fromMouseClick)
 {
 #define strKeyName Settings::DefaultPropsPrimitive
 
-   m_d.m_useAsPlayfield = false;
    m_d.m_use3DMesh = false;
 
    m_d.m_meshFileName.clear();
@@ -376,7 +347,7 @@ void Primitive::WriteRegDefaults()
 
 void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   m_d.m_useAsPlayfield = IsPlayfield();
+   m_useAsPlayfield = IsPlayfield();
 
    //
 
@@ -521,7 +492,7 @@ void Primitive::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< ro
 void Primitive::SetupHitObject(PhysicsEngine* physics, HitObject *obj, const bool isUI)
 {
    const Material * const mat = m_ptable->GetMaterial(m_d.m_szPhysicsMaterial);
-   if (m_d.m_useAsPlayfield)
+   if (m_useAsPlayfield)
    {
       obj->SetFriction(m_ptable->m_overridePhysics ? m_ptable->m_fOverrideContactFriction : m_ptable->m_friction);
       obj->m_elasticity = m_ptable->m_overridePhysics ? m_ptable->m_fOverrideElasticity : m_ptable->m_elasticity;
@@ -1193,7 +1164,7 @@ void Primitive::RenderSetup(RenderDevice *device)
    m_lightmap = m_ptable->GetLight(m_d.m_szLightmap);
 
    m_currentFrame = -1.f;
-   m_d.m_isBackGlassImage = IsBackglass();
+   m_isBackGlassImage = IsBackglass();
 
    VertexBuffer *vertexBuffer = new VertexBuffer(m_rd, (unsigned int)m_mesh.NumVertices(), nullptr, !(m_d.m_staticRendering || m_mesh.m_animationFrames.empty()));
    IndexBuffer *indexBuffer = new IndexBuffer(m_rd, m_mesh.m_indices);
@@ -1228,7 +1199,7 @@ void Primitive::Render(const unsigned int renderMask)
 
    // Update playfield primitive settings from table settings
    SamplerFilter pinf = SF_UNDEFINED; // Use the default filtering of the sampler (trilinear or anisotropic, depending on user choice)
-   if (m_d.m_useAsPlayfield)
+   if (m_useAsPlayfield)
    {
       m_d.m_szMaterial = g_pplayer->m_ptable->m_playfieldMaterial;
       m_d.m_szImage = g_pplayer->m_ptable->m_image;
@@ -1304,7 +1275,7 @@ void Primitive::Render(const unsigned int renderMask)
    Texture * const nMap = m_ptable->GetImage(m_d.m_szNormalMap);
    BaseTexture *pin = nullptr;
    float pinAlphaTest = -1.f;
-   if (g_pplayer->m_texPUP && m_d.m_isBackGlassImage)
+   if (g_pplayer->m_texPUP && m_isBackGlassImage)
    {
       pin = g_pplayer->m_texPUP;
       m_rd->m_basicShader->SetAlphaTestValue(0.f);

@@ -15,8 +15,6 @@ Ramp::Ramp()
    m_d.m_wireDistanceX = 38.0f;
    m_d.m_wireDistanceY = 88.0f;
    m_propPosition = nullptr;
-   m_d.m_hitEvent = false;
-   m_d.m_overwritePhysics = true;
    m_rgheightInit = nullptr;
 }
 
