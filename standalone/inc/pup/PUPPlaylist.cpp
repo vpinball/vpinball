@@ -136,11 +136,11 @@ const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 const string& PUPPlaylist::GetNextPlayFile()
 {
    if (!m_randomize) {
+      const string& file = m_files[m_lastIndex];
       if (++m_lastIndex >= m_files.size())
          m_lastIndex = 0;
-      return m_files[m_lastIndex];
+      return file;
    }
-
    return m_files[rand() % m_files.size()];
 }
 
