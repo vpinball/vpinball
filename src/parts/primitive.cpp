@@ -220,6 +220,7 @@ Primitive::Primitive()
    m_propVisual = nullptr;
    m_d.m_overwritePhysics = true;
    m_d.m_useAsPlayfield = false;
+   m_d.m_hitEvent = false;
 }
 
 Primitive::~Primitive()
