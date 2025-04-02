@@ -24,11 +24,9 @@ HitTarget::HitTarget()
 
    m_propPosition = nullptr;
    m_propVisual = nullptr;
-   m_d.m_overwritePhysics = true;
    m_moveAnimation = false;
    m_moveDown = true;
    m_moveAnimationOffset = 0.0f;
-   m_hitEvent = false;
    m_timeStamp = 0;
 }
 
