@@ -191,8 +191,6 @@ public:
    memcpy(dst->m_wzName, m_wzName, sizeof(m_wzName)); \
    if (dst->GetScriptable()) \
       table->m_pcv->AddItem(dst->GetScriptable(), false); \
-   dst->m_oldLayerIndex = m_oldLayerIndex; \
-   dst->m_layerName = m_layerName; \
    dst->m_isVisible = m_isVisible; \
    dst->m_backglass = m_backglass; \
    dst->m_locked = m_locked; \
@@ -279,7 +277,7 @@ public:
    void MarkForUndo();
    void MarkForDelete();
    void Undelete();
-   const char *GetName();
+   const char *GetName() const;
    void SetName(const string& name);
    virtual void Delete();
    virtual void Uncreate();
@@ -288,6 +286,8 @@ public:
 
    void SetPartGroup(class PartGroup *partGroup);
    class PartGroup* GetPartGroup() const { return m_partGroup; } 
+   string GetPathString(const bool isDirOnly) const;
+   bool IsChild(const PartGroup* group) const;
 
    HRESULT put_TimerEnabled(VARIANT_BOOL newVal, BOOL *pte);
    HRESULT put_TimerInterval(long newVal, int *pti);

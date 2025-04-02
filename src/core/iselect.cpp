@@ -3,17 +3,8 @@
 #include "core/stdafx.h"
 
 ISelect::ISelect()
+   : m_vpinball(g_pvp)
 {
-   m_dragging = false;
-   m_markedForUndo = false;
-   m_selectstate = eNotSelected;
-
-   m_locked = false;
-
-   m_menuid = -1;
-   m_oldLayerIndex = 0;
-   m_isVisible = true;
-   m_vpinball = g_pvp;
 }
 
 void ISelect::SetObjectPos()
@@ -296,12 +287,12 @@ static void SetPartGroup(ISelect* me, string layerName)
          });
       if (partGroup == me->GetPTable()->m_vedit.end())
       {
-         PartGroup *const partGroup = static_cast<PartGroup *>(EditableRegistry::Create(eItemPartGroup));
-         partGroup->Init(me->GetPTable(), 0, 0, false);
+         PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::Create(eItemPartGroup));
+         newGroup->Init(me->GetPTable(), 0, 0, false);
          const int len = (int)layerName.length() + 1;
-         MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, partGroup->GetScriptable()->m_wzName, len);
-         me->GetPTable()->m_vedit.push_back(partGroup);
-         me->GetIEditable()->SetPartGroup(partGroup);
+         MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, newGroup->GetScriptable()->m_wzName, len);
+         me->GetPTable()->m_vedit.push_back(newGroup);
+         me->GetIEditable()->SetPartGroup(newGroup);
       }
       else
       {
@@ -321,14 +312,12 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
           int layerIndex;
           pbr->GetInt(layerIndex);
           SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
-          m_oldLayerIndex = (unsigned char)layerIndex; // FIXME remove
           break;
        }
        case FID(LANR): // 10.7 layers (limited number of named layers)
        {
           string layerName;
           pbr->GetString(layerName);
-          m_layerName = layerName; // FIXME remove
           std::ranges::replace(layerName, ' ', '_');
           SetPartGroup(this, "Layer_" + layerName);
           break;
@@ -349,12 +338,26 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    BiffWriter bw(pstm, hcrypthash);
 
    bw.WriteBool(FID(LOCK), m_locked);
-   bw.WriteBool(FID(LVIS), m_isVisible);
-   bw.WriteInt(FID(LAYR), m_oldLayerIndex); // FIXME remove
-   bw.WriteString(FID(LANR), m_layerName); // FIXME remove
    if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
+   {
       bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
-
+      // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
+      PartGroup* layer = GetIEditable()->GetPartGroup();
+      while (layer->GetPartGroup() != nullptr)
+         layer = layer->GetPartGroup();
+      int index = 0;
+      for (auto edit : GetPTable()->m_vedit)
+      {
+         if (edit == layer)
+            break;
+         if (edit->GetItemType() == eItemPartGroup && edit->GetPartGroup() == nullptr)
+            index++;
+      }
+      bw.WriteInt(FID(LAYR), min(index, 11));
+      bw.WriteString(FID(LANR), layer->GetName());
+   }
+   bw.WriteBool(FID(LVIS), m_isVisible);
+   
    return S_OK;
 }
 

@@ -47,14 +47,6 @@
 #include <unordered_map>
 #endif
 
-#if !defined(__clang__)
-#define stable_sort std::ranges::stable_sort
-#define sort std::ranges::sort
-#else
-#define stable_sort std::stable_sort
-#define sort std::sort
-#endif
-
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -438,7 +430,7 @@ static void HelpMarker(const char *desc)
 template <class T> static std::vector<T> SortedCaseInsensitive(std::vector<T>& list, const std::function<string(T)>& map)
 {
    std::vector<T> sorted(list.begin(), list.end());
-   sort(sorted.begin(), sorted.end(), [map](const T &a, const T &b) -> bool 
+   std::ranges::sort(sorted, [map](const T &a, const T &b) -> bool 
       {
          const string str1 = map(a), str2 = map(b);
          for (string::const_iterator c1 = str1.begin(), c2 = str2.begin(); c1 != str1.end() && c2 != str2.end(); ++c1, ++c2)
@@ -3457,60 +3449,59 @@ void LiveUI::UpdateOutlinerUI()
             }
             if (ImGui::TreeNodeEx("Layers", ImGuiTreeNodeFlags_DefaultOpen))
             {
+               // Sort by path (this is heavy but simple, ensuring part groups appear before their children as well as stable alphabetical ordering)
+               vector<IEditable*> editables = table->m_vedit;
+               std::ranges::sort(editables, [](IEditable *a, IEditable *b) { return a->GetPathString(false) < b->GetPathString(false); });
+               // Live objects are the one created at runtime, not parented to any group
                if (is_live && ImGui::TreeNode("Live Objects"))
                {
-                  for (size_t t = 0; t < table->m_vedit.size(); t++)
+                  for (IEditable* edit : editables)
                   {
-                     ISelect *const psel = table->m_vedit[t]->GetISelect();
-                     if (psel != nullptr && psel->m_layerName.empty())
+                     if (edit->GetPartGroup() == nullptr && edit->GetItemType() != eItemPartGroup)
                      {
-                        Selection sel(is_live, table->m_vedit[t]);
-                        if (IsOutlinerFiltered(table->m_vedit[t]->GetName()) && ImGui::Selectable(table->m_vedit[t]->GetName(), m_selection == sel))
+                        Selection sel(is_live, edit);
+                        if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName(), m_selection == sel))
                            m_selection = sel;
                      }
                   }
                   ImGui::TreePop();
                }
-               // Very very inefficient...
-               robin_hood::unordered_map<std::string, vector<IEditable *>> layers;
-               for (size_t t = 0; t < table->m_vedit.size(); t++)
+               // Table definition parts
+               struct Node
                {
-                  ISelect *const psel = table->m_vedit[t]->GetISelect();
-                  if (psel != nullptr)
+                  PartGroup* group;
+                  bool opened;
+               };
+               vector<Node> stack;
+               for (IEditable* edit : editables)
+               {
+                  const PartGroup* parent = edit->GetPartGroup();
+                  if ((parent == nullptr) && (edit->GetItemType() != eItemPartGroup))
+                     continue;
+                  while (!stack.empty() && ((parent == nullptr) || !edit->IsChild(stack.back().group)))
                   {
-                     auto iter = layers.find(psel->m_layerName);
-                     if (iter != layers.end())
-                     {
-                        iter->second.push_back(table->m_vedit[t]);
-                     }
-                     else
-                     {
-                        vector<IEditable *> list;
-                        list.push_back(table->m_vedit[t]);
-                        layers[psel->m_layerName] = list;
-                     }
+                     if (stack.back().opened)
+                        ImGui::TreePop();
+                     stack.pop_back();
+                  }
+                  if (edit->GetItemType() == eItemPartGroup)
+                  {
+                     stack.push_back({ 
+                        static_cast<PartGroup*>(edit), 
+                        (stack.empty() || stack.back().opened) ? ImGui::TreeNodeEx(edit->GetName(), ImGuiTreeNodeFlags_None) : false });
+                  }
+                  else if (stack.back().opened)
+                  {
+                     Selection sel(is_live, edit);
+                     if (IsOutlinerFiltered(edit->GetName()) && ImGui::Selectable(edit->GetName(), m_selection == sel))
+                        m_selection = sel;
                   }
                }
-               std::vector<std::string> keys;
-               keys.reserve(layers.size());
-               for (const auto &it : layers)
-                  keys.push_back(it.first);
-               sort(keys.begin(), keys.end());
-               for (const auto &it : keys)
+               while (!stack.empty())
                {
-                  if (it.empty()) // Skip editables without a layer (like live implicit playfield,...)
-                     continue;
-                  if (ImGui::TreeNode(it.c_str()))
-                  {
-                     const std::function<string(IEditable *)> map = [](IEditable *editable) -> string { return editable->GetName(); };
-                     for (IEditable *&editable : SortedCaseInsensitive(layers[it], map))
-                     {
-                        Selection sel(is_live, editable);
-                        if (IsOutlinerFiltered(editable->GetName()) && ImGui::Selectable(editable->GetName(), m_selection == sel))
-                           m_selection = sel;
-                     }
+                  if (stack.back().opened)
                      ImGui::TreePop();
-                  }
+                  stack.pop_back();
                }
                ImGui::TreePop();
             }

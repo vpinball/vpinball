@@ -142,22 +142,16 @@ public:
    virtual void AddPoint(int x, int y, const bool smooth) {}
    virtual void UpdateStatusBarInfo();
 
-   POINT m_ptLast;
-
-   SelectState m_selectstate;
-
-   int m_menuid; // context menu to use
-
-   // TODO remove, as now part of more general PartGroup (layers being top level part groups) and moved to IEditable
-   string m_layerName;
-   // TODO also remove m_oldLayerIndex and directly process at load time in one step
-   unsigned char m_oldLayerIndex; //!! deprecated, leave it here for compatibility reasons. To load old tables to new layer handling
-
-   bool m_dragging;
-   bool m_markedForUndo;
-   bool m_locked; // Can not be dragged in the editor
-   bool m_isVisible;
+   SelectState m_selectstate = eNotSelected;
+   int m_menuid = -1; // context menu to use
+   bool m_dragging = false;
+   bool m_locked = false; // Can not be dragged in the editor
+   bool m_isVisible = true; // UI visibility (not the same as rendering visibility which is a member of part data)
 
 protected:
-   VPinball *m_vpinball;
+   VPinball *m_vpinball = nullptr;
+   
+private:
+   bool m_markedForUndo = false; // Flag set when dragged to enable undo
+   POINT m_ptLast {}; // Last point when dragging
 };
