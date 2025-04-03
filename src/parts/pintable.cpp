@@ -1409,39 +1409,15 @@ STDMETHODIMP ScriptGlobalTable::get_RenderingMode(int *pVal)
 PinTable::PinTable()
    : m_settings(&(g_pvp->m_settings))
 {
-   m_savingActive = false;
    m_renderSolid = m_settings.LoadValueWithDefault(Settings::Editor, "RenderSolid"s, true);
    ClearMultiSel();
 
-   m_hbmOffScreen = nullptr;
    m_undo.m_ptable = this;
-   m_grid = true;
-   m_backdrop = true;
-   m_moving = false;
-
-   m_renderDecals = true;
-   m_renderEMReels = true;
-
-   m_overridePhysics = 0;
-   m_overridePhysicsFlipper = false;
-
-   m_defaultBulbIntensityScaleOnBall = 1.0f;
 
    SetDefaultPhysics(false);
 
-   m_defaultScatter = 0.f;
-   m_nudgeTime = 5.0f;
-
-   m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
-   m_plungerFilter = false;
    m_PhysicsMaxLoops = m_settings.LoadValueWithDefault(Settings::Player, "PhysicsMaxLoops"s, (int)0xFFFFFFFFu);
 
-   m_right = 0.0f;
-   m_bottom = 0.0f;
-
-   m_glassTopHeight = m_glassBottomHeight = 210;
-
-   m_BG_enable_FSS = false;
    UpdateCurrentBGSet();
    m_currentBackglassMode = m_BG_current_set;
 
@@ -1454,43 +1430,19 @@ PinTable::PinTable()
    m_psgt->AddRef();
    m_psgt->Init(m_vpinball, this);
 
-   m_sdsDirtyProp = eSaveClean;
-   m_sdsDirtyScript = eSaveClean;
-   m_sdsNonUndoableDirty = eSaveClean;
-   m_sdsCurrentDirtyState = eSaveClean;
-
    memset(&m_protectionData, 0, sizeof(m_protectionData)); //!!
 
-   m_globalEmissionScale = 1.0f;
-
-   m_numTimesSaved = 0;
-
-   m_pbTempScreenshot = nullptr;
-
-   m_tblMirrorEnabled = false;
-
-   m_hMaterialManager = nullptr;
-
-   m_numMaterials = 0;
-
-   m_difficulty = 0.2f; // easy by default
    m_globalDifficulty = m_settings.LoadValueWithDefault(Settings::TableOverride, "Difficulty"s, m_difficulty);
 
    m_tblAutoStart = m_settings.LoadValueWithDefault(Settings::Player, "Autostart"s, 0) * 10;
    m_tblAutoStartRetry = m_settings.LoadValueWithDefault(Settings::Player, "AutostartRetry"s, 0) * 10;
    m_tblAutoStartEnabled = m_settings.LoadValueWithDefault(Settings::Player, "asenable"s, false);
-   m_tblVolmod = (float)m_settings.LoadValueWithDefault(Settings::Player, "Volmod"s, 1000) * (float)(1.0/1000.0);
 
    m_global3DZPD = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DZPD"s, 0.5f);
-   m_3DZPD = 0.5f;
    m_global3DMaxSeparation = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DMaxSeparation"s, 0.03f);
-   m_3DmaxSeparation = 0.03f;
    m_global3DOffset = m_settings.LoadValueWithDefault(Settings::Player, "Stereo3DOffset"s, 0.f);
-   m_3DOffset = 0.0f;
-   m_overwriteGlobalStereo3D = false;
 
    m_tblNudgeRead = Vertex2D(0.f,0.f);
-   m_tblNudgeReadTilt = 0.0f;
    m_tblNudgePlumb = Vertex2D(0.f,0.f);
 
 #ifdef UNUSED_TILT
@@ -1719,9 +1671,6 @@ void PinTable::InitTablePostLoad()
 
    m_hbmOffScreen = nullptr;
    m_dirtyDraw = true;
-
-   m_left = 0.f;
-   m_top = 0.f;
 
    SetDefaultView();
 
@@ -2089,18 +2038,6 @@ void PinTable::Render3DProjection(Sur * const psur)
    psur->SetFillColor(RGB(200, 200, 200));
    psur->SetBorderColor(-1, false, 0);
    psur->Polygon(rgvOut, 8);
-}
-
-
-bool PinTable::GetDecalsEnabled() const
-{
-   return m_renderDecals;
-}
-
-
-bool PinTable::GetEMReelsEnabled() const
-{
-   return m_renderEMReels;
 }
 
 // draws the main design screen

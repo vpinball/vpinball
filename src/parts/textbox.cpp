@@ -9,6 +9,7 @@
 
 Textbox::Textbox()
 {
+   m_backglass = true; // Textbox is always located on backdrop
 }
 
 Textbox::~Textbox()
@@ -50,8 +51,6 @@ void Textbox::SetDefaults(const bool fromMouseClick)
 {
 #define regKey Settings::DefaultPropsTextBox
 
-   //Textbox is always located on backdrop
-   m_backglass = true;
    m_d.m_visible = true;
 
 #ifndef __STANDALONE__
@@ -462,17 +461,15 @@ void Textbox::UpdateAnimation(const float diff_time_msec)
 void Textbox::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   assert(m_backglass);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
-   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
    const bool is_dmd = m_d.m_isDMD || StrStrI(m_d.m_sztext.c_str(), "DMD") != nullptr; //!! second part is VP10.0 legacy
    if (isStaticOnly
       || !m_d.m_visible
-      || (m_backglass && isReflectionPass)
-      || (m_backglass && isNoBackdrop)
       || (!is_dmd && m_texture == nullptr))
       return;
 

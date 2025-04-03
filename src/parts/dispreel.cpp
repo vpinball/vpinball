@@ -5,6 +5,7 @@
 
 DispReel::DispReel()
 {
+   m_backglass = true; // DispReel is always located on backdrop
 }
 
 DispReel::~DispReel()
@@ -35,10 +36,6 @@ HRESULT DispReel::Init(PinTable *const ptable, const float x, const float y, con
 void DispReel::SetDefaults(const bool fromMouseClick)
 {
 #define regKey Settings::DefaultPropsEMReel
-
-   // object is only available on the backglass
-   m_backglass = true;
-
    // set all the Data defaults
    bool hr;
    hr = g_pvp->m_settings.LoadValue(regKey, "Image"s, m_d.m_szImage);
@@ -363,17 +360,14 @@ void DispReel::UpdateAnimation(const float diff_time_msec)
 void DispReel::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   assert(m_backglass);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
-   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
    if (isStaticOnly
    || !m_d.m_visible
-   || !GetPTable()->GetEMReelsEnabled()
-   || (m_backglass && isReflectionPass)
-   || (m_backglass && isNoBackdrop))
+   || !GetPTable()->GetEMReelsEnabled())
       return;
 
    Texture * const pin = m_ptable->GetImage(m_d.m_szImage);
@@ -382,12 +376,9 @@ void DispReel::Render(const unsigned int renderMask)
 
    m_rd->ResetRenderState();
 
-   if (m_backglass)
-   {
-      m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
-      m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
-      m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
-   }
+   m_rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   m_rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   m_rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
 
    m_rd->m_DMDShader->SetFloat(SHADER_alphaTestValue, (float)(128.0 / 255.0));
    m_rd->EnableAlphaBlend(false);

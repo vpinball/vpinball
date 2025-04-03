@@ -16,14 +16,6 @@ unsigned int Ball::GetNextBallID() { unsigned int id = Ball::m_nextBallID; Ball:
 Ball::Ball() : m_id(GetNextBallID())
 {
    swprintf_s(m_wzName, std::size(m_wzName), L"LiveBall%d", m_id); // Default name
-   m_d.m_useTableRenderSettings = true;
-   m_d.m_color = RGB(255, 255, 255);
-   m_d.m_bulb_intensity_scale = 1.0f;
-   m_d.m_playfieldReflectionStrength = 1.0f;
-   m_d.m_reflectionEnabled = true;
-   m_d.m_forceReflection = false;
-   m_d.m_visible = true;
-   m_d.m_decalMode = false;
    m_hitBall.m_d.m_pos = Vertex3Ds(0.f, 0.f, 25.f);
    m_hitBall.m_d.m_radius = 25.f;
    m_hitBall.m_d.m_mass = 1.f;
@@ -278,6 +270,7 @@ static inline float map_bulblight_to_emission(const Light* const l) // magic map
 void Ball::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   assert(!m_backglass);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;

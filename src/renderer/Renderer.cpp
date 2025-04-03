@@ -1138,6 +1138,14 @@ void Renderer::RenderFrame()
    }
    m_renderableToInit.clear();
 
+   // Update backdrop visibility and visibility mask
+   // For the time being, the RenderFrame only support rendering one 3D view, used for main scene, mixed realaity and virtual reality
+   // Dedicated 3D rendering for backglass, topper, apron are not yet implemented
+   m_noBackdrop = (g_pplayer->m_vrDevice != nullptr) || (m_table->m_BG_current_set == BG_FULLSCREEN);
+   m_visibilityMask = g_pplayer->m_vrDevice == nullptr ? PartGroupData::VisibilityMask::VM_PLAYFIELD
+                    : m_vrApplyColorKey ?               (PartGroupData::VisibilityMask::VM_PLAYFIELD | PartGroupData::VisibilityMask::VM_MIXED_REALITY)
+                    :                                   (PartGroupData::VisibilityMask::VM_PLAYFIELD | PartGroupData::VisibilityMask::VM_MIXED_REALITY | PartGroupData::VisibilityMask::VM_VIRTUAL_REALITY);
+
    // Setup ball rendering: collect all lights that can reflect on balls
    m_ballTrailMeshBufferPos = 0;
    m_ballReflectedLights.clear();
@@ -1401,9 +1409,9 @@ void Renderer::DrawBulbLightBuffer()
    m_render_mask |= Renderer::LIGHT_BUFFER;
    m_renderDevice->SetRenderTarget("Transmitted Light " + std::to_string(id), GetBloomBufferTexture(), true, true);
    m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE); // disable all z-tests as zbuffer is in different resolution
-   for (Hitable *hitable : g_pplayer->m_vhitables)
-      if (hitable->HitableGetItemType() == eItemLight)
-         hitable->Render(m_render_mask);
+   for (IEditable *renderable : g_pplayer->m_vhitables)
+      if (renderable->GetItemType() == eItemLight)
+         RenderItem(renderable, true);
    m_render_mask &= ~Renderer::LIGHT_BUFFER;
 
    bool hasLight = m_renderDevice->GetCurrentPass()->GetCommandCount() > 0;
@@ -1447,26 +1455,28 @@ void Renderer::DrawBulbLightBuffer()
 void Renderer::DrawStatics()
 {
    const unsigned int mask = m_render_mask;
+   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::STATIC_ONLY;
-   for (Hitable* hitable : g_pplayer->m_vhitables)
-      hitable->Render(m_render_mask);
+   for (IEditable* renderable : g_pplayer->m_vhitables)
+      RenderItem(renderable, isNoBackdrop);
    m_render_mask = mask;
 }
 
 void Renderer::DrawDynamics(bool onlyBalls)
 {
    const unsigned int mask = m_render_mask;
+   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= Renderer::DYNAMIC_ONLY;
    if (onlyBalls)
    {
       for (HitBall* ball : g_pplayer->m_vball)
-         ball->m_pBall->Render(m_render_mask);
+         RenderItem(ball->m_pBall, isNoBackdrop);
    }
    else
    {
       DrawBulbLightBuffer();
-      for (Hitable* hitable : g_pplayer->m_vhitables)
-         hitable->Render(m_render_mask);
+      for (IEditable* renderable : g_pplayer->m_vhitables)
+         RenderItem(renderable, isNoBackdrop);
    }
    m_render_mask = mask;
 }
@@ -1508,6 +1518,14 @@ using namespace Concurrency::diagnostic;
 extern marker_series series;
 #endif
 
+void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
+{
+   if (!(isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
+      && (renderable->GetPartGroup() == nullptr || (renderable->GetPartGroup()->GetVisibilityMask() & m_visibilityMask))) // Apply visibility mask
+      renderable->GetIHitable()->Render(m_render_mask);
+}
+
+
 void Renderer::RenderStaticPrepass()
 {
    // For VR, we don't use any static pre-rendering
@@ -1526,6 +1544,7 @@ void Renderer::RenderStaticPrepass()
    TRACE_FUNCTION();
 
    m_render_mask |= Renderer::STATIC_ONLY;
+   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
 
    // The code will fail if the static render target is MSAA (the copy operation we are performing is not allowed)
    delete m_staticPrepassRT;
@@ -1588,8 +1607,8 @@ void Renderer::RenderStaticPrepass()
 
          // Render static parts
          UpdateBasicShaderMatrix();
-         for (Hitable *hitable : g_pplayer->m_vhitables)
-            hitable->Render(m_render_mask);
+         for (IEditable* renderable : g_pplayer->m_vhitables)
+            RenderItem(renderable, isNoBackdrop);
 
          // Rendering is done to the static render target then accumulated to accumulationSurface
          // We use the framebuffer mirror shader which copies a weighted version of the bound texture
@@ -1706,8 +1725,8 @@ void Renderer::RenderStaticPrepass()
          for (size_t i = 0; i < m_table->m_vrenderprobe.size(); ++i)
             m_table->m_vrenderprobe[i]->MarkDirty();
          UpdateBasicShaderMatrix();
-         for (Hitable* hitable : g_pplayer->m_vhitables)
-            hitable->Render(m_render_mask);
+         for (IEditable* renderable : g_pplayer->m_vhitables)
+            RenderItem(renderable, isNoBackdrop);
       }
       // Copy supersampled color buffer
       m_renderDevice->SetRenderTarget("PreRender Combine Color"s, renderRTmsaa, true, true); // Force new pass to avoid sorting blit call with background calls
@@ -1776,10 +1795,11 @@ void Renderer::RenderDynamics()
    #endif
 
    const unsigned int mask = m_render_mask;
+   const bool isNoBackdrop = m_noBackdrop || ((m_render_mask & Renderer::REFLECTION_PASS) != 0);
    m_render_mask |= IsUsingStaticPrepass() ? Renderer::DYNAMIC_ONLY : Renderer::DEFAULT;
    DrawBulbLightBuffer();
-   for (Hitable* hitable : g_pplayer->m_vhitables)
-      hitable->Render(m_render_mask);
+   for (IEditable* renderable : g_pplayer->m_vhitables)
+      RenderItem(renderable, isNoBackdrop);
    m_render_mask = mask;
    
    m_renderDevice->m_basicShader->SetTextureNull(SHADER_tex_base_transmission); // need to reset the bulb light texture, as its used as render target for bloom again

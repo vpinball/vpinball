@@ -15,13 +15,13 @@ public:
    enum VisibilityMask
    {
       VM_PLAYFIELD       = 0x0001,
-      VM_SCOREVIEW       = 0x0002,
-      VM_BACKGLASS       = 0x0004,
-      VM_TOPPER          = 0x0008,
-      VM_APRON_LEFT      = 0x0010,
-      VM_APRON_RIGHT     = 0x0020,
-      VM_MIXED_REALITY   = 0x0040,
-      VM_VIRTUAL_REALITY = 0x0080
+      VM_MIXED_REALITY   = 0x0002,
+      VM_VIRTUAL_REALITY = 0x0004,
+      VM_SCOREVIEW       = 0x0008,
+      VM_BACKGLASS       = 0x0010,
+      VM_TOPPER          = 0x0020,
+      VM_APRON_LEFT      = 0x0040,
+      VM_APRON_RIGHT     = 0x0080,
    };
    unsigned int m_visibilityMask = VM_PLAYFIELD;
    enum class SpaceReference : int

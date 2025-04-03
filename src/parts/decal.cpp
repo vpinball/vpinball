@@ -165,7 +165,7 @@ void Decal::WriteRegDefaults()
 
 void Decal::UIRenderPass1(Sur * const psur)
 {
-   if (!m_backglass || GetPTable()->GetDecalsEnabled())
+   if (!(m_backglass && !GetPTable()->GetDecalsEnabled()))
    {
       psur->SetBorderColor(-1, false, 0);
       psur->SetFillColor(m_ptable->RenderSolid() ? RGB(0, 0, 255) : -1);
@@ -197,7 +197,7 @@ void Decal::UIRenderPass1(Sur * const psur)
 
 void Decal::UIRenderPass2(Sur * const psur)
 {
-   if (!m_backglass || GetPTable()->GetDecalsEnabled())
+   if (!(m_backglass && !GetPTable()->GetDecalsEnabled()))
    {
       psur->SetBorderColor(RGB(0, 0, 0), false, 0);
       psur->SetFillColor(-1);
@@ -752,13 +752,9 @@ void Decal::Render(const unsigned int renderMask)
    assert(m_rd != nullptr);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
-   const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
-   const bool isNoBackdrop = renderMask & Renderer::DISABLE_BACKDROP;
    TRACE_FUNCTION();
 
-   if ((m_backglass && !GetPTable()->GetDecalsEnabled())
-    || (m_backglass && isReflectionPass)
-    || (m_backglass && isNoBackdrop))
+   if (m_backglass && !GetPTable()->GetDecalsEnabled())
       return;
 
    //!! should just check if material has no opacity enabled, but this is crucial for HV setup performance like-is

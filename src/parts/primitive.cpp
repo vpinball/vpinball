@@ -1188,6 +1188,7 @@ void Primitive::RenderRelease()
 void Primitive::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   assert(!m_backglass);
 
    if (!m_d.m_visible || m_skipRendering)
       return;

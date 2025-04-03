@@ -413,6 +413,7 @@ void Gate::UpdateAnimation(const float diff_time_msec)
 void Gate::Render(const unsigned int renderMask)
 {
    assert(m_rd != nullptr);
+   assert(!m_backglass);
    const bool isStaticOnly = renderMask & Renderer::STATIC_ONLY;
    const bool isDynamicOnly = renderMask & Renderer::DYNAMIC_ONLY;
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
@@ -432,7 +433,6 @@ void Gate::Render(const unsigned int renderMask)
       const Matrix3D vertMatrix = (fullMatrix
                                  * Matrix3D::MatrixScale(m_d.m_length, m_d.m_length, m_d.m_length))
                                  * Matrix3D::MatrixTranslate(m_d.m_vCenter.x, m_d.m_vCenter.y, m_d.m_height + m_baseHeight);
-
       Vertex3D_NoTex2 *buf;
       m_wireMeshBuffer->m_vb->Lock(buf);
       vertMatrix.TransformPositions(m_vertices, buf, m_numVertices);

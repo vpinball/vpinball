@@ -233,7 +233,7 @@ public:
    PhysicsEngine* m_physics = nullptr;
 
    vector<HitBall *> m_vball;
-   vector<Hitable *> m_vhitables; // all Hitables obtained from the table's list of Editables
+   vector<IEditable *> m_vhitables; // all Renderable parts obtained from the table's list of Editables
 
    int m_minphyslooptime; // minimum physics loop processing time in usec (0-1000), effort to reduce input latency (mainly useful if vsync is enabled, too)
 

@@ -69,7 +69,7 @@ public:
     bool  m_hitEvent = false;
     bool  m_overwritePhysics = true;
     bool  m_reflectionEnabled = true;
-    bool  m_visible;
+    bool  m_visible = true;
 };
 
 // ISelect is the subclass for anything that can be manipulated with the mouse.
