@@ -267,8 +267,8 @@ public:
    bool m_primaryDisplay; // force use of pixel(0,0) monitor
    bool m_table_played_via_command_line;
    volatile bool m_table_played_via_SelectTableOnStart;
-   bool m_bgles; // override global emission scale by m_fgles below?
-   float m_fgles;
+   bool m_bgles = false; // override global emission scale by m_fgles below?
+   float m_fgles = 0.f;
    WCHAR *m_customParameters[MAX_CUSTOM_PARAM_INDEX];
 
    HBITMAP m_hbmInPlayMode;
