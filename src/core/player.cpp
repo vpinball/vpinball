@@ -654,20 +654,18 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    PLOGI << "Initializing renderer"; // For profiling
    m_progressDialog.SetProgress("Initializing Renderer..."s, 60);
 
-   m_renderer->m_render_mask = m_vrDevice ? Renderer::DISABLE_BACKDROP : Renderer::DEFAULT;
-
-   // Start the frame.
+   // Setup rendering and timers
    for (RenderProbe *probe : m_ptable->m_vrenderprobe)
       probe->RenderSetup(m_renderer);
    for (auto editable : m_ptable->m_vedit)
       if (editable->GetIHitable())
-         m_vhitables.push_back(editable->GetIHitable());
-   for (Hitable *hitable : m_vhitables)
+         m_vhitables.push_back(editable);
+   for (IEditable *hitable : m_vhitables)
    {
-      hitable->TimerSetup(m_vht);
-      hitable->RenderSetup(m_renderer->m_renderDevice);
-      if (hitable->HitableGetItemType() == ItemTypeEnum::eItemBall)
-         m_vball.push_back(&((Ball*)hitable)->m_hitBall);
+      hitable->GetIHitable()->TimerSetup(m_vht);
+      hitable->GetIHitable()->RenderSetup(m_renderer->m_renderDevice);
+      if (hitable->GetItemType() == ItemTypeEnum::eItemBall)
+         m_vball.push_back(&static_cast<Ball *>(hitable)->m_hitBall);
    }
 
    // Setup anisotropic filtering
@@ -698,15 +696,15 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
 
       // Fire Init event for table object and all 'hitable' parts, also fire Animate event of parts having it since initial setup is considered as the initial animation event
       m_ptable->FireVoidEvent(DISPID_GameEvents_Init);
-      for (Hitable *const ph : m_vhitables)
+      for (IEditable *const ph : m_vhitables)
       {
-         if (ph->GetEventProxyBase())
+         if (ph->GetIHitable()->GetEventProxyBase())
          {
-            ph->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
-            ItemTypeEnum type = ph->HitableGetItemType();
+            ph->GetIHitable()->GetEventProxyBase()->FireVoidEvent(DISPID_GameEvents_Init);
+            ItemTypeEnum type = ph->GetItemType();
             if (type == ItemTypeEnum::eItemBumper || type == ItemTypeEnum::eItemDispReel || type == ItemTypeEnum::eItemFlipper || type == ItemTypeEnum::eItemGate
                || type == ItemTypeEnum::eItemHitTarget || type == ItemTypeEnum::eItemLight || type == ItemTypeEnum::eItemSpinner || type == ItemTypeEnum::eItemTrigger)
-               ph->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
+               ph->GetIHitable()->GetEventProxyBase()->FireVoidEvent(DISPID_AnimateEvents_Animate);
          }
       }
       m_ptable->FireOptionEvent(0); // Custom option init event
@@ -754,7 +752,7 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.lock();
    #endif
-   m_renderer->RenderStaticPrepass();
+   m_renderer->RenderFrame();
    #if defined(ENABLE_BGFX)
    m_renderer->m_renderDevice->m_frameMutex.unlock();
    #endif
@@ -1000,9 +998,9 @@ Player::~Player()
    for (auto probe : m_ptable->m_vrenderprobe)
       probe->RenderRelease();
    for (auto renderable : m_vhitables)
-      renderable->RenderRelease();
+      renderable->GetIHitable()->RenderRelease();
    for (auto hitable : m_vhitables)
-      hitable->TimerRelease();
+      hitable->GetIHitable()->TimerRelease();
    assert(m_vballDelete.empty());
    m_vball.clear();
 
@@ -1529,7 +1527,7 @@ string Player::GetPerfInfo()
    info << "State changes: " << m_renderer->m_renderDevice->Perf_GetNumStateChanges() << '\n';
    info << "Texture changes: " << m_renderer->m_renderDevice->Perf_GetNumTextureChanges() << " (" << m_renderer->m_renderDevice->Perf_GetNumTextureUploads() << " Uploads)\n";
    info << "Shader/Parameter changes: " << m_renderer->m_renderDevice->Perf_GetNumTechniqueChanges() << " / " << m_renderer->m_renderDevice->Perf_GetNumParameterChanges() << '\n';
-   info << "Objects: " << (unsigned int)m_vhitables.size() << '\n';
+   info << "Objects: " << static_cast<unsigned int>(m_vhitables.size()) << '\n';
    info << '\n';
 
    // Physics additional information
@@ -2014,8 +2012,8 @@ void Player::FinishFrame()
       pBall->RenderRelease();
       pBall->TimerRelease();
       pBall->Release();
-      RemoveFromVectorSingle(m_ptable->m_vedit, (IEditable*) pBall);
-      RemoveFromVectorSingle(m_vhitables, (Hitable *)pBall);
+      RemoveFromVectorSingle(m_ptable->m_vedit, static_cast<IEditable *>(pBall));
+      RemoveFromVectorSingle(m_vhitables, static_cast<IEditable *>(pBall));
    }
    m_vballDelete.clear();
 

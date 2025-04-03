@@ -36,7 +36,6 @@ public:
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
    bool IsUsingStaticPrepass() const { return m_disableStaticPrepass <= 0; }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
-   void RenderStaticPrepass();
 
    void RenderFrame();
 
@@ -115,7 +114,6 @@ public:
       LIGHT_BUFFER = 1 << 2,      // Transmitted light rendering
       REFLECTION_PASS = 1 << 3,   // Reflection pass, only render reflected elements
       DISABLE_LIGHTMAPS = 1 << 4, // Disable lightmaps, usefull for reflection probe parallel to lightmap ot avoid doubling them
-      DISABLE_BACKDROP = 1 << 5,  // Disable backdrop, used for VR and cabinet rendering (background is just black for these)
    };
    unsigned int m_render_mask = DEFAULT; // Active pass render bit mask
    bool IsRenderPass(const RenderMask pass_mask) const { return (m_render_mask & pass_mask) != 0; }
@@ -144,6 +142,8 @@ public:
    RenderTarget* GetBackBufferTexture() const { return m_pOffscreenBackBufferTexture1; } // Main render target, with MSAA resolved if any, also may have stereo output (2 viewports)
 
 private:
+   void RenderItem(IEditable* renderable, bool isNoBackdrop);
+   void RenderStaticPrepass();
    void RenderDynamics();
    void DrawBackground();
    void DrawBulbLightBuffer();
@@ -200,6 +200,9 @@ private:
    RenderTarget* m_staticPrepassRT = nullptr;
    unsigned int m_statsDrawnStaticTriangles = 0;
    RenderProbe::ReflectionMode m_maxReflectionMode;
+   
+   bool m_noBackdrop = false;
+   unsigned int m_visibilityMask = 0xFFFF;
 
    vector<Renderable*> m_renderableToInit;
 

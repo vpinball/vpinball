@@ -31,8 +31,6 @@ class Light;
 #define DISABLE_SCRIPT_EDITING 0x00000002 // cannot open script windows (stops editing and viewing)
 #define DISABLE_EVERYTHING 0x80000000 // everything is off limits (including future locks)
 
-#define MAX_LAYERS 11
-
 struct LightSource
 {
    COLORREF emission;
@@ -362,8 +360,8 @@ public:
 
    void Render3DProjection(Sur *const psur);
 
-   bool GetDecalsEnabled() const;
-   bool GetEMReelsEnabled() const;
+   bool GetDecalsEnabled() const { return m_renderDecals; } // Enable backdrop image, decals and lights on backdrop
+   bool GetEMReelsEnabled() const { return m_renderEMReels; } // Enable dispreel on backdrop
 
    void Copy(int x, int y);
    void Paste(const bool atLocation, const int x, const int y);
@@ -630,26 +628,25 @@ public:
    Vertex2D m_offset;
    float m_zoom;
 
-   //ISelect *m_pselcur;
    VectorProtected<ISelect> m_vmultisel;
 
-   float m_left; // always zero for now
-   float m_top; // always zero for now
-   float m_right;
-   float m_bottom;
+   float m_left = 0.f; // always zero for now
+   float m_top = 0.f; // always zero for now
+   float m_right = 0.f;
+   float m_bottom = 0.f;
 
-   float m_glassBottomHeight; // Height of glass above playfield at bottom of playfield
-   float m_glassTopHeight; // Height of glass above playfield at top of playfield
+   float m_glassBottomHeight = 210.f; // Height of glass above playfield at bottom of playfield
+   float m_glassTopHeight = 210.f; // Height of glass above playfield at top of playfield
 
-   float m_3DmaxSeparation;
+   float m_3DmaxSeparation = 0.03f;
    float m_global3DMaxSeparation;
-   float m_3DZPD;
+   float m_3DZPD = 0.5f;
    float m_global3DZPD;
-   float m_3DOffset;
+   float m_3DOffset = 0.f;
    float m_global3DOffset;
-   float m_defaultBulbIntensityScaleOnBall;
+   float m_defaultBulbIntensityScaleOnBall = 1.f;
 
-   bool m_BG_enable_FSS; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
+   bool m_BG_enable_FSS = false; // Flag telling if this table supports Full Single Screen POV (defaults is to use it in desktop mode if available)
    ViewSetupID m_BG_override = BG_INVALID; // Allow to easily override the POV for testing (not persisted)
    ViewSetupID m_BG_current_set; // Cache of the active view setup ID (depends on table but also on application settings and user overriding it)
    ViewSetup mViewSetups[NUM_BG_SETS];
@@ -659,37 +656,41 @@ public:
    float m_angletiltMax;
    float m_angletiltMin;
 
-   int m_overridePhysics;
-   float m_fOverrideGravityConstant, m_fOverrideContactFriction, m_fOverrideElasticity, m_fOverrideElasticityFalloff, m_fOverrideScatterAngle;
-   float m_fOverrideMinSlope, m_fOverrideMaxSlope;
+   int m_overridePhysics = 0;
+   float m_fOverrideGravityConstant;
+   float m_fOverrideContactFriction;
+   float m_fOverrideElasticity;
+   float m_fOverrideElasticityFalloff;
+   float m_fOverrideScatterAngle;
+   float m_fOverrideMinSlope;
+   float m_fOverrideMaxSlope;
+
+   bool m_overridePhysicsFlipper = false;
 
    unsigned int m_PhysicsMaxLoops;
 
    float m_Gravity;
-
    float m_friction;
    float m_elasticity;
    float m_elasticityFalloff;
    float m_scatter;
+   float m_defaultScatter = 0.f;
+   
+   int m_plungerNormalize = 100;  //Mech-Plunger component adjustment or weak spring, aging
+   bool m_plungerFilter = false;
 
-   float m_defaultScatter;
-   float m_nudgeTime;
-   int m_plungerNormalize;
-   bool m_plungerFilter;
-
-   bool m_overridePhysicsFlipper;
-
-   bool m_tblAutoStartEnabled;
-   bool m_tblMirrorEnabled; // Mirror tables left to right.  This is activated by a cheat during table selection.
-
+   float m_nudgeTime = 5.f;
    Vertex2D m_tblNudgeRead;
-   float m_tblNudgeReadTilt;
+   float m_tblNudgeReadTilt = 0.f;
    Vertex2D m_tblNudgePlumb;
 
+   bool m_tblAutoStartEnabled;
    U32 m_tblAutoStart; // msecs before trying an autostart if doing once-only method .. 0 is automethod
    U32 m_tblAutoStartRetry; // msecs before retrying to autostart.
-   float m_tblVolmod; // volume modulation for doing audio balancing
-   float m_difficulty; // table difficulty Level
+
+   bool m_tblMirrorEnabled = false; // Mirror tables left to right.  This is activated by a cheat during table selection.
+
+   float m_difficulty = 0.2f; // table difficulty Level
    float m_globalDifficulty; // global difficulty, that is to say table difficulty eventually overriden from settings
 
    short2 m_oldMousePos;
@@ -717,7 +718,7 @@ public:
    vector<Texture *> m_vliveimage;
    const vector<Texture *> &GetImageList() const { return m_vimage; }
 
-   int m_numMaterials;
+   int m_numMaterials = 0;
    vector<Material *> m_materials;
    const vector<Material *> &GetMaterialList() const { return m_materials; }
 
@@ -745,18 +746,16 @@ public:
 
    FRect m_rcDragRect; // Multi-select
 
-   HBITMAP m_hbmOffScreen; // Buffer for drawing the editor window
-
    PinUndo m_undo;
 
    CComObject<CodeViewer> *m_pcv;
 
    CComObject<ScriptGlobalTable> *m_psgt; // Object to expose to script for global functions
 
-   SaveDirtyState m_sdsDirtyProp;
-   SaveDirtyState m_sdsDirtyScript;
-   SaveDirtyState m_sdsNonUndoableDirty;
-   SaveDirtyState m_sdsCurrentDirtyState;
+   SaveDirtyState m_sdsDirtyProp = eSaveClean;
+   SaveDirtyState m_sdsDirtyScript = eSaveClean;
+   SaveDirtyState m_sdsNonUndoableDirty = eSaveClean;
+   SaveDirtyState m_sdsCurrentDirtyState = eSaveClean;
 
    // Table info
    string m_szTableName;
@@ -770,9 +769,7 @@ public:
    string m_szRules;
    string m_szScreenShot;
    string m_szDateSaved;
-   unsigned int m_numTimesSaved;
-
-   PinBinary *m_pbTempScreenshot; // Holds contents of screenshot image until the image asks for it
+   unsigned int m_numTimesSaved = 0;
 
    vector<string> m_vCustomInfoTag;
    vector<string> m_vCustomInfoContent;
@@ -785,7 +782,7 @@ public:
    float m_lightRange;
    float m_lightEmissionScale;
    float m_envEmissionScale;
-   float m_globalEmissionScale;
+   float m_globalEmissionScale = 1.f;
    float m_AOScale;
    float m_SSRScale;
 
@@ -796,19 +793,17 @@ public:
    bool m_enableSSR;
    float m_bloom_strength;
 
-   HWND m_hMaterialManager;
    SearchSelectDialog m_searchSelectDlg;
 
-   volatile std::atomic<bool> m_savingActive;
+   volatile std::atomic<bool> m_savingActive = false;
 
-   bool m_dirtyDraw; // Whether our background bitmap is up to date
-   bool m_renderSolid;
+   bool m_renderSolid = true;
 
-   bool m_grid; // Display grid or not
-   bool m_backdrop;
-   bool m_renderDecals;
-   bool m_renderEMReels;
-   bool m_overwriteGlobalStereo3D;
+   bool m_grid = true; // Display grid or not
+   bool m_backdrop = true;
+   bool m_renderDecals = true;
+   bool m_renderEMReels = true;
+   bool m_overwriteGlobalStereo3D = false;
 
 #ifdef UNUSED_TILT //!! currently unused (see NudgeGetTilt())
    int m_jolt_amount;
@@ -882,7 +877,12 @@ private:
    robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
    robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
    robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
-   bool m_moving;
+   bool m_moving = false;
+
+   PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it
+
+   bool m_dirtyDraw = true; // Whether our background bitmap is up to date
+   HBITMAP m_hbmOffScreen = nullptr; // Buffer for drawing the editor window
 
    ToneMapper m_toneMapper = ToneMapper::TM_AGX;
    float m_exposure = 1.f;

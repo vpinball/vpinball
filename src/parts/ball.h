@@ -85,14 +85,14 @@ public:
    // Vertex3Ds m_pos; implemented in HitBall to avoid duplication
    // float m_radius; implemented in HitBall to avoid duplication
    // float m_mass; implemented in HitBall to avoid duplication
-   bool m_forceReflection;
+   bool m_forceReflection = false;
 
-   bool m_useTableRenderSettings;
-   bool m_decalMode;
+   bool m_useTableRenderSettings = true;
+   bool m_decalMode = false;
    string m_imageDecal;
-   float m_bulb_intensity_scale; // to dampen/increase contribution of the bulb lights (locally/by script)
-   float m_playfieldReflectionStrength;
-   COLORREF m_color;
+   float m_bulb_intensity_scale = 1.f; // to dampen/increase contribution of the bulb lights (locally/by script)
+   float m_playfieldReflectionStrength = 1.f;
+   COLORREF m_color = RGB(255, 255, 255);
    bool m_pinballEnvSphericalMapping;
 };
 
