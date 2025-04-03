@@ -54,5 +54,25 @@ class VPinballActivity : SDLActivity() {
     }
 
     override fun getLibraries(): Array<String> =
-        arrayOf("SDL3", "SDL3_image", "SDL3_ttf", "SDL3_mixer", "freeimage", "bass", "pinmame", "altsound", "dmdutil", "dof", "pupdmd", "vpinball")
+        arrayOf(
+            "SDL3",
+            "SDL3_image",
+            "SDL3_ttf",
+            "SDL3_mixer",
+            "freeimage",
+            "bass",
+            "pinmame",
+            "altsound",
+            "dmdutil",
+            "dof",
+            "pupdmd",
+            "avcodec",
+            "avdevice",
+            "avfilter",
+            "avformat",
+            "avutil",
+            "swresample",
+            "swscale",
+            "vpinball",
+        )
 }

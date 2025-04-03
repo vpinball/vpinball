@@ -24,7 +24,6 @@ PUPMediaPlayer::PUPMediaPlayer()
    m_priority = -1;
    m_pRenderer = NULL;
    m_pTexture = NULL;
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    m_pFormatContext = NULL;
    m_videoStream = -1;
    m_pVideoContext = NULL;
@@ -36,7 +35,6 @@ PUPMediaPlayer::PUPMediaPlayer()
    m_pAudioContext = NULL;
    m_pAudioConversionContext = NULL;
    m_audioFormat = AV_SAMPLE_FMT_NONE;
-#endif
    m_pPinSound = new PinSound(nullptr);
    m_pPinSound->StreamInit(44100, 2, 0.0f);
    m_running = false;
@@ -47,7 +45,6 @@ PUPMediaPlayer::~PUPMediaPlayer()
 {
    Stop();
 
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    if (m_pFormatContext)
       avformat_close_input(&m_pFormatContext);
 
@@ -62,7 +59,6 @@ PUPMediaPlayer::~PUPMediaPlayer()
 
    if (m_pAudioConversionContext)
       swr_free(&m_pAudioConversionContext);
-#endif
 
    delete m_pPinSound;
 }
@@ -83,7 +79,6 @@ void PUPMediaPlayer::Play(const string& szFilename)
    m_volume = 0.0f;
    m_loop = false;
 
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    if (m_pFormatContext)
       avformat_close_input(&m_pFormatContext);
 
@@ -178,7 +173,6 @@ void PUPMediaPlayer::Play(const string& szFilename)
 
    m_running = true;
    m_thread = std::thread(&PUPMediaPlayer::Run, this);
-#endif
 }
 
 bool PUPMediaPlayer::IsPlaying()
@@ -207,7 +201,6 @@ void PUPMediaPlayer::Stop()
    if (m_thread.joinable())
       m_thread.join();
 
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    {
       std::lock_guard<std::mutex> lock(m_mutex);
       while (!m_queue.empty()) {
@@ -216,12 +209,10 @@ void PUPMediaPlayer::Stop()
          m_queue.pop();
       }
    }
-#endif
 }
 
 void PUPMediaPlayer::Run()
 {
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    AVPacket* pPacket = av_packet_alloc();
    if (!pPacket) {
       PLOGE.printf("Unable to allocate packet");
@@ -365,7 +356,6 @@ void PUPMediaPlayer::Run()
       std::lock_guard<std::mutex> lock(m_mutex);
       m_running = false;
    }
-#endif
 }
 
 void PUPMediaPlayer::SetLoop(bool loop)
@@ -388,7 +378,6 @@ void PUPMediaPlayer::SetVolume(float volume)
 
 void PUPMediaPlayer::Render(const SDL_Rect& destRect)
 {
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
    AVFrame* pFrame = NULL;
 
    {
@@ -463,10 +452,8 @@ void PUPMediaPlayer::Render(const SDL_Rect& destRect)
       fDestRect.h = static_cast<float>(destRect.h);
       SDL_RenderTexture(m_pRenderer, m_pTexture, NULL, &fDestRect);
    }
-#endif
 }
 
-#ifdef VIDEO_WINDOW_HAS_FFMPEG_LIBS
 AVCodecContext* PUPMediaPlayer::OpenStream(AVFormatContext* pInputFormatContext, int stream)
 {
    AVCodecContext* pContext = avcodec_alloc_context3(NULL);
@@ -604,7 +591,6 @@ void PUPMediaPlayer::SetYUVConversionMode(AVFrame *frame)
    SDL_SetYUVConversionMode(mode);
    */
 }
-#endif
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
