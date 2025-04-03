@@ -195,6 +195,11 @@ void Settings::Validate(const bool addDefaults)
 
 
    //////////////////////////////////////////////////////////////////////////
+   // Rendering section
+   Validate(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, addDefaults);
+
+
+   //////////////////////////////////////////////////////////////////////////
    // Cabinet section
 
    Validate(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, addDefaults);

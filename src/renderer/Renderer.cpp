@@ -116,7 +116,7 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       }
       else
       {
-         m_globalEmissionScale = m_table->m_settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f);
+         m_globalEmissionScale = m_table->m_settings.LoadValueFloat(Settings::Player, "EmissionScale"s);
       }
    }
    if (g_pvp->m_bgles)

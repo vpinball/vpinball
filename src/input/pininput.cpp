@@ -736,19 +736,22 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
    {
    case InputLayout::PBWizard:
       SetupJoyMapping(joystickId, InputLayout::Generic);
-      MapActionToJoystick(ePlungerKey, joystickId, 0, true);
-      MapActionToJoystick(eRightFlipperKey, joystickId, 1, true);
-      MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
-      MapActionToJoystick(eVolumeDown, joystickId, 3, true);
-      MapActionToJoystick(eVolumeUp, joystickId, 4, true);
-      // Button 5 is not mapped
-      MapActionToJoystick(eEscape, joystickId, 6, true);
-      MapActionToJoystick(eExitGame, joystickId, 7, true);
-      MapActionToJoystick(eStartGameKey, joystickId, 8, true);
-      MapActionToJoystick(eLeftFlipperKey, joystickId, 9, true);
-      MapActionToJoystick(eLeftMagnaSave, joystickId, 10, true);
-      MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
-      MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
+      if (!m_override_default_buttons)
+      {
+         MapActionToJoystick(ePlungerKey, joystickId, 0, true);
+         MapActionToJoystick(eRightFlipperKey, joystickId, 1, true);
+         MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
+         MapActionToJoystick(eVolumeDown, joystickId, 3, true);
+         MapActionToJoystick(eVolumeUp, joystickId, 4, true);
+         // Button 5 is not mapped
+         MapActionToJoystick(eEscape, joystickId, 6, true);
+         MapActionToJoystick(eExitGame, joystickId, 7, true);
+         MapActionToJoystick(eStartGameKey, joystickId, 8, true);
+         MapActionToJoystick(eLeftFlipperKey, joystickId, 9, true);
+         MapActionToJoystick(eLeftMagnaSave, joystickId, 10, true);
+         MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
+         MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
+      }
 
       if (lr_axis != 0)
          MapAnalogActionToJoystick(AnalogAction::AM_NudgeX, joystickId, 1, true, false);
@@ -765,21 +768,24 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
 
    case InputLayout::UltraCade:
       SetupJoyMapping(joystickId, InputLayout::Generic);
-      MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
-      MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
-      MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
-      // Button 3 is not mapped
-      // Button 4 is not mapped
-      MapActionToJoystick(eVolumeUp, joystickId, 5, true);
-      MapActionToJoystick(eVolumeDown, joystickId, 6, true);
-      // Button 7 is not mapped
-      MapActionToJoystick(eLeftFlipperKey, joystickId, 8, true);
-      // Button 9 is not mapped
-      MapActionToJoystick(eRightFlipperKey, joystickId, 10, true);
-      // Button 11 is not mapped
-      MapActionToJoystick(eStartGameKey, joystickId, 12, true);
-      MapActionToJoystick(ePlungerKey, joystickId, 13, true);
-      MapActionToJoystick(eExitGame, joystickId, 14, true);
+      if (!m_override_default_buttons)
+      {
+         MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
+         MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
+         MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
+         // Button 3 is not mapped
+         // Button 4 is not mapped
+         MapActionToJoystick(eVolumeUp, joystickId, 5, true);
+         MapActionToJoystick(eVolumeDown, joystickId, 6, true);
+         // Button 7 is not mapped
+         MapActionToJoystick(eLeftFlipperKey, joystickId, 8, true);
+         // Button 9 is not mapped
+         MapActionToJoystick(eRightFlipperKey, joystickId, 10, true);
+         // Button 11 is not mapped
+         MapActionToJoystick(eStartGameKey, joystickId, 12, true);
+         MapActionToJoystick(ePlungerKey, joystickId, 13, true);
+         MapActionToJoystick(eExitGame, joystickId, 14, true);
+      }
 
       if (lr_axis != 0)
          MapAnalogActionToJoystick(AnalogAction::AM_NudgeX, joystickId, 2, true, false);
@@ -802,19 +808,22 @@ void PinInput::SetupJoyMapping(uint64_t joystickId, InputLayout inputLayout)
 
    case InputLayout::VirtuaPin:
       SetupJoyMapping(joystickId, InputLayout::Generic);
-      MapActionToJoystick(ePlungerKey, joystickId, 0, true);
-      MapActionToJoystick(eRightFlipperKey, joystickId, 1, true);
-      MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
-      MapActionToJoystick(eVolumeDown, joystickId, 3, true);
-      MapActionToJoystick(eVolumeUp, joystickId, 4, true);
-      // Button 5 is not mapped
-      MapActionToJoystick(eEscape, joystickId, 6, true);
-      MapActionToJoystick(eExitGame, joystickId, 7, true);
-      MapActionToJoystick(eStartGameKey, joystickId, 8, true);
-      MapActionToJoystick(eLeftFlipperKey, joystickId, 9, true);
-      MapActionToJoystick(eLeftMagnaSave, joystickId, 10, true);
-      MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
-      MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
+      if (!m_override_default_buttons)
+      {
+         MapActionToJoystick(ePlungerKey, joystickId, 0, true);
+         MapActionToJoystick(eRightFlipperKey, joystickId, 1, true);
+         MapActionToJoystick(eRightMagnaSave, joystickId, 2, true);
+         MapActionToJoystick(eVolumeDown, joystickId, 3, true);
+         MapActionToJoystick(eVolumeUp, joystickId, 4, true);
+         // Button 5 is not mapped
+         MapActionToJoystick(eEscape, joystickId, 6, true);
+         MapActionToJoystick(eExitGame, joystickId, 7, true);
+         MapActionToJoystick(eStartGameKey, joystickId, 8, true);
+         MapActionToJoystick(eLeftFlipperKey, joystickId, 9, true);
+         MapActionToJoystick(eLeftMagnaSave, joystickId, 10, true);
+         MapActionToJoystick(eAddCreditKey, joystickId, 11, true);
+         MapActionToJoystick(eAddCreditKey2, joystickId, 12, true);
+      }
 
       if (lr_axis != 0)
          MapAnalogActionToJoystick(AnalogAction::AM_NudgeX, joystickId, 1, true, false);

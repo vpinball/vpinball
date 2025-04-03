@@ -1183,7 +1183,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    }
 
    m_overrideNightDay.SetCheck(settings.LoadValueWithDefault(Settings::TableOverride, "OverrideEmissionScale"s, false) ? BST_CHECKED : BST_UNCHECKED);
-   m_nightDay.SetPos((int)(100.f * settings.LoadValueWithDefault(Settings::Player, "EmissionScale"s, 0.5f)),1);
+   m_nightDay.SetPos((int)(100.f * settings.LoadValueFloat(Settings::Player, "EmissionScale"s)),1);
    m_autoNightDay.SetCheck(settings.LoadValueWithDefault(Settings::Player, "DynamicDayNight"s, false) ? BST_CHECKED : BST_UNCHECKED);
    const float lat = settings.LoadValueWithDefault(Settings::Player, "Latitude"s, 52.52f);
    sprintf_s(tmp, sizeof(tmp), "%.3f", lat);
