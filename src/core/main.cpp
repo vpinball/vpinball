@@ -422,8 +422,8 @@ private:
    bool m_extractScript;
    bool m_audit;
    bool m_tournament;
-   bool m_bgles;
-   float m_fgles;
+   bool m_bgles = false;
+   float m_fgles = 0.f;
 #ifdef __STANDALONE__
    string m_szPrefPath;
    bool m_listRes;
