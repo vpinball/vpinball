@@ -248,7 +248,7 @@ public:
 
 static const string platform_cpu[2] = { "x86"s, "arm"s };
 static const string platform_bits[2] = { "32"s, "64"s };
-static const string platform_os[6] = { "windows"s, "linux"s, "ios"s, "tvos"s, "macos"s, "android"s };
+static const string platform_os[6] = { "windows"s, "android"s, "linux"s, "ios"s, "tvos"s, "macos"s };
 static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, too?
 
 #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
@@ -270,23 +270,23 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
 #ifdef _MSC_VER
  #define GET_PLATFORM_OS_ENUM 0
  #define GET_PLATFORM_OS "windows"
-#elif (defined(__linux) || defined(__linux__))
+#elif defined(__ANDROID__)
  #define GET_PLATFORM_OS_ENUM 1
+ #define GET_PLATFORM_OS "android"
+#elif (defined(__linux) || defined(__linux__))
+ #define GET_PLATFORM_OS_ENUM 2
  #define GET_PLATFORM_OS "linux"
 #elif defined(__APPLE__)
 #if defined(TARGET_OS_IOS) && TARGET_OS_IOS
- #define GET_PLATFORM_OS_ENUM 2
+ #define GET_PLATFORM_OS_ENUM 3
  #define GET_PLATFORM_OS "ios"
 #elif defined(TARGET_OS_TV) && TARGET_OS_TV
- #define GET_PLATFORM_OS_ENUM 3
+ #define GET_PLATFORM_OS_ENUM 4
  #define GET_PLATFORM_OS "tvos"
 #else
- #define GET_PLATFORM_OS_ENUM 4
+ #define GET_PLATFORM_OS_ENUM 5
  #define GET_PLATFORM_OS "macos"
 #endif
-#elif defined(__ANDROID__)
- #define GET_PLATFORM_OS_ENUM 5
- #define GET_PLATFORM_OS "android" 
 #endif
 
 #if defined(ENABLE_BGFX)
