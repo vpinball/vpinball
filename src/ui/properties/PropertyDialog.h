@@ -247,7 +247,7 @@ public:
     void CreateTabs(VectorProtected<ISelect> &pvsel);
     void DeleteAllTabs();
     void UpdateTabs(VectorProtected<ISelect> &pvsel);
-    bool PreTranslateMessage(MSG* msg);
+    BOOL PreTranslateMessage(MSG& msg) override;
 
     static void UpdateTextureComboBox(const vector<Texture*>& contentList, const CComboBox &combo, const string &selectName);
     static void UpdateComboBox(const vector<string>& contentList, const CComboBox &combo, const string &selectName);

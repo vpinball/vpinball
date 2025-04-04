@@ -16,7 +16,7 @@ public:
    void Select(IEditable* editable);
    IEditable* GetSelection() const;
 
-   bool PreTranslateMessage(MSG* msg);
+   BOOL PreTranslateMessage(MSG& msg) override;
 
 protected:
    void OnAttach() override;
@@ -57,7 +57,7 @@ class LayersListDialog final : public CDialog
 public:
    LayersListDialog();
    ~LayersListDialog() override;
-   
+
    void SetActiveTable(PinTable* ptable);
    void Update();
    void AssignToSelectedGroup();
@@ -65,8 +65,8 @@ public:
    void ResetView() { m_layerTreeView.ResetView(); }
 
    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
-   bool PreTranslateMessage(MSG* msg);
-   
+   BOOL PreTranslateMessage(MSG& msg) override;
+
 protected:
    BOOL OnInitDialog() override;
    INT_PTR DialogProc(UINT msg, WPARAM wparam, LPARAM lparam) override;

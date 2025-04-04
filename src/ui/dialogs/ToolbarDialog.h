@@ -10,7 +10,7 @@ public:
     LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
 
     void EnableButtons();
-    bool PreTranslateMessage(MSG* msg);
+    BOOL PreTranslateMessage(MSG& msg) override;
 
 protected:
     BOOL OnInitDialog() override;

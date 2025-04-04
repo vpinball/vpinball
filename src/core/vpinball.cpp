@@ -374,7 +374,7 @@ bool VPinball::OpenFileDialog(const string& initDir, vector<string>& filename, c
    }
    else
    {
-      filename.push_back(string());
+      filename.emplace_back(string());
 
       return false;
    }
@@ -399,7 +399,7 @@ bool VPinball::SaveFileDialog(const string& initDir, vector<string>& filename, c
    }
    else
    {
-      filename.push_back(string());
+      filename.emplace_back(string());
 
       return false;
    }
@@ -623,7 +623,7 @@ public:
    {
    }
 
-   virtual BOOL OnInitDialog() override
+   BOOL OnInitDialog() override
    {
       SetDlgItemText(IDC_INFOTEXT_EDIT, m_message.c_str());
       return TRUE;
@@ -1715,13 +1715,13 @@ bool VPinball::processKeyInputForDialogs(MSG *pmsg)
 
       const HWND activeHwnd = ::GetFocus();
       if (!consumed && m_toolbarDialog && (activeHwnd == m_toolbarDialog->GetHwnd()))
-         consumed = m_toolbarDialog->PreTranslateMessage(pmsg);
+         consumed = m_toolbarDialog->PreTranslateMessage(*pmsg);
       if (!consumed && m_propertyDialog)
-         consumed = m_propertyDialog->PreTranslateMessage(pmsg);
+         consumed = m_propertyDialog->PreTranslateMessage(*pmsg);
       if (!consumed && m_dockLayers)
-         consumed = GetLayersListDialog()->PreTranslateMessage(pmsg);
+         consumed = GetLayersListDialog()->PreTranslateMessage(*pmsg);
       if (!consumed && m_notesDialog && activeHwnd == m_notesDialog->GetHwnd())
-         consumed = m_notesDialog->PreTranslateMessage(pmsg);
+         consumed = m_notesDialog->PreTranslateMessage(*pmsg);
    }
 #endif
    return consumed;
@@ -1745,7 +1745,7 @@ bool VPinball::ApcHost_OnTranslateMessage(MSG* pmsg)
    // check if message must be processed by the code editor
    if (m_pcv && (GetZOrder(m_pcv->GetHwnd()) < GetZOrder(GetHwnd())))
    {
-      consumed = m_pcv->PreTranslateMessage(pmsg);
+      consumed = m_pcv->PreTranslateMessage(*pmsg);
 
       if (m_pcv->m_hwndFind && ::IsDialogMessage(m_pcv->m_hwndFind, pmsg))
          consumed = true;
@@ -3005,7 +3005,7 @@ void VPinball::CopyPasteElement(const CopyPasteModes mode)
 
 //
 
-inline string GetTextFileFromDirectory(const string& szfilename, const string& dirname)
+static inline string GetTextFileFromDirectory(const string& szfilename, const string& dirname)
 {
    string szPath;
    if (!dirname.empty())
@@ -3018,7 +3018,7 @@ static constexpr uint8_t lookupRev[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
 0x1, 0x9, 0x5, 0xd, 0x3, 0xb, 0x7, 0xf };
 
-inline uint8_t reverse(const uint8_t n)
+static inline uint8_t reverse(const uint8_t n)
 {
    return (lookupRev[n & 0x0f] << 4) | lookupRev[n >> 4];
 }
@@ -3087,7 +3087,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
       while(*textFoundStart != '"')
          --textFoundStart;
 
-      vbsFiles.push_back(string(textFoundStart+1,textFound+3-textFoundStart));
+      vbsFiles.emplace_back(textFoundStart+1,textFound+3-textFoundStart);
    }
 
    delete [] szText;

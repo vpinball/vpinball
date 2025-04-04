@@ -54,12 +54,12 @@ INT_PTR NotesDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
    return DialogProcDefault(uMsg, wParam, lParam);
 }
 
-bool NotesDialog::PreTranslateMessage(MSG* msg)
+BOOL NotesDialog::PreTranslateMessage(MSG& msg)
 {
    if (!IsWindow())
-      return false;
+      return FALSE;
 
-   return !!IsDialogMessage(*msg);
+   return IsDialogMessage(msg);
 }
 
 void NotesDialog::SetText()

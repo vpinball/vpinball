@@ -1134,18 +1134,18 @@ void CodeViewer::Destroy()
 #endif
 }
 
-bool CodeViewer::PreTranslateMessage(MSG *msg)
+BOOL CodeViewer::PreTranslateMessage(MSG &msg)
 {
 #ifndef __STANDALONE__
    if (!IsWindow())
       return FALSE;
 
    // only pre-translate mouse and keyboard input events
-   if (   ((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
-       && TranslateAccelerator(m_hwndMain, m_haccel, msg))
+   if ( ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
+       && TranslateAccelerator(m_hwndMain, m_haccel, &msg) )
       return TRUE;
 
-   if (::IsDialogMessage(m_hwndMain, msg))
+   if (IsDialogMessage(msg))
       return TRUE;
 #endif
    return FALSE;

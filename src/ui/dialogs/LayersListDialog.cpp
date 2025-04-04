@@ -181,25 +181,25 @@ void LayersListDialog::AssignToSelectedGroup()
    m_activeTable->AssignSelectionToPartGroup(group);
 }
 
-bool LayersListDialog::PreTranslateMessage(MSG* msg)
+BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
 {
    if (!IsWindow())
-      return false;
+      return FALSE;
 
    // only pre-translate mouse and keyboard input events
-   if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST)))
+   if ((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
    {
-      const int keyPressed = LOWORD(msg->wParam);
+      const int keyPressed = LOWORD(msg.wParam);
       // only pass F1-F12 to the main VPinball class to open subdialogs from everywhere
       if (((keyPressed >= VK_F3 && keyPressed <= VK_F12) || (keyPressed == VK_ESCAPE))
-         && TranslateAccelerator(g_pvp->GetHwnd(), m_accel, msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
-         return true;
+         && TranslateAccelerator(g_pvp->GetHwnd(), m_accel, &msg)) //!! VK_ESCAPE is a workaround, otherwise there is a hickup when changing a layername and pressing this
+         return TRUE;
    }
 
    if (m_layerTreeView.PreTranslateMessage(msg))
-      return true;
+      return TRUE;
 
-   return !!IsDialogMessage(*msg);
+   return IsDialogMessage(msg);
 }
 
 void LayersListDialog::SetActiveTable(PinTable* ptable)
@@ -320,11 +320,11 @@ void LayerTreeView::Update()
          itemPath.insert(itemPath.begin(), parent);
          parent = parent->GetPartGroup();
       }
-      ss.str("");
+      ss.clear();
       for (const auto& group : itemPath)
-         ss << group->GetName() << "/";
+         ss << group->GetName() << '/';
       ss << name;
-      newContent.push_back({ ss.str(), editable, nullptr, false, false });
+      newContent.emplace_back(ss.str(), editable, nullptr, false, false);
       StrToLower(newContent.back().path);
    }
    std::ranges::sort(newContent,
@@ -346,12 +346,12 @@ void LayerTreeView::Update()
    for (auto& node : newContent)
    {
       while ((oldContentIt < m_content.end()) && (oldContentIt->pendingDelete))
-         oldContentIt++;
+         ++oldContentIt;
       if ((oldContentIt < m_content.end()) && (oldContentIt->path == node.path) && (oldContentIt->editable == node.editable))
       {
          // Reuse existing element
          node.item = oldContentIt->item;
-         oldContentIt++;
+         ++oldContentIt;
       }
       else
       {
@@ -415,7 +415,7 @@ void LayerTreeView::Update()
    while (oldContentIt < m_content.end())
    {
       oldContentIt->pendingDelete = true;
-      oldContentIt++;
+      ++oldContentIt;
    }
    
    // Remove old items
@@ -472,24 +472,24 @@ void LayerTreeView::ResetView()
    SetRedraw(TRUE);
 }
 
-bool LayerTreeView::PreTranslateMessage(MSG* msg)
+BOOL LayerTreeView::PreTranslateMessage(MSG& msg)
 {
    if (!IsWindow())
-      return false;
+      return FALSE;
 
-   if (msg->hwnd != GetHwnd())
-      return false;
+   if (msg.hwnd != GetHwnd())
+      return FALSE;
 
-   const int keyPressed = LOWORD(msg->wParam);
+   const int keyPressed = LOWORD(msg.wParam);
    if (keyPressed != VK_F2)
    {
       // only pre-translate mouse and keyboard input events
-      if (((msg->message >= WM_KEYFIRST && msg->message <= WM_KEYLAST) || (msg->message >= WM_MOUSEFIRST && msg->message <= WM_MOUSELAST))
-         && TranslateAccelerator(GetHwnd(), m_accel, msg))
-         return true;
+      if (((msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) || (msg.message >= WM_MOUSEFIRST && msg.message <= WM_MOUSELAST))
+         && TranslateAccelerator(GetHwnd(), m_accel, &msg))
+         return TRUE;
    }
 
-   return !!IsDialogMessage(*msg);
+   return IsDialogMessage(msg);
 }
 
 void LayerTreeView::OnAttach()

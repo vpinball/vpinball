@@ -290,7 +290,7 @@ public:
    void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const char * const szText);
 
-   bool PreTranslateMessage(MSG* msg);
+   BOOL PreTranslateMessage(MSG& msg) override;
 
    IScriptableHost *m_psh;
 
@@ -486,7 +486,7 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
 public:
    Collection();

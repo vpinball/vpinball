@@ -21,7 +21,7 @@ public:
    NotesDialog();
    ~NotesDialog() override = default;
 
-   bool PreTranslateMessage(MSG* msg);
+   BOOL PreTranslateMessage(MSG& msg) override;
    CString GetText() const
    {
       return m_notesEdit.GetWindowText();
