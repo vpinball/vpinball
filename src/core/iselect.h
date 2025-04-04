@@ -99,7 +99,7 @@ public:
    virtual PinTable *GetPTable() = 0;
    virtual const PinTable *GetPTable() const = 0;
 
-   virtual HRESULT GetTypeName(BSTR *pVal);
+   virtual HRESULT GetTypeName(BSTR *pVal) const;
    void GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) const;
 
    virtual IDispatch *GetDispatch() = 0;
@@ -150,7 +150,7 @@ public:
 
 protected:
    VPinball *m_vpinball = nullptr;
-   
+
 private:
    bool m_markedForUndo = false; // Flag set when dragged to enable undo
    POINT m_ptLast {}; // Last point when dragging

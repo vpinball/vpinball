@@ -7100,7 +7100,7 @@ void PinTable::OnMouseMove(int x, int y)
       SetDirtyDraw();
 }
 
-HRESULT PinTable::GetTypeName(BSTR *pVal)
+HRESULT PinTable::GetTypeName(BSTR *pVal) const
 {
    const int stringid = (!m_vpinball->m_backglassView) ? IDS_TABLE : IDS_TB_BACKGLASS;
 

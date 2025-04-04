@@ -82,7 +82,7 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    Light();
    virtual ~Light();
@@ -164,32 +164,33 @@ private:
    public:
       LightCenter(Light *plight) : m_plight(plight) { }
 
-      HRESULT GetTypeName(BSTR *pVal) { return m_plight->GetTypeName(pVal); }
-      IDispatch *GetDispatch() { return m_plight->GetDispatch(); }
-      const IDispatch *GetDispatch() const { return m_plight->GetDispatch(); }
+      HRESULT GetTypeName(BSTR *pVal) const override { return m_plight->GetTypeName(pVal); }
 
-      void Delete() { m_plight->Delete(); }
-      void Uncreate() { m_plight->Uncreate(); }
+      IDispatch *GetDispatch() override { return m_plight->GetDispatch(); }
+      const IDispatch *GetDispatch() const override { return m_plight->GetDispatch(); }
 
-      int GetSelectLevel() const { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
+      void Delete() override { m_plight->Delete(); }
+      void Uncreate() override { m_plight->Uncreate(); }
 
-      IEditable *GetIEditable() { return (IEditable *)m_plight; }
-      const IEditable *GetIEditable() const { return (const IEditable *)m_plight; }
+      int GetSelectLevel() const override { return (m_plight->m_d.m_shape == ShapeCircle) ? 1 : 2; } // Don't select light bulb twice if we have drag points
 
-      PinTable *GetPTable() { return m_plight->GetPTable(); }
-      const PinTable *GetPTable() const { return m_plight->GetPTable(); }
+      IEditable *GetIEditable() override { return (IEditable *)m_plight; }
+      const IEditable *GetIEditable() const override { return (const IEditable *)m_plight; }
 
-      bool LoadToken(const int id, BiffReader * const pbr) { return true; }
+      PinTable *GetPTable() override { return m_plight->GetPTable(); }
+      const PinTable *GetPTable() const override { return m_plight->GetPTable(); }
 
-      Vertex2D GetCenter() const { return m_plight->m_d.m_vCenter; }
-      void PutCenter(const Vertex2D& pv) { m_plight->m_d.m_vCenter = pv; }
+      bool LoadToken(const int id, BiffReader * const pbr) override { return true; }
 
-      void MoveOffset(const float dx, const float dy) {
+      Vertex2D GetCenter() const override { return m_plight->m_d.m_vCenter; }
+      void PutCenter(const Vertex2D& pv) override { m_plight->m_d.m_vCenter = pv; }
+
+      void MoveOffset(const float dx, const float dy) override {
           m_plight->m_d.m_vCenter.x += dx;
           m_plight->m_d.m_vCenter.y += dy;
       }
 
-      ItemTypeEnum GetItemType() const { return eItemLightCenter; }
+      ItemTypeEnum GetItemType() const override { return eItemLightCenter; }
 
    private:
       Light *m_plight;

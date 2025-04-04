@@ -109,7 +109,7 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    STDMETHOD(get_BallFrontDecal)(/*[out, retval]*/ BSTR *pVal);
    STDMETHOD(put_BallFrontDecal)(/*[in]*/ BSTR newVal);
@@ -346,17 +346,17 @@ public:
    void InitTablePostLoad();
    void RemoveInvalidReferences();
 
-   HRESULT GetTypeName(BSTR *pVal) override;
+   HRESULT GetTypeName(BSTR *pVal) const final;
 
    void SetCaption(const string &szCaption);
    void SetMouseCapture();
    int ShowMessageBox(const char *text) const;
    POINT GetScreenPoint() const;
 
-   void UIRenderPass2(Sur *const psur) override;
+   void UIRenderPass2(Sur *const psur) final;
    void Paint(HDC hdc);
    ISelect *HitTest(const int x, const int y);
-   void SetDirtyDraw() override;
+   void SetDirtyDraw() final;
 
    void Render3DProjection(Sur *const psur);
 
@@ -415,37 +415,37 @@ public:
    void SetCollectionName(Collection *pcol, const char *szName, HWND hwndList, int index);
 
    void DoContextMenu(int x, int y, const int menuid, ISelect *psel);
-   virtual void DoCommand(int icmd, int x, int y) override;
+   void DoCommand(int icmd, int x, int y) final;
    bool FMutilSelLocked();
 
-   void SelectItem(IScriptable *piscript) override;
-   void DoCodeViewCommand(int command) override;
-   void SetDirtyScript(SaveDirtyState sds) override;
-   void ExportMesh(ObjLoader &loader) override;
+   void SelectItem(IScriptable *piscript) final;
+   void DoCodeViewCommand(int command) final;
+   void SetDirtyScript(SaveDirtyState sds) final;
+   void ExportMesh(ObjLoader &loader) final;
 
    // Multi-object manipulation
-   Vertex2D GetCenter() const override;
-   void PutCenter(const Vertex2D &pv) override;
-   void FlipY(const Vertex2D &pvCenter) override;
-   void FlipX(const Vertex2D &pvCenter) override;
-   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) override;
-   void Translate(const Vertex2D &pvOffset) override;
+   Vertex2D GetCenter() const final;
+   void PutCenter(const Vertex2D &pv) final;
+   void FlipY(const Vertex2D &pvCenter) final;
+   void FlipX(const Vertex2D &pvCenter) final;
+   void Rotate(const float ang, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Scale(const float scalex, const float scaley, const Vertex2D &pvCenter, const bool useElementCenter) final;
+   void Translate(const Vertex2D &pvOffset) final;
 
    // IEditable (mostly bogus for now)
-   void UIRenderPass1(Sur *const psur) override;
-   ItemTypeEnum GetItemType() const override { return eItemTable; }
-   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) override;
-   HRESULT InitPostLoad() override;
-   HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) override;
-   ISelect *GetISelect() override { return (ISelect *)this; }
-   const ISelect *GetISelect() const override { return (const ISelect *)this; }
-   void SetDefaults(const bool fromMouseClick) override;
-   IScriptable *GetScriptable() override { return (IScriptable *)this; }
-   void SetDefaultPhysics(const bool fromMouseClick) override;
+   void UIRenderPass1(Sur *const psur) final;
+   ItemTypeEnum GetItemType() const final { return eItemTable; }
+   HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) final;
+   HRESULT InitPostLoad() final;
+   HRESULT InitVBA(BOOL fNew, int id, WCHAR *const wzName) final;
+   ISelect *GetISelect() final { return (ISelect *)this; }
+   const ISelect *GetISelect() const final { return (const ISelect *)this; }
+   void SetDefaults(const bool fromMouseClick) final;
+   IScriptable *GetScriptable() final { return (IScriptable *)this; }
+   void SetDefaultPhysics(const bool fromMouseClick) final;
 
-   PinTable *GetPTable() override { return this; }
-   const PinTable *GetPTable() const override { return this; }
+   PinTable *GetPTable() final { return this; }
+   const PinTable *GetPTable() const final { return this; }
    static const char *GetElementName(IEditable *pedit);
 
    IEditable *GetElementByName(const char *const name) const;
@@ -485,28 +485,28 @@ public:
    HRESULT SaveCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash);
    static HRESULT WriteInfoValue(IStorage *pstg, const WCHAR *const wzName, const string &szValue, HCRYPTHASH hcrypthash);
    static HRESULT ReadInfoValue(IStorage *pstg, const WCHAR *const wzName, string &output, HCRYPTHASH hcrypthash);
-   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) override;
+   HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) final;
    HRESULT LoadGameFromFilename(const string &szFileName);
    HRESULT LoadGameFromFilename(const string &szFileName, VPXFileFeedback& feedback);
    HRESULT LoadInfo(IStorage *pstg, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadCustomInfo(IStorage *pstg, IStream *pstmTags, HCRYPTHASH hcrypthash, int version);
    HRESULT LoadData(IStream *pstm, int &csubobj, int &csounds, int &ctextures, int &cfonts, int &ccollection, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey);
-   IEditable *GetIEditable() override { return (IEditable *)this; }
-   const IEditable *GetIEditable() const override { return (const IEditable *)this; }
-   void Delete() override { } // Can't delete table itself
-   void Uncreate() override { }
-   bool LoadToken(const int id, BiffReader *const pbr) override;
+   IEditable *GetIEditable() final { return (IEditable *)this; }
+   const IEditable *GetIEditable() const final { return (const IEditable *)this; }
+   void Delete() final { } // Can't delete table itself
+   void Uncreate() final { }
+   bool LoadToken(const int id, BiffReader *const pbr) final;
 
    virtual IDispatch *GetPrimary() { return this->GetDispatch(); }
-   IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
-   IFireEvents *GetIFireEvents() override { return (IFireEvents *)this; }
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
+   IFireEvents *GetIFireEvents() final { return (IFireEvents *)this; }
 
    void SetZoom(float zoom);
    void SetMyScrollInfo();
 
-   void BeginUndo() override;
-   void EndUndo() override;
+   void BeginUndo() final;
+   void EndUndo() final;
    void Undo();
 
    void Uncreate(IEditable *pie);
@@ -520,9 +520,9 @@ public:
    STDMETHOD(GetPredefinedStrings)(DISPID dispID, CALPOLESTR *pcaStringsOut, CADWORD *pcaCookiesOut, IEditable *piedit);
    STDMETHOD(GetPredefinedValue)(DISPID dispID, DWORD dwCookie, VARIANT *pVarOut, IEditable *piedit);
 
-   void OnLButtonDown(int x, int y) override;
-   void OnLButtonUp(int x, int y) override;
-   void OnMouseMove(int x, int y) override;
+   void OnLButtonDown(int x, int y) final;
+   void OnLButtonUp(int x, int y) final;
+   void OnMouseMove(int x, int y) final;
    void OnMouseMove(const short x, const short y);
 
    void SetDefaultView();
@@ -812,9 +812,9 @@ public:
    int m_tilt_trigger_time;
 #endif
 
-   virtual void OnInitialUpdate() override;
-   virtual LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   virtual BOOL OnEraseBkgnd(CDC &dc) override;
+   void OnInitialUpdate() final;
+   LRESULT WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam) final;
+   BOOL OnEraseBkgnd(CDC &dc) final;
 
    void SetMouseCursor();
    void OnLeftButtonDown(const short x, const short y);
@@ -1020,11 +1020,11 @@ public:
    void Init(VPinball *vpinball, PinTable *pt);
    ~ScriptGlobalTable();
 
-   IDispatch *GetDispatch() override { return (IDispatch *)this; }
-   const IDispatch *GetDispatch() const override { return (const IDispatch *)this; }
+   IDispatch *GetDispatch() final { return (IDispatch *)this; }
+   const IDispatch *GetDispatch() const final { return (const IDispatch *)this; }
 
-   ISelect *GetISelect() override { return nullptr; }
-   const ISelect *GetISelect() const override { return nullptr; }
+   ISelect *GetISelect() final { return nullptr; }
+   const ISelect *GetISelect() const final { return nullptr; }
 
    BEGIN_COM_MAP(ScriptGlobalTable)
    COM_INTERFACE_ENTRY(ITableGlobal)

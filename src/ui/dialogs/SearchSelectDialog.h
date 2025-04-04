@@ -16,7 +16,7 @@ protected:
    void OnCancel() override;
 
 private:
-   bool IsValidString(const string &name);
+   static bool IsValidString(const string &name);
    void AddSearchItemToList(IEditable * const piedit, int idx);
 
    void LoadPosition();

@@ -243,7 +243,7 @@ void ISelect::Translate(const Vertex2D &pvOffset)
    PutCenter(vCenter);
 }
 
-HRESULT ISelect::GetTypeName(BSTR *pVal)
+HRESULT ISelect::GetTypeName(BSTR *pVal) const
 {
    WCHAR buf[256];
    GetTypeNameForType(GetItemType(), buf);
@@ -273,19 +273,18 @@ void ISelect::GetTypeNameForType(const ItemTypeEnum type, WCHAR * const buf) con
 #endif
 }
 
-static void SetPartGroup(ISelect* me, string layerName)
+static void SetPartGroup(ISelect* const me, const string& layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
-      auto partGroup = std::ranges::find_if(me->GetPTable()->m_vedit,
+      auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit,
          [layerName](IEditable *editable)
          {
             if (editable->GetItemType() != ItemTypeEnum::eItemPartGroup)
                return false;
-            string name(editable->GetName());
-            return name == layerName;
+            return editable->GetName() == layerName;
          });
-      if (partGroup == me->GetPTable()->m_vedit.end())
+      if (partGroupF == me->GetPTable()->m_vedit.end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::Create(eItemPartGroup));
          newGroup->Init(me->GetPTable(), 0, 0, false);
@@ -296,7 +295,7 @@ static void SetPartGroup(ISelect* me, string layerName)
       }
       else
       {
-         me->GetIEditable()->SetPartGroup(static_cast<PartGroup *>(*partGroup));
+         me->GetIEditable()->SetPartGroup(static_cast<PartGroup *>(*partGroupF));
       }
    }
 }
