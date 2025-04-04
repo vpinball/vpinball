@@ -622,7 +622,7 @@ void HitQuadtreeNode::HitTestXRay(const HitQuadtree* const quadTree, const HitBa
          #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
-            pvhoHit.emplace_back(pho, newtime);
+            pvhoHit.push_back({pho, newtime});
       }
    }
 
