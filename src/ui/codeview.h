@@ -290,7 +290,7 @@ public:
    void EvaluateScriptStatement(const char * const szScript);
    void AddToDebugOutput(const char * const szText);
 
-   BOOL PreTranslateMessage(MSG& msg) override;
+   BOOL PreTranslateMessage(MSG& msg) OVERRIDE;
 
    IScriptableHost *m_psh;
 
