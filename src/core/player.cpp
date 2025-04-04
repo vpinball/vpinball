@@ -2287,7 +2287,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
          if (pCD == m_controllerDisplays.end())
          {
-            m_controllerDisplays.emplace_back(m_defaultDmdId, -1, nullptr);
+            m_controllerDisplays.emplace_back({m_defaultDmdId, -1, nullptr});
             display = &m_controllerDisplays.back();
          }
          else
@@ -2319,7 +2319,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          delete[] getSrcMsg.entries;
          if (!dmdFound)
             return { { 0 }, -1, nullptr };
-         m_controllerDisplays.emplace_back(dmdId, -1, nullptr);
+         m_controllerDisplays.emplace_back({dmdId, -1, nullptr});
          display = &m_controllerDisplays.back();
       }
       else
