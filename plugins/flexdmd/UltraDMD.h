@@ -10,7 +10,7 @@
 
 #include <unordered_map>
 
-class UltraDMD
+class UltraDMD final
 {
 public:
    UltraDMD(FlexDMD* pFlexDMD);

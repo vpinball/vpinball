@@ -3,7 +3,6 @@
 #include <cassert>
 #include <cstdlib>
 #include <chrono>
-#include <cstdlib>
 #include <cstring>
 
 #include "MsgPlugin.h"
@@ -36,7 +35,7 @@ static CtlResId dmdId;
 static unsigned int lastRawFrameId;
 static bool dmdSelected = false;
 
-class ColorizationState
+class ColorizationState final
 {
 public:
    ColorizationState(unsigned int width, unsigned int height)
@@ -103,7 +102,7 @@ public:
 static ColorizationState* state = nullptr;
 
 
-void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    assert(pSerum);
    GetRawDmdMsg* const getDmdMsg = static_cast<GetRawDmdMsg*>(msgData);
@@ -156,7 +155,7 @@ void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
 {
    assert(pSerum);
    GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
@@ -232,7 +231,7 @@ void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
+static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
 {
    if (pSerum == nullptr || state == nullptr || !dmdSelected)
       return;
@@ -264,7 +263,7 @@ void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData
    }
 }
 
-void onGameStart(const unsigned int eventId, void* userData, void* msgData)
+static void onGameStart(const unsigned int eventId, void* userData, void* msgData)
 {
    // Setup Serum on the selected DMD
    const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
@@ -285,7 +284,7 @@ void onGameStart(const unsigned int eventId, void* userData, void* msgData)
    }
 }
 
-void onGameEnd(const unsigned int eventId, void* userData, void* msgData)
+static void onGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    if (pSerum)
    {

@@ -150,7 +150,7 @@ public:
    }
 };
 
-class UdpClientSocket : public UdpSocket
+class UdpClientSocket final : public UdpSocket
 {
 public:
    UdpClientSocket(const char* host, const short port, const uint32_t timeoutMsec = 0)
@@ -178,7 +178,7 @@ public:
    }
 };
 
-class UdpServerSocket : public UdpSocket
+class UdpServerSocket final : public UdpSocket
 {
 public:
    UdpServerSocket(const short port, const uint32_t timeoutMsec = 0)

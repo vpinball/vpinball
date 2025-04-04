@@ -1,6 +1,5 @@
 #include "common.h"
 
-#include <sstream>
 #include <algorithm>
 #include <filesystem>
 
@@ -40,4 +39,3 @@ string find_directory_case_insensitive(const string& szParentPath, const string&
 
    return string();
 }
-

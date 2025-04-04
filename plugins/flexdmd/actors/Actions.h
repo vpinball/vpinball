@@ -335,7 +335,7 @@ public:
 
    void AddTween(float from, float to, float duration, const std::function<bool(float)>& callback)
    {
-      m_tweens.emplace_back(tweeny::tween<float>(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback)));
+      m_tweens.emplace_back(tweeny::from(from).to(to).during(duration * 1000.0f).onStep(callback));
    }
 
 protected:

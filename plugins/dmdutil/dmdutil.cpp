@@ -1,9 +1,7 @@
 // license:GPLv3+
 
-#include <cassert>
 #include <cstdlib>
 #include <chrono>
-#include <cstdlib>
 #include <cstring>
 
 #include "VPXPlugin.h"
@@ -34,7 +32,7 @@ LPI_USE();
 
 LPI_IMPLEMENT
 
-void onUpdateDMD(void* userData)
+static void onUpdateDMD(void* userData)
 {
    if (!pDmd)
       return;
@@ -51,7 +49,7 @@ void onUpdateDMD(void* userData)
             const uint8_t* const __restrict luminanceData = getMsg.frame;
             uint8_t* const __restrict rgb24Data = (uint8_t*)malloc(getMsg.dmdId.width * getMsg.dmdId.height * 3);
 
-            for (int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
+            for (unsigned int i = 0; i < getMsg.dmdId.width * getMsg.dmdId.height; ++i) {
                 const uint32_t lum = luminanceData[i];
                 rgb24Data[i * 3    ] = (uint8_t)((lum * tintR) / 255u);
                 rgb24Data[i * 3 + 1] = (uint8_t)((lum * tintG) / 255u);
@@ -76,7 +74,7 @@ void onUpdateDMD(void* userData)
    msgApi->RunOnMainThread(1. / 60., onUpdateDMD, nullptr);
 }
 
-void initDMD()
+static void initDMD()
 {
    pDmd = new DMDUtil::DMD();
    pDmd->FindDisplays();
@@ -97,13 +95,13 @@ void initDMD()
    onUpdateDMD(nullptr);
 }
 
-void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
+static void onGameEnd(const unsigned int msgId, void* userData, void* msgData)
 {
    delete pDmd;
    pDmd = nullptr;
 }
 
-void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
+static void onDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
    DmdSrcId newDmdId = { 0 };
 
