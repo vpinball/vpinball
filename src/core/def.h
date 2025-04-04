@@ -270,7 +270,7 @@ static const string platform_renderer[2] = { "dx"s, "gl"s }; // gles necessary, 
 #ifdef _MSC_VER
  #define GET_PLATFORM_OS_ENUM 0
  #define GET_PLATFORM_OS "windows"
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) // leave here, as it also defines linux
  #define GET_PLATFORM_OS_ENUM 1
  #define GET_PLATFORM_OS "android"
 #elif (defined(__linux) || defined(__linux__))

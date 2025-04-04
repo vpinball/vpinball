@@ -30,12 +30,12 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
+      , m_isDynamicallyLinked(true)
       , m_library(library)
       , m_directory(directory)
       , m_endpointId(endpointId)
       , m_loadPlugin(nullptr)
-      , m_unloadPlugin(nullptr)
-      , m_isDynamicallyLinked(true) { }
+      , m_unloadPlugin(nullptr) { }
    MsgPlugin(const std::string& id, const std::string& name, const std::string& description, const std::string& author, const std::string& version, const std::string& link,
       const msgpi_load_plugin& loadPlugin, const msgpi_unload_plugin& unloadPlugin, const unsigned int endpointId)
       : m_id(id)
@@ -44,12 +44,12 @@ public:
       , m_author(author)
       , m_version(version)
       , m_link(link)
+      , m_isDynamicallyLinked(false)
       , m_library()
       , m_directory()
       , m_endpointId(endpointId)
       , m_loadPlugin(loadPlugin)
-      , m_unloadPlugin(unloadPlugin)
-      , m_isDynamicallyLinked(false) { }
+      , m_unloadPlugin(unloadPlugin) { }
    ~MsgPlugin();
 
    void Load(const MsgPluginAPI* msgAPI);
@@ -132,7 +132,7 @@ private:
 
    std::function<void(const char*, const char*, char*, unsigned int)> m_settingHandler = 
       [](const char* name_space, const char* name, char* valueBuf, unsigned int valueBufSize) { valueBuf[0] = 0; };
- 
+
    MsgPluginAPI m_api;
    
    uint32_t m_nextEndpointId = 1;

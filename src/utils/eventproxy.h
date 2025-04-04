@@ -80,7 +80,7 @@ public:
       g_frameProfiler->ExitScriptSection();
    }
 
-   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final
    {
       g_frameProfiler->EnterScriptSection(dispid);
       T* const pT = static_cast<T*>(this);

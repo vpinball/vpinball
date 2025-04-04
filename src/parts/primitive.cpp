@@ -631,18 +631,18 @@ void Primitive::UIRenderPass2(Sur * const psur)
             const float Cn = m_normals[m_mesh.m_indices[i + 2]];
             if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back({A->x, A->y});
-               drawVertices.push_back({B->x, B->y});
+               drawVertices.emplace_back(A->x, A->y);
+               drawVertices.emplace_back(B->x, B->y);
             }
             if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back({B->x, B->y});
-               drawVertices.push_back({C->x, C->y});
+               drawVertices.emplace_back(B->x, B->y);
+               drawVertices.emplace_back(C->x, C->y);
             }
             if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
             {
-               drawVertices.push_back({C->x, C->y});
-               drawVertices.push_back({A->x, A->y});
+               drawVertices.emplace_back(C->x, C->y);
+               drawVertices.emplace_back(A->x, A->y);
             }
          }
 
@@ -760,18 +760,18 @@ void Primitive::RenderBlueprint(Sur *psur, const bool solid)
          const float Cn = m_normals[m_mesh.m_indices[i + 2]];
          if (fabsf(An + Bn) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back({A->x, A->y});
-            drawVertices.push_back({B->x, B->y});
+            drawVertices.emplace_back(A->x, A->y);
+            drawVertices.emplace_back(B->x, B->y);
          }
          if (fabsf(Bn + Cn) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back({B->x, B->y});
-            drawVertices.push_back({C->x, C->y});
+            drawVertices.emplace_back(B->x, B->y);
+            drawVertices.emplace_back(C->x, C->y);
          }
          if (fabsf(Cn + An) < m_d.m_edgeFactorUI)
          {
-            drawVertices.push_back({C->x, C->y});
-            drawVertices.push_back({A->x, A->y});
+            drawVertices.emplace_back(C->x, C->y);
+            drawVertices.emplace_back(A->x, A->y);
          }
       }
 
@@ -794,14 +794,14 @@ void Primitive::GetBoundingVertices(vector<Vertex3Ds> &bounds, vector<Vertex3Ds>
       {
          const Vertex3Ds minBound = m_fullMatrix.MultiplyVectorNoPerspective(m_mesh.m_minAABound);
          const Vertex3Ds maxBound = m_fullMatrix.MultiplyVectorNoPerspective(m_mesh.m_maxAABound);
-         bounds.push_back({minBound.x, minBound.y, minBound.z});
-         bounds.push_back({minBound.x, minBound.y, maxBound.z});
-         bounds.push_back({minBound.x, maxBound.y, minBound.z});
-         bounds.push_back({minBound.x, maxBound.y, maxBound.z});
-         bounds.push_back({maxBound.x, minBound.y, minBound.z});
-         bounds.push_back({maxBound.x, minBound.y, maxBound.z});
-         bounds.push_back({maxBound.x, maxBound.y, minBound.z});
-         bounds.push_back({maxBound.x, maxBound.y, maxBound.z});
+         bounds.emplace_back(minBound.x, minBound.y, minBound.z);
+         bounds.emplace_back(minBound.x, minBound.y, maxBound.z);
+         bounds.emplace_back(minBound.x, maxBound.y, minBound.z);
+         bounds.emplace_back(minBound.x, maxBound.y, maxBound.z);
+         bounds.emplace_back(maxBound.x, minBound.y, minBound.z);
+         bounds.emplace_back(maxBound.x, minBound.y, maxBound.z);
+         bounds.emplace_back(maxBound.x, maxBound.y, minBound.z);
+         bounds.emplace_back(maxBound.x, maxBound.y, maxBound.z);
       }
    }
 }

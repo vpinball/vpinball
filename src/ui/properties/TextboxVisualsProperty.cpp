@@ -6,9 +6,9 @@
 
 TextboxVisualsProperty::TextboxVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTEXTBOX_VISUALS, pvsel)
 {
-    m_alignList.push_back("Align Left");
-    m_alignList.push_back("Align Center");
-    m_alignList.push_back("Align Right");
+    m_alignList.push_back("Align Left"s);
+    m_alignList.push_back("Align Center"s);
+    m_alignList.push_back("Align Right"s);
 
     m_textIntensityEdit.SetDialog(this);
     m_posXEdit.SetDialog(this);

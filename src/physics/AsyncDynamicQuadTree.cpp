@@ -348,7 +348,7 @@ void AsyncDynamicQuadTree::DynamicEditable::HitTestXRay(const HitBall* const pba
          #endif
          const float newtime = pho->HitTest(pball->m_d, coll.m_hittime, coll);
          if (newtime >= 0.f)
-            pvhoHit.push_back({ pho, newtime });
+            pvhoHit.emplace_back(pho, newtime);
       }
    }
 }

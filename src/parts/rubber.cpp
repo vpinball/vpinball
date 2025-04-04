@@ -135,18 +135,18 @@ void Rubber::DrawRubberMesh(Sur * const psur)
       const Vertex3Ds C = Vertex3Ds(m_vertices[m_ringIndices[i + 2]].x, m_vertices[m_ringIndices[i + 2]].y, m_vertices[m_ringIndices[i + 2]].z);
       if (fabsf(m_vertices[m_ringIndices[i]].nz + m_vertices[m_ringIndices[i + 1]].nz) < 1.f)
       {
-         drawVertices.push_back({A.x, A.y});
-         drawVertices.push_back({B.x, B.y});
+         drawVertices.emplace_back(A.x, A.y);
+         drawVertices.emplace_back(B.x, B.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 1]].nz + m_vertices[m_ringIndices[i + 2]].nz) < 1.f)
       {
-         drawVertices.push_back({B.x, B.y});
-         drawVertices.push_back({C.x, C.y});
+         drawVertices.emplace_back(B.x, B.y);
+         drawVertices.emplace_back(C.x, C.y);
       }
       if (fabsf(m_vertices[m_ringIndices[i + 2]].nz + m_vertices[m_ringIndices[i]].nz) < 1.f)
       {
-         drawVertices.push_back({C.x, C.y});
-         drawVertices.push_back({A.x, A.y});
+         drawVertices.emplace_back(C.x, C.y);
+         drawVertices.emplace_back(A.x, A.y);
       }
    }
    if (!drawVertices.empty())

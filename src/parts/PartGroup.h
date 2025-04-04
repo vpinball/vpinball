@@ -10,7 +10,7 @@ public:
    // Standard properties
    TimerDataRoot m_tdr;
    Vertex2D m_v;
-   
+
    // PartGroup properties
    enum VisibilityMask
    {
@@ -27,9 +27,9 @@ public:
    enum class SpaceReference : int
    {
       SR_INHERIT, // Inherit space reference from parent (note that root defaults to Playfield reference space)
-      SR_ROOM, // Base space, aligned to (offseted) real world, without any scaling (to match real world room in AR/VR)
+      SR_ROOM, // Base space, aligned to (offset'ed) real world, without any scaling (to match real world room in AR/VR)
       SR_CABINET_FEET, // Relative to room, scaled to fit cabinet size (without any height adjustment, for cabinet feet to touch ground)
-      SR_CABINET, // Relative to cabinet feet, with height adjustment (with height adjustment for locakbar ro match cabinet lockbar height after scaling)
+      SR_CABINET, // Relative to cabinet feet, with height adjustment (with height adjustment for lockbar ro match cabinet lockbar height after scaling)
       SR_PLAYFIELD, // Relative to cabinet with playfield inclination and local coordinate system applied (usual local playfield coordinate system tailored for table design)
    };
    SpaceReference m_spaceReference = SpaceReference::SR_PLAYFIELD;
@@ -56,7 +56,7 @@ public:
    STDMETHOD(GetIDsOfNames)(REFIID /*riid*/, LPOLESTR* rgszNames, UINT cNames, LCID lcid,DISPID* rgDispId);
    STDMETHOD(Invoke)(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD wFlags, DISPPARAMS* pDispParams, VARIANT* pVarResult, EXCEPINFO* pExcepInfo, UINT* puArgErr);
    STDMETHOD(GetDocumentation)(INT index, BSTR *pBstrName, BSTR *pBstrDocString, DWORD *pdwHelpContext, BSTR *pBstrHelpFile);
-   virtual HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) override;
+   HRESULT FireDispID(const DISPID dispid, DISPPARAMS * const pdispparams) final;
 #endif
    PartGroup();
    virtual ~PartGroup();
@@ -93,7 +93,6 @@ public:
    STDMETHOD(InterfaceSupportsErrorInfo)(REFIID riid);
 
    // IPartGroup
-
 
    unsigned int GetVisibilityMask() const;
    PartGroupData::SpaceReference GetReferenceSpace() const;

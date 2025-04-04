@@ -14,7 +14,7 @@
 #endif
 #endif
 
-class DebugAppender : public plog::IAppender
+class DebugAppender final : public plog::IAppender
 {
 public:
    DebugAppender()
@@ -22,7 +22,7 @@ public:
       m_uiThreadId = std::this_thread::get_id();
    }
 
-   virtual void write(const plog::Record &record) PLOG_OVERRIDE
+   void write(const plog::Record &record) PLOG_OVERRIDE
    {
       if (g_pvp == nullptr || g_pplayer == nullptr)
          return;
@@ -67,7 +67,7 @@ void Logger::SetupLogger(const bool enable)
       if (!initialized)
       {
          initialized = true;
-         string szLogPath = g_pvp->m_szMyPrefPath + "vpinball.log";
+         const string szLogPath = g_pvp->m_szMyPrefPath + "vpinball.log";
          static plog::RollingFileAppender<plog::TxtFormatter> fileAppender(szLogPath.c_str(), 1024 * 1024 * 5, 1);
          static DebugAppender debugAppender;
          plog::Logger<PLOG_DEFAULT_INSTANCE_ID>::getInstance()->addAppender(&debugAppender);

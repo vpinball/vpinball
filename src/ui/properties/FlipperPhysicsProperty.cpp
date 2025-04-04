@@ -6,15 +6,15 @@
 
 FlipperPhysicsProperty::FlipperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPFLIPPER_PHYSICS, pvsel)
 {
-    m_physicSetList.push_back("Disable");
-    m_physicSetList.push_back("Set1");
-    m_physicSetList.push_back("Set2");
-    m_physicSetList.push_back("Set3");
-    m_physicSetList.push_back("Set4");
-    m_physicSetList.push_back("Set5");
-    m_physicSetList.push_back("Set6");
-    m_physicSetList.push_back("Set7");
-    m_physicSetList.push_back("Set8");
+    m_physicSetList.push_back("Disable"s);
+    m_physicSetList.push_back("Set1"s);
+    m_physicSetList.push_back("Set2"s);
+    m_physicSetList.push_back("Set3"s);
+    m_physicSetList.push_back("Set4"s);
+    m_physicSetList.push_back("Set5"s);
+    m_physicSetList.push_back("Set6"s);
+    m_physicSetList.push_back("Set7"s);
+    m_physicSetList.push_back("Set8"s);
 
     m_massEdit.SetDialog(this);
     m_strengthEdit.SetDialog(this);

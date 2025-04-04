@@ -166,10 +166,10 @@ void SharedVertexBuffer::Upload()
 
 VertexBuffer::VertexBuffer(RenderDevice* rd, const unsigned int vertexCount, const float* verts, const bool isDynamic, const VertexFormat fmt)
    : m_rd(rd)
-   , m_count(vertexCount)
-   , m_vertexFormat(fmt)
-   , m_sizePerVertex(fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly))
    , m_isStatic(!isDynamic)
+   , m_vertexFormat(fmt)
+   , m_count(vertexCount)
+   , m_sizePerVertex(fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly))
    , m_size(vertexCount * (fmt ==  VertexFormat::VF_POS_NORMAL_TEX ? sizeof(Vertex3D_NoTex2) : sizeof(Vertex3D_TexelOnly)))
 {
    assert(m_count > 0);

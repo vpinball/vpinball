@@ -13,14 +13,14 @@ class DynamicTypeLibrary final
 public:
    DynamicTypeLibrary();
    ~DynamicTypeLibrary();
-   
+
    void RegisterScriptClass(ScriptClassDef *classDef);
    void RegisterScriptTypeAlias(const char *name, const char *aliasedType);
    void RegisterScriptArray(ScriptArrayDef *arrayDef);
    void ResolveAllClasses();
 
    // FIXME allow to unregister
-   
+
    ScriptClassDef *ResolveClass(const char * name) const;
    int ResolveMemberId(const ScriptClassDef *classDef, const char *memberName) const;
 
@@ -65,10 +65,10 @@ class DynamicDispatch final : public IDispatch
 {
 public:
    DynamicDispatch(const DynamicTypeLibrary* typeLibrary, const ScriptClassDef* classDef, void * nativeObject)
-      : m_classDef(classDef)
+      : m_refCount(1)
+      , m_classDef(classDef)
       , m_typeLibrary(typeLibrary)
       , m_nativeObject(nativeObject)
-      , m_refCount(1)
    {
       #ifdef DEBUG
       assert(classDef == typeLibrary->ResolveClass(classDef->name.name));

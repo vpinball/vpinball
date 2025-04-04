@@ -13,16 +13,16 @@
 #include <bgfx/platform.h>
 #endif
 
-Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter) : 
-   m_type(SurfaceType::RT_DEFAULT), 
-   m_dirty(false),
-   m_rd(rd),
-   m_ownTexture(true),
-   m_width(surf->width()),
-   m_height(surf->height()),
-   m_clampu(clampu),
-   m_clampv(clampv),
-   m_filter(filter)
+Sampler::Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
+   : m_dirty(false)
+   , m_type(SurfaceType::RT_DEFAULT)
+   , m_ownTexture(true)
+   , m_rd(rd)
+   , m_width(surf->width())
+   , m_height(surf->height())
+   , m_clampu(clampu)
+   , m_clampv(clampv)
+   , m_filter(filter)
 {
    m_rd->m_curTextureUpdates++;
 #if defined(ENABLE_BGFX)
@@ -169,10 +169,10 @@ Sampler::Sampler(RenderDevice* rd, SurfaceType type, GLuint glTexture, bool ownT
 
 #elif defined(ENABLE_DX9)
 Sampler::Sampler(RenderDevice* rd, IDirect3DTexture9* dx9Texture, bool ownTexture, bool force_linear_rgb, const SamplerAddressMode clampu, const SamplerAddressMode clampv, const SamplerFilter filter)
-   : m_type(SurfaceType::RT_DEFAULT)
-   , m_rd(rd)
-   , m_dirty(false)
+   : m_dirty(false)
+   , m_type(SurfaceType::RT_DEFAULT)
    , m_ownTexture(ownTexture)
+   , m_rd(rd)
    , m_clampu(clampu)
    , m_clampv(clampv)
    , m_filter(filter)

@@ -126,7 +126,7 @@ public:
    virtual void ClearPointsForOverwrite();
 
    virtual Vertex2D GetPointCenter() const;
-   virtual void PutPointCenter(const Vertex2D& pv);
+   virtual void PutPointCenter(const Vertex2D &pv) { }
 
    void FlipPointY(const Vertex2D& pvCenter);
    void FlipPointX(const Vertex2D& pvCenter);

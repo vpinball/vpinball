@@ -7,17 +7,9 @@ IEditable::IEditable()
    VariantInit(&m_uservalue);
 }
 
-IEditable::~IEditable()
-{
-}
-
 void IEditable::SetDirtyDraw()
 {
    GetPTable()->SetDirtyDraw();
-}
-
-void IEditable::ClearForOverwrite()
-{
 }
 
 void IEditable::Delete()
@@ -68,7 +60,7 @@ string IEditable::GetPathString(const bool isDirOnly) const
    }
    std::stringstream ss;
    for (const auto& group : itemPath)
-      ss << group->GetName() << "/";
+      ss << group->GetName() << '/';
    if (!isDirOnly)
       ss << GetName();
    return ss.str();

@@ -199,7 +199,7 @@ protected:
 
 
 // Open Pinball Device context object
-class OpenPinDevContext
+class OpenPinDevContext final
 {
    friend class OpenPinDevHandler;
 

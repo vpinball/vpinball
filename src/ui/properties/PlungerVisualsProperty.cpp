@@ -6,9 +6,9 @@
 
 PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {
-    m_typeList.push_back("Modern");
-    m_typeList.push_back("Flat");
-    m_typeList.push_back("Custom");
+    m_typeList.push_back("Modern"s);
+    m_typeList.push_back("Flat"s);
+    m_typeList.push_back("Custom"s);
 
     m_flatFramesEdit.SetDialog(this);
     m_widthEdit.SetDialog(this);

@@ -190,7 +190,7 @@ void ScoreView::Parse(const string& path, std::istream& content)
          expectedIndent = indent + 1;
          layout.visuals.push_back({VisualType::SegDisplay});
          visual = &layout.visuals.back();
-         visual->srcUri = "";
+         visual->srcUri = string();
          visual->liveStyle = 1;
          visual->tint = vec3(1.f, 1.f, 1.f);
          visual->glassTint = vec3(1.f, 1.f, 1.f);

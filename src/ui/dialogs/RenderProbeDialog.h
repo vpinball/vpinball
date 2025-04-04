@@ -11,10 +11,10 @@ public:
 
 protected:
    BOOL OnInitDialog() override;
-   virtual INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
-   virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
-   virtual void OnOK() override;
-   virtual void OnClose() override;
+   INT_PTR DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam) override;
+   BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+   void OnOK() override;
+   void OnClose() override;
 
 private:
    void UpdateList();

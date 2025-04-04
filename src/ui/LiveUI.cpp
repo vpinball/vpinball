@@ -989,7 +989,7 @@ unsigned int LiveUI::PushNotification(const string &message, const int lengthMs,
    }
    else
    {
-      m_notifications.push_back( { m_nextNotificationIs++, message, msec() + lengthMs} );
+      m_notifications.emplace_back(m_nextNotificationIs++, message, msec() + lengthMs);
       return m_nextNotificationIs - 1;
    }
 }
@@ -3486,9 +3486,9 @@ void LiveUI::UpdateOutlinerUI()
                   }
                   if (edit->GetItemType() == eItemPartGroup)
                   {
-                     stack.push_back({ 
+                     stack.emplace_back(
                         static_cast<PartGroup*>(edit), 
-                        (stack.empty() || stack.back().opened) ? ImGui::TreeNodeEx(edit->GetName(), ImGuiTreeNodeFlags_None) : false });
+                        (stack.empty() || stack.back().opened) ? ImGui::TreeNodeEx(edit->GetName(), ImGuiTreeNodeFlags_None) : false);
                   }
                   else if (stack.back().opened)
                   {

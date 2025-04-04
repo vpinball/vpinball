@@ -226,7 +226,7 @@ class IEditable
 {
 public:
    IEditable();
-   virtual ~IEditable();
+   virtual ~IEditable() { }
 
    // this function draws the shape of the object with a solid fill
    // only used in the UI/editor and not the game
@@ -256,7 +256,7 @@ public:
    virtual const Hitable *GetIHitable() const { return nullptr; }
 
    virtual HRESULT SaveData(IStream *pstm, HCRYPTHASH hcrypthash, const bool saveForUndo) = 0;
-   virtual void ClearForOverwrite();
+   virtual void ClearForOverwrite() { }
    virtual HRESULT InitLoad(IStream *pstm, PinTable *ptable, int *pid, int version, HCRYPTHASH hcrypthash, HCRYPTKEY hcryptkey) = 0;
    virtual HRESULT InitPostLoad() = 0;
    virtual HRESULT InitVBA(BOOL fNew, int id, WCHAR * const wzName) = 0;

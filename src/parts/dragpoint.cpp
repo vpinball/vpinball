@@ -36,10 +36,6 @@ Vertex2D IHaveDragPoints::GetPointCenter() const
    return {(maxx + minx)*0.5f, (maxy + miny)*0.5f};
 }
 
-void IHaveDragPoints::PutPointCenter(const Vertex2D& pv)
-{
-}
-
 void IHaveDragPoints::FlipPointY(const Vertex2D& pvCenter)
 {
    STARTUNDOSELECT

@@ -13,9 +13,9 @@ public:
 
    static Logger* GetInstance();
 
-   void Init();
-   void SetupLogger(const bool enable);
-   void Truncate();
+   static void Init();
+   static void SetupLogger(const bool enable);
+   static void Truncate();
 
 private:
    Logger() {}

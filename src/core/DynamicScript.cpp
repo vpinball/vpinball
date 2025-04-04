@@ -85,7 +85,7 @@ void DynamicTypeLibrary::RegisterScriptClass(ScriptClassDef* classDef)
    // Add class to type library
    classDef->name.id = static_cast<unsigned int>(m_types.size());
    m_typenames[classId] = classDef->name.id;
-   m_types.push_back(TypeDef { .category = TypeDef::TD_CLASS, .classDef = cd });
+   m_types.push_back({ .category = TypeDef::TD_CLASS, .classDef = cd });
 
    // Register members
    for (int i = 0; i < static_cast<int>(classDef->nMembers); i++)

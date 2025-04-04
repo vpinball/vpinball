@@ -31,15 +31,15 @@ private:
     static int m_columnSortOrder;
 };
 
-class CollectionDialog : public CDialog
+class CollectionDialog final : public CDialog
 {
 public:
     CollectionDialog(CollectionDialogStruct &pcds);
 
 protected:
-    virtual BOOL OnInitDialog();
-    virtual BOOL OnCommand(WPARAM wParam, LPARAM lParam);
-    virtual void OnOK();
+    BOOL OnInitDialog() override;
+    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
+    void OnOK() override;
 
 private:
     CollectionDialogStruct &pCurCollection;
