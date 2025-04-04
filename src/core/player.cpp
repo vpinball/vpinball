@@ -2175,7 +2175,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
          if (pCD == m_controllerSegDisplays.end())
          {
-            m_controllerSegDisplays.emplace_back({m_defaultSegId, 0, nullptr});
+            m_controllerSegDisplays.push_back({m_defaultSegId, 0, nullptr});
             display = &m_controllerSegDisplays.back();
             for (unsigned int i = 0; i < getSrcMsg.count; i++)
             {
@@ -2201,7 +2201,7 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          // Search for the requested display
          GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
          VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
-         m_controllerSegDisplays.emplace_back({id, 0, nullptr});
+         m_controllerSegDisplays.push_back({id, 0, nullptr});
          display = &m_controllerSegDisplays.back();
          for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
@@ -2287,7 +2287,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
          if (pCD == m_controllerDisplays.end())
          {
-            m_controllerDisplays.emplace_back({m_defaultDmdId, -1, nullptr});
+            m_controllerDisplays.push_back({m_defaultDmdId, -1, nullptr});
             display = &m_controllerDisplays.back();
          }
          else
@@ -2319,7 +2319,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          delete[] getSrcMsg.entries;
          if (!dmdFound)
             return { { 0 }, -1, nullptr };
-         m_controllerDisplays.emplace_back({dmdId, -1, nullptr});
+         m_controllerDisplays.push_back({dmdId, -1, nullptr});
          display = &m_controllerDisplays.back();
       }
       else
