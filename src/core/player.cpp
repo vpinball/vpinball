@@ -15,7 +15,7 @@
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
-#include <map>
+#include "robin_hood.h"
 #endif
 
 #ifdef __LIBVPINBALL__
@@ -35,7 +35,9 @@
 #include "renderer/captureExt.h"
 #endif
 #ifdef _MSC_VER
+#if !defined(ENABLE_SDL_VIDEO)
 #include "winsdk/legacy_touch.h"
+#endif
 // Used to log which program steals the focus from VPX
 #include "psapi.h"
 #pragma comment(lib, "Psapi")
@@ -53,14 +55,6 @@
 #include <cvmarkersobj.h>
 using namespace Concurrency::diagnostic;
 extern marker_series series;
-#endif
-
-#if !defined(__clang__)
-#define stable_sort std::ranges::stable_sort
-#define sort std::ranges::sort
-#else
-#define stable_sort std::stable_sort
-#define sort std::sort
 #endif
 
 //
@@ -877,8 +871,8 @@ Player::~Player()
 
       tinyxml2::XMLDocument xmlDoc;
       tinyxml2::XMLElement* root;
-      std::map<string, tinyxml2::XMLElement*> textureAge;
-      string path = dir + "used_textures.xml";
+      robin_hood::unordered_map<string, tinyxml2::XMLElement*> textureAge;
+      const string path = dir + "used_textures.xml";
       if (FileExists(path))
       {
          std::ifstream myFile(path);
@@ -896,9 +890,10 @@ Player::~Player()
                const char *name = node->GetText();
                if (name)
                {
-                  if (textureAge.count(name) == 1)
-                     toRemove.push_back(textureAge[name]);
-                  textureAge[name] = node;
+                  const string name_s = name;
+                  if (textureAge.count(name_s) == 1)
+                     toRemove.push_back(textureAge[name_s]);
+                  textureAge[name_s] = node;
                   if (node->QueryIntAttribute("age", &age) == tinyxml2::XML_SUCCESS)
                      node->SetAttribute("age", age + 1);
                   else
@@ -2180,13 +2175,13 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
          if (pCD == m_controllerSegDisplays.end())
          {
-            m_controllerSegDisplays.push_back({ m_defaultSegId, 0, nullptr });
+            m_controllerSegDisplays.emplace_back(m_defaultSegId, 0, nullptr);
             display = &m_controllerSegDisplays.back();
             for (unsigned int i = 0; i < getSrcMsg.count; i++)
             {
                if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
                {
-                  display->displays.emplace_back(vector<SegElementType>(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]));
+                  display->displays.emplace_back(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]);
                   display->nElements += getSrcMsg.entries[i].nElements;
                }
             }
@@ -2206,13 +2201,13 @@ Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
          // Search for the requested display
          GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
          VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
-         m_controllerSegDisplays.push_back({ id, 0, nullptr });
+         m_controllerSegDisplays.emplace_back(id, 0, nullptr);
          display = &m_controllerSegDisplays.back();
          for (unsigned int i = 0; i < getSrcMsg.count; i++)
          {
             if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
             {
-               display->displays.emplace_back(vector<SegElementType>(getSrcMsg.entries[i].elementType[0], getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]));
+               display->displays.emplace_back(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]);
                display->nElements += getSrcMsg.entries[i].nElements;
             }
          }
@@ -2292,7 +2287,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
          if (pCD == m_controllerDisplays.end())
          {
-            m_controllerDisplays.push_back({m_defaultDmdId, -1, nullptr});
+            m_controllerDisplays.emplace_back(m_defaultDmdId, -1, nullptr);
             display = &m_controllerDisplays.back();
          }
          else
@@ -2324,7 +2319,7 @@ Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
          delete[] getSrcMsg.entries;
          if (!dmdFound)
             return { { 0 }, -1, nullptr };
-         m_controllerDisplays.push_back({ dmdId, -1, nullptr });
+         m_controllerDisplays.emplace_back(dmdId, -1, nullptr);
          display = &m_controllerDisplays.back();
       }
       else
