@@ -99,4 +99,13 @@ if "%vsv%" == "2019" (
 )
 
 
+REM ***************************************************************************************************
+copy /V /Y "plugin-dmdutil.net2022.vcxproj" "../plugin-dmdutil.vcxproj"
+copy /V /Y "plugin-dmdutil.net2022.vcxproj.filters" "../plugin-dmdutil.vcxproj.filters"
+
+if "%vsv%" == "2019" (
+	cscript "simplereplace.wsf" //nologo /search:"v143" /replace:"v142" /in:"../plugin-dmdutil.vcxproj" /out:"../plugin-dmdutil.vcxproj"
+)
+
+
 endlocal
