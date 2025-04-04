@@ -263,6 +263,16 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
       #else
          libraryKey = "windows.x64"s;
       #endif
+   #elif defined(__ANDROID__) // leave here, as it also defines linux
+      #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
+         #if (INTPTR_MAX == INT32_MAX)
+            libraryKey = "android.x86_32"s;
+         #else
+            libraryKey = "android.x86_64"s;
+         #endif
+      #elif (INTPTR_MAX == INT32_MAX)
+         libraryKey = "android.x86_32"s;
+      #endif
    #elif (defined(__linux) || defined(__linux__))
       #if defined(__aarch64__)
          libraryKey = "linux.aarch64"s;
@@ -278,16 +288,6 @@ void MsgPluginManager::ScanPluginFolder(const std::string& pluginDir, const std:
          libraryKey = "macos.arm64"s;
       #else
          libraryKey = "macos.x64"s;
-      #endif
-   #elif defined(__ANDROID__)
-      #if defined(_M_IX86) || defined(_M_X64) || defined(_M_AMD64) || defined(__i386__) || defined(__i386) || defined(__i486__) || defined(__i486) || defined(i386) || defined(__ia64__) || defined(__x86_64__)
-         #if (INTPTR_MAX == INT32_MAX)
-            libraryKey = "android.x86_32"s;
-         #else
-            libraryKey = "android.x86_64"s;
-         #endif
-      #elif (INTPTR_MAX == INT32_MAX)
-         libraryKey = "android.x86_32"s;
       #endif
    #endif
    if (libraryKey.empty())
