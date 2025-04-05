@@ -73,6 +73,7 @@ protected:
    BOOL OnCommand(WPARAM wParam, LPARAM lParam) override;
 
 private:
+   void UpdateCommands();
    void AddToolTip(const char* const text, HWND parentHwnd, HWND toolTipHwnd, HWND controlHwnd);
 
    CResizer      m_resizer;
@@ -81,6 +82,8 @@ private:
    CButton       m_addLayerButton;
    CButton       m_deleteLayerButton;
    CButton       m_expandCollapseButton;
+   CButton       m_selectButton;
+   CButton       m_syncButton;
    CEdit         m_layerFilterEditBox;
    CButton       m_layerFilterCaseButton;
    PinTable*     m_activeTable = nullptr;

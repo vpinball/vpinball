@@ -44,6 +44,7 @@
 #include "ui/properties/TableVisualsProperty.h"
 #include "ui/properties/TablePhysicsProperty.h"
 #include "ui/properties/TableLightsProperty.h"
+#include "ui/properties/PartGroupVisualsProperty.h"
 #include <WindowsX.h>
 
 #pragma region PropertyDialog
@@ -407,6 +408,17 @@ void PropertyDialog::CreateTabs(VectorProtected<ISelect> &pvsel)
         else
             m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new DragpointVisualsProperty(IDD_PROPPOINT_VISUALSWTEX, &pvsel), _T("Visuals")));
         activePage = 0;
+        break;
+    }
+    case eItemPartGroup:
+    {
+        m_elementTypeName.SetWindowText("Group");
+        m_tabs[0] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new PartGroupVisualsProperty(&pvsel), _T("Visuals")));
+        m_tabs[1] = static_cast<BasePropertyDialog*>(m_tab.AddTabPage(new TimerProperty(&pvsel), _T("Timer")));
+        if (m_tab.m_activeTabText == CString("Visuals"))
+            activePage = 0;
+        else if (m_tab.m_activeTabText == CString("Timer"))
+            activePage = 1;
         break;
     }
     default:

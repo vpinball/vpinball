@@ -3,6 +3,8 @@
 #include "core/stdafx.h"
 #include "LayersListDialog.h"
 
+#define WM_TREE_SEL_CHANGED (WM_USER + 1)
+
 LayersListDialog::LayersListDialog()
    : CDialog(IDD_LAYERS)
    , m_accel(LoadAccelerators(g_pvp->theInstance, MAKEINTRESOURCE(IDR_VPSIMPELACCEL)))
@@ -45,13 +47,15 @@ BOOL LayersListDialog::OnInitDialog()
 {
    const HWND toolTipHwnd = CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
 
-   AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
    AttachItem(IDC_ADD_LAYER_BUTTON, m_addLayerButton);
    AttachItem(IDC_DELETE_LAYER_BUTTON, m_deleteLayerButton);
    AttachItem(IDC_ASSIGN_BUTTON, m_assignButton);
+   AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
+   AttachItem(IDC_SELECT, m_selectButton);
+   AttachItem(IDC_SYNC, m_syncButton);
    AttachItem(IDC_LAYER_FILTER_EDIT, m_layerFilterEditBox);
    AttachItem(IDC_LAYER_FILTER_CASE_BUTTON, m_layerFilterCaseButton);
-   AttachItem(IDC_EXPAND_COLLAPSE_BUTTON, m_expandCollapseButton);
+   AttachItem(IDC_LAYER_TREEVIEW, m_layerTreeView);
 
    constexpr int iconSize = 16;
    HANDLE hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_ASSIGN), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
@@ -62,6 +66,8 @@ BOOL LayersListDialog::OnInitDialog()
    m_deleteLayerButton.SetIcon((HICON)hIcon);
    hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_EXPANDCOLLAPSE), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
    m_expandCollapseButton.SetIcon((HICON)hIcon);
+   hIcon = ::LoadImage(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDI_SELECT), IMAGE_ICON, iconSize, iconSize, LR_DEFAULTCOLOR);
+   m_selectButton.SetIcon((HICON)hIcon);
 
    AddToolTip("Assign selected elements to selected layer", GetHwnd(), toolTipHwnd, m_assignButton.GetHwnd());
    AddToolTip("Collapse all", GetHwnd(), toolTipHwnd, m_expandCollapseButton.GetHwnd());
@@ -69,16 +75,22 @@ BOOL LayersListDialog::OnInitDialog()
    AddToolTip("Delete selected layer", GetHwnd(), toolTipHwnd, m_deleteLayerButton.GetHwnd());
    AddToolTip("Filter tree. Only elements that match the filter string will be shown!", GetHwnd(), toolTipHwnd, m_layerFilterEditBox.GetHwnd());
    AddToolTip("Enable case sensitive filtering", GetHwnd(), toolTipHwnd, m_layerFilterCaseButton.GetHwnd());
+   AddToolTip("Sync tree with selection", GetHwnd(), toolTipHwnd, m_syncButton.GetHwnd());
+   AddToolTip("Edit group properties", GetHwnd(), toolTipHwnd, m_selectButton.GetHwnd());
 
    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 200, 200));
-   m_resizer.AddChild(m_layerTreeView.GetHwnd(), CResizer::topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_addLayerButton.GetHwnd(), CResizer::topright, 0);
-   m_resizer.AddChild(m_deleteLayerButton.GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(m_assignButton.GetHwnd(), CResizer::topleft, 0);
-   m_resizer.AddChild(m_layerFilterCaseButton.GetHwnd(), CResizer::topright, 0);
    m_resizer.AddChild(m_expandCollapseButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_selectButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_addLayerButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_deleteLayerButton.GetHwnd(), CResizer::topleft, 0);
+   m_resizer.AddChild(m_syncButton.GetHwnd(), CResizer::topleft, 0);
    m_resizer.AddChild(m_layerFilterEditBox.GetHwnd(), CResizer::topright, RD_STRETCH_WIDTH);
+   m_resizer.AddChild(m_layerFilterCaseButton.GetHwnd(), CResizer::topright, 0);
+   m_resizer.AddChild(m_layerTreeView.GetHwnd(), CResizer::topleft, RD_STRETCH_HEIGHT | RD_STRETCH_WIDTH);
    m_resizer.RecalcLayout();
+
+   UpdateCommands();
 
    return TRUE;
 }
@@ -89,6 +101,7 @@ INT_PTR LayersListDialog::DialogProc(UINT msg, WPARAM wparam, LPARAM lparam)
 
    switch (msg)
    {
+   case WM_TREE_SEL_CHANGED: UpdateCommands(); return TRUE;
    case WM_MOUSEACTIVATE: return OnMouseActivate(msg, wparam, lparam);
    }
 
@@ -107,6 +120,16 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
    {
    case IDC_SYNC:
       Update();
+      return TRUE;
+
+   case IDC_SELECT:
+      if (m_activeTable && GetSelectedPartGroup())
+      {
+         m_activeTable->ClearMultiSel();
+         m_activeTable->AddMultiSel(GetSelectedPartGroup(), true, false, false);
+         m_activeTable->RefreshProperties();
+         m_activeTable->SetDirtyDraw();
+      }
       return TRUE;
 
    case IDC_ADD_LAYER_BUTTON:
@@ -206,21 +229,39 @@ void LayersListDialog::SetActiveTable(PinTable* ptable)
 {
    m_activeTable = ptable;
    m_layerTreeView.SetActiveTable(ptable);
-   if (IsDlgButtonChecked(IDC_SYNC) == BST_CHECKED)
+   if (m_syncButton.GetCheck() == BST_CHECKED)
    {
       ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
       m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
    }
+   UpdateCommands();
+}
+
+void LayersListDialog::UpdateCommands()
+{
+   // Enable/disable treeview and buttons depending on the active table
+   m_layerTreeView.EnableWindow(m_activeTable ? TRUE : FALSE);
+   m_addLayerButton.EnableWindow(m_activeTable ? TRUE : FALSE);
+   m_expandCollapseButton.EnableWindow(m_activeTable ? TRUE : FALSE);
+   m_syncButton.EnableWindow(m_activeTable ? TRUE : FALSE);
+   m_layerFilterEditBox.EnableWindow(m_activeTable ? TRUE : FALSE);
+   m_layerFilterCaseButton.EnableWindow(m_activeTable ? TRUE : FALSE);
+   // Enable/disable buttons depending on the current selection
+   const bool isPartGroupSelected = GetSelectedPartGroup() != nullptr;
+   m_assignButton.EnableWindow(m_activeTable && isPartGroupSelected ? TRUE : FALSE);
+   m_deleteLayerButton.EnableWindow(m_activeTable && isPartGroupSelected ? TRUE : FALSE);
+   m_selectButton.EnableWindow(m_activeTable && isPartGroupSelected ? TRUE : FALSE);
 }
 
 void LayersListDialog::Update()
 {
    m_layerTreeView.Update();
-   if (IsDlgButtonChecked(IDC_SYNC) == BST_CHECKED)
+   if (m_syncButton.GetCheck() == BST_CHECKED)
    {
       ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
       m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
    }
+   UpdateCommands();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -607,8 +648,7 @@ LRESULT LayerTreeView::OnNotifyReflect(WPARAM wparam, LPARAM lparam)
    }
    case TVN_SELCHANGED:
    {
-      // TODO allow edition of group properties
-      // (LPNMTREEVIEW)lpnmh  => using handle: pNMTV->itemNew.hItem
+      GetParent().SendMessage(WM_TREE_SEL_CHANGED);
       return FALSE;
    }
    case TVN_ENDLABELEDIT:

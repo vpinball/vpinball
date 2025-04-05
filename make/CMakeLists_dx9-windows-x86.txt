@@ -425,6 +425,8 @@ add_executable(vpinball WIN32
    src/ui/properties/LightStatesProperty.h
    src/ui/properties/LightVisualsProperty.cpp
    src/ui/properties/LightVisualsProperty.h
+   src/ui/properties/PartGroupVisualsProperty.cpp
+   src/ui/properties/PartGroupVisualsProperty.h
    src/ui/properties/PlungerPhysicsProperty.cpp
    src/ui/properties/PlungerPhysicsProperty.h
    src/ui/properties/PlungerVisualsProperty.cpp
