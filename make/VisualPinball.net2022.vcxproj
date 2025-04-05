@@ -1292,6 +1292,7 @@
     <ClCompile Include="src/utils/wintimer.cpp" />
     <ClCompile Include="src\parts\PartGroup.cpp" />
     <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp" />
+    <ClCompile Include="src\ui\properties\PartGroupVisualsProperty.cpp" />
     <ClCompile Include="third-party/include/hidapi/windows/hid.cpp">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
@@ -1657,6 +1658,7 @@
     <ClInclude Include="src\parts\PartGroup.h" />
     <ClInclude Include="src\physics\AsyncDynamicQuadTree.h" />
     <ClInclude Include="src\plugins\ScriptablePlugin.h" />
+    <ClInclude Include="src\ui\properties\PartGroupVisualsProperty.h" />
     <ClInclude Include="vpinball.h" />
     <ClInclude Include="src/audio/pinsound.h" />
     <ClInclude Include="src/core/def.h" />

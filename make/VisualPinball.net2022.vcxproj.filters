@@ -705,6 +705,9 @@
     <ClCompile Include="src\parts\PartGroup.cpp">
       <Filter>parts</Filter>
     </ClCompile>
+    <ClCompile Include="src\ui\properties\PartGroupVisualsProperty.cpp">
+      <Filter>ui\properties</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="vpinball.h">
@@ -1846,6 +1849,9 @@
     </ClInclude>
     <ClInclude Include="src\parts\PartGroup.h">
       <Filter>parts</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\properties\PartGroupVisualsProperty.h">
+      <Filter>ui\properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
