@@ -19,7 +19,7 @@ public:
    PUPMediaPlayer();
    ~PUPMediaPlayer();
 
-   void SetRenderer(SDL_Renderer* pRenderer);
+   void SetScreen(PUPScreen* pScreen);
    void Play(const string& szFilename);
    bool IsPlaying();
    void Pause(bool pause);
@@ -41,7 +41,7 @@ private:
    bool m_loop;
    float m_volume;
    int m_priority;
-   SDL_Renderer* m_pRenderer;
+   PUPScreen* m_pScreen;
    SDL_Texture* m_pTexture;
    AVFormatContext* m_pFormatContext;
    int m_videoStream;

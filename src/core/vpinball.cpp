@@ -1134,8 +1134,8 @@ void VPinball::DoPlay(const int playMode)
                if (isPFWnd) {
                   // We scale motion data since SDL expects DPI scaled points coordinates on Apple device, while it uses pixel coordinates on other devices (see SDL_WINDOWS_DPI_SCALING)
                   // For the time being, VPX always uses pixel coordinates, using setup obtained at window creation time.
-                  e.motion.x *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
-                  e.motion.y *= g_pplayer->m_playfieldWnd->GetHiDPIScale();
+                  e.motion.x *= SDL_GetWindowPixelDensity(g_pplayer->m_playfieldWnd->GetCore());
+                  e.motion.y *= SDL_GetWindowPixelDensity(g_pplayer->m_playfieldWnd->GetCore());
                   static float m_lastcursorx = FLT_MAX, m_lastcursory = FLT_MAX;
                   if (m_lastcursorx != e.motion.x || m_lastcursory != e.motion.y)
                   {
@@ -1170,10 +1170,6 @@ void VPinball::DoPlay(const int playMode)
             if (isPFWnd)
                ImGui_ImplSDL3_ProcessEvent(&e);
 
-            #ifdef __STANDALONE__
-            g_pStandalone->ProcessEvent(&e);
-            #endif
-
             #ifdef ENABLE_SDL_INPUT
             g_pplayer->m_pininput.HandleSDLEvent(e);
             #endif
@@ -1182,10 +1178,6 @@ void VPinball::DoPlay(const int playMode)
             if ((usec() - startTick) > 1000ull)
                break;
          }
-
-         #ifdef __STANDALONE__
-         g_pStandalone->ProcessUpdates();
-         #endif
       };
 
       #elif !defined(__STANDALONE__)

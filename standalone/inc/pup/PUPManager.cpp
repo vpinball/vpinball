@@ -250,50 +250,45 @@ void PUPManager::Start()
 
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
-   if (pSettings->LoadValueWithDefault(Settings::Standalone, "PUPWindows"s, true)) {
-      AddWindow("Topper",
-         PUP_SCREEN_TOPPER,
-         PUP_SETTINGS_TOPPERX,
-         PUP_SETTINGS_TOPPERY,
-         PUP_SETTINGS_TOPPERWIDTH,
-         PUP_SETTINGS_TOPPERHEIGHT,
-         PUP_ZORDER_TOPPER);
+   AddWindow("Topper",
+      PUP_SCREEN_TOPPER,
+      PUP_ZORDER_TOPPER,
+      PUP_SETTINGS_TOPPERX,
+      PUP_SETTINGS_TOPPERY,
+      PUP_SETTINGS_TOPPERWIDTH,
+      PUP_SETTINGS_TOPPERHEIGHT);
 
-      AddWindow("Backglass",
-         PUP_SCREEN_BACKGLASS,
-         PUP_SETTINGS_BACKGLASSX,
-         PUP_SETTINGS_BACKGLASSY,
-         PUP_SETTINGS_BACKGLASSWIDTH,
-         PUP_SETTINGS_BACKGLASSHEIGHT,
-         PUP_ZORDER_BACKGLASS);
+   AddWindow("Backglass",
+      PUP_SCREEN_BACKGLASS,
+      PUP_ZORDER_BACKGLASS,
+      PUP_SETTINGS_BACKGLASSX,
+      PUP_SETTINGS_BACKGLASSY,
+      PUP_SETTINGS_BACKGLASSWIDTH,
+      PUP_SETTINGS_BACKGLASSHEIGHT);
 
-      AddWindow("DMD",
-         PUP_SCREEN_DMD,
-         PUP_SETTINGS_DMDX,
-         PUP_SETTINGS_DMDY,
-         PUP_SETTINGS_DMDWIDTH,
-         PUP_SETTINGS_DMDHEIGHT,
-         PUP_ZORDER_DMD);
+   AddWindow("DMD",
+      PUP_SCREEN_DMD,
+      PUP_ZORDER_DMD,
+      PUP_SETTINGS_DMDX,
+      PUP_SETTINGS_DMDY,
+      PUP_SETTINGS_DMDWIDTH,
+      PUP_SETTINGS_DMDHEIGHT);
 
-      AddWindow("Playfield",
-         PUP_SCREEN_PLAYFIELD,
-         PUP_SETTINGS_PLAYFIELDX,
-         PUP_SETTINGS_PLAYFIELDY,
-         PUP_SETTINGS_PLAYFIELDWIDTH,
-         PUP_SETTINGS_PLAYFIELDHEIGHT,
-         PUP_ZORDER_PLAYFIELD);
+   AddWindow("Playfield",
+      PUP_SCREEN_PLAYFIELD,
+      PUP_ZORDER_PLAYFIELD,
+      PUP_SETTINGS_PLAYFIELDX,
+      PUP_SETTINGS_PLAYFIELDY,
+      PUP_SETTINGS_PLAYFIELDWIDTH,
+      PUP_SETTINGS_PLAYFIELDHEIGHT);
 
-      AddWindow("FullDMD",
-         PUP_SCREEN_FULLDMD,
-         PUP_SETTINGS_FULLDMDX,
-         PUP_SETTINGS_FULLDMDY,
-         PUP_SETTINGS_FULLDMDWIDTH,
-         PUP_SETTINGS_FULLDMDHEIGHT,
-         PUP_ZORDER_FULLDMD);
-   }
-   else {
-      PLOGI.printf("PUP windows disabled");
-   }
+   AddWindow("FullDMD",
+      PUP_SCREEN_FULLDMD,
+      PUP_ZORDER_FULLDMD,
+      PUP_SETTINGS_FULLDMDX,
+      PUP_SETTINGS_FULLDMDY,
+      PUP_SETTINGS_FULLDMDWIDTH,
+      PUP_SETTINGS_FULLDMDHEIGHT);
 
    m_isRunning = true;
    m_thread = std::thread(&PUPManager::ProcessQueue, this);
@@ -302,7 +297,7 @@ void PUPManager::Start()
       pScreen->Start();
 }
 
-void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y, int width, int height, int zOrder)
+void PUPManager::AddWindow(const string& szWindowName, int screen, int z, int x, int y, int width, int height)
 {
    Settings* const pSettings = &g_pplayer->m_ptable->m_settings;
 
@@ -319,20 +314,13 @@ void PUPManager::AddWindow(const string& szWindowName, int screen, int x, int y,
       return;
    }
 
-   if (!pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Window"s, true)) {
-      PLOGI.printf("PUP %s window disabled", szWindowName.c_str());
-      return;
-   }
+   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix, z,
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WndX"s, x),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WndY"s, y),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Width"s, width),
+      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "Height"s, height));
 
-   PUPWindow* pWindow = new PUPWindow(pScreen, szPrefix,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowX"s, x),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowY"s, y),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowWidth"s, width),
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowHeight"s, height),
-      zOrder,
-      pSettings->LoadValueWithDefault(Settings::Standalone, szPrefix + "WindowRotation"s, 0));
-
-   if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF)
+   if (pScreen->GetMode() != PUP_SCREEN_MODE_OFF && pScreen->GetMode() != PUP_SCREEN_MODE_MUSIC_ONLY)
       pWindow->Show();
 
    m_windows.push_back(pWindow);
