@@ -55,9 +55,9 @@ void PartGroupVisualsProperty::UpdateVisibilityMask(PartGroup* const partGroup, 
    {
       PropertyDialog::StartUndo(partGroup);
       if (checked)
-         partGroup->m_d.m_visibilityMask |= PartGroupData::VisibilityMask::VM_PLAYFIELD;
+         partGroup->m_d.m_visibilityMask |= mask;
       else
-         partGroup->m_d.m_visibilityMask &= ~PartGroupData::VisibilityMask::VM_PLAYFIELD;
+         partGroup->m_d.m_visibilityMask &= ~mask;
       PropertyDialog::EndUndo(partGroup);
    }
 }

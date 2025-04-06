@@ -277,19 +277,27 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
 {
    if (me->GetIEditable() && (me->GetItemType() != eItemDragPoint) && (me->GetItemType() != eItemLightCenter))
    {
+      if (me->GetIEditable()->GetPartGroup())
+      {
+         PartGroup* legacyPartGroup = me->GetIEditable()->GetPartGroup();
+         me->GetIEditable()->SetPartGroup(nullptr);
+         auto users = std::ranges::find_if(me->GetPTable()->m_vedit, [legacyPartGroup](IEditable *editable) { return editable->GetPartGroup() == legacyPartGroup; });
+         if (users == me->GetPTable()->m_vedit.end())
+            legacyPartGroup->GetISelect()->Uncreate();
+      }
       auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit,
          [layerName](IEditable *editable)
          {
-            if (editable->GetItemType() != ItemTypeEnum::eItemPartGroup)
-               return false;
-            return editable->GetName() == layerName;
+            return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup)  && editable->GetName() == layerName;
          });
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
-         PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::Create(eItemPartGroup));
-         newGroup->Init(me->GetPTable(), 0, 0, false);
+         PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
          const int len = (int)layerName.length() + 1;
-         MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, newGroup->GetScriptable()->m_wzName, len);
+         WCHAR newName[MAXNAMEBUFFER];
+         MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, newName, len);
+         me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
+         lstrcpynW(newGroup->GetScriptable()->m_wzName, newName, len);
          me->GetPTable()->m_vedit.push_back(newGroup);
          me->GetIEditable()->SetPartGroup(newGroup);
       }
@@ -304,30 +312,30 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
 {
    switch(id)
    {
-       case FID(LOCK): pbr->GetBool(m_locked); break;
-       case FID(LVIS): pbr->GetBool(m_isVisible); break;
-       case FID(LAYR): // Old layer style (limited number of unnamed layers)
-       {
-          int layerIndex;
-          pbr->GetInt(layerIndex);
-          SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
-          break;
-       }
-       case FID(LANR): // 10.7 layers (limited number of named layers)
-       {
-          string layerName;
-          pbr->GetString(layerName);
-          std::ranges::replace(layerName, ' ', '_');
-          SetPartGroup(this, "Layer_" + layerName);
-          break;
-       }
-       case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
-       {
-          string partGroupName;
-          pbr->GetString(partGroupName);
-          SetPartGroup(this, partGroupName);
-          break;
-       }
+      case FID(LOCK): pbr->GetBool(m_locked); break;
+      case FID(LVIS): pbr->GetBool(m_isVisible); break;
+      case FID(LAYR): // Old layer style (limited number of unnamed layers)
+      {
+         int layerIndex;
+         pbr->GetInt(layerIndex);
+         SetPartGroup(this, (layerIndex < 9 ? "Layer_0" : "Layer_") + std::to_string(layerIndex + 1));
+         break;
+      }
+      case FID(LANR): // 10.7 layers (limited number of named layers)
+      {
+         string layerName;
+         pbr->GetString(layerName);
+         std::ranges::replace(layerName, ' ', '_');
+         SetPartGroup(this, "Layer_" + layerName);
+         break;
+      }
+      case FID(GRUP): // 10.8.1 groups (unlimited number of hierarchical parenting with properties)
+      {
+         string partGroupName;
+         pbr->GetString(partGroupName);
+         SetPartGroup(this, partGroupName);
+         break;
+      }
    }
    return true;
 }
@@ -339,7 +347,6 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    bw.WriteBool(FID(LOCK), m_locked);
    if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
    {
-      bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
       // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
       PartGroup* layer = GetIEditable()->GetPartGroup();
       while (layer->GetPartGroup() != nullptr)
@@ -354,6 +361,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       }
       bw.WriteInt(FID(LAYR), min(index, 11));
       bw.WriteString(FID(LANR), layer->GetName());
+      bw.WriteString(FID(GRUP), GetIEditable()->GetPartGroup()->GetName());
    }
    bw.WriteBool(FID(LVIS), m_isVisible);
    
