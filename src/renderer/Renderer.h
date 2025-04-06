@@ -34,7 +34,7 @@ public:
    void UpdateStereoShaderState();
 
    void DisableStaticPrePass(const bool disable) { bool wasUsingStaticPrepass = IsUsingStaticPrepass(); m_disableStaticPrepass += disable ? 1 : -1; m_isStaticPrepassDirty |= wasUsingStaticPrepass != IsUsingStaticPrepass(); }
-   bool IsUsingStaticPrepass() const { return m_disableStaticPrepass <= 0; }
+   bool IsUsingStaticPrepass() const { return (m_disableStaticPrepass <= 0) && (m_stereo3D != STEREO_VR); }
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
    void RenderFrame();
