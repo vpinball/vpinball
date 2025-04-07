@@ -820,32 +820,53 @@ HRESULT external_create_object(const WCHAR* progid, IClassFactory* cf, IUnknown*
 
 void external_log_info(const char* format, ...)
 {
-    char buffer[1024];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-    PLOGI << buffer;
+   va_list args;
+   va_start(args, format);
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
+      char* const buffer = static_cast<char*>(malloc(size + 1));
+      vsnprintf(buffer, size + 1, format, args);
+      PLOGI << buffer;
+      free(buffer);
+   }
+   va_end(args);
 }
 
 void external_log_debug(const char* format, ...)
 {
-    char buffer[1024];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-    PLOGD << buffer;
+   va_list args;
+   va_start(args, format);
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
+      char* const buffer = static_cast<char*>(malloc(size + 1));
+      vsnprintf(buffer, size + 1, format, args);
+      PLOGD << buffer;
+      free(buffer);
+   }
+   va_end(args);
 }
 
 void external_log_error(const char* format, ...)
 {
-    char buffer[1024];
-    va_list args;
-    va_start(args, format);
-    vsnprintf(buffer, sizeof(buffer), format, args);
-    va_end(args);
-    PLOGE << buffer;
+   va_list args;
+   va_start(args, format);
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
+      char* const buffer = static_cast<char*>(malloc(size + 1));
+      vsnprintf(buffer, size + 1, format, args);
+      PLOGE << buffer;
+      free(buffer);
+   }
+   va_end(args);
 }
 
 #endif

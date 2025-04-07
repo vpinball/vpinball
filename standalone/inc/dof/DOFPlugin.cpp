@@ -4,10 +4,21 @@
 
 void OnDOFLog(DOF_LogLevel logLevel, const char* format, va_list args)
 {
-   char buffer[4096];
-   vsnprintf(buffer, sizeof(buffer), format, args);
-
-   PLOGI.printf("%s", buffer);
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
+      char* const buffer = static_cast<char*>(malloc(size + 1));
+      vsnprintf(buffer, size + 1, format, args);
+      if (logLevel == DOF_LogLevel_INFO) {
+         PLOGI << buffer;
+      }
+      else if (logLevel == DOF_LogLevel_ERROR) {
+         PLOGE << buffer;
+      }
+      free(buffer);
+   }
 }
 
 DOFPlugin::DOFPlugin() : Plugin()
