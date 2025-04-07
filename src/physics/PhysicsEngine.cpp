@@ -1,6 +1,9 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+
+#include <iomanip>
+
 #include "PhysicsEngine.h"
 
 #include "plugins/MsgPlugin.h"

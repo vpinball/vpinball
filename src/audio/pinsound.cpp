@@ -2,6 +2,8 @@
 
 #include "core/stdafx.h"
 
+#include <iomanip>
+
 #include <SDL3_mixer/SDL_mixer.h>
 
 // SDL Sound Device Id for each output 

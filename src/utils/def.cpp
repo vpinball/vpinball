@@ -11,6 +11,7 @@
 #include "standalone/PoleStorage.h"
 #endif
 
+#include <iomanip>
 #include <filesystem>
 
 unsigned long long mwc64x_state = 4077358422479273989ull;
