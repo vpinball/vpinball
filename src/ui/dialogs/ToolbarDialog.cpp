@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ToolbarDialog.h"
-#include <WindowsX.h>
 
 ToolbarDialog::ToolbarDialog() : CDialog(IDD_TOOLBAR)
 {

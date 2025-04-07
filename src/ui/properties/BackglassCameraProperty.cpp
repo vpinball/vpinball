@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/BackglassCameraProperty.h"
-#include <WindowsX.h>
 
 BackglassCameraProperty::BackglassCameraProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBACKGLASS_CAMERA, pvsel)
 {

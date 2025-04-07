@@ -45,7 +45,6 @@
 #include "ui/properties/TablePhysicsProperty.h"
 #include "ui/properties/TableLightsProperty.h"
 #include "ui/properties/PartGroupVisualsProperty.h"
-#include <WindowsX.h>
 
 #pragma region PropertyDialog
 

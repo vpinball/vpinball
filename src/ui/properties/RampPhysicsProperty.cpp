@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/RampPhysicsProperty.h"
-#include <WindowsX.h>
 
 RampPhysicsProperty::RampPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_PHYSICS, pvsel)
 {

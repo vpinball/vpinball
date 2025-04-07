@@ -280,7 +280,7 @@ class BackglassViewOptPage final : public VideoOptionPropPage
 {
 public:
    BackglassViewOptPage(Settings& appSettings, Settings& tableSettings);
-   virtual ~BackglassViewOptPage() override { }
+   ~BackglassViewOptPage() override { }
 
    BackglassViewOptPage(const BackglassViewOptPage&) = delete;
    BackglassViewOptPage& operator=(const BackglassViewOptPage&) = delete;

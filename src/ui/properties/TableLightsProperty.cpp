@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/TableLightsProperty.h"
-#include <WindowsX.h>
 
 TableLightsProperty::TableLightsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPTABLE_LIGHTSOURCES, pvsel)
 {

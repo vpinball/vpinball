@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/BallPhysicsProperty.h"
-#include <WindowsX.h>
 
 BallPhysicsProperty::BallPhysicsProperty(const VectorProtected<ISelect> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_PHYSICS, pvsel)

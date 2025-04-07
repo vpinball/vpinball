@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/DispreelVisualsProperty.h"
-#include <WindowsX.h>
 
 DispreelVisualsProperty::DispreelVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPDISPREEL_VISUALS, pvsel)
 {

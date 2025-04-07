@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/BumperPhysicsProperty.h"
-#include <WindowsX.h>
 
 BumperPhysicsProperty::BumperPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPBUMPER_PHYSICS, pvsel)
 {

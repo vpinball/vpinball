@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/HitTargetPhysicsProperty.h"
-#include <WindowsX.h>
 
 HitTargetPhysicsProperty::HitTargetPhysicsProperty(const VectorProtected<ISelect> *pvsel): BasePropertyDialog(IDD_PROPHITTARGET_PHYSICS, pvsel)
 {

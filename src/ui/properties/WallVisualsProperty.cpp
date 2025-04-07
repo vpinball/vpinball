@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/WallVisualsProperty.h"
-#include <WindowsX.h>
 
 WallVisualsProperty::WallVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPWALL_VISUALS, pvsel)
 {

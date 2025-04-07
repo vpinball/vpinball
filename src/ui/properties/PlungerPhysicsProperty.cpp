@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/PlungerPhysicsProperty.h"
-#include <WindowsX.h>
 
 PlungerPhysicsProperty::PlungerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_PHYSICS, pvsel)
 {

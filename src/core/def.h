@@ -743,12 +743,10 @@ bool IsWindows10_1803orAbove();
 
 #include "renderer/typedefs3D.h"
 
-#include <fstream>
-
 void copy_folder(const string& srcPath, const string& dstPath);
 vector<string> find_files_by_extension(const string& directoryPath, const string& extension);
 string find_path_case_insensitive(const string& szPath);
-string find_directory_case_insensitive(const std::string& szParentPath, const std::string& szDirName);
+string find_directory_case_insensitive(const string& szParentPath, const string& szDirName);
 string extension_from_path(const string& path);
 string normalize_path_separators(const string& szPath);
 bool path_has_extension(const string& path, const string& extension);
@@ -763,7 +761,7 @@ vector<string> parse_csv_line(const string& line);
 string color_to_hex(OLE_COLOR color);
 bool string_contains_case_insensitive(const string& str1, const string& str2);
 bool string_compare_case_insensitive(const string& str1, const string& str2);
-bool string_starts_with_case_insensitive(const std::string& str, const std::string& prefix);
+bool string_starts_with_case_insensitive(const string& str, const string& prefix);
 string string_replace_all(const string& szStr, const string& szFrom, const string& szTo, const size_t offs = 0);
 string create_hex_dump(const UINT8* buffer, size_t size);
 vector<unsigned char> base64_decode(const string &encoded_string);

@@ -49,27 +49,14 @@
 
 #include <dsound.h>
 
-//#include <richedit.h>
-//#include <atlcom.h>
 #ifndef __STANDALONE__
-#include <windowsx.h>
 #include <atlbase.h>
+#include <atlctl.h>
 #else
 extern "C" {
    #include <atlbase.h>
 }
 #endif
-//#include <atlhost.h>
-
-#ifndef __STANDALONE__
-#include <atlctl.h>
-#endif
-//#include <cassert>
-
-//#include <commctrl.h>
-
-//#include <cstdio>
-//#include "wchar.h"
 
 #ifdef __STANDALONE__
 #undef strncpy
@@ -110,8 +97,9 @@ extern "C" {
 #include <vector>
 #include <string>
 #include <algorithm>
-#include <iomanip>
 #include <commdlg.h>
+#include <dlgs.h>
+#include <cderr.h>
 
 using namespace std::string_literals;
 using std::string;
@@ -123,9 +111,6 @@ using std::vector;
 // if that also fails, try the standard installation path
 static string defaultFileNameSearch[] = { string(), string(), string(), string(), string(), string(), string() };
 static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CHAR, "scripts"s +PATH_SEPARATOR_CHAR, "tables"s +PATH_SEPARATOR_CHAR, string(), string(), string() };
-
-#include <dlgs.h>
-#include <cderr.h>
 
 #ifndef __STANDALONE__
 
@@ -277,9 +262,7 @@ class SCNotification final { };
 #include "standalone/inc/atlmfc/atltypes.h"
 
 #include "standalone/inc/win32xx/win32xx.h"
-#endif
 
-#ifdef __STANDALONE__
 #include <cstdint>
 #endif
 

@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/PartGroupVisualsProperty.h"
-#include <WindowsX.h>
 
 PartGroupVisualsProperty::PartGroupVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
 {

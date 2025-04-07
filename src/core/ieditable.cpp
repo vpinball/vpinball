@@ -51,8 +51,8 @@ void IEditable::SetPartGroup(PartGroup* partGroup)
 
 string IEditable::GetPathString(const bool isDirOnly) const
 {
-   vector<PartGroup*> itemPath;
-   PartGroup* parent = GetPartGroup();
+   vector<const PartGroup*> itemPath;
+   const PartGroup* parent = GetPartGroup();
    while (parent != nullptr)
    {
       itemPath.insert(itemPath.begin(), parent);
@@ -68,7 +68,7 @@ string IEditable::GetPathString(const bool isDirOnly) const
 
 bool IEditable::IsChild(const PartGroup* group) const
 {
-   PartGroup* parent = GetPartGroup();
+   const PartGroup* parent = GetPartGroup();
    while ((parent != group) && (parent != nullptr))
       parent = parent->GetPartGroup();
    return parent == group;
@@ -167,18 +167,14 @@ void IEditable::Undelete()
 
 const char *IEditable::GetName() const
 {
-    WCHAR *elemName = nullptr;
     if (GetItemType() == eItemDecal)
         return "Decal";
 
-    IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
+    const IScriptable *const pscript = const_cast<IEditable*>(this)->GetScriptable();
     if (pscript)
-        elemName = pscript->m_wzName;
-
-    if (elemName)
     {
         static char elementName[256];
-        WideCharToMultiByteNull(CP_ACP, 0, elemName, -1, elementName, sizeof(elementName), nullptr, nullptr);
+        WideCharToMultiByteNull(CP_ACP, 0, pscript->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
         return elementName;
     }
     return nullptr;
@@ -190,7 +186,7 @@ void IEditable::SetName(const string& name)
         return;
     if (GetItemType() == eItemDecal)
         return;
-    PinTable* const pt = GetPTable();
+    const PinTable* const pt = GetPTable();
     if (pt == nullptr)
         return;
 

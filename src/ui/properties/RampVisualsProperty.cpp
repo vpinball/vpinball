@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/RampVisualsProperty.h"
-#include <WindowsX.h>
 
 RampVisualsProperty::RampVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPRAMP_VISUALS, pvsel)
 {

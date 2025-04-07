@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/KickerPhysicsProperty.h"
-#include <WindowsX.h>
 
 KickerPhysicsProperty::KickerPhysicsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPKICKER_STATE, pvsel)
 {

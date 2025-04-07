@@ -11,7 +11,6 @@
 #include "standalone/VPinballLib.h"
 #endif
 
-//#include <Windowsx.h>
 // The GUID used to identify the coclass of the VB Script engine
 //  {B54F3741-5B07-11cf-A4B0-00AA004A55E8}
 #define szCLSID_VBScript "{B54F3741-5B07-11cf-A4B0-00AA004A55E8}"

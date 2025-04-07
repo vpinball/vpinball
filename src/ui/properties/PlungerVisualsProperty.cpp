@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/PlungerVisualsProperty.h"
-#include <WindowsX.h>
 
 PlungerVisualsProperty::PlungerVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPLUNGER_VISUALS, pvsel)
 {

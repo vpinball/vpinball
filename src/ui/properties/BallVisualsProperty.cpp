@@ -2,7 +2,6 @@
 
 #include "core/stdafx.h"
 #include "ui/properties/BallVisualsProperty.h"
-#include <WindowsX.h>
 
 BallVisualsProperty::BallVisualsProperty(const VectorProtected<ISelect> *pvsel)
    : BasePropertyDialog(IDD_PROPBALL_VISUALS, pvsel)
