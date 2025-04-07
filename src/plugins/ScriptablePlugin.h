@@ -158,10 +158,13 @@ typedef struct ScriptablePluginAPI
       if (scriptablePluginApi != nullptr) { \
          va_list args; \
          va_start(args, format); \
-         int size = vsnprintf(NULL, 0, format, args); \
+         va_list args_copy; \
+         va_copy(args_copy, args); \
+         int size = vsnprintf(nullptr, 0, format, args_copy); \
+         va_end(args_copy); \
          if (size > 0) { \
             char* buffer = static_cast<char*>(malloc(size + 1)); \
-            vsnprintf(buffer, size, format, args); \
+            vsnprintf(buffer, size + 1, format, args); \
             scriptablePluginApi->OnError(type, buffer); \
             free(buffer); \
          } \
