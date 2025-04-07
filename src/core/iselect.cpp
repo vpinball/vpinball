@@ -153,13 +153,10 @@ void ISelect::DoCommand(int icmd, int x, int y)
 #endif
 }
 
-#define COLOR_LOCKED RGB(160,160,160)
-//GetSysColor(COLOR_GRAYTEXT)
-
 void ISelect::SetSelectFormat(Sur *psur)
 {
-   const DWORD color = m_locked ? m_vpinball->m_elemSelectLockedColor
-                                : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor
+                                   : m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 4);
    psur->SetLineColor(color, false, 4);
@@ -167,9 +164,8 @@ void ISelect::SetSelectFormat(Sur *psur)
 
 void ISelect::SetMultiSelectFormat(Sur *psur)
 {
-   const DWORD color = m_locked ?
-       m_vpinball->m_elemSelectLockedColor :
-       m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
+   const COLORREF color = m_locked ? m_vpinball->m_elemSelectLockedColor :
+                                     m_vpinball->m_elemSelectColor;//GetSysColor(COLOR_HIGHLIGHT);
 
    psur->SetBorderColor(color, false, 3);
    psur->SetLineColor(color, false, 3);
@@ -293,8 +289,8 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
          PartGroup *const newGroup = static_cast<PartGroup *>(EditableRegistry::CreateAndInit(eItemPartGroup, me->GetPTable(), 0, 0));
-         const int len = (int)layerName.length() + 1;
-         WCHAR newName[MAXNAMEBUFFER];
+         const int len = (int)(sizeof(newGroup->GetScriptable()->m_wzName)/sizeof(newGroup->GetScriptable()->m_wzName[0]));
+         WCHAR newName[len];
          MultiByteToWideCharNull(CP_ACP, 0, layerName.c_str(), -1, newName, len);
          me->GetPTable()->m_pcv->ReplaceName(newGroup->GetIEditable()->GetScriptable(), newName);
          lstrcpynW(newGroup->GetScriptable()->m_wzName, newName, len);
@@ -352,7 +348,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
       while (layer->GetPartGroup() != nullptr)
          layer = layer->GetPartGroup();
       int index = 0;
-      for (auto edit : GetPTable()->m_vedit)
+      for (const auto edit : GetPTable()->m_vedit)
       {
          if (edit == layer)
             break;
