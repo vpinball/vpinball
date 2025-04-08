@@ -108,7 +108,7 @@ build/VPinballX_BGFX.app/Contents/MacOS/VPinballX_BGFX -play src/assets/exampleT
 
 ```
 sudo apt-get update
-sudo apt install git build-essential autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
+sudo apt install git build-essential pkg-config autoconf automake libtool cmake nasm bison curl zlib1g-dev libdrm-dev libgbm-dev libglu1-mesa-dev libegl-dev libgl1-mesa-dev libwayland-dev libwayland-egl-backend-dev libudev-dev libx11-dev libxrandr-dev libasound2-dev libpipewire-0.3-dev
 platforms/linux-x64/external.sh
 cp make/CMakeLists_bgfx-linux-x64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
@@ -163,7 +163,7 @@ cd standalone/android
 
 ```
 sudo dnf install @development-tools
-sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
+sudo dnf install gcc-c++ pkg-config autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
 platforms/linux-x64/external.sh
 cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
 cmake -DCMAKE_BUILD_TYPE=Release -B build
@@ -179,7 +179,7 @@ build/VPinballX_BGFX -play src/assets/exampleTable.vpx -disabletruefullscreen
 
 ```
 sudo dnf install @development-tools
-sudo dnf install gcc-c++ autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
+sudo dnf install gcc-c++ pkg-config autoconf automake libtool cmake nasm bison curl systemd-devel libX11-devel mesa-libGL-devel libXext-devel zlib-ng-compat-static zlib-ng-compat-devel wayland-devel libxkbcommon-devel
 platforms/linux-x64/external.sh
 cp make/CMakeLists_bgfx-linux-aarch64.txt CMakeLists.txt
 cmake -DBUILD_RK3588=ON -DCMAKE_BUILD_TYPE=Release -B build
