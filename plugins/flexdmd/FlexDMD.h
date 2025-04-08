@@ -156,7 +156,7 @@ private:
    bool m_show = true;
    bool m_run = false;
    uint32_t m_id = 0;
-   VP::SurfaceGraphics* m_pSurface;
+   VP::SurfaceGraphics* m_pSurface = nullptr;
 
    //std::thread* m_pThread;
    //void RenderLoop();
