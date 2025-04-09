@@ -23,11 +23,6 @@
 #endif
 
 #include <windows.h>
-#include <mmsystem.h>
-
-#ifdef __STANDALONE__
-#undef PlaySound
-#endif
 
 #ifdef USE_DINPUT8
  #define DIRECTINPUT_VERSION 0x0800
@@ -47,18 +42,16 @@
  #include "minid3d9.h"
 #endif
 
-#include <dsound.h>
+#include <mmsystem.h>
 
 #ifndef __STANDALONE__
 #include <atlbase.h>
 #include <atlctl.h>
 #else
+#undef PlaySound
 extern "C" {
    #include <atlbase.h>
 }
-#endif
-
-#ifdef __STANDALONE__
 #undef strncpy
 #include <wchar.h>
 #endif
@@ -154,7 +147,7 @@ static const string defaultPathSearch[] = { string(), "user"s +PATH_SEPARATOR_CH
 //#include <wxx_toolbar.h>		// Add CToolBar
 #include <wxx_treeview.h>		// Add CTreeView
 //#include <wxx_webbrowser.h>		// Add CAXWindow, CWebBrowser
-#include <wxx_wincore.h>
+//#include <wxx_wincore.h>
 #endif
 
 #ifdef __STANDALONE__

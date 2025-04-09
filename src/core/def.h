@@ -186,13 +186,13 @@ class Vertex3D_TexelOnly final // for rendering, uses VF_POS_TEX
 {
 public:
    // Position
-   D3DVALUE x;
-   D3DVALUE y;
-   D3DVALUE z;
+   float x;
+   float y;
+   float z;
 
    // Texture coordinates
-   D3DVALUE tu;
-   D3DVALUE tv;
+   float tu;
+   float tv;
 };
 
 
@@ -201,18 +201,18 @@ class Vertex3D_NoTex2 final // for rendering, uses VF_POS_NORMAL_TEX
 {
 public:
    // Position
-   D3DVALUE x;
-   D3DVALUE y;
-   D3DVALUE z;
+   float x;
+   float y;
+   float z;
 
    // Normals
-   D3DVALUE nx;
-   D3DVALUE ny;
-   D3DVALUE nz;
+   float nx;
+   float ny;
+   float nz;
 
    // Texture coordinates (0)
-   D3DVALUE tu;
-   D3DVALUE tv;
+   float tu;
+   float tv;
 };
 
 class LocalString final

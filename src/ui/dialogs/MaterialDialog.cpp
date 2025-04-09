@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "MaterialDialog.h"
-#include <fstream>
 #include "WhereUsedDialog.h"
 
 typedef struct _tagSORTDATA
@@ -64,10 +63,10 @@ BOOL MaterialDialog::OnInitDialog()
    AttachItem(IDC_COLOR_BUTTON5, m_colorButton4);
 
    HWND hwnd = GetDlgItem(IDC_MATERIAL_TYPE).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Basic");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Basic");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Metal");
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    m_resizer.Initialize(this->GetHwnd(), CRect(0, 0, 780, 520));
    m_resizer.AddChild(m_hMaterialList, CResizer::topleft, RD_STRETCH_WIDTH | RD_STRETCH_HEIGHT);

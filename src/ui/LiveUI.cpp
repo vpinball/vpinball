@@ -43,10 +43,6 @@
 #include "imguizmo/ImGuizmo.h"
 #include "imgui_markdown/imgui_markdown.h"
 
-#ifdef __STANDALONE__
-#include <unordered_map>
-#endif
-
 #ifndef __STANDALONE__
 #include "BAM/BAMView.h"
 #endif
@@ -615,7 +611,7 @@ static void HelpEditableHeader(bool is_live, IEditable *editable, IEditable *liv
    }
    HelpTextCentered(title);
    ImGui::BeginDisabled(is_live); // Do not edit name of live objects, it would likely break the script
-   string name = select_editable ? select_editable->GetName() : string();
+   string name = select_editable ? string(select_editable->GetName()) : string();
    if (ImGui::InputText("Name", &name))
    {
       editable->SetName(name);
@@ -912,7 +908,7 @@ void LiveUI::Render()
             glDisable(GL_SCISSOR_TEST);
             
             #elif defined(ENABLE_DX9)
-            lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DXMATRIX *)&matTranslate);
+            lui->m_rd->GetCoreDevice()->SetTransform(D3DTS_WORLD, (const D3DMATRIX *)&matTranslate);
             lui->m_rd->GetCoreDevice()->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
             #endif
 

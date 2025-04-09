@@ -4,7 +4,6 @@
 #include "ui/resource.h"
 #include "DimensionDialog.h"
 #include <iostream>
-#include <fstream>
 
 DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
 {

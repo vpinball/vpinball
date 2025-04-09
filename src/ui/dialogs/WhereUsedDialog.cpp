@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "WhereUsedDialog.h"
-#include "core/vpversion.h"
 #include "atlconv.h"
 
 typedef struct _tagSORTDATA
@@ -365,7 +364,7 @@ void WhereUsedDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND t
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
    toolInfo.uId = (UINT_PTR)controlHwnd;
    toolInfo.lpszText = (char *)text;
-   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 void WhereUsedDialog::EditObject(HWND hWhereListView)

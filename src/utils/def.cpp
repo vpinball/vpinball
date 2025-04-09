@@ -2,7 +2,7 @@
 
 #include "core/stdafx.h"
 #ifndef __STANDALONE__
-#include "Intshcut.h"
+#include <Intshcut.h>
 #endif
 
 #ifdef __STANDALONE__

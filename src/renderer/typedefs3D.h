@@ -17,7 +17,6 @@
 
 #elif defined(ENABLE_DX9)
  #include "minid3d9.h"
- #include <d3dx9.h>
 #endif
 
 #ifdef ENABLE_VR

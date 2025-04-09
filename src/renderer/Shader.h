@@ -26,6 +26,9 @@
 #define DEBUG_LEVEL_LOG 0
 #define WRITE_SHADER_FILES 1
 #endif
+
+#elif defined(ENABLE_DX9)
+#include <d3dx9.h>
 #endif
 
 // Attempt to speed up STL which is very CPU costly, maybe we should look into using EASTL instead? http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2007/n2271.html https://github.com/electronicarts/EASTL
@@ -504,7 +507,7 @@ public:
    void SetBool(const ShaderUniforms uniformName, const bool b) { m_state->SetBool(uniformName, b); }
    void SetUniformBlock(const ShaderUniforms uniformName, const float* const pMatrix) { m_state->SetUniformBlock(uniformName, pMatrix); }
    #if defined(ENABLE_DX9)
-   void SetMatrix(const ShaderUniforms uniformName, const D3DXMATRIX* const pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
+   void SetMatrix(const ShaderUniforms uniformName, const D3DMATRIX* const pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    #endif
    void SetMatrix(const ShaderUniforms uniformName, const Matrix3D* const pMatrix, const unsigned int count = 1) { SetMatrix(uniformName, &(pMatrix->m[0][0]), count); }
    void SetVector(const ShaderUniforms uniformName, const vec4* const pVector) { m_state->SetVector(uniformName, pVector); }

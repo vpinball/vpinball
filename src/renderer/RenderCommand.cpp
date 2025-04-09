@@ -36,7 +36,7 @@ void RenderCommand::Execute(const int nInstances, const bool log)
          PLOGI << "> Clear";
       }
       m_renderState.Apply(m_rd);
-      constexpr D3DVALUE z = 1.0f;
+      constexpr float z = 1.0f;
       constexpr DWORD stencil = 0L;
 
       #if defined(ENABLE_BGFX)
