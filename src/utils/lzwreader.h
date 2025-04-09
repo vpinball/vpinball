@@ -8,7 +8,7 @@ class LZWReader final
 {
 public:
    LZWReader(IStream *pstm, int *bits, int width, int height, int pitch);
-   ~LZWReader();
+   ~LZWReader() { }
 
    short Decoder();
 

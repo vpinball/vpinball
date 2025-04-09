@@ -14,7 +14,7 @@ public:
    };
 
    LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch);
-   ~LZWWriter();
+   ~LZWWriter() { }
 
    HRESULT CompressBits(int init_bits);
 
@@ -59,8 +59,6 @@ private:
    int m_a_count;
 
    unsigned char m_accum[256];
-
-   static int m_masks[17];
 
    int m_iPixelCur;
    int m_iXCur;

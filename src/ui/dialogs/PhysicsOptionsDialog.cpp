@@ -8,7 +8,7 @@
 #include "tinyxml2/tinyxml2.h"
 
 constexpr unsigned int num_physicsoptions = 8;
-static char * physicsoptions[num_physicsoptions] ={ nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr };
+static string physicsoptions[num_physicsoptions];
 static unsigned int physicsselection = 0;
 
 
@@ -20,35 +20,29 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
 {
     const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
-    const size_t size = SendMessage(hwndList, LB_GETCOUNT, 0, 0);
+    const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
     for (size_t i = 0; i < size; i++)
     {
-        if (physicsoptions[i])
-        {
-            delete[] physicsoptions[i];
-            physicsoptions[i] = nullptr;
-        }
-        const int* sd = (int *)SendMessage(hwndList, LB_GETITEMDATA, i, 0);
+        physicsoptions[i].clear();
+        const int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
     }
 
-    SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-    SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
+    ::SendMessage(hwndList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+    ::SendMessage(hwndList, LB_RESETCONTENT, 0, 0);
     for (unsigned int i = 0; i < num_physicsoptions; i++)
     {
-        physicsoptions[i] = new char[256];
-        char tmp[256];
-        sprintf_s(tmp, sizeof(tmp), "PhysicsSetName%u", i);
-        if (!g_pvp->m_settings.LoadValue(Settings::Player, tmp, physicsoptions[i], 256))
-            sprintf_s(physicsoptions[i], 256, "Set %u", i + 1);
-        sprintf_s(tmp, sizeof(tmp), "%u: %s", i + 1, physicsoptions[i]);
-        const size_t index = SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp);
+        string tmp = "PhysicsSetName" + std::to_string(i);
+        if (!g_pvp->m_settings.LoadValue(Settings::Player, tmp, physicsoptions[i]))
+            physicsoptions[i] = "Set " + std::to_string(i + 1);
+        tmp = std::to_string(i + 1) + ": " + physicsoptions[i];
+        const size_t index = ::SendMessage(hwndList, LB_ADDSTRING, 0, (size_t)tmp.c_str());
         int * const sd = new int;
         *sd = i;
-        SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
+        ::SendMessage(hwndList, LB_SETITEMDATA, index, (LPARAM)sd);
     }
-    SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
-    SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
+    ::SendMessage(hwndList, LB_SETCURSEL, physicsselection, 0);
+    ::SendMessage(hwndList, WM_SETREDRAW, TRUE, 0);
 
     const float FlipperPhysicsMass = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "FlipperPhysicsMass" + std::to_string(physicsselection), 1.f);
     SetItemText(DISPID_Flipper_Speed, FlipperPhysicsMass);
@@ -87,7 +81,7 @@ BOOL PhysicsOptionsDialog::OnInitDialog()
     const float TablePhysicsMaxSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "TablePhysicsMaxSlope" + std::to_string(physicsselection), DEFAULT_TABLE_MAX_SLOPE);
     SetItemText(1104, TablePhysicsMaxSlope);
 
-    SetDlgItemText(1110, physicsoptions[physicsselection]);
+    SetDlgItemText(1110, (char*)physicsoptions[physicsselection].c_str());
 
     return TRUE;
 }
@@ -135,7 +129,7 @@ BOOL PhysicsOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         {
             const HWND hwndList = GetDlgItem(IDC_PhysicsList).GetHwnd();
 
-            const size_t tmp = SendMessage(hwndList, LB_GETCURSEL, 0, 0);
+            const size_t tmp = ::SendMessage(hwndList, LB_GETCURSEL, 0, 0);
 
             if (tmp != physicsselection)
             {
@@ -341,11 +335,7 @@ void PhysicsOptionsDialog::OnDestroy()
     const size_t size = ::SendMessage(hwndList, LB_GETCOUNT, 0, 0);
     for (size_t i = 0; i < size; i++)
     {
-        if (physicsoptions[i])
-        {
-            delete[] physicsoptions[i];
-            physicsoptions[i] = nullptr;
-        }
+        physicsoptions[i].clear();
         const int* sd = (int *)::SendMessage(hwndList, LB_GETITEMDATA, i, 0);
         delete sd;
     }

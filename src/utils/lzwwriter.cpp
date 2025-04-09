@@ -1,15 +1,11 @@
 #include "core/stdafx.h"
 
-int LZWWriter::m_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
+static constexpr int LZW_masks[17] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
 0x001F, 0x003F, 0x007F, 0x00FF,
 0x01FF, 0x03FF, 0x07FF, 0x0FFF,
 0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
 
 LZWWriter::LZWWriter(IStream * pistream, int *bits, int width, int height, int pitch) : m_pistream(pistream), m_bits(bits), m_width(width), m_height(height), m_pitch(pitch)
-{
-}
-
-LZWWriter::~LZWWriter()
 {
 }
 
@@ -146,7 +142,7 @@ HRESULT LZWWriter::CompressBits(int init_bits)
 
 HRESULT LZWWriter::Output(int code)
 {
-   m_cur_accum &= m_masks[m_cur_bits];
+   m_cur_accum &= LZW_masks[m_cur_bits];
 
    if (m_cur_bits > 0)
       m_cur_accum |= (code << m_cur_bits);
