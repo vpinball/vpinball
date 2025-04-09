@@ -4,6 +4,8 @@
 #include "RenderCommand.h"
 #include "VRDevice.h"
 
+#include <iomanip>
+
 RenderCommand::RenderCommand(RenderDevice* rd)
    : m_rd(rd)
 {

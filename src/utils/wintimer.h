@@ -6,6 +6,7 @@
 #include <climits>
 #endif
 #include <thread>
+#include <iomanip>
 
 #include "robin_hood.h"
 

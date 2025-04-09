@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <iomanip>
 #include "renderer/typedefs3D.h"
 #include <math/vector.h>
 

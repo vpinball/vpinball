@@ -203,9 +203,11 @@ LPI_IMPLEMENT // Implement shared login support
 
 void PINMAMECALLBACK OnLogMessage(PINMAME_LOG_LEVEL logLevel, const char* format, va_list args, void* const pUserData)
 {
-   int size = vsnprintf(nullptr, 0, format, args);
-   if (size > 0)
-   {
+   va_list args_copy;
+   va_copy(args_copy, args);
+   int size = vsnprintf(nullptr, 0, format, args_copy);
+   va_end(args_copy);
+   if (size > 0) {
       char* const buffer = static_cast<char*>(malloc(size + 1));
       vsnprintf(buffer, size + 1, format, args);
       if (logLevel == PINMAME_LOG_LEVEL_INFO)
