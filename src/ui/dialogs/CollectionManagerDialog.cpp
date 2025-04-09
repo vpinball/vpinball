@@ -332,7 +332,7 @@ BOOL CollectionDialog::OnInitDialog()
     const HWND hwndOut = GetDlgItem(IDC_OUTLIST).GetHwnd();
     const HWND hwndIn = GetDlgItem(IDC_INLIST).GetHwnd();
 
-    SendMessage(hwndIn, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+    ::SendMessage(hwndIn, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     for (int i = 0; i < pcol->m_visel.size(); i++)
     {
         IEditable * const piedit = pcol->m_visel[i].GetIEditable();
@@ -344,11 +344,11 @@ BOOL CollectionDialog::OnInitDialog()
             ::SendMessage(hwndIn, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }
-    SendMessage(hwndIn, WM_SETREDRAW, TRUE, 0);
+    ::SendMessage(hwndIn, WM_SETREDRAW, TRUE, 0);
 
     const PinTable * const ppt = pCurCollection.ppt;
 
-    SendMessage(hwndOut, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+    ::SendMessage(hwndOut, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
     for (size_t i = 0; i < ppt->m_vedit.size(); i++)
     {
         IEditable * const piedit = ppt->m_vedit[i];
@@ -369,7 +369,7 @@ BOOL CollectionDialog::OnInitDialog()
             ::SendMessage(hwndOut, LB_SETITEMDATA, index, (size_t)piscript);
         }
     }
-    SendMessage(hwndOut, WM_SETREDRAW, TRUE, 0);
+    ::SendMessage(hwndOut, WM_SETREDRAW, TRUE, 0);
 
     return TRUE;
 }

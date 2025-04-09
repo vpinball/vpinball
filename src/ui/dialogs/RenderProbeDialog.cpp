@@ -29,15 +29,15 @@ BOOL RenderProbeDialog::OnInitDialog()
    lvcol.cx = 200;
    ListView_InsertColumn(hListHwnd, 1, &lvcol); */
 
-   HWND hwnd = GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   const HWND hwnd = GetDlgItem(IDC_REFLECTION_MAX_LEVEL).GetHwnd();
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Balls Only");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static Only");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Balls");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Static & Unsynced Dynamic");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Dynamic");
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    UpdateList();
 
@@ -196,13 +196,13 @@ void RenderProbeDialog::LoadProbeToUI(RenderProbe *const pb)
    GetDlgItem(IDC_REFLECTION_MAX_LEVEL).EnableWindow(type == RenderProbe::PLANE_REFLECTION);
    GetDlgItem(IDC_REFLECTION_NO_LIGHTMAPS).EnableWindow(type == RenderProbe::PLANE_REFLECTION && !isPfReflections);
    CheckDlgButton(IDC_REFLECTION_NO_LIGHTMAPS, pb->GetReflectionNoLightmaps() ? 1 : 0);
-   HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
-   SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
-   SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
-   SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
-   SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
-   SendMessage(hwnd, TBM_SETTHUMBLENGTH, 10, 0);
-   SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetRoughness());
+   const HWND hwnd = GetDlgItem(IDC_ROUGHNESS).GetHwnd();
+   ::SendMessage(hwnd, TBM_SETRANGE, fTrue, MAKELONG(0, 13 - 1));
+   ::SendMessage(hwnd, TBM_SETTICFREQ, 1, 0);
+   ::SendMessage(hwnd, TBM_SETLINESIZE, 0, 1);
+   ::SendMessage(hwnd, TBM_SETPAGESIZE, 0, 1);
+   ::SendMessage(hwnd, TBM_SETTHUMBLENGTH, 10, 0);
+   ::SendMessage(hwnd, TBM_SETPOS, TRUE, pb->GetRoughness());
    GetDlgItem(IDC_ROUGHNESS_LABEL).SetWindowText(("Level: " + std::to_string(pb->GetRoughness())).c_str());
 }
 

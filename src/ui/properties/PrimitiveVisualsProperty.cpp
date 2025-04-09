@@ -277,7 +277,7 @@ void PrimitiveVisualsProperty::AddToolTip(const char *const text, HWND parentHwn
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)controlHwnd;
     toolInfo.lpszText = (char *)text;
-    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+    ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 BOOL PrimitiveVisualsProperty::OnInitDialog()
@@ -363,7 +363,7 @@ BOOL PrimitiveVisualsProperty::OnInitDialog()
     const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_pvp->theInstance, NULL);
     if (toolTipHwnd)
     {
-        SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+        ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
         AddToolTip("Render backfacing transparent faces (Should be enabled for transparent parts)", hwndDlg, toolTipHwnd, m_hRenderBackfacingCheck);
         AddToolTip("Hide parts behind this one using the depth mask (Should be disabled for transparent parts)", hwndDlg, toolTipHwnd, m_hDepthMaskWriteCheck);
     }

@@ -953,7 +953,7 @@ BOOL RenderOptPage::OnInitDialog()
    m_rampDetail.SetTicFreq(1);
    m_rampDetail.SetLineSize(1);
    m_rampDetail.SetPageSize(1);
-   SendMessage(m_rampDetail.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
+   ::SendMessage(m_rampDetail.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
 
    AttachItem(IDC_GLOBAL_TRAIL_CHECK, m_ballTrails);
    AttachItem(IDC_BALL_TRAIL_STRENGTH, m_ballTrailStrength);
@@ -1022,7 +1022,7 @@ BOOL RenderOptPage::OnInitDialog()
    m_nightDay.SetTicFreq(10);
    m_nightDay.SetLineSize(1);
    m_nightDay.SetPageSize(1);
-   SendMessage(m_nightDay.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
+   ::SendMessage(m_nightDay.GetHwnd(), TBM_SETTHUMBLENGTH, 10, 0);
 
    AttachItem(IDC_GFX_BACKEND, m_gfxBackend);
    #if defined(ENABLE_BGFX)

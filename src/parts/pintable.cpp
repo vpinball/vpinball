@@ -2139,13 +2139,13 @@ PinTable* PinTable::CopyForPlay()
 
    CComObject<PinTable> *dst = live_table;
    #ifndef __STANDALONE__
-      const size_t cchar = SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t cchar = ::SendMessage(src->m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
       char *const szText = new char[cchar + 1];
-      SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
       std::string script = szText;
       delete[] szText;
       script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
-      SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
+      ::SendMessage(dst->m_pcv->m_hwndScintilla, SCI_SETTEXT, 0, (size_t)script.c_str());
    #else
       std::string script = src->m_pcv->m_script_text;
       script = VPXPluginAPIImpl::GetInstance().ApplyScriptCOMObjectOverrides(script);
@@ -4893,9 +4893,7 @@ int PinTable::AddListCollection(HWND hwndListView, CComObject<Collection> *pcol)
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);
 
-   char buf[16] = { 0 };
-   sprintf_s(buf, sizeof(buf), "%i", pcol->m_visel.size());
-   ListView_SetItemText(hwndListView, index, 1, buf);
+   ListView_SetItemText(hwndListView, index, 1, (char*)std::to_string(pcol->m_visel.size()).c_str());
    return index;
 #else
    return 0L;
@@ -7708,9 +7706,9 @@ string PinTable::AuditTable(bool log) const
 
    // Ultra basic parser to get a (somewhat) valid list of referenced parts
    #ifndef __STANDALONE__
-      const size_t cchar = SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t cchar = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
       char * const szText = new char[cchar + 1];
-      SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
+      ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, cchar + 1, (LPARAM)szText);
    #else
       const char * const szText = (char*)m_pcv->m_script_text.c_str();
    #endif

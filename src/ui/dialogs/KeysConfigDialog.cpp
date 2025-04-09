@@ -307,7 +307,7 @@ void KeysConfigDialog::AddToolTip(char *text, HWND parentHwnd, HWND toolTipHwnd,
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
    toolInfo.uId = (UINT_PTR)controlHwnd;
    toolInfo.lpszText = text;
-   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 void KeysConfigDialog::AddStringDOF(const string &name, const int idc)

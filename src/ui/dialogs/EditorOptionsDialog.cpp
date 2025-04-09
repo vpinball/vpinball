@@ -26,7 +26,7 @@ void EditorOptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, H
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)controlHwnd;
     toolInfo.lpszText = (char*)text;
-    SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+    ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 BOOL EditorOptionsDialog::OnInitDialog()
@@ -36,7 +36,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const HWND toolTipHwnd = ::CreateWindowEx(0, TOOLTIPS_CLASS, nullptr, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, GetHwnd(), nullptr, g_pvp->theInstance, nullptr);
     if (toolTipHwnd)
     {
-        SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+        ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
         AddToolTip("If checked, the 'Throw Balls in Player' option is always active. You don't need to activate it in the debug menu again.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_THROW_BALLS_ALWAYS_ON_CHECK));
         AddToolTip("Defines the default size of the ball when dropped onto the table.", GetHwnd(), toolTipHwnd, GetDlgItem(IDC_THROW_BALLS_SIZE_EDIT));
     }
@@ -104,10 +104,10 @@ BOOL EditorOptionsDialog::OnInitDialog()
 
     const int units = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "Units"s, 0);
     const HWND hwnd = GetDlgItem(IDC_UNIT_LIST_COMBO).GetHwnd();
-    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VPUnits");
-    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Inches");
-    SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Millimeters");
-    SendMessage(hwnd, CB_SETCURSEL, units, 0);
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VPUnits");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Inches");
+    ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Millimeters");
+    ::SendMessage(hwnd, CB_SETCURSEL, units, 0);
 
     return TRUE;
 }

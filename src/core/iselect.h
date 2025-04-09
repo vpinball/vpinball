@@ -82,13 +82,13 @@ public:
 
    virtual void OnLButtonDown(int x, int y);
    virtual void OnLButtonUp(int x, int y);
-   virtual void OnRButtonDown(int x, int y, HWND hwnd);
-   virtual void OnRButtonUp(int x, int y);
+   virtual void OnRButtonDown(int x, int y, HWND hwnd) { }
+   virtual void OnRButtonUp(int x, int y) { }
    virtual void OnMouseMove(int x, int y);
 
    // Things to override
-   virtual void MoveOffset(const float dx, const float dy);
-   virtual void EditMenu(CMenu &menu);
+   virtual void MoveOffset(const float dx, const float dy) { } // Implement in child class to enable dragging
+   virtual void EditMenu(CMenu &menu) { }
    virtual void DoCommand(int icmd, int x, int y);
    virtual void SetObjectPos();
 

@@ -309,7 +309,7 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
    toolInfo.uId = (UINT_PTR)controlHwnd;
    toolInfo.lpszText = (char*)text;
-   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 void VROptionsDialog::ResetVideoPreferences()
@@ -369,7 +369,7 @@ BOOL VROptionsDialog::OnInitDialog()
    const HWND toolTipHwnd = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndDlg, NULL, g_pvp->theInstance, NULL);
    if (toolTipHwnd)
    {
-      SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
+      ::SendMessage(toolTipHwnd, TTM_SETMAXTIPWIDTH, 0, 180);
       AddToolTip("Disable VR auto-detection, e.g. if Visual Pinball refuses to start up.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_TURN_VR_ON).GetHwnd());
       AddToolTip("What sources should be used for DMD?\nOnly internally supplied via Script/Text Label/Flasher\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_DMD_SOURCE).GetHwnd());
       AddToolTip("What sources should be used for Backglass?\nOnly internal background\nTry to open a directb2s file\ndirectb2s file dialog\nScreenreader (see screenreader.ini)\nFrom Shared Memory API", hwndDlg, toolTipHwnd, GetDlgItem(IDC_BG_SOURCE).GetHwnd());
@@ -392,13 +392,13 @@ BOOL VROptionsDialog::OnInitDialog()
 
    const VRPreviewMode vrPreview = (VRPreviewMode)g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "VRPreview"s, VRPREVIEW_LEFT);
    HWND hwnd = GetDlgItem(IDC_VR_PREVIEW).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Right Eye");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both Eyes");
-   SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Disabled");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Left Eye");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Right Eye");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM) "Both Eyes");
+   ::SendMessage(hwnd, CB_SETCURSEL, (int)vrPreview, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const bool shrinkToFit = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
    SendDlgItemMessage(IDC_SHRINK, BM_SETCHECK, shrinkToFit ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -447,31 +447,31 @@ BOOL VROptionsDialog::OnInitDialog()
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR enabled");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR disabled");
-   SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR enabled");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR autodetect");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"VR disabled");
+   ::SendMessage(hwnd, CB_SETCURSEL, askToTurnOn, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int DMDsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "DMDSource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_DMD_SOURCE).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Screenreader");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Internal Text/Flasher (via vbscript)");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Screenreader");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
+   ::SendMessage(hwnd, CB_SETCURSEL, DMDsource, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    const int BGsource = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "BGSource"s, 1); // Unimplemented for the time being
    hwnd = GetDlgItem(IDC_BG_SOURCE).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
-   SendMessage(hwnd, CB_SETCURSEL, BGsource, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"Default table background");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File (auto only)");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"directb2s File");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"SharedMemory API");
+   ::SendMessage(hwnd, CB_SETCURSEL, BGsource, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    bool on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "CaptureExternalDMD"s, false);
    SendDlgItemMessage(IDC_CAP_EXTDMD, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
@@ -482,13 +482,13 @@ BOOL VROptionsDialog::OnInitDialog()
    //AMD Debugging
    const int textureModeVR = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "EyeFBFormat"s, 1);
    hwnd = GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd();
-   SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 8");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
-   SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
-   SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
-   SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 8");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 8 (Recommended)");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGB 16F");
+   ::SendMessage(hwnd, CB_ADDSTRING, 0, (LPARAM)"RGBA 16F");
+   ::SendMessage(hwnd, CB_SETCURSEL, textureModeVR, 0);
+   ::SendMessage(hwnd, WM_SETREDRAW, TRUE, 0);
 
    on = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "UsePassthroughColor"s, false);
    SendDlgItemMessage(IDC_ENABLE_PASSTHROUGH_COLOR, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);

@@ -628,7 +628,7 @@ void SoundDialog::AddToolTip(const char *const text, HWND parentHwnd, HWND toolT
    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
    toolInfo.uId = (UINT_PTR)controlHwnd;
    toolInfo.lpszText = (char *)text;
-   SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+   ::SendMessage(toolTipHwnd, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 }
 
 SoundPositionDialog::SoundPositionDialog(PinSound * const pps)

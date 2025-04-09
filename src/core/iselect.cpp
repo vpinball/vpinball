@@ -39,14 +39,6 @@ void ISelect::OnLButtonUp(int x, int y)
    }
 }
 
-void ISelect::OnRButtonDown(int x, int y, HWND hwnd)
-{
-}
-
-void ISelect::OnRButtonUp(int x, int y)
-{
-}
-
 void ISelect::OnMouseMove(int x, int y)
 {
    if ((x == m_ptLast.x) && (y == m_ptLast.y))
@@ -70,15 +62,6 @@ void ISelect::OnMouseMove(int x, int y)
       m_ptLast.y = y;
       SetObjectPos();
    }
-}
-
-void ISelect::MoveOffset(const float dx, const float dy)
-{
-   // Implement in child class to enable dragging
-}
-
-void ISelect::EditMenu(CMenu &menu)
-{
 }
 
 void ISelect::DoCommand(int icmd, int x, int y)
@@ -284,7 +267,7 @@ static void SetPartGroup(ISelect* const me, const string& layerName)
       auto partGroupF = std::ranges::find_if(me->GetPTable()->m_vedit,
          [layerName](IEditable *editable)
          {
-            return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup)  && editable->GetName() == layerName;
+            return (editable->GetItemType() == ItemTypeEnum::eItemPartGroup) && editable->GetName() == layerName;
          });
       if (partGroupF == me->GetPTable()->m_vedit.end())
       {
@@ -344,7 +327,7 @@ HRESULT ISelect::SaveData(IStream *pstm, HCRYPTHASH hcrypthash)
    if (GetIEditable() && (GetItemType() != eItemDragPoint) && (GetItemType() != eItemLightCenter) && GetIEditable()->GetPartGroup())
    {
       // Implement backward 'readability' (file will open in previous versions, with unsupported content dropped)
-      PartGroup* layer = GetIEditable()->GetPartGroup();
+      const PartGroup* layer = GetIEditable()->GetPartGroup();
       while (layer->GetPartGroup() != nullptr)
          layer = layer->GetPartGroup();
       int index = 0;

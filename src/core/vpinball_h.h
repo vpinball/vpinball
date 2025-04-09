@@ -178,7 +178,7 @@ public:
     }
 
 #ifndef __STANDALONE__
-    SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
+    ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 5 | 0, (size_t)textBuf.c_str());
 #endif
    }
 

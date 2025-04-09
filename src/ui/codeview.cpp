@@ -21,7 +21,7 @@ DEFINE_GUID(CLSID_VBScript, 0xb54f3741, 0x5b07, 0x11cf, 0xa4, 0xb0, 0x0, 0xaa, 0
 
 #ifdef __STANDALONE__
 #include <sstream>
-#include <limits.h>
+#include <climits>
 #endif
 
 //#define RECOLOR_LINE WM_USER+100
@@ -480,12 +480,12 @@ static void GetRange(const HWND hwndScintilla, const size_t start, const size_t 
 void CodeViewer::GetWordUnderCaret()
 {
 #ifndef __STANDALONE__
-   const LRESULT CurPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
-   m_wordUnderCaret.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
-   m_wordUnderCaret.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
+   const LRESULT CurPos = ::SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 );
+   m_wordUnderCaret.chrg.cpMin = (Sci_PositionCR)::SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, CurPos, TRUE);
+   m_wordUnderCaret.chrg.cpMax = (Sci_PositionCR)::SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, CurPos, TRUE);
    if ((m_wordUnderCaret.chrg.cpMax - m_wordUnderCaret.chrg.cpMin) > MAX_FIND_LENGTH) return;
 
-   SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_wordUnderCaret);
+   ::SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_wordUnderCaret);
 #endif
 }
 
@@ -493,7 +493,7 @@ void CodeViewer::SetClean(const SaveDirtyState sds)
 {
 #ifndef __STANDALONE__
    if (sds == eSaveClean)
-      SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETSAVEPOINT, 0, 0);
    m_sdsDirty = sds;
    m_psh->SetDirtyScript(sds);
 #endif
@@ -573,8 +573,8 @@ HRESULT CodeViewer::AddItem(IScriptable * const piscript, const bool global)
       ti->Release();
    }
 #else
-   const size_t index = SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
-   SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
+   const size_t index = ::SendMessage(m_hwndItemList, CB_ADDSTRING, 0, (size_t)szT);
+   ::SendMessage(m_hwndItemList, CB_SETITEMDATA, index, (size_t)piscript);
 #endif
    //AndyS - WIP insert new item into autocomplete list??
    return S_OK;
@@ -968,7 +968,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
    m_hwndLastErrorTextArea = CreateWindowEx(0, "Edit", "",
       WS_CHILD | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE,
       0, 0, 0, 0, m_hwndMain, nullptr, g_pvp->theInstance, 0);
-   SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
+   ::SendMessage(m_hwndLastErrorTextArea, EM_SETREADONLY, TRUE, 0);
    ::SendMessage(m_hwndLastErrorTextArea, WM_SETFONT, (size_t)GetStockObject(ANSI_FIXED_FONT), 0);
 
    //////////////////////// Scintilla text editor
@@ -980,7 +980,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 	//if still using old dll load VB lexer instead
 	//use SCI_SETLEXERLANGUAGE as SCI_GETLEXER doesn't return the correct value with SCI_SETLEXER
 	::SendMessage(m_hwndScintilla, SCI_SETLEXERLANGUAGE, 0, (LPARAM)"vpscript");
-	const LRESULT lexVersion = SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
+	const LRESULT lexVersion = ::SendMessage(m_hwndScintilla, SCI_GETLEXER, 0, 0);
 	if (lexVersion != SCLEX_VPSCRIPT)
 	{
 		::SendMessage(m_hwndScintilla, SCI_SETLEXER, (WPARAM)SCLEX_VBSCRIPT, 0);
@@ -1086,7 +1086,7 @@ int CodeViewer::OnCreate(CREATESTRUCT& cs)
 
    ::SendMessage(m_hwndScintilla, SCI_SETWORDCHARS, 0, (LPARAM)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_");
 
-   //SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
+   //::SendMessage(m_hwndScintilla, SCI_SETMOUSEDOWNCAPTURES ,0,0); //send mouse events through scintilla.
    ::SendMessage(m_hwndScintilla, SCI_AUTOCSETIGNORECASE, TRUE, 0);
    ::SendMessage(m_hwndScintilla, SCI_AUTOCSETCASEINSENSITIVEBEHAVIOUR, SC_CASEINSENSITIVEBEHAVIOUR_IGNORECASE,0);
 
@@ -1557,7 +1557,7 @@ void CodeViewer::Compile(const bool message)
    if (m_pScript)
    {
 #ifndef __STANDALONE__
-      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 #else 
       const size_t cchar = m_script_text.length();
 #endif
@@ -1566,7 +1566,7 @@ void CodeViewer::Compile(const bool message)
       WCHAR * const wzText = new WCHAR[cchar + 1];
 
 #ifndef __STANDALONE__
-      SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 #else
       strcpy(szText, m_script_text.c_str());
 #endif
@@ -1624,12 +1624,12 @@ void CodeViewer::EvaluateScriptStatement(const char * const szScript)
 void CodeViewer::AddToDebugOutput(const char * const szText)
 {
 #ifndef __STANDALONE__
-   SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen(szText), (LPARAM)szText);
-   SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
+   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, lstrlen(szText), (LPARAM)szText);
+   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ADDTEXT, 1, (LPARAM)"\n");
 
-   const size_t pos = SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
-   const size_t line = SendMessage(g_pplayer->m_hwndDebugOutput, SCI_LINEFROMPOSITION, pos, 0);
-   SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
+   const size_t pos = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_GETCURRENTPOS, 0, 0);
+   const size_t line = ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_LINEFROMPOSITION, pos, 0);
+   ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
 #endif
 }
 
@@ -1691,14 +1691,14 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
 
    m_findreplaceold = *pfr;
 
-   const size_t selstart = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-   const size_t selend = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+   const size_t selstart = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   const size_t selend = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
 
    size_t startChar, stopChar;
 
    if (pfr->Flags & FR_DOWN)
    {
-      const size_t len = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t len = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
       startChar = selend;
       stopChar = len;
    }
@@ -1712,10 +1712,10 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       ((pfr->Flags & FR_MATCHCASE) ? SCFIND_MATCHCASE : 0) /*|
                                                            ((pfr->Flags & 0) ? SCFIND_REGEXP : 0)*/;
 
-   SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
-   SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
-   SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
-   LRESULT posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+   ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
+   ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
+   ::SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, scinfindflags, 0);
+   LRESULT posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
 
    bool wrapped = false;
 
@@ -1730,33 +1730,33 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       }
       else
       {
-         const size_t len = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+         const size_t len = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
          startChar = len;
          stopChar = selend;
       }
 
-      SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
-      SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
 
-      posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
+      posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(pfr->lpstrFindWhat), (LPARAM)pfr->lpstrFindWhat);
    }
 
    if (posFind != -1)
    {
-      const size_t start = SendMessage(m_hwndScintilla, SCI_GETTARGETSTART, 0, 0);
-      const size_t end = SendMessage(m_hwndScintilla, SCI_GETTARGETEND, 0, 0);
-      const size_t lineStart = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, min(start, end), 0);
-      const size_t lineEnd = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, max(start, end), 0);
+      const size_t start = ::SendMessage(m_hwndScintilla, SCI_GETTARGETSTART, 0, 0);
+      const size_t end = ::SendMessage(m_hwndScintilla, SCI_GETTARGETEND, 0, 0);
+      const size_t lineStart = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, min(start, end), 0);
+      const size_t lineEnd = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, max(start, end), 0);
       for (size_t line = lineStart; line <= lineEnd; ++line)
-         SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
-      SendMessage(m_hwndScintilla, SCI_SETSEL, start, end);
+         ::SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, line, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETSEL, start, end);
 
       if (!wrapped)
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
+         ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)"");
       else
       {
          const LocalString ls(IDS_FINDLOOPED);
-         SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)ls.m_szbuffer);
+         ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)ls.m_szbuffer);
       }
    }
    else
@@ -1765,7 +1765,7 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
       const LocalString ls2(IDS_FINDFAILED2);
       const string szT = string(ls.m_szbuffer) + pfr->lpstrFindWhat + ls2.m_szbuffer;
       MessageBeep(MB_ICONEXCLAMATION);
-      SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
+      ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
    }
 #endif
 }
@@ -1773,10 +1773,10 @@ void CodeViewer::Find(const FINDREPLACE * const pfr)
 void CodeViewer::Replace(const FINDREPLACE * const pfr)
 {
 #ifndef __STANDALONE__
-   const size_t selstart = SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-   const size_t selend = SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+   const size_t selstart = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+   const size_t selend = ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
 
-   const size_t len = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   const size_t len = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 
    FINDTEXTEX ft;
    ft.chrg.cpMax = (LONG)len;			// search through end of the text
@@ -1790,7 +1790,7 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
    while (replace)
    {
       replace = false;
-      const size_t cpMatch = SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
+      const size_t cpMatch = ::SendMessage(m_hwndScintilla, SCI_FINDTEXT, (WPARAM)(pfr->Flags), (LPARAM)&ft);
       if ((SSIZE_T)cpMatch < 0)
       {
          if (cszReplaced == 0)
@@ -1799,26 +1799,25 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
             const LocalString ls2(IDS_FINDFAILED2);
             const string szT = string(ls.m_szbuffer) + ft.lpstrText + ls2.m_szbuffer;
             MessageBeep(MB_ICONEXCLAMATION);
-            SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
+            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
          }
          else
          {
             const LocalString ls(IDS_REPLACEALL);
             const LocalString ls2(IDS_REPLACEALL2);
-            char szT[MAX_PATH];
-            wsprintfA(szT, "%s %ld %s", ls.m_szbuffer, cszReplaced, ls2.m_szbuffer);
+            const string szT = string(ls.m_szbuffer) + ' ' + std::to_string(cszReplaced) + ' ' + ls2.m_szbuffer;
             MessageBeep(MB_ICONEXCLAMATION);
-            SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT);
+            ::SendMessage(m_hwndStatus, SB_SETTEXT, 1 | 0, (size_t)szT.c_str());
          }
       }
       else
       {
          ft.chrg.cpMin = ft.chrgText.cpMin;
          ft.chrg.cpMax = ft.chrgText.cpMax;
-         SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
+         ::SendMessage(m_hwndScintilla, SCI_SETSEL, ft.chrgText.cpMin, ft.chrgText.cpMax);
          if (((pfr->Flags & FR_REPLACE) && cszReplaced == 0) || (pfr->Flags & FR_REPLACEALL))
          {
-            SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
+            ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, true, (LPARAM)pfr->lpstrReplaceWith);
             ft.chrg.cpMin = (LONG)(cpMatch + lstrlen(pfr->lpstrReplaceWith));
             ft.chrg.cpMax = (LONG)len;	// search through end of the text
             cszReplaced++;
@@ -1832,9 +1831,9 @@ void CodeViewer::Replace(const FINDREPLACE * const pfr)
 void CodeViewer::SaveToStream(IStream *pistream, const HCRYPTHASH hcrypthash)
 {
 #ifndef __STANDALONE__
-   size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    char * szText = new char[cchar + MAXNAMEBUFFER + 1]; //!! MAXNAMEBUFFER ??
-   SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+   ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 
    // if there was an external vbs loaded, save the script to that file
    // and ask if to save the original script also to the table
@@ -1878,13 +1877,13 @@ void CodeViewer::SaveToFile(const string& filename)
    if ((fopen_s(&fScript, filename.c_str(), "wb") == 0) && fScript)
    {
 #ifndef __STANDALONE__
-      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
 #else
       const size_t cchar = m_script_text.length();
 #endif
       char * const szText = new char[cchar + 1];
 #ifndef __STANDALONE__
-      SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
+      ::SendMessage(m_hwndScintilla, SCI_GETTEXT, cchar + 1, (size_t)szText);
 #else
       strcpy(szText, m_script_text.c_str());
 #endif
@@ -1947,9 +1946,9 @@ void CodeViewer::LoadFromStream(IStream *pistream, const HCRYPTHASH hcrypthash, 
    }
 
 #ifndef __STANDALONE__
-   SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
-   SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
-   SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
+   ::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
+   ::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
+   ::SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
 #else
    m_script_text = szText;
 #endif
@@ -1992,9 +1991,9 @@ void CodeViewer::LoadFromFile(const string& filename)
 		}
 
 #ifndef __STANDALONE__
-		SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
-		SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
-		SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
+		::SendMessage(m_hwndScintilla, SCI_SETCODEPAGE, SC_CP_UTF8, 0); // Set to UTF-8 codepage
+		::SendMessage(m_hwndScintilla, SCI_SETTEXT, 0, (size_t)szText);
+		::SendMessage(m_hwndScintilla, SCI_EMPTYUNDOBUFFER, 0, 0);
 #else
 		m_script_text = szText;
 #endif
@@ -2014,10 +2013,10 @@ void CodeViewer::ColorLine(const int line)
 void CodeViewer::UncolorError()
 {
 #ifndef __STANDALONE__
-   const size_t startChar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, m_errorLineNumber, 0);
-   const size_t length = SendMessage(m_hwndScintilla, SCI_LINELENGTH, m_errorLineNumber, 0);
+   const size_t startChar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, m_errorLineNumber, 0);
+   const size_t length = ::SendMessage(m_hwndScintilla, SCI_LINELENGTH, m_errorLineNumber, 0);
 
-   SendMessage(m_hwndScintilla, SCI_INDICATORCLEARRANGE, startChar, length);
+   ::SendMessage(m_hwndScintilla, SCI_INDICATORCLEARRANGE, startChar, length);
 
    m_errorLineNumber = -1;
 #endif
@@ -2028,11 +2027,11 @@ void CodeViewer::ColorError(const int line, const int nchar)
    m_errorLineNumber = line - 1;
 
 #ifndef __STANDALONE__
-   const size_t startChar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line - 1, 0);
-   const size_t length = SendMessage(m_hwndScintilla, SCI_LINELENGTH, line - 1, 0);
+   const size_t startChar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line - 1, 0);
+   const size_t length = ::SendMessage(m_hwndScintilla, SCI_LINELENGTH, line - 1, 0);
 
-   SendMessage(m_hwndScintilla, SCI_INDICATORFILLRANGE, startChar, length);
-   SendMessage(m_hwndScintilla, SCI_GOTOLINE, line, 0);
+   ::SendMessage(m_hwndScintilla, SCI_INDICATORFILLRANGE, startChar, length);
+   ::SendMessage(m_hwndScintilla, SCI_GOTOLINE, line, 0);
 #endif
 }
 
@@ -2049,8 +2048,8 @@ STDMETHODIMP CodeViewer::OnLeaveScript()
 void CodeViewer::TellHostToSelectItem()
 {
 #ifndef __STANDALONE__
-   const size_t index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-   IScriptable * const pscript = (IScriptable *)SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
+   const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
+   IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
 
    m_psh->SelectItem(pscript);
 #endif
@@ -2061,8 +2060,8 @@ void CodeViewer::GetParamsFromEvent(const UINT iEvent, char * const szParams)
 #ifndef __STANDALONE__
    szParams[0] = '\0';
 
-   const size_t index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-   IScriptable * const pscript = (IScriptable *)SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
+   const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
+   IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
    IDispatch * const pdisp = pscript->GetDispatch();
    IProvideClassInfo* pClassInfo;
    pdisp->QueryInterface(IID_IProvideClassInfo, (void **)&pClassInfo);
@@ -2137,10 +2136,10 @@ void CodeViewer::ListEventsFromItem()
 {
 #ifndef __STANDALONE__
    // Clear old events
-   SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
+   ::SendMessage(m_hwndEventList, CB_RESETCONTENT, 0, 0);
 
-   const size_t index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-   IScriptable * const pscript = (IScriptable *)SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
+   const size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
+   IScriptable * const pscript = (IScriptable *)::SendMessage(m_hwndItemList, CB_GETITEMDATA, index, 0);
    IDispatch * const pdisp = pscript->GetDispatch();
 
    // Enum Events From Dispatch
@@ -2182,8 +2181,8 @@ void CodeViewer::ListEventsFromItem()
                      // Add enum string to combo control
                      char szT[512];
                      WideCharToMultiByteNull(CP_ACP, 0, rgstr[0], -1, szT, 512, nullptr, nullptr);
-                     const size_t listindex = SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)szT);
-                     SendMessage(m_hwndEventList, CB_SETITEMDATA, listindex, l);
+                     const size_t listindex = ::SendMessage(m_hwndEventList, CB_ADDSTRING, 0, (size_t)szT);
+                     ::SendMessage(m_hwndEventList, CB_SETITEMDATA, listindex, l);
                      for (unsigned int i2 = 0; i2 < cnames; i2++)
                         SysFreeString(rgstr[i2]);
                      CoTaskMemFree(rgstr);
@@ -2209,30 +2208,30 @@ void CodeViewer::FindCodeFromEvent()
 
    char szItemName[512]; // Can't be longer than 32 chars, but use this buffer for concatenating
    char szEventName[512];
-   size_t index = SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
-   SendMessage(m_hwndItemList, CB_GETLBTEXT, index, (size_t)szItemName);
-   index = SendMessage(m_hwndEventList, CB_GETCURSEL, 0, 0);
-   SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (size_t)szEventName);
-   const size_t iEventIndex = SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
+   size_t index = ::SendMessage(m_hwndItemList, CB_GETCURSEL, 0, 0);
+   ::SendMessage(m_hwndItemList, CB_GETLBTEXT, index, (size_t)szItemName);
+   index = ::SendMessage(m_hwndEventList, CB_GETCURSEL, 0, 0);
+   ::SendMessage(m_hwndEventList, CB_GETLBTEXT, index, (size_t)szEventName);
+   const size_t iEventIndex = ::SendMessage(m_hwndEventList, CB_GETITEMDATA, index, 0);
    lstrcat(szItemName, "_"); // VB Specific event names
    lstrcat(szItemName, szEventName);
-   size_t codelen = SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+   size_t codelen = ::SendMessage(m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
    const size_t stopChar = codelen;
-   SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
-   SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
+   ::SendMessage(m_hwndScintilla, SCI_TARGETWHOLEDOCUMENT, 0, 0);
+   ::SendMessage(m_hwndScintilla, SCI_SETSEARCHFLAGS, SCFIND_WHOLEWORD, 0);
    LRESULT posFind;
-   while ((posFind = SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
+   while ((posFind = ::SendMessage(m_hwndScintilla, SCI_SEARCHINTARGET, lstrlen(szItemName), (LPARAM)szItemName)) != -1)
    {
-      const size_t line = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
+      const size_t line = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, posFind, 0);
       // Check for 'sub' and make sure we're not in a comment
-      const size_t beginchar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
+      const size_t beginchar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
       bool goodMatch = true;
 
       char szLine[MAX_LINE_LENGTH] = {};
       SOURCE_TEXT_ATTR wzFormat[MAX_LINE_LENGTH];
       WCHAR wzText[MAX_LINE_LENGTH];
 
-      const size_t cchar = SendMessage(m_hwndScintilla, SCI_GETLINE, line, (LPARAM)szLine);
+      const size_t cchar = ::SendMessage(m_hwndScintilla, SCI_GETLINE, line, (LPARAM)szLine);
       MultiByteToWideCharNull(CP_ACP, 0, szLine, -1, wzText, MAX_LINE_LENGTH);
       m_pScriptDebug->GetScriptTextAttributes(wzText, (ULONG)cchar, nullptr, 0, wzFormat);
 
@@ -2265,24 +2264,24 @@ void CodeViewer::FindCodeFromEvent()
 
          found = true;
 
-         LRESULT ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
+         LRESULT ichar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line + 1, 0);
          if (ichar == -1)
          {
             // The function was declared as the last line of the script - rare but possible
-            ichar = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
+            ichar = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, line, 0);
          }
 
-         const size_t lineEvent = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
-         SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, lineEvent, 0);
-         SendMessage(m_hwndScintilla, SCI_SETSEL, ichar, ichar);
+         const size_t lineEvent = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, ichar, 0);
+         ::SendMessage(m_hwndScintilla, SCI_ENSUREVISIBLEENFORCEPOLICY, lineEvent, 0);
+         ::SendMessage(m_hwndScintilla, SCI_SETSEL, ichar, ichar);
       }
 
       if (found)
          break;
 
       const size_t startChar = posFind + 1;
-      SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
-      SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETTARGETSTART, startChar, 0);
+      ::SendMessage(m_hwndScintilla, SCI_SETTARGETEND, stopChar, 0);
    }
 
    if (!found)
@@ -2294,24 +2293,24 @@ void CodeViewer::FindCodeFromEvent()
       tr.lpstrText = szEnd;
 
       // Make sure there is at least a one space gap between the last function and this new one
-      SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (size_t)&tr);
+      ::SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (size_t)&tr);
 
       if (szEnd[0] != '\n')
       {
-         SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
+         ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
+         ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
          codelen++;
       }
 
       if (szEnd[1] != '\n')
       {
-         SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
-         SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
+         ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
+         ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)"\n");
          codelen++;
       }
 
       // Add the new function at the end
-      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
+      ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen, codelen);
 
       char szParams[MAX_LINE_LENGTH];
 
@@ -2326,9 +2325,9 @@ void CodeViewer::FindCodeFromEvent()
       const size_t subtitlelen = lstrlen(szNewCode);
       lstrcat(szNewCode, "\nEnd Sub");
 
-      SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
+      ::SendMessage(m_hwndScintilla, SCI_REPLACESEL, TRUE, (size_t)szNewCode);
 
-      SendMessage(m_hwndScintilla, SCI_SETSEL, codelen + subtitlelen, codelen + subtitlelen);
+      ::SendMessage(m_hwndScintilla, SCI_SETSEL, codelen + subtitlelen, codelen + subtitlelen);
    }
 
    ::SetFocus(m_hwndScintilla);
@@ -2508,18 +2507,18 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 		if ((int)intWordLen > m_displayAutoCompleteLength && intWordLen < MAX_FIND_LENGTH)
 		{
 			const char * McStr = m_autoCompString.c_str();
-			SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
+			::SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, intWordLen, (LPARAM)McStr);
 		}
 	}
 	else
 	{
 		//Get member construct
 
-		const LRESULT ConstructPos = SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
-		m_currentConstruct.chrg.cpMin = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
-		m_currentConstruct.chrg.cpMax = (Sci_PositionCR)SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
+		const LRESULT ConstructPos = ::SendMessage(m_hwndScintilla, SCI_GETCURRENTPOS, 0, 0 ) - 2;
+		m_currentConstruct.chrg.cpMin = (Sci_PositionCR)::SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, ConstructPos, TRUE);
+		m_currentConstruct.chrg.cpMax = (Sci_PositionCR)::SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, ConstructPos, TRUE);
 		if ((m_currentConstruct.chrg.cpMax - m_currentConstruct.chrg.cpMin) > MAX_FIND_LENGTH) return;
-		SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_currentConstruct);
+		::SendMessage(m_hwndScintilla, SCI_GETTEXTRANGE, 0, (LPARAM)&m_currentConstruct);
 
 		//Check Core dict first
 		m_currentConstruct.lpstrText = ConstructTextBuff;
@@ -2542,7 +2541,7 @@ void CodeViewer::ShowAutoComplete(const SCNotification *pSCN)
 		}
 		//display
 		const char * McStr = m_autoCompMembersString.c_str();
-		SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, 0, (LPARAM)McStr);
+		::SendMessage(m_hwndScintilla, SCI_AUTOCSHOW, 0, (LPARAM)McStr);
 	}
 #endif
 
@@ -2566,20 +2565,20 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 {
 #ifndef __STANDALONE__
 	//get word under pointer
-	const Sci_Position dwellpos = pSCN ? pSCN->position : SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-	const LRESULT wordstart = SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
-	const LRESULT wordfinish = SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
-	const int CurrentLineNo = (int)SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
+	const Sci_Position dwellpos = pSCN ? pSCN->position : ::SendMessage(m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+	const LRESULT wordstart = ::SendMessage(m_hwndScintilla, SCI_WORDSTARTPOSITION, dwellpos, TRUE);
+	const LRESULT wordfinish = ::SendMessage(m_hwndScintilla, SCI_WORDENDPOSITION, dwellpos, TRUE);
+	const int CurrentLineNo = (int)::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, dwellpos, 0);
 
 	//return if in a comment
 	char text[MAX_LINE_LENGTH] = {};
-	SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
+	::SendMessage(m_hwndScintilla, SCI_GETLINE, CurrentLineNo, (LPARAM)text);
 	if (text[0] != '\0')
 	{
 		const size_t t = string(text).find_first_of('\'', 0);
 		if (t != string::npos)
 		{
-			const LRESULT linestart = SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0);
+			const LRESULT linestart = ::SendMessage(m_hwndScintilla, SCI_POSITIONFROMLINE, CurrentLineNo, 0);
 			if (((size_t)(wordstart - linestart)) >= t) return false;
 		}
 	}
@@ -2587,7 +2586,7 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 	// is it a valid 'word'
 	string Mess;
 	const UserData *gotoDefinition = nullptr;
-	if ((SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart, wordfinish)) && ((wordfinish - wordstart) < 255))
+	if (::SendMessage(m_hwndScintilla, SCI_ISRANGEWORD, wordstart, wordfinish) && ((wordfinish - wordstart) < 255))
 	{
 		//Retrieve the word
 		char szDwellWord[256] = {};
@@ -2649,11 +2648,11 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 	if (!Mess.empty())
 	{
 		if (tooltip)
-			SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess.c_str());
+			::SendMessage(m_hwndScintilla,SCI_CALLTIPSHOW,dwellpos, (LPARAM)Mess.c_str());
 		else if (gotoDefinition)
 		{
-			SendMessage(m_hwndScintilla, SCI_GOTOLINE, gotoDefinition->m_lineNum, 0);
-			SendMessage(m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+			::SendMessage(m_hwndScintilla, SCI_GOTOLINE, gotoDefinition->m_lineNum, 0);
+			::SendMessage(m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
 		}
 		else
 			return false;
@@ -2666,41 +2665,41 @@ bool CodeViewer::ShowTooltipOrGoToDefinition(const SCNotification *pSCN, const b
 #ifndef __STANDALONE__
 void CodeViewer::MarginClick(const Sci_Position position, const int modifiers)
 {
-   const size_t lineClick = SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, position, 0);
+   const size_t lineClick = ::SendMessage(m_hwndScintilla, SCI_LINEFROMPOSITION, position, 0);
    if ((modifiers & SCMOD_SHIFT) && (modifiers & SCMOD_CTRL))
    {
       //FoldAll();
    }
    else
    {
-      const size_t levelClick = SendMessage(m_hwndScintilla, SCI_GETFOLDLEVEL, lineClick, 0);
+      const size_t levelClick = ::SendMessage(m_hwndScintilla, SCI_GETFOLDLEVEL, lineClick, 0);
       if (levelClick & SC_FOLDLEVELHEADERFLAG)
       {
          if (modifiers & SCMOD_SHIFT)
          {
             // Ensure all children visible
-            SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 1);
+            ::SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 1);
             //Expand(lineClick, true, true, 100, levelClick);
          }
          else if (modifiers & SCMOD_CTRL)
          {
-            if (SendMessage(m_hwndScintilla, SCI_GETFOLDEXPANDED, lineClick, 0))
+            if (::SendMessage(m_hwndScintilla, SCI_GETFOLDEXPANDED, lineClick, 0))
             {
                // Contract this line and all children
-               SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 0);
+               ::SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 0);
                //Expand(lineClick, false, true, 0, levelClick);
             }
             else
             {
                // Expand this line and all children
-               SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 1);
+               ::SendMessage(m_hwndScintilla, SCI_SETFOLDEXPANDED, lineClick, 1);
                //Expand(lineClick, true, true, 100, levelClick);
             }
          }
          else
          {
             // Toggle this line
-            SendMessage(m_hwndScintilla, SCI_TOGGLEFOLD, lineClick, 0);
+            ::SendMessage(m_hwndScintilla, SCI_TOGGLEFOLD, lineClick, 0);
          }
       }
    }
@@ -3165,7 +3164,7 @@ void CodeViewer::RemoveNonVBSChars(string &line)
 void CodeViewer::ParseForFunction() // Subs & Collections WIP 
 {
 #ifndef __STANDALONE__
-	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+	const int scriptLines = (int)::SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 
 	m_parentLevel = 0; //root
 	m_currentParentKey.clear();
@@ -3176,15 +3175,15 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	for (int linecount = 0; linecount < scriptLines; ++linecount)
 	{
 		// Read line
-		const size_t lineLength = SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
+		const size_t lineLength = ::SendMessage(m_hwndScintilla, SCI_LINELENGTH, linecount, 0);
 		if (!ParseOKLineLength(lineLength)) continue;
 		char text[MAX_LINE_LENGTH] = {};
-		SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
+		::SendMessage(m_hwndScintilla, SCI_GETLINE, linecount, (LPARAM)text);
 		if (text[0] != '\0')
 			ReadLineToParseBrain(text, linecount, m_pageConstructsDict);
 	}
-	SendMessage(m_hwndFunctionList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
-	SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
+	::SendMessage(m_hwndFunctionList, WM_SETREDRAW, FALSE, 0); // to speed up adding the entries :/
+	::SendMessage(m_hwndFunctionList, CB_RESETCONTENT, 0, 0);
 
 	//Propagate subs&funcs in menu in order
 	for (fi_vector<UserData>::const_iterator i = m_pageConstructsDict.begin(); i != m_pageConstructsDict.end(); ++i) 
@@ -3192,20 +3191,20 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 		if (i->eTyping < eDim)
 		{
 			const char *c_str1 = i->m_keyName.c_str();
-			SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)c_str1);
+			::SendMessage(m_hwndFunctionList, CB_ADDSTRING, 0, (LPARAM)c_str1);
 		}
 	}
-	SendMessage(m_hwndFunctionList, WM_SETREDRAW, TRUE, 0);
+	::SendMessage(m_hwndFunctionList, WM_SETREDRAW, TRUE, 0);
 
 	//Collect Objects/Components from the menu. (cheat!)
-	size_t CBCount = SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1; //Zero Based
+	size_t CBCount = ::SendMessage(m_hwndItemList, CB_GETCOUNT, 0, 0)-1; //Zero Based
 	while ((SSIZE_T)CBCount >= 0)
 	{
-		const LRESULT s = SendMessage(m_hwndItemList, CB_GETLBTEXTLEN, CBCount, 0);
+		const LRESULT s = ::SendMessage(m_hwndItemList, CB_GETLBTEXTLEN, CBCount, 0);
 		if (s > 1)
 		{
 			char * const c_str1 = new char[s + 1];
-			SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
+			::SendMessage(m_hwndItemList, CB_GETLBTEXT, CBCount, (LPARAM)c_str1);
 			UserData ud;
 			ud.m_keyName = c_str1;
 			delete[] c_str1;
@@ -3258,11 +3257,11 @@ void CodeViewer::ParseForFunction() // Subs & Collections WIP
 	//Send the collected func/subs to scintilla for highlighting - always as lowercase as VBS is case insensitive.
 	//TODO: Need to comune with scintilla closer (COM pointers??)
 	StrToLower(sSubFunOut);
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
+	::SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 1, (LPARAM)sSubFunOut.c_str());
 	StrToLower(strCompOut);
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2, (LPARAM)strCompOut.c_str());
+	::SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 2, (LPARAM)strCompOut.c_str());
 	StrToLower(strVPcoreWords);
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3, (LPARAM)strVPcoreWords.c_str());
+	::SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 3, (LPARAM)strVPcoreWords.c_str());
 #endif
 }
 
@@ -3472,15 +3471,15 @@ BOOL CodeViewer::ParseSelChangeEvent(const int id, const SCNotification *pSCN)
          if (Listindex != -1)
          {
             char ConstructName[MAX_FIND_LENGTH] = {};
-            /*size_t index =*/ SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
+            /*size_t index =*/ ::SendMessage(pcv->m_hwndFunctionList, CB_GETLBTEXT, Listindex, (LPARAM)ConstructName);
             int idx;
             string s(ConstructName);
             RemovePadding(s);
             FindUD(pcv->m_pageConstructsDict, lowerCase(s), idx);
             if (idx != -1)
             {
-               SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, pcv->m_pageConstructsDict[idx].m_lineNum, 0);
-               SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
+               ::SendMessage(pcv->m_hwndScintilla, SCI_GOTOLINE, pcv->m_pageConstructsDict[idx].m_lineNum, 0);
+               ::SendMessage(pcv->m_hwndScintilla, SCI_GRABFOCUS, 0, 0);
             }
          }
          return TRUE;
@@ -3521,10 +3520,10 @@ LRESULT CodeViewer::WndProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
       if (pfr->Flags & FR_DIALOGTERM)
       {
          pcv->m_hwndFind = nullptr;
-         const size_t selstart = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
-         const size_t selend = SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
+         const size_t selstart = ::SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONSTART, 0, 0);
+         const size_t selend = ::SendMessage(pcv->m_hwndScintilla, SCI_GETSELECTIONEND, 0, 0);
          ::SetFocus(pcv->m_hwndScintilla);
-         SendMessage(pcv->m_hwndScintilla, SCI_SETSEL, selstart, selend);
+         ::SendMessage(pcv->m_hwndScintilla, SCI_SETSEL, selstart, selend);
          return 0;
       }
       if (pfr->Flags & FR_FINDNEXT)
@@ -3663,7 +3662,7 @@ LRESULT CodeViewer::OnNotify(WPARAM wparam, LPARAM lparam)
       {
          if (pcv->m_toolTipActive)
          {
-            SendMessage(pcv->m_hwndScintilla, SCI_CALLTIPCANCEL, 0, 0);
+            ::SendMessage(pcv->m_hwndScintilla, SCI_CALLTIPCANCEL, 0, 0);
             pcv->m_toolTipActive = false;
          }
          break;
@@ -3942,13 +3941,13 @@ INT_PTR CALLBACK CVPrefProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 void CodeViewer::UpdateScinFromPrefs()
 {
 #ifndef __STANDALONE__
-	SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME, m_dwellDisplayTime, 0);
-	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, m_prefEverythingElse->m_sciKeywordID, m_bgColor);
-	SendMessage(m_hwndScintilla, SCI_SETSELBACK, m_prefEverythingElse->m_sciKeywordID, m_bgSelColor);
+	::SendMessage(m_hwndScintilla, SCI_SETMOUSEDWELLTIME, m_dwellDisplayTime, 0);
+	::SendMessage(m_hwndScintilla, SCI_STYLESETBACK, m_prefEverythingElse->m_sciKeywordID, m_bgColor);
+	::SendMessage(m_hwndScintilla, SCI_SETSELBACK, m_prefEverythingElse->m_sciKeywordID, m_bgSelColor);
 	m_prefEverythingElse->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);//Update internally
-	SendMessage(m_hwndScintilla,SCI_STYLECLEARALL,0,0);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, m_prefEverythingElse->m_rgb);
-	SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, m_bgColor);
+	::SendMessage(m_hwndScintilla,SCI_STYLECLEARALL,0,0);
+	::SendMessage(m_hwndScintilla, SCI_MARKERSETFORE, SC_MARKNUM_FOLDEROPEN, m_prefEverythingElse->m_rgb);
+	::SendMessage(m_hwndScintilla, SCI_MARKERSETBACK, SC_MARKNUM_FOLDEROPEN, m_bgColor);
 	prefDefault->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	prefVBS->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	prefSubs->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
@@ -3956,12 +3955,12 @@ void CodeViewer::UpdateScinFromPrefs()
 	prefLiterals->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	prefComments->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
 	prefVPcore->ApplyPreferences(m_hwndScintilla, m_prefEverythingElse);
-	SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200));
-	SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
+	::SendMessage(m_hwndScintilla, SCI_STYLESETBACK, SCE_B_KEYWORD5, RGB(200,200,200));
+	::SendMessage(m_hwndScintilla, SCI_SETKEYWORDS, 4 , (LPARAM)m_wordUnderCaret.lpstrText);
 
-	const int scriptLines = (int)SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
+	const int scriptLines = (int)::SendMessage(m_hwndScintilla, SCI_GETLINECOUNT, 0, 0);
 	//Update the margin width to fit the number of characters required to display the line number * font size
-	SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10((double)scriptLines) + 3.) : 1) * m_prefEverythingElse->m_pointSize);
+	::SendMessage(m_hwndScintilla, SCI_SETMARGINWIDTHN, 0, (scriptLines > 0 ? (int)ceil(log10((double)scriptLines) + 3.) : 1) * m_prefEverythingElse->m_pointSize);
 #endif
 }
 
@@ -4009,7 +4008,7 @@ void CodeViewer::SetLastErrorTextW(const LPCWSTR text)
 	::SetWindowTextW(m_hwndLastErrorTextArea, text);
 
 	// Scroll to the bottom
-	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
+	::SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
 #endif
 }
 
@@ -4028,7 +4027,7 @@ void CodeViewer::AppendLastErrorTextW(const wstring& text)
 	::SetWindowTextW(m_hwndLastErrorTextArea, buf);
 
 	// Scroll to the bottom
-	SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
+	::SendMessage(m_hwndLastErrorTextArea, EM_LINESCROLL, 0, 9999);
 
 	delete[] buf;
 #else

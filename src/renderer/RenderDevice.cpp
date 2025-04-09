@@ -904,9 +904,8 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    #ifndef __STANDALONE__
    if (gl_majorVersion < 4 || (gl_majorVersion == 4 && gl_minorVersion < 3))
    {
-      char errorMsg[256];
-      sprintf_s(errorMsg, sizeof(errorMsg), "Your graphics card only supports OpenGL %d.%d, but VPX requires OpenGL 4.3 or newer.", gl_majorVersion, gl_minorVersion);
-      ShowError(errorMsg);
+      const string errorMsg = "Your graphics card only supports OpenGL " + std::to_string(gl_majorVersion) + '.' + std::to_string(gl_minorVersion) + ", but VPX requires OpenGL 4.3 or newer.";
+      ShowError(errorMsg.c_str());
       exit(-1);
    }
    #endif

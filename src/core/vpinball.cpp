@@ -347,14 +347,14 @@ void VPinball::SetCursorCur(HINSTANCE hInstance, LPCTSTR lpCursorName)
 void VPinball::SetActionCur(const string& szaction)
 {
 #ifndef __STANDALONE__
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction.c_str());
+   ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 3 | 0, (size_t)szaction.c_str());
 #endif
 }
 
 void VPinball::SetStatusBarElementInfo(const string& info)
 {
 #ifndef __STANDALONE__
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
+   ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 4 | 0, (size_t)info.c_str());
 #endif
 }
 
@@ -536,7 +536,7 @@ void VPinball::SetPosCur(float x, float y)
    // display position 1st column in VP units
    char szT[256];
    sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
+   ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 0, (size_t)szT);
 
    // display converted position in separate status
    if (m_convertToUnit != 2) 
@@ -553,7 +553,7 @@ void VPinball::SetPosCur(float x, float y)
                assert(!"wrong unit");
                break;
        }
-       SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szT);
+       ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 0 | 2, (size_t)szT);
    }
 
    m_mouseCursorPosition.x = x;
@@ -566,14 +566,14 @@ void VPinball::SetObjectPosCur(float x, float y)
    char szT[256];
    sprintf_s(szT, sizeof(szT), "%.4f, %.4f", x, y);
 #ifndef __STANDALONE__
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
+   ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)szT);
 #endif
 }
 
 void VPinball::ClearObjectPosCur()
 {
 #ifndef __STANDALONE__
-   SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
+   ::SendMessage(m_hwndStatusBar, SB_SETTEXT, 1 | 0, (size_t)"");
 #endif
 }
 

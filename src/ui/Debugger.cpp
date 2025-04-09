@@ -43,15 +43,15 @@ BOOL DebuggerDialog::OnInitDialog()
                                                   WS_CHILD | ES_NOHIDESEL | WS_VISIBLE | ES_SUNKEN | WS_HSCROLL | WS_VSCROLL | ES_MULTILINE | ES_WANTRETURN | WS_BORDER,
                                                   rcEditSize.left, rcEditSize.top, rcEditSize.right - rcEditSize.left, rcEditSize.bottom - rcEditSize.top, GetHwnd(), nullptr, g_pvp->theInstance, 0);
 
-    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
-    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETSIZE, 32, 10);
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_STYLESETFONT, 32, (LPARAM)"Courier");
 
-    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETMARGINWIDTHN, 1, 0);
 
-    SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
+    ::SendMessage(g_pplayer->m_hwndDebugOutput, SCI_SETTABWIDTH, 4, 0);
 
-    SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
-    SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_SETCHECK, g_pplayer->m_throwBalls ? BST_CHECKED : BST_UNCHECKED, 0);
+    ::SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_SETCHECK, g_pplayer->m_ballControl ? BST_CHECKED : BST_UNCHECKED, 0);
 
     m_ballSizeEdit.SetWindowText(std::to_string(g_pplayer->m_debugBallSize).c_str());
 
@@ -93,13 +93,13 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
         }
         case IDC_BALL_THROWING:
         {
-            const size_t checked = SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_GETCHECK, 0, 0);
+            const size_t checked = ::SendMessage(GetDlgItem(IDC_BALL_THROWING).GetHwnd(), BM_GETCHECK, 0, 0);
             g_pplayer->m_throwBalls = !!checked;
             return TRUE;
         }
         case IDC_BALL_CONTROL:
         {
-            const size_t checked = SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_GETCHECK, 0, 0);
+            const size_t checked = ::SendMessage(GetDlgItem(IDC_BALL_CONTROL).GetHwnd(), BM_GETCHECK, 0, 0);
             g_pplayer->m_ballControl = !!checked;
             return TRUE;
         }
@@ -155,32 +155,32 @@ LRESULT DebuggerDialog::OnNotify(WPARAM wparam, LPARAM lparam)
             const SCNotification* const pscnmh = (SCNotification*)lparam;
             if (pscnmh->ch == '\n') // execute code
             {
-                SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
+                ::SendMessage(pnmh->hwndFrom, SCI_DELETEBACK, 0, 0);
 
-                const size_t curpos = SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
-                const size_t line = SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
-                const size_t lineStart = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
-                const size_t lineEnd = SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
+                const size_t curpos = ::SendMessage(pnmh->hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+                const size_t line = ::SendMessage(pnmh->hwndFrom, SCI_LINEFROMPOSITION, curpos, 0);
+                const size_t lineStart = ::SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line, 0);
+                const size_t lineEnd = ::SendMessage(pnmh->hwndFrom, SCI_GETLINEENDPOSITION, line, 0);
 
                 char* const szText = new char[lineEnd - lineStart + 1];
                 Sci_TextRange tr;
                 tr.chrg.cpMin = (Sci_PositionCR)lineStart;
                 tr.chrg.cpMax = (Sci_PositionCR)lineEnd;
                 tr.lpstrText = szText;
-                SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+                ::SendMessage(pnmh->hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-                const size_t maxlines = SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
+                const size_t maxlines = ::SendMessage(pnmh->hwndFrom, SCI_GETLINECOUNT, 0, 0);
 
                 if (maxlines == line + 1)
                 {
                     // need to add a new line to the end
-                    SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
-                    SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, 1, (LPARAM)"\n");
+                    ::SendMessage(pnmh->hwndFrom, SCI_DOCUMENTEND, 0, 0);
+                    ::SendMessage(pnmh->hwndFrom, SCI_ADDTEXT, 1, (LPARAM)"\n");
                 }
                 else
                 {
-                    const size_t pos = SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
-                    SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
+                    const size_t pos = ::SendMessage(pnmh->hwndFrom, SCI_POSITIONFROMLINE, line + 1, 0);
+                    ::SendMessage(pnmh->hwndFrom, SCI_SETCURRENTPOS, pos, 0);
                 }
 
                 g_pplayer->m_ptable->m_pcv->EvaluateScriptStatement(szText);
