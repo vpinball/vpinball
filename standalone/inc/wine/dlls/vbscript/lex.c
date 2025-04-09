@@ -94,6 +94,8 @@ static const struct {
     {L"xor",       tXOR}
 };
 
+#ifdef __STANDALONE__
+// https://gitlab.winehq.org/wine/wine/-/merge_requests/7591
 static const double pow10[309] = {
 1.e0,1.e1,1.e2,1.e3,1.e4,1.e5,1.e6,1.e7,1.e8,1.e9,1.e10,1.e11,1.e12,1.e13,1.e14,1.e15,1.e16,
 1.e17,1.e18,1.e19,1.e20,1.e21,1.e22,1.e23,1.e24,1.e25,1.e26,1.e27,1.e28,1.e29,1.e30,1.e31,
@@ -118,6 +120,7 @@ static const double pow10[309] = {
 1.e275,1.e276,1.e277,1.e278,1.e279,1.e280,1.e281,1.e282,1.e283,1.e284,1.e285,1.e286,1.e287,
 1.e288,1.e289,1.e290,1.e291,1.e292,1.e293,1.e294,1.e295,1.e296,1.e297,1.e298,1.e299,1.e300,
 1.e301,1.e302,1.e303,1.e304,1.e305,1.e306,1.e307,1.e308};
+#endif
 
 static inline BOOL is_identifier_char(WCHAR c)
 {
@@ -331,7 +334,11 @@ static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
 
         do {
             e = e*10 + *(ctx->ptr++) - '0';
+#ifdef __STANDALONE__
             if(sign == -1 && -e+exp < -308) {
+#else
+            if(sign == -1 && -e+exp < -(INT_MAX/100)) {
+#endif
                 /* The literal will be rounded to 0 anyway. */
                 while(is_digit(*ctx->ptr))
                     ctx->ptr++;
@@ -339,8 +346,12 @@ static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
                 return tDouble;
             }
 
+#ifdef __STANDALONE__
             if(sign*e + exp > 308) {
                 /* This would result in infinity */
+#else
+            if(sign*e + exp > INT_MAX/100) {
+#endif
                 FIXME("Invalid numeric literal\n");
                 return 0;
             }
@@ -354,7 +365,11 @@ static int parse_numeric_literal(parser_ctx_t *ctx, void **ret)
         return tInt;
     }
 
+#ifdef __STANDALONE__
     r = exp>=0 ? d*pow10[exp] : d/pow10[-exp];
+#else
+    r = exp>=0 ? d*pow(10, exp) : d/pow(10, -exp);
+#endif
     if(isinf(r)) {
         FIXME("Invalid numeric literal\n");
         return 0;
