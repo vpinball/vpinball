@@ -6,7 +6,7 @@
 #include "math/ModelViewProj.h"
 #include "renderer/RenderDevice.h"
 #include "renderer/Texture.h"
-#include "parts/backGlass.h"
+#include "Backglass.h"
 #include "plugins/CorePlugin.h"
 
 class Renderable;
