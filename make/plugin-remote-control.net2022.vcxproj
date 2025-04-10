@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{2bf90d88-9139-4e66-a778-4327311af777}</ProjectGuid>
+    <ProjectGuid>{57516B53-6E7E-4618-93B3-4F5222F28807}</ProjectGuid>
     <RootNamespace>plugin-remote-control</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -73,9 +73,9 @@
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">plugin-remote-control</TargetName>
     <TargetName Condition="'$(Platform)'=='x64'">plugin-remote-control64</TargetName>
-    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,17 +148,17 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\remote-control\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\remote-control\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\remote-control\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\remote-control\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\remote-control\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
@@ -176,10 +176,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/remote-control/RemoteControl.cpp" />
+    <ClCompile Include="../../plugins/remote-control/RemoteControl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/remote-control/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/remote-control/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

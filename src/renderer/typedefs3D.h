@@ -19,6 +19,12 @@
  #include "minid3d9.h"
 #endif
 
+#ifndef D3DCOLOR_DEFINED
+   // D3DCOLOR: 0xAARRGGBB
+   typedef uint32_t D3DCOLOR;
+   #define D3DCOLOR_DEFINED
+#endif
+
 #ifdef ENABLE_VR
  #include "openvr.h"
 #endif

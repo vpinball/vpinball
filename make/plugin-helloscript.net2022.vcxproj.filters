@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/helloscript/helloscript.cpp">
+    <ClCompile Include="../../plugins/helloscript/helloscript.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/helloscript/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/helloscript/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>

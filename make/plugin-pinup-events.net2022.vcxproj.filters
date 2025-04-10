@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/pinup-events/pinup-events.cpp">
+    <ClCompile Include="../../plugins/pinup-events/pinup-events.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/pinup-events/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/pinup-events/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>

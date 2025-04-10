@@ -73,9 +73,9 @@
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">plugin-serum</TargetName>
     <TargetName Condition="'$(Platform)'=='x64'">plugin-serum64</TargetName>
-    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins;./plugins/serum/third-party/include</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins;$(SolutionDir)../../plugins/serum/third-party/include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,21 +152,21 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
-        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\serum\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
-        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\serum\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\serum\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
-        copy /y "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
-        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\serum\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        copy /y "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\serum\"
+        copy /y "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\serum\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>plugins/serum;third-party/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/serum;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -180,19 +180,19 @@
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies Condition="'$(Platform)'=='x64'">serum64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">serum.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="plugins/serum/common.h" />
-    <ClCompile Include="plugins/serum/common.cpp" />
-    <ClCompile Include="plugins/serum/serum.cpp" />
+    <ClInclude Include="../../plugins/serum/common.h" />
+    <ClCompile Include="../../plugins/serum/common.cpp" />
+    <ClCompile Include="../../plugins/serum/serum.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/serum/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/serum/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

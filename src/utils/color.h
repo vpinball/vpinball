@@ -11,8 +11,8 @@
 
 inline D3DCOLOR COLORREF_to_D3DCOLOR(const COLORREF c)
 {
-   // COLORREF: 0x00BBGGRR
-   // D3DCOLOR: 0xAARRGGBB
+   // COLORREF: 0x00BBGGRR (from windef)
+   // D3DCOLOR: 0xAARRGGBB (from d3d9.h)
    const COLORREF r = (c & 0x000000ff);
    const COLORREF g = (c & 0x0000ff00) >> 8;
    const COLORREF b = (c & 0x00ff0000) >> 16;

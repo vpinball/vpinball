@@ -29,3 +29,4 @@ standalone/android/app/src/main/jniLibs
 VisualPinball.sln
 /*.vcxproj
 /*.vcxproj.filters
+/.build

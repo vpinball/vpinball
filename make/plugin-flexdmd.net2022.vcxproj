@@ -73,9 +73,9 @@
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">plugin-flexdmd</TargetName>
     <TargetName Condition="'$(Platform)'=='x64'">plugin-flexdmd64</TargetName>
-    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,27 +148,27 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)plugins\flexdmd\assets" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\assets\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\flexdmd\assets\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)plugins\flexdmd\assets" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\assets\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\flexdmd\assets\"
 		
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
-        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)third-party\runtime-libs\windows-$(Platform)\*.*" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
-		xcopy /y /d /q "$(SolutionDir)plugins\flexdmd\assets" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\flexdmd\assets\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
+        xcopy /y /d /q "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../third-party/runtime-libs/windows-$(Platform)/*.*" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\"
+		xcopy /y /d /q "$(SolutionDir)../../plugins/flexdmd/assets" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\flexdmd\assets\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
-      <AdditionalIncludeDirectories>plugins/flexdmd;third-party/include/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)../../plugins/flexdmd;$(SolutionDir)../../third-party/include/</AdditionalIncludeDirectories>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AnySuitable</InlineFunctionExpansion>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Speed</FavorSizeOrSpeed>
       <InlineFunctionExpansion Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AnySuitable</InlineFunctionExpansion>
@@ -182,104 +182,104 @@
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies Condition="'$(Platform)'=='x64'">SDL364.lib;SDL3_image64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">SDL3.lib;SDL3_image.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/flexdmd/actors/Actor.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/AnimatedActor.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/FadeOverlay.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/Frame.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/GIFImage.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/Group.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/Label.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/AssetManager.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/AssetSrc.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/AdditiveFilter.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/Bitmap.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/BitmapFilter.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/DotFilter.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/Font.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/PadFilter.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/RegionFilter.cpp" />
-    <ClCompile Include="plugins/flexdmd/FlexDMD.cpp" />
-    <ClCompile Include="plugins/flexdmd/FlexDmdPlugin.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/Image.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/ImageSequence.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/ScoreBoard.cpp" />
-    <ClCompile Include="plugins/flexdmd/actors/Video.cpp" />
-    <ClCompile Include="plugins/flexdmd/bmfonts/BitmapFont.cpp" />
-    <ClCompile Include="plugins/flexdmd/common.cpp" />
-    <ClCompile Include="plugins/flexdmd/resources/VPXFile.cpp" />
-	<ClCompile Include="plugins/flexdmd/scenes/BackgroundScene.cpp" />
-    <ClCompile Include="plugins/flexdmd/scenes/Scene.cpp" />
-    <ClCompile Include="plugins/flexdmd/scenes/ScrollingCreditsScene.cpp" />
-    <ClCompile Include="plugins/flexdmd/scenes/Sequence.cpp" />
-    <ClCompile Include="plugins/flexdmd/scenes/SingleLineScene.cpp" />
-    <ClCompile Include="plugins/flexdmd/scenes/TwoLineScene.cpp" />
-    <ClCompile Include="plugins/flexdmd/SurfaceGraphics.cpp" />
-	<ClCompile Include="third-party/include/pole/pole.cpp" />
-    <ClCompile Include="plugins/flexdmd/UltraDMD.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Actor.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/AnimatedActor.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/FadeOverlay.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Frame.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/GIFImage.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Group.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Label.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/AssetManager.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/AssetSrc.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/AdditiveFilter.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/Bitmap.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/BitmapFilter.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/DotFilter.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/Font.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/PadFilter.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/RegionFilter.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/FlexDMD.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/FlexDmdPlugin.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Image.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/ImageSequence.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/ScoreBoard.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/actors/Video.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/bmfonts/BitmapFont.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/common.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/resources/VPXFile.cpp" />
+	<ClCompile Include="../../plugins/flexdmd/scenes/BackgroundScene.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/scenes/Scene.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/scenes/ScrollingCreditsScene.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/scenes/Sequence.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/scenes/SingleLineScene.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/scenes/TwoLineScene.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/SurfaceGraphics.cpp" />
+	<ClCompile Include="../../third-party/include/pole/pole.cpp" />
+    <ClCompile Include="../../plugins/flexdmd/UltraDMD.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="plugins/flexdmd/bmfonts/BitmapFont.h" />
-    <ClInclude Include="plugins/flexdmd/bmfonts/Character.h" />
-    <ClInclude Include="plugins/flexdmd/bmfonts/Kerning.h" />
-    <ClInclude Include="plugins/flexdmd/bmfonts/Page.h" />
-    <ClInclude Include="plugins/flexdmd/common.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Actor.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Actions.h" />
-    <ClInclude Include="plugins/flexdmd/actors/AnimatedActor.h" />
-    <ClInclude Include="plugins/flexdmd/actors/FadeOverlay.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Frame.h" />
-    <ClInclude Include="plugins/flexdmd/actors/GIFImage.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Group.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Image.h" />
-    <ClInclude Include="plugins/flexdmd/actors/ImageSequence.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Label.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Layout.h" />
-    <ClInclude Include="plugins/flexdmd/actors/ScoreBoard.h" />
-    <ClInclude Include="plugins/flexdmd/actors/Video.h" />
-    <ClInclude Include="plugins/flexdmd/resources/AssetManager.h" />
-    <ClInclude Include="plugins/flexdmd/resources/AssetSrc.h" />
-    <ClInclude Include="plugins/flexdmd/resources/Bitmap.h" />
-    <ClInclude Include="plugins/flexdmd/resources/AdditiveFilter.h" />
-    <ClInclude Include="plugins/flexdmd/resources/BitmapFilter.h" />
-    <ClInclude Include="plugins/flexdmd/resources/DotFilter.h" />
-    <ClInclude Include="plugins/flexdmd/resources/Font.h" />
-    <ClInclude Include="plugins/flexdmd/resources/PadFilter.h" />
-    <ClInclude Include="plugins/flexdmd/resources/RegionFilter.h" />
-    <ClInclude Include="plugins/flexdmd/resources/ResourceDef.h" />
-    <ClInclude Include="plugins/flexdmd/FlexDMD.h" />
-    <ClInclude Include="third-party/include/tweeny-3.2.0.h" />
-    <ClInclude Include="plugins/flexdmd/resources/VPXFile.h" />
-	<ClInclude Include="plugins/flexdmd/scenes/AnimationType.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/BackgroundScene.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/Scene.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/ScrollingCreditsScene.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/Sequence.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/SingleLineScene.h" />
-    <ClInclude Include="plugins/flexdmd/scenes/TwoLineScene.h" />
-    <ClInclude Include="plugins/flexdmd/SurfaceGraphics.h" />
-    <ClInclude Include="third-party/include/pole/pole.h" />
-	<ClInclude Include="third-party/include/sdl3/SDL_begin_code.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_blendmode.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_endian.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_error.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_pixels.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_platform_defines.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_properties.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_rect.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_stdinc.h" />
-    <ClInclude Include="third-party/include/sdl3/SDL_surface.h" />
-    <ClInclude Include="third-party/include/sdl3_image/SDL_image.h" />
-    <ClInclude Include="plugins/flexdmd/UltraDMD.h" />
+    <ClInclude Include="../../plugins/flexdmd/bmfonts/BitmapFont.h" />
+    <ClInclude Include="../../plugins/flexdmd/bmfonts/Character.h" />
+    <ClInclude Include="../../plugins/flexdmd/bmfonts/Kerning.h" />
+    <ClInclude Include="../../plugins/flexdmd/bmfonts/Page.h" />
+    <ClInclude Include="../../plugins/flexdmd/common.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Actor.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Actions.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/AnimatedActor.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/FadeOverlay.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Frame.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/GIFImage.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Group.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Image.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/ImageSequence.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Label.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Layout.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/ScoreBoard.h" />
+    <ClInclude Include="../../plugins/flexdmd/actors/Video.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/AssetManager.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/AssetSrc.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/Bitmap.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/AdditiveFilter.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/BitmapFilter.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/DotFilter.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/Font.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/PadFilter.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/RegionFilter.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/ResourceDef.h" />
+    <ClInclude Include="../../plugins/flexdmd/FlexDMD.h" />
+    <ClInclude Include="../../third-party/include/tweeny-3.2.0.h" />
+    <ClInclude Include="../../plugins/flexdmd/resources/VPXFile.h" />
+	<ClInclude Include="../../plugins/flexdmd/scenes/AnimationType.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/BackgroundScene.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/Scene.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/ScrollingCreditsScene.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/Sequence.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/SingleLineScene.h" />
+    <ClInclude Include="../../plugins/flexdmd/scenes/TwoLineScene.h" />
+    <ClInclude Include="../../plugins/flexdmd/SurfaceGraphics.h" />
+    <ClInclude Include="../../third-party/include/pole/pole.h" />
+	<ClInclude Include="../../third-party/include/sdl3/SDL_begin_code.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_blendmode.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_endian.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_error.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_pixels.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_platform_defines.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_properties.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_rect.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_stdinc.h" />
+    <ClInclude Include="../../third-party/include/sdl3/SDL_surface.h" />
+    <ClInclude Include="../../third-party/include/sdl3_image/SDL_image.h" />
+    <ClInclude Include="../../plugins/flexdmd/UltraDMD.h" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/flexdmd/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/flexdmd/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

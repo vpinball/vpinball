@@ -73,9 +73,9 @@
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">plugin-dmdutil</TargetName>
     <TargetName Condition="'$(Platform)'=='x64'">plugin-dmdutil64</TargetName>
-    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins;./third-party/include</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins;$(SolutionDir)../../third-party/include</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,17 +148,17 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\dmdutil\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\dmdutil\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\dmdutil\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\dmdutil\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\dmdutil\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
@@ -175,17 +175,17 @@
       <FloatingPointExceptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</FloatingPointExceptions>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)../../third-party/build-libs/windows-x64/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)../../third-party/build-libs/windows-x86/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies Condition="'$(Platform)'=='x64'">dmdutil64.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies Condition="'$(Platform)'=='Win32'">dmdutil.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/dmdutil/dmdutil.cpp" />
+    <ClCompile Include="../../plugins/dmdutil/dmdutil.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/dmdutil/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/dmdutil/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

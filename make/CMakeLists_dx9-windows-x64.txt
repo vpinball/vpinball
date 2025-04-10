@@ -504,7 +504,7 @@ add_executable(vpinball WIN32
    src/utils/CrashHandler.h
 
    src/ui/vpinball.rc
-   vpinball.idl
+   src/core/vpinball.idl
 
    src/ui/res/ball.rgs
    src/ui/res/bumper.rgs
@@ -651,7 +651,7 @@ target_include_directories(vpinball PUBLIC
    $ENV{DXSDK_DIR}/Include
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)
-   ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/shader
+   ${CMAKE_CURRENT_BINARY_DIR}/$(IntDir)/src
    third-party/include
    third-party/include/win32xx/include
    src
