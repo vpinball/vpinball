@@ -1160,7 +1160,7 @@
     <ClCompile Include="../../src/core/ScoreView.cpp" />
     <ClCompile Include="../../src/math/math.cpp" />
     <ClCompile Include="../../src/math/matrix.cpp" />
-    <ClCompile Include="../../src/parts/backGlass.cpp" />
+    <ClCompile Include="../../src/renderer/Backglass.cpp" />
     <ClCompile Include="../../src/parts/ball.cpp" />
     <ClCompile Include="../../src/parts/bumper.cpp" />
     <ClCompile Include="../../src/parts/decal.cpp" />
@@ -1731,7 +1731,7 @@
     <ClInclude Include="../../src/meshes/spinnerPlateMesh.h" />
     <ClInclude Include="../../src/meshes/triggerSimpleMesh.h" />
     <ClInclude Include="../../src/meshes/triggerStarMesh.h" />
-    <ClInclude Include="../../src/parts/backGlass.h" />
+    <ClInclude Include="../../src/renderer/Backglass.h" />
     <ClInclude Include="../../src/parts/dragpoint.h" />
     <ClInclude Include="../../src/parts/Material.h" />
     <ClInclude Include="../../src/parts/pinbinary.h" />

@@ -183,8 +183,8 @@
     <ClCompile Include="../../src/parts/ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="../../src/parts/backGlass.cpp">
-      <Filter>parts</Filter>
+    <ClCompile Include="../../src/renderer/Backglass.cpp">
+      <Filter>renderer</Filter>
     </ClCompile>
     <ClCompile Include="../../src/parts/bumper.cpp">
       <Filter>parts</Filter>
@@ -869,8 +869,8 @@
     <ClInclude Include="../../src/meshes/kickerSimpleHoleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="../../src/parts/backGlass.h">
-      <Filter>parts</Filter>
+    <ClInclude Include="../../src/renderer/Backglass.h">
+      <Filter>renderer</Filter>
     </ClInclude>
     <ClInclude Include="../../src/parts/ball.h">
       <Filter>parts</Filter>

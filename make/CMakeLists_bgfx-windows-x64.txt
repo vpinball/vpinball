@@ -64,7 +64,7 @@ add_executable(vpinball WIN32
    src/core/def.h
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
-   src/parts/backGlass.cpp
+   src/renderer/Backglass.cpp
    src/parts/pinbinary.cpp
    src/core/vpversion.h
 
@@ -152,7 +152,7 @@ add_executable(vpinball WIN32
    src/meshes/triggerSimpleMesh.h
    src/meshes/triggerStarMesh.h
 
-   src/parts/backGlass.h
+   src/renderer/Backglass.h
    src/parts/dragpoint.h
    src/parts/Material.h
    src/parts/pinbinary.h
