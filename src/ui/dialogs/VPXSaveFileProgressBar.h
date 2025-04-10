@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "parts/VPXFileFeedback.h"
+#include "ui/VPXFileFeedback.h"
 
 /**
  * Displays a progress bar using Win32 API to track progress of a table being saved.
