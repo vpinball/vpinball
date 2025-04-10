@@ -1756,7 +1756,7 @@
     <ClInclude Include="../../src/parts/kicker.h" />
     <ClInclude Include="../../src/parts/light.h" />
     <ClInclude Include="../../src/parts/lightseq.h" />
-    <ClInclude Include="../../src/parts/VPXFileFeedback.h" />
+    <ClInclude Include="../../src/ui/VPXFileFeedback.h" />
     <ClInclude Include="../../src/physics/physconst.h" />
     <ClInclude Include="../../src/physics/kdtree.h" />
     <ClInclude Include="../../src/physics/hitball.h" />

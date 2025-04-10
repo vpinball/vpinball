@@ -13,7 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include "renderer/Shader.h"
-#include "parts/VPXFileFeedback.h"
+#include "ui/VPXFileFeedback.h"
 #ifndef __STANDALONE__
 #include "renderer/captureExt.h"
 #include "ui/dialogs/VPXLoadFileProgressBar.h"

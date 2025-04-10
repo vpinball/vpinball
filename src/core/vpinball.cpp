@@ -3,7 +3,7 @@
 // implementation of the VPinball class.
 
 #include "core/stdafx.h"
-#include "parts/VPXFileFeedback.h"
+#include "ui/VPXFileFeedback.h"
 #include "ui/resource.h"
 #ifndef __STANDALONE__
 #include "ui/dialogs/KeysConfigDialog.h"

@@ -243,7 +243,7 @@ add_executable(vpinball WIN32
    src/parts/timer.h
    src/parts/trigger.cpp
    src/parts/trigger.h
-   src/parts/VPXFileFeedback.h
+   src/ui/VPXFileFeedback.h
 
    src/physics/physconst.h
    src/physics/AsyncDynamicQuadTree.h

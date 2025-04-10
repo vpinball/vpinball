@@ -917,7 +917,7 @@
     <ClInclude Include="../../src/parts/pintable.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="../../src/parts/VPXFileFeedback.h">
+    <ClInclude Include="../../src/ui/VPXFileFeedback.h">
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="../../src/parts/plunger.h">
