@@ -570,8 +570,8 @@
     <ClCompile Include="../../src/ui/dialogs/RenderProbeDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="../../src/utils/def.cpp">
-      <Filter>utils</Filter>
+    <ClCompile Include="../../src/core/def.cpp">
+      <Filter>core</Filter>
     </ClCompile>
     <ClCompile Include="../../src/utils/ushock_output.cpp">
       <Filter>utils</Filter>
@@ -918,7 +918,7 @@
       <Filter>parts</Filter>
     </ClInclude>
     <ClInclude Include="../../src/ui/VPXFileFeedback.h">
-      <Filter>parts</Filter>
+      <Filter>ui</Filter>
     </ClInclude>
     <ClInclude Include="../../src/parts/plunger.h">
       <Filter>parts</Filter>

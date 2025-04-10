@@ -57,7 +57,6 @@ add_definitions(
 )
 
 add_executable(vpinball
-   src/core/def.h
    src/parts/dragpoint.cpp
    src/utils/eventproxy.h
    src/parts/backGlass.cpp
@@ -67,6 +66,8 @@ add_executable(vpinball
    src/audio/pinsound.cpp
    src/audio/pinsound.h
 
+   src/core/def.h
+   src/core/def.cpp
    src/core/dispid.h
    src/core/DynamicScript.cpp
    src/core/DynamicScript.h
@@ -277,7 +278,6 @@ add_executable(vpinball
 
    src/utils/bulb.cpp
    src/utils/bulb.h
-   src/utils/def.cpp
    src/utils/wintimer.cpp
    src/utils/wintimer.h
    src/utils/ushock_output.cpp

@@ -1294,7 +1294,7 @@
     <ClCompile Include="../../src/utils/BlackBox.cpp" />
     <ClCompile Include="../../src/utils/bulb.cpp" />
     <ClCompile Include="../../src/utils/CrashHandler.cpp" />
-    <ClCompile Include="../../src/utils/def.cpp" />
+    <ClCompile Include="../../src/core/def.cpp" />
     <ClCompile Include="../../src/utils/fileio.cpp" />
     <ClCompile Include="../../src/utils/hash.cpp" />
     <ClCompile Include="../../src/utils/Logger.cpp" />

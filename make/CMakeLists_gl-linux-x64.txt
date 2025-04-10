@@ -270,7 +270,7 @@ add_executable(vpinball
 
    src/utils/bulb.cpp
    src/utils/bulb.h
-   src/utils/def.cpp
+   src/core/def.cpp
    src/utils/wintimer.cpp
    src/utils/wintimer.h
    src/utils/ushock_output.cpp
