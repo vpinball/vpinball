@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/stdafx.h"
-#include "parts/VPXFileFeedback.h"
+#include "ui/VPXFileFeedback.h"
 
 
 class VPXProgress: public VPXFileFeedback
