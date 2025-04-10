@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/dmdutil/dmdutil.cpp">
+    <ClCompile Include="../../plugins/dmdutil/dmdutil.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/dmdutil/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/dmdutil/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>

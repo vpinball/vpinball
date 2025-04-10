@@ -2,23 +2,22 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="source">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+      <UniqueIdentifier>{85ea0f98-18af-43c1-9b8e-809d60172a9f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/alphadmd/alphadmd.cpp">
+    <ClCompile Include="../../plugins/alphadmd/alphadmd.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="plugins/alphadmd/usbalphanumeric.h">
-      <Filter>source</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <CopyFileToFolders Include="plugins/alphadmd/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/alphadmd/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="../../plugins/alphadmd/usbalphanumeric.h">
+      <Filter>source</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

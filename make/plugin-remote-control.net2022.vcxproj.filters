@@ -7,12 +7,12 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/remote-control/RemoteControl.cpp">
+    <ClCompile Include="../../plugins/remote-control/RemoteControl.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/remote-control/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/remote-control/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>

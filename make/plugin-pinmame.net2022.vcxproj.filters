@@ -7,71 +7,71 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/pinmame/common.cpp">
+    <ClCompile Include="../../plugins/pinmame/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/PinMamePlugin.cpp">
+    <ClCompile Include="../../plugins/pinmame/PinMamePlugin.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Rom.cpp">
+    <ClCompile Include="../../plugins/pinmame/Rom.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Controller.cpp">
+    <ClCompile Include="../../plugins/pinmame/Controller.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Roms.cpp">
+    <ClCompile Include="../../plugins/pinmame/Roms.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/ControllerSettings.cpp">
+    <ClCompile Include="../../plugins/pinmame/ControllerSettings.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Game.cpp">
+    <ClCompile Include="../../plugins/pinmame/Game.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Games.cpp">
+    <ClCompile Include="../../plugins/pinmame/Games.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/GameSettings.cpp">
+    <ClCompile Include="../../plugins/pinmame/GameSettings.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/pinmame/Settings.cpp">
+    <ClCompile Include="../../plugins/pinmame/Settings.cpp">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/pinmame/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/pinmame/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="plugins/pinmame/common.h">
+    <ClInclude Include="../../plugins/pinmame/common.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Controller.h">
+    <ClInclude Include="../../plugins/pinmame/Controller.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/ControllerSettings.h">
+    <ClInclude Include="../../plugins/pinmame/ControllerSettings.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Game.h">
+    <ClInclude Include="../../plugins/pinmame/Game.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Games.h">
+    <ClInclude Include="../../plugins/pinmame/Games.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/GameSettings.h">
+    <ClInclude Include="../../plugins/pinmame/GameSettings.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Rom.h">
+    <ClInclude Include="../../plugins/pinmame/Rom.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Roms.h">
+    <ClInclude Include="../../plugins/pinmame/Roms.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/pinmame/Settings.h">
+    <ClInclude Include="../../plugins/pinmame/Settings.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/libpinmame.h">
+    <ClInclude Include="../../third-party/include/libpinmame.h">
       <Filter>source</Filter>
     </ClInclude>
   </ItemGroup>

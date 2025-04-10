@@ -471,7 +471,7 @@ add_executable(vpinball WIN32
    src/utils/CrashHandler.h
 
    src/ui/vpinball.rc
-   vpinball.idl
+   src/core/vpinball.idl
 
    src/ui/res/ball.rgs
    src/ui/res/bumper.rgs

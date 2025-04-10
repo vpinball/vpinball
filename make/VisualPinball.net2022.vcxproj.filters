@@ -135,2561 +135,2561 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src/audio/pinsound.cpp">
+    <ClCompile Include="../../src/audio/pinsound.cpp">
       <Filter>audio</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/editablereg.cpp">
+    <ClCompile Include="../../src/core/editablereg.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/extern.cpp">
+    <ClCompile Include="../../src/core/extern.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/ieditable.cpp">
+    <ClCompile Include="../../src/core/ieditable.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/iselect.cpp">
+    <ClCompile Include="../../src/core/iselect.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/main.cpp">
+    <ClCompile Include="../../src/core/main.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/pinundo.cpp">
+    <ClCompile Include="../../src/core/pinundo.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/player.cpp">
+    <ClCompile Include="../../src/core/player.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/Settings.cpp">
+    <ClCompile Include="../../src/core/Settings.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/stdafx.cpp">
+    <ClCompile Include="../../src/core/stdafx.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/TableDB.cpp">
+    <ClCompile Include="../../src/core/TableDB.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/vpinball.cpp">
+    <ClCompile Include="../../src/core/vpinball.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/VPXPluginAPIImpl.cpp">
+    <ClCompile Include="../../src/core/VPXPluginAPIImpl.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/math/math.cpp">
+    <ClCompile Include="../../src/math/math.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="src/math/matrix.cpp">
+    <ClCompile Include="../../src/math/matrix.cpp">
       <Filter>math</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/ball.cpp">
+    <ClCompile Include="../../src/parts/ball.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/backGlass.cpp">
+    <ClCompile Include="../../src/parts/backGlass.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/bumper.cpp">
+    <ClCompile Include="../../src/parts/bumper.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/decal.cpp">
+    <ClCompile Include="../../src/parts/decal.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/dispreel.cpp">
+    <ClCompile Include="../../src/parts/dispreel.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/flasher.cpp">
+    <ClCompile Include="../../src/parts/flasher.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/flipper.cpp">
+    <ClCompile Include="../../src/parts/flipper.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/dragpoint.cpp">
+    <ClCompile Include="../../src/parts/dragpoint.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/pinbinary.cpp">
+    <ClCompile Include="../../src/parts/pinbinary.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/gate.cpp">
+    <ClCompile Include="../../src/parts/gate.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/hittarget.cpp">
+    <ClCompile Include="../../src/parts/hittarget.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/kicker.cpp">
+    <ClCompile Include="../../src/parts/kicker.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/light.cpp">
+    <ClCompile Include="../../src/parts/light.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/lightseq.cpp">
+    <ClCompile Include="../../src/parts/lightseq.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/pintable.cpp">
+    <ClCompile Include="../../src/parts/pintable.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/plunger.cpp">
+    <ClCompile Include="../../src/parts/plunger.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/primitive.cpp">
+    <ClCompile Include="../../src/parts/primitive.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/ramp.cpp">
+    <ClCompile Include="../../src/parts/ramp.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/rubber.cpp">
+    <ClCompile Include="../../src/parts/rubber.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/spinner.cpp">
+    <ClCompile Include="../../src/parts/spinner.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/surface.cpp">
+    <ClCompile Include="../../src/parts/surface.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/textbox.cpp">
+    <ClCompile Include="../../src/parts/textbox.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/timer.cpp">
+    <ClCompile Include="../../src/parts/timer.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/parts/trigger.cpp">
+    <ClCompile Include="../../src/parts/trigger.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/kdtree.cpp">
+    <ClCompile Include="../../src/physics/kdtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/hitball.cpp">
+    <ClCompile Include="../../src/physics/hitball.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/collide.cpp">
+    <ClCompile Include="../../src/physics/collide.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/collideex.cpp">
+    <ClCompile Include="../../src/physics/collideex.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/hitflipper.cpp">
+    <ClCompile Include="../../src/physics/hitflipper.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/hitplunger.cpp">
+    <ClCompile Include="../../src/physics/hitplunger.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/NudgeFilter.cpp">
+    <ClCompile Include="../../src/physics/NudgeFilter.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/PhysicsEngine.cpp">
+    <ClCompile Include="../../src/physics/PhysicsEngine.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/physics/quadtree.cpp">
+    <ClCompile Include="../../src/physics/quadtree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/plugins/MsgPluginManager.cpp">
+    <ClCompile Include="../../src/plugins/MsgPluginManager.cpp">
       <Filter>plugin</Filter>
     </ClCompile>
-    <ClInclude Include="src/plugins/MsgPluginManager.h">
+    <ClInclude Include="../../src/plugins/MsgPluginManager.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClCompile Include="src/renderer/Anaglyph.cpp">
+    <ClCompile Include="../../src/renderer/Anaglyph.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/captureExt.cpp">
+    <ClCompile Include="../../src/renderer/captureExt.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/IndexBuffer.cpp">
+    <ClCompile Include="../../src/renderer/IndexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/MeshBuffer.cpp">
+    <ClCompile Include="../../src/renderer/MeshBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/Renderer.cpp">
+    <ClCompile Include="../../src/renderer/Renderer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderCommand.cpp">
+    <ClCompile Include="../../src/renderer/RenderCommand.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderDevice.cpp">
+    <ClCompile Include="../../src/renderer/RenderDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderFrame.cpp">
+    <ClCompile Include="../../src/renderer/RenderFrame.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderPass.cpp">
+    <ClCompile Include="../../src/renderer/RenderPass.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderProbe.cpp">
+    <ClCompile Include="../../src/renderer/RenderProbe.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderState.cpp">
+    <ClCompile Include="../../src/renderer/RenderState.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/RenderTarget.cpp">
+    <ClCompile Include="../../src/renderer/RenderTarget.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/Sampler.cpp">
+    <ClCompile Include="../../src/renderer/Sampler.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/Shader.cpp">
+    <ClCompile Include="../../src/renderer/Shader.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/Texture.cpp">
+    <ClCompile Include="../../src/renderer/Texture.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/TextureManager.cpp">
+    <ClCompile Include="../../src/renderer/TextureManager.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/VertexBuffer.cpp">
+    <ClCompile Include="../../src/renderer/VertexBuffer.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/ViewSetup.cpp">
+    <ClCompile Include="../../src/renderer/ViewSetup.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/VRDevice.cpp">
+    <ClCompile Include="../../src/renderer/VRDevice.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/renderer/Window.cpp">
+    <ClCompile Include="../../src/renderer/Window.cpp">
       <Filter>renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/hitrectsur.cpp">
+    <ClCompile Include="../../src/ui/hitrectsur.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/hitsur.cpp">
+    <ClCompile Include="../../src/ui/hitsur.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/paintsur.cpp">
+    <ClCompile Include="../../src/ui/paintsur.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/codeviewedit.cpp">
+    <ClCompile Include="../../src/ui/codeviewedit.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/Debugger.cpp">
+    <ClCompile Include="../../src/ui/Debugger.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/LiveUI.cpp">
+    <ClCompile Include="../../src/ui/LiveUI.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/codeview.cpp">
+    <ClCompile Include="../../src/ui/codeview.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/worker.cpp">
+    <ClCompile Include="../../src/ui/worker.cpp">
       <Filter>ui</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/AboutDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/AboutDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/DimensionDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/DimensionDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/DrawingOrderDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/DrawingOrderDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ImageDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/ImageDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/InputDeviceDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/InputDeviceDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/MaterialDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/MaterialDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/SearchSelectDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/SearchSelectDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/SoundDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/SoundDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/TableInfoDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/TableInfoDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/EditorOptionsDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/EditorOptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/AudioOptionsDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/AudioOptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VideoOptionsDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/VideoOptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/CollectionManagerDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/CollectionManagerDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/NotesDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/NotesDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/PhysicsOptionsDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/PhysicsOptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/KeysConfigDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/KeysConfigDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ScriptErrorDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/ScriptErrorDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/ToolbarDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/ToolbarDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VPXLoadFileProgressBar.cpp">
+    <ClCompile Include="../../src/ui/dialogs/VPXLoadFileProgressBar.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VPXSaveFileProgressBar.cpp">
+    <ClCompile Include="../../src/ui/dialogs/VPXSaveFileProgressBar.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PropertyDialog.cpp">
+    <ClCompile Include="../../src/ui/properties/PropertyDialog.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/WallVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/WallVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/GateVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/GateVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/GatePhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/GatePhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/WallPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/WallPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/RampPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/RampPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/RampVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/RampVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/FlipperPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/FlipperPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/FlipperVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/FlipperVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/DragpointVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/DragpointVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PlungerPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/PlungerPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PlungerVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/PlungerVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BallPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BallPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BallVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BallVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BumperPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BumperPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BumperVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BumperVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/SpinnerPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/SpinnerPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/SpinnerVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/SpinnerVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TriggerVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TriggerVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TriggerPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TriggerPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/LightStatesProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/LightStatesProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/LightVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/LightVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/HitTargetPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/HitTargetPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/HitTargetVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/HitTargetVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/KickerPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/KickerPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/KickerVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/KickerVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/DecalVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/DecalVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TextboxVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TextboxVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/DispreelVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/DispreelVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/DispreelStateProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/DispreelStateProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/LightseqStatesProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/LightseqStatesProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PrimitiveVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/PrimitiveVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PrimitivePhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/PrimitivePhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/PrimitivePositionProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/PrimitivePositionProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/FlasherVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/FlasherVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/RubberVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/RubberVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/RubberPhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/RubberPhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BackglassVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BackglassVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/BackglassCameraProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/BackglassCameraProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TableAudioProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TableAudioProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TableVisualsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TableVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TablePhysicsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TablePhysicsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/properties/TableLightsProperty.cpp">
+    <ClCompile Include="../../src/ui/properties/TableLightsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/LayersListDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/LayersListDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/VROptionsDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/VROptionsDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/WhereUsedDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/WhereUsedDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/ui/dialogs/RenderProbeDialog.cpp">
+    <ClCompile Include="../../src/ui/dialogs/RenderProbeDialog.cpp">
       <Filter>ui\dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/def.cpp">
+    <ClCompile Include="../../src/utils/def.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/ushock_output.cpp">
+    <ClCompile Include="../../src/utils/ushock_output.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/wintimer.cpp">
+    <ClCompile Include="../../src/utils/wintimer.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/bulb.cpp">
+    <ClCompile Include="../../src/utils/bulb.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/fileio.cpp">
+    <ClCompile Include="../../src/utils/fileio.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/Logger.cpp">
+    <ClCompile Include="../../src/utils/Logger.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/lzwreader.cpp">
+    <ClCompile Include="../../src/utils/lzwreader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/lzwwriter.cpp">
+    <ClCompile Include="../../src/utils/lzwwriter.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/memutil.cpp">
+    <ClCompile Include="../../src/utils/memutil.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/variant.cpp">
+    <ClCompile Include="../../src/utils/variant.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/BlackBox.cpp">
+    <ClCompile Include="../../src/utils/BlackBox.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/CrashHandler.cpp">
+    <ClCompile Include="../../src/utils/CrashHandler.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/MemoryStatus.cpp">
+    <ClCompile Include="../../src/utils/MemoryStatus.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/StackTrace.cpp">
+    <ClCompile Include="../../src/utils/StackTrace.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/hash.cpp">
+    <ClCompile Include="../../src/utils/hash.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="src/utils/objloader.cpp">
+    <ClCompile Include="../../src/utils/objloader.cpp">
       <Filter>utils</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/miniz/miniz.c">
+    <ClCompile Include="../../third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/hidapi/windows/hid.cpp">
+    <ClCompile Include="../../third-party/include/hidapi/windows/hid.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/hid-report-parser/hid_report_parser.cpp">
+    <ClCompile Include="../../third-party/include/hid-report-parser/hid_report_parser.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/BAM/BAMView.cpp">
+    <ClCompile Include="../../third-party/include/BAM/BAMView.cpp">
       <Filter>third-party\BAM</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_widgets.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_widgets.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_draw.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_draw.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_tables.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_tables.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_stdlib.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_stdlib.cpp">
       <Filter>third-party\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/tinyxml2/tinyxml2.cpp">
+    <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
       <Filter>third-party\tinyxml2</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/gpuprofiler.cpp">
+    <ClCompile Include="../../third-party/include/gpuprofiler.cpp">
       <Filter>third-party\gpuprofiler</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/glad/src/gl.c">
+    <ClCompile Include="../../third-party/include/glad/src/gl.c">
       <Filter>third-party\glad</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/progmesh.cpp">
+    <ClCompile Include="../../third-party/include/progmesh.cpp">
       <Filter>third-party\progmesh</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/serial.cpp">
+    <ClCompile Include="../../third-party/include/serial.cpp">
       <Filter>third-party\serial</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
+    <ClCompile Include="../../third-party/include/bgfx-imgui/imgui_impl_bgfx.cpp">
       <Filter>third-party\imgui\bgfx</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_win32.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_impl_win32.cpp">
       <Filter>third-party\imgui\win32</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_dx9.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_impl_dx9.cpp">
       <Filter>third-party\imgui\dx9</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_opengl3.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_impl_opengl3.cpp">
       <Filter>third-party\imgui\opengl</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/implot/implot_items.cpp">
+    <ClCompile Include="../../third-party/include/implot/implot_items.cpp">
       <Filter>third-party\imgui\implot</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/implot/implot.cpp">
+    <ClCompile Include="../../third-party/include/implot/implot.cpp">
       <Filter>third-party\imgui\implot</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imguizmo/ImGuizmo.cpp">
+    <ClCompile Include="../../third-party/include/imguizmo/ImGuizmo.cpp">
       <Filter>third-party\imgui\ImGuizmo</Filter>
     </ClCompile>
-    <ClCompile Include="third-party/include/imgui/imgui_impl_sdl3.cpp">
+    <ClCompile Include="../../third-party/include/imgui/imgui_impl_sdl3.cpp">
       <Filter>third-party\imgui\sdl3</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/DynamicScript.cpp">
+    <ClCompile Include="../../src/core/DynamicScript.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/ScoreView.cpp">
+    <ClCompile Include="../../src/core/ScoreView.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src/core/ResURIResolver.cpp">
+    <ClCompile Include="../../src/core/ResURIResolver.cpp">
       <Filter>core</Filter>
     </ClCompile>
-    <ClCompile Include="src\physics\AsyncDynamicQuadTree.cpp">
+    <ClCompile Include="../../src\physics\AsyncDynamicQuadTree.cpp">
       <Filter>physics</Filter>
     </ClCompile>
-    <ClCompile Include="src/input/pininput.cpp">
+    <ClCompile Include="../../src/input/pininput.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="src/input/OpenPinDevHandler.cpp">
+    <ClCompile Include="../../src/input/OpenPinDevHandler.cpp">
       <Filter>input</Filter>
     </ClCompile>
-    <ClCompile Include="src\parts\PartGroup.cpp">
+    <ClCompile Include="../../src\parts\PartGroup.cpp">
       <Filter>parts</Filter>
     </ClCompile>
-    <ClCompile Include="src\ui\properties\PartGroupVisualsProperty.cpp">
+    <ClCompile Include="../../src\ui\properties\PartGroupVisualsProperty.cpp">
       <Filter>ui\properties</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="vpinball.h">
+    <ClInclude Include="../gen/vpinball.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/audio/pinsound.h">
+    <ClInclude Include="../../src/audio/pinsound.h">
       <Filter>audio</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/def.h">
+    <ClInclude Include="../../src/core/def.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/vpversion.h">
+    <ClInclude Include="../../src/core/vpversion.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/extern.h">
+    <ClInclude Include="../../src/core/extern.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/dispid.h">
+    <ClInclude Include="../../src/core/dispid.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/editablereg.h">
+    <ClInclude Include="../../src/core/editablereg.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/ieditable.h">
+    <ClInclude Include="../../src/core/ieditable.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/iselect.h">
+    <ClInclude Include="../../src/core/iselect.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/main.h">
+    <ClInclude Include="../../src/core/main.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/stdafx.h">
+    <ClInclude Include="../../src/core/stdafx.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/pinundo.h">
+    <ClInclude Include="../../src/core/pinundo.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/vpinball_h.h">
+    <ClInclude Include="../../src/core/vpinball_h.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/player.h">
+    <ClInclude Include="../../src/core/player.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/Settings.h">
+    <ClInclude Include="../../src/core/Settings.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/TableDB.h">
+    <ClInclude Include="../../src/core/TableDB.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/VPXPluginAPIImpl.h">
+    <ClInclude Include="../../src/core/VPXPluginAPIImpl.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/bbox.h">
+    <ClInclude Include="../../src/math/bbox.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/math.h">
+    <ClInclude Include="../../src/math/math.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/matrix.h">
+    <ClInclude Include="../../src/math/matrix.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/mesh.h">
+    <ClInclude Include="../../src/math/mesh.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/vector.h">
+    <ClInclude Include="../../src/math/vector.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/math/ModelViewProj.h">
+    <ClInclude Include="../../src/math/ModelViewProj.h">
       <Filter>math</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/ballMesh.h">
+    <ClInclude Include="../../src/meshes/ballMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bulbLightMesh.h">
+    <ClInclude Include="../../src/meshes/bulbLightMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bulbSocketMesh.h">
+    <ClInclude Include="../../src/meshes/bulbSocketMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bumperBaseMesh.h">
+    <ClInclude Include="../../src/meshes/bumperBaseMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bumperCapMesh.h">
+    <ClInclude Include="../../src/meshes/bumperCapMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bumperRingMesh.h">
+    <ClInclude Include="../../src/meshes/bumperRingMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/bumperSocketMesh.h">
+    <ClInclude Include="../../src/meshes/bumperSocketMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/dropTargetT2Mesh.h">
+    <ClInclude Include="../../src/meshes/dropTargetT2Mesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/dropTargetT3Mesh.h">
+    <ClInclude Include="../../src/meshes/dropTargetT3Mesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/flipperBase.h">
+    <ClInclude Include="../../src/meshes/flipperBase.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/gateBracketMesh.h">
+    <ClInclude Include="../../src/meshes/gateBracketMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/gateWireMesh.h">
+    <ClInclude Include="../../src/meshes/gateWireMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetRectangleMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetRectangleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetRoundMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetRoundMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/kickerCupMesh.h">
+    <ClInclude Include="../../src/meshes/kickerCupMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/kickerHitMesh.h">
+    <ClInclude Include="../../src/meshes/kickerHitMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/kickerHoleMesh.h">
+    <ClInclude Include="../../src/meshes/kickerHoleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/spinnerBracketMesh.h">
+    <ClInclude Include="../../src/meshes/spinnerBracketMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/spinnerPlateMesh.h">
+    <ClInclude Include="../../src/meshes/spinnerPlateMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/triggerSimpleMesh.h">
+    <ClInclude Include="../../src/meshes/triggerSimpleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/triggerStarMesh.h">
+    <ClInclude Include="../../src/meshes/triggerStarMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/dropTargetT4Mesh.h">
+    <ClInclude Include="../../src/meshes/dropTargetT4Mesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetFatRectangleMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetFatRectangleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetFatSquareMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetFatSquareMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/gateLongPlateMesh.h">
+    <ClInclude Include="../../src/meshes/gateLongPlateMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/gatePlateMesh.h">
+    <ClInclude Include="../../src/meshes/gatePlateMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/gateWireRectangleMesh.h">
+    <ClInclude Include="../../src/meshes/gateWireRectangleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetT1SlimMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetT1SlimMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/hitTargetT2SlimMesh.h">
+    <ClInclude Include="../../src/meshes/hitTargetT2SlimMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/meshes/kickerSimpleHoleMesh.h">
+    <ClInclude Include="../../src/meshes/kickerSimpleHoleMesh.h">
       <Filter>assets\meshes</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/backGlass.h">
+    <ClInclude Include="../../src/parts/backGlass.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/ball.h">
+    <ClInclude Include="../../src/parts/ball.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/bumper.h">
+    <ClInclude Include="../../src/parts/bumper.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/decal.h">
+    <ClInclude Include="../../src/parts/decal.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/Material.h">
+    <ClInclude Include="../../src/parts/Material.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/pinbinary.h">
+    <ClInclude Include="../../src/parts/pinbinary.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/dragpoint.h">
+    <ClInclude Include="../../src/parts/dragpoint.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/dispreel.h">
+    <ClInclude Include="../../src/parts/dispreel.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/flasher.h">
+    <ClInclude Include="../../src/parts/flasher.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/flipper.h">
+    <ClInclude Include="../../src/parts/flipper.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/gate.h">
+    <ClInclude Include="../../src/parts/gate.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/hittarget.h">
+    <ClInclude Include="../../src/parts/hittarget.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/kicker.h">
+    <ClInclude Include="../../src/parts/kicker.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/light.h">
+    <ClInclude Include="../../src/parts/light.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/lightseq.h">
+    <ClInclude Include="../../src/parts/lightseq.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/pintable.h">
+    <ClInclude Include="../../src/parts/pintable.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/VPXFileFeedback.h">
+    <ClInclude Include="../../src/parts/VPXFileFeedback.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/plunger.h">
+    <ClInclude Include="../../src/parts/plunger.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/primitive.h">
+    <ClInclude Include="../../src/parts/primitive.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/spinner.h">
+    <ClInclude Include="../../src/parts/spinner.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/ramp.h">
+    <ClInclude Include="../../src/parts/ramp.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/surface.h">
+    <ClInclude Include="../../src/parts/surface.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/textbox.h">
+    <ClInclude Include="../../src/parts/textbox.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/timer.h">
+    <ClInclude Include="../../src/parts/timer.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/trigger.h">
+    <ClInclude Include="../../src/parts/trigger.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/parts/rubber.h">
+    <ClInclude Include="../../src/parts/rubber.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/collide.h">
+    <ClInclude Include="../../src/physics/collide.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/collideex.h">
+    <ClInclude Include="../../src/physics/collideex.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/hitball.h">
+    <ClInclude Include="../../src/physics/hitball.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/hitflipper.h">
+    <ClInclude Include="../../src/physics/hitflipper.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/hitplunger.h">
+    <ClInclude Include="../../src/physics/hitplunger.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/hitable.h">
+    <ClInclude Include="../../src/physics/hitable.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/hittimer.h">
+    <ClInclude Include="../../src/physics/hittimer.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/physconst.h">
+    <ClInclude Include="../../src/physics/physconst.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/kdtree.h">
+    <ClInclude Include="../../src/physics/kdtree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/NudgeFilter.h">
+    <ClInclude Include="../../src/physics/NudgeFilter.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/PhysicsEngine.h">
+    <ClInclude Include="../../src/physics/PhysicsEngine.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/physics/quadtree.h">
+    <ClInclude Include="../../src/physics/quadtree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src/plugins/VPXPlugin.h">
+    <ClInclude Include="../../src/plugins/VPXPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="src/plugins/MsgPlugin.h">
+    <ClInclude Include="../../src/plugins/MsgPlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="src/plugins/CorePlugin.h">
+    <ClInclude Include="../../src/plugins/CorePlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="src/plugins/PinMamePlugin.h">
+    <ClInclude Include="../../src/plugins/PinMamePlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Anaglyph.h">
+    <ClInclude Include="../../src/renderer/Anaglyph.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/AreaTex.h">
+    <ClInclude Include="../../src/renderer/AreaTex.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/captureExt.h">
+    <ClInclude Include="../../src/renderer/captureExt.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/IndexBuffer.h">
+    <ClInclude Include="../../src/renderer/IndexBuffer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/MeshBuffer.h">
+    <ClInclude Include="../../src/renderer/MeshBuffer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderProbe.h">
+    <ClInclude Include="../../src/renderer/RenderProbe.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderCommand.h">
+    <ClInclude Include="../../src/renderer/RenderCommand.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderFrame.h">
+    <ClInclude Include="../../src/renderer/RenderFrame.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderPass.h">
+    <ClInclude Include="../../src/renderer/RenderPass.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Renderable.h">
+    <ClInclude Include="../../src/renderer/Renderable.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderTarget.h">
+    <ClInclude Include="../../src/renderer/RenderTarget.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderDevice.h">
+    <ClInclude Include="../../src/renderer/RenderDevice.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/RenderState.h">
+    <ClInclude Include="../../src/renderer/RenderState.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Renderer.h">
+    <ClInclude Include="../../src/renderer/Renderer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Sampler.h">
+    <ClInclude Include="../../src/renderer/Sampler.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/SearchTex.h">
+    <ClInclude Include="../../src/renderer/SearchTex.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Shader.h">
+    <ClInclude Include="../../src/renderer/Shader.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Texture.h">
+    <ClInclude Include="../../src/renderer/Texture.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/TextureManager.h">
+    <ClInclude Include="../../src/renderer/TextureManager.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/trace.h">
+    <ClInclude Include="../../src/renderer/trace.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/typedefs3D.h">
+    <ClInclude Include="../../src/renderer/typedefs3D.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/VertexBuffer.h">
+    <ClInclude Include="../../src/renderer/VertexBuffer.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/ViewSetup.h">
+    <ClInclude Include="../../src/renderer/ViewSetup.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/VRDevice.h">
+    <ClInclude Include="../../src/renderer/VRDevice.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/renderer/Window.h">
+    <ClInclude Include="../../src/renderer/Window.h">
       <Filter>renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/resource.h">
+    <ClInclude Include="../../src/ui/resource.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/worker.h">
+    <ClInclude Include="../../src/ui/worker.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/LiveUI.h">
+    <ClInclude Include="../../src/ui/LiveUI.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/Debugger.h">
+    <ClInclude Include="../../src/ui/Debugger.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/codeview.h">
+    <ClInclude Include="../../src/ui/codeview.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/codeviewedit.h">
+    <ClInclude Include="../../src/ui/codeviewedit.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/paintsur.h">
+    <ClInclude Include="../../src/ui/paintsur.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/sur.h">
+    <ClInclude Include="../../src/ui/sur.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/hitrectsur.h">
+    <ClInclude Include="../../src/ui/hitrectsur.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/hitsur.h">
+    <ClInclude Include="../../src/ui/hitsur.h">
       <Filter>ui</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/AboutDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/AboutDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/DimensionDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/DimensionDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/DrawingOrderDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/DrawingOrderDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ImageDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/ImageDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/InputDeviceDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/InputDeviceDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/SearchSelectDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/SearchSelectDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/SoundDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/SoundDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/TableInfoDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/TableInfoDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/EditorOptionsDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/EditorOptionsDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/AudioOptionsDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/AudioOptionsDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VideoOptionsDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/VideoOptionsDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/CollectionManagerDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/CollectionManagerDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/PhysicsOptionsDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/PhysicsOptionsDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/MaterialDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/MaterialDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/KeysConfigDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/KeysConfigDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VROptionsDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/VROptionsDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/WhereUsedDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/WhereUsedDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ToolbarDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/ToolbarDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/LayersListDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/LayersListDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/NotesDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/NotesDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/RenderProbeDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/RenderProbeDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/ScriptErrorDialog.h">
+    <ClInclude Include="../../src/ui/dialogs/ScriptErrorDialog.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VPXLoadFileProgressBar.h">
+    <ClInclude Include="../../src/ui/dialogs/VPXLoadFileProgressBar.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/dialogs/VPXSaveFileProgressBar.h">
+    <ClInclude Include="../../src/ui/dialogs/VPXSaveFileProgressBar.h">
       <Filter>ui\dialogs</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PropertyDialog.h">
+    <ClInclude Include="../../src/ui/properties/PropertyDialog.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/WallVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/WallVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/GateVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/GateVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/GatePhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/GatePhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/WallPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/WallPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/RampPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/RampPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/RampVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/RampVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/FlipperPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/FlipperPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/FlipperVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/FlipperVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/DragpointVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/DragpointVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PlungerPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/PlungerPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PlungerVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/PlungerVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BallPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/BallPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BallVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/BallVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BumperPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/BumperPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BumperVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/BumperVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/SpinnerPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/SpinnerPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/SpinnerVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/SpinnerVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TriggerVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TriggerVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TriggerPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TriggerPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/LightStatesProperty.h">
+    <ClInclude Include="../../src/ui/properties/LightStatesProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/LightVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/LightVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/HitTargetPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/HitTargetPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/HitTargetVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/HitTargetVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/KickerPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/KickerPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/KickerVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/KickerVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/DecalVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/DecalVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TextboxVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TextboxVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/DispreelVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/DispreelVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/DispreelStateProperty.h">
+    <ClInclude Include="../../src/ui/properties/DispreelStateProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/LightseqStatesProperty.h">
+    <ClInclude Include="../../src/ui/properties/LightseqStatesProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PrimitiveVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/PrimitiveVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PrimitivePhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/PrimitivePhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/PrimitivePositionProperty.h">
+    <ClInclude Include="../../src/ui/properties/PrimitivePositionProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/FlasherVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/FlasherVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/RubberVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/RubberVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/RubberPhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/RubberPhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BackglassVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/BackglassVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/BackglassCameraProperty.h">
+    <ClInclude Include="../../src/ui/properties/BackglassCameraProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TableAudioProperty.h">
+    <ClInclude Include="../../src/ui/properties/TableAudioProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TableVisualsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TableVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TablePhysicsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TablePhysicsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/ui/properties/TableLightsProperty.h">
+    <ClInclude Include="../../src/ui/properties/TableLightsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/BlackBox.h">
+    <ClInclude Include="../../src/utils/BlackBox.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/bulb.h">
+    <ClInclude Include="../../src/utils/bulb.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/CrashHandler.h">
+    <ClInclude Include="../../src/utils/CrashHandler.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/eventproxy.h">
+    <ClInclude Include="../../src/utils/eventproxy.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/fileio.h">
+    <ClInclude Include="../../src/utils/fileio.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/hash.h">
+    <ClInclude Include="../../src/utils/hash.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/ushock_output.h">
+    <ClInclude Include="../../src/utils/ushock_output.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/Logger.h">
+    <ClInclude Include="../../src/utils/Logger.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/lzwwriter.h">
+    <ClInclude Include="../../src/utils/lzwwriter.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/lzwreader.h">
+    <ClInclude Include="../../src/utils/lzwreader.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/MemoryStatus.h">
+    <ClInclude Include="../../src/utils/MemoryStatus.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/memutil.h">
+    <ClInclude Include="../../src/utils/memutil.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/objloader.h">
+    <ClInclude Include="../../src/utils/objloader.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/StackTrace.h">
+    <ClInclude Include="../../src/utils/StackTrace.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/variant.h">
+    <ClInclude Include="../../src/utils/variant.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/vector.h">
+    <ClInclude Include="../../src/utils/vector.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/vectorsort.h">
+    <ClInclude Include="../../src/utils/vectorsort.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="src/utils/wintimer.h">
+    <ClInclude Include="../../src/utils/wintimer.h">
       <Filter>utils</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/freeimage.h">
+    <ClInclude Include="../../third-party/include/freeimage.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/ThreadPool.h">
+    <ClInclude Include="../../third-party/include/ThreadPool.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/forsyth.h">
+    <ClInclude Include="../../third-party/include/forsyth.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/stb_image.h">
+    <ClInclude Include="../../third-party/include/stb_image.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM/BAM_Tracker.h">
+    <ClInclude Include="../../third-party/include/BAM/BAM_Tracker.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM/BAM_ViewPortSetup.h">
+    <ClInclude Include="../../third-party/include/BAM/BAM_ViewPortSetup.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/BAM/BAMView.h">
+    <ClInclude Include="../../third-party/include/BAM/BAMView.h">
       <Filter>third-party\BAM</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/hidapi/hidapi.h">
+    <ClInclude Include="../../third-party/include/hidapi/hidapi.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/hid-report-parser/hid_report_parser.h">
+    <ClInclude Include="../../third-party/include/hid-report-parser/hid_report_parser.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_internal.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_internal.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imconfig.h">
+    <ClInclude Include="../../third-party/include/imgui/imconfig.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_stdlib.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_stdlib.h">
       <Filter>third-party\imgui</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_common.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_common.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_d3dext.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_d3dext.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salend.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_salend.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_salstart.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_salstart.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_sli.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_sli.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_stereo.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_stereo.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/nvapi/nvapi_lite_surround.h">
+    <ClInclude Include="../../third-party/include/nvapi/nvapi_lite_surround.h">
       <Filter>third-party\nvapi</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/tinyxml2/tinyxml2.h">
+    <ClInclude Include="../../third-party/include/tinyxml2/tinyxml2.h">
       <Filter>third-party\tinyxml2</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/default_resource.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/default_resource.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_preview.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_preview.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_printdialogex.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_printdialogex.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_appcore.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_appcore.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_appcore0.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_appcore0.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_archive.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_archive.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_commondlg.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_commondlg.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_controls.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_controls.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_cstring.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_cstring.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_ddx.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_ddx.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_dialog.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_dialog.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_dockframe.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_dockframe.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_docking.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_docking.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_exception.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_exception.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_file.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_file.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_filefind.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_filefind.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_folderdialog.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_folderdialog.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_frame.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_frame.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_gdi.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_gdi.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_imagelist.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_imagelist.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_listview.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_listview.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_mdi.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_mdi.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_menu.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_menu.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_menubar.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_menubar.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_metafile.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_metafile.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_mutex.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_mutex.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_printdialogs.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_printdialogs.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_propertysheet.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_propertysheet.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_rebar.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_rebar.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_rect.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_rect.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_regkey.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_regkey.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_ribbon.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_ribbon.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_richedit.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_richedit.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_scrollview.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_scrollview.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_shared_ptr.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_shared_ptr.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_socket.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_socket.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_statusbar.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_statusbar.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_stdcontrols.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_stdcontrols.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_tab.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_tab.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_taskdialog.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_taskdialog.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_textconv.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_textconv.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_themes.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_themes.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_time.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_time.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_toolbar.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_toolbar.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_treeview.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_treeview.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_wceframe.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_wceframe.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_wcestddef.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_wcestddef.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_webbrowser.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_webbrowser.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_wincore.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_wincore.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/win32xx/include/wxx_wincore0.h">
+    <ClInclude Include="../../third-party/include/win32xx/include/wxx_wincore0.h">
       <Filter>third-party\Win32xx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/winsdk/hidpi.h">
+    <ClInclude Include="../../third-party/include/winsdk/hidpi.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/winsdk/hidsdi.h">
+    <ClInclude Include="../../third-party/include/winsdk/hidsdi.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/winsdk/hidusage.h">
+    <ClInclude Include="../../third-party/include/winsdk/hidusage.h">
       <Filter>third-party\hid</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/gpuprofiler.h">
+    <ClInclude Include="../../third-party/include/gpuprofiler.h">
       <Filter>third-party\gpuprofiler</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/glad/include/glad/gl.h">
+    <ClInclude Include="../../third-party/include/glad/include/glad/gl.h">
       <Filter>third-party\glad</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/progmesh.h">
+    <ClInclude Include="../../third-party/include/progmesh.h">
       <Filter>third-party\progmesh</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/progmesh_vecmatquat_minimal.h">
+    <ClInclude Include="../../third-party/include/progmesh_vecmatquat_minimal.h">
       <Filter>third-party\progmesh</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/Sci_Position.h">
+    <ClInclude Include="../../third-party/include/Sci_Position.h">
       <Filter>third-party\scintilla</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/scilexer.h">
+    <ClInclude Include="../../third-party/include/scilexer.h">
       <Filter>third-party\scintilla</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/scintilla.h">
+    <ClInclude Include="../../third-party/include/scintilla.h">
       <Filter>third-party\scintilla</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/serial.h">
+    <ClInclude Include="../../third-party/include/serial.h">
       <Filter>third-party\serial</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
+    <ClInclude Include="../../third-party/include/bgfx-imgui/fs_ocornut_imgui.bin.h">
       <Filter>third-party\imgui\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
+    <ClInclude Include="../../third-party/include/bgfx-imgui/vs_ocornut_imgui.bin.h">
       <Filter>third-party\imgui\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
+    <ClInclude Include="../../third-party/include/bgfx-imgui/imgui_impl_bgfx.h">
       <Filter>third-party\imgui\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_win32.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_impl_win32.h">
       <Filter>third-party\imgui\win32</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_dx9.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_impl_dx9.h">
       <Filter>third-party\imgui\dx9</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_impl_opengl3.h">
       <Filter>third-party\imgui\opengl</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_opengl3_loader.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_impl_opengl3_loader.h">
       <Filter>third-party\imgui\opengl</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/implot/implot.h">
+    <ClInclude Include="../../third-party/include/implot/implot.h">
       <Filter>third-party\imgui\implot</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/implot/implot_internal.h">
+    <ClInclude Include="../../third-party/include/implot/implot_internal.h">
       <Filter>third-party\imgui\implot</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imguizmo/ImGuizmo.h">
+    <ClInclude Include="../../third-party/include/imguizmo/ImGuizmo.h">
       <Filter>third-party\imgui\ImGuizmo</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bimg\bimg.h">
+    <ClInclude Include="../../third-party\include\bimg\bimg.h">
       <Filter>third-party\bimg</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bimg\decode.h">
+    <ClInclude Include="../../third-party\include\bimg\decode.h">
       <Filter>third-party\bimg</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bgfx\bgfx.h">
+    <ClInclude Include="../../third-party\include\bgfx\bgfx.h">
       <Filter>third-party\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bgfx\defines.h">
+    <ClInclude Include="../../third-party\include\bgfx\defines.h">
       <Filter>third-party\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bgfx\embedded_shader.h">
+    <ClInclude Include="../../third-party\include\bgfx\embedded_shader.h">
       <Filter>third-party\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bgfx\platform.h">
+    <ClInclude Include="../../third-party\include\bgfx\platform.h">
       <Filter>third-party\bgfx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\allocator.h">
+    <ClInclude Include="../../third-party\include\bx\allocator.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\bounds.h">
+    <ClInclude Include="../../third-party\include\bx\bounds.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\bx.h">
+    <ClInclude Include="../../third-party\include\bx\bx.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\commandline.h">
+    <ClInclude Include="../../third-party\include\bx\commandline.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\config.h">
+    <ClInclude Include="../../third-party\include\bx\config.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\constants.h">
+    <ClInclude Include="../../third-party\include\bx\constants.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\cpu.h">
+    <ClInclude Include="../../third-party\include\bx\cpu.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\debug.h">
+    <ClInclude Include="../../third-party\include\bx\debug.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\easing.h">
+    <ClInclude Include="../../third-party\include\bx\easing.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\endian.h">
+    <ClInclude Include="../../third-party\include\bx\endian.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\error.h">
+    <ClInclude Include="../../third-party\include\bx\error.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\file.h">
+    <ClInclude Include="../../third-party\include\bx\file.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\filepath.h">
+    <ClInclude Include="../../third-party\include\bx\filepath.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\float4x4_t.h">
+    <ClInclude Include="../../third-party\include\bx\float4x4_t.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\handlealloc.h">
+    <ClInclude Include="../../third-party\include\bx\handlealloc.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\hash.h">
+    <ClInclude Include="../../third-party\include\bx\hash.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\macros.h">
+    <ClInclude Include="../../third-party\include\bx\macros.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\maputil.h">
+    <ClInclude Include="../../third-party\include\bx\maputil.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\math.h">
+    <ClInclude Include="../../third-party\include\bx\math.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\mpscqueue.h">
+    <ClInclude Include="../../third-party\include\bx\mpscqueue.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\mutex.h">
+    <ClInclude Include="../../third-party\include\bx\mutex.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\os.h">
+    <ClInclude Include="../../third-party\include\bx\os.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\pixelformat.h">
+    <ClInclude Include="../../third-party\include\bx\pixelformat.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\platform.h">
+    <ClInclude Include="../../third-party\include\bx\platform.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\process.h">
+    <ClInclude Include="../../third-party\include\bx\process.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\readerwriter.h">
+    <ClInclude Include="../../third-party\include\bx\readerwriter.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\ringbuffer.h">
+    <ClInclude Include="../../third-party\include\bx\ringbuffer.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\rng.h">
+    <ClInclude Include="../../third-party\include\bx\rng.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\semaphore.h">
+    <ClInclude Include="../../third-party\include\bx\semaphore.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\settings.h">
+    <ClInclude Include="../../third-party\include\bx\settings.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\simd_t.h">
+    <ClInclude Include="../../third-party\include\bx\simd_t.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\sort.h">
+    <ClInclude Include="../../third-party\include\bx\sort.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\spscqueue.h">
+    <ClInclude Include="../../third-party\include\bx\spscqueue.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\string.h">
+    <ClInclude Include="../../third-party\include\bx\string.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\thread.h">
+    <ClInclude Include="../../third-party\include\bx\thread.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\timer.h">
+    <ClInclude Include="../../third-party\include\bx\timer.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\typetraits.h">
+    <ClInclude Include="../../third-party\include\bx\typetraits.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\uint32_t.h">
+    <ClInclude Include="../../third-party\include\bx\uint32_t.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\bx\url.h">
+    <ClInclude Include="../../third-party\include\bx\url.h">
       <Filter>third-party\bx</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\compat\msvc\alloca.h">
+    <ClInclude Include="../../third-party\include\compat\msvc\alloca.h">
       <Filter>third-party\compat</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\compat\msvc\dirent.h">
+    <ClInclude Include="../../third-party\include\compat\msvc\dirent.h">
       <Filter>third-party\compat</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\compat\msvc\inttypes.h">
+    <ClInclude Include="../../third-party\include\compat\msvc\inttypes.h">
       <Filter>third-party\compat</Filter>
     </ClInclude>
-    <ClInclude Include="third-party\include\compat\msvc\stdbool.h">
+    <ClInclude Include="../../third-party\include\compat\msvc\stdbool.h">
       <Filter>third-party\compat</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/imgui/imgui_impl_sdl3.h">
+    <ClInclude Include="../../third-party/include/imgui/imgui_impl_sdl3.h">
       <Filter>third-party\imgui\sdl3</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_loader_negotiation.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_loader_negotiation.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_platform.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_platform.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_platform_defines.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_platform_defines.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_reflection.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_reflection.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_reflection_parent_structs.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_reflection_parent_structs.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/openxr/openxr_reflection_structs.h">
+    <ClInclude Include="../../third-party/include/openxr/openxr_reflection_structs.h">
       <Filter>third-party\openxr</Filter>
     </ClInclude>
-    <ClInclude Include="third-party/include/simple-uri-parser/uri_parser.h">
+    <ClInclude Include="../../third-party/include/simple-uri-parser/uri_parser.h">
       <Filter>third-party\simple-uri-parser</Filter>
     </ClInclude>
-    <ClInclude Include="src\plugins\ScriptablePlugin.h">
+    <ClInclude Include="../../src\plugins\ScriptablePlugin.h">
       <Filter>plugin</Filter>
     </ClInclude>
-    <ClInclude Include="src/core/DynamicScript.h">
+    <ClInclude Include="../../src/core/DynamicScript.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\ScoreView.h">
+    <ClInclude Include="../../src\core\ScoreView.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src\core\ResURIResolver.h">
+    <ClInclude Include="../../src\core\ResURIResolver.h">
       <Filter>core</Filter>
     </ClInclude>
-    <ClInclude Include="src\physics\AsyncDynamicQuadTree.h">
+    <ClInclude Include="../../src\physics\AsyncDynamicQuadTree.h">
       <Filter>physics</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\DirectInputJoystickHandler.h">
+    <ClInclude Include="../../src\input\DirectInputJoystickHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\DirectInputKeyboardHandler.h">
+    <ClInclude Include="../../src\input\DirectInputKeyboardHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\DirectInputMouseHandler.h">
+    <ClInclude Include="../../src\input\DirectInputMouseHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\SDLInputHandler.h">
+    <ClInclude Include="../../src\input\SDLInputHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\Win32InputKeyboardHandler.h">
+    <ClInclude Include="../../src\input\Win32InputKeyboardHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\XInputJoystickHandler.h">
+    <ClInclude Include="../../src\input\XInputJoystickHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src/input/pininput.h">
+    <ClInclude Include="../../src/input/pininput.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\input\OpenPinDevHandler.h">
+    <ClInclude Include="../../src\input\OpenPinDevHandler.h">
       <Filter>input</Filter>
     </ClInclude>
-    <ClInclude Include="src\parts\PartGroup.h">
+    <ClInclude Include="../../src\parts\PartGroup.h">
       <Filter>parts</Filter>
     </ClInclude>
-    <ClInclude Include="src\ui\properties\PartGroupVisualsProperty.h">
+    <ClInclude Include="../../src\ui\properties\PartGroupVisualsProperty.h">
       <Filter>ui\properties</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="src/ui/vpinball.rc">
+    <ResourceCompile Include="../../src/ui/vpinball.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="src/ui/vpinball_eng.rc">
+    <ResourceCompile Include="../../src/ui/vpinball_eng.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="src/ui/vpinball_fre.rc">
+    <ResourceCompile Include="../../src/ui/vpinball_fre.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="src/ui/vpinball_ger.rc">
+    <ResourceCompile Include="../../src/ui/vpinball_ger.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="src/ui/vpinball_spa.rc">
+    <ResourceCompile Include="../../src/ui/vpinball_spa.rc">
       <Filter>ui\res</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src/assets/Default_VPinballX.ini">
+    <None Include="../../src/assets/Default_VPinballX.ini">
       <Filter>assets</Filter>
     </None>
-    <Image Include="src/assets/AOdither.webp">
-      <Filter>assets</Filter>
-    </Image>
-    <Image Include="src/assets/BallEnv.exr">
+    <Image Include="../../src/assets/AOdither.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/bumperbase.webp">
+    <Image Include="../../src/assets/BallEnv.exr">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/bumperCap.webp">
+    <Image Include="../../src/assets/bumperbase.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/bumperring.webp">
+    <Image Include="../../src/assets/bumperCap.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/bumperskirt.webp">
+    <Image Include="../../src/assets/bumperring.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/envmap.webp">
+    <Image Include="../../src/assets/bumperskirt.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/kickerCup.webp">
+    <Image Include="../../src/assets/envmap.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/kickerHoleWood.webp">
+    <Image Include="../../src/assets/kickerCup.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/kickerWilliams.webp">
+    <Image Include="../../src/assets/kickerHoleWood.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/kickerGottlieb.webp">
+    <Image Include="../../src/assets/kickerWilliams.webp">
       <Filter>assets</Filter>
     </Image>
-    <Image Include="src/assets/kickerT1.webp">
+    <Image Include="../../src/assets/kickerGottlieb.webp">
       <Filter>assets</Filter>
     </Image>
-    <None Include="src/assets/blankTable.vpx">
+    <Image Include="../../src/assets/kickerT1.webp">
+      <Filter>assets</Filter>
+    </Image>
+    <None Include="../../src/assets/blankTable.vpx">
       <Filter>assets</Filter>
     </None>
-    <None Include="src/assets/exampleTable.vpx">
+    <None Include="../../src/assets/exampleTable.vpx">
       <Filter>assets</Filter>
     </None>
-    <None Include="src/assets/strippedTable.vpx">
+    <None Include="../../src/assets/strippedTable.vpx">
       <Filter>assets</Filter>
     </None>
-    <None Include="src/assets/lightSeqTable.vpx">
+    <None Include="../../src/assets/lightSeqTable.vpx">
       <Filter>assets</Filter>
     </None>
-    <None Include="src/assets/TableSizes.csv">
+    <None Include="../../src/assets/TableSizes.csv">
       <Filter>assets</Filter>
     </None>
-    <None Include="scripts\6803.vbs">
+    <None Include="../../scripts\6803.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\ALI.vbs">
+    <None Include="../../scripts\ALI.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\alving.vbs">
+    <None Include="../../scripts\alving.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\antar.vbs">
+    <None Include="../../scripts\antar.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Atari.vbs">
+    <None Include="../../scripts\Atari.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Atari1.vbs">
+    <None Include="../../scripts\Atari1.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Atari1b.vbs">
+    <None Include="../../scripts\Atari1b.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Atari2.vbs">
+    <None Include="../../scripts\Atari2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\B2B.vbs">
+    <None Include="../../scripts\B2B.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\B2Bcollision.vbs">
+    <None Include="../../scripts\B2Bcollision.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\b2s.vbs">
+    <None Include="../../scripts\b2s.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Bally.vbs">
+    <None Include="../../scripts\Bally.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\BallyG.vbs">
+    <None Include="../../scripts\BallyG.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\capcom.vbs">
+    <None Include="../../scripts\capcom.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Class1812.vbs">
+    <None Include="../../scripts\Class1812.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\controller.vbs">
+    <None Include="../../scripts\controller.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\core.vbs">
+    <None Include="../../scripts\core.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\de.vbs">
+    <None Include="../../scripts\de.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\de2.vbs">
+    <None Include="../../scripts\de2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\FPVPX.vbs">
+    <None Include="../../scripts\FPVPX.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\GamePlan.vbs">
+    <None Include="../../scripts\GamePlan.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\gts1.vbs">
+    <None Include="../../scripts\gts1.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\gts3.vbs">
+    <None Include="../../scripts\gts3.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Hankin.vbs">
+    <None Include="../../scripts\Hankin.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\idsa.vbs">
+    <None Include="../../scripts\idsa.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\inder.vbs">
+    <None Include="../../scripts\inder.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\inder_atleta.vbs">
+    <None Include="../../scripts\inder_atleta.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\inder_centaur.vbs">
+    <None Include="../../scripts\inder_centaur.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\inder_skateboard.vbs">
+    <None Include="../../scripts\inder_skateboard.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\ironballs.vbs">
+    <None Include="../../scripts\ironballs.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\joctronic.vbs">
+    <None Include="../../scripts\joctronic.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\juegos.vbs">
+    <None Include="../../scripts\juegos.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\juegos2.vbs">
+    <None Include="../../scripts\juegos2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\jvh.vbs">
+    <None Include="../../scripts\jvh.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\lancelot.vbs">
+    <None Include="../../scripts\lancelot.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\LTD.vbs">
+    <None Include="../../scripts\LTD.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\LTD3.vbs">
+    <None Include="../../scripts\LTD3.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\LTD4a.vbs">
+    <None Include="../../scripts\LTD4a.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\LTDPecmen.vbs">
+    <None Include="../../scripts\LTDPecmen.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\mac.vbs">
+    <None Include="../../scripts\mac.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\mrgame.vbs">
+    <None Include="../../scripts\mrgame.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\NudgePlugIn_blur2NoAccel.vbs">
+    <None Include="../../scripts\NudgePlugIn_blur2NoAccel.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\NudgePlugIn_blurNoAccel.vbs">
+    <None Include="../../scripts\NudgePlugIn_blurNoAccel.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\NudgePlugIn_mjrAccelAndTilt.vbs">
+    <None Include="../../scripts\NudgePlugIn_mjrAccelAndTilt.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\NudgePlugIn_robBlurNoAccel.vbs">
+    <None Include="../../scripts\NudgePlugIn_robBlurNoAccel.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\NudgePlugIn_robNoAccel.vbs">
+    <None Include="../../scripts\NudgePlugIn_robNoAccel.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\nuova.vbs">
+    <None Include="../../scripts\nuova.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\PDB.vbs">
+    <None Include="../../scripts\PDB.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\peyper.vbs">
+    <None Include="../../scripts\peyper.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Play1.vbs">
+    <None Include="../../scripts\Play1.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Play2.vbs">
+    <None Include="../../scripts\Play2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\Play4.vbs">
+    <None Include="../../scripts\Play4.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\s4.vbs">
+    <None Include="../../scripts\s4.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\s6.vbs">
+    <None Include="../../scripts\s6.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\s7.vbs">
+    <None Include="../../scripts\s7.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\s8_StillCrazy.vbs">
+    <None Include="../../scripts\s8_StillCrazy.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\s11.vbs">
+    <None Include="../../scripts\s11.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\sam.vbs">
+    <None Include="../../scripts\sam.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\sega.vbs">
+    <None Include="../../scripts\sega.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\sega2.vbs">
+    <None Include="../../scripts\sega2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\sleic.vbs">
+    <None Include="../../scripts\sleic.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\solarwars.vbs">
+    <None Include="../../scripts\solarwars.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\spinball.vbs">
+    <None Include="../../scripts\spinball.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\stern.vbs">
+    <None Include="../../scripts\stern.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\sys80.vbs">
+    <None Include="../../scripts\sys80.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\taito.vbs">
+    <None Include="../../scripts\taito.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\UltraDMD_Options.vbs">
+    <None Include="../../scripts\UltraDMD_Options.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\vbsdoc_outdated.html">
+    <None Include="../../scripts\vbsdoc_outdated.html">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\VPMKeys.vbs">
+    <None Include="../../scripts\VPMKeys.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\WPC.vbs">
+    <None Include="../../scripts\WPC.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\wpc_ph.vbs">
+    <None Include="../../scripts\wpc_ph.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\zac.vbs">
+    <None Include="../../scripts\zac.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\zac1.vbs">
+    <None Include="../../scripts\zac1.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\zac2.vbs">
+    <None Include="../../scripts\zac2.vbs">
       <Filter>scripts</Filter>
     </None>
-    <None Include="scripts\zacproto.vbs">
+    <None Include="../../scripts\zacproto.vbs">
       <Filter>scripts</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="src/ui/res/chevron.bmp">
+    <Image Include="../../src/ui/res/chevron.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/logo.bmp">
+    <Image Include="../../src/ui/res/logo.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/pause.ico">
+    <Image Include="../../src/ui/res/pause.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/play.ico">
+    <Image Include="../../src/ui/res/play.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/script.ico">
+    <Image Include="../../src/ui/res/script.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/step.ico">
+    <Image Include="../../src/ui/res/step.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/table.ico">
+    <Image Include="../../src/ui/res/table.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/toolbar.bmp">
+    <Image Include="../../src/ui/res/toolbar.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/vpinball.ico">
+    <Image Include="../../src/ui/res/vpinball.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/backglass.ico">
+    <Image Include="../../src/ui/res/backglass.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/bumper.ico">
+    <Image Include="../../src/ui/res/bumper.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/decal.ico">
+    <Image Include="../../src/ui/res/decal.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/flasher.ico">
+    <Image Include="../../src/ui/res/flasher.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/flipper.ico">
+    <Image Include="../../src/ui/res/flipper.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/gate.ico">
+    <Image Include="../../src/ui/res/gate.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/kicker.ico">
+    <Image Include="../../src/ui/res/kicker.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/light.ico">
+    <Image Include="../../src/ui/res/light.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/lightseq.ico">
+    <Image Include="../../src/ui/res/lightseq.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/magnify.ico">
+    <Image Include="../../src/ui/res/magnify.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/options.ico">
+    <Image Include="../../src/ui/res/options.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/plunger.ico">
+    <Image Include="../../src/ui/res/plunger.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/primitive.ico">
+    <Image Include="../../src/ui/res/primitive.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/ramp.ico">
+    <Image Include="../../src/ui/res/ramp.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/reel.ico">
+    <Image Include="../../src/ui/res/reel.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/rubber.ico">
+    <Image Include="../../src/ui/res/rubber.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/select.ico">
+    <Image Include="../../src/ui/res/select.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/spinner.ico">
+    <Image Include="../../src/ui/res/spinner.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/target.ico">
+    <Image Include="../../src/ui/res/target.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/textbox.ico">
+    <Image Include="../../src/ui/res/textbox.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/timer.ico">
+    <Image Include="../../src/ui/res/timer.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/trigger.ico">
+    <Image Include="../../src/ui/res/trigger.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/wall.ico">
+    <Image Include="../../src/ui/res/wall.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDbottom.bmp">
+    <Image Include="../../src/ui/res/SDbottom.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDcenter.bmp">
+    <Image Include="../../src/ui/res/SDcenter.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDleft.bmp">
+    <Image Include="../../src/ui/res/SDleft.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDmiddle.bmp">
+    <Image Include="../../src/ui/res/SDmiddle.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDright.bmp">
+    <Image Include="../../src/ui/res/SDright.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/SDtop.bmp">
+    <Image Include="../../src/ui/res/SDtop.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/add.ico">
+    <Image Include="../../src/ui/res/add.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/assign.ico">
+    <Image Include="../../src/ui/res/assign.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src\ui\res\ball.ico">
+    <Image Include="../../src\ui\res\ball.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/expandcolapse.ico">
+    <Image Include="../../src/ui/res/expandcolapse.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/layerIcons16.bmp">
+    <Image Include="../../src/ui/res/layerIcons16.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/layerIcons32.bmp">
+    <Image Include="../../src/ui/res/layerIcons32.bmp">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/remove.ico">
+    <Image Include="../../src/ui/res/remove.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/layers.ico">
+    <Image Include="../../src/ui/res/layers.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/toolbar.ico">
+    <Image Include="../../src/ui/res/toolbar.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/camera.ico">
+    <Image Include="../../src/ui/res/camera.ico">
       <Filter>ui\res</Filter>
     </Image>
-    <Image Include="src/ui/res/PlayWarning.bmp">
+    <Image Include="../../src/ui/res/PlayWarning.bmp">
       <Filter>ui\res</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="src/ui/res/vpinball.rgs">
+    <None Include="../../src/ui/res/vpinball.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/hittarget.rgs">
+    <None Include="../../src/ui/res/hittarget.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src\ui\res\ball.cur">
+    <None Include="../../src\ui\res\ball.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/ball.rgs">
+    <None Include="../../src/ui/res/ball.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/bumper.cur">
+    <None Include="../../src/ui/res/bumper.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/bumper.rgs">
+    <None Include="../../src/ui/res/bumper.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/decal.cur">
+    <None Include="../../src/ui/res/decal.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/dispreel.cur">
+    <None Include="../../src/ui/res/dispreel.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/dispreel.rgs">
+    <None Include="../../src/ui/res/dispreel.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/dragpoint.rgs">
+    <None Include="../../src/ui/res/dragpoint.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/flasher.cur">
+    <None Include="../../src/ui/res/flasher.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/flasher.rgs">
+    <None Include="../../src/ui/res/flasher.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/flipper.cur">
+    <None Include="../../src/ui/res/flipper.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/flipper.rgs">
+    <None Include="../../src/ui/res/flipper.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/gate.cur">
+    <None Include="../../src/ui/res/gate.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/gate.rgs">
+    <None Include="../../src/ui/res/gate.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/kicker.cur">
+    <None Include="../../src/ui/res/kicker.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/kicker.rgs">
+    <None Include="../../src/ui/res/kicker.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/light.cur">
+    <None Include="../../src/ui/res/light.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/light.rgs">
+    <None Include="../../src/ui/res/light.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/lightseq.cur">
+    <None Include="../../src/ui/res/lightseq.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/lightseq.rgs">
+    <None Include="../../src/ui/res/lightseq.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/magnify.cur">
+    <None Include="../../src/ui/res/magnify.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/pieventhandler.rgs">
+    <None Include="../../src/ui/res/pieventhandler.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/plunger.cur">
+    <None Include="../../src/ui/res/plunger.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/plunger.rgs">
+    <None Include="../../src/ui/res/plunger.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/primitive.cur">
+    <None Include="../../src/ui/res/primitive.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/primitive.rgs">
+    <None Include="../../src/ui/res/primitive.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/ramp.cur">
+    <None Include="../../src/ui/res/ramp.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/ramp.rgs">
+    <None Include="../../src/ui/res/ramp.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/rubber.cur">
+    <None Include="../../src/ui/res/rubber.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/rubber.rgs">
+    <None Include="../../src/ui/res/rubber.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/spinner.cur">
+    <None Include="../../src/ui/res/spinner.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/spinner.rgs">
+    <None Include="../../src/ui/res/spinner.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/surface.rgs">
+    <None Include="../../src/ui/res/surface.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/target.cur">
+    <None Include="../../src/ui/res/target.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/textbox.cur">
+    <None Include="../../src/ui/res/textbox.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/textbox.rgs">
+    <None Include="../../src/ui/res/textbox.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/timer.cur">
+    <None Include="../../src/ui/res/timer.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/timer.rgs">
+    <None Include="../../src/ui/res/timer.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/trigger.cur">
+    <None Include="../../src/ui/res/trigger.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/trigger.rgs">
+    <None Include="../../src/ui/res/trigger.rgs">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/wall.cur">
+    <None Include="../../src/ui/res/wall.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/SplitH.cur">
+    <None Include="../../src/ui/res/SplitH.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/ui/res/SplitV.cur">
+    <None Include="../../src/ui/res/SplitV.cur">
       <Filter>ui\res</Filter>
     </None>
-    <None Include="src/shaders/bgfx/ball_shadows.sh">
+    <None Include="../../src/shaders/bgfx/ball_shadows.sh">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/bgfx_shader.sh">
+    <None Include="../../src/shaders/bgfx/bgfx_shader.sh">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/common.sh">
+    <None Include="../../src/shaders/bgfx/common.sh">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_ball.sc">
+    <None Include="../../src/shaders/bgfx/fs_ball.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_ball_debug.sc">
+    <None Include="../../src/shaders/bgfx/fs_ball_debug.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_ball_trail.sc">
+    <None Include="../../src/shaders/bgfx/fs_ball_trail.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_basic.sc">
+    <None Include="../../src/shaders/bgfx/fs_basic.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_classic_light.sc">
+    <None Include="../../src/shaders/bgfx/fs_classic_light.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_decal.sc">
+    <None Include="../../src/shaders/bgfx/fs_decal.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_dmd.sc">
+    <None Include="../../src/shaders/bgfx/fs_dmd.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_dmd2.sc">
+    <None Include="../../src/shaders/bgfx/fs_dmd2.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_flasher.sc">
+    <None Include="../../src/shaders/bgfx/fs_flasher.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_imgui.sc">
+    <None Include="../../src/shaders/bgfx/fs_imgui.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_light.sc">
+    <None Include="../../src/shaders/bgfx/fs_light.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_ao.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_ao.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_ao_display.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_ao_display.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_bilateral_cas.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_bilateral_cas.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_bloom.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_bloom.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_blur.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_blur.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_cas.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_cas.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_copy.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_copy.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_dlaa.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_dlaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_dlaa_edge.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_dlaa_edge.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_fxaa.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_fxaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_irradiance.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_irradiance.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_mirror.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_mirror.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_motionblur.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_motionblur.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_nfaa.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_nfaa.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_smaa_BlendingWeightCalculation.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_smaa_EdgeDetection.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_smaa_NeighborhoodBlending.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_smaa_NeighborhoodBlending.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_ssao.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_ssao.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_ssr.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_ssr.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_stereo.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_stereo.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_pp_tonemap.sc">
+    <None Include="../../src/shaders/bgfx/fs_pp_tonemap.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/fs_unshaded.sc">
+    <None Include="../../src/shaders/bgfx/fs_unshaded.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/material.sh">
+    <None Include="../../src/shaders/bgfx/material.sh">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/SMAA.hlsl">
+    <None Include="../../src/shaders/bgfx/SMAA.hlsl">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/SMAA.sh">
+    <None Include="../../src/shaders/bgfx/SMAA.sh">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/varying.def.sc">
+    <None Include="../../src/shaders/bgfx/varying.def.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_ball.sc">
+    <None Include="../../src/shaders/bgfx/vs_ball.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_ball_trail.sc">
+    <None Include="../../src/shaders/bgfx/vs_ball_trail.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_basic.sc">
+    <None Include="../../src/shaders/bgfx/vs_basic.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_dmd.sc">
+    <None Include="../../src/shaders/bgfx/vs_dmd.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_flasher.sc">
+    <None Include="../../src/shaders/bgfx/vs_flasher.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_imgui.sc">
+    <None Include="../../src/shaders/bgfx/vs_imgui.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_light.sc">
+    <None Include="../../src/shaders/bgfx/vs_light.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_postprocess.sc">
+    <None Include="../../src/shaders/bgfx/vs_postprocess.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc">
+    <None Include="../../src/shaders/bgfx/vs_pp_smaa_BlendingWeightCalculation.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc">
+    <None Include="../../src/shaders/bgfx/vs_pp_smaa_EdgeDetection.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc">
+    <None Include="../../src/shaders/bgfx/vs_pp_smaa_NeighborhoodBlending.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/bgfx/vs_vr_mask.sc">
+    <None Include="../../src/shaders/bgfx/vs_vr_mask.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/BasicShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/BasicShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/BallShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/BallShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/BallShadows.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/BallShadows.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/ClassicLightShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/ClassicLightShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/DMDShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/DMDShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/DMDShaderVR.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/DMDShaderVR.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/FBShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/FBShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/FBShader.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/FBShader.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/FXAAStereoAO.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/FlasherShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/FlasherShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/FXAAStereoAO_GL.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/Helpers.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/Helpers.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/Material.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/Material.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/Material_GL.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/Material_GL.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/LightShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/LightShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/SMAA.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/SMAA.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/SMAA.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/SMAA.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/SSR.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/SSR.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/SSR_GL.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/SSR_GL.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/Stereo.fxh">
+    <None Include="../../src/shaders/hlsl_glsl/Stereo.fxh">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
-    <None Include="src/shaders/hlsl_glsl/StereoShader.glfx">
+    <None Include="../../src/shaders/hlsl_glsl/StereoShader.glfx">
       <Filter>shaders\hlsl_glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="src/shaders/hlsl_glsl/BallShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/BallShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/BasicShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/BasicShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/DMDShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/DMDShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/FBShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/FBShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/FlasherShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/FlasherShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/LightShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/LightShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
-    <FxCompile Include="src/shaders/hlsl_glsl/StereoShader.hlsl">
+    <FxCompile Include="../../src/shaders/hlsl_glsl/StereoShader.hlsl">
       <Filter>shaders\hlsl_glsl</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="vpinball.idl">
+    <Midl Include="../../src/core/vpinball.idl">
       <Filter>core</Filter>
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="make\vpinball.natvis">
+    <Natvis Include="../../make/vpinball.natvis">
       <Filter>utils</Filter>
     </Natvis>
-    <Natvis Include="make\bgfx.natvis">
+    <Natvis Include="../../make/bgfx.natvis">
       <Filter>utils</Filter>
     </Natvis>
   </ItemGroup>

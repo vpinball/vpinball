@@ -73,9 +73,9 @@
   <PropertyGroup>
     <TargetName Condition="'$(Platform)'=='Win32'">plugin-helloscript</TargetName>
     <TargetName Condition="'$(Platform)'=='x64'">plugin-helloscript64</TargetName>
-    <OutDir>$(SolutionDir).build\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
-    <IntDir>$(SolutionDir).build\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);./src/plugins</IncludePath>
+    <OutDir>$(SolutionDir)..\bin\$(TargetName)\$(Configuration)-$(Platform)\</OutDir>
+    <IntDir>$(SolutionDir)..\obj\$(TargetName)\$(Configuration)-$(Platform)\</IntDir>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(SolutionDir)../../src/plugins</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -148,17 +148,17 @@
   <ItemDefinitionGroup>
     <PostBuildEvent>
       <Command>
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\" md "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_BGFX-$(Platform)\plugins\helloscript\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\" md "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)_GL-$(Platform)\plugins\helloscript\"
 
-        if not exist "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloscript\" md "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
-        copy "$(TargetPath)" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
-        copy "$(TargetDir)plugin.cfg" "$(SolutionDir).build\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
+        if not exist "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\" md "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
+        copy "$(TargetPath)" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
+        copy "$(TargetDir)plugin.cfg" "$(SolutionDir)..\bin\$(Configuration)-$(Platform)\plugins\helloscript\"
       </Command>
     </PostBuildEvent>
     <ClCompile>
@@ -176,10 +176,10 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="plugins/helloscript/helloscript.cpp" />
+    <ClCompile Include="../../plugins/helloscript/helloscript.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/helloscript/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/helloscript/plugin.cfg">
       <FileType>Document</FileType>
     </CopyFileToFolders>
   </ItemGroup>

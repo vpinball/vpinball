@@ -10,36 +10,36 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="plugins/serum/common.h">
+    <ClInclude Include="../../plugins/serum/common.h">
       <Filter>source</Filter>
     </ClInclude>
-    <ClCompile Include="plugins/serum/common.cpp">
+    <ClCompile Include="../../plugins/serum/common.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="plugins/serum/serum.cpp">
+    <ClCompile Include="../../plugins/serum/serum.cpp">
       <Filter>source</Filter>
     </ClCompile>
-    <ClInclude Include="plugins/serum/third-party/include/miniz/miniz.h">
+    <ClInclude Include="../../plugins/serum/third-party/include/miniz/miniz.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClCompile Include="plugins/serum/third-party/include/miniz/miniz.c">
+    <ClCompile Include="../../plugins/serum/third-party/include/miniz/miniz.c">
       <Filter>third-party</Filter>
     </ClCompile>
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum.h">
+    <ClInclude Include="../../plugins/serum/third-party/include/libserum/serum.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-decode.h">
+    <ClInclude Include="../../plugins/serum/third-party/include/libserum/serum-decode.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClInclude Include="plugins/serum/third-party/include/libserum/serum-version.h">
+    <ClInclude Include="../../plugins/serum/third-party/include/libserum/serum-version.h">
       <Filter>third-party</Filter>
     </ClInclude>
-    <ClCompile Include="plugins/serum/third-party/include/libserum/serum-decode.cpp">
+    <ClCompile Include="../../plugins/serum/third-party/include/libserum/serum-decode.cpp">
       <Filter>third-party</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CopyFileToFolders Include="plugins/serum/plugin.cfg">
+    <CopyFileToFolders Include="../../plugins/serum/plugin.cfg">
       <Filter>source</Filter>
     </CopyFileToFolders>
   </ItemGroup>
