@@ -4067,36 +4067,40 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
             std::for_each(removeLegacyLayers, m_vedit.end(), [](IEditable *e) { e->Release(); });
             m_vedit.erase(removeLegacyLayers, m_vedit.end());
 
-            // Rename layers that have been automatically converted to group if there aren't any name conflict
-            std::ranges::for_each(m_vedit, [&](IEditable *editable)
-               {
-                  if (editable->GetItemType() != eItemPartGroup)
-                     return;
-                  string name(editable->GetName());
-                  if (!name.starts_with("Layer_"))
-                     return;
-                  string shortName = name.substr(6);
-                  auto v = std::ranges::find_if(m_vedit, [shortName](IEditable *e) { return strcmp(e->GetName(), shortName.c_str()) == 0; });
-                  if (v == m_vedit.end())
+            // Rename layers that have been automatically converted to group if there aren't any name conflict (checking for collection objects, as well as script variable names)
+            #ifndef __STANDALONE__
+               const size_t scriptLength = ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXTLENGTH, 0, 0);
+               char *const scriptChars = new char[scriptLength + 1];
+               ::SendMessage(m_pcv->m_hwndScintilla, SCI_GETTEXT, scriptLength + 1, (LPARAM)scriptChars);
+               const string script(scriptChars);
+               delete[] scriptChars;
+            #else
+               const string& script = m_pcv->m_script_text;
+            #endif
+               std::ranges::for_each(m_vedit,
+                  [&](IEditable *editable)
                   {
+                     if (editable->GetItemType() != eItemPartGroup)
+                        return;
+                     string name(editable->GetName());
+                     if (!name.starts_with("Layer_"))
+                        return;
+                     string shortName = name.substr(6);
+                     auto v = std::ranges::find_if(m_vedit, [shortName](IEditable *e) { return strcmp(e->GetName(), shortName.c_str()) == 0; });
+                     if (v != m_vedit.end())
+                        return; // Conflict with another part name
+                     if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortName) != std::string::npos)
+                        return; // (Potential) conflict with a script variable
                      char elementName[256];
-                     bool inUse = false;
                      for (int i = 0; i < m_vcollection.size(); i++)
                      {
                         WideCharToMultiByteNull(CP_ACP, 0, m_vcollection.ElementAt(i)->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
                         if (strcmp(elementName, shortName.c_str()) == 0)
-                        {
-                           inUse = true;
-                           break;
-                        }
+                           return; // Conflict with a collection name
                      }
-                     if (!inUse)
-                     {
-                        const int len = (int)shortName.length() + 1;
-                        MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, len);
-                     }
-                  }
-               });
+                     const int len = (int)shortName.length() + 1;
+                     MultiByteToWideCharNull(CP_ACP, 0, shortName.c_str(), -1, editable->GetScriptable()->m_wzName, len);
+                  });
          }
          
          // Since 10.8.1, Flashers are allowed on 2D backdrop, with advanced rendering capabilities.
