@@ -162,12 +162,11 @@ public:
 
    float m_anglespeed;
    float m_angle;
-   float m_angleMin, m_angleMax;
-   float m_friction;
    float m_damping;
    float m_gravityfactor;
-   bool m_visible;
-   bool m_open;         // True if the table logic is opening the gate, not just the ball passing through
+
+   float m_angleMin, m_angleMax; // Open & close angle when using physics, animation limits when using forced animation
+   bool m_open; // True if the table logic is opening the gate, not just the ball passing through
    bool m_forcedMove;   // True if the table logic is opening/closing the gate
    bool m_hitDirection; // For the direction of the little bounce-back
 };

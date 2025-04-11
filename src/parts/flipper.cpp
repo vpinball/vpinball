@@ -245,7 +245,6 @@ void Flipper::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    HitFlipper *const phf = new HitFlipper(m_d.m_Center, max(m_d.m_BaseRadius, 0.01f), max(m_d.m_EndRadius, 0.01f), max(m_d.m_FlipperRadius, 0.01f), ANGTORAD(m_d.m_StartAngle),
       ANGTORAD(m_d.m_EndAngle), height, height + m_d.m_height, this);
    phf->m_flipperMover.m_enabled = m_d.m_enabled;
-   phf->m_flipperMover.m_visible = m_d.m_visible;
    physics->AddCollider(phf, isUI);
    if (!isUI)
       m_phitflipper = phf;
@@ -789,8 +788,7 @@ void Flipper::Render(const unsigned int renderMask)
    const bool isReflectionPass = renderMask & Renderer::REFLECTION_PASS;
    TRACE_FUNCTION();
 
-   if ((m_phitflipper && !m_phitflipper->m_flipperMover.m_visible)
-    || (m_phitflipper == nullptr && !m_d.m_visible)
+   if (!m_d.m_visible
     || (isReflectionPass && !m_d.m_reflectionEnabled)
     || isStaticOnly)  
       return;
@@ -1035,53 +1033,39 @@ STDMETHODIMP Flipper::put_EOSTorqueAngle(float newVal)
 
 STDMETHODIMP Flipper::get_StartAngle(float *pVal)
 {
-   if (m_phitflipper)
-      *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleStart);
-   else
-      *pVal = m_d.m_StartAngle;
-
+   *pVal = m_d.m_StartAngle;
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_StartAngle(float newVal)
 {
+   m_d.m_StartAngle = newVal;
    if (m_phitflipper)
       m_phitflipper->m_flipperMover.SetStartAngle(ANGTORAD(newVal));
-   else
-      m_d.m_StartAngle = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_EndAngle(float *pVal)
 {
-   if (m_phitflipper)
-      *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleEnd);
-   else
-      *pVal = m_d.m_EndAngle;
-
+   *pVal = m_d.m_EndAngle;
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_EndAngle(float newVal)
 {
+   m_d.m_EndAngle = newVal;
    if (m_phitflipper)
       m_phitflipper->m_flipperMover.SetEndAngle(ANGTORAD(newVal));
-   else
-      m_d.m_EndAngle = newVal;
-
    return S_OK;
 }
 
 STDMETHODIMP Flipper::get_CurrentAngle(float *pVal)
 {
    if (m_phitflipper)
-   {
       *pVal = RADTOANG(m_phitflipper->m_flipperMover.m_angleCur);
-      return S_OK;
-   }
    else
-      return E_FAIL;
+      *pVal = m_d.m_StartAngle;
+   return S_OK;
 }
 
 STDMETHODIMP Flipper::get_X(float *pVal)
@@ -1263,17 +1247,13 @@ STDMETHODIMP Flipper::put_Strength(float newVal)
 
 STDMETHODIMP Flipper::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB(m_phitflipper ? m_phitflipper->m_flipperMover.m_visible : m_d.m_visible);
+   *pVal = FTOVB(m_d.m_visible);
    return S_OK;
 }
 
 STDMETHODIMP Flipper::put_Visible(VARIANT_BOOL newVal)
 {
-   if (m_phitflipper)
-      m_phitflipper->m_flipperMover.m_visible = VBTOb(newVal); //m_d.m_visible
-   else
-      m_d.m_visible = VBTOb(newVal);
-
+   m_d.m_visible = VBTOb(newVal);
    return S_OK;
 }
 
