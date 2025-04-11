@@ -473,102 +473,68 @@ bool Settings::HasValue(const Section section, const string& key, const bool sea
    return hasInIni;
 }
 
-bool Settings::LoadValue(const Section section, const string &key, string &buffer) const
+#if 0
+bool Settings::LoadValue(const Section section, const string &key, void *const szbuffer, const size_t size) const
 {
-   DataType type = DT_SZ;
-   char szbuffer[MAXSTRING];
-   szbuffer[0] = '\0';
-   const bool success = LoadValue(section, key, type, szbuffer, MAXSTRING);
-   if (success)
-      buffer = szbuffer;
-   return success && (type == DT_SZ);
-}
+   if (size == 0)
+      return false;
 
-bool Settings::LoadValue(const Section section, const string &key, void *const szbuffer, const DWORD size) const
-{
-   if (size > 0) // clear string in case of reg value being set, but being null string which results in szbuffer being kept as-is
+   string val;
+   const bool success = LoadValue(section, key, val);
+   if (success)
+      strncpy_s((char *)szbuffer, size, val.c_str(), size - 1);
+   else
       ((char *)szbuffer)[0] = '\0';
-   DataType type = DT_SZ;
-   const bool success = LoadValue(section, key, type, szbuffer, size);
-   return success && (type == DT_SZ);
+
+   return success;
 }
+#endif
 
 bool Settings::LoadValue(const Section section, const string &key, float &pfloat) const
 {
-   DataType type = DT_SZ;
-   char szbuffer[16];
-   const bool success = LoadValue(section, key, type, szbuffer, sizeof(szbuffer));
-   if (!success || (type != DT_SZ))
+   string val;
+   if (!LoadValue(section, key, val))
       return false;
-   const int len = lstrlen(szbuffer);
-   if (len == 0)
-      return false;
-   char *const fo = strchr(szbuffer, ',');
-   if (fo != nullptr)
-      *fo = '.';
-   if (szbuffer[0] == '-')
-   {
-      if (len < 2)
-         return false;
-      pfloat = (float)atof(&szbuffer[1]);
-      pfloat = -pfloat;
-   }
-   else
-      pfloat = (float)atof(szbuffer);
+   pfloat = sz2f(val,true);
    return true;
 }
 
 bool Settings::LoadValue(const Section section, const string &key, int &pint) const
 {
-   DataType type = DT_DWORD;
-   const bool success = LoadValue(section, key, type, (void *)&pint, 4);
-   return success && (type == DT_DWORD);
-}
-
-bool Settings::LoadValue(const Section section, const string &key, unsigned int &pint) const
-{
-   DataType type = DT_DWORD;
-   const bool success = LoadValue(section, key, type, (void *)&pint, 4);
-   return success && (type == DT_DWORD);
-}
-
-bool Settings::LoadValue(const Section section, const string &key, DataType &type, void *pvalue, const DWORD size) const
-{
-   if (size == 0)
-   {
-      type = DT_ERROR;
+   unsigned int val;
+   if (!LoadValue(section, key, val))
       return false;
+   pint = val;
+   return true;
+}
+
+bool Settings::LoadValue(const Section section, const string &key, string &val) const
+{
+   const string value = m_ini.get(m_settingKeys[section]).get(key);
+   if (!value.empty())
+   {
+      val = value;
+      return true;
    }
 
-      const string value = m_ini.get(m_settingKeys[section]).get(key);
-      if (!value.empty())
-      {
-         // Value is empty (just a marker for text formatting), consider it as undefined
-         if (type == DT_SZ)
-         {
-            const DWORD len = (DWORD)value.length() + 1;
-            const DWORD len_min = min(len, size) - 1;
-            memcpy(pvalue, value.c_str(), len_min);
-            ((char *)pvalue)[len_min] = '\0';
-            return true;
-         }
-         else if (type == DT_DWORD)
-         {
-            *((DWORD *)pvalue) = (DWORD)atoll(value.c_str());
-            return true;
-         }
-         else
-         {
-            assert(!"Bad Type");
-            type = DT_ERROR;
-            return false;
-         }
-      }
+   if (m_parent != nullptr)
+      return m_parent->LoadValue(section, key, val);
+
+   return false;
+}
+
+bool Settings::LoadValue(const Section section, const string &key, unsigned int &val) const
+{
+   const string value = m_ini.get(m_settingKeys[section]).get(key);
+   if (!value.empty())
+   {
+      val = (unsigned int)std::stoll(value);
+      return true;
+   }
 
    if (m_parent != nullptr)
-      return m_parent->LoadValue(section, key, type, pvalue, size);
+      return m_parent->LoadValue(section, key, val);
 
-   type = DT_ERROR;
    return false;
 }
 
@@ -604,16 +570,14 @@ string Settings::LoadValueWithDefault(const Section section, const string &key, 
    return LoadValue(section, key, val) ? val : def;
 }
 
-bool Settings::SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode)
+bool Settings::SaveValue(const Section section, const string &key, const string &val, const bool overrideMode)
 {
-   assert(type == DT_SZ || type == DT_DWORD);
-   if (key.empty() || (type != DT_SZ && type != DT_DWORD))
+   if (key.empty())
       return false;
-   const string copy = type == DT_SZ ? std::string((const char*)pvalue) : std::to_string(*(const DWORD *)pvalue);
    if (m_parent && overrideMode)
    {
       string value;
-      if (m_parent->LoadValue(section, key, value) && value == copy)
+      if (m_parent->LoadValue(section, key, value) && value == val)
       {
          // This is an override and it has the same value as parent: remove it and rely on parent
          if (m_ini.get(m_settingKeys[section]).has(key))
@@ -625,42 +589,36 @@ bool Settings::SaveValue(const Section section, const string &key, const DataTyp
       }
    }
    m_modified = true;
-   m_ini[m_settingKeys[section]][key] = copy;
+   m_ini[m_settingKeys[section]][key] = val;
    return true;
 }
 
 bool Settings::SaveValue(const Section section, const string &key, const bool val, const bool overrideMode)
 {
-   const DWORD dwval = val ? 1 : 0;
-   return SaveValue(section, key, DT_DWORD, &dwval, sizeof(DWORD), overrideMode);
+   return SaveValue(section, key, val ? "1"s : "0"s, overrideMode);
 }
 
 bool Settings::SaveValue(const Section section, const string &key, const int val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_DWORD, &val, sizeof(DWORD), overrideMode);
+   return SaveValue(section, key, std::to_string(val), overrideMode);
 }
 
 bool Settings::SaveValue(const Section section, const string &key, const unsigned int val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_DWORD, &val, sizeof(DWORD), overrideMode);
+   return SaveValue(section, key, std::to_string(val), overrideMode);
 }
 
 bool Settings::SaveValue(const Section section, const string &key, const float val, const bool overrideMode)
 {
-   char buf[64];
-   sprintf_s(buf, sizeof(buf), "%f", val);
-   return SaveValue(section, key, DT_SZ, buf, lstrlen(buf), overrideMode);
+   return SaveValue(section, key, f2sz(val,false), overrideMode);
 }
 
+#if 0
 bool Settings::SaveValue(const Section section, const string &key, const char *val, const bool overrideMode)
 {
-   return SaveValue(section, key, DT_SZ, val, lstrlen(val), overrideMode);
+   return SaveValue(section, key, string(val), overrideMode);
 }
-
-bool Settings::SaveValue(const Section section, const string &key, const string &val, const bool overrideMode)
-{
-   return SaveValue(section, key, DT_SZ, val.c_str(), (DWORD)val.length(), overrideMode);
-}
+#endif
 
 bool Settings::DeleteValue(const Section section, const string &key, const bool deleteFromParent)
 {

@@ -58,10 +58,9 @@ void Plunger::SetDefaults(const bool fromMouseClick)
    m_d.m_autoPlunger = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "AutoPlunger"s, false) : false;
    m_d.m_visible = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "Visible"s, true) : true;
 
-   hr = g_pvp->m_settings.LoadValue(regKey, "CustomTipShape"s, m_d.m_szTipShape, MAXTIPSHAPE);
+   hr = g_pvp->m_settings.LoadValue(regKey, "CustomTipShape"s, m_d.m_szTipShape);
    if (!hr || !fromMouseClick)
-      strncpy_s(m_d.m_szTipShape,
-      "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84", sizeof(m_d.m_szTipShape)-1);
+      m_d.m_szTipShape = "0 .34; 2 .6; 3 .64; 5 .7; 7 .84; 8 .88; 9 .9; 11 .92; 14 .92; 39 .84"s;
 
    m_d.m_rodDiam = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRodDiam"s, 0.60f) : 0.60f;
    m_d.m_ringGap = fromMouseClick ? g_pvp->m_settings.LoadValueWithDefault(regKey, "CustomRingGap"s, 2.0f) : 2.0f;
@@ -313,7 +312,7 @@ void Plunger::RenderSetup(RenderDevice *device)
       // Count entries in the tip list.  Entries are separated
       // by semicolons.
       int nTip = 1;
-      for (const char *p = m_d.m_szTipShape; *p != '\0'; ++p)
+      for (const char *p = m_d.m_szTipShape.c_str(); *p != '\0'; ++p)
       {
          if (*p == ';')
          {
@@ -330,7 +329,7 @@ void Plunger::RenderSetup(RenderDevice *device)
       // figure the tip lathe descriptor from the shape point list
       PlungerCoord *c = customDesc->c;
       float tiplen = 0;
-      for (const char *p = m_d.m_szTipShape; *p != '\0'; c++)
+      for (const char *p = m_d.m_szTipShape.c_str(); *p != '\0'; c++)
       {
          // Parse the entry: "yOffset, diam".  yOffset is the
          // offset (in table distance units) from the previous
@@ -947,7 +946,7 @@ bool Plunger::LoadToken(const int id, BiffReader * const pbr)
    case FID(VSBL): pbr->GetBool(m_d.m_visible); break;
    case FID(REEN): pbr->GetBool(m_d.m_reflectionEnabled); break;
    case FID(SURF): pbr->GetString(m_d.m_szSurface); break;
-   case FID(TIPS): pbr->GetString(m_d.m_szTipShape, sizeof(m_d.m_szTipShape)); break;
+   case FID(TIPS): pbr->GetString(m_d.m_szTipShape); break;
    case FID(RODD): pbr->GetFloat(m_d.m_rodDiam); break;
    case FID(RNGG): pbr->GetFloat(m_d.m_ringGap); break;
    case FID(RNGD): pbr->GetFloat(m_d.m_ringDiam); break;
@@ -1132,7 +1131,7 @@ STDMETHODIMP Plunger::put_AnimFrames(int newVal)
 STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 {
    WCHAR wz[MAXTIPSHAPE];
-   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szTipShape, -1, wz, MAXTIPSHAPE);
+   MultiByteToWideCharNull(CP_ACP, 0, m_d.m_szTipShape.c_str(), -1, wz, MAXTIPSHAPE);
    *pVal = SysAllocString(wz);
 
    return S_OK;
@@ -1140,7 +1139,10 @@ STDMETHODIMP Plunger::get_TipShape(BSTR *pVal)
 
 STDMETHODIMP Plunger::put_TipShape(BSTR newVal)
 {
-   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, m_d.m_szTipShape, MAXTIPSHAPE, nullptr, nullptr);
+   char sz[MAXTIPSHAPE];
+   WideCharToMultiByteNull(CP_ACP, 0, newVal, -1, sz, MAXTIPSHAPE, nullptr, nullptr);
+   m_d.m_szTipShape = sz;
+
    return S_OK;
 }
 

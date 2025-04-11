@@ -57,7 +57,7 @@ void LightSeq::WriteRegDefaults()
    char strTmp[MAXSTRING];
    WideCharToMultiByteNull(CP_ACP, 0, m_d.m_wzCollection.c_str(), -1, strTmp, MAXSTRING, nullptr, nullptr);
    g_pvp->m_settings.SaveValue(regKey, "UpdateInterval"s, (int)m_d.m_updateinterval);
-   g_pvp->m_settings.SaveValue(regKey, "Collection"s, strTmp);
+   g_pvp->m_settings.SaveValue(regKey, "Collection"s, string(strTmp));
    g_pvp->m_settings.SaveValue(regKey, "CenterX"s, m_d.m_vCenter.x);
    g_pvp->m_settings.SaveValue(regKey, "CenterY"s, m_d.m_vCenter.y);
    g_pvp->m_settings.SaveValue(regKey, "TimerEnabled"s, m_d.m_tdr.m_TimerEnabled);

@@ -83,11 +83,10 @@ public:
 
    bool HasValue(const Section section, const string &key, const bool searchParent = false) const;
 
-   bool LoadValue(const Section section, const string &key, string &buffer) const;
-   bool LoadValue(const Section section, const string &key, void *const szbuffer, const DWORD size) const;
+   bool LoadValue(const Section section, const string &key, string &val) const;
    bool LoadValue(const Section section, const string &key, float &pfloat) const;
    bool LoadValue(const Section section, const string &key, int &pint) const;
-   bool LoadValue(const Section section, const string &key, unsigned int &pint) const;
+   bool LoadValue(const Section section, const string &key, unsigned int &val) const;
 
    void Validate(const Section section, const string &key, const string& defVal, const bool addDefaults);
    void Validate(const Section section, const string &key, const bool defVal, const bool addDefaults);
@@ -108,7 +107,6 @@ public:
    bool LoadValueWithDefault(const Section section, const string &key, const bool def) const;
    string LoadValueWithDefault(const Section section, const string &key, const string &def) const;
 
-   bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const string &val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const float val, const bool overrideMode = false);
    bool SaveValue(const Section section, const string &key, const int val, const bool overrideMode = false);
@@ -138,15 +136,10 @@ public:
    static const vector<OptionDef>& GetPluginSettings() { return m_pluginOptions; }
 
 private:
-   enum DataType
-   {
-      DT_SZ, // char*, 0 terminated
-      DT_DWORD,
-      DT_ERROR
-   };
-
-   bool LoadValue(const Section section, const string &key, DataType &type, void *pvalue, DWORD size) const;
-   bool SaveValue(const Section section, const string &key, const DataType type, const void *pvalue, const DWORD size, const bool overrideMode);
+#if 0
+   bool LoadValue(const Section section, const string &key, void *const szbuffer, const size_t size) const;
+   bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
+#endif
 
    bool m_modified = false;
    string m_iniPath;

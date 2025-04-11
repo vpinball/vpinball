@@ -159,7 +159,7 @@ void Textbox::WriteRegDefaults()
    const size_t charCnt = wcslen(fd.lpstrName) + 1;
    char * const strTmp = new char[2 * charCnt];
    WideCharToMultiByteNull(CP_ACP, 0, fd.lpstrName, -1, strTmp, (int)(2 * charCnt), nullptr, nullptr);
-   g_pvp->m_settings.SaveValue(regKey, "FontName"s, strTmp);
+   g_pvp->m_settings.SaveValue(regKey, "FontName"s, string(strTmp));
    delete[] strTmp;
    const int weight = fd.sWeight;
    const int charset = fd.sCharset;

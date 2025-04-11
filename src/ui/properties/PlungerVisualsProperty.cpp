@@ -50,7 +50,7 @@ void PlungerVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
         if (dispid == DISPID_RodDiam || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_rodDiameterEdit, plunger->m_d.m_rodDiam);
         if (dispid == DISPID_TipShape || dispid == -1)
-            m_tipShapeEdit.SetWindowText(plunger->m_d.m_szTipShape);
+            m_tipShapeEdit.SetWindowText(plunger->m_d.m_szTipShape.c_str());
         if (dispid == DISPID_RingGap || dispid == -1)
             PropertyDialog::SetFloatTextbox(m_ringGapEdit, plunger->m_d.m_ringGap);
         if (dispid == DISPID_RingDiam || dispid == -1)
@@ -102,7 +102,7 @@ void PlungerVisualsProperty::UpdateProperties(const int dispid)
                 break;
             case DISPID_TipShape:
                 PropertyDialog::StartUndo(plunger);
-                strncpy_s(plunger->m_d.m_szTipShape, m_tipShapeEdit.GetWindowText().c_str(), sizeof(plunger->m_d.m_szTipShape)-1);
+                plunger->m_d.m_szTipShape = m_tipShapeEdit.GetWindowText().GetString();
                 PropertyDialog::EndUndo(plunger);
                 break;
             case DISPID_RingGap:

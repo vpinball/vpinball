@@ -581,8 +581,8 @@ constexpr __forceinline float millimetersToVPUnits(const float value)
    // return value * (float)(1.0 / 0.540425);
 }
 
-float sz2f(string sz);
-string f2sz(const float f);
+float sz2f(string sz, const bool force_convert_decimal_point = false);
+string f2sz(const float f, const bool can_convert_decimal_point = true);
 
 void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen);
 int WideStrCmp(const WCHAR* wz1, const WCHAR* wz2);

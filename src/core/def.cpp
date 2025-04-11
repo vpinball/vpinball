@@ -19,12 +19,12 @@ unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
 // used by dialogues, etc, locale specific, otherwise use e.g. std::stof() directly
-float sz2f(string sz)
+float sz2f(string sz, const bool force_convert_decimal_point)
 {
 #if 1
-   if (point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
+   if (force_convert_decimal_point || point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
    {
-      const size_t pos = sz.find_first_of(point);
+      const size_t pos = sz.find_first_of(force_convert_decimal_point ? ',' : point);
       if (pos != string::npos)
          sz[pos] = '.';
    }
@@ -60,14 +60,14 @@ float sz2f(string sz)
 }
 
 // used by dialogues, etc, locale specific, otherwise use e.g. std::to_string() directly
-string f2sz(const float f)
+string f2sz(const float f, const bool can_convert_decimal_point)
 {
 #if 1
    string sz = std::to_string(f);
    const size_t pos = sz.find_first_of('.');
    if (pos != string::npos)
    {
-      if (point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
+      if (can_convert_decimal_point && point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
          sz[pos] = point;
 
       size_t pos0 = sz.find_last_not_of('0');

@@ -485,7 +485,7 @@ void SoundDialog::Export()
                     pps = (PinSound *)lvitem.lParam;
                 }
 
-                g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, pathName);
+                g_pvp->m_settings.SaveValue(Settings::RecentDir, "SoundDir"s, string(pathName));
             }
         }
     }

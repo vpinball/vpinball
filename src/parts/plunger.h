@@ -27,7 +27,7 @@ public:
    string m_szSurface;
    float m_scatterVelocity;
    float m_momentumXfer;
-   char m_szTipShape[MAXTIPSHAPE];
+   string m_szTipShape;
    float m_rodDiam;
    float m_ringGap;
    float m_ringDiam;
