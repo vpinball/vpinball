@@ -834,6 +834,10 @@ Player::~Player()
    VPinballLib::VPinball::SendEvent(VPinballLib::Event::PlayerClosing, nullptr);
 #endif
 
+#ifdef __STANDALONE__
+   g_pStandalone->Shutdown();
+#endif
+
    // Signal plugins early since most fields will become invalid
    const unsigned int onGameEndMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_END);
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(onGameEndMsgId, nullptr);
@@ -1947,6 +1951,10 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    m_renderer->RenderFrame();
 
+   #ifdef __STANDALONE__
+   g_pStandalone->Render();
+   #endif
+
    if ((m_vrDevice == nullptr) && (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
       m_scoreView.Render(m_scoreviewOutput);
 
@@ -2046,10 +2054,6 @@ void Player::FinishFrame()
 #endif
       }
    }
-
-#ifdef __STANDALONE__
-   g_pStandalone->Render();
-#endif
 
    // Brute force stop: blast into space
    if (m_closing == CS_FORCE_STOP)

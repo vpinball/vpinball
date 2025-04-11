@@ -12,11 +12,12 @@
 
 class PUPScreen;
 
-PUPWindow::PUPWindow(PUPScreen* pScreen, const string& szTitle, int x, int y, int w, int h, int z, int rotation)
-    : VP::Window(szTitle, x, y, w, h, z, rotation)
+PUPWindow::PUPWindow(PUPScreen* pScreen, const string& szTitle, int z, int x, int y, int w, int h)
+    : VP::Window(szTitle, z, x, y, w, h)
 {
    m_pScreen = pScreen;
    m_pScreen->SetSize(w, h);
+   m_pSDLTexture = nullptr;
 }
 
 PUPWindow::~PUPWindow()
@@ -28,22 +29,38 @@ bool PUPWindow::Init()
    if (!VP::Window::Init())
       return false;
 
-   if (m_pScreen)
-      m_pScreen->Init(m_pRenderer);
+   m_pScreen->Init(this);
 
    return true;
 }
 
 void PUPWindow::Render()
 {
-   if (!m_visible)
-      return;
+   if (!m_pSDLTexture) {
+      m_pSDLTexture = SDL_CreateTexture(m_pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_TARGET, GetDrawableWidth(), GetDrawableHeight());
+      if (!m_pSDLTexture)
+         return;
+   }
 
-   SDL_SetRenderDrawColor(m_pRenderer, 0, 0, 0, 255);
-   SDL_RenderClear(m_pRenderer);
+   if (!m_pTexture) {
+      m_pTexture = new BaseTexture(GetDrawableWidth(), GetDrawableHeight(), BaseTexture::RGBA);
+      if (!m_pTexture)
+         return;
+   } 
 
-   if (m_pScreen)
-      m_pScreen->Render();
+   SDL_SetRenderTarget(m_pRenderer, m_pSDLTexture);
+   SDL_SetRenderLogicalPresentation(m_pRenderer, GetWidth(), GetHeight(), SDL_LOGICAL_PRESENTATION_STRETCH);
 
-   SDL_RenderPresent(m_pRenderer);
-}
+   m_pScreen->Render();
+
+   SDL_Surface* pSurface = SDL_RenderReadPixels(m_pRenderer, nullptr);
+   if (pSurface) {
+      memcpy(m_pTexture->data(), pSurface->pixels, pSurface->pitch * pSurface->h);
+      g_pplayer->m_renderer->m_renderDevice->m_texMan.SetDirty(m_pTexture);
+      SDL_DestroySurface(pSurface);
+   }
+
+   SDL_SetRenderTarget(m_pRenderer, NULL);
+
+   Window::Render();
+ }
