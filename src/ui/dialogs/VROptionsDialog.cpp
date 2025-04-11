@@ -314,8 +314,6 @@ void VROptionsDialog::AddToolTip(const char * const text, HWND parentHwnd, HWND 
 
 void VROptionsDialog::ResetVideoPreferences()
 {
-   char tmp[256];
-
    SendDlgItemMessage(IDC_VR_PREVIEW, CB_SETCURSEL, VRPREVIEW_LEFT, 0);
 
    constexpr bool scaleToFixedWidth = false;
@@ -325,8 +323,7 @@ void VROptionsDialog::ResetVideoPreferences()
    scaleRelative = 1.0f;
    scaleAbsolute = 55.0f;
 
-   sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
-   SetDlgItemText(IDC_VR_SCALE, tmp);
+   SetDlgItemText(IDC_VR_SCALE, f2sz(scaleToFixedWidth ? scaleAbsolute : scaleRelative).c_str());
 
    SetDlgItemText(IDC_NEAR_PLANE, f2sz(5.0f).c_str());
    SetDlgItemText(IDC_VR_SLOPE, f2sz(6.5f).c_str());
@@ -363,8 +360,6 @@ BOOL VROptionsDialog::OnInitDialog()
       AddToolTip("Attempt to capture the PUP player window and display it as a Backglass in VR.", hwndDlg, toolTipHwnd, GetDlgItem(IDC_CAP_PUP).GetHwnd());
    }
 
-   char tmp[256];
-
    #ifdef ENABLE_XR
       ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), FALSE);
@@ -387,13 +382,8 @@ BOOL VROptionsDialog::OnInitDialog()
    const bool shrinkToFit = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ShrinkPreview"s, false);
    SendDlgItemMessage(IDC_SHRINK, BM_SETCHECK, shrinkToFit ? BST_CHECKED : BST_UNCHECKED, 0);
 
-   const int vrPreviewWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640);
-   sprintf_s(tmp, sizeof(tmp), "%d", vrPreviewWidth);
-   SetDlgItemText(IDC_VRPREVIEW_WIDTH, tmp);
-
-   const int vrPreviewHeight = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 640);
-   sprintf_s(tmp, sizeof(tmp), "%d", vrPreviewHeight);
-   SetDlgItemText(IDC_VRPREVIEW_HEIGHT, tmp);
+   SetDlgItemText(IDC_VRPREVIEW_WIDTH, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewWidth"s, 640)).c_str());
+   SetDlgItemText(IDC_VRPREVIEW_HEIGHT, std::to_string(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "PreviewHeight"s, 640)).c_str());
 
    const bool scaleToFixedWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
    oldScaleValue = scaleToFixedWidth;
@@ -402,8 +392,7 @@ BOOL VROptionsDialog::OnInitDialog()
    scaleRelative = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
    scaleAbsolute = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleAbsolute"s, 55.0f);
 
-   sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
-   SetDlgItemText(IDC_VR_SCALE, tmp);
+   SetDlgItemText(IDC_VR_SCALE, f2sz(scaleToFixedWidth ? scaleAbsolute : scaleRelative).c_str());
 
    SetDlgItemText(IDC_NEAR_PLANE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f)).c_str());
    SetDlgItemText(IDC_VR_SLOPE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f)).c_str());
@@ -631,9 +620,7 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             else
                scaleRelative = tmpf;
 
-            char tmp[256];
-            sprintf_s(tmp, sizeof(tmp), isScaleToLockbarWidth ? "%0.1f" : "%0.3f", isScaleToLockbarWidth ? scaleAbsolute : scaleRelative);
-            SetDlgItemText(IDC_VR_SCALE, tmp);
+            SetDlgItemText(IDC_VR_SCALE, f2sz(isScaleToLockbarWidth ? scaleAbsolute : scaleRelative).c_str());
             oldScaleValue = isScaleToLockbarWidth;
          }
          #endif
