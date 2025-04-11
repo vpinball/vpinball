@@ -13,7 +13,6 @@
 
 Gate::Gate()
 {
-   m_d.m_type = GateWireW;
 }
 
 Gate::~Gate()
@@ -420,7 +419,7 @@ void Gate::Render(const unsigned int renderMask)
    TRACE_FUNCTION();
 
    if (isStaticOnly 
-   || !m_phitgate->m_gateMover.m_visible 
+   || !m_d.m_visible 
    || (isReflectionPass && !m_d.m_reflectionEnabled))
       return;
 
@@ -850,54 +849,60 @@ STDMETHODIMP Gate::put_Collidable(VARIANT_BOOL newVal)
    return S_OK;
 }
 
-STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable gate, for graphic effects only
+// Animate gate toward a givendirection or angle at the given speed, disabling physics, for graphic effects only
+// dir: 0 => use angle for direction, -1 => close, +1 => open. Note that dir is not used if angle is not 0
+// speed: <0 => default speed, otherwise speed in degrees/sec
+// angle: 0 => use dir for angle, otherwise angle in degrees
+STDMETHODIMP Gate::Move(int dir, float speed, float angle)
 {
-   if (g_pplayer)
+   if (m_phitgate == nullptr)
+      return S_OK;
+
+   m_phitgate->m_gateMover.m_hitDirection = false;
+
+   m_phitgate->m_gateMover.m_forcedMove = true;
+   m_phitgate->m_gateMover.m_open = true; // move always turns off natural swing
+   m_phitgate->m_enabled = false;         // and collidable off
+   if (!m_d.m_twoWay)
+      m_plineseg->m_enabled = false;
+
+   if (speed <= 0.0f)
+      speed = 0.2f;                     // default gate angle speed
+   else
+      speed *= (float)(M_PI / 180.0);   // convert to radians
+
+   if (dir == 0 || angle != 0) // if no direction or non-zero angle
    {
-      m_phitgate->m_gateMover.m_hitDirection = false;
-
-      m_phitgate->m_gateMover.m_forcedMove = true;
-      m_phitgate->m_gateMover.m_open = true; // move always turns off natural swing
-      m_phitgate->m_enabled = false;         // and collidable off
-      if (!m_d.m_twoWay)
-         m_plineseg->m_enabled = false;
-
-      if (speed <= 0.0f) speed = 0.2f;       //default gate angle speed
-      else speed *= (float)(M_PI / 180.0);   // convert to radians
-
-      if (!dir || angle != 0)                // if no direction or non-zero angle
+      angle = clamp(angle * (float)(M_PI / 180.0), m_d.m_angleMin, m_d.m_angleMax);
+      const float da = angle - m_phitgate->m_gateMover.m_angle; //calc true direction
+      if (da > 1.0e-5f)
+         dir = +1;
+      else if (da < -1.0e-5f)
+         dir = -1;
+      else
       {
-         angle *= (float)(M_PI / 180.0);     // convert to radians
-
-         if (angle < m_d.m_angleMin) angle = m_d.m_angleMin;
-         else if (angle > m_d.m_angleMax) angle = m_d.m_angleMax;
-
-         const float da = angle - m_phitgate->m_gateMover.m_angle; //calc true direction
-
-         if (da > 1.0e-5f) dir = +1;
-         else if (da < -1.0e-5f) dir = -1;
-         else
-         {
-            dir = 0;                                  // do nothing
-            m_phitgate->m_gateMover.m_anglespeed = 0; //stop 
-         }
+         dir = 0;                                  // do nothing
+         m_phitgate->m_gateMover.m_anglespeed = 0; //stop 
       }
-      else { angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax; } //dir selected and angle not specified			
+   }
+   else
+   { // dir selected and angle not specified
+      angle = (dir < 0) ? m_d.m_angleMin : m_d.m_angleMax;
+   }
 
-      if (dir > 0)
-      {
-         m_phitgate->m_gateMover.m_angleMax = angle;
+   if (dir > 0)
+   {
+      m_phitgate->m_gateMover.m_angleMax = angle;
 
-         if (m_phitgate->m_gateMover.m_angle < m_phitgate->m_gateMover.m_angleMax)
-            m_phitgate->m_gateMover.m_anglespeed = speed;
-      }
-      else if (dir < 0)
-      {
-         m_phitgate->m_gateMover.m_angleMin = angle;
+      if (m_phitgate->m_gateMover.m_angle < m_phitgate->m_gateMover.m_angleMax)
+         m_phitgate->m_gateMover.m_anglespeed = speed;
+   }
+   else if (dir < 0)
+   {
+      m_phitgate->m_gateMover.m_angleMin = angle;
 
-         if (m_phitgate->m_gateMover.m_angle > m_phitgate->m_gateMover.m_angleMin)
-            m_phitgate->m_gateMover.m_anglespeed = -speed;
-      }
+      if (m_phitgate->m_gateMover.m_angle > m_phitgate->m_gateMover.m_angleMin)
+         m_phitgate->m_gateMover.m_anglespeed = -speed;
    }
 
    return S_OK;
@@ -905,19 +910,13 @@ STDMETHODIMP Gate::Move(int dir, float speed, float angle) //move non-collidable
 
 STDMETHODIMP Gate::get_Friction(float *pVal)
 {
-   *pVal = (g_pplayer) ? m_phitgate->m_gateMover.m_friction : m_d.m_friction;
+   *pVal = m_d.m_friction;
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Friction(float newVal)
 {
-   newVal = clamp(newVal, 0.f,1.f);
-
-   if (g_pplayer)
-      m_phitgate->m_gateMover.m_friction = newVal;
-   else
-      m_d.m_friction = newVal;
-
+   m_d.m_friction = clamp(newVal, 0.f, 1.f);
    return S_OK;
 }
 
@@ -958,17 +957,13 @@ STDMETHODIMP Gate::put_GravityFactor(float newVal)
 
 STDMETHODIMP Gate::get_Visible(VARIANT_BOOL *pVal)
 {
-   *pVal = FTOVB((g_pplayer) ? m_phitgate->m_gateMover.m_visible : m_d.m_visible);
+   *pVal = FTOVB(m_d.m_visible);
    return S_OK;
 }
 
 STDMETHODIMP Gate::put_Visible(VARIANT_BOOL newVal)
 {
-   if (g_pplayer)
-      m_phitgate->m_gateMover.m_visible = VBTOb(newVal);
-   else
-      m_d.m_visible = VBTOb(newVal);
-
+   m_d.m_visible = VBTOb(newVal);
    return S_OK;
 }
 

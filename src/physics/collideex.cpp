@@ -148,9 +148,6 @@ HitGate::HitGate(Gate* const pgate, const float height)
    m_gateMover.m_angleMin = pgate->m_d.m_angleMin;
    m_gateMover.m_angleMax = pgate->m_d.m_angleMax;
 
-   m_gateMover.m_friction = pgate->m_d.m_friction;
-   m_gateMover.m_visible = pgate->m_d.m_visible;
-
    m_gateMover.m_angle = m_gateMover.m_angleMin;
    m_gateMover.m_anglespeed = 0.0f;
    m_gateMover.m_damping = powf(pgate->m_d.m_damping, (float)PHYS_FACTOR); // 0.996f;

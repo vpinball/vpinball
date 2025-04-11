@@ -19,7 +19,7 @@ public:
    string m_szSurface;
    float m_angleMin;
    float m_angleMax;
-   GateType m_type;
+   GateType m_type = GateWireW;
    bool m_showBracket;
    bool m_twoWay;
 };
@@ -110,7 +110,7 @@ private:
 
    LineSeg *m_plineseg = nullptr;
    HitGate *m_phitgate = nullptr;
-   float m_lastAngle;
+   float m_lastAngle = FLT_MAX;
 
    float m_vertexbuffer_angle = FLT_MAX;
    MeshBuffer *m_wireMeshBuffer = nullptr;
@@ -121,7 +121,7 @@ private:
    unsigned int m_numVertices = 0;
    unsigned int m_numIndices = 0;
 
-   float m_baseHeight;
+   float m_baseHeight = 0.f;
 
    // IGate
 public:

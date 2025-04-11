@@ -348,7 +348,8 @@ void FlipperMoverObject::UpdateDisplacements(const float dtime)
          g_pplayer->m_pininput.m_leftkey_down_usec_EOS = usec(); // debug only
          g_pplayer->m_pininput.m_leftkey_down_frame_EOS = g_pplayer->m_overall_frames;
       }
-      else if (m_enableRotateEvent < 0) m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
+      else if (m_enableRotateEvent < 0)
+         m_pflipper->FireVoidEventParm(DISPID_LimitEvents_BOS, anglespd); // send Beginning of Stroke/Park event
 
       m_enableRotateEvent = 0;
    }

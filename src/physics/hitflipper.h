@@ -67,7 +67,6 @@ public:
    bool m_isInContact;
 
    bool m_enabled;
-   bool m_visible;
    bool m_lastHitFace;
 
 #ifdef DEBUG_FLIPPERS
