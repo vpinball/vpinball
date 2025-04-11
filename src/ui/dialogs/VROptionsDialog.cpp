@@ -328,13 +328,13 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   SetDlgItemText(IDC_NEAR_PLANE, f2sz(5.0f));
-   SetDlgItemText(IDC_VR_SLOPE, f2sz(6.5f));
+   SetDlgItemText(IDC_NEAR_PLANE, f2sz(5.0f).c_str());
+   SetDlgItemText(IDC_VR_SLOPE, f2sz(6.5f).c_str());
 
-   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(0.0f));
-   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(0.0f));
-   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(0.0f));
-   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(80.0f));
+   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(0.0f).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(0.0f).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(0.0f).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(80.0f).c_str());
 
    SendDlgItemMessage(IDC_TURN_VR_ON, CB_SETCURSEL, 1, 0);
 
