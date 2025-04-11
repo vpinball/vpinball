@@ -141,17 +141,7 @@ static HRESULT WINAPI GetRef_Invoke(IDispatch *iface, DISPID id, REFIID riid, LC
        return E_FAIL;
 
     if (id == DISPID_VALUE && (flags & DISPATCH_METHOD)) {
-       if (dp->cArgs == 0 && (flags & DISPATCH_PROPERTYGET)) {
-          IDispatch *disp = &This->IDispatch_iface;
-          IDispatch_AddRef(disp);
-          V_VT(res) = VT_DISPATCH;
-          V_DISPATCH(res) = disp;
-
-          return S_OK;
-       }
-       else {
-          return exec_script(This->ctx, FALSE, This->func, NULL, dp, res);
-       }
+       return exec_script(This->ctx, FALSE, This->func, NULL, dp, res);
     }
 
     return DISP_E_UNKNOWNNAME;
