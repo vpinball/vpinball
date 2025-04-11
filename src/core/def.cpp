@@ -1,11 +1,10 @@
 // license:GPLv3+
 
 #include "core/stdafx.h"
+
 #ifndef __STANDALONE__
 #include <Intshcut.h>
-#endif
-
-#ifdef __STANDALONE__
+#else
 #include <dirent.h>
 #include <sys/stat.h>
 #include "standalone/PoleStorage.h"
@@ -14,11 +13,31 @@
 #include <iomanip>
 #include <filesystem>
 
+static const char point = std::use_facet<std::numpunct<char>>(std::locale("")).decimal_point(); // gets the OS locale decimal point (e.g. ',' or '.')
+
 unsigned long long mwc64x_state = 4077358422479273989ull;
 
 
-float sz2f(const string& sz)
+// used by dialogues, etc, locale specific, otherwise use e.g. std::stof() directly
+float sz2f(string sz)
 {
+#if 1
+   if (point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
+   {
+      const size_t pos = sz.find_first_of(point);
+      if (pos != string::npos)
+         sz[pos] = '.';
+   }
+
+   const char* const szp = sz.c_str();
+   char* sze;
+   const float result = std::strtof(szp, &sze);
+
+   if (szp == sze)
+      return 0.0f; //!! use inf or NaN instead?
+
+   return result;
+#else
    const int len = (int)sz.length()+1;
    WCHAR * const wzT = new WCHAR[len];
    MultiByteToWideCharNull(CP_ACP, 0, sz.c_str(), -1, wzT, len);
@@ -37,10 +56,28 @@ float sz2f(const string& sz)
    delete[] wzT;
 
    return result;
+#endif
 }
 
+// used by dialogues, etc, locale specific, otherwise use e.g. std::to_string() directly
 string f2sz(const float f)
 {
+#if 1
+   string sz = std::to_string(f);
+   const size_t pos = sz.find_first_of('.');
+   if (pos != string::npos)
+   {
+      if (point != '.') // fix locales that use a ',' instead of the C '.' as decimal point
+         sz[pos] = point;
+
+      size_t pos0 = sz.find_last_not_of('0');
+      if (pos0 == pos)
+         pos0++;
+      sz.erase(pos0 + 1, string::npos); // remove trailing zeros, but leave .0 for integers (line above), as then its clearer that a decimal point can be used for a certain setting!
+   }
+
+   return sz;
+#else
    CComVariant var = f;
 
    if (SUCCEEDED(VariantChangeType(&var, &var, 0, VT_BSTR)))
@@ -52,7 +89,8 @@ string f2sz(const float f)
       return tmp;
    }
    else
-      return "0.0"s; //!! must this be somehow localized, i.e. . vs ,
+      return "0.0"s; //!! should be localized! i.e. . vs ,
+#endif
 }
 
 void WideStrNCopy(const WCHAR* wzin, WCHAR* wzout, const size_t wzoutMaxLen)
