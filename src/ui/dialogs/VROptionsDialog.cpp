@@ -328,29 +328,13 @@ void VROptionsDialog::ResetVideoPreferences()
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   constexpr float vrNearPlane = 5.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
-   SetDlgItemText(IDC_NEAR_PLANE, tmp);
+   SetDlgItemText(IDC_NEAR_PLANE, f2sz(5.0f));
+   SetDlgItemText(IDC_VR_SLOPE, f2sz(6.5f));
 
-   constexpr float vrSlope = 6.5f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrSlope);
-   SetDlgItemText(IDC_VR_SLOPE, tmp);
-
-   constexpr float vrOrientation = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrOrientation);
-   SetDlgItemText(IDC_3D_VR_ORIENTATION, tmp);
-
-   constexpr float vrX = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrX);
-   SetDlgItemText(IDC_VR_OFFSET_X, tmp);
-
-   constexpr float vrY = 0.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrY);
-   SetDlgItemText(IDC_VR_OFFSET_Y, tmp);
-
-   constexpr float vrZ = 80.0f;
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
-   SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
+   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(0.0f));
+   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(0.0f));
+   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(0.0f));
+   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(80.0f));
 
    SendDlgItemMessage(IDC_TURN_VR_ON, CB_SETCURSEL, 1, 0);
 
@@ -421,29 +405,12 @@ BOOL VROptionsDialog::OnInitDialog()
    sprintf_s(tmp, sizeof(tmp), scaleToFixedWidth ? "%0.1f" : "%0.3f", scaleToFixedWidth ? scaleAbsolute : scaleRelative);
    SetDlgItemText(IDC_VR_SCALE, tmp);
 
-   const float vrNearPlane = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrNearPlane);
-   SetDlgItemText(IDC_NEAR_PLANE, tmp);
-
-   const float vrSlope = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
-   sprintf_s(tmp, sizeof(tmp), "%0.2f", vrSlope);
-   SetDlgItemText(IDC_VR_SLOPE, tmp);
-
-   const float vrOrientation = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrOrientation);
-   SetDlgItemText(IDC_3D_VR_ORIENTATION, tmp);
-
-   const float vrX = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrX);
-   SetDlgItemText(IDC_VR_OFFSET_X, tmp);
-
-   const float vrY = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrY);
-   SetDlgItemText(IDC_VR_OFFSET_Y, tmp);
-
-   const float vrZ = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
-   sprintf_s(tmp, sizeof(tmp), "%0.1f", vrZ);
-   SetDlgItemText(IDC_VR_OFFSET_Z, tmp);
+   SetDlgItemText(IDC_NEAR_PLANE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f)).c_str());
+   SetDlgItemText(IDC_VR_SLOPE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f)).c_str());
+   SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f)).c_str());
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -658,12 +625,11 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
             ::EnableWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), isScaleToLockbarWidth ? FALSE : TRUE);         
          #else
          if (oldScaleValue != isScaleToLockbarWidth) {
-            CString tmpStr = GetDlgItemText(IDC_VR_SCALE);
-            tmpStr.Replace(',', '.');
+            const float tmpf = sz2f(GetDlgItemText(IDC_VR_SCALE).GetString());
             if (oldScaleValue)
-               scaleAbsolute = (float)atof(tmpStr.c_str());
+               scaleAbsolute = tmpf;
             else
-               scaleRelative = (float)atof(tmpStr.c_str());
+               scaleRelative = tmpf;
 
             char tmp[256];
             sprintf_s(tmp, sizeof(tmp), isScaleToLockbarWidth ? "%0.1f" : "%0.3f", isScaleToLockbarWidth ? scaleAbsolute : scaleRelative);
@@ -728,27 +694,27 @@ void VROptionsDialog::OnOK()
    const bool shrinkToFit = IsDlgButtonChecked(IDC_SHRINK) != 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ShrinkPreview"s, shrinkToFit);
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewWidth"s, GetDlgItemText(IDC_VRPREVIEW_WIDTH).c_str());
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewHeight"s, GetDlgItemText(IDC_VRPREVIEW_HEIGHT).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewWidth"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_WIDTH).GetString()));
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "PreviewHeight"s, sz2f(GetDlgItemText(IDC_VRPREVIEW_HEIGHT).GetString()));
 
    const bool scaleToFixedWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)!= 0;
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "ScaleToFixedWidth"s, scaleToFixedWidth);
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "ScaleAbsolute"s : "ScaleRelative"s, GetDlgItemText(IDC_VR_SCALE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "ScaleAbsolute"s : "ScaleRelative"s, sz2f(GetDlgItemText(IDC_VR_SCALE).GetString()));
    //g_pvp->m_settings.SaveValue(Settings::PlayerVR, scaleToFixedWidth ? "ScaleRelative"s : "ScaleAbsolute"s, scaleToFixedWidth ? scaleRelative : scaleAbsolute); //Also update hidden value?
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NearPlane"s, GetDlgItemText(IDC_NEAR_PLANE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "NearPlane"s, sz2f(GetDlgItemText(IDC_NEAR_PLANE).GetString()));
 
    //For compatibility keep these in Player instead of PlayerVR
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, GetDlgItemText(IDC_VR_SLOPE).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Slope"s, sz2f(GetDlgItemText(IDC_VR_SLOPE).GetString()));
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Orientation"s, GetDlgItemText(IDC_3D_VR_ORIENTATION).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "Orientation"s, sz2f(GetDlgItemText(IDC_3D_VR_ORIENTATION).GetString()));
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableX"s, GetDlgItemText(IDC_VR_OFFSET_X).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableX"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_X).GetString()));
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, GetDlgItemText(IDC_VR_OFFSET_Y).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableY"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_Y).GetString()));
 
-   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, GetDlgItemText(IDC_VR_OFFSET_Z).c_str());
+   g_pvp->m_settings.SaveValue(Settings::PlayerVR, "TableZ"s, sz2f(GetDlgItemText(IDC_VR_OFFSET_Z).GetString()));
 
    const size_t askToTurnOn = SendDlgItemMessage(IDC_TURN_VR_ON, CB_GETCURSEL, 0, 0);
    g_pvp->m_settings.SaveValue(Settings::PlayerVR, "AskToTurnOn"s, (int)askToTurnOn);
