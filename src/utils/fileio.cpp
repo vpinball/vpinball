@@ -109,7 +109,7 @@ string PathFromFilename(const string &szfilename)
       end = len - 1;
 
    // copy from the start of the string to the end (or last '\')
-   const char * szT = szfilename.c_str();
+   const char *szT = szfilename.c_str();
    int count = end + 1;
 
    string szpath;

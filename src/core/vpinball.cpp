@@ -3078,7 +3078,7 @@ static unsigned int GenerateTournamentFileInternal(BYTE *const dmd_data, const u
    vector<string> vbsFiles;
    while(textPos < textEnd)
    {
-      const char* const textFound = strstr(textPos,".vbs\"");
+      const char* const textFound = StrStrI(textPos,".vbs\"");
       if(textFound == nullptr)
          break;
       textPos = textFound+1;

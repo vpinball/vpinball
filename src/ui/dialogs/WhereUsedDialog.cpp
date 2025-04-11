@@ -125,16 +125,13 @@ INT_PTR WhereUsedDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
          for (const WhereUsedInfo &where : vWhereUsed)
          {
             //Create Listview Item
-            LPSTR srcImage;
-            LPSTR usedByObject;
-            LPSTR usedByPropertyName;
-            srcImage = LPSTR(where.searchObjectName.c_str());
+            LPSTR srcImage = LPSTR(where.searchObjectName.c_str());
 
             // Convert the string into an ANSI string
             CW2A szUsedByObject(where.whereUsedObjectname);
             // Now Convert it to a LPSTR
-            usedByObject = LPSTR(szUsedByObject);
-            usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
+            LPSTR usedByObject = LPSTR(szUsedByObject);
+            LPSTR usedByPropertyName = LPSTR(where.whereUsedPropertyName.c_str());
 
             LVITEM lvitem;
             lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;

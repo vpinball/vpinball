@@ -60,7 +60,7 @@ void LightStatesProperty::UpdateProperties(const int dispid)
             }
             case IDC_BLINK_PATTERN_EDIT:
             {
-                const string pattern(m_blinkPatternEdit.GetWindowText().c_str());
+                const string pattern(m_blinkPatternEdit.GetWindowText().GetString());
                 if (pattern != light->m_d.m_rgblinkpattern)
                 {
                     PropertyDialog::StartUndo(light);

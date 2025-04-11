@@ -181,7 +181,7 @@ BOOL LayersListDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 
    case IDC_LAYER_FILTER_EDIT:
    case IDC_LAYER_FILTER_CASE_BUTTON:
-      m_layerTreeView.SetFilter(m_layerFilterEditBox.GetWindowText().c_str(), m_layerFilterCaseButton.GetCheck() == BST_UNCHECKED);
+      m_layerTreeView.SetFilter(m_layerFilterEditBox.GetWindowText().GetString(), m_layerFilterCaseButton.GetCheck() == BST_UNCHECKED);
       return TRUE;
 
    default: break;

@@ -981,7 +981,7 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    VPX::Window::GetDisplays(displays);
    for (const VPX::Window::DisplayConfig& disp : displays)
    {
-      if (disp.adapter == m_outputWnd[0]->GetAdapterId() && strstr(disp.GPU_Name, "PerfHUD") != 0)
+      if (disp.adapter == m_outputWnd[0]->GetAdapterId() && strstr(disp.GPU_Name, "PerfHUD") != nullptr)
       {
          devtype = D3DDEVTYPE_REF;
          break;

@@ -204,12 +204,12 @@ BOOL TableInfoDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_GOWEBSITE:
       {
-         OpenURL(m_websiteEdit.GetWindowText().c_str());
+         OpenURL(m_websiteEdit.GetWindowText().GetString());
          break;
       }
       case IDC_SENDMAIL:
       {
-         const string url = "mailto:"s + m_emailEdit.GetWindowText().c_str() + "?subject=" + m_tableNameEdit.GetWindowText().c_str();
+         const string url = "mailto:" + m_emailEdit.GetWindowText().GetString() + "?subject=" + m_tableNameEdit.GetWindowText().GetString();
          OpenURL(url);
          break;
       }
@@ -223,23 +223,23 @@ void TableInfoDialog::OnOK()
 {
    CCO(PinTable) * const pt = g_pvp->GetActiveTable();
 
-   pt->m_szTableName = m_tableNameEdit.GetWindowText();
-   pt->m_szAuthor = m_authorEdit.GetWindowText();
-   pt->m_szVersion = m_versionEdit.GetWindowText();
-   pt->m_szReleaseDate = m_releaseEdit.GetWindowText();
-   pt->m_szAuthorEMail = m_emailEdit.GetWindowText();
-   pt->m_szWebSite = m_websiteEdit.GetWindowText();
-   pt->m_szBlurb = m_blurbEdit.GetWindowText();
-   pt->m_szDescription = m_descriptionEdit.GetWindowText();
-   pt->m_szRules = m_rulesEdits.GetWindowTextA();
+   pt->m_szTableName = m_tableNameEdit.GetWindowText().GetString();
+   pt->m_szAuthor = m_authorEdit.GetWindowText().GetString();
+   pt->m_szVersion = m_versionEdit.GetWindowText().GetString();
+   pt->m_szReleaseDate = m_releaseEdit.GetWindowText().GetString();
+   pt->m_szAuthorEMail = m_emailEdit.GetWindowText().GetString();
+   pt->m_szWebSite = m_websiteEdit.GetWindowText().GetString();
+   pt->m_szBlurb = m_blurbEdit.GetWindowText().GetString();
+   pt->m_szDescription = m_descriptionEdit.GetWindowText().GetString();
+   pt->m_szRules = m_rulesEdits.GetWindowTextA().GetString();
 
    const CString sshot = GetDlgItem(IDC_SCREENSHOT).GetWindowText();
 
    const LocalString ls(IDS_NONE);
-   if (!lstrcmp(sshot.c_str(), ls.m_szbuffer))
+   if (sshot.GetString() == ls.m_szbuffer)
       pt->m_szScreenShot.clear();
    else
-      pt->m_szScreenShot = sshot.c_str();
+      pt->m_szScreenShot = sshot.GetString();
 
    // Clear old custom values, read back new ones
    pt->m_vCustomInfoTag.clear();
@@ -249,10 +249,10 @@ void TableInfoDialog::OnOK()
    for (int i = 0; i < customcount; i++)
    {
       const CString name = m_customListView.GetItemText(i, 0, MAXSTRING);
-      pt->m_vCustomInfoTag.push_back(name.c_str());
+      pt->m_vCustomInfoTag.push_back(name.GetString());
 
       const CString value = m_customListView.GetItemText(i, 1, MAXSTRING);
-      pt->m_vCustomInfoContent.push_back(value.c_str());
+      pt->m_vCustomInfoContent.push_back(value.GetString());
    }
 
    pt->SetNonUndoableDirty(eSaveDirty);

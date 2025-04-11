@@ -760,7 +760,7 @@ HRESULT DynamicTypeLibrary::Invoke(const ScriptClassDef * classDef, void* native
       std::stringstream ss;
       ss << "Invoke Call: " << classDef->name.name << '.' << memberDef.name.name << '(';
       for (unsigned int i = 0; i < pDispParams->cArgs; i++)
-         ss << ((i != 0) ? ", " : "") << ScriptVariantToString(memberDef.callArgType[i], args[i]).c_str();
+         ss << ((i != 0) ? ", " : "") << ScriptVariantToString(memberDef.callArgType[i], args[i]);
       PLOGD << ss.str() << ')';
    #endif
 

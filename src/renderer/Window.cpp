@@ -72,7 +72,7 @@ Window::Window(const string &title, const Settings::Section section, const strin
    // Look for 'NVIDIA PerfHUD' adapter. If it is present, override default settings (this only takes effect if run under NVPerfHud)
    for (const DisplayConfig& dispConf : displays)
    {
-      if (strstr(dispConf.GPU_Name, "PerfHUD") != 0)
+      if (strstr(dispConf.GPU_Name, "PerfHUD") != nullptr)
       {
          m_display = dispConf.display;
          break;

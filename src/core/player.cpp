@@ -2024,7 +2024,7 @@ void Player::FinishFrame()
       m_closing = CS_CLOSE_APP;
 #if (defined(__APPLE__) && (defined(TARGET_OS_TV) && TARGET_OS_TV))
       PLOGE.printf("Runtime error detected. Resetting LaunchTable to default.");
-      g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
+      g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx"s);
 #endif
 #endif
    }

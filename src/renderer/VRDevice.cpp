@@ -434,7 +434,7 @@ VRDevice::VRDevice()
       {
          for (auto& layerProperty : apiLayerProperties)
          {
-            if (strcmp(requestLayer.c_str(), layerProperty.layerName) == 0)
+            if (requestLayer == layerProperty.layerName)
             {
                m_activeAPILayers.push_back(requestLayer.c_str());
                break;

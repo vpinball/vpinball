@@ -205,7 +205,7 @@ typedef struct ScriptablePluginAPI
 #define PSC_VAR_SET_uint16(variant, value)        (variant).vUInt16 = value
 #define PSC_VAR_SET_uint32(variant, value)        (variant).vUInt32 = value
 #define PSC_VAR_SET_uint64(variant, value)        (variant).vUInt64 = value
-#define PSC_VAR_SET_string(variant, value)        { const string& v=value; size_t n=v.size()+1; char* p = new char[n];  memcpy(p, v.c_str(), n); (variant).vString = { [](ScriptString* s) { delete[] s->string; }, p }; }
+#define PSC_VAR_SET_string(variant, value)        { const string& v=value; size_t n=v.length()+1; char* p = new char[n];  memcpy(p, v.c_str(), n); (variant).vString = { [](ScriptString* s) { delete[] s->string; }, p }; }
 #define PSC_VAR_SET_enum(type, variant, value)    (variant).vInt = static_cast<int>(value)
 #define PSC_VAR_SET_object(type, variant, value)  (variant).vObject = static_cast<void*>(value);
 

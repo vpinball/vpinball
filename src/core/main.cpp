@@ -596,7 +596,7 @@ public:
          //
 #ifdef __STANDALONE__
          // If the only parameter passed is a vpx table we play it automatically.
-         const bool launchfile = (!valid_param) && (nArgs == 2) && (i==1) && strstr(szArglist[i], ".vpx") == (&szArglist[i][strlen(szArglist[i]) - 4]);
+         const bool launchfile = (!valid_param) && (nArgs == 2) && (i==1) && StrStrI(szArglist[i], ".vpx") == (&szArglist[i][strlen(szArglist[i]) - 4]);
          if(launchfile)
          {
             valid_param = true;
@@ -658,11 +658,11 @@ public:
 
          if (compare_option(szArglist[i], OPTION_VERSION))
          {
-            const string ver = "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL;
+            static const string ver = "Visual Pinball "s + VP_VERSION_STRING_FULL_LITERAL;
 #ifndef __STANDALONE__
             ::MessageBox(NULL, ver.c_str(), "Visual Pinball", MB_OK);
 #else
-            std::cout << ver.c_str() << "\n\n";
+            std::cout << ver << "\n\n";
 #endif
             exit(0);
          }
@@ -951,7 +951,7 @@ public:
       }
 
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
-      m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, VP_VERSION_STRING_DIGITS);
+      m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, string(VP_VERSION_STRING_DIGITS));
 
 #ifndef __STANDALONE__
       Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));

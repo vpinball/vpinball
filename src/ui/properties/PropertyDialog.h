@@ -281,7 +281,7 @@ public:
     
     static float GetFloatTextbox(const CEdit &textbox)
     {
-        const float fv = sz2f(textbox.GetWindowText().c_str());
+        const float fv = sz2f(textbox.GetWindowText().GetString());
         return fv;
     }
 

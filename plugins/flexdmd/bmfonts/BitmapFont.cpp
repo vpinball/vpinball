@@ -151,9 +151,9 @@ SDL_Rect BitmapFont::MeasureFont(const string& text, double maxWidth)
 
    for (size_t i = 0; i < length; i++)
    {
-      const char* chars = text.c_str();
+      const char* const chars = text.c_str();
 
-      char character = chars[i];
+      const char character = chars[i];
 
       if (character == '\n' || character == '\r') {
          if (character == '\n' || i + 1 == length || chars[i + 1] != '\n') {

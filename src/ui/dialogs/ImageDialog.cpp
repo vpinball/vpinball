@@ -240,7 +240,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
-               const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str())/255.f;
+               const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).GetString())/255.f;
                if (ppi->m_alphaTestValue != v)
                {
                   ppi->m_alphaTestValue = v;
@@ -359,7 +359,7 @@ void ImageDialog::UpdateImages()
             Texture * const ppi = (Texture *)lvitem.lParam;
             if (ppi != nullptr)
             {
-                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).c_str())/255.f;
+                const float v = sz2f(GetDlgItemText(IDC_ALPHA_MASK_EDIT).GetString())/255.f;
                 if (ppi->m_alphaTestValue != v)
                 {
                     ppi->m_alphaTestValue = v;
@@ -611,7 +611,7 @@ void ImageDialog::Export()
                   ppi = (Texture*)lvitem.lParam;
                }
 
-               g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, pathName);
+               g_pvp->m_settings.SaveValue(Settings::RecentDir, "ImageDir"s, string(pathName));
             } // finished all selected items
          }
       }

@@ -2557,7 +2557,7 @@ HRESULT PinTable::Save(const bool saveAs)
       char szInitialDir[MAXSTRING];
       strncpy_s(szInitialDir, m_szFileName.c_str(), sizeof(szInitialDir)-1);
       szInitialDir[ofn.nFileOffset] = '\0'; // truncate after folder
-      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, szInitialDir);
+      g_pvp->m_settings.SaveValue(Settings::RecentDir, "LoadDir"s, string(szInitialDir));
 
       {
          MAKE_WIDEPTR_FROMANSI(wszCodeFile, m_szFileName.c_str(), m_szFileName.length());
@@ -4086,16 +4086,16 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                      if (!name.starts_with("Layer_"))
                         return;
                      string shortName = name.substr(6);
-                     auto v = std::ranges::find_if(m_vedit, [shortName](IEditable *e) { return strcmp(e->GetName(), shortName.c_str()) == 0; });
+                     auto v = std::ranges::find_if(m_vedit, [shortName](const IEditable * const e) { return e->GetName() == shortName; });
                      if (v != m_vedit.end())
                         return; // Conflict with another part name
                      if ((shortName.find_first_not_of("0123456789") != std::string::npos) && script.find(shortName) != std::string::npos)
                         return; // (Potential) conflict with a script variable
-                     char elementName[256];
                      for (int i = 0; i < m_vcollection.size(); i++)
                      {
+                        char elementName[256];
                         WideCharToMultiByteNull(CP_ACP, 0, m_vcollection.ElementAt(i)->m_wzName, -1, elementName, sizeof(elementName), nullptr, nullptr);
-                        if (strcmp(elementName, shortName.c_str()) == 0)
+                        if (elementName == shortName)
                            return; // Conflict with a collection name
                      }
                      const int len = (int)shortName.length() + 1;
@@ -7951,7 +7951,7 @@ int PinTable::AddListItem(HWND hwndListView, const string& szName, const string&
    lvitem.mask = LVIF_DI_SETITEM | LVIF_TEXT | LVIF_PARAM;
    lvitem.iItem = 0;
    lvitem.iSubItem = 0;
-   lvitem.pszText = (char*)szName.c_str();
+   lvitem.pszText = (LPSTR)szName.c_str();
    lvitem.lParam = lparam;
 
    const int index = ListView_InsertItem(hwndListView, &lvitem);

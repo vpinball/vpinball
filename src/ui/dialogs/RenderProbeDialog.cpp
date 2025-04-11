@@ -212,10 +212,10 @@ void RenderProbeDialog::SaveProbeFromUI(RenderProbe *const pb)
    RenderProbe::ProbeType type = isReflection ? RenderProbe::PLANE_REFLECTION : RenderProbe::SCREEN_SPACE_TRANSPARENCY;
    vec4 plane;
    pb->GetReflectionPlane(plane);
-   const float vx = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NX).c_str());
-   const float vy = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NY).c_str());
-   const float vz = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NZ).c_str());
-   const float vw = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_DIST).c_str());
+   const float vx = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NX).GetString());
+   const float vy = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NY).GetString());
+   const float vz = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_NZ).GetString());
+   const float vw = sz2f(GetDlgItemText(IDC_REFLECTION_PLANE_DIST).GetString());
    LRESULT reflectionMode = SendDlgItemMessage(IDC_REFLECTION_MAX_LEVEL, CB_GETCURSEL, 0, 0);
    if (reflectionMode == LB_ERR)
       reflectionMode = RenderProbe::REFL_STATIC;

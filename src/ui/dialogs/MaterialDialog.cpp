@@ -37,7 +37,7 @@ void MaterialDialog::EnableAllMaterialDialogItems(const BOOL e)
 
 float MaterialDialog::getItemText(int id)
 {
-   return sz2f(GetDlgItemText(id).c_str());
+   return sz2f(GetDlgItemText(id).GetString());
 }
 
 void MaterialDialog::setItemText(int id, float value)

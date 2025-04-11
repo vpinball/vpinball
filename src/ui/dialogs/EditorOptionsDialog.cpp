@@ -308,7 +308,7 @@ void EditorOptionsDialog::OnOK()
     const int ballSize = GetDlgItemInt(IDC_THROW_BALLS_SIZE_EDIT, nothing, FALSE);
     g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallSize"s, ballSize);
 
-    const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).c_str());
+    const float fv = sz2f(GetDlgItemText(IDC_THROW_BALLS_MASS_EDIT).GetString());
     g_pvp->m_settings.SaveValue(Settings::Editor, "ThrowBallMass"s, fv);
 
     checked = (IsDlgButtonChecked(IDC_DEFAULT_GROUP_COLLECTION_CHECK) == BST_CHECKED);

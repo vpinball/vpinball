@@ -110,8 +110,7 @@ BOOL DebuggerDialog::OnCommand(WPARAM wParam, LPARAM lParam)
 void DebuggerDialog::OnClose()
 {
     g_pplayer->m_debugBallSize = GetDlgItemInt(IDC_THROW_BALL_SIZE_EDIT2, FALSE);
-    const float fv = sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).c_str());
-    g_pplayer->m_debugBallMass = fv;
+    g_pplayer->m_debugBallMass = sz2f(GetDlgItemText(IDC_THROW_BALL_MASS_EDIT2).GetString());
     g_pplayer->m_debugMode = false;
     g_pplayer->m_showDebugger = false;
     ShowWindow(SW_HIDE);

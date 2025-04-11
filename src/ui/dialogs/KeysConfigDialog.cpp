@@ -848,7 +848,7 @@ void KeysConfigDialog::OnOK()
     else
         g_pvp->m_settings.DeleteValue(Settings::Player, "TiltSensitivity"s);
 
-    float tiltInertia = clamp(sz2f(GetDlgItemText(IDC_TILT_INERTIA).c_str()), 0.f, 1000.f);
+    float tiltInertia = clamp(sz2f(GetDlgItemText(IDC_TILT_INERTIA).GetString()), 0.f, 1000.f);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, tiltInertia);
 
     for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
