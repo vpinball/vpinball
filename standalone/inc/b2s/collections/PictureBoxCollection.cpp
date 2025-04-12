@@ -30,9 +30,9 @@ void PictureBoxCollection::Add(B2SPictureBox* pPicbox, eDualMode dualMode)
          pUsedRomIDs4Authentic = pB2SData->GetUsedRomMechIDs4Authentic();
          pUsedRomIDs4Fantasy = pB2SData->GetUsedRomMechIDs4Fantasy();
       }
-      if (dualMode == eDualMode_Both || dualMode == eDualMode_Authentic)
+      if (pUsedRomIDs4Authentic && (dualMode == eDualMode_Both || dualMode == eDualMode_Authentic))
           (*pUsedRomIDs4Authentic)[pPicbox->GetRomID()].push_back(pPicbox);
-      if (dualMode == eDualMode_Both || dualMode == eDualMode_Fantasy)
+      if (pUsedRomIDs4Fantasy && (dualMode == eDualMode_Both || dualMode == eDualMode_Fantasy))
           (*pUsedRomIDs4Fantasy)[pPicbox->GetRomID()].push_back(pPicbox);
    }
 }
