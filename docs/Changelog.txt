@@ -13,7 +13,17 @@ FEATURES:
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 
-- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor or using the LiveUI which as a dedicated UI for it.
+- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor, or using the LiveUI which has a dedicated UI for it
+  For the time being, there are 3 models available for nudge simulation (from keyboard or the cabinet sensor)
+   1. Legacy nudge
+      - Perform a keyboard nudge by applying a force directly to the balls, first in the forward direction, then, after a little while, in the opposite direction
+      - No hardware nudging support
+   2. Acceleration based nudge
+      - Perform a keyboard nudge by applying an impulse to a physics model of the cabinet (spring-mass model)
+      - Acquire cabinet acceleration from sensor and apply it directly to balls
+   3. Velocity based nudge
+      - Perform a keyboard nudge by applying an impulse to a physics model of the cabinet (spring-mass model)
+      - Acquire cabinet velocity from sensor and apply it to the physics model of the cabinet (same spring-mass model as for the keyboard nudge)
 
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11/12, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off)
@@ -42,6 +52,9 @@ FIXES:
 
 - export of a sound from the sound manager will now export the sound file as-is (without adding a wave header in front of non-WAV files)
 - fix wrong/too-loud volume for the test play in the sound manager
+
+- respect the decimal point locale in more UI editboxes (e.g. video/vr/physics preferences)
+  and be more robust against wrong inputs (including the .ini files)
 
 - note that the support for ancient windows versions (e.g. Windows XP) for the DX9 build has been removed in order to be able to use newer compilers
 - due to this, VPX now allows to use the C++20 language feature set, which means that the windows build system requires Visual Studio 2019 or newer
