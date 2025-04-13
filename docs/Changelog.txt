@@ -13,7 +13,7 @@ FEATURES:
 
 - balls can now be created and edited directly from the editor like all other parts, and not only from the script
 
-- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor, or using the LiveUI which has a dedicated UI for it
+- improved physics model for the emulated plumb tilt. Its settings will need to be adjusted either through the main editor, or using the LiveUI which has a dedicated UI for it with live feedback.
   For the time being, there are 3 models available for nudge simulation (from keyboard or the cabinet sensor)
    1. Legacy nudge
       - Perform a keyboard nudge by applying a force directly to the balls, first in the forward direction, then, after a little while, in the opposite direction
@@ -27,10 +27,12 @@ FEATURES:
 
 - add a new flavor of VPX named 'BGFX'. This flavor uses the BGFX library to interface with all the latest rendering backends (Vulkan, Metal, DirectX11/12, OpenGL,...) with some unique benefits:
   . it supports Variable Refresh Rate display (when VSync is switched off)
-  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input latency, more stable gameplay emulation, as well as a performance boost
+  . it uses multiple CPU cores to separately process the rendering from the game simulation, allowing for lower input/physics/controller latency, more stable gameplay emulation, as well as a performance boost
   . it supports rendering to multiple outputs (windows)
 
-- add a new 'DMD view' which renders the virtual DMD to a dedicated window (BGFX variant only)
+- add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The scoreview uses a layout defined in a 'scv' file placed along the table file
+  matching its name, or by automatically selecting one of the default layout matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
+  define the layout.
 
 - add 'raytraced' ball motion blur (BGFX only)
 
@@ -45,6 +47,27 @@ FEATURES:
    The new dialog contains a listview of all the images/materials in use and each table object that is referencing them.
    One can select any row of the listview and click a button on the dialog labeled 'Edit Control' and it will place
    that table object into the 'Properties' editor dialog for you.
+
+- VR was rewritten to use OpenXR instead of OpenVR (OpenVR is still available when using VPX OpenGl variant but is deprecated and will be removed in future
+  versions as it relies on deprecated components and has a few known bugs that won't be solved, like in game UI, invalid colorspace,...). OpenXR is enabled
+  when using the BGFX variant. It comes with the following improvement:
+  . it should work with any OpenXR backend (Virtual Desktop, SteamVR, Meta Quest Link, ...),
+  . correct colorspace for all headset (no more washed out colors needing hacks),
+  . support for color keyed passthrough mode (for example using Virtual Desktop),
+  . implement OpenXR latency reduction framework:
+    - by taking in account the headset latency when rendering,
+    - by providing the headset with information for live reprojection (depth data),
+  . integrate VR with VPX's TweakUI which allows to adjust all settings in game using usual pinball controls, also supporting continuous recentering by
+    keeping reset button pressed.
+
+- number of layers is no more limited. Layers can also be nested and they now have properties:
+  . a visibility mask, that allows to filter on which output or VR mode they are active (playfield, virtual reality, mixed reality, ...)
+  . a space reference, to ease virtual/mixed reality support:
+    - 'playfield' is the default space reference, and is the only one where parts contribute to physics simulation, it corresponds to the usual playfield.
+    - 'room' is tied to the real world room, it is not scaled or inclined like playfield, and should be used for VR room
+    - 'cabinet' is tied to the real world cabinet, it is not inclined like playfield but it is scaled and height offseted to match the real world cabinet
+    - 'cabinet feet' is tied to the real world cabinet feet, unlike 'cabinet' it is not height offseted, allowing to keep cabinet's feet on real room ground
+
 
 FIXES:
 
@@ -61,13 +84,15 @@ FIXES:
 
 - SDL2 code was updated and modernized to SDL3
 
-- the BASS sound engine was replaced/unified with SDL3(_mixer)
+- the BASS sound engine was replaced/unified with SDL3(_mixer), fixing pitch/volume adjustment of 'ogg' file.
+  As a consequence 'ogg' file should now be favored over legacy 'wav'.
 
 - DirectX 8 port for input handling (currently disabled)
 
 - see Changelog_Scripts.txt for the respective core script changes (version 3.62)
 - see CommandReference.txt for the changelog of all the scripting properties/interface changes
 - see Scripts.txt for the actual usage and "documentation" of the scripts that come with VPX
+
 
 VP 10.8.0 Changelog
 ------------------------
