@@ -2467,7 +2467,7 @@
     <None Include="../../src/shaders/bgfx/fs_dmd.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
-    <None Include="../../src/shaders/bgfx/fs_dmd2.sc">
+    <None Include="../../src/shaders/bgfx/fs_display.sc">
       <Filter>shaders\bgfx</Filter>
     </None>
     <None Include="../../src/shaders/bgfx/fs_flasher.sc">
