@@ -63,6 +63,7 @@ public:
    void AssignToSelectedGroup();
    PartGroup* GetSelectedPartGroup() const;
    void ResetView() { m_layerTreeView.ResetView(); }
+   bool IsSyncedOnSelection() const { return m_syncButton.GetCheck() == BST_CHECKED; }
 
    LRESULT OnMouseActivate(UINT msg, WPARAM wparam, LPARAM lparam);
    BOOL PreTranslateMessage(MSG& msg) override;

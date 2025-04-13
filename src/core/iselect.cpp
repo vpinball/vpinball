@@ -304,7 +304,10 @@ bool ISelect::LoadToken(const int id, BiffReader * const pbr)
       {
          string layerName;
          pbr->GetString(layerName);
-         std::ranges::replace(layerName, ' ', '_');
+         std::ranges::transform(
+            layerName.begin(), layerName.end(), layerName.begin(), [](char c) {
+               return ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) ? c : '_';
+            });
          SetPartGroup(this, "Layer_" + layerName);
          break;
       }

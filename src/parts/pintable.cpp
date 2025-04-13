@@ -6851,7 +6851,7 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
     piSelect = m_vmultisel.ElementAt(0);
     if (piSelect && piSelect->GetIEditable() && piSelect->GetIEditable()->GetScriptable())
     {
-        string info = "Layer: " + piSelect->GetIEditable()->GetPathString(false);
+        string info = piSelect->GetIEditable()->GetPathString(false);
         if (piSelect->GetItemType() == eItemPrimitive)
         {
             const Primitive *const prim = (Primitive *)piSelect;
@@ -6861,10 +6861,13 @@ void PinTable::AddMultiSel(ISelect *psel, const bool add, const bool update, con
 #ifndef __STANDALONE__
         m_vpinball->SetStatusBarElementInfo(info);
         m_pcv->SelectItem(piSelect->GetIEditable()->GetScriptable());
-        // Update the layer dialog
-        m_vpinball->GetLayersListDialog()->Update();
 #endif
     }
+
+#ifndef __STANDALONE__
+   if (m_vpinball->GetLayersListDialog()->IsSyncedOnSelection())
+      m_vpinball->GetLayersListDialog()->Update();
+#endif
 }
 
 void PinTable::RefreshProperties()
