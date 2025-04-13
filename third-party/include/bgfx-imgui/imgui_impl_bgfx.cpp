@@ -129,7 +129,7 @@ void ImGui_Implbgfx_RenderDrawLists(int view, int instanceCount, ImDrawData* dra
 
             Sampler* sampler = (Sampler*)cmd->TextureId;
             if (sampler)
-               bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture());
+               bgfx::setTexture(0, g_AttribLocationTex, sampler->GetCoreTexture(true));
             bgfx::setState(state);
             bgfx::setUniform(g_AttribLocationCol, g_SDRColor);
             bgfx::setUniform(g_AttribLocationOfs, g_stereoOfs);

@@ -217,7 +217,7 @@ Sampler::~Sampler()
 }
 
 #if defined(ENABLE_BGFX)
-bgfx::TextureHandle Sampler::GetCoreTexture()
+bgfx::TextureHandle Sampler::GetCoreTexture(bool genMipmaps)
 {
    assert(m_textureUpdate || bgfx::isValid(m_nomipsTexture) || bgfx::isValid(m_mipsTexture));
    // Handle texture initial creation loading and updates on BGFX API thread
@@ -241,8 +241,9 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
    // Handle mipmap generation on BGFX API thread
    if (bgfx::isValid(m_nomipsTexture))
    {
-      // Defer mipmap generation if we are approaching BGFX limits (using magic margins)
-      if (m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 // We approximate the number of framebuffer used by the view index
+      // Defer mipmap generation if we are approaching BGFX limits (using magic margins) or it is not needed
+      if (!genMipmaps
+       || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxFrameBuffers - 16 // We approximate the number of framebuffer used by the view index
        || m_rd->m_activeViewId >= (int)bgfx::getCaps()->limits.maxViews - 32)
          return m_nomipsTexture;
       // TODO BGFX a clean GPU mipmap generation with Kaiser filter would be better than doing a blit to trigger default's driver render target mipmap generation
@@ -264,6 +265,7 @@ bgfx::TextureHandle Sampler::GetCoreTexture()
         activeRT->Activate();
       // Mipmaps have been generated, we can release the framebuffer and base version of the texture (on a view processed after the one actually generating the mipmaps, to ensure correct command execution order)
       bgfx::destroy(mipsFramebuffer);
+      // TODO if a texture with and without mipmaps, then the noMips variant may be in used in this frame (this does not happen in practice)
       bgfx::destroy(m_nomipsTexture);
       m_nomipsTexture = BGFX_INVALID_HANDLE;
    }
@@ -275,7 +277,7 @@ uintptr_t Sampler::GetNativeTexture()
    if (m_texture_override == 0)
    {
       // Lazily create a texture override
-      bgfx::TextureHandle handle = GetCoreTexture();
+      bgfx::TextureHandle handle = GetCoreTexture(false);
       m_texture_override = bgfx::overrideInternal(handle, m_width, m_height, 0, m_bgfx_format, BGFX_TEXTURE_BLIT_DST | BGFX_SAMPLER_NONE);
    }
    return m_texture_override;

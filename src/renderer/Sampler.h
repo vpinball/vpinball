@@ -53,7 +53,7 @@ public:
    Sampler(RenderDevice* rd, const BaseTexture* const surf, const bool force_linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
 #if defined(ENABLE_BGFX)
    Sampler(RenderDevice* rd, SurfaceType type, bgfx::TextureHandle bgfxTexture, unsigned int width, unsigned int height, bool ownTexture, bool linear_rgb, const SamplerAddressMode clampu = SA_UNDEFINED, const SamplerAddressMode clampv = SA_UNDEFINED, const SamplerFilter filter = SF_UNDEFINED);
-   bgfx::TextureHandle GetCoreTexture();
+   bgfx::TextureHandle GetCoreTexture(bool genMipmaps);
    bool IsMipMapGenerated() const { return (m_textureUpdate == nullptr) && !bgfx::isValid(m_nomipsTexture); }
    uintptr_t GetNativeTexture();
 #elif defined(ENABLE_OPENGL)
