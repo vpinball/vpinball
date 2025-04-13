@@ -157,6 +157,8 @@ void main()
 		vec2 dmdUv = displayUv * dmdSize;
 		ivec2 dotPos = ivec2(floor(dmdUv));
 		vec2 dotRelativePos = fract(dmdUv) - vec2_splat(0.5);
+		float thr = 0.15 * (abs(dFdx(dmdUv.x)) + abs(dFdx(dmdUv.y))); // Magic formula to adjust antialiasing to actual gradient
+		float minThr = 0.5 - thr, maxThr = dotThreshold + thr;
 		for (int y = -N_SAMPLES; y <= N_SAMPLES; y++)
 			for (int x = -N_SAMPLES; x <= N_SAMPLES; x++)
 			{
@@ -165,7 +167,7 @@ void main()
 				{
 					// SDF is 0.5 at dot border, increasing inside, linearly decreasing to 0 outside
 					float sdf = clamp(sdfOffset - length(dotRelativePos - vec2(x,y)) * (0.5 / (float(N_SAMPLES) + 0.5)), 0.0, 1.0);
-					float sharp = smoothstep(0.5, dotThreshold, sdf); // Compute dot lighting contribution (0 outside of this dot)
+					float sharp = smoothstep(minThr, maxThr, sdf); // Compute dot lighting contribution (0 outside of this dot)
 					float diffuse = diffuseStrength * sdf * sdf; // Magic formula to evaluate light dispersion at maximum glass roughness
 					float light = mix(sharp, diffuse, roughness);
 					unlitLum += light;

@@ -1484,7 +1484,7 @@
     <None Include="../../src/shaders/bgfx/fs_classic_light.sc" />
     <None Include="../../src/shaders/bgfx/fs_decal.sc" />
     <None Include="../../src/shaders/bgfx/fs_dmd.sc" />
-    <None Include="../../src/shaders/bgfx/fs_dmd2.sc" />
+    <None Include="../../src/shaders/bgfx/fs_display.sc" />
     <None Include="../../src/shaders/bgfx/fs_flasher.sc" />
     <None Include="../../src/shaders/bgfx/fs_imgui.sc" />
     <None Include="../../src/shaders/bgfx/fs_light.sc" />
