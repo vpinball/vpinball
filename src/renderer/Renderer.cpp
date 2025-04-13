@@ -1365,10 +1365,10 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
       { // (fake) depth by applying some parallax mapping
          Vertex3Ds v0(vertices[0].x, vertices[0].y, vertices[0].z);
          Vertex3Ds v1(vertices[1].x, vertices[1].y, vertices[1].z);
-         Vertex3Ds v2(vertices[2].x, vertices[2].y, vertices[2].z);
+         Vertex3Ds v2(vertices[3].x, vertices[3].y, vertices[3].z);
          Vertex2D u0(vertices[0].tu, vertices[0].tv);
          Vertex2D u1(vertices[1].tu, vertices[1].tv);
-         Vertex2D u2(vertices[2].tu, vertices[2].tv);
+         Vertex2D u2(vertices[3].tu, vertices[3].tv);
          Vertex3Ds dv1 = v1 - v0;
          Vertex3Ds dv2 = v2 - v0;
          Vertex2D duv1 = u1 - u0;
@@ -1379,7 +1379,7 @@ void Renderer::SetupDMDRender(int profile, const bool isBackdrop, const vec3& co
          const Matrix3D& mv = GetMVP().GetModelView();
          tangent = mv.MultiplyVectorNoTranslate(tangent);
          bitangent = mv.MultiplyVectorNoTranslate(bitangent);
-         Vertex3Ds eye = (v0 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
+         Vertex3Ds eye = (v1 + v2) * 0.5f; // Suppose a rectangle shape, use opposite corners to get its center
          eye = mv.MultiplyVectorNoPerspective(eye);
          eye.Normalize();
          float tN = tangent.Length();
