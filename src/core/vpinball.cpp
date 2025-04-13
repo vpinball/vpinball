@@ -2255,8 +2255,6 @@ LRESULT VPinball::OnFrontEndControlsMsg(WPARAM wParam, LPARAM lParam)
 LRESULT VPinball::OnMDIActivated(UINT msg, WPARAM wparam, LPARAM lparam)
 {
 #ifndef __STANDALONE__
-   if (m_dockLayers != nullptr)
-      GetLayersListDialog()->Update();
    if (m_dockNotes != nullptr)
       m_dockNotes->Refresh();
    return CMDIFrameT::OnMDIActivated(msg, wparam, lparam);

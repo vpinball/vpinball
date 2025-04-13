@@ -227,9 +227,23 @@ BOOL LayersListDialog::PreTranslateMessage(MSG& msg)
 
 void LayersListDialog::SetActiveTable(PinTable* ptable)
 {
-   m_activeTable = ptable;
-   m_layerTreeView.SetActiveTable(ptable);
-   if (m_syncButton.GetCheck() == BST_CHECKED)
+   if (m_activeTable != ptable)
+   {
+      m_activeTable = ptable;
+      m_layerTreeView.SetActiveTable(ptable);
+      if (IsSyncedOnSelection())
+      {
+         ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
+         m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
+      }
+      UpdateCommands();
+   }
+}
+
+void LayersListDialog::Update()
+{
+   m_layerTreeView.Update();
+   if (IsSyncedOnSelection())
    {
       ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
       m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
@@ -253,16 +267,6 @@ void LayersListDialog::UpdateCommands()
    m_selectButton.EnableWindow(m_activeTable && isPartGroupSelected ? TRUE : FALSE);
 }
 
-void LayersListDialog::Update()
-{
-   m_layerTreeView.Update();
-   if (m_syncButton.GetCheck() == BST_CHECKED)
-   {
-      ISelect* const sel = m_activeTable->m_vmultisel.ElementAt(0);
-      m_layerTreeView.Select(sel ? sel->GetIEditable() : nullptr);
-   }
-   UpdateCommands();
-}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -326,6 +330,7 @@ void LayerTreeView::Update()
 {
    if (m_activeTable == nullptr)
    {
+      m_content.clear();
       DeleteAllItems();
       m_hRootItem = AddItem(nullptr, _T("Layers"), nullptr, 0);
       TreeView_SetItemState(GetHwnd(), m_hRootItem, INDEXTOSTATEIMAGEMASK(1), TVIS_STATEIMAGEMASK);
@@ -333,8 +338,6 @@ void LayerTreeView::Update()
    }
    
    // Build new content list (in the end, a tree is a hierarchically displayed list)
-   std::stringstream ss;
-   vector<PartGroup*> itemPath;
    vector<TreeEntry> newContent;
    const string filter = m_isCaseSensitiveFilter ? lowerCase(m_filter) : m_filter;
    for (const auto& editable : m_activeTable->m_vedit)
@@ -354,18 +357,7 @@ void LayerTreeView::Update()
                continue;
          }
       }
-      itemPath.clear();
-      PartGroup* parent = editable->GetPartGroup();
-      while (parent != nullptr)
-      {
-         itemPath.insert(itemPath.begin(), parent);
-         parent = parent->GetPartGroup();
-      }
-      ss.clear();
-      for (const auto& group : itemPath)
-         ss << group->GetName() << '/';
-      ss << name;
-      newContent.emplace_back(ss.str(), editable, nullptr, false, false);
+      newContent.emplace_back(editable->GetPathString(false), editable, nullptr, false, false);
       StrToLower(newContent.back().path);
    }
    std::ranges::sort(newContent,
