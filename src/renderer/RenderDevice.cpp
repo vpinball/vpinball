@@ -1566,7 +1566,7 @@ void RenderDevice::Flip()
    // Process pending texture upload/mipmap generation before flipping the frame
    for (auto it = m_pendingTextureUploads.cbegin(); it != m_pendingTextureUploads.cend();)
    {
-      (*it)->GetCoreTexture();
+      (*it)->GetCoreTexture(true);
       if ((*it)->IsMipMapGenerated())
       {
          it = m_pendingTextureUploads.erase(it);

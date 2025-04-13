@@ -1117,13 +1117,7 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          Sampler* texel = *(Sampler**)src;
          if (texel == nullptr)
          {
-            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture());
-            return;
-         }
-         bgfx::TextureHandle texHandle = texel->GetCoreTexture();
-         if (!bgfx::isValid(texel->GetCoreTexture()))
-         {
-            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture());
+            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));
             return;
          }
          SamplerFilter filter = texel->GetFilter();
@@ -1184,6 +1178,12 @@ void Shader::ApplyUniform(const ShaderUniforms uniformName)
          case SA_MIRROR: flags |= BGFX_SAMPLER_V_MIRROR; break;
          case SA_REPEAT: /* Default mode, no flag to set */ break;
          default: break;
+         }
+         const bgfx::TextureHandle texHandle = texel->GetCoreTexture(filter != SF_NONE);
+         if (!bgfx::isValid(texHandle))
+         {
+            bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, m_renderDevice->m_nullTexture->GetCoreTexture(false));
+            return;
          }
          bgfx::setTexture(shaderUniformNames[uniformName].tex_unit, desc, texHandle, flags);
 
