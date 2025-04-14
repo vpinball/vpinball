@@ -211,6 +211,7 @@ private:
    CButton m_bamHeadtracking; // TODO move to plugin
 
    CEdit m_lockbarWidth;
+   CEdit m_lockbarHeight;
 
    CEdit m_playfieldScreenWidth;
    CEdit m_playfieldScreenHeight;
@@ -1586,6 +1587,8 @@ BOOL CabinetOptPage::OnInitDialog()
 
    AttachItem(IDC_LOCKBAR_WIDTH, m_lockbarWidth);
    AddToolTip(m_lockbarWidth, "Physical width of the lockbar in centimeters.\r\n\r\nThis is needed for Virtual Reality automatic scaling mode.");
+   AttachItem(IDC_LOCKBAR_HEIGHT_FROM_GROUND, m_lockbarHeight);
+   AddToolTip(m_lockbarHeight, "Physical height of the lockbar in centimeters measured from ground.\r\n\r\nThis is used for Virtual Reality positionning.");
 
    LoadSettings(GetEditedSettings());
    return TRUE;
@@ -1604,7 +1607,8 @@ void CabinetOptPage::LoadSettings(Settings& settings)
    m_playfieldScreenHeight.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f)).c_str());
    m_playfieldScreenInclination.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f)).c_str());
 
-   m_lockbarWidth.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::PlayerVR, "LockbarWidth"s, 0.0f)).c_str());
+   m_lockbarWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarWidth"s)).c_str());
+   m_lockbarHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarHeight"s)).c_str());
    
    EndLoad();
 }
@@ -1620,7 +1624,8 @@ void CabinetOptPage::SaveSettings(Settings& settings, bool saveAll)
    settings.SaveValue(Settings::Player, "ScreenHeight"s, sz2f(GetDlgItemText(IDC_SCREEN_HEIGHT).GetString()), !saveAll);
    settings.SaveValue(Settings::Player, "ScreenInclination"s, sz2f(GetDlgItemText(IDC_SCREEN_INCLINATION).GetString()), !saveAll);
 
-   settings.SaveValue(Settings::PlayerVR, "LockbarWidth"s, sz2f(GetDlgItemText(IDC_LOCKBAR_WIDTH).GetString()), !saveAll);
+   settings.SaveValue(Settings::Player, "LockbarWidth"s, sz2f(GetDlgItemText(IDC_LOCKBAR_WIDTH).GetString()), !saveAll);
+   settings.SaveValue(Settings::Player, "LockbarHeight"s, sz2f(GetDlgItemText(IDC_LOCKBAR_HEIGHT_FROM_GROUND).GetString()), !saveAll);
 }
 
 BOOL CabinetOptPage::OnApply()
@@ -1640,6 +1645,7 @@ BOOL CabinetOptPage::OnCommand(WPARAM wParam, LPARAM lParam)
    case IDC_SCREEN_HEIGHT:
    case IDC_SCREEN_INCLINATION:
    case IDC_LOCKBAR_WIDTH:
+   case IDC_LOCKBAR_HEIGHT_FROM_GROUND:
       if (HIWORD(wParam) == EN_CHANGE)
          PropChanged();
       break;

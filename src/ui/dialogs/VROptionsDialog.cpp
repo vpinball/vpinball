@@ -361,9 +361,30 @@ BOOL VROptionsDialog::OnInitDialog()
    }
 
    #ifdef ENABLE_XR
-      ::EnableWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), FALSE);
-      ::EnableWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), FALSE);
-      SetDlgItemText(IDC_SCALE_TO_CM, "Scale to match lockbar width");
+      ::ShowWindow(GetDlgItem(IDC_SCALE_TO_CM).GetHwnd(), SW_HIDE); // OpenXR always use fixed scale to real world lockbar width
+      ::ShowWindow(GetDlgItem(IDC_VR_SCALE_LABEL).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), SW_HIDE);
+
+      ::ShowWindow(GetDlgItem(IDC_STATIC1).GetHwnd(), SW_HIDE); // No performance/hack option for the time being
+      ::ShowWindow(GetDlgItem(IDC_STATIC2).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_COMBO_TEXTURE).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_STATIC3).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_NEAR_LABEL).GetHwnd(), SW_HIDE); // OpenXR use fixed near plane distance in real world unit
+      ::ShowWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), SW_HIDE);
+
+      ::ShowWindow(GetDlgItem(IDC_BTTABLERECENTER).GetHwnd(), SW_HIDE); // Position is managed through TweakUI, not custom key shortcuts
+      ::ShowWindow(GetDlgItem(IDC_TABLEREC_TEXT).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_JOYTABLERECENTER).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_STATIC4).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_STATIC5).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_STATIC6).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_BTTABLEUP).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_TABLEUP_TEXT).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_JOYTABLEUP).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_BTTABLEDOWN).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_TABLEDOWN_TEXT).GetHwnd(), SW_HIDE);
+      ::ShowWindow(GetDlgItem(IDC_JOYTABLEDOWN).GetHwnd(), SW_HIDE);
+
    #else
       ::EnableWindow(GetDlgItem(IDC_COLOR_BUTTON1).GetHwnd(), FALSE);
       ::EnableWindow(GetDlgItem(IDC_ENABLE_PASSTHROUGH_COLOR).GetHwnd(), FALSE);
@@ -397,9 +418,9 @@ BOOL VROptionsDialog::OnInitDialog()
    SetDlgItemText(IDC_NEAR_PLANE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "NearPlane"s, 5.0f)).c_str());
    SetDlgItemText(IDC_VR_SLOPE, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f)).c_str());
    SetDlgItemText(IDC_3D_VR_ORIENTATION, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f)).c_str());
-   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_X, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableX"s)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Y, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableY"s)).c_str());
+   SetDlgItemText(IDC_VR_OFFSET_Z, f2sz(g_pvp->m_settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s)).c_str());
 
    const int askToTurnOn = g_pvp->m_settings.LoadValueWithDefault(Settings::PlayerVR, "AskToTurnOn"s, 1);
    hwnd = GetDlgItem(IDC_TURN_VR_ON).GetHwnd();
@@ -609,11 +630,13 @@ BOOL VROptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
       }
       case IDC_SCALE_TO_CM:
       {
-         const bool isScaleToLockbarWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM)> 0;
          #ifdef ENABLE_XR
-            ::EnableWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), isScaleToLockbarWidth ? FALSE : TRUE);         
+            // Disable the custom scale as we always scale against the real world lockbar width
+            ::ShowWindow(GetDlgItem(IDC_VR_SCALE).GetHwnd(), SW_HIDE);
          #else
-         if (oldScaleValue != isScaleToLockbarWidth) {
+         const bool isScaleToLockbarWidth = IsDlgButtonChecked(IDC_SCALE_TO_CM) > 0;
+         if (oldScaleValue != isScaleToLockbarWidth)
+         {
             const float tmpf = sz2f(GetDlgItemText(IDC_VR_SCALE).GetString());
             if (oldScaleValue)
                scaleAbsolute = tmpf;

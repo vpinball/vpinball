@@ -1643,7 +1643,6 @@ void LiveUI::UpdateTweakPage()
       m_tweakPageOptions.push_back(BS_VRX);
       m_tweakPageOptions.push_back(BS_VRY);
       m_tweakPageOptions.push_back(BS_VRZ);
-      m_tweakPageOptions.push_back(BS_VRScaleMode);
       m_tweakPageOptions.push_back(BS_VRScale);
       m_tweakPageOptions.push_back(BS_VRSlope);
       m_tweakPageOptions.push_back(BS_AR_VR);
@@ -1853,13 +1852,7 @@ void LiveUI::HandleTweakInput()
          case BS_WndBottomZOfs: viewSetup.mWindowBottomZOfs += 10.f * incSpeed; break;
 
          // VR Position
-         case BS_VRScaleMode: if (keyEvent == 1) m_player->m_vrDevice->SetSceneScaledToLockbarWidth(!m_player->m_vrDevice->IsSceneScaledToLockbarWidth()); break;
-         case BS_VRScale: 
-            if (m_player->m_vrDevice->IsSceneScaledToLockbarWidth())
-               m_player->m_vrDevice->SetLockbarWidth(clamp(m_player->m_vrDevice->GetLockbarWidth() + 1.f * incSpeed, 5.f, 200.f));
-            else
-               m_player->m_vrDevice->SetSceneScale(clamp(m_player->m_vrDevice->GetSceneScale() + 0.05f * incSpeed, 0.1f, 2.f));
-            break;
+         case BS_VRScale: m_player->m_vrDevice->SetLockbarWidth(clamp(m_player->m_vrDevice->GetLockbarWidth() + 1.f * incSpeed, 5.f, 200.f)); break;
          case BS_VRSlope: m_player->m_vrDevice->SetSceneSlope(m_player->m_vrDevice->GetSceneSlope() + 1.f * incSpeed); break;
          case BS_VROrientation: m_player->m_vrDevice->SetSceneOrientation(m_player->m_vrDevice->GetSceneOrientation() + 1.f * incSpeed); break;
          case BS_VRX: { Vertex3Ds pos = m_player->m_vrDevice->GetSceneOffset(); pos.x += 1.f * incSpeed; m_player->m_vrDevice->SetSceneOffset(pos); break; }
@@ -2194,10 +2187,7 @@ void LiveUI::HandleTweakInput()
             }
             else if (m_tweakPages[m_activeTweakPageIndex] == TP_VRPosition)
             {
-               m_player->m_vrDevice->SetSceneOrientation(0.f);
-               m_player->m_vrDevice->SetSceneScale(1.f);
                m_player->m_vrDevice->SetSceneSlope(6.5f);
-               m_player->m_vrDevice->SetSceneOffset(Vertex3Ds(0.f, 0.f, m_player->m_vrDevice->GetSceneOffset().z));
                m_player->m_vrDevice->RecenterTable();
             }
             // Reset custom table/plugin options
@@ -2271,10 +2261,7 @@ void LiveUI::HandleTweakInput()
       else if (keyEvent == 0) // Continuous keypress
       {
          if ((keycode == ePlungerKey) && (m_tweakPages[m_activeTweakPageIndex] == TP_VRPosition)) {
-            m_player->m_vrDevice->SetSceneOrientation(0.f);
-            m_player->m_vrDevice->SetSceneScale(1.f);
             m_player->m_vrDevice->SetSceneSlope(6.5f);
-            m_player->m_vrDevice->SetSceneOffset(Vertex3Ds(0.f, 0.f, m_player->m_vrDevice->GetSceneOffset().z));
             m_player->m_vrDevice->RecenterTable();
          }
          else if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
@@ -2410,17 +2397,7 @@ void LiveUI::UpdateTweakModeUI()
          case BS_VRX: CM_ROW(setting, "Scene Offset X", "%.1f", m_player->m_vrDevice->GetSceneOffset().x, "cm"); break;
          case BS_VRY: CM_ROW(setting, "Scene Offset Y", "%.1f", m_player->m_vrDevice->GetSceneOffset().y, "cm"); break;
          case BS_VRZ: CM_ROW(setting, "Scene Offset Z", "%.1f", m_player->m_vrDevice->GetSceneOffset().z, "cm"); break;
-         case BS_VRScaleMode: CM_ROW(setting, "Scene Scale Mode", "%s", m_player->m_vrDevice->IsSceneScaledToLockbarWidth() ? "To lockbar" : "Relative", ""); break;
-         case BS_VRScale: 
-            if (m_player->m_vrDevice->IsSceneScaledToLockbarWidth())
-            {
-               CM_ROW(setting, "Lockbar width", "%.1f", m_player->m_vrDevice->GetLockbarWidth(), "cm");
-            }
-            else
-            {
-               CM_ROW(setting, "Scene Scale", "%.1f", m_player->m_vrDevice->GetSceneScale() * 100.f, "%");
-            }
-            break;
+         case BS_VRScale: CM_ROW(setting, "Lockbar width", "%.1f", m_player->m_vrDevice->GetLockbarWidth(), "cm"); break;
          case BS_VRSlope: CM_ROW(setting, "Floor Slope", "%.1f", m_player->m_vrDevice->GetSceneSlope(), "°"); break;
          case BS_AR_VR: CM_ROW(setting, "Color Keyed Passthrough:", "%s", m_renderer->m_vrApplyColorKey ? "Enabled" : "Disabled", ""); break;
 
