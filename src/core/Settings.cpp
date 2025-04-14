@@ -40,7 +40,7 @@ Settings::Settings(const Settings* parent)
 {
 }
 
-void Settings::Validate(const Section section, const string &key, const string& defVal, const bool addDefaults)
+void Settings::Validate(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
       m_validatedKeys[section].insert(key);
@@ -51,7 +51,7 @@ void Settings::Validate(const Section section, const string &key, const string& 
       SaveValue(section, key, defVal);
 }
 
-void Settings::Validate(const Section section, const string &key, const bool defVal, const bool addDefaults)
+void Settings::Validate(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
       m_validatedKeys[section].insert(key);
@@ -67,7 +67,7 @@ void Settings::Validate(const Section section, const string &key, const bool def
       SaveValue(section, key, defVal);
 }
 
-void Settings::Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults)
+void Settings::Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
       m_validatedKeys[section].insert(key);
@@ -83,7 +83,7 @@ void Settings::Validate(const Section section, const string &key, const int defV
       SaveValue(section, key, defVal);
 }
 
-void Settings::Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults)
+void Settings::Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
       m_validatedKeys[section].insert(key);
@@ -196,6 +196,7 @@ void Settings::Validate(const bool addDefaults)
 
    //////////////////////////////////////////////////////////////////////////
    // Rendering section
+
    Validate(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, addDefaults);
 
 
@@ -214,6 +215,12 @@ void Settings::Validate(const bool addDefaults)
    Validate(Section::DMD, "DMDWndY"s, 0, -10000, 10000, addDefaults);
    Validate(Section::DMD, "DMDWidth"s, 512, 1, 16384, addDefaults);
    Validate(Section::DMD, "DMDHeight"s, 128, 1, 16384, addDefaults);*/
+
+   //////////////////////////////////////////////////////////////////////////
+   // Playfield view section
+
+   Validate(Section::Player, "MaxFramerate"s, -1.f, 1000.f, -1.f, addDefaults, "Maximum FPS of playfield view (minimum of 24FPS), 0 is unlimited, < 0 is limited to display refresh rate.");
+   Validate(Section::Player, "SyncMode"s, VSM_NONE, VSM_FRAME_PACING, VSM_NONE, addDefaults, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing");
 
    //////////////////////////////////////////////////////////////////////////
    // DMD section

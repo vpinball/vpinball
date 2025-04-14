@@ -1104,29 +1104,17 @@ void RenderOptPage::LoadSettings(Settings& settings)
       
    }
 
-   float maxFPS = settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1.f);
+   float maxFPS = settings.LoadValueFloat(Settings::Player, "MaxFramerate"s);
    if (maxFPS > 0.f && maxFPS <= 24.f) // at least 24 fps
       maxFPS = 24.f;
-   VideoSyncMode syncMode = (VideoSyncMode)settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
-   if (maxFPS < 0.f && syncMode == VideoSyncMode::VSM_INVALID)
-   {
-      const int vsync = settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
-      switch (vsync)
-      {
-      case -1: maxFPS = 0.f; syncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-      case 0: maxFPS = 0.f; syncMode = VideoSyncMode::VSM_NONE; break;
-      case 1: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_VSYNC; break;
-      case 2: maxFPS = -1.f; syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      default: maxFPS = static_cast<float>(vsync); syncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-      }
-   }
    if (maxFPS < 0.f)
       maxFPS = -1.f;
    m_maxFPS.SetWindowText(f2sz(maxFPS).c_str());
+   VideoSyncMode syncMode = static_cast<VideoSyncMode>(settings.LoadValueUInt(Settings::Player, "SyncMode"s));
    #if defined(ENABLE_BGFX)
-   syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
+      syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_VSYNC);
    #else
-   syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_FRAME_PACING);
+      syncMode = (VideoSyncMode)clamp(syncMode, VSM_NONE, VSM_FRAME_PACING);
    #endif
    SendDlgItemMessage(IDC_VIDEO_SYNC_MODE, CB_SETCURSEL, syncMode, 0);
    const int maxPrerenderedFrames = settings.LoadValueWithDefault(Settings::Player, "MaxPrerenderedFrames"s, 0);

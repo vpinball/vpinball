@@ -177,7 +177,7 @@ public:
    bool m_lastFrameSyncOnVBlank = false;
    bool m_lastFrameSyncOnFPS = false;
 
-   float GetTargetRefreshRate() const { return m_maxFramerate < 10000.f ? m_maxFramerate : m_playfieldWnd->GetRefreshRate(); }
+   float GetTargetRefreshRate() const { return m_maxFramerate; }
    bool m_curFrameSyncOnFPS = false;
    
    FrameProfiler m_logicProfiler; // Frame timing profiler to be used when measuring timings from the game logic thread

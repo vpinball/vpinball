@@ -1271,7 +1271,7 @@ void LiveUI::UpdatePerfOverlay()
       {
          ImPlot::SetupAxis(ImAxis_X1, nullptr, rt_axis);
          ImPlot::SetupAxis(ImAxis_Y1, nullptr, ImPlotAxisFlags_LockMin);
-         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / m_player->GetTargetRefreshRate(), ImGuiCond_Always);
+         ImPlot::SetupAxisLimits(ImAxis_Y1, 0, 2000.f / min(m_player->GetTargetRefreshRate(), 200.f), ImGuiCond_Always);
          if (m_plotFPS.m_rolling)
             ImPlot::SetupAxisLimits(ImAxis_X1, 0, m_plotFPS.m_timeSpan, ImGuiCond_Always);
          else

@@ -88,10 +88,10 @@ public:
    bool LoadValue(const Section section, const string &key, int &pint) const;
    bool LoadValue(const Section section, const string &key, unsigned int &val) const;
 
-   void Validate(const Section section, const string &key, const string& defVal, const bool addDefaults);
-   void Validate(const Section section, const string &key, const bool defVal, const bool addDefaults);
-   void Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults);
-   void Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults);
+   void Validate(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = "");
+   void Validate(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = "");
+   void Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = "");
+   void Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = "");
    void Validate(const bool addDefaults);
 
    // The following method must only be used for settings previously validated to guarantee successfull loading

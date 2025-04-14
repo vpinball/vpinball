@@ -372,20 +372,17 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    #ifdef ENABLE_XR
    if (g_pplayer->m_vrDevice)
    {
+      assert((init.resolution.reset & BGFX_RESET_VSYNC) == 0); // Display VSync must be disabled as we are synced by OpenXR on the headset display
       init.type = bgfx::RendererType::Direct3D11; // TODO support other backends
       init.resolution.width = max(init.resolution.width, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeWidth())); // Needed for bgfx::clear to work
       init.resolution.height = max(init.resolution.height, static_cast<uint32_t>(g_pplayer->m_vrDevice->GetEyeHeight())); // Needed for bgfx::clear to work
-      init.resolution.reset &= ~BGFX_RESET_VSYNC; // Disable display VSync as we are synced by OpenXR on the headset display
       init.platformData.context = g_pplayer->m_vrDevice->GetGraphicContext(); // Use the context selected by OpenXR
    }
    #endif
 
-   // Set up to dynamically toggle vsync
-   if (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate())
-      init.resolution.reset &= ~BGFX_RESET_VSYNC; // If targeting a FPS rate higher than display FPS, then entirely disable VSYNC
+   // Store the user requested VSync setting, but always initialize with VSync disabled as we will enable it when needed
    const bool useVSync = init.resolution.reset & BGFX_RESET_VSYNC;
-
-   // Always start with VSync disabled (we will enable it if needed)
+   assert(!(useVSync && (g_pplayer->GetTargetRefreshRate() > rd->m_outputWnd[0]->GetRefreshRate()))); // VSync must be disabled if targeting a refresh rate higher than the display's one
    init.resolution.reset &= ~BGFX_RESET_VSYNC;
 
    g_pplayer->m_renderProfiler->SetThreadLock();
@@ -531,7 +528,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
    #endif
    {
       U64 lastFlipTick = 0;
-      bool vsync = false;
+      bool gpuVSync = false;
 
       // Desktop renderloop, synchronized on main display (playfield window), with game logic preparing frames as soon as possible
       while (rd->m_renderDeviceAlive)
@@ -543,7 +540,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
          if (!rd->m_framePending)
             continue;
          const bool noSync = rd->m_frameNoSync;
-         const bool needsVSync = useVSync && !noSync;
+         const bool needsVSync = useVSync && !noSync; // User as activated VSync and we are not processing an unsynced frame (offline rendering for example)   
 
          // lock prepared frame and submit it
          {
@@ -555,14 +552,15 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SUBMIT);
             rd->m_framePending = false; // Request next frame to be prepared as soon as possible
             rd->m_frameNoSync = false;
-            if (vsync != needsVSync)
             #ifdef _MSC_VER
-               // For Windows, only use GPU sync if we can't use DWM sync (GPU sync has issues when used with multiple monitors, and leads to higher visual latency)
-               if (!rd->m_dwm_enabled)
+            // For Windows, only use GPU sync if we can't use DWM sync (GPU sync has issues when used with multiple monitors, and leads to higher visual latency)
+            if (!rd->m_dwm_enabled && (gpuVSync != needsVSync))
+            #else
+            if (gpuVSync != needsVSync)
             #endif
             {
-               vsync = needsVSync;
-               bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
+               gpuVSync = needsVSync;
+               bgfx::reset(init.resolution.width, init.resolution.height, init.resolution.reset | (gpuVSync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE), init.resolution.format);
             }
             rd->SubmitRenderFrame();
             #ifdef MSVC_CONCURRENCY_VIEWER
@@ -571,18 +569,17 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             g_pplayer->m_renderProfiler->ExitProfileSection();
          }
 
-         // If the user asked to sync on another frame rate than the refresh rate, then perform manual synchronization
-         if (!noSync && (!needsVSync || (g_pplayer->GetTargetRefreshRate() != rd->m_outputWnd[0]->GetRefreshRate())))
+         if (!noSync && // This is a synced frame (not offline rendering)
+              ((!useVSync && g_pplayer->GetTargetRefreshRate() < 10000.f) // the user has disabled VSync without an unbound FPS limit
+            || ( useVSync && g_pplayer->GetTargetRefreshRate() < rd->m_outputWnd[0]->GetRefreshRate()))) // the user has enabled VSync with a max FPS below the display FPS
          {
             g_pplayer->m_renderProfiler->EnterProfileSection(FrameProfiler::PROFILE_RENDER_SLEEP);
             #ifdef MSVC_CONCURRENCY_VIEWER
             span* tagSpan = new span(series, 1, _T("WaitSync"));
             #endif
             U64 now = usec();
-            const unsigned int refreshLength = static_cast<unsigned int>(1000000. / (double)rd->m_outputWnd[0]->GetRefreshRate());
-            const unsigned int minimumFrameLength = static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            const unsigned int maximumFrameLength = 5 * refreshLength;
-            const unsigned int targetFrameLength = clamp(refreshLength - 2000, min(minimumFrameLength, maximumFrameLength), maximumFrameLength);
+            const unsigned int targetFrameLength = useVSync ? (static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
+                                                            :  static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
             while (now - lastFlipTick < targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
@@ -604,8 +601,9 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             #endif
             rd->Flip();
             #ifdef _MSC_VER
+               // On Windows, sync on the main display using the composer instead of GPU VSync (this supposes that the playfield window is on the main display to behave correctly)
                if (needsVSync && rd->m_dwm_enabled)
-                  rd->WaitForVSync(false); // Sync on the main display (this supposes that the playfield window is on the main display to behave correctly)
+                  rd->WaitForVSync(false);
             #endif
             if (s_screenshot) {
                bgfx::requestScreenShot(BGFX_INVALID_HANDLE, s_screenshotFilename.c_str());
@@ -690,8 +688,9 @@ RenderDevice::RenderDevice(VPX::Window* const wnd, const bool isVR, const int nE
    bgfx::Init init;
    init.type = bgfx::RendererType::Count; // Tells BGFX to select the default backend for the running platform
 
+   // Limit to VSYNC on/off
    syncMode = syncMode != VideoSyncMode::VSM_NONE ? VideoSyncMode::VSM_VSYNC : VideoSyncMode::VSM_NONE;
-
+   
    static const string bgfxRendererNames[bgfx::RendererType::Count + 1]
       = { "Noop"s, "Agc"s, "Direct3D11"s, "Direct3D12"s, "Gnm"s, "Metal"s, "Nvn"s, "OpenGLES"s, "OpenGL"s, "Vulkan"s, "Default"s };
 #ifdef __ANDROID__
