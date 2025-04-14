@@ -59,7 +59,7 @@ private:
       // Point of View
       BS_ViewMode, BS_LookAt, BS_FOV, BS_Layback, BS_ViewHOfs, BS_ViewVOfs, BS_XYZScale, BS_XScale, BS_YScale, BS_ZScale, BS_XOffset, BS_YOffset, BS_ZOffset, BS_WndTopZOfs, BS_WndBottomZOfs,
       // VR position
-      BS_VROrientation, BS_VRX, BS_VRY, BS_VRZ, BS_AR_VR, BS_VRScale, BS_VRSlope,
+      BS_VROrientation, BS_VRX, BS_VRY, BS_VRZ, BS_AR_VR, BS_VRScale,
       // Table tweaks & Custom table defined options (must be the last of this enum)
       BS_Volume, BS_BackglassVolume, BS_PlayfieldVolume, BS_DayNight, BS_Difficulty, BS_Tonemapper, BS_Exposure, BS_Custom
    };

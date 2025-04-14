@@ -525,6 +525,7 @@ BEGIN
     EDITTEXT        IDC_LOCKBAR_WIDTH,271,131,22,12,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "Lockbar Height from ground (cm)",IDC_STATIC5,161,147,105,8
     EDITTEXT        IDC_LOCKBAR_HEIGHT_FROM_GROUND,271,145,22,12,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "These value are used when playing using a pinball cabinet, including in mixed/virtual reality.\n\nThey are needed to correctly map virtual world to real world.",IDC_STATIC,155,10,283,35
 END
 
 IDD_PFVIEW_OPT DIALOGEX 0, 0, 302, 237

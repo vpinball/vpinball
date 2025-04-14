@@ -400,11 +400,16 @@ VRDevice::VRDevice()
       m_orientation = settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
       m_tablePos.x = settings.LoadValueFloat(Settings::PlayerVR, "TableX"s);
       m_tablePos.y = settings.LoadValueFloat(Settings::PlayerVR, "TableY"s);
-      // FIXME Playfield to room slope should be fixed and based on the table slope
-      m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
       // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
       // (Note that for OpenVR offset is defined from the ground)
       m_tablePos.z = settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s);
+   #endif
+   #if defined(ENABLE_VR)
+      m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+   #elif defined(ENABLE_XR)
+      // Playfield to room slope should be fixed and based on the table slope, the problem is that there weren't multiple space reference
+      // in the past, so room used to be inclined to compensate and user may have to adjust it. This is still slight, so we can skip it.
+      m_slope = g_pplayer->m_ptable->GetPlayfieldSlope();
    #endif
    #if defined(ENABLE_XR)
       m_sceneOffset.x = 0.f;
