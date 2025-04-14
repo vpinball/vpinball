@@ -57,7 +57,9 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
       {
          switch (mode)
          {
-         case FlasherData::FLASHER: m_modeCombo.SetCurSel(0); break;
+         case FlasherData::FLASHER:
+            m_modeCombo.SetCurSel(0);
+            break;
          case FlasherData::DMD:
             m_modeCombo.SetCurSel(1);
             m_styleCombo.ResetContent();
@@ -78,20 +80,31 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
             //m_styleCombo.AddString("ScaleFX");
             //m_styleCombo.AddString("Horizontal CRT");
             //m_styleCombo.AddString("Vertical CRT");
+            UpdateVisuals(IDC_DMD);
             break;
          case FlasherData::ALPHASEG:
             m_modeCombo.SetCurSel(3);
             m_styleCombo.ResetContent();
-            // TODO
+            for (int i = 0; i < 5; i++)
+            {
+               const string family = i == 0 ? "Generic: " : i == 1 ? "Gottlieb: " : i == 2 ? "Williams: " : i == 3 ? "Bally: " : "Atari: ";
+               m_styleCombo.AddString((family + "Neon Plasma").c_str());
+               m_styleCombo.AddString((family + "Blue VFD").c_str());
+               m_styleCombo.AddString((family + "Green VFD").c_str());
+               m_styleCombo.AddString((family + "Red LED").c_str());
+               m_styleCombo.AddString((family + "Green LED").c_str());
+               m_styleCombo.AddString((family + "Yellow LED").c_str());
+               m_styleCombo.AddString((family + "Generic Plasma").c_str());
+               m_styleCombo.AddString((family + "Generic LED").c_str());
+            }
+            UpdateVisuals(IDC_DMD);
             break;
          }
 
-         //::ShowWindow(GetDlgItem(IDC_STATIC21), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
-         GetDlgItem(IDC_STATIC21)
-            .SetWindowText(mode == FlasherData::FLASHER ? "Images"
-                  : mode == FlasherData::DMD            ? "DMD Style"
-                  : mode == FlasherData::DISPLAY        ? "Display Style"
-                                                        : "Alpha Seg. Style");
+         GetDlgItem(IDC_STATIC21).SetWindowText(mode == FlasherData::FLASHER ? "Images"
+                                              : mode == FlasherData::DMD     ? "DMD Style"
+                                              : mode == FlasherData::DISPLAY ? "Display Style"
+                                                                             : "Alpha Seg. Style");
 
          int isDisplay = mode != FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE;
          ::ShowWindow(GetDlgItem(IDC_STATIC24), isDisplay);
@@ -132,11 +145,12 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          GetDlgItem(IDC_STATIC7).SetWindowText(mode == FlasherData::FLASHER ? "Opacity" : "Brightness");
          //m_opacityAmountEdit.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
          //::ShowWindow(GetDlgItem(IDC_STATIC8), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
-         //::ShowWindow(GetDlgItem(IDC_STATIC19), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+         ::ShowWindow(GetDlgItem(IDC_STATIC19), mode != FlasherData::ALPHASEG ? SW_SHOWNORMAL : SW_HIDE);
          m_lightmapCombo.EnableWindow(mode == FlasherData::FLASHER ? 1 : 0);
-         //::ShowWindow(m_hAdditiveBlendCheck, mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
-         //::ShowWindow(GetDlgItem(IDC_STATIC11), mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
-         //m_modulateEdit.ShowWindow(mode == FlasherData::FLASHER ? SW_SHOWNORMAL : SW_HIDE);
+         m_lightmapCombo.ShowWindow(mode != FlasherData::ALPHASEG ? 1 : 0);
+         ::ShowWindow(m_hAdditiveBlendCheck, mode != FlasherData::ALPHASEG ? SW_SHOWNORMAL : SW_HIDE);
+         ::ShowWindow(GetDlgItem(IDC_STATIC11), mode != FlasherData::ALPHASEG ? SW_SHOWNORMAL : SW_HIDE);
+         m_modulateEdit.ShowWindow(mode != FlasherData::ALPHASEG ? SW_SHOWNORMAL : SW_HIDE);
       }
       if (dispid == IDC_VISIBLE_CHECK || dispid == -1)
          PropertyDialog::SetCheckboxState(m_hVisibleCheck, flash->m_d.m_isVisible);
@@ -146,7 +160,10 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
          PropertyDialog::SetFloatTextbox(m_depthBiasEdit, flash->m_d.m_depthBias);
 
       if (dispid == IDC_DMD || dispid == -1)
-         m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0, flash->m_d.m_renderMode == FlasherData::DMD ? 6 : flash->m_d.m_renderMode == FlasherData::DISPLAY ? 1 : 0));
+         m_styleCombo.SetCurSel(clamp(flash->m_d.m_renderStyle, 0, flash->m_d.m_renderMode == FlasherData::DMD      ? (7 - 1) 
+                                                                 : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (2 - 1)
+                                                                 : flash->m_d.m_renderMode == FlasherData::ALPHASEG ? (5 * 8 - 1)
+                                                                 : 0));
       if (dispid == IDC_IMAGE_LINK_EDIT || dispid == -1)
          m_linkEdit.SetWindowText(flash->m_d.m_imageSrcLink.c_str());
 
@@ -263,7 +280,10 @@ void FlasherVisualsProperty::UpdateProperties(const int dispid)
          break;
       case IDC_DMD:
          PropertyDialog::StartUndo(flash);
-         flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, flash->m_d.m_renderMode == FlasherData::DMD ? 6 : flash->m_d.m_renderMode == FlasherData::DISPLAY ? 1 : 0);
+         flash->m_d.m_renderStyle = clamp(m_styleCombo.GetCurSel(), 0, flash->m_d.m_renderMode == FlasherData::DMD      ? (7 - 1) 
+                                                                     : flash->m_d.m_renderMode == FlasherData::DISPLAY  ? (2 - 1)
+                                                                     : flash->m_d.m_renderMode == FlasherData::ALPHASEG ? (5 * 8 - 1)
+                                                                     : 0);
          PropertyDialog::EndUndo(flash);
          break;
       case IDC_IMAGE_LINK_EDIT:

@@ -441,14 +441,14 @@ void ScoreView::Select(const VPX::RenderOutput& output)
          switch (visual.type)
          {
          case VisualType::DMD:
-            dmdFrame = player->m_resURIResolver.GetDisplay(visual.srcUri, nullptr);
+            dmdFrame = player->m_resURIResolver.GetDisplay(visual.srcUri);
             if ((dmdFrame == nullptr) || (dmdFrame->width() * visual.dmdSize.y != visual.dmdSize.x * dmdFrame->height()))
                layout.unmatchedVisuals++;
             else
                layout.matchedVisuals++;
             break;
          case VisualType::SegDisplay:
-            segDisplay = player->m_resURIResolver.GetSegDisplay(visual.srcUri, nullptr);
+            segDisplay = player->m_resURIResolver.GetSegDisplay(visual.srcUri);
             if ((segDisplay.frame == nullptr) || (segDisplay.displays.size() != visual.nElements))
                layout.unmatchedVisuals++;
             else
@@ -565,7 +565,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
       {
       case VisualType::DMD:
       {
-         BaseTexture* frame = player->m_resURIResolver.GetDisplay(visual.srcUri, nullptr);
+         BaseTexture* frame = player->m_resURIResolver.GetDisplay(visual.srcUri);
          if (frame == nullptr)
             continue;
          LoadGlass(visual);
@@ -601,16 +601,16 @@ void ScoreView::Render(const VPX::RenderOutput& output)
 
       case VisualType::SegDisplay:
       {
-         ResURIResolver::SegDisplay frame = player->m_resURIResolver.GetSegDisplay(visual.srcUri, nullptr);
+         ResURIResolver::SegDisplay frame = player->m_resURIResolver.GetSegDisplay(visual.srcUri);
          if ((frame.frame == nullptr) || (frame.displays.size() != visual.nElements))
             continue;
          LoadGlass(visual);
          renderer->m_renderDevice->ResetRenderState();
+         // We use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
+         renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
          renderer->m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_TRUE);
          renderer->m_renderDevice->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
          renderer->m_renderDevice->SetRenderState(RenderState::DESTBLEND, RenderState::ONE);
-         // We use max blending as segment may overlap in the glass diffuse: we retain the most lighted one which is wrong but looks ok (otherwise we would have to deal with colorspace conversions and layering between glass and emitter)
-         renderer->m_renderDevice->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_MAX);
          renderer->m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
          renderer->m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
@@ -640,7 +640,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
          for (size_t i = 0; i < frame.displays.size(); i++)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
-            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, frame.displays[i], &frame.frame[i * 16], 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr, 
+            renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, 
+               frame.displays[i], &frame.frame[i * 16], Renderer::ColorSpace::Reinhard_sRGB, nullptr, 
                visual.glassPad, visual.glassTint, visual.glassRoughness,
                visual.glass, segGlassArea, visual.glassAmbient);
             const float vx1 = px + sx * (visual.x + visual.xOffsets[i]);
