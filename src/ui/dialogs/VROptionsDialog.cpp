@@ -372,6 +372,9 @@ BOOL VROptionsDialog::OnInitDialog()
       ::ShowWindow(GetDlgItem(IDC_NEAR_LABEL).GetHwnd(), SW_HIDE); // OpenXR use fixed near plane distance in real world unit
       ::ShowWindow(GetDlgItem(IDC_NEAR_PLANE).GetHwnd(), SW_HIDE);
 
+      ::ShowWindow(GetDlgItem(IDC_VR_SLOPE_LABEL).GetHwnd(), SW_HIDE); // OpenXR only compensate the playfield slope (no additional user adjustment)
+      ::ShowWindow(GetDlgItem(IDC_VR_SLOPE).GetHwnd(), SW_HIDE);
+
       ::ShowWindow(GetDlgItem(IDC_BTTABLERECENTER).GetHwnd(), SW_HIDE); // Position is managed through TweakUI, not custom key shortcuts
       ::ShowWindow(GetDlgItem(IDC_TABLEREC_TEXT).GetHwnd(), SW_HIDE);
       ::ShowWindow(GetDlgItem(IDC_JOYTABLERECENTER).GetHwnd(), SW_HIDE);
