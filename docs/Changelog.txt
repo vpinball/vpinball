@@ -36,7 +36,7 @@ FEATURES:
 
 - add 'raytraced' ball motion blur (BGFX only)
 
-- add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirextX output only)
+- add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirectX output only)
   this comes with an additional video preference option to ignore all tonemappers in order to fully exploit the high dynamic range
   and an additional global exposure scale multiplier to adapt to the display capabilities
   (note that one should use Windows 11 and the MS HDR calibration tool for best results with optimal range)

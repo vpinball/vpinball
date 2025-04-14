@@ -201,11 +201,20 @@ void Settings::Validate(const bool addDefaults)
 
 
    //////////////////////////////////////////////////////////////////////////
+   // VR Player section
+
+   Validate(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, addDefaults, "VR scene horizontal X offset (cm)");
+   Validate(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, addDefaults, "VR scene horizontal Y offset (cm)");
+   Validate(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, addDefaults, "VR scene vertical offset (cm)");
+
+   //////////////////////////////////////////////////////////////////////////
    // Cabinet section
 
    Validate(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, addDefaults);
    Validate(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, addDefaults);
    Validate(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, addDefaults);
+   Validate(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, addDefaults, "Lockbar width in centimeters (measured on the cabinet).");
+   Validate(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, addDefaults, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar).");
 
    //////////////////////////////////////////////////////////////////////////
    // ScoreView section

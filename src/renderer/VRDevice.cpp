@@ -396,21 +396,27 @@ VRDevice::VRDevice()
 {
    Settings& settings = g_pvp->GetActiveTable()->m_settings;
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
-      m_slope       = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+      // Scene offset (vertical rotation and horizontal shift)
       m_orientation = settings.LoadValueWithDefault(Settings::PlayerVR, "Orientation"s, 0.0f);
-      m_tablePos.x  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableX"s, 0.0f);
-      m_tablePos.y  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableY"s, 0.0f);
-      m_tablePos.z  = settings.LoadValueWithDefault(Settings::PlayerVR, "TableZ"s, 80.0f);
+      m_tablePos.x = settings.LoadValueFloat(Settings::PlayerVR, "TableX"s);
+      m_tablePos.y = settings.LoadValueFloat(Settings::PlayerVR, "TableY"s);
+      // FIXME Playfield to room slope should be fixed and based on the table slope
+      m_slope = settings.LoadValueWithDefault(Settings::PlayerVR, "Slope"s, 6.5f);
+      // Offset of the playfield from the room ground is defined as an offset from the lockbar, minus bottom glass height and custom adjustment
+      // (Note that for OpenVR offset is defined from the ground)
+      m_tablePos.z = settings.LoadValueFloat(Settings::PlayerVR, "TableZ"s);
+   #endif
+   #if defined(ENABLE_XR)
+      m_sceneOffset.x = 0.f;
+      m_sceneOffset.y = 5.f; // Fixed value of 5 cm between playfield bottom and lockbar border
+      m_sceneOffset.z = g_pvp->m_settings.LoadValueFloat(Settings::Player, "LockbarHeight") - VPUTOCM(g_pplayer->m_ptable->m_glassTopHeight);
    #endif
    m_tableWorldDirty = true;
    
    #if defined(ENABLE_XR)
       // Relative scale factor
-      m_scaleToLockbarWidth = settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleToFixedWidth"s, false);
-      m_lockbarWidth = settings.LoadValueWithDefault(Settings::PlayerVR, "LockbarWidth"s, 0.0f);
-      m_scale = settings.LoadValueWithDefault(Settings::PlayerVR, "ScaleRelative"s, 1.0f);
-      m_scale = clamp(m_scale, 0.1f, 2.0f);
-
+      m_lockbarWidth = settings.LoadValueFloat(Settings::Player, "LockbarWidth"s);
+      
       // Fill out an XrApplicationInfo structure detailing the names and OpenXR version.
       // The application/engine name and version are user-definied. These may help IHVs or runtimes.
       XrApplicationInfo AI;
@@ -1315,30 +1321,30 @@ void VRDevice::RenderFrame(RenderDevice* rd, std::function<void(RenderTarget* vr
             m_orientation = RADTOANG(atan2f(medianViewInVPU.m[0][2], medianViewInVPU.m[0][0]));
             m_tablePos.x = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerX") - VPUTOCM(medianPoseInVPU.position.x);
             m_tablePos.y = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerY") - VPUTOCM(medianPoseInVPU.position.z);
-            // Suppose a typical pinball height of 85cm
-            m_tablePos.z = 85.f;
-            // Define relatively to player
-            // m_tablePos.z = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ") - VPUTOCM(medianPoseInVPU.position.y);
+            m_tablePos.z = abs(m_tablePos.z) > 10.f ? 0.f : m_tablePos.z; // Keep user custom offset except if it seems out of normal range
             m_tableWorldDirty = true;
          }
+
+         // The 4 space references we use:
+         // - Room is the VR room, offseted and rotated to the table orientation (rotation around vertical axis)
+         // - Cabinet feet is the same as the room with cabinet scaling applied (to match lockbar width)
+         // - Cabinet is the same as the cabinet feet but also applying depth offset (to match lockbar height)
+         // - Playfield is the main space reference where the simulation happens (only one to support physics), relative to the cabinet, with inclination and table coordinate system
 
          if (m_tableWorldDirty)
          {
             m_tableWorldDirty = false;
 
             // Update fixed scaling, considering lockbar size to be the width of the playfield + 2"1/4
-            if (m_scaleToLockbarWidth && (m_lockbarWidth > 0.f))
-            {
-               const float tableWidth = VPUTOCM(g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) + 2.25f * 2.54f;
-               m_scale = m_lockbarWidth / tableWidth;
-               m_scale = clamp(m_scale, 0.1f, 2.0f);
-            }
+            const float tableWidth = VPUTOCM(g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) + 2.25f * 2.54f;
+            m_scale = m_lockbarWidth / tableWidth;
+            m_scale = clamp(m_scale, 0.1f, 2.0f);
 
             // Move table (in VPU coordinates), adjust coord from RH to LH system
             const Matrix3D trans = Matrix3D::MatrixTranslate(
-               -CMTOVPU(m_tablePos.x      ) - m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f,
-                CMTOVPU(m_tablePos.y + 5.f) + m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top),
-                CMTOVPU(m_tablePos.z      ));
+               -CMTOVPU(m_tablePos.x + m_sceneOffset.x) - m_scale * (g_pplayer->m_ptable->m_right - g_pplayer->m_ptable->m_left) * 0.5f,
+                CMTOVPU(m_tablePos.y + m_sceneOffset.y) + m_scale * (g_pplayer->m_ptable->m_bottom - g_pplayer->m_ptable->m_top),
+                CMTOVPU(m_tablePos.z + m_sceneOffset.z));
             const Matrix3D coords = Matrix3D::MatrixScale(1.f, -1.f, 1.f);
             const Matrix3D rotx = Matrix3D::MatrixRotateX(ANGTORAD(m_slope));
             const Matrix3D rotz = Matrix3D::MatrixRotateZ(ANGTORAD(m_orientation));
