@@ -299,36 +299,35 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
       m_playfieldWnd = new VPX::Window(WIN32_WND_TITLE, stereo3D == STEREO_VR ? Settings::PlayerVR : Settings::Player, stereo3D == STEREO_VR ? "Preview" : "Playfield");
 
       float pfRefreshRate = m_playfieldWnd->GetRefreshRate(); 
-      m_maxFramerate = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxFramerate"s, -1.f);
+      m_maxFramerate = m_ptable->m_settings.LoadValueFloat(Settings::Player, "MaxFramerate"s);
       if(m_maxFramerate > 0.f && m_maxFramerate < 24.f) // at least 24 fps
          m_maxFramerate = 24.f;
-      m_videoSyncMode = (VideoSyncMode)m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "SyncMode"s, VSM_INVALID);
-      if (m_maxFramerate < 0 && m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-      {
-         const int vsync = m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "AdaptiveVSync"s, -1);
-         switch (vsync)
-         {
-         case -1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING; break;
-         case  0: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_NONE; break;
-         case  1: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_VSYNC; break;
-         case  2: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         default: m_maxFramerate = pfRefreshRate; m_videoSyncMode = VideoSyncMode::VSM_ADAPTIVE_VSYNC; break;
-         }
-      }
-      if (m_videoSyncMode == VideoSyncMode::VSM_INVALID)
-         m_videoSyncMode = VideoSyncMode::VSM_FRAME_PACING;
       if (m_maxFramerate < 0.f) // Negative is display refresh rate
          m_maxFramerate = pfRefreshRate;
       if (m_maxFramerate == 0.f) // 0 is unbound refresh rate
          m_maxFramerate = 10000.f;
-      if (m_videoSyncMode != VideoSyncMode::VSM_NONE && m_maxFramerate > pfRefreshRate)
-         m_maxFramerate = pfRefreshRate;
+      m_videoSyncMode = static_cast<VideoSyncMode>(m_ptable->m_settings.LoadValueUInt(Settings::Player, "SyncMode"s));
+      if (m_videoSyncMode != VideoSyncMode::VSM_NONE)
+      {
+         if (m_maxFramerate > pfRefreshRate)
+            // User requested a max framerate above display rate but using VSync => limit to display refresh rate
+            m_maxFramerate = pfRefreshRate;
+         else if (m_maxFramerate < pfRefreshRate)
+         {
+            // User requested a max framerate below display rate but using VSync => limit to an integral division of the display refresh rate (keeping the FPS above 24FPS)
+            float divider = 1.f;
+            while ((m_maxFramerate * divider > pfRefreshRate) && (24.f * divider <= pfRefreshRate))
+               divider += 1.f;
+            m_maxFramerate = pfRefreshRate / divider;
+         }
+      }
       if (stereo3D == STEREO_VR)
       {
          // Disable VSync for VR (sync is performed by the OpenVR runtime)
          m_videoSyncMode = VideoSyncMode::VSM_NONE;
          m_maxFramerate = 10000.f;
       }
+      assert(24.f <= m_maxFramerate && m_maxFramerate <= 10000.f); // We guarantee a target framerate from 24 FPS to unbound, expressed as 10000 FPS
       PLOGI << "Synchronization mode: " << m_videoSyncMode << " with maximum FPS: " << m_maxFramerate << ", display FPS: " << pfRefreshRate;
    }
 
@@ -1590,7 +1589,8 @@ void Player::LockForegroundWindow(const bool enable)
 
 void Player::GameLoop(std::function<void()> ProcessOSMessages)
 {
-   assert(m_renderer->m_stereo3D != STEREO_VR || (m_videoSyncMode == VideoSyncMode::VSM_NONE && m_maxFramerate > 1000.f)); // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   // Stereo must be run unthrottled to let OpenVR set the frame pace according to the head set
+   assert(!(m_renderer->m_stereo3D == STEREO_VR && (m_videoSyncMode != VideoSyncMode::VSM_NONE || m_maxFramerate < 1000.f)));
 
    auto sync = [this, ProcessOSMessages]()
    {
