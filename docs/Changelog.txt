@@ -68,6 +68,13 @@ FEATURES:
     - 'cabinet' is tied to the real world cabinet, it is not inclined like playfield but it is scaled and height offseted to match the real world cabinet
     - 'cabinet feet' is tied to the real world cabinet feet, unlike 'cabinet' it is not height offseted, allowing to keep cabinet's feet on real room ground
 
+- flashers have been improved:
+  . they now have advanced options for rendering DMD, segment and video displays. The rendering mode between these can be selected in the part properties,
+    then each mode has its own rendering options. The display rendering mode is designed the same for the 3 supported sources (DMD, segments, video). It
+	consist of a light source with an optional glass above it. A render profile for the light source corresponding to the physical part	(Neon Plasma DMD,
+	VFD segment display, CRT video, ...) needs to be chosen. A few options allow to setup the glass tint/roughness and the position of the light source
+	beneath it. Segment display flashers are 'max blended' to support overlapping without graphic glitches.
+  . flasher may now be placed on desktop backdrop, deprecating the use of textbox for DMD rendering on desktop backdrop.
 
 FIXES:
 
