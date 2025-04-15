@@ -211,7 +211,7 @@ void VPinball::GetMyPrefPath()
 {
 #ifdef _WIN32
    // Use standard Windows AppData directory (to avoid requesting write permissions, and behave correctly for Windows restore,...)
-   // That would look something like: C:\Users\bob\AppData\Roaming\VPinballX\ 
+   // That would look something like: "C:\Users\bob\AppData\Roaming\VPinballX\"
    m_szMyPrefPath = string(GetAppDataPath()) + PATH_SEPARATOR_CHAR + "VPinballX" + PATH_SEPARATOR_CHAR;
 #elif defined(__ANDROID__)
    char *szPrefPath = SDL_GetPrefPath(NULL, NULL);

@@ -1534,9 +1534,9 @@ bool LightSeq::ProcessTracer(_tracer * const pTracer, const LightState State)
 
       // process the circle type of effect
       case eSeqCircle:
-         for (float fi = 0; fi < 360.0f; fi += 0.5f)
+         for (int fi = 0; fi < 720; fi ++)
          {
-            const float angle = (float)(M_PI * 2.0 / 360.0)*fi;
+            const float angle = static_cast<float>((M_PI * 2.0 / 360.0)*(fi / 2.0));
             const float sn = sinf(angle);
             const float cs = cosf(angle);
             const float x = pTracer->x + sn*pTracer->radius;

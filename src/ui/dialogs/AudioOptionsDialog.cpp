@@ -164,7 +164,7 @@ void AudioOptionsDialog::LoadSettings()
    SendDlgItemMessage(IDC_PLAY_SOUND, BM_SETCHECK, fsound ? BST_CHECKED : BST_UNCHECKED, 0);
    OnCommand(IDC_PLAY_SOUND, 0L);
    
-   int fmusic = settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, 0);
+   int fmusic = settings.LoadValueUInt(Settings::Player, "Sound3D"s);
    switch (fmusic)
    {
    case SNDCFG_SND3DALLREAR: SendDlgItemMessage(IDC_RADIO_SND3DALLREAR, BM_SETCHECK, BST_CHECKED, 0); break;

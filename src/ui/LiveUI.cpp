@@ -634,7 +634,7 @@ LiveUI::LiveUI(RenderDevice *const rd)
    m_live_table = m_player->m_ptable;
    m_pininput = &(m_player->m_pininput);
    m_renderer = m_player->m_renderer;
-   m_disable_esc = m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
+   m_disable_esc = m_live_table->m_settings.LoadValueBool(Settings::Player, "DisableESC"s);
 
    m_selection.type = Selection::SelectionType::S_NONE;
    m_useEditorCam = false;
@@ -1983,7 +1983,6 @@ void LiveUI::HandleTweakInput()
             {
                // Note that scene offset is not saved per table but as an app setting
                m_player->m_vrDevice->SaveVRSettings(g_pvp->m_settings);
-               m_table->m_settings.SaveValue(Settings::PlayerVR, "ScaleRelative"s, m_player->m_vrDevice->GetSceneScale());
                m_table->m_settings.SaveValue(Settings::PlayerVR, "UsePassthroughColor"s, m_renderer->m_vrApplyColorKey);
             }
             else if (m_tweakPages[m_activeTweakPageIndex] == TP_TableOption)
@@ -2135,8 +2134,8 @@ void LiveUI::HandleTweakInput()
                   break;
                case BG_FULLSCREEN:
                {
-                  const float screenWidth = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f);
-                  const float screenHeight = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f);
+                  const float screenWidth = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s);
+                  const float screenHeight = g_pvp->m_settings.LoadValueFloat(Settings::Player, "ScreenHeight"s);
                   if (screenWidth <= 1.f || screenHeight <= 1.f)
                   {
                      PushNotification("You must setup your screen size before using Window mode"s, 5000);
@@ -2443,7 +2442,7 @@ void LiveUI::UpdateTweakModeUI()
          // Do not show it as it is more confusing than helpful due to the use of different coordinate systems in settings vs live edit
          //ImGui::Text("Camera at X: %.1fcm Y: %.1fcm Z: %.1fcm", VPUTOCM(viewSetup.mViewX), VPUTOCM(viewSetup.mViewY), VPUTOCM(viewSetup.mViewZ));
          //ImGui::NewLine();
-         if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f) <= 1.f)
+         if (m_live_table->m_settings.LoadValueFloat(Settings::Player, "ScreenWidth"s) <= 1.f)
          {
             ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
             ImGui::Text("You are using 'Window' mode but haven't defined your display physical size.");

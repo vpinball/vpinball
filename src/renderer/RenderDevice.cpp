@@ -541,6 +541,7 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             continue;
          const bool noSync = rd->m_frameNoSync;
          const bool needsVSync = useVSync && !noSync; // User as activated VSync and we are not processing an unsynced frame (offline rendering for example)   
+         g_pplayer->m_curFrameSyncOnVBlank = needsVSync;
 
          // lock prepared frame and submit it
          {
@@ -580,10 +581,10 @@ void RenderDevice::RenderThread(RenderDevice* rd, const bgfx::Init& initReq)
             U64 now = usec();
             const unsigned int targetFrameLength = useVSync ? (static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate()) - 2000) // Keep some margin since, in the end, the sync will be done on hardware VSync (somewhat hacky, disallow VSync with low FPS ?)
                                                             :  static_cast<unsigned int>(1000000. / (double)g_pplayer->GetTargetRefreshRate());
-            while (now - lastFlipTick < targetFrameLength)
+            if (now - lastFlipTick < targetFrameLength)
             {
                g_pplayer->m_curFrameSyncOnFPS = true;
-               YieldProcessor();
+               uSleep(targetFrameLength - (now - lastFlipTick));
                now = usec();
             }
             lastFlipTick = now;

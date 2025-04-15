@@ -953,11 +953,7 @@ public:
       m_vpinball.m_settings.LoadFromFile(m_szIniFileName, true);
       m_vpinball.m_settings.SaveValue(Settings::Version, "VPinball"s, string(VP_VERSION_STRING_DIGITS));
 
-#ifndef __STANDALONE__
-      Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false));
-#else
-      Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, true));
-#endif
+      Logger::GetInstance()->SetupLogger(m_vpinball.m_settings.LoadValueBool(Settings::Editor, "EnableLog"s));
 
       PLOGI << "Starting VPX - " << VP_VERSION_STRING_FULL_LITERAL;
       PLOGI << "Setting file is: " << m_szIniFileName;

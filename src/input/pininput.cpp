@@ -65,10 +65,10 @@ void PinInput::Init()
    const Settings& settings = g_pvp->m_settings;
 
    m_exitPressTimestamp = 0;
-   m_exitAppPressLengthMs = settings.LoadValueWithDefault(Settings::Player, "Exitconfirm"s, 120) * 1000 / 60; // this is supposed to be seconds, but is seconds*60  :/
+   m_exitAppPressLengthMs = settings.LoadValueInt(Settings::Player, "Exitconfirm"s) * 1000 / 60;
 
-   m_override_default_buttons = settings.LoadValueWithDefault(Settings::Player, "PBWDefaultLayout"s, m_override_default_buttons);
-   m_disable_esc = settings.LoadValueWithDefault(Settings::Player, "DisableESC"s, m_disable_esc);
+   m_override_default_buttons = settings.LoadValueBool(Settings::Player, "PBWDefaultLayout"s);
+   m_disable_esc = settings.LoadValueBool(Settings::Player, "DisableESC"s);
    m_deadz = settings.LoadValueWithDefault(Settings::Player, "DeadZone"s, 0) * JOYRANGEMX / 100;
 
    m_linearPlunger = false;

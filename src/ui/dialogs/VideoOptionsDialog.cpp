@@ -1054,7 +1054,7 @@ void RenderOptPage::LoadSettings(Settings& settings)
    BeginLoad();
 
    { // Performance
-      m_initialMaxTexDim = settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0);
+      m_initialMaxTexDim = settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
       const int maxTexDim = ((1023 + m_initialMaxTexDim) / 1024) - 1;
       m_maxTexSize.SetCurSel(maxTexDim < 0 ? 7 : maxTexDim);
       
@@ -1603,9 +1603,9 @@ void CabinetOptPage::LoadSettings(Settings& settings)
    m_playerZ.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenPlayerZ"s)).c_str());
    m_bamHeadtracking.SetCheck(settings.LoadValueWithDefault(Settings::Player, "BAMHeadTracking"s, false) ? BST_CHECKED : BST_UNCHECKED);
 
-   m_playfieldScreenWidth.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "ScreenWidth"s, 0.0f)).c_str());
-   m_playfieldScreenHeight.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "ScreenHeight"s, 0.0f)).c_str());
-   m_playfieldScreenInclination.SetWindowText(f2sz(settings.LoadValueWithDefault(Settings::Player, "ScreenInclination"s, 0.0f)).c_str());
+   m_playfieldScreenWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenWidth"s)).c_str());
+   m_playfieldScreenHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenHeight"s)).c_str());
+   m_playfieldScreenInclination.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "ScreenInclination"s)).c_str());
 
    m_lockbarWidth.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarWidth"s)).c_str());
    m_lockbarHeight.SetWindowText(f2sz(settings.LoadValueFloat(Settings::Player, "LockbarHeight"s)).c_str());
