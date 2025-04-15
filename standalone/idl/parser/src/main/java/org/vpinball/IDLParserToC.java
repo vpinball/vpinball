@@ -538,6 +538,7 @@ public class IDLParserToC {
                 	new IDLInterface("IDriveCollection", "drivecoll"),
                 	new IDLInterface("IFolderCollection", "foldercoll"),
                 	new IDLInterface("IFolder", "folder"),
+                	new IDLInterface("IFileCollection", "filecoll"),
                 	new IDLInterface("IDrive", "drive"),
                 	new IDLInterface("ITextStream", "textstream"),
                 	new IDLInterface("IFile", "file"),

@@ -15,6 +15,9 @@
 #include <sys/stat.h>
 #include "vbscript.h"
 
+#include <dirent.h>
+#include <fnmatch.h>
+
 #undef wcsncpy
 
 HRESULT external_open_storage(const OLECHAR* pwcsName, IStorage* pstgPriority, DWORD grfMode, SNB snbExclude, DWORD reserved, IStorage **ppstgOpen);
@@ -1153,19 +1156,102 @@ BOOL WINAPI FileTimeToLocalFileTime(const FILETIME *lpFileTime, LPFILETIME lpLoc
    return 0;
 }
 
+typedef struct {
+   DIR *dir;
+   WCHAR search_path[MAX_PATH];
+   char pattern[MAX_PATH];
+} find_handle;
+
+static void fill_find_data(const char *filename, WIN32_FIND_DATAW *data)
+{
+   memset(data, 0, sizeof(*data));
+   data->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+
+   int wlen = MultiByteToWideChar(CP_UTF8, 0, filename, -1, data->cFileName, MAX_PATH);
+   if (wlen <= 0 || wlen > MAX_PATH)
+      data->cFileName[MAX_PATH - 1] = 0;
+}
+
 BOOL WINAPI FindClose(HANDLE hFindFile)
 {
-   return 0;
+   find_handle *handle = (find_handle *)hFindFile;
+   if (!handle)
+      return FALSE;
+
+   if (handle->dir)
+      closedir(handle->dir);
+
+   free(handle);
+   return TRUE;
 }
 
 HANDLE WINAPI FindFirstFileW(LPCWSTR lpFileName, LPWIN32_FIND_DATAW lpFindFileData)
 {
-   return 0;
+   if (!lpFileName || !lpFindFileData)
+      return INVALID_HANDLE_VALUE;
+
+   WCHAR pathW[MAX_PATH];
+   wcsncpy(pathW, lpFileName, MAX_PATH);
+   WCHAR *lastSlash = wcsrchr(pathW, L'\\');
+   if (!lastSlash) lastSlash = wcsrchr(pathW, L'/');
+
+   WCHAR *patternW = NULL;
+   if (lastSlash) {
+      *lastSlash = 0;
+      patternW = lastSlash + 1;
+   }
+   else {
+      wcscpy(pathW, L".");
+      patternW = (WCHAR *)lpFileName;
+   }
+
+   char path[MAX_PATH];
+   char pattern[MAX_PATH];
+   WideCharToMultiByte(CP_UTF8, 0, pathW, -1, path, sizeof(path), NULL, NULL);
+   WideCharToMultiByte(CP_UTF8, 0, patternW, -1, pattern, sizeof(pattern), NULL, NULL);
+
+   for (int i = 0; path[i]; ++i)
+      if (path[i] == '\\') path[i] = '/';
+
+   DIR *dir = opendir(path);
+   if (!dir)
+      return INVALID_HANDLE_VALUE;
+
+   find_handle *handle = calloc(1, sizeof(find_handle));
+   handle->dir = dir;
+   wcsncpy(handle->search_path, lpFileName, MAX_PATH);
+   lstrcpynA(handle->pattern, pattern, MAX_PATH);
+
+   struct dirent *entry;
+   while ((entry = readdir(dir)) != NULL) {
+      if (entry->d_name[0] == '.') continue;
+      if (fnmatch(handle->pattern, entry->d_name, 0) != 0) continue;
+
+      fill_find_data(entry->d_name, lpFindFileData);
+      return (HANDLE)handle;
+   }
+
+   closedir(dir);
+   free(handle);
+   return INVALID_HANDLE_VALUE;
 }
 
 BOOL WINAPI FindNextFileW(HANDLE hFindFile, LPWIN32_FIND_DATAW lpFindFileData)
 {
-   return 0;
+   find_handle *handle = (find_handle *)hFindFile;
+   if (!handle || !handle->dir || !lpFindFileData)
+      return FALSE;
+
+   struct dirent *entry;
+   while ((entry = readdir(handle->dir)) != NULL) {
+      if (entry->d_name[0] == '.') continue;
+      if (fnmatch(handle->pattern, entry->d_name, 0) != 0) continue;
+
+      fill_find_data(entry->d_name, lpFindFileData);
+      return TRUE;
+   }
+
+   return FALSE;
 }
 
 BOOL WINAPI GetDiskFreeSpaceExW(LPCWSTR lpDirectoryName, PULARGE_INTEGER lpFreeBytesAvailableToCaller, PULARGE_INTEGER lpTotalNumberOfBytes, PULARGE_INTEGER lpTotalNumberOfFreeBytes)

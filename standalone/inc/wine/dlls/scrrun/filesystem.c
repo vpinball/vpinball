@@ -2126,6 +2126,11 @@ static HRESULT WINAPI filecoll_GetTypeInfo(IFileCollection *iface, UINT iTInfo,
     return get_typeinfo(IFileCollection_tid, ppTInfo);
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI filecoll_GetIDsOfNames(IFileCollection *iface, REFIID riid,
+    LPOLESTR *rgszNames, UINT cNames,
+    LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI filecoll_GetIDsOfNames(IFileCollection *iface, REFIID riid,
                                         LPOLESTR *rgszNames, UINT cNames,
                                         LCID lcid, DISPID *rgDispId)
@@ -2144,7 +2149,14 @@ static HRESULT WINAPI filecoll_GetIDsOfNames(IFileCollection *iface, REFIID riid
 
     return hr;
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI filecoll_Invoke(IFileCollection *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags,
+    DISPPARAMS *pDispParams, VARIANT *pVarResult,
+    EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI filecoll_Invoke(IFileCollection *iface, DISPID dispIdMember,
                                       REFIID riid, LCID lcid, WORD wFlags,
                                       DISPPARAMS *pDispParams, VARIANT *pVarResult,
@@ -2166,6 +2178,7 @@ static HRESULT WINAPI filecoll_Invoke(IFileCollection *iface, DISPID dispIdMembe
 
     return hr;
 }
+#endif
 
 static HRESULT WINAPI filecoll_get_Item(IFileCollection *iface, VARIANT Key, IFile **file)
 {
