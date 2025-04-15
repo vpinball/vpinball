@@ -18,8 +18,8 @@ protected:
 private:
    void UpdateVisibilityMask(PartGroup* const partGroup, PartGroupData::VisibilityMask mask, bool checked);
 
-   ComboBox m_referenceSpace;
-   CButton  m_visibilityPlayfield;
-   CButton  m_visibilityMixedReality;
-   CButton  m_visibilityVirtualReality;
+   CComboBox m_referenceSpace;
+   CButton   m_visibilityPlayfield;
+   CButton   m_visibilityMixedReality;
+   CButton   m_visibilityVirtualReality;
 };

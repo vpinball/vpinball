@@ -632,6 +632,13 @@ public:
          0.0f, 0.0f, 0.0f, 1.0f};
    }
 
+   static Matrix3D MatrixInverse(const Matrix3D& other)
+   {
+      Matrix3D result(other);
+      result.Invert();
+      return result;
+   }
+
 #pragma endregion FactoryConstructors
 
 

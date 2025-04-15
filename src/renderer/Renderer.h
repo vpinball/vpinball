@@ -8,6 +8,7 @@
 #include "renderer/Texture.h"
 #include "Backglass.h"
 #include "plugins/CorePlugin.h"
+#include "parts/PartGroup.h"
 
 class Renderable;
 
@@ -194,6 +195,7 @@ private:
    PinTable* const m_table;
 
    ModelViewProj* m_mvp = nullptr; // Store the active Model / View / Projection
+   PartGroupData::SpaceReference m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
 
    bool m_isStaticPrepassDirty = true;
    int m_disableStaticPrepass = 0;

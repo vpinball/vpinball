@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ui/resource.h"
+#include "timer.h"
 
 class PartGroupData final
 {
@@ -27,11 +28,11 @@ public:
    unsigned int m_visibilityMask = VM_ALL;
    enum class SpaceReference : int
    {
-      SR_INHERIT, // Inherit space reference from parent (note that root defaults to Playfield reference space)
-      SR_ROOM, // Base space, aligned to (offsetted) real world, without any scaling (to match real world room in AR/VR)
-      SR_CABINET_FEET, // Relative to room, scaled to fit cabinet size (without any height adjustment, for cabinet feet to touch ground)
-      SR_CABINET, // Relative to cabinet feet, with height adjustment (with height adjustment for lockbar to match cabinet lockbar height after scaling)
       SR_PLAYFIELD, // Relative to cabinet with playfield inclination and local coordinate system applied (usual local playfield coordinate system tailored for table design)
+      SR_CABINET, // Relative to cabinet feet, with height adjustment (with height adjustment for lockbar to match cabinet lockbar height after scaling)
+      SR_CABINET_FEET, // Relative to room, scaled to fit cabinet size (without any height adjustment, for cabinet feet to touch ground)
+      SR_ROOM, // Base space, aligned to (offsetted) real world, without any scaling (to match real world room in AR/VR)
+      SR_INHERIT, // Inherit space reference from parent (note that root defaults to Playfield reference space)
    };
    SpaceReference m_spaceReference = SpaceReference::SR_PLAYFIELD;
 };
