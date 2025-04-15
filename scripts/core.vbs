@@ -3139,6 +3139,10 @@ Sub NVOffset(version) ' version 2 for dB2S compatibility
 End Sub
 
 Sub VPMVol
+	if PlatformOS <> "windows" then
+		MsgBox "VPinMAME Volume adjustment is not supported on standalone versions of Visual Pinball."
+		Exit Sub
+	End If
 	Dim VolPM,VolPMNew
 	VolPM = Controller.Games(controller.GameName).Settings.Value("volume")
 	VolPMNew = InputBox ("Enter desired VPinMAME Volume Level (-32 to 0)","VPinMAME Volume",VolPM)
