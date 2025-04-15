@@ -195,6 +195,10 @@ public:
    void UpdateVRPosition(ModelViewProj& mvp);
    void tableUp();
    void tableDown();
+   void tableForward();
+   void tableBack();
+   void tableRight();
+   void tableLeft();
    void recenterTable();
    void updateTableMatrix();
    static bool isVRinstalled();

@@ -1074,6 +1074,14 @@ void PinInput::FireKeyEvent(const int dispid, int keycode)
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableUp();
    else if (keycode == g_pplayer->m_rgKeys[eTableDown] && dispid == DISPID_GameEvents_KeyUp)
       g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableDown();
+   else if (keycode == g_pplayer->m_rgKeys[eTableForward] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableForward();
+   else if (keycode == g_pplayer->m_rgKeys[eTableBack] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableBack();
+   else if (keycode == g_pplayer->m_rgKeys[eTableRight] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableRight();
+   else if (keycode == g_pplayer->m_rgKeys[eTableLeft] && dispid == DISPID_GameEvents_KeyUp)
+      g_pplayer->m_pin3d.m_pd3dPrimaryDevice->tableLeft();
    else
 #endif
 

@@ -20,7 +20,7 @@ enum VRPreviewMode
    VRPREVIEW_RIGHT,
    VRPREVIEW_BOTH
 };
-
+//Panasony
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {
@@ -49,6 +49,10 @@ enum EnumAssignKeys
    eTableRecenter,
    eTableUp,
    eTableDown,
+   eTableForward,
+   eTableBack,
+   eTableRight,
+   eTableLeft,
    eEscape,
    ePause,
    eTweak,
@@ -81,6 +85,10 @@ static const string regkey_string[eCKeys] = {
    "TableRecenterKey"s,
    "TableUpKey"s,
    "TableDownKey"s,
+   "TableForwardKey"s,
+   "TableBackKey"s,
+   "TableRightKey"s,
+   "TableLeftKey"s,
    "EscapeKey"s,
    "PauseKey"s,
    "TweakKey"s
@@ -111,6 +119,10 @@ static constexpr int regkey_defdik[eCKeys] = {
    DIK_NUMPAD5,
    DIK_NUMPAD8,
    DIK_NUMPAD2,
+   -1,
+   -1,
+   -1,
+   -1,
    DIK_ESCAPE,
    DIK_P,
    DIK_F12
@@ -141,6 +153,10 @@ static constexpr int regkey_idc[eCKeys] = {
    IDC_TABLEREC_TEXT,
    IDC_TABLEUP_TEXT,
    IDC_TABLEDOWN_TEXT,
+   -1,
+   -1,
+   -1,
+   -1,
    -1, // Escape
    IDC_PAUSE,
    IDC_TWEAK
