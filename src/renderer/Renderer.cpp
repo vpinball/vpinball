@@ -406,8 +406,6 @@ Renderer::~Renderer()
    delete m_ballDebugPoints;
    #endif
    delete m_ballTrailMeshBuffer;
-   delete m_ballImage;
-   delete m_decalImage;
    delete m_tonemapLUT;
    delete m_staticPrepassRT;
    delete m_pOffscreenBackBufferTexture1;
