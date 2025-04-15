@@ -184,7 +184,7 @@ BackGlass::BackGlass(RenderDevice* const pd3dDevice, Texture * backgroundFallbac
                   }
                   size_t size = decode_base64(val, data, val_size, data_len);
                   if ((size > 0) && (strcmp(imagesNode->Name(), "BackglassImage") == 0)) {
-                     m_loaded_image = BaseTexture::CreateFromData(data, size, g_pplayer->m_ptable->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
+                     m_loaded_image = BaseTexture::CreateFromData(data, size, g_pplayer->m_ptable->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
                      m_loaded_image->RemoveAlpha();
                      m_backgroundTexture = m_pd3dDevice->m_texMan.LoadTexture(m_loaded_image, SF_TRILINEAR, SA_CLAMP, SA_CLAMP, false);
                      m_backglass_width = m_backgroundTexture->GetWidth();

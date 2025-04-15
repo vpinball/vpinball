@@ -6,7 +6,6 @@
 #include "mINI/ini.h"
 #include "robin_hood.h"
 
-
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
 // This is used to allow overriding part of the settings for a specific table while still using the base application value for others.
@@ -88,13 +87,8 @@ public:
    bool LoadValue(const Section section, const string &key, int &pint) const;
    bool LoadValue(const Section section, const string &key, unsigned int &val) const;
 
-   void Validate(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = "");
-   void Validate(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = "");
-   void Validate(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = "");
-   void Validate(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = "");
-   void Validate(const bool addDefaults);
-
    // The following method must only be used for settings previously validated to guarantee successfull loading
+   void Validate(const bool addDefaults);
    void ResetValue(const Section section, const string &key);
    string LoadValueString(const Section section, const string &key) const { string v; LoadValue(section, key, v); return v; }
    float LoadValueFloat(const Section section, const string &key) const { float v; bool ok = LoadValue(section, key, v); assert(ok); return v; }
@@ -140,6 +134,11 @@ private:
    bool LoadValue(const Section section, const string &key, void *const szbuffer, const size_t size) const;
    bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
 #endif
+
+   void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = "");
+   void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = "");
+   void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = "");
+   void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = "");
 
    bool m_modified = false;
    string m_iniPath;

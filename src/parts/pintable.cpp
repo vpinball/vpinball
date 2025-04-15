@@ -3788,7 +3788,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                         return hr;
 
                      Texture *const ppi = new Texture();
-                     ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
+                     ppi->m_maxTexDim = m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
                      if ((hr = ppi->LoadFromStream(pstmItem, loadfileversion, this, false)) == S_OK)
                         m_vimage[i] = ppi;
                      else
@@ -3819,7 +3819,7 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                }
 
                Texture *const ppi = new Texture();
-               ppi->m_maxTexDim = m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0); // default: Don't resize textures
+               ppi->m_maxTexDim = m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s);
                ppi->LoadFromStream(pstmItem, loadfileversion, this, false);
                if (!ppi)
                   failed_load_img += "\n- " + szStmName;

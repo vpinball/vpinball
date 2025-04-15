@@ -125,7 +125,7 @@ void PinSound::initSDLAudio(const Settings& settings)
       }
     }
 
-   PinSound::m_SoundMode3D = (SoundConfigTypes) settings.LoadValueWithDefault(Settings::Player, "Sound3D"s, (int)SNDCFG_SND3D2CH);
+   PinSound::m_SoundMode3D = static_cast<SoundConfigTypes>(settings.LoadValueUInt(Settings::Player, "Sound3D"s));
 
    if (!SDL_WasInit(SDL_INIT_AUDIO))
       if (!SDL_InitSubSystem(SDL_INIT_AUDIO)) {

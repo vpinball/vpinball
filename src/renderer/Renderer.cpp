@@ -67,14 +67,14 @@ Renderer::Renderer(PinTable* const table, VPX::Window* wnd, VideoSyncMode& syncM
       bool hr = m_table->m_settings.LoadValue(Settings::Player, "BallImage"s, imageName);
       if (hr)
       {
-         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
+         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
          if (tex != nullptr)
             m_ballImage = new Texture(tex);
       }
       hr = m_table->m_settings.LoadValue(Settings::Player, "DecalImage"s, imageName);
       if (hr)
       {
-         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueWithDefault(Settings::Player, "MaxTexDimension"s, 0));
+         BaseTexture* const tex = BaseTexture::CreateFromFile(imageName, m_table->m_settings.LoadValueInt(Settings::Player, "MaxTexDimension"s));
          if (tex != nullptr)
             m_decalImage = new Texture(tex);
       }

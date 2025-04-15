@@ -93,7 +93,7 @@ BOOL EditorOptionsDialog::OnInitDialog()
     const float throwBallMass = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "ThrowBallMass"s, 1.0f);
     SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(throwBallMass).c_str());
 
-    const bool enableLog = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "EnableLog"s, false);
+    const bool enableLog = g_pvp->m_settings.LoadValueBool(Settings::Editor, "EnableLog"s);
     SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, enableLog ? BST_CHECKED : BST_UNCHECKED, 0);
 
     const bool logScript = g_pvp->m_settings.LoadValueWithDefault(Settings::Editor, "LogScriptOutput"s, false);
