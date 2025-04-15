@@ -209,6 +209,10 @@ static HRESULT WINAPI SubMatches_GetTypeInfo(ISubMatches *iface,
     return E_NOTIMPL;
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI SubMatches_GetIDsOfNames(ISubMatches *iface,
+    REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI SubMatches_GetIDsOfNames(ISubMatches *iface,
         REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
@@ -219,7 +223,13 @@ static HRESULT WINAPI SubMatches_GetIDsOfNames(ISubMatches *iface,
 
     return ITypeInfo_GetIDsOfNames(typeinfos[SubMatches_tid], rgszNames, cNames, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+                    VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
                         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -232,6 +242,7 @@ static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
     return ITypeInfo_Invoke(typeinfos[SubMatches_tid], iface, dispIdMember, wFlags,
             pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI SubMatches_get_Item(ISubMatches *iface,
         LONG index, VARIANT *pSubMatch)
@@ -415,6 +426,10 @@ static HRESULT WINAPI Match2_GetTypeInfo(IMatch2 *iface,
     return E_NOTIMPL;
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface,
+    REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface,
         REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
@@ -425,7 +440,13 @@ static HRESULT WINAPI Match2_GetIDsOfNames(IMatch2 *iface,
 
     return ITypeInfo_GetIDsOfNames(typeinfos[Match2_tid], rgszNames, cNames, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+            VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
                 VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -438,6 +459,7 @@ static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
     return ITypeInfo_Invoke(typeinfos[Match2_tid], iface, dispIdMember, wFlags,
             pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI Match2_get_Value(IMatch2 *iface, BSTR *pValue)
 {
@@ -549,13 +571,23 @@ static HRESULT WINAPI Match_GetTypeInfo(IMatch *iface, UINT iTInfo, LCID lcid, I
     return IMatch2_GetTypeInfo(&This->IMatch2_iface, iTInfo, lcid, ppTInfo);
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI Match_GetIDsOfNames(IMatch *iface, REFIID riid,
+    LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI Match_GetIDsOfNames(IMatch *iface, REFIID riid,
         LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
     Match2 *This = impl_from_IMatch(iface);
     return IMatch2_GetIDsOfNames(&This->IMatch2_iface, riid, rgszNames, cNames, lcid, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+    VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -564,6 +596,7 @@ static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
     return IMatch2_Invoke(&This->IMatch2_iface, dispIdMember, riid, lcid,
             wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI Match_get_Value(IMatch *iface, BSTR *pValue)
 {
@@ -853,6 +886,10 @@ static HRESULT WINAPI MatchCollection2_GetTypeInfo(IMatchCollection2 *iface,
     return E_NOTIMPL;
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI MatchCollection2_GetIDsOfNames(IMatchCollection2 *iface,
+    REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI MatchCollection2_GetIDsOfNames(IMatchCollection2 *iface,
         REFIID riid, LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
@@ -863,7 +900,13 @@ static HRESULT WINAPI MatchCollection2_GetIDsOfNames(IMatchCollection2 *iface,
 
     return ITypeInfo_GetIDsOfNames(typeinfos[MatchCollection2_tid], rgszNames, cNames, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+    VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -876,6 +919,7 @@ static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID d
     return ITypeInfo_Invoke(typeinfos[MatchCollection2_tid], iface, dispIdMember, wFlags,
             pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI MatchCollection2_get_Item(IMatchCollection2 *iface,
         LONG index, IDispatch **ppMatch)
@@ -969,6 +1013,10 @@ static HRESULT WINAPI MatchCollection_GetTypeInfo(IMatchCollection *iface,
     return IMatchCollection2_GetTypeInfo(&This->IMatchCollection2_iface, iTInfo, lcid, ppTInfo);
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI MatchCollection_GetIDsOfNames(IMatchCollection *iface, REFIID riid,
+    LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI MatchCollection_GetIDsOfNames(IMatchCollection *iface, REFIID riid,
         LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
@@ -976,7 +1024,13 @@ static HRESULT WINAPI MatchCollection_GetIDsOfNames(IMatchCollection *iface, REF
     return IMatchCollection2_GetIDsOfNames(&This->IMatchCollection2_iface,
             riid, rgszNames, cNames, lcid, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult,
+    EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult,
         EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -985,6 +1039,7 @@ static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dis
     return IMatchCollection2_Invoke(&This->IMatchCollection2_iface, dispIdMember,
             riid, lcid, wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI MatchCollection_get_Item(IMatchCollection *iface, LONG index, IDispatch **ppMatch)
 {
@@ -1047,9 +1102,11 @@ static HRESULT create_match_collection2(IMatchCollection2 **match_collection)
     MatchCollection2 *ret;
     HRESULT hres;
 
+#ifndef __STANDALONE__
     hres = init_regexp_typeinfo(MatchCollection2_tid);
     if(FAILED(hres))
         return hres;
+#endif
 
     ret = calloc(1, sizeof(*ret));
     if(!ret)
@@ -1148,6 +1205,10 @@ static HRESULT WINAPI RegExp2_GetTypeInfo(IRegExp2 *iface,
     return S_OK;
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI RegExp2_GetIDsOfNames(IRegExp2 *iface, REFIID riid,
+    LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI RegExp2_GetIDsOfNames(IRegExp2 *iface, REFIID riid,
         LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
@@ -1158,7 +1219,13 @@ static HRESULT WINAPI RegExp2_GetIDsOfNames(IRegExp2 *iface, REFIID riid,
 
     return ITypeInfo_GetIDsOfNames(typeinfos[RegExp2_tid], rgszNames, cNames, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+    VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
         VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -1171,6 +1238,7 @@ static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
     return ITypeInfo_Invoke(typeinfos[RegExp2_tid], iface, dispIdMember, wFlags,
             pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI RegExp2_get_Pattern(IRegExp2 *iface, BSTR *pPattern)
 {
@@ -1713,13 +1781,23 @@ static HRESULT WINAPI RegExp_GetTypeInfo(IRegExp *iface,
     return IRegExp2_GetTypeInfo(&This->IRegExp2_iface, iTInfo, lcid, ppTInfo);
 }
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI RegExp_GetIDsOfNames(IRegExp *iface, REFIID riid,
+    LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId);
+#else
 static HRESULT WINAPI RegExp_GetIDsOfNames(IRegExp *iface, REFIID riid,
         LPOLESTR *rgszNames, UINT cNames, LCID lcid, DISPID *rgDispId)
 {
     RegExp2 *This = impl_from_IRegExp(iface);
     return IRegExp2_GetIDsOfNames(&This->IRegExp2_iface, riid, rgszNames, cNames, lcid, rgDispId);
 }
+#endif
 
+#ifdef __STANDALONE__
+static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
+    REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
+            VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+#else
 static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
         REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams,
                 VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr)
@@ -1728,6 +1806,7 @@ static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
     return IRegExp2_Invoke(&This->IRegExp2_iface, dispIdMember, riid, lcid,
             wFlags, pDispParams, pVarResult, pExcepInfo, puArgErr);
 }
+#endif
 
 static HRESULT WINAPI RegExp_get_Pattern(IRegExp *iface, BSTR *pPattern)
 {
@@ -1813,9 +1892,11 @@ HRESULT create_regexp(IDispatch **ret)
     RegExp2 *regexp;
     HRESULT hres;
 
+#ifndef __STANDALONE__
     hres = init_regexp_typeinfo(RegExp2_tid);
     if(FAILED(hres))
         return hres;
+#endif
 
     regexp = calloc(1, sizeof(*regexp));
     if(!regexp)
@@ -1857,3 +1938,7 @@ void release_regexp_typelib(void)
     if(typelib)
         ITypeLib_Release(typelib);
 }
+
+#ifdef __STANDALONE__
+#include "regexp_proxy.c"
+#endif

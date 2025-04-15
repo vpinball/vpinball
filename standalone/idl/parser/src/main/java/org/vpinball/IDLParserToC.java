@@ -514,6 +514,18 @@ public class IDLParserToC {
         IDLParserToC parser = new IDLParserToC();
 
         parser.parse(
+                "../../inc/wine/dlls/vbscript/vbsregexp55.idl",
+                "regexp_proxy.c",
+                Arrays.asList(
+                	new IDLInterface("IRegExp", "RegExp"),
+                	new IDLInterface("IRegExp2", "RegExp2"),
+                	new IDLInterface("IMatch", "Match"),
+                	new IDLInterface("IMatch2", "Match2"),
+                	new IDLInterface("IMatchCollection", "MatchCollection"),
+                	new IDLInterface("IMatchCollection2", "MatchCollection2"),
+                	new IDLInterface("ISubMatches", "SubMatches")));
+
+        parser.parse(
                 "../../inc/wine/dlls/scrrun/scrrun.idl", 
                 "dictionary_proxy.c",
                 Arrays.asList(
