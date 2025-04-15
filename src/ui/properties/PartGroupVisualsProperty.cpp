@@ -5,13 +5,19 @@
 
 PartGroupVisualsProperty::PartGroupVisualsProperty(const VectorProtected<ISelect> *pvsel) : BasePropertyDialog(IDD_PROPPARTGROUP_VISUALS, pvsel)
 {
-   m_referenceSpace.SetDialog(this);
 }
 
 BOOL PartGroupVisualsProperty::OnInitDialog()
 {
    AttachItem(IDC_SPACE_REFERENCE, m_referenceSpace);
-   m_referenceSpace.EnableWindow(FALSE); // Not yet implemented
+   m_referenceSpace.SetRedraw(false);
+   m_referenceSpace.ResetContent();
+   m_referenceSpace.AddString("Playfield");
+   m_referenceSpace.AddString("Cabinet");
+   m_referenceSpace.AddString("Cabinet Feet");
+   m_referenceSpace.AddString("Room");
+   m_referenceSpace.AddString("Inherit");
+   m_referenceSpace.SetRedraw(true);
    AttachItem(IDC_MASK_PLAYFIELD, m_visibilityPlayfield);
    AttachItem(IDC_MASK_MIXED_REALITY, m_visibilityMixedReality);
    AttachItem(IDC_MASK_AUGMENTED_REALITY, m_visibilityVirtualReality);
@@ -39,6 +45,8 @@ void PartGroupVisualsProperty::UpdateVisuals(const int dispid/*=-1*/)
    PartGroup* const partGroup = static_cast<PartGroup*>(m_pvsel->ElementAt(0));
    if (partGroup == nullptr)
       return;
+   if (dispid == IDC_SPACE_REFERENCE || dispid == -1)
+      m_referenceSpace.SetCurSel(static_cast<int>(partGroup->m_d.m_spaceReference));
    if (dispid == IDC_MASK_PLAYFIELD || dispid == -1)
       m_visibilityPlayfield.SetCheck((partGroup->m_d.m_visibilityMask & PartGroupData::VisibilityMask::VM_PLAYFIELD) ? BST_CHECKED : BST_UNCHECKED);
    if (dispid == IDC_MASK_MIXED_REALITY || dispid == -1)
@@ -70,10 +78,11 @@ void PartGroupVisualsProperty::UpdateProperties(const int dispid)
       PartGroup* const partGroup = static_cast<PartGroup*>(m_pvsel->ElementAt(i));
       switch (dispid)
       {
-         case IDC_MASK_PLAYFIELD: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_PLAYFIELD, m_visibilityPlayfield.GetCheck() == BST_CHECKED); break;
-         case IDC_MASK_MIXED_REALITY: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_MIXED_REALITY, m_visibilityMixedReality.GetCheck() == BST_CHECKED); break;
-         case IDC_MASK_AUGMENTED_REALITY: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_VIRTUAL_REALITY, m_visibilityVirtualReality.GetCheck() == BST_CHECKED); break;
-         default: break;
+      case IDC_SPACE_REFERENCE: partGroup->m_d.m_spaceReference = static_cast<PartGroupData::SpaceReference>(m_referenceSpace.GetCurSel()); break;
+      case IDC_MASK_PLAYFIELD: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_PLAYFIELD, m_visibilityPlayfield.GetCheck() == BST_CHECKED); break;
+      case IDC_MASK_MIXED_REALITY: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_MIXED_REALITY, m_visibilityMixedReality.GetCheck() == BST_CHECKED); break;
+      case IDC_MASK_AUGMENTED_REALITY: UpdateVisibilityMask(partGroup, PartGroupData::VisibilityMask::VM_VIRTUAL_REALITY, m_visibilityVirtualReality.GetCheck() == BST_CHECKED); break;
+      default: break;
       }
       partGroup->UpdateStatusBarInfo();
    }

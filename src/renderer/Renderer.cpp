@@ -1160,7 +1160,10 @@ void Renderer::RenderFrame()
    // Update camera point of view
    #if defined(ENABLE_VR) || defined(ENABLE_XR)
    if (m_stereo3D == STEREO_VR)
-      g_pplayer->m_vrDevice->UpdateVRPosition(GetMVP());
+   {
+      m_mvpSpaceReference = PartGroupData::SpaceReference::SR_PLAYFIELD;
+      g_pplayer->m_vrDevice->UpdateVRPosition(PartGroupData::SpaceReference::SR_PLAYFIELD, GetMVP());
+   }
    else 
    #endif
    // Legacy headtracking (to be moved to a plugin, using plugin API to update camera)
@@ -1194,7 +1197,7 @@ void Renderer::RenderFrame()
             m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_TRUE);
             m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_TRUE);
             m_renderDevice->SetRenderState(RenderState::ZFUNC, RenderState::Z_ALWAYS);
-            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &g_pplayer->m_vrDevice->m_visibilityMaskProj[0], 2);
+            m_renderDevice->m_basicShader->SetMatrix(SHADER_matWorldViewProj, g_pplayer->m_vrDevice->GetVisibilityMaskProjs(), 2);
             m_renderDevice->m_basicShader->SetTechnique(SHADER_TECHNIQUE_vr_mask);
             m_renderDevice->DrawMesh(m_renderDevice->m_basicShader, false, pos, 0, mask, RenderDevice::TRIANGLELIST, 0, mask->m_ib->m_count);
             UpdateBasicShaderMatrix();
@@ -1518,9 +1521,24 @@ extern marker_series series;
 
 void Renderer::RenderItem(IEditable* renderable, bool isNoBackdrop)
 {
-   if (!(isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
-      && (renderable->GetPartGroup() == nullptr || (renderable->GetPartGroup()->GetVisibilityMask() & m_visibilityMask))) // Apply visibility mask
-      renderable->GetIHitable()->Render(m_render_mask);
+   if ((isNoBackdrop && renderable->m_backglass) // Don't render backdrop items in reflections or VR & cabinet modes
+      || (renderable->GetPartGroup() != nullptr && ((renderable->GetPartGroup()->GetVisibilityMask() & m_visibilityMask) == 0))) // Apply visibility mask
+      return;
+      
+   #if defined(ENABLE_XR)
+   if (m_stereo3D == STEREO_VR)
+   {
+      PartGroupData::SpaceReference spaceReference = renderable->GetPartGroup() ? renderable->GetPartGroup()->GetReferenceSpace() : PartGroupData::SpaceReference::SR_PLAYFIELD;
+      if (m_mvpSpaceReference != spaceReference)
+      {
+         m_mvpSpaceReference = spaceReference;
+         g_pplayer->m_vrDevice->UpdateVRPosition(m_mvpSpaceReference, GetMVP());
+         UpdateBasicShaderMatrix();
+      }
+   }
+   #endif
+
+   renderable->GetIHitable()->Render(m_render_mask);
 }
 
 

@@ -16,18 +16,18 @@ public:
 
    unsigned int GetEyeWidth() const { return m_eyeWidth; }
    unsigned int GetEyeHeight() const { return m_eyeHeight; }
-   void UpdateVRPosition(ModelViewProj& mvp);
+   
+   float GetLockbarWidth() const { return m_lockbarWidth; }
+   void SetLockbarWidth(float width) { m_lockbarWidth = width; m_worldDirty = true; }
 
    void RecenterTable();
-   void SaveVRSettings(Settings& settings) const;
-   float GetSceneScale() const { return m_scale; }
-   float GetLockbarWidth() const { return m_lockbarWidth; }
    float GetSceneOrientation() const { return m_orientation; }
    const Vertex3Ds& GetSceneOffset() const { return m_tablePos; }
-   void SetSceneScale(float scale) { m_scale = scale; m_tableWorldDirty = true; }
-   void SetLockbarWidth(float width) { m_lockbarWidth = width; m_tableWorldDirty = true; }
-   void SetSceneOrientation(float orientation) { m_orientation = orientation; m_tableWorldDirty = true; }
-   void SetSceneOffset(const Vertex3Ds& pos) { m_tablePos = pos; m_tableWorldDirty = true; }
+   void SetSceneOrientation(float orientation) { m_orientation = orientation; m_worldDirty = true; }
+   void SetSceneOffset(const Vertex3Ds& pos) { m_tablePos = pos; m_worldDirty = true; }
+   void SaveVRSettings(Settings& settings) const;
+
+   void UpdateVRPosition(PartGroupData::SpaceReference spaceRef, ModelViewProj& mvp);
 
 #ifndef ENABLE_XR
    float GetPredictedDisplayDelayInS() const { return 0.f; } // Unsupported as OpenVR is planned for deprecation and removal
@@ -39,14 +39,23 @@ private:
    
    float m_scale = 1.0f;
    float m_lockbarWidth = 0.0f;
-   float m_slope = 0.0f;
    float m_orientation = 0.0f;
    Vertex3Ds m_tablePos;
-   bool m_tableWorldDirty = true;
-   Matrix3D m_tableWorld;
+   float m_slope = 0.0f;
    
-   Matrix3D m_vrMatView;
-   Matrix3D m_vrMatProj[2];
+   bool m_worldDirty = true;
+   Matrix3D m_pfWorld;
+   Matrix3D m_pfMatView;
+   Matrix3D m_pfMatProj[2];
+   Matrix3D m_cabWorld;
+   Matrix3D m_cabMatView;
+   Matrix3D m_cabMatProj[2];
+   Matrix3D m_feetWorld;
+   Matrix3D m_feetMatView;
+   Matrix3D m_feetMatProj[2];
+   Matrix3D m_roomWorld;
+   Matrix3D m_roomMatView;
+   Matrix3D m_roomMatProj[2];
 
 #ifdef ENABLE_VR
 public:
@@ -82,7 +91,7 @@ public:
 
    float GetPredictedDisplayDelayInS() const { return m_predictedDisplayDelayInS; }
 
-   Matrix3D m_visibilityMaskProj[2];
+   Matrix3D* GetVisibilityMaskProjs() { return &m_nextProj[0]; }
 
    enum class SwapchainType : uint8_t
    {
@@ -145,6 +154,9 @@ private:
 
    bool m_win32PerfCounterExtensionSupported = false;
    float m_predictedDisplayDelayInS = 0.f;
+   Matrix3D m_nextMedianView;
+   Matrix3D m_nextView[2];
+   Matrix3D m_nextProj[2];
 
    bool m_debugUtilsExtensionSupported = false;
    XrDebugUtilsMessengerEXT m_debugUtilsMessenger = XR_NULL_HANDLE;
