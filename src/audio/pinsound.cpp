@@ -397,11 +397,11 @@ void PinSound::PlayBGSound(float volume, const int loopcount, const bool usesame
          Mix_HaltChannel(m_assignedChannel);
       Mix_Volume(m_assignedChannel, nVolume);
       if (restart || !usesame) // stop and reload
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
    }
    else { // not playing
       Mix_Volume(m_assignedChannel, nVolume);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, 0);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
    }
 }
 
@@ -511,14 +511,14 @@ void PinSound::Play_SNDCFG_SND3DALLREAR(float nVolume, const float randompitch, 
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
          Mix_RegisterEffect(m_assignedChannel, PinSound::MoveFrontToRearEffect, nullptr, &m_mixEffectsData);
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
       }
    }
    else { // not playing
       setPitch(pitch, randompitch);
       // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
       Mix_RegisterEffect(m_assignedChannel, PinSound::MoveFrontToRearEffect, nullptr, &m_mixEffectsData);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
    }
 }
 
@@ -559,14 +559,14 @@ void PinSound::Play_SNDCFG_SND3D2CH(float nVolume, const float randompitch, cons
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
          Mix_RegisterEffect(m_assignedChannel, PinSound::Pan2ChannelEffect, nullptr, &m_mixEffectsData);
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
       }
    }
    else { // not playing
       setPitch(pitch, randompitch);
       // register the effects.  must do this each time before PlayChannel and once the sound is done its unregistered automatically
       Mix_RegisterEffect(m_assignedChannel, PinSound::Pan2ChannelEffect, nullptr, &m_mixEffectsData);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
    }
 }
 
@@ -609,14 +609,14 @@ void PinSound::Play_SNDCFG_SND3DSSF(float nVolume, const float randompitch, cons
          setPitch(pitch, randompitch);
          // register the effects.  must do this each time before PlayChannel.  When the sound is done playing its automatically unregistered.
          Mix_RegisterEffect(m_assignedChannel, PinSound::SSFEffect, nullptr, &m_mixEffectsData);
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
       }
    }
    else { // not playing
       setPitch(pitch, randompitch);
       // register the pitch effect.  must do this each time before PlayChannel.  When the sound is done playing its automatically unregistered.
       Mix_RegisterEffect(m_assignedChannel, PinSound::SSFEffect, nullptr, &m_mixEffectsData);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, 0);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunk, loopcount);
    }
 }
 
