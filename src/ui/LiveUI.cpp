@@ -1724,7 +1724,7 @@ void LiveUI::HandleTweakInput()
    BackdropSetting activeTweakSetting = m_tweakPageOptions[m_activeTweakIndex];
    PinTable * const table = m_live_table;
 
-   if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+   if (m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
    {
       if (!ImGui::IsKeyDown(ImGuiKey_LeftAlt) && !ImGui::IsKeyDown(ImGuiKey_RightAlt))
       {
@@ -1957,9 +1957,9 @@ void LiveUI::HandleTweakInput()
       }
       else if (keyEvent == 1) // Key down
       {
-         if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
-         else if (keycode == eRightTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         else if (keycode == eRightTiltKey && m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
          else if (keycode == eStartGameKey) // Save tweak page
          {
@@ -2253,12 +2253,11 @@ void LiveUI::HandleTweakInput()
       }
       else if (keyEvent == 0) // Continuous keypress
       {
-         if ((keycode == ePlungerKey) && (m_tweakPages[m_activeTweakPageIndex] == TP_VRPosition)) {
+         if ((keycode == ePlungerKey) && (m_tweakPages[m_activeTweakPageIndex] == TP_VRPosition))
             m_player->m_vrDevice->RecenterTable();
-         }
-         else if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         else if (keycode == eLeftTiltKey && m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation -= 1.0f;
-         else if (keycode == eRightTiltKey && m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+         else if (keycode == eRightTiltKey && m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
             m_live_table->mViewSetups[m_live_table->m_BG_current_set].mViewportRotation += 1.0f;
       }
    }
@@ -2501,7 +2500,7 @@ void LiveUI::UpdateTweakModeUI()
          infos.push_back("Credit Key:   Reset page to old values"s);
       }
       infos.push_back("Magna save keys:   Previous/Next option"s);
-      if (m_live_table->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false))
+      if (m_live_table->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s))
       {
          infos.push_back("Nudge key:   Rotate table orientation"s);
          infos.push_back("Arrows & Left Alt Key:   Navigate around"s);

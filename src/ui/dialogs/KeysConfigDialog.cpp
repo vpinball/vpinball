@@ -422,7 +422,7 @@ BOOL KeysConfigDialog::OnInitDialog()
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, true);
     SendDlgItemMessage(IDC_ENABLE_MOUSE_PLAYER, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
-    on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, false);
+    on = g_pvp->m_settings.LoadValueBool(Settings::Player, "EnableCameraModeFlyAround"s);
     SendDlgItemMessage(IDC_ENABLE_CAMERA_FLY_AROUND, BM_SETCHECK, on ? BST_CHECKED : BST_UNCHECKED, 0);
 
     on = g_pvp->m_settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, false);
@@ -851,13 +851,12 @@ void KeysConfigDialog::OnOK()
     float tiltInertia = clamp(sz2f(GetDlgItemText(IDC_TILT_INERTIA).GetString()), 0.f, 1000.f);
     g_pvp->m_settings.SaveValue(Settings::Player, "TiltInertia"s, tiltInertia);
 
-    for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
-    {
-        if (i == eTableRecenter || i == eTableUp || i == eTableDown)
-           continue;
-        const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
-        g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)key);
-    }
+   for (unsigned int i = 0; i < eCKeys; ++i) if (regkey_idc[i] != -1)
+      if (regkey_idc[i] != -1 && GetDlgItem(regkey_idc[i]) && GetDlgItem(regkey_idc[i]).IsWindow())
+      {
+         const size_t key = ::GetWindowLongPtr(GetDlgItem(regkey_idc[i]).GetHwnd(), GWLP_USERDATA);
+         g_pvp->m_settings.SaveValue(Settings::Player, regkey_string[i], (int)key);
+      }
 
     size_t key = ::GetWindowLongPtr(GetDlgItem(IDC_JOYCUSTOM1).GetHwnd(), GWLP_USERDATA);
     g_pvp->m_settings.SaveValue(Settings::Player, "JoyCustom1Key"s, (int)key);
