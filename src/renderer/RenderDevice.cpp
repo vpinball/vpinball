@@ -2255,6 +2255,26 @@ void RenderDevice::tableDown()
       m_tablez = 0.0f;
    updateTableMatrix();
 }
+void RenderDevice::tableForward()
+{
+   m_tabley -= 1.0f;
+   updateTableMatrix();
+}
+void RenderDevice::tableBack()
+{
+   m_tabley += 1.0f;
+   updateTableMatrix();
+}
+void RenderDevice::tableRight()
+{
+   m_tablex -= 1.0f;
+   updateTableMatrix();
+}
+void RenderDevice::tableLeft()
+{
+   m_tablex += 1.0f;
+   updateTableMatrix();
+}
 
 void RenderDevice::recenterTable()
 {
