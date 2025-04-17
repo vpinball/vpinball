@@ -623,12 +623,12 @@ void PinInput::FireActionEvent(EnumAssignKeys action, bool isPressed)
       }
       break;
 
-   #if defined(ENABLE_VR)
    case eTableRecenter:
-      if (g_pplayer->m_vrDevice && !isPressed)
+      if (g_pplayer->m_vrDevice && isPressed)
          g_pplayer->m_vrDevice->RecenterTable();
       break;
 
+   #if defined(ENABLE_VR)
    case eTableUp:
       if (g_pplayer->m_vrDevice && !isPressed)
          g_pplayer->m_vrDevice->TableUp();

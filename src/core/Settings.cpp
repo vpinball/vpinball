@@ -328,6 +328,11 @@ void Settings::Validate(const bool addDefaults)
 
 
    //////////////////////////////////////////////////////////////////////////
+   // Player misc. section
+   SettingBool(Settings::Player, "EnableCameraModeFlyAround"s, false, "Enable moving camera when using Tweak menu (legacy, replaced by LiveUI fly mode)");
+
+
+   //////////////////////////////////////////////////////////////////////////
    // Editor section
 
    SettingBool(Settings::Editor, "EnableLog"s, true, "Enable general logging to the vinball.log file."s);
