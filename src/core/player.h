@@ -20,7 +20,6 @@ enum VRPreviewMode
    VRPREVIEW_RIGHT,
    VRPREVIEW_BOTH
 };
-//Panasony
 // NOTE that the following four definitions need to be in sync in their order!
 enum EnumAssignKeys
 {

@@ -221,6 +221,7 @@ private:
    int m_joypmcoin3, m_joypmcoin4, m_joypmcoindoor, m_joypmcancel, m_joypmdown, m_joypmup, m_joypmenter, m_joydebugballs, m_joydebugger, m_joylockbar, m_joymechtilt;
    int m_joycustom1, m_joycustom2, m_joycustom3, m_joycustom4;
    int m_joytablerecenter, m_joytableup, m_joytabledown, m_joypause, m_joytweak;
+   int m_joytableforward, m_joytableback, m_joytableleft, m_joytableright;
    int m_deadz;
    bool m_override_default_buttons, m_plunger_reverse, m_disable_esc, m_lr_axis_reverse, m_ud_axis_reverse;
    bool m_enableMouseInPlayer;

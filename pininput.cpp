@@ -104,7 +104,11 @@ PinInput::PinInput()
    m_joytablerecenter = 0;
    m_joytableup = 0;
    m_joytabledown = 0;
-
+   m_joytableforward = 0;
+   m_joytableback = 0;
+   m_joytableleft = 0;
+   m_joytableright = 0;
+ 
    m_firedautostart = 0;
 
    m_pressed_start = false;
@@ -198,6 +202,10 @@ void PinInput::LoadSettings(const Settings& settings)
    m_joytablerecenter = settings.LoadValueWithDefault(Settings::Player, "JoyTableRecenterKey"s, m_joytablerecenter);
    m_joytableup = settings.LoadValueWithDefault(Settings::Player, "JoyTableUpKey"s, m_joytableup);
    m_joytabledown = settings.LoadValueWithDefault(Settings::Player, "JoyTableDownKey"s, m_joytabledown);
+   m_joytableforward = settings.LoadValueWithDefault(Settings::Player, "JoyTableForwardKey"s, m_joytableforward);
+   m_joytableback = settings.LoadValueWithDefault(Settings::Player, "JoyTableBackKey"s, m_joytableback);
+   m_joytableleft = settings.LoadValueWithDefault(Settings::Player, "JoyTableLeftKey"s, m_joytableleft);
+   m_joytableright = settings.LoadValueWithDefault(Settings::Player, "JoyTableRightKey"s, m_joytableright);
    m_enableMouseInPlayer = settings.LoadValueWithDefault(Settings::Player, "EnableMouseInPlayer"s, m_enableMouseInPlayer);
    m_enableCameraModeFlyAround = settings.LoadValueWithDefault(Settings::Player, "EnableCameraModeFlyAround"s, m_enableCameraModeFlyAround);
    m_enable_nudge_filter = settings.LoadValueWithDefault(Settings::Player, "EnableNudgeFilter"s, m_enable_nudge_filter);
@@ -1265,6 +1273,10 @@ void PinInput::Joy(const unsigned int n, const int updown, const bool start)
    if (m_joytablerecenter == n) FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableRecenter]);
    if (m_joytableup == n)       FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableUp]);
    if (m_joytabledown == n)     FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableDown]);
+   if (m_joytableforward == n)  FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableForward]);
+   if (m_joytableback == n)     FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableBack]);
+   if (m_joytableleft == n)     FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableLeft]);
+   if (m_joytableright == n)    FireKeyEvent(updown, g_pplayer->m_rgKeys[eTableRight]);
    if (m_joystartgamekey == n)
    {
       if (start)
