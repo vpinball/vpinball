@@ -90,18 +90,14 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       if (path.starts_with("dmds.")) {
          path[4] = PATH_SEPARATOR_CHAR;
       }
-      auto fixed_path = fixPathCaseFromBack(path, 1);
-      if (fixed_path) {
-         PLOGI << "Fixed path: " << fixed_path->string();
-         pAssetSrc->SetPath(fixed_path->string());
-      } else {
-         //PLOGI << "Could not correct path\n";
+      if (auto fixed_path = fixPathFromMoveBack(path, 2))
+         pAssetSrc->SetPath(*fixed_path);
+      else
          pAssetSrc->SetPath(path); 
-      }
    }
    else if (parts[0].starts_with("VPX.")) {
       pAssetSrc->SetSrcType(AssetSrcType_VPXResource);
-      pAssetSrc->SetPath(parts[0].substr(4)); // SUPERHAC - FILE PATH - I'm not sure this would ever have a case sensitive path? 
+      pAssetSrc->SetPath(parts[0].substr(4)); 
       ext.clear();
 
       Texture* pTexture = NULL;
@@ -123,26 +119,16 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    else {
       pAssetSrc->SetSrcType(AssetSrcType_File);
       if (!pBaseSrc){
-         auto fixed_path = fixPathCaseFromBack(m_szBasePath + parts[0], 1);
-         if (fixed_path) {
-            PLOGI << "Case sensitive path fixed: " << fixed_path->string();
-            pAssetSrc->SetPath(fixed_path->string());
-         } 
-         else {
-            //PLOGI << "Could not correct path case sensitive path\n";
+         if (auto fixed_path = fixPathFromMoveBack(m_szBasePath + parts[0], 2))
+            pAssetSrc->SetPath(*fixed_path);
+         else
             pAssetSrc->SetPath(m_szBasePath + parts[0]); 
-         }
       }
       else{
-         auto fixed_path = fixPathCaseFromBack(parts[0], 1);
-         if (fixed_path) {
-            PLOGI << "Case sensitive path fixed: " << fixed_path->string();
-            pAssetSrc->SetPath(fixed_path->string());
-         } 
-         else {
-            //PLOGI <<  "Could not correct path case sensitive path\n";
+         if (auto fixed_path = fixPathFromMoveBack(parts[0], 2))
+            pAssetSrc->SetPath(*fixed_path);
+         else
             pAssetSrc->SetPath(parts[0]); 
-         }
       }
    }
 
@@ -257,7 +243,6 @@ void* AssetManager::Open(AssetSrc* pSrc)
       break;
       case AssetSrcType_FlexResource:
       {
-         PLOGI << "FLEX RESOURCE";
          string path = g_pvp->m_szMyPath + "flexdmd" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
 
          if (pSrc->GetAssetType() == AssetType_BMFont)
@@ -351,64 +336,48 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    return pFont;
 }
 
-// Case-insensitive string comparison
-bool AssetManager::iequals(const std::string& a, const std::string& b) {
-   return std::equal(
-       a.begin(), a.end(), b.begin(), b.end(),
-       [](char a, char b) {
-           return std::tolower(a) == std::tolower(b);
-       }
-   );
-}
-
-// Case-insensitive match in a directory
-std::optional<std::string> AssetManager::findEntryCaseInsensitive(const std::filesystem::path& dir, const std::string& name) {
-   DIR* dp = opendir(dir.c_str());
-   if (!dp) return std::nullopt;
-
-   dirent* entry;
-   while ((entry = readdir(dp)) != nullptr) {
-       if (iequals(entry->d_name, name)) {
-           closedir(dp);
-           return std::string(entry->d_name); // Real casing
-       }
-   }
-
-   closedir(dp);
-   return std::nullopt;
-}
-
 // Fix last N components (from the back) to match real filesystem case
-// // start_back_index: 1 = file + parent dir, 2 = parent dir + sub dir, etc.
-std::optional<std::filesystem::path> AssetManager::fixPathCaseFromBack(const std::filesystem::path& input, int start_back_index) {
-   std::vector<std::filesystem::path> parts;
+// // fixFromBack: 1 = file + parent dir, 2 = parent dir + sub dir, etc.
+std::optional<std::string> AssetManager::fixPathFromMoveBack(const std::string& originalPath, int fixFromBack) {
+   std::filesystem::path input = std::filesystem::absolute(originalPath).lexically_normal();
+   std::vector<std::string> components;
+
    for (const auto& part : input) {
-       parts.push_back(part);
+       components.push_back(part.string());
    }
 
-   if (start_back_index >= static_cast<int>(parts.size())) {
-       return std::nullopt; // Not enough components
-   }
-
-   // Build the base (trusted part of path)
-   std::filesystem::path fixed;
-   for (size_t i = 0; i < parts.size() - start_back_index; ++i) {
-       fixed /= parts[i];
-   }
-
-   // Validate that the base exists
-   if (!std::filesystem::exists(fixed) || !std::filesystem::is_directory(fixed)) {
+   if (fixFromBack >= static_cast<int>(components.size()))
        return std::nullopt;
+
+   // Start building the trusted path
+   std::string currentPath = components[0]; // root or drive
+
+   for (size_t i = 1; i < components.size() - fixFromBack; ++i) {
+       currentPath += PATH_SEPARATOR_CHAR;
+       currentPath += components[i];
    }
 
-   // Start fixing from the point specified
-   for (size_t i = parts.size() - start_back_index; i < parts.size(); ++i) {
-       auto match = findEntryCaseInsensitive(fixed, parts[i].string());
-       if (!match) {
-           return std::nullopt; // Not found
+   // Fix components from back (leaf up to N levels)
+   for (size_t i = components.size() - fixFromBack; i < components.size(); ++i) {
+       const std::string& name = components[i];
+
+       if (i == components.size() - 1) {
+           // Last component: use file fixer
+           std::string fixedFile = find_path_case_insensitive(currentPath + PATH_SEPARATOR_CHAR + name);
+           if (fixedFile.empty()) return std::nullopt;
+           return fixedFile;
+       } else {
+           // Intermediate directory
+           std::string fixedDir = find_directory_case_insensitive(currentPath, name);
+           if (fixedDir.empty()) return std::nullopt;
+
+           // Remove trailing slash to keep path joining clean
+           if (!fixedDir.empty() && fixedDir.back() == PATH_SEPARATOR_CHAR)
+               fixedDir.pop_back();
+
+           currentPath = fixedDir;
        }
-       fixed /= *match;
    }
 
-   return fixed;
+   return currentPath;
 }

@@ -35,8 +35,5 @@ private:
 
    string m_szBasePath;
 
-   bool iequals(const std::string& a, const std::string& b);
-   std::optional<std::string> findEntryCaseInsensitive(const std::filesystem::path& dir, const std::string& name);
-   std::optional<std::filesystem::path> fixPathCaseFromBack(const std::filesystem::path& input, int start_back_index);
-
+   std::optional<std::string> fixPathFromMoveBack(const std::string& originalPath, int fixFromBack);
 };
