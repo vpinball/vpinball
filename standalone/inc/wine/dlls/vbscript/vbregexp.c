@@ -314,9 +314,11 @@ static HRESULT create_sub_matches(DWORD pos, match_state_t *result, SubMatches *
     DWORD i;
     HRESULT hres;
 
+#ifndef __STANDALONE__
     hres = init_regexp_typeinfo(SubMatches_tid);
     if(FAILED(hres))
         return hres;
+#endif
 
     ret = calloc(1, sizeof(*ret));
     if(!ret)
@@ -634,9 +636,11 @@ static HRESULT create_match2(DWORD pos, match_state_t **result, IMatch2 **match)
     Match2 *ret;
     HRESULT hres;
 
+#ifndef __STANDALONE__
     hres = init_regexp_typeinfo(Match2_tid);
     if(FAILED(hres))
         return hres;
+#endif
 
     ret = calloc(1, sizeof(*ret));
     if(!ret)

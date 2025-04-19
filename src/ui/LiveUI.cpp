@@ -4337,68 +4337,12 @@ void LiveUI::UpdateMainSplashModal()
          ImGui::GetIO().MousePos.y = 0;
       }
 #endif
-#ifndef __LIBVPINBALL__
-      bool webServerRunning = g_pvp->m_webServer.IsRunning();
-      if (ImGui::Button(webServerRunning ? "Disable Web Server" : "Enable Web Server", size))
-      {
-         g_pvp->m_settings.SaveValue(Settings::Standalone, "WebServer"s, !webServerRunning);
-
-         if (webServerRunning)
-            g_pvp->m_webServer.Stop();
-         else
-            g_pvp->m_webServer.Start();
-
-#if ((defined(__APPLE__) && (defined(TARGET_OS_IOS) && TARGET_OS_IOS)) || defined(__ANDROID__))
-         ImGui::GetIO().MousePos.x = 0;
-         ImGui::GetIO().MousePos.y = 0;
-#endif
-      }
-#endif
-
       if (ImGui::Button("Quit", size) || (enableKeyboardShortcuts && ImGui::IsKeyPressed(dikToImGuiKeys[m_player->m_rgKeys[eExitGame]])))
       {
          ImGui::CloseCurrentPopup();
          HideUI();
          m_table->QuitPlayer(Player::CS_CLOSE_APP);
       }
-
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS && !defined(__LIBVPINBALL__)) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-      ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
-      ImGui::Separator();
-      ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
-      ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Launch Table:").x) * 0.5f));
-      ImGui::Text("Launch Table:");
-
-      ImGui::PushItemWidth(size.x);
-
-      const string launchTable = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx"s);
-      if (ImGui::BeginCombo("##Launch Table", launchTable.c_str()))
-      {
-         vector<string> files = find_files_by_extension(g_pvp->m_szMyPrefPath, "vpx"s);
-
-         for (const auto& file : files) {
-            if (ImGui::Selectable(file.c_str()))
-               g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, file);
-         }
-
-         ImGui::EndCombo();
-      }
-
-      ImGui::PopItemWidth();
-#endif
-
-#ifndef __LIBVPINBALL__
-      string url = g_pvp->m_webServer.GetUrl();
-      if (!url.empty())
-      {
-         ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
-         ImGui::Separator();
-         ImGui::Dummy(ImVec2(0.f, m_dpi * 4.f));
-         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(url.c_str()).x) * 0.5f));
-         ImGui::Text("%s", url.c_str());
-      }
-#endif
-
 #endif
       const ImVec2 pos = ImGui::GetWindowPos();
       ImVec2 max = ImGui::GetWindowSize();

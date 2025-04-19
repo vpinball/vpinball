@@ -1011,13 +1011,6 @@ public:
       if (m_listRes || m_listSnd)
          exit(0);
 
-#if (defined(__APPLE__) && ((defined(TARGET_OS_IOS) && TARGET_OS_IOS) || (defined(TARGET_OS_TV) && TARGET_OS_TV))) || defined(__ANDROID__)
-      const string launchTable = g_pvp->m_settings.LoadValueWithDefault(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx"s);
-      m_szTableFileName = m_vpinball.m_szMyPrefPath + launchTable;
-      m_file = true;
-      m_play = true;
-#endif
-
 #endif
 
       // Start VP with file dialog open and then also playing that one?
