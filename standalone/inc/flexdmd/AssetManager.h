@@ -4,6 +4,13 @@
 #include "Bitmap.h"
 
 #include <map>
+#include <filesystem>
+#include <iostream>
+#include <dirent.h>
+#include <vector>
+#include <string>
+#include <cctype>
+#include <optional>
 
 class Font;
 
@@ -27,4 +34,6 @@ private:
    std::map<string, Font*> m_cachedFonts;
 
    string m_szBasePath;
+
+   std::optional<std::string> fixPathFromMoveBack(const std::string& originalPath, int fixFromBack);
 };

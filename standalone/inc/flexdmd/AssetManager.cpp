@@ -10,6 +10,7 @@
 
 #include <filesystem>
 
+
 AssetManager::AssetManager()
 {
    m_szBasePath = g_pvp->m_currentTablePath;
@@ -89,11 +90,14 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
       if (path.starts_with("dmds.")) {
          path[4] = PATH_SEPARATOR_CHAR;
       }
-      pAssetSrc->SetPath(path);
+      if (auto fixed_path = fixPathFromMoveBack(path, 2))
+         pAssetSrc->SetPath(*fixed_path);
+      else
+         pAssetSrc->SetPath(path); 
    }
    else if (parts[0].starts_with("VPX.")) {
       pAssetSrc->SetSrcType(AssetSrcType_VPXResource);
-      pAssetSrc->SetPath(parts[0].substr(4));
+      pAssetSrc->SetPath(parts[0].substr(4)); 
       ext.clear();
 
       Texture* pTexture = NULL;
@@ -114,10 +118,18 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
    }
    else {
       pAssetSrc->SetSrcType(AssetSrcType_File);
-      if (!pBaseSrc)
-         pAssetSrc->SetPath(m_szBasePath + parts[0]);
-      else
-         pAssetSrc->SetPath(parts[0]);
+      if (!pBaseSrc){
+         if (auto fixed_path = fixPathFromMoveBack(m_szBasePath + parts[0], 2))
+            pAssetSrc->SetPath(*fixed_path);
+         else
+            pAssetSrc->SetPath(m_szBasePath + parts[0]); 
+      }
+      else{
+         if (auto fixed_path = fixPathFromMoveBack(parts[0], 2))
+            pAssetSrc->SetPath(*fixed_path);
+         else
+            pAssetSrc->SetPath(parts[0]); 
+      }
    }
 
    if (ext == "png" || ext == "jpg" || ext == "jpeg" || ext == "bmp")
@@ -219,6 +231,7 @@ void* AssetManager::Open(AssetSrc* pSrc)
       case AssetSrcType_File:
       {
         string path = pSrc->GetPath();
+
         
         if (pSrc->GetAssetType() == AssetType_BMFont)
            pAsset = BitmapFont::Create(path);
@@ -321,4 +334,50 @@ Font* AssetManager::GetFont(AssetSrc* pSrc)
    m_cachedFonts[pSrc->GetId()] = pFont;
    PLOGI.printf("Font added to cache: %s", pSrc->GetId().c_str());
    return pFont;
+}
+
+// Fix last N components (from the back) to match real filesystem case
+// // fixFromBack: 1 = file + parent dir, 2 = parent dir + sub dir, etc.
+std::optional<std::string> AssetManager::fixPathFromMoveBack(const std::string& originalPath, int fixFromBack) {
+   std::filesystem::path input = std::filesystem::absolute(originalPath).lexically_normal();
+   std::vector<std::string> components;
+
+   for (const auto& part : input) {
+       components.push_back(part.string());
+   }
+
+   if (fixFromBack >= static_cast<int>(components.size()))
+       return std::nullopt;
+
+   // Start building the trusted path
+   std::string currentPath = components[0]; // root or drive
+
+   for (size_t i = 1; i < components.size() - fixFromBack; ++i) {
+       currentPath += PATH_SEPARATOR_CHAR;
+       currentPath += components[i];
+   }
+
+   // Fix components from back (leaf up to N levels)
+   for (size_t i = components.size() - fixFromBack; i < components.size(); ++i) {
+       const std::string& name = components[i];
+
+       if (i == components.size() - 1) {
+           // Last component: use file fixer
+           std::string fixedFile = find_path_case_insensitive(currentPath + PATH_SEPARATOR_CHAR + name);
+           if (fixedFile.empty()) return std::nullopt;
+           return fixedFile;
+       } else {
+           // Intermediate directory
+           std::string fixedDir = find_directory_case_insensitive(currentPath, name);
+           if (fixedDir.empty()) return std::nullopt;
+
+           // Remove trailing slash to keep path joining clean
+           if (!fixedDir.empty() && fixedDir.back() == PATH_SEPARATOR_CHAR)
+               fixedDir.pop_back();
+
+           currentPath = fixedDir;
+       }
+   }
+
+   return currentPath;
 }
