@@ -26,8 +26,6 @@ static int GraphicsCompareFloat(const void *a, const void *b)
 RendererGraphics::RendererGraphics(SDL_Renderer* pRenderer)
 {
    m_pRenderer = pRenderer;
-
-   SDL_GetRenderLogicalPresentation(pRenderer, &m_width, &m_height, NULL);
    m_color = RGB(0, 0, 0);
    m_alpha = 255;
 

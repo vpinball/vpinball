@@ -12,6 +12,7 @@
 #include <condition_variable>
 #include <thread>
 
+class PUPWindow;
 class PUPCustomPos;
 class PUPMediaManager;
 class PUPLabel;
@@ -80,8 +81,8 @@ class PUPScreen
 public:
    ~PUPScreen();
 
-   static PUPScreen* CreateFromCSV(const string& line, const std::vector<PUPPlaylist*>& playlists);
-   static PUPScreen* CreateDefault(int screenNum, const std::vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateFromCSV(PUPManager* pManager, const string& line, const std::vector<PUPPlaylist*>& playlists);
+   static PUPScreen* CreateDefault(PUPManager* pManager, int screenNum, const std::vector<PUPPlaylist*>& playlists);
    PUP_SCREEN_MODE GetMode() const { return m_mode; }
    void SetMode(PUP_SCREEN_MODE mode) { m_mode = mode; }
    int GetScreenNum() const { return m_screenNum; }
@@ -102,7 +103,7 @@ public:
    vector<PUPTrigger*>* GetTriggers(const string& szTrigger);
    void SendToFront();
    void SetSize(int w, int h);
-   void Init(SDL_Renderer* pRenderer);
+   void Init(PUPWindow* pWindow = nullptr);
    void Start();
    bool IsLabelInit() const { return m_labelInit; }
    void SetLabelInit() { m_labelInit = true; }
@@ -111,6 +112,8 @@ public:
    void SendLabelToFront(PUPLabel* pLabel);
    void SendLabelToBack(PUPLabel* pLabel);
    void SetPage(int pagenum, int seconds);
+   bool CanRender();
+   SDL_Renderer* GetRenderer();
    void Render();
    const SDL_Rect& GetRect() const { return m_rect; }
    void SetBackground(PUPPlaylist* pPlaylist, const std::string& szPlayFile);
@@ -130,7 +133,7 @@ public:
    string ToString(bool full = true) const;
 
 private:
-   PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists);
+   PUPScreen(PUPManager* pManager, PUP_SCREEN_MODE mode, int screenNum, const string& screenDes, const string& backgroundPlaylist, const string& backgroundFilename, bool transparent, float volume, PUPCustomPos* pCustomPos, const std::vector<PUPPlaylist*>& playlists);
 
    void LoadTriggers();
    void ProcessQueue();
@@ -155,7 +158,6 @@ private:
    std::map<string, PUPLabel*> m_labelMap;
    std::map<string, PUPPlaylist*> m_playlistMap;
    std::map<string, vector<PUPTrigger*>> m_triggerMap;
-   SDL_Renderer* m_pRenderer;
    PUPScreenRenderable m_background;
    PUPScreenRenderable m_overlay;
    PUPMediaManager* m_pMediaPlayerManager;
@@ -164,6 +166,7 @@ private:
    int m_defaultPagenum;
    VP::Timer* m_pPageTimer;
    PUPScreen* m_pParent;
+   PUPWindow* m_pWindow;
    vector<PUPScreen*> m_topChildren;
    vector<PUPScreen*> m_backChildren;
    vector<PUPScreen*> m_defaultChildren;
