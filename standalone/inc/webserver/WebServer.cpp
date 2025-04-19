@@ -1,4 +1,5 @@
 #include "core/stdafx.h"
+#include "core/vpversion.h"
 #include "WebServer.h"
 
 #include "miniz/miniz.h"
@@ -10,34 +11,42 @@
 #include "standalone/VPinballLib.h"
 #endif
 
-void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data, void *fn_data)
+void WebServer::EventHandler(struct mg_connection *c, int ev, void *ev_data)
 {
-   WebServer* webServer = (WebServer*)fn_data;
+   WebServer* webServer = (WebServer*)c->fn_data;
 
    if (ev == MG_EV_HTTP_MSG) {
       struct mg_http_message *hm = (struct mg_http_message *) ev_data;
 
-      if (mg_http_match_uri(hm, "/files"))
+      if (mg_match(hm->uri, mg_str("/status"), NULL))
+         webServer->Status(c, hm);
+      else if (mg_match(hm->uri, mg_str("/files"), NULL))
          webServer->Files(c, hm);
-      else if (mg_http_match_uri(hm, "/download"))
+      else if (mg_match(hm->uri, mg_str("/download"), NULL))
          webServer->Download(c, hm);
-      else if (mg_http_match_uri(hm, "/upload"))
+      else if (mg_match(hm->uri, mg_str("/upload"), NULL))
          webServer->Upload(c, hm);
-      else if (mg_http_match_uri(hm, "/delete"))
+      else if (mg_match(hm->uri, mg_str("/delete"), NULL))
          webServer->Delete(c, hm);
-      else if (mg_http_match_uri(hm, "/folder"))
+      else if (mg_match(hm->uri, mg_str("/folder"), NULL))
          webServer->Folder(c, hm);
-      else if (mg_http_match_uri(hm, "/extract"))
+      else if (mg_match(hm->uri, mg_str("/extract"), NULL))
          webServer->Extract(c, hm);
-      else if (mg_http_match_uri(hm, "/activate"))
-         webServer->Activate(c, hm);
-      else if (mg_http_match_uri(hm, "/command"))
+      else if (mg_match(hm->uri, mg_str("/command"), NULL))
          webServer->Command(c, hm);
       else {
-         string path = g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR + "vpx.html";
-
          struct mg_http_serve_opts opts = {};
-         mg_http_serve_file(c, hm, path.c_str(), &opts);
+
+         string uri(hm->uri.buf, hm->uri.len);
+         if (!uri.empty() && uri.front() == '/') uri.erase(0, 1);
+
+         std::filesystem::path base = std::filesystem::path(g_pvp->m_szMyPath) / "assets";
+         std::filesystem::path asset = uri.empty() ? base / "vpx.html" : base / uri;
+
+         if (!uri.empty() && std::filesystem::exists(asset))
+            mg_http_serve_file(c, hm, asset.string().c_str(), &opts);
+         else
+            mg_http_serve_file(c, hm, (base / "vpx.html").string().c_str(), &opts);
       }
    }
 }
@@ -98,11 +107,35 @@ bool WebServer::Unzip(const char* pSource)
    return success;
 }
 
+void WebServer::Status(struct mg_connection *c, struct mg_http_message* hm)
+{
+   bool running = g_pplayer != nullptr;
+   string currentTable = (running && !g_pvp->m_currentTablePath.empty())
+      ? (std::filesystem::path(g_pvp->m_currentTablePath) / g_pvp->GetActiveTable()->m_szFileName).string()
+      : "";
+   char* currentTableJson = (running && !currentTable.empty())
+      ? mg_mprintf("\"%s\"", currentTable.c_str())
+      : mg_mprintf("null");
+   char* json = mg_mprintf(
+      "{\"version\":\"%s\",\"running\":%s,\"currentTable\":%s}",
+      VP_VERSION_STRING_FULL_LITERAL,
+      running ? "true" : "false",
+      currentTableJson
+   );
+   free(currentTableJson);
+   mg_http_reply(c, 200, "Content-Type: application/json\r\n", "%s", json);
+   free(json);
+}
+
 void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
+
+   if (!mg_path_is_sane(mg_str(q))) {
+      mg_http_reply(c, 400, "", "Bad request");
+      return;
+   }
 
    PLOGI.printf("Retrieving file list: q=%s", q);
 
@@ -133,21 +166,26 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 
       string file = path + entry->d_name;
       string ext;
-
-      if (entry->d_type != DT_DIR)
-         ext = extension_from_path(file);
+      if (entry->d_type != DT_DIR) ext = extension_from_path(file);
 
       struct stat st;
       if (stat(file.c_str(), &st) == 0) {
-         char* buf = mg_mprintf("{ %m: %m, %m: %m, %m: %s, %m: %lld }",
+         char datebuf[32];
+         struct tm tm;
+         gmtime_r(&st.st_mtime, &tm);
+         strftime(datebuf, sizeof(datebuf), "%Y-%m-%dT%H:%M:%SZ", &tm);
+
+         char* buf = mg_mprintf(
+            "{ %m: %m, %m: %m, %m: %s, %m: %lld, %m: %m }",
             MG_ESC("name"), MG_ESC(entry->d_name),
             MG_ESC("ext"), MG_ESC(ext.c_str()),
             MG_ESC("isDir"), entry->d_type == DT_DIR ? "true" : "false",
-            MG_ESC("size"), (long long)st.st_size);
+            MG_ESC("size"), (long long)st.st_size,
+            MG_ESC("date"), MG_ESC(datebuf)
+         );
 
          json += buf;
          free(buf);
-
          i++;
       }
    }
@@ -156,21 +194,20 @@ void WebServer::Files(struct mg_connection *c, struct mg_http_message* hm)
 
    closedir(dir);
 
-   mg_http_reply(c, 200, "", "%s", json.c_str());
+   mg_http_reply(c, 200, "Content-Type: application/json\r\n", "%s", json.c_str());
 }
 
 void WebServer::Download(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
 
-   PLOGI.printf("Downloading file: q=%s", q);
-
-   if (*q == '\0') {
+   if (*q == '\0' || !mg_path_is_sane(mg_str(q))) {
       mg_http_reply(c, 400, "", "Bad request");
       return;
    }
+
+   PLOGI.printf("Downloading file: q=%s", q);
 
    string path = g_pvp->m_szMyPrefPath + q;
 
@@ -182,13 +219,23 @@ void WebServer::Upload(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
-
-   PLOGI.printf("Uploading file: q=%s", q);
-
-   if (*q == '\0') {
+   if (*q != '\0' && !mg_path_is_sane(mg_str(q))) {
       mg_http_reply(c, 400, "", "Bad request");
       return;
+   }
+
+   char file[1024];
+   mg_http_get_var(&hm->query, "file", file, sizeof(file));
+   if (*file == '\0' || !mg_path_is_sane(mg_str(file))) {
+      mg_http_reply(c, 400, "", "Bad request");
+      return;
+   }
+
+   char offsetStr[32];
+   mg_http_get_var(&hm->query, "offset", offsetStr, sizeof(offsetStr));
+   long offset = offsetStr[0] ? strtol(offsetStr, nullptr, 10) : 0;
+   if (offset <= 0) {
+      PLOGI.printf("Uploading file: file=%s", file);
    }
 
    string path = g_pvp->m_szMyPrefPath + q;
@@ -203,9 +250,8 @@ void WebServer::Delete(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
 
-   if (*q == '\0') {
+   if (*q == '\0' || !mg_path_is_sane(mg_str(q))) {
       mg_http_reply(c, 400, "", "Bad request");
       return;
    }
@@ -232,9 +278,8 @@ void WebServer::Folder(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
 
-   if (*q == '\0') {
+   if (*q == '\0' || !mg_path_is_sane(mg_str(q))) {
       mg_http_reply(c, 400, "", "Bad request");
       return;
    }
@@ -251,9 +296,8 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
 {
    char q[1024];
    mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
 
-   if (*q == '\0') {
+   if (*q == '\0' || !mg_path_is_sane(mg_str(q))) {
       mg_http_reply(c, 400, "", "Bad request");
       return;
    }
@@ -274,24 +318,6 @@ void WebServer::Extract(struct mg_connection *c, struct mg_http_message* hm)
    }
    else
       mg_http_reply(c, 400, "", "Bad request");
-}
-
-void WebServer::Activate(struct mg_connection *c, struct mg_http_message* hm)
-{
-   char q[1024];
-   mg_http_get_var(&hm->query, "q", q, sizeof(q));
-   mg_remove_double_dots(q);
-
-   PLOGI.printf("Activating table: q=%s", q);
-
-   if (*q == '\0') {
-      mg_http_reply(c, 400, "", "Bad request");
-      return;
-   }
-
-   g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, q);
-
-   mg_http_reply(c, 200, "", "OK");
 }
 
 void WebServer::Command(struct mg_connection *c, struct mg_http_message* hm)

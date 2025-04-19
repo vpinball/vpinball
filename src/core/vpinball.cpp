@@ -1239,10 +1239,6 @@ void VPinball::DoPlay(const int playMode)
    if (initError)
    {
       g_pvp->m_table_played_via_SelectTableOnStart = false;
-      #if defined(__APPLE__) && defined(TARGET_OS_TV) && TARGET_OS_TV
-         PLOGE.printf("Load failure detected. Resetting LaunchTable to default.");
-         g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
-      #endif
    }
 
    #ifdef __LIBVPINBALL__
@@ -1286,6 +1282,7 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor, V
       OnInitialUpdate();
 
    m_currentTablePath = PathFromFilename(szFileName);
+
    CloseAllDialogs();
 
    PinTableMDI * const mdiTable = new PinTableMDI(this);
@@ -1304,13 +1301,6 @@ void VPinball::LoadFileName(const string& szFileName, const bool updateEditor, V
       ShowError("This file does not exist, or is corrupt and failed to load.");
 
       delete mdiTable;
-
-#ifdef __STANDALONE__
-#if (defined(__APPLE__) && (defined(TARGET_OS_TV) && TARGET_OS_TV))
-      PLOGE.printf("Load failure detected. Resetting LaunchTable to default.");
-      g_pvp->m_settings.SaveValue(Settings::Standalone, "LaunchTable"s, "assets/exampleTable.vpx");
-#endif
-#endif
    }
    else
    {
