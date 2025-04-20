@@ -20,8 +20,7 @@ B2SReelBox::B2SReelBox() : B2SBaseBox()
    m_currentText = 0;
    m_text = 0;
    m_rollingInterval = cTimerInterval;
-   m_pTimer = new VP::Timer(m_rollingInterval / (((m_intermediates == -1) ? 3 : m_intermediates) + 2), std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
-
+   m_pTimer = new VP::Timer(cTimerInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
    m_firstintermediatecount = 1;
    m_pB2SData = B2SData::GetInstance();
 }
@@ -51,7 +50,8 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
                if (pImages->contains(name))
                   pGraphics->DrawImage((*pImages)[name], NULL, &rect);
                m_intermediates = m_firstintermediatecount - 1;
-               m_intermediates2go = 1;
+               m_szReelIndex = ConvertText(m_currentText + 1);
+               m_intermediates2go = 4;
             }
          }
          else if (m_intermediates2go > 0) {
@@ -59,7 +59,7 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
             if (pIntImages->contains(name))
                pGraphics->DrawImage((*pIntImages)[name], NULL, &rect);
          }
-         else {
+         else {  //m_intermediates == 0 
             name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
             if (pImages->contains(name))
                pGraphics->DrawImage((*pImages)[name], NULL, &rect);
@@ -72,9 +72,9 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
 
 void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
 {
+   m_intermediates2go--;
    if (m_intermediates2go > 0 || m_intermediates == -1) {
       Refresh();
-      m_intermediates2go--;
    }
    else {
       if (m_intermediates2go == 0) {
@@ -85,29 +85,16 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
          }
 
          m_szReelIndex = ConvertText(m_currentText);
-
-         // play sound and redraw reel
-         if (m_pSound != NULL) {
-            //My.Computer.Audio.Play(Sound(), AudioPlayMode.Background)
-         }
-         else if (m_szSoundName == "stille") {
-            // no sound
-         }
-         else {
-            //My.Computer.Audio.Play(My.Resources.EMReel, AudioPlayMode.Background)
-         }
-
          Refresh();
-         m_intermediates2go--;
       }
-      else if (m_intermediates2go == -1)
-         m_intermediates2go--;
       else {
          // maybe stop timer
          m_intermediates2go = m_intermediates;
+
          if (m_currentText == m_text || m_text >= 10) {
              m_pTimer->Stop();
-             m_pTimer->SetInterval(m_rollingInterval / (((m_intermediates == -1) ? 3 : m_intermediates) + 2));
+             m_pTimer->SetInterval(cTimerInterval);
+             m_intermediates2go = -2;
          }
       }
    }

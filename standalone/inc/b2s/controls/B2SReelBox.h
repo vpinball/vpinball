@@ -43,7 +43,7 @@ private:
    string ConvertText(int text);
 
    VP::Timer* m_pTimer;
-   const int cTimerInterval = 101;
+   const int cTimerInterval = 50;
    bool m_led;
    int m_length;
    string m_initValue;
