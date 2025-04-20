@@ -1,12 +1,16 @@
 #pragma once
 
-#include "libpinmame.h"
+#include <cassert>
+#include <cstdarg>
+#include <cstdio>
 
 #include <string>
 using std::string;
 
 #include <vector>
 using std::vector;
+
+#include "libpinmame.h"
 
 // Shared logging
 #include "LoggingPlugin.h"
@@ -21,10 +25,8 @@ PSC_USE_ERROR();
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
-#define PATH_SEPARATOR_WCHAR L'\\'
 #else
 #define PATH_SEPARATOR_CHAR '/'
-#define PATH_SEPARATOR_WCHAR L'/'
 #endif
 
-string find_directory_case_insensitive(const std::string& szParentPath, const std::string& szDirName);
+string find_case_insensitive_directory_path(const string& szPath);

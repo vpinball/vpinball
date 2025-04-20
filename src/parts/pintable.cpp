@@ -339,7 +339,7 @@ bool ScriptGlobalTable::GetTextFileFromDirectory(const string& szfilename, const
    // else: use current directory
    szPath += szfilename;
    #ifdef __STANDALONE__
-   szPath = find_path_case_insensitive(szPath);
+   szPath = find_case_insensitive_file_path(szPath);
    #endif
    if (!szPath.empty()) {
       std::ifstream scriptFile;

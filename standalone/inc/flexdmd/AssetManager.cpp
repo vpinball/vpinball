@@ -35,11 +35,9 @@ void AssetManager::ClearAll()
 
 void AssetManager::SetBasePath(const string& szBasePath)
 { 
-   m_szBasePath = g_pvp->m_currentTablePath + normalize_path_separators(szBasePath);
-
+   m_szBasePath = normalize_path_separators(szBasePath);
    if (!m_szBasePath.ends_with(PATH_SEPARATOR_CHAR))
       m_szBasePath += PATH_SEPARATOR_CHAR;
-
    PLOGI.printf("Base path set to: %s", m_szBasePath.c_str());
 }
 
@@ -98,7 +96,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
 
       Texture* pTexture = NULL;
       for (Texture* texturePtr : g_pvp->m_ptableActive->m_vimage) {
-         if (string_compare_case_insensitive(texturePtr->m_szName, pAssetSrc->GetPath())) {
+         if (StrCompareNoCase(texturePtr->m_szName, pAssetSrc->GetPath())) {
             pTexture = texturePtr;
             break;
          }
@@ -218,32 +216,34 @@ void* AssetManager::Open(AssetSrc* pSrc)
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        string path = pSrc->GetPath();
-        
-        if (pSrc->GetAssetType() == AssetType_BMFont)
-           pAsset = BitmapFont::Create(path);
-        else if (pSrc->GetAssetType() != AssetType_GIF)
-           pAsset = IMG_Load(path.c_str());
-        else
-           pAsset = IMG_LoadAnimation(path.c_str());
+        string path = find_case_insensitive_file_path(pSrc->GetPath());
+        if (!path.empty()) {
+           if (pSrc->GetAssetType() == AssetType_BMFont)
+              pAsset = BitmapFont::Create(path);
+           else if (pSrc->GetAssetType() != AssetType_GIF)
+              pAsset = IMG_Load(path.c_str());
+           else
+              pAsset = IMG_LoadAnimation(path.c_str());
+        }
       }
       break;
       case AssetSrcType_FlexResource:
       {
-         string path = g_pvp->m_szMyPath + "flexdmd" + PATH_SEPARATOR_CHAR + pSrc->GetPath();
-
-         if (pSrc->GetAssetType() == AssetType_BMFont)
-            pAsset = BitmapFont::Create(path);
-         else if  (pSrc->GetAssetType() != AssetType_GIF)
-            pAsset = IMG_Load(path.c_str());
-         else
-            pAsset = IMG_LoadAnimation(path.c_str());
+         string path = find_case_insensitive_file_path(g_pvp->m_szMyPath + "flexdmd" + PATH_SEPARATOR_CHAR + pSrc->GetPath());
+         if (!path.empty()) {
+            if (pSrc->GetAssetType() == AssetType_BMFont)
+               pAsset = BitmapFont::Create(path);
+            else if  (pSrc->GetAssetType() != AssetType_GIF)
+               pAsset = IMG_Load(path.c_str());
+            else
+               pAsset = IMG_LoadAnimation(path.c_str());
+         }
       }
       break;
       case AssetSrcType_VPXResource:
       {
          for (Texture* texturePtr : g_pvp->m_ptableActive->m_vimage) {
-            if (string_compare_case_insensitive(texturePtr->m_szName, pSrc->GetPath())) {
+            if (StrCompareNoCase(texturePtr->m_szName, pSrc->GetPath())) {
                SDL_IOStream* rwops = SDL_IOFromConstMem(texturePtr->m_ppb->m_pdata, texturePtr->m_ppb->m_cdata);
                if (pSrc->GetAssetType() != AssetType_GIF)
                   pAsset = IMG_Load_IO(rwops, 0);

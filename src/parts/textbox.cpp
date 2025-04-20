@@ -892,7 +892,7 @@ TTF_Font* Textbox::LoadFont()
 
    string szPath;
    for (const auto& szStyle : styles) {
-      szPath = find_path_case_insensitive(g_pvp->m_currentTablePath + szFontName + szStyle + ".ttf");
+      szPath = find_case_insensitive_file_path(g_pvp->m_currentTablePath + szFontName + szStyle + ".ttf");
       if (!szPath.empty()) {
          pFont = TTF_OpenFont(szPath.c_str(), m_fontSize);
          if (pFont) {

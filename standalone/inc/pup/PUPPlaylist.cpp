@@ -48,18 +48,18 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
    m_priority = priority;
    m_lastIndex = 0;
 
-   if (string_compare_case_insensitive(szFolder, "PUPOverlays"))
+   if (StrCompareNoCase(szFolder, "PUPOverlays"))
       m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
-   else if (string_compare_case_insensitive(szFolder, "PUPFrames"))
+   else if (StrCompareNoCase(szFolder, "PUPFrames"))
       m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
-   else if (string_compare_case_insensitive(szFolder, "PUPAlphas"))
+   else if (StrCompareNoCase(szFolder, "PUPAlphas"))
       m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
-   else if (string_compare_case_insensitive(szFolder, "PuPShapes"))
+   else if (StrCompareNoCase(szFolder, "PuPShapes"))
       m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
    else
       m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
 
-   m_szBasePath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), szFolder);
+   m_szBasePath = find_case_insensitive_directory_path(PUPManager::GetInstance()->GetPath() + szFolder);
    if (m_szBasePath.empty()) {
       PLOGE.printf("Playlist folder not found: %s", szFolder.c_str());
       return;
@@ -90,7 +90,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
       return nullptr;
    }
 
-   string szFolderPath = find_directory_case_insensitive(PUPManager::GetInstance()->GetPath(), parts[1]);
+   string szFolderPath = find_case_insensitive_directory_path(PUPManager::GetInstance()->GetPath() + parts[1]);
    if (szFolderPath.empty()) {
       PLOGW.printf("Playlist folder not found: %s", parts[1].c_str());
       return nullptr;
