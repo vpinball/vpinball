@@ -134,19 +134,19 @@ PUPScreen* PUPScreen::CreateFromCSV(const string& line, const std::vector<PUPPla
    }
 
    PUP_SCREEN_MODE mode;
-   if (string_compare_case_insensitive(parts[5], "Show"))
+   if (StrCompareNoCase(parts[5], "Show"))
       mode = PUP_SCREEN_MODE_SHOW;
-   else if (string_compare_case_insensitive(parts[5], "ForceON"))
+   else if (StrCompareNoCase(parts[5], "ForceON"))
       mode = PUP_SCREEN_MODE_FORCE_ON;
-   else if (string_compare_case_insensitive(parts[5], "ForcePoP"))
+   else if (StrCompareNoCase(parts[5], "ForcePoP"))
       mode = PUP_SCREEN_MODE_FORCE_POP;
-   else if (string_compare_case_insensitive(parts[5], "ForceBack"))
+   else if (StrCompareNoCase(parts[5], "ForceBack"))
       mode = PUP_SCREEN_MODE_FORCE_BACK;
-   else if (string_compare_case_insensitive(parts[5], "ForcePopBack"))
+   else if (StrCompareNoCase(parts[5], "ForcePopBack"))
       mode = PUP_SCREEN_MODE_FORCE_POP_BACK;
-   else if (string_compare_case_insensitive(parts[5], "MusicOnly"))
+   else if (StrCompareNoCase(parts[5], "MusicOnly"))
       mode = PUP_SCREEN_MODE_MUSIC_ONLY;
-   else if (string_compare_case_insensitive(parts[5], "Off"))
+   else if (StrCompareNoCase(parts[5], "Off"))
       mode = PUP_SCREEN_MODE_OFF;
    else {
       PLOGW.printf("Invalid screen mode: %s", parts[5].c_str());
@@ -189,7 +189,7 @@ PUPScreen* PUPScreen::CreateDefault(int screenNum, const std::vector<PUPPlaylist
 
 void PUPScreen::LoadTriggers()
 {
-   string szPlaylistsPath = find_path_case_insensitive(m_pManager->GetPath() + "triggers.pup");
+   string szPlaylistsPath = find_case_insensitive_file_path(m_pManager->GetPath() + "triggers.pup");
    std::ifstream triggersFile;
    triggersFile.open(szPlaylistsPath, std::ifstream::in);
    if (triggersFile.is_open()) {

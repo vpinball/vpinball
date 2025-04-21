@@ -21,7 +21,7 @@ PUPManager::PUPManager()
 {
    m_init = false;
    m_isRunning = false;
-   m_szRootPath = find_directory_case_insensitive(g_pvp->m_currentTablePath, "pupvideos");
+   m_szRootPath = find_case_insensitive_directory_path(g_pvp->m_currentTablePath + "pupvideos");
 }
 
 PUPManager::~PUPManager()
@@ -41,7 +41,7 @@ void PUPManager::LoadConfig(const string& szRomName)
       return;
    }
 
-   m_szPath = find_directory_case_insensitive(m_szRootPath, szRomName);
+   m_szPath = find_case_insensitive_directory_path(m_szRootPath + szRomName);
    if (m_szPath.empty())
       return;
 
@@ -53,7 +53,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    // Load screens
 
-   string szScreensPath = find_path_case_insensitive(m_szPath + "screens.pup");
+   string szScreensPath = find_case_insensitive_file_path(m_szPath + "screens.pup");
    if (!szScreensPath.empty()) {
       std::ifstream screensFile;
       screensFile.open(szScreensPath, std::ifstream::in);
@@ -88,7 +88,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
    // Load Fonts
 
-   string szFontsPath = find_directory_case_insensitive(m_szPath, "FONTS");
+   string szFontsPath = find_case_insensitive_directory_path(m_szPath + "FONTS");
    if (!szFontsPath.empty()) {
       for (const auto& entry : std::filesystem::directory_iterator(szFontsPath)) {
          if (entry.is_regular_file()) {
@@ -116,7 +116,7 @@ void PUPManager::LoadConfig(const string& szRomName)
 
 void PUPManager::LoadPlaylists()
 {
-   string szPlaylistsPath = find_path_case_insensitive(GetPath() + "playlists.pup");
+   string szPlaylistsPath = find_case_insensitive_file_path(GetPath() + "playlists.pup");
    std::ifstream playlistsFile;
    playlistsFile.open(szPlaylistsPath, std::ifstream::in);
    if (playlistsFile.is_open()) {

@@ -94,7 +94,7 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
       return nullptr;
    }
 
-   if (string_compare_case_insensitive(triggerPlayAction, "CustomFunc")) {
+   if (StrCompareNoCase(triggerPlayAction, "CustomFunc")) {
       // TODO parse the custom function and call PUPPinDisplay::SendMSG when triggered
       PLOGW.printf("CustomFunc not implemented: %s", line.c_str());
       return nullptr;
@@ -122,23 +122,23 @@ PUPTrigger* PUPTrigger::CreateFromCSV(PUPScreen* pScreen, string line)
    }
 
    PUP_TRIGGER_PLAY_ACTION playAction;
-   if (string_compare_case_insensitive(triggerPlayAction, "Loop"))
+   if (StrCompareNoCase(triggerPlayAction, "Loop"))
       playAction = PUP_TRIGGER_PLAY_ACTION_LOOP;
-   else if (string_compare_case_insensitive(triggerPlayAction, "SplashReset"))
+   else if (StrCompareNoCase(triggerPlayAction, "SplashReset"))
       playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET;
-   else if (string_compare_case_insensitive(triggerPlayAction, "SplashReturn"))
+   else if (StrCompareNoCase(triggerPlayAction, "SplashReturn"))
       playAction = PUP_TRIGGER_PLAY_ACTION_SPLASH_RESET;
-   else if (string_compare_case_insensitive(triggerPlayAction, "StopPlayer"))
+   else if (StrCompareNoCase(triggerPlayAction, "StopPlayer"))
       playAction = PUP_TRIGGER_PLAY_ACTION_STOP_PLAYER;
-   else if (string_compare_case_insensitive(triggerPlayAction, "StopFile"))
+   else if (StrCompareNoCase(triggerPlayAction, "StopFile"))
       playAction = PUP_TRIGGER_PLAY_ACTION_STOP_FILE;
-   else if (string_compare_case_insensitive(triggerPlayAction, "SetBG"))
+   else if (StrCompareNoCase(triggerPlayAction, "SetBG"))
       playAction = PUP_TRIGGER_PLAY_ACTION_SET_BG;
-   else if (string_compare_case_insensitive(triggerPlayAction, "PlaySSF"))
+   else if (StrCompareNoCase(triggerPlayAction, "PlaySSF"))
       playAction = PUP_TRIGGER_PLAY_ACTION_PLAY_SSF;
-   else if (string_compare_case_insensitive(triggerPlayAction, "SkipSamePrty"))
+   else if (StrCompareNoCase(triggerPlayAction, "SkipSamePrty"))
       playAction = PUP_TRIGGER_PLAY_ACTION_SKIP_SAME_PRTY;
-   else if (string_compare_case_insensitive(triggerPlayAction, "CustomFunc"))
+   else if (StrCompareNoCase(triggerPlayAction, "CustomFunc"))
       playAction = PUP_TRIGGER_PLAY_ACTION_CUSTOM_FUNC;
    else
       playAction = PUP_TRIGGER_PLAY_ACTION_NORMAL;

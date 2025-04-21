@@ -335,7 +335,7 @@ void FormBackglass::StopSound(const string& szSoundName)
 
 void FormBackglass::LoadB2SData()
 {
-   string szFilename = find_path_case_insensitive(TitleAndPathFromFilename(m_pB2SData->GetTableFileName().c_str()) + ".directb2s");
+   string szFilename = find_case_insensitive_file_path(TitleAndPathFromFilename(m_pB2SData->GetTableFileName().c_str()) + ".directb2s");
    if (szFilename.empty()) {
       PLOGW.printf("No directb2s file found");
       return;
