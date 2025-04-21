@@ -20,7 +20,7 @@ B2SReelBox::B2SReelBox() : B2SBaseBox()
    m_currentText = 0;
    m_text = 0;
    m_rollingInterval = cTimerInterval;
-   m_pTimer = new VP::Timer(cTimerInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
+   m_pTimer = new VP::Timer(m_rollingInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
    m_firstintermediatecount = 1;
    m_pB2SData = B2SData::GetInstance();
 }
@@ -38,6 +38,7 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
          GenericDictionaryIgnoreCase<SDL_Surface*>* pIntImages = (m_illuminated ? m_pB2SData->GetReelIntermediateIlluImages() : m_pB2SData->GetReelIntermediateImages());
          string name;
          SDL_Rect rect = GetRect();
+
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {
             name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount);
             if (pIntImages->contains(name)) {
@@ -50,8 +51,7 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
                if (pImages->contains(name))
                   pGraphics->DrawImage((*pImages)[name], NULL, &rect);
                m_intermediates = m_firstintermediatecount - 1;
-               m_szReelIndex = ConvertText(m_currentText + 1);
-               m_intermediates2go = 4;
+               m_intermediates2go = 1;
             }
          }
          else if (m_intermediates2go > 0) {
@@ -59,9 +59,12 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
             if (pIntImages->contains(name))
                pGraphics->DrawImage((*pIntImages)[name], NULL, &rect);
          }
-         else {  //m_intermediates == 0 
-            name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
-            if (pImages->contains(name))
+         else { //
+            if (m_intermediates2go == 0 && m_intermediates > 0)
+               name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
+            else
+               name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
+            if (pImages->contains(name)) 
                pGraphics->DrawImage((*pImages)[name], NULL, &rect);
          }
       }
@@ -72,9 +75,9 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
 
 void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
 {
-   m_intermediates2go--;
-   if (m_intermediates2go > 0 || m_intermediates == -1) {
+   if (m_intermediates2go > 0 ||  m_intermediates == -1) {
       Refresh();
+      m_intermediates2go--;  
    }
    else {
       if (m_intermediates2go == 0) {
@@ -85,16 +88,19 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
          }
 
          m_szReelIndex = ConvertText(m_currentText);
-         Refresh();
+         Refresh(); 
+         m_intermediates2go--;
+      }
+      else if (m_intermediates2go == -1) {
+         m_intermediates2go--;
       }
       else {
          // maybe stop timer
          m_intermediates2go = m_intermediates;
-
          if (m_currentText == m_text || m_text >= 10) {
              m_pTimer->Stop();
              m_pTimer->SetInterval(cTimerInterval);
-             m_intermediates2go = -2;
+             m_intermediates2go = -1;
          }
       }
    }
@@ -148,6 +154,7 @@ void B2SReelBox::SetValue(int value, bool refresh)
 
 void B2SReelBox::SetText(int text, bool animateReelChange)
 {
+   
    if (text >= 0) {
       if (m_text != text) {
          m_text = text;
