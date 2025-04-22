@@ -88,6 +88,18 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
          }
 
          m_szReelIndex = ConvertText(m_currentText);
+
+         // play sound and redraw reel
+         if (m_pSound != NULL) {
+            //My.Computer.Audio.Play(Sound(), AudioPlayMode.Background)
+         }
+         else if (m_szSoundName == "stille") {
+            // no sound
+         }
+         else {
+            //My.Computer.Audio.Play(My.Resources.EMReel, AudioPlayMode.Background)
+         }
+
          Refresh(); 
          m_intermediates2go--;
       }
