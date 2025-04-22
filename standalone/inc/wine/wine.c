@@ -1075,7 +1075,17 @@ BOOL WINAPI CopyFileW(LPCWSTR lpExistingFileName, LPCWSTR lpNewFileName, BOOL bF
 
 BOOL WINAPI CreateDirectoryW(LPCWSTR lpPathName, LPSECURITY_ATTRIBUTES lpSecurityAttributes)
 {
-   return 0;
+   CHAR szPathName[MAX_PATH];
+   int len = wcslen(lpPathName);
+   WideCharToMultiByte(CP_ACP, 0, lpPathName, len, szPathName, len, NULL, NULL);
+   szPathName[len] = '\0';
+
+   for (int i = 0; i < len; ++i) {
+      if (szPathName[i] == '\\')
+         szPathName[i] = '/';
+   }
+
+   return mkdir(szPathName, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) == 0;
 }
 
 HANDLE WINAPI CreateFileW(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile)

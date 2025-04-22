@@ -397,11 +397,11 @@ void PinSound::PlayBGSound(float volume, const int loopcount, const bool usesame
          Mix_HaltChannel(m_assignedChannel);
       Mix_Volume(m_assignedChannel, nVolume);
       if (restart || !usesame) // stop and reload
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount > 0 ? loopcount -1 : loopcount);
    }
    else { // not playing
       Mix_Volume(m_assignedChannel, nVolume);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount > 0 ? loopcount -1 : loopcount);
    }
 }
 
@@ -648,8 +648,14 @@ bool PinSound::SetMusicFile(const string& szFileName)
    if(m_pMixMusic != nullptr)
       Mix_FreeMusic(m_pMixMusic);
 
-   if(!(m_pMixMusic = Mix_LoadMUS(szFileName.c_str())))
-   {
+   string path = find_case_insensitive_file_path(szFileName);
+   if (path.empty()) {
+      PLOGE << "Failed to find music file: " << szFileName;
+      return false;
+   }
+
+   m_pMixMusic = Mix_LoadMUS(path.c_str());
+   if (!m_pMixMusic) {
       PLOGE << "Failed to load sound: " << SDL_GetError();
       return false;
    }
@@ -679,11 +685,7 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
 {
    m_outputTarget = SNDOUT_BACKGLASS;
 
-   #ifndef __STANDALONE__
-      const string& filename = szFileName;
-   #else
-      const string filename = normalize_path_separators(szFileName);
-   #endif
+   const string& filename = szFileName;
 
    if(m_pMixMusic != nullptr)
       Mix_FreeMusic(m_pMixMusic);
@@ -695,21 +697,15 @@ bool PinSound::MusicInit(const string& szFileName, const float volume)
       switch (i)
       {
       case 0: break;
-      #ifdef __STANDALONE__
-      case 1: path = find_directory_case_insensitive(g_pvp->m_szMyPath, "music"s) + PATH_SEPARATOR_CHAR; break;
-      case 2: path = g_pvp->m_currentTablePath; break;
-      case 3: path = find_directory_case_insensitive(g_pvp->m_currentTablePath, "music"s) + PATH_SEPARATOR_CHAR; break;
-      #else
       case 1: path = g_pvp->m_szMyPath + "music" + PATH_SEPARATOR_CHAR; break;
       case 2: path = g_pvp->m_currentTablePath; break;
       case 3: path = g_pvp->m_currentTablePath + "music" + PATH_SEPARATOR_CHAR; break;
-      #endif
       case 4: path = PATH_MUSIC; break;
       }
       path += filename;
 
       #ifdef __STANDALONE__
-      path = find_path_case_insensitive(path);
+      path = find_case_insensitive_file_path(path);
       #endif
 
       if ((m_pMixMusic = Mix_LoadMUS(path.c_str())))

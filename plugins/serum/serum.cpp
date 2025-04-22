@@ -17,6 +17,8 @@ using namespace std::string_literals;
  #define strcpy_s(A, B, C) strncpy(A, C, B)
 #endif
 
+LPI_IMPLEMENT // Implement shared login support
+
 ///////////////////////////////////////////////////////////////////////////////
 // Serum Colorization plugin
 //
@@ -268,7 +270,7 @@ static void onGameStart(const unsigned int eventId, void* userData, void* msgDat
    // Setup Serum on the selected DMD
    const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
    assert(msg != nullptr && msg->vpmPath != nullptr && msg->gameId != nullptr);
-   std::string altColorPath = find_directory_case_insensitive(msg->vpmPath, "altcolor"s);
+   std::string altColorPath = find_case_insensitive_directory_path(msg->vpmPath + "altcolor"s);
    char crzFolder[512];
    if (!altColorPath.empty())
       strcpy_s(crzFolder, sizeof(crzFolder), altColorPath.c_str());
@@ -303,6 +305,10 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 {
    msgApi = api;
    endpointId = sessionId;
+
+   // Request and setup shared login API
+   LPISetup(endpointId, msgApi);
+
    onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
    getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
    getRenderDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
