@@ -39,7 +39,6 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
          GenericDictionaryIgnoreCase<SDL_Surface*>* pIntImages = (m_illuminated ? m_pB2SData->GetReelIntermediateIlluImages() : m_pB2SData->GetReelIntermediateImages());
          string name;
          SDL_Rect rect = GetRect();
-
          if (m_intermediates == -1 && m_pTimer->IsEnabled()) {
             name = m_szReelType + '_' + m_szReelIndex + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string()) + '_' + std::to_string(m_firstintermediatecount);
             if (pIntImages->contains(name)) {
@@ -60,7 +59,7 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
             if (pIntImages->contains(name))
                pGraphics->DrawImage((*pIntImages)[name], NULL, &rect);
          }
-         else { //
+         else { 
             if (m_intermediates2go == 0 && m_intermediates > 0)
                name = m_szReelType + '_' + ConvertText(m_currentText + 1) + (m_setID > 0 && m_illuminated ? '_' + std::to_string(m_setID) : string());
             else
@@ -76,7 +75,7 @@ void B2SReelBox::OnPaint(VP::RendererGraphics* pGraphics)
 
 void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
 {
-   if (m_intermediates2go > 0 ||  m_intermediates == -1) {
+   if (m_intermediates2go > 0 || m_intermediates == -1) {
       Refresh();
       m_intermediates2go--;
    }
@@ -101,12 +100,11 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
             //My.Computer.Audio.Play(My.Resources.EMReel, AudioPlayMode.Background)
          }
 
-         Refresh(); 
+         Refresh();
          m_intermediates2go--;
       }
-      else if (m_intermediates2go == -1) {
+      else if (m_intermediates2go == -1)
          m_intermediates2go--;
-      }
       else {
          // maybe stop timer
          m_intermediates2go = m_intermediates;
