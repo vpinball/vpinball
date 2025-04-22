@@ -78,6 +78,7 @@ PUPScreen::PUPScreen(PUP_SCREEN_MODE mode, int screenNum, const string& szScreen
    m_pPageTimer = new VP::Timer();
    m_pPageTimer->SetElapsedListener(std::bind(&PUPScreen::PageTimerElapsed, this, std::placeholders::_1));
    m_pParent = nullptr;
+   m_isRunning = false;
 
    for (const PUPPlaylist* pPlaylist : playlists) {
       // make a copy of the playlist
@@ -102,7 +103,8 @@ PUPScreen::~PUPScreen()
       m_isRunning = false;
    }
    m_queueCondVar.notify_all();
-   m_thread.join();
+   if (m_thread.joinable())
+      m_thread.join();
 
    delete m_pCustomPos;
    FreeRenderable(&m_background);
