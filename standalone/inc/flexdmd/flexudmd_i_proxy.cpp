@@ -649,13 +649,13 @@ STDMETHODIMP UltraDMD::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;

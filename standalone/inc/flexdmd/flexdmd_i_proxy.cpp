@@ -71,13 +71,13 @@ STDMETHODIMP SequenceAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID l
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -140,13 +140,13 @@ STDMETHODIMP ParallelAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID l
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -213,13 +213,13 @@ STDMETHODIMP TweenAction::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -450,13 +450,13 @@ STDMETHODIMP ActionFactory::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -918,13 +918,13 @@ STDMETHODIMP Group::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		break;
 	}
 
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -1317,13 +1317,13 @@ STDMETHODIMP Frame::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -1672,13 +1672,13 @@ STDMETHODIMP Image::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -2075,13 +2075,13 @@ STDMETHODIMP AnimatedActor::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lc
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -2457,13 +2457,13 @@ STDMETHODIMP Label::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -2884,13 +2884,13 @@ STDMETHODIMP FlexDMD::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;

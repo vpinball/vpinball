@@ -349,13 +349,13 @@ public class IDLParserToCpp {
 		buffer.append("default:\n");
 		buffer.append("break;\n");
 		buffer.append("}\n");
-		buffer.append("if (hres == S_OK) {\n");
+		buffer.append("if (SUCCEEDED(hres)) {\n");
 		buffer.append("if (pVarResult)\n");
 		buffer.append("\t*pVarResult = res;\n");
 		buffer.append("else\n");
 		buffer.append("\tVariantClear(&res);\n");
 		buffer.append("}\n");
-		buffer.append("else if (hres != S_FALSE) {\n");
+		buffer.append("else {\n");
 		buffer.append("PLOGI.printf(\"dispId=%d (0x%08x), wFlags=%d, hres=%d\", dispIdMember, dispIdMember, wFlags, hres);\n");
 		buffer.append("}\n");
 		buffer.append("return hres;\n");
