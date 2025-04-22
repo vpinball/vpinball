@@ -21,7 +21,7 @@ B2SReelBox::B2SReelBox() : B2SBaseBox()
    m_text = 0;
    m_rollingInterval = cTimerInterval;
    m_pTimer = new VP::Timer(m_rollingInterval, std::bind(&B2SReelBox::ReelAnimationTimerTick, this, std::placeholders::_1));
-   
+
    m_firstintermediatecount = 1;
    m_pB2SData = B2SData::GetInstance();
 }
@@ -78,7 +78,7 @@ void B2SReelBox::ReelAnimationTimerTick(VP::Timer* pTimer)
 {
    if (m_intermediates2go > 0 ||  m_intermediates == -1) {
       Refresh();
-      m_intermediates2go--;  
+      m_intermediates2go--;
    }
    else {
       if (m_intermediates2go == 0) {
