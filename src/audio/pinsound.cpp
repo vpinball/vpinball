@@ -397,11 +397,11 @@ void PinSound::PlayBGSound(float volume, const int loopcount, const bool usesame
          Mix_HaltChannel(m_assignedChannel);
       Mix_Volume(m_assignedChannel, nVolume);
       if (restart || !usesame) // stop and reload
-         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
+         Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount > 0 ? loopcount -1 : loopcount);
    }
    else { // not playing
       Mix_Volume(m_assignedChannel, nVolume);
-      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount);
+      Mix_PlayChannel(m_assignedChannel, m_pMixChunkOrg, loopcount > 0 ? loopcount -1 : loopcount);
    }
 }
 
