@@ -48,7 +48,7 @@ STDMETHODIMP WMPCore::get_URL(BSTR *pbstrURL)
 
 STDMETHODIMP WMPCore::put_URL(BSTR pbstrURL)
 {
-   m_szURL = normalize_path_separators(MakeString(pbstrURL));
+   m_szURL = MakeString(pbstrURL);
 
    PLOGI.printf("player=%p, URL=%s", this, m_szURL.c_str());
 

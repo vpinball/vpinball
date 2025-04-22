@@ -124,7 +124,7 @@ AssetSrc* AssetManager::ResolveSrc(const string& src, AssetSrc* pBaseSrc)
          {
             pAssetSrc->SetAssetType(AssetType_Image);
             if (file.size() > 4)
-               ext = string_to_lower(extension_from_path(file));
+               ext = extension_from_path(file);
          }
       }
    }
@@ -234,14 +234,15 @@ void* AssetManager::Open(AssetSrc* pSrc)
    switch(pSrc->GetSrcType()) {
       case AssetSrcType_File:
       {
-        const string& path = pSrc->GetPath();
-
-        if (pSrc->GetAssetType() == AssetType_BMFont)
-           pAsset = BitmapFont::Create(path);
-        else if (pSrc->GetAssetType() != AssetType_GIF)
-           pAsset = IMG_Load(path.c_str());
-        else
-           pAsset = IMG_LoadAnimation(path.c_str());
+        string path = find_case_insensitive_file_path(pSrc->GetPath());
+        if (!path.empty()) {
+           if (pSrc->GetAssetType() == AssetType_BMFont)
+              pAsset = BitmapFont::Create(path);
+           else if (pSrc->GetAssetType() != AssetType_GIF)
+              pAsset = IMG_Load(path.c_str());
+           else
+              pAsset = IMG_LoadAnimation(path.c_str());
+        }
       }
       break;
       case AssetSrcType_FlexResource:
@@ -270,12 +271,15 @@ void* AssetManager::Open(AssetSrc* pSrc)
                }
             }
          #endif
-         if (pSrc->GetAssetType() == AssetType_BMFont)
-            pAsset = BitmapFont::Create(path);
-         else if (pSrc->GetAssetType() != AssetType_GIF)
-            pAsset = IMG_Load(path.c_str());
-         else
-            pAsset = IMG_LoadAnimation(path.c_str());
+         path = find_case_insensitive_file_path(path);
+         if (!path.empty()) {
+            if (pSrc->GetAssetType() == AssetType_BMFont)
+               pAsset = BitmapFont::Create(path);
+            else if (pSrc->GetAssetType() != AssetType_GIF)
+               pAsset = IMG_Load(path.c_str());
+            else
+               pAsset = IMG_LoadAnimation(path.c_str());
+         }
       }
       break;
       case AssetSrcType_VPXResource:

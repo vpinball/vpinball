@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <cassert>
+#include <cstdarg>
+#include <cstdio>
 
 #include <string>
 using namespace std::string_literals;
@@ -29,10 +30,8 @@ typedef uint32_t ColorRGBA32;
 
 #ifdef _MSC_VER
 #define PATH_SEPARATOR_CHAR '\\'
-#define PATH_SEPARATOR_WCHAR L'\\'
 #else
 #define PATH_SEPARATOR_CHAR '/'
-#define PATH_SEPARATOR_WCHAR L'/'
 #endif
 
 #ifdef min
@@ -46,8 +45,9 @@ template <typename T> __forceinline T max(const T x, const T y) { return x < y ?
 
 string string_to_lower(string str);
 string trim_string(const string& str);
-string extension_from_path(const string& path);
-string normalize_path_separators(const string& szPath);
 int string_to_int(const string& str, int defaultValue = 0);
 bool try_parse_int(const string& str, int& value);
 bool try_parse_color(const string& str, ColorRGBA32& value);
+string normalize_path_separators(const string& szPath);
+string extension_from_path(const string& path);
+string find_case_insensitive_file_path(const string& szPath);
