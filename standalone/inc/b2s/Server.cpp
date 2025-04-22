@@ -248,7 +248,7 @@ STDMETHODIMP Server::get_Games(BSTR GameName, VARIANT *pRetVal)
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_Games(&pGames);
 
-   if (hres == S_OK) {
+   if (SUCCEEDED(hres)) {
       VARIANT var0;
       V_VT(&var0) = VT_BSTR;
       V_BSTR(&var0) = SysAllocString(GameName);
@@ -257,7 +257,7 @@ STDMETHODIMP Server::get_Games(BSTR GameName, VARIANT *pRetVal)
 
       VariantClear(&var0);
 
-      if (hres == S_OK) {
+      if (SUCCEEDED(hres)) {
          V_VT(pRetVal) = VT_DISPATCH;
          V_DISPATCH(pRetVal) = pGame;
       }
@@ -274,7 +274,7 @@ STDMETHODIMP Server::get_Settings(VARIANT *pRetVal)
 
    HRESULT hres = m_pB2SData->GetVPinMAME()->get_Settings(&pSettings);
 
-   if (hres == S_OK) {
+   if (SUCCEEDED(hres)) {
       V_VT(pRetVal) = VT_DISPATCH;
       V_DISPATCH(pRetVal) = pSettings;
    }

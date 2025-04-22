@@ -71,13 +71,13 @@ STDMETHODIMP Collection::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -1701,13 +1701,13 @@ STDMETHODIMP PinTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -4158,13 +4158,13 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -4278,13 +4278,13 @@ STDMETHODIMP DebuggerModule::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID l
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -4961,13 +4961,13 @@ STDMETHODIMP Surface::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -5176,13 +5176,13 @@ STDMETHODIMP DragPoint::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -5842,13 +5842,13 @@ STDMETHODIMP Flipper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -6016,13 +6016,13 @@ STDMETHODIMP Timer::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -6729,13 +6729,13 @@ STDMETHODIMP Plunger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -7121,13 +7121,13 @@ STDMETHODIMP Textbox::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -7716,13 +7716,13 @@ STDMETHODIMP Bumper::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -8135,13 +8135,13 @@ STDMETHODIMP Trigger::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -8839,13 +8839,13 @@ STDMETHODIMP Light::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -9373,13 +9373,13 @@ STDMETHODIMP Kicker::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -9715,13 +9715,13 @@ STDMETHODIMP Decal::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -10867,13 +10867,13 @@ STDMETHODIMP Primitive::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -11547,13 +11547,13 @@ STDMETHODIMP HitTarget::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -12091,13 +12091,13 @@ STDMETHODIMP Gate::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -12528,13 +12528,13 @@ STDMETHODIMP Spinner::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -13160,13 +13160,13 @@ STDMETHODIMP Ramp::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -13715,13 +13715,13 @@ STDMETHODIMP Flasher::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WO
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -14186,13 +14186,13 @@ STDMETHODIMP Rubber::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WOR
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -14700,13 +14700,13 @@ STDMETHODIMP Ball::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, WORD 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -15303,13 +15303,13 @@ STDMETHODIMP DispReel::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -15473,13 +15473,13 @@ STDMETHODIMP PartGroup::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, 
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -15745,13 +15745,13 @@ STDMETHODIMP LightSeq::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCID lcid, W
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		PLOGI.printf("dispId=%d (0x%08x), wFlags=%d, hres=%d", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;

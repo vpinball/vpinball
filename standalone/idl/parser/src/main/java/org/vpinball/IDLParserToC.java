@@ -215,13 +215,13 @@ public class IDLParserToC {
         fragment.append("default:\n");
         fragment.append("break;\n");
         fragment.append("}\n");
-        fragment.append("if (hres == S_OK) {\n");
+        fragment.append("if (SUCCEEDED(hres)) {\n");
         fragment.append("if (pVarResult)\n");
         fragment.append("\t*pVarResult = res;\n");
         fragment.append("else\n");
         fragment.append("\tVariantClear(&res);\n");
         fragment.append("}\n");
-        fragment.append("else if (hres != S_FALSE) {\n");
+        fragment.append("else {\n");
         fragment.append("printf(\"" + idlInterface.getClassName() + "_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\\n\", dispIdMember, dispIdMember, wFlags, hres);\n");
         fragment.append("}\n");
         fragment.append("return hres;\n");

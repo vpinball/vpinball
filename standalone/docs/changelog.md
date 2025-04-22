@@ -4,20 +4,29 @@ To keep up with all the changes in master, and make it easier to rebase, this br
 
 The downside of this approach is not accurately keeping track of history:
 
-* 03/30/24
+* 04/22/25
+    * Fix long standing issue when score reels did not fully rotate in B2S (@superhac) 
+    * Update all COM proxies to return VARIANT for SUCCEEDED(hres) instead of hres == S_OK (fixes ReadAll)
+    * Refactor finding case insensitive file and directory paths
+    * Implement support CreateDirectoryW
+
+* 04/15/25
+    * Implement support for IFileCollection and RegExp
+
+* 03/30/25
     * Various PuP fixes (@francisdb)
     * Fix random/alpha PuP Playlist setting (reported by @mrandromeda69)
     * Updated README notes about joystick configuration
 
-* 02/22/24
+* 02/22/25
     * Bump Wine source to wine-41abefccebf2729a70be9ec7bdb1c6226a56e369 (10.2)
     * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7068) vbscript: class single line multivar on a single line. (@sloper42/@francisdb)
     * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7304) Add Join implementation (@jacek/@francisdb)
 
-* 02/12/24
+* 02/12/25
     * Use toxie's fork of FreeImage
 
-* 01/09/24
+* 01/09/25
     * Bump Wine source to 7af71662366406a899e1bca35f638a0fa245dec4
     * Implement [official](https://gitlab.winehq.org/wine/wine/-/merge_requests/7049) mid() throws when passed VT_EMPTY instead of returning empty string. (@francisdb)
 

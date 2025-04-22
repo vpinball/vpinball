@@ -144,13 +144,13 @@ static HRESULT WINAPI RegExp_Invoke(IRegExp *iface, DISPID dispIdMember,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("RegExp_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -317,13 +317,13 @@ static HRESULT WINAPI RegExp2_Invoke(IRegExp2 *iface, DISPID dispIdMember,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("RegExp2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -402,13 +402,13 @@ static HRESULT WINAPI Match_Invoke(IMatch *iface, DISPID dispIdMember,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("Match_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -496,13 +496,13 @@ static HRESULT WINAPI Match2_Invoke(IMatch2 *iface, DISPID dispIdMember,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("Match2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -584,13 +584,13 @@ static HRESULT WINAPI MatchCollection_Invoke(IMatchCollection *iface, DISPID dis
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("MatchCollection_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -672,13 +672,13 @@ static HRESULT WINAPI MatchCollection2_Invoke(IMatchCollection2 *iface, DISPID d
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("MatchCollection2_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
@@ -759,13 +759,13 @@ static HRESULT WINAPI SubMatches_Invoke(ISubMatches *iface, DISPID dispIdMember,
 		default:
 		break;
 	}
-	if (hres == S_OK) {
+	if (SUCCEEDED(hres)) {
 		if (pVarResult)
 			*pVarResult = res;
 		else
 			VariantClear(&res);
 	}
-	else if (hres != S_FALSE) {
+	else {
 		external_log_info("SubMatches_Invoke: dispId=%d (0x%08x), wFlags=%d, hres=%d\n", dispIdMember, dispIdMember, wFlags, hres);
 	}
 	return hres;
