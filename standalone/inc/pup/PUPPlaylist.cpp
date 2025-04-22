@@ -148,6 +148,9 @@ string PUPPlaylist::GetPlayFilePath(const string& szFilename)
 {
    static string emptyString = "";
 
+   if (m_files.empty())
+      return emptyString;
+
    if (!szFilename.empty()) {
       std::map<string, string>::const_iterator it = m_fileMap.find(lowerCase(szFilename));
       if (it != m_fileMap.end())
