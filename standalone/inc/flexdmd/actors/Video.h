@@ -12,6 +12,8 @@ public:
    STDMETHOD(Seek)(single posInSeconds);
 
    void SetVisible(bool visible) { AnimatedActor::SetVisible(visible); OnStageStateChanged(); }
+
+   void Advance(float delta) override;
    void Rewind() override;
    void ReadNextFrame() override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;

@@ -40,6 +40,11 @@ void Video::Seek(float posInSeconds)
 
 }
 
+void Video::Advance(float delta)
+{
+   // Remove when video is supported
+}
+
 void Video::Rewind()
 {
    AnimatedActor::Rewind();

@@ -15,7 +15,7 @@ public:
    float GetPlaySpeed() const { return m_playSpeed; }
    
    void Seek(float posInSeconds) override;
-
+   void Advance(float delta) override;
    void Rewind() override;
    void ReadNextFrame() override;
    void Draw(VP::SurfaceGraphics* pGraphics) override;
