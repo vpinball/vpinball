@@ -43,6 +43,11 @@ STDMETHODIMP Video::Seek(single posInSeconds)
    return S_OK;
 }
 
+void Video::Advance(float delta)
+{
+   // Remove when video is supported
+}
+
 void Video::Rewind()
 {
    AnimatedActor::Rewind();
@@ -51,6 +56,7 @@ void Video::Rewind()
 
 void Video::ReadNextFrame()
 {
+   SetFrameTime(GetFrameTime() + GetFrameDuration());
 }
 
 void Video::Draw(VP::SurfaceGraphics* pGraphics)
