@@ -106,44 +106,32 @@ string extension_from_path(const string& path)
 
 string find_case_insensitive_file_path(const string& szPath)
 {
-   std::filesystem::path p(normalize_path_separators(szPath));
-   if (p.is_relative())
-      p = std::filesystem::current_path() / p;
-   p = p.lexically_normal();
+   string path = normalize_path_separators(szPath);
+   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::error_code ec;
 
-   if (std::filesystem::exists(p)) {
-      if (std::filesystem::is_regular_file(p))
-         return std::filesystem::canonical(p).string();
-      else
+   if (std::filesystem::exists(p, ec))
+      return path;
+
+   auto parent = p.parent_path();
+   string base;
+   if (parent.empty() || parent == p)
+      base = ".";
+   else {
+      base = find_case_insensitive_file_path(parent.string());
+      if (base.empty())
          return string();
    }
 
-   std::filesystem::path result = p.root_path();
-   if (result.empty())
-      result = std::filesystem::current_path().root_path();
-
-   for (auto it = std::next(p.begin()); it != p.end(); ++it) {
-      const string name = it->string();
-      if (!std::filesystem::exists(result) || !std::filesystem::is_directory(result))
-         return string();
-
-      bool matched = false;
-      for (const auto& entry : std::filesystem::directory_iterator(result)) {
-         const string fname = entry.path().filename().string();
-         if (StrCompareNoCase(fname, name)) {
-            result /= entry.path().filename();
-            matched = true;
-            break;
+   for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
+         auto found = ent.path().string();
+         if (found != path) {
+            LOGI("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
          }
+         return found;
       }
-      if (!matched)
-         return string();
    }
 
-   if (!std::filesystem::exists(result) || !std::filesystem::is_regular_file(result))
-      return string();
-
-   string match = std::filesystem::canonical(result).string();
-   LOGI("exact directory not found, but a case-insensitive file match was found: szPath=%s, match=%s", szPath.c_str(), match.c_str());
-   return match;
+   return string();
 }

@@ -449,95 +449,74 @@ string normalize_path_separators(const string& szPath)
 
 string find_case_insensitive_file_path(const string& szPath)
 {
-   std::filesystem::path p(normalize_path_separators(szPath));
-   if (p.is_relative())
-      p = std::filesystem::current_path() / p;
-   p = p.lexically_normal();
+   string path = normalize_path_separators(szPath);
+   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::error_code ec;
 
-   if (std::filesystem::exists(p)) {
-      if (std::filesystem::is_regular_file(p))
-         return std::filesystem::canonical(p).string();
-      else
+   if (std::filesystem::exists(p, ec))
+      return path;
+
+   auto parent = p.parent_path();
+   string base;
+   if (parent.empty() || parent == p)
+      base = ".";
+   else {
+      base = find_case_insensitive_file_path(parent.string());
+      if (base.empty())
          return string();
    }
 
-   std::filesystem::path result = p.root_path();
-   if (result.empty())
-      result = std::filesystem::current_path().root_path();
-
-   for (auto it = std::next(p.begin()); it != p.end(); ++it) {
-      const string name = it->string();
-      if (!std::filesystem::exists(result) || !std::filesystem::is_directory(result))
-         return string();
-
-      bool matched = false;
-      for (const auto& entry : std::filesystem::directory_iterator(result)) {
-         const string fname = entry.path().filename().string();
-         if (StrCompareNoCase(fname, name)) {
-            result /= entry.path().filename();
-            matched = true;
-            break;
+   for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      if (!ec && StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
+         auto found = ent.path().string();
+         if (found != path) {
+            PLOGI.printf("case insensitive file match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
          }
+         return found;
       }
-      if (!matched)
-         return string();
    }
 
-   if (!std::filesystem::exists(result) || !std::filesystem::is_regular_file(result))
-      return string();
-
-   string match = std::filesystem::canonical(result).string();
-   PLOGI.printf("exact file not found, but a case-insensitive file match was found: szPath=%s, match=%s", szPath.c_str(), match.c_str());
-   return match;
+   return string();
 }
 
 string find_case_insensitive_directory_path(const string& szPath)
 {
-   std::filesystem::path p(normalize_path_separators(szPath));
-   if (p.is_relative())
-      p = std::filesystem::current_path() / p;
-   p = p.lexically_normal();
+   string path = normalize_path_separators(szPath);
+   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::error_code ec;
 
-   if (std::filesystem::exists(p) && std::filesystem::is_directory(p)) {
-      auto realPath = std::filesystem::canonical(p);
-      string match = realPath.string();
-      if (!match.empty() && match.back() != PATH_SEPARATOR_CHAR)
-         match.push_back(PATH_SEPARATOR_CHAR);
-      return match;
+   if (std::filesystem::exists(p, ec) && std::filesystem::is_directory(p, ec)) {
+      string exact = p.string();
+      if (!exact.empty() && exact.back() != PATH_SEPARATOR_CHAR)
+         exact.push_back(PATH_SEPARATOR_CHAR);
+      return exact;
    }
 
-   std::filesystem::path result = p.root_path();
-   if (result.empty())
-      result = std::filesystem::current_path().root_path();
-
-   for (auto it = std::next(p.begin()); it != p.end(); ++it) {
-      const string name = it->string();
-      if (!std::filesystem::exists(result) || !std::filesystem::is_directory(result))
+   auto parent = p.parent_path();
+   string base;
+   if (parent.empty() || parent == p)
+      base = ".";
+   else {
+      base = find_case_insensitive_directory_path(parent.string());
+      if (base.empty())
          return string();
+   }
 
-      bool matched = false;
-      for (const auto& entry : std::filesystem::directory_iterator(result)) {
-         const string fname = entry.path().filename().string();
-         if (StrCompareNoCase(fname, name)) {
-            result /= entry.path().filename();
-            matched = true;
-            break;
+   for (auto& ent : std::filesystem::directory_iterator(base, ec)) {
+      if (ec || !ent.is_directory(ec))
+         continue;
+      if (StrCompareNoCase(ent.path().filename().string(), p.filename().string())) {
+         string found = ent.path().string();
+         if (!found.empty() && found.back() != PATH_SEPARATOR_CHAR)
+            found.push_back(PATH_SEPARATOR_CHAR);
+         if (found != path) {
+            PLOGI.printf("case insensitive directory match: requested \"%s\", actual \"%s\"", path.c_str(), found.c_str());
          }
+         return found;
       }
-      if (!matched)
-         return string();
    }
 
-   if (!std::filesystem::exists(result) || !std::filesystem::is_directory(result))
-      return string();
-
-   auto realPath = std::filesystem::canonical(result);
-   string match = realPath.string();
-   if (!match.empty() && match.back() != PATH_SEPARATOR_CHAR)
-      match.push_back(PATH_SEPARATOR_CHAR);
-
-   PLOGI.printf("exact directory not found, but a case-insensitive directory match was found: szPath=%s, match=%s", szPath.c_str(), match.c_str());
-   return match;
+   return string();
 }
 
 string extension_from_path(const string& path)
