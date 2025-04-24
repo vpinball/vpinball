@@ -29,6 +29,7 @@ B2SScreen::B2SScreen()
    m_backgroundPath.clear();
    m_backglassCutOff = { 0, 0, 0, 0 };
    m_dmdToBeShown = false;
+   m_rescaleBackglass = { 0, 0, 1.0f, 1.0f };
 
    m_pB2SData = B2SData::GetInstance();
    m_pB2SSettings = B2SSettings::GetInstance();
@@ -203,11 +204,15 @@ void B2SScreen::Show()
       m_pFormDMD->SetSize({ 0, 0, m_pFormDMD->GetBackgroundImage()->w, m_pFormDMD->GetBackgroundImage()->h});
 
    // calculate backglass rescale factors
-   float rescaleBackglassX = (float)m_pFormBackglass->GetWidth() / (float)m_backglassSize.w;
-   float rescaleBackglassY = (float)m_pFormBackglass->GetHeight() / (float)m_backglassSize.h;
    if (m_pFormBackglass->GetBackgroundImage()) {
-      rescaleBackglassX = (float)m_pFormBackglass->GetBackgroundImage()->w / (float)m_backglassSize.w;
-      rescaleBackglassY = (float)m_pFormBackglass->GetBackgroundImage()->h / (float)m_backglassSize.h;
+      m_rescaleBackglass = { 0, 0,
+         (float)m_pFormBackglass->GetBackgroundImage()->w / (float)m_backglassSize.w,
+         (float)m_pFormBackglass->GetBackgroundImage()->h / (float)m_backglassSize.h };
+   }
+   else {
+      m_rescaleBackglass = { 0, 0,
+         (float)m_pFormBackglass->GetWidth() / (float)m_backglassSize.w,
+         (float)m_pFormBackglass->GetHeight() / (float)m_backglassSize.h };
    }
 
    // maybe rescale the location and the size because this is the default and therefore it has to be done
@@ -216,9 +221,9 @@ void B2SScreen::Show()
    if (m_dmdToBeShown) {
       if (m_dmdAtDefaultLocation) {
          m_dmdSize = m_pFormDMD->GetSize();
-         if (rescaleBackglassX != 1.0f || rescaleBackglassY != 1.0f) {
-            m_dmdLocation = { (int)(m_dmdLocation.x * rescaleBackglassX), (int)(m_dmdLocation.y * rescaleBackglassY) };
-            m_dmdSize = { 0, 0, (int)(m_dmdSize.w * rescaleBackglassX), (int)(m_dmdSize.h * rescaleBackglassY) };
+         if (m_rescaleBackglass.w != 1.0f || m_rescaleBackglass.h != 1.0f) {
+            m_dmdLocation = { (int)(m_dmdLocation.x * m_rescaleBackglass.w), (int)(m_dmdLocation.y * m_rescaleBackglass.h) };
+            m_dmdSize = { 0, 0, (int)(m_dmdSize.w * m_rescaleBackglass.w), (int)(m_dmdSize.h * m_rescaleBackglass.h) };
          }
       }
 
@@ -232,7 +237,7 @@ void B2SScreen::Show()
    }
 
    // move and scale all picked objects
-   ScaleAllControls(rescaleBackglassX, rescaleBackglassY, rescaleDMDX, rescaleDMDY);
+   ScaleAllControls(m_rescaleBackglass.w, m_rescaleBackglass.h, rescaleDMDX, rescaleDMDY);
 
    // show the backglass form
    m_pFormBackglass->SetSize(m_backglassSize);

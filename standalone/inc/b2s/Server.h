@@ -55,6 +55,7 @@ public:
 
    STDMETHOD(Dispose)();
    STDMETHOD(get_B2SServerVersion)(BSTR *pRetVal);
+   STDMETHOD(get_B2SBuildVersion)(double *pRetVal);
    STDMETHOD(get_B2SServerDirectory)(BSTR *pRetVal);
    STDMETHOD(get_GameName)(BSTR *pRetVal);
    STDMETHOD(put_GameName)(BSTR pRetVal);
@@ -68,10 +69,11 @@ public:
    STDMETHOD(get_Games)(BSTR GameName, VARIANT *pRetVal);
    STDMETHOD(get_Settings)(VARIANT *pRetVal);
    STDMETHOD(get_Running)(VARIANT_BOOL *pRetVal);
-   STDMETHOD(put_TimeFence)(VARIANT timeInS);
+   STDMETHOD(put_TimeFence)(double timeInS);
    STDMETHOD(get_Pause)(VARIANT_BOOL *pRetVal);
    STDMETHOD(put_Pause)(VARIANT_BOOL pRetVal);
    STDMETHOD(get_Version)(BSTR *pRetVal);
+   STDMETHOD(get_VPMBuildVersion)(BSTR *pRetVal);
    STDMETHOD(Run)(VARIANT handle);
    STDMETHOD(Stop)();
    STDMETHOD(get_LaunchBackglass)(VARIANT_BOOL *pRetVal);
@@ -130,6 +132,7 @@ public:
    STDMETHOD(put_SoundMode)(LONG pRetVal);
    STDMETHOD(B2SSetData)(VARIANT idORname, VARIANT value);
    STDMETHOD(B2SPulseData)(VARIANT idORname);
+   STDMETHOD(B2SSetPos)(VARIANT idORname, VARIANT xpos, VARIANT ypos);
    STDMETHOD(B2SSetIllumination)(VARIANT name, VARIANT value);
    STDMETHOD(B2SSetLED)(VARIANT digit, VARIANT valueORtext);
    STDMETHOD(B2SSetLEDDisplay)(VARIANT display, VARIANT text);
@@ -185,6 +188,7 @@ private:
    void CheckLEDs(SAFEARRAY* psa);
    void MyB2SSetData(int id, int value);
    void MyB2SSetData(const string& groupname, int value);
+   void MyB2SSetPos(int id, int xpos, int ypos);
    void MyB2SSetLED(int digit, int value);
    void MyB2SSetLED(int digit, const string& value);
    void MyB2SSetLEDDisplay(int display, const string& szText);
