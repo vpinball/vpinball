@@ -27,6 +27,7 @@ public:
    void HideScoreDisplays();
    void PlaySound(const string& szSoundName);
    void StopSound(const string& szSoundName);
+   SDL_FRect& GetScaleFactor();
    SDL_Surface* GetTopLightImage() const { return m_pB2SSettings->GetCurrentDualMode() == eDualMode_Fantasy ? m_pTopLightImage4Fantasy : m_pTopLightImage4Authentic; }
    SDL_Surface* GetTopLightImage4Authentic() const { return m_pTopLightImage4Authentic; }
    void SetTopLightImage4Authentic(SDL_Surface* pTopLightImage4Authentic) { m_pTopLightImage4Authentic = pTopLightImage4Authentic; }
@@ -71,6 +72,8 @@ private:
    SDL_Surface* CreateLightImage(SDL_Surface* image, eDualMode dualmode, const string& firstromkey_, const string& secondromkey_);
    SDL_Surface* CreateLightImage(SDL_Surface* image, eDualMode dualmode, const string& firstromkey_, const string& secondromkey_, int& romid, eRomIDType& romidtype, bool& rominverted);
    void CheckBulbs(int romid, eRomIDType romidtype, bool rominverted, eDualMode dualmode);
+   SDL_Rect GetBoundingRectangle(SDL_Surface* pImage);
+   SDL_Surface* CropImageToTransparency(SDL_Surface* pImage, SDL_Surface* pOffImage, SDL_Point& loc, SDL_Rect& size);
    SDL_Surface* Base64ToImage(const string& image);
    Sound* Base64ToWav(const string& data);
    OLE_COLOR String2Color(const string& color);

@@ -108,6 +108,15 @@ typedef struct Processes Processes;
 #endif /* defined __cplusplus */
 #endif /* defined __Processes_FWD_DEFINED__ */
 
+#ifndef __B2SVersionInfo_FWD_DEFINED__
+#define __B2SVersionInfo_FWD_DEFINED__
+#ifdef __cplusplus
+typedef class B2SVersionInfo B2SVersionInfo;
+#else
+typedef struct B2SVersionInfo B2SVersionInfo;
+#endif /* defined __cplusplus */
+#endif /* defined __B2SVersionInfo_FWD_DEFINED__ */
+
 #ifndef __B2SBaseBox_FWD_DEFINED__
 #define __B2SBaseBox_FWD_DEFINED__
 #ifdef __cplusplus
@@ -161,6 +170,15 @@ typedef class Dream7Display Dream7Display;
 typedef struct Dream7Display Dream7Display;
 #endif /* defined __cplusplus */
 #endif /* defined __Dream7Display_FWD_DEFINED__ */
+
+#ifndef __Background_FWD_DEFINED__
+#define __Background_FWD_DEFINED__
+#ifdef __cplusplus
+typedef class Background Background;
+#else
+typedef struct Background Background;
+#endif /* defined __cplusplus */
+#endif /* defined __Background_FWD_DEFINED__ */
 
 #ifndef __formBackglass_FWD_DEFINED__
 #define __formBackglass_FWD_DEFINED__
@@ -558,6 +576,14 @@ interface _Processes;
 #endif /* __cplusplus */
 #endif
 
+#ifndef ___B2SVersionInfo_FWD_DEFINED__
+#define ___B2SVersionInfo_FWD_DEFINED__
+typedef interface _B2SVersionInfo _B2SVersionInfo;
+#ifdef __cplusplus
+interface _B2SVersionInfo;
+#endif /* __cplusplus */
+#endif
+
 #ifndef ___B2SBaseBox_FWD_DEFINED__
 #define ___B2SBaseBox_FWD_DEFINED__
 typedef interface _B2SBaseBox _B2SBaseBox;
@@ -603,6 +629,14 @@ interface _B2SSnifferPanel;
 typedef interface _Dream7Display _Dream7Display;
 #ifdef __cplusplus
 interface _Dream7Display;
+#endif /* __cplusplus */
+#endif
+
+#ifndef ___Background_FWD_DEFINED__
+#define ___Background_FWD_DEFINED__
+typedef interface _Background _Background;
+#ifdef __cplusplus
+interface _Background;
 #endif /* __cplusplus */
 #endif
 
@@ -908,6 +942,14 @@ interface _Processes;
 #endif /* __cplusplus */
 #endif
 
+#ifndef ___B2SVersionInfo_FWD_DEFINED__
+#define ___B2SVersionInfo_FWD_DEFINED__
+typedef interface _B2SVersionInfo _B2SVersionInfo;
+#ifdef __cplusplus
+interface _B2SVersionInfo;
+#endif /* __cplusplus */
+#endif
+
 #ifndef ___B2SBaseBox_FWD_DEFINED__
 #define ___B2SBaseBox_FWD_DEFINED__
 typedef interface _B2SBaseBox _B2SBaseBox;
@@ -953,6 +995,14 @@ interface _B2SSnifferPanel;
 typedef interface _Dream7Display _Dream7Display;
 #ifdef __cplusplus
 interface _Dream7Display;
+#endif /* __cplusplus */
+#endif
+
+#ifndef ___Background_FWD_DEFINED__
+#define ___Background_FWD_DEFINED__
+typedef interface _Background _Background;
+#ifdef __cplusplus
+interface _Background;
 #endif /* __cplusplus */
 #endif
 
@@ -1176,12 +1226,12 @@ interface _FinishedEventHandler_2;
  * B2SAnimation coclass
  */
 
-DEFINE_GUID(CLSID_B2SAnimation, 0x703807b5, 0x9dc2, 0x3789, 0x9e,0x80, 0x4f,0xc1,0x98,0xaa,0xed,0x4e);
+DEFINE_GUID(CLSID_B2SAnimation, 0x82a27cad, 0x8eb4, 0x34bf, 0xa8,0xf0, 0xe4,0x47,0xaf,0x2a,0x4e,0xed);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("703807b5-9dc2-3789-9e80-4fc198aaed4e") B2SAnimation;
+class DECLSPEC_UUID("82a27cad-8eb4-34bf-a8f0-e447af2a4eed") B2SAnimation;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SAnimation, 0x703807b5, 0x9dc2, 0x3789, 0x9e,0x80, 0x4f,0xc1,0x98,0xaa,0xed,0x4e)
+__CRT_UUID_DECL(B2SAnimation, 0x82a27cad, 0x8eb4, 0x34bf, 0xa8,0xf0, 0xe4,0x47,0xaf,0x2a,0x4e,0xed)
 #endif
 #endif
 
@@ -1189,12 +1239,12 @@ __CRT_UUID_DECL(B2SAnimation, 0x703807b5, 0x9dc2, 0x3789, 0x9e,0x80, 0x4f,0xc1,0
  * B2SCollectData coclass
  */
 
-DEFINE_GUID(CLSID_B2SCollectData, 0xe575e3c7, 0xe580, 0x3749, 0x88,0x17, 0x01,0x17,0x03,0xfd,0x76,0xc8);
+DEFINE_GUID(CLSID_B2SCollectData, 0xc0a3867a, 0x9961, 0x3873, 0xbe,0x37, 0x8c,0x31,0x86,0x02,0x4d,0x87);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("e575e3c7-e580-3749-8817-011703fd76c8") B2SCollectData;
+class DECLSPEC_UUID("c0a3867a-9961-3873-be37-8c3186024d87") B2SCollectData;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SCollectData, 0xe575e3c7, 0xe580, 0x3749, 0x88,0x17, 0x01,0x17,0x03,0xfd,0x76,0xc8)
+__CRT_UUID_DECL(B2SCollectData, 0xc0a3867a, 0x9961, 0x3873, 0xbe,0x37, 0x8c,0x31,0x86,0x02,0x4d,0x87)
 #endif
 #endif
 
@@ -1202,12 +1252,12 @@ __CRT_UUID_DECL(B2SCollectData, 0xe575e3c7, 0xe580, 0x3749, 0x88,0x17, 0x01,0x17
  * B2SData coclass
  */
 
-DEFINE_GUID(CLSID_B2SData, 0x59e7d353, 0x6d58, 0x37b3, 0xae,0xe6, 0x2b,0xea,0xfa,0x1c,0x43,0x54);
+DEFINE_GUID(CLSID_B2SData, 0x84c7df69, 0xcef6, 0x381f, 0xa0,0x51, 0xaa,0x7f,0xfe,0x23,0xd3,0xf5);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("59e7d353-6d58-37b3-aee6-2beafa1c4354") B2SData;
+class DECLSPEC_UUID("84c7df69-cef6-381f-a051-aa7ffe23d3f5") B2SData;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SData, 0x59e7d353, 0x6d58, 0x37b3, 0xae,0xe6, 0x2b,0xea,0xfa,0x1c,0x43,0x54)
+__CRT_UUID_DECL(B2SData, 0x84c7df69, 0xcef6, 0x381f, 0xa0,0x51, 0xaa,0x7f,0xfe,0x23,0xd3,0xf5)
 #endif
 #endif
 
@@ -1215,12 +1265,12 @@ __CRT_UUID_DECL(B2SData, 0x59e7d353, 0x6d58, 0x37b3, 0xae,0xe6, 0x2b,0xea,0xfa,0
  * B2SLED coclass
  */
 
-DEFINE_GUID(CLSID_B2SLED, 0xbb2907ec, 0x86b7, 0x3fc6, 0x95,0x67, 0x55,0x6d,0xe0,0x3a,0x24,0xd5);
+DEFINE_GUID(CLSID_B2SLED, 0x930e4847, 0xbeab, 0x34a3, 0xaa,0x05, 0x09,0x7c,0x9e,0x7d,0x75,0x55);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("bb2907ec-86b7-3fc6-9567-556de03a24d5") B2SLED;
+class DECLSPEC_UUID("930e4847-beab-34a3-aa05-097c9e7d7555") B2SLED;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SLED, 0xbb2907ec, 0x86b7, 0x3fc6, 0x95,0x67, 0x55,0x6d,0xe0,0x3a,0x24,0xd5)
+__CRT_UUID_DECL(B2SLED, 0x930e4847, 0xbeab, 0x34a3, 0xaa,0x05, 0x09,0x7c,0x9e,0x7d,0x75,0x55)
 #endif
 #endif
 
@@ -1228,12 +1278,12 @@ __CRT_UUID_DECL(B2SLED, 0xbb2907ec, 0x86b7, 0x3fc6, 0x95,0x67, 0x55,0x6d,0xe0,0x
  * B2SPlayer coclass
  */
 
-DEFINE_GUID(CLSID_B2SPlayer, 0x155b2de6, 0x38f5, 0x369c, 0xba,0x2f, 0x31,0xbe,0xda,0xed,0x1f,0x60);
+DEFINE_GUID(CLSID_B2SPlayer, 0x95bba534, 0x873c, 0x3dc1, 0x98,0x0c, 0xa2,0x96,0xa8,0xae,0x0c,0x1e);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("155b2de6-38f5-369c-ba2f-31bedaed1f60") B2SPlayer;
+class DECLSPEC_UUID("95bba534-873c-3dc1-980c-a296a8ae0c1e") B2SPlayer;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SPlayer, 0x155b2de6, 0x38f5, 0x369c, 0xba,0x2f, 0x31,0xbe,0xda,0xed,0x1f,0x60)
+__CRT_UUID_DECL(B2SPlayer, 0x95bba534, 0x873c, 0x3dc1, 0x98,0x0c, 0xa2,0x96,0xa8,0xae,0x0c,0x1e)
 #endif
 #endif
 
@@ -1241,12 +1291,12 @@ __CRT_UUID_DECL(B2SPlayer, 0x155b2de6, 0x38f5, 0x369c, 0xba,0x2f, 0x31,0xbe,0xda
  * B2SReelDisplay coclass
  */
 
-DEFINE_GUID(CLSID_B2SReelDisplay, 0x015c0c18, 0xb2cb, 0x3fb2, 0x9c,0xce, 0x1b,0xda,0xa9,0x32,0x9e,0xcf);
+DEFINE_GUID(CLSID_B2SReelDisplay, 0xf630763c, 0x3faa, 0x3f31, 0x85,0x2d, 0xaa,0x1f,0x32,0x7d,0x1b,0x49);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("015c0c18-b2cb-3fb2-9cce-1bdaa9329ecf") B2SReelDisplay;
+class DECLSPEC_UUID("f630763c-3faa-3f31-852d-aa1f327d1b49") B2SReelDisplay;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SReelDisplay, 0x015c0c18, 0xb2cb, 0x3fb2, 0x9c,0xce, 0x1b,0xda,0xa9,0x32,0x9e,0xcf)
+__CRT_UUID_DECL(B2SReelDisplay, 0xf630763c, 0x3faa, 0x3f31, 0x85,0x2d, 0xaa,0x1f,0x32,0x7d,0x1b,0x49)
 #endif
 #endif
 
@@ -1254,12 +1304,12 @@ __CRT_UUID_DECL(B2SReelDisplay, 0x015c0c18, 0xb2cb, 0x3fb2, 0x9c,0xce, 0x1b,0xda
  * B2SScreen coclass
  */
 
-DEFINE_GUID(CLSID_B2SScreen, 0x2e929b95, 0x1121, 0x3e5d, 0x82,0x71, 0xc1,0x58,0xdd,0x7f,0xc3,0xbc);
+DEFINE_GUID(CLSID_B2SScreen, 0x38e645fa, 0x6939, 0x3ee8, 0x96,0x0b, 0xf7,0x84,0x09,0x51,0x5c,0x82);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("2e929b95-1121-3e5d-8271-c158dd7fc3bc") B2SScreen;
+class DECLSPEC_UUID("38e645fa-6939-3ee8-960b-f78409515c82") B2SScreen;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SScreen, 0x2e929b95, 0x1121, 0x3e5d, 0x82,0x71, 0xc1,0x58,0xdd,0x7f,0xc3,0xbc)
+__CRT_UUID_DECL(B2SScreen, 0x38e645fa, 0x6939, 0x3ee8, 0x96,0x0b, 0xf7,0x84,0x09,0x51,0x5c,0x82)
 #endif
 #endif
 
@@ -1267,12 +1317,12 @@ __CRT_UUID_DECL(B2SScreen, 0x2e929b95, 0x1121, 0x3e5d, 0x82,0x71, 0xc1,0x58,0xdd
  * B2SSettings coclass
  */
 
-DEFINE_GUID(CLSID_B2SSettings, 0xdc1d1c65, 0x9bef, 0x389b, 0x97,0x51, 0x3f,0x0f,0xe9,0x21,0x69,0x3b);
+DEFINE_GUID(CLSID_B2SSettings, 0x2a31f9dc, 0xe0f0, 0x3dac, 0x8a,0xd4, 0xcb,0xd6,0xc2,0xab,0xe6,0x49);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("dc1d1c65-9bef-389b-9751-3f0fe921693b") B2SSettings;
+class DECLSPEC_UUID("2a31f9dc-e0f0-3dac-8ad4-cbd6c2abe649") B2SSettings;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SSettings, 0xdc1d1c65, 0x9bef, 0x389b, 0x97,0x51, 0x3f,0x0f,0xe9,0x21,0x69,0x3b)
+__CRT_UUID_DECL(B2SSettings, 0x2a31f9dc, 0xe0f0, 0x3dac, 0x8a,0xd4, 0xcb,0xd6,0xc2,0xab,0xe6,0x49)
 #endif
 #endif
 
@@ -1280,12 +1330,12 @@ __CRT_UUID_DECL(B2SSettings, 0xdc1d1c65, 0x9bef, 0x389b, 0x97,0x51, 0x3f,0x0f,0x
  * B2SStatistics coclass
  */
 
-DEFINE_GUID(CLSID_B2SStatistics, 0x9674feda, 0x91ba, 0x3a48, 0x96,0xd9, 0x9d,0xb1,0xf4,0x1f,0x24,0x85);
+DEFINE_GUID(CLSID_B2SStatistics, 0xcb5cd646, 0x2807, 0x30f6, 0xa3,0x46, 0xf3,0xf4,0x15,0x9e,0x6d,0x03);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("9674feda-91ba-3a48-96d9-9db1f41f2485") B2SStatistics;
+class DECLSPEC_UUID("cb5cd646-2807-30f6-a346-f3f4159e6d03") B2SStatistics;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SStatistics, 0x9674feda, 0x91ba, 0x3a48, 0x96,0xd9, 0x9d,0xb1,0xf4,0x1f,0x24,0x85)
+__CRT_UUID_DECL(B2SStatistics, 0xcb5cd646, 0x2807, 0x30f6, 0xa3,0x46, 0xf3,0xf4,0x15,0x9e,0x6d,0x03)
 #endif
 #endif
 
@@ -1293,12 +1343,25 @@ __CRT_UUID_DECL(B2SStatistics, 0x9674feda, 0x91ba, 0x3a48, 0x96,0xd9, 0x9d,0xb1,
  * Processes coclass
  */
 
-DEFINE_GUID(CLSID_Processes, 0xbb2cc0ce, 0x0927, 0x32f5, 0xba,0x09, 0x7f,0xc0,0xe0,0x67,0x15,0xdf);
+DEFINE_GUID(CLSID_Processes, 0xb01b5200, 0x062b, 0x3232, 0x9b,0x89, 0xda,0xc1,0x8d,0xab,0x4b,0x4c);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("bb2cc0ce-0927-32f5-ba09-7fc0e06715df") Processes;
+class DECLSPEC_UUID("b01b5200-062b-3232-9b89-dac18dab4b4c") Processes;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Processes, 0xbb2cc0ce, 0x0927, 0x32f5, 0xba,0x09, 0x7f,0xc0,0xe0,0x67,0x15,0xdf)
+__CRT_UUID_DECL(Processes, 0xb01b5200, 0x062b, 0x3232, 0x9b,0x89, 0xda,0xc1,0x8d,0xab,0x4b,0x4c)
+#endif
+#endif
+
+/*****************************************************************************
+ * B2SVersionInfo coclass
+ */
+
+DEFINE_GUID(CLSID_B2SVersionInfo, 0xfffdf4b0, 0x0f50, 0x321c, 0xbf,0xa6, 0xea,0x0c,0x82,0xaa,0xfd,0xcf);
+
+#ifdef __cplusplus
+class DECLSPEC_UUID("fffdf4b0-0f50-321c-bfa6-ea0c82aafdcf") B2SVersionInfo;
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(B2SVersionInfo, 0xfffdf4b0, 0x0f50, 0x321c, 0xbf,0xa6, 0xea,0x0c,0x82,0xaa,0xfd,0xcf)
 #endif
 #endif
 
@@ -1306,12 +1369,12 @@ __CRT_UUID_DECL(Processes, 0xbb2cc0ce, 0x0927, 0x32f5, 0xba,0x09, 0x7f,0xc0,0xe0
  * B2SBaseBox coclass
  */
 
-DEFINE_GUID(CLSID_B2SBaseBox, 0xf278af37, 0x7a8d, 0x37f6, 0x96,0x34, 0xfc,0x9b,0x29,0xa1,0x0a,0xd3);
+DEFINE_GUID(CLSID_B2SBaseBox, 0x5f20efad, 0x124b, 0x3ffb, 0x9a,0x12, 0xea,0xb7,0xb6,0x3a,0x4d,0x16);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("f278af37-7a8d-37f6-9634-fc9b29a10ad3") B2SBaseBox;
+class DECLSPEC_UUID("5f20efad-124b-3ffb-9a12-eab7b63a4d16") B2SBaseBox;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SBaseBox, 0xf278af37, 0x7a8d, 0x37f6, 0x96,0x34, 0xfc,0x9b,0x29,0xa1,0x0a,0xd3)
+__CRT_UUID_DECL(B2SBaseBox, 0x5f20efad, 0x124b, 0x3ffb, 0x9a,0x12, 0xea,0xb7,0xb6,0x3a,0x4d,0x16)
 #endif
 #endif
 
@@ -1319,12 +1382,12 @@ __CRT_UUID_DECL(B2SBaseBox, 0xf278af37, 0x7a8d, 0x37f6, 0x96,0x34, 0xfc,0x9b,0x2
  * B2SLEDBox coclass
  */
 
-DEFINE_GUID(CLSID_B2SLEDBox, 0x8293c4f8, 0xfa8a, 0x3980, 0x90,0x58, 0x10,0x2c,0x9a,0x3b,0x24,0xb1);
+DEFINE_GUID(CLSID_B2SLEDBox, 0x73137f25, 0xa926, 0x302c, 0xb1,0x5a, 0xfe,0x4a,0xd4,0xa2,0xd3,0xa0);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("8293c4f8-fa8a-3980-9058-102c9a3b24b1") B2SLEDBox;
+class DECLSPEC_UUID("73137f25-a926-302c-b15a-fe4ad4a2d3a0") B2SLEDBox;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SLEDBox, 0x8293c4f8, 0xfa8a, 0x3980, 0x90,0x58, 0x10,0x2c,0x9a,0x3b,0x24,0xb1)
+__CRT_UUID_DECL(B2SLEDBox, 0x73137f25, 0xa926, 0x302c, 0xb1,0x5a, 0xfe,0x4a,0xd4,0xa2,0xd3,0xa0)
 #endif
 #endif
 
@@ -1332,12 +1395,12 @@ __CRT_UUID_DECL(B2SLEDBox, 0x8293c4f8, 0xfa8a, 0x3980, 0x90,0x58, 0x10,0x2c,0x9a
  * B2SPictureBox coclass
  */
 
-DEFINE_GUID(CLSID_B2SPictureBox, 0xf5323223, 0xb199, 0x35d7, 0x9e,0x12, 0xdb,0xed,0x2c,0xf0,0xcc,0x4e);
+DEFINE_GUID(CLSID_B2SPictureBox, 0x797eae8f, 0xc0c8, 0x33d9, 0x85,0xbd, 0x70,0x08,0x86,0x23,0x26,0xcd);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("f5323223-b199-35d7-9e12-dbed2cf0cc4e") B2SPictureBox;
+class DECLSPEC_UUID("797eae8f-c0c8-33d9-85bd-7008862326cd") B2SPictureBox;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SPictureBox, 0xf5323223, 0xb199, 0x35d7, 0x9e,0x12, 0xdb,0xed,0x2c,0xf0,0xcc,0x4e)
+__CRT_UUID_DECL(B2SPictureBox, 0x797eae8f, 0xc0c8, 0x33d9, 0x85,0xbd, 0x70,0x08,0x86,0x23,0x26,0xcd)
 #endif
 #endif
 
@@ -1345,12 +1408,12 @@ __CRT_UUID_DECL(B2SPictureBox, 0xf5323223, 0xb199, 0x35d7, 0x9e,0x12, 0xdb,0xed,
  * B2SReelBox coclass
  */
 
-DEFINE_GUID(CLSID_B2SReelBox, 0x4d78c14d, 0xc1ea, 0x36a6, 0xa4,0x8f, 0x29,0x78,0x7b,0xf7,0xda,0x17);
+DEFINE_GUID(CLSID_B2SReelBox, 0xd541f1c3, 0xc5b6, 0x3a81, 0x89,0x85, 0x2b,0x6a,0xef,0x00,0x4a,0x87);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("4d78c14d-c1ea-36a6-a48f-29787bf7da17") B2SReelBox;
+class DECLSPEC_UUID("d541f1c3-c5b6-3a81-8985-2b6aef004a87") B2SReelBox;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SReelBox, 0x4d78c14d, 0xc1ea, 0x36a6, 0xa4,0x8f, 0x29,0x78,0x7b,0xf7,0xda,0x17)
+__CRT_UUID_DECL(B2SReelBox, 0xd541f1c3, 0xc5b6, 0x3a81, 0x89,0x85, 0x2b,0x6a,0xef,0x00,0x4a,0x87)
 #endif
 #endif
 
@@ -1358,12 +1421,12 @@ __CRT_UUID_DECL(B2SReelBox, 0x4d78c14d, 0xc1ea, 0x36a6, 0xa4,0x8f, 0x29,0x78,0x7
  * B2SSnifferPanel coclass
  */
 
-DEFINE_GUID(CLSID_B2SSnifferPanel, 0xb86f0ed8, 0xc18c, 0x3b7c, 0xae,0x0d, 0xa1,0xb9,0xcd,0x46,0x19,0x0d);
+DEFINE_GUID(CLSID_B2SSnifferPanel, 0x85de0869, 0x8a31, 0x36ab, 0x86,0x95, 0x6f,0x4e,0x4b,0x2b,0x73,0x74);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("b86f0ed8-c18c-3b7c-ae0d-a1b9cd46190d") B2SSnifferPanel;
+class DECLSPEC_UUID("85de0869-8a31-36ab-8695-6f4e4b2b7374") B2SSnifferPanel;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SSnifferPanel, 0xb86f0ed8, 0xc18c, 0x3b7c, 0xae,0x0d, 0xa1,0xb9,0xcd,0x46,0x19,0x0d)
+__CRT_UUID_DECL(B2SSnifferPanel, 0x85de0869, 0x8a31, 0x36ab, 0x86,0x95, 0x6f,0x4e,0x4b,0x2b,0x73,0x74)
 #endif
 #endif
 
@@ -1371,12 +1434,12 @@ __CRT_UUID_DECL(B2SSnifferPanel, 0xb86f0ed8, 0xc18c, 0x3b7c, 0xae,0x0d, 0xa1,0xb
  * Dream7Display coclass
  */
 
-DEFINE_GUID(CLSID_Dream7Display, 0x52089ee8, 0xd61f, 0x3429, 0xa8,0x57, 0xe1,0xaa,0x08,0xfb,0xef,0xa1);
+DEFINE_GUID(CLSID_Dream7Display, 0x77eca8d4, 0x5e8d, 0x327b, 0xb6,0x20, 0x2b,0x2d,0x69,0x9c,0xb5,0x9e);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("52089ee8-d61f-3429-a857-e1aa08fbefa1") Dream7Display;
+class DECLSPEC_UUID("77eca8d4-5e8d-327b-b620-2b2d699cb59e") Dream7Display;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Dream7Display, 0x52089ee8, 0xd61f, 0x3429, 0xa8,0x57, 0xe1,0xaa,0x08,0xfb,0xef,0xa1)
+__CRT_UUID_DECL(Dream7Display, 0x77eca8d4, 0x5e8d, 0x327b, 0xb6,0x20, 0x2b,0x2d,0x69,0x9c,0xb5,0x9e)
 #endif
 #endif
 
@@ -1391,15 +1454,28 @@ typedef enum __WIDL_B2S_generated_name_0000001F {
     SegmentNumberType_FourteenSegment = 14
 } SegmentNumberType;
 /*****************************************************************************
+ * Background coclass
+ */
+
+DEFINE_GUID(CLSID_Background, 0xfa94d85b, 0xd9ec, 0x3c58, 0xa4,0x9d, 0x4d,0xde,0xc4,0x2c,0xe9,0x43);
+
+#ifdef __cplusplus
+class DECLSPEC_UUID("fa94d85b-d9ec-3c58-a49d-4ddec42ce943") Background;
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(Background, 0xfa94d85b, 0xd9ec, 0x3c58, 0xa4,0x9d, 0x4d,0xde,0xc4,0x2c,0xe9,0x43)
+#endif
+#endif
+
+/*****************************************************************************
  * formBackglass coclass
  */
 
-DEFINE_GUID(CLSID_formBackglass, 0x41e018de, 0xade2, 0x3d8f, 0x97,0xb4, 0x38,0x2f,0x88,0xfc,0x55,0x3b);
+DEFINE_GUID(CLSID_formBackglass, 0xaa05afeb, 0x40b5, 0x333d, 0xb7,0x84, 0xb0,0xee,0xbc,0x21,0xe2,0xc8);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("41e018de-ade2-3d8f-97b4-382f88fc553b") formBackglass;
+class DECLSPEC_UUID("aa05afeb-40b5-333d-b784-b0eebc21e2c8") formBackglass;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(formBackglass, 0x41e018de, 0xade2, 0x3d8f, 0x97,0xb4, 0x38,0x2f,0x88,0xfc,0x55,0x3b)
+__CRT_UUID_DECL(formBackglass, 0xaa05afeb, 0x40b5, 0x333d, 0xb7,0x84, 0xb0,0xee,0xbc,0x21,0xe2,0xc8)
 #endif
 #endif
 
@@ -1407,12 +1483,12 @@ __CRT_UUID_DECL(formBackglass, 0x41e018de, 0xade2, 0x3d8f, 0x97,0xb4, 0x38,0x2f,
  * formDMD coclass
  */
 
-DEFINE_GUID(CLSID_formDMD, 0x22e7ab66, 0xf194, 0x3512, 0xa6,0x1e, 0x0e,0xf0,0x52,0xcf,0x53,0x42);
+DEFINE_GUID(CLSID_formDMD, 0x4687c9b8, 0x4908, 0x3cb9, 0x97,0x7b, 0xe7,0xb7,0x8e,0xa6,0xaf,0xf4);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("22e7ab66-f194-3512-a61e-0ef052cf5342") formDMD;
+class DECLSPEC_UUID("4687c9b8-4908-3cb9-977b-e7b78ea6aff4") formDMD;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(formDMD, 0x22e7ab66, 0xf194, 0x3512, 0xa6,0x1e, 0x0e,0xf0,0x52,0xcf,0x53,0x42)
+__CRT_UUID_DECL(formDMD, 0x4687c9b8, 0x4908, 0x3cb9, 0x97,0x7b, 0xe7,0xb7,0x8e,0xa6,0xaf,0xf4)
 #endif
 #endif
 
@@ -1420,12 +1496,12 @@ __CRT_UUID_DECL(formDMD, 0x22e7ab66, 0xf194, 0x3512, 0xa6,0x1e, 0x0e,0xf0,0x52,0
  * formMode coclass
  */
 
-DEFINE_GUID(CLSID_formMode, 0xbabcc6bd, 0x6710, 0x3554, 0x9d,0xd3, 0xb4,0x0f,0xf0,0x86,0xfc,0xf9);
+DEFINE_GUID(CLSID_formMode, 0x60da8b06, 0xf831, 0x35f7, 0x93,0x21, 0x76,0xcb,0xcb,0xb9,0x92,0xee);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("babcc6bd-6710-3554-9dd3-b40ff086fcf9") formMode;
+class DECLSPEC_UUID("60da8b06-f831-35f7-9321-76cbcbb992ee") formMode;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(formMode, 0xbabcc6bd, 0x6710, 0x3554, 0x9d,0xd3, 0xb4,0x0f,0xf0,0x86,0xfc,0xf9)
+__CRT_UUID_DECL(formMode, 0x60da8b06, 0xf831, 0x35f7, 0x93,0x21, 0x76,0xcb,0xcb,0xb9,0x92,0xee)
 #endif
 #endif
 
@@ -1433,12 +1509,12 @@ __CRT_UUID_DECL(formMode, 0xbabcc6bd, 0x6710, 0x3554, 0x9d,0xd3, 0xb4,0x0f,0xf0,
  * formSettings coclass
  */
 
-DEFINE_GUID(CLSID_formSettings, 0x74a040be, 0x21b4, 0x3ff9, 0x89,0xc3, 0x09,0x25,0xe2,0x18,0xf1,0x25);
+DEFINE_GUID(CLSID_formSettings, 0xbee09755, 0x950d, 0x3141, 0x89,0x57, 0x82,0x2c,0x25,0xa2,0xdf,0xc2);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("74a040be-21b4-3ff9-89c3-0925e218f125") formSettings;
+class DECLSPEC_UUID("bee09755-950d-3141-8957-822c25a2dfc2") formSettings;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(formSettings, 0x74a040be, 0x21b4, 0x3ff9, 0x89,0xc3, 0x09,0x25,0xe2,0x18,0xf1,0x25)
+__CRT_UUID_DECL(formSettings, 0xbee09755, 0x950d, 0x3141, 0x89,0x57, 0x82,0x2c,0x25,0xa2,0xdf,0xc2)
 #endif
 #endif
 
@@ -1446,12 +1522,12 @@ __CRT_UUID_DECL(formSettings, 0x74a040be, 0x21b4, 0x3ff9, 0x89,0xc3, 0x09,0x25,0
  * formSettingsMore coclass
  */
 
-DEFINE_GUID(CLSID_formSettingsMore, 0xf36a696b, 0x15d6, 0x338d, 0x9f,0x22, 0x94,0xc9,0x34,0x2b,0x1c,0x60);
+DEFINE_GUID(CLSID_formSettingsMore, 0x57716817, 0xe5fc, 0x30ad, 0xaf,0x33, 0xa0,0x62,0xa4,0xf4,0xdc,0x33);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("f36a696b-15d6-338d-9f22-94c9342b1c60") formSettingsMore;
+class DECLSPEC_UUID("57716817-e5fc-30ad-af33-a062a4f4dc33") formSettingsMore;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(formSettingsMore, 0xf36a696b, 0x15d6, 0x338d, 0x9f,0x22, 0x94,0xc9,0x34,0x2b,0x1c,0x60)
+__CRT_UUID_DECL(formSettingsMore, 0x57716817, 0xe5fc, 0x30ad, 0xaf,0x33, 0xa0,0x62,0xa4,0xf4,0xdc,0x33)
 #endif
 #endif
 
@@ -1459,12 +1535,12 @@ __CRT_UUID_DECL(formSettingsMore, 0xf36a696b, 0x15d6, 0x338d, 0x9f,0x22, 0x94,0x
  * Statistics coclass
  */
 
-DEFINE_GUID(CLSID_Statistics, 0xb550eb0d, 0x886e, 0x3d1c, 0x82,0xcd, 0xbf,0x5a,0x58,0xd1,0x17,0x57);
+DEFINE_GUID(CLSID_Statistics, 0xfdd7fc1d, 0x54a3, 0x30ea, 0x99,0x11, 0x07,0x51,0x4a,0x5b,0x86,0xab);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("b550eb0d-886e-3d1c-82cd-bf5a58d11757") Statistics;
+class DECLSPEC_UUID("fdd7fc1d-54a3-30ea-9911-07514a5b86ab") Statistics;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Statistics, 0xb550eb0d, 0x886e, 0x3d1c, 0x82,0xcd, 0xbf,0x5a,0x58,0xd1,0x17,0x57)
+__CRT_UUID_DECL(Statistics, 0xfdd7fc1d, 0x54a3, 0x30ea, 0x99,0x11, 0x07,0x51,0x4a,0x5b,0x86,0xab)
 #endif
 #endif
 
@@ -1472,12 +1548,12 @@ __CRT_UUID_DECL(Statistics, 0xb550eb0d, 0x886e, 0x3d1c, 0x82,0xcd, 0xbf,0x5a,0x5
  * Log coclass
  */
 
-DEFINE_GUID(CLSID_Log, 0x0e21f7b4, 0x601b, 0x3052, 0xb9,0xcd, 0x4b,0x7c,0x42,0x57,0x8c,0x90);
+DEFINE_GUID(CLSID_Log, 0xa22639cf, 0x8dfc, 0x3691, 0x85,0x02, 0xa5,0x69,0x8e,0xf9,0xd1,0x1f);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("0e21f7b4-601b-3052-b9cd-4b7c42578c90") Log;
+class DECLSPEC_UUID("a22639cf-8dfc-3691-8502-a5698ef9d11f") Log;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Log, 0x0e21f7b4, 0x601b, 0x3052, 0xb9,0xcd, 0x4b,0x7c,0x42,0x57,0x8c,0x90)
+__CRT_UUID_DECL(Log, 0xa22639cf, 0x8dfc, 0x3691, 0x85,0x02, 0xa5,0x69,0x8e,0xf9,0xd1,0x1f)
 #endif
 #endif
 
@@ -1490,12 +1566,12 @@ typedef enum __WIDL_B2S_generated_name_00000020 {
  * Plugin coclass
  */
 
-DEFINE_GUID(CLSID_Plugin, 0x2d89ece4, 0xba92, 0x345c, 0x98,0xdc, 0xa7,0xbc,0x20,0xe9,0xe8,0xff);
+DEFINE_GUID(CLSID_Plugin, 0x6c54d02b, 0x00db, 0x39e8, 0xa0,0xee, 0x95,0x3b,0x9f,0xc4,0xbf,0xb6);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("2d89ece4-ba92-345c-98dc-a7bc20e9e8ff") Plugin;
+class DECLSPEC_UUID("6c54d02b-00db-39e8-a0ee-953b9fc4bfb6") Plugin;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(Plugin, 0x2d89ece4, 0xba92, 0x345c, 0x98,0xdc, 0xa7,0xbc,0x20,0xe9,0xe8,0xff)
+__CRT_UUID_DECL(Plugin, 0x6c54d02b, 0x00db, 0x39e8, 0xa0,0xee, 0x95,0x3b,0x9f,0xc4,0xbf,0xb6)
 #endif
 #endif
 
@@ -1503,12 +1579,12 @@ __CRT_UUID_DECL(Plugin, 0x2d89ece4, 0xba92, 0x345c, 0x98,0xdc, 0xa7,0xbc,0x20,0x
  * PluginHost coclass
  */
 
-DEFINE_GUID(CLSID_PluginHost, 0x7622de45, 0x3760, 0x3569, 0xa6,0x34, 0xca,0xf9,0x06,0x3b,0x6d,0x16);
+DEFINE_GUID(CLSID_PluginHost, 0xe27005c4, 0x12ea, 0x3d36, 0xaa,0x6b, 0xe6,0x91,0x79,0x0b,0x8a,0x72);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("7622de45-3760-3569-a634-caf9063b6d16") PluginHost;
+class DECLSPEC_UUID("e27005c4-12ea-3d36-aa6b-e691790b8a72") PluginHost;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PluginHost, 0x7622de45, 0x3760, 0x3569, 0xa6,0x34, 0xca,0xf9,0x06,0x3b,0x6d,0x16)
+__CRT_UUID_DECL(PluginHost, 0xe27005c4, 0x12ea, 0x3d36, 0xaa,0x6b, 0xe6,0x91,0x79,0x0b,0x8a,0x72)
 #endif
 #endif
 
@@ -1516,12 +1592,12 @@ __CRT_UUID_DECL(PluginHost, 0x7622de45, 0x3760, 0x3569, 0xa6,0x34, 0xca,0xf9,0x0
  * PluginList coclass
  */
 
-DEFINE_GUID(CLSID_PluginList, 0xac12a926, 0x813f, 0x3843, 0xae,0x67, 0x0a,0x1e,0x3f,0x6d,0xb8,0x42);
+DEFINE_GUID(CLSID_PluginList, 0x0dfa906e, 0x954b, 0x3b26, 0x95,0x01, 0xc9,0x90,0xf5,0x8e,0x84,0x70);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("ac12a926-813f-3843-ae67-0a1e3f6db842") PluginList;
+class DECLSPEC_UUID("0dfa906e-954b-3b26-9501-c990f58e8470") PluginList;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PluginList, 0xac12a926, 0x813f, 0x3843, 0xae,0x67, 0x0a,0x1e,0x3f,0x6d,0xb8,0x42)
+__CRT_UUID_DECL(PluginList, 0x0dfa906e, 0x954b, 0x3b26, 0x95,0x01, 0xc9,0x90,0xf5,0x8e,0x84,0x70)
 #endif
 #endif
 
@@ -1529,12 +1605,12 @@ __CRT_UUID_DECL(PluginList, 0xac12a926, 0x813f, 0x3843, 0xae,0x67, 0x0a,0x1e,0x3
  * PluginWindow coclass
  */
 
-DEFINE_GUID(CLSID_PluginWindow, 0xd7261b20, 0xa7be, 0x3254, 0xb4,0xae, 0x00,0x8e,0x55,0x1a,0x27,0x2b);
+DEFINE_GUID(CLSID_PluginWindow, 0xb450de5a, 0xe45d, 0x3866, 0x88,0x05, 0x86,0xe7,0x1e,0x3f,0xe7,0x89);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("d7261b20-a7be-3254-b4ae-008e551a272b") PluginWindow;
+class DECLSPEC_UUID("b450de5a-e45d-3866-8805-86e71e3fe789") PluginWindow;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PluginWindow, 0xd7261b20, 0xa7be, 0x3254, 0xb4,0xae, 0x00,0x8e,0x55,0x1a,0x27,0x2b)
+__CRT_UUID_DECL(PluginWindow, 0xb450de5a, 0xe45d, 0x3866, 0x88,0x05, 0x86,0xe7,0x1e,0x3f,0xe7,0x89)
 #endif
 #endif
 
@@ -1581,12 +1657,12 @@ typedef enum __WIDL_B2S_generated_name_00000024 {
  * B2SAnimationBase coclass
  */
 
-DEFINE_GUID(CLSID_B2SAnimationBase, 0x79602b83, 0xebde, 0x366c, 0x93,0x59, 0x80,0x0f,0x4f,0x6c,0x7d,0xce);
+DEFINE_GUID(CLSID_B2SAnimationBase, 0x0d7580ec, 0x5fd4, 0x3510, 0x96,0xe3, 0x6d,0x90,0xb9,0xdf,0x8b,0x32);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("79602b83-ebde-366c-9359-800f4f6c7dce") B2SAnimationBase;
+class DECLSPEC_UUID("0d7580ec-5fd4-3510-96e3-6d90b9df8b32") B2SAnimationBase;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(B2SAnimationBase, 0x79602b83, 0xebde, 0x366c, 0x93,0x59, 0x80,0x0f,0x4f,0x6c,0x7d,0xce)
+__CRT_UUID_DECL(B2SAnimationBase, 0x0d7580ec, 0x5fd4, 0x3510, 0x96,0xe3, 0x6d,0x90,0xb9,0xdf,0x8b,0x32)
 #endif
 #endif
 
@@ -1594,12 +1670,12 @@ __CRT_UUID_DECL(B2SAnimationBase, 0x79602b83, 0xebde, 0x366c, 0x93,0x59, 0x80,0x
  * TimerAnimation coclass
  */
 
-DEFINE_GUID(CLSID_TimerAnimation, 0x285aaa5b, 0xb3d2, 0x3a52, 0xa2,0x1c, 0x19,0x10,0x08,0x34,0xf9,0x81);
+DEFINE_GUID(CLSID_TimerAnimation, 0x7f26f43c, 0xc3ce, 0x3ce1, 0xb0,0x72, 0x5d,0xda,0xa7,0x6d,0x91,0xd9);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("285aaa5b-b3d2-3a52-a21c-19100834f981") TimerAnimation;
+class DECLSPEC_UUID("7f26f43c-c3ce-3ce1-b072-5ddaa76d91d9") TimerAnimation;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(TimerAnimation, 0x285aaa5b, 0xb3d2, 0x3a52, 0xa2,0x1c, 0x19,0x10,0x08,0x34,0xf9,0x81)
+__CRT_UUID_DECL(TimerAnimation, 0x7f26f43c, 0xc3ce, 0x3ce1, 0xb0,0x72, 0x5d,0xda,0xa7,0x6d,0x91,0xd9)
 #endif
 #endif
 
@@ -1607,12 +1683,12 @@ __CRT_UUID_DECL(TimerAnimation, 0x285aaa5b, 0xb3d2, 0x3a52, 0xa2,0x1c, 0x19,0x10
  * PictureBoxAnimation coclass
  */
 
-DEFINE_GUID(CLSID_PictureBoxAnimation, 0xc5fbe4b8, 0xeb11, 0x3828, 0xab,0x1a, 0x52,0xf7,0x60,0xad,0x8f,0x6a);
+DEFINE_GUID(CLSID_PictureBoxAnimation, 0x4dfc26c8, 0x2f4a, 0x3c05, 0xa7,0x69, 0x18,0x81,0x29,0x2e,0xdc,0x79);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("c5fbe4b8-eb11-3828-ab1a-52f760ad8f6a") PictureBoxAnimation;
+class DECLSPEC_UUID("4dfc26c8-2f4a-3c05-a769-1881292edc79") PictureBoxAnimation;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PictureBoxAnimation, 0xc5fbe4b8, 0xeb11, 0x3828, 0xab,0x1a, 0x52,0xf7,0x60,0xad,0x8f,0x6a)
+__CRT_UUID_DECL(PictureBoxAnimation, 0x4dfc26c8, 0x2f4a, 0x3c05, 0xa7,0x69, 0x18,0x81,0x29,0x2e,0xdc,0x79)
 #endif
 #endif
 
@@ -1620,12 +1696,12 @@ __CRT_UUID_DECL(PictureBoxAnimation, 0xc5fbe4b8, 0xeb11, 0x3828, 0xab,0x1a, 0x52
  * PictureBoxAnimationEntry coclass
  */
 
-DEFINE_GUID(CLSID_PictureBoxAnimationEntry, 0x17b5f964, 0x5ce8, 0x32a3, 0x87,0xef, 0xd0,0xde,0xe6,0x6b,0x2d,0x5e);
+DEFINE_GUID(CLSID_PictureBoxAnimationEntry, 0x7fefbacd, 0xb512, 0x351e, 0xa6,0x50, 0x8f,0x45,0x35,0x5e,0x6e,0x46);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("17b5f964-5ce8-32a3-87ef-d0dee66b2d5e") PictureBoxAnimationEntry;
+class DECLSPEC_UUID("7fefbacd-b512-351e-a650-8f45355e6e46") PictureBoxAnimationEntry;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PictureBoxAnimationEntry, 0x17b5f964, 0x5ce8, 0x32a3, 0x87,0xef, 0xd0,0xde,0xe6,0x6b,0x2d,0x5e)
+__CRT_UUID_DECL(PictureBoxAnimationEntry, 0x7fefbacd, 0xb512, 0x351e, 0xa6,0x50, 0x8f,0x45,0x35,0x5e,0x6e,0x46)
 #endif
 #endif
 
@@ -1633,12 +1709,12 @@ __CRT_UUID_DECL(PictureBoxAnimationEntry, 0x17b5f964, 0x5ce8, 0x32a3, 0x87,0xef,
  * PictureBoxAnimationCollection coclass
  */
 
-DEFINE_GUID(CLSID_PictureBoxAnimationCollection, 0x374f2f95, 0x2c4b, 0x35a9, 0x98,0xdc, 0x0b,0xc5,0x83,0xab,0xec,0xb9);
+DEFINE_GUID(CLSID_PictureBoxAnimationCollection, 0xc931646e, 0x61c2, 0x3b47, 0xa3,0x6a, 0x8b,0xc2,0xbb,0xf7,0x61,0x03);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("374f2f95-2c4b-35a9-98dc-0bc583abecb9") PictureBoxAnimationCollection;
+class DECLSPEC_UUID("c931646e-61c2-3b47-a36a-8bc2bbf76103") PictureBoxAnimationCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PictureBoxAnimationCollection, 0x374f2f95, 0x2c4b, 0x35a9, 0x98,0xdc, 0x0b,0xc5,0x83,0xab,0xec,0xb9)
+__CRT_UUID_DECL(PictureBoxAnimationCollection, 0xc931646e, 0x61c2, 0x3b47, 0xa3,0x6a, 0x8b,0xc2,0xbb,0xf7,0x61,0x03)
 #endif
 #endif
 
@@ -1646,12 +1722,12 @@ __CRT_UUID_DECL(PictureBoxAnimationCollection, 0x374f2f95, 0x2c4b, 0x35a9, 0x98,
  * PictureBoxAnimationCollectionEntry coclass
  */
 
-DEFINE_GUID(CLSID_PictureBoxAnimationCollectionEntry, 0x6c3ddcd4, 0x8003, 0x3c2a, 0xa9,0x03, 0x10,0x10,0xe4,0x8f,0xc2,0x24);
+DEFINE_GUID(CLSID_PictureBoxAnimationCollectionEntry, 0xf2153c35, 0x81e3, 0x3d2d, 0xa4,0x16, 0x73,0x2d,0xf8,0xe6,0x11,0x56);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("6c3ddcd4-8003-3c2a-a903-1010e48fc224") PictureBoxAnimationCollectionEntry;
+class DECLSPEC_UUID("f2153c35-81e3-3d2d-a416-732df8e61156") PictureBoxAnimationCollectionEntry;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PictureBoxAnimationCollectionEntry, 0x6c3ddcd4, 0x8003, 0x3c2a, 0xa9,0x03, 0x10,0x10,0xe4,0x8f,0xc2,0x24)
+__CRT_UUID_DECL(PictureBoxAnimationCollectionEntry, 0xf2153c35, 0x81e3, 0x3d2d, 0xa4,0x16, 0x73,0x2d,0xf8,0xe6,0x11,0x56)
 #endif
 #endif
 
@@ -1665,12 +1741,12 @@ typedef enum __WIDL_B2S_generated_name_00000025 {
  * CollectData coclass
  */
 
-DEFINE_GUID(CLSID_CollectData, 0x689eac8e, 0x9138, 0x310b, 0xb3,0x7e, 0x69,0x0c,0xef,0x21,0xeb,0xff);
+DEFINE_GUID(CLSID_CollectData, 0x79355622, 0x9da3, 0x3cd7, 0x92,0x09, 0xb3,0x76,0x96,0x2f,0x3d,0x60);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("689eac8e-9138-310b-b37e-690cef21ebff") CollectData;
+class DECLSPEC_UUID("79355622-9da3-3cd7-9209-b376962f3d60") CollectData;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(CollectData, 0x689eac8e, 0x9138, 0x310b, 0xb3,0x7e, 0x69,0x0c,0xef,0x21,0xeb,0xff)
+__CRT_UUID_DECL(CollectData, 0x79355622, 0x9da3, 0x3cd7, 0x92,0x09, 0xb3,0x76,0x96,0x2f,0x3d,0x60)
 #endif
 #endif
 
@@ -1690,12 +1766,12 @@ typedef enum __WIDL_B2S_generated_name_00000027 {
  * PictureBoxCollection coclass
  */
 
-DEFINE_GUID(CLSID_PictureBoxCollection, 0x4752d05a, 0xf95e, 0x348e, 0x8e,0xf8, 0x05,0x21,0xf6,0x29,0xcb,0xd2);
+DEFINE_GUID(CLSID_PictureBoxCollection, 0xc4a3401e, 0x404f, 0x3805, 0xa8,0x17, 0xf5,0xa4,0x01,0x36,0x5b,0xf6);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("4752d05a-f95e-348e-8ef8-0521f629cbd2") PictureBoxCollection;
+class DECLSPEC_UUID("c4a3401e-404f-3805-a817-f5a401365bf6") PictureBoxCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(PictureBoxCollection, 0x4752d05a, 0xf95e, 0x348e, 0x8e,0xf8, 0x05,0x21,0xf6,0x29,0xcb,0xd2)
+__CRT_UUID_DECL(PictureBoxCollection, 0xc4a3401e, 0x404f, 0x3805, 0xa8,0x17, 0xf5,0xa4,0x01,0x36,0x5b,0xf6)
 #endif
 #endif
 
@@ -1703,12 +1779,12 @@ __CRT_UUID_DECL(PictureBoxCollection, 0x4752d05a, 0xf95e, 0x348e, 0x8e,0xf8, 0x0
  * ReelBoxCollection coclass
  */
 
-DEFINE_GUID(CLSID_ReelBoxCollection, 0xe829e1d3, 0x1aec, 0x3ac4, 0xb6,0x23, 0x3a,0x38,0x6d,0x62,0xda,0x80);
+DEFINE_GUID(CLSID_ReelBoxCollection, 0xb3898993, 0xa85b, 0x3467, 0x81,0x85, 0x36,0x1a,0xb3,0x3d,0x3d,0xbb);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("e829e1d3-1aec-3ac4-b623-3a386d62da80") ReelBoxCollection;
+class DECLSPEC_UUID("b3898993-a85b-3467-8185-361ab33d3dbb") ReelBoxCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ReelBoxCollection, 0xe829e1d3, 0x1aec, 0x3ac4, 0xb6,0x23, 0x3a,0x38,0x6d,0x62,0xda,0x80)
+__CRT_UUID_DECL(ReelBoxCollection, 0xb3898993, 0xa85b, 0x3467, 0x81,0x85, 0x36,0x1a,0xb3,0x3d,0x3d,0xbb)
 #endif
 #endif
 
@@ -1716,12 +1792,12 @@ __CRT_UUID_DECL(ReelBoxCollection, 0xe829e1d3, 0x1aec, 0x3ac4, 0xb6,0x23, 0x3a,0
  * ZOrderCollection coclass
  */
 
-DEFINE_GUID(CLSID_ZOrderCollection, 0x6019c772, 0x1c73, 0x3d75, 0xbe,0x91, 0x54,0xd1,0x0c,0x6e,0x46,0xef);
+DEFINE_GUID(CLSID_ZOrderCollection, 0x6326d645, 0x06d4, 0x30e2, 0x86,0x60, 0x3e,0xa0,0xf2,0xd5,0x39,0x81);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("6019c772-1c73-3d75-be91-54d10c6e46ef") ZOrderCollection;
+class DECLSPEC_UUID("6326d645-06d4-30e2-8660-3ea0f2d53981") ZOrderCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ZOrderCollection, 0x6019c772, 0x1c73, 0x3d75, 0xbe,0x91, 0x54,0xd1,0x0c,0x6e,0x46,0xef)
+__CRT_UUID_DECL(ZOrderCollection, 0x6326d645, 0x06d4, 0x30e2, 0x86,0x60, 0x3e,0xa0,0xf2,0xd5,0x39,0x81)
 #endif
 #endif
 
@@ -1729,12 +1805,12 @@ __CRT_UUID_DECL(ZOrderCollection, 0x6019c772, 0x1c73, 0x3d75, 0xbe,0x91, 0x54,0x
  * AnimationInfo coclass
  */
 
-DEFINE_GUID(CLSID_AnimationInfo, 0x0b42cd23, 0x99a8, 0x37f1, 0x82,0x46, 0xd6,0x12,0x50,0x3c,0x22,0xba);
+DEFINE_GUID(CLSID_AnimationInfo, 0xe3b51e65, 0x1e37, 0x3043, 0x81,0x13, 0x85,0xf1,0x5a,0xb1,0x2f,0x77);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("0b42cd23-99a8-37f1-8246-d612503c22ba") AnimationInfo;
+class DECLSPEC_UUID("e3b51e65-1e37-3043-8113-85f15ab12f77") AnimationInfo;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(AnimationInfo, 0x0b42cd23, 0x99a8, 0x37f1, 0x82,0x46, 0xd6,0x12,0x50,0x3c,0x22,0xba)
+__CRT_UUID_DECL(AnimationInfo, 0xe3b51e65, 0x1e37, 0x3043, 0x81,0x13, 0x85,0xf1,0x5a,0xb1,0x2f,0x77)
 #endif
 #endif
 
@@ -1742,12 +1818,12 @@ __CRT_UUID_DECL(AnimationInfo, 0x0b42cd23, 0x99a8, 0x37f1, 0x82,0x46, 0xd6,0x12,
  * AnimationCollection coclass
  */
 
-DEFINE_GUID(CLSID_AnimationCollection, 0x24607c71, 0x413f, 0x3ec5, 0xa3,0x9c, 0x05,0x6e,0xfe,0x92,0x6e,0xc0);
+DEFINE_GUID(CLSID_AnimationCollection, 0x8a945d5a, 0x6a79, 0x33c6, 0x94,0xb4, 0x01,0x3d,0x93,0xcb,0x06,0x96);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("24607c71-413f-3ec5-a39c-056efe926ec0") AnimationCollection;
+class DECLSPEC_UUID("8a945d5a-6a79-33c6-94b4-013d93cb0696") AnimationCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(AnimationCollection, 0x24607c71, 0x413f, 0x3ec5, 0xa3,0x9c, 0x05,0x6e,0xfe,0x92,0x6e,0xc0)
+__CRT_UUID_DECL(AnimationCollection, 0x8a945d5a, 0x6a79, 0x33c6, 0x94,0xb4, 0x01,0x3d,0x93,0xcb,0x06,0x96)
 #endif
 #endif
 
@@ -1755,12 +1831,12 @@ __CRT_UUID_DECL(AnimationCollection, 0x24607c71, 0x413f, 0x3ec5, 0xa3,0x9c, 0x05
  * IlluminationGroupCollection coclass
  */
 
-DEFINE_GUID(CLSID_IlluminationGroupCollection, 0x92390d93, 0xa2f2, 0x3591, 0xb4,0x7c, 0xbe,0x48,0x85,0x1c,0x42,0xad);
+DEFINE_GUID(CLSID_IlluminationGroupCollection, 0xf184b929, 0x1cfc, 0x3c35, 0x87,0xdf, 0x56,0x44,0x38,0xa5,0xc6,0x47);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("92390d93-a2f2-3591-b47c-be48851c42ad") IlluminationGroupCollection;
+class DECLSPEC_UUID("f184b929-1cfc-3c35-87df-564438a5c647") IlluminationGroupCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(IlluminationGroupCollection, 0x92390d93, 0xa2f2, 0x3591, 0xb4,0x7c, 0xbe,0x48,0x85,0x1c,0x42,0xad)
+__CRT_UUID_DECL(IlluminationGroupCollection, 0xf184b929, 0x1cfc, 0x3c35, 0x87,0xdf, 0x56,0x44,0x38,0xa5,0xc6,0x47)
 #endif
 #endif
 
@@ -1768,12 +1844,12 @@ __CRT_UUID_DECL(IlluminationGroupCollection, 0x92390d93, 0xa2f2, 0x3591, 0xb4,0x
  * LEDAreaInfo coclass
  */
 
-DEFINE_GUID(CLSID_LEDAreaInfo, 0x3d38e61e, 0x1540, 0x3b1a, 0x89,0x51, 0x4a,0x90,0x81,0xb6,0xdc,0x01);
+DEFINE_GUID(CLSID_LEDAreaInfo, 0x0cd77758, 0x153b, 0x31e9, 0x8c,0x50, 0xcb,0xed,0x0e,0xf1,0xfc,0x9e);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("3d38e61e-1540-3b1a-8951-4a9081b6dc01") LEDAreaInfo;
+class DECLSPEC_UUID("0cd77758-153b-31e9-8c50-cbed0ef1fc9e") LEDAreaInfo;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(LEDAreaInfo, 0x3d38e61e, 0x1540, 0x3b1a, 0x89,0x51, 0x4a,0x90,0x81,0xb6,0xdc,0x01)
+__CRT_UUID_DECL(LEDAreaInfo, 0x0cd77758, 0x153b, 0x31e9, 0x8c,0x50, 0xcb,0xed,0x0e,0xf1,0xfc,0x9e)
 #endif
 #endif
 
@@ -1781,12 +1857,12 @@ __CRT_UUID_DECL(LEDAreaInfo, 0x3d38e61e, 0x1540, 0x3b1a, 0x89,0x51, 0x4a,0x90,0x
  * LEDDisplayDigitLocation coclass
  */
 
-DEFINE_GUID(CLSID_LEDDisplayDigitLocation, 0x3689038e, 0x7a56, 0x319f, 0x86,0x98, 0x89,0x50,0xa3,0x2b,0xc2,0xc2);
+DEFINE_GUID(CLSID_LEDDisplayDigitLocation, 0x23ffe69d, 0xe221, 0x3b7d, 0x83,0x53, 0x63,0xd8,0xd8,0x27,0xe5,0x60);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("3689038e-7a56-319f-8698-8950a32bc2c2") LEDDisplayDigitLocation;
+class DECLSPEC_UUID("23ffe69d-e221-3b7d-8353-63d8d827e560") LEDDisplayDigitLocation;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(LEDDisplayDigitLocation, 0x3689038e, 0x7a56, 0x319f, 0x86,0x98, 0x89,0x50,0xa3,0x2b,0xc2,0xc2)
+__CRT_UUID_DECL(LEDDisplayDigitLocation, 0x23ffe69d, 0xe221, 0x3b7d, 0x83,0x53, 0x63,0xd8,0xd8,0x27,0xe5,0x60)
 #endif
 #endif
 
@@ -1808,12 +1884,12 @@ typedef enum __WIDL_B2S_generated_name_00000029 {
  * ControlCollection coclass
  */
 
-DEFINE_GUID(CLSID_ControlCollection, 0xa8138c07, 0x892e, 0x36bc, 0xb9,0x11, 0xb9,0x61,0x5d,0x8c,0xff,0x76);
+DEFINE_GUID(CLSID_ControlCollection, 0x9beb910e, 0x7300, 0x3c92, 0x96,0x63, 0xdd,0x8a,0x5b,0x23,0xbb,0x39);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("a8138c07-892e-36bc-b911-b9615d8cff76") ControlCollection;
+class DECLSPEC_UUID("9beb910e-7300-3c92-9663-dd8a5b23bb39") ControlCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ControlCollection, 0xa8138c07, 0x892e, 0x36bc, 0xb9,0x11, 0xb9,0x61,0x5d,0x8c,0xff,0x76)
+__CRT_UUID_DECL(ControlCollection, 0x9beb910e, 0x7300, 0x3c92, 0x96,0x63, 0xdd,0x8a,0x5b,0x23,0xbb,0x39)
 #endif
 #endif
 
@@ -1821,12 +1897,12 @@ __CRT_UUID_DECL(ControlCollection, 0xa8138c07, 0x892e, 0x36bc, 0xb9,0x11, 0xb9,0
  * ControlInfo coclass
  */
 
-DEFINE_GUID(CLSID_ControlInfo, 0x1bfdfd06, 0x8e67, 0x34b0, 0xa0,0x8d, 0xab,0xc4,0x37,0x13,0x64,0xa7);
+DEFINE_GUID(CLSID_ControlInfo, 0x33ebd1fa, 0x821f, 0x3481, 0xbf,0xfe, 0xf5,0xea,0x18,0x52,0xba,0x07);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("1bfdfd06-8e67-34b0-a08d-abc4371364a7") ControlInfo;
+class DECLSPEC_UUID("33ebd1fa-821f-3481-bffe-f5ea1852ba07") ControlInfo;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ControlInfo, 0x1bfdfd06, 0x8e67, 0x34b0, 0xa0,0x8d, 0xab,0xc4,0x37,0x13,0x64,0xa7)
+__CRT_UUID_DECL(ControlInfo, 0x33ebd1fa, 0x821f, 0x3481, 0xbf,0xfe, 0xf5,0xea,0x18,0x52,0xba,0x07)
 #endif
 #endif
 
@@ -1862,12 +1938,12 @@ typedef enum __WIDL_B2S_generated_name_0000002E {
  * StatsCollection coclass
  */
 
-DEFINE_GUID(CLSID_StatsCollection, 0x0671e2a7, 0xced6, 0x380a, 0xa5,0xc7, 0xa2,0x8b,0xd2,0x4a,0x64,0x9e);
+DEFINE_GUID(CLSID_StatsCollection, 0xdfaf85ff, 0x3c40, 0x3dc1, 0xbf,0x72, 0x44,0x28,0x87,0x3f,0x77,0x1e);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("0671e2a7-ced6-380a-a5c7-a28bd24a649e") StatsCollection;
+class DECLSPEC_UUID("dfaf85ff-3c40-3dc1-bf72-4428873f771e") StatsCollection;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(StatsCollection, 0x0671e2a7, 0xced6, 0x380a, 0xa5,0xc7, 0xa2,0x8b,0xd2,0x4a,0x64,0x9e)
+__CRT_UUID_DECL(StatsCollection, 0xdfaf85ff, 0x3c40, 0x3dc1, 0xbf,0x72, 0x44,0x28,0x87,0x3f,0x77,0x1e)
 #endif
 #endif
 
@@ -1875,12 +1951,12 @@ __CRT_UUID_DECL(StatsCollection, 0x0671e2a7, 0xced6, 0x380a, 0xa5,0xc7, 0xa2,0x8
  * StatsEntry coclass
  */
 
-DEFINE_GUID(CLSID_StatsEntry, 0xd7e864cc, 0x5ba3, 0x3376, 0x8a,0xe5, 0xca,0xae,0xa0,0xde,0xb2,0xac);
+DEFINE_GUID(CLSID_StatsEntry, 0x46b01083, 0xfee0, 0x3f1a, 0xa3,0xce, 0x31,0x97,0x03,0x9a,0xfe,0x71);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("d7e864cc-5ba3-3376-8ae5-caaea0deb2ac") StatsEntry;
+class DECLSPEC_UUID("46b01083-fee0-3f1a-a3ce-3197039afe71") StatsEntry;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(StatsEntry, 0xd7e864cc, 0x5ba3, 0x3376, 0x8a,0xe5, 0xca,0xae,0xa0,0xde,0xb2,0xac)
+__CRT_UUID_DECL(StatsEntry, 0x46b01083, 0xfee0, 0x3f1a, 0xa3,0xce, 0x31,0x97,0x03,0x9a,0xfe,0x71)
 #endif
 #endif
 
@@ -1915,12 +1991,12 @@ typedef enum __WIDL_B2S_generated_name_00000033 {
  * ReelRollOverEventArgs coclass
  */
 
-DEFINE_GUID(CLSID_ReelRollOverEventArgs, 0xebe204ce, 0x785f, 0x366a, 0x9d,0x64, 0x58,0x31,0x48,0x74,0xac,0x25);
+DEFINE_GUID(CLSID_ReelRollOverEventArgs, 0x62c6acd5, 0xf0ad, 0x3e54, 0x8c,0xa6, 0x29,0x6b,0x80,0xa3,0x7b,0x03);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("ebe204ce-785f-366a-9d64-58314874ac25") ReelRollOverEventArgs;
+class DECLSPEC_UUID("62c6acd5-f0ad-3e54-8ca6-296b80a37b03") ReelRollOverEventArgs;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ReelRollOverEventArgs, 0xebe204ce, 0x785f, 0x366a, 0x9d,0x64, 0x58,0x31,0x48,0x74,0xac,0x25)
+__CRT_UUID_DECL(ReelRollOverEventArgs, 0x62c6acd5, 0xf0ad, 0x3e54, 0x8c,0xa6, 0x29,0x6b,0x80,0xa3,0x7b,0x03)
 #endif
 #endif
 
@@ -1928,12 +2004,12 @@ __CRT_UUID_DECL(ReelRollOverEventArgs, 0xebe204ce, 0x785f, 0x366a, 0x9d,0x64, 0x
  * ReelRollOverEventHandler coclass
  */
 
-DEFINE_GUID(CLSID_ReelRollOverEventHandler, 0xbaaa5d5d, 0x630a, 0x3c7a, 0xaa,0x4d, 0x6e,0x32,0x9b,0x73,0xbc,0x88);
+DEFINE_GUID(CLSID_ReelRollOverEventHandler, 0x15632dd5, 0x3ce9, 0x36d1, 0xad,0x90, 0xe5,0x73,0x42,0xd5,0x12,0xb9);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("baaa5d5d-630a-3c7a-aa4d-6e329b73bc88") ReelRollOverEventHandler;
+class DECLSPEC_UUID("15632dd5-3ce9-36d1-ad90-e57342d512b9") ReelRollOverEventHandler;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ReelRollOverEventHandler, 0xbaaa5d5d, 0x630a, 0x3c7a, 0xaa,0x4d, 0x6e,0x32,0x9b,0x73,0xbc,0x88)
+__CRT_UUID_DECL(ReelRollOverEventHandler, 0x15632dd5, 0x3ce9, 0x36d1, 0xad,0x90, 0xe5,0x73,0x42,0xd5,0x12,0xb9)
 #endif
 #endif
 
@@ -1953,6 +2029,9 @@ _Server : public IDispatch
 
     virtual HRESULT STDMETHODCALLTYPE get_B2SServerVersion(
         BSTR *pRetVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_B2SBuildVersion(
+        double *pRetVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE get_B2SServerDirectory(
         BSTR *pRetVal) = 0;
@@ -1994,6 +2073,9 @@ _Server : public IDispatch
     virtual HRESULT STDMETHODCALLTYPE get_Running(
         VARIANT_BOOL *pRetVal) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE put_TimeFence(
+        double rhs) = 0;
+
     virtual HRESULT STDMETHODCALLTYPE get_Pause(
         VARIANT_BOOL *pRetVal) = 0;
 
@@ -2001,6 +2083,9 @@ _Server : public IDispatch
         VARIANT_BOOL pRetVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE get_Version(
+        BSTR *pRetVal) = 0;
+
+    virtual HRESULT STDMETHODCALLTYPE get_VPMBuildVersion(
         BSTR *pRetVal) = 0;
 
     virtual HRESULT STDMETHODCALLTYPE Run(
@@ -2197,6 +2282,11 @@ _Server : public IDispatch
     virtual HRESULT STDMETHODCALLTYPE B2SPulseData(
         VARIANT idORname) = 0;
 
+    virtual HRESULT STDMETHODCALLTYPE B2SSetPos(
+        VARIANT idORname,
+        VARIANT xpos,
+        VARIANT ypos) = 0;
+
     virtual HRESULT STDMETHODCALLTYPE B2SSetIllumination(
         VARIANT name,
         VARIANT value) = 0;
@@ -2340,9 +2430,6 @@ _Server : public IDispatch
         VARIANT digit,
         BSTR soundname) = 0;
 
-    virtual HRESULT STDMETHODCALLTYPE put_TimeFence(
-        VARIANT timeInS) = 0;
-
 };
 #ifdef __CRT_UUID_DECL
 __CRT_UUID_DECL(_Server, 0x5693c68c, 0x5834, 0x466d, 0xaa,0xac, 0xa8,0x69,0x22,0x07,0x6e,0xfd)
@@ -2401,6 +2488,10 @@ typedef struct _ServerVtbl {
         _Server *This,
         BSTR *pRetVal);
 
+    HRESULT (STDMETHODCALLTYPE *get_B2SBuildVersion)(
+        _Server *This,
+        double *pRetVal);
+
     HRESULT (STDMETHODCALLTYPE *get_B2SServerDirectory)(
         _Server *This,
         BSTR *pRetVal);
@@ -2454,6 +2545,10 @@ typedef struct _ServerVtbl {
         _Server *This,
         VARIANT_BOOL *pRetVal);
 
+    HRESULT (STDMETHODCALLTYPE *put_TimeFence)(
+        _Server *This,
+        double rhs);
+
     HRESULT (STDMETHODCALLTYPE *get_Pause)(
         _Server *This,
         VARIANT_BOOL *pRetVal);
@@ -2463,6 +2558,10 @@ typedef struct _ServerVtbl {
         VARIANT_BOOL pRetVal);
 
     HRESULT (STDMETHODCALLTYPE *get_Version)(
+        _Server *This,
+        BSTR *pRetVal);
+
+    HRESULT (STDMETHODCALLTYPE *get_VPMBuildVersion)(
         _Server *This,
         BSTR *pRetVal);
 
@@ -2717,6 +2816,12 @@ typedef struct _ServerVtbl {
         _Server *This,
         VARIANT idORname);
 
+    HRESULT (STDMETHODCALLTYPE *B2SSetPos)(
+        _Server *This,
+        VARIANT idORname,
+        VARIANT xpos,
+        VARIANT ypos);
+
     HRESULT (STDMETHODCALLTYPE *B2SSetIllumination)(
         _Server *This,
         VARIANT name,
@@ -2896,10 +3001,6 @@ typedef struct _ServerVtbl {
         VARIANT digit,
         BSTR soundname);
 
-    HRESULT (STDMETHODCALLTYPE *put_TimeFence)(
-        _Server *This,
-        VARIANT timeInS);
-
     END_INTERFACE
 } _ServerVtbl;
 
@@ -2921,6 +3022,7 @@ interface _Server {
 /*** _Server methods ***/
 #define _Server_Dispose(This) (This)->lpVtbl->Dispose(This)
 #define _Server_get_B2SServerVersion(This,pRetVal) (This)->lpVtbl->get_B2SServerVersion(This,pRetVal)
+#define _Server_get_B2SBuildVersion(This,pRetVal) (This)->lpVtbl->get_B2SBuildVersion(This,pRetVal)
 #define _Server_get_B2SServerDirectory(This,pRetVal) (This)->lpVtbl->get_B2SServerDirectory(This,pRetVal)
 #define _Server_get_GameName(This,pRetVal) (This)->lpVtbl->get_GameName(This,pRetVal)
 #define _Server_put_GameName(This,pRetVal) (This)->lpVtbl->put_GameName(This,pRetVal)
@@ -2934,9 +3036,11 @@ interface _Server {
 #define _Server_get_Games(This,GameName,pRetVal) (This)->lpVtbl->get_Games(This,GameName,pRetVal)
 #define _Server_get_Settings(This,pRetVal) (This)->lpVtbl->get_Settings(This,pRetVal)
 #define _Server_get_Running(This,pRetVal) (This)->lpVtbl->get_Running(This,pRetVal)
+#define _Server_put_TimeFence(This,rhs) (This)->lpVtbl->put_TimeFence(This,rhs)
 #define _Server_get_Pause(This,pRetVal) (This)->lpVtbl->get_Pause(This,pRetVal)
 #define _Server_put_Pause(This,pRetVal) (This)->lpVtbl->put_Pause(This,pRetVal)
 #define _Server_get_Version(This,pRetVal) (This)->lpVtbl->get_Version(This,pRetVal)
+#define _Server_get_VPMBuildVersion(This,pRetVal) (This)->lpVtbl->get_VPMBuildVersion(This,pRetVal)
 #define _Server_Run(This,handle) (This)->lpVtbl->Run(This,handle)
 #define _Server_Stop(This) (This)->lpVtbl->Stop(This)
 #define _Server_get_LaunchBackglass(This,pRetVal) (This)->lpVtbl->get_LaunchBackglass(This,pRetVal)
@@ -2995,6 +3099,7 @@ interface _Server {
 #define _Server_put_SoundMode(This,pRetVal) (This)->lpVtbl->put_SoundMode(This,pRetVal)
 #define _Server_B2SSetData(This,idORname,value) (This)->lpVtbl->B2SSetData(This,idORname,value)
 #define _Server_B2SPulseData(This,idORname) (This)->lpVtbl->B2SPulseData(This,idORname)
+#define _Server_B2SSetPos(This,idORname,xpos,ypos) (This)->lpVtbl->B2SSetPos(This,idORname,xpos,ypos)
 #define _Server_B2SSetIllumination(This,name,value) (This)->lpVtbl->B2SSetIllumination(This,name,value)
 #define _Server_B2SSetLED(This,digit,valueORtext) (This)->lpVtbl->B2SSetLED(This,digit,valueORtext)
 #define _Server_B2SSetLEDDisplay(This,display,text) (This)->lpVtbl->B2SSetLEDDisplay(This,display,text)
@@ -3036,7 +3141,6 @@ interface _Server {
 #define _Server_B2SPlaySound(This,soundname) (This)->lpVtbl->B2SPlaySound(This,soundname)
 #define _Server_B2SStopSound(This,soundname) (This)->lpVtbl->B2SStopSound(This,soundname)
 #define _Server_B2SMapSound(This,digit,soundname) (This)->lpVtbl->B2SMapSound(This,digit,soundname)
-#define _Server_put_TimeFence(This,timeInS) (This)->lpVtbl->put_TimeFence(This,timeInS)
 #else
 /*** IUnknown methods ***/
 static inline HRESULT _Server_QueryInterface(_Server* This,REFIID riid,void **ppvObject) {
@@ -3067,6 +3171,9 @@ static inline HRESULT _Server_Dispose(_Server* This) {
 }
 static inline HRESULT _Server_get_B2SServerVersion(_Server* This,BSTR *pRetVal) {
     return This->lpVtbl->get_B2SServerVersion(This,pRetVal);
+}
+static inline HRESULT _Server_get_B2SBuildVersion(_Server* This,double *pRetVal) {
+    return This->lpVtbl->get_B2SBuildVersion(This,pRetVal);
 }
 static inline HRESULT _Server_get_B2SServerDirectory(_Server* This,BSTR *pRetVal) {
     return This->lpVtbl->get_B2SServerDirectory(This,pRetVal);
@@ -3107,6 +3214,9 @@ static inline HRESULT _Server_get_Settings(_Server* This,VARIANT *pRetVal) {
 static inline HRESULT _Server_get_Running(_Server* This,VARIANT_BOOL *pRetVal) {
     return This->lpVtbl->get_Running(This,pRetVal);
 }
+static inline HRESULT _Server_put_TimeFence(_Server* This,double rhs) {
+    return This->lpVtbl->put_TimeFence(This,rhs);
+}
 static inline HRESULT _Server_get_Pause(_Server* This,VARIANT_BOOL *pRetVal) {
     return This->lpVtbl->get_Pause(This,pRetVal);
 }
@@ -3115,6 +3225,9 @@ static inline HRESULT _Server_put_Pause(_Server* This,VARIANT_BOOL pRetVal) {
 }
 static inline HRESULT _Server_get_Version(_Server* This,BSTR *pRetVal) {
     return This->lpVtbl->get_Version(This,pRetVal);
+}
+static inline HRESULT _Server_get_VPMBuildVersion(_Server* This,BSTR *pRetVal) {
+    return This->lpVtbl->get_VPMBuildVersion(This,pRetVal);
 }
 static inline HRESULT _Server_Run(_Server* This,VARIANT handle) {
     return This->lpVtbl->Run(This,handle);
@@ -3290,6 +3403,9 @@ static inline HRESULT _Server_B2SSetData(_Server* This,VARIANT idORname,VARIANT 
 static inline HRESULT _Server_B2SPulseData(_Server* This,VARIANT idORname) {
     return This->lpVtbl->B2SPulseData(This,idORname);
 }
+static inline HRESULT _Server_B2SSetPos(_Server* This,VARIANT idORname,VARIANT xpos,VARIANT ypos) {
+    return This->lpVtbl->B2SSetPos(This,idORname,xpos,ypos);
+}
 static inline HRESULT _Server_B2SSetIllumination(_Server* This,VARIANT name,VARIANT value) {
     return This->lpVtbl->B2SSetIllumination(This,name,value);
 }
@@ -3413,9 +3529,6 @@ static inline HRESULT _Server_B2SStopSound(_Server* This,BSTR soundname) {
 static inline HRESULT _Server_B2SMapSound(_Server* This,VARIANT digit,BSTR soundname) {
     return This->lpVtbl->B2SMapSound(This,digit,soundname);
 }
-static inline HRESULT _Server_put_TimeFence(_Server* This,VARIANT timeInS) {
-    return This->lpVtbl->put_TimeFence(This,timeInS);
-}
 #endif
 #endif
 
@@ -3428,12 +3541,12 @@ static inline HRESULT _Server_put_TimeFence(_Server* This,VARIANT timeInS) {
  * FinishedEventHandler coclass
  */
 
-DEFINE_GUID(CLSID_FinishedEventHandler, 0xa82ba555, 0x5bec, 0x31f2, 0xa8,0x0b, 0x30,0x0b,0x5e,0xc3,0x89,0x3d);
+DEFINE_GUID(CLSID_FinishedEventHandler, 0xab3fdee8, 0x2e95, 0x394c, 0x9a,0x0a, 0x46,0x11,0x07,0xd4,0xea,0x28);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("a82ba555-5bec-31f2-a80b-300b5ec3893d") FinishedEventHandler;
+class DECLSPEC_UUID("ab3fdee8-2e95-394c-9a0a-461107d4ea28") FinishedEventHandler;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(FinishedEventHandler, 0xa82ba555, 0x5bec, 0x31f2, 0xa8,0x0b, 0x30,0x0b,0x5e,0xc3,0x89,0x3d)
+__CRT_UUID_DECL(FinishedEventHandler, 0xab3fdee8, 0x2e95, 0x394c, 0x9a,0x0a, 0x46,0x11,0x07,0xd4,0xea,0x28)
 #endif
 #endif
 
@@ -3441,12 +3554,12 @@ __CRT_UUID_DECL(FinishedEventHandler, 0xa82ba555, 0x5bec, 0x31f2, 0xa8,0x0b, 0x3
  * ReelBoxCollection_2 coclass
  */
 
-DEFINE_GUID(CLSID_ReelBoxCollection_2, 0xf31f135a, 0x82f9, 0x3858, 0xa0,0xc1, 0x9c,0x54,0xdd,0xf2,0xbb,0xcd);
+DEFINE_GUID(CLSID_ReelBoxCollection_2, 0xb384a341, 0x9f0d, 0x3b94, 0xac,0x5a, 0x3d,0x68,0x1d,0xe5,0x68,0xb2);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("f31f135a-82f9-3858-a0c1-9c54ddf2bbcd") ReelBoxCollection_2;
+class DECLSPEC_UUID("b384a341-9f0d-3b94-ac5a-3d681de568b2") ReelBoxCollection_2;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(ReelBoxCollection_2, 0xf31f135a, 0x82f9, 0x3858, 0xa0,0xc1, 0x9c,0x54,0xdd,0xf2,0xbb,0xcd)
+__CRT_UUID_DECL(ReelBoxCollection_2, 0xb384a341, 0x9f0d, 0x3b94, 0xac,0x5a, 0x3d,0x68,0x1d,0xe5,0x68,0xb2)
 #endif
 #endif
 
@@ -3464,12 +3577,12 @@ typedef enum __WIDL_B2S_generated_name_00000035 {
  * FinishedEventHandler_2 coclass
  */
 
-DEFINE_GUID(CLSID_FinishedEventHandler_2, 0xd47f6892, 0x58d3, 0x3c89, 0xb3,0x71, 0x88,0x18,0x33,0x4e,0xe9,0xde);
+DEFINE_GUID(CLSID_FinishedEventHandler_2, 0xd2bff109, 0xf664, 0x3b3f, 0x8c,0x86, 0x06,0x96,0x67,0xe9,0x13,0x5a);
 
 #ifdef __cplusplus
-class DECLSPEC_UUID("d47f6892-58d3-3c89-b371-8818334ee9de") FinishedEventHandler_2;
+class DECLSPEC_UUID("d2bff109-f664-3b3f-8c86-069667e9135a") FinishedEventHandler_2;
 #ifdef __CRT_UUID_DECL
-__CRT_UUID_DECL(FinishedEventHandler_2, 0xd47f6892, 0x58d3, 0x3c89, 0xb3,0x71, 0x88,0x18,0x33,0x4e,0xe9,0xde)
+__CRT_UUID_DECL(FinishedEventHandler_2, 0xd2bff109, 0xf664, 0x3b3f, 0x8c,0x86, 0x06,0x96,0x67,0xe9,0x13,0x5a)
 #endif
 #endif
 
@@ -4362,6 +4475,117 @@ static inline HRESULT _Processes_Invoke(_Processes* This,DISPID dispIdMember,REF
 #endif  /* ___Processes_INTERFACE_DEFINED__ */
 
 /*****************************************************************************
+ * _B2SVersionInfo interface
+ */
+#ifndef ___B2SVersionInfo_INTERFACE_DEFINED__
+#define ___B2SVersionInfo_INTERFACE_DEFINED__
+
+DEFINE_GUID(IID__B2SVersionInfo, 0xc7cfe730, 0x7418, 0x3565, 0xa7,0x3b, 0x9b,0xb6,0xbf,0xd9,0x36,0x26);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("c7cfe730-7418-3565-a73b-9bb6bfd93626")
+_B2SVersionInfo : public IDispatch
+{
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(_B2SVersionInfo, 0xc7cfe730, 0x7418, 0x3565, 0xa7,0x3b, 0x9b,0xb6,0xbf,0xd9,0x36,0x26)
+#endif
+#else
+typedef struct _B2SVersionInfoVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        _B2SVersionInfo *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        _B2SVersionInfo *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        _B2SVersionInfo *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        _B2SVersionInfo *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        _B2SVersionInfo *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        _B2SVersionInfo *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        _B2SVersionInfo *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    END_INTERFACE
+} _B2SVersionInfoVtbl;
+
+interface _B2SVersionInfo {
+    CONST_VTBL _B2SVersionInfoVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define _B2SVersionInfo_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define _B2SVersionInfo_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define _B2SVersionInfo_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define _B2SVersionInfo_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define _B2SVersionInfo_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define _B2SVersionInfo_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define _B2SVersionInfo_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+#else
+/*** IUnknown methods ***/
+static inline HRESULT _B2SVersionInfo_QueryInterface(_B2SVersionInfo* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static inline ULONG _B2SVersionInfo_AddRef(_B2SVersionInfo* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static inline ULONG _B2SVersionInfo_Release(_B2SVersionInfo* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static inline HRESULT _B2SVersionInfo_GetTypeInfoCount(_B2SVersionInfo* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static inline HRESULT _B2SVersionInfo_GetTypeInfo(_B2SVersionInfo* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static inline HRESULT _B2SVersionInfo_GetIDsOfNames(_B2SVersionInfo* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static inline HRESULT _B2SVersionInfo_Invoke(_B2SVersionInfo* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+#endif
+#endif
+
+#endif
+
+
+#endif  /* ___B2SVersionInfo_INTERFACE_DEFINED__ */
+
+/*****************************************************************************
  * _B2SBaseBox interface
  */
 #ifndef ___B2SBaseBox_INTERFACE_DEFINED__
@@ -5026,6 +5250,117 @@ static inline HRESULT _Dream7Display_Invoke(_Dream7Display* This,DISPID dispIdMe
 
 
 #endif  /* ___Dream7Display_INTERFACE_DEFINED__ */
+
+/*****************************************************************************
+ * _Background interface
+ */
+#ifndef ___Background_INTERFACE_DEFINED__
+#define ___Background_INTERFACE_DEFINED__
+
+DEFINE_GUID(IID__Background, 0xad9fffb3, 0xea9b, 0x3140, 0xb3,0xa3, 0x7c,0x83,0x3e,0xc2,0x7e,0x76);
+#if defined(__cplusplus) && !defined(CINTERFACE)
+MIDL_INTERFACE("ad9fffb3-ea9b-3140-b3a3-7c833ec27e76")
+_Background : public IDispatch
+{
+};
+#ifdef __CRT_UUID_DECL
+__CRT_UUID_DECL(_Background, 0xad9fffb3, 0xea9b, 0x3140, 0xb3,0xa3, 0x7c,0x83,0x3e,0xc2,0x7e,0x76)
+#endif
+#else
+typedef struct _BackgroundVtbl {
+    BEGIN_INTERFACE
+
+    /*** IUnknown methods ***/
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        _Background *This,
+        REFIID riid,
+        void **ppvObject);
+
+    ULONG (STDMETHODCALLTYPE *AddRef)(
+        _Background *This);
+
+    ULONG (STDMETHODCALLTYPE *Release)(
+        _Background *This);
+
+    /*** IDispatch methods ***/
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        _Background *This,
+        UINT *pctinfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        _Background *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        _Background *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        _Background *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    END_INTERFACE
+} _BackgroundVtbl;
+
+interface _Background {
+    CONST_VTBL _BackgroundVtbl* lpVtbl;
+};
+
+#ifdef COBJMACROS
+#ifndef WIDL_C_INLINE_WRAPPERS
+/*** IUnknown methods ***/
+#define _Background_QueryInterface(This,riid,ppvObject) (This)->lpVtbl->QueryInterface(This,riid,ppvObject)
+#define _Background_AddRef(This) (This)->lpVtbl->AddRef(This)
+#define _Background_Release(This) (This)->lpVtbl->Release(This)
+/*** IDispatch methods ***/
+#define _Background_GetTypeInfoCount(This,pctinfo) (This)->lpVtbl->GetTypeInfoCount(This,pctinfo)
+#define _Background_GetTypeInfo(This,iTInfo,lcid,ppTInfo) (This)->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo)
+#define _Background_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) (This)->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)
+#define _Background_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) (This)->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)
+#else
+/*** IUnknown methods ***/
+static inline HRESULT _Background_QueryInterface(_Background* This,REFIID riid,void **ppvObject) {
+    return This->lpVtbl->QueryInterface(This,riid,ppvObject);
+}
+static inline ULONG _Background_AddRef(_Background* This) {
+    return This->lpVtbl->AddRef(This);
+}
+static inline ULONG _Background_Release(_Background* This) {
+    return This->lpVtbl->Release(This);
+}
+/*** IDispatch methods ***/
+static inline HRESULT _Background_GetTypeInfoCount(_Background* This,UINT *pctinfo) {
+    return This->lpVtbl->GetTypeInfoCount(This,pctinfo);
+}
+static inline HRESULT _Background_GetTypeInfo(_Background* This,UINT iTInfo,LCID lcid,ITypeInfo **ppTInfo) {
+    return This->lpVtbl->GetTypeInfo(This,iTInfo,lcid,ppTInfo);
+}
+static inline HRESULT _Background_GetIDsOfNames(_Background* This,REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId) {
+    return This->lpVtbl->GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId);
+}
+static inline HRESULT _Background_Invoke(_Background* This,DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr) {
+    return This->lpVtbl->Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr);
+}
+#endif
+#endif
+
+#endif
+
+
+#endif  /* ___Background_INTERFACE_DEFINED__ */
 
 /*****************************************************************************
  * _formBackglass interface

@@ -7,6 +7,7 @@
 #include "controls/B2SReelBox.h"
 #include "controls/B2SLEDBox.h"
 #include "dream7/Dream7Display.h"
+#include "classes/B2SVersionInfo.h"
 #include "classes/B2SReelDisplay.h"
 #include "classes/LEDDisplayDigitLocation.h"
 #include "classes/CollectData.h"
@@ -157,9 +158,19 @@ STDMETHODIMP Server::Dispose()
 
 STDMETHODIMP Server::get_B2SServerVersion(BSTR *pRetVal)
 {
-   const WCHAR *const wzVersion = MakeWide(m_pB2SSettings->GetDirectB2SVersion());
+   const WCHAR *const wzVersion = MakeWide(string(B2S_VERSION_STRING));
    *pRetVal = SysAllocString(wzVersion);
    delete [] wzVersion;
+
+   return S_OK;
+}
+
+STDMETHODIMP Server::get_B2SBuildVersion(double *pRetVal)
+{
+   *pRetVal = B2S_VERSION_MAJOR * 10000.0
+      + B2S_VERSION_MINOR * 100.0
+      + B2S_VERSION_REVISION
+      + static_cast<double>(B2S_VERSION_BUILD) / 10000.0;
 
    return S_OK;
 }
@@ -287,17 +298,9 @@ STDMETHODIMP Server::get_Running(VARIANT_BOOL *pRetVal)
    return m_pB2SData->GetVPinMAME()->get_Running(pRetVal);
 }
 
-STDMETHODIMP Server::put_TimeFence(VARIANT timeInS)
+STDMETHODIMP Server::put_TimeFence(double timeInS)
 {
-   VARIANT var0;
-   V_VT(&var0) = VT_EMPTY;
-   VariantChangeType(&var0, &timeInS, 0, VT_R8);
-
-   HRESULT hres = m_pB2SData->GetVPinMAME()->put_TimeFence(V_R8(&var0));
-
-   VariantClear(&var0);
-
-   return hres;
+   return m_pB2SData->GetVPinMAME()->put_TimeFence(timeInS);
 }
 
 STDMETHODIMP Server::get_Pause(VARIANT_BOOL *pRetVal)
@@ -319,6 +322,11 @@ STDMETHODIMP Server::put_Pause(VARIANT_BOOL pRetVal)
 }
 
 STDMETHODIMP Server::get_Version(BSTR *pRetVal)
+{
+   return m_pB2SData->GetVPinMAME()->get_Version(pRetVal);
+}
+
+STDMETHODIMP Server::get_VPMBuildVersion(BSTR *pRetVal)
 {
    return m_pB2SData->GetVPinMAME()->get_Version(pRetVal);
 }
@@ -850,6 +858,31 @@ STDMETHODIMP Server::B2SPulseData(VARIANT idORname)
       MyB2SSetData(V_I4(&var0), 0);
 
       VariantClear(&var0);
+   }
+
+   return S_OK;
+}
+
+STDMETHODIMP Server::B2SSetPos(VARIANT idORname, VARIANT xpos, VARIANT ypos)
+{
+   if (V_VT(&idORname) != VT_BSTR) {
+      VARIANT var0;
+      V_VT(&var0) = VT_EMPTY;
+      VariantChangeType(&var0, &idORname, 0, VT_I4);
+
+      VARIANT var1;
+      V_VT(&var1) = VT_EMPTY;
+      VariantChangeType(&var1, &xpos, 0, VT_I4);
+
+      VARIANT var2;
+      V_VT(&var2) = VT_EMPTY;
+      VariantChangeType(&var2, &ypos, 0, VT_I4);
+
+      MyB2SSetPos(V_I4(&var0), V_I4(&var1), V_I4(&var2));
+
+      VariantClear(&var0);
+      VariantClear(&var1);
+      VariantClear(&var2);
    }
 
    return S_OK;
@@ -2182,6 +2215,30 @@ void Server::MyB2SSetData(const string& groupname, int value)
                pPicbox->SetVisible(pPicbox->GetRomIDValue() == value);
             else
                pPicbox->SetVisible(value != 0);
+         }
+      }
+   }
+}
+
+void Server::MyB2SSetPos(int id, int xpos, int ypos)
+{
+   if (!m_pB2SData->IsValid())
+      return;
+
+   SDL_FRect& rescaleBackglass = m_pFormBackglass->GetScaleFactor();
+
+   if (m_pB2SData->GetUsedRomLampIDs()->contains(id)) {
+      for (const auto& pBase : (*m_pB2SData->GetUsedRomLampIDs())[id]) {
+         B2SPictureBox* pPicbox = dynamic_cast<B2SPictureBox*>(pBase);
+         if (pPicbox && (!m_pB2SData->IsUseIlluminationLocks() || pPicbox->GetGroupName().empty() || !m_pB2SData->GetIlluminationLocks()->contains(pPicbox->GetGroupName()))) {
+            if (pPicbox->GetLeft() != xpos || pPicbox->GetTop() != ypos) {
+               pPicbox->SetLeft(xpos);
+               pPicbox->SetTop(ypos);
+               SDL_FRect& rectF = pPicbox->GetRectangleF();
+               pPicbox->SetRectangleF({ (pPicbox->GetLeft() / rescaleBackglass.w), (pPicbox->GetTop() / rescaleBackglass.h), rectF.w, rectF.h });
+               if (pPicbox->GetParent())
+                  pPicbox->GetParent()->Invalidate();
+            }
          }
       }
    }

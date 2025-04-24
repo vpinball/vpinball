@@ -30,7 +30,6 @@ class B2SSettings
 public:
    static B2SSettings* GetInstance();
 
-   string GetDirectB2SVersion() const { return "2.1.2"; }
    string GetMinimumDirectB2SVersion() const { return "1.0"; }
    string GetBackglassFileVersion() const { return m_szBackglassFileVersion; }
    void SetBackglassFileVersion(const string& szBackglassFileVersion) { m_szBackglassFileVersion = szBackglassFileVersion; }

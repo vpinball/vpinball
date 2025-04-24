@@ -942,7 +942,7 @@ public class IDLParserToCpp {
 				new IDLInterface("IWMPSettings", "WMPSettings")));
 
 		parser.parse(
-			"../../../vpinball.idl",
+			"../../../src/core/vpinball.idl",
 			"vpinball_standalone_i_proxy.cpp",
 			Arrays.asList(
 				new IDLInterface("IPartGroup", "PartGroup"),
