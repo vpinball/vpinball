@@ -47,13 +47,14 @@ PinSound::PinSound(const Settings& settings)
       if (!isSDLAudioInitialized) {
          PinSound::initSDLAudio(settings);
          isSDLAudioInitialized = true;
-
+         const char* pdriverName = SDL_GetCurrentAudioDriver();
+        
          // Set the output devices AudioSpec
          Mix_QuerySpec(&m_mixEffectsData.outputFrequency, &m_mixEffectsData.outputFormat, &m_mixEffectsData.outputChannels); // the struct that gets passed to the MixEffect callbacks.
          Mix_QuerySpec(&m_audioSpecOutput.freq, &m_audioSpecOutput.format, &m_audioSpecOutput.channels);
 
          PLOGI << "Output Device Settings: " << "Freq: " << m_audioSpecOutput.freq << " Format (SDL_AudioFormat): " << m_audioSpecOutput.format
-         << " channels: " << m_audioSpecOutput.channels;
+         << " channels: " << m_audioSpecOutput.channels << ", driver: " << (pdriverName ? pdriverName : "NULL") ;
       }
    }
 
