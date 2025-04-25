@@ -35,7 +35,7 @@ BOOL DimensionDialog::OnInitDialog()
       SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT, f2sz(VPUTOINCHES(pt->m_glassTopHeight)).c_str());
       SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT, f2sz(VPUTOINCHES(pt->m_glassBottomHeight)).c_str());
       const float ratio = height / width;
-      SetDlgItemText(IDC_AR_LABEL, ("Aspect ratio: "+f2sz(VPUTOINCHES(ratio))).c_str());
+      SetDlgItemText(IDC_AR_LABEL, ("Aspect ratio: "+f2sz(VPUTOINCHES(ratio)).substr(0,5)).c_str());
 
       selectedItem = m_db.GetBestSizeMatch(width, height, pt->m_glassTopHeight, pt->m_glassBottomHeight);
    }
