@@ -131,126 +131,126 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Input section
 
-   SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly close the app, (sadly) expressed in seconds * 60.");
-   SettingBool(Section::Player, "PBWDefaultLayout"s, false, "Disable default layout of recognized Pincab controllers (DirectInput only).");
-   SettingBool(Section::Player, "DisableESC"s, false, "Disable ESC key as exit action button.");
+   SettingInt(Section::Player, "Exitconfirm"s, 120, 0, 30*60, "Length of a long ESC press that directly closes the app, (sadly) expressed in seconds * 60."s);
+   SettingBool(Section::Player, "PBWDefaultLayout"s, false, "Disable default layout of recognized Pincab controllers (DirectInput only)."s);
+   SettingBool(Section::Player, "DisableESC"s, false, "Disable ESC key as exit action button."s);
 
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, "");
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftFlipperKey], DIK_LSHIFT, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightFlipperKey], DIK_RSHIFT, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedLeftFlipperKey], DIK_LWIN, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStagedRightFlipperKey], DIK_RALT, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftTiltKey], DIK_Z, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightTiltKey], DIK_SLASH, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eCenterTiltKey], DIK_SPACE, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePlungerKey], DIK_RETURN, 0x00, 0xFFFF, ""s);
    #if !defined(__APPLE__) && !defined(__ANDROID__)
-      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F11, 0x00, 0xFFFF, "");
+      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F11, 0x00, 0xFFFF, ""s);
    #else
-      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F1, 0x00, 0xFFFF, "");
+      SettingInt(Section::Player, regkey_string[EnumAssignKeys::eFrameCount], DIK_F1, 0x00, 0xFFFF, ""s);
    #endif
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDBGBalls], DIK_O, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDebugger], DIK_D, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey], DIK_5, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStartGameKey], DIK_1, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eExitGame], DIK_Q, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEnable3D], DIK_F10, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, "");
-   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, "");
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDBGBalls], DIK_O, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eDebugger], DIK_D, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey], DIK_5, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eAddCreditKey2], DIK_4, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eStartGameKey], DIK_1, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eMechanicalTilt], DIK_T, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eRightMagnaSave], DIK_RCONTROL, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLeftMagnaSave], DIK_LCONTROL, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eExitGame], DIK_Q, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeUp], DIK_EQUALS, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eVolumeDown], DIK_MINUS, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eLockbarKey], DIK_LALT, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEnable3D], DIK_F10, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableRecenter], DIK_NUMPAD5, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableUp], DIK_NUMPAD8, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTableDown], DIK_NUMPAD2, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eEscape], DIK_ESCAPE, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::ePause], DIK_P, 0x00, 0xFFFF, ""s);
+   SettingInt(Section::Player, regkey_string[EnumAssignKeys::eTweak], DIK_F12, 0x00, 0xFFFF, ""s);
 
 #ifdef ENABLE_SDL_INPUT
-   SettingInt(Settings::Player, "JoyLFlipKey"s, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRFlipKey"s, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyCTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_UP + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyPlungerKey"s, SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyFrameCount"s, SDL_GAMEPAD_BUTTON_WEST + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyAddCreditKey"s, SDL_GAMEPAD_BUTTON_SOUTH + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStartGameKey"s, SDL_GAMEPAD_BUTTON_EAST + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRMagnaSave"s, SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLMagnaSave"s, SDL_GAMEPAD_BUTTON_LEFT_STICK + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLockbarKey"s, SDL_GAMEPAD_BUTTON_GUIDE + 1, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, "");
+   SettingInt(Settings::Player, "JoyLFlipKey"s, SDL_GAMEPAD_BUTTON_LEFT_SHOULDER + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRFlipKey"s, SDL_GAMEPAD_BUTTON_RIGHT_SHOULDER + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_LEFT + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_RIGHT + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyCTiltKey"s, SDL_GAMEPAD_BUTTON_DPAD_UP + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyPlungerKey"s, SDL_GAMEPAD_BUTTON_DPAD_DOWN + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyFrameCount"s, SDL_GAMEPAD_BUTTON_WEST + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyAddCreditKey"s, SDL_GAMEPAD_BUTTON_SOUTH + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStartGameKey"s, SDL_GAMEPAD_BUTTON_EAST + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRMagnaSave"s, SDL_GAMEPAD_BUTTON_RIGHT_STICK + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLMagnaSave"s, SDL_GAMEPAD_BUTTON_LEFT_STICK + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLockbarKey"s, SDL_GAMEPAD_BUTTON_GUIDE + 1, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, ""s);
 #else
-   SettingInt(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, "");
-   SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, "");
+   SettingInt(Settings::Player, "JoyLFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStagedLFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStagedRFlipKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLTiltKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRTiltKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyCTiltKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyPlungerKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyFrameCount"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyDebugKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyDebuggerKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyAddCreditKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyAddCredit2Key"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyStartGameKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyMechTiltKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyRMagnaSave"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLMagnaSave"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyExitGameKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyVolumeUp"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyVolumeDown"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyLockbarKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableRecenterKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableUpKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTableDownKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyPauseKey"s, 0, 0x00, 0xFFFF, ""s);
+   SettingInt(Settings::Player, "JoyTweakKey"s, 0, 0x00, 0xFFFF, ""s);
 #endif
 
 
    //////////////////////////////////////////////////////////////////////////
    // Rendering section
 
-   SettingFloat(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, "");
-   SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Image size above this limit will be automatically scaled down on load.");
+   SettingFloat(Section::Player, "EmissionScale"s, 0.5f, 0.f, 1.f, ""s);
+   SettingInt(Section::Player, "MaxTexDimension"s, 0, 0, 16384, "Maximum texture dimension. Images sized above this limit will be automatically scaled down on load."s);
 
 
    //////////////////////////////////////////////////////////////////////////
    // VR Player section
 
-   SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)");
-   SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)");
-   SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)");
+   SettingFloat(Settings::PlayerVR, "TableX"s, 0.f, -300.f, 300.f, "VR scene horizontal X offset (cm)."s);
+   SettingFloat(Settings::PlayerVR, "TableY"s, 0.f, -300.f, 300.f, "VR scene horizontal Y offset (cm)."s);
+   SettingFloat(Settings::PlayerVR, "TableZ"s, 0.f, -300.f, 300.f, "VR scene vertical offset (cm)s"s);
 
 
    //////////////////////////////////////////////////////////////////////////
    // Cabinet section
 
-   SettingFloat(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, "");
-   SettingFloat(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, "");
-   SettingFloat(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, "");
-   SettingFloat(Section::Player, "ScreenWidth"s, 95.89f, 1.f, 500.f, "Physical width (cm) of the display area of the playfield (main) screen.");
-   SettingFloat(Section::Player, "ScreenHeight"s, 53.94f, 1.f, 500.f, "Physical height (cm) of the display area of the playfield (main) screen.");
-   SettingFloat(Section::Player, "ScreenInclination"s, 0.0f, -15.f, 15.f, "Inclination (degree) of the playfield (main) screen. 0 is horizontal.");
-   SettingFloat(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, "Lockbar width in centimeters (measured on the cabinet).");
-   SettingFloat(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar).");
+   SettingFloat(Section::Player, "ScreenPlayerX"s, 0.f, -100.f, 100.f, ""s);
+   SettingFloat(Section::Player, "ScreenPlayerY"s, 0.f, -100.f, 100.f, ""s);
+   SettingFloat(Section::Player, "ScreenPlayerZ"s, 70.f, -100.f, 200.f, ""s);
+   SettingFloat(Section::Player, "ScreenWidth"s, 95.89f, 1.f, 500.f, "Physical width (cm) of the display area of the playfield (main) screen."s);
+   SettingFloat(Section::Player, "ScreenHeight"s, 53.94f, 1.f, 500.f, "Physical height (cm) of the display area of the playfield (main) screen."s);
+   SettingFloat(Section::Player, "ScreenInclination"s, 0.0f, -15.f, 15.f, "Inclination (degree) of the playfield (main) screen. 0 is horizontal."s);
+   SettingFloat(Section::Player, "LockbarWidth"s, 70.f, 10.f, 150.f, "Lockbar width in centimeters (measured on the cabinet)."s);
+   SettingFloat(Section::Player, "LockbarHeight"s, 85.f, 0.f, 250.f, "Lockbar height in centimeters (measured on the cabinet, from ground to top of lockbar)."s);
 
 
    //////////////////////////////////////////////////////////////////////////
@@ -260,8 +260,8 @@ void Settings::Validate(const bool addDefaults)
    //////////////////////////////////////////////////////////////////////////
    // Playfield view section
 
-   SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum of 24FPS), 0 is unlimited, < 0 is limited to display refresh rate.");
-   SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing");
+   SettingFloat(Section::Player, "MaxFramerate"s, -1.f, -1.f, 1000.f, "Maximum FPS of playfield view (minimum: 24FPS), 0 is unlimited, < 0 is limited to the display refresh rate."s);
+   SettingInt(Section::Player, "SyncMode"s, VSM_NONE, VSM_NONE, VSM_FRAME_PACING, "Hardware video sync mode to use: None / Vertical Sync / Adaptative Sync / Frame Pacing."s);
 
 
    //////////////////////////////////////////////////////////////////////////
@@ -282,14 +282,14 @@ void Settings::Validate(const bool addDefaults)
       case 7: dotColor = 0x00FFFFFF; break; // Generic Led
       default: assert(false);
       }
-      SettingBool(Section::DMD, prefix + "Legacy",        i == 1, "");
-      SettingBool(Section::DMD, prefix + "ScaleFX",       false, "");
-      SettingInt(Section::DMD, prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, "");
-      SettingInt(Section::DMD, prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, "");
-      SettingFloat(Section::DMD, prefix + "DotBrightness", 25.0f,  0.001f, 100.f, "");
-      SettingFloat(Section::DMD, prefix + "DotSize",       (i == 2 || i == 6) ? 0.6f : 0.75f,  0.001f, 1.f, ""); // WPC & GTS3 Neon Plasma: 0.6, Stern Red LED: 0.75
-      SettingFloat(Section::DMD, prefix + "DotSharpness",  0.90f, 0.f, 1.f, "");
-      SettingFloat(Section::DMD, prefix + "DiffuseGlow",   0.10f, 0.f, 10.f, "");
+      SettingBool(Section::DMD, prefix + "Legacy",       i == 1, ""s);
+      SettingBool(Section::DMD, prefix + "ScaleFX",      false, ""s);
+      SettingInt(Section::DMD, prefix + "DotTint",       dotColor,   0x00000000, 0x00FFFFFF, ""s);
+      SettingInt(Section::DMD, prefix + "UnlitDotColor", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
+      SettingFloat(Section::DMD, prefix + "DotBrightness", 25.0f,  0.001f, 100.f, ""s);
+      SettingFloat(Section::DMD, prefix + "DotSize",       (i == 2 || i == 6) ? 0.6f : 0.75f,  0.001f, 1.f, ""s); // WPC & GTS3 Neon Plasma: 0.6, Stern Red LED: 0.75
+      SettingFloat(Section::DMD, prefix + "DotSharpness",  0.90f, 0.f, 1.f, ""s);
+      SettingFloat(Section::DMD, prefix + "DiffuseGlow",   0.10f, 0.f, 10.f, ""s);
    }
 
 
@@ -314,24 +314,24 @@ void Settings::Validate(const bool addDefaults)
       case 8: color = 0x00FFFFFF; break; // Generic Led
       default: assert(false);
       }
-      SettingInt(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, "");
-      SettingInt(Section::Alpha, prefix + "Unlit", 0x00404040, 0x00000000, 0x00FFFFFF, "");
-      SettingFloat(Section::Alpha, prefix + "Brightness", 5.0f, 0.001f, 100.f, "");
-      SettingFloat(Section::Alpha, prefix + "DiffuseGlow", 1.0f, 0.f, 10.f, "");
+      SettingInt(Section::Alpha, prefix + "Color", color, 0x00000000, 0x00FFFFFF, ""s);
+      SettingInt(Section::Alpha, prefix + "Unlit", 0x00404040, 0x00000000, 0x00FFFFFF, ""s);
+      SettingFloat(Section::Alpha, prefix + "Brightness", 5.0f, 0.001f, 100.f, ""s);
+      SettingFloat(Section::Alpha, prefix + "DiffuseGlow", 1.0f, 0.f, 10.f, ""s);
    }
 
 
    //////////////////////////////////////////////////////////////////////////
    // Sound section
 
-   SettingInt(Settings::Player, "Sound3D"s, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3DSSF, "");
+   SettingInt(Settings::Player, "Sound3D"s, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3D2CH, SoundConfigTypes::SNDCFG_SND3DSSF, ""s);
 
 
    //////////////////////////////////////////////////////////////////////////
    // Editor section
 
-   SettingBool(Settings::Editor, "EnableLog"s, true, "Enable general logging to vinball.log file");
-   
+   SettingBool(Settings::Editor, "EnableLog"s, true, "Enable general logging to the vinball.log file."s);
+
    #undef SettingString
    #undef SettingBool
    #undef SettingFloat

@@ -87,7 +87,7 @@ void FlasherVisualsProperty::UpdateVisuals(const int dispid /*=-1*/)
             m_styleCombo.ResetContent();
             for (int i = 0; i < 5; i++)
             {
-               const string family = i == 0 ? "Generic: " : i == 1 ? "Gottlieb: " : i == 2 ? "Williams: " : i == 3 ? "Bally: " : "Atari: ";
+               const string family = i == 0 ? "Generic: "s : i == 1 ? "Gottlieb: "s : i == 2 ? "Williams: "s : i == 3 ? "Bally: "s : "Atari: "s;
                m_styleCombo.AddString((family + "Neon Plasma").c_str());
                m_styleCombo.AddString((family + "Blue VFD").c_str());
                m_styleCombo.AddString((family + "Green VFD").c_str());

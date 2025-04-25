@@ -926,15 +926,15 @@ void Surface::Render(const unsigned int renderMask)
 
    if (isReflectionPass && !m_d.m_reflectionEnabled)
       return;
-   
+
    RenderSlingshots();
-   
+
    if (isStaticOnly && !StaticRendering())
       return;
-   
+
    if (isDynamicOnly && StaticRendering())
       return;
-   
+
    if (!m_isDropped || StaticRendering())
    {
       RenderWallsAtHeight(false, isReflectionPass);

@@ -31,12 +31,12 @@ FEATURES:
   . it supports rendering to multiple outputs (windows)
 
 - add a new 'ScoreView' which renders the segment displays or DMD to a dedicated window (BGFX variant only). The scoreview uses a layout defined in a 'scv' file placed along the table file
-  matching its name, or by automatically selecting one of the default layout matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
+  matching its name, or by automatically selecting one of the default layouts matching the available displays at runtime. Default layout files in the asset folder show the syntax used to
   define the layout.
 
 - add 'raytraced' ball motion blur (BGFX only)
 
-- add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirectX output only)
+- add Wide Color Gamut output (a.k.a. HDR display) support (BGFX using DirectX output only):
   this comes with an additional video preference option to ignore all tonemappers in order to fully exploit the high dynamic range
   and an additional global exposure scale multiplier to adapt to the display capabilities
   (note that one should use Windows 11 and the MS HDR calibration tool for best results with optimal range)
@@ -48,33 +48,34 @@ FEATURES:
    One can select any row of the listview and click a button on the dialog labeled 'Edit Control' and it will place
    that table object into the 'Properties' editor dialog for you.
 
-- VR was rewritten to use OpenXR instead of OpenVR (OpenVR is still available when using VPX OpenGl variant but is deprecated and will be removed in future
-  versions as it relies on deprecated components and has a few known bugs that won't be solved, like in game UI, invalid colorspace,...). OpenXR is enabled
-  when using the BGFX variant. It comes with the following improvement:
+- VR was rewritten to use OpenXR instead of OpenVR (OpenVR is still available when using the VPX OpenGL variant, but is deprecated and will be removed in future
+  versions, as it relies on deprecated components and has a few known bugs that won't be solved, like in game UI, invalid colorspace,...). OpenXR is automatically used
+  in the BGFX variant. It comes with the following improvements:
   . it should work with any OpenXR backend (Virtual Desktop, SteamVR, Meta Quest Link, ...),
-  . correct colorspace for all headset (no more washed out colors needing hacks),
+  . correct colorspace for all headsets (no more washed out colors that needed hacks),
   . support for color keyed passthrough mode (for example using Virtual Desktop),
   . implement OpenXR latency reduction framework:
-    - by taking in account the headset latency when rendering,
+    - by taking into account the headset latency when rendering,
     - by providing the headset with information for live reprojection (depth data),
-  . integrate VR with VPX's TweakUI which allows to adjust all settings in game using usual pinball controls, also supporting continuous recentering by
-    keeping reset button pressed.
+  . integrate VR with VPX's TweakUI, which allows to adjust all settings in-game using the usual pinball controls, also supporting continuous recentering by
+    keeping the 'reset' button pressed.
 
-- number of layers is no more limited. Layers can also be nested and they now have properties:
-  . a visibility mask, that allows to filter on which output or VR mode they are active (playfield, virtual reality, mixed reality, ...)
+- number of layers is not limited anymore. Layers can also be nested and they now feature properties:
+  . a visibility mask, that allows to filter on which output, or VR mode layers are active (playfield, virtual reality, mixed reality, ...)
   . a space reference, to ease virtual/mixed reality support:
     - 'playfield' is the default space reference, and is the only one where parts contribute to physics simulation, it corresponds to the usual playfield.
-    - 'room' is tied to the real world room, it is not scaled or inclined like playfield, and should be used for VR room
-    - 'cabinet' is tied to the real world cabinet, it is not inclined like playfield but it is scaled and height offseted to match the real world cabinet
-    - 'cabinet feet' is tied to the real world cabinet feet, unlike 'cabinet' it is not height offseted, allowing to keep cabinet's feet on real room ground
+    - 'room' is tied to the real world room, it is not scaled or inclined like playfield, and should be used for the VR room.
+    - 'cabinet' is tied to the real world cabinet, it is not inclined like playfield but it is scaled and height offseted to match the real world cabinet.
+    - 'cabinet feet' is tied to the real world cabinet feet, unlike 'cabinet' it is not height offseted, allowing to keep the cabinet's feet on the real room ground.
 
 - flashers have been improved:
-  . they now have advanced options for rendering DMD, segment and video displays. The rendering mode between these can be selected in the part properties,
-    then each mode has its own rendering options. The display rendering mode is designed the same for the 3 supported sources (DMD, segments, video). It
-	consist of a light source with an optional glass above it. A render profile for the light source corresponding to the physical part	(Neon Plasma DMD,
-	VFD segment display, CRT video, ...) needs to be chosen. A few options allow to setup the glass tint/roughness and the position of the light source
-	beneath it. Segment display flashers are 'max blended' to support overlapping without graphic glitches.
-  . flasher may now be placed on desktop backdrop, deprecating the use of textbox for DMD rendering on desktop backdrop.
+  . these now feature advanced options for rendering DMD, segments and video displays. The rendering mode between these can be selected in the part properties,
+    then each mode has its own rendering options:
+    The display rendering mode is designed the same for the 3 supported sources (DMD, segments, video). It
+    consists of a light source with an optional glass above it. A render profile for the light source corresponding to the physical part (Neon Plasma DMD,
+    VFD segment display, CRT video, ...) needs to be chosen. A few options allow to setup the glass tint/roughness and the position of the light source
+    beneath it. Segment display flashers are 'max blended' to support overlapping without graphical glitches.
+  . flashers may now be placed on the desktop backdrop, deprecating the use of a textbox for DMD rendering on the desktop backdrop.
 
 FIXES:
 
@@ -91,8 +92,8 @@ FIXES:
 
 - SDL2 code was updated and modernized to SDL3
 
-- the BASS sound engine was replaced/unified with SDL3(_mixer), fixing pitch/volume adjustment of 'ogg' file.
-  As a consequence 'ogg' file should now be favored over legacy 'wav'.
+- the BASS sound engine was replaced/unified with SDL3(_mixer), fixing pitch/volume adjustment of 'ogg' files.
+  As a consequence 'ogg' files should now be favored over legacy 'wav'.
 
 - DirectX 8 port for input handling (currently disabled)
 

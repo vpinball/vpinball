@@ -135,10 +135,10 @@ private:
    bool SaveValue(const Section section, const string &key, const char *val, const bool overrideMode = false);
 #endif
 
-   void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = "");
-   void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = "");
-   void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = "");
-   void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = "");
+   void RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments = string());
+   void RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments = string());
+   void RegisterIntSetting(const Section section, const string &key, const int defVal, const int minVal, const int maxVal, const bool addDefaults, const string &comments = string());
+   void RegisterFloatSetting(const Section section, const string &key, const float defVal, const float minVal, const float maxVal, const bool addDefaults, const string &comments = string());
 
    bool m_modified = false;
    string m_iniPath;

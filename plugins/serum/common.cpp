@@ -49,7 +49,7 @@ string find_case_insensitive_directory_path(const string& szPath)
    auto parent = p.parent_path();
    string base;
    if (parent.empty() || parent == p)
-      base = ".";
+      base = '.';
    else {
       base = find_case_insensitive_directory_path(parent.string());
       if (base.empty())
