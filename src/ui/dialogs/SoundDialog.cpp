@@ -732,9 +732,8 @@ INT_PTR SoundPositionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void SoundPositionDialog::ReadTextValue(int item, int &oValue)
 {
-	float fval;
-	const int ret = sscanf_s(GetDlgItemText(item).c_str(), "%f", &fval);
-	if (ret == 1 && fval >= -1.0f && fval <= 1.0f)
+	float fval = sz2f(GetDlgItemText(item).GetString());
+	if (fval >= -1.0f && fval <= 1.0f)
 		oValue = quantizeSignedPercent(fval);
 }
 
@@ -747,10 +746,7 @@ void SoundPositionDialog::SetTextValues()
 
 void SoundPositionDialog::SetTextValue(int ctl, int val)
 {
-	char textBuf[MAXNAMEBUFFER];
-	sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(val));
-	const CString textStr(textBuf);
-	SetDlgItemText(ctl, textStr);
+	SetDlgItemText(ctl, f2sz(dequantizeSignedPercent(val)).c_str());
 }
 
 

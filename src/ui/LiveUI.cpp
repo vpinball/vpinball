@@ -2153,10 +2153,7 @@ void LiveUI::HandleTweakInput()
                         {
                            bottomHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassBottom);
                            topHeight = INCHESTOVPU(db.m_data[bestSizeMatch].glassTop);
-                           char textBuf1[MAXNAMEBUFFER], textBuf2[MAXNAMEBUFFER];
-                           sprintf_s(textBuf1, sizeof(textBuf1), "%.02f", db.m_data[bestSizeMatch].glassBottom);
-                           sprintf_s(textBuf2, sizeof(textBuf2), "%.02f", db.m_data[bestSizeMatch].glassTop);
-                           PushNotification("Missing glass position guessed to be "s + textBuf1 + "\" / " + textBuf2 + "\" (" + db.m_data[bestSizeMatch].name + ')', 5000);
+                           PushNotification("Missing glass position guessed to be " + std::to_string(db.m_data[bestSizeMatch].glassBottom) + "\" / " + std::to_string(db.m_data[bestSizeMatch].glassTop) + "\" (" + db.m_data[bestSizeMatch].name + ')', 5000);
                         }
                         else
                         {
@@ -2776,7 +2773,7 @@ void LiveUI::UpdateMainUI()
          //const float zp = mvp._13 * v.x + mvp._23 * v.y + mvp._33 * v.z + mvp._43;
          const float wp = mvp._14 * v.x + mvp._24 * v.y + mvp._34 * v.z + mvp._44;
          if (wp <= 1e-10f) // behind camera (or degenerated)
-            return Vertex2D(FLT_MAX, FLT_MAX);
+            return Vertex2D{FLT_MAX, FLT_MAX};
          const float inv_wp = 1.0f / wp;
          return Vertex2D{(wp + xp) * rClipWidth * inv_wp, (wp - yp) * rClipHeight * inv_wp};
       };
@@ -3255,14 +3252,14 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    {
       Bumper *const f = static_cast<Bumper *>(m_selection.editable);
       const float px = f->m_d.m_vCenter.x, py = f->m_d.m_vCenter.y;
-      f->Translate(Vertex2D(posX - px, posY - py));
+      f->Translate(Vertex2D{posX - px, posY - py});
       break;
    }
    case eItemFlasher:
    {
       Flasher *const p = static_cast<Flasher *>(m_selection.editable);
       const float px = p->m_d.m_vCenter.x, py = p->m_d.m_vCenter.y;
-      p->TranslatePoints(Vertex2D(posX - px, posY - py));
+      p->TranslatePoints(Vertex2D{posX - px, posY - py});
       p->put_Height(posZ);
       p->put_RotX(rotX);
       p->put_RotY(rotY);
@@ -3273,7 +3270,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
    {
       Flipper *const f = static_cast<Flipper *>(m_selection.editable);
       const float px = f->m_d.m_Center.x, py = f->m_d.m_Center.y;
-      f->Translate(Vertex2D(posX - px, posY - py));
+      f->Translate(Vertex2D{posX - px, posY - py});
       break;
    }
    case eItemLight:
@@ -3281,7 +3278,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       Light *const l = static_cast<Light *>(m_selection.editable);
       const float height = (m_selection.is_live ? m_live_table : m_table)->GetSurfaceHeight(l->m_d.m_szSurface, l->m_d.m_vCenter.x, l->m_d.m_vCenter.y);
       const float px = l->m_d.m_vCenter.x, py = l->m_d.m_vCenter.y, pz = height + l->m_d.m_height;
-      l->Translate(Vertex2D(posX - px, posY - py));
+      l->Translate(Vertex2D{posX - px, posY - py});
       l->m_d.m_height += posZ - pz;
       l->m_d.m_bulbHaloHeight += posZ - pz;
       break;
@@ -3305,7 +3302,7 @@ void LiveUI::SetSelectionTransform(const Matrix3D &newTransform, bool clearPosit
       Surface *const obj = static_cast<Surface *>(m_selection.editable);
       Vertex2D center = obj->GetPointCenter();
       const float px = center.x, py = center.y, pz = 0.5f * (obj->m_d.m_heightbottom + obj->m_d.m_heighttop);
-      obj->TranslatePoints(Vertex2D(posX - px, posY - py));
+      obj->TranslatePoints(Vertex2D{posX - px, posY - py});
       obj->m_d.m_heightbottom += posZ - pz;
       obj->m_d.m_heighttop += posZ - pz;
       break;
