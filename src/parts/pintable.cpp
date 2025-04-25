@@ -4103,8 +4103,8 @@ HRESULT PinTable::LoadGameFromFilename(const string& szFileName, VPXFileFeedback
                   });
          }
          
-         // Since 10.8.1, Flashers are allowed on 2D backdrop, with advanced rendering capabilities.
-         /* This code woudl replace DMD textbox by flasher. It is deactivated since it would break scripting (but does anyone scripted this ?)
+         // Since 10.8.1, Flashers are allowed on a 2D backdrop, with advanced rendering capabilities.
+         /* This code would replace a DMD textbox by a flasher. It is deactivated since it would break scripting (but does anyone script this ?)
          for (size_t i = 0; i < m_vedit.size(); ++i)
          {
             if (m_vedit[i]->GetItemType() == ItemTypeEnum::eItemTextbox)
@@ -4764,13 +4764,9 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
       ListView_SetItemText(hwndListView, index, 2, (LPSTR) "Table");
       break;
    }
-   char textBuf[40];
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetPan()));
-   ListView_SetItemText(hwndListView, index, 3, textBuf);
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetFrontRearFade()));
-   ListView_SetItemText(hwndListView, index, 4, textBuf);
-   sprintf_s(textBuf, sizeof(textBuf), "%.03f", dequantizeSignedPercent(pps->GetVolume()));
-   ListView_SetItemText(hwndListView, index, 5, textBuf);
+   ListView_SetItemText(hwndListView, index, 3, f2sz(dequantizeSignedPercent(pps->GetPan())).c_str());
+   ListView_SetItemText(hwndListView, index, 4, f2sz(dequantizeSignedPercent(pps->GetFrontRearFade())).c_str());
+   ListView_SetItemText(hwndListView, index, 5, f2sz(dequantizeSignedPercent(pps->GetVolume())).c_str());
 
    return index;
 #else
