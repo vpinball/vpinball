@@ -4761,12 +4761,12 @@ int PinTable::AddListSound(HWND hwndListView, PinSound * const pps)
 	   break;
    default:
       assert(false);
-      ListView_SetItemText(hwndListView, index, 2, (LPSTR) "Table");
+      ListView_SetItemText(hwndListView, index, 2, (LPSTR)"Table");
       break;
    }
-   ListView_SetItemText(hwndListView, index, 3, f2sz(dequantizeSignedPercent(pps->GetPan())).c_str());
-   ListView_SetItemText(hwndListView, index, 4, f2sz(dequantizeSignedPercent(pps->GetFrontRearFade())).c_str());
-   ListView_SetItemText(hwndListView, index, 5, f2sz(dequantizeSignedPercent(pps->GetVolume())).c_str());
+   ListView_SetItemText(hwndListView, index, 3, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetPan())).c_str());
+   ListView_SetItemText(hwndListView, index, 4, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetFrontRearFade())).c_str());
+   ListView_SetItemText(hwndListView, index, 5, (LPSTR)f2sz(dequantizeSignedPercent(pps->GetVolume())).c_str());
 
    return index;
 #else
