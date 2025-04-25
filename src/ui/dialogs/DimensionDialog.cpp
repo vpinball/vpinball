@@ -3,7 +3,6 @@
 #include "core/stdafx.h"
 #include "ui/resource.h"
 #include "DimensionDialog.h"
-#include <iostream>
 
 DimensionDialog::DimensionDialog() : CDialog(IDD_DIMENSION_CALCULATOR)
 {
@@ -135,7 +134,7 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             else if (LOWORD(wParam) == IDC_VP_HEIGHT)
             {
-               float vpHeight = fmaxf(sz2f(GetDlgItemText(IDC_VP_HEIGHT).GetString(), 0.0f);
+               float vpHeight = fmaxf(sz2f(GetDlgItemText(IDC_VP_HEIGHT).GetString()), 0.0f);
                SetDlgItemText(IDC_SIZE_HEIGHT, f2sz((float)VPUTOINCHES(vpHeight)).c_str());
             }
             m_discardChangeNotification = false;
