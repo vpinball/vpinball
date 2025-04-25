@@ -107,7 +107,7 @@ string extension_from_path(const string& path)
 string find_case_insensitive_file_path(const string& szPath)
 {
    string path = normalize_path_separators(szPath);
-   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
    std::error_code ec;
 
    if (std::filesystem::exists(p, ec))

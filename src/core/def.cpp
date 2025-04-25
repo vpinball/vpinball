@@ -450,7 +450,7 @@ string normalize_path_separators(const string& szPath)
 string find_case_insensitive_file_path(const string& szPath)
 {
    string path = normalize_path_separators(szPath);
-   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
    std::error_code ec;
 
    if (std::filesystem::exists(p, ec))
@@ -482,7 +482,7 @@ string find_case_insensitive_file_path(const string& szPath)
 string find_case_insensitive_directory_path(const string& szPath)
 {
    string path = normalize_path_separators(szPath);
-   std::filesystem::path p = std::filesystem::path(szPath).lexically_normal();
+   std::filesystem::path p = std::filesystem::path(path).lexically_normal();
    std::error_code ec;
 
    if (std::filesystem::exists(p, ec) && std::filesystem::is_directory(p, ec)) {
