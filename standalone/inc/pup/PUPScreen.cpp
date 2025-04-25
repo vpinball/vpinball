@@ -176,15 +176,15 @@ PUPScreen* PUPScreen::CreateDefault(int screenNum, const std::vector<PUPPlaylist
    PUPScreen* pScreen = nullptr;
    switch(screenNum) {
       case PUP_SCREEN_TOPPER:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper", "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_TOPPER, "Topper"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_DMD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD", "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_DMD, "DMD"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_BACKGLASS:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass", "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_BACKGLASS, "Backglass"s, "", "", false, 100.0f, nullptr, playlists);
       case PUP_SCREEN_PLAYFIELD:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield", "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, PUP_SCREEN_PLAYFIELD, "Playfield"s, "", "", false, 100.0f, nullptr, playlists);
       default:
-         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown", "", "", false, 100.0f, nullptr, playlists);
+         pScreen = new PUPScreen(PUP_SCREEN_MODE_SHOW, screenNum, "Unknown"s, "", "", false, 100.0f, nullptr, playlists);
    }
    return pScreen;
 }

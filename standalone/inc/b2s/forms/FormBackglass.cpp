@@ -1481,30 +1481,36 @@ SDL_Surface* FormBackglass::RotateSurface(SDL_Surface* source, int angle)
 {
    SDL_LockSurface(source);
 
-   SDL_Surface* const destination = SDL_CreateSurface(source->w, source->h, source->format);
+   const int sw = source->w;
+   const int sh = source->h;
+
+   SDL_Surface* const destination = SDL_CreateSurface(sw, sh, source->format);
 
    const float radians = -(float)angle * (float)(M_PI / 180.0);
    const float cosine = cosf(radians);
    const float sine = sinf(radians);
 
-   const float center_x = destination->w / 2.0f;
-   const float center_y = destination->h / 2.0f;
+   const int dw = destination->w;
+   const int dh = destination->h;
+
+   const float center_x = dw / 2.0f;
+   const float center_y = dh / 2.0f;
 
    const uint32_t* const __restrict src = ((uint32_t*)source->pixels);
    uint32_t* const __restrict dest = ((uint32_t*)destination->pixels);
 
-   for (int y = 0; y < destination->h; ++y) {
+   for (int y = 0; y < dh; ++y) {
       const float xoffs = center_x - center_x * cosine + ((float)y - center_y) * sine;
       const float yoffs = center_y + center_x * sine   + ((float)y - center_y) * cosine;
 
-      for (int x = 0; x < destination->w; ++x) {
+      for (int x = 0; x < dw; ++x) {
          const int old_x = (int)(round(xoffs + (float)x * cosine));
          const int old_y = (int)(round(yoffs - (float)x * sine));
 
-         if (/*old_x >= 0 &&*/ (unsigned int)old_x < (unsigned int)source->w && /*old_y >= 0 &&*/ (unsigned int)old_y < (unsigned int)source->h)
-            dest[y * destination->w + x] = src[old_y * source->w + old_x];
+         if (/*old_x >= 0 &&*/ (unsigned int)old_x < (unsigned int)sw && /*old_y >= 0 &&*/ (unsigned int)old_y < (unsigned int)sh)
+            dest[y * dw + x] = src[old_y * sw + old_x];
          else
-            dest[y * destination->w + x] = 0; //!!?
+            dest[y * dw + x] = 0; //!!?
       }
    }
 
@@ -1528,31 +1534,32 @@ SDL_Rect FormBackglass::GetBoundingRectangle(SDL_Surface* pImage)
 {
    SDL_LockSurface(pImage);
 
-   uint32_t* pixels = static_cast<uint32_t*>(pImage->pixels);
-   int pitch = pImage->pitch / sizeof(uint32_t);
+   const uint32_t* const __restrict pixels = static_cast<uint32_t*>(pImage->pixels);
+   const int pitch = pImage->pitch / sizeof(uint32_t);
+   const SDL_PixelFormatDetails* const pfd = SDL_GetPixelFormatDetails(pImage->format);
+   SDL_Palette* const pal = SDL_GetSurfacePalette(pImage);
 
-   int minX = pImage->w;
-   int minY = pImage->h;
+   const int w = pImage->w;
+   const int h = pImage->h;
+
+   int minX = w;
+   int minY = h;
    int maxX = 0;
    int maxY = 0;
 
    bool foundNonTransparent = false;
 
-   uint8_t r;
-   uint8_t g;
-   uint8_t b;
-   uint8_t alpha;
-
-   for (int y = 0; y < pImage->h; y++) {
-      for (int x = 0; x < pImage->w; x++) {
-         SDL_GetRGBA(pixels[y * pitch + x], SDL_GetPixelFormatDetails(pImage->format), SDL_GetSurfacePalette(pImage), &r, &g, &b, &alpha);
+   for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {
+         uint8_t r,g,b,alpha;
+         SDL_GetRGBA(pixels[y * pitch + x], pfd, pal, &r, &g, &b, &alpha);
 
          if (alpha) {
             foundNonTransparent = true;
-            minX = SDL_min(minX, x);
-            minY = SDL_min(minY, y);
-            maxX = SDL_max(maxX, x);
-            maxY = SDL_max(maxY, y);
+            minX = min(minX, x);
+            minY = min(minY, y);
+            maxX = max(maxX, x);
+            maxY = max(maxY, y);
          }
       }
    }

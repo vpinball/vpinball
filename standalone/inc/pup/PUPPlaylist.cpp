@@ -48,13 +48,13 @@ PUPPlaylist::PUPPlaylist(const string& szFolder, const string& szDescription, bo
    m_priority = priority;
    m_lastIndex = 0;
 
-   if (StrCompareNoCase(szFolder, "PUPOverlays"))
+   if (StrCompareNoCase(szFolder, "PUPOverlays"s))
       m_function = PUP_PLAYLIST_FUNCTION_OVERLAYS;
-   else if (StrCompareNoCase(szFolder, "PUPFrames"))
+   else if (StrCompareNoCase(szFolder, "PUPFrames"s))
       m_function = PUP_PLAYLIST_FUNCTION_FRAMES;
-   else if (StrCompareNoCase(szFolder, "PUPAlphas"))
+   else if (StrCompareNoCase(szFolder, "PUPAlphas"s))
       m_function = PUP_PLAYLIST_FUNCTION_ALPHAS;
-   else if (StrCompareNoCase(szFolder, "PuPShapes"))
+   else if (StrCompareNoCase(szFolder, "PuPShapes"s))
       m_function = PUP_PLAYLIST_FUNCTION_SHAPES;
    else
       m_function = PUP_PLAYLIST_FUNCTION_DEFAULT;
@@ -127,7 +127,7 @@ PUPPlaylist* PUPPlaylist::CreateFromCSV(const string& line)
 
 const string& PUPPlaylist::GetPlayFile(const string& szFilename)
 {
-   static string emptyString = "";
+   static const string emptyString;
 
    std::map<string, string>::iterator it = m_fileMap.find(lowerCase(szFilename));
    return it != m_fileMap.end() ? it->second : emptyString;
@@ -146,7 +146,7 @@ const string& PUPPlaylist::GetNextPlayFile()
 
 string PUPPlaylist::GetPlayFilePath(const string& szFilename)
 {
-   static string emptyString = "";
+   static const string emptyString;
 
    if (m_files.empty())
       return emptyString;

@@ -412,14 +412,14 @@ SDL_Surface* B2SScreen::ResizeImage(SDL_Surface* pSourceImage, int grillheight)
 
 SDL_Surface* B2SScreen::FlipImage(SDL_Surface* pSourceImage)
 {
-   SDL_Surface* pFlippedImage = SDL_CreateSurface(pSourceImage->w, pSourceImage->h, pSourceImage->format);
+   SDL_Surface* const pFlippedImage = SDL_CreateSurface(pSourceImage->w, pSourceImage->h, pSourceImage->format);
    if (!pFlippedImage)
       return NULL;
 
    SDL_LockSurface(pSourceImage);
    SDL_LockSurface(pFlippedImage);
 
-   int bpp = SDL_GetPixelFormatDetails(pSourceImage->format)->bytes_per_pixel;
+   const int bpp = SDL_GetPixelFormatDetails(pSourceImage->format)->bytes_per_pixel;
    for (int y = 0; y < pSourceImage->h; ++y) {
       UINT8* src_pixel = (UINT8*)pSourceImage->pixels + y * pSourceImage->pitch;
       UINT8* dst_pixel = (UINT8*)pFlippedImage->pixels + (pFlippedImage->h - y - 1) * pFlippedImage->pitch;

@@ -197,15 +197,15 @@ Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrigh
    OLE_COLOR baseColor = m_pFlexDMD->GetRenderMode() == RenderMode_DMD_RGB ? m_pFlexDMD->GetDMDColor() : RGB(255, 255, 255);
 
    OLE_COLOR tint = brightness >= 0.0f ? RGB(
-      SDL_min((GetRValue(baseColor) * brightness), 255),
-      SDL_min((GetGValue(baseColor) * brightness), 255),
-      SDL_min((GetBValue(baseColor) * brightness), 255)) : RGB(0, 0, 0);
+      min(GetRValue(baseColor) * brightness, 255),
+      min(GetGValue(baseColor) * brightness, 255),
+      min(GetBValue(baseColor) * brightness, 255)) : RGB(0, 0, 0);
 
    if (outlineBrightness >= 0.0f) {
       OLE_COLOR borderTint = RGB(
-         SDL_min((GetRValue(baseColor) * outlineBrightness), 255),
-         SDL_min((GetGValue(baseColor) * outlineBrightness), 255),
-         SDL_min((GetBValue(baseColor) * outlineBrightness), 255));
+         min(GetRValue(baseColor) * outlineBrightness, 255),
+         min(GetGValue(baseColor) * outlineBrightness, 255),
+         min(GetBValue(baseColor) * outlineBrightness, 255));
 
       return m_pFlexDMD->NewFont(path, tint, borderTint, 1);
    }

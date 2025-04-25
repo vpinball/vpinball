@@ -7,8 +7,8 @@ BitmapFilter::BitmapFilter()
 
 UINT32 BitmapFilter::GetPixel(SDL_Surface* surface, int x, int y)
 {
-   const SDL_PixelFormatDetails* format = SDL_GetPixelFormatDetails(surface->format);
-   UINT8* pixel = (UINT8*)surface->pixels + y * surface->pitch + x * format->bytes_per_pixel;
+   const SDL_PixelFormatDetails* const format = SDL_GetPixelFormatDetails(surface->format);
+   const UINT8* const pixel = (UINT8*)surface->pixels + y * surface->pitch + x * format->bytes_per_pixel;
 
    switch (format->bytes_per_pixel) {
       case 1:

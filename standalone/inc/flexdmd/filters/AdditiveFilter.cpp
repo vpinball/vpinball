@@ -11,28 +11,30 @@ AdditiveFilter::~AdditiveFilter()
 
 void AdditiveFilter::Filter(Bitmap* pBitmap)
 {
-   SDL_Surface* src = pBitmap->GetSurface();
+   SDL_Surface* const src = pBitmap->GetSurface();
 
    if (!src)
       return;
 
-   SDL_Surface* dst = SDL_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_RGBA32);
+   const SDL_PixelFormatDetails* const pfd = SDL_GetPixelFormatDetails(src->format);
+   SDL_Palette* const pal = SDL_GetSurfacePalette(src);
 
-   UINT8 cr;
-   UINT8 cg;
-   UINT8 cb;
-   UINT8 ca;
-   UINT32 pixel;
-   UINT32* pixels = (Uint32*)dst->pixels;
+   SDL_Surface* const dst = SDL_CreateSurface(src->w, src->h, SDL_PIXELFORMAT_RGBA32);
 
-   for (int y = 0; y < dst->h; y++) {
-      for (int x = 0; x < dst->w; x++) {
-         pixel = GetPixel(src, x, y);
-         SDL_GetRGBA(pixel, SDL_GetPixelFormatDetails(src->format), SDL_GetSurfacePalette(src), &cr, &cg, &cb, &ca);
+   const int w = dst->w;
+   const int h = dst->h;
+
+   UINT32* const __restrict pixels = (UINT32*)dst->pixels;
+
+   for (int y = 0; y < h; y++) {
+      for (int x = 0; x < w; x++) {
+         UINT32 pixel = GetPixel(src, x, y);
+         UINT8 cr,cg,cb,ca;
+         SDL_GetRGBA(pixel, pfd, pal, &cr, &cg, &cb, &ca);
          if (cr < 64 && cg < 64 && cb < 64)
-            pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(src, cr, cg, cb, 0);
+            pixels[y * w + x] = SDL_MapSurfaceRGBA(src, cr, cg, cb, 0);
          else
-            pixels[(y * dst->w) + x] = SDL_MapSurfaceRGBA(src, cr, cg, cb, ca);
+            pixels[y * w + x] = SDL_MapSurfaceRGBA(src, cr, cg, cb, ca);
       }
    }
 
