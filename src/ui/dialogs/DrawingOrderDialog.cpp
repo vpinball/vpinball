@@ -61,8 +61,6 @@ BOOL DrawingOrderDialog::OnInitDialog()
          const char * const szTemp = PinTable::GetElementName(pedit);
          if (szTemp)
          {
-            char textBuf[256];
-
             lv.iItem = (int)i;
             lv.iSubItem = 0;
             lv.pszText = (char*)szTemp;
@@ -70,50 +68,43 @@ BOOL DrawingOrderDialog::OnInitDialog()
             if (pedit->GetItemType() == eItemSurface)
             {
                const Surface * const sur = (Surface*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", sur->m_d.m_heighttop);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(sur->m_d.m_heighttop).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Wall");
             }
             else if (pedit->GetItemType() == eItemPrimitive)
             {
                const Primitive * const prim = (Primitive*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", prim->m_d.m_vPosition.z);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(prim->m_d.m_vPosition.z).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Primitive");
             }
             else if (pedit->GetItemType() == eItemRamp)
             {
                const Ramp * const ramp = (Ramp*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", ramp->m_d.m_heighttop);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(ramp->m_d.m_heighttop).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Ramp");
             }
             else if (pedit->GetItemType() == eItemFlasher)
             {
                const Flasher * const flasher = (Flasher*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", flasher->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flasher->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flasher");
             }
             else if (pedit->GetItemType() == eItemRubber)
             {
                const Rubber * const rubber = (Rubber*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", rubber->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(rubber->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Rubber");
             }
             else if (pedit->GetItemType() == eItemSpinner)
             {
                const Spinner * const spin = (Spinner*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", spin->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(spin->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Spinner");
             }
             else if (pedit->GetItemType() == eItemKicker)
             {
                const Kicker * const kick = (Kicker*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", kick->m_d.m_hitAccuracy);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(kick->m_d.m_hitAccuracy).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Kicker");
             }
             else if (pedit->GetItemType() == eItemLight)
@@ -131,22 +122,19 @@ BOOL DrawingOrderDialog::OnInitDialog()
             else if (pedit->GetItemType() == eItemFlipper)
             {
                const Flipper * const flip = (Flipper*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", flip->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(flip->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Flipper");
             }
             else if (pedit->GetItemType() == eItemGate)
             {
                const Gate * const gate = (Gate*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", gate->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(gate->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Gate");
             }
             else if (pedit->GetItemType() == eItemPlunger)
             {
                const Plunger * const plung = (Plunger*)pedit;
-               sprintf_s(textBuf, sizeof(textBuf), "%.02f", plung->m_d.m_height);
-               ListView_SetItemText(hOrderList, i, 1, textBuf);
+               ListView_SetItemText(hOrderList, i, 1, (LPSTR)f2sz(plung->m_d.m_height).c_str());
                ListView_SetItemText(hOrderList, i, 2, (LPSTR)"Plunger");
             }
          }

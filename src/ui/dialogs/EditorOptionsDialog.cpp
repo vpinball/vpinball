@@ -216,7 +216,7 @@ BOOL EditorOptionsDialog::OnCommand(WPARAM wParam, LPARAM lParam)
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_START_VP_FILE_DIALOG2, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_UNIT_LIST_COMBO, CB_SETCURSEL, 0, 0);
-          SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, "1.0");
+          SetDlgItemText(IDC_THROW_BALLS_MASS_EDIT, f2sz(1.0f).c_str());
           SendDlgItemMessage(IDC_ENABLE_LOGGING, BM_SETCHECK, BST_UNCHECKED, 0);
           SendDlgItemMessage(IDC_ENABLE_SCRIPT_LOGGING, BM_SETCHECK, BST_CHECKED, 0);
           SendDlgItemMessage(IDC_STORE_INI_LOCATION, BM_SETCHECK, BST_UNCHECKED, 0);

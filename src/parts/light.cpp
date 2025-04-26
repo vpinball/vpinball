@@ -480,9 +480,7 @@ void Light::RenderSetup(RenderDevice *device)
    {
       char name[sizeof(m_wzName)/sizeof(m_wzName[0])];
       WideCharToMultiByteNull(CP_ACP, 0, m_wzName, -1, name, sizeof(name), nullptr, nullptr);
-      char textBuffer[MAX_PATH];
-      _snprintf_s(textBuffer, MAX_PATH-1, "%s has an invalid shape! It can not be rendered!", name);
-      ShowError(textBuffer);
+      ShowError(name + " has an invalid shape! It can not be rendered!"s);
       return;
    }
 

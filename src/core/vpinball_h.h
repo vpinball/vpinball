@@ -221,24 +221,22 @@ public:
 
    int m_palettescroll;
 
-   //SmartBrowser m_sb;
-
    vector<IStream*> m_vstmclipboard;
 
    PinSound m_ps;
 
-   int m_ToolCur; // Palette button currently pressed
+   int m_ToolCur; // palette button currently pressed
 
    int m_NextTableID; // counter to create next unique table name
 
-   CodeViewer *m_pcv; // Currently active code window
+   CodeViewer *m_pcv; // currently active code window
 
-   bool m_backglassView; // Whether viewing the playfield or screen layout
+   bool m_backglassView; // whether viewing the playfield or screen layout
 
    bool m_alwaysDrawDragPoints;
    bool m_alwaysDrawLightCenters;
    int m_gridSize;
-   int m_convertToUnit; //0=Inches, 1=Millimeters, 2=VPUnits
+   int m_convertToUnit; // 0=Inches, 1=Millimeters, 2=VPUnits
 
    int m_securitylevel;
 

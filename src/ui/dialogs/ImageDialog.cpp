@@ -136,9 +136,7 @@ INT_PTR ImageDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
          ListImages(hListView);
 
-         char textBuf[16];
-         strncpy_s(textBuf, "128", sizeof(textBuf)-1);
-         SetDlgItemText(IDC_ALPHA_MASK_EDIT, textBuf);
+         SetDlgItemText(IDC_ALPHA_MASK_EDIT, f2sz(128.0f).c_str());
          ListView_SetItemState(hListView, 0, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
          GotoDlgCtrl(hListView);
          return FALSE;
