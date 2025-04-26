@@ -444,7 +444,7 @@ BOOL FlasherVisualsProperty::OnInitDialog()
    m_resizer.AddChild(GetDlgItem(IDC_STATIC21), CResizer::topleft, RD_STRETCH_WIDTH); // Flasher Group
    m_resizer.AddChild(m_imageACombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_imageBCombo, CResizer::topleft, RD_STRETCH_WIDTH);
-   m_resizer.AddChild(m_filterCombo, CResizer::topleft, 0);
+   m_resizer.AddChild(m_filterCombo, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_filterAmountEdit, CResizer::topright, RD_STRETCH_WIDTH);
    m_resizer.AddChild(m_hDisplayInEditorCheck, CResizer::topleft, RD_STRETCH_WIDTH);
    m_resizer.AddChild(GetDlgItem(IDC_STATIC6), CResizer::topright, 0);
