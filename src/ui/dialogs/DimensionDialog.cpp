@@ -35,7 +35,7 @@ BOOL DimensionDialog::OnInitDialog()
       SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT, f2sz(VPUTOINCHES(pt->m_glassTopHeight)).c_str());
       SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT, f2sz(VPUTOINCHES(pt->m_glassBottomHeight)).c_str());
       const float ratio = height / width;
-      SetDlgItemText(IDC_AR_LABEL, ("Aspect ratio: "+f2sz(VPUTOINCHES(ratio)).substr(0,5)).c_str());
+      SetDlgItemText(IDC_AR_LABEL, ("Aspect ratio: "+f2sz(ratio).substr(0,5)).c_str());
 
       selectedItem = m_db.GetBestSizeMatch(width, height, pt->m_glassTopHeight, pt->m_glassBottomHeight);
    }
@@ -99,7 +99,7 @@ LRESULT DimensionDialog::OnNotify(WPARAM wparam, LPARAM lparam)
          SetDlgItemText(IDC_TABLE_GLASS_TOP_HEIGHT_EDIT2, f2sz(m_db.m_data[idx].glassTop).c_str());
          SetDlgItemText(IDC_TABLE_GLASS_BOTTOM_HEIGHT_EDIT2, f2sz(m_db.m_data[idx].glassBottom).c_str());
          const float ratio = m_db.m_data[idx].height / m_db.m_data[idx].width;
-         SetDlgItemText(IDC_AR_LABEL2, f2sz(ratio).c_str());
+         SetDlgItemText(IDC_AR_LABEL2, ("Aspect ratio: "+f2sz(ratio).substr(0,5)).c_str());
          UpdateApplyState();
          break;
       }
@@ -130,12 +130,12 @@ INT_PTR DimensionDialog::DialogProc(UINT uMsg, WPARAM wParam, LPARAM lParam)
             else if (LOWORD(wParam) == IDC_VP_WIDTH)
             {
                float vpWidth = fmaxf(sz2f(GetDlgItemText(IDC_VP_WIDTH).GetString()), 0.0f);
-               SetDlgItemText(IDC_SIZE_WIDTH, f2sz((float)VPUTOINCHES(vpWidth)).c_str());
+               SetDlgItemText(IDC_SIZE_WIDTH, f2sz(VPUTOINCHES(vpWidth)).c_str());
             }
             else if (LOWORD(wParam) == IDC_VP_HEIGHT)
             {
                float vpHeight = fmaxf(sz2f(GetDlgItemText(IDC_VP_HEIGHT).GetString()), 0.0f);
-               SetDlgItemText(IDC_SIZE_HEIGHT, f2sz((float)VPUTOINCHES(vpHeight)).c_str());
+               SetDlgItemText(IDC_SIZE_HEIGHT, f2sz(VPUTOINCHES(vpHeight)).c_str());
             }
             m_discardChangeNotification = false;
             UpdateApplyState();

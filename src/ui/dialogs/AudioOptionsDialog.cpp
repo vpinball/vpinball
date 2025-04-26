@@ -4,7 +4,6 @@
 #include "ui/resource.h"
 #include "AudioOptionsDialog.h"
 #include "audio/pinsound.h"
-#include <iostream>
 
 AudioOptionsDialog::AudioOptionsDialog() : CDialog(IDD_AUDIO_OPTIONS)
 {
