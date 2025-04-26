@@ -327,22 +327,22 @@ BEGIN
     LTEXT           "Maddes",IDC_STATIC,13,152,42,9
     LTEXT           "Poiuyterry",IDC_STATIC,150,152,42,9
     CTEXT           "Cupid",IDC_STATIC,82,162,42,9
-    LTEXT           "Fuzzel",IDC_STATIC,13,162,21,8
+    LTEXT           "Fuzzel",IDC_STATIC,13,162,21,9
     LTEXT           "Koadic",IDC_STATIC,150,162,42,9
-    LTEXT           "Mjr",IDC_STATIC,13,172,21,8
-    LTEXT           "DJRobX",IDC_STATIC,48,172,32,8
+    LTEXT           "Mjr",IDC_STATIC,13,172,21,9
+    LTEXT           "DJRobX",IDC_STATIC,48,172,32,9
     CTEXT           "Mukuste",IDC_STATIC,82,172,42,9
     LTEXT           "Brandrew",IDC_STATIC,150,172,42,9
     CTEXT           "Copyright (C) 2000-2025 Randy Davis and the\nVisual Pinball team. All rights reserved (see license.txt)",IDC_STATIC,1,293,167,25
     LTEXT           "Translator's Name - Translation",IDC_TRANSNAME,171,65,52,9,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "Translator's web site address",IDC_TRANSWEBSITE,0,328,32,8,NOT WS_VISIBLE | WS_DISABLED
     LTEXT           "VP10 Active Development",IDC_STATIC,65,183,102,9
-    LTEXT           "Fuzzel",IDC_STATIC,13,194,21,8
+    LTEXT           "Fuzzel",IDC_STATIC,13,194,21,9
     LTEXT           "Toxie",IDC_STATIC,41,194,22,9
-    LTEXT           "DJRobX",IDC_STATIC,67,194,32,8
-    LTEXT           "Caligula",IDC_STATIC,48,152,32,8
-    LTEXT           "Rawnei",IDC_STATIC,48,162,32,8
-    LTEXT           "Vincent Bousquet",IDC_STATIC,150,194,70,8
+    LTEXT           "DJRobX",IDC_STATIC,67,194,32,9
+    LTEXT           "Caligula",IDC_STATIC,48,152,32,9
+    LTEXT           "Rawnei",IDC_STATIC,48,162,32,9
+    LTEXT           "Vincent Bousquet",IDC_STATIC,150,194,70,9
     LTEXT           "Jason Millard",IDC_STATIC,100,194,48,9
     DEFPUSHBUTTON   "&OK",IDOK,173,319,50,14
 END
@@ -791,18 +791,22 @@ BEGIN
     LTEXT           "EOS Torque Angle",IDC_STATIC,11,154,66,8
     EDITTEXT        189,88,152,40,12,ES_AUTOHSCROLL
     GROUPBOX        "Playfield Settings",IDC_STATIC,5,171,127,136
-    LTEXT           "Gravity Constant",IDC_STATIC,11,185,69,8
-    EDITTEXT        1100,88,183,40,12,ES_AUTOHSCROLL
-    LTEXT           "Friction",IDC_STATIC,11,200,69,8
+    LTEXT           "Gravity Constant",IDC_STATIC,11,184,69,8
+    EDITTEXT        1100,88,182,40,12,ES_AUTOHSCROLL
+    LTEXT           "Friction",IDC_STATIC,11,199,69,8
     EDITTEXT        1101,88,197,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity",IDC_STATIC,11,215,69,8
+    LTEXT           "Elasticity",IDC_STATIC,11,214,69,8
     EDITTEXT        1708,88,212,40,12,ES_AUTOHSCROLL
-    LTEXT           "Elasticity Falloff",IDC_STATIC,11,230,69,8
+    LTEXT           "Elasticity Falloff",IDC_STATIC,11,229,69,8
     EDITTEXT        1709,88,227,40,12,ES_AUTOHSCROLL
-    LTEXT           "Playfield Scatter",IDC_STATIC,11,245,69,8
+    LTEXT           "Playfield Scatter",IDC_STATIC,11,244,69,8
     EDITTEXT        1710,88,242,40,12,ES_AUTOHSCROLL
-    LTEXT           "Default Ele. Scatter Angle",IDC_STATIC,11,260,76,8
+    LTEXT           "Default Ele. Scatter Angle",IDC_STATIC,11,259,76,8
     EDITTEXT        1102,88,257,40,12,ES_AUTOHSCROLL
+    LTEXT           "Min Slope",IDC_STATIC,11,274,32,8
+    EDITTEXT        1103,88,272,40,12,ES_AUTOHSCROLL
+    LTEXT           "Max Slope",IDC_STATIC,11,289,34,8
+    EDITTEXT        1104,88,287,40,12,ES_AUTOHSCROLL
     LTEXT           "Set Name",IDC_STATIC,5,320,35,8
     EDITTEXT        1110,48,318,80,12,ES_AUTOHSCROLL
     LISTBOX         IDC_PhysicsList,5,333,188,35,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
@@ -810,10 +814,6 @@ BEGIN
     PUSHBUTTON      "&Cancel",IDCANCEL,144,28,50,14
     PUSHBUTTON      "&Import Set",1111,144,241,50,14
     PUSHBUTTON      "&Export Set",1112,144,259,50,14
-    LTEXT           "Min Slope",IDC_STATIC,11,274,32,8
-    EDITTEXT        1103,88,272,40,12,ES_AUTOHSCROLL
-    LTEXT           "Max Slope",IDC_STATIC,11,288,34,8
-    EDITTEXT        1104,88,287,40,12,ES_AUTOHSCROLL
     LTEXT           "Note:\nInserting a negative value in this Flipper section will not modify the respective table-specific Flipper setting",IDC_STATIC,144,79,53,84
 END
 
@@ -1643,14 +1643,14 @@ IDD_PROPPOINT_VISUALS DIALOGEX 0, 0, 125, 71
 STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    CONTROL         "Smooth",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,40,8
+    CONTROL         "S&mooth",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,40,8
     GROUPBOX        "Position",IDC_STATIC1,3,18,119,46
     EDITTEXT        1,14,29,65,12,ES_AUTOHSCROLL
     EDITTEXT        2,14,45,65,12,ES_AUTOHSCROLL
     LTEXT           "&X",IDC_STATIC2,6,31,8,8
     LTEXT           "&Y",IDC_STATIC3,6,47,8,8
-    PUSHBUTTON      "Copy",IDC_POINT_COPY_BUTTON,84,29,37,12
-    PUSHBUTTON      "Paste",IDC_POINT_PASTE_BUTTON,84,45,37,12
+    PUSHBUTTON      "&Copy",IDC_POINT_COPY_BUTTON,84,29,23,12
+    PUSHBUTTON      "&Paste",IDC_POINT_PASTE_BUTTON,84,45,23,12
 END
 
 IDD_PROPPOINT_VISUALSWTEX DIALOGEX 0, 0, 125, 99
@@ -1658,7 +1658,7 @@ STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
     CONTROL         "S&mooth",3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,40,10
-    CONTROL         "Auto Texture Coord.",4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,17,80,10
+    CONTROL         "&Auto Texture Coord.",4,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,17,80,10
     EDITTEXT        5,55,30,63,12,ES_AUTOHSCROLL
     LTEXT           "&Texture Coord.",IDC_STATIC1,7,32,48,8
     GROUPBOX        "Position",IDC_STATIC2,3,45,119,46
@@ -1666,8 +1666,8 @@ BEGIN
     EDITTEXT        2,17,72,62,12,ES_AUTOHSCROLL
     LTEXT           "&X",IDC_STATIC3,6,58,8,8
     LTEXT           "&Y",IDC_STATIC4,6,74,8,8
-    PUSHBUTTON      "&Copy",IDC_POINT_COPY_BUTTON,84,56,37,12
-    PUSHBUTTON      "&Paste",IDC_POINT_PASTE_BUTTON,84,72,37,12
+    PUSHBUTTON      "&Copy",IDC_POINT_COPY_BUTTON,84,56,23,12
+    PUSHBUTTON      "&Paste",IDC_POINT_PASTE_BUTTON,84,72,23,12
 END
 
 IDD_SECURITY_OPTIONS DIALOGEX 0, 0, 208, 182
@@ -2906,7 +2906,6 @@ BEGIN
         VALUE "Translation", 0x409, 1200
     END
 END
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
