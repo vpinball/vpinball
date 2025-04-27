@@ -445,7 +445,6 @@ cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/libpinmame.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
-cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include
 
 cp libdmdutil/libdmdutil/build/libdmdutil.so ../../../third-party/runtime-libs/android-arm64-v8a
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/

@@ -86,7 +86,7 @@ typedef struct VPXViewSetupDef
    float interpupillaryDistance;                       // [R_] TODO upgrade to RW to allow head tracking to measure and adjust accordingly
 } VPXViewSetupDef;
 
-enum VPXAction
+typedef enum
 {
    VPXACTION_LeftFlipperKey,
    VPXACTION_RightFlipperKey,
@@ -116,7 +116,7 @@ enum VPXAction
    VPXACTION_Escape,
    VPXACTION_Pause,
    VPXACTION_Tweak,
-};
+} VPXAction;
 
 typedef struct VPXActionEvent
 {

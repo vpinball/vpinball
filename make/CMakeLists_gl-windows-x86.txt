@@ -613,6 +613,7 @@ target_include_directories(vpinball PUBLIC
    third-party/include
    third-party/include/win32xx/include
    src
+   src/plugins
 )
 
 target_precompile_headers(vpinball PUBLIC

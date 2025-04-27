@@ -821,14 +821,14 @@ void Light::Render(const unsigned int renderMask)
          #if defined(ENABLE_BGFX)
          const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
          if (eyes > 1)
-            memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+            matWorldViewProj[1] = matWorldViewProj[0];
          shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
          #elif defined(ENABLE_OPENGL)
          if (shader == m_rd->m_lightShader)
          {
             const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
             if (eyes > 1)
-               memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+               matWorldViewProj[1] = matWorldViewProj[0];
             shader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
          }
          else

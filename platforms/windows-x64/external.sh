@@ -323,7 +323,6 @@ cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.lib ../../../third-party/build-libs/windows-x64
 cp pinmame/pinmame/build/${BUILD_TYPE}/pinmame64.dll ../../../third-party/runtime-libs/windows-x64
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
-cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include
 
 cp openxr/openxr/build/src/loader/${BUILD_TYPE}/openxr_loader64.lib ../../../third-party/build-libs/windows-x64
 cp openxr/openxr/build/src/loader/${BUILD_TYPE}/openxr_loader64.dll ../../../third-party/runtime-libs/windows-x64

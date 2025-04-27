@@ -1275,7 +1275,7 @@ void Flasher::Render(const unsigned int renderMask)
       matWorldViewProj[0]._42 = 1.0f;
       const int eyes = m_rd->GetCurrentRenderTarget()->m_nLayers;
       if (eyes > 1)
-         memcpy(&matWorldViewProj[1].m[0][0], &matWorldViewProj[0].m[0][0], 4 * 4 * sizeof(float));
+         matWorldViewProj[1] = matWorldViewProj[0];
       m_rd->m_flasherShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
       m_rd->m_DMDShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
    }
@@ -1359,7 +1359,7 @@ void Flasher::Render(const unsigned int renderMask)
       {
          BaseTexture *frame = g_pplayer->m_resURIResolver.GetDisplay(m_d.m_imageSrcLink);
          if (frame == nullptr)
-            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->GetControllerDisplay({ 0, 0 }).frame;
+            frame = m_dmdFrame != nullptr ? m_dmdFrame : g_pplayer->m_resURIResolver.GetControllerDisplay({ 0, 0 }).frame;
          if (frame == nullptr)
          {
             if (m_backglass)

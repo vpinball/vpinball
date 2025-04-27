@@ -73,4 +73,8 @@ private:
 
    void LoadGlass(Visual& visual);
    ankerl::unordered_dense::map<string, Texture*> m_images;
+
+   unsigned int m_onDmdChangedMsgId, m_onSegChangedMsgId;
+   static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
+   static void OnSegChanged(const unsigned int msgId, void* userData, void* msgData);
 };

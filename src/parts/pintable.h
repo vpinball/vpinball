@@ -1013,8 +1013,6 @@ public:
 
    STDMETHOD(LoadTexture)(BSTR imageName, BSTR fileName);
 
-   STDMETHOD(put_PinMameStateBlock)(BSTR sharedMemName);
-
    STDMETHOD(CreatePluginObject)(/*[in]*/ BSTR classId, /*[out, retval]*/ IDispatch **pVal);
 
    void Init(VPinball *vpinball, PinTable *pt);

@@ -523,7 +523,7 @@ void Textbox::Render(const unsigned int renderMask)
          vertices[i].y = 1.0f - (vertices[i].y * h + y) * 2.0f;
       }
 
-      const Player::ControllerDisplay dmd = g_pplayer->GetControllerDisplay({ 0, 0 });
+      const ResURIResolver::ControllerDisplay dmd = g_pplayer->m_resURIResolver.GetControllerDisplay({ 0, 0 });
       if (dmd.frame == nullptr)
          return;
       // DMD support for textbox is for backward compatibility only, so only use compatibility style #0

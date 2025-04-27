@@ -57,9 +57,6 @@ Dim HasTimeFence : HasTimeFence = False
 ' Are we using the plugin version of PinMAME
 Dim IsPluginPinMAME : IsPluginPinMAME = False
 
-' Does the controller support state exchange through a global state block
-Dim HasStateBlock : HasStateBlock = 2
-
 ' If UsePdbLeds is not defined, then define and disable it to avoid constantly raising an error
 If IsEmpty(Eval("UsePdbLeds"))=true Then ExecuteGlobal("Dim UsePdbLeds:UsePdbLeds=False")
 
@@ -2546,24 +2543,9 @@ Sub PinMAMETimer_Timer
 		If UpdateVisual Then LastPinMameVisualSync = GameTime
 	End If
 
-	If HasStateBlock = 2 Then
-		On Error Resume Next ' Late initialization since StateBlock is only available when Controller is running
-			Err.Clear
-			PinMameStateBlock = Controller.StateBlock
-			If Err Then HasStateBlock = 0 Else HasStateBlock = 1
-			Err.Clear
-		On Error Goto 0
-	ElseIf HasStateBlock = 1 Then
-		If UpdateVisual Then
-			Controller.UpdateStateBlock 63 ' Update all
-		Else
-			Controller.UpdateStateBlock 2 ' Update general purpose outputs only (Solenoids & GI)
-		End If
-	End If
-
 	On Error Resume Next
 		If UpdateVisual Then
-			If Not IsPluginPinMAME And HasStateBlock = 0 Then
+			If Not IsPluginPinMAME Then
 				If UseDMD Then
 					DMDp = Controller.RawDmdPixels
 					If Not IsEmpty(DMDp) Then
