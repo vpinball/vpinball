@@ -721,12 +721,14 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    wintimer_init();
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
-   // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
+   m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
+   m_renderBackglassMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_RENDER_BACKGLASS);
    m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
-   m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
+
+   // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
    VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_onGameStartMsgId, nullptr);
-   m_onPrepareFrameMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_PREPARE_FRAME);
 
    m_scoreView.Select(m_scoreviewOutput);
 
@@ -846,6 +848,7 @@ Player::~Player()
 
    // Release plugin message Ids
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
+   VPXPluginAPIImpl::ReleaseMsgID(m_renderBackglassMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onAudioUpdatedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(onGameEndMsgId);
@@ -1808,6 +1811,8 @@ void Player::FramePacingGameLoop(const std::function<void()>& sync)
    }
 }
 
+extern void PrecompSplineTonemap(const float displayMaxLum, float out[6]);
+
 void Player::PrepareFrame(const std::function<void()>& sync)
 {
    // Rendering outputs to m_renderDevice->GetBackBufferTexture(). If MSAA is used, it is resolved as part of the rendering (i.e. this surface is NOT the MSAA rneder surface but its resolved copy)
@@ -1908,24 +1913,54 @@ void Player::PrepareFrame(const std::function<void()>& sync)
    if (GetProfilingMode() == PF_ENABLED)
       m_renderer->m_gpu_profiler.BeginFrame(m_renderer->m_renderDevice->GetCoreDevice());
    #endif
-
-   #ifdef MSVC_CONCURRENCY_VIEWER
-   delete tagSpan;
-   #endif
+   
    #if defined(ENABLE_BGFX)
    // Since the script can be somewhat lengthy, we do an additional sync here
    sync();
    #endif
+
+   #ifdef MSVC_CONCURRENCY_VIEWER
+   delete tagSpan;
+   #endif
+
    #ifdef MSVC_CONCURRENCY_VIEWER
    tagSpan = new span(series, 1, _T("Build.RF"));
    #endif
 
-   m_renderer->RenderFrame();
+   RenderDevice *const rd = m_renderer->m_renderDevice;
 
+   // Prepare main 3D scene frame
+   m_renderer->RenderFrame();
+   RenderTarget *playfieldRT = rd->GetCurrentRenderTarget();
+
+   // Prepare scoreview
+   RenderTarget *scoreViewRT = nullptr;
    if ((m_vrDevice == nullptr) && (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
+   {
       m_scoreView.Render(m_scoreviewOutput);
+      scoreViewRT = rd->GetCurrentRenderTarget();
+   }
+
+   // Prepare backglass
+   RenderTarget *backglassRT = nullptr;
+   if ((m_vrDevice == nullptr) && (m_backglassOutput.GetMode() != VPX::RenderOutput::OM_DISABLED))
+   {
+      RenderBackglass(playfieldRT);
+      backglassRT = rd->GetCurrentRenderTarget();
+   }
+   
+   // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
+   rd->SetRenderTarget("PostProcess"s, m_renderer->GetBackBufferTexture(), true);
+   if (playfieldRT && playfieldRT != m_renderer->GetBackBufferTexture())
+      rd->AddRenderTargetDependency(playfieldRT, true);
+   if (scoreViewRT && scoreViewRT != m_renderer->GetBackBufferTexture())
+      rd->AddRenderTargetDependency(scoreViewRT, false);
+   if (backglassRT && backglassRT != m_renderer->GetBackBufferTexture())
+      rd->AddRenderTargetDependency(backglassRT, false);
+   m_renderer->PrepareVideoBuffers(m_renderer->m_renderDevice->GetOutputBackBuffer());
 
    m_logicProfiler.ExitProfileSection();
+
    #ifdef MSVC_CONCURRENCY_VIEWER
    delete tagSpan;
    #endif
@@ -2063,6 +2098,167 @@ void Player::FinishFrame()
       }
    }
 #endif
+}
+
+void Player::RenderBackglass(RenderTarget* playfieldRT)
+{
+   RenderDevice *const rd = m_renderer->m_renderDevice;
+   int m_outputX, m_outputY, m_outputW, m_outputH;
+
+   RenderTarget *backglassRT;
+   #ifdef ENABLE_BGFX
+   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      backglassRT = m_backglassOutput.GetWindow()->GetBackBuffer();
+      m_outputW = backglassRT->GetWidth();
+      m_outputH = backglassRT->GetHeight();
+      m_outputX = m_outputY = 0;
+      m_backglassOutput.GetWindow()->Show();
+   }
+   else
+   #endif
+   {
+      assert(m_backglassOutput.GetMode() == VPX::RenderOutput::OM_EMBEDDED);
+      backglassRT = playfieldRT;
+      m_outputW = m_backglassOutput.GetEmbeddedWindow()->GetWidth();
+      m_outputH = m_backglassOutput.GetEmbeddedWindow()->GetHeight();
+      m_backglassOutput.GetEmbeddedWindow()->GetPos(m_outputX, m_outputY);
+      m_outputY = backglassRT->GetHeight() - m_outputY - m_outputH;
+   }
+      
+   Matrix3D matWorldViewProj[2];
+   matWorldViewProj[0] = Matrix3D::MatrixIdentity();
+   matWorldViewProj[0]._11 = 2.f * static_cast<float>(m_outputW) / static_cast<float>(backglassRT->GetWidth());
+   matWorldViewProj[0]._41 = -1.f + 2.f * m_outputX / static_cast<float>(backglassRT->GetWidth());
+   matWorldViewProj[0]._22 = -2.f * static_cast<float>(m_outputH) / static_cast<float>(backglassRT->GetHeight());
+   matWorldViewProj[0]._42 = 1.f - 2.f * m_outputY / static_cast<float>(backglassRT->GetHeight());
+   const int eyes = rd->GetCurrentRenderTarget()->m_nLayers;
+   if (eyes > 1)
+      matWorldViewProj[1] = matWorldViewProj[0];
+   rd->m_basicShader->SetMatrix(SHADER_matWorldViewProj, &matWorldViewProj[0], eyes);
+   rd->m_basicShader->SetFloat(SHADER_alphaTestValue, 0.0f);
+   rd->m_basicShader->SetTechnique(SHADER_TECHNIQUE_bg_decal_with_texture);
+   rd->ResetRenderState();
+   rd->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+   rd->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+   rd->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+   rd->SetRenderState(RenderState::SRCBLEND, RenderState::SRC_ALPHA);
+   rd->SetRenderState(RenderState::DESTBLEND, RenderState::INVSRC_ALPHA);
+   rd->SetRenderState(RenderState::BLENDOP, RenderState::BLENDOP_ADD);
+
+   // Performing linear rendering + tonemapping maybe overkill when used for legacy B2S which are already tonemapped
+   // (mostly a flipbook of prepared images), we should open the path for full HDR rendering but only use it when needed.
+   // Flag to disable HDR rendering (to be moved to some settings)
+   const bool m_disableBackglassHDR = false; // TODO still needs to implement sRGB image drawing when render target is non linear
+
+   if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
+   {
+      if (m_disableBackglassHDR)
+      {
+         rd->SetRenderTarget("BackglassView"s, backglassRT, false, true);
+      }
+      else
+      {
+         if (m_backglassHdrRT == nullptr)
+            m_backglassHdrRT = new RenderTarget(
+               rd, SurfaceType::RT_DEFAULT, "BackglassBackBuffer"s, m_outputW, m_outputH, colorFormat::RGBA16F, false, 1, "Fatal Error: unable to create backglass back buffer");
+         rd->SetRenderTarget("BackglassView"s, m_backglassHdrRT, false, true);
+      }
+   }
+   else
+   {
+      rd->SetRenderTarget("BackglassView"s, backglassRT, true, true);
+      // FIXME place backglass rendering after main render pass, before postprocess
+   }
+   // TODO evaluate and perform if clear is needed (when backglass does not have a default image covering the entire backglass, so far this never happened)
+      
+   VPXRenderBackglassContext context
+   {
+      static_cast<float>(m_outputW), static_cast<float>(m_outputH),
+      1.f, 1.f,
+      [](VPXRenderBackglassContext* ctx, VPXTexture texture,
+         const float tintR, const float tintG, const float tintB, const float alpha,
+         const float srcX, const float srcY, const float srcW, const float srcH,
+         const float dstX, const float dstY, const float dstW, const float dstH)
+         {
+            Texture *tex = static_cast<Texture*>(texture);
+            RenderDevice *rd = g_pplayer->m_renderer->m_renderDevice;
+            rd->SetRenderState(RenderState::ALPHABLENDENABLE, (alpha != 1.f || !tex->m_pdsBuffer->IsOpaque()) ? RenderState::RS_TRUE : RenderState::RS_FALSE);
+            rd->m_basicShader->SetVector(SHADER_cBase_Alpha, tintR, tintG, tintB, alpha);
+            rd->m_basicShader->SetTexture(SHADER_tex_base_color, tex->m_pdsBuffer);
+            const float vx1 = dstX / ctx->srcWidth;
+            const float vy1 = dstY / ctx->srcHeight;
+            const float vx2 = vx1 + dstW / ctx->srcWidth;
+            const float vy2 = vy1 + dstH / ctx->srcHeight;
+            const float tx1 = srcX / tex->m_width;
+            const float ty1 = 1.f - srcY / tex->m_height;
+            const float tx2 = (srcX + srcW) / tex->m_width;
+            const float ty2 = 1.f - (srcY + srcH) / tex->m_height;
+            const Vertex3D_NoTex2 vertices[4] = {
+               { vx2, vy1, 0.f, 0.f, 0.f, 1.f, tx2, ty2 },
+               { vx1, vy1, 0.f, 0.f, 0.f, 1.f, tx1, ty2 },
+               { vx2, vy2, 0.f, 0.f, 0.f, 1.f, tx2, ty1 },
+               { vx1, vy2, 0.f, 0.f, 0.f, 1.f, tx1, ty1 } };
+            rd->DrawTexturedQuad(rd->m_basicShader, vertices, true, 0.f);
+         }
+   };
+   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_renderBackglassMsgId, &context);
+
+   m_renderer->UpdateBasicShaderMatrix();
+
+   if (!m_disableBackglassHDR && (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW))
+   {
+      const float jitter = (float)((msec() & 2047) / 1000.0);
+      rd->SetRenderTarget("BackglassOutput"s, backglassRT, true, true);
+      rd->AddRenderTargetDependency(m_backglassHdrRT, false);
+      rd->m_FBShader->SetTextureNull(SHADER_tex_depth);
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_unfiltered, m_backglassHdrRT->GetColorSampler());
+      rd->m_FBShader->SetTexture(SHADER_tex_fb_filtered, m_backglassHdrRT->GetColorSampler());
+      rd->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
+         0.f, // Bloom
+         m_backglassOutput.GetWindow()->IsWCGBackBuffer()  ? 0.f : 1.f, // Dither
+         0.f, // LUT colorgrade
+         0.f);
+      rd->m_FBShader->SetVector(SHADER_w_h_height, 
+         static_cast<float>(1.0 / static_cast<double>(m_outputW)),
+         static_cast<float>(1.0 / static_cast<double>(m_outputH)),
+         jitter, // radical_inverse(jittertime) * 11.0f,
+         jitter); // sobol(jittertime) * 13.0f); // jitter for dither pattern}
+      ShaderTechniques tonemapTechnique; // FIXME use a tonemapping corresponding to the output, handling situations where playfield is on a HDR display but backglass is not
+      switch (m_renderer->m_toneMapper)
+      {
+      case TM_REINHARD: tonemapTechnique = SHADER_TECHNIQUE_fb_rhtonemap_no_filter; break;
+      case TM_FILMIC: tonemapTechnique = SHADER_TECHNIQUE_fb_fmtonemap_no_filter; break;
+      case TM_NEUTRAL: tonemapTechnique = SHADER_TECHNIQUE_fb_nttonemap_no_filter; break;
+      case TM_AGX: tonemapTechnique = SHADER_TECHNIQUE_fb_agxtonemap_no_filter; break;
+      case TM_AGX_PUNCHY: tonemapTechnique = SHADER_TECHNIQUE_fb_agxptonemap_no_filter; break;
+      default: assert(!"unknown tonemapper"); break;
+      }
+      rd->m_FBShader->SetTechnique(tonemapTechnique);
+      const float m_exposure = 1.f; // TODO implement exposure
+      if (m_backglassOutput.GetWindow()->IsWCGBackBuffer())
+      {
+         const float maxDisplayLuminance = m_backglassOutput.GetWindow()->GetHDRHeadRoom() * (m_backglassOutput.GetWindow()->GetSDRWhitePoint() * 80.f); // Maximum luminance of display in nits, note that GetSDRWhitePoint()*80 should usually be in the 200 nits range
+         rd->m_FBShader->SetVector(SHADER_exposure_wcg,
+            m_exposure,
+            (m_backglassOutput.GetWindow()->GetSDRWhitePoint() * 80.f) / maxDisplayLuminance, // Apply SDR whitepoint (1.0 -> white point in nits), then scale down by maximum luminance (in nits) of display to get a relative value before before tonemapping, equal to 1/GetHDRHeadRoom()
+            maxDisplayLuminance / 10000.f, // Apply back maximum luminance in nits of display after tonemapping, scaled down to PQ limits (1.0 is 10000 nits)
+            1.f);
+         float spline_params[6];
+         PrecompSplineTonemap(maxDisplayLuminance, spline_params);
+         rd->m_FBShader->SetVector(SHADER_spline1, spline_params[0],spline_params[1],spline_params[2],spline_params[3]);
+         rd->m_FBShader->SetVector(SHADER_spline2, spline_params[4],spline_params[5], 0.f,0.f);
+      }
+      else
+      {
+         rd->m_FBShader->SetVector(SHADER_exposure_wcg, 
+            m_exposure,
+            1.f, 
+            0.f, // Unused for SDR
+            0.f); // Tonemapping mode: 0 = SDR 
+      }
+      rd->DrawFullscreenTexturedQuad(rd->m_FBShader);
+   }
 }
 
 void Player::UpdateVolume()

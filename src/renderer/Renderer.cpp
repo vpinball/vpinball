@@ -1216,8 +1216,30 @@ void Renderer::RenderFrame()
    if (g_pplayer->GetInfoMode() != IF_STATIC_ONLY)
       RenderDynamics();
 
-   // Apply screenspace transforms (MSAA, AO, AA, stereo, ball motion blur, tonemapping, dithering, bloom,...)
-   PrepareVideoBuffers(m_renderDevice->GetOutputBackBuffer());
+   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
+   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
+   {
+      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
+      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
+      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
+      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
+      initial_rt->m_name += '-';
+   }
+
+   // Compute bloom (to be applied later)
+   if (IsBloomEnabled())
+   {
+      m_renderDevice->ResetRenderState();
+      m_renderDevice->SetRenderState(RenderState::ALPHABLENDENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::CULLMODE, RenderState::CULL_NONE);
+      m_renderDevice->SetRenderState(RenderState::ZWRITEENABLE, RenderState::RS_FALSE);
+      m_renderDevice->SetRenderState(RenderState::ZENABLE, RenderState::RS_FALSE);
+      Bloom();
+      if (g_pplayer->GetProfilingMode() == PF_ENABLED)
+         m_gpu_profiler.Timestamp(GTS_Bloom);
+      m_renderDevice->SetRenderTarget("Postprocess"s, GetBackBufferTexture(), true, true);
+      m_renderDevice->AddRenderTargetDependency(GetBloomBufferTexture());
+   }
 }
 
 static Texture* LoadSegSDF(Texture& tex, const string& path)
@@ -1858,13 +1880,16 @@ void Renderer::SSRefl()
    m_renderDevice->DrawFullscreenTexturedQuad(m_renderDevice->m_FBShader);
 }
 
+bool Renderer::IsBloomEnabled() const
+{
+   return !m_bloomOff && (m_table->m_bloom_strength > 0.0f) && (g_pplayer->GetInfoMode() <= IF_DYNAMIC_ONLY);
+}
+
 void Renderer::Bloom()
 {
-   if (m_table->m_bloom_strength <= 0.0f || m_bloomOff || g_pplayer->GetInfoMode() == IF_LIGHT_BUFFER_ONLY)
-      return;
-
-   const double w = (double)GetBackBufferTexture()->GetWidth();
-   const double h = (double)GetBackBufferTexture()->GetHeight();
+   assert(IsBloomEnabled());
+   const double w = static_cast<double>(GetBackBufferTexture()->GetWidth());
+   const double h = static_cast<double>(GetBackBufferTexture()->GetHeight());
    #if !defined(ENABLE_BGFX)
    const
    #endif
@@ -1888,7 +1913,7 @@ void Renderer::Bloom()
       // switch to 'bloom' output buffer to collect clipped framebuffer values
       m_renderDevice->SetRenderTarget("Bloom Cut Off"s, GetBloomBufferTexture(), false);
       m_renderDevice->AddRenderTargetDependency(GetBackBufferTexture());
-
+      
       m_renderDevice->m_FBShader->SetTexture(SHADER_tex_fb_filtered, GetBackBufferTexture()->GetColorSampler());
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height, (float) (1.0 / w), (float) (1.0 / h), m_table->m_bloom_strength, 1.0f);
       m_renderDevice->m_FBShader->SetTechnique(SHADER_TECHNIQUE_fb_bloom);
@@ -1942,7 +1967,7 @@ static float pl_hdr_rescale(const bool from, const bool to, float x)
 }
 
 // precompute spline parameters based on all the constants in here and the HDR display range (in nits)
-static void PrecompSplineTonemap(const float displayMaxLum, float out[6])
+void PrecompSplineTonemap(const float displayMaxLum, float out[6])
 {
    const float src_hdr_max = max(1000.f, displayMaxLum); // assumes 1000 nits as scene input max, but adapts to displays with higher nits, as then everything stays perfectly linear //!! use 10000. for max input?
 
@@ -2077,16 +2102,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
    //const unsigned int jittertime = (unsigned int)((U64)msec()*90/1000);
    const float jitter = (float)((msec() & 2047) / 1000.0);
 
-   // Resolve MSAA buffer to a normal one (noop if not using MSAA), allowing sampling it for postprocessing
-   if (GetMSAABackBufferTexture() != GetBackBufferTexture())
-   {
-      RenderPass* const initial_rt = m_renderDevice->GetCurrentPass();
-      m_renderDevice->SetRenderTarget("Resolve MSAA"s, GetBackBufferTexture());
-      m_renderDevice->BlitRenderTarget(GetMSAABackBufferTexture(), GetBackBufferTexture(), true, true);
-      m_renderDevice->SetRenderTarget(initial_rt->m_name, initial_rt->m_rt);
-      initial_rt->m_name += '-';
-   }
-
    RenderTarget* renderedRT = GetBackBufferTexture();
    RenderTarget *outputRT = nullptr;
    m_renderDevice->ResetRenderState();
@@ -2097,11 +2112,6 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
 
    // All postprocess that uses depth sample it from the MSAA resolved rendered backbuffer
    m_renderDevice->m_FBShader->SetTexture(SHADER_tex_depth, GetBackBufferTexture()->GetDepthSampler());
-
-   // Compute bloom (to be applied later)
-   Bloom();
-   if (g_pplayer->GetProfilingMode() == PF_ENABLED)
-      m_gpu_profiler.Timestamp(GTS_Bloom);
 
    // Add screen space reflections
    if (ss_refl)
@@ -2230,11 +2240,10 @@ void Renderer::PrepareVideoBuffers(RenderTarget* outputBackBuffer)
          // FIXME ensure that we always honor the linear RGB. Here it can be defeated if texture is used for something else (which is very unlikely)
          m_renderDevice->m_FBShader->SetTexture(SHADER_tex_color_lut, pin, SF_BILINEAR, SA_CLAMP, SA_CLAMP, true);
       m_renderDevice->m_FBShader->SetVector(SHADER_bloom_dither_colorgrade,
-         ((m_table->m_bloom_strength > 0.0f) && !m_bloomOff && (infoMode <= IF_DYNAMIC_ONLY)) ? 1.f : 0.f, /* Bloom */
-         (!isHdr2020 && (outputBackBuffer->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, /* Dither */
+         IsBloomEnabled() ? 1.f : 0.f, // Bloom
+         (!isHdr2020 && (outputBackBuffer->GetColorFormat() != colorFormat::RGBA10)) ? 1.f : 0.f, // Dither
          (pin != nullptr) ? 1.f : 0.f, /* LUT colorgrade */
          0.f);
-
       m_renderDevice->m_FBShader->SetVector(SHADER_w_h_height,
          (float)(1.0 / (double)render_w), (float)(1.0 / (double)render_h),
          jitter, // radical_inverse(jittertime) * 11.0f,

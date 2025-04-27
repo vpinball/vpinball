@@ -1376,7 +1376,9 @@
     </ClCompile>
     <ClCompile Include="../../third-party/include/progmesh.cpp" />
     <ClCompile Include="../../third-party/include/serial.cpp" />
-    <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp" />
+    <ClCompile Include="../../third-party/include/tinyxml2/tinyxml2.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="../../src/core/vpinball.idl" />
@@ -2211,6 +2213,9 @@
   <ItemGroup>
     <ProjectReference Include="plugin-alphadmd.vcxproj">
       <Project>{2bf90d88-9139-4e66-a778-4327311af7a7}</Project>
+    </ProjectReference>
+    <ProjectReference Include="plugin-b2s.vcxproj">
+      <Project>{7D58C20E-53F4-4AD6-9004-CA6148082491}</Project>
     </ProjectReference>
     <ProjectReference Include="plugin-dmdutil.vcxproj">
       <Project>{DAFBE049-4233-430B-9A04-63223C3972E3}</Project>

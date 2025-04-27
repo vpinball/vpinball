@@ -39,6 +39,7 @@ public:
    unsigned int GetNPrerenderTris() const { return m_statsDrawnStaticTriangles; }
 
    void RenderFrame();
+   void PrepareVideoBuffers(RenderTarget* outputBackBuffer);
 
    enum ColorSpace
    {
@@ -148,7 +149,7 @@ private:
    void RenderDynamics();
    void DrawBackground();
    void DrawBulbLightBuffer();
-   void PrepareVideoBuffers(RenderTarget* outputBackBuffer);
+   bool IsBloomEnabled() const;
    void Bloom();
    void SSRefl();
    BaseTexture* EnvmapPrecalc(const Texture* envTex, const unsigned int rad_env_xres, const unsigned int rad_env_yres);
