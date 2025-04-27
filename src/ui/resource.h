@@ -1317,7 +1317,6 @@
 #define IDD_CABINET_OPT                 930
 #define IDC_WHERE_DESCR                 930
 #define IDD_PFVIEW_OPT                  931
-#define IDD_ALPHAVIEW_OPT               932
 #define IDD_SCOREVIEW_OPT               933
 #define IDD_BACKGLASS_OPT               934
 #define IDC_DOT_TINT                    935

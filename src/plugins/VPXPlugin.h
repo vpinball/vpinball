@@ -39,6 +39,22 @@
 #define VPXPI_EVT_ON_SETTINGS_CHANGED   "OnSettingsChanged"   // Broadcasted when settings have been changed
 #define VPXPI_EVT_ON_ACTION_CHANGED     "OnActionChanged"     // Broadcasted when an action state change, event data is an VPXActionEvent whose isPressed field can be modified by plugins
 
+// Preliminary backglass rendering
+#define VPXPI_EVT_RENDER_BACKGLASS      "RenderBackglass"     // Broadcasted to request rendering of the backglass using the backglass render context provided as msg data
+
+typedef void* VPXTexture;
+
+typedef struct VPXRenderBackglassContext
+{
+   float outWidth;   // Target surface width, mostly to be used for apsect ratio computation, LOD and layout
+   float outHeight;  // Target surface height, mostly to be used for apsect ratio computation, LOD and layout
+   float srcWidth;   // Source surface width, used in DrawImage call, default to 1.0f
+   float srcHeight;  // Source surface height, used in DrawImage call, default to 1.0f
+   void(MSGPIAPI* DrawImage)(VPXRenderBackglassContext* ctx, VPXTexture texture,
+      const float tintR, const float tintG, const float tintB, const float alpha, // tint color and alpha (0..1)
+      const float texX, const float texY, const float texW, const float texH,  // coordinates in texture surface (0..tex.width, 0..tex.height)
+      const float srcX, const float srcY, const float srcW, const float srcH); // coordinates in source surface (0..srcWidth, 0..srcHeight)
+} VPXRenderBackglassContext;
 
 // Core VPX settings pages
 // GetOption 'pageId' parameter is either the id of a loaded plugin or the id of one of the core VPX pages defined below
@@ -143,4 +159,10 @@ typedef struct VPXPluginAPI
    // Input management
    void(MSGPIAPI* GetInputState)(uint64_t* keyState, float* nudgeX, float* nudgeY, float* plunger);
    void(MSGPIAPI* SetInputState)(const uint64_t keyState, const float nudgeX, const float nudgeY, const float plunger);
+
+   // Rendering
+   VPXTexture(MSGPIAPI* CreateTexture)(uint8_t* rawData, int size);
+   void(MSGPIAPI* GetTextureInfo)(VPXTexture texture, int* width, int* height);
+   void(MSGPIAPI* DeleteTexture)(VPXTexture texture);
+
 } VPXPluginAPI;

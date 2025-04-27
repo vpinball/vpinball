@@ -278,11 +278,15 @@ public:
    VRDevice *m_vrDevice = nullptr;
    bool m_headTracking = false;
    bool m_scaleFX_DMD = false;
+   unsigned int m_renderBackglassMsgId = 0;
+   RenderTarget *m_backglassHdrRT = nullptr;
 
 private:
    void PrepareFrame(const std::function<void()>& sync);
    void SubmitFrame();
    void FinishFrame();
+
+   void RenderBackglass(RenderTarget* playfieldRT);
 #pragma endregion
 
 

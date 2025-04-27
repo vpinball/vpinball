@@ -136,6 +136,29 @@ void VPXPluginAPIImpl::SetInputState(const uint64_t keyState, const float nudgeX
    g_pplayer->m_pininput.SetPlungerPos(plunger);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Rendering
+
+VPXTexture VPXPluginAPIImpl::CreateTexture(uint8_t* rawData, int size)
+{
+   Texture* texture = new Texture();
+   if (texture->LoadFromMemory(rawData, size))
+      return texture;
+   delete texture;
+   return nullptr;
+}
+
+void VPXPluginAPIImpl::GetTextureInfo(VPXTexture texture, int* width, int* height)
+{
+   *width = static_cast<Texture*>(texture)->m_width;
+   *height = static_cast<Texture*>(texture)->m_height;
+}
+
+void VPXPluginAPIImpl::DeleteTexture(VPXTexture texture)
+{
+   delete texture;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Shared logging support for plugin API
@@ -371,6 +394,10 @@ VPXPluginAPIImpl::VPXPluginAPIImpl()
 
    m_api.GetInputState = GetInputState;
    m_api.SetInputState = SetInputState;
+
+   m_api.CreateTexture = CreateTexture;
+   m_api.GetTextureInfo = GetTextureInfo;
+   m_api.DeleteTexture = DeleteTexture;
 
    m_vpxPlugin = MsgPluginManager::GetInstance().RegisterPlugin("vpx", "VPX", "Visual Pinball X", "", "", "https://github.com/vpinball/vpinball", 
          [](const uint32_t pluginId, const MsgPluginAPI* api) {},

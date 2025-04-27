@@ -550,7 +550,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
    if (output.GetMode() == VPX::RenderOutput::OM_EMBEDDED)
    {
       output.GetEmbeddedWindow()->GetPos(scoreX, scoreY);
-      scoreRT = player->m_playfieldWnd->GetBackBuffer();
+      scoreRT = sceneRT;
       scoreW = output.GetEmbeddedWindow()->GetWidth();
       scoreH = output.GetEmbeddedWindow()->GetHeight();
       scoreY = scoreRT->GetHeight() - scoreY - scoreH;
@@ -558,7 +558,7 @@ void ScoreView::Render(const VPX::RenderOutput& output)
    if (scoreRT == nullptr)
       return;
 
-   // Render layout
+   // Render layout: we fit the layout inside the output (scoreXYWH) which is itself inside the window (scoreRT)
    const float rtAR = static_cast<float>(scoreW) / static_cast<float>(scoreH);
    const float layoutAR = m_bestLayout->width / m_bestLayout->height;
    const float pw = 2.f * (rtAR > layoutAR ? layoutAR / rtAR : 1.f) * static_cast<float>(scoreW) / static_cast<float>(scoreRT->GetWidth());
@@ -569,9 +569,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
    const float sy = ph / m_bestLayout->height;
 
    renderer->m_renderDevice->SetRenderTarget("ScoreView"s, scoreRT, true, true);
-   if (scoreRT != sceneRT)
+   if (output.GetMode() == VPX::RenderOutput::OM_WINDOW)
    {
-      renderer->m_renderDevice->AddRenderTargetDependency(sceneRT, false);
       renderer->m_renderDevice->Clear(clearType::TARGET, 0);
    }
    else
@@ -604,7 +603,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
             glassArea.z = visual.glassArea.z / (float)visual.glass->m_width;
             glassArea.w = visual.glassArea.w / (float)visual.glass->m_height;
          }
-         renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, frame, 1.f, Renderer::ColorSpace::Reinhard_sRGB, nullptr,
+         renderer->SetupDMDRender(visual.liveStyle, true, visual.tint, 1.f, frame, 1.f,
+            output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr,
             visual.glassPad, visual.glassTint, visual.glassRoughness, visual.glass, glassArea, visual.glassAmbient);
          const float vx1 = px  + visual.x * sx;
          const float vy1 = py  + visual.y * sy;
@@ -661,7 +661,8 @@ void ScoreView::Render(const VPX::RenderOutput& output)
          {
             segGlassArea.x = glassArea.x + visual.xOffsets[i] * hGlassScale;
             renderer->SetupSegmentRenderer(visual.liveStyle, true, visual.tint, 1.0f, visual.segFamilyHint, 
-               frame.displays[i], &frame.frame[i * 16], Renderer::ColorSpace::Reinhard_sRGB, nullptr, 
+               frame.displays[i], &frame.frame[i * 16],
+               output.GetMode() == VPX::RenderOutput::OM_WINDOW ? Renderer::ColorSpace::Reinhard_sRGB : Renderer::ColorSpace::Reinhard, nullptr, 
                visual.glassPad, visual.glassTint, visual.glassRoughness,
                visual.glass, segGlassArea, visual.glassAmbient);
             const float vx1 = px + sx * (visual.x + visual.xOffsets[i]);
