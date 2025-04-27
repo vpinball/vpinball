@@ -1807,7 +1807,6 @@ STDMETHODIMP ScriptGlobalTable::GetIDsOfNames(REFIID /*riid*/, LPOLESTR* rgszNam
 			{ L"NudgeSetCalibration", 805 },
 			{ L"NudgeTiltStatus", 807 },
 			{ L"OpenSerial", 250 },
-			{ L"PinMameStateBlock", 264 },
 			{ L"PlatformBits", 261 },
 			{ L"PlatformCPU", 260 },
 			{ L"PlatformOS", 259 },
@@ -2988,17 +2987,6 @@ STDMETHODIMP ScriptGlobalTable::Invoke(DISPID dispIdMember, REFIID /*riid*/, LCI
 				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
 				V_VT(&res) = VT_DISPATCH;
 				hres = CreatePluginObject(V_BSTR(&var0), (IDispatch**)&V_DISPATCH(&res));
-				VariantClear(&var0);
-			}
-			break;
-		}
-		case 264: {
-			if (wFlags & DISPATCH_PROPERTYPUT) {
-				// line 812: [ propput, id(264), helpstring("property PinMameStateBlock") ] HRESULT PinMameStateBlock([in] BSTR sharedMemName);
-				VARIANT var0;
-				V_VT(&var0) = VT_EMPTY;
-				VariantChangeType(&var0, &pDispParams->rgvarg[--index], 0, VT_BSTR);
-				hres = put_PinMameStateBlock(V_BSTR(&var0));
 				VariantClear(&var0);
 			}
 			break;

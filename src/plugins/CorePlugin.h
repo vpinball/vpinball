@@ -33,6 +33,82 @@ typedef union CtlResId
    uint64_t id;
 } CtlResId;
 
+// Generic device state definition
+typedef struct DeviceDef
+{
+   char* name; // User friendly name, or null if not available, owned by the provider
+   union // User friendly unique mapping id, note that while unique, this id may appear multiple times if a device state is mirrored
+   {
+      struct
+      {
+         uint16_t groupId;
+         uint16_t deviceId;
+      };
+      uint32_t mappingId;
+   };
+} DeviceDef;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Controller input state
+//
+
+// Broadcasted after an input source has been added, modified or removed, there is no message data
+#define CTLPI_ONINPUT_SRC_CHG_MSG "OnInputsChanged"
+
+// Request subscribers to fill up an array with the list of input blocks, message data is a pointer to a GetInputSrcMsg structure
+#define CTLPI_GETINPUT_SRC_MSG    "GetInputs"
+
+typedef struct InputSrcId
+{
+   CtlResId id;                                                                   // Unique Id of the input block
+   unsigned int nInputs;                                                          // Number of inputs
+   DeviceDef* inputDefs;                                                          // Pointer to a block of nInputs DeviceDef
+   int(MSGPIAPI* GetInputState)(const unsigned int inputIndex);                   // Pointer to function to request an input state
+   void(MSGPIAPI* SetInputState)(const unsigned int inputIndex, const int isSet); // Pointer to function to request an input state change
+} InputSrcId;
+
+typedef struct GetInputSrcMsg
+{
+   // Request
+   unsigned int maxEntryCount; // see below
+   // Response
+   unsigned int count;         // Number of entries, also position to put next entry
+   InputSrcId* entries;        // Pointer to an array of maxEntryCount entries to be filled
+} GetInputSrcMsg;
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Controlled device states
+//
+
+// Broadcasted after a controlled device source has been added, modified or removed, there is no message data
+#define CTLPI_ONDEV_SRC_CHG_MSG "OnDevSrcChanged"
+
+// Request subscribers to fill up an array with the list of controlled device sources, message data is a pointer to a GetDevSrcMsg structure
+#define CTLPI_GETDEV_SRC_MSG    "GetDevices"
+
+typedef struct DevSrcId
+{
+   CtlResId id;                                                      // Unique Id of the controlled device block
+   unsigned int nDevices;                                            // Number of device properties in this block
+   DeviceDef* deviceDefs;                                            // Pointer to a block of nDevices DeviceDef
+   uint8_t (MSGPIAPI* GetByteState)(const unsigned int deviceIndex); // Get the state of a device property
+   float (MSGPIAPI* GetFloatState)(const unsigned int deviceIndex);  // Get the state of a device property
+} IOSrcId;
+
+typedef struct GetDevSrcMsg
+{
+   // Request
+   unsigned int maxEntryCount; // see below
+   // Response
+   unsigned int count;         // Number of entries, also position to put next entry
+   DevSrcId* entries;          // Pointer to an array of maxEntryCount entries to be filled
+} GetDevSrcMsg;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -49,8 +125,8 @@ typedef union CtlResId
 //   providing upscaling or colorization support.
 //
 
-// Broadcasted when a DMD source has been added, changed or removed, there is no message data
-#define CTLPI_ONDMD_SRC_CHG_MSG               "OnDMDSrcChange"
+// Broadcasted after a DMD source has been added, modified or removed, there is no message data
+#define CTLPI_ONDMD_SRC_CHG_MSG               "OnDMDSrcChanged"
 
 // Request subscribers to fill up an array with the list of DMD sources, message data is a pointer to a GetDmdSrcMsg structure
 #define CTLPI_GETDMD_SRC_MSG                  "GetDMDSrc"
@@ -127,8 +203,8 @@ typedef struct GetRawDmdMsg
 // Segment displays
 //
 
-// Broadcasted when an alpha numeric source has been added, changed or removed, there is no message data
-#define CTLPI_ONSEG_SRC_CHG_MSG        "OnSegSrcChange"
+// Broadcasted after an alpha numeric source has been added, modified or removed, there is no message data
+#define CTLPI_ONSEG_SRC_CHG_MSG        "OnSegSrcChanged"
 
 // Request subscribers to fill up an array with the list of alpha numeric sources, message data is a pointer to a GetSegSrcMsg structure
 #define CTLPI_GETSEG_SRC_MSG           "GetSegSrc"

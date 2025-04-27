@@ -362,40 +362,9 @@ public:
    BaseTexture* m_dmdFrame = nullptr;
    int m_dmdFrameId = 0;
 
-   // DMDs and video displays gathered through plugin API
-   struct ControllerDisplay
-   {
-      DmdSrcId dmdId;
-      int frameId = -1;
-      BaseTexture *frame = nullptr;
-   };
-   ControllerDisplay GetControllerDisplay(CtlResId id);
-
-   // Segment displays gathered through plugin API
-   struct ControllerSegDisplay
-   {
-      CtlResId segId;
-      unsigned int nElements;
-      float *frame = nullptr;
-      vector<vector<SegElementType>> displays;
-   };
-   ControllerSegDisplay GetControllerSegDisplay(CtlResId id);
-
    ResURIResolver m_resURIResolver;
 
 private:
-   static void OnDmdChanged(const unsigned int msgId, void* userData, void* msgData);
-   unsigned int m_getDmdMsgId, m_getDmdSrcMsgId, m_onDmdChangedMsgId;
-   vector<ControllerDisplay> m_controllerDisplays;
-   bool m_defaultDmdSelected = false;
-   DmdSrcId m_defaultDmdId;
-
-   static void OnSegChanged(const unsigned int msgId, void *userData, void *msgData);
-   unsigned int m_getSegMsgId, m_getSegSrcMsgId, m_onSegChangedMsgId;
-   vector<ControllerSegDisplay> m_controllerSegDisplays;
-   bool m_defaultSegSelected = false;
-   CtlResId m_defaultSegId; 
-   
    ScoreView m_scoreView;
 
 

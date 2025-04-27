@@ -1880,7 +1880,7 @@ void RenderDevice::SetClipPlane(const vec4 &plane)
    // FIXME GLES implement (or use BGFX OpenGL ES implementation)
    return;
 #elif defined(ENABLE_BGFX)
-   m_DMDShader->SetVector(SHADER_clip_plane, &plane);
+   //m_DMDShader->SetVector(SHADER_clip_plane, &plane); // FIXME
    m_basicShader->SetVector(SHADER_clip_plane, &plane);
    m_lightShader->SetVector(SHADER_clip_plane, &plane);
    m_flasherShader->SetVector(SHADER_clip_plane, &plane);

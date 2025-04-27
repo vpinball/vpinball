@@ -695,6 +695,7 @@ target_include_directories(vpinball PUBLIC
    media
    pin
    src
+   src/plugins
 )
 
 target_precompile_headers(vpinball PUBLIC

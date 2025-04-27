@@ -365,7 +365,6 @@ cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp -a pinmame/pinmame/build/libpinmame.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
-cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include
 
 cp -a libdmdutil/libdmdutil/build/libdmdutil.{so,so.*} ../../../third-party/runtime-libs/linux-aarch64
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/

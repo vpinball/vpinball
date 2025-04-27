@@ -2,19 +2,30 @@
 #include "Game.h"
 #include <thread>
 
-Controller::Controller(PinmameConfig& config)
+Controller::Controller(MsgPluginAPI* api, unsigned int endpointId, PinmameConfig& config)
+   : m_msgApi(api)
+   , m_endpointId(endpointId)
 {
    PinmameSetConfig(&config);
    PinmameSetSoundMode(PINMAME_SOUND_MODE_DEFAULT);
-   // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use state blocks
+   // PinmameSetDmdMode(PINMAME_DMD_MODE_RAW); // Unneeded as we use LibPïnMame controller messages
    PinmameSetHandleKeyboard(0);
    PinmameSetHandleMechanics(0xFF);
 
    m_vpmPath = config.vpmPath;
+
+   m_getDmdSrcMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
+   m_getDmdMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
+   m_onDmdChangedMsgId = m_msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
+   m_msgApi->SubscribeMsg(m_endpointId, m_onDmdChangedMsgId, OnDmdSrcChanged, this);
 }
 
 Controller::~Controller()
 {
+   m_msgApi->UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdSrcChanged);
+   m_msgApi->ReleaseMsgID(m_onDmdChangedMsgId);
+   m_msgApi->ReleaseMsgID(m_getDmdSrcMsgId);
+   m_msgApi->ReleaseMsgID(m_getDmdMsgId);
    if (m_onDestroyHandler)
       m_onDestroyHandler(this);
    delete m_pPinmameGame;
@@ -154,7 +165,6 @@ void Controller::Stop()
       if (m_onGameEndHandler)
          m_onGameEndHandler(this);
    }
-   m_stateBlock = nullptr;
 }
 
 void Controller::SetMech(int mechNo, int newVal)
@@ -252,104 +262,88 @@ const vector<PinmameSolenoidState>& Controller::GetChangedSolenoids()
    return m_solenoidStates;
 }
 
-int Controller::GetRawDmdWidth() const
+void Controller::OnDmdSrcChanged(const unsigned int msgId, void* userData, void* msgData)
 {
-   GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (m_stateBlock == nullptr)
-      return 0;
-   pinmame_tDisplayStates* state = m_stateBlock->displayStates;
-   if (state == nullptr)
-      return 0;
-   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-      if (frame->width >= 128)
-         return frame->width;
-   return 0;
+   Controller* me = static_cast<Controller*>(userData);
+   me->m_defaultDmd.dmdId.id.id = 0;
 }
 
-int Controller::GetRawDmdHeight() const
+void Controller::UpdateDmd()
 {
-   GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (m_stateBlock == nullptr)
-      return 0;
-   pinmame_tDisplayStates* state = m_stateBlock->displayStates;
-   if (state == nullptr)
-      return 0;
-   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-      if (frame->width >= 128)
-         return frame->height;
-   return 0;
-}
-
-std::vector<uint8_t> Controller::GetRawDmdPixels() const
-{
-   std::vector<uint8_t> pixels;
-   GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (m_stateBlock == nullptr)
-      return pixels;
-   pinmame_tDisplayStates* state = m_stateBlock->displayStates;
-   if (state == nullptr)
-      return pixels;
-   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-      if (frame->width >= 128)
+   if (m_defaultDmd.dmdId.id.id == 0)
+   {
+      unsigned int largest = 128;
+      GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
+      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdSrcMsgId, &getSrcMsg);
+      for (unsigned int i = 0; i < getSrcMsg.count; i++)
       {
-         const int size = frame->width * frame->height;
-         pixels.resize(size);
-         switch (frame->dataFormat)
+         if (getSrcMsg.entries[i].width >= largest)
          {
-         case PINMAME_FRAME_FORMAT_LUM:
-            for (int i = 0; i < size; i++)
-               pixels[i] = (uint32_t)frame->frameData[i] * 100u / 255u;
-            break;
-         case PINMAME_FRAME_FORMAT_RGB:
-            for (int i = 0; i < size; i++)
-               pixels[i] = static_cast<uint8_t>(21.26f * (float)frame->frameData[i * 3] + 71.52f * (float)frame->frameData[i * 3 + 1] + 7.22f * (float)frame->frameData[i * 3 + 2]);
-            break;
-         default:
-            pixels.resize(0);
-            break;
+            m_defaultDmd.dmdId = getSrcMsg.entries[i];
+            largest = getSrcMsg.entries[i].width;
          }
-         break;
       }
+   }
+   if (m_defaultDmd.dmdId.id.id != 0)
+      m_msgApi->BroadcastMsg(m_endpointId, m_getDmdMsgId, &m_defaultDmd);
+}
+
+int Controller::GetRawDmdWidth()
+{
+   UpdateDmd();
+   return m_defaultDmd.dmdId.id.id != 0 ? m_defaultDmd.dmdId.width : 0;
+}
+
+int Controller::GetRawDmdHeight()
+{
+   UpdateDmd();
+   return m_defaultDmd.dmdId.id.id != 0 ? m_defaultDmd.dmdId.height : 0;
+}
+
+std::vector<uint8_t> Controller::GetRawDmdPixels()
+{
+   UpdateDmd();
+   std::vector<uint8_t> pixels;
+   if (m_defaultDmd.dmdId.id.id == 0)
+      return pixels;
+   const int size = m_defaultDmd.dmdId.width * m_defaultDmd.dmdId.height;
+   if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_LUM8)
+   {
+      pixels.resize(size);
+      for (int i = 0; i < size; i++)
+         pixels[i] = (uint32_t)m_defaultDmd.frame[i] * 100u / 255u;
+   }
+   else if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_SRGB888)
+   {
+      pixels.resize(size);
+      for (int i = 0; i < size; i++)
+         pixels[i] = static_cast<uint8_t>(21.26f * (float)m_defaultDmd.frame[i * 3] + 71.52f * (float)m_defaultDmd.frame[i * 3 + 1] + 7.22f * (float)m_defaultDmd.frame[i * 3 + 2]);
+   }
    return pixels;
 }
 
-std::vector<uint32_t> Controller::GetRawDmdColoredPixels() const
+std::vector<uint32_t> Controller::GetRawDmdColoredPixels()
 {
+   UpdateDmd();
    std::vector<uint32_t> pixels;
-   GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (m_stateBlock == nullptr)
+   if (m_defaultDmd.dmdId.id.id == 0)
       return pixels;
-   pinmame_tDisplayStates* state = m_stateBlock->displayStates;
-   if (state == nullptr)
-      return pixels;
-   const pinmame_tFrameState* const frame = (pinmame_tFrameState*)((uint8_t*)state + sizeof(pinmame_tDisplayStates));
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-      if (frame->width >= 128)
+   const int size = m_defaultDmd.dmdId.width * m_defaultDmd.dmdId.height;
+   if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_LUM8)
+   {
+      pixels.resize(size);
+      for (int i = 0; i < size; i++)
       {
-         const int size = frame->width * frame->height;
-         pixels.resize(size);
-         switch (frame->dataFormat)
-         {
-         case PINMAME_FRAME_FORMAT_LUM:
-            for (int i = 0; i < size; i++)
-            {
-               // TODO implement original PinMame / VPinMame coloring
-               const uint32_t lum = frame->frameData[i];
-               pixels[i] = (lum << 16) | (lum << 8) | lum;
-            }
-            break;
-         case PINMAME_FRAME_FORMAT_RGB:
-            for (int i = 0; i < size; i++)
-               pixels[i] = ((uint32_t)frame->frameData[i * 3] << 16) | ((uint32_t)frame->frameData[i * 3 + 1] << 8) | (frame->frameData[i * 3 + 2]);
-            break;
-         default:
-            pixels.resize(0);
-            break;
-         }
-         break;
+         // TODO implement original PinMame / VPinMame coloring
+         const uint32_t lum = m_defaultDmd.frame[i];
+         pixels[i] = (lum << 16) | (lum << 8) | lum;
       }
+   }
+   else if (m_defaultDmd.dmdId.format == CTLPI_GETDMD_FORMAT_SRGB888)
+   {
+      pixels.resize(size);
+      for (int i = 0; i < size; i++)
+         pixels[i] = ((uint32_t)m_defaultDmd.frame[i * 3] << 16) | ((uint32_t)m_defaultDmd.frame[i * 3 + 1] << 8) | (m_defaultDmd.frame[i * 3 + 2]);
+   }
    return pixels;
 }

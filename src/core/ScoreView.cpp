@@ -6,16 +6,36 @@
 #include <sstream>
 #include <algorithm>
 #include <iostream>
+#include "plugins/CorePlugin.h"
+#include "core/VPXPluginAPIImpl.h"
 
 ScoreView::ScoreView()
 {
+   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
+   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
+   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
+   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
 }
 
 ScoreView::~ScoreView()
 {
+   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onSegChangedMsgId);
+   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdChanged);
+   VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
    for (auto& image : m_images)
       delete image.second;
    m_images.clear();
+}
+
+void ScoreView::OnSegChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   static_cast<ScoreView*>(userData)->Select(g_pplayer->m_scoreviewOutput);
+}
+
+void ScoreView::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
+{
+   static_cast<ScoreView*>(userData)->Select(g_pplayer->m_scoreviewOutput);
 }
 
 void ScoreView::Load(const string& path)

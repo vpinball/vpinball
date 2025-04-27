@@ -43,7 +43,6 @@ Settings::Settings(const Settings* parent)
 void Settings::RegisterStringSetting(const Section section, const string &key, const string &defVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
-      assert(m_validatedKeys[section].find(key) == m_validatedKeys[section].end());
       m_validatedKeys[section].insert(key);
    #endif
    string val;
@@ -55,7 +54,6 @@ void Settings::RegisterStringSetting(const Section section, const string &key, c
 void Settings::RegisterBoolSetting(const Section section, const string &key, const bool defVal, const bool addDefaults, const string &comments)
 {
    #ifdef DEBUG
-      assert(m_validatedKeys[section].find(key) == m_validatedKeys[section].end());
       m_validatedKeys[section].insert(key);
    #endif
    int val;
@@ -73,7 +71,6 @@ void Settings::RegisterIntSetting(const Section section, const string &key, cons
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
    #ifdef DEBUG
-      assert(m_validatedKeys[section].find(key) == m_validatedKeys[section].end());
       m_validatedKeys[section].insert(key);
    #endif
    int val;
@@ -91,7 +88,6 @@ void Settings::RegisterFloatSetting(const Section section, const string &key, co
 {
    assert((minVal <= defVal) && (defVal <= maxVal));
    #ifdef DEBUG
-      assert(m_validatedKeys[section].find(key) == m_validatedKeys[section].end());
       m_validatedKeys[section].insert(key);
    #endif
    float val;

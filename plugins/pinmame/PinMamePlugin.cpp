@@ -193,7 +193,6 @@ static MsgPluginAPI* msgApi = nullptr;
 static ScriptablePluginAPI* scriptApi = nullptr;
 
 static uint32_t endpointId;
-static unsigned int onGameStartId, onGameEndId;
 
 static Controller* controller = nullptr;
 
@@ -291,218 +290,15 @@ int PINMAMECALLBACK OnAudioUpdated(void* p_buffer, int samples, void* const pUse
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
-// Alphanumeric segment displays
-
-static bool hasAlpha = false;
-static unsigned int onSegSrcChangedId, getSegSrcId, getSegId;
-static unsigned int segFrameId = 0;
-static float segLuminances[16 * 128] = { 0 };
-static float segPrevLuminances[16 * 128] = { 0 };
-
-static void onGetSegSrc(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (!hasAlpha || (controller == nullptr))
-      return;
-   GetSegSrcMsg& msg = *static_cast<GetSegSrcMsg*>(msgData);
-
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_ALPHA_DEVICE_STATE);
-   if (block == nullptr)
-      return;
-   pinmame_tAlphaStates* states = block->alphaDisplayStates;
-   if (states == nullptr)
-      return;
-   pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(states);
-   for (unsigned int i = 0, pos = 0; (msg.count < msg.maxEntryCount) && (i < states->nDisplays); i++)
-   {
-      assert(states->displayDefs[i].nElements < CTLPI_SEG_MAX_DISP_ELEMENTS);
-      msg.entries[msg.count].id = { endpointId, 0 };
-      msg.entries[msg.count].nDisplaysInGroup = states->nDisplays;
-      msg.entries[msg.count].displayIndex = i;
-      msg.entries[msg.count].hardware = CTLPI_GETSEG_HARDWARE_UNKNOWN;
-      msg.entries[msg.count].nElements = states->displayDefs[i].nElements;
-      for (unsigned int j = 0; j < states->displayDefs[i].nElements; j++, pos++)
-         msg.entries[msg.count].elementType[j] = static_cast<SegElementType>(alphaStates[pos].type);
-      msg.count++;
-   }
-}
-
-static void onGetSeg(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (!hasAlpha || (controller == nullptr))
-      return;
-   GetSegMsg& msg = *static_cast<GetSegMsg*>(msgData);
-   if ((msg.frame != nullptr) || (msg.segId.endpointId != endpointId) || (msg.segId.resId != 0))
-      return;
-
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_ALPHA_DEVICE_STATE);
-   if (block == nullptr)
-      return;
-   pinmame_tAlphaStates* state = block->alphaDisplayStates;
-   if (state == nullptr)
-      return;
-   pinmame_tAlphaSegmentState* alphaStates = PINMAME_STATE_BLOCK_FIRST_ALPHA_FRAME(state);
-   static constexpr int nSegments[] = { 7, 8, 8, 10, 10, 15, 15, 16, 16 };
-   unsigned int nElements = 0;
-   for (unsigned int display = 0; display < state->nDisplays; display++)
-      nElements += state->displayDefs[display].nElements;
-   for (unsigned int i = 0; i < nElements; i++)
-      memcpy(&segLuminances[i * 16], alphaStates[i].luminance, nSegments[alphaStates[i].type] * sizeof(float));
-   if (memcmp(segPrevLuminances, segLuminances, nElements * 16 * sizeof(float)) != 0)
-   {
-      memcpy(segPrevLuminances, segLuminances, nElements * 16 * sizeof(float));
-      segFrameId++;
-   }
-   msg.frame = segLuminances;
-   msg.frameId = segFrameId;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
-// DMD & Displays
-
-static bool hasDMD = false;
-static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId;
-
-static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (!hasDMD || (controller == nullptr))
-      return;
-   GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
-
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (block == nullptr)
-      return;
-   pinmame_tDisplayStates* state = block->displayStates;
-   if (state == nullptr)
-      return;
-
-   pinmame_tFrameState* frame = PINMAME_STATE_BLOCK_FIRST_DISPLAY_FRAME(state);
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-   {
-      if (msg.count < msg.maxEntryCount)
-      {
-         msg.entries[msg.count].id = { endpointId, static_cast <uint32_t>(frame->displayId) };
-         msg.entries[msg.count].format = frame->dataFormat;
-         msg.entries[msg.count].width = frame->width;
-         msg.entries[msg.count].height = frame->height;
-         msg.count++;
-      }
-      frame = PINMAME_STATE_BLOCK_NEXT_DISPLAY_FRAME(frame);
-   }
-}
-
-static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (!hasDMD || (controller == nullptr))
-      return;
-   GetRawDmdMsg* const msg = static_cast<GetRawDmdMsg*>(msgData);
-   if ((msg->frame != nullptr) || (msg->dmdId.endpointId != endpointId))
-      return;
-
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (block == nullptr)
-      return;
-   pinmame_tDisplayStates* state = block->rawDMDStates;
-   if (state == nullptr)
-      return;
-
-   pinmame_tFrameState* frame = PINMAME_STATE_BLOCK_FIRST_DISPLAY_FRAME(state);
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-   {
-      if (msg->dmdId.resId == frame->displayId)
-      {
-         msg->format = frame->dataFormat;
-         msg->width = frame->width;
-         msg->height = frame->height;
-         msg->frameId = frame->frameId;
-         msg->frame = frame->frameData;
-         return;
-      }
-      frame = PINMAME_STATE_BLOCK_NEXT_DISPLAY_FRAME(frame);
-   }
-}
-
-static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msgData)
-{
-   if (!hasDMD || (controller == nullptr))
-      return;
-   GetDmdMsg* const msg = static_cast<GetDmdMsg*>(msgData);
-   if ((msg->frame != nullptr) || (msg->dmdId.id.endpointId != endpointId))
-      return;
-
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_DISPLAY_STATE);
-   if (block == nullptr)
-      return;
-   pinmame_tDisplayStates* state = block->displayStates;
-   if (state == nullptr)
-      return;
-
-   pinmame_tFrameState* frame = PINMAME_STATE_BLOCK_FIRST_DISPLAY_FRAME(state);
-   for (unsigned int index = 0; index < state->nDisplays; index++)
-   {
-      if (msg->dmdId.id.resId == frame->displayId)
-      {
-         if ((msg->dmdId.width == frame->width) && (msg->dmdId.height == frame->height) && (msg->dmdId.format == frame->dataFormat))
-         {
-            msg->frameId = frame->frameId;
-            msg->frame = frame->frameData;
-         }
-         return;
-      }
-      frame = PINMAME_STATE_BLOCK_NEXT_DISPLAY_FRAME(frame);
-   }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////
 // Overall game messages
 
 static void OnControllerGameStart(Controller*)
 {
    assert(controller->GetRunning());
-   const string& gameName = controller->GetGameName();
-   PMPI_MSG_ON_GAME_START msg = { controller->GetVpmPath().c_str(), gameName.c_str() };
-   msgApi->BroadcastMsg(endpointId, onGameStartId, reinterpret_cast<void*>(&msg));
-   auto block = controller->GetStateBlock(PINMAME_STATE_REQMASK_ALL);
-   if (block != nullptr)
-   {
-      hasDMD = (block->displayStates != nullptr) && (block->displayStates->nDisplays > 0);
-      if (hasDMD)
-      {
-         msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetRenderDMDSrc, controller);
-         msgApi->SubscribeMsg(endpointId, getRenderDmdId, onGetRenderDMD, controller);
-         msgApi->SubscribeMsg(endpointId, getIdentifyDmdId, onGetIdentifyDMD, controller);
-         msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
-      }
-      hasAlpha = (block->alphaDisplayStates != nullptr) && (block->alphaDisplayStates->nDisplays > 0);
-      if (hasAlpha)
-      {
-         msgApi->SubscribeMsg(endpointId, getSegSrcId, onGetSegSrc, controller);
-         msgApi->SubscribeMsg(endpointId, getSegId, onGetSeg, controller);
-         msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
-      }
-   }
 }
 
 static void OnControllerGameEnd(Controller*)
 {
-   if (hasDMD)
-   {
-      hasDMD = false;
-      msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc);
-      msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
-      msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
-   }
-   if (hasAlpha)
-   {
-      hasAlpha = false;
-      msgApi->UnsubscribeMsg(getSegSrcId, onGetSegSrc);
-      msgApi->UnsubscribeMsg(getSegId, onGetSeg);
-   }
-   // Broadcast message after unsubscribing to avoid receiving unwanted requests
-   msgApi->BroadcastMsg(endpointId, onGameEndId, nullptr);
-   msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
-   msgApi->BroadcastMsg(endpointId, onSegSrcChangedId, nullptr);
    StopAudioStream();
 }
 
@@ -525,19 +321,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    // Request and setup shared login API
    LPISetup(endpointId, msgApi);
 
-   // Setup our own messages
-   onGameStartId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_START);
-   onGameEndId = msgApi->GetMsgID(PMPI_NAMESPACE, PMPI_EVT_ON_GAME_END);
-
    // Setup our contribution to the controller messages
-   onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
-   getDmdSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   getRenderDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   getIdentifyDmdId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_IDENTIFY_MSG);
-   onDmdSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
-   onSegSrcChangedId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
-   getSegSrcId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
-   getSegId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
    onAudioUpdateId = msgApi->GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
 
    // Contribute our API to the script engine
@@ -582,9 +366,9 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
 
       // Define pinmame directory (for ROM, NVRAM, ... eventually using VPX API if available)
       string pinmamePath;
-      unsigned int getVpxApiId;
       VPXPluginAPI* vpxApi = nullptr;
-      msgApi->BroadcastMsg(endpointId, getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API), &vpxApi);
+      unsigned int getVpxApiId = msgApi->GetMsgID(VPXPI_NAMESPACE, VPXPI_MSG_GET_API);
+      msgApi->BroadcastMsg(endpointId, getVpxApiId, &vpxApi);
       msgApi->ReleaseMsgID(getVpxApiId);
       if (vpxApi != nullptr)
       {
@@ -617,7 +401,7 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
       strncpy(const_cast<char*>(config.vpmPath), pinmamePath.c_str(), PINMAME_MAX_PATH - 1);
       #endif
 
-      Controller* pController = new Controller(config);
+      Controller* pController = new Controller(msgApi, endpointId, config);
       pController->SetOnDestroyHandler(OnControllerDestroyed);
       pController->SetOnGameStartHandler(OnControllerGameStart);
       pController->SetOnGameEndHandler(OnControllerGameEnd);
@@ -626,19 +410,14 @@ MSGPI_EXPORT void MSGPIAPI PluginLoad(const uint32_t sessionId, MsgPluginAPI* ap
    };
    scriptApi->SubmitTypeLibrary();
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", Controller_SCD);
+
+   PinmameSetMsgAPI(msgApi, endpointId);
 }
 
 MSGPI_EXPORT void MSGPIAPI PluginUnload()
 {
-   msgApi->ReleaseMsgID(onGameStartId);
-   msgApi->ReleaseMsgID(onGameEndId);
-   msgApi->ReleaseMsgID(onDmdSrcChangedId);
-   msgApi->ReleaseMsgID(getDmdSrcId);
-   msgApi->ReleaseMsgID(getRenderDmdId);
-   msgApi->ReleaseMsgID(getIdentifyDmdId);
-   msgApi->ReleaseMsgID(onSegSrcChangedId);
-   msgApi->ReleaseMsgID(getSegSrcId);
-   msgApi->ReleaseMsgID(getSegId);
+   PinmameSetMsgAPI(nullptr, 0);
+
    msgApi->ReleaseMsgID(onAudioUpdateId);
    scriptApi->SetCOMObjectOverride("VPinMAME.Controller", nullptr);
    // TODO we should unregister the script API contribution

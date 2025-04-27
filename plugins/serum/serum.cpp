@@ -32,10 +32,9 @@ static MsgPluginAPI* msgApi = nullptr;
 static uint32_t endpointId;
 static unsigned int onDmdSrcChangedId, getDmdSrcId, getRenderDmdId, getIdentifyDmdId, onGameStartId, onGameEndId, onDmdTrigger;
 
-static Serum_Frame_Struc* pSerum;
-static CtlResId dmdId;
-static unsigned int lastRawFrameId;
-static bool dmdSelected = false;
+static Serum_Frame_Struc* pSerum = nullptr;
+static CtlResId dmdId = { 0 };
+static unsigned int lastRawFrameId = 0;
 
 class ColorizationState final
 {
@@ -110,7 +109,7 @@ static void onGetIdentifyDMD(const unsigned int eventId, void* userData, void* m
    GetRawDmdMsg* const getDmdMsg = static_cast<GetRawDmdMsg*>(msgData);
 
    // Only process selected DMD
-   if (!dmdSelected || getDmdMsg->dmdId.id != dmdId.id)
+   if (dmdId.id == 0 || getDmdMsg->dmdId.id != dmdId.id)
       return;
 
    // Only process response with a new frame
@@ -163,12 +162,11 @@ static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msg
    GetDmdMsg& getDmdMsg = *static_cast<GetDmdMsg*>(msgData);
 
    // If main DMD not yet selected then do it
-   if (!dmdSelected)
+   if (dmdId.id == 0)
    {
       if (getDmdMsg.dmdId.width < 128)
          return;
       dmdId = getDmdMsg.dmdId.id;
-      dmdSelected = true;
    }
 
    // Only process selected DMD
@@ -235,7 +233,7 @@ static void onGetRenderDMD(const unsigned int eventId, void* userData, void* msg
 
 static void onGetRenderDMDSrc(const unsigned int eventId, void* userData, void* msgData)
 {
-   if (pSerum == nullptr || state == nullptr || !dmdSelected)
+   if (pSerum == nullptr || state == nullptr || dmdId.id == 0)
       return;
    
    GetDmdSrcMsg& msg = *static_cast<GetDmdSrcMsg*>(msgData);
@@ -269,15 +267,11 @@ static void onGameStart(const unsigned int eventId, void* userData, void* msgDat
 {
    // Setup Serum on the selected DMD
    const PMPI_MSG_ON_GAME_START* msg = static_cast<const PMPI_MSG_ON_GAME_START*>(msgData);
-   assert(msg != nullptr && msg->vpmPath != nullptr && msg->gameId != nullptr);
-   std::string altColorPath = find_case_insensitive_directory_path(msg->vpmPath + "altcolor"s);
+   assert(msg != nullptr && msg->gameId != nullptr);
    char crzFolder[512];
-   if (!altColorPath.empty())
-      strcpy_s(crzFolder, sizeof(crzFolder), altColorPath.c_str());
-   else
-      msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
+   msgApi->GetSetting("Serum", "CRZFolder", crzFolder, sizeof(crzFolder));
    pSerum = Serum_Load(crzFolder, msg->gameId, FLAG_REQUEST_32P_FRAMES | FLAG_REQUEST_64P_FRAMES);
-   dmdSelected = false;
+   dmdId.id = 0;
    if (pSerum)
    {
       msgApi->SubscribeMsg(endpointId, getDmdSrcId, onGetRenderDMDSrc, nullptr);
@@ -290,14 +284,14 @@ static void onGameEnd(const unsigned int eventId, void* userData, void* msgData)
 {
    if (pSerum)
    {
-      delete state;
-      state = nullptr;
-      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
       msgApi->UnsubscribeMsg(getDmdSrcId, onGetRenderDMDSrc);
       msgApi->UnsubscribeMsg(getRenderDmdId, onGetRenderDMD);
       msgApi->UnsubscribeMsg(getIdentifyDmdId, onGetIdentifyDMD);
-      Serum_Dispose();
+      msgApi->BroadcastMsg(endpointId, onDmdSrcChangedId, nullptr);
+      delete state;
+      state = nullptr;
       pSerum = nullptr;
+      Serum_Dispose();
    }
 }
 

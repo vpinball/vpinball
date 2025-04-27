@@ -21,6 +21,5 @@
 
 struct PMPI_MSG_ON_GAME_START
 {
-   const char* vpmPath;
    const char* gameId;
 };

@@ -462,13 +462,17 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    #if defined(ENABLE_BGFX)
    if (m_vrDevice == nullptr) // Anciliary windows are not yet supported while in VR mode
    {
-      m_scoreView.Load(PathFromFilename(m_ptable->m_szFileName));
-      if (!m_scoreView.HasLayouts())
-         m_scoreView.Load(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR);
       if (m_scoreviewOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_scoreviewOutput.GetWindow());
       if (m_backglassOutput.GetMode() == VPX::RenderOutput::OM_WINDOW)
          m_renderer->m_renderDevice->AddWindow(m_backglassOutput.GetWindow());
+
+      if (m_scoreviewOutput.GetMode() != VPX::RenderOutput::OM_DISABLED)
+      {
+         m_scoreView.Load(PathFromFilename(m_ptable->m_szFileName));
+         if (!m_scoreView.HasLayouts())
+            m_scoreView.Load(g_pvp->m_szMyPath + "assets" + PATH_SEPARATOR_CHAR);
+      }
    }
    #endif
 
@@ -718,14 +722,6 @@ Player::Player(PinTable *const editor_table, PinTable *const live_table, const i
    m_liveUI = new LiveUI(m_renderer->m_renderDevice);
 
    // Signal plugins before performing static prerendering. The only thing not fully initialized is the physics (is this ok ?)
-   m_getDmdSrcMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_SRC_MSG);
-   m_getDmdMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETDMD_RENDER_MSG);
-   m_onDmdChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONDMD_SRC_CHG_MSG);
-   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onDmdChangedMsgId, OnDmdChanged, this);
-   m_getSegSrcMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_SRC_MSG);
-   m_getSegMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_GETSEG_MSG);
-   m_onSegChangedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONSEG_SRC_CHG_MSG);
-   MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onSegChangedMsgId, OnSegChanged, this);
    m_onAudioUpdatedMsgId = VPXPluginAPIImpl::GetMsgID(CTLPI_NAMESPACE, CTLPI_ONAUDIO_UPDATE_MSG);
    MsgPluginManager::GetInstance().GetMsgAPI().SubscribeMsg(VPXPluginAPIImpl::GetInstance().GetVPXEndPointId(), m_onAudioUpdatedMsgId, OnAudioUpdated, this);
    m_onGameStartMsgId = VPXPluginAPIImpl::GetMsgID(VPXPI_NAMESPACE, VPXPI_EVT_ON_GAME_START);
@@ -849,14 +845,6 @@ Player::~Player()
    }
 
    // Release plugin message Ids
-   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onSegChangedMsgId, OnSegChanged);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onSegChangedMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_getSegSrcMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_getSegMsgId);
-   MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onDmdChangedMsgId, OnDmdChanged);
-   VPXPluginAPIImpl::ReleaseMsgID(m_onDmdChangedMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_getDmdSrcMsgId);
-   VPXPluginAPIImpl::ReleaseMsgID(m_getDmdMsgId);
    MsgPluginManager::GetInstance().GetMsgAPI().UnsubscribeMsg(m_onAudioUpdatedMsgId, OnAudioUpdated);
    VPXPluginAPIImpl::ReleaseMsgID(m_onAudioUpdatedMsgId);
    VPXPluginAPIImpl::ReleaseMsgID(m_onGameStartMsgId);
@@ -1013,23 +1001,6 @@ Player::~Player()
       m_renderer->m_renderDevice->m_texMan.UnloadTexture(m_dmdFrame);
       delete m_dmdFrame;
       m_dmdFrame = nullptr;
-   }
-   for (ControllerDisplay &display : m_controllerDisplays)
-   {
-      if (display.frame)
-      {
-         m_renderer->m_renderDevice->m_texMan.UnloadTexture(display.frame);
-         delete display.frame;
-         display.frame = nullptr;
-      }
-   }
-   for (ControllerSegDisplay &display : m_controllerSegDisplays)
-   {
-      if (display.frame)
-      {
-         delete[] display.frame;
-         display.frame = nullptr;
-      }
    }
 
 #ifdef PLAYBACK
@@ -1604,6 +1575,8 @@ void Player::GameLoop(std::function<void()> ProcessOSMessages)
       {
          m_pininput.ProcessInput(); // Trigger key events to sync with controller
          m_physics->UpdatePhysics(); // Update physics (also triggering events, syncing with controller)
+         // TODO These updates should also be done directly in the physics engine after collision events
+         m_resURIResolver.RequestPhysicsUpdate(); // Invalidate data bound to physics state
          FireSyncController(); // Trigger script sync event (to sync solenoids back)
       }
       MsgPluginManager::GetInstance().ProcessAsyncCallbacks();
@@ -1846,6 +1819,8 @@ void Player::PrepareFrame(const std::function<void()>& sync)
 
    m_logicProfiler.NewFrame(m_time_msec);
    m_logicProfiler.EnterProfileSection(FrameProfiler::PROFILE_PREPARE_FRAME);
+
+   m_resURIResolver.RequestVisualUpdate();
 
    m_overall_frames++; // This causes the next VPinMame <-> VPX sync to update light status which can be heavy since it needs to perform PWM integration of all lights
    m_LastKnownGoodCounter++;
@@ -2129,256 +2104,6 @@ void Player::OnAudioUpdated(const unsigned int msgId, void* userData, void* msgD
          me->m_externalAudioPlayers.erase(entry);
       }
    }
-}
-
-void Player::OnSegChanged(const unsigned int msgId, void *userData, void *msgData)
-{
-   static_cast<Player *>(userData)->m_defaultSegSelected = false;
-   static_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   static_cast<Player *>(userData)->m_scoreView.Select(static_cast<Player *>(userData)->m_scoreviewOutput);
-}
-
-Player::ControllerSegDisplay Player::GetControllerSegDisplay(CtlResId id)
-{
-   ControllerSegDisplay* display = nullptr;
-   if (id.id == 0)
-   {
-      if (m_defaultSegSelected)
-      {
-         auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
-         if (pCD == m_controllerSegDisplays.end())
-         {
-            assert(false); // This is not supposed to happen (we identify default by storing m_defaultSefId instead of the controller display only to manage vector resize operation)
-            m_defaultSegSelected = false;
-         }
-         else
-            display = &(*pCD);
-      }
-
-      // Search for the default seg display
-      if (!m_defaultSegSelected)
-      {
-         m_defaultSegId = { 0 };
-         GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
-         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
-         if (getSrcMsg.count == 0)
-         {
-            delete[] getSrcMsg.entries;
-            return { { 0 }, 0, nullptr };
-         }
-
-         // Update seg display list
-         m_defaultSegId = getSrcMsg.entries[0].id;
-         auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [&](const ControllerSegDisplay &cd) { return cd.segId.id == m_defaultSegId.id; });
-         if (pCD == m_controllerSegDisplays.end())
-         {
-            m_controllerSegDisplays.push_back({m_defaultSegId, 0, nullptr});
-            display = &m_controllerSegDisplays.back();
-            for (unsigned int i = 0; i < getSrcMsg.count; i++)
-            {
-               if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
-               {
-                  display->displays.emplace_back(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements]);
-                  display->nElements += getSrcMsg.entries[i].nElements;
-               }
-            }
-            display->frame = new float[16 * display->nElements];
-         }
-         else
-            display = &(*pCD);
-         delete[] getSrcMsg.entries;
-         m_defaultSegSelected = true;
-      }
-   }
-   else
-   {
-      auto pCD = std::ranges::find_if(m_controllerSegDisplays.begin(), m_controllerSegDisplays.end(), [id](const ControllerSegDisplay &cd) { return cd.segId.id == id.id; });
-      if (pCD == m_controllerSegDisplays.end())
-      {
-         // Search for the requested display
-         GetSegSrcMsg getSrcMsg = { 1024, 0, new SegSrcId[1024] };
-         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegSrcMsgId, &getSrcMsg);
-         m_controllerSegDisplays.push_back({id, 0, nullptr});
-         display = &m_controllerSegDisplays.back();
-         for (unsigned int i = 0; i < getSrcMsg.count; i++)
-         {
-            if (getSrcMsg.entries[0].id.id == m_defaultSegId.id)
-            {
-               display->displays.emplace_back(&getSrcMsg.entries[i].elementType[0], &getSrcMsg.entries[i].elementType[getSrcMsg.entries[i].nElements - 1]);
-               display->nElements += getSrcMsg.entries[i].nElements;
-            }
-         }
-         display->frame = new float[16 * display->nElements];
-         delete[] getSrcMsg.entries;
-      }
-      else
-      {
-         display = &(*pCD);
-      }
-   }
-
-   // Obtain frame from controller plugin
-   GetSegMsg getMsg = { display->segId, 0, nullptr };
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getSegMsgId, &getMsg);
-   if (getMsg.frame == nullptr)
-      return { display->segId, 0, nullptr };
-   memcpy(display->frame, getMsg.frame, display->nElements * 16 * sizeof(float));
-   return *display;
-}
-
-void Player::OnDmdChanged(const unsigned int msgId, void* userData, void* msgData)
-{
-   static_cast<Player *>(userData)->m_defaultDmdSelected = false;
-   static_cast<Player *>(userData)->m_resURIResolver.ClearCache();
-   static_cast<Player *>(userData)->m_scoreView.Select(static_cast<Player *>(userData)->m_scoreviewOutput);
-}
-
-Player::ControllerDisplay Player::GetControllerDisplay(CtlResId id)
-{
-   ControllerDisplay* display = nullptr;
-   if (id.id == 0)
-   {
-      // FIXME script should be declared as other DMD and priorized during selection
-      // Script DMD takes precedence over plugin DMD
-      if (m_dmdFrame)
-         return { { 0 }, m_dmdFrameId, m_dmdFrame }; // FIXME 0 id is wrong here
-
-      // Use previously selected DMD
-      if (m_defaultDmdSelected)
-      {
-         auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
-         if (pCD == m_controllerDisplays.end())
-         {
-            assert(false); // This is not supposed to happen (we identify default by storing m_defaultDmdId instead ot the controller display only to manage vector resize operation)
-            m_defaultDmdSelected = false;
-         }
-         else
-         {
-            display = &(*pCD);
-         }
-      }
-
-      // Search for the default DMD
-      if (!m_defaultDmdSelected)
-      {
-         m_defaultDmdId = {0};
-         bool dmdFound = false;
-         unsigned int largest = 128;
-         GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
-         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdSrcMsgId, &getSrcMsg);
-         for (unsigned int i = 0; i < getSrcMsg.count; i++)
-         {
-            if ((getSrcMsg.entries[i].width >= largest) // Select a large DMD
-               && (m_defaultDmdId.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
-            {
-               m_defaultDmdId = getSrcMsg.entries[i];
-               largest = getSrcMsg.entries[i].width;
-               dmdFound = true;
-            }
-         }
-         delete[] getSrcMsg.entries;
-         if (!dmdFound)
-            return { { 0 }, -1, nullptr };
-
-         // Update in display list
-         auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &m_defaultDmdId, sizeof(DmdSrcId)) == 0; });
-         if (pCD == m_controllerDisplays.end())
-         {
-            m_controllerDisplays.push_back({m_defaultDmdId, -1, nullptr});
-            display = &m_controllerDisplays.back();
-         }
-         else
-         {
-            display = &(*pCD);
-         }
-         m_defaultDmdSelected = true;
-      }
-   }
-   else
-   {
-      // FIXME this only match on the frame source id, not on the other properties (size/format)
-      auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [id](const ControllerDisplay &cd) { return cd.dmdId.id.id == id.id; });
-      if (pCD == m_controllerDisplays.end())
-      {
-         // Search for the requested DMD
-         bool dmdFound = false;
-         DmdSrcId dmdId = { 0 };
-         GetDmdSrcMsg getSrcMsg = { 1024, 0, new DmdSrcId[1024] };
-         VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdSrcMsgId, &getSrcMsg);
-         for (unsigned int i = 0; i < getSrcMsg.count; i++)
-         {
-            if ((getSrcMsg.entries[i].id.id == id.id) && (dmdId.format == 0 || getSrcMsg.entries[i].format != CTLPI_GETDMD_FORMAT_LUM8)) // Prefer color over monochrome
-            {
-               dmdId = getSrcMsg.entries[i];
-               dmdFound = true;
-            }
-         }
-         delete[] getSrcMsg.entries;
-         if (!dmdFound)
-            return { { 0 }, -1, nullptr };
-         m_controllerDisplays.push_back({dmdId, -1, nullptr});
-         display = &m_controllerDisplays.back();
-      }
-      else
-      {
-         display = &(*pCD);
-      }
-   }
-
-   // Obtain DMD frame from controller plugin
-   GetDmdMsg getMsg = { display->dmdId, 0, nullptr };
-   VPXPluginAPIImpl::GetInstance().BroadcastVPXMsg(m_getDmdMsgId, &getMsg);
-   if (getMsg.frame == nullptr)
-      return { display->dmdId, -1, nullptr };
-
-   // Requesting the DMD may have triggered colorization and display list to be modified, so the display pointer may be bad at this point
-   auto pCD = std::ranges::find_if(m_controllerDisplays.begin(), m_controllerDisplays.end(), [&](const ControllerDisplay &cd) { return memcmp(&cd.dmdId, &getMsg.dmdId, sizeof(DmdSrcId)) == 0; });
-   if (pCD == m_controllerDisplays.end())
-      return { display->dmdId, -1, nullptr };
-   else
-      display = &(*pCD);
-
-   // (re) Create DMD texture
-   const BaseTexture::Format format = display->dmdId.format == CTLPI_GETDMD_FORMAT_LUM8 ? BaseTexture::BW : BaseTexture::SRGBA;
-   if (display->frame == nullptr || display->frame->width() != display->dmdId.width || display->frame->height() != display->dmdId.height || display->frame->m_format != format)
-   {
-      // Delay texture deletion since it may be used by the render frame which is processed asynchronously. If so, deleting would cause a deadlock & invalid access
-      BaseTexture *tex = display->frame;
-      m_renderer->m_renderDevice->AddEndOfFrameCmd([tex] { delete tex; });
-      display->frame = new BaseTexture(display->dmdId.width, display->dmdId.height, format);
-      display->frame->SetIsOpaque(true);
-      display->frameId = -1;
-   }
-
-   // Copy DMD frame, eventually converting it
-   if (display->frameId != getMsg.frameId)
-   {
-      display->frameId = getMsg.frameId;
-      const int size = display->dmdId.width * display->dmdId.height;
-      if (display->dmdId.format == CTLPI_GETDMD_FORMAT_LUM8)
-         memcpy(display->frame->data(), getMsg.frame, size);
-      else if (display->dmdId.format == CTLPI_GETDMD_FORMAT_SRGB565)
-      {
-         static constexpr UINT8 lum32[] = { 0, 8, 16, 25, 33, 41, 49, 58, 66, 74, 82, 90, 99, 107, 115, 123, 132, 140, 148, 156, 165, 173, 181, 189, 197, 206, 214, 222, 230, 239, 247, 255 };
-         static constexpr UINT8 lum64[] = { 0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 45, 49, 53, 57, 61, 65, 69, 73, 77, 81, 85, 89, 93, 97, 101, 105, 109, 113, 117, 121, 125, 130, 134, 138, 142, 146, 150, 154, 158, 162, 166, 170, 174, 178, 182, 186, 190, 194, 198, 202, 206, 210, 215, 219, 223, 227, 231, 235, 239, 243, 247, 251, 255 };
-         DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
-         const uint16_t * const frame = reinterpret_cast<uint16_t *>(getMsg.frame);
-         for (int ofs = 0; ofs < size; ofs++)
-         {
-            const uint16_t rgb565 = frame[ofs];
-            data[ofs] = 0xFF000000 | (lum32[rgb565 & 0x1F] << 16) | (lum64[(rgb565 >> 5) & 0x3F] << 8) | lum32[(rgb565 >> 11) & 0x1F];
-         }
-      }
-      else if (display->dmdId.format == CTLPI_GETDMD_FORMAT_SRGB888)
-      {
-         DWORD *const data = reinterpret_cast<DWORD *>(display->frame->data());
-         for (int ofs = 0; ofs < size; ofs++)
-            data[ofs] = 0xFF000000 | (getMsg.frame[ofs * 3 + 2] << 16) | (getMsg.frame[ofs * 3 + 1] << 8) | getMsg.frame[ofs * 3];
-      }
-      m_renderer->m_renderDevice->m_texMan.SetDirty(display->frame);
-   }
-
-   return *display;
 }
 
 void Player::PauseMusic()

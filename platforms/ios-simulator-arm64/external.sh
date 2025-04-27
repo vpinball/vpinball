@@ -401,7 +401,6 @@ cp -r bgfx/bgfx.cmake/bx/include/bx ../../../third-party/include/
 
 cp pinmame/pinmame/build/libpinmame.a ../../../third-party/build-libs/ios-simulator-arm64
 cp pinmame/pinmame/src/libpinmame/libpinmame.h ../../../third-party/include
-cp pinmame/pinmame/src/libpinmame/pinmamedef.h ../../../third-party/include
 
 cp libdmdutil/libdmdutil/build/libdmdutil.a ../../../third-party/build-libs/ios-simulator-arm64
 cp -r libdmdutil/libdmdutil/include/DMDUtil ../../../third-party/include/
