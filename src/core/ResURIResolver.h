@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 class BaseTexture;
 class IEditable;
@@ -67,7 +67,7 @@ public:
 
 private:
    typedef std::function<BaseTexture *(const string &)> texCacheLambda;
-   robin_hood::unordered_map<string, texCacheLambda> m_texCache;
+   ankerl::unordered_dense::map<string, texCacheLambda> m_texCache;
    typedef std::function<SegDisplay(const string &)> segCacheLambda;
-   robin_hood::unordered_map<string, segCacheLambda> m_segCache;
+   ankerl::unordered_dense::map<string, segCacheLambda> m_segCache;
 };

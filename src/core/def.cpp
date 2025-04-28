@@ -160,7 +160,7 @@ LocalString::LocalString(const int resid)
    else
       m_szbuffer[0] = '\0';
 #else
-   static const robin_hood::unordered_map<int, const char*> ids_map = {
+   static const ankerl::unordered_dense::map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
      { IDS_TB_BUMPER, "Bumper" },
      { IDS_TB_DECAL, "Decal" },
@@ -182,7 +182,7 @@ LocalString::LocalString(const int resid)
      { IDS_TB_TRIGGER, "Trigger" },
      { IDS_TB_TARGET, "Target" }
    };
-   const robin_hood::unordered_map<int, const char*>::const_iterator it = ids_map.find(resid);
+   const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
    {
       const char* sz = it->second;
@@ -199,7 +199,7 @@ LocalStringW::LocalStringW(const int resid)
    else
       m_szbuffer[0] = L'\0';
 #else
-   static const robin_hood::unordered_map<int, const char*> ids_map = {
+   static const ankerl::unordered_dense::map<int, const char*> ids_map = {
      { IDS_SCRIPT, "Script" },
      { IDS_TB_BUMPER, "Bumper" },
      { IDS_TB_DECAL, "Decal" },
@@ -221,7 +221,7 @@ LocalStringW::LocalStringW(const int resid)
      { IDS_TB_TRIGGER, "Trigger" },
      { IDS_TB_TARGET, "Target" }
    };
-   const robin_hood::unordered_map<int, const char*>::const_iterator it = ids_map.find(resid);
+   const ankerl::unordered_dense::map<int, const char*>::const_iterator it = ids_map.find(resid);
    if (it != ids_map.end())
    {
       const char* sz = it->second;
@@ -746,7 +746,7 @@ vector<unsigned char> base64_decode(const string &encoded_string)
 #ifdef ENABLE_OPENGL
 const char* gl_to_string(GLuint value)
 {
-   static const robin_hood::unordered_map<GLuint, const char*> value_map = {
+   static const ankerl::unordered_dense::map<GLuint, const char*> value_map = {
      { (GLuint)GL_RGB, "GL_RGB" },
      { (GLuint)GL_RGBA, "GL_RGBA" },
      { (GLuint)GL_RGB8, "GL_RGB8" },
@@ -758,7 +758,7 @@ const char* gl_to_string(GLuint value)
      { (GLuint)GL_HALF_FLOAT, "GL_HALF_FLOAT" },
    };
 
-   const robin_hood::unordered_map<GLuint, const char*>::const_iterator it = value_map.find(value);
+   const ankerl::unordered_dense::map<GLuint, const char*>::const_iterator it = value_map.find(value);
    if (it != value_map.end()) {
       return it->second;
    }

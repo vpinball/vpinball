@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 #include <atomic>
 #include "utils/hash.h"
@@ -18,7 +18,6 @@
 
 #ifdef __STANDALONE__
 #include <iostream>
-#include <unordered_map>
 class Light;
 #endif
 
@@ -621,8 +620,8 @@ public:
    Settings m_settings; // Settings for this table (apply overrides above application settings)
 
    bool m_isLiveInstance = false; // true for live shallow copy of a table
-   robin_hood::unordered_map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
-   robin_hood::unordered_map<void *, void *> m_liveToStartup;
+   ankerl::unordered_dense::map<void *, void *> m_startupToLive; // For live table, maps back and forth to startup table editable parts, materials,...
+   ankerl::unordered_dense::map<void *, void *> m_liveToStartup;
 
    // editor viewport
    Vertex2D m_offset;
@@ -873,10 +872,10 @@ private:
 
    PinTableMDI *m_mdiTable = nullptr;
    CString m_notesText;
-   robin_hood::unordered_map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
-   robin_hood::unordered_map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
-   robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
-   robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
+   ankerl::unordered_dense::map<string, Texture *, StringHashFunctor, StringComparator> m_textureMap; // hash table to speed up texture lookup by name
+   ankerl::unordered_dense::map<string, Material *, StringHashFunctor, StringComparator> m_materialMap; // hash table to speed up material lookup by name
+   ankerl::unordered_dense::map<string, Light *, StringHashFunctor, StringComparator> m_lightMap; // hash table to speed up light lookup by name
+   ankerl::unordered_dense::map<string, RenderProbe *, StringHashFunctor, StringComparator> m_renderprobeMap; // hash table to speed up renderprobe lookup by name
    bool m_moving = false;
 
    PinBinary *m_pbTempScreenshot = nullptr; // Holds contents of screenshot image until the image asks for it

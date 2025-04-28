@@ -534,7 +534,7 @@ float Rubber::GetSurfaceHeight(float x, float y) const
 
 void Rubber::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 {
-   robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+   ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
    if (!isUI)
       GenerateMesh(6, true); //!! adapt hacky code in the function if changing the "6" here
@@ -577,10 +577,10 @@ void Rubber::PhysicRelease(PhysicsEngine* physics, const bool isUI)
       m_vhoCollidable.clear();
 }
 
-void Rubber::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI)
+void Rubber::AddHitEdge(PhysicsEngine* physics, ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> &addedEdges, const unsigned i, const unsigned j, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
    {
       const Vertex3Ds v1(m_vertices[i].x, m_vertices[i].y, m_vertices[i].z);

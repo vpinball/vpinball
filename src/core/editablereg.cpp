@@ -2,4 +2,4 @@
 
 #include "editablereg.h"
 
-robin_hood::unordered_map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;
+ankerl::unordered_dense::map<ItemTypeEnum, EditableInfo> EditableRegistry::m_map;

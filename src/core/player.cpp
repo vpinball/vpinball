@@ -15,7 +15,7 @@
 
 #ifdef __STANDALONE__
 #include "standalone/Standalone.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 #endif
 
 #ifdef __LIBVPINBALL__
@@ -871,7 +871,7 @@ Player::~Player()
 
       tinyxml2::XMLDocument xmlDoc;
       tinyxml2::XMLElement* root;
-      robin_hood::unordered_map<string, tinyxml2::XMLElement*> textureAge;
+      ankerl::unordered_dense::map<string, tinyxml2::XMLElement*> textureAge;
       const string path = dir + "used_textures.xml";
       if (FileExists(path))
       {

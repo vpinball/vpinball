@@ -375,7 +375,7 @@ private:
    ID3D11DeviceContext* m_immediateContext = nullptr;
    PFN_xrGetD3D11GraphicsRequirementsKHR xrGetD3D11GraphicsRequirementsKHR = nullptr;
    XrGraphicsBindingD3D11KHR graphicsBinding {};
-   std::unordered_map<XrSwapchain, std::pair<VRDevice::SwapchainType, std::vector<XrSwapchainImageD3D11KHR>>> swapchainImagesMap {};
+   ankerl::unordered_dense::map<XrSwapchain, std::pair<VRDevice::SwapchainType, std::vector<XrSwapchainImageD3D11KHR>>> swapchainImagesMap {};
 };
 #endif
 

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 #include "Texture.h"
 #include "Sampler.h"
@@ -37,6 +37,6 @@ private:
       bool forceLinearRGB;
    };
    RenderDevice& m_rd;
-   robin_hood::unordered_map<BaseTexture*, MapEntry> m_map;
-   typedef robin_hood::unordered_map<BaseTexture*, MapEntry>::iterator Iter;
+   ankerl::unordered_dense::map<BaseTexture*, MapEntry> m_map;
+   typedef ankerl::unordered_dense::map<BaseTexture*, MapEntry>::iterator Iter;
 };

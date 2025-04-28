@@ -208,7 +208,7 @@ bool ObjLoader::Load(const string& filename, const bool flipTv, const bool conve
       tmp.nx = m_tmpNorms[m_tmpFaces[i].ni0].x;
       tmp.ny = m_tmpNorms[m_tmpFaces[i].ni0].y;
       tmp.nz = m_tmpNorms[m_tmpFaces[i].ni0].z;
-      std::unordered_set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator>::const_iterator idx = m_tmpCombined.find(std::pair<const Vertex3D_NoTex2*, const unsigned int>(&tmp, 0)); // idx is ignored when searching via find
+      ankerl::unordered_dense::set<std::pair<const Vertex3D_NoTex2*, const unsigned int>, Vertex3D_NoTex2IdxHashFunctor, Vertex3D_NoTex2IdxComparator>::const_iterator idx = m_tmpCombined.find(std::pair<const Vertex3D_NoTex2*, const unsigned int>(&tmp, 0)); // idx is ignored when searching via find
       if (idx == m_tmpCombined.end())
       {
          m_verts.push_back(tmp);

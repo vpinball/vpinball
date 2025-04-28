@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "unordered_dense.h"
+
 class DeviceTreeView final : public CTreeView
 {
 public:
@@ -41,7 +43,7 @@ private:
    HTREEITEM hRootItem;
    HTREEITEM hCurrentDeviceItem;
    CImageList m_normalImages;
-   std::map<string, HTREEITEM> m_deviceItems;
+   ankerl::unordered_dense::map<string, HTREEITEM> m_deviceItems;
 };
 
 

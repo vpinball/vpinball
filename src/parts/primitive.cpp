@@ -401,7 +401,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
       //
 
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < prog_new_indices.size(); ++i)
@@ -441,7 +441,7 @@ void Primitive::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    }
    else
    {
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
       // add collision triangles and edges
       for (size_t i = 0; i < m_mesh.NumIndices(); i += 3)
@@ -481,10 +481,10 @@ void Primitive::PhysicRelease(PhysicsEngine* physics, const bool isUI)
 
 // Ported at: VisualPinball.Engine/Math/EdgeSet.cs
 
-void Primitive::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI)
+void Primitive::AddHitEdge(PhysicsEngine* physics, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
       SetupHitObject(physics, new HitLine3D(this, vi, vj), isUI);
 }

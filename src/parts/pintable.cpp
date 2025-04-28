@@ -1617,13 +1617,13 @@ POINT PinTable::GetScreenPoint() const
 }
 
 #define CLEAN_MATERIAL(pEditMaterial) \
-{robin_hood::unordered_map<string, Material*, StringHashFunctor, StringComparator>::const_iterator \
+{ankerl::unordered_dense::map<string, Material*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_materialMap.find(pEditMaterial); \
 if (it == m_materialMap.end()) \
    pEditMaterial.clear();}
 
 #define CLEAN_IMAGE(pEditImage) \
-{robin_hood::unordered_map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
+{ankerl::unordered_dense::map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator \
    it = m_textureMap.find(pEditImage); \
 if (it == m_textureMap.end()) \
    pEditImage.clear();}
@@ -5889,7 +5889,6 @@ void PinTable::DoMouseMove(int x, int y)
 
 void PinTable::OnLeftDoubleClick(int x, int y)
 {
-   //m_vpinball->m_sb.SetVisible(true);
    //::SendMessage(m_vpinball->m_hwnd, WM_SIZE, 0, 0);
 }
 
@@ -7263,7 +7262,7 @@ RenderProbe *PinTable::GetRenderProbe(const string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_renderprobeMap.empty())
    {
-      const robin_hood::unordered_map<string, RenderProbe *, StringHashFunctor, StringComparator>::const_iterator it = m_renderprobeMap.find(szName);
+      const ankerl::unordered_dense::map<string, RenderProbe *, StringHashFunctor, StringComparator>::const_iterator it = m_renderprobeMap.find(szName);
       if (it != m_renderprobeMap.end())
          return it->second;
       else
@@ -7285,7 +7284,7 @@ Light *PinTable::GetLight(const string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_lightMap.empty())
    {
-      const robin_hood::unordered_map<string, Light *, StringHashFunctor, StringComparator>::const_iterator it = m_lightMap.find(szName);
+      const ankerl::unordered_dense::map<string, Light *, StringHashFunctor, StringComparator>::const_iterator it = m_lightMap.find(szName);
       if (it != m_lightMap.end())
          return it->second;
       else
@@ -7310,7 +7309,7 @@ Texture* PinTable::GetImage(const string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_textureMap.empty())
    {
-      const robin_hood::unordered_map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator
+      const ankerl::unordered_dense::map<string, Texture*, StringHashFunctor, StringComparator>::const_iterator
          it = m_textureMap.find(szName);
       if (it != m_textureMap.end())
          return it->second;
@@ -7508,7 +7507,7 @@ Material* PinTable::GetMaterial(const string &szName) const
    // during playback, we use the hashtable for lookup
    if (!m_materialMap.empty())
    {
-      const robin_hood::unordered_map<string, Material*, StringHashFunctor, StringComparator>::const_iterator
+      const ankerl::unordered_dense::map<string, Material*, StringHashFunctor, StringComparator>::const_iterator
          it = m_materialMap.find(szName);
       if (it != m_materialMap.end())
          return it->second;

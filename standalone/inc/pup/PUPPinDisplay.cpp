@@ -526,7 +526,7 @@ STDMETHODIMP PUPPinDisplay::LabelNew(LONG ScreenNum, BSTR LabelName, BSTR FontNa
 
 STDMETHODIMP PUPPinDisplay::LabelSet(LONG ScreenNum, BSTR LabelName, BSTR Caption, LONG Visible, BSTR Special)
 {
-   static robin_hood::unordered_map<LONG, robin_hood::unordered_set<string>> warnedLabels;
+   static ankerl::unordered_dense::map<LONG, ankerl::unordered_dense::set<string>> warnedLabels;
 
    PUPScreen* pScreen = m_pManager->GetScreen(ScreenNum);
    if (!pScreen) {

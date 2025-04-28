@@ -4,7 +4,7 @@
 
 #define MINI_CASE_SENSITIVE
 #include "mINI/ini.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 // This class holds the settings registry.
 // A setting registry can have a parent, in which case, missing settings will be looked for in the parent.
@@ -146,7 +146,7 @@ private:
    const Settings * m_parent;
    vector<OptionDef> m_tableOptions;
    #ifdef DEBUG
-      robin_hood::unordered_map<Section, robin_hood::unordered_flat_set<string>> m_validatedKeys;
+      ankerl::unordered_dense::map<Section, ankerl::unordered_dense::set<string>> m_validatedKeys;
    #endif
 
    // Shared across all settings

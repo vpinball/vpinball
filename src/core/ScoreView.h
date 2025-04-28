@@ -72,5 +72,5 @@ private:
    Layout* m_bestLayout = nullptr;
 
    void LoadGlass(Visual& visual);
-   robin_hood::unordered_map<string, Texture*> m_images;
+   ankerl::unordered_dense::map<string, Texture*> m_images;
 };

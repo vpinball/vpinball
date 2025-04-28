@@ -6,7 +6,7 @@
 #include "plugins/ScriptablePlugin.h"
 #include "plugins/LoggingPlugin.h"
 #include "core/DynamicScript.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 // VPX serves as a plugin host, using the generic messaging plugin API
 // 
@@ -69,7 +69,7 @@ private:
    static void OnScriptError(unsigned int type, const char* message);
    static void SetCOMObjectOverride(const char* className, const ScriptClassDef* classDef);
 
-   robin_hood::unordered_map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
+   ankerl::unordered_dense::map<string, const ScriptClassDef*> m_scriptCOMObjectOverrides;
    DynamicTypeLibrary m_dynamicTypeLibrary;
    ScriptablePluginAPI m_scriptableApi;
 

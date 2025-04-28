@@ -8,7 +8,7 @@
 #include <thread>
 #include <iomanip>
 
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 // call if msec,usec or uSleep, etc. should be more precise
 void set_lowest_possible_win_timer_resolution();
@@ -484,7 +484,7 @@ private:
       unsigned int totalLength = 0;
    };
    DISPID m_scriptEventDispID = 0;
-   robin_hood::unordered_map<DISPID, EventTick> m_scriptEventData;
+   ankerl::unordered_dense::map<DISPID, EventTick> m_scriptEventData;
 
    // Overall frame
    unsigned int m_frameIndex = -1;
@@ -518,9 +518,9 @@ private:
    unsigned int m_profileWorstGameTime[N_WORST];
    char m_profileWorstProfileTimers[N_WORST][MAX_TIMER_LOG];
    size_t m_profileWorstProfileTimersLen[N_WORST];
-   robin_hood::unordered_map<DISPID, EventTick> m_worstScriptEventData[N_WORST];
+   ankerl::unordered_dense::map<DISPID, EventTick> m_worstScriptEventData[N_WORST];
 
-   string EventDataToLog(const robin_hood::unordered_map<DISPID, EventTick>& eventData, const char* profileTimers, const size_t profileTimersLen) const
+   string EventDataToLog(const ankerl::unordered_dense::map<DISPID, EventTick>& eventData, const char* profileTimers, const size_t profileTimersLen) const
    {
       std::stringstream ss;
       for (const auto& v : eventData)
@@ -558,7 +558,7 @@ private:
                int calls;
                U32 lengths;
             };
-            robin_hood::unordered_map<string, info> infos;
+            ankerl::unordered_dense::map<string, info> infos;
             size_t pos = 0;
             while (pos < profileTimersLen)
             {

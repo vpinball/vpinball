@@ -390,7 +390,7 @@ void PUPLabel::Render(SDL_Renderer* pRenderer, SDL_Rect& rect, int pagenum)
 
 void PUPLabel::UpdateLabelTexture(SDL_Renderer* pRenderer, SDL_Rect& rect)
 {
-   static robin_hood::unordered_map<string, robin_hood::unordered_set<string>> warnedLabels;
+   static ankerl::unordered_dense::map<string, ankerl::unordered_dense::set<string>> warnedLabels;
 
    if (m_pTexture) {
       SDL_DestroyTexture(m_pTexture);

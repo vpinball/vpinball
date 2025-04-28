@@ -30,7 +30,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "robin_hood.h"
+#include "unordered_dense.h"
 #ifdef __STANDALONE__
 #include <sstream>
 #endif
@@ -1730,7 +1730,7 @@ bool Shader::UseGeometryShader() const
 }
 
 //parse a file. Is called recursively for includes
-bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int level, robin_hood::unordered_map<string, string> &values, const string& parentMode) {
+bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int level, ankerl::unordered_dense::map<string, string> &values, const string& parentMode) {
    if (level > 16) {//Can be increased, but looks very much like an infinite recursion.
       PLOGE << "Reached more than 16 includes while trying to include " << fileName << " Aborting...";
       return false;
@@ -1739,7 +1739,7 @@ bool Shader::parseFile(const string& fileNameRoot, const string& fileName, int l
       PLOGW << "Reached include level " << level << " while trying to include " << fileName << " Check for recursion and try to avoid includes with includes.";
    }
    string currentMode = parentMode;
-   robin_hood::unordered_map<string, string>::iterator currentElemIt = values.find(parentMode);
+   ankerl::unordered_dense::map<string, string>::iterator currentElemIt = values.find(parentMode);
    string currentElement = (currentElemIt != values.end()) ? currentElemIt->second : string();
    std::ifstream glfxFile;
    glfxFile.open(m_shaderPath + fileName, std::ifstream::in);
@@ -2072,14 +2072,14 @@ Shader::ShaderTechnique* Shader::compileGLShader(const ShaderTechniques techniqu
 }
 
 //Check if technique is valid and replace %PARAMi% with the values in the function header
-string Shader::analyzeFunction(const string& shaderCodeName, const string& _technique, const string& functionName, const robin_hood::unordered_map<string, string> &values) {
+string Shader::analyzeFunction(const string& shaderCodeName, const string& _technique, const string& functionName, const ankerl::unordered_dense::map<string, string> &values) {
    const size_t start = functionName.find('(');
    const size_t end = functionName.find(')');
    if ((start == string::npos) || (end == string::npos) || (start > end)) {
       PLOGW << "Invalid technique: " << _technique;
       return string();
    }
-   const robin_hood::unordered_map<string, string>::const_iterator it = values.find(functionName.substr(0, start));
+   const ankerl::unordered_dense::map<string, string>::const_iterator it = values.find(functionName.substr(0, start));
    string functionCode = (it != values.end()) ? it->second : string();
    if (end > start + 1) {
       std::stringstream params(functionName.substr(start + 1, end - start - 1));
@@ -2154,7 +2154,7 @@ void Shader::Load(const std::string& name)
    m_shaderPath = g_pvp->m_szMyPath
       + ("shaders-" + std::to_string(VP_VERSION_MAJOR) + '.' + std::to_string(VP_VERSION_MINOR) + '.' + std::to_string(VP_VERSION_REV) + PATH_SEPARATOR_CHAR);
    PLOGI << "Parsing file " << name;
-   robin_hood::unordered_map<string, string> values;
+   ankerl::unordered_dense::map<string, string> values;
    const bool parsing = parseFile(m_shaderCodeName, m_shaderCodeName, 0, values, "GLOBAL"s);
    if (!parsing) {
       m_hasError = true;
@@ -2163,7 +2163,7 @@ void Shader::Load(const std::string& name)
       ReportError(e.c_str(), -1, __FILE__, __LINE__);
       return;
    }
-   robin_hood::unordered_map<string, string>::iterator it = values.find("GLOBAL"s);
+   ankerl::unordered_dense::map<string, string>::iterator it = values.find("GLOBAL"s);
    string global = (it != values.end()) ? it->second : string();
 
    it = values.find("VERTEX"s);

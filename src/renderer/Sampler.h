@@ -5,7 +5,7 @@
 #include <mutex>
 #include <string>
 using std::string;
-#include "robin_hood.h"
+#include "unordered_dense.h"
 #include "typedefs3D.h"
 
 class RenderDevice;
@@ -80,7 +80,7 @@ public:
    SamplerAddressMode GetClampV() const { return m_clampv; }
 
    bool m_dirty;
-   robin_hood::unordered_set<SamplerBinding*> m_bindings;
+   ankerl::unordered_dense::set<SamplerBinding*> m_bindings;
    const SurfaceType m_type;
 
 private:

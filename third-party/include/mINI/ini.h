@@ -90,7 +90,7 @@
 #if defined(_MSC_VER) && (_MSC_VER <= 1935)
  #include <unordered_map>
 #else
- #include "robin_hood.h"
+ #include "unordered_dense.h"
 #endif
 #include <vector>
 #include <memory>
@@ -142,7 +142,7 @@ namespace mINI
 #if defined(_MSC_VER) && (_MSC_VER <= 1935)
 		using T_DataIndexMap = std::unordered_map<std::string, std::size_t>;
 #else
-		using T_DataIndexMap = robin_hood::unordered_map<std::string, std::size_t>;
+		using T_DataIndexMap = ankerl::unordered_dense::map<std::string, std::size_t>;
 #endif
 		using T_DataItem = std::pair<std::string, T>;
 		using T_DataContainer = std::vector<T_DataItem>;

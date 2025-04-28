@@ -4,7 +4,7 @@
 
 #include <variant>
 #include "plugins/ScriptablePlugin.h"
-#include "robin_hood.h"
+#include "unordered_dense.h"
 
 class DynamicDispatch;
 
@@ -38,7 +38,7 @@ private:
    struct ClassDef {
       ScriptClassDef * classDef;
       std::vector<std::vector<int>> members; // DispID (index in vector, corresponding to a case insensitive member name) to list of members (allowing overloads)
-      robin_hood::unordered_map<string, int> memberMap; // Name to DispID map
+      ankerl::unordered_dense::map<string, int> memberMap; // Name to DispID map
    };
    struct TypeDef {
       enum {
@@ -57,7 +57,7 @@ private:
       };
    };
    std::vector<TypeDef> m_types; // id (index in vector, corresponding to a case insensitive type name) to type definition
-   robin_hood::unordered_map<string, int> m_typenames; // Name to type id map
+   ankerl::unordered_dense::map<string, int> m_typenames; // Name to type id map
 };
 
 

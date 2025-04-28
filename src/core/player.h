@@ -403,7 +403,7 @@ private:
 private:
    static void OnAudioUpdated(const unsigned int msgId, void *userData, void *msgData);
    unsigned int m_onAudioUpdatedMsgId;
-   robin_hood::unordered_flat_map<uint64_t, PinSound*> m_externalAudioPlayers;
+   ankerl::unordered_dense::map<uint64_t, PinSound*> m_externalAudioPlayers;
 
 
 public:

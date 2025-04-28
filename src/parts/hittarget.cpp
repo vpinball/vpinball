@@ -252,7 +252,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
 
    if (m_d.m_targetType == DropTargetBeveled || m_d.m_targetType == DropTargetFlatSimple || m_d.m_targetType == DropTargetSimple)
    {
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
 
       const Matrix3D fullMatrix = Matrix3D::MatrixRotateZ(ANGTORAD(m_d.m_rotZ));
 
@@ -334,7 +334,7 @@ void HitTarget::PhysicSetup(PhysicsEngine* physics, const bool isUI)
    }
    else
    {
-      robin_hood::unordered_set<robin_hood::pair<unsigned, unsigned>> addedEdges;
+      ankerl::unordered_dense::set<std::pair<unsigned, unsigned>> addedEdges;
       // add collision triangles and edges
       for (unsigned i = 0; i < m_numIndices; i += 3)
       {
@@ -370,10 +370,10 @@ void HitTarget::PhysicRelease(PhysicsEngine* physics, const bool isUI)
       m_vhoCollidable.clear();
 }
 
-void HitTarget::AddHitEdge(PhysicsEngine* physics, robin_hood::unordered_set< robin_hood::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject, const bool isUI)
+void HitTarget::AddHitEdge(PhysicsEngine* physics, ankerl::unordered_dense::set< std::pair<unsigned, unsigned> >& addedEdges, const unsigned i, const unsigned j, const Vertex3Ds &vi, const Vertex3Ds &vj, const bool setHitObject, const bool isUI)
 {
    // create pair uniquely identifying the edge (i,j)
-   const robin_hood::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
+   const std::pair<unsigned, unsigned> p(std::min(i, j), std::max(i, j));
    if (!isUI && addedEdges.insert(p).second) // edge not yet added?
       SetupHitObject(physics, new HitLine3D(this, vi, vj), setHitObject, isUI);
 }

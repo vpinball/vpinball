@@ -1,5 +1,7 @@
 #pragma once
 
+#include "unordered_dense.h"
+
 // this is the djb2 (with XOR mod) string hash algorithm, str is converted to lower case
 // in general found to only work well for chars/strings
 inline size_t StringHash(const string& str)
@@ -73,20 +75,23 @@ struct Vertex3D_NoTex2IdxComparator
    }
 };
 
-namespace robin_hood {
-template<>
-struct hash<robin_hood::pair<unsigned, unsigned>> {
-   size_t operator()(robin_hood::pair<unsigned, unsigned> const& p) const noexcept {
-      return hash<unsigned long long>{}((unsigned long long)p.first | (((unsigned long long)p.second) << 32));
+template <>
+struct ankerl::unordered_dense::hash<std::pair<unsigned, unsigned>> {
+   using is_avalanching = void;
+
+   [[nodiscard]] auto operator()(std::pair<unsigned, unsigned> const& x) const noexcept -> uint64_t {
+      return detail::wyhash::hash((uint64_t)x.first | (((uint64_t)x.second) << 32));
    }
 };
-template<>
-struct hash<robin_hood::pair<int, int>> {
-   size_t operator()(robin_hood::pair<int, int> const& p) const noexcept {
-      return hash<unsigned long long>{}((unsigned long long)(unsigned int)p.first | (((unsigned long long)(unsigned int)p.second) << 32));
+
+template <>
+struct ankerl::unordered_dense::hash<std::pair<int, int>> {
+   using is_avalanching = void;
+
+   [[nodiscard]] auto operator()(std::pair<int, int> const& x) const noexcept -> uint64_t {
+      return detail::wyhash::hash((uint64_t)(uint32_t)x.first | (((uint64_t)(uint32_t)x.second) << 32));
    }
 };
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Simple MD5 hashing from public domain implementation: https://github.com/Zunawe/md5-c
