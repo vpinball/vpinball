@@ -323,8 +323,8 @@ add_executable(vpinball
    third-party/include/tinyxml2/tinyxml2.cpp
    third-party/include/tinyxml2/tinyxml2.h
    third-party/include/miniz/miniz.c
-   third-party/include/miniz/miniz.h   
-   third-party/include/robin_hood.h
+   third-party/include/miniz/miniz.h
+   third-party/include/unordered_dense.h
    third-party/include/RSJparser/RSJparser.tcc
 
    standalone/vpinball_standalone_i.c
