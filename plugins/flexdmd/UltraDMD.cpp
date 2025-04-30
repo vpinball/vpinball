@@ -79,19 +79,19 @@ void UltraDMD::Clear()
       m_pQueue->SetVisible(false);
 }
 
-Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness)
+Label* UltraDMD::GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const
 {
    for (const auto& pFontDef : m_singleLineFonts) {
       Label* pLabel = new Label(m_pFlexDMD, GetFont(pFontDef->GetPath(), fillBrightness, outlineBrightness), text, string());
       pLabel->SetPosition((m_pFlexDMD->GetWidth() - pLabel->GetWidth()) / 2.f, (m_pFlexDMD->GetHeight() - pLabel->GetHeight()) / 2.f);
-      if ((pLabel->GetX() >= 0 && pLabel->GetY() >= 0) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
+      if ((pLabel->GetX() >= 0.f && pLabel->GetY() >= 0.f) || pFontDef == m_singleLineFonts[m_singleLineFonts.size() - 1])
          return pLabel;
       pLabel->Release();
     }
     return nullptr;
 }
 
-Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrightness)
+Font* UltraDMD::GetFont(const string& path, float brightness, float outlineBrightness) const
 {
    brightness = brightness > 1.f ? 1.f : brightness;
    outlineBrightness = outlineBrightness > 1.f ? 1.f : outlineBrightness;
@@ -126,9 +126,9 @@ void UltraDMD::SetScoreboardBackgroundImage(const string& filename, int selected
 Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
 {
    int key;
-   std::unordered_map<int, BaseDef*>::iterator k;
+   ankerl::unordered_dense::map<int, BaseDef*>::const_iterator k;
    if (try_parse_int(filename, key) && ((k = m_preloads.find(key)) != m_preloads.end())) {
-      VideoDef* pVideoDef = dynamic_cast<VideoDef*>(k->second);
+      const VideoDef* const pVideoDef = dynamic_cast<const VideoDef*>(k->second);
       if (pVideoDef) {
          Video* pActor = Video::Create(m_pFlexDMD, pVideoDef->GetVideoFilename(), string(), pVideoDef->GetLoop());
          if (pActor) {
@@ -139,7 +139,7 @@ Actor* UltraDMD::ResolveImage(const string& filename, bool useFrame)
          return pActor;
       }
       else {
-         ImageSequenceDef* pImageSequenceDef = dynamic_cast<ImageSequenceDef*>(k->second);
+         const ImageSequenceDef* const pImageSequenceDef = dynamic_cast<const ImageSequenceDef*>(k->second);
          if (pImageSequenceDef) {
             ImageSequence* pVideo = ImageSequence::Create(m_pFlexDMD, m_pFlexDMD->GetAssetManager(), pImageSequenceDef->GetImages(), string(), pImageSequenceDef->GetFPS(), pImageSequenceDef->GetLoop());
             if (pVideo) {
@@ -206,7 +206,7 @@ int UltraDMD::CreateAnimationFromImages(int fps, bool loop, const string& imagel
 
 int UltraDMD::RegisterVideo(int videoStretchMode, bool loop, const string& videoFilename)
 {
-   VideoDef* pVideoDef = new VideoDef(videoFilename, loop);
+   VideoDef* const pVideoDef = new VideoDef(videoFilename, loop);
 
    switch (videoStretchMode) {
       case 0:
@@ -228,7 +228,7 @@ int UltraDMD::RegisterVideo(int videoStretchMode, bool loop, const string& video
    }
 
    for (const auto& kv : m_preloads) {
-      VideoDef* pObject = dynamic_cast<VideoDef*>(kv.second);
+      VideoDef* const pObject = dynamic_cast<VideoDef*>(kv.second);
       if (pObject) {
          if (*pObject == *pVideoDef) {
             return kv.first;
@@ -281,7 +281,7 @@ void UltraDMD::DisplayScene00ExWithId(const string& sceneId, bool cancelPrevious
    int bottomBrightness, int bottomOutlineBrightness, int animateIn, int pauseTime, int animateOut)
 {
    if (cancelPrevious && !sceneId.empty()) {
-      Scene* pScene = m_pQueue->GetActiveScene();
+      Scene* const pScene = m_pQueue->GetActiveScene();
       if (pScene != nullptr && pScene->GetName() == sceneId)
          m_pQueue->RemoveScene(sceneId);
    }
@@ -289,37 +289,37 @@ void UltraDMD::DisplayScene00ExWithId(const string& sceneId, bool cancelPrevious
    m_pQueue->SetVisible(true);
 
    if (!toptext.empty() && !bottomtext.empty()) {
-      Font* pFontTop = GetFont(m_pTwoLinesFontTop->GetPath(), topBrightness / 15.0f, topOutlineBrightness / 15.0f);
-      Font* pFontBottom = GetFont(m_pTwoLinesFontBottom->GetPath(), bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
+      Font* const pFontTop = GetFont(m_pTwoLinesFontTop->GetPath(), topBrightness / 15.0f, topOutlineBrightness / 15.0f);
+      Font* const pFontBottom = GetFont(m_pTwoLinesFontBottom->GetPath(), bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
       TwoLineScene* pScene = new TwoLineScene(m_pFlexDMD, ResolveImage(background, true), toptext, pFontTop, bottomtext, pFontBottom, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, sceneId);
       m_pQueue->Enqueue(pScene);
    }
    else if (!toptext.empty()) {
-      Label* pLabel = GetFittedLabel(toptext, topBrightness / 15.0f, topOutlineBrightness / 15.0f);
+      Label* const pLabel = GetFittedLabel(toptext, topBrightness / 15.0f, topOutlineBrightness / 15.0f);
       SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(background, true), toptext, pLabel->GetFont(), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, false, sceneId);
       pLabel->Release();
       m_pQueue->Enqueue(pScene);
    }
    else if (!bottomtext.empty()) {
-      Label* pLabel = GetFittedLabel(bottomtext, bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
+      Label* const pLabel = GetFittedLabel(bottomtext, bottomBrightness / 15.0f, bottomOutlineBrightness / 15.0f);
       SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(background, true), bottomtext, pLabel->GetFont(), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, false, sceneId);
       pLabel->Release();
       m_pQueue->Enqueue(pScene);
    }
    else {
-      BackgroundScene* pScene = new BackgroundScene(m_pFlexDMD, ResolveImage(background, true), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, sceneId);
+      BackgroundScene* const pScene = new BackgroundScene(m_pFlexDMD, ResolveImage(background, true), (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, sceneId);
       m_pQueue->Enqueue(pScene);
    }
 }
 
 void UltraDMD::ModifyScene00(const string& id, const string& toptext, const string& bottomtext)
 {
-   Scene* pScene = m_pQueue->GetActiveScene();
+   Scene* const pScene = m_pQueue->GetActiveScene();
    if (pScene != nullptr && !id.empty() && pScene->GetName() == id) {
-      TwoLineScene* pScene2 = dynamic_cast<TwoLineScene*>(pScene);
+      TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
       if (pScene2 != nullptr)
          pScene2->SetText(toptext, bottomtext);
-      SingleLineScene* pScene1 = dynamic_cast<SingleLineScene*>(pScene);
+      SingleLineScene* const pScene1 = dynamic_cast<SingleLineScene*>(pScene);
       if (pScene1 != nullptr)
          pScene1->SetText(toptext);
    }
@@ -327,12 +327,12 @@ void UltraDMD::ModifyScene00(const string& id, const string& toptext, const stri
 
 void UltraDMD::ModifyScene00Ex(const string& id, const string& toptext, const string& bottomtext, int pauseTime)
 {
-   Scene* pScene = m_pQueue->GetActiveScene();
+   Scene* const pScene = m_pQueue->GetActiveScene();
    if (pScene != nullptr && !id.empty() && pScene->GetName() == id) {
-      TwoLineScene* pScene2 = dynamic_cast<TwoLineScene*>(pScene);
+      TwoLineScene* const pScene2 = dynamic_cast<TwoLineScene*>(pScene);
       if (pScene2 != nullptr)
          pScene2->SetText(toptext, bottomtext);
-      SingleLineScene* pScene1 = dynamic_cast<SingleLineScene*>(pScene);
+      SingleLineScene* const pScene1 = dynamic_cast<SingleLineScene*>(pScene);
       if (pScene1 != nullptr)
          pScene1->SetText(toptext);
       pScene->SetPause((float)(pScene->GetTime() + pauseTime / 1000.0));
@@ -341,8 +341,8 @@ void UltraDMD::ModifyScene00Ex(const string& id, const string& toptext, const st
 
 void UltraDMD::DisplayScene01(const string& sceneId, const string& background, const string& text, int textBrightness, int textOutlineBrightness, int animateIn, int pauseTime, int animateOut)
 {
-   Font* pFont = GetFont(m_singleLineFonts[0]->GetPath(), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
-   SingleLineScene* pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(background, false), text, pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, true, sceneId);
+   Font* const pFont = GetFont(m_singleLineFonts[0]->GetPath(), textBrightness / 15.0f, textOutlineBrightness / 15.0f);
+   SingleLineScene* const pScene = new SingleLineScene(m_pFlexDMD, ResolveImage(background, false), text, pFont, (AnimationType)animateIn, pauseTime / 1000.0f, (AnimationType)animateOut, true, sceneId);
    m_pScoreBoard->SetVisible(false);
    m_pQueue->SetVisible(true);
    m_pQueue->Enqueue(pScene);
@@ -353,7 +353,7 @@ void UltraDMD::DisplayText(const string& text, int textBrightness, int textOutli
    m_pScoreBoard->SetVisible(false);
    if (m_pQueue->IsFinished()) {
       m_pQueue->SetVisible(false);
-      Label* pLabel = GetFittedLabel(text, textBrightness / 15.0f, textOutlineBrightness / 15.0f);
+      Label* const pLabel = GetFittedLabel(text, textBrightness / 15.0f, textOutlineBrightness / 15.0f);
       pLabel->Draw(m_pFlexDMD->GetGraphics());
       delete pLabel;
    }

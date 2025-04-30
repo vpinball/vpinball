@@ -1,9 +1,9 @@
 #pragma once
 
+#include <unordered_dense.h>
+
 #include "AssetSrc.h"
 #include "Bitmap.h"
-
-#include <unordered_map>
 
 
 class Font;
@@ -27,8 +27,8 @@ public:
    void ClearAll();
 
 private:
-   std::unordered_map<string, Bitmap*> m_cachedBitmaps;
-   std::unordered_map<string, Font*> m_cachedFonts;
+   ankerl::unordered_dense::map<string, Bitmap*> m_cachedBitmaps;
+   ankerl::unordered_dense::map<string, Font*> m_cachedFonts;
 
    string m_szBasePath;
    string m_szTableFile;

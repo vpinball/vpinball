@@ -464,14 +464,14 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
       SDL_Rect displayBounds;
       if (SDL_GetDisplayBounds(displayIDs[i], &displayBounds))
       {
-         for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+         for (auto& display : displayMap)
          {
-            if (display->second.left == displayBounds.x && display->second.top == displayBounds.y && display->second.width == displayBounds.w && display->second.height == displayBounds.h)
+            if (display.second.left == displayBounds.x && display.second.top == displayBounds.y && display.second.width == displayBounds.w && display.second.height == displayBounds.h)
             {
-               display->second.adapter = i;
-               const char* displayName = SDL_GetDisplayName(display->second.adapter);
+               display.second.adapter = i;
+               const char* displayName = SDL_GetDisplayName(display.second.adapter);
                if (displayName)
-                  strncpy_s(display->second.GPU_Name, displayName, sizeof(display->second.GPU_Name) - 1);
+                  strncpy_s(display.second.GPU_Name, displayName, sizeof(display.second.GPU_Name) - 1);
             }
          }
       }
@@ -480,12 +480,12 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
 
    // Apply the same numbering as windows
    int i = 0;
-   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+   for (auto& display : displayMap)
    {
-      if (display->second.adapter >= 0)
+      if (display.second.adapter >= 0)
       {
-         display->second.display = i;
-         displays.push_back(display->second);
+         display.second.display = i;
+         displays.push_back(display.second);
       }
       i++;
    }
@@ -525,7 +525,7 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
       ShowError("Could not create D3D9 object.");
       return -1;
    }
-   // Map the displays to the DX9 adapter. Otherwise this leads to an performance impact on systems with multiple GPUs
+   // Map the displays to the DX9 adapter. Otherwise, this leads to a performance impact on systems with multiple GPUs
    const int adapterCount = pD3D->GetAdapterCount();
    for (int i = 0; i < adapterCount; ++i)
    {
@@ -542,11 +542,11 @@ int Window::GetDisplays(vector<DisplayConfig>& displays)
 
    // Apply the same numbering as windows
    int i = 0;
-   for (std::map<string, DisplayConfig>::iterator display = displayMap.begin(); display != displayMap.end(); ++display)
+   for (auto& display : displayMap)
    {
-      if (display->second.adapter >= 0) {
-         display->second.display = i;
-         displays.push_back(display->second);
+      if (display.second.adapter >= 0) {
+         display.second.display = i;
+         displays.push_back(display.second);
       }
       i++;
    }

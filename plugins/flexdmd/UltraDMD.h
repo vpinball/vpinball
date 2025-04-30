@@ -8,7 +8,7 @@
 #include "resources/ResourceDef.h"
 #include "VPXPlugin.h"
 
-#include <unordered_map>
+#include <unordered_dense>
 
 class UltraDMD final
 {
@@ -51,8 +51,8 @@ public:
 
 private:
    Actor* ResolveImage(const string& filename, bool useFrame);
-   Font* GetFont(const string& path, float brightness, float outlineBrightness);
-   Label* GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness);
+   Font* GetFont(const string& path, float brightness, float outlineBrightness) const;
+   Label* GetFittedLabel(const string& text, float fillBrightness, float outlineBrightness) const;
 
    FlexDMD* m_pFlexDMD;
    Sequence* m_pQueue;
@@ -66,5 +66,5 @@ private:
    //bool m_visible = true;
    int m_stretchMode = 0;
    int m_nextId = 1;
-   std::unordered_map<int, BaseDef*> m_preloads;
+   ankerl::unordered_dense::map<int, BaseDef*> m_preloads;
 };
